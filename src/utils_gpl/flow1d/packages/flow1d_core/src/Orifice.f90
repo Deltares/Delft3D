@@ -140,12 +140,6 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
         (s1m1 - s1m2<=0.0 .and. allowedflowdir==1) .or. &
         (sop - scr<=.0)) then
        kfum = 0
-    !           ARS 9698 .lt. is change to .le.
-    elseif (smax - scr < thresholdDry) then
-       kfum = 0
-    elseif (smax - scr > thresholdFlood) then
-       kfum = 1
-    else
     endif
     if (kfum == 0) then
        fum   = 0.0d0

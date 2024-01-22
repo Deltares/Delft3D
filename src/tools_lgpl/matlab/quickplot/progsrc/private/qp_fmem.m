@@ -154,6 +154,8 @@ switch cmd
                     try_next='nodelemesh';
                 case {'.14','.gr3'}
                     try_next='adcircmesh';
+                case {'.2dm'}
+                    try_next='smsmesh';
                 case {'.mesh'}
                     try_next='mikemesh';
                 case {'.shy'}
@@ -162,7 +164,7 @@ switch cmd
                     try_next='geomesh';
                 case {'.msh'}
                     try_next='gmsh';
-                case {'.mat'}
+                case {'.mat','.fig'}
                     try_next='matlab';
                 case {'.map'}
                     try_next='pcraster';
@@ -174,7 +176,7 @@ switch cmd
                     try_next='asciiwind';
                 case {'.inc','.crs','.bin'}
                     try_next='fls';
-                case {'.grib','.grib1','.grib2'}
+                case {'.grb','.grib','.grib1','.grib2'}
                     try_next='grib';
                 case {'.tek','.ann','.ldb','.pol','.spl','.tka','.tkp','.tkf','.pli','.pliz'}
                     try_next='tekal';
@@ -182,7 +184,7 @@ switch cmd
                     try_next='AutoCAD DXF';
                 case {'.geojson'}
                     try_next='GeoJSON';
-                case {'.xyz'}
+                case {'.xyz','.csv'}
                     try_next='samples';
                 case {'.seq'}
                     try_next='aukepc';
@@ -243,7 +245,11 @@ switch cmd
                     types_to_check{i} = types_to_check{i}(2:end);
                 end
             end
-            types_to_check = setdiff(types_to_check,try_next);
+            % previously setdiff was used here, it's simpler but sorts the
+            % types_to_check array. Unfortunately, grib files should be
+            % checked before the NetCDF file, but capital N is sorted
+            % before lowercase g.
+            types_to_check(ismember(types_to_check,try_next))=[];
         else
             types_to_check = {};
         end
@@ -337,18 +343,11 @@ switch cmd
                                     FI = qp_option(FI,'morstt',0);
                                     FI = qp_option(FI,'dps','');
                                     FI = qp_option(FI,'displaytime','hydrodynamic time');
+                                    FI = detect_partitions(FI);
                                 case {'delft3d-trih'}
                                     FI = qp_option(FI,'displaytime','hydrodynamic time');
                                 case {'delft3d-com'}
-                                    Opt = get_matching_names(FileName,'-',-1);
-                                    if ~isempty(Opt)
-                                        FI.Partitions = Opt;
-                                        for d = Opt{1}:-1:1
-                                            FN = FileName;
-                                            FN(Opt{2}+(1:Opt{3})) = sprintf('%3.3i',d);
-                                            FI.NEFIS(d) = vs_use(FN,'quiet');
-                                        end
-                                    end
+                                    FI = detect_partitions(FI);
                             end
                             if isfield(FI,'SubType')
                                 Tp=FI.SubType;
@@ -369,10 +368,15 @@ switch cmd
                         else
                             FI=load('-mat',FileName);
                         end
+                        if strcmpi(en,'.fig')
+                            d3d_qp('openfigure',FileName);
+                            FI=[];
+                            break
+                        end
                         if isstruct(FI)
                             f=fieldnames(FI);
-                            if length(f)==1 && strcmp(lower(f{1}),'data')
-                                FI=getfield(FI,f{1});
+                            if numel(f)==1 && strcmpi(f{1},'data')
+                                FI = FI.(f{1});
                                 FI.FileName=FileName;
                                 Tp=try_next;
                             else
@@ -790,6 +794,13 @@ switch cmd
                             FI.Options=0;
                             Tp=FI.FileType;
                         end
+                    case 'tuflowmesh'
+                        asciicheck(isASCII,REASON)
+                        FI=tuflowmesh('open',FileName);
+                        if ~isempty(FI)
+                            FI.Options=0;
+                            Tp=FI.FileType;
+                        end
                     case 'tekal'
                         asciicheck(isASCII,REASON)
                         FI=tekal('open',FileName);
@@ -1202,12 +1213,15 @@ qp_settings('LastFileType',lasttp)
 
 function [isASCII,REASON] = verifyascii(arg)
 fid = fopen(arg,'r');
-S = fread(fid,[1 100],'uint8');
+S = fread(fid,[1 1024],'uint8');
 fclose(fid);
 if isempty(S)
     isASCII = false;
     REASON  = 'the file is empty';
 else
+    if S(end) == 26 % last chracter can be an EOF marker
+        S = S(1:end-1);
+    end
     invalid_chars = S(S~=9 & S~=10 & S~=13 & S<32); % TAB,LF,CR allowed
     if ~isempty(invalid_chars)
         isASCII = false;
@@ -1259,5 +1273,44 @@ if nDigits>0 && all(ismember(n(iOffset+(1:nDigits)),'0123456789'))
     %
     if isequal(N,0:length(N)-1) || isequal(N,1:length(N))
         Opt = {length(N) iPOffset nDigits N(1)};
+    end
+end
+
+
+function FI = detect_partitions(FI)
+FileName = [FI.FileName FI.DatExt];
+Opt = get_matching_names(FileName,'-',-1);
+if ~isempty(Opt)
+    FI.Partitions = Opt;
+    nParts = Opt{1};
+    for d = nParts:-1:1
+        FN = FileName;
+        FN(Opt{2}+(1:Opt{3})) = sprintf('%3.3i',d);
+        FI.NEFIS(d) = vs_use(FN,'quiet');
+    end
+    FI.Merge.Length = 0;
+    FI.Merge.Indices = cell(1,nParts);
+    for d = 1:nParts
+        switch FI.SubType
+            case 'Delft3D-trim'
+                KCS = vs_get(FI.NEFIS(d),'map-const','KCS','quiet');
+            case 'Delft3D-com'
+                KCS = vs_get(FI.NEFIS(d),'KENMCNST','KCS','quiet');
+        end
+        if d == 1
+            if KCS(end,2) == -1
+                FI.Merge.Dimension = 'N';
+            else
+                FI.Merge.Dimension = 'M';
+            end
+        end
+        switch FI.Merge.Dimension
+            case 'M'
+                IPart = sum(not(any(KCS==-1,1)));
+            case 'N'
+                IPart = sum(not(any(KCS==-1,2)));
+        end
+        FI.Merge.Indices{d} = FI.Merge.Length + (1:IPart);
+        FI.Merge.Length = FI.Merge.Length + IPart;
     end
 end

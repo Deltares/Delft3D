@@ -26,8 +26,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
    subroutine mba_init()
 
@@ -320,13 +320,13 @@
 
    datembastart = ""
    if (mjd2date(refdate_mjd + timembastart/86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-      write(datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)      
+      write(datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
    endif
    datembaend = ""
    if (mjd2date(refdate_mjd + timembaend/86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
       write(datembaend, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
    endif
-   
+
 !  New total volumes and masses
    call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
 
@@ -675,7 +675,8 @@
    subroutine mba_write_bal_header(lunbal, numconst, const_names, iconst2sys, nosys, notot, isys2wqbot, syname_sub, nomba, mbaname, nflux, &
                                    totfluxsys, stochi, fluxname, fluxprocname, nfluxsys, ipfluxsys, fluxsys)
 
-   use unstruc_version_module, only: unstruc_version_full, get_unstruc_source
+   use dflowfm_version_module, only: getfullversionstring_dflowfm
+   use dflowfm_version_module, only: getbranch_dflowfm
 
    implicit none
 
@@ -706,6 +707,7 @@
 
    character(255)              :: tex
    character(20)               :: rundat
+   character(160)              :: version_id
    integer                     :: imba
    integer                     :: iconst
    integer                     :: isys
@@ -713,9 +715,11 @@
    integer                     :: jflux
    integer                     :: ifluxsys
 
+   call getfullversionstring_dflowfm(version_id)
+
    write (lunbal, '("=============================================================")')
-   write(lunbal,'(A)') trim(unstruc_version_full)
-   call get_unstruc_source(tex)
+   write(lunbal,'(A)') trim(version_id)
+   call getbranch_dflowfm(tex)
    write(lunbal,'(A)') 'Source: '//trim(tex)
    call datum(rundat)
    write(lunbal,'(A)') 'File creation date: '//rundat
@@ -1759,7 +1763,7 @@
    return
 
 1  format (a',',a',',a',',a',')
-2  format (a,es16.8e3,',',es16.8e3,',',es16.8e3)
+2  format (a,es16.8e3,',',es16.8e3)
 3  format (a,a',',a',',es16.8e3,',',es16.8e3,',',es16.8e3)
 
    end subroutine mba_write_csv_time_step

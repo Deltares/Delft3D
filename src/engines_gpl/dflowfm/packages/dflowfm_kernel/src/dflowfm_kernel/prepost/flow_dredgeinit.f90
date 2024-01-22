@@ -36,7 +36,6 @@ subroutine flow_dredgeinit()
    use m_fm_dredge,   only: fm_rddredge
    use unstruc_model, only: md_dredgefile
    use m_sediment, only: stm_included, jased
-   use m_flowparameters, only: jatransportmodule
    use MessageHandling, only: mess, LEVEL_FATAL
 
    implicit none

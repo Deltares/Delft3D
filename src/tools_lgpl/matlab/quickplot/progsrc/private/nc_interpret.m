@@ -54,6 +54,13 @@ if nargin>1
     nc1 = rmfield(nc,'Filename');
     nc1.Dimension = rmfield(nc1.Dimension,'Length');
     nc1.Dataset   = rmfield(nc1.Dataset,{'Size','Chunking','Shuffle','Deflate'});
+    Atts = {nc1.Attribute.Name};
+    i_uuid = ustrcmpi('uuid',Atts);
+    if i_uuid > 0
+        uuid1 = nc.Attribute(i_uuid).Value;
+    else
+        uuid1 = NaN;
+    end
     nc1 = rmfield(nc1,'Attribute');
     partNrFormat = ['%' num2str(nDigits) '.' num2str(nDigits) 'd'];
     %
@@ -68,16 +75,29 @@ if nargin>1
         nc2 = rmfield(nc2,'Filename');
         nc2.Dimension = rmfield(nc2.Dimension,'Length');
         nc2.Dataset   = rmfield(nc2.Dataset,{'Size','Chunking','Shuffle','Deflate'});
+        Atts = {nc.Attribute.Name};
+        i_uuid = ustrcmpi('uuid',Atts);
+        if i_uuid > 0
+            uuid2 = nc.Attribute(i_uuid).Value;
+        else
+            uuid2 = NaN;
+        end
         nc2 = rmfield(nc2,'Attribute');
         %
-        if vardiff(nc1,nc2)>1
+        if isequal(uuid1,uuid2)
+            % same uuid, so these files must belong to the same simulation
+        elseif vardiff(nc1,nc2)>1
+            % A mismatch in the data sets was detected, revert to the
+            % default one file processing. Make sure that we are processing
+            % the file that was selected instead of the first partition.
+            Partitions{1} = nc_interpret(nc);
             NumPartitions = 1;
             break
         end
     end
     delete(hPB)
     %
-    nc = Partitions{1};
+    nc = Partitions{1}; % this is just a place holder ... the contents may differ
     nc.NumDomains = NumPartitions;
     if NumPartitions>1
         nc.Partitions = Partitions;
@@ -388,11 +408,37 @@ for ivar = 1:nvars
     j = strmatch('units',Attribs,'exact');
     if ~isempty(j)
         unit = Info.Attribute(j).Value;
-        [unit1,unit2] = strtok(lower(unit));
-        if ~ischar(unit1)
-            unit1='';
+        if ~ischar(unit)
+            unit = '';
         end
-        switch unit1
+        %
+        try
+            [refdate,dt,TZshift] = nc_interpret_time_unit(unit);
+            if ~isempty(refdate) && ~isequal(nc.Dataset(ivar).Type,'time') && length(nc.Dataset(ivar).Dimension)==1
+                if strcmp(nc.Dataset(ivar).Type,'coordinate')
+                    nc = setType(nc,ivar,idim,'time');
+                else
+                    nc = setType(nc,ivar,idim,'aux-time');
+                end
+            elseif strcmp(nc.Dataset(ivar).Type,'coordinate')
+                nc = setType(nc,ivar,idim,'aux-time');
+            end
+            %
+            nc.Dataset(ivar).Info.DT      = dt;
+            if ~isempty(unit) && isempty(refdate)
+                nc.Dataset(ivar).Info.RefDate = unit;
+            else
+                nc.Dataset(ivar).Info.RefDate = refdate;
+            end
+            %
+            % Pass TZshift to QUICKPLOT for optional processing
+            nc.Dataset(ivar).Info.TZshift = TZshift;
+            continue
+        catch
+            % no problem, the unit doesn't have to be a time unit
+        end
+        %
+        switch unit
             case {'degrees_north','degree_north','degrees_N','degree_N','degreesN','degreeN'}
                 nc = setType(nc,ivar,idim,'latitude');
                 continue
@@ -405,101 +451,19 @@ for ivar = 1:nvars
                 %
                 nc = setType(nc,ivar,idim,'z-coordinate');
                 continue
-            case {'millisecond','milliseconds','millisec','millisecs','msec','ms'}
-                dt = 0.001;
-            case {'second','seconds','sec','secs','s'}
-                dt = 1;
-            case {'minute','minutes','min','mins'}
-                dt = 60;
-            case {'hour','hours','hr','hrs','h'}
-                dt = 3600;
-            case {'day','days','d'}
-                dt = 86400; % 24*3600
-            case {'week'}
-                dt = 7*86400;
-            case {'month','months','mon'}
-                dt = 365.242198781*24*3600/12;
-            case {'year','years','yr','yrs'}
-                dt = 365.242198781*24*3600;
-            case {'common_year','common_years'}
-                dt = 365          *24*3600;
-            case {'leap_year','leap_years'}
-                dt = 366          *24*3600;
-            case {'Julian_year','Julian_years'}
-                dt = 365.25       *24*3600;
-            case {'Gregorian_year','Gregorian_years'}
-                dt = 365.2425     *24*3600;
             otherwise
                 try
                     f = qp_unitconversion(unit1,'Pa');
-                catch
-                    f = 'fail';
-                end
-                if ~ischar(f)
                     %
-                    % dimension unit is compatible with pressure (Pa)
-                    % according CF 1.4 this must be a z-coordinate
-                    %
-                    nc = setType(nc,ivar,idim,'z-coordinate');
-                    continue
-                end
-                dt = [];
-        end
-        if ~isempty(dt)
-            % quantity with time unit
-            %
-            % even though there is a space between the time and the time
-            % zone, this line supports the case in which a + or - of the
-            % time zone is directly attached to the time.
-            refdate = sscanf(unit2,' since %d-%d-%d%*1[ T]%d:%d:%f %d:%d',[1 8]);
-            if length(refdate)==1
-                % possibly basic (condensed) format
-                refdate = sscanf(unit2,' since %4d%2d%2d%*1[ T]%2d%2d%f %d:%d',[1 8]);
-            end
-            if length(refdate)>=6
-                if length(refdate)==8
-                    % offset HH:MM
-                    TZshift = refdate(7) + sign(refdate(7))*refdate(8)/60;
-                elseif length(refdate)==7
-                    % offset HH or HHMM
-                    TZshift = refdate(7);
-                    if abs(TZshift)>24
-                        TZshift = fix(TZshift/100)+rem(TZshift,100)/60;
+                    if isnumeric(f)
+                        % dimension unit is compatible with pressure (Pa)
+                        % according CF 1.4 this must be a z-coordinate
+                        nc = setType(nc,ivar,idim,'z-coordinate');
+                        continue
                     end
-                else
-                    TZshift = 0;
+                catch
+                    % other units don't have any special meaning
                 end
-                refdate = datenum(refdate(1:6));
-            elseif length(refdate)>=3
-                refdate(6) = 0;
-                refdate = datenum(refdate);
-                TZshift = NaN;
-            else
-                refdate = [];
-                TZshift = NaN;
-            end
-            %
-            % time quantity "since" --> time dimension
-            %
-            if ~isempty(refdate) && ~isequal(nc.Dataset(ivar).Type,'time') && length(nc.Dataset(ivar).Dimension)==1
-                if strcmp(nc.Dataset(ivar).Type,'coordinate')
-                    nc = setType(nc,ivar,idim,'time');
-                else
-                    nc = setType(nc,ivar,idim,'aux-time');
-                end
-            elseif strcmp(nc.Dataset(ivar).Type,'coordinate')
-                nc = setType(nc,ivar,idim,'aux-time');
-            end
-            %
-            nc.Dataset(ivar).Info.DT      = dt/86400;
-            if ~isempty(unit2) && isempty(refdate)
-                nc.Dataset(ivar).Info.RefDate = unit;
-            else
-                nc.Dataset(ivar).Info.RefDate = refdate;
-            end
-            % Pass TZshift to QUICKPLOT for optional processing
-            nc.Dataset(ivar).Info.TZshift = TZshift;
-            continue
         end
     end
     %
@@ -630,6 +594,10 @@ SGrid  = {nc.Dataset(iSGrid).Name};
 UGrid  = {nc.Dataset(iUGrid).Name};
 iSGrid = find(iSGrid);
 iUGrid = find(iUGrid);
+ugridDims = {};
+for i = 1:length(iUGrid)
+    ugridDims = cat(2,ugridDims,nc.Dataset(iUGrid(i)).Mesh(5:end));
+end
 gridLoc = {'node','edge','face','volume'};
 scalarDimWarnings = {};
 for ivar = 1:nvars
@@ -748,7 +716,7 @@ for ivar = 1:nvars
             if ~isempty(nmDims) && ~strcmp(Info.Type,'ugrid_mesh') && ~strcmp(Info.Type,'simple_geometry')
                 vDimsStr = sprintf('%s, ',vDims{:});
                 cvDimsStr = sprintf('%s, ',cvDims{:});
-                if length(nmDims) == 1 && cvSize == 1
+                if length(nmDims) == 1 && isequal(cvSize,1)
                     % coordinate variable with length 1
                     if ~ismember(nc.Dataset(icvar).Name,scalarDimWarnings)
                         Msg = sprintf(['Auxiliary coordinate %s has a dimension %s\n', ...
@@ -817,16 +785,35 @@ for ivar = 1:nvars
     end
     if ~isempty(Info.Time)
         iTime = abs(Info.Time);
+        % remove time dimensions that match UGRID dimensions.
+        %
+        % This is a tricky path. Should a 1D dataset with X(i), Y(i), T(i)
+        % be interpreted as a track or a 1D spatial quantity with varying
+        % time? We do the former, but if the dimension is also associated
+        % with UGRID then it will be a spatial dimension. Use case: D-Flow
+        % FM fourier file with time at which maximum/minimum is observed.
+        for it = length(iTime):-1:1
+            if length(nc.Dataset(iTime(it)).Dimid)>1
+                iTime(it) = [];
+            else
+                dimName = nc.Dimension(nc.Dataset(iTime(it)).Dimid+1).Name;
+                if ismember(dimName,ugridDims)
+                    iTime(it) = [];
+                end
+            end
+        end
         %
         % Assumption: time is always unique and coordinate dimension.
         %
-        if length(iTime)>1 || length(nc.Dataset(iTime).Dimid)>1
-            ui_message('error','Unsupported case encountered: multiple time coordinates encountered.')
-        end
-        Info.Time = iTime(1);
-        %
-        if ~isempty(nc.Dataset(Info.Time).Dimid)
-            Info.TSMNK(1) = nc.Dataset(Info.Time).Dimid;
+        if ~isempty(iTime)
+            if length(iTime)>1 || length(nc.Dataset(iTime).Dimid)>1
+                ui_message('error','Unsupported case encountered: multiple time coordinates encountered.')
+            end
+            Info.Time = iTime(1);
+            %
+            if ~isempty(nc.Dataset(Info.Time).Dimid)
+                Info.TSMNK(1) = nc.Dataset(Info.Time).Dimid;
+            end
         end
     end
     %
@@ -867,6 +854,8 @@ for ivar = 1:nvars
     xName = '';
     if strcmp(Info.Type,'simple_geometry')
         Info.TSMNK(3) = nc.Dataset(Info.Mesh{4}).Dimid;
+    elseif strcmp(Info.Type,'ugrid_mesh_contact')
+        Info.TSMNK(3) = Info.Dimid(1);
     elseif strcmp(Info.Type,'ugrid_mesh') && iscell(Info.Mesh) && strcmp(Info.Mesh{1},'ugrid1d_network')
         crds = Info.Coordinates;
         for i = 1:length(crds)
@@ -1120,8 +1109,8 @@ for ivar = 1:nvars
     % we prefer such vertical coordinates over Z variables that don't.
     %
     if iscell(Info.Mesh) && isequal(Info.Mesh{1},'ugrid')
-        ugridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
-        nonmatchUgridDims = setdiff(ugridDims,Info.Dimension);
+        localUgridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
+        nonmatchUgridDims = setdiff(localUgridDims,Info.Dimension);
         for z = 1:length(nc.Dataset)
             if strncmp(nc.Dataset(z).Type,'z-coordinate',12)
                 nmDim = setdiff(nc.Dataset(z).Dimension,Info.Dimension);
@@ -1215,8 +1204,8 @@ for ivar = 1:nvars
             end
             % ... and dimensions associated with other UGRID dimensions
             if iscell(Info.Mesh) && isequal(Info.Mesh{1},'ugrid')
-                ugridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
-                iUDims = find(ismember({nc.Dimension.Name},ugridDims));
+                localUgridDims = nc.Dataset(Info.Mesh{3}).Mesh(5:end);
+                iUDims = find(ismember({nc.Dimension.Name},localUgridDims));
                 ZDims = setdiff(ZDims,iUDims);
             end
         end
@@ -1460,18 +1449,49 @@ if nargin<5
     Attribs = {Info.Attribute.Name};
 end
 % ugrid mesh contact
-Info.Type = 'ugrid_mesh_contact';
+geometry = 'ugrid_mesh_contact';
+Info.Type = geometry;
 %
 j = strmatch('cf_role',Attribs,'exact');
 if isempty(j) || ~strcmp(Info.Attribute(j).Value,'mesh_topology_contact')
     ui_message('error','Attribute ''cf_role'' should be set to ''mesh_topology_contact'' for UGRID mesh contact variable "%s".',Info.Name)
+    return
 end
 %
 j = strmatch('contact',Attribs,'exact');
 if isempty(j)
     ui_message('error','Attribute ''contact'' should be defined for UGRID mesh contact variable "%s".',Info.Name)
+    return
 else
-    meshLoc = reshape(multiline(Info.Attribute(j).Value,' ','cell'),[2 2])';
+    try
+        mesh_contact = Info.Attribute(j).Value;
+        meshLoc = reshape(multiline(mesh_contact,' ','cell'),[2 2])';
+    catch
+        ui_message('error','Unable to interpret contact attribute string "%s" as ''[mesh1]: [loc1] [mesh2]: [loc2]'' for "%s".',Info.Attribute(j).Value,Info.Name)
+        return
+    end
+end
+%
+for imesh = 1:2
+    mesh = meshLoc{imesh,1}(1:end-1);
+    meshvar = ustrcmpi(mesh,varNames);
+    if meshvar<0
+        ui_message('error','Unable to locate mesh "%s" referred to from %s contact attribute "%s".',mesh,Info.Name,mesh_contact)
+        return
+    end
+    loc = meshLoc{imesh,2};
+    switch lower(loc)
+        case 'node'
+            dloc = 0;
+        case 'edge'
+            dloc = 1;
+        case 'face'
+            dloc = 2;
+        otherwise
+            ui_message('error','Unknown location "%s" specified for mesh %s in %s contact attribute "%s".',loc,mesh,Info.Name,mesh_contact)
+            return
+    end
+    meshLoc(imesh,:) = {meshvar dloc};
 end
 %
 %      contacts:cf_role = "mesh_topology_contact" ;
@@ -1480,6 +1500,7 @@ end
 %      contacts:contact_id = "contacts_contact_id" ;
 %      contacts:contact_long_name = "contacts_contact_long_name" ;
 %      contacts:start_index = 1 d;
+Info.Mesh = {geometry meshLoc ivar};
 
 
 function [nc,Info] = parse_ugrid_mesh_or_contact(nc,varNames,dimNames,ivar)
@@ -1904,7 +1925,7 @@ for mesh = NumMeshes:-1:1
         %
         progressbar((NumMeshes-mesh)/NumMeshes + (p/(2*nPart))/NumMeshes, hPB);
     end
-    nGlbFaces = sum(cellfun(@sum,faceMask));
+    nGlbFaces = max(cellfun(@max,iFaces));
     glbFNC = NaN(nGlbFaces,6);
     %
     xyNodes = [cat(1,xNodes{:}) cat(1,yNodes{:})];
@@ -2026,6 +2047,14 @@ for mesh = NumMeshes:-1:1
     merged_mesh(mesh).FaceNodeConnect = glbFNC;
     merged_mesh(mesh).faceDMask  = faceMask;
     merged_mesh(mesh).faceGIndex = iFaces;
+    %
+    if ~isempty(efcVar)
+        glbEFC = zeros(nGlbEdges,2);
+        for p = 1:nPart
+            glbEFC(iEdges{p},:) = efc{p};
+        end
+        merged_mesh(mesh).EdgeFaceConnect = glbEFC;
+    end
 end
 
 

@@ -346,21 +346,21 @@ module geometry_module
          ipoint = 1
 
          INSIDE = 0
-         do while ( ipoint.lt.NP )
+         do while ( ipoint < NP )
             !        get polygon start and end pointer respectively
             call get_startend(NP-ipoint+1,xp(ipoint:NP),yp(ipoint:NP), istart, iend, dmiss)
             istart = istart+ipoint-1
             iend   = iend  +ipoint-1
 
-            if ( istart.ge.iend .or. iend.gt.NP ) exit ! done
+            if ( istart >= iend .or. iend > NP ) exit ! done
             CALL PINPOK(X, Y, iend-istart+1, XP(istart:iend), YP(istart:iend), INSIDE, jins, dmiss)
 
-            if ( INSIDE.eq.1 .and. JINS.eq.1 ) exit
-            if ( INSIDE.eq.0 .and. JINS.eq.0 ) exit
+            if ( INSIDE == 1 .and. JINS == 1 ) exit
+            if ( INSIDE == 0 .and. JINS == 0 ) exit
 
             !        advance pointer
             ipoint = iend+2
-         end do   ! do while ( ipoint.lt.NP )
+         end do   ! do while ( ipoint < NP )
       ENDIF
       RETURN
       END SUBROUTINE DPINPOK
@@ -375,12 +375,12 @@ module geometry_module
       integer, intent(in)           :: jsferic, jasfer3D
       double precision, intent(in)  :: dmiss
 
-      if ( x1.eq.dmiss .or. x2.eq.dmiss .or. y1.eq.dmiss .or. y2.eq.dmiss ) then
+      if ( x1 == dmiss .or. x2 == dmiss .or. y1 == dmiss .or. y2 == dmiss ) then
          dbdistance = 0d0
          return
       end if
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          call sphertocart3D(x1,y1,xx1,yy1,zz1)
          call sphertocart3D(x2,y2,xx2,yy2,zz2)
          dbdistance = sqrt( (xx2-xx1)**2 + (yy2-yy1)**2 + (zz2-zz1)**2 )
@@ -416,8 +416,8 @@ module geometry_module
          ! fix for poles
          diff1 = abs(abs(y1)-90d0)
          diff2 = abs(abs(y2)-90d0)
-         if ( (diff1.le.dtol_pole .and. diff2.gt.dtol_pole) .or. &
-            (diff1.gt.dtol_pole .and. diff2.le.dtol_pole) ) then
+         if ( (diff1 <= dtol_pole .and. diff2 > dtol_pole) .or. &
+            (diff1 > dtol_pole .and. diff2 <= dtol_pole) ) then
          getdx = 0d0
          return
          end if
@@ -493,7 +493,7 @@ module geometry_module
       implicit none
       double precision     :: x1,y1,xx1,yy1,zz1,rr
       
-!      if ( jsferic.eq.1 ) then
+!      if ( jsferic == 1 ) then
          zz1 = earth_radius*sin(y1*degrad_hp)
          rr  = earth_radius*cos(y1*degrad_hp)
          xx1 = rr*cos(x1*degrad_hp)
@@ -526,16 +526,16 @@ module geometry_module
          
          double precision, parameter   :: dtol=1d-16
          
-!         if ( jsferic.eq.1 ) then
+!         if ( jsferic == 1 ) then
             xx1_ = xx1
 !            yy1a = abs(yy1)
-!            if ( xx1.gt.-dtol*yy1a .and. xx1.lt.dtol*yy1a ) then
+!            if ( xx1 > -dtol*yy1a .and. xx1 < dtol*yy1a ) then
 !               xx1_ = 0d0
 !            end if
             x1 = atan2(yy1,xx1)*raddeg_hp
             y1 = atan2(zz1,sqrt(xx1**2+yy1**2))*raddeg_hp
             
-!            if ( x1.ne.DMISS ) then
+!            if ( x1 /= DMISS ) then
                x1 = x1 + nint((xref-x1)/360d0) * 360d0
 !            end if
 !         else
@@ -578,7 +578,7 @@ module geometry_module
 
       ! Set defaults for no crossing at all:
       jamakenondimensional = 0
-      if ( abs(crp+1234d0).lt.0.5d0 ) then
+      if ( abs(crp+1234d0) < 0.5d0 ) then
          jamakenondimensional = 1
          crp = 0d0
       endif
@@ -615,7 +615,7 @@ module geometry_module
          ENDIF
          XCR    = X1 + SL*(X2-X1)
          YCR    = Y1 + SL*(Y2-Y1)
-         if ( jamakenondimensional.eq.1 ) then  ! make crp non-dimensional (for spline2curvi)
+         if ( jamakenondimensional == 1 ) then  ! make crp non-dimensional (for spline2curvi)
             CRP    = -DET / ( sqrt(x21**2+y21**2) * sqrt(x43**2 + y43**2) + 1d-8 )
          else
             CRP    = -DET
@@ -668,12 +668,12 @@ module geometry_module
          
          dum = sqrt(abs(inprod(n12,n34)))
          
-         if ( 1d0-dum.gt.dtol ) then
+         if ( 1d0-dum > dtol ) then
 !           3D         
             Det12 = inprod(xx2-xx1,n34)
             Det34 = inprod(xx4-xx3,n12)
          
-            if ( abs(Det12).gt.dtol .and. abs(Det34).gt.dtol ) then
+            if ( abs(Det12) > dtol .and. abs(Det34) > dtol ) then
                SL = - inprod(xx1,n34) / Det12
                SM = - inprod(xx3,n12) / Det34
             end if
@@ -710,12 +710,12 @@ module geometry_module
 
       integer                                     :: i
 
-      if ( N.lt.1 ) return
+      if ( N < 1 ) return
 
       dNi = 1d0/N
       x1 = x(1)
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          xxu = 0d0
          yyu = 0d0
          zzu = 0d0
@@ -829,12 +829,12 @@ module geometry_module
       integer                                         :: count
       numselect = 0
 
-      if ( NPL.eq.0 ) then
+      if ( NPL == 0 ) then
          in = 1
          return
       end if
 
-      Linit =  ( in.lt.0 )
+      Linit =  ( in < 0 )
 
       in = 0
 
@@ -850,7 +850,7 @@ module geometry_module
          call realloc(iistart, maxpoly, keepExisting=.false.)
          call realloc(iiend, maxpoly, keepExisting=.false.)
 
-         do while ( ipoint.lt.NPL )
+         do while ( ipoint < NPL )
             ipoly = ipoly+1
             if (ipoly > maxpoly) then
                maxpoly = ceiling(maxpoly*1.1)
@@ -867,7 +867,7 @@ module geometry_module
             istart = istart+ipoint-1
             iend   = iend  +ipoint-1
 
-            if ( istart.ge.iend .or. iend.gt.NPL ) exit ! done
+            if ( istart >= iend .or. iend > NPL ) exit ! done
 
             xpmin(ipoly) = minval(xpl(istart:iend))
             xpmax(ipoly) = maxval(xpl(istart:iend))
@@ -879,7 +879,7 @@ module geometry_module
 
             !           advance pointer
             ipoint = iend+2
-         end do   ! do while ( ipoint.lt.NPL .and. ipoly.lt.MAXPOLY )
+         end do   ! do while ( ipoint < NPL .and. ipoly < MAXPOLY )
          Npoly = ipoly
 
          !         write(6,"('done, Npoly=', I4)") Npoly
@@ -891,14 +891,14 @@ module geometry_module
 
          !         write(6,"('dbpinpol: ipoly=', I4, ', istart=', I16, ', iend=', I16)") ipoly, istart, iend
 
-         if ( istart.ge.iend .or. iend.gt.NPL ) exit ! done
+         if ( istart >= iend .or. iend > NPL ) exit ! done
 
-         if ( iselect.eq.-1 .and. (zpl(istart).eq.DMISS .or.  zpl(istart).ge.0) ) cycle
-         if ( iselect.eq. 1 .and. (zpl(istart).ne.DMISS .and. zpl(istart).lt.0) ) cycle
+         if ( iselect == -1 .and. (zpl(istart) == DMISS .or.  zpl(istart) >= 0) ) cycle
+         if ( iselect == 1 .and. (zpl(istart) /= DMISS .and. zpl(istart) < 0) ) cycle
 
          numselect = numselect+1
 
-         if ( inside_perpol.eq.1 .and. zpl(istart) /= dmiss ) then   ! only if third column was actually supplied
+         if ( inside_perpol == 1 .and. zpl(istart) /= dmiss ) then   ! only if third column was actually supplied
             jins_opt = int(zpl(istart)) ! Use inside-option per each polygon.
          else
             jins_opt = JINS ! Use global inside-option.
@@ -986,12 +986,12 @@ module geometry_module
       
       numselect = 0
 
-      if ( NPL.eq.0 ) then
+      if ( NPL == 0 ) then
          in = 1
          return
       end if
 
-      Linit =  ( in.lt.0 )
+      Linit =  ( in < 0 )
 
       in = 0
 
@@ -1007,7 +1007,7 @@ module geometry_module
          call realloc(iistart, maxpoly, keepExisting=.false.)
          call realloc(iiend, maxpoly, keepExisting=.false.)
 
-         do while ( ipoint.lt.NPL )
+         do while ( ipoint < NPL )
             ipoly = ipoly+1
             if (ipoly > maxpoly) then
                maxpoly = ceiling(maxpoly*1.1)
@@ -1024,7 +1024,7 @@ module geometry_module
             istart = istart+ipoint-1
             iend   = iend  +ipoint-1
 
-            if ( istart.ge.iend .or. iend.gt.NPL ) exit ! done
+            if ( istart >= iend .or. iend > NPL ) exit ! done
 
             xpmin(ipoly) = minval(xpl(istart:iend))
             xpmax(ipoly) = maxval(xpl(istart:iend))
@@ -1036,7 +1036,7 @@ module geometry_module
 
             !           advance pointer
             ipoint = iend+2
-         end do   ! do while ( ipoint.lt.NPL .and. ipoly.lt.MAXPOLY )
+         end do   ! do while ( ipoint < NPL .and. ipoly < MAXPOLY )
          Npoly = ipoly
 
          !         write(6,"('done, Npoly=', I4)") Npoly
@@ -1048,14 +1048,14 @@ module geometry_module
 
          !         write(6,"('dbpinpol: ipoly=', I4, ', istart=', I16, ', iend=', I16)") ipoly, istart, iend
 
-         if ( istart.ge.iend .or. iend.gt.NPL ) exit ! done
+         if ( istart >= iend .or. iend > NPL ) exit ! done
 
-         if ( iselect.eq.-1 .and. (zpl(istart).eq.DMISS .or.  zpl(istart).ge.0) ) cycle
-         if ( iselect.eq. 1 .and. (zpl(istart).ne.DMISS .and. zpl(istart).lt.0) ) cycle
+         if ( iselect == -1 .and. (zpl(istart) == DMISS .or.  zpl(istart) >= 0) ) cycle
+         if ( iselect == 1 .and. (zpl(istart) /= DMISS .and. zpl(istart) < 0) ) cycle
 
          numselect = numselect+1
 
-         if ( inside_perpol.eq.1 .and. zpl(istart) /= dmiss ) then   ! only if third column was actually supplied
+         if ( inside_perpol == 1 .and. zpl(istart) /= dmiss ) then   ! only if third column was actually supplied
             jins_opt = int(zpl(istart)) ! Use inside-option per each polygon.
          else
             jins_opt = JINS ! Use global inside-option.
@@ -1069,7 +1069,7 @@ module geometry_module
                IN = 1-in   ! IN-1
             end if
 
-            if ( in.eq.1 ) then
+            if ( in == 1 ) then
                exit
             end if
             endif
@@ -1081,7 +1081,7 @@ module geometry_module
                IN = 1-in   ! IN-1
             end if
 
-            if ( in.eq.1 ) then
+            if ( in == 1 ) then
                exit ! outside check succeeded, return 'true'.
             end if
             else
@@ -1115,22 +1115,22 @@ module geometry_module
       jend = 1
       jstart = jend
 
-      if ( jend.ge.num ) return
+      if ( jend >= num ) return
 
-      if ( x(jstart+1).eq.dmiss ) jstart = jstart+1
-      if ( jstart.ge.num ) return
+      if ( x(jstart+1) == dmiss ) jstart = jstart+1
+      if ( jstart >= num ) return
 
-      do while( x(jstart).eq.dmiss )
+      do while( x(jstart) == dmiss )
          jstart = jstart+1
-         if ( jstart.eq.num ) exit
+         if ( jstart == num ) exit
       end do
-      if ( x(jstart).eq.dmiss ) return
+      if ( x(jstart) == dmiss ) return
 
       jend   = jstart
-      if ( jend.lt.num ) then
-         do while( x(jend+1).ne.dmiss )
+      if ( jend < num ) then
+         do while( x(jend+1) /= dmiss )
             jend = jend+1
-            if ( jend.eq.num ) exit
+            if ( jend == num ) exit
          end do
       end if
 
@@ -1174,9 +1174,9 @@ module geometry_module
 
       double precision,               parameter   :: dtol = 0d0
 
-      if ( N.lt.3 ) then
+      if ( N < 3 ) then
          inside = 0
-         if ( jins.ne.1 ) inside = 1-inside
+         if ( jins /= 1 ) inside = 1-inside
          goto 1234
       end if
 
@@ -1186,10 +1186,10 @@ module geometry_module
       !     get 3D polygon coordinates
       num = 0
       do i=1,N
-         if ( x(i).ne.DMISS .and. y(i).ne.DMISS ) then
+         if ( x(i) /= DMISS .and. y(i) /= DMISS ) then
             num = num+1
             call sphertocart3D(x(i),y(i),xx(num),yy(num),zz(num))
-         else if ( num.gt.0 ) then
+         else if ( num > 0 ) then
             exit
          end if
       end do
@@ -1206,9 +1206,9 @@ module geometry_module
          end do
       end if
       
-      if ( num.lt.3 ) then
+      if ( num < 3 ) then
          inside = 0
-         if ( jins.ne.1 ) inside=1-inside
+         if ( jins /= 1 ) inside=1-inside
          goto 1234  ! no valid polygon found
       end if
 
@@ -1221,7 +1221,7 @@ module geometry_module
       !     loop over polygon sections
       inside = 0
       do i=1,num
-         ip1 = i+1; if ( ip1.gt.num ) ip1=ip1-num
+         ip1 = i+1; if ( ip1 > num ) ip1=ip1-num
 
 !         xiXxip1 = (/ yy(i)*zz(ip1) - zz(i)*yy(ip1),   &
 !                      zz(i)*xx(ip1) - xx(i)*zz(ip1),   &
@@ -1240,7 +1240,7 @@ module geometry_module
          D = inprod( xiXxip1, ee )
 !         D = dsign(1d0,D)
          
-         if ( abs(D).gt.dtol ) then
+         if ( abs(D) > dtol ) then
             Di = 1d0/D
 !            xi   = -( xpXe(1)*xx(ip1) + xpXe(2)*yy(ip1) + xpXe(3)*zz(ip1) ) * Di
 !            eta  =  ( xpXe(1)*xx(i)   + xpXe(2)*yy(i)   + xpXe(3)*zz(i)   ) * Di
@@ -1256,10 +1256,10 @@ module geometry_module
             zeta = -1d0
          end if
 
-         if ( zeta.eq.0d0 ) then
+         if ( zeta == 0d0 ) then
             inside=1
             goto 1234
-         else if ( xi.ge.0d0 .and. eta.gt.0d0 .and. zeta.gt.0d0 ) then
+         else if ( xi >= 0d0 .and. eta > 0d0 .and. zeta > 0d0 ) then
             inside = 1-inside
          end if
 
@@ -1267,7 +1267,7 @@ module geometry_module
 
  1234 continue      
       
-      if ( jins.eq.0 ) inside=1-inside
+      if ( jins == 0 ) inside=1-inside
       
 !     deallocate
       if ( allocated(xx) ) deallocate(xx)
@@ -1413,7 +1413,7 @@ module geometry_module
 !     korste afstand tot lijnelement tussen eindpunten
       JA  = 0
       
-      if ( jsferic.eq.0 .or. jasfer3D.eq.0 ) then
+      if ( jsferic == 0 .or. jasfer3D == 0 ) then
          X21 = getdx(x1,y1,x2,y2,jsferic)
          Y21 = getdy(x1,y1,x2,y2,jsferic)
          X31 = getdx(x1,y1,x3,y3,jsferic)
@@ -1428,10 +1428,10 @@ module geometry_module
             XN  = X1 + RL*(x2-x1)
             
 !           fix for spherical, periodic coordinates
-            if ( jsferic.eq.1 ) then
-               if ( x2-x1.gt.180d0 ) then
+            if ( jsferic == 1 ) then
+               if ( x2-x1 > 180d0 ) then
                   XN = XN - RL*360d0
-               else if ( x2-x1.lt.-180d0 ) then
+               else if ( x2-x1 < -180d0 ) then
                   XN = XN + RL*360d0
                end if
             end if
@@ -1488,7 +1488,7 @@ module geometry_module
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          call sphertocart3D(x1,y1,xx1,yy1,zz1)
          call sphertocart3D(x2,y2,xx2,yy2,zz2)
          call sphertocart3D(x3,y3,xx3,yy3,zz3)
@@ -1501,7 +1501,7 @@ module geometry_module
          dprodout = sqrt(vxx**2 + vyy**2 + vzz**2 )
 
          !   check if vector is pointing outwards of earth
-         if ( vxx*xx1 + vyy*yy1 + vzz*zz1 .lt. 0d0 ) then
+         if ( vxx*xx1 + vyy*yy1 + vzz*zz1 < 0d0 ) then
             dprodout = -dprodout
          end if
       else
@@ -1535,7 +1535,7 @@ module geometry_module
       double precision                :: dz1, dz2
 
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          call sphertocart3D(x1, y1, xx(1), yy(1), zz(1))
          call sphertocart3D(x2, y2, xx(2), yy(2), zz(2))
          call sphertocart3D(x3, y3, xx(3), yy(3), zz(3))
@@ -1551,7 +1551,7 @@ module geometry_module
          dz2 = zz(4)-zz(3)
          r2  = dx2**2 + dy2**2 + dz2**2
 
-         if ( r1.eq.0d0 .or. r2.eq.0d0 ) then
+         if ( r1 == 0d0 .or. r2 == 0d0 ) then
             dcosphi = dxymis
          else
             dcosphi = (dx1*dx2 + dy1*dy2 + dz1*dz2)/sqrt(r1*r2)
@@ -1617,7 +1617,7 @@ module geometry_module
       double precision, intent(in)                :: dmiss
 
 
-      if ( jsferic.eq.0 .or. jasfer3D.eq.0 ) then
+      if ( jsferic == 0 .or. jasfer3D == 0 ) then
          do i=1,N
             vxloc(i) = vxglob(i)
             vyloc(i) = vyglob(i)
@@ -1709,7 +1709,7 @@ module geometry_module
       double precision, intent(in)                :: dmiss
 
 
-      if ( jsferic.eq.0 .or. jasfer3D.eq.0 ) then
+      if ( jsferic == 0 .or. jasfer3D == 0 ) then
          do i=1,N
             vxloc(i) = vxglob
             vyloc(i) = vyglob
@@ -1791,7 +1791,7 @@ module geometry_module
       double precision :: lambda, phi
       integer, intent(in)          :: jsferic, jasfer3D
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          !    call qnerror('normalin: reference probably not set', ' ', ' ')
 
          !   compute 3D coordinates
@@ -1852,7 +1852,7 @@ module geometry_module
       integer, intent(in)             :: jsferic, jasfer3D
       double precision, intent(in)    :: dmiss, dxymis
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          !   get local coordinates w.r.t. (xn,yn)
          call half(x1,y1,x2,y2,xn,yn, jsferic, jasfer3D)
 
@@ -1887,7 +1887,7 @@ module geometry_module
          xn  =  ddy / rr
          yn  = -ddx / rr
       endif
-      if (jsferic == 1 .and. jasfer3D.eq.0) then
+      if (jsferic == 1 .and. jasfer3D == 0) then
          xn = xn / cos(degrad_hp*0.5d0*(y1+y2) )
          yn = yn
       endif
@@ -1928,7 +1928,7 @@ module geometry_module
       !   yn = -yn
       !end if
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          !   x4 = x1+xn
          call half(x1,y1,x2,y2,xref,yref, jsferic, jasfer3D)
          call spher2locvec(x1,y1,1,(/xref/),(/yref/),(/xn/),(/yn/),xnloc,ynloc, jsferic, jasfer3D, dmiss)
@@ -1983,7 +1983,7 @@ module geometry_module
 
       double precision              :: xx1, yy1, zz1, xx2, yy2, zz2
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          call sphertoCart3D(x1,y1,xx1,yy1,zz1)
          call sphertoCart3D(x2,y2,xx2,yy2,zz2)
          call Cart3Dtospher(0.5d0*(xx1+xx2),0.5d0*(yy1+yy2),0.5d0*(zz1+zz2),xu,yu,max(x1,x2))
@@ -2020,11 +2020,11 @@ module geometry_module
       double precision               :: lambda, phi
       integer, intent(in)            :: jsferic, jasfer3D
 
-      if ( jsferic.eq.0 ) then
+      if ( jsferic == 0 ) then
          xu = x + alpha*vx
          yu = y + alpha*vy
       else
-         if ( jasfer3D.eq.1 ) then
+         if ( jasfer3D == 1 ) then
          !     compute global base vectors at other point in 3D (xx,yy,zz) frame
          lambda = x*degrad_hp
          phi    = y*degrad_hp
@@ -2060,7 +2060,7 @@ module geometry_module
       integer,                        intent(in )   :: jsferic, jasfer3D
       double precision,               intent(in)    :: dmiss
 
-      if ( jsferic.eq.1 .and. jasfer3D.eq.1 ) then
+      if ( jsferic == 1 .and. jasfer3D == 1 ) then
          call comp_masscenter3D(N, xin , y, xcg, ycg, area, jacounterclockwise, jsferic, jasfer3D, dmiss)
       else
          call comp_masscenter2D(N, xin , y, xcg, ycg, area, jacounterclockwise, jsferic, dmiss)
@@ -2101,7 +2101,7 @@ module geometry_module
       ycg  = 0d0
       jacounterclockwise = 1
 
-      if ( N.lt.1 ) goto 1234
+      if ( N < 1 ) goto 1234
 
       x = xin
 
@@ -2109,19 +2109,19 @@ module geometry_module
       x0 = minval(x(1:N))
       y0 = y(1)
       do i=2,N
-         if ( abs(y(i)).lt.abs(y0) ) then
+         if ( abs(y(i)) < abs(y0) ) then
             y0 = y(i)
          end if
       end do
 
       !  fix for periodic, spherical coordinates
-      if ( jsferic.eq.1 ) then
+      if ( jsferic == 1 ) then
          x1 = maxval(x(1:N))
-         if ( x1-x0.gt.180d0 ) then
+         if ( x1-x0 > 180d0 ) then
             !        determine cutline
             xdum = x1-180d0
             do i=1,N
-               if ( x(i).lt.xdum ) then
+               if ( x(i) < xdum ) then
                   x(i) = x(i) + 360d0
                end if
             end do
@@ -2130,7 +2130,7 @@ module geometry_module
       end if
 
       do i=1,N
-         ip1 = i+1; if ( ip1.gt.N ) ip1=ip1-N
+         ip1 = i+1; if ( ip1 > N ) ip1=ip1-N
 
 
          call getdxdy(x0,y0,x(i),y(i), dx0,dy0, jsferic)
@@ -2162,7 +2162,7 @@ module geometry_module
       xcg = fac * xcg
       ycg = fac * ycg
 
-      if ( JSFERIC.ne.0 ) then
+      if ( JSFERIC /= 0 ) then
          ycg = ycg / (earth_radius*degrad_hp)
          xcg = xcg / (earth_radius*degrad_hp*cos((ycg+y0)*degrad_hp))
       end if
@@ -2171,7 +2171,7 @@ module geometry_module
       ycg = ycg + y0
 
       !  output cell orientation
-      if ( area.gt.0d0 ) then
+      if ( area > 0d0 ) then
          jacounterclockwise = 1
       else
          jacounterclockwise = 0
@@ -2235,9 +2235,9 @@ module geometry_module
       ycg = 0d0
       jacounterclockwise = 1
 
-      if ( N.lt.1 ) goto 1234
+      if ( N < 1 ) goto 1234
 
-      if ( N.eq.2 ) then
+      if ( N == 2 ) then
          call half(x(1),y(1),x(2),y(2),xcg,ycg, jsferic, jasfer3D)
          goto 1234
       end if
@@ -2271,7 +2271,7 @@ module geometry_module
          !     compute volume
          vol = 0d0
          do i=1,N
-            ip1 = i+1; if ( ip1.gt.N ) ip1=ip1-N
+            ip1 = i+1; if ( ip1 > N ) ip1=ip1-N
 
             DvolDx(i) = onesixth * ( yy(i)*zz(ip1) - zz(i)*yy(ip1))
             DvolDy(i) = onesixth * ( zz(i)*xx(ip1) - xx(i)*zz(ip1))
@@ -2281,8 +2281,8 @@ module geometry_module
             vol = vol + dvol
          end do
 
-         if ( abs(vol).lt.dtol) then 
-            if (iter .eq.1 ) then  ! no mass center can be defined, use first iterate
+         if ( abs(vol) < dtol) then 
+            if (iter == 1 ) then  ! no mass center can be defined, use first iterate
                
                exit
             else                   ! also use first iterate
@@ -2307,7 +2307,7 @@ module geometry_module
          Jy = (0.25d0-alpha)*yy0 !*vol
          Jz = (0.25d0-alpha)*zz0 !*vol
          do i=1,N
-            ip1 = i+1; if ( ip1.gt.N ) ip1=ip1-N
+            ip1 = i+1; if ( ip1 > N ) ip1=ip1-N
 
             dvol = (DvolDx(i)*xx0 + DvolDy(i)*yy0 + DvolDz(i)*zz0) * voli  ! *vol
 
@@ -2367,14 +2367,14 @@ module geometry_module
          alpha = alpha + rhs(4)*Rai
 
          !     check convergence
-         if ( rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 .lt. deps ) then
+         if ( rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < deps ) then
             exit
          end if
 
       end do
 
       !  check convergence
-      if ( iter.ge.MAXITER ) then
+      if ( iter >= MAXITER ) then
          call msgbox('', 'comp_masscenter: no convergence', LEVEL_ERROR)
          write(1234,*) 'L1'
          write(1234,*) N, 2
@@ -2386,7 +2386,7 @@ module geometry_module
       !  compute area
       Area = 0d0
       do i=1,N
-         ip1 = i+1; if ( ip1.gt.N ) ip1=ip1-N
+         ip1 = i+1; if ( ip1 > N ) ip1=ip1-N
          sx = 0.5d0*( (yy(i)-yy0) * (zz(ip1)-zz0) - (zz(i)-zz0) * (yy(ip1)-yy0) )
          sy = 0.5d0*( (zz(i)-zz0) * (xx(ip1)-xx0) - (xx(i)-xx0) * (zz(ip1)-zz0) )
          sz = 0.5d0*( (xx(i)-xx0) * (yy(ip1)-yy0) - (yy(i)-yy0) * (xx(ip1)-xx0) )
@@ -2400,7 +2400,7 @@ module geometry_module
       call Cart3Dtospher(xx0,yy0,zz0,xcg,ycg,maxval(x(1:N)))
 
       !  output cell orientation
-      if ( vol.gt.0d0 ) then
+      if ( vol > 0d0 ) then
          jacounterclockwise = 1
       else
          jacounterclockwise = 0
@@ -2481,7 +2481,7 @@ module geometry_module
 
       !  compute tangential vectors and edge midpoints, edge i is from nodes i to i+1, and convergence tolerance
       do i=1,N
-         ip1 = i+1; if ( ip1.gt.N) ip1=ip1-N
+         ip1 = i+1; if ( ip1 > N) ip1=ip1-N
 
          !     tangential vector
          ttx(i) = xx(ip1)-xx(i)
@@ -2490,7 +2490,7 @@ module geometry_module
 
          ds(i) = sqrt(ttx(i)**2 + tty(i)**2 + ttz(i)**2)
 
-         if ( ds(i).lt.dtol ) cycle
+         if ( ds(i) < dtol ) cycle
 
          dsi = 1d0/ds(i)
 
@@ -2512,7 +2512,7 @@ module geometry_module
          A   = 0d0
          rhs = 0d0
          do i=1,N
-            if ( ds(i).lt.dtol ) cycle ! no contribution
+            if ( ds(i) < dtol ) cycle ! no contribution
 
             !        add to upper triangular part and right-hand side
             A(1,1) = A(1,1) + ttx(i)*ttx(i)
@@ -2531,7 +2531,7 @@ module geometry_module
             rhs(3) = rhs(3) - dinpr*ttz(i)
          end do
 
-         if ( jsferic.eq.1 ) then
+         if ( jsferic == 1 ) then
             !        add contribution of constraint
             A(1,1) = A(1,1) - 2d0*lambda
             A(2,2) = A(2,2) - 2d0*lambda
@@ -2577,13 +2577,13 @@ module geometry_module
 
 
          !     check convergence
-         if ( rhs(1)**2 + rhs(2)**2 + rhs(3)**2 .lt. deps ) then
+         if ( rhs(1)**2 + rhs(2)**2 + rhs(3)**2 < deps ) then
             exit
          end if
       end do
 
       !  check convergence
-      if ( iter.ge.MAXITER ) then
+      if ( iter >= MAXITER ) then
          call msgbox('', 'comp_circumcenter3D: no convergence', LEVEL_ERROR)
          ! TODO: SvdP: consider adding 'call mess' to stop the simulation.
       end if
@@ -2592,11 +2592,11 @@ module geometry_module
       call Cart3Dtospher(xxc,yyc,zzc,xz,yz,maxval(xv(1:N)))
       
 !     check if circumcenter is inside cell
-      if ( dcenterinside .le. 1d0 .and. dcenterinside.ge.0d0 ) then
+      if ( dcenterinside <= 1d0 .and. dcenterinside >= 0d0 ) then
          call pinpok3D(xz,yz,N,xv,yv,in, dmiss, 1, jsferic, 1)                    ! circumcentre may not lie outside cell
          if (in == 0) then
             do i  = 1,N
-               ip1 = i + 1; if ( ip1.gt.N ) ip1=ip1-N
+               ip1 = i + 1; if ( ip1 > N ) ip1=ip1-N
                call CROSS3D(xzw, yzw, xz, yz, xv(i), yv(i), xv(ip1), yv(ip1),&
                   JACROS,SL,SM,xcr,ycr,jsferic, dmiss)
 
@@ -2685,7 +2685,7 @@ module geometry_module
 
       !--------------------------
       ! test
-      ! if ( nn.gt.N6 ) then
+      ! if ( nn > N6 ) then
       !    call qnerror('getcircumcenter: nn>N6', ' ', ' ')
       !    stop
       ! end if
@@ -2778,8 +2778,8 @@ module geometry_module
       !    endif
       ! ENDIF
 
-      if ( dcenterinside .le. 1d0 .and. dcenterinside.ge.0d0 ) then
-         if ( nn.le.3 ) then ! triangles
+      if ( dcenterinside <= 1d0 .and. dcenterinside >= 0d0 ) then
+         if ( nn <= 3 ) then ! triangles
             dfac = 1d0
          else
             dfac = dcenterinside
@@ -2846,7 +2846,7 @@ module geometry_module
       dy3 = getdy( x(1),y(1),x(3),y(3), jsferic )
 
       den = dy2*dx3-dy3*dx2
-      if (den .ne. 0) then
+      if (den /= 0) then
          z=(dx2*(dx2-dx3)+dy2*(dy2-dy3))/den
       else
          ! call qnerror('coinciding points',' ',' ')

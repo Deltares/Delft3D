@@ -27,8 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 module wrwaq
 
 !include preprocessing flags from autotools
@@ -429,7 +429,7 @@ end subroutine reset_waq
 
 !> Write the coupled hydrodynamics information file (.hyd)
 subroutine waq_wri_hyd()
-   use unstruc_version_module, only: unstruc_version_full
+   use dflowfm_version_module, only: getfullversionstring_dflowfm
    use unstruc_files
    use m_flowparameters
    use m_flowtimes
@@ -445,6 +445,7 @@ subroutine waq_wri_hyd()
    !
    integer :: lunhyd
    character(len=255) :: filename, stmp
+   character(len=160) :: version_id
    character tex*80, datetime*20
    integer :: i, ibnd, isrc, kk1, kk2
    integer :: itdate, julday, idatum, itijd, iyea,imon,iday, ihou,imin,isec
@@ -454,12 +455,14 @@ subroutine waq_wri_hyd()
    !
    !! executable statements -------------------------------------------------------
    !
+   call getfullversionstring_dflowfm(version_id)
+
    filename = defaultFilename('hyd')
    call newfil(lunhyd, trim(filename))
    call dateandtimenow(iyea,imon,iday,ihou,imin,isec)
    write(datetime ,'(i4.4,a,i2.2,a,i2.2,a,i2.2,a,i2.2,a,i2.2)') iyea, '-', imon, '-', iday, ', ', ihou, ':', imin, ':', isec
    tex = 'file-creation-date  ' //datetime
-   write(lunhyd,'(a/a)') 'file-created-by  '//trim(unstruc_version_full), tex
+   write(lunhyd,'(a/a)') 'file-created-by  '//trim(version_id), tex
 
    write (lunhyd, '(a,a)') 'task      ','full-coupling'
 
@@ -743,11 +746,11 @@ subroutine waq_write_waqgeom_filepointer_ugrid(igeomfile)
    ierr = ug_addglobalatts(igeomfile, ug_meta_fm)
    call check_error(ierr)
 
-   if (ndx2d > 0) then 
+   if (ndx2d > 0) then
       ! Get mesh geometry and edge type array.
       ierr = create_ugrid_geometry(meshgeom, edge_type)
       call check_error(ierr)
-   
+
       ! Aggregate mesh geometry, if needed.
       if (waqpar%aggre == 1) then
          ! Create empty meshgeom.
@@ -755,7 +758,7 @@ subroutine waq_write_waqgeom_filepointer_ugrid(igeomfile)
          aggregated_meshgeom%meshName = 'mesh2d'
          aggregated_meshgeom%start_index = 1
          call check_error(ierr)
-   
+
          ! Aggregate.
          call klok(startTime)
          success = aggregate_ugrid_geometry(meshgeom, aggregated_meshgeom, edge_type, aggregated_edge_type, waqpar%iapnt)
@@ -763,25 +766,25 @@ subroutine waq_write_waqgeom_filepointer_ugrid(igeomfile)
          if (success) then ! If no errors occurred.
             write(message, "('Aggregated grid for waq geometry file, elapsed time: ', F10.3, ' s.')") endTime - startTime
             call mess(LEVEL_INFO, trim(message))
-   
+
             ! Replace meshgeom and edge_type variables with their aggregated counterparts.
             meshgeom = aggregated_meshgeom
             call realloc(edge_type, size(aggregated_edge_type))
             edge_type = aggregated_edge_type
          end if
-   
+
          !TODO deallocate aggregated_meshgeom
          if (allocated(aggregated_edge_type)) deallocate(aggregated_edge_type)
       end if
-   
+
       ! Write mesh geometry.
       ierr = ug_write_mesh_struct(igeomfile, meshids, networkids, crs, meshgeom) ! NOTE: UNST-5477: this call is not valid yet for 3D models with ocean_sigma_z combined layering
       call check_error(ierr)
-   
+
       ! Write edge type variable (this is an extra variable that is not part of the UGRID standard).
       call write_edge_type_variable(igeomfile, meshids, meshgeom%meshName, edge_type)
       deallocate(edge_type)
-   
+
       ! when in mpi mode, add face domain numbers and global face numbers
       if ( jampi.eq.1 ) then
          ! face domain numbers
@@ -791,10 +794,10 @@ subroutine waq_write_waqgeom_filepointer_ugrid(igeomfile)
       end if
    endif
 
-   if (numl1d > 0) then 
+   if (numl1d > 0) then
       ! number of 1D links (numl1d) if greater than zero
       ! use the generic routine to write the 1D grid, the 2D grid might need extra data, and contains extra info.
-      call unc_write_flowgeom_filepointer_ugrid(igeomfile, geomids%id_tsp, ja2D = .false.) 
+      call unc_write_flowgeom_filepointer_ugrid(igeomfile, geomids%id_tsp, ja2D = .false.)
    endif
 
 end subroutine waq_write_waqgeom_filepointer_ugrid
@@ -1077,7 +1080,7 @@ function add_layers_to_meshgeom(meshgeom) result(ierr)
    call get_layer_data_ugrid(layer_count, layer_type, layer_zs, interface_zs)
 
    ! Store layer info in mesh geometry.
-   meshgeom%numlayer = layer_count
+   meshgeom%num_layers = layer_count
    meshgeom%layertype = layer_type
    call reallocP(meshgeom%layer_zs, layer_count, fill=dmiss)
    call reallocP(meshgeom%interface_zs, layer_count + 1, fill=dmiss)
@@ -1087,7 +1090,7 @@ function add_layers_to_meshgeom(meshgeom) result(ierr)
    select case (meshgeom%layertype)
    case (LAYERTYPE_OCEANSIGMA)
       ! Set trivial value for numtopsig: same as total layer count
-      meshgeom%numtopsig = meshgeom%numLayer
+      meshgeom%numtopsig = meshgeom%num_layers
    case (LAYERTYPE_Z)
       ! Set trivial value for numtopsig: 0, all layers are fixed z.
       meshgeom%numtopsig = 0
@@ -1337,7 +1340,7 @@ function aggregate_ugrid_geometry(input, output, input_edge_type, output_edge_ty
    ! Store remaining output variables in output mesh geometry.
    output%meshName = trim(input%meshName)//'_agg'
    output%dim = input%dim
-   output%numlayer = input%numlayer
+   output%num_layers = input%num_layers
    output%layertype = input%layertype
    output%layer_zs => input%layer_zs
    output%interface_zs => input%interface_zs
@@ -2390,7 +2393,7 @@ subroutine waq_prepare_lat()
    call realloc (waqpar%ifrmtolat, (/ 2,waqpar%numlatwaq /), keepexisting=.true., fill=0 )
    call realloc (qlatwaq, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )
    call realloc (qlatwaq0, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )
-   
+
    ibnd = (ndx - ndxi + waqpar%numsrcbnd) * waqpar%kmxnxa
    ilatwaq = 0
    do ilat = 1, numlatsg
@@ -2695,7 +2698,7 @@ subroutine waq_wri_vel(itim, filenamevel, lunvel)
    !
    !           Local variables
    !
-   integer :: i, k, kb, kt, ktx, kk
+   integer :: i, k, kb, kt, ktx, kk, n
    !
    !! executable statements -------------------------------------------------------
    !
@@ -2709,8 +2712,14 @@ subroutine waq_wri_vel(itim, filenamevel, lunvel)
    call getucxucyeulmag(ndkx, workx, worky, ucmag, 1, 1)
 
    if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
+
       do i = 1, ndxi
-         waqpar%vel(i) = ucmag(i)
+         if (kmx == 0) then
+            n = i
+         else
+            n = kbot(i)
+         endif
+         waqpar%vel(i) = ucmag(n)
       end do
    else if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
       do k = 1, ndxi
@@ -3092,7 +3101,12 @@ subroutine waq_wri_flo(itim, ti_waq, filename, lun)
    ! Average the accumulated discharges.
    if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
       do i = 1, lnx
-         waqpar%qag(i) = q1waq(i) / dble(ti_waq)
+         if (kmx == 0) then
+            L = i
+         else
+            L = Lbot(i)
+         endif
+         waqpar%qag(i) = q1waq(L) / dble(ti_waq)
       end do
    else if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
       do L = 1, lnx
@@ -3125,7 +3139,7 @@ subroutine waq_wri_flo(itim, ti_waq, filename, lun)
          waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / dble(ti_waq)
       enddo
    endif
-   
+
    ! Add laterals
    if(waqpar%numlatwaq > 0) then
       do ilatwaq = 1, waqpar%numlatwaq
@@ -3236,12 +3250,12 @@ function makesectionname(prefix, id) result (sectionname)
    character(len=*), intent(in)   :: prefix      !< Optional prefix
    character(len=*), intent(in)   :: id          !< Input D-FM id
    character(len=20)              :: sectionname !< Delwaq section name
-   
+
    integer  (8) :: int
    real     (8) :: reel
    integer      :: ierrint
    integer      :: ierrreel
-   
+
    read ( id , '(i)', iostat=ierrint)  int
    read ( id , '(g)', iostat=ierrreel) reel
 

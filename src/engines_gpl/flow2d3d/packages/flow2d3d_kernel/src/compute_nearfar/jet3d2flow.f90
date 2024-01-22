@@ -1,9 +1,9 @@
-subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
+subroutine jet3d2flow(thick  ,kmax   ,dps    ,s0     ,r0       ,          &
                     & lstsci ,lsal   ,ltem   ,xz     ,yz       ,nmmax   , &
-                    & kcs    ,flwang ,sign   ,gdp    )
+                    & kcs    ,flwang ,sign   ,time   ,linkinf  ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2020.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -40,7 +40,6 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
 !!--declarations----------------------------------------------------------------
 !
     use precision
-    use mathconsts
     !
     use globaldata
     !
@@ -49,9 +48,10 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     type(globdat),target :: gdp
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
+    ! They replace the  include igd / include igp lines
     !
-    integer           , pointer :: m_diff
-    integer           , pointer :: n_diff
+    integer, dimension(:)           , pointer :: m_diff
+    integer, dimension(:)           , pointer :: n_diff
 !
 ! Global variables
 !
@@ -60,31 +60,36 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     integer                                                    , intent(in)  :: lsal     !  Description and declaration in tricom.igs
     integer                                                    , intent(in)  :: ltem     !  Description and declaration in tricom.igs
     integer                                                    , intent(in)  :: nmmax    !  Description and declaration in tricom.igs
+    real(fp)                                                   , intent(in)  :: time
     integer    , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kcs      !  Description and declaration in
     real(fp)                                                                 :: sign     !  Description and declaration in tricom.igs
     real(fp)   ,                                                 intent(in)  :: flwang   !  Description and declaration in esm_alloc_real.f90 gs
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: s1       !  Description and declaration in esm_alloc_real.f90 gs
+    real(fp)     , dimension(8)                                , intent(in)  :: linkinf
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: s0       !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: xz       !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: yz       !  Description and declaration in esm_alloc_real.f90
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(out) :: disch_nf !  Description and declaration in esm_alloc_real.f90
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax,lstsci) , intent(out) :: sour_nf  !  Description and declaration in
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub,kmax,lstsci)  , intent(in)  :: r0
     real(fp)   , dimension(kmax)                               , intent(in)  :: thick    !  Description and declaration in esm_alloc_real.f90 gs
     real(prec) , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: dps      !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
+    integer                                  :: ierror
     integer                                  :: irow
     integer                   , external     :: newlun
     integer                                  :: nm_diff
     integer                                  :: nrow
     integer                                  :: luntmp
-    real(fp)                                 :: rdum
+    real(fp)                                 :: deg2rad
+    real(fp)                                 :: pi
+    real(fp) , dimension(4)                  :: rdum
     real(fp)                                 :: xxx
     real(fp)                                 :: yyy
     real(fp) , dimension(:)   , allocatable  :: x_jet
     real(fp) , dimension(:)   , allocatable  :: y_jet
     real(fp) , dimension(:)   , allocatable  :: z_jet
     real(fp) , dimension(:)   , allocatable  :: b_jet
+    real(fp) , dimension(:)   , allocatable  :: h_jet
     real(fp) , dimension(:)   , allocatable  :: s_jet
     real(fp) , dimension(:)   , allocatable  :: v_jet
 !
@@ -93,7 +98,10 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     m_diff         => gdp%gdnfl%m_diff
     n_diff         => gdp%gdnfl%n_diff
     !
-    call n_and_m_to_nm(n_diff, m_diff, nm_diff, gdp)
+    pi      = acos(-1.0_fp)
+    deg2rad = pi/180.0_fp
+    !
+    call n_and_m_to_nm(n_diff(1), m_diff(1), nm_diff, gdp)
     !
     ! Open Jet3d output file and read jet characteristics end of near field
     !
@@ -104,15 +112,25 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     !
     read (luntmp,*) nrow
     !
-    allocate (x_jet(nrow))
-    allocate (y_jet(nrow))
-    allocate (z_jet(nrow))
-    allocate (b_jet(nrow))
-    allocate (s_jet(nrow))
-    allocate (v_jet(nrow))
+    allocate (x_jet(nrow), stat=ierror)
+    allocate (y_jet(nrow), stat=ierror)
+    allocate (z_jet(nrow), stat=ierror)
+    allocate (b_jet(nrow), stat=ierror)
+    allocate (h_jet(nrow), stat=ierror)
+    allocate (s_jet(nrow), stat=ierror)
+    allocate (v_jet(nrow), stat=ierror)
+
+    x_jet = 0.0_fp
+    y_jet = 0.0_fp
+    z_jet = 0.0_fp
+    b_jet = 0.0_fp
+    h_jet = 0.0_fp
+    s_jet = 0.0_fp
+    v_jet = 0.0_fp
+
     !
     do irow = 1, nrow
-       read (luntmp,*)       rdum       , x_jet(irow), y_jet(irow), z_jet(irow), &
+       read (luntmp,*)       rdum(1)    , x_jet(irow), y_jet(irow), z_jet(irow), &
                            & s_jet(irow), b_jet(irow), v_jet(irow)
     enddo
     !
@@ -134,8 +152,8 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     ! Jet3d relative to main flow direction, convert coordinates back to orignal coordinate system
     !
     do irow = 1, nrow
-       xxx = x_jet(irow)*cos(flwang*degrad) - sign*y_jet(irow)*sin(flwang*degrad)
-       yyy = x_jet(irow)*sin(flwang*degrad) + sign*y_jet(irow)*cos(flwang*degrad)
+       xxx = x_jet(irow)*cos(flwang*deg2rad) - sign*y_jet(irow)*sin(flwang*deg2rad)
+       yyy = x_jet(irow)*sin(flwang*deg2rad) + sign*y_jet(irow)*cos(flwang*deg2rad)
        x_jet(irow) = xz(nm_diff) + xxx
        y_jet(irow) = yz(nm_diff) + yyy
        z_jet(irow) = real(dps(nm_diff),fp) - z_jet(irow)
@@ -143,20 +161,22 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s1     ,disch_nf ,sour_nf , &
     !
     ! Fill sources and sinks following the Desa Method of Prof. Lee
     !
-    call desa(x_jet   ,y_jet    ,z_jet   ,s_jet   ,nrow    , &
-            & kcs     ,xz       ,yz      ,dps     ,s1      , &
-            & nmmax   ,thick    ,kmax    ,lstsci  ,lsal    , &
-            & ltem    ,disch_nf ,sour_nf ,gdp     )
-    !        & ltem    ,disch_nf ,sour_nf ,b_jet   ,v_jet   ,gdp     )
+    !call desa(x_jet      ,y_jet       ,z_jet     ,s_jet      ,nrow    , &
+    !        & kcs        ,xz          ,yz        ,dps        ,s0      , &
+    !        & nmmax      ,thick       ,kmax      ,lstsci     ,lsal    , &
+    !        & ltem       ,h_jet       ,b_jet     ,v_jet      ,1       , &
+    !        & rdum(1)    ,rdum(2)     ,rdum(3)   ,rdum(4)    ,r0      , &
+    !        & linkinf ,gdp     )
     !
     ! Deallocate temporary arrays
     !
-    deallocate (x_jet)
-    deallocate (y_jet)
-    deallocate (z_jet)
-    deallocate (b_jet)
-    deallocate (s_jet)
-    deallocate (v_jet)
+    deallocate (x_jet, stat=ierror)
+    deallocate (y_jet, stat=ierror)
+    deallocate (z_jet, stat=ierror)
+    deallocate (b_jet, stat=ierror)
+    deallocate (h_jet, stat=ierror)
+    deallocate (s_jet, stat=ierror)
+    deallocate (v_jet, stat=ierror)
     !
 999 continue
     !

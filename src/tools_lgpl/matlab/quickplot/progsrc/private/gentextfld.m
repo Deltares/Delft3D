@@ -33,13 +33,6 @@ function hNew=gentextfld(hOld,Ops,Parent,Val,X,Y,Z)
 
 delete(hOld);
 zcoord=nargin>6;
-if iscellstr(Val) || ischar(Val)
-    convert=0;
-elseif isfield(Ops,'numformat')
-    convert=1;
-else
-    convert=2;
-end
 if zcoord
     blank=isnan(X(:))|isnan(Y(:))|isnan(Z(:));
     Z=Z(~blank); Z=Z(:);
@@ -58,35 +51,127 @@ if isempty(X)
     end
 end
 %
+% axes limits don't react to text objects, add a line to influence the axes
 if zcoord
-    hNew = line([min(X) max(X)],[min(Y) max(Y)],[min(Z) max(Z)],'linestyle','none','marker','none','parent',Parent);
+    hLine = line([min(X) max(X)],[min(Y) max(Y)],[min(Z) max(Z)],'linestyle','none','marker','none','parent',Parent);
 else
-    hNew = line([min(X) max(X)],[min(Y) max(Y)],'linestyle','none','marker','none','parent',Parent);
+    hLine = line([min(X) max(X)],[min(Y) max(Y)],'linestyle','none','marker','none','parent',Parent);
 end
-hNew = repmat(hNew,1,length(Val)+1); % pre-allocate hNew of appropriate length
-for i=1:length(Val)
-    if convert==1
-        if iscell(Val)
-            Str=sprintf(Ops.numformat,Val{i});
+if isfield(Ops,'thinningmode') && strcmp(Ops.thinningmode,'dynamic')
+    xDummy = zeros(Ops.thinningcount,1);
+else
+    xDummy = zeros(length(X),1);
+end
+% generate text objects
+hText = text(xDummy,xDummy,'','parent',Parent,'clipping','on',Ops.FontParams{:});
+hNew = cat(2,hLine,hText');
+% fill text objects
+if zcoord
+    args = {hNew,[X,Y,Z],Val,Ops};
+else
+    args = {hNew,[X,Y],Val,Ops};
+end
+setappdata(hLine,'axesRefresh',@gentextfld_update)
+setappdata(hLine,'axesRefreshArguments',args)
+gentextfld_update(args{:})
+
+
+function gentextfld_update(hNew,XYZ,Val,Ops)
+if iscellstr(Val)
+    convert = 0;
+elseif ischar(Val)
+    convert = 1;
+elseif isfield(Ops,'numformat')
+    if iscell(Val)
+        convert = 2;
+    else
+        convert = 3;
+    end
+else
+    if iscell(Val)
+        convert = 4;
+    else
+        convert = 5;
+    end
+end
+
+N = length(Val);
+if isfield(Ops,'thinningmode') && strcmp(Ops.thinningmode,'dynamic')
+    K = Ops.thinningcount;
+    
+    % first clip to xlim/ylim
+    ax = get(hNew(1),'parent');
+    xlim = get(ax,'xlim');
+    ylim = get(ax,'ylim');
+    I = XYZ(:,1) > xlim(1) & XYZ(:,1) < xlim(2) & XYZ(:,2) > ylim(1) & XYZ(:,2) < ylim(2);
+    XYZ = XYZ(I,:);
+    Val = Val(I);
+    N = length(Val);
+    
+    % if numeric values then we can do some smart stuff such as make sure
+    % to include the minimum and maximum values.
+    if isnumeric(Val)
+        [Val,sorted] = sort(Val);
+        XYZ = XYZ(sorted,:);
+        
+        if N < K
+            % keep all
         else
-            Str=sprintf(Ops.numformat,Val(i));
+            if N > 50000
+                % for performance reasons start with a random subset
+                I = sort(randperm(N,50000));
+                % but always include the minimum and maximum values
+                I(1) = 1;
+                I(end) = N;
+                XYZ = XYZ(I,:);
+                Val = Val(I);
+                N = 50000;
+            end
+            
+            f = @(i) (XYZ(:,1)-XYZ(i,1)).^2 + (XYZ(:,2)-XYZ(i,2)).^2;
+            I = zeros(1,K);
+            I(1) = 1; % minimum value
+            dist = f(1);
+            I(2) = N; % maximum value
+            dist = min(dist, f(N));
+            for i = 3:K
+                [~,k] = max(dist);
+                I(i) = k;
+                dist = min(dist, f(k));
+            end
+            I = sort(I);
+            
+            XYZ = XYZ(I,:);
+            Val = Val(I);
         end
-    elseif convert==2
-        if iscell(Val)
-            Str=var2str(Val{i});
-        else
-            Str=var2str(Val(i));
-        end
-    elseif iscell(Val)
-        Str=Val{i};
-    else % char
-        Str=Val(i);
+    end
+    N = length(Val);
+end
+
+ncrd = size(XYZ,2);
+for i = 1:N
+    switch convert
+        case 0
+            Str = Val{i};
+        case 1 % char
+            Str = Val(i);
+        case 2
+            Str = sprintf(Ops.numformat,Val{i});
+        case 3
+            Str = sprintf(Ops.numformat,Val(i));
+        case 4
+            Str = var2str(Val{i});
+        case 5
+            Str = var2str(Val(i));
     end
     Str = protectstring(Str);
-    if zcoord
-        hNew(i+1)=text(X(i),Y(i),Z(i),Str,'parent',Parent); % faster to use text(X,Y,Z,Val,...)?
-    else
-        hNew(i+1)=text(X(i),Y(i),Str,'parent',Parent); % faster to use text(X,Y,Z,Val,...)?
-    end
+
+    % we need to preserve the Z coordinate in a 2D plot ...
+    xyz  = get(hNew(1+i),'position');
+    xyz(1:ncrd) = XYZ(i,:);
+
+    set(hNew(1+i),'position',xyz,'string',Str,'visible','on')
+    % possible future extension ... highlight the min/max values somehow ... by colour, fontsize, weight, box ... ,'color','k')
 end
-set(hNew(2:end),'clipping','on',Ops.FontParams{:})
+set(hNew(1+N+1:end),'visible','off')
+% set(hNew(1+[1,N]),'color','r') % min/max

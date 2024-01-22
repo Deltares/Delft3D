@@ -36,6 +36,7 @@ module bedcomposition_module
 !
 !!--module declarations---------------------------------------------------------
 use precision
+use sediment_basics_module, only: SEDTYP_SILT
 private
 
 !
@@ -114,31 +115,32 @@ type bedcomp_settings
     !
     ! integers
     !
-    integer :: idiffusion !  switch for diffusion between layers
-                          !  0: no diffusion
-                          !  1: diffusion
-    integer :: iporosity  !  switch for porosity (simulate porosity if iporosity > 0)
-                          !  0: porosity included in densities, set porosity to 0
-                          !  1: ...
-    integer :: iunderlyr  !  switch for underlayer concept
-                          !  1: standard fully mixed concept
-                          !  2: graded sediment concept
-    integer :: keuler     !  index of first Eulerian (i.e. non-moving) layer
-                          !  2   : standard Eulerian, only top layer moves with bed level
-                          !  nlyr: fully Lagrangian (all layers move with bed level)
-    integer :: nfrac      !  number of sediment fractions
-    integer :: neulyr     !  number of Eulerian underlayers
-    integer :: nlalyr     !  number of Lagrangian underlayers
-    integer :: nlyr       !  number of layers (transport + exchange + under layers)
-    integer :: ndiff      !  number of diffusion coefficients in vertical direction
-    integer :: nmlb       !  start index of segments
-    integer :: nmub       !  nm end index
-    integer :: updbaselyr !  switch for computing composition of base layer
-                          !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
-                          !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
-                          !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
-                          !  4: base layer composition and thickness constant (no change whatsoever)
-                          !  5: base lyaer composition is updated, but thickness is kept constant
+    integer :: idiffusion     !  switch for diffusion between layers
+                              !  0: no diffusion
+                              !  1: diffusion
+    integer :: iporosity      !  switch for porosity (simulate porosity if iporosity > 0)
+                              !  0: porosity included in densities, set porosity to 0
+                              !  1: ...
+    integer :: iunderlyr      !  switch for underlayer concept
+                              !  1: standard fully mixed concept
+                              !  2: graded sediment concept
+    integer :: keuler         !  index of first Eulerian (i.e. non-moving) layer
+                              !  2   : standard Eulerian, only top layer moves with bed level
+                              !  nlyr: fully Lagrangian (all layers move with bed level)
+    integer :: max_mud_sedtyp ! highest sediment type number that is considered a mud fraction
+    integer :: nfrac          !  number of sediment fractions
+    integer :: neulyr         !  number of Eulerian underlayers
+    integer :: nlalyr         !  number of Lagrangian underlayers
+    integer :: nlyr           !  number of layers (transport + exchange + under layers)
+    integer :: ndiff          !  number of diffusion coefficients in vertical direction
+    integer :: nmlb           !  start index of segments
+    integer :: nmub           !  nm end index
+    integer :: updbaselyr     !  switch for computing composition of base layer
+                              !  1: base layer is an independent layer (both composition and thickness computed like any other layer)
+                              !  2: base layer composition is kept fixed (thickness is computed - total mass conserved)
+                              !  3: base layer composition is set equal to the composition of layer above it (thickness computed - total mass conserved)
+                              !  4: base layer composition and thickness constant (no change whatsoever)
+                              !  5: base lyaer composition is updated, but thickness is kept constant
     !
     ! pointers
     !
@@ -1394,7 +1396,6 @@ subroutine detthcmud(this, thcmud)
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module
     !
     implicit none
 !
@@ -1418,7 +1419,7 @@ subroutine detthcmud(this, thcmud)
     do nm = this%settings%nmlb,this%settings%nmub
        thcmud (nm) = 0.0
         do l = 1, this%settings%nfrac
-           if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+           if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
               thcmud(nm) = thcmud(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
            endif
         enddo
@@ -1504,7 +1505,6 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto)
 !
 !!--declarations----------------------------------------------------------------
     use precision 
-    use sediment_basics_module
     !
     implicit none
     !
@@ -1544,7 +1544,7 @@ subroutine getfrac(this, frac, anymud, mudcnt, mudfrac, nmfrom, nmto)
        !
        mudfrac = 0.0
        do l = 1, this%settings%nfrac
-          if (this%settings%sedtyp(l) == SEDTYP_COHESIVE) then
+          if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
              do nm = nmfrom, nmto
                 mudfrac(nm) = mudfrac(nm) + frac(nm,l)
              enddo
@@ -1955,21 +1955,22 @@ function initmorlyr(this) result (istat)
        settings%morlyrnum%MaxNumShortWarning = 100
     endif
     !
-    settings%keuler     = 2
-    settings%ndiff      = 0
-    settings%nfrac      = 0
-    settings%nlyr       = 0
-    settings%nmlb       = 0
-    settings%nmub       = 0
-    settings%idiffusion = 0
-    settings%iunderlyr  = 1
-    settings%iporosity  = 0
-    settings%exchlyr    = .false.
-    settings%neulyr     = 0
-    settings%nlalyr     = 0
-    settings%theulyr    = rmissval
-    settings%thlalyr    = rmissval
-    settings%updbaselyr = 1
+    settings%keuler         = 2
+    settings%ndiff          = 0
+    settings%nfrac          = 0
+    settings%nlyr           = 0
+    settings%nmlb           = 0
+    settings%nmub           = 0
+    settings%idiffusion     = 0
+    settings%iunderlyr      = 1
+    settings%iporosity      = 0
+    settings%exchlyr        = .false.
+    settings%max_mud_sedtyp = SEDTYP_SILT
+    settings%neulyr         = 0
+    settings%nlalyr         = 0
+    settings%theulyr        = rmissval
+    settings%thlalyr        = rmissval
+    settings%updbaselyr     = 1
     !
     nullify(settings%kdiff)
     nullify(settings%phi)

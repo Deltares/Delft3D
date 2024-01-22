@@ -44,4 +44,6 @@ function Out = qpfopen(varargin)
 %   $Id$
 
 [Out,FileName,Tp] = qp_fmem('open',varargin{:});
-Out.QP_FileType = Tp;
+if ~isempty(Tp)
+    Out.QP_FileType = Tp;
+end

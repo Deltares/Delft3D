@@ -36,6 +36,7 @@ function z=asciiload(filename,varargin)
 
 fid=fopen(filename,'r','n','US-ASCII');
 comment='%';
+formatting={};
 i=0; % line number in file
 if nargin>2
     j=1;
@@ -60,6 +61,9 @@ if nargin>2
                         fgetl(fid);
                     end
                 end
+                j = j+2;
+            case 'format'
+                formatting = varargin{j+1};
                 j = j+2;
             case 'comment'
                 comment = varargin{j+1};
@@ -139,7 +143,7 @@ while ~feof(fid)
     else
         str=txt;
     end
-    [values,n,err,ni]=sscanf(str,'%f',[1 inf]);
+    [values,n,err,ni]=sscanf(str,'%f%*[ \t]',[1 inf]);
     while ni<=length(str)
         cni=cni+ni-1;
         str=str(ni:end);
@@ -148,7 +152,7 @@ while ~feof(fid)
                 cni=cni+1;
                 str=str(2:end);
                 prevcomma=1;
-                [values2,n,err,ni]=sscanf(str,'%f',[1 inf]);
+                [values2,n,err,ni]=sscanf(str,'%f%*[ ]',[1 inf]);
                 if n>0
                     prevcomma=0;
                     values=cat(2,values,values2);
@@ -185,13 +189,31 @@ while ~feof(fid)
                     case {'?','.'}
                         kyw=1;
                         kywval=NaN;
-                    case '/'
-                        [A,cnt,err,next] = sscanf(str,'/%d/%d',2);
-                        if cnt==2 && isempty(err) && length(values)==1 % only for first column
-                            values = values*10000 + A(1)*100 + A(2);
-                            kyw=next-1;
-                            kywval = [];
+                    case {'/','-'} % YYYY/MM/DD or YYYY-MM-DD
+                        icol = length(values);
+                        if icol>numel(formatting) || isequal(formatting{icol},'datetime')
+                            format = [str(1),'%d',str(1),'%d %d:%d:%f'];
+                            what = 'datetime';
+                        elseif isequal(formatting{icol},'date')
+                            format = [str(1),'%d',str(1),'%d'];
+                            what = 'date';
+                        else
+                            fclose(fid);
+                            spaces=repmat(' ',1,cni);
+                            error('Unknown text on line number %i of ASCII file %s:\n%s\n%s^',i,filename,txt,spaces)
                         end
+                        [A,cnt,~,next] = sscanf(str,format,5);
+                        if cnt==2
+                            values(icol) = values(icol)*10000 + A(1)*100 + A(2);
+                        elseif cnt==5
+                            values(icol) = values(icol)*10000 + A(1)*100 + A(2) + A(3)*0.01 + A(4)*0.0001 + A(5)*0.000001;
+                        else
+                            fclose(fid);
+                            spaces=repmat(' ',1,cni+cnt-1);
+                            error('Incomplete %s specification on line number %i of ASCII file %s:\n%s\n%s^',what,i,filename,txt,spaces)
+                        end
+                        kyw=next-1;
+                        kywval = [];
                     case ':'
                         [A,cnt,err,next] = sscanf(str,':%d:%d',2);
                         if cnt==2 && isempty(err) && length(values)==2 % only for first column
@@ -227,8 +249,8 @@ while ~feof(fid)
                     values=cat(2,values,values2);
                 end
             else
-                spaces=repmat(' ',1,cni);
                 fclose(fid);
+                spaces=repmat(' ',1,cni);
                 error('Unknown text on line number %i of ASCII file %s:\n%s\n%s^',i,filename,txt,spaces)
             end
         end

@@ -38,6 +38,7 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
+    use morphology_data_module, only: missing_value
     !
     implicit none
 !
@@ -48,7 +49,7 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
     real(fp)                 , intent(in)    :: dg     ! mean surface grain size [m]
     real(fp)                 , intent(in)    :: di     ! Grain size specified as d50
     real(fp)                 , intent(in)    :: fs     ! sand fraction on surface
-    real(fp), dimension(npar), intent(in)    :: par    ! sediment parameter list
+    real(fp), dimension(npar), intent(inout) :: par    ! sediment parameter list
     real(fp)                 , intent(in)    :: taub   ! bed shear stress [N/m2]
     real(fp)                 , intent(in)    :: utot   ! flow velocity
     !
@@ -100,4 +101,12 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
     ! bed load magnitude [m3/m/s]
     sbot    = a * wistar * ustar**3 / (delta * ag)
     ! note: proportion of size fraction on surface (fi) is included elsewhere
+    !
+    par     = missing_value
+    par( 1) = wistar
+    par( 2) = ustar
+    par( 3) = phi
+    par( 4) = tauri
+    par( 5) = taurm
+    par( 6) = b
 end subroutine trabwc

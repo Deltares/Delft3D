@@ -30,16 +30,16 @@
 ! 
 ! 
 
-   subroutine fm_adjust_bedload(sbn, sbt, avalan)
+   subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
    use m_physcoef, only: ag
    use m_sferic, only: pi
-   use m_flowparameters, only: epshs, epshu
-   use m_flowgeom, only: lnxi, lnx, ln, kcs, ba, bl, Dx, wu, wu_mor
-   use m_flow, only: hu, hs
+   use m_flowgeom, only: lnxi, lnx, ln, kcs, ba, bl, Dx, wu_mor
+   use m_flow, only: hu
    use m_flowtimes
    use m_turbulence, only: rhou
    use precision
    use m_fm_erosed
+   use m_sediment, only: bermslopeindexbed, bermslopeindexsus
    use m_alloc
 
    implicit none
@@ -47,10 +47,11 @@
    !!
    !! Global variables
    !!
-   logical                               ,          intent(in)           :: avalan
-   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbn     !  sbcuu, sbwuu, or sswuu
-   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbt     !  sbcvv, sbwvv, or sswvv
-   real(fp)  , dimension(:)  ,          allocatable                      :: sbncor  !  corrected values
+   logical                               ,          intent(in)           :: avalan    !<  do only once for avalanching fluxes
+   logical                               ,          intent(in)           :: slopecor  !<  do only on bedload, cf UNST-7286
+   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbn       !<  sbcuu, sbwuu, or sswuu
+   real(fp)  , dimension(1:lnx,1:lsedtot),          intent(inout)        :: sbt       !<  sbcvv, sbwvv, or sswvv
+   real(fp)  , dimension(:)  ,          allocatable                      :: sbncor    !<  corrected values
    real(fp)  , dimension(:)  ,          allocatable                      :: sbtcor
    !!
    !! Local variables
@@ -60,7 +61,7 @@
 
    double precision       :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
    double precision       :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
-   double precision       :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux, fac
+   double precision       :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
    double precision       :: eps = 1.0d-6
    !
    !! executable statements -------------------------------------------------------
@@ -79,13 +80,19 @@
       ! for cutcell
       if (wu_mor(Lf)==0d0) cycle
       !
+      ! no bed slope effects on links with bermslope adjustments
+      ! fixfac and frac applied in bermslopenudging()
+      if (stmpar%morpar%bermslopetransport) then
+         if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
+      endif
+      !
       if (hu(Lf) > 0d0) then
          k1 = ln(1, Lf)
          k2 = ln(2, Lf)
          call getLbotLtop(Lf, Lb, Lt)
          if (Lt<Lb) cycle
          do l = 1, lsedtot
-            if (sedtyp(l) /= SEDTYP_COHESIVE) then
+            if (has_bedload(tratyp(l))) then
                di50 = sedd50(l)
                di50spatial = .false.
                if (di50<0.0_fp .and. lsedtot==1) di50spatial = .true.
@@ -105,7 +112,7 @@
                sbncor(Lf) = sbedn
                sbtcor(Lf) = sbedt
 
-               if (sbedm>eps) then
+               if (sbedm>eps .and. slopecor) then
                   dzds =  e_dzdn(Lf)*sbedn/sbedm + e_dzdt(Lf)*sbedt/sbedm ! in direction of transport (not n)
                   dzdp = -e_dzdn(Lf)*sbedt/sbedm + e_dzdt(Lf)*sbedn/sbedm ! perpendicular to transport direction (not t)
                   !
@@ -208,10 +215,6 @@
                end if      ! sbedm
                !               !
                if (avalan .and. (.not. duneavalan) .and. wetslope<9.99d0) then
-                  !
-                  ! Avalanching (MvO, 2011-04-06)
-                  !
-                  ! To be used instead of avalanching routine that is called at the end of BOTT3D.
                   ! Uses a maximum wet slope (keyword WetSlope in the mor file).
                   ! The default for Wetslope is 10.0 (i.e. 10:1, extremely steep, so no avalanching).
                   !
@@ -233,7 +236,7 @@
                !
                ! At inflow (open, dd, and partition) boundaries the fixfac should not be taken upwind.
                !
-               if (Lf > lnxi .and. hu(Lf) > epshu) then          ! wet boundary link
+               if (Lf > lnxi) then                               ! boundary link, hu condition removed as 0.0<hu<epshu possible
                   fixf = fixfac(k2, l)
                   frc  = frac(k2, l)
                else                                              ! interior link
@@ -249,7 +252,7 @@
                sbncor(Lf) = sbncor(Lf) * frc * fixf
                sbtcor(Lf) = sbtcor(Lf) * frc * fixf
                !
-            end if         ! SEDTYP
+            end if         ! tratyp
             sbn(Lf, l) = sbncor(Lf)
             sbt(Lf, l) = sbtcor(Lf)
          end do            ! lsedtot

@@ -527,6 +527,22 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
                    call prterr(lundia, 'V016', errmsg)
                 endif
              endif
+          elseif (kcs(n, m) == -1) then
+             if (gsqs(n, m) <= 0.) then
+                gsqs(n, m) = 1.23456789000000_fp
+             endif
+             if (guu(n, m) <= 0.) then
+                guu (n, m) = 1.23456789000000_fp
+             endif
+             if (guv(n, m) <= 0.) then
+                guv (n, m) = 1.23456789000000_fp
+             endif
+             if (gvu(n, m) <= 0.) then
+                gvu (n, m) = 1.23456789000000_fp
+             endif
+             if (gvv(n, m) <= 0.) then
+                gvv (n, m) = 1.23456789000000_fp
+             endif
           endif
        enddo
     enddo

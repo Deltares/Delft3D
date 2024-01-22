@@ -1,28 +1,22 @@
 set(executable_name nesthd1)
+
+# Set version file variables
+set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/src/nesthd1_common_version.F90")
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(src_path src)
 
 # Include directories that are required as references
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set version file variables
-# Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/include/version_number.ini)
 
-# Generate the version files
-set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/nesthd1_version.F90)
-generate_version_files(${fortran_version_file} ${ini_version_file})
-
-# Gather the source files
+# Gather source files
 get_fortran_source_files(${src_path} sources)
 
                             
 # Define the executable
 add_executable(${executable_name} ${sources} ${fortran_version_file})
 
-# Define prebuild event
-prebuild_version_number(${executable_name} ${fortran_version_file} 
-                                        ${checkout_src_root} 
-                                        ${ini_version_file})
 
 # Set dependencies
 set(oss_dependencies    deltares_common
@@ -71,7 +65,9 @@ if (WIN32)
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
-# Create the folder structure in vfproj
+target_include_directories(${executable_name}  PRIVATE ${version_include_dir})
+
+# Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${sources} ${fortran_version_file})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/nesthd1)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)

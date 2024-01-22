@@ -39,7 +39,9 @@ type gd_heat
     real(fp)                :: fclou     !  % of sky covered by clouds
     real(fp)                :: timjan
     real(fp)                :: stanton   !  Parameter Stanton (used in Proctor heat model ktemp=5)
+	real(fp)                :: mulsta    !  Multiplication factor for Stanton [0.7,1.3]
     real(fp)                :: dalton    !  Parameter Dalton (used in Proctor heat model ktemp=5)
+	real(fp)                :: muldal    !  Multiplication factor for Stanton [0.7,1.3]
     real(fp)                :: qtotmx    !  Maximum value for the total heat exchange flux in temperature model KTEMP=3
                                          !  In the research version it was introduced as qtotmx
     real(fp)                :: lambda    !  Fixed   value for the exchange coefficient (lambda) in temperature model KTEMP=3
@@ -139,6 +141,7 @@ type gd_heat
     real(fp) , dimension(:) , pointer :: hfree_out  ! Free convection of sensible heat
     real(fp) , dimension(:) , pointer :: efree_out  ! Free convection of latent heat   
     real(fp) , dimension(:) , pointer :: qmis_out   ! keva=3: mismatch between calculated and derived heat flux
+    logical  , dimension(:) , pointer :: flbcktemp  ! [lstsc]  flag to indicate background temperature constituents
     real(fp) , dimension(:) , pointer :: zqeva_out  ! Evaporation heat flux, in zeta-point for history file
     real(fp) , dimension(:) , pointer :: zqco_out   ! Heat flux of forced convection, in zeta-point for history file
     real(fp) , dimension(:) , pointer :: zqbl_out   ! Nett back radation, in zeta-point for history file
@@ -160,6 +163,7 @@ type gd_heat
     logical :: scc_file    = .false. !  True when Secchi depth      is read from METEO input file (only ktemp = 5)
     logical :: free_convec = .false. !  True when free convection   is read from input file (only ktemp = 5)
     logical :: solrad_read = .false. !  True when solar radiation   is read from extra column in .tem file (only ktemp = 5)
+    logical :: back_temp   = .false. !  True when background temperature is switched on
 !
 ! characters
 !

@@ -24,22 +24,7 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id: d_hydro_version.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/d_hydro/packages/d_hydro/src/d_hydro_version.cpp $
 #include <stdio.h>
-#include <string.h>
-
-#if defined(WIN32) || defined (WIN64)
-#  include <io.h>
-#  include <wtypes.h>
-#elif defined (salford32)
-#  include <io.h>
-#  include <windows.h>
-#endif
-
-#if HAVE_CONFIG_H
-#   include "config.h"
-#endif
 #include "d_hydro_version.h"
 
 #ifndef min
@@ -47,28 +32,36 @@
 #  define max(a,b) (a)>(b) ? (a) : (b)
 #endif
 
-static char modname_version_id [] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_revision "." modname_build ", " __DATE__ ", " __TIME__ ""};
+#if defined(_WIN64)
+static char modname_version_id [] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Win64), " __DATE__ ", " __TIME__ ""};
+#elif defined(LINUX64)
+static char modname_version_id [] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Linux64), " __DATE__ ", " __TIME__ ""};
+#else
+static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Unknown), " __DATE__ ", " __TIME__ "" };
+#endif
 
-void STDCALL GETSHORTVERSIONSTRING( char * str, int length_str )
+
+char * getversionstring_d_hydro(void)
 {
-  int i;
-  for (i=0; i<length_str; i++) {str[i] = ' ';}
-  i  = min((int) length_str, (int) strlen(modname_version_short));
-  strncpy(str, modname_version_short, i);
+    return modname_version;
 }
 
-void STDCALL GETFULLVERSIONSTRING( char * str, int length_str )
+char * getfullversionstring_d_hydro(void)
 {
-  int i;
-  for (i=0; i<length_str; i++) {str[i] = ' ';}
-  i  = min((int) length_str, (int) strlen(modname_version_full));
-  strncpy(str, modname_version_full, i);
+    return modname_version_full;
 }
 
-void STDCALL GETURLSTRING( char * str, int length_str )
+char * getshortversionstring_d_hydro(void)
 {
-  int i;
-  for (i=0; i<length_str; i++) {str[i] = ' ';}
-  i  = min((int) length_str, (int) strlen(modname_company_url));
-  strncpy(str, modname_company_url, i);
+    return modname_version_short;
+}
+
+char * geturlstring_d_hydro(void)
+{
+    return modname_url;
+}
+
+char * getversionidstring_d_hydro(void)
+{
+    return modname_version_id;
 }

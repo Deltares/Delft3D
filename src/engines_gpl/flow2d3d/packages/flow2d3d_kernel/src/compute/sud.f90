@@ -21,7 +21,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
              & b         ,c         ,d         ,aa        ,bb        , &
              & cc        ,dd        ,tetau     ,aak       ,bbk       , &
              & cck       ,ddk       ,d0        ,d0k       ,bbka      , &
-             & bbkc      ,ua        ,ub        ,soumud    ,dis_nf    , &
+             & bbkc      ,ua        ,ub        ,soumud    ,            &
              & precip    ,ustokes   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -108,6 +108,14 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     logical                , pointer :: nfl
     logical                , pointer :: zmodel
     logical                , pointer :: wavcmp
+
+    integer                    , pointer :: no_dis
+    integer , dimension(:)     , pointer :: m_intake
+    integer , dimension(:)     , pointer :: n_intake
+    integer , dimension(:)     , pointer :: k_intake
+    real(fp), dimension(:)     , pointer :: q_diff
+    real(fp), dimension(:,:,:) , pointer :: disnf
+    real(fp), dimension(:,:,:) , pointer :: disnf_intake
 !
 ! Global variables
 !
@@ -220,7 +228,6 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: ustokes !  Description and declaration in trisol.igs
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: v1      !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax+2)                     :: vicuv   !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: dis_nf  !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)               :: r0      !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(kmax)                                              :: sig     !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(kmax)                                              :: thick   !  Description and declaration in esm_alloc_real.f90
@@ -236,6 +243,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     integer       :: i
     integer       :: icxy
     integer       :: icol
+    integer       :: idis
     integer       :: ierror
     integer       :: intdir
     integer       :: iter
@@ -290,6 +298,14 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     nfl         => gdp%gdprocs%nfl
     zmodel      => gdp%gdprocs%zmodel
     wavcmp      => gdp%gdprocs%wavcmp
+    
+    no_dis      => gdp%gdnfl%no_dis
+    disnf       => gdp%gdnfl%disnf
+    disnf_intake=> gdp%gdnfl%disnf_intake
+    m_intake    => gdp%gdnfl%m_intake
+    n_intake    => gdp%gdnfl%n_intake
+    k_intake    => gdp%gdnfl%k_intake
+    q_diff      => gdp%gdnfl%q_diff
     !
     call timer_start(timer_sud_rest, gdp)
     !
@@ -442,9 +458,37 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     if (nfl) then
        do nm = 1, nmmax
           do k = 1, kmax
-             d0k(nm,k) = d0k(nm,k) + dis_nf(nm,k)
+             do idis = 1, no_dis
+                d0k(nm,k) = d0k(nm,k) + disnf(nm,k,idis) + disnf_intake(nm,k,idis)
+             enddo
           enddo
        enddo
+       !
+       ! Addition of the intake from the near field model
+       !
+       ! (Op verzoek van Robin uitgezet, onttrekkingen dus via normaal (ontkoppeld) debietpunt
+       !
+!      do idis = 1, no_dis
+!         if (m_intake(idis) > 0) then
+!            call n_and_m_to_nm(n_intake(idis), m_intake(idis), nm, gdp)
+!            kenm = min(1, kfu(nm) + kfu(nm - icx) + kfv(nm) + kfv(nm - icy))
+!            if (kenm/=0 .or. -q_diff(idis)>=0.0) then
+!               if (k_intake(idis)/=0) then
+!                  d0k(nm, k_intake(idis)) = d0k(nm, k_intake(idis)) - q_diff(idis)
+!               else
+!                  do kk = 1, kmax
+!                     d0k(nm, kk) = d0k(nm, kk) - q_diff(idis)*thick(kk)
+!                  enddo
+!               endif
+                !
+                ! Generate warning if trying to subtract from dry cell
+                !
+ !           else
+ !              write (errtxt, '(i0,i3)') nst, i
+ !              call prterr(lundia    ,'S208'    ,trim(errtxt))
+ !           endif
+ !        endif
+ !     enddo
     endif
     !
     ! add sources/sinks mud layer if mudlay == .true.

@@ -117,124 +117,66 @@ end
 v=transpose(v(:));
 
 Patches=1:size(tri,1);
-nlevels = length(levels);
+nLevels = length(levels);
 if getdata
-    H=cell(1,nlevels);
+    H=cell(1,nLevels);
 else
-    H=zeros(1,nlevels);
+    H=zeros(1,nLevels);
 end
-NonEmptyLevel=zeros(1,nlevels);
-for LevelNr=1:nlevels
-    level=levels(LevelNr);
-    Nlarger=sum(v(tri)>level,2);
-    Nsmaller=sum(v(tri)<level,2);
-    NaN_tri=any(isnan(v(tri)),2);
-    Nsmaller(NaN_tri)=3;
-    Nlarger(NaN_tri)=0;
-    CLIndex=1+4*Nlarger+Nsmaller;
-    %Cutslevel=[0 3 2 0 3 3 3 0 2 3 0 0 0 0 0]; % deactivate cases 3 and 9 for process_polylines
+NonEmptyLevel=zeros(1,nLevels);
+levelTri = v(tri);
+for LevelNr = 1:nLevels
+    thisLevel = levels(LevelNr);
+    nLarger = sum(levelTri>thisLevel,2);
+    nSmaller = sum(levelTri<thisLevel,2);
+    
+    % if there is a NaN, consider all values smaller
+    NaN_tri = any(isnan(levelTri),2);
+    nSmaller(NaN_tri) = 3;
+    nLarger(NaN_tri) = 0;
+    
+    % CLIndex:
+    %
+    %      nSmaller nLarger nEqual
+    %  1 =                    3     -> no line
+    %  2 =    1               2     -> line along edge
+    %  3 =    2               1     -> single point (skip)
+    %  4 =    3                     -> whole patch
+    %  5 =             1      2     -> line along edge
+    %  6 =    1        1      1     -> slice through node
+    %  7 =    2        1            -> slice
+    %  8 =   --- not possible ---
+    %  9 =             2      1     -> single point (skip)
+    % 10 =    1        2            -> slice
+    % 11 =   --- not possible ---
+    % 12 =   --- not possible ---
+    % 13 =             3            -> no line
+    
+    
+    CLIndex = 1 + nSmaller + 4*nLarger;
+    
+    % include single points
+    %Cutslevel=[0 3 2 0 3 3 3 0 2 3 0 0 0 0 0];
+    % skip single points
     Cutslevel=[0 3 0 0 3 3 3 0 0 3 0 0 0 0 0];
+    
     NLevel=sum(Cutslevel(CLIndex));
-    XLevel=repmat(NaN,[NLevel 1]);
+    XLevel=NaN(NLevel,1);
     YLevel=XLevel;
     if zdef
         ZLevel=XLevel;
     end
     LvlOffset=0;
+        
+%% single point (skip)
     
-    % patches with three equal
-    % Patch=Patches(CLIndex==1);
-    
-    % patches with two equal
-    Patch=Patches((CLIndex==2) | (CLIndex==5));
-    if ~isempty(Patch)
-        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
-        LvlIndex=[LvlIndex;LvlIndex+1];
-        Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)==level,2);
-        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % first element has elevation different from level
-        Index=Index(:,[2 3]);
-        XPoint=transpose(x(Index));
-        XLevel(LvlIndex(:))=XPoint(:);
-        YPoint=transpose(y(Index));
-        YLevel(LvlIndex(:))=YPoint(:);
-        if zdef
-            ZPoint=transpose(z(Index));
-            ZLevel(LvlIndex(:))=ZPoint(:);
-        end
-        LvlOffset=LvlOffset+3*length(Patch);
-    end
-    
-    % patches with one equal, one larger and one smaller
-    Patch=Patches(CLIndex==6);
-    if ~isempty(Patch)
-        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
-        LvlIndex=[LvlIndex;LvlIndex+1];
-        Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index),2);
-        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % second element has elevation equal to level
-        VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,1))./(VTemp(:,3)-VTemp(:,1)));
-        XPoint=transpose([transpose(x(Index(:,1)))+Lambda.*transpose(x(Index(:,3))-x(Index(:,1))) transpose(x(Index(:,2)))]);
-        XLevel(LvlIndex(:))=XPoint(:);
-        YPoint=transpose([transpose(y(Index(:,1)))+Lambda.*transpose(y(Index(:,3))-y(Index(:,1))) transpose(y(Index(:,2)))]);
-        YLevel(LvlIndex(:))=YPoint(:);
-        if zdef
-            ZPoint=transpose([transpose(z(Index(:,1)))+Lambda.*transpose(z(Index(:,3))-z(Index(:,1))) transpose(z(Index(:,2)))]);
-            ZLevel(LvlIndex(:))=ZPoint(:);
-        end
-        LvlOffset=LvlOffset+3*length(Patch);
-    end
-    
-    % patches with two larger and one smaller
-    Patch=Patches(CLIndex==10);
-    if ~isempty(Patch)
-        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
-        LvlIndex=[LvlIndex;LvlIndex+1];
-        Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)<level,2);
-        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % last element has elevation less than level
-        VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,3)*ones(1,2))./(VTemp(:,[1 2])-VTemp(:,3)*ones(1,2)));
-        XPoint=transpose(transpose(x(Index(:,3)))*ones(1,2)+Lambda.*(x(Index(:,[1 2]))-transpose(x(Index(:,3)))*ones(1,2)));
-        XLevel(LvlIndex(:))=XPoint(:);
-        YPoint=transpose(transpose(y(Index(:,3)))*ones(1,2)+Lambda.*(y(Index(:,[1 2]))-transpose(y(Index(:,3)))*ones(1,2)));
-        YLevel(LvlIndex(:))=YPoint(:);
-        if zdef
-            ZPoint=transpose(transpose(z(Index(:,3)))*ones(1,2)+Lambda.*(z(Index(:,[1 2]))-transpose(z(Index(:,3)))*ones(1,2)));
-            ZLevel(LvlIndex(:))=ZPoint(:);
-        end
-        LvlOffset=LvlOffset+3*length(Patch);
-    end
-    
-    % patches with two smaller and one larger
-    Patch=Patches(CLIndex==7);
-    if ~isempty(Patch)
-        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
-        LvlIndex=[LvlIndex;LvlIndex+1];
-        Index=tri(Patch,:);
-        [Dummy,Permutation]=sort(v(Index)>level,2);
-        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
-        % last element has elevation larger than level
-        VTemp=v(Index);
-        Lambda=min(1,(level-VTemp(:,[1 2]))./(VTemp(:,3)*ones(1,2)-VTemp(:,[1 2])));
-        XPoint=transpose(x(Index(:,[1 2]))+Lambda.*(transpose(x(Index(:,3)))*ones(1,2)-x(Index(:,[1 2]))));
-        XLevel(LvlIndex(:))=XPoint(:);
-        YPoint=transpose(y(Index(:,[1 2]))+Lambda.*(transpose(y(Index(:,3)))*ones(1,2)-y(Index(:,[1 2]))));
-        YLevel(LvlIndex(:))=YPoint(:);
-        if zdef
-            ZPoint=transpose(z(Index(:,[1 2]))+Lambda.*(transpose(z(Index(:,3)))*ones(1,2)-z(Index(:,[1 2]))));
-            ZLevel(LvlIndex(:))=ZPoint(:);
-        end
-        LvlOffset=LvlOffset+3*length(Patch);
-    end
-    
-    % patches with one equal and two larger or two smaller
-    % Needed to capture peaks that coincide with contour.
-    % Deactivated for compatibility with process_polylines
+    % patches with one equal and two larger or two smaller generate only a
+    % single point for the contour lines. In most cases this point is not
+    % relevant because neighboring patches will contribute line segments
+    % that run until that point. However, in exceptional cases this point
+    % may the only point on the "contour", namely if a (local) minimum or
+    % maximum matches a contour level. We exclude such points for the time
+    % being.
 %     Patch=Patches((CLIndex==3) | (CLIndex==9));
 %     if ~isempty(Patch)
 %         LvlIndex=LvlOffset+(1:2:(2*length(Patch)));
@@ -253,18 +195,113 @@ for LevelNr=1:nlevels
 %         end
 %         LvlOffset=LvlOffset+2*length(Patch);
 %     end
-    
-    NonEmptyLevel(LevelNr)=1;
-    if 1 % the processing of the polylines adds a performance penalty, but improves the quality of the plot in HG2. 
-    %if isempty(XLevel)
-        % no line, so no reason to concatenate lines
-    elseif zdef
-        [XLevel,YLevel,ZLevel] = process_polylines(XLevel,YLevel,ZLevel);
-    else
-        [XLevel,YLevel] = process_polylines(XLevel,YLevel);
+
+%% line along edge
+    % patches with two equal: the contour follows exactly an edge.
+    % WARNING: this contour segment may be generated twice, which may
+    % result in a problem when trying to stitch the polygons together.
+    % Let's take a chance since this set will be empty in most cases.
+    Patch=Patches((CLIndex==2) | (CLIndex==5));
+    if ~isempty(Patch)
+        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
+        LvlIndex=[LvlIndex;LvlIndex+1];
+        Index=tri(Patch,:);
+        [Dummy,Permutation]=sort(v(Index)==thisLevel,2);
+        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
+        % first element has elevation different from level
+        Index=Index(:,[2 3]);
+        XPoint=transpose(x(Index));
+        XLevel(LvlIndex(:))=XPoint(:);
+        YPoint=transpose(y(Index));
+        YLevel(LvlIndex(:))=YPoint(:);
+        if zdef
+            ZPoint=transpose(z(Index));
+            ZLevel(LvlIndex(:))=ZPoint(:);
+        end
+        LvlOffset=LvlOffset+3*length(Patch);
     end
+
+%% slice through node
+    % patches with one equal, one larger and one smaller
+    Patch=Patches(CLIndex==6);
+    if ~isempty(Patch)
+        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
+        LvlIndex=[LvlIndex;LvlIndex+1];
+        Index=tri(Patch,:);
+        [Dummy,Permutation]=sort(v(Index),2);
+        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
+        % first index points to smallest elevation
+        % second index points to elevation equal to level
+        % third index points to higher elevation
+        VTemp=v(Index);
+        Lambda=min(1,(thisLevel-VTemp(:,1))./(VTemp(:,3)-VTemp(:,1))); % large - small
+        XPoint=transpose([transpose(x(Index(:,1)))+Lambda.*transpose(x(Index(:,3))-x(Index(:,1))) transpose(x(Index(:,2)))]);
+        XLevel(LvlIndex(:))=XPoint(:);
+        YPoint=transpose([transpose(y(Index(:,1)))+Lambda.*transpose(y(Index(:,3))-y(Index(:,1))) transpose(y(Index(:,2)))]);
+        YLevel(LvlIndex(:))=YPoint(:);
+        if zdef
+            ZPoint=transpose([transpose(z(Index(:,1)))+Lambda.*transpose(z(Index(:,3))-z(Index(:,1))) transpose(z(Index(:,2)))]);
+            ZLevel(LvlIndex(:))=ZPoint(:);
+        end
+        LvlOffset=LvlOffset+3*length(Patch);
+    end
+
+%% slice
+    % patches with two larger and one smaller
+    Patch=Patches(CLIndex==10);
+    if ~isempty(Patch)
+        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
+        LvlIndex=[LvlIndex;LvlIndex+1];
+        Index=tri(Patch,:);
+        [Dummy,Permutation]=sort(v(Index)<thisLevel,2);
+        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
+        % first two indices point to levels larger than level
+        % last index points to elevation smaller than level
+        VTemp=v(Index);
+        Lambda=min(1,(thisLevel-VTemp(:,3)*ones(1,2))./(VTemp(:,[1 2])-VTemp(:,3)*ones(1,2))); % large - small
+        XPoint=transpose(transpose(x(Index(:,3)))*ones(1,2)+Lambda.*(x(Index(:,[1 2]))-transpose(x(Index(:,3)))*ones(1,2)));
+        XLevel(LvlIndex(:))=XPoint(:);
+        YPoint=transpose(transpose(y(Index(:,3)))*ones(1,2)+Lambda.*(y(Index(:,[1 2]))-transpose(y(Index(:,3)))*ones(1,2)));
+        YLevel(LvlIndex(:))=YPoint(:);
+        if zdef
+            ZPoint=transpose(transpose(z(Index(:,3)))*ones(1,2)+Lambda.*(z(Index(:,[1 2]))-transpose(z(Index(:,3)))*ones(1,2)));
+            ZLevel(LvlIndex(:))=ZPoint(:);
+        end
+        LvlOffset=LvlOffset+3*length(Patch);
+    end
+
+%% slice
+    % patches with two smaller and one larger
+    Patch=Patches(CLIndex==7);
+    if ~isempty(Patch)
+        LvlIndex=LvlOffset+(1:3:(3*length(Patch)));
+        LvlIndex=[LvlIndex;LvlIndex+1];
+        Index=tri(Patch,:);
+        [Dummy,Permutation]=sort(v(Index)>thisLevel,2);
+        Index=Index((Permutation-1)*size(Index,1)+transpose(1:size(Index,1))*[1 1 1]);
+        % first two indices point to levels smaller than level
+        % last index points to elevation larger than level
+        VTemp=v(Index);
+        Lambda=min(1,(thisLevel-VTemp(:,[1 2]))./(VTemp(:,3)*ones(1,2)-VTemp(:,[1 2]))); % large - small
+        XPoint=transpose(x(Index(:,[1 2]))+Lambda.*(transpose(x(Index(:,3)))*ones(1,2)-x(Index(:,[1 2]))));
+        XLevel(LvlIndex(:))=XPoint(:);
+        YPoint=transpose(y(Index(:,[1 2]))+Lambda.*(transpose(y(Index(:,3)))*ones(1,2)-y(Index(:,[1 2]))));
+        YLevel(LvlIndex(:))=YPoint(:);
+        if zdef
+            ZPoint=transpose(z(Index(:,[1 2]))+Lambda.*(transpose(z(Index(:,3)))*ones(1,2)-z(Index(:,[1 2]))));
+            ZLevel(LvlIndex(:))=ZPoint(:);
+        end
+        LvlOffset=LvlOffset+3*length(Patch);
+    end
+
+%% whole patch
+    % patches with three equal
+    % Patch=Patches(CLIndex==1);
+
+%% continue
+    NonEmptyLevel(LevelNr)=1;
     
-    VLevel=level*ones(size(XLevel));
+    VLevel=thisLevel*ones(size(XLevel));
     
     if getdata
         if zdef
@@ -276,13 +313,13 @@ for LevelNr=1:nlevels
         if ~zdef
             ZLevel=VLevel;
         end
-        NewH = patch('XData',transpose([XLevel;XLevel]), ...
-            'YData',transpose([YLevel;YLevel]), ...
-            'ZData',transpose([ZLevel;ZLevel]), ...
-            'CData',transpose([VLevel;VLevel]), ...
+        NewH = patch('XData',transpose(XLevel), ...
+            'YData',transpose(YLevel), ...
+            'ZData',transpose(ZLevel), ...
+            'CData',transpose(VLevel), ...
             'facecolor','none', ...
             'edgecolor','flat',...
-            'userdata',level, ...
+            'userdata',thisLevel, ...
             'parent',ax);
         H(LevelNr)=NewH;
     else
@@ -292,7 +329,7 @@ for LevelNr=1:nlevels
         NewH = line('XData',XLevel, ...
             'YData',YLevel, ...
             'ZData',ZLevel, ...
-            'userdata',level, ...
+            'userdata',thisLevel, ...
             'parent',ax);
         H(LevelNr)=NewH;
     end
@@ -317,115 +354,4 @@ else
     end
 end
 
-
-function [X,Y,Z] = process_polylines(X,Y,Z)
-valid = ~isnan(X);
-if nargin==2 || isempty(Z)
-    xyz = [X(valid) Y(valid)];
-else
-    xyz = [X(valid) Y(valid) Z(valid)];
-end
-[uxyz,ia,ic] = unique(xyz,'rows');
-edp = reshape(ic,[2 length(ic)/2])';
-sedp = sort(edp,2);
-[uedp,edgenr,isorted] = unique(sedp,'rows');
-edges = edp(edgenr,:);
-%
-contour = NaN(1,2*size(edges,1));
-i1 = 1;
-contour(i1:i1+1) = edges(1,:);
-n1 = contour(i1);
-n2 = contour(i1+1);
-i2 = i1+1;
-%
-[snodes,irow] = sort(edges(:));
-irow = mod(irow-1,size(edges,1))+1;
-istart = find(diff([0;snodes;0]));
-%
-% mark edge as traversed
-edges(1,:) = NaN;
-%
-ntodo = size(edges,1)-1;
-%
-flipped = false;
-while 1
-    %
-    % search for an edge that connects to node n2.
-    % these edges are numbered irow(istart(n2):istart(n2+1)-1)
-    % they may already be traversed, so let's check which one is available
-    %
-    found = false;
-    for r2 = istart(n2):istart(n2+1)-1
-        l2 = irow(r2);
-        if edges(l2,1)==n2
-            found = true;
-            n3 = edges(l2,2);
-            break
-        elseif edges(l2,2)==n2
-            found = true;
-            n3 = edges(l2,1);
-            break
-        end
-    end
-    %
-    if ~found
-        if flipped
-            if ntodo>0
-                % start new polyline using first unused edge
-                todo = find(~isnan(edges(:,1)));
-                todo = todo(1);
-                %
-                i1 = i2+2;
-                %
-                contour(i1:i1+1) = edges(todo,:);
-                n1 = contour(i1);
-                n2 = contour(i1+1);
-                i2 = i1+1;
-                %
-                % mark edge as traversed
-                edges(todo,:) = NaN;
-                ntodo = ntodo-1;
-                %
-                flipped = false;
-            else
-                % all edges done
-                break
-            end
-        else
-            % no edge to continue ... try flipping
-            contour(i1:i2) = contour(i2:-1:i1);
-            n1 = contour(i1);
-            n2 = contour(i2);
-            flipped = true;
-        end
-        continue
-    end
-    %
-    % n3 is the number of the other node
-    % add it to the contour
-    i2=i2+1;
-    contour(i2) = n3;
-    %
-    % mark edge as traversed
-    edges(l2,1:2) = NaN;
-    ntodo = ntodo-1;
-    %
-    % continue the search from the latest node
-    n2 = n3;
-end
-%
-% TODO: check here how many polylines have been created
-%
-% put contour back into X,Y,Z
-contour = contour(1:i2);
-bpoint = isnan(contour);
-contour(bpoint) = 1;
-X = uxyz(contour,1);
-X(bpoint) = NaN;
-Y = uxyz(contour,2);
-Y(bpoint) = NaN;
-if nargout==3
-    Z = uxyz(contour,3);
-    Z(bpoint) = NaN;
-end
 

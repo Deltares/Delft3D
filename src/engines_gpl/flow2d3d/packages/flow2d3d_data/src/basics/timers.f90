@@ -561,6 +561,9 @@ subroutine timer_stop (timnum, gdp)
     usedcp(timnum,starttime_cpu) = 0.0_hp
     usedcp(timnum,sumtime)   = usedcp(timnum,sumtime) &
                              & + (real(tcount,hp)/real(trate,hp) - usedcp(timnum,starttime))
+    if (timnum==timer_wait) then
+       write(*,'(a,f15.3,a)') "Waited: ", real(tcount,hp)/real(trate,hp) - usedcp(timnum,starttime), " sec"
+    endif
     usedcp(timnum,starttime) = -1.0_hp
 end subroutine timer_stop
 !

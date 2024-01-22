@@ -100,7 +100,7 @@ integer,          dimension(:)  , pointer       :: kcu2, shapearray
 integer,                          pointer       :: ndx2d
 double precision, dimension(:),   pointer       :: bndvalues
 double precision, dimension(:,:), pointer       :: inslevtube
-double precision, dimension(:,:), pointer       :: gridvolume, gridsurface
+double precision, dimension(:,:), pointer       :: gridvolume, gridsurface, griddeadstorage, gridstorage
 double precision, dimension(:),   allocatable   :: wl_deadstorage, bedlevels, topheights
 integer, parameter                              :: maxdims = 6
 ! externals
@@ -114,16 +114,16 @@ integer(I4P)                      :: ierr         !< Error trapping flag.
 open(newunit = dia, file='dfm_volume_tool.dia')
 call SetMessageHandling(write2screen = .true., lunmessages = dia)
 
-call get_full_versionstring_dfm_volume_tool_full(msgbuf)
+call getfullversionstring_dfm_volume_tool(msgbuf)
 call msg_flush()
-call get_dfm_volume_tool_source(msgbuf)
+call getbranch_dfm_volume_tool(msgbuf)
 call msg_flush()
 
 numids = 0
 !-----------------------------------------------------------------------------------------------------------------------------------
 !! initializing Command Line Interface
-call cli%init(progname    = dfm_volume_tool_basename,                                            &
-              version     = dfm_volume_tool_version,                                             &
+call cli%init(progname    = base_name,                                            &
+              version     = version,                                             &
               description = 'Tool for generating volume output for D-Flow FM') 
 !
 !! setting Command Line Arguments
@@ -135,6 +135,7 @@ call cli%add(switch='--gridoutputfile',switch_ab='-g', help='name of the per-gri
 
 ! parsing Command Line Interface
 call cli%parse(error=ierr)
+call cli%errored(error=ierr)
 
 if (ierr /= 0) then
    call SetMessage(LEVEL_ERROR, 'Error reading input parameters')
@@ -222,6 +223,7 @@ if (ierr==0) then
    call BMI_GET_VAR_POINTER(dfm, string_to_char_array('ln'), xptr)
    call c_f_pointer(xptr, lnog, (/2, lnx/))
    
+   call BMI_GET_VAR_POINTER(dfm, string_to_char_array('kbndz'), xptr)
    call c_f_pointer(xptr, bndindex, (/MAXDIMS, numbnd/))
    
    call BMI_GET_VAR_POINTER(dfm, string_to_char_array('vltb'), xptr)
@@ -312,15 +314,17 @@ if (ierr==0) then
    if (computeOnGridpoints) then !Gridpoints are written separately
       !compute maximum volume table length
       
-      allocate(gridsurface(numpoints,numlevels),gridvolume(numpoints,numlevels),bedlevels(numpoints),topheights(numpoints),tablecount(numpoints))
+      allocate(gridsurface(numlevels,numpoints),griddeadstorage(numlevels,numpoints),gridvolume(numlevels,numpoints),gridstorage(numlevels,numpoints),bedlevels(numpoints),topheights(numpoints),tablecount(numpoints))
    
       do i = 1, numpoints   
          bedlevels(i)   = volumetable(i)%bedlevel
          topheights(i)  = volumetable(i)%topheight
          tablecount(i)  = volumetable(i)%count
+         call AddVolumeAndSurface(volume(:,1), surface(:,1), griddeadstorage(:,i), wl_deadstorage(i), volumetable(i), volumetable(i)%bedlevel, increment, numlevels)
          do j = 1,volumetable(i)%count
-            gridsurface(i,j) = volumetable(i)%sur(j)
-            gridvolume(i,j) = volumetable(i)%vol(j)
+            gridsurface(j,i) = volumetable(i)%sur(j)
+            gridvolume (j,i) = volumetable(i)%vol(j)
+            gridstorage(j,i) = gridvolume(j,i) - griddeadstorage(j,i)
          enddo
       enddo
       
@@ -328,7 +332,8 @@ if (ierr==0) then
       ! Write the output to the netcdf file
       call write_1d_flowgeom_ugrid(dfm, ncid)
       
-      call write_volume_table_gridpoint_data(ncid,bedlevels,topheights,gridvolume,gridsurface,tablecount,numpoints,increment)
+      call write_volume_table_gridpoint_data(ncid,bedlevels,topheights,gridvolume,gridsurface, &
+           gridstorage,griddeadstorage,wl_deadstorage,tablecount,numpoints,increment)
    endif
             
    deallocate(surface,volume, levels, ids, mask)

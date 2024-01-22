@@ -22,39 +22,10 @@ if(NOT TARGET dfm_api_access)
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
 endif()
 
-# Waqpb
-if(NOT TARGET waqpb_lib)
-    add_subdirectory(${checkout_src_root}/${waqpb_lib_module} waqpb_lib)
+# cosumo_bmi
+if(NOT TARGET cosumo_bmi)
+    add_subdirectory(${checkout_src_root}/${cosumo_bmi_module} cosumo_bmi)
 endif()
 
-if(NOT TARGET waqpb_import)
-    add_subdirectory(${checkout_src_root}/${waqpb_import_module} waqpb_import)
-endif()
-
-if(NOT TARGET waqpb_export)
-    add_subdirectory(${checkout_src_root}/${waqpb_export_module} waqpb_export)
-endif()
-
-# Waqmerge
-if(NOT TARGET waqmerge_version_number)
-    add_subdirectory(${checkout_src_root}/${waqmerge_module} waqmerge_version_number)
-endif()
-
-if(NOT TARGET waqmerge)
-    add_subdirectory(${checkout_src_root}/${waqmerge_module} waqmerge)
-endif()
-
-# Ddcouple
-if(NOT TARGET ddcouple)
-    add_subdirectory(${checkout_src_root}/${ddcouple_module} ddcouple)
-endif()
-
-# Agrhyd
-if(NOT TARGET agrhyd)
-    add_subdirectory(${checkout_src_root}/${agrhyd_module} agrhyd)
-endif()
-
-# Maptonetcdf
-if(NOT TARGET maptonetcdf)
-    add_subdirectory(${checkout_src_root}/${maptonetcdf_module} maptonetcdf)
-endif()
+# D-Waq tools
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_tools.cmake)

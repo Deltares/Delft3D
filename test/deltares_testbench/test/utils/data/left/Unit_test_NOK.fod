@@ -1,0 +1,1607 @@
+D-Foundations DUMP FILE
+==============================================================================
+COMPANY    :    
+
+DATE       : 7-3-2019
+TIME       : 12:22:57
+FILENAME   : D:\DFoundations 19.1\release\Projects\Benchmarks\bm1-1a.fod
+CREATED BY : D-Foundations version 19.1.1.23780
+==========================    BEGINNING OF DATA     ==========================
+[DUMPFILE]
+[INPUT DATA]
+[VERSION]
+Soil=1005
+D-Foundations=1015
+[END OF VERSION]
+
+[VERSION EXTERNALS]
+DGSFoundationCalc.dll=19.1.1.23780
+[END OF VERSION EXTERNALS]
+
+[MODEL]
+0 : Model = Bearing Piles (EC7-NL)
+[END OF MODEL]
+[SOIL COLLECTION]
+   20 = number of items
+[SOIL]
+Clay, clean, stiff
+SoilColor=11526561
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=20.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=30.00
+SoilPhi=25.00
+SoilCu=200.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0040000
+SoilCcIndex=0.1260000
+[END OF SOIL]
+[SOIL]
+Clay, clean, weak
+SoilColor=12181921
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=17.00
+SoilGamWet=17.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=10.00
+SoilPhi=17.50
+SoilCu=50.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0130000
+SoilCcIndex=0.3620000
+[END OF SOIL]
+[SOIL]
+Clay, organ, moderate
+SoilColor=12841121
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=16.00
+SoilGamWet=16.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=2.00
+SoilPhi=15.00
+SoilCu=30.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0120000
+SoilCcIndex=0.4200000
+[END OF SOIL]
+[SOIL]
+Clay, organ, weak
+SoilColor=14151841
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=15.00
+SoilGamWet=15.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=2.00
+SoilPhi=15.00
+SoilCu=25.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0150000
+SoilCcIndex=0.7600000
+[END OF SOIL]
+[SOIL]
+Clay, sl san, moderate
+SoilColor=11527841
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=20.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=25.00
+SoilPhi=22.50
+SoilCu=120.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0050000
+SoilCcIndex=0.1260000
+[END OF SOIL]
+[SOIL]
+Clay, ve san, stiff
+SoilColor=12839841
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=20.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=2.00
+SoilPhi=32.50
+SoilCu=10.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0040000
+SoilCcIndex=0.0270000
+[END OF SOIL]
+[SOIL]
+Gravel, sl sil, moderate
+SoilColor=7892605
+SoilSoilType=0
+SoilBelgianSoilType=0
+SoilGamDry=19.00
+SoilGamWet=21.00
+SoilInitialVoidRatio=0.256082
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=0.00
+SoilPhi=37.50
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000001
+SoilCcIndex=0.0030000
+[END OF SOIL]
+[SOIL]
+Loam, sl san, weak
+SoilColor=12817532
+SoilSoilType=2
+SoilBelgianSoilType=2
+SoilGamDry=20.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=2.00
+SoilPhi=30.00
+SoilCu=100.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0040000
+SoilCcIndex=0.0840000
+[END OF SOIL]
+[SOIL]
+Loam, ve san, stiff
+SoilColor=12818812
+SoilSoilType=2
+SoilBelgianSoilType=2
+SoilGamDry=20.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=2.00
+SoilPhi=35.00
+SoilCu=100.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0020000
+SoilCcIndex=0.0550000
+[END OF SOIL]
+[SOIL]
+Material (1)
+SoilColor=7648893
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=17.00
+SoilGamWet=19.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.30000
+SoilMinVoidRatio=0.000
+SoilMaxVoidRatio=0.000
+SoilCohesion=0.00
+SoilPhi=25.00
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000000
+SoilCcIndex=0.0000000
+[END OF SOIL]
+[SOIL]
+Material (2)
+SoilColor=9764853
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=17.00
+SoilGamWet=19.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.30000
+SoilMinVoidRatio=0.000
+SoilMaxVoidRatio=0.000
+SoilCohesion=0.00
+SoilPhi=27.50
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000000
+SoilCcIndex=0.0000000
+[END OF SOIL]
+[SOIL]
+Material (3)
+SoilColor=5953498
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=18.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.30000
+SoilMinVoidRatio=0.000
+SoilMaxVoidRatio=0.000
+SoilCohesion=0.00
+SoilPhi=30.00
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000000
+SoilCcIndex=0.0000000
+[END OF SOIL]
+[SOIL]
+Material (4)
+SoilColor=10944420
+SoilSoilType=3
+SoilBelgianSoilType=3
+SoilGamDry=15.00
+SoilGamWet=15.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.000
+SoilMaxVoidRatio=0.000
+SoilCohesion=0.00
+SoilPhi=22.50
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000000
+SoilCcIndex=0.0000000
+[END OF SOIL]
+[SOIL]
+Material (5)
+SoilColor=9094655
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=19.00
+SoilGamWet=20.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.30000
+SoilMinVoidRatio=0.000
+SoilMaxVoidRatio=0.000
+SoilCohesion=0.00
+SoilPhi=32.50
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000000
+SoilCcIndex=0.0000000
+[END OF SOIL]
+[SOIL]
+Peat, mod pl, moderate
+SoilColor=6045349
+SoilSoilType=4
+SoilBelgianSoilType=4
+SoilGamDry=13.00
+SoilGamWet=13.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=10.00
+SoilPhi=15.00
+SoilCu=30.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0160000
+SoilCcIndex=0.9000000
+[END OF SOIL]
+[SOIL]
+Peat, not pl, weak
+SoilColor=6699429
+SoilSoilType=4
+SoilBelgianSoilType=4
+SoilGamDry=12.00
+SoilGamWet=12.00
+SoilInitialVoidRatio=0.001001
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=5.00
+SoilPhi=15.00
+SoilCu=20.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0230000
+SoilCcIndex=1.8100000
+[END OF SOIL]
+[SOIL]
+Sand, clean, stiff
+SoilColor=2679279
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=20.00
+SoilGamWet=22.00
+SoilInitialVoidRatio=0.256082
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=0.00
+SoilPhi=40.00
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000001
+SoilCcIndex=0.0020000
+[END OF SOIL]
+[SOIL]
+Sand, sl sil, moderate
+SoilColor=710639
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=19.00
+SoilGamWet=21.00
+SoilInitialVoidRatio=0.256082
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=0.00
+SoilPhi=32.50
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000001
+SoilCcIndex=0.0050000
+[END OF SOIL]
+[SOIL]
+Sand, ve sil, loose
+SoilColor=711919
+SoilSoilType=1
+SoilBelgianSoilType=1
+SoilGamDry=19.00
+SoilGamWet=21.00
+SoilInitialVoidRatio=0.256082
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=0.00
+SoilPhi=30.00
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000001
+SoilCcIndex=0.0090000
+[END OF SOIL]
+[SOIL]
+Undetermined
+SoilColor=16777215
+SoilSoilType=2
+SoilBelgianSoilType=2
+SoilGamDry=0.00
+SoilGamWet=0.00
+SoilInitialVoidRatio=0.000000
+SoilDiameterD50=0.20000
+SoilMinVoidRatio=0.400
+SoilMaxVoidRatio=0.800
+SoilCohesion=0.00
+SoilPhi=0.00
+SoilCu=0.00
+SoilMaxConeResistType=0
+SoilMaxConeResist=0.00
+SoilUseTension=1
+SoilCa=0.0000001
+SoilCcIndex=1.0000000
+[END OF SOIL]
+[END OF SOIL COLLECTION]
+
+
+[RUN IDENTIFICATION]
+
+
+
+Benchmark 1-1 - Bearing piles (EC7-NL)
+Source: Fugro
+-
+
+[END OF RUN IDENTIFICATION]
+[CPT LIST]
+[NUMBER OF CPTS]
+3
+--------------------------------------
+[CPTNAME]
+FUGBEN1
+[END OF CPTNAME]
+[PROJECT NAME]
+Unknown
+[END OF PROJECT NAME]
+[PROJECTID]
+
+[END OF PROJECTID]
+[PROJECT NUMBER]
+
+[END OF PROJECT NUMBER]
+[PROJECT SUBNUMBER]
+
+[END OF PROJECT SUBNUMBER]
+[LOCATION NAME]
+Unknown
+[END OF LOCATION NAME]
+[CLIENT NAME]
+Unknown
+[END OF CLIENT NAME]
+[COMPANYID]
+Unknown
+[END OF COMPANYID]
+[FILEDATE]
+2001-11-01
+[END OF FILEDATE]
+[FILEOWNER]
+Unknown
+[END OF FILEOWNER]
+[GEF VERSION]
+Unknown
+[END OF GEF VERSION]
+[PROCEDURECODE]
+Unknown
+[END OF PROCEDURECODE]
+[ObjectID]
+0
+[END OF ObjectID]
+[STARTDATE]
+2001-11-01
+[END OF STARTDATE]
+[STARTTIME]
+
+[END OF STARTTIME]
+[EXCAVATION TYPE]
+1 : Before
+[END OF EXCAVATION TYPE]
+[TIMEORDER TYPE]
+1 : CPT - Excavation - Install
+[END OF TIMEORDER TYPE]
+[CPT TYPE]
+1 : Electronic CPT
+[END OF CPT TYPE]
+[USAGE CONE VALUE]
+0 : Mechanical qc required
+[END OF USAGE CONE VALUE]
+[XY COORDINATE SYSTEM]
+Unknown
+[END OF XY COORDINATE SYSTEM]
+[XWORLD]
+  987654321.000
+[END OF XWORLD]
+[XWORLD ACCURACY]
+987654321.00000
+[END OF XWORLD ACCURACY]
+[YWORLD]
+  987654321.000
+[END OF YWORLD]
+[YWORLD ACCURACY]
+987654321.00000
+[END OF YWORLD ACCURACY]
+[GROUNDLEVEL]
+          0.500
+[END OF GROUNDLEVEL]
+[GROUNDLEVEL ACCURACY]
+987654321.00000
+[END OF GROUNDLEVEL ACCURACY]
+[GROUNDLEVEL WAS MEASURED]
+1 : False
+[END OF GROUNDLEVEL WAS MEASURED]
+[LEVELTEXT]
+
+[END OF LEVELTEXT]
+[PRE EXCAVATION]
+  987654321.000
+[END OF PRE EXCAVATION]
+[WATERLEVEL]
+  987654321.000
+[END OF WATERLEVEL]
+[XLOCAL]
+          2.500
+[END OF XLOCAL]
+[YLOCAL]
+         15.000
+[END OF YLOCAL]
+[LOCAL X CROSSSECTION]
+          0.000
+[END OF LOCAL X CROSSSECTION]
+[INTERPRETATION MODEL]
+0
+[END OF INTERPRETATION MODEL]
+[INTERPRETATION MODEL STRESSDEPENDENT]
+0 : False
+[END OF INTERPRETATION MODEL STRESSDEPENDENT]
+[DEPTHRANGE]
+          0.100
+[END OF DEPTHRANGE]
+[GRAPH MAX PERCENTAGE]
+  10
+[END OF GRAPH MAX PERCENTAGE]
+[GRAPH WIDTH]
+         10.000
+[END OF GRAPH WIDTH]
+[GRAPH LINEWIDTH]
+   1
+[END OF GRAPH LINEWIDTH]
+[GRAPH BORDERWIDTH]
+   1
+[END OF GRAPH BORDERWIDTH]
+[GRAPH BORDERCOLOR]
+              0
+[END OF GRAPH BORDERCOLOR]
+[GRAPH FRICTIONCOLOR]
+       16711680
+[END OF GRAPH FRICTIONCOLOR]
+[GRAPH QCCOLOR]
+            255
+[END OF GRAPH QCCOLOR]
+[GRAPH PLANE COLOR]
+              0
+[END OF GRAPH PLANE COLOR]
+[GRAPH FIT FOR SIZE]
+0 : True
+[END OF GRAPH FIT FOR SIZE]
+[GRAPH FIT SYMBOL FOR SIZE]
+0 : True
+[END OF GRAPH FIT SYMBOL FOR SIZE]
+[GRAPH SYMBOL SIZE]
+          1.000
+[END OF GRAPH SYMBOL SIZE]
+[VOID VALUE DEPTH]
+  987654321.000
+[END OF VOID VALUE DEPTH]
+[VOID VALUE CONE RESISTANCE]
+  987654321.000
+[END OF VOID VALUE CONE RESISTANCE]
+[VOID VALUE PORE WATER PRESSURE]
+987654321.000000
+[END OF VOID VALUE PORE WATER PRESSURE]
+[VOID VALUE SLEEVE FRICTION]
+987654321.000000
+[END OF VOID VALUE SLEEVE FRICTION]
+[VOID VALUE FRICTION NUMBER]
+987654321.000000
+[END OF VOID VALUE FRICTION NUMBER]
+[VOID VALUE EQUIVALENT ELECTRONIC QC]
+987000000.000000
+[END OF VOID VALUE EQUIVALENT ELECTRONIC QC]
+[MEASURED DATA]
+[TABLE]
+[COLUMN INDICATION]
+z
+qc
+[END OF COLUMN INDICATION]
+[DATA]
+       0.500        2.000
+      -2.000        2.000
+      -2.001        4.000
+      -6.000        4.000
+      -6.001       15.000
+     -14.000       15.000
+     -14.001        1.000
+     -16.000        1.000
+     -16.001        1.000
+     -17.000        1.000
+     -17.001       35.000
+     -20.000       35.000
+     -20.001       35.000
+     -23.999       35.000
+     -24.000       35.000
+     -30.000       35.000
+[END OF DATA]
+[END OF TABLE]
+[END OF MEASURED DATA]
+[NEXT OF NUMBER OF CPTS]
+[CPTNAME]
+FUGBEN2
+[END OF CPTNAME]
+[PROJECT NAME]
+Unknown
+[END OF PROJECT NAME]
+[PROJECTID]
+
+[END OF PROJECTID]
+[PROJECT NUMBER]
+
+[END OF PROJECT NUMBER]
+[PROJECT SUBNUMBER]
+
+[END OF PROJECT SUBNUMBER]
+[LOCATION NAME]
+Unknown
+[END OF LOCATION NAME]
+[CLIENT NAME]
+Unknown
+[END OF CLIENT NAME]
+[COMPANYID]
+Unknown
+[END OF COMPANYID]
+[FILEDATE]
+2001-11-01
+[END OF FILEDATE]
+[FILEOWNER]
+Unknown
+[END OF FILEOWNER]
+[GEF VERSION]
+Unknown
+[END OF GEF VERSION]
+[PROCEDURECODE]
+Unknown
+[END OF PROCEDURECODE]
+[ObjectID]
+0
+[END OF ObjectID]
+[STARTDATE]
+2001-11-01
+[END OF STARTDATE]
+[STARTTIME]
+
+[END OF STARTTIME]
+[EXCAVATION TYPE]
+1 : Before
+[END OF EXCAVATION TYPE]
+[TIMEORDER TYPE]
+1 : CPT - Excavation - Install
+[END OF TIMEORDER TYPE]
+[CPT TYPE]
+1 : Electronic CPT
+[END OF CPT TYPE]
+[USAGE CONE VALUE]
+0 : Mechanical qc required
+[END OF USAGE CONE VALUE]
+[XY COORDINATE SYSTEM]
+Unknown
+[END OF XY COORDINATE SYSTEM]
+[XWORLD]
+  987654321.000
+[END OF XWORLD]
+[XWORLD ACCURACY]
+987654321.00000
+[END OF XWORLD ACCURACY]
+[YWORLD]
+  987654321.000
+[END OF YWORLD]
+[YWORLD ACCURACY]
+987654321.00000
+[END OF YWORLD ACCURACY]
+[GROUNDLEVEL]
+          0.500
+[END OF GROUNDLEVEL]
+[GROUNDLEVEL ACCURACY]
+987654321.00000
+[END OF GROUNDLEVEL ACCURACY]
+[GROUNDLEVEL WAS MEASURED]
+1 : False
+[END OF GROUNDLEVEL WAS MEASURED]
+[LEVELTEXT]
+
+[END OF LEVELTEXT]
+[PRE EXCAVATION]
+  987654321.000
+[END OF PRE EXCAVATION]
+[WATERLEVEL]
+  987654321.000
+[END OF WATERLEVEL]
+[XLOCAL]
+         16.000
+[END OF XLOCAL]
+[YLOCAL]
+          2.000
+[END OF YLOCAL]
+[LOCAL X CROSSSECTION]
+          0.000
+[END OF LOCAL X CROSSSECTION]
+[INTERPRETATION MODEL]
+0
+[END OF INTERPRETATION MODEL]
+[INTERPRETATION MODEL STRESSDEPENDENT]
+0 : False
+[END OF INTERPRETATION MODEL STRESSDEPENDENT]
+[DEPTHRANGE]
+          0.100
+[END OF DEPTHRANGE]
+[GRAPH MAX PERCENTAGE]
+  10
+[END OF GRAPH MAX PERCENTAGE]
+[GRAPH WIDTH]
+         10.000
+[END OF GRAPH WIDTH]
+[GRAPH LINEWIDTH]
+   1
+[END OF GRAPH LINEWIDTH]
+[GRAPH BORDERWIDTH]
+   1
+[END OF GRAPH BORDERWIDTH]
+[GRAPH BORDERCOLOR]
+              0
+[END OF GRAPH BORDERCOLOR]
+[GRAPH FRICTIONCOLOR]
+       16711680
+[END OF GRAPH FRICTIONCOLOR]
+[GRAPH QCCOLOR]
+            255
+[END OF GRAPH QCCOLOR]
+[GRAPH PLANE COLOR]
+              0
+[END OF GRAPH PLANE COLOR]
+[GRAPH FIT FOR SIZE]
+0 : True
+[END OF GRAPH FIT FOR SIZE]
+[GRAPH FIT SYMBOL FOR SIZE]
+0 : True
+[END OF GRAPH FIT SYMBOL FOR SIZE]
+[GRAPH SYMBOL SIZE]
+          1.000
+[END OF GRAPH SYMBOL SIZE]
+[VOID VALUE DEPTH]
+  987654321.000
+[END OF VOID VALUE DEPTH]
+[VOID VALUE CONE RESISTANCE]
+  987654321.000
+[END OF VOID VALUE CONE RESISTANCE]
+[VOID VALUE PORE WATER PRESSURE]
+987654321.000000
+[END OF VOID VALUE PORE WATER PRESSURE]
+[VOID VALUE SLEEVE FRICTION]
+987654321.000000
+[END OF VOID VALUE SLEEVE FRICTION]
+[VOID VALUE FRICTION NUMBER]
+987654321.000000
+[END OF VOID VALUE FRICTION NUMBER]
+[VOID VALUE EQUIVALENT ELECTRONIC QC]
+987000000.000000
+[END OF VOID VALUE EQUIVALENT ELECTRONIC QC]
+[MEASURED DATA]
+[TABLE]
+[COLUMN INDICATION]
+z
+qc
+[END OF COLUMN INDICATION]
+[DATA]
+       0.500        2.000
+      -2.000        2.000
+      -2.001        4.000
+      -5.000        4.000
+      -5.001       12.000
+     -14.000       12.000
+     -14.001        1.000
+     -16.000        1.000
+     -16.001        1.000
+     -17.000        1.000
+     -17.001       25.000
+     -20.000       25.000
+     -20.001       25.000
+     -23.999       25.000
+     -24.000       25.000
+     -30.000       25.000
+[END OF DATA]
+[END OF TABLE]
+[END OF MEASURED DATA]
+[NEXT OF NUMBER OF CPTS]
+[CPTNAME]
+FUGBEN3
+[END OF CPTNAME]
+[PROJECT NAME]
+Unknown
+[END OF PROJECT NAME]
+[PROJECTID]
+
+[END OF PROJECTID]
+[PROJECT NUMBER]
+
+[END OF PROJECT NUMBER]
+[PROJECT SUBNUMBER]
+
+[END OF PROJECT SUBNUMBER]
+[LOCATION NAME]
+Unknown
+[END OF LOCATION NAME]
+[CLIENT NAME]
+Unknown
+[END OF CLIENT NAME]
+[COMPANYID]
+Unknown
+[END OF COMPANYID]
+[FILEDATE]
+2001-11-01
+[END OF FILEDATE]
+[FILEOWNER]
+Unknown
+[END OF FILEOWNER]
+[GEF VERSION]
+Unknown
+[END OF GEF VERSION]
+[PROCEDURECODE]
+Unknown
+[END OF PROCEDURECODE]
+[ObjectID]
+0
+[END OF ObjectID]
+[STARTDATE]
+2001-11-01
+[END OF STARTDATE]
+[STARTTIME]
+
+[END OF STARTTIME]
+[EXCAVATION TYPE]
+1 : Before
+[END OF EXCAVATION TYPE]
+[TIMEORDER TYPE]
+1 : CPT - Excavation - Install
+[END OF TIMEORDER TYPE]
+[CPT TYPE]
+1 : Electronic CPT
+[END OF CPT TYPE]
+[USAGE CONE VALUE]
+0 : Mechanical qc required
+[END OF USAGE CONE VALUE]
+[XY COORDINATE SYSTEM]
+Unknown
+[END OF XY COORDINATE SYSTEM]
+[XWORLD]
+  987654321.000
+[END OF XWORLD]
+[XWORLD ACCURACY]
+987654321.00000
+[END OF XWORLD ACCURACY]
+[YWORLD]
+  987654321.000
+[END OF YWORLD]
+[YWORLD ACCURACY]
+987654321.00000
+[END OF YWORLD ACCURACY]
+[GROUNDLEVEL]
+          0.500
+[END OF GROUNDLEVEL]
+[GROUNDLEVEL ACCURACY]
+987654321.00000
+[END OF GROUNDLEVEL ACCURACY]
+[GROUNDLEVEL WAS MEASURED]
+1 : False
+[END OF GROUNDLEVEL WAS MEASURED]
+[LEVELTEXT]
+
+[END OF LEVELTEXT]
+[PRE EXCAVATION]
+  987654321.000
+[END OF PRE EXCAVATION]
+[WATERLEVEL]
+  987654321.000
+[END OF WATERLEVEL]
+[XLOCAL]
+         32.500
+[END OF XLOCAL]
+[YLOCAL]
+         15.000
+[END OF YLOCAL]
+[LOCAL X CROSSSECTION]
+          0.000
+[END OF LOCAL X CROSSSECTION]
+[INTERPRETATION MODEL]
+0
+[END OF INTERPRETATION MODEL]
+[INTERPRETATION MODEL STRESSDEPENDENT]
+0 : False
+[END OF INTERPRETATION MODEL STRESSDEPENDENT]
+[DEPTHRANGE]
+          0.100
+[END OF DEPTHRANGE]
+[GRAPH MAX PERCENTAGE]
+  10
+[END OF GRAPH MAX PERCENTAGE]
+[GRAPH WIDTH]
+         10.000
+[END OF GRAPH WIDTH]
+[GRAPH LINEWIDTH]
+   1
+[END OF GRAPH LINEWIDTH]
+[GRAPH BORDERWIDTH]
+   1
+[END OF GRAPH BORDERWIDTH]
+[GRAPH BORDERCOLOR]
+              0
+[END OF GRAPH BORDERCOLOR]
+[GRAPH FRICTIONCOLOR]
+       16711680
+[END OF GRAPH FRICTIONCOLOR]
+[GRAPH QCCOLOR]
+            255
+[END OF GRAPH QCCOLOR]
+[GRAPH PLANE COLOR]
+              0
+[END OF GRAPH PLANE COLOR]
+[GRAPH FIT FOR SIZE]
+0 : True
+[END OF GRAPH FIT FOR SIZE]
+[GRAPH FIT SYMBOL FOR SIZE]
+0 : True
+[END OF GRAPH FIT SYMBOL FOR SIZE]
+[GRAPH SYMBOL SIZE]
+          1.000
+[END OF GRAPH SYMBOL SIZE]
+[VOID VALUE DEPTH]
+  987654321.000
+[END OF VOID VALUE DEPTH]
+[VOID VALUE CONE RESISTANCE]
+  987654321.000
+[END OF VOID VALUE CONE RESISTANCE]
+[VOID VALUE PORE WATER PRESSURE]
+987654321.000000
+[END OF VOID VALUE PORE WATER PRESSURE]
+[VOID VALUE SLEEVE FRICTION]
+987654321.000000
+[END OF VOID VALUE SLEEVE FRICTION]
+[VOID VALUE FRICTION NUMBER]
+987654321.000000
+[END OF VOID VALUE FRICTION NUMBER]
+[VOID VALUE EQUIVALENT ELECTRONIC QC]
+987000000.000000
+[END OF VOID VALUE EQUIVALENT ELECTRONIC QC]
+[MEASURED DATA]
+[TABLE]
+[COLUMN INDICATION]
+z
+qc
+[END OF COLUMN INDICATION]
+[DATA]
+       0.500        2.000
+      -2.000        2.000
+      -2.001        4.000
+     -10.000        4.000
+     -10.001       15.000
+     -14.000       15.000
+     -14.001        1.000
+     -16.000        1.000
+     -16.001       30.000
+     -20.000       30.000
+     -20.001       13.000
+     -22.000       13.000
+     -22.001       15.000
+     -23.000       15.000
+     -23.001       25.000
+     -23.999       25.000
+     -24.000       25.000
+     -30.000       25.000
+[END OF DATA]
+[END OF TABLE]
+[END OF MEASURED DATA]
+[END OF NUMBER OF CPTS]
+[END OF CPT LIST]
+
+[PROFILES]
+   3 = number of items
+FUGBEN1
+    0 : Matching CPT = FUGBEN1
+        2.50 : X coordinate [m]
+       15.00 : Y coordinate [m]
+       -1.00 : Phreatic level [m]
+      -24.00 : Pile tip level [m]
+        1.00 : Overconsolidation ratio of bearing layer [m]
+      -17.00 : Top of positive skin friction zone [m]
+       -6.50 : Bottom of negative skin friction zone [m]
+        0.00 : Expected ground level settlement [m]
+        0.00 : Placement depth of foundation element [m]
+           3 : Concentration value according to Frohlich [-]
+        0.00 : Top of tension zone [m]
+           2 : Reduction type of cone resistance = Manual
+       -6.50 : Excavation level [m]
+1 : Excavation width infinite = TRUE
+1 : Excavation length infinite = TRUE
+        0.00 : Distance edge pile to excavation boundary [m]
+    8 : Number of layers
+Layer (1)
+    9 : Material = Material (1)
+       0.500 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (2)
+   10 : Material = Material (2)
+      -2.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (3)
+   11 : Material = Material (3)
+      -6.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (4)
+   11 : Material = Material (3)
+     -14.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (5)
+   12 : Material = Material (4)
+     -16.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (6)
+   13 : Material = Material (5)
+     -17.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (7)
+   13 : Material = Material (5)
+     -20.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (8)
+   13 : Material = Material (5)
+     -23.999 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+FUGBEN2
+    1 : Matching CPT = FUGBEN2
+       16.00 : X coordinate [m]
+        2.00 : Y coordinate [m]
+       -1.00 : Phreatic level [m]
+      -24.00 : Pile tip level [m]
+        1.00 : Overconsolidation ratio of bearing layer [m]
+      -16.00 : Top of positive skin friction zone [m]
+       -6.50 : Bottom of negative skin friction zone [m]
+        0.00 : Expected ground level settlement [m]
+        0.00 : Placement depth of foundation element [m]
+           3 : Concentration value according to Frohlich [-]
+        0.00 : Top of tension zone [m]
+           2 : Reduction type of cone resistance = Manual
+       -6.50 : Excavation level [m]
+1 : Excavation width infinite = TRUE
+1 : Excavation length infinite = TRUE
+        0.00 : Distance edge pile to excavation boundary [m]
+    8 : Number of layers
+Layer (1)
+    9 : Material = Material (1)
+       0.500 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (2)
+   10 : Material = Material (2)
+      -2.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (3)
+   11 : Material = Material (3)
+      -5.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (4)
+   11 : Material = Material (3)
+     -14.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (5)
+   12 : Material = Material (4)
+     -16.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (6)
+   13 : Material = Material (5)
+     -17.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (7)
+   13 : Material = Material (5)
+     -20.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+Layer (8)
+   13 : Material = Material (5)
+     -23.999 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+           0 : Reduction of cone resistance [%]
+FUGBEN3
+    2 : Matching CPT = FUGBEN3
+       32.50 : X coordinate [m]
+       15.00 : Y coordinate [m]
+       -1.00 : Phreatic level [m]
+      -24.00 : Pile tip level [m]
+        1.00 : Overconsolidation ratio of bearing layer [m]
+      -16.00 : Top of positive skin friction zone [m]
+       -6.50 : Bottom of negative skin friction zone [m]
+        0.00 : Expected ground level settlement [m]
+        0.00 : Placement depth of foundation element [m]
+           3 : Concentration value according to Frohlich [-]
+        0.00 : Top of tension zone [m]
+           2 : Reduction type of cone resistance = Manual
+       -6.50 : Excavation level [m]
+1 : Excavation width infinite = TRUE
+1 : Excavation length infinite = TRUE
+        0.00 : Distance edge pile to excavation boundary [m]
+    7 : Number of layers
+Layer (1)
+    9 : Material = Material (1)
+       0.500 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          28 : Reduction of cone resistance [%]
+Layer (2)
+   10 : Material = Material (2)
+      -2.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          28 : Reduction of cone resistance [%]
+Layer (3)
+   11 : Material = Material (3)
+     -10.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          28 : Reduction of cone resistance [%]
+Layer (4)
+   12 : Material = Material (4)
+     -14.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          28 : Reduction of cone resistance [%]
+Layer (5)
+   13 : Material = Material (5)
+     -16.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          24 : Reduction of cone resistance [%]
+Layer (6)
+   13 : Material = Material (5)
+     -20.000 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          19 : Reduction of cone resistance [%]
+Layer (7)
+   13 : Material = Material (5)
+     -23.999 : Top level [m]
+        0.00 : Excess pore pressure at top [kN/m3]
+        0.00 : Excess pore pressure at bottom [kN/m3]
+        1.00 : OCR value [-]
+          17 : Reduction of cone resistance [%]
+[END OF PROFILES]
+[SLOPES]
+    0 = number of items
+[END OF SLOPES]
+[TYPES - BEARING PILES]
+0 : pile type shown in main graph
+    1 = number of items
+Round 550
+11 : Pile type = Continuous flight auger pile
+ 0 : Slip Layer = None
+ 0 : Shape = Round pile
+       0.550 : Diameter [m)
+0 : Factor beta overruled = FALSE
+0 : Factor s overruled = FALSE
+1 : Use Pre 2016 Alpha P Factor = TRUE
+1 : User Defined piletype as Overig = TRUE
+0 : Use manual reduction for qc;III = FALSE
+ 25.00 : Reduction percentage qc;III
+ 1 : User defined name
+[END OF TYPES - BEARING PILES]
+[TYPES - BEARING PILES BELGIAN]
+-1 : pile type shown in main graph
+    0 = number of items
+[END OF TYPES - BEARING PILES BELGIAN]
+[TYPES - TENSION PILES (CUR)]
+-1 : pile type shown in main graph
+    0 = number of items
+[END OF TYPES - TENSION PILES (CUR)]
+[TYPES - SHALLOW FOUNDATIONS]
+    0 = number of items
+[END OF TYPES - SHALLOW FOUNDATIONS]
+[LOADS]
+    0 = number of items
+[END OF LOADS]
+[POSITIONS - BEARING PILES]
+[TABLE]
+[COLUMN INDICATION]
+index
+X
+Y
+PileHeadLevel
+Surcharge
+LimitStateStrGeo
+LimitStateService
+PileName
+[END OF COLUMN INDICATION]
+[DATA]
+     1      0.00      0.00      0.50      0.00   1800.00   1400.00 'Pos (1)'
+     2      0.00      7.90      0.50      0.00   1800.00   1400.00 'Pos (2)'
+     3      0.00     10.10      0.50      0.00   1800.00   1400.00 'Pos (3)'
+     4      0.00     18.00      0.50      0.00   1800.00   1400.00 'Pos (4)'
+     5      6.70      0.00      0.50      0.00   1800.00   1400.00 'Pos (5)'
+     6      6.70      7.90      0.50      0.00   1800.00   1400.00 'Pos (6)'
+     7      6.70     10.10      0.50      0.00   1800.00   1400.00 'Pos (7)'
+     8      6.70     18.00      0.50      0.00   1800.00   1400.00 'Pos (8)'
+     9      8.90      0.00      0.50      0.00   1800.00   1400.00 'Pos (9)'
+    10      8.90      7.90      0.50      0.00   1800.00   1400.00 'Pos (10)'
+    11      8.90     10.10      0.50      0.00   1800.00   1400.00 'Pos (11)'
+    12      8.90     18.00      0.50      0.00   1800.00   1400.00 'Pos (12)'
+    13     14.50      0.00      0.50      0.00   1800.00   1400.00 'Pos (13)'
+    14     14.50      7.90      0.50      0.00   1800.00   1400.00 'Pos (14)'
+    15     14.50     10.10      0.50      0.00   1800.00   1400.00 'Pos (15)'
+    16     14.50     18.00      0.50      0.00   1800.00   1400.00 'Pos (16)'
+    17     16.70      0.00      0.50      0.00   1800.00   1400.00 'Pos (17)'
+    18     16.70      7.90      0.50      0.00   1800.00   1400.00 'Pos (18)'
+    19     16.70     10.10      0.50      0.00   1800.00   1400.00 'Pos (19)'
+    20     16.70     18.00      0.50      0.00   1800.00   1400.00 'Pos (20)'
+    21     22.30      0.00      0.50      0.00   1800.00   1400.00 'Pos (21)'
+    22     22.30      7.90      0.50      0.00   1800.00   1400.00 'Pos (22)'
+    23     22.30     10.10      0.50      0.00   1800.00   1400.00 'Pos (23)'
+    24     22.30     18.00      0.50      0.00   1800.00   1400.00 'Pos (24)'
+    25     24.50      0.00      0.50      0.00   1800.00   1400.00 'Pos (25)'
+    26     24.50      7.90      0.50      0.00   1800.00   1400.00 'Pos (26)'
+    27     24.50     10.10      0.50      0.00   1800.00   1400.00 'Pos (27)'
+    28     24.50     18.00      0.50      0.00   1800.00   1400.00 'Pos (28)'
+    29     30.10      0.00      0.50      0.00   1800.00   1400.00 'Pos (29)'
+    30     30.10      7.90      0.50      0.00   1800.00   1400.00 'Pos (30)'
+    31     30.10     10.10      0.50      0.00   1800.00   1400.00 'Pos (31)'
+    32     30.10     18.00      0.50      0.00   1800.00   1400.00 'Pos (32)'
+    33     32.30      0.00      0.50      0.00   1800.00   1400.00 'Pos (33)'
+    34     32.30      7.90      0.50      0.00   1800.00   1400.00 'Pos (34)'
+    35     32.30     10.10      0.50      0.00   1800.00   1400.00 'Pos (35)'
+    36     32.30     18.00      0.50      0.00   1800.00   1400.00 'Pos (36)'
+    37     39.10      0.00      0.50      0.00   1800.00   1400.00 'Pos (37)'
+    38     39.10      7.90      0.50      0.00   1800.00   1400.00 'Pos (38)'
+    39     39.10     10.10      0.50      0.00   1800.00   1400.00 'Pos (39)'
+    40     39.10     18.00      0.50      0.00   1800.00   1400.00 'Pos (40)'
+[END OF DATA]
+[END OF TABLE]
+[END OF POSITIONS - BEARING PILES]
+[POSITIONS - BEARING PILES BELGIAN]
+[TABLE]
+[COLUMN INDICATION]
+index
+X
+Y
+PileHeadLevel
+Surcharge
+LimitStateStrGeo
+LimitStateService
+PileName
+[END OF COLUMN INDICATION]
+[DATA]
+[END OF DATA]
+[END OF TABLE]
+[END OF POSITIONS - BEARING PILES BELGIAN]
+[POSITIONS - TENSION PILES (CUR)]
+[TABLE]
+[COLUMN INDICATION]
+index
+X
+Y
+PileHeadLevel
+UseAlternatingLoads
+MaxForce
+MinForce
+LimitStateStrGeo
+LimitStateService
+PileName
+[END OF COLUMN INDICATION]
+[DATA]
+[END OF DATA]
+[END OF TABLE]
+[END OF POSITIONS - TENSION PILES (CUR)]
+[POSITIONS - SHALLOW FOUNDATIONS]
+[TABLE]
+[COLUMN INDICATION]
+index
+X
+Y
+Angle
+FoundationType
+Load
+Profile
+Slope
+PileName
+[END OF COLUMN INDICATION]
+[DATA]
+[END OF DATA]
+[END OF TABLE]
+[END OF POSITIONS - SHALLOW FOUNDATIONS]
+[CALCULATION OPTIONS]
+0 : Superstructure rigidity = Non-rigid
+       0.066 : Max. allowed settlement [m]; lim. state STR/GEO
+    0.010000 : Max. allowed rel. rotation [m/m]; lim. state STR/GEO
+       0.022 : Max. allowed settlement [m]; serv. lim. state
+    0.003333 : Max. allowed rel. rotation [m/m]; serv. lim. state
+0 : Factor xi3 NEN overruled = FALSE
+0 : Factor xi4 NEN overruled = FALSE
+0 : Gamma b NEN overruled = FALSE
+0 : Gamma fnk NEN overruled = FALSE
+0 : Area overruled = FALSE
+0 : Suppress qcIII reduction = FALSE
+0 : Overrule excavation = FALSE
+1 : Use pile group = TRUE
+1 : Write intermediate results = TRUE
+0 : Use interaction model = FALSE
+0 : Is gamma;gamma overruled (LS EQU/STR/GEO) = FALSE
+        1.00 : Factor gamma;gamma (LS EQU/STR/GEO) user defined
+0 : Is gamma;coh overruled = FALSE
+        1.00 : Factor gamma;coh user defined
+0 : Is gamma;phi overruled = FALSE
+        1.00 : Factor gamma;phi user defined
+0 : Is gamma;fundr overruled = FALSE
+        1.00 : Factor gamma;fundr user defined
+0 : Is gamma;gamma (SLS) overruled = FALSE
+        1.00 : Factor gamma;gamma (SLS) user defined
+0 : Is gamma;Cc overruled = FALSE
+        1.00 : Factor gamma;Cc user defined
+0 : Is gamma;Ca overruled = FALSE
+        1.00 : Factor gamma;Ca user defined
+0 : Keep length constant when optimizing dimensions = FALSE
+0 : Use the 5% limit instead of the 20% limit to determine the inclination = FALSE
+0.8330 : LoadFactor between limitstate 1 and limitstate 2 for the determination of maximum vertical load option
+        9.81 : Unit weight water [kN/m3]
+0 : Use compaction = FALSE
+0 : Gamma var overruled = FALSE
+        1.00 : Factor gamma var user defined
+0 : Gamma st overruled = FALSE
+        1.00 : Factor gamma st user defined
+0 : Gamma gamma overruled = FALSE
+        1.00 : Factor gamma_gamma user defined
+        0.00 : Surcharge [kN/m2]
+1 : Use Piezometric levels = TRUE
+0 : Use Almere rules = FALSE
+0 : Use Extra Almere rules = FALSE
+0 : Xi3 BPB overruled = FALSE
+0 : Xi4 BPB overruled = FALSE
+0 : Gamma rd overruled = FALSE
+        1.00 : Factor xi3 user defined
+        1.00 : Factor xi4 user defined
+        1.00 : Factor Gamma rd user defined
+0 : Gamma b BPB overruled = FALSE
+        1.00 : Factor Gamma b user defined
+0 : Gamma s BPB overruled = FALSE
+        1.00 : Factor Gamma s user defined
+ 0 : Suppress all qc reduction (BP) = FALSE
+1 : Eea;gem overruled = TRUE
+100000.00 : Eea;gem user defined
+0 : Use Quality Assurance = FALSE
+     1000.00 : Area covered per CPT
+0 : Gamma s for NEN overruled = FALSE
+        1.00 : Factor Gamma s for NEN user defined
+0 : Factor Beta (BPB) overruled = FALSE
+        0.00 : Factor Beta (BPB) user defined
+[END OF CALCULATION OPTIONS]
+[CALCULATIONTYPE]
+ 1 : Main calculationtype
+ 1 : Sub calculationtype
+[END OF CALCULATIONTYPE]
+[PRELIMINARY DESIGN]
+  -15.00 : Trajectory begin [m]
+  -24.00 : Trajectory end [m]
+    1.00 : Trajectory interval [m]
+3 : Number of Profiles selected for calculation
+0 : FUGBEN1
+1 : FUGBEN2
+2 : FUGBEN3
+    0 : Pile type = Round 550
+  -27.00 : CPT Test Level [m]
+[END OF PRELIMINARY DESIGN]
+[DE BEER]
+  0.0360 : Cone diameter [m]
+    1.00 : Installation factor [-]
+   1.000 : Scale factor [-]
+    0.00 : Trajectory begin [m]
+    0.00 : Trajectory end [m]
+    1.00 : Trajectory interval [m]
+0 : Number of Profiles selected for calculation
+   -1 : No pile type selected
+0 : Lambda overruled = FALSE
+[END OF DE BEER]
+[LOCATION MAP]
+
+       0.000
+       0.000
+       0.000
+       0.000
+[END OF LOCATION MAP]
+
+[END OF INPUT DATA]
+[DUMPFILE OUTPUT]
+[RESULTS AT CPT TEST LEVEL]
+     1320.94  = Max Delta Fr;max;i
+     4325.71  = Average Fr;max;i
+     0.15644  = VariatieCoef Fr;max;i
+0 = Can Table 10 (ksi3/ksi4) be used in a valid way?
+   -1  = PileGroupIndex With Largest Variatie Coef (-1 means not relevant)
+[END OF RESULTS AT CPT TEST LEVEL]
+[VERIFICATION RESULTS]
+[GLOBAL NEN RESULTS]
+0.063203 = wd1B
+0.009173 = Betad1B
+0.024783 = w2d
+0.003441 = Betad2
+[END OF GLOBAL NEN RESULTS]
+[DEMANDS NEN-EN]
+0.066 = wreq1b
+0.022 = wreq2
+0 = Stiffness
+0.010000 = Betadreq1B
+1 = GT = 1B
+0.003333 = Betadreq2
+[END OF DEMANDS NEN-EN]
+[NEN PILE RESULTS]
+1  pile count
+3  cpt count
+40  total number of piles in foundation plan
+[CPTS]
+[TABLE]
+[COLUMN INDICATION]
+index
+PPN
+HNK
+HPK
+XCoordinate
+YCoordinate
+CptName
+[END OF COLUMN INDICATION]
+[DATA]
+     1    -24.00     -6.50    -17.00      2.50     15.00 'FUGBEN1'
+     2    -24.00     -6.50    -16.00     16.00      2.00 'FUGBEN2'
+     3    -24.00     -6.50    -16.00     32.50     15.00 'FUGBEN3'
+[END OF DATA]
+[END OF TABLE]
+[END OF CPTS]
+ 1.00 = Pile point shape factor beta
+ 1.00 = Factor influence crosssection of pile point s
+  1800.000 = Max load on foundation Fs_rep
+  2105.015 = Max bearing capacity foundation Fr;fund;max;d
+6 = Critical pile nr for settlement in GT1B
+3 = Critical CPT nr for settlement in GT1B
+6 = Critical pile nr for settlement in GT2
+3 = Critical CPT nr for settlement in GT2
+4 = First pile nr for critical rotation in GT1B
+7 = Second pile nr for critical rotation in GT1B
+4 = First pile nr for critical rotation in GT2
+7 = Second pile nr for critical rotation in GT2
+  2100.00000 = Fs_tot_d_1B
+  1385.90051 = Fr_max_punt_d_1B
+   719.11439 = Fr_max_schacht_d_1B
+  1080.90160 = FR_punt_d_1B
+  0.045820 = spunt_d_1B
+     0.00868 = sel_d1B
+     0.00871 = s2_d1B
+     0.00000 = sneg1B
+  1400.00000 = Fs_tot_d_2
+  1663.08061 = Fr_max_punt_d_2
+   862.93727 = Fr_max_schacht_d_2
+   677.32738 = FR_punt_d_2
+     0.01140 = spunt_d_2
+     0.00661 = sel_d2
+     0.00677 = s2_d2
+     0.00000 = sneg2
+[MAX SHAFT AND POINT]
+[TABLE]
+[COLUMN INDICATION]
+CptIndex
+Grenstoestand
+MaxShaft
+MaxPoint
+[END OF COLUMN INDICATION]
+[DATA]
+     1 GT1B   697.777  2253.992
+     2 GT1B   719.921  1644.805
+     3 GT1B   719.114  1385.901
+     1 GT2    837.332  2704.790
+     2 GT2    863.905  1973.766
+     3 GT2    862.937  1663.081
+[END OF DATA]
+[END OF TABLE]
+[END OF MAX SHAFT AND POINT]
+    7.576 = Sigma_max_schacht_1B
+    5.893 = Sigma_max_schacht_2
+    0.000 = Min value Fs;nk;d
+    0.000 = Max value Fs;nk;d
+[NEN AVERAGE PILE FACTORS]
+[TABLE]
+[COLUMN INDICATION]
+CptIndex
+AlphaSGemSg
+AlphaSGemClp
+AlphaPGem
+CptName
+[END OF COLUMN INDICATION]
+[DATA]
+  1  0.0060  0.0000  0.8000 'FUGBEN1'
+  2  0.0060  0.0200  0.8000 'FUGBEN2'
+  3  0.0060  0.0000  0.8000 'FUGBEN3'
+[END OF DATA]
+[END OF TABLE]
+[END OF NEN AVERAGE PILE FACTORS]
+
+[CALCULATION PARAMETERS BEARING PILES EC 7]
+Ksi3Used = 1.3000
+Ksi4Used = 1.3000
+GammaBUsed = 1.2000
+GammaSUsed = 1.2000
+IsKsi3Used = 0
+[END OF CALCULATION PARAMETERS BEARING PILES EC 7]
+
+[END OF NEN PILE RESULTS]
+[END OF VERIFICATION RESULTS]
+[FOOTNOTE WARNINGS]
+[PILE TYPE]
+PileTypeNumber = 1
+WarningFootNoteDTable7c = 0
+[END OF PILE TYPE]
+[END OF FOOTNOTE WARNINGS]
+[END OF DUMPFILE OUTPUT]
+[CALCULATION WARNINGS]
+0 = IsWarningF1Given (1=true, 0=false)
+0 = F1GreaterThan1Found (1=true, 0=false)
+0 = IsWarningNENDepthGiven (1=true, 0=false)
+0 = IsWarningSFFundWidthGiven (1=true, 0=false)
+0 = IsWarningSFFundLengthGiven (1=true, 0=false)
+0 = IsWarningSFCudGiven (1=true, 0=false)
+0 = IsWarningSFDeltaPhiGiven (1=true, 0=false)
+ 12 = IsWarningNENSpacingGiven (> 0 warning, 0= no warning)
+0 = IsWarningSFSlopeNotRelevantGiven (1=true, 0=false)
+0 = IsWarningNENSFPlacementDepthTooDeep (1=true, 0=false)
+0 = IsWarningNENSFPlacementDepthTooShallow (1=true, 0=false)
+[END OF CALCULATION WARNINGS]
+[END OF DUMPFILE]

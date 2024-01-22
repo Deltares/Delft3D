@@ -101,7 +101,9 @@ contains
           allocate(bc%columns(bc%numcols))
        endif
     case (BC_FTYPE_NETCDF)
-       if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, bc%dimvector)) then
+       allocate(bc%ncvarndx(1))
+       if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
+                              bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
        endif
        if (bc%numlay<=1) then
@@ -111,16 +113,12 @@ contains
        endif
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
-       bc%timeunit = bc%ncptr%timeunit
-       bc%timeint = BC_TIMEINT_LIN   
-       bc%quantity%name = quantityName
-       bc%quantity%missing = bc%ncptr%fillvalues(bc%ncvarndx)
-       bc%quantity%factor = bc%ncptr%scales(bc%ncvarndx)
-       bc%quantity%offset = bc%ncptr%offsets(bc%ncvarndx)
-       !  Set vector of dimensions for the found variable to 1
-       ! For the time being we only allow scalars to be read from netCDF variables
-       ! TODO: Introduce the vector-attribute (string) similar to the bc-format, composing a vector from scalar variables
-       bc%quantity%vectormax = 1
+       bc%timeunit         = bc%ncptr%timeunit
+       bc%timeint          = BC_TIMEINT_LIN   
+       bc%quantity%name    = quantityName
+       bc%quantity%missing = bc%ncptr%fillvalues(bc%ncvarndx(1))
+       bc%quantity%factor  = bc%ncptr%scales(bc%ncvarndx(1))
+       bc%quantity%offset  = bc%ncptr%offsets(bc%ncvarndx(1))
     case default
        call setECMessage("Forcing file ("//trim(bc%fname)//") should either be of type .nc (netcdf timeseries file) or .bc (ascii BC-file).")
        return
@@ -885,7 +883,8 @@ contains
           call setECMessage("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
-       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector,BCPtr%nctimndx,ec_timesteps,values)) then
+       if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer)) then
           call setECMessage("Read failure in file: "//trim(bcPtr%fname))
           return
        else

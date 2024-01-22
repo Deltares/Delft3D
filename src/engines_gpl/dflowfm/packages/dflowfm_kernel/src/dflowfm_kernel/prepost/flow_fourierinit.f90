@@ -32,10 +32,11 @@
 
 !> Fourier Analysis, copied from Delft3D:
 !! Opens and reads .fou file (md_foufile, specified in the mdu)
-!! and prepares the gd_fourier structure
+!! and prepares the fourier structure
 subroutine flow_fourierinit()
 use precision, only: fp
 use m_fourier_analysis
+use m_update_fourier, only: fourier_save_dry_wet_mask
 use m_transport, only: NUMCONST, ISALT, ITEMP
 use unstruc_model, only: md_foufile, md_tunit, getoutputdir, md_fou_step
 use unstruc_files, only : defaultFilename
@@ -67,6 +68,10 @@ select case (md_fou_step)
 end select
 
 call reafou(minp, md_foufile, kmxd, NUMCONST, ISALT, ITEMP, tstart_user, tstop_user, ti_fou, success)
+
+if (fourierWithMask()) then
+   call fourier_save_dry_wet_mask()
+endif
 
 if (network%loaded) then
    if (fourierWithFb() .or. fourierWithWdog() .or. fourierWithVog()) then

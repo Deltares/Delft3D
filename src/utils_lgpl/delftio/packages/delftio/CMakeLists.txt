@@ -1,17 +1,13 @@
 # Set path for include files 
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(delftio_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-include_directories(${delftio_include_path})
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+
+include_directories(${delftio_include_path}
+                    ${version_include_dir})
 
 # Set include path to have it accessible for other components
 set(public_include_path ${delftio_include_path})
-
-# Set version file variables
-set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/include/version_number.ini)
-set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/diof90/delftio_version.F90)
-
-# Generate the F90 version file
-generate_version_files(${fortran_version_file} ${ini_version_file})
 
 # Set directory which contains all source files
 set(src_path src)
@@ -39,12 +35,6 @@ oss_include_libraries(${library_name} oss_dependencies)
 if(UNIX)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
-
-# Define prebuild events
-prebuild_version_number(${library_name} ${fortran_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file}
-                                        ON)
 
 # Set preprocessor definitions
 if(WIN32)

@@ -138,9 +138,6 @@ subroutine tricom_step(olv_handle, gdp)
     integer                             , pointer :: itcoml
     integer                             , pointer :: itdrof
     integer                             , pointer :: itdroi
-    integer                             , pointer :: itnflf
-    integer                             , pointer :: itnfli
-    integer                             , pointer :: itnfll
     integer                             , pointer :: itrsti
     integer                             , pointer :: iphisf
     integer                             , pointer :: iphisi
@@ -431,9 +428,6 @@ subroutine tricom_step(olv_handle, gdp)
     itcoml              => gdp%gdinttim%itcoml
     itdrof              => gdp%gdinttim%itdrof
     itdroi              => gdp%gdinttim%itdroi
-    itnflf              => gdp%gdinttim%itnflf
-    itnfli              => gdp%gdinttim%itnfli
-    itnfll              => gdp%gdinttim%itnfll
     itrsti              => gdp%gdinttim%itrsti
     iphisf              => gdp%gdinttim%iphisf
     iphisi              => gdp%gdinttim%iphisi

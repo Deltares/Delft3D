@@ -29,8 +29,11 @@ case $key in
     ;;
     --)
     dfm_volume_tooloptions=$*
-    shift $#
-    break       # exit loop, all remaining options to dflowfm executable
+    break	# exit loop, all remaining options to dflowfm executable
+    ;;
+    *)
+    dfm_volume_tooloptions="$key $*"
+    break	# exit loop, $key+all remaining options to dflowfm executable
     ;;
 esac
 done
@@ -41,7 +44,7 @@ export D3D_HOME=$scriptdir/..
 export LD_LIBRARY_PATH=$D3D_HOME/lib:$LD_LIBRARY_PATH
 
 ##$SCRIPT_DIR/../dflowfm "$@"
-echo $D3D_HOME/bin/dfm_volume_tool --verbose $dfm_volume_tooloptions "$@"
-#echo $dfm_volume_tooloptions
-$D3D_HOME/bin/dfm_volume_tool --verbose $dfm_volume_tooloptions "$@"
+echo $D3D_HOME/bin/dfm_volume_tool $dfm_volume_tooloptions
+echo $dfm_volume_tooloptions
+$D3D_HOME/bin/dfm_volume_tool $dfm_volume_tooloptions
 

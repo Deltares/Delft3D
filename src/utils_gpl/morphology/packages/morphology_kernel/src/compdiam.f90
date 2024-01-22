@@ -1,7 +1,7 @@
-subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
-                  & logsedsig ,nseddia   ,logseddia ,nmmax     ,nmlb      , &
-                  & nmub      ,xx        ,nxx       ,sedd50fld ,dm        , &
-                  & dg        ,dxx       ,dgsd      )
+subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
+                  & logsedsig, nseddia, logseddia, nmmax, nmlb, &
+                  & nmub, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
+                  & sedd50fld, dm, dg, dxx, dgsd)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -28,8 +28,8 @@ subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id: compdiam.f90 878 2011-10-07 12:58:46Z mourits $
-!  : https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/compdiam.f90 $
+!
+!
 !!--description-----------------------------------------------------------------
 !
 ! Function: Determines the characteristic diameters of the sediment mixtures
@@ -61,24 +61,26 @@ subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
 !
 ! Arguments
 !
-    integer                                             , intent(in)  :: lsedtot   ! number of sediment fractions
-    integer                                             , intent(in)  :: nmmax     ! last space index to be processed
-    integer                                             , intent(in)  :: nmlb      ! start space index
-    integer                                             , intent(in)  :: nmub      ! end space index
-    integer                                             , intent(in)  :: nxx       ! number of diameters to be determined
-    integer , dimension(lsedtot)                        , intent(in)  :: nseddia   ! number of sediment diameters per fraction
-    integer , dimension(lsedtot)                        , intent(in)  :: sedtyp    ! sediment type: 0=total/1=noncoh/2=coh
-    real(fp), dimension(nmlb:nmub, lsedtot)             , intent(in)  :: frac      ! fractional composition of sediment
-    real(fp), dimension(lsedtot)                        , intent(in)  :: seddm     ! mean diameter of sediment fraction
-    real(fp), dimension(lsedtot)                        , intent(in)  :: sedd50    ! D50 of sediment fraction
-    real(fp), dimension(lsedtot)                        , intent(in)  :: logsedsig ! std deviation of sediment diameter
-    real(fp), dimension(nmlb:nmub)                      , intent(in)  :: sedd50fld ! D50 field (in case of 1 sediment fraction)
-    real(fp), dimension(nxx)                            , intent(in)  :: xx        ! percentile: the xx of Dxx, i.e. 0.5 for D50
-    real(fp), dimension(2,101,lsedtot)                  , intent(in)  :: logseddia ! percentile and log-diameter per fraction
-    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dg        ! geometric mean diameter field
-    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dm        ! arithmetic mean diameter field
-    real(fp), dimension(nmlb:nmub, nxx)                 , intent(out) :: dxx       ! diameters corresponding to percentiles
-    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dgsd      ! geometric standard deviation
+    integer                                             , intent(in)  :: lsedtot        ! number of sediment fractions
+    integer                                             , intent(in)  :: nmmax          ! last space index to be processed
+    integer                                             , intent(in)  :: nmlb           ! start space index
+    integer                                             , intent(in)  :: nmub           ! end space index
+    integer                                             , intent(in)  :: nxx            ! number of diameters to be determined
+    integer                                             , intent(in)  :: max_mud_sedtyp ! largest sediment type associated with mud
+    integer                                             , intent(in)  :: min_dxx_sedtyp ! smallest sediment type included in characteristic diameter computation
+    integer , dimension(lsedtot)                        , intent(in)  :: nseddia        ! number of sediment diameters per fraction
+    integer , dimension(lsedtot)                        , intent(in)  :: sedtyp         ! sediment type: 0=total/1=noncoh/2=coh
+    real(fp), dimension(nmlb:nmub, lsedtot)             , intent(in)  :: frac           ! fractional composition of sediment
+    real(fp), dimension(lsedtot)                        , intent(in)  :: seddm          ! mean diameter of sediment fraction
+    real(fp), dimension(lsedtot)                        , intent(in)  :: sedd50         ! D50 of sediment fraction
+    real(fp), dimension(lsedtot)                        , intent(in)  :: logsedsig      ! std deviation of sediment diameter
+    real(fp), dimension(nmlb:nmub)                      , intent(in)  :: sedd50fld      ! D50 field (in case of 1 sediment fraction)
+    real(fp), dimension(nxx)                            , intent(in)  :: xx             ! percentile: the xx of Dxx, i.e. 0.5 for D50
+    real(fp), dimension(2,101,lsedtot)                  , intent(in)  :: logseddia      ! percentile and log-diameter per fraction
+    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dg             ! geometric mean diameter field
+    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dm             ! arithmetic mean diameter field
+    real(fp), dimension(nmlb:nmub, nxx)                 , intent(out) :: dxx            ! diameters corresponding to percentiles
+    real(fp), dimension(nmlb:nmub)                      , intent(out) :: dgsd           ! geometric standard deviation
 !
 ! Local variables
 !
@@ -108,7 +110,7 @@ subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
 !
 !! executable statements -------------------------------------------------------
 !
-    if (lsedtot==1 .and. seddm(1)<0.0_fp .and. sedtyp(1) /= SEDTYP_COHESIVE) then
+    if (lsedtot==1 .and. seddm(1)<0.0_fp) then
        !
        ! Handle case with spatially varying sediment diameter
        ! separately using the same approximation of the lognormal
@@ -163,13 +165,13 @@ subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
           dgsd(nm)   = 0.0_fp
           !
           do l = 1, lsedtot
-             if (sedtyp(l) /= SEDTYP_COHESIVE) then
+             if (sedtyp(l) >= min_dxx_sedtyp) then
                 fracnonmud = fracnonmud + frac(nm,l)
              endif
           enddo
           if (fracnonmud > 0.0_fp) then
              do l = 1, lsedtot
-                if (sedtyp(l) /= SEDTYP_COHESIVE) then
+                if (sedtyp(l) >= min_dxx_sedtyp) then
                    dm(nm)     = dm(nm) + (frac(nm,l) / fracnonmud) * seddm(l)
                    dg(nm)     = dg(nm) * (sedd50(l)**(frac(nm,l)/fracnonmud))
                 endif
@@ -182,7 +184,7 @@ subroutine compdiam(frac      ,seddm     ,sedd50    ,sedtyp    ,lsedtot   , &
              ! separate loop required as dg needs to be calculated first
              !
              do l = 1, lsedtot
-                if ((sedtyp(l) /= SEDTYP_COHESIVE) .and. (comparereal(frac(nm,l),0.0_fp) == 1)) then
+                if ((sedtyp(l) >= min_dxx_sedtyp) .and. (comparereal(frac(nm,l),0.0_fp) == 1)) then
                    dgsd(nm) = dgsd(nm) + (frac(nm,l)/fracnonmud)*(log(sedd50(l))-log(dg(nm)))**2
                 endif
              enddo

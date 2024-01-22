@@ -425,7 +425,6 @@ type gd_r_i_ch
        integer(pntrsize) :: kadu       !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kadv       !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcs        !  Description and declaration in esm_alloc_int.f90
-       integer(pntrsize) :: kcs_nf     !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcu        !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kcv        !  Description and declaration in esm_alloc_int.f90
        integer(pntrsize) :: kfs        !  Description and declaration in esm_alloc_int.f90

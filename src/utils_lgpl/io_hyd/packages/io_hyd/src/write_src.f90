@@ -33,6 +33,8 @@
 
       ! global declarations
 
+      use m_srstop
+      use m_monsys
       use hydmod                   ! module contains everything for the hydrodynamics
       use time_module, only: sec2ddhhmmss
       implicit none

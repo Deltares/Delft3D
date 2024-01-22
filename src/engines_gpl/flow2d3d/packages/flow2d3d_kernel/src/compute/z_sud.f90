@@ -78,21 +78,30 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp)               , pointer :: eps
-    integer                , pointer :: lundia
-    integer                , pointer :: ntstep
-    real(fp)               , pointer :: dryflc
-    real(fp)               , pointer :: hdt
-    integer                , pointer :: iter1
-    real(fp)               , pointer :: rhow
-    real(fp)               , pointer :: ag
-    integer                , pointer :: iro
-    integer                , pointer :: maseva
-    logical                , pointer :: wind
-    logical                , pointer :: culvert
-    logical                , pointer :: zmodel
-    logical                , pointer :: wavcmp
-    logical                , pointer :: bubble
+    real(fp)                   , pointer :: eps
+    integer                    , pointer :: lundia
+    integer                    , pointer :: ntstep
+    real(fp)                   , pointer :: dryflc
+    real(fp)                   , pointer :: hdt
+    integer                    , pointer :: iter1
+    real(fp)                   , pointer :: rhow
+    real(fp)                   , pointer :: ag
+    integer                    , pointer :: iro
+    integer                    , pointer :: maseva
+    logical                    , pointer :: wind
+    logical                    , pointer :: culvert
+    logical                    , pointer :: nfl
+    logical                    , pointer :: zmodel
+    logical                    , pointer :: wavcmp
+    logical                    , pointer :: bubble
+    integer                    , pointer :: no_dis
+    integer , dimension(:)     , pointer :: m_intake
+    integer , dimension(:)     , pointer :: n_intake
+    integer , dimension(:)     , pointer :: k_intake
+    real(fp), dimension(:)     , pointer :: q_diff
+    real(fp), dimension(:,:,:) , pointer :: disnf
+    real(fp), dimension(:,:,:) , pointer :: disnf_intake
+
     include 'flow_steps_f.inc'
 !
 ! Global variables
@@ -237,6 +246,7 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
     integer       :: i
     integer       :: icxy
     integer       :: icol
+    integer       :: idis
     integer       :: ierror
     integer       :: intdir
     integer       :: iter
@@ -274,8 +284,16 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
     eps        => gdp%gdconst%eps
     lundia     => gdp%gdinout%lundia
     ntstep     => gdp%gdinttim%ntstep
+    no_dis     => gdp%gdnfl%no_dis
+    disnf      => gdp%gdnfl%disnf
+    disnf_intake=> gdp%gdnfl%disnf_intake
+    m_intake   => gdp%gdnfl%m_intake
+    n_intake   => gdp%gdnfl%n_intake
+    k_intake   => gdp%gdnfl%k_intake
+    q_diff     => gdp%gdnfl%q_diff
     wind       => gdp%gdprocs%wind
     culvert    => gdp%gdprocs%culvert
+    nfl        => gdp%gdprocs%nfl
     zmodel     => gdp%gdprocs%zmodel
     wavcmp     => gdp%gdprocs%wavcmp
     bubble     => gdp%gdprocs%bubble
@@ -476,6 +494,44 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
        endif
     enddo
     !
+    ! ADDITION OF DISCHARGES from near field model
+    !
+    if (nfl) then
+       do nm = 1, nmmax
+          do k = kfsmn0(nm), kfsmx0(nm)
+             do idis = 1, no_dis
+                d0k(nm,k) = d0k(nm,k) + (disnf(nm,k,idis)+disnf_intake(nm,k,idis))/gsqs(nm)
+             enddo
+          enddo
+       enddo
+       !
+       ! Addition of the intake from the near field model
+       !
+       ! (Op verzoek van Robin uitgezet, onttrekkingen dus via normaal (ontkoppeld) debietpunt
+       !
+!      do idis = 1, no_dis
+!         if (m_intake(idis) > 0) then
+!            call n_and_m_to_nm(n_intake(idis), m_intake(idis), nm, gdp)
+!            kenm = min(1, kfu(nm) + kfu(nm - icx) + kfv(nm) + kfv(nm - icy))
+!            if (kenm/=0 .or. -q_diff(idis)>=0.0) then
+!               if (k_intake(idis)/=0) then
+!                  d0k(nm, k_intake(idis)) = d0k(nm, k_intake(idis)) - q_diff(idis)
+!               else
+!                  do kk = 1, kmax
+!                     d0k(nm, kk) = d0k(nm, kk) - q_diff(idis)*thick(kk)
+!                  enddo
+!               endif
+                !
+                ! Generate warning if trying to subtract from dry cell
+                !
+ !           else
+ !              write (errtxt, '(i0,i3)') nst, i
+ !              call prterr(lundia    ,'S208'    ,trim(errtxt))
+ !           endif
+ !        endif
+ !     enddo
+    endif
+    !
     ! Initialise arrays a - dd for all (nm)
     !
     a  = 0.0_fp
@@ -601,7 +657,7 @@ subroutine z_sud(j         ,nmmaxj    ,nmmax     ,kmax      ,mmax      , &
           ! Single domain case without domain decomposition
           ! The next piece of code in this IF-statement works for both serial and parallel runs
           ! In case of parallel runs twisted factorization technique is employed which is
-          ! perfectly parallizable for two processors only. In case of more than 2 processors,
+          ! perfectly parallellizable for two processors only. In case of more than 2 processors,
           ! this technique is combined with the block Jacobi approach at coupling points between
           ! pairs of "twisted" processors. Improvement in convergence is achieved by means of
           ! alternating the pairs of twisted processors at each iteration.

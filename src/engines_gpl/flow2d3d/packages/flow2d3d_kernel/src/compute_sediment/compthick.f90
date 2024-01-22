@@ -112,8 +112,8 @@ subroutine compthick(dps, s1, nmmax, gdp)
        ! Determine new exchange layer thickness
        !
        select case(telform)
-       case(1)
-       case default
+          case(1)
+          case default
        endselect
     case default
        !

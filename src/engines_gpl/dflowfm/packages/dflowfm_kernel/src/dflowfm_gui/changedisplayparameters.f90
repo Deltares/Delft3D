@@ -37,7 +37,7 @@
    use m_sediment
    use m_flow, only : kplotfrombedorsurface, kplotordepthaveraged
 
-   use unstruc_version_module, only : unstruc_company, unstruc_program
+   use dflowfm_version_module, only : company, product_name
    use unstruc_opengl,         only : jaOpenGL
 
    implicit none
@@ -207,7 +207,7 @@
    CALL IWinAction('FPC')
    CALL IWinOpen(IXP,IYP,IW,1)
    CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-   CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program)//' DISPLAY PARAMETER FORM')
+   CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name)//' DISPLAY PARAMETER FORM')
    CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !  Explain keyfunctions in bottom window

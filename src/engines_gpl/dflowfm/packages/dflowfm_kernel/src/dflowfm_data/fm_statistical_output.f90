@@ -44,6 +44,134 @@ private
 
    contains
    
+   !> Initialize (allocate) observation crosssection data array obscrs_data.
+   !! This subroutine should be called only once, such that afterward individual calls
+   !! to add_stat_output_items can point to obscrs_data(:,i) slices in this array.
+   !! Structure of data array:
+   !! * obscrs_data(1:ncrs, 1:5): basic flow quantities
+   !! * obscrs_data(1:ncrs, 5+(1:2*NUMCONST_MDU)): constituent transport quantities
+   !! * obscrs_data(1:ncrs, 5+2*NUMCONST_MDU+(1:2 + stmpar%lsedtot)): sediment transport quantities
+   !! Also, the output config items for sediment and other constituents are also registered
+   !! (only now, with the model fully loaded, because earlier the constituents were not yet known).
+   subroutine init_obscrs_data_and_config(num_const_items, output_config, idx_const)
+   use m_monitoring_crosssections, only: ncrs
+   use m_ug_nc_attribute
+   use m_transport, only: NUMCONST_MDU, const_names, isedn, ised1, const_units
+   use m_sediment, only: stmpar, jased
+   use messagehandling, only : Idlen
+   use string_module, only: replace_char
+   use netcdf_utils, only: ncu_set_att
+
+   integer,                            intent(  out) :: num_const_items !< Number of constituent items (including sediment).
+   type(t_output_quantity_config_set), intent(inout) :: output_config   !< Output configuration for the HIS file.
+   integer, allocatable, dimension(:), intent(  out) :: idx_const       !< Indexes for the constituent output variables. To be used for 
+                                                                        !< the registration of the variables in the output set.
+   integer ::  num, lenunitstr, lsed
+   character(len=idlen) :: conststr
+   character(len=idlen) :: unitstr
+   type(ug_nc_attribute) :: atts(5)
+ 
+   if (ncrs == 0) then
+      return
+   end if
+   
+   call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
+   
+   if (jased == 4 .and. stmpar%lsedtot > 0) then
+      num_const_items = 2 + stmpar%lsedtot
+   else
+      num_const_items = 0
+   end if
+   num_const_items = num_const_items + 2*NUMCONST_MDU
+
+   if (.not. allocated(obscrs_data)) then
+      allocate(obscrs_data(ncrs, 5 + num_const_items)) ! First 5 are for IPNT_Q1C:IPNT_HUA
+      allocate(idx_const(num_const_items))
+   endif
+   
+   do num = 1,NUMCONST_MDU
+      conststr = const_names(num)
+      ! Forbidden chars in NetCDF names: space, /, and more.
+      call replace_char(conststr,32,95) ! ' ' -> '_'
+      call replace_char(conststr,47,95) ! '/' -> '_'
+
+      unitstr = ''
+      if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+         select case(stmpar%morpar%moroutput%transptype)
+         case (0)
+            unitstr = 'kg s-1'
+         case (1, 2)
+            unitstr = 'm3 s-1'
+         end select
+      else
+         if (const_units(num) /= ' ') then
+            unitstr = trim(const_units(num)) // ' m3 s-1'
+         else
+            unitstr = ''
+         endif
+      endif
+
+      ! Just-in-time add *config* item for this constituent current transport
+      call addoutval(out_quan_conf_his, idx_const(2*num-1),                                       &
+            'Wrihis_crs_constituents', 'cross_section_'//trim(conststr), &
+            'Flux (based on upwind flow cell) for '//trim(conststr), &
+            '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+      output_config%statout(idx_const(2*num-1))%input_value =     &
+            output_config%statout(IDX_HIS_OBSCRS_CONST_ABSTRACT)%input_value      
+            
+
+      ! Just-in-time add *config* item for this constituent cumulative transport
+      lenunitstr = len_trim(unitstr)
+      if (lenunitstr > 4) then
+         unitstr = unitstr(1:lenunitstr-4) ! Trim off ' s-1'
+      end if
+            
+      call addoutval(output_config, idx_const(2*num),                                       &
+            'Wrihis_crs_constituents', 'cross_section_cumulative_'//trim(conststr), &
+            'Cumulative flux (based on upwind flow cell) for '//trim(conststr), &
+            '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+      output_config%statout(idx_const(2*num))%input_value =     &
+            output_config%statout(IDX_HIS_OBSCRS_CONST_ABSTRACT)%input_value      
+   
+   enddo
+   !
+   ! Sediment transport
+   !
+   if (jased == 4 .and. stmpar%lsedtot > 0) then
+      ! Just to get the complete list of indexes in idx_const
+      idx_const(NUMCONST_MDU*2 + 1) = IDX_HIS_OBSCRS_SED_BTRANSPORT
+
+      if( stmpar%lsedsus > 0 ) then
+         idx_const(NUMCONST_MDU*2 + 2) = IDX_HIS_OBSCRS_SED_STRANSPORT
+      else
+         idx_const(NUMCONST_MDU*2 + 2) = 0
+      endif
+      
+      do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
+         ! Just-in-time add *config* item for this fraction's bed load sediment transport
+         call addoutval(output_config, idx_const(NUMCONST_MDU*2 + 2 + lsed),                                       &
+               'Wrihis_constituents', 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
+               'Cumulative bed load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
+               '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+         output_config%statout(idx_const(NUMCONST_MDU*2 + 2 + lsed))%input_value =     &
+               output_config%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT)%input_value 
+      enddo
+   endif
+   
+   end subroutine init_obscrs_data_and_config
+
+
+   !> Aggregate observation crossection data from crs()% value arrays into source_input data array.
+   !! Will fill *all* obscrs_data, and leave the input data_pointer untouched: it assumes that all
+   !! individual calls to add_stat_output_items() have already pointered their obscrs data_pointer variables
+   !! to their corresponding obscrs_data(:,i) slice.
+   !! Structure of data array:
+   !! * obscrs_data(1:ncrs, 1:5): basic flow quantities
+   !! * obscrs_data(1:ncrs, 5+(1:2*NUMCONST_MDU)): constituent transport quantities
+   !! * obscrs_data(1:ncrs, 5+2*NUMCONST_MDU+(1:2 + stmpar%lsedtot)): sediment transport quantities
+   subroutine aggregate_obscrs_data(data_pointer)
    
    !> Calculates flow velocity vector on zeta points.
    !! Will allocate and fill both the ucx_data and ucy_data arrays,
@@ -468,58 +596,47 @@ private
    use m_sediment, only: sedtot2sedsus, stmpar, jased
    double precision, pointer, dimension(:), intent(inout) :: source_input  !< pointer to constit_crs_obs_data
 
-   integer :: i, IP, num, l, lsed, numseddata
+   integer :: i, IP, num, l, lsed
    double precision :: rhol
 
-   if (jased == 4 .and. stmpar%lsedtot > 0) then
-      numseddata = 2 + stmpar%lsedtot
-   else
-      numseddata = 0
+   if (ncrs == 0) then
+      return
    end if
+   
+   ! Fill basic flow quantities
+   do i=1,ncrs
+      ! Discharge
+      obscrs_data(i, 1) = crs(i)%sumvalcur(IPNT_Q1C)
+      ! Cumulative discharge
+      obscrs_data(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
+      ! Cross sectional areas A*u
+      obscrs_data(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
+         ! Average velocity Q/Au
+      obscrs_data(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
+      ! Entry 5 intentionally left blank (IPNT_S1A)
+   end do
 
-   if (ncrs > 0) then
-      if (.not. allocated(constit_crs_obs)) then
-         allocate(constit_crs_obs(ncrs, 5 + 2*NUMCONST_MDU + numseddata)) ! First 5 are for IPNT_Q1C:IPNT_HUA
+   ! Fill all constituent transport through observation crosssection
+   do num = 1,NUMCONST_MDU
+      IP = IPNT_HUA + num
+      if (num >= ISED1 .and. num <= ISEDN) then
+         l = sedtot2sedsus(num-ISED1+1)
+         select case(stmpar%morpar%moroutput%transptype)
+         case (0)
+            rhol = 1d0
+         case (1)
+            rhol = stmpar%sedpar%cdryb(l)
+         case (2)
+            rhol = stmpar%sedpar%rhosol(l)
+         end select
+      else
+         rhol = 1d0 ! dummy
       endif
-      if (.not. associated(source_input))then
-         source_input => constit_crs_obs(:,1) ! Only point to obscrs discharge, others are pointered separately.
-      endif
-
-      ! Fill basic flow quantities
       do i=1,ncrs
-         ! Discharge
-         constit_crs_obs(i, 1) = crs(i)%sumvalcur(IPNT_Q1C)
-         ! Cumulative discharge
-         constit_crs_obs(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
-         ! Cross sectional areas A*u
-         constit_crs_obs(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
-          ! Average velocity Q/Au
-         constit_crs_obs(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
-         ! Entry 5 intentionally left blank (IPNT_S1A)
+         obscrs_data(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
+         obscrs_data(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
       end do
-
-      ! Fill all constituent transport through observation crosssection
-      do num = 1,NUMCONST_MDU
-         IP = IPNT_HUA + num
-         if (num >= ISED1 .and. num <= ISEDN) then
-            l = sedtot2sedsus(num-ISED1+1)
-            select case(stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1d0
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
-         else
-            rhol = 1d0 ! dummy
-         endif
-         do i=1,ncrs
-            constit_crs_obs(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
-            constit_crs_obs(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
-         end do
-      enddo
-   endif
+   enddo
 
    if (jased == 4 .and. stmpar%lsedtot > 0) then
       IP = IPNT_HUA + NUMCONST_MDU + 1
@@ -573,12 +690,14 @@ private
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
       use netcdf_utils, only: ncu_set_att
-      use coordinate_reference_system, only: nc_attribute
+      use m_ug_nc_attribute
       use netcdf, only: nf90_int
       use m_flow
+      use m_ug_nc_attribute, only: ug_nc_attribute
+      use netcdf_utils
       use m_missing
       
-      type(nc_attribute) :: atts(5)
+      type(ug_nc_attribute) :: atts(5)
 
       out_quan_conf_his%count = 0
       out_quan_conf_map%count = 0
@@ -1329,20 +1448,19 @@ private
       !
       ! HIS: Variables on observation cross sections
       !
-      ! TODO: UNST-6902:
       call ncu_set_att(atts(1), 'geometry', 'cross_section_geom')
-      !config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_type, nc_atts, description)
+
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE,                                       &
-                     'Wrihis_crs', 'cross_section_discharge', 'Discharge through observation cross section',    &
+                     'Wrihis_crs_flow', 'cross_section_discharge', 'Discharge through observation cross section',    &
                      'ocean_volume_transport_across_line', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUM,                                       &
-                     'Wrihis_crs', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
+                     'Wrihis_crs_flow', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
                      'integral_wrt_time_of_ocean_volume_transport_across_line', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_AREA,                                       &
-                     'Wrihis_crs', 'cross_section_area', 'Wet area of observation cross section',    &
+                     'Wrihis_crs_flow', 'cross_section_area', 'Wet area of observation cross section',    &
                      '', 'm2', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_VELOCITY,                                       &
-                     'Wrihis_crs', 'cross_section_velocity', 'Space-averaged velocity through observation cross section',    &
+                     'Wrihis_crs_flow', 'cross_section_velocity', 'Space-averaged velocity through observation cross section',    &
                      '', 'm s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       ! Disable writing cross_section_velocity_avg (see UNST-1148), because in a parallel run, it is impossible to compute
       ! summation of area (denominator) at each computational time step in a cheap way, i.e. without communication between
@@ -1353,9 +1471,27 @@ private
       ! The constituents that are actually available depend on the model initialization
       ! and will only be added later, during init_fm_statistical_output_his().
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_CONST_ABSTRACT,                                       &
-                     'Wrihis_constituents', 'cross_section_const_abstract', '',                                                                 &
+                     'Wrihis_crs_constituents', 'cross_section_const_abstract', '',                                                                 &
                      '', '-', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write all transported constituents to his file')
-            
+
+      ! Sediment model nr. 4
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT,                                       &
+            'Wrihis_crs_sediment', 'cross_section_bedload_sediment_transport', &
+            'Cumulative bed load sediment transport', &
+            '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_STRANSPORT,                                       &
+            'Wrihis_crs_sediment', 'cross_section_suspended_sediment_transport', &
+            'Cumulative suspended load sediment transport', &
+            '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
+      ! The following output value is an abstract entry representing all bedload sediment fractions.
+      ! The fractions that are actually available depend on the model initialization
+      ! and will only be added later, during init_fm_statistical_output_his().
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT,                                       &
+            'Wrihis_crs_sediment', 'cross_section_bedload_sediment_transport_abstract', '', &
+            '', '-', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+
       !
       ! HIS: Lateral discharges
       !
@@ -1874,36 +2010,30 @@ private
    !! the quantity configuration set and the active model settings.
    !! Must be called as part of flow_modelinit.
    subroutine flow_init_statistical_output_his(output_config,output_set)
-      use netcdf_utils, only: ncu_set_att
-      use coordinate_reference_system, only: nc_attribute
+      use m_ug_nc_attribute
       use string_module, only: replace_char
       use m_flow
       use m_flowexternalforcings
       use m_structures
       use m_observations
-      use m_sediment
       use m_statistical_callback
-      use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
+      use m_transport, only: NUMCONST, itemp, isalt
+      use m_sediment, only: stm_included
       use m_longculverts, only: nlongculverts
       USE m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug
       USE, INTRINSIC :: ISO_C_BINDING
    
-      type(t_output_quantity_config_set), intent(in   ) :: output_config !< output config for which an output set is needed.
+      type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
-      type(nc_attribute) :: atts(5)
       double precision, pointer, dimension(:) :: temp_pointer
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
 
-      integer :: i, ntot, num, lsed
-      integer :: idx_const_
-      integer :: lenunitstr
-      character(len=20)  :: unitstr
-      character(len=255) :: conststr
-      
+      integer :: i, ntot, num_const_items
+      integer, allocatable, dimension(:) :: idx_const
+
       ntot = numobs + nummovobs
-    
       !
       ! Mass balance variables
       !
@@ -2342,108 +2472,28 @@ private
       !
       if (ncrs > 0) then
          !
+         ! Prepare data array
+         ! Add configuration items for constituents and sediment output (During reading of MDU file this data was not available)
+         !
+         call init_obscrs_data_and_config(num_const_items, output_config, idx_const)
+
+         !
          ! Basic flow quantities
          !
-         function_pointer => aggregate_constit_crs_obs
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     null(), function_pointer)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), constit_crs_obs(:,2))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          constit_crs_obs(:,3))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      constit_crs_obs(:,4))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     obscrs_data(:,1), aggregate_obscrs_data)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), obscrs_data(:,2))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          obscrs_data(:,3))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      obscrs_data(:,4))
 
          !
          ! Transported consituents
          !
-         IDX_HIS_OBSCRS_CONST_1 = out_quan_conf_his%count + 1
-         do num = 1,NUMCONST_MDU
-            conststr = const_names(num)
-            ! Forbidden chars in NetCDF names: space, /, and more.
-            call replace_char(conststr,32,95) ! ' ' -> '_'
-            call replace_char(conststr,47,95) ! '/' -> '_'
-
-            unitstr = ''
-            if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
-               select case(stmpar%morpar%moroutput%transptype)
-               case (0)
-                  unitstr = 'kg s-1'
-               case (1, 2)
-                  unitstr = 'm3 s-1'
-               end select
-            else
-               if (const_units(num) /= ' ') then
-                  unitstr = trim(const_units(num)) // ' m3 s-1'
-               else
-                  unitstr = ''
-               endif
+         do i = 1, num_const_items
+            if (idx_const(i) > 0) then
+               call add_stat_output_items(output_set, output_config%statout(idx_const(i)),      obscrs_data(:,5 + i))
             endif
-
-            ! Just-in-time add *config* item for this constituent transport
-            call addoutval(out_quan_conf_his, idx_const_,                                       &
-                  'Wrihis_constituents', 'cross_section_'//trim(conststr), &
-                  'Flux (based on upwind flow cell) for '//trim(conststr), &
-                  '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-
-            ! And add the output item(s) for the current transport
-            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 1))
-
-            ! Same for cumulative transport:
-            lenunitstr = len_trim(unitstr)
-            if (lenunitstr > 4) then
-               unitstr = unitstr(1:lenunitstr-4) ! Trim off ' s-1'
-            end if
-
-            ! Just-in-time add *config* item for this constituent cumulative transport
-            call addoutval(out_quan_conf_his, idx_const_,                                       &
-                           'Wrihis_constituents', 'cross_section_cumulative_'//trim(conststr), &
-                           'Cumulative flux (based on upwind flow cell) for '//trim(conststr), &
-                           '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-
-            ! And add the output item(s) for the cumulative transport
-            call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + (num-1)*2 + 2))
-
          enddo
-         IDX_HIS_OBSCRS_CONST_N = out_quan_conf_his%count ! Note: this concludes 2 * NUMCONST_MDU extra entries in config list
-
-
-         !
-         ! Sediment transport
-         !
-         if (jased == 4 .and. stmpar%lsedtot > 0) then
-            ! Just-in-time add *config* item for this bed load sediment transport
-            call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT,                                       &
-                  'Wrihis_constituents', 'cross_section_bedload_sediment_transport', &
-                  'Cumulative bed load sediment transport', &
-                  '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-
-            ! And add the output item(s) for the bed load sediment transport
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_BTRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 1))
-
-            if( stmpar%lsedsus > 0 ) then
-               ! Just-in-time add *config* item for this suspended load sediment transport
-               call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_STRANSPORT,                                       &
-                     'Wrihis_constituents', 'cross_section_suspended_sediment_transport', &
-                     'Cumulative suspended load sediment transport', &
-                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-
-               ! And add the output item(s) for the suspended load sediment transport
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_SED_STRANSPORT),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2))
-            endif
-
-            IDX_HIS_OBSCRS_SED_BTRANSPORT_1 = out_quan_conf_his%count + 1
-            do lsed = 1,stmpar%lsedtot    ! Making bedload on crosssections per fraction
-               ! Just-in-time add *config* item for this fraction's bed load sediment transport
-               call addoutval(out_quan_conf_his, idx_const_,                                       &
-                     'Wrihis_constituents', 'cross_section_bedload_sediment_transport_'//trim(stmpar%sedpar%namsed(lsed)), &
-                     'Cumulative bed load sediment transport for fraction '//trim(stmpar%sedpar%namsed(lsed)), &
-                     '', 'kg', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
-
-               ! And add the output item(s) for this fraction's bed load sediment transport
-               call add_stat_output_items(output_set, output_config%statout(idx_const_),      constit_crs_obs(:,5 + NUMCONST_MDU*2 + 2 + lsed))
-            enddo
-            IDX_HIS_OBSCRS_SED_BTRANSPORT_N = out_quan_conf_his%count ! Note: this concludes stmpar%lsedtot extra entries in config list
-         endif
       endif
-      
-
       !
       ! Variables on lateral discharges
       !

@@ -52,7 +52,7 @@
       character(*), intent(  out) :: str               !< token if itype = 1
       integer  (8), intent(  out) :: int               !< token if itype = 2
       real     (8), intent(  out) :: reel              !< token if itype = 3
-      integer  (4), intent(  out) :: itype             !< type of the token ( 0 = none )
+      integer  (4), intent(  out) :: itype             !< type of the token ( 0 = none, 1 = character, 2 = integer, 3 = real )
       integer  (4), intent(  out) :: iposl             !< left  position in LINE of token
       integer  (4), intent(  out) :: iposr             !< right position in LINE of token
       integer  (4), intent(in   ) :: iwidth            !< Line length of input lines
@@ -74,9 +74,9 @@
       real     (  8) reels       !   Stored previous real
       integer        iposls      !   Stored previous left
       integer        iposrs      !   Stored previous right
-      character(  1) ctrlz       !   Tab character
-      character(  1) chtab       !   Cariage return character
-      character(  1) ch_cr       !   Ctrl_Z character
+      character(  1) ctrlz       !   Ctrl_Z character
+      character(  1) chtab       !   Tab character
+      character(  1) ch_cr       !   Cariage return character
       integer        i, i2, j    !   loop counters
       integer        iexp, ihlp  !   help variables in the parsing process
 

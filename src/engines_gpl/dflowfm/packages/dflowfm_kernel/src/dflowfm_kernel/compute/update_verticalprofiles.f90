@@ -64,7 +64,7 @@ subroutine update_verticalprofiles()
 
  double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
 
- double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq
+ double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
  double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin
 
@@ -345,6 +345,28 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
+     if (facLaxturb > 0) then 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*turkin0(L) +  0.5d0*facLaxturb*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+              endif
+           enddo
+        endif
+     endif
+
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
 
      ! Calculate turkin source from wave dissipation: preparation
@@ -457,7 +479,20 @@ double precision, external :: setrhofixedp
             else if (jadrhodz == 5) then
 
                drhodz  = max( drhodz1, drhodz2 )  ! least stratified, increases viscosity 
-           
+
+            else if (jadrhodz == 6) then          ! first average then d/dz
+
+               if (dzc1 > 0 .and. dzc2 > 0) then
+
+                  if (idensform < 10) then                     
+                     drhodz  = ( rho(k1u) + rho(k2u) - rho(k1) - rho(k2) ) / (dzc1 + dzc2)
+                  else
+                     prsappr = ag*rhomean*( zws(ktop(ln(1,LL))) - zws(k1) )   
+                     drhodz  = ( setrhofixedp(k1u,prsappr) + setrhofixedp(k2u,prsappr) - setrhofixedp(k1,prsappr) - setrhofixedp(k1,prsappr)) / ( dzc1 + dzc2)
+                  endif
+ 
+               endif
+               
             endif
  !
             bruva (k)  = coefn2*drhodz                  ! N.B., bruva = N**2 / sigrho
@@ -692,6 +727,28 @@ double precision, external :: setrhofixedp
      dk(0:kxL) = dtiL*tureps0(Lb0:Lt)
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
+
+     if (facLaxturb > 0) then 
+        if (jafacLaxturbtyp == 1) then 
+           do L  = Lb,Lt-1
+              zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
+              if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
+                 k1 = ln(1,L) ; k2 = ln(2,L) 
+                 if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                    faclax = facLaxturb*zf
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 endif
+              endif
+           enddo
+        else if (jafacLaxturbtyp == 2) then 
+           do L  = Lb,Lt-1
+              k1 = ln(1,L) ; k2 = ln(2,L) 
+              if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
+                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+              endif
+           enddo
+        endif  
+     endif
 
      vicu  = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigepsi
 

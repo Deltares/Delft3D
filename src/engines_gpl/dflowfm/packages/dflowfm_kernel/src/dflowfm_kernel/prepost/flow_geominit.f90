@@ -56,7 +56,7 @@
  use string_module
  use m_plotdots
  use geometry_module, only: getdx, getdy, dbdistance, normalin, normalout, half, duitpl, dlinedis
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use m_flowtimes, only: ti_waq
  use gridoperations
  use m_flow, only : numlimdt, numlimdt_baorg
@@ -114,14 +114,17 @@
  double precision        :: xh, yh
 
  integer                 :: jaidomain, jaiglobal_s, ierror
+ integer                 :: numl2D
 
  double precision, external    :: cosphiu
  integer :: ndraw
  COMMON /DRAWTHIS/ ndraw(50)
 
- if (numk <= 2 .or. numl <= 1 ) then
-    call mess(LEVEL_WARN,'A valid network requires at least 3 computational grid points (net nodes) and at least 2 netlinks for 1D or 3 netlinks for 2D.')
-    return               ! only do this for sufficient network
+ numl2D = numl - numl1D
+
+ if (numk < 2 .or. (numl1D == 0 .and. numl2D < 3) .or. (numl2D > 0 .and. numl2D < 3)) then
+    call mess(LEVEL_WARN, 'A valid network requires at least 2 computational grid points (net nodes) and at least 1 netlink for 1D or 3 netlinks for 2D.')
+    return ! only continue for sufficient network
  endif
 
  noncrossinglink = .false.
@@ -214,6 +217,14 @@
 ! also disabled isolated cells due to cutcells and store masks
   call cutcell_list(6,'dum',3, 1)
 
+ if (strip_mesh > 0) then
+     if (numl1d > 0) then
+         call mess(LEVEL_WARN, 'Stripping mesh not yet supported when including 1D segments.')
+     else
+         call remove_unused_nodes_and_links()
+     endif
+ endif
+ 
  ! if (makeorthocenters .gt. 0 .and. jglobe == 0) then
  if (makeorthocenters .gt. 0) then
     call make_orthocenters(0.5d-2,makeorthocenters)
@@ -1081,7 +1092,7 @@
     nonLin   = inonLin(3)
  end if
 
- if (japure1D > 0) then
+ if (japure1D == 1 .or. japure1D == 2) then 
     call setisnbnodisnblin() ! set signarray isnbnod for left and rightneighbouring uc1d.
  endif
 
@@ -1405,7 +1416,7 @@
      enddo
    enddo
 
-   CALL INDEXX(mxban,rr,nr)
+   call sort_index(rr, nr)
    do k = 1, mxban
       ka = nr(k)
       nban(1,k) = nbanh(1,ka)

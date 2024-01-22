@@ -1,5 +1,5 @@
 subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
-                      & delta, t, r, b, tc, tt, tcu, tcd, ttu, ttd, sfltc, sfltt, &
+                      & delta, tp, r, b, tc, tt, tcu, tcd, ttu, ttd, sfltc, sfltt, &
                       & wss, rh, scr_c, scr_t, sc, st, scx, scy, stx, sty, &
                       & uc, ut, n, m, alphas, alphar, pcr, &
                       & pc, pt, oc, occ, oct, ot, ott, otc, phicx, phitx, &
@@ -58,7 +58,7 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
     real(fp)  , intent(in)  :: rhos
     real(fp)  , intent(in)  :: rhow
     real(fp)  , intent(in)  :: delta
-    real(fp)  , intent(in)  :: t
+    real(fp)  , intent(in)  :: tp
     real(fp)  , intent(in)  :: r
     real(fp)  , intent(in)  :: b
     real(fp)  , intent(in)  :: tc
@@ -135,11 +135,11 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
 !   measurements GWK Schretlen 2010
     if (sw_effects == 1) then
         if (comparereal(rh,0.0_fp) == 0) then
-            worbc1 = pi*hw*sfltc/t/d
-            worbt1 = pi*hw*sfltt/t/d
+            worbc1 = pi*hw*sfltc/tp/d
+            worbt1 = pi*hw*sfltt/tp/d
         else
-            worbc1 = pi*hw*rh/t/d
-            worbt1 = pi*hw*rh/t/d
+            worbc1 = pi*hw*rh/tp/d
+            worbt1 = pi*hw*rh/tp/d
         endif
         worbc2 = worbc1*2.0_fp*(2.0_fp*r-1.0_fp)
         worbt2 = worbt1*2.0_fp*(2.0_fp*r-1.0_fp)
@@ -155,14 +155,14 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
                      & sqrt(worbt1**2+32.0_fp*worbt2**2))/worbt2))
         worbt = worbt*eps_corr
         ! calculation wave propegation speed
-        ksi = 4.0_fp*pi**2*d/(g*t**2)
+        ksi = 4.0_fp*pi**2*d/(g*tp**2)
         if (ksi <= 1.0_fp) then
             eta = sqrt(ksi)*(1.0_fp+0.2_fp*ksi)
         else ! ksi > 1.0_fp
             eta = ksi*(1.0_fp+0.2_fp*exp(2.0_fp-2.0_fp*ksi))
         endif
         l  = 2.0_fp*pi*d/eta
-        c  = l/t
+        c  = l/tp
         xi = 1.7_fp !0.55*sqrt(2)
     else
         worbc = 0.0_fp
@@ -248,8 +248,8 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
         phity = sty/sqrt(abs(st))*(ott+1.0_fp/xt*oct)
     endif
 
-    phix = (tc*phicx+tt*phitx)/t           ! dimensionless transport in x-direction
-    phiy = (tc*phicy+tt*phity)/t           ! dimensionless transport in y-direction
+    phix = (tc*phicx+tt*phitx)/tp          ! dimensionless transport in x-direction
+    phiy = (tc*phicy+tt*phity)/tp          ! dimensionless transport in y-direction
 
     qsx = phix*sqrt(delta*g*d50**3)        ! transport in x-direction [m2/s]
     qsy = phiy*sqrt(delta*g*d50**3)        ! transport in y-direction [m2/s]

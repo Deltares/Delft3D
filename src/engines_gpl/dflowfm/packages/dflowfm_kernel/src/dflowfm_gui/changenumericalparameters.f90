@@ -39,7 +39,7 @@
    use unstruc_display
    use m_reduce
    use m_sediment, only: dmorfac
-   use unstruc_version_module, only : unstruc_company, unstruc_program
+   use dflowfm_version_module, only : company, product_name
    use unstruc_messages
    use m_fixedweirs
    implicit none
@@ -142,7 +142,7 @@
    CALL IWinAction('FPC')
    CALL IWinOpen(IXP,IYP,IW,1)
    CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-   CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program) // ' PARAMETER FORM')
+   CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name) // ' PARAMETER FORM')
    CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !  Explain keyfunctions in bottom window
@@ -188,7 +188,6 @@
    CALL IFORMPUTINTEGER (2* 7 ,itstep           )
    CALL IFormPutDouble  (2* 8 ,teta0  ,'(F10.3)')
    CALL IFORMPUTinteger (2* 9 ,icgsolver        )
-   CALL IFORMPUTinteger (2*10 ,jatransportmodule)
    CALL IFORMPUTinteger (2*11 ,jasal            )
    CALL IFORMPUTinteger (2*12 ,jatem            )
    CALL IFORMPUTinteger (2*13 ,jacreep          )
@@ -250,7 +249,6 @@
           CALL IFORMgeTINTEGER (2* 7 ,itstep          )
           CALL IFormgetDouble  (2* 8 ,teta0           )
           CALL IFORMgeTinteger (2* 9 ,icgsolver       )
-          CALL IFORMgeTinteger (2*10 ,jatransportmodule)
           CALL IFORMgeTinteger (2*11 ,jasal           )
           CALL IFORMgeTinteger (2*12 ,jatem           )
           CALL IFORMgeTinteger (2*13 ,jacreep         )

@@ -84,23 +84,28 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp)               , pointer :: drycrt
-    real(fp)               , pointer :: dryflc
-    real(fp)               , pointer :: gammax
-    character(8)           , pointer :: dpsopt
-    character(6)           , pointer :: momsol
-    logical                , pointer :: old_corio
-    logical                , pointer :: slplim
-    real(fp)               , pointer :: hdt
-    real(fp)               , pointer :: rhow
-    real(fp)               , pointer :: ag
-    real(fp)               , pointer :: vicmol
-    integer                , pointer :: iro
-    integer                , pointer :: irov
-    logical                , pointer :: wave
-    logical                , pointer :: roller
-    logical                , pointer :: xbeach
-    real(fp)               , pointer :: dzmin
+    real(fp)                     , pointer :: drycrt
+    real(fp)                     , pointer :: dryflc
+    real(fp)                     , pointer :: gammax
+    character(8)                 , pointer :: dpsopt
+    character(6)                 , pointer :: momsol
+    logical                      , pointer :: old_corio
+    logical                      , pointer :: slplim
+    real(fp)                     , pointer :: hdt
+    real(fp)                     , pointer :: rhow
+    real(fp)                     , pointer :: ag
+    real(fp)                     , pointer :: vicmol
+    integer                      , pointer :: iro
+    integer                      , pointer :: irov
+    logical                      , pointer :: wave
+    logical                      , pointer :: roller
+    logical                      , pointer :: xbeach
+    real(fp)                     , pointer :: dzmin
+    integer                      , pointer :: no_dis
+	logical                      , pointer :: nf_src_mom
+    real(fp), dimension(:,:,:)   , pointer :: nf_src_momu
+    real(fp), dimension(:,:,:)   , pointer :: nf_src_momv
+    real(fp)                     , pointer :: momrelax
 !
 ! Global variables
 !
@@ -209,6 +214,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer            :: idifc
     integer            :: idifd
     integer            :: idifu
+    integer            :: idis
     integer            :: isrc
     integer            :: k
     integer            :: kdo
@@ -279,6 +285,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: svvv
     real(fp)           :: thvert     ! theta coefficient for vertical advection terms
     real(fp)           :: timest
+    real(fp)           :: trelaxi
     real(fp)           :: uuu
     real(fp)           :: uweir
     real(fp)           :: vih
@@ -293,23 +300,28 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
-    drycrt    => gdp%gdnumeco%drycrt
-    dryflc    => gdp%gdnumeco%dryflc
-    dpsopt    => gdp%gdnumeco%dpsopt
-    momsol    => gdp%gdnumeco%momsol
-    old_corio => gdp%gdnumeco%old_corio
-    slplim    => gdp%gdnumeco%slplim
-    gammax    => gdp%gdnumeco%gammax
-    rhow      => gdp%gdphysco%rhow
-    ag        => gdp%gdphysco%ag
-    vicmol    => gdp%gdphysco%vicmol
-    iro       => gdp%gdphysco%iro
-    irov      => gdp%gdphysco%irov
-    wave      => gdp%gdprocs%wave
-    roller    => gdp%gdprocs%roller
-    xbeach    => gdp%gdprocs%xbeach
-    hdt       => gdp%gdnumeco%hdt
-    dzmin     => gdp%gdzmodel%dzmin
+    drycrt         => gdp%gdnumeco%drycrt
+    dryflc         => gdp%gdnumeco%dryflc
+    dpsopt         => gdp%gdnumeco%dpsopt
+    momsol         => gdp%gdnumeco%momsol
+    old_corio      => gdp%gdnumeco%old_corio
+    slplim         => gdp%gdnumeco%slplim
+    gammax         => gdp%gdnumeco%gammax
+    rhow           => gdp%gdphysco%rhow
+    ag             => gdp%gdphysco%ag
+    vicmol         => gdp%gdphysco%vicmol
+    iro            => gdp%gdphysco%iro
+    irov           => gdp%gdphysco%irov
+    wave           => gdp%gdprocs%wave
+    roller         => gdp%gdprocs%roller
+    xbeach         => gdp%gdprocs%xbeach
+    hdt            => gdp%gdnumeco%hdt
+    dzmin          => gdp%gdzmodel%dzmin
+    no_dis         => gdp%gdnfl%no_dis
+    nf_src_mom     => gdp%gdnfl%nf_src_mom
+    nf_src_momu    => gdp%gdnfl%nf_src_momu
+    nf_src_momv    => gdp%gdnfl%nf_src_momv
+    momrelax       => gdp%gdnfl%momrelax
     !
     call timer_start(timer_cucnp_ini, gdp)
     !
@@ -622,6 +634,40 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           endif
        endif
     enddo
+    if (nf_src_mom) then
+       !
+       ! DISCHARGE ADDITION OF MOMENTUM FROM NEARFIELD
+       !
+       ! Instead of weighting the nearfield momentum with the volume added via the nearfield source,
+       ! it is choosen to use a trelax, based on the time step.
+       ! This should force the cell velocity to get the a value "growing" fast to the nearfield momentum value.
+       !
+       ! Only change ddk/bbk when the momentum source in the present direction is non-negative
+       ! Inverse of the relaxation time:
+       !
+       trelaxi = 1.0 / (momrelax*2.0*hdt)
+       do nm = 1, nmmax
+          if (kfu(nm) == 1) then
+             do k = kfumn0(nm), kfumx0(nm)
+                if (kfuz0(nm, k) == 1) then
+                  do idis = 1, no_dis
+                     if (icx == 1 ) then
+                        if (comparereal(nf_src_momv(nm,k,idis), 0.0_fp) /= 0) then
+                           ddk(nm,k) = ddk(nm,k) + nf_src_momv(nm,k,idis)*trelaxi
+                           bbk(nm,k) = bbk(nm,k) + trelaxi
+                        endif
+                     else 
+                        if (comparereal(nf_src_momu(nm,k,idis), 0.0_fp) /= 0) then
+                           ddk(nm,k) = ddk(nm,k) + nf_src_momu(nm,k,idis)*trelaxi
+                           bbk(nm,k) = bbk(nm,k) + trelaxi
+                        endif
+                     endif
+                  enddo
+                endif
+             enddo
+          endif
+       enddo
+    endif
     call timer_stop(timer_cucnp_dismmt, gdp)
     !
     ! VERTICAL ADVECTION AND VISCOSITY

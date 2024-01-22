@@ -73,11 +73,16 @@
 
    if (ti_his > 0) then
       if (comparereal(tim, time_his, eps10)>= 0) then
-         call finalize_SO_AVERAGE(out_variable_set_his%statout)
+         if (out_variable_set_his%count > 0) then
+            call finalize_SO_AVERAGE(out_variable_set_his%statout)
+         endif
+         
          if ( jampi.eq.0 .or. ( jampi.eq.1 .and. my_rank.eq.0 ) ) then
             call unc_write_his(tim)   ! wrihis
          endif
-         call reset_statistical_output(out_variable_set_his%statout)
+         if (out_variable_set_his%count > 0) then
+            call reset_statistical_output(out_variable_set_his%statout)
+         endif
          if (nrug>0) then
             ! needs to be done at exactly ti_his, but over all domains, so cannot go in wrihis
             call clearRunupGauges()
@@ -214,28 +219,19 @@
    endif
    call timstop(handle_extra(76))
 
-  if (ti_waq > 0) then
-      if (comparereal(tim, time_waq, eps10) == 0) then
+   if (ti_waq > 0) then
 
-         if (comparereal(time_waq, ti_waqs, eps10) == 0) then
-            call waq_wri_model_files()
-            wrwaqon = .true.
-         endif
-
-         call waq_wri_couple_files(tim)
-         if (comparereal(time_waq, ti_waqe, eps10) == 0) then
-            time_waq = tstop_user + 1
-         else
-            tem_dif = (tim - ti_waqs)/ti_waq
-            time_waq = max(ti_waqs + (floor(tem_dif + 0.001d0)+1)*ti_waq,ti_waqs)
-         ! this is taken care of ! call volsur() ! TODO: move volsur in flow_initimestep to end of flow_singletimestep (is duplicate now)
-            if (comparereal(time_waq, ti_waqe, eps10) == 1) then
-               time_waq = ti_waqe
-            endif
-         endif
+      if (.not. wrwaqon) then
+          call waq_wri_model_files()
+          wrwaqon = .true.
       endif
-   endif
 
+      if (tim .ge. ti_waqs .and. tim .le. ti_waqe+0.1d0 .and. tim .ge. time_waq-0.1d0) then  
+          call waq_wri_couple_files(tim)
+          time_waq = time_waq + ti_waq 
+      endif
+
+   endif
 
    if (ti_stat > 0) then
       if (tim >= time_stat) then

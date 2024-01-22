@@ -41,11 +41,12 @@ subroutine extract_constituents()
    use m_missing
    use m_plotdots
    use timers
+   use m_flowtimes
 
    implicit none
 
-   integer :: i, iconst, k, kk, limmin, limmax
-   double precision :: dmin
+   integer :: i, iconst, k, kk, limmin, limmax,  ll, kb, k1, kt, ii
+   double precision :: dmin, tempmi
 
    integer(4) ithndl /0/
    if (timon) call timstrt ( "extract_constituents", ithndl )
@@ -66,8 +67,10 @@ subroutine extract_constituents()
                constituents(iconst,k) = 0d0
             endif
             !
+            ! keep track of mass error because of concentration limitation
             if (constituents(iconst,k)>upperlimitssc) then
                limmax = limmax + 1
+               maserrsed = maserrsed + vol1(k)*(constituents(iconst,k)-upperlimitssc)
                constituents(iconst,k) = upperlimitssc
             endif
             sed(i,k) = constituents(iconst,k)
@@ -98,19 +101,31 @@ subroutine extract_constituents()
             write(msgbuf , *) 'Max. temperature limited, number of cells Limmax = ' , limmax  ; call msg_flush()
          endif
       endif
-      if (tempmin .ne. dmiss) then ! tem is now positive
          limmin = 0
-         do k = 1, Ndkx
+     
+      if (tempmin .ne. dmiss) then 
+         k1 = 1 ; if (kmx > 0) k1 = Ndx + 1
+         do k = k1, Ndkx
             if (constituents(itemp,k) < tempmin) then
                 constituents(itemp,k) = tempmin
                 limmin   = limmin + 1
             endif
          enddo
-         if (limmin .ne. 0) then
-            write(msgbuf , *) 'Min. temperature limited, number of cells Limmin = ' , limmin  ; call msg_flush()
-         endif
+      else if (isalt > 0) then ! only at surface limit to freezing point
+         !a = -0.0575d0 ; b =  1.710523d-3 ; c = -2.154996d-4 ; d = -7.53d-3 ; P = 0 ; 
+         !fp = (a + b.*sqrt(S) + c.*S) .* S + d*P;
+         do k = 1, Ndx
+            kt = ktop(k)
+            tempmi = ( -0.0575d0 - 2.154996d-4*constituents(isalt,kt) ) * constituents(isalt,kt)  
+            if (constituents(itemp,kt) < tempmi) then
+                constituents(itemp,kt) = tempmi
+                limmin   = limmin + 1
+            endif
+         enddo
       endif
-
+      if (limmin .ne. 0 .and. tempmin > -0.001d0) then     !! no warnings when negative temperatures are allowed
+         write(msgbuf , *) 'Min. temperature limited, number of cells Limmin = ' , limmin  ; call msg_flush()
+      endif
    endif
 
    if (jasal .ne. 0) then
@@ -146,6 +161,24 @@ subroutine extract_constituents()
 
   if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
      call doforester()
+  endif
+  !
+  ! When a cell become dries, keep track of the mass in the water column in sscum array. This will be accounted
+  ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and exploding bed levels.
+  if (stm_included) then
+     if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor*tfac) then
+        if (ISED1>0) then
+          do ll=1,mxgr
+             do k=1,ndx
+                if (hs(k)<stmpar%morpar%sedthr) then
+                   call getkbotktop(k,kb,kt)
+                   ssccum(ll,k) = ssccum(ll,k)+sum(constituents(ISED1+ll-1,kb:kt))/dts*bai_mor(k)*vol1(k)
+                   constituents(ISED1+ll-1,kb:kt) = 0d0
+                endif
+             enddo
+           enddo
+        endif
+     endif
   endif
 
   if (timon) call timstop( ithndl )

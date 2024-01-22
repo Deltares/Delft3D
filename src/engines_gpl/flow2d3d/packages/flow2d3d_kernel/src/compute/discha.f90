@@ -52,6 +52,7 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     integer , pointer :: ltem
     integer , pointer :: lundia
     real(fp), pointer :: maxTOutlet
+    logical , dimension(:) , pointer :: flbcktemp
 !
 ! Global variables
 !
@@ -102,6 +103,7 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     ltem       => gdp%d%ltem
     lundia     => gdp%gdinout%lundia
     maxTOutlet => gdp%gddischarge%maxTOutlet
+    flbcktemp  => gdp%gdheat%flbcktemp
     !
     ddb  = gdp%d%ddbound
     icxy = max(icx, icy)
@@ -134,6 +136,19 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
              ! concentration at outfall is prescribed in rint
              !
              concin = rint(lcon, isrc)
+             !
+             ! For background temperatures the current temperature is used (Temprature at the outfall location)
+             !
+             if ( flbcktemp(lcon) ) then
+                if (kkout == 0) then
+                   concin = 0.0_fp
+                   do k2 = 1, kmax
+                      concin = concin + r0(nmout,k2, lcon)*thick(k2)
+                   enddo
+                else
+                  concin = r0(nmout, kkout, lcon)
+                endif
+             endif
           else
              !
              ! discharge with intake (culverts, power station)

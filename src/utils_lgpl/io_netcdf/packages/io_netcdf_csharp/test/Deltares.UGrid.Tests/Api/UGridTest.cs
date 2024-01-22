@@ -311,18 +311,18 @@ namespace Deltares.UGrid.Tests.Api
 
                 var networkId = api.WriteNetworkGeometry(geometry);
 
-                api.Close();
-
                 Assert.AreEqual(1, networkId);
+            }
 
+            // Asserts
+            using (var api = new UGridApi())
+            {
                 api.Open(path);
-
                 var networkIds = api.GetNetworkIds();
                 
                 using (var readGeometry = api.GetNetworkGeometry(networkIds[0]))
                 {
                     Assert.AreEqual(geometry.NetworkName, readGeometry.NetworkName);
-
                     Assert.AreEqual(geometry.NodesY, readGeometry.NodesY);
                     Assert.AreEqual(geometry.NodesX, readGeometry.NodesX);
                     Assert.AreEqual(geometry.NodeIds, readGeometry.NodeIds);
@@ -337,6 +337,72 @@ namespace Deltares.UGrid.Tests.Api
                     Assert.AreEqual(geometry.NodesTo, readGeometry.NodesTo);
                     Assert.AreEqual(geometry.BranchGeometryNodesCount, readGeometry.BranchGeometryNodesCount);
 
+                    Assert.AreEqual(geometry.BranchGeometryX, readGeometry.BranchGeometryX);
+                    Assert.AreEqual(geometry.BranchGeometryY, readGeometry.BranchGeometryY);
+                }
+            }
+        }
+        
+        [Test]
+        public void GivenUGrid_WriteNetworkGeometry_CheckMemory_ShouldWork()
+        {
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            var geometry = new DisposableNetworkGeometry
+            {
+                NetworkName = "Test network",
+
+                NodesY = new double[] { 4, 6 },
+                NodesX = new double[] { 1, 4 },
+                NodeIds = new string[] { "node1", "node2" },
+                NodeLongNames = new string[] { "node1 long name", "node2 long name" },
+
+                BranchIds = new string[] { "Branch 1" },
+                BranchLongNames = new string[] { "Branch 1 long name" },
+                BranchLengths = new double[] { 220.9 },
+                BranchOrder = new int[] { 5 },
+                BranchTypes = new int[] { 1 },
+                NodesFrom = new int[] { 0 },
+                NodesTo = new int[] { 1 },
+                BranchGeometryNodesCount = new int[] { 4 },
+
+                BranchGeometryX = new double[] { 5, 6, 7, 8 },
+                BranchGeometryY = new double[] { 5, 6, 7, 8 }
+            };
+            
+            // Arrange & Act
+            using (geometry)
+            using (var api = new UGridApi())
+            {
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var networkId = api.WriteNetworkGeometry(geometry);
+
+                Assert.AreEqual(1, networkId);
+
+                // Asserts
+                using (var readGeometry = api.GetNetworkGeometry(networkId))
+                {
+                    Assert.AreEqual(geometry.NetworkName, readGeometry.NetworkName);
+                    Assert.AreEqual(geometry.NodesY, readGeometry.NodesY);
+                    Assert.AreEqual(geometry.NodesX, readGeometry.NodesX);
+                    Assert.AreEqual(geometry.NodeIds, readGeometry.NodeIds);
+                    Assert.AreEqual(geometry.NodeLongNames, readGeometry.NodeLongNames);
+
+                    Assert.AreEqual(geometry.BranchIds, readGeometry.BranchIds);
+                    Assert.AreEqual(geometry.BranchLongNames, readGeometry.BranchLongNames);
+                    Assert.AreEqual(geometry.BranchLengths, readGeometry.BranchLengths);
+                    Assert.AreEqual(geometry.BranchOrder, readGeometry.BranchOrder);
+                    Assert.AreEqual(geometry.BranchTypes, readGeometry.BranchTypes);
+                    Assert.AreEqual(geometry.NodesFrom, readGeometry.NodesFrom);
+                    Assert.AreEqual(geometry.NodesTo, readGeometry.NodesTo);
+
+                    Assert.AreEqual(geometry.BranchGeometryNodesCount, readGeometry.BranchGeometryNodesCount);
                     Assert.AreEqual(geometry.BranchGeometryX, readGeometry.BranchGeometryX);
                     Assert.AreEqual(geometry.BranchGeometryY, readGeometry.BranchGeometryY);
                 }
@@ -397,24 +463,26 @@ namespace Deltares.UGrid.Tests.Api
                 FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
                 MaxNumberOfFaceNodes = 4
             };
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
 
             // Arrange & Act
             using (disposable2DMeshGeometry)
             using (var api = new UGridApi())
             {
-                var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
-
+            
                 api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
 
                 var meshId = api.WriteMesh2D(disposable2DMeshGeometry);
 
                 Assert.AreEqual(1, meshId);
+            }
 
-                api.Close();
-
+            // Asserts
+            using (var api = new UGridApi())
+            {
                 api.Open(path);
-
-                meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
                 using (var readMesh2DGeometry = api.GetMesh2D(meshId))
                 {
                     Assert.AreEqual(disposable2DMeshGeometry.NodesX, readMesh2DGeometry.NodesX);
@@ -425,6 +493,421 @@ namespace Deltares.UGrid.Tests.Api
                     Assert.AreEqual(disposable2DMeshGeometry.FaceY, readMesh2DGeometry.FaceY);
                     Assert.AreEqual(disposable2DMeshGeometry.MaxNumberOfFaceNodes, readMesh2DGeometry.MaxNumberOfFaceNodes);
                     Assert.AreEqual(disposable2DMeshGeometry.Name, readMesh2DGeometry.Name);
+                }
+            }
+        }
+        
+        [Test]
+        public void GivenUGrid_WriteMesh2D_CheckMemory_ShouldWork()
+        {
+            //
+            //          7
+            //    6.----.----. 8
+            //     |    |    | 
+            //     |    |    | 
+            //    3.----.----. 5
+            //     |   4|    | 
+            //     |    |    | 
+            //     .----.----.
+            //     0    1    2
+            //
+            // 
+
+            var disposable2DMeshGeometry = new Disposable2DMeshGeometry
+            {
+                Name = "Mesh2d",
+                NodesX = new double[] { 1, 2, 3, 1, 2, 3, 1, 2, 3 },
+                NodesY = new double[] { 1, 1, 1, 2, 2, 2, 3, 3, 3 },
+                EdgeNodes = new []{0,1,1,2,0,3,1,4,2,5,3,4,4,5,3,6,4,7,5,8,6,7,7,8},
+                FaceNodes = new []{0,1,3,4,  1,2,4,5,  3,4,6,7  ,4,5,7,8},
+                FaceX = new double[] { 1.5, 1.5, 2.5, 2.5 },
+                FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
+                MaxNumberOfFaceNodes = 4
+            };
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
+
+            // Arrange & Act
+            using (disposable2DMeshGeometry)
+            using (var api = new UGridApi())
+            {
+            
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var meshId = api.WriteMesh2D(disposable2DMeshGeometry);
+
+                Assert.AreEqual(1, meshId);
+
+                // Asserts
+                using (var readMesh2DGeometry = api.GetMesh2D(meshId))
+                {
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesX, readMesh2DGeometry.NodesX);
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesY, readMesh2DGeometry.NodesY);
+                    Assert.AreEqual(disposable2DMeshGeometry.EdgeNodes, readMesh2DGeometry.EdgeNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceNodes, readMesh2DGeometry.FaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceX, readMesh2DGeometry.FaceX);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceY, readMesh2DGeometry.FaceY);
+                    Assert.AreEqual(disposable2DMeshGeometry.MaxNumberOfFaceNodes, readMesh2DGeometry.MaxNumberOfFaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.Name, readMesh2DGeometry.Name);
+                }
+            }
+        }
+
+        [Test]
+        public void GivenUGrid_WriteNetworkGeomThenMesh1DThenMesh2DThenZValuesOnNodeMesh2DThenLinksAndReadBack_ShouldWork()
+        {
+            var geometry = new DisposableNetworkGeometry
+            {
+                NetworkName = "Test_network",
+
+                NodesX = new double[] { 1, 4, 5 },
+                NodesY = new double[] { 4, 6, 6 },
+                NodeIds = new string[] { "node1", "node2", "node3" },
+                NodeLongNames = new string[] { "node1 long name", "node2 long name", "node3 long name" },
+
+                BranchIds = new string[] { "Branch1" },
+                BranchLongNames = new string[] { "Branch 1 long name"},
+                BranchLengths = new double[] { 220.9 },
+                BranchOrder = new int[] { 5 },
+                BranchTypes = new int[] { 1 },
+                NodesFrom = new int[] { 0 },
+                NodesTo = new int[] { 1 },
+                BranchGeometryNodesCount = new int[] { 4 },
+
+                BranchGeometryX = new double[] { 1,4,3,5 },
+                BranchGeometryY = new double[] { 4,6,7,6 }
+            };
+
+            var disposable1DMeshGeometry = new Disposable1DMeshGeometry
+            {
+                Name = "Mesh1d",
+                NodesX = new double[] { 1, 4, 5 },
+                NodesY = new double[] { 4, 6, 6 },
+                BranchIDs = new int[] { 0, 0, 0 },
+                BranchOffsets = new double[] { 1, 2, 3 },
+                NodeLongNames = new string[] { "Long name 1", "Long name 2", "Long name 3" },
+                NodeIds = new string[] { "Node1", "Node2", "Node3" },
+                EdgeBranchIds = new int[] { 0, 0 },
+                EdgeNodes = new int[] { 0, 1, 1, 2, 2, 3 },
+                EdgeCenterPointOffset = new double[] { 1.5, 2.5 },
+                EdgeCenterPointX = new[] { 1.5, 2.5 },
+                EdgeCenterPointY = new[] { 1.5, 2.5 }
+            };
+            
+
+            //
+            //          7
+            //    6.----.----. 8
+            //     |    |    | 
+            //     |    |    | 
+            //    3.----.----. 5
+            //     |   4|    | 
+            //     |    |    | 
+            //     .----.----.
+            //     0    1    2
+            //
+            // 
+
+            var disposable2DMeshGeometry = new Disposable2DMeshGeometry
+            {
+                Name = "Mesh2d",
+                NodesX = new double[] { 1, 2, 3, 1, 2, 3, 1, 2, 3 },
+                NodesY = new double[] { 1, 1, 1, 2, 2, 2, 3, 3, 3 },
+                EdgeNodes = new []{0,1,1,2,0,3,1,4,2,5,3,4,4,5,3,6,4,7,5,8,6,7,7,8},
+                FaceNodes = new []{0,1,3,4,  1,2,4,5,  3,4,6,7  ,4,5,7,8},
+                FaceX = new double[] { 1.5, 1.5, 2.5, 2.5 },
+                FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
+                MaxNumberOfFaceNodes = 4
+            };
+            var disposableLinksGeometry = new DisposableLinksGeometry
+            {
+                LinkId = new string[] { "Linkid1" },
+                LinkLongName = new string[] { "Link long name 1" },
+                LinkType = new int[] { 3 },
+                Mesh2DTo = new int[] { 3 },
+                Mesh1DFrom = new int[] { 1 }
+            };
+
+            // Arrange & Act
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
+
+            double[] valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length)
+                .Select(Convert.ToDouble).ToArray();
+
+            using (geometry)
+            using (disposable1DMeshGeometry)
+            using (disposable2DMeshGeometry)
+            using (disposableLinksGeometry)
+            using (var api = new UGridApi())
+            {
+                
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var networkId = api.WriteNetworkGeometry(geometry);
+                var mesh1DId = api.WriteMesh1D(disposable1DMeshGeometry, networkId);
+
+                Assert.AreEqual(1, networkId);
+                Assert.AreEqual(1, mesh1DId);
+
+                var mesh2DId = api.WriteMesh2D(disposable2DMeshGeometry);
+
+                Assert.AreEqual(2, mesh2DId);
+                
+                api.SetVariableValues("node_z", "altitude", "z-coordinate of mesh nodes", "m", mesh2DId,
+                    GridLocationType.Node, valuesToSet, -300);
+                
+                var linksId = api.WriteLinks(disposableLinksGeometry);
+
+                Assert.AreEqual(1, linksId);
+            }
+
+            // Asserts
+            using (var api = new UGridApi())
+            {
+                api.Open(path);
+                
+                var mesh1DId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh1D).FirstOrDefault();
+                Assert.AreEqual(1, mesh1DId);
+                
+                var networkId = api.GetNetworkIdFromMeshId(mesh1DId);
+                Assert.AreEqual(1, networkId);
+
+                using (var readNetworkGeometry = api.GetNetworkGeometry(networkId))
+                {
+                    Assert.AreEqual(geometry.NetworkName, readNetworkGeometry.NetworkName);
+                    Assert.AreEqual(geometry.NodesX, readNetworkGeometry.NodesX);
+                    Assert.AreEqual(geometry.NodesY, readNetworkGeometry.NodesY);
+                    Assert.AreEqual(geometry.NodeIds, readNetworkGeometry.NodeIds);
+                    Assert.AreEqual(geometry.NodeLongNames, readNetworkGeometry.NodeLongNames);
+
+                    Assert.AreEqual(geometry.BranchIds, readNetworkGeometry.BranchIds);
+                    Assert.AreEqual(geometry.BranchLongNames, readNetworkGeometry.BranchLongNames);
+                    Assert.AreEqual(geometry.BranchLengths, readNetworkGeometry.BranchLengths);
+                    Assert.AreEqual(geometry.BranchOrder, readNetworkGeometry.BranchOrder);
+                    Assert.AreEqual(geometry.BranchTypes, readNetworkGeometry.BranchTypes);
+                    Assert.AreEqual(geometry.NodesFrom, readNetworkGeometry.NodesFrom);
+                    Assert.AreEqual(geometry.NodesTo, readNetworkGeometry.NodesTo);
+
+                    Assert.AreEqual(geometry.BranchGeometryNodesCount, readNetworkGeometry.BranchGeometryNodesCount);
+                    Assert.AreEqual(geometry.BranchGeometryX, readNetworkGeometry.BranchGeometryX);
+                    Assert.AreEqual(geometry.BranchGeometryY, readNetworkGeometry.BranchGeometryY);
+                }
+
+                using (var readMesh = api.GetMesh1D(mesh1DId))
+                {
+                    Assert.AreEqual(disposable1DMeshGeometry.Name, readMesh.Name);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesX, readMesh.NodesX);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesY, readMesh.NodesY);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchIDs, readMesh.BranchIDs);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchOffsets, readMesh.BranchOffsets);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeLongNames, readMesh.NodeLongNames);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeIds, readMesh.NodeIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeBranchIds, readMesh.EdgeBranchIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointOffset, readMesh.EdgeCenterPointOffset);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointX, readMesh.EdgeCenterPointX);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointY, readMesh.EdgeCenterPointY);
+                }
+
+                var mesh2DId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).FirstOrDefault();
+                Assert.AreEqual(2, mesh2DId);
+                using (var readMesh2DGeometry = api.GetMesh2D(mesh2DId))
+                {
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesX, readMesh2DGeometry.NodesX);
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesY, readMesh2DGeometry.NodesY);
+                    Assert.AreEqual(disposable2DMeshGeometry.EdgeNodes, readMesh2DGeometry.EdgeNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceNodes, readMesh2DGeometry.FaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceX, readMesh2DGeometry.FaceX);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceY, readMesh2DGeometry.FaceY);
+                    Assert.AreEqual(disposable2DMeshGeometry.MaxNumberOfFaceNodes, readMesh2DGeometry.MaxNumberOfFaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.Name, readMesh2DGeometry.Name);
+                }
+
+                var values = api.GetVariableValues("node_z", mesh2DId, GridLocationType.Node);
+
+                Assert.AreEqual(values.Length, 9);
+                for (int i = 0; i < values.Length; i++)
+                {
+                    Assert.AreEqual(values[i], i + 1);
+                }
+
+                var linksId = api.GetLinksId();
+                Assert.AreEqual(1, linksId);
+                using (var readLinksGeometry = api.GetLinks(linksId))
+                {
+                    Assert.AreEqual(disposableLinksGeometry.LinkId, readLinksGeometry.LinkId);
+                    Assert.AreEqual(disposableLinksGeometry.LinkLongName, readLinksGeometry.LinkLongName);
+                    Assert.AreEqual(disposableLinksGeometry.LinkType, readLinksGeometry.LinkType);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh1DFrom, readLinksGeometry.Mesh1DFrom);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh2DTo, readLinksGeometry.Mesh2DTo);
+                }
+            }
+
+        }
+    
+        [Test]
+        public void GivenUGrid_WriteNetworkGeomThenMesh1DThenMesh2DThenZValuesOnNodeMesh2DThenLinksAndReadBack_CheckMemory_ShouldWork()
+        {
+            var geometry = new DisposableNetworkGeometry
+            {
+                NetworkName = "Test_network",
+
+                NodesX = new double[] { 1, 4, 5 },
+                NodesY = new double[] { 4, 6, 6 },
+                NodeIds = new string[] { "node1", "node2", "node3" },
+                NodeLongNames = new string[] { "node1 long name", "node2 long name", "node3 long name" },
+
+                BranchIds = new string[] { "Branch1" },
+                BranchLongNames = new string[] { "Branch 1 long name"},
+                BranchLengths = new double[] { 220.9 },
+                BranchOrder = new int[] { 5 },
+                BranchTypes = new int[] { 1 },
+                NodesFrom = new int[] { 0 },
+                NodesTo = new int[] { 1 },
+                BranchGeometryNodesCount = new int[] { 4 },
+
+                BranchGeometryX = new double[] { 1,4,3,5 },
+                BranchGeometryY = new double[] { 4,6,7,6 }
+            };
+
+            var disposable1DMeshGeometry = new Disposable1DMeshGeometry
+            {
+                Name = "Mesh1d",
+                NodesX = new double[] { 1, 4, 5 },
+                NodesY = new double[] { 4, 6, 6 },
+                BranchIDs = new int[] { 0, 0, 0 },
+                BranchOffsets = new double[] { 1, 2, 3 },
+                NodeLongNames = new string[] { "Long name 1", "Long name 2", "Long name 3" },
+                NodeIds = new string[] { "Node1", "Node2", "Node3" },
+                EdgeBranchIds = new int[] { 0, 0 },
+                EdgeNodes = new int[] { 0, 1, 1, 2, 2, 3 },
+                EdgeCenterPointOffset = new double[] { 1.5, 2.5 },
+                EdgeCenterPointX = new[] { 1.5, 2.5 },
+                EdgeCenterPointY = new[] { 1.5, 2.5 }
+            };
+            
+
+            //
+            //          7
+            //    6.----.----. 8
+            //     |    |    | 
+            //     |    |    | 
+            //    3.----.----. 5
+            //     |   4|    | 
+            //     |    |    | 
+            //     .----.----.
+            //     0    1    2
+            //
+            // 
+
+            var disposable2DMeshGeometry = new Disposable2DMeshGeometry
+            {
+                Name = "Mesh2d",
+                NodesX = new double[] { 1, 2, 3, 1, 2, 3, 1, 2, 3 },
+                NodesY = new double[] { 1, 1, 1, 2, 2, 2, 3, 3, 3 },
+                EdgeNodes = new []{0,1,1,2,0,3,1,4,2,5,3,4,4,5,3,6,4,7,5,8,6,7,7,8},
+                FaceNodes = new []{0,1,3,4,  1,2,4,5,  3,4,6,7  ,4,5,7,8},
+                FaceX = new double[] { 1.5, 1.5, 2.5, 2.5 },
+                FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
+                MaxNumberOfFaceNodes = 4
+            };
+
+            var disposableLinksGeometry = new DisposableLinksGeometry
+            {
+                LinkId = new string[] { "Linkid1" },
+                LinkLongName = new string[] { "Link long name 1" },
+                LinkType = new int[] { 3 },
+                Mesh2DTo = new int[] { 3 },
+                Mesh1DFrom = new int[] { 1 }
+            };
+
+            // Arrange & Act
+            using (geometry)
+            using (disposable1DMeshGeometry)
+            using (disposable2DMeshGeometry)
+            using (disposableLinksGeometry)
+            using (var api = new UGridApi())
+            {
+                var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
+
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var networkId = api.WriteNetworkGeometry(geometry);
+                var mesh1DId = api.WriteMesh1D(disposable1DMeshGeometry, networkId);
+
+                Assert.AreEqual(1, networkId);
+                Assert.AreEqual(1, mesh1DId);
+
+                using (var readNetworkGeometry = api.GetNetworkGeometry(networkId))
+                {
+                    Assert.AreEqual(geometry.NetworkName, readNetworkGeometry.NetworkName);
+                    Assert.AreEqual(geometry.NodesX, readNetworkGeometry.NodesX);
+                    Assert.AreEqual(geometry.NodesY, readNetworkGeometry.NodesY);
+                    Assert.AreEqual(geometry.NodeIds, readNetworkGeometry.NodeIds);
+                    Assert.AreEqual(geometry.NodeLongNames, readNetworkGeometry.NodeLongNames);
+
+                    Assert.AreEqual(geometry.BranchIds, readNetworkGeometry.BranchIds);
+                    Assert.AreEqual(geometry.BranchLongNames, readNetworkGeometry.BranchLongNames);
+                    Assert.AreEqual(geometry.BranchLengths, readNetworkGeometry.BranchLengths);
+                    Assert.AreEqual(geometry.BranchOrder, readNetworkGeometry.BranchOrder);
+                    Assert.AreEqual(geometry.BranchTypes, readNetworkGeometry.BranchTypes);
+                    Assert.AreEqual(geometry.NodesFrom, readNetworkGeometry.NodesFrom);
+                    Assert.AreEqual(geometry.NodesTo, readNetworkGeometry.NodesTo);
+
+                    Assert.AreEqual(geometry.BranchGeometryNodesCount, readNetworkGeometry.BranchGeometryNodesCount);
+                    Assert.AreEqual(geometry.BranchGeometryX, readNetworkGeometry.BranchGeometryX);
+                    Assert.AreEqual(geometry.BranchGeometryY, readNetworkGeometry.BranchGeometryY);
+                }
+                using (var readMesh = api.GetMesh1D(mesh1DId))
+                {
+                    Assert.AreEqual(disposable1DMeshGeometry.Name, readMesh.Name);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesX, readMesh.NodesX);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesY, readMesh.NodesY);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchIDs, readMesh.BranchIDs);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchOffsets, readMesh.BranchOffsets);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeLongNames, readMesh.NodeLongNames);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeIds, readMesh.NodeIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeBranchIds, readMesh.EdgeBranchIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointOffset, readMesh.EdgeCenterPointOffset);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointX, readMesh.EdgeCenterPointX);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointY, readMesh.EdgeCenterPointY);
+                }
+
+                var mesh2DId = api.WriteMesh2D(disposable2DMeshGeometry);
+
+                Assert.AreEqual(2, mesh2DId);
+                using (var readMesh2DGeometry = api.GetMesh2D(mesh2DId))
+                {
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesX, readMesh2DGeometry.NodesX);
+                    Assert.AreEqual(disposable2DMeshGeometry.NodesY, readMesh2DGeometry.NodesY);
+                    Assert.AreEqual(disposable2DMeshGeometry.EdgeNodes, readMesh2DGeometry.EdgeNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceNodes, readMesh2DGeometry.FaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceX, readMesh2DGeometry.FaceX);
+                    Assert.AreEqual(disposable2DMeshGeometry.FaceY, readMesh2DGeometry.FaceY);
+                    Assert.AreEqual(disposable2DMeshGeometry.MaxNumberOfFaceNodes, readMesh2DGeometry.MaxNumberOfFaceNodes);
+                    Assert.AreEqual(disposable2DMeshGeometry.Name, readMesh2DGeometry.Name);
+                }
+
+                double[] valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length).Select(Convert.ToDouble).ToArray();
+
+                api.SetVariableValues("node_z", "altitude", "z-coordinate of mesh nodes", "m", mesh2DId, GridLocationType.Node, valuesToSet, -300);
+                var values = api.GetVariableValues("node_z", mesh2DId, GridLocationType.Node);
+
+                Assert.AreEqual(values.Length, 9);
+                for (int i = 0; i < values.Length; i++)
+                {
+                    Assert.AreEqual(values[i], i + 1);
+                }
+                
+                var linksId = api.WriteLinks(disposableLinksGeometry);
+                Assert.AreEqual(1, linksId);
+                using (var readLinksGeometry = api.GetLinks(linksId))
+                {
+                    Assert.AreEqual(disposableLinksGeometry.LinkId, readLinksGeometry.LinkId);
+                    Assert.AreEqual(disposableLinksGeometry.LinkLongName, readLinksGeometry.LinkLongName);
+                    Assert.AreEqual(disposableLinksGeometry.LinkType, readLinksGeometry.LinkType);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh1DFrom, readLinksGeometry.Mesh1DFrom);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh2DTo, readLinksGeometry.Mesh2DTo);
                 }
             }
         }
@@ -478,7 +961,118 @@ namespace Deltares.UGrid.Tests.Api
         }
         
         [Test]
-        public void GivenUGrid_WriteMesh1D_ShouldWork()
+        public void GivenUGrid_WriteMesh1DWithNetworkGeometry_ShouldWork()
+        {
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
+
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            var geometry = new DisposableNetworkGeometry
+            {
+                NetworkName = "Test_network",
+
+                NodesY = new double[] { 4, 6 },
+                NodesX = new double[] { 1, 4 },
+                NodeIds = new string[] { "node1", "node2" },
+                NodeLongNames = new string[] { "node1 long name", "node2 long name" },
+
+                BranchIds = new string[] { "Branch 1" },
+                BranchLongNames = new string[] { "Branch 1 long name" },
+                BranchLengths = new double[] { 220.9 },
+                BranchOrder = new int[] { 5 },
+                BranchTypes = new int[] { 1 },
+                NodesFrom = new int[] { 0 },
+                NodesTo = new int[] { 1 },
+
+                BranchGeometryNodesCount = new int[] { 4 },
+                BranchGeometryX = new double[] { 5, 6, 7, 8 },
+                BranchGeometryY = new double[] { 5, 6, 7, 8 }
+            };
+
+            var disposable1DMeshGeometry = new Disposable1DMeshGeometry
+            {
+                Name = "Mesh 1d",
+                NodesX = new double[] { 1, 2, 3 },
+                NodesY = new double[] { 1, 1, 1 },
+                BranchIDs = new int[] { 0, 0, 0 },
+                BranchOffsets = new double[] { 1, 2, 3 },
+                NodeLongNames = new string[] { "Long name 1", "Long name 2", "Long name 3" },
+                NodeIds = new string[] { "Node1", "Node2", "Node3" },
+                EdgeBranchIds = new int[] {0, 0},
+                EdgeNodes = new int[] { 0, 1, 1, 2, 2, 3 },
+                EdgeCenterPointOffset = new double[] {1.5, 2.5},
+                EdgeCenterPointX = new []{1.5,2.5},
+                EdgeCenterPointY = new[] { 1.5, 2.5 }
+            };
+
+            // Arrange & Act
+            using(geometry) 
+            using(disposable1DMeshGeometry)
+            using (var api = new UGridApi())
+            {
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var networkId = api.WriteNetworkGeometry(geometry);
+                var meshId = api.WriteMesh1D(disposable1DMeshGeometry, networkId);
+
+                Assert.AreEqual(1, networkId);
+                Assert.AreEqual(1, meshId);
+            }
+
+            // Asserts
+            using (var api = new UGridApi())
+            {
+                api.Open(path);
+
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh1D).FirstOrDefault();
+                Assert.AreEqual(1, meshId);
+
+                var networkId = api.GetNetworkIdFromMeshId(meshId);
+                Assert.AreEqual(1, networkId);
+                using (var readMesh = api.GetMesh1D(meshId))
+                {
+                    Assert.AreEqual(disposable1DMeshGeometry.Name, readMesh.Name);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesX, readMesh.NodesX);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesY, readMesh.NodesY);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchIDs, readMesh.BranchIDs);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchOffsets, readMesh.BranchOffsets);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeLongNames, readMesh.NodeLongNames);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeIds, readMesh.NodeIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeBranchIds, readMesh.EdgeBranchIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointOffset, readMesh.EdgeCenterPointOffset);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointX, readMesh.EdgeCenterPointX);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointY, readMesh.EdgeCenterPointY);
+                }
+
+                using (var readNetworkGeometry = api.GetNetworkGeometry(networkId))
+                {
+                    Assert.AreEqual(geometry.NetworkName, readNetworkGeometry.NetworkName);
+                    Assert.AreEqual(geometry.NodesX, readNetworkGeometry.NodesX);
+                    Assert.AreEqual(geometry.NodesY, readNetworkGeometry.NodesY);
+                    Assert.AreEqual(geometry.NodeIds, readNetworkGeometry.NodeIds);
+                    Assert.AreEqual(geometry.NodeLongNames, readNetworkGeometry.NodeLongNames);
+
+                    Assert.AreEqual(geometry.BranchIds, readNetworkGeometry.BranchIds);
+                    Assert.AreEqual(geometry.BranchLongNames, readNetworkGeometry.BranchLongNames);
+                    Assert.AreEqual(geometry.BranchLengths, readNetworkGeometry.BranchLengths);
+                    Assert.AreEqual(geometry.BranchOrder, readNetworkGeometry.BranchOrder);
+                    Assert.AreEqual(geometry.BranchTypes, readNetworkGeometry.BranchTypes);
+                    Assert.AreEqual(geometry.NodesFrom, readNetworkGeometry.NodesFrom);
+                    Assert.AreEqual(geometry.NodesTo, readNetworkGeometry.NodesTo);
+                    
+                    Assert.AreEqual(geometry.BranchGeometryNodesCount, readNetworkGeometry.BranchGeometryNodesCount);
+                    Assert.AreEqual(geometry.BranchGeometryX, readNetworkGeometry.BranchGeometryX);
+                    Assert.AreEqual(geometry.BranchGeometryY, readNetworkGeometry.BranchGeometryY);
+                }
+            }
+        }
+
+        [Test]
+        public void GivenUGrid_WriteMesh1DWithNetworkGeometry_CheckMemory_ShouldWork()
         {
             var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
                 TestContext.CurrentContext.Test.Name + ".nc"));
@@ -519,16 +1113,16 @@ namespace Deltares.UGrid.Tests.Api
                 BranchOffsets = new double[] { 1, 2, 3 },
                 NodeLongNames = new string[] { "Long name 1", "Long name 2", "Long name 3" },
                 NodeIds = new string[] { "Node1", "Node2", "Node3" },
-                EdgeBranchIds = new int[] {0, 0},
+                EdgeBranchIds = new int[] { 0, 0 },
                 EdgeNodes = new int[] { 0, 1, 1, 2, 2, 3 },
-                EdgeCenterPointOffset = new double[] {1.5, 2.5},
-                EdgeCenterPointX = new []{1.5,2.5},
+                EdgeCenterPointOffset = new double[] { 1.5, 2.5 },
+                EdgeCenterPointX = new[] { 1.5, 2.5 },
                 EdgeCenterPointY = new[] { 1.5, 2.5 }
             };
 
             // Arrange & Act
-            using(geometry) 
-            using(disposable1DMeshGeometry)
+            using (geometry)
+            using (disposable1DMeshGeometry)
             using (var api = new UGridApi())
             {
                 api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
@@ -539,23 +1133,41 @@ namespace Deltares.UGrid.Tests.Api
                 Assert.AreEqual(1, networkId);
                 Assert.AreEqual(1, meshId);
 
-                api.Close();
-                api.Open(path);
+                using (var readMesh = api.GetMesh1D(meshId))
+                {
+                    Assert.AreEqual(disposable1DMeshGeometry.Name, readMesh.Name);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesX, readMesh.NodesX);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodesY, readMesh.NodesY);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchIDs, readMesh.BranchIDs);
+                    Assert.AreEqual(disposable1DMeshGeometry.BranchOffsets, readMesh.BranchOffsets);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeLongNames, readMesh.NodeLongNames);
+                    Assert.AreEqual(disposable1DMeshGeometry.NodeIds, readMesh.NodeIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeBranchIds, readMesh.EdgeBranchIds);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointOffset, readMesh.EdgeCenterPointOffset);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointX, readMesh.EdgeCenterPointX);
+                    Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointY, readMesh.EdgeCenterPointY);
+                }
 
-                meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh1D).First();
-                var readMesh = api.GetMesh1D(meshId);
+                using (var readNetworkGeometry = api.GetNetworkGeometry(networkId))
+                {
+                    Assert.AreEqual(geometry.NetworkName, readNetworkGeometry.NetworkName);
+                    Assert.AreEqual(geometry.NodesX, readNetworkGeometry.NodesX);
+                    Assert.AreEqual(geometry.NodesY, readNetworkGeometry.NodesY);
+                    Assert.AreEqual(geometry.NodeIds, readNetworkGeometry.NodeIds);
+                    Assert.AreEqual(geometry.NodeLongNames, readNetworkGeometry.NodeLongNames);
 
-                Assert.AreEqual(disposable1DMeshGeometry.Name, readMesh.Name);
-                Assert.AreEqual(disposable1DMeshGeometry.NodesX, readMesh.NodesX);
-                Assert.AreEqual(disposable1DMeshGeometry.NodesY, readMesh.NodesY);
-                Assert.AreEqual(disposable1DMeshGeometry.BranchIDs, readMesh.BranchIDs);
-                Assert.AreEqual(disposable1DMeshGeometry.BranchOffsets, readMesh.BranchOffsets);
-                Assert.AreEqual(disposable1DMeshGeometry.NodeLongNames, readMesh.NodeLongNames);
-                Assert.AreEqual(disposable1DMeshGeometry.NodeIds, readMesh.NodeIds);
-                Assert.AreEqual(disposable1DMeshGeometry.EdgeBranchIds, readMesh.EdgeBranchIds);
-                Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointOffset, readMesh.EdgeCenterPointOffset);
-                Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointX, readMesh.EdgeCenterPointX);
-                Assert.AreEqual(disposable1DMeshGeometry.EdgeCenterPointY, readMesh.EdgeCenterPointY);
+                    Assert.AreEqual(geometry.BranchIds, readNetworkGeometry.BranchIds);
+                    Assert.AreEqual(geometry.BranchLongNames, readNetworkGeometry.BranchLongNames);
+                    Assert.AreEqual(geometry.BranchLengths, readNetworkGeometry.BranchLengths);
+                    Assert.AreEqual(geometry.BranchOrder, readNetworkGeometry.BranchOrder);
+                    Assert.AreEqual(geometry.BranchTypes, readNetworkGeometry.BranchTypes);
+                    Assert.AreEqual(geometry.NodesFrom, readNetworkGeometry.NodesFrom);
+                    Assert.AreEqual(geometry.NodesTo, readNetworkGeometry.NodesTo);
+
+                    Assert.AreEqual(geometry.BranchGeometryNodesCount, readNetworkGeometry.BranchGeometryNodesCount);
+                    Assert.AreEqual(geometry.BranchGeometryX, readNetworkGeometry.BranchGeometryX);
+                    Assert.AreEqual(geometry.BranchGeometryY, readNetworkGeometry.BranchGeometryY);
+                }
             }
         }
 
@@ -603,44 +1215,78 @@ namespace Deltares.UGrid.Tests.Api
             }
 
             // Arrange & Act
+            var disposableLinksGeometry = new DisposableLinksGeometry
+            {
+                LinkId = new string[] { "Link id 1" },
+                LinkLongName = new string[] { "Link long name 1" },
+                LinkType = new int[] { 3 },
+                Mesh2DTo = new int[] { 1 },
+                Mesh1DFrom = new int[] { 2 }
+            };
+            using (disposableLinksGeometry)
             using (var api = new UGridApi())
             {
-                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4")); 
+                var linksId = api.WriteLinks(disposableLinksGeometry);
+                Assert.AreEqual(1, linksId);
 
-                var disposableLinksGeometry = new DisposableLinksGeometry
+            }
+
+            // Asserts
+            using (var api = new UGridApi())
+            {
+                api.Open(path);
+                var linksId = api.GetLinksId();
+                Assert.AreEqual(1, linksId);
+                using (var readLinksGeometry = api.GetLinks(linksId))
                 {
-                    LinkId = new string[] {"Link id 1"},
-                    LinkLongName = new string[] { "Link long name 1" },
-                    LinkType = new int[] {3},
-                    Mesh2DTo = new int[] {1},
-                    Mesh1DFrom = new int[] { 2 }
-                };
-
-                using (disposableLinksGeometry)
-                {
-                    var linksId = api.WriteLinks(disposableLinksGeometry);
-
-                    Assert.AreEqual(1, linksId);
-
-                    api.Close();
-
-                    // re-open file
-                    api.Open(path);
-
-                    linksId = api.GetLinksId();
-                    
-                    using (var readLinksGeometry = api.GetLinks(linksId))
-                    {
-                        Assert.AreEqual(disposableLinksGeometry.LinkId, readLinksGeometry.LinkId);
-                        Assert.AreEqual(disposableLinksGeometry.LinkLongName, readLinksGeometry.LinkLongName);
-                        Assert.AreEqual(disposableLinksGeometry.LinkType, readLinksGeometry.LinkType);
-                        Assert.AreEqual(disposableLinksGeometry.Mesh1DFrom, readLinksGeometry.Mesh1DFrom);
-                        Assert.AreEqual(disposableLinksGeometry.Mesh2DTo, readLinksGeometry.Mesh2DTo);
-                    }
+                    Assert.AreEqual(disposableLinksGeometry.LinkId, readLinksGeometry.LinkId);
+                    Assert.AreEqual(disposableLinksGeometry.LinkLongName, readLinksGeometry.LinkLongName);
+                    Assert.AreEqual(disposableLinksGeometry.LinkType, readLinksGeometry.LinkType);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh1DFrom, readLinksGeometry.Mesh1DFrom);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh2DTo, readLinksGeometry.Mesh2DTo);
                 }
             }
         }
+        [Test]
+        public void GivenUGrid_WriteLinks_CheckMemory_ShouldWork()
+        {
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
 
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            // Arrange & Act
+            var disposableLinksGeometry = new DisposableLinksGeometry
+            {
+                LinkId = new string[] { "Link id 1" },
+                LinkLongName = new string[] { "Link long name 1" },
+                LinkType = new int[] { 3 },
+                Mesh2DTo = new int[] { 1 },
+                Mesh1DFrom = new int[] { 2 }
+            };
+
+            using (disposableLinksGeometry)
+            using (var api = new UGridApi())
+            {
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+                var linksId = api.WriteLinks(disposableLinksGeometry);
+                Assert.AreEqual(1, linksId); 
+
+                // Asserts
+                using (var readLinksGeometry = api.GetLinks(linksId))
+                {
+                    Assert.AreEqual(disposableLinksGeometry.LinkId, readLinksGeometry.LinkId);
+                    Assert.AreEqual(disposableLinksGeometry.LinkLongName, readLinksGeometry.LinkLongName);
+                    Assert.AreEqual(disposableLinksGeometry.LinkType, readLinksGeometry.LinkType);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh1DFrom, readLinksGeometry.Mesh1DFrom);
+                    Assert.AreEqual(disposableLinksGeometry.Mesh2DTo, readLinksGeometry.Mesh2DTo);
+                }
+            }
+        }
         [Test]
         public void GivenUGrid_GetVariableValuesOnMesh2D_ShouldWork()
         {
@@ -685,13 +1331,13 @@ namespace Deltares.UGrid.Tests.Api
                 FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
                 MaxNumberOfFaceNodes = 4
             };
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".",
+                TestContext.CurrentContext.Test.Name + ".nc"));
 
             // Arrange & Act
             using (disposable2DMeshGeometry)
             using (var api = new UGridApi())
             {
-                var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
-
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -700,43 +1346,53 @@ namespace Deltares.UGrid.Tests.Api
                 api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
 
                 var meshId = api.WriteMesh2D(disposable2DMeshGeometry);
-                
+
                 Assert.AreEqual(1, meshId);
+            }
 
-                api.Close(); // flush grid
+            var valuesToSet = new double[0];
+            var variableName = "abc";
 
+            using (var api = new UGridApi())
+            {
                 api.Open(path, OpenMode.Appending);
-
-                var valuesToSet= new double[0];
 
                 switch (locationType)
                 {
                     case GridLocationType.None:
                         break;
                     case GridLocationType.Node:
-                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length).Select(Convert.ToDouble).ToArray();
+                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length)
+                            .Select(Convert.ToDouble).ToArray();
                         break;
                     case GridLocationType.Edge:
-                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.EdgeNodes.Length/2).Select(Convert.ToDouble).ToArray();
+                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.EdgeNodes.Length / 2)
+                            .Select(Convert.ToDouble).ToArray();
                         break;
                     case GridLocationType.Face:
                     case GridLocationType.Volume:
-                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.FaceX.Length).Select(Convert.ToDouble).ToArray();
+                        valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.FaceX.Length)
+                            .Select(Convert.ToDouble).ToArray();
                         break;
                     case GridLocationType.All2D:
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(locationType), locationType, null);
-                };
+                }
 
-                var variableName = "abc";
-                api.SetVariableValues(variableName, "alphabet", "The alphabet.","l", meshId, locationType, valuesToSet, -300);
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                Assert.AreEqual(1, meshId);
 
-                api.Close();
+                api.SetVariableValues(variableName, "alphabet", "The alphabet.", "l", meshId, locationType, valuesToSet,
+                    -300);
 
-                api.Open(path);
+            }
 
-                meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+            using (var api = new UGridApi())
+            {
+                api.Open(path, OpenMode.Appending);
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                Assert.AreEqual(1, meshId);
 
                 var values = api.GetVariableValues(variableName, meshId, locationType);
                 var noDataValue = api.GetVariableNoDataValue(variableName, meshId, locationType);
@@ -790,30 +1446,18 @@ namespace Deltares.UGrid.Tests.Api
 
                 Assert.AreEqual(1, meshId);
 
-                api.Close(); // flush grid
-
                 var locationType = GridLocationType.Node;
                 var variableName = "abc";
-
-                api.Open(path, OpenMode.Appending);
 
                 // write values
                 var valuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length).Select(Convert.ToDouble).ToArray();
 
                 api.SetVariableValues(variableName, "alphabet", "The alphabet.", "l", meshId, locationType, valuesToSet, -300);
 
-                api.Close();
-
-                api.Open(path, OpenMode.Appending);
-
                 // rewrite values
                 var newValuesToSet = Enumerable.Range(1, disposable2DMeshGeometry.NodesX.Length).Select(i => Convert.ToDouble(i) + 10).ToArray();
 
                 api.SetVariableValues(variableName, "alphabet", "The alphabet.", "l", meshId, locationType, newValuesToSet, -300);
-
-                api.Close();
-
-                api.Open(path);
 
                 meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
 
@@ -854,33 +1498,90 @@ namespace Deltares.UGrid.Tests.Api
             };
 
             // Arrange & Act
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
+
             using (disposable2DMeshGeometry)
             using (var api = new UGridApi())
             {
-                var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
-
                 // create file with original mesh
                 api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
 
                 var meshId = api.WriteMesh2D(disposable2DMeshGeometry);
-
                 Assert.AreEqual(1, meshId);
+            }
 
-                api.Close();
-
-                // rewrite vertices coordinates
+            // rewrite vertices coordinates
+            var newXValues = disposable2DMeshGeometry.NodesX.Select(x => x + 2).ToArray();
+            var newYValues = disposable2DMeshGeometry.NodesY.Select(x => x + 3).ToArray();
+            using (var api = new UGridApi())
+            {
                 api.Open(path, OpenMode.Appending);
 
-                var newXValues = disposable2DMeshGeometry.NodesX.Select(x => x + 2).ToArray();
-                var newYValues = disposable2DMeshGeometry.NodesY.Select(x => x + 3).ToArray();
-
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                Assert.AreEqual(1, meshId);
                 api.ResetMeshVerticesCoordinates(meshId, newXValues, newYValues);
+            }
 
-                api.Close();
-
+            // Asserts
+            using (var api = new UGridApi())
+            {
                 api.Open(path);
 
-                meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                var meshId = api.GetMeshIdsByMeshType(UGridMeshType.Mesh2D).First();
+                using (var readMesh2DGeometry = api.GetMesh2D(meshId))
+                {
+                    Assert.AreEqual(newXValues, readMesh2DGeometry.NodesX);
+                    Assert.AreEqual(newYValues, readMesh2DGeometry.NodesY);
+                }
+            }
+        }
+
+        [Test]
+        public void GivenUGrid_DoingResetMeshVerticesCoordinates_InMemory_ShouldResetMeshVerticesToNewValues()
+        {
+            //
+            //          7
+            //    6.----.----. 8
+            //     |    |    | 
+            //     |    |    | 
+            //    3.----.----. 5
+            //     |   4|    | 
+            //     |    |    | 
+            //     .----.----.
+            //     0    1    2
+            //
+            // 
+
+            var disposable2DMeshGeometry = new Disposable2DMeshGeometry
+            {
+                Name = "Mesh2d",
+                NodesX = new double[] { 1, 2, 3, 1, 2, 3, 1, 2, 3 },
+                NodesY = new double[] { 1, 1, 1, 2, 2, 2, 3, 3, 3 },
+                EdgeNodes = new[] { 0, 1, 1, 2, 0, 3, 1, 4, 2, 5, 3, 4, 4, 5, 3, 6, 4, 7, 5, 8, 6, 7, 7, 8 },
+                FaceNodes = new[] { 0, 1, 3, 4, 1, 2, 4, 5, 3, 4, 6, 7, 4, 5, 7, 8 },
+                FaceX = new double[] { 1.5, 1.5, 2.5, 2.5 },
+                FaceY = new double[] { 1.5, 2.5, 1.5, 2.5 },
+                MaxNumberOfFaceNodes = 4
+            };
+
+            // Arrange & Act
+            var path = System.IO.Path.GetFullPath(System.IO.Path.Combine(".", TestContext.CurrentContext.Test.Name + ".nc"));
+
+            using (disposable2DMeshGeometry)
+            using (var api = new UGridApi())
+            {
+                // create file with original mesh
+                api.CreateFile(path, new FileMetaData("Test_model", "Test", "10.4"));
+
+                var meshId = api.WriteMesh2D(disposable2DMeshGeometry);
+                Assert.AreEqual(1, meshId);
+
+                // rewrite vertices coordinates
+                var newXValues = disposable2DMeshGeometry.NodesX.Select(x => x + 2).ToArray();
+                var newYValues = disposable2DMeshGeometry.NodesY.Select(x => x + 3).ToArray();
+                api.ResetMeshVerticesCoordinates(meshId, newXValues, newYValues);
+
+                // Asserts
                 using (var readMesh2DGeometry = api.GetMesh2D(meshId))
                 {
                     Assert.AreEqual(newXValues, readMesh2DGeometry.NodesX);
@@ -888,6 +1589,37 @@ namespace Deltares.UGrid.Tests.Api
                 }
             }
 
+        }
+
+        [TestCase(0, "No error")]
+        [TestCase(-2001, "Bad io_netcdf dataset ID")]
+        [TestCase(-2002, "File not opened/created")]
+        [TestCase(-2003, "Memory allocation failure")]
+        [TestCase(-2004, "Dataset non-compliant to any of the supported standards")]
+        [TestCase(-2005, "Functionality not available for this dataset (possibly dataset adheres to different conventions?)")]
+        [TestCase(-38, "NetCDF: Operation not allowed in data mode")]
+        [TestCase(-39, "NetCDF: Operation not allowed in define mode")]
+        [TestCase(-1010, "Generic error")]
+        [TestCase(-1011, "Invalid or missing mesh name, or mesh not found")]
+        [TestCase(-1012, "Invalid mesh topology dimension")]
+        [TestCase(-1013, "Invalid topological data location")]
+        [TestCase(-1014, "Output array too small to store all values")]
+        [TestCase(-1015, "Variable not in dataset")]
+        [TestCase(-1016, "Too many matching variables found in dataset")]
+        [TestCase(-1017, "Invalid layer type")]
+        [TestCase(-1018, "Attribute not in dataset")]
+        [TestCase(-1019, "Dimension not in dataset")]
+        [TestCase(-1030, "Invalid coordinate reference system")]
+        [TestCase(-1031, "Invalid network name")]
+        [TestCase(-1032, "Invalid contact name")]
+        [TestCase(-1099, "Functionality not available yet (not implemented)")]
+
+        public void GivenUGrid_WhenErrorCode_ShouldReturnErrorMessage(int ierr, string errorMessage)
+        {
+            using (var api = new UGridApi())
+            {
+                Assert.That(api.GetReadableError(ierr), Is.EqualTo(errorMessage));
+            }
         }
     }
 }

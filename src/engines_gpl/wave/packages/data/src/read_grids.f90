@@ -576,6 +576,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
                          & filename_tmp, flowLinkConnectivity)
     use netcdf
+    use dwaves_version_module
     implicit none
 !
 ! Parameters
@@ -684,13 +685,10 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     logical                                :: regulargrid
     character(10)                          :: dum
     character(NF90_MAX_NAME)               :: string
-    character(256)                         :: version_full
-    character(256)                         :: company
-    character(256)                         :: companyurl
-    character(256)                         :: programname
     character(8)                           :: cdate
     character(10)                          :: ctime
     character(5)                           :: czone
+    character(256)                         :: full_version
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1054,10 +1052,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     ! Write the flow grid to a temporary NetCDF file in SCRIP format. Needed by ESMF_RegridWeightGen
     ! See http://www.earthsystemmodeling.org/esmf_releases/last_built/ESMF_refdoc/node3.html
     !
-    call getfullversionstring_WAVE(version_full)
-    call getprogramname_WAVE(programname)
-    call getcompany_WAVE(company)
-    call getcompanyurl_WAVE(companyurl)
+    call getfullversionstring_dwaves(full_version)
     call date_and_time(cdate, ctime, czone)
     !
     ! define name of output file
@@ -1071,11 +1066,11 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     ! global attributes
     !
     ierror = nf90_put_att(idfile, nf90_global,  'institution', trim(company)); call nc_check_err(ierror, "put_att global institution", filename_tmp)
-    ierror = nf90_put_att(idfile, nf90_global,  'references', trim(companyurl)); call nc_check_err(ierror, "put_att global references", filename_tmp)
-    ierror = nf90_put_att(idfile, nf90_global,  'source', trim(version_full)); call nc_check_err(ierror, "put_att global source", filename_tmp)
+    ierror = nf90_put_att(idfile, nf90_global,  'references', trim(company_url)); call nc_check_err(ierror, "put_att global references", filename_tmp)
+    ierror = nf90_put_att(idfile, nf90_global,  'source', trim(full_version)); call nc_check_err(ierror, "put_att global source", filename_tmp)
     ierror = nf90_put_att(idfile, nf90_global,  'history', &
            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
-           ', '//trim(programname)); call nc_check_err(ierror, "put_att global history", filename_tmp)
+           ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename_tmp)
     if (.not.sferic) then
        ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename_tmp)
        ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename_tmp)

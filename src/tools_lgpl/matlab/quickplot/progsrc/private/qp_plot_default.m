@@ -458,6 +458,9 @@ switch NVal
                     planecomp=data.YComp;
                 end
                 planecomp=xsign.*planecomp;
+                if ~isfield(data,'ZComp')
+                    data.ZComp = zeros(size(planecomp));
+                end
                 planecomp((planecomp==0) & (data.ZComp==0))=NaN;
                 
                 hold on
@@ -618,7 +621,12 @@ switch NVal
                 Qc1 = [Quant ' comp.1'];
                 Qc2 = [Quant ' comp.2'];
                 ax=Parent(1);
-                hNew(1)=line(squeeze(data.XComp),squeeze(Z),'parent',ax);
+                v = squeeze(data.XComp);
+                z = squeeze(Z);
+                if length(z) == length(v)+1
+                    z = (z(1:end-1) + z(2:end))/2;
+                end
+                hNew(1)=line(v,z,'parent',ax);
                 setaxesprops(ax,'Val-Z',{Qc1 'elevation'},{Units ZUnits});
                 if ~isempty(stn)
                     qp_title(ax,stn,'quantity',Qc1,'unit',Units,'time',TStr)
@@ -626,10 +634,11 @@ switch NVal
                 
                 ax=Parent(2);
                 if isfield(data,'YComp')
-                    hNew(2)=line(squeeze(data.YComp),squeeze(Z),'parent',ax);
+                    v = squeeze(data.YComp);
                 else
-                    hNew(2)=line(squeeze(data.ZComp),squeeze(Z),'parent',ax);
+                    v = squeeze(data.ZComp);
                 end
+                hNew(2)=line(v,z,'parent',ax);
                 setaxesprops(ax,'Val-Z',{Qc2 'elevation'},{Units ZUnits});
                 qp_title(ax,TStr,'quantity',Qc2,'unit',Units,'time',TStr)
                 

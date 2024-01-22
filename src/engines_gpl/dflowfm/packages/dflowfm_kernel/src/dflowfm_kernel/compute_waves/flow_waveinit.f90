@@ -75,7 +75,7 @@
    call realloc(usty_cc, ndkx, stat=ierr, keepExisting = .false., fill = 0d0)
    call aerr('usty_cc  (ndkx)', ierr, ndkx)
 
-   if (jawave==3 .or. jawave==4 .or. jawave==6) then
+   if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
       call realloc(wavfu, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavfu  (lnkx)', ierr, lnkx)
       call realloc(wavfv, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
@@ -84,13 +84,15 @@
       call aerr('sxwav  (ndx)', ierr, ndx)
       call realloc(sywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('sywav  (ndx)', ierr, ndx)
-      call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('sbxwav  (ndx)', ierr, ndx)
-      call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('sbywav  (ndx)', ierr, ndx)
+      if(jawave /= 7 .or. waveforcing == 3) then
+          call realloc(sbxwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('sbxwav  (ndx)', ierr, ndx)
+          call realloc(sbywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('sbywav  (ndx)', ierr, ndx)
+      endif
    endif
 
-   if (jawave==3) then
+   if (jawave == 3 .or. jawave == 7) then
       call realloc(wavmubnd, lnkx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('wavmubnd  (lnkx)', ierr, lnkx)
       call realloc(uorbwav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
@@ -102,12 +104,17 @@
       call aerr('mxwav(ndx)', ierr, ndx)
       call realloc(mywav, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
       call aerr('mywav(ndx)', ierr, ndx)
-
-      call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('dsurf(ndx)', ierr, ndx)
-      call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-      call aerr('dwcap(ndx)', ierr, ndx)
-   end if
+      if(jawave /= 7 .or. waveforcing == 3) then
+          call realloc(dsurf, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('dsurf(ndx)', ierr, ndx)
+          call realloc(dwcap, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('dwcap(ndx)', ierr, ndx)
+      endif
+      if(jawave == 7 .and. waveforcing == 2) then
+          call realloc(distot, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+          call aerr('distot(ndx)', ierr, ndx)
+      endif
+   endif
    !
    if  (jawave > 0) then
       call realloc( hwavcom,   ndx, stat=ierr, keepExisting = .false., fill = hwavuni)
@@ -266,57 +273,57 @@
          call aerr('hhwwci  (ndx)', ierr, ndx)
       endif
       !
-      if (windmodel .eq. 0) then
+      !if (windmodel .eq. 0) then
          call realloc(L1, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
          call aerr('L1  (ndx)', ierr, ndx)
          call realloc(Ltemp, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
          call aerr('Ltemp  (ndx)', ierr, ndx)
          call realloc(L0, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
          call aerr('L0  (ndx)', ierr, ndx)
-      endif
+      !endif
 
-      if (windmodel .eq. 1) then
-         call realloc(tt1, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('tt1  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(cwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('cwavt  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(cgwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('cgwavt  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(kwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('kwavt  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(nwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('nwavt  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(horadvec2, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('horadvec2  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(thetaadvec2, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('thetaadvec2  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(L0t, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('L0t  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(L1t, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('L1t  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(Ltempt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('Ltempt  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(ma, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('ma  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(mb, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('mb  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(wmagcc, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('wmagcc  (ndx)', ierr, ntheta*ndx)
-         call realloc(windspreadfac, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('windspreadfac (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(wsorE, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('wsorE  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(wsorT, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('wsorT  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(egradcg, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('egradcg  (ntheta,ndx)', ierr, ntheta*ndx)
-         call realloc(ddT, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('ddT  (ndx)', ierr, ntheta*ndx)
-         call realloc(SwE, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('SwE  (ndx)', ierr, ntheta*ndx)
-         call realloc(SwT, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
-         call aerr('SwT  (ndx)', ierr, ntheta*ndx)
-      endif
+      !if (windmodel .eq. 1) then
+      !   call realloc(tt1, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('tt1  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(cwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('cwavt  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(cgwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('cgwavt  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(kwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('kwavt  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(nwavt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('nwavt  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(horadvec2, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('horadvec2  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(thetaadvec2, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('thetaadvec2  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(L0t, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('L0t  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(L1t, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('L1t  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(Ltempt, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('Ltempt  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(ma, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('ma  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(mb, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('mb  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(wmagcc, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('wmagcc  (ndx)', ierr, ntheta*ndx)
+      !   call realloc(windspreadfac, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('windspreadfac (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(wsorE, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('wsorE  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(wsorT, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('wsorT  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(egradcg, (/ntheta,ndx/), stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('egradcg  (ntheta,ndx)', ierr, ntheta*ndx)
+      !   call realloc(ddT, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('ddT  (ndx)', ierr, ntheta*ndx)
+      !   call realloc(SwE, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('SwE  (ndx)', ierr, ntheta*ndx)
+      !   call realloc(SwT, ndx, stat=ierr, keepExisting = .false., fill = 0d0)
+      !   call aerr('SwT  (ndx)', ierr, ntheta*ndx)
+      !endif
 
       ! handle wave friction, has to be post-poned until here because of unavailability of ndx
       if (wavefricfile .ne. ' ') then

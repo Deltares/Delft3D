@@ -1,7 +1,8 @@
 subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
                 & h         ,hrms      ,tp        ,dir       ,npar      , &
-                & par       ,dzdx      ,dzdy      ,sbotx     ,sboty     , &
-                & ssusx     ,ssusy     ,cesus     ,vonkar    )
+                & par       ,dzdx      ,dzdy      ,vonkar    ,ws        , &
+                & poros     ,sbotx     ,sboty     ,ssusx     ,ssusy     , &
+                & cesus     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -45,38 +46,39 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
 ! Arguments
 !
     integer                  , intent(in)    :: npar
-    real(fp)                                 :: cesus
     real(fp)                 , intent(in)    :: chezy
     real(fp)                 , intent(in)    :: d50
     real(fp)                 , intent(in)    :: d90
     real(fp)                 , intent(in)    :: dir
-    real(fp)                                 :: dzdx
-    real(fp)                                 :: dzdy
-    real(fp)                                 :: h
-    real(fp)                                 :: hrms
+    real(fp)                 , intent(in)    :: dzdx
+    real(fp)                 , intent(in)    :: dzdy
+    real(fp)                 , intent(in)    :: h
+    real(fp)                 , intent(in)    :: hrms
     real(fp), dimension(npar), intent(in)    :: par
+    real(fp)                 , intent(in)    :: poros
     real(fp)                 , intent(in)    :: tp
     real(fp)                 , intent(in)    :: u
     real(fp)                 , intent(in)    :: v
     real(fp)                 , intent(in)    :: vonkar
+    real(fp)                 , intent(in)    :: ws
     !
     real(fp)                 , intent(out)   :: sbotx
     real(fp)                 , intent(out)   :: sboty
     real(fp)                 , intent(out)   :: ssusx
     real(fp)                 , intent(out)   :: ssusy
+    real(fp)                 , intent(out)   :: cesus
 !
 ! Local variables
 !
     integer                        :: ilun
-    logical, save                  :: crstr
-    logical, save                  :: exist
+    logical                        :: crstr
+    logical                        :: exist
     logical, save                  :: first
     real(fp)                       :: ag                   ! gravity acceleration
     real(fp)                       :: arga
     real(fp)                       :: b                    ! correction coefficient shear stress
     real(fp)                       :: bd
     real(fp)                       :: bs
-    real(fp)                       :: c                    ! velocity (es/ew) chezy waarde
     real(fp)                       :: c90
     real(fp)                       :: cf
     real(fp)                       :: critd
@@ -110,8 +112,9 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     real(fp), external             :: fgyint
     real(hp), external             :: termfy
     real(hp), external             :: termgy
-    real(fp), save                 :: epssl, faca, facu
-    !
+    real(fp)                       :: epssl
+    real(fp)                       :: faca
+    real(fp)                       :: facu
     !
     data first/.true./
 !
@@ -120,28 +123,10 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     if (first) then
        inquire (file = 'coef.inp', exist = exist)
        if (exist) then
-          open (newunit=ilun, file = 'coef.inp')
-          read (ilun, *) faca
-          read (ilun, *) facu
-          read (ilun, *) epssl
-          close (ilun)
-          crstr = .true.
-          write (*, '(A,/,A)') ' File coef.inp is read',                        &
-                              & ' Cross-shore transport is accounted for'
-       else
-          faca = 0.
-          facu = 0.
-          epssl = 0.
-          crstr = .false.
+          write (*, '(A)') 'Obsolete coef.inp file found; please use new keywords.'
        endif
        first = .false.
     endif
-    sbotx = 0.0
-    sboty = 0.0
-    ssusx = 0.0
-    ssusy = 0.0
-
-    cesus = 0.0
     !
     ag = par(1)
     delta = par(4)
@@ -149,80 +134,96 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     bd = par(12)
     crits = par(13)
     critd = par(14)
-    rk = par(16)
+    ! par(15) not used [was: d90]
+    ! par(16) not used [was: rk]
     w = par(17)
+    if (w < 0.0_fp) then
+       w = ws
+    endif
     por = par(18)
-    if (tp<1E-6) then
+    if (por < 0.0_fp) then
+       por = poros
+    endif
+    if (tp < 1e-6_fp) then
        t = par(19)
     else
        t = tp
     endif
+    faca = par(20)
+    facu = par(21)
+    epssl = par(22)
+    crstr = epssl > 0.0_fp
     !
-    if ((h/rk<=1.33) .or. (h>200.)) then
+    rkh = 12.0_fp  * 10.0_fp ** -(chezy / 18.0_fp)
+    !
+    if ((rkh >= 0.75_fp) .or. (h > 200.0_fp)) then
+       sbotx = 0.0_fp
+       sboty = 0.0_fp
+       ssusx = 0.0_fp
+       ssusy = 0.0_fp
+       cesus = 0.0_fp
        return
     endif
-    if (chezy<1.E-6) then
-       c = 18.*log10(12.*h/rk)
-    else
-       c = chezy
-    endif
-    uuvar = 0.0
+    !
+    rk = rkh * max(h, 0.1_fp)
+    uuvar = 0.0_fp
     call wavenr(h         ,t         ,kw        ,ag        )
     theta = dir*degrad
     utot = sqrt(u*u + v*v)
-    if (utot>1.0E-10) uuvar = utot*utot
-    if (t>1.E-6) call wave(uo, t, uuvar, pi, hrms, c, rk, h, ag, kw)
-    cf = ag/c/c
+    if (utot > 1.0e-10_fp) uuvar = utot*utot
+    if (t > 1.0e-6_fp) call wave(uo, t, uuvar, pi, hrms, chezy, rk, h, ag, kw)
+    cf = ag/chezy/chezy
     relhrms = hrms/h
-    b = bs
-    if (critd<relhrms .and. relhrms<crits) then
+    if (critd < relhrms .and. relhrms < crits) then
        fac1 = (bs - bd)/(crits - critd)
        fac2 = bd - fac1*critd
        b = fac2 + fac1*relhrms
+    elseif (relhrms <= critd) then
+       b = bd
+    else
+       b = bs
     endif
-    if (relhrms<=critd) b = bd
-    c90 = 18.*log10(12.*h/d90)
-    rmu = c/c90
+    c90 = 18.0_fp * log10(12.0_fp * h/d90)
+    rmu = chezy/c90
     rmu = rmu*sqrt(rmu)
-    if (uuvar>1.0E-20) then
-       arga = -.27*delta*d50*c*c/(rmu*uuvar)
+    if (uuvar > 1.0e-20_fp) then
+       arga = -0.27_fp * delta * d50 * chezy*chezy/(rmu*uuvar)
        arga = max(arga, -50.0_fp)
        arga = min(arga, 50.0_fp)
        vstar = sqrt(cf)*sqrt(uuvar)
        z = w/vonkar/vstar
        z = min(z, 8.0_fp)
     else
-       arga = -50.0
-       z = 8.0
+       arga = -50.0_fp
+       z = 8.0_fp
     endif
-    sbota = b*d50/c*sqrt(ag)*exp(arga)*(1. - por)
-    eps = .001
-    rkh = rk/h
-    ri1 = .216*rkh**(z - 1.)/(1. - rkh)**z*fgyint(rkh, 1.0_fp, z, eps, termfy)
-    ri2 = .216*rkh**(z - 1.)/(1. - rkh)**z*fgyint(rkh, 1.0_fp, z, eps, termgy)
-    zfact = 1.83
-    cesus = zfact*sbota*(ri1*log(33.0/rkh) + ri2)
+    sbota = b * d50/chezy * sqrt(ag) * exp(arga) * (1.0_fp - por)
+    eps = 0.001_fp
+    ri1 = 0.216_fp * rkh**(z - 1.0_fp)/(1.0_fp - rkh)**z * fgyint(rkh, 1.0_fp, z, eps, termfy)
+    ri2 = 0.216_fp * rkh**(z - 1.0_fp)/(1.0_fp - rkh)**z * fgyint(rkh, 1.0_fp, z, eps, termgy)
+    zfact = 1.83_fp
+    cesus = zfact*sbota*(ri1*log(33.0_fp/rkh) + ri2)
     !
     if (crstr) then
        call bailtr(h         ,hrms      ,t         ,theta     ,w         , &
                  & dzdx      ,dzdy      ,sbksi     ,sbeta     ,ssksi     , &
                  & sseta     ,epssl     ,faca      ,facu      ,ag        )
     else
-       sbksi = 0.
-       sbeta = 0.
-       ssksi = 0.
-       sseta = 0.
+       sbksi = 0.0_fp
+       sbeta = 0.0_fp
+       ssksi = 0.0_fp
+       sseta = 0.0_fp
     endif
-    !
-    if (utot>1.0E-10) then
+    ! 
+    if (utot > 1.0e-10_fp) then
        sbotx = sbota*u + sbksi + ssksi
        sboty = sbota*v + sbeta + sseta
        ssusx = cesus*u
        ssusy = cesus*v
     else
        sbotx = sbksi + ssksi
-       ssusx = 0.0
+       ssusx = 0.0_fp
        sboty = sbeta + sseta
-       ssusy = 0.0
+       ssusy = 0.0_fp
     endif
 end subroutine tranb5

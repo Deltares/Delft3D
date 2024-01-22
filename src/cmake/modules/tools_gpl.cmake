@@ -11,26 +11,18 @@ set(dfm_api_access_module "${tools_gpl_path}/dfm_volume_tool/packages/dfm_api_ac
 # Mormerge
 set(mormerge_module "${tools_gpl_path}/mormerge/packages/mormerge")
 
-# Waqpb 
-set(waqpb_module_path "${tools_gpl_path}/waqpb/packages/")
+# Waqpb
+set(waqpb_module_path ${tools_gpl_path}/waq_tools/waqpb)
 set(waqpb_lib_module ${waqpb_module_path}/waqpb_lib)
 set(waqpb_import_module ${waqpb_module_path}/waqpb_import)
 set(waqpb_export_module ${waqpb_module_path}/waqpb_export)
 
 # Waqmerge
-set(waqmerge_module_path "${tools_gpl_path}/waqmerge/packages/")
-set(waqmerge_version_number_module ${tools_gpl_path}/waqmerge/packages/waqmerge_version_number)
-set(waqmerge_module ${tools_gpl_path}/waqmerge/packages/waqmerge)
+set(waqmerge_module ${tools_gpl_path}/waq_tools/waqmerge)
 
 # Ddcouple
-set(ddcouple_module_path "${tools_gpl_path}/ddcouple/packages/")
-set(ddcouple_version_number_module ${tools_gpl_path}/ddcouple/packages/ddcouple_version_number)
-set(ddcouple_module ${tools_gpl_path}/ddcouple/packages/ddcouple)
+set(ddcouple_module ${tools_gpl_path}/waq_tools/ddcouple)
 
-# Waq_Run_processes
-set(waq_run_processes_module_path "${tools_gpl_path}/waq_run_processes/packages/")
-set(waq_run_processes_version_number_module ${waq_run_processes_module_path}/waq_run_processes_version_number)
-set(waq_run_processes_module ${waq_run_processes_module_path}/waq_run_processes)
 
 # Duprol2delwaq
 set(duprol2delwaq_module ${tools_gpl_path}/duprol2delwaq/packages/parse)
@@ -63,7 +55,13 @@ set(nesthd2_module ${nesthd2_module_path}/nesthd2)
 
 
 # Agrhyd
-set(agrhyd_module ${tools_gpl_path}/agrhyd/packages/agrhyd)
+set(agrhyd_module ${tools_gpl_path}/waq_tools/agrhyd)
 
 # Maptonetcdf
-set(maptonetcdf_module ${tools_gpl_path}/maptonetcdf/packages/maptonetcdf)
+set(maptonetcdf_module ${tools_gpl_path}/waq_tools/maptonetcdf)
+
+# Calcage
+set(calcage_module ${tools_gpl_path}/waq_tools/calcage)
+
+# cosumo_bmi
+set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")

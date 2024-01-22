@@ -50,13 +50,13 @@
    ws                  => mtd%ws
    uau                 => mtd%uau
 
-
    ! stmpar
    lsed                => stmpar%lsedsus
    lsedtot             => stmpar%lsedtot
    
    ! sedpar
    nmudfrac            => stmpar%sedpar%nmudfrac
+   max_mud_sedtyp      => stmpar%sedpar%max_mud_sedtyp
    cmpupdfrac          => stmpar%sedpar%cmpupdfrac
    rhosol              => stmpar%sedpar%rhosol
    cdryb               => stmpar%sedpar%cdryb
@@ -73,13 +73,23 @@
    pmcrit              => stmpar%sedpar%pmcrit
    nseddia             => stmpar%sedpar%nseddia
    sedtyp              => stmpar%sedpar%sedtyp
+   tratyp              => stmpar%sedpar%tratyp
    anymud              => stmpar%sedpar%anymud
    sedtrcfac           => stmpar%sedpar%sedtrcfac
    bsskin              => stmpar%sedpar%bsskin
    thcmud              => stmpar%sedpar%thcmud
    tpsnumber           => stmpar%sedpar%tpsnumber
    dss                 => stmpar%sedpar%dss
-   
+   !
+   max_mud_sedtyp      => stmpar%sedpar%max_mud_sedtyp
+   min_dxx_sedtyp      => stmpar%sedpar%min_dxx_sedtyp
+   flocmod             => stmpar%sedpar%flocmod
+   nflocpop            => stmpar%sedpar%nflocpop
+   nflocsizes          => stmpar%sedpar%nflocsizes
+   floclist            => stmpar%sedpar%floclist
+   tbreakup            => stmpar%sedpar%tbreakup
+   tfloc               => stmpar%sedpar%tfloc
+
    ! morpar
    thresh              => stmpar%morpar%thresh
    sus                 => stmpar%morpar%sus
@@ -144,6 +154,13 @@
    thetsd              => stmpar%morpar%thetsd
    eulerisoglm         => stmpar%morpar%eulerisoglm
    l_suscor            => stmpar%morpar%l_suscor
+   bermslopetransport  => stmpar%morpar%bermslopetransport
+   bermslopebed        => stmpar%morpar%bermslopebed
+   bermslopesus        => stmpar%morpar%bermslopesus
+   bermslope           => stmpar%morpar%bermslope
+   bermslopefac        => stmpar%morpar%bermslopefac
+   bermslopegamma      => stmpar%morpar%bermslopegamma
+   bermslopedepth      => stmpar%morpar%bermslopedepth
 
    ! trapar
    iform               => stmpar%trapar%iform

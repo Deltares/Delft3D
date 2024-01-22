@@ -9,8 +9,13 @@
 !! Computations of the orbital motions in the nearshore morphodynamical model
 !! using the formula of Abreu et al. (2010)
 !!
-subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
+subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
+                 & ag, vicmol, rhosol, rhowat, sw_effects, as_effects, &
+                 & pl_effects, sl_effects, dzduu ,dzdvv , i2d3d, &
                  & sbcu, sbcv, sbwu, sbwv, sswu, sswv , &
+                 & uwc, uwt, rh, ksw, ksc, ucrepr, utrepr, fcwc, fcwt, &
+                 & screpr, strepr, pc, pt, occ, otc, ott, oct, tc, tt, &
+                 & phicx, phitx, qsu, sk, as, &
                  & error, message)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -49,15 +54,30 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
 !
 ! arguments
 !
+    real(fp)                        , intent(in)    :: h          !< water depth [m]
+    real(fp)                        , intent(in)    :: d50        !< sediment diameter of fraction [m]
+    real(fp)                        , intent(in)    :: d90        !< 90-percentile diameter of local sediment mixture [m]
+    real(fp)                        , intent(in)    :: hrms       !< wave height [m]
+    real(fp)                        , intent(in)    :: tp         !< wave period [s]
+    real(fp)                        , intent(in)    :: uorb       !< orbital velocity at the bed [m/s]
+    real(fp)                        , intent(in)    :: teta       !< angle between wave dir and local grid orientation [deg]
+    real(fp)                        , intent(in)    :: uuu        !< m component of characteristic velocity [m/s]
+    real(fp)                        , intent(in)    :: vvv        !< n component of characteristic velocity [m/s]
+    real(fp)                        , intent(in)    :: umod       !< magnitude of characteristic velocity [m/s]
+    real(fp)                        , intent(in)    :: zumod      !< height above bed of characteristic velocity [m]
+    real(fp)                        , intent(in)    :: ag         !< gravitational acceleration [m/s2]
+    real(fp)                        , intent(in)    :: vicmol     !< molecular viscosity of water [m2/s]
+    real(fp)                        , intent(in)    :: rhosol     !< solid sediment density [kg/m3]
+    real(fp)                        , intent(in)    :: rhowat     !< local water density [kg/m3]
+!
+    integer                         , intent(in)    :: sw_effects !< surface wave effects 1 for on 0 for off
+    integer                         , intent(in)    :: as_effects !< wave asymmetry effects 1 for on 0 for off
+    integer                         , intent(in)    :: pl_effects !< phase lag effects 1 for on 0 for off
+    integer                         , intent(in)    :: sl_effects !< slope effect oaaja in critical shear stress 1 for on 0 for off
+!
     integer                         , intent(in)    :: i2d3d      !< switch 2D/3D (2 = 2D, 3 = 3D)
-    integer                         , intent(in)    :: numrealpar !< number of parameters in realpar array
-    integer                         , intent(in)    :: npar       !< number of parameters in par array
     real(fp)                        , intent(in)    :: dzduu      !< slope in m direction [m/m]
     real(fp)                        , intent(in)    :: dzdvv      !< slope in n direction [m/m]
-!
-    real(hp), dimension(numrealpar) , intent(in)    :: realpar    !< array of local conditions
-    real(fp), dimension(30)         , intent(inout) :: par        !< in: transport formula parameters
-                                                                  !! out: transport output variables
 !
     real(fp)                        , intent(out)   :: sbcu       !< bed load due to currents, m component [m3/m/s]
     real(fp)                        , intent(out)   :: sbcv       !< bed load due to currents, n component [m3/m/s]
@@ -65,44 +85,55 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
     real(fp)                        , intent(out)   :: sbwv       !< bed load due to waves, n component [m3/m/s]
     real(fp)                        , intent(out)   :: sswu       !< susp load due to waves, m component [m3/m/s]
     real(fp)                        , intent(out)   :: sswv       !< susp load due to waves, n component [m3/m/s]
+!
+    real(fp)                        , intent(out)   :: uwc        !< orbital velocity at crest [m/s]
+    real(fp)                        , intent(out)   :: uwt        !< orbital velocity in trough [m/s]
+    real(fp)                        , intent(out)   :: rh         !< ripple height [m]
+    real(fp)                        , intent(out)   :: ksw        !< wave roughness height [m]
+    real(fp)                        , intent(out)   :: ksc        !< current roughness height [m]
+    real(fp)                        , intent(out)   :: ucrepr     !< representative velocity at crest [m/s]
+    real(fp)                        , intent(out)   :: utrepr     !< representative velocity in trough [m/s]
+    real(fp)                        , intent(out)   :: fcwc       !< friction factor at crest [-]
+    real(fp)                        , intent(out)   :: fcwt       !< friction factor in trough [-]
+    real(fp)                        , intent(out)   :: screpr     !< representative shear stress at crest [-]
+    real(fp)                        , intent(out)   :: strepr     !< representative shear stress in trough [-]
+    real(fp)                        , intent(out)   :: pc         !< phase lag parameter at crest [-]
+    real(fp)                        , intent(out)   :: pt         !< phase lag parameter in trough [-]
+    real(fp)                        , intent(out)   :: occ        !< load entrained and transported during crest period [-]
+    real(fp)                        , intent(out)   :: otc        !< load entrained during trough period and transported during crest period [-]
+    real(fp)                        , intent(out)   :: ott        !< load entrained and transported during trough period [-]
+    real(fp)                        , intent(out)   :: oct        !< load entrained during crest period and transported during trough period [-]
+    real(fp)                        , intent(out)   :: tc         !< wave period at crest [s]
+    real(fp)                        , intent(out)   :: tt         !< wave period in trough [s]
+    real(fp)                        , intent(out)   :: phicx      !< dimensionless sediment transport at crest [-]
+    real(fp)                        , intent(out)   :: phitx      !< dimensionless sediment transport in trough [-]
+    real(fp)                        , intent(out)   :: qsu        !< volumetric transport rate [m2/s]
+    real(fp)                        , intent(out)   :: sk         !< skewness [-]
+    real(fp)                        , intent(out)   :: as         !< asymmetry [-]
+!
     character(len=256)              , intent(out)   :: message    !< error message
     logical                         , intent(out)   :: error      !< flag indicating whether an error occurred
+!
 
 !
 ! local variables for input parameters
 !
       integer                  :: nm
-      integer                  :: sw_effects ! surface wave effects 1 for on 0 for off
-      integer                  :: as_effects ! wave asymmetry effects 1 for on 0 for off
-      integer                  :: pl_effects ! phase lag effects 1 for on 0 for off
-      integer                  :: sl_effects ! slope effect oaaja in critical shear stress 1 for on 0 for off
-      real(fp)                 :: ag
-      real(fp)                 :: d
-      real(fp)                 :: d50
-      real(fp)                 :: d90
-      real(fp)                 :: hrms
-      real(fp)                 :: rhosol
-      real(fp)                 :: rhowat
-      real(fp)                 :: teta
       real(fp)                 :: timsec
-      real(fp)                 :: tp
       real(fp)                 :: tanphi     ! tangens of angle of natural talud
       real(fp)                 :: u
-      real(fp)                 :: umod
-      real(fp)                 :: uorb
       real(fp)                 :: utot
-      real(fp)                 :: uuu
       real(fp)                 :: v
-      real(fp)                 :: vicmol
-      real(fp)                 :: vvv
-      real(fp)                 :: zumod
 !
 ! local variables
 !
+      logical                  :: includes_waves
       integer                  :: i
-      integer                             :: istat
+      integer                  :: istat
       integer                  :: j
       integer                  :: nt
+      integer                  :: as_effects_
+      integer                  :: sw_effects_
       real(fp)                 :: ang        ! angle between net current direction and positive orbital velocity [deg]
       real(fp)                 :: alphas
       real(fp)                 :: alphar
@@ -113,7 +144,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: a1
       real(fp)                 :: a2
       real(fp)                 :: a3
-      real(fp)                 :: as
       real(fp)                 :: b
       real(fp)                 :: c1
       real(fp)                 :: delwblt
@@ -128,11 +158,7 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: fcw
       real(fp)                 :: fsl_cr_c
       real(fp)                 :: fsl_cr_t
-      real(fp)                 :: fcwc
-      real(fp)                 :: fcwt
-      real(fp)                 :: hw         ! wave height  [m]
-      real(fp)                 :: ksw
-      real(fp)                 :: ksc
+      real(fp)                 :: hs         ! significant wave height  [m]
       real(fp)                 :: k
       real(fp)                 :: k0
       real(fp)                 :: k1
@@ -141,29 +167,18 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: l0
       real(fp)                 :: m1
       real(fp)                 :: n1
-      real(fp)                 :: nr_timesteps
       real(fp)                 :: ocr
       real(fp)                 :: oc
-      real(fp)                 :: occ
-      real(fp)                 :: oct
       real(fp)                 :: ot
-      real(fp)                 :: ott
-      real(fp)                 :: otc
       real(fp)                 :: omega
       real(fp)                 :: pcr       ! critical phase lag parameter [-]
-      real(fp)                 :: pc
-      real(fp)                 :: pt
       real(fp)                 :: phi_ab
-      real(fp)                 :: phicx
-      real(fp)                 :: phitx
       real(fp)                 :: phicy
       real(fp)                 :: phity
       real(fp)                 :: qsx
       real(fp)                 :: qsy
-      real(fp)                 :: qsu
       real(fp)                 :: qsv
       real(fp)                 :: r
-      real(fp)                 :: rh
       real(fp)                 :: rl
       real(fp)                 :: r_ab
       real(fp)                 :: sfltc
@@ -174,7 +189,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: scr_t
       real(fp)                 :: sc
       real(fp)                 :: s1
-      real(fp)                 :: sk
       real(fp)                 :: st
       real(fp)                 :: swc
       real(fp)                 :: swt
@@ -188,8 +202,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: swcrepr
       real(fp)                 :: swtrepr
       real(fp)                 :: swc_sflt
-      real(fp)                 :: screpr
-      real(fp)                 :: strepr
       real(fp)                 :: scxrepr
       real(fp)                 :: scyrepr
       real(fp)                 :: stxrepr
@@ -198,8 +210,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: screpr_u
       real(fp)                 :: strepr_v
       real(fp)                 :: strepr_u
-      real(fp)                 :: tc
-      real(fp)                 :: tt
       real(fp)                 :: tcu
       real(fp)                 :: tcd
       real(fp)                 :: ttu
@@ -209,8 +219,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: ustar
       real(fp)                 :: unet      ! magnitude of current velocity [umod] at reference level zumod [m/s]
       real(fp)                 :: urms      ! rootmeansquare orbital velocity [m/s]
-      real(fp)                 :: uwc
-      real(fp)                 :: uwt
       real(fp)                 :: uw
       real(fp)                 :: uwcrepr
       real(fp)                 :: uwtrepr
@@ -218,10 +226,8 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: ur
       real(fp)                 :: ucxrepr
       real(fp)                 :: ucyrepr
-      real(fp)                 :: ucrepr
       real(fp)                 :: utxrepr
       real(fp)                 :: utyrepr
-      real(fp)                 :: utrepr
       real(fp)                 :: ucx
       real(fp)                 :: ucy
       real(fp)                 :: utx
@@ -232,7 +238,8 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
       real(fp)                 :: uwmax
       real(fp)                 :: uwmin
       real(fp)                 :: wss
-      real(fp)                 :: zref           ! reference level net current velocity [m]
+      
+      integer :: choice_a, choice_b, choice_c, choice_d, choice_e
 !
 !! executable statements -------------------------------------------------------
 !
@@ -240,37 +247,18 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
     allocate(tw             (nt), STAT = istat)
     allocate(uorb_time_serie(nt), STAT = istat)
     !
-    d         = real(realpar(RP_DEPTH),fp)  ! d water depth [m]
-    d50       = real(realpar(RP_D50)  ,fp)  ! sediment diameter of fraction [m]
-    d90       = real(realpar(RP_D90MX),fp)  ! 90-percentile diameter of local sediment mixture [m]
-    hrms      = real(realpar(RP_HRMS) ,fp)  ! wave height [m]
-    tp        = real(realpar(RP_TPEAK),fp)  ! wave period [s]
-    uorb      = real(realpar(RP_UORB) ,fp)  ! orbital velocity at the bed [m/s]
-    teta      = real(realpar(RP_TETA) ,fp)  ! angle between wave dir and local grid orientation [deg]
-    uuu       = real(realpar(RP_UCHAR),fp)  ! m component of characteristic velocity [m/s]
-    vvv       = real(realpar(RP_VCHAR),fp)  ! n component of characteristic velocity [m/s]
-    umod      = real(realpar(RP_VELCH),fp)  ! magnitude of characteristic velocity [m/s]
-    zumod     = real(realpar(RP_ZVLCH),fp)  ! height above bed of characteristic velocity [m]
-    ag        = real(realpar(RP_GRAV) ,fp)  ! gravitational acceleration [m/s2]
-    vicmol    = real(realpar(RP_VICML),fp)  ! molecular viscosity of water [m2/s]
-    rhosol    = real(realpar(RP_RHOSL),fp)  ! solid sediment density [kg/m3]
-    rhowat    = real(realpar(RP_RHOWT),fp)  ! local water density [kg/m3]
-
     uwcrepr =  0.0_fp
     uwtrepr =  0.0_fp
-
-    sw_effects = int(par(20))
-    as_effects = int(par(21))
-    pl_effects = int(par(22))
-    sl_effects = int(par(23))
-
     error = .false.
+    
+    ! local copies of these flags since we may modify them
+    sw_effects_ = sw_effects
+    as_effects_ = as_effects
 !
 ! set some parameters.
 !
-    hw      = sqrt2*hrms              ! significant wave height [m]
+    hs      = sqrt2*hrms              ! significant wave height [m]
     pcr     = 1.0_fp
-    zref    = zumod                   ! zmud is computed in dwnvel; for 3d it is the centre of the lowest layer above deltas; for 2d it equals h/e
     tanphi  = tan(30.0_fp*degrad)     ! fixed the angle of repose of the natural talud to 30 degrees
 !
 !   determine the rms orbital velocity
@@ -281,6 +269,7 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
 !   if there is no current and no waves the sand transport is zero
 !
     if (comparereal(urms,0.0_fp) == 0 .and. comparereal(umod,0.0_fp) == 0) then
+        ! no waves and no currents
         qsu = 0.0_fp
         qsv = 0.0_fp
     else
@@ -297,26 +286,39 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
             ang = ang_cur-ang_ubot+360.0_fp
         endif
 !
-!       calculate velocity and acceleration parameters for the wave 
-!       approximation of Abreu et al. (2010) by Reussink et al. (2012)
-!
-        call santoss_rrr12(ag, hw, tp, d, sk, as, phi_ab, r_ab, ur, km)
-!
-!       calculate wave time serie by Abreu et al. (2010)
-!
-        call santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb_time_serie)
-!
-!       check wether it is current alone
-!
-        nr_timesteps = 0.0_fp
-        uwmax = 0.0_fp
-        uwmin = 0.0_fp
-        do i = 1, nt
-            uwmax = max(uwmax,uorb_time_serie(i))
-            uwmin = min(uwmin,uorb_time_serie(i))
-        enddo
+        if (hs > 0.0_fp) then
+            ! include wave effect
+!           
+!           calculate velocity and acceleration parameters for the wave 
+!           approximation of Abreu et al. (2010) by Reussink et al. (2012)
+!           
+            call santoss_rrr12(ag, hs, tp, h, sk, as, phi_ab, r_ab, ur, km)
+!           
+!           calculate wave time serie by Abreu et al. (2010)
+!           
+            call santoss_abreu(hrms, km, h, r_ab, phi_ab, urms, tp, nt, tw, uorb_time_serie)
+!           
+!           check wether it is current alone
+!           
+            do i = 1, nt
+                uwmax = max(uwmax,uorb_time_serie(i))
+                uwmin = min(uwmin,uorb_time_serie(i))
+            enddo
+            
+            if (comparereal(uwmax,0.0_fp) == 0 .and. comparereal(uwmin,0.0_fp) == 0) then
+                includes_waves = .false.
+            else
+                includes_waves = .true.
+            endif
+        else
+            ! currents, but no waves
+            uorb_time_serie = 0.0_fp
+            tw = 0.0_fp
+            includes_waves = .false.
+        endif
 
-        if (comparereal(uwmax,0.0_fp) == 0 .and. comparereal(uwmin,0.0_fp) == 0) then
+        if (.not. includes_waves) then
+            ! currents, but no wave effect
             uw      =  0.0_fp
             aw      =  0.0_fp
             uwt     =  0.0_fp
@@ -335,12 +337,13 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
             r = 0.5_fp
             b = 0.5_fp
         else
+            ! include wave effect
 !
 !           calculate orbital periods and velocities
 !           for this first call set unet = 0.
 !
             call santoss_orb(nt, as_effects, tw, uorb_time_serie, 0.0_fp, ang, tp, &
-                     & rhowat, d, hw, aw, uw, uwc, uwt, uwcrepr, uwtrepr, &
+                     & rhowat, h, hs, aw, uw, uwc, uwt, uwcrepr, uwtrepr, &
                      & tc, tcu, tcd, tt, ttu, ttd, uc, ut, ucx, utx, ucy, uty, &
                      & ucxrepr, utxrepr, ucrepr, utrepr, b)
         endif
@@ -353,9 +356,10 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
 !       calculate shields parameter
 !
 !       first for the case of only a current near the bed
-        if (comparereal(uwmax,0.0_fp)==0 .and. comparereal(uwmin,0.0_fp)==0) then
-            call santoss_bsscurrent(i2d3d, ag, d, d50, d90, delta, unet, ang, &
-                     & zref, rh, rl, unet_delwblt, delwblt, sc, scx, scy)
+        if (.not. includes_waves) then
+            ! currents, but no wave effect
+            call santoss_bsscurrent(i2d3d, ag, h, d50, d90, delta, unet, ang, &
+                     & zumod, rh, rl, unet_delwblt, delwblt, sc, scx, scy)
             screpr  = sc
             scxrepr = scx
             scyrepr = scy
@@ -373,25 +377,26 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
             tt      = 0.0_fp
             ttu     = 0.0_fp
             ttd     = 0.0_fp
-            sw_effects=0
-            as_effects=0
+            sw_effects_ = 0
+            as_effects_ = 0
         else
+            ! include wave effect
 !           define general friction factor (wave + current) and net velocity at edge boundary layer
 !           using regular waves: so one friction factor and unet_delwblt for whole time serie.
 !           first call to santoss_bss1 using aw, uw, uwc and uwt based on santoss_orb call with unet_delwblt=0
-            call santoss_bss1(i2d3d, ag, d, d50, d90, delta, aw, uw, &
-                     & unet, zref, rh, rl, uwc, uwt, ang, uc, ut, &
+            call santoss_bss1(i2d3d, ag, h, d50, d90, delta, aw, uw, &
+                     & unet, zumod, rh, rl, uwc, uwt, ang, uc, ut, &
                      & theta, ksw, ksc, fc, fw, fcw, unet_delwblt, alpha, delwblt)
 
 !           final definition of (representative) velocities and partial periods
             call santoss_orb(nt, as_effects, tw, uorb_time_serie, unet_delwblt, ang, tp, &
-                     & rhowat, d, hw, aw, uw, uwc, uwt, uwcrepr, uwtrepr, &
+                     & rhowat, h, hs, aw, uw, uwc, uwt, uwcrepr, uwtrepr, &
                      & tc, tcu, tcd, tt, ttu, ttd, uc, ut, ucx, utx, ucy, uty, &
                      & ucxrepr, utxrepr, ucrepr, utrepr, b)
             r = uwc/(uwc+uwt)
 
 !           final call to santoss_bss1 using aw, uw, uwc and uwt based on santoss_orb call with unet_delwblt/=0
-            call santoss_bss1(i2d3d, ag, d, d50, d90, delta, aw, uw, &
+            call santoss_bss1(i2d3d, ag, h, d50, d90, delta, aw, uw, &
                      & unet_delwblt, delwblt, rh, rl, uwc, uwt, ang, uc, ut, &
                      & theta, ksw, ksc, fc, fw, fcw, unet_delwblt, alpha, delwblt)
 
@@ -401,12 +406,12 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
             utyrepr = unet_delwblt*sin(ang*degrad)             !y-component utrough [m/s]
 
             ! Shields based on maximum velocities: uwc, uwt, uc, ut
-            call santoss_bss2(sw_effects, as_effects, ag, d, rhowat, rhosol, delta, &
+            call santoss_bss2(sw_effects_, as_effects_, ag, h, rhowat, rhosol, delta, &
                      & d50, d90, b, r, tp, uw, aw, uwc, uwt, uc, ut, unet_delwblt, &
                      & ang, delwblt, alpha, ksw, ksc, fw, fcw, tc, tt, tcu, tcd, &
                      & ttu, ttd, fc, sc, st, swc, swt, scx, scy, stx, sty, fcwc, fcwt)
             ! Shields based on representative velocities: uwcrepr, uwtrepr, ucrepr, utrepr
-            call santoss_bss2(sw_effects, as_effects, ag, d, rhowat, rhosol, delta, &
+            call santoss_bss2(sw_effects_, as_effects_, ag, h, rhowat, rhosol, delta, &
                      & d50, d90, b, r, tp, uw, aw, uwcrepr, uwtrepr, ucrepr, utrepr, unet_delwblt, &
                      & ang, delwblt, alpha, ksw, ksc, fw, fcw, tc, tt, tcu, tcd, &
                      & ttu, ttd, fc, screpr, strepr, swcrepr, swtrepr, scxrepr, scyrepr, stxrepr, styrepr, fcwc, fcwt)
@@ -416,7 +421,7 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
 !          - fsl_cr_c and fsl_cr_t for correction on critical Shields stress
 !            eqs. (3.27) and (3.28), Veen (2014)
 !
-        if (sl_effects==1.) then
+        if (sl_effects==1.0_fp) then
             screpr_u = -scyrepr*sin(teta*degrad)+scxrepr*cos(teta*degrad)
             screpr_v =  scxrepr*sin(teta*degrad)+scyrepr*cos(teta*degrad)
             strepr_u = -styrepr*sin(teta*degrad)+stxrepr*cos(teta*degrad)
@@ -475,7 +480,7 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
         m1 = 10.9711_fp         ! multiplication factor 
         alphas = 8.2_fp         ! phase lag coefficient sheet-flow cases
         alphar = 8.2_fp         ! phase lag coefficient ripple cases   
-        call santoss_core(pl_effects, sw_effects, ag, d50, d, hw, rhosol, rhowat, &
+        call santoss_core(pl_effects, sw_effects_, ag, d50, h, hs, rhosol, rhowat, &
                  & delta, tp, r, b, tc, tt, tcu, tcd, ttu, ttd, sfltc, sfltt, &
                  & wss, rh, scr_c, scr_t, screpr, strepr, scxrepr, scyrepr, stxrepr, styrepr, &
                  & uwc, uwt, n1, m1, alphas, alphar, pcr, &
@@ -500,32 +505,6 @@ subroutine santoss(numrealpar, realpar ,par ,npar, dzduu ,dzdvv , i2d3d, &
     sswu  = 0.0_fp
     sswv  = 0.0_fp
 
-    ! santoss specific output
-    par     = -999.0_fp
-    par( 1) = uwc
-    par( 2) = uwt
-    par( 3) = rh
-    par( 4) = ksw
-    par( 5) = ksc
-    par( 6) = ucrepr
-    par( 7) = utrepr
-    par( 8) = fcwc
-    par( 9) = fcwt
-    par(10) = screpr
-    par(11) = strepr
-    par(12) = pc
-    par(13) = pt
-    par(14) = occ
-    par(15) = otc
-    par(16) = ott
-    par(17) = oct
-    par(18) = tc
-    par(19) = tt
-    par(20) = phicx
-    par(21) = phitx
-    par(22) = qsu
-    par(23) = sk
-    par(24) = as
     !
     deallocate(tw             , STAT = istat)
     deallocate(uorb_time_serie, STAT = istat)

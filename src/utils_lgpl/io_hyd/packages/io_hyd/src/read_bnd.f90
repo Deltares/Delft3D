@@ -32,6 +32,8 @@
 
       ! global declarations
 
+      use m_srstop
+      use m_monsys
       use filmod                   ! module contains everything for the files
       use hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token                 ! tokenized reading

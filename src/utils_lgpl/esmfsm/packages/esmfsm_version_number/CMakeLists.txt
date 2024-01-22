@@ -1,21 +1,12 @@
 # Set version file variables
 set(include_path include)
-include_directories(${include_path})
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+
+include_directories(${include_path}
+                    ${version_include_dir})
 
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
-set(svn_version_path ${CMAKE_CURRENT_SOURCE_DIR}/../../) # Trace back to the esmfsm path
-set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/${include_path}/version_number.ini)
 set(h_version_file ${CMAKE_CURRENT_SOURCE_DIR}/${include_path}/version_number.h)
-set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/${include_path}/version_number.rc)
-
-# Generate version files
-generate_version_files(${rc_version_file} 
-                       ${ini_version_file} 
-                       ON)
-
-generate_version_files(${h_version_file} 
-                       ${ini_version_file} 
-                       ON)
 
 # Set directory which contains all source files
 set(src_path src)
@@ -27,17 +18,6 @@ file(GLOB source_files ${src_path}/*.c)
 set(library_name esmfsm_version_number)
 add_library(${library_name} ${source_files}
                             ${h_version_file})
-
-# Define prebuild events
-prebuild_version_number(${library_name} ${rc_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file}
-                                        ON)
-
-prebuild_version_number(${library_name} ${h_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file}
-                                        ON)
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files}

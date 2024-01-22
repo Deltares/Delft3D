@@ -341,6 +341,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
             strcat(dathdr, ", NEFIS Data File; ");
             string = getfileversionstring_nefis();
             strcat(dathdr, string);
+            dathdr[LHDRDT] = '\0';
         }
 
         if (coding == 'N' || coding == 'n') coding = 'L';
@@ -431,6 +432,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
            nefis[set].dat_name);
         return nefis_errno;
       }
+      dathdr[LHDRDT] = '\0'; 
 /*
  *  Is the given file a NEFIS data file, yes or no
  */
@@ -551,6 +553,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
             strcat(defhdr, ", NEFIS Definition File; ");
             string = getfileversionstring_nefis();
             strcat(defhdr, string);
+            defhdr[LHDRDF] = '\0';
         }
 
       if (coding == 'N' || coding == 'n') coding = 'L';
@@ -647,7 +650,7 @@ BInt4 create_nefis_files ( BInt4 * fd_nefis   ,
            nefis[set].def_name);
         return nefis_errno;
       }
-
+      defhdr[LHDRDF] = '\0';
 /*
  *  Is the given file a NEFIS definition file, yes or no
  */

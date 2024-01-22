@@ -62,6 +62,7 @@ contains
         use precision
         use globaldata
         use d3d_olv_class
+        use flow2d3d_version_module
         
         implicit none
 

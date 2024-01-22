@@ -271,8 +271,7 @@
               uux = uqcx(k)
               uuy = uqcy(k)
            endif
-!           call arrowsxy( xz(kk), yz(kk), uux, uuy, VFAC, 0)
-           call arrows( xz(kk), yz(kk), uux, uuy, 0D0, VFAC)
+           call arrowsxy( xz(kk), yz(kk), uux, uuy, VFAC)
         endif
      enddo
  else if (ndraw(13) .eq. 5) then                        ! show vectors u based
@@ -316,7 +315,5 @@
  if ( jased.gt.0 .and. jased.le.3 ) call tekbanfs()
 
  call tekship()
-
- call tekpart()
 
  end subroutine tekflowstuff

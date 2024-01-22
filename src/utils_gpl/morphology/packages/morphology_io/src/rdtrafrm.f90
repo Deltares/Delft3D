@@ -227,14 +227,15 @@ end subroutine initrafrm
 
 subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                   & ipardef   ,rpardef   ,npardef   ,trapar    , &
-                  & sedparout ,sedtyp    ,sedblock  ,dims      )
+                  & sedparout ,sedtyp    ,sedblock  ,dims      , &
+                  & max_mud_sedtyp)
 !!--description-----------------------------------------------------------------
 !
 ! Reads transport formula and parameters
 !
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module, only: SEDTYP_COHESIVE
+    use sediment_basics_module, only: SEDTYP_SAND
     use morphology_data_module
     use properties, only: tree_data
     use grid_dimens_module 
@@ -255,6 +256,7 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     integer, dimension(:)        , intent(in)   :: sedtyp
     type(tree_data), dimension(:), intent(in)   :: sedblock
     type (griddimtype), target   , intent(in)   :: dims    !  grid dimensions
+    integer                      , intent(in)   :: max_mud_sedtyp
 !
 ! Local variables
 !
@@ -332,10 +334,10 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     ! for cohesive sediment fractions formula -3 (Partheniades-Krone) is the default formula
     !
     do ll=1, lsedtot
-       if (sedtyp(ll)==SEDTYP_COHESIVE .and. iform(ll)==-999) iform(ll) = -3
+       if (sedtyp(ll) <= max_mud_sedtyp .and. iform(ll)==-999) iform(ll) = -3
     enddo
     !
-    ! back=up value of iform(1) because the first index will be used to load
+    ! backup value of iform(1) because the first index will be used to load
     ! the default sediment transport settings.
     !
     iform1tmp = iform(1)
@@ -346,7 +348,8 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
        write (lundia, '(a,a)') 'Reading: ',trim(filtrn)
     endif
     call rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
-                 & parfil    ,iparfld   ,nparfld   ,0         , &
+                 & parfil    ,iparfld   ,nparfld   ,0         ,SEDTYP_SAND, &
+                 & max_mud_sedtyp, &
                  & filtrn    ,name      ,dll_handle,dll_name  ,dll_function, &
                  & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
                  & noutpar   ,outpar_name, outpar_longname)
@@ -354,15 +357,16 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     iformdef = iform(1)
     do ll=2, lsedtot
        if (iform(ll)==-999 .and. flstrn(ll)==' ') then
-          name        (ll) = name(1)
-          dll_handle  (ll) = dll_handle(1)
-          dll_function(ll) = dll_function(1)
-          dll_usrfil  (ll) = dll_usrfil(1)
-          do i = 1,npar
-             par(i,ll)     = par(i,1)
-             parfil(i,ll)  = parfil(i,1)
-             iparfld(i,ll) = iparfld(i,1)
-          enddo
+          name(ll)              = name(1)
+          dll_handle(ll)        = dll_handle(1)
+          dll_function(ll)      = dll_function(1)
+          dll_usrfil(ll)        = dll_usrfil(1)
+          par(:,ll)             = par(:,1)
+          parfil(:,ll)          = parfil(:,1)
+          iparfld(:,ll)         = iparfld(:,1)
+          noutpar(ll)           = noutpar(1)
+          outpar_name(:,ll)     = outpar_name(:,1)
+          outpar_longname(:,ll) = outpar_longname(:,1)
        endif
     enddo
     !
@@ -383,7 +387,8 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
        if (flstrn(ll) /= ' ') write (lundia, '(a,a)') 'Reading: ',trim(flstrn(ll))
        if (flstrn(ll) /= ' ' .or. iform(ll)/=-999) then
           call rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
-                       & parfil    ,iparfld   ,nparfld   ,ll        , &
+                       & parfil    ,iparfld   ,nparfld   ,ll        ,sedtyp(ll), &
+                       & max_mud_sedtyp, &
                        & flstrn(ll),name      ,dll_handle,dll_name  ,dll_function, &
                        & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
                        & noutpar   ,outpar_name, outpar_longname)
@@ -413,7 +418,8 @@ end subroutine rdtrafrm
 
 
 subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
-                   & parfil    ,iparfld   ,nparfld   ,ifrac     , &
+                   & parfil    ,iparfld   ,nparfld   ,ifrac     ,sedtyp    , &
+                   & max_mud_sedtyp, &
                    & flname    ,name      ,dll_handle,dll_name  ,dll_func  , &
                    & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
                    & noutpar   ,outpar_name, outpar_longname)
@@ -446,6 +452,8 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     integer     , dimension(:,:)                 :: iparfld
     integer                                      :: nparfld
     integer                       , intent(in)   :: ifrac
+    integer                       , intent(in)   :: sedtyp
+    integer                       , intent(in)   :: max_mud_sedtyp
     character(*)                                 :: flname
     character(*), dimension(:)                   :: name
     character(*), dimension(:)                   :: dll_name
@@ -489,7 +497,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     sed_ptr = sedblock(l)
     !
     if (flname == ' ') then
-       ! don't read any file, just use defaults
+       ! parameters not in a separate file -- read them from the block in the .sed file
        version = -1
     else
        write (lundia, '(a,a)') '    Input file                   : ',trim(flname)
@@ -539,15 +547,20 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
           !
           rec  = ' '
           call prop_get_string(tran_ptr,'TransportFormula','DLL',rec)
+          call prop_get_string(tran_ptr,'TransportFormula','TranspLib',rec)
           dll_name(l) = rec
           if (rec /= ' ') then
              name(l) = ' '
              call prop_get_string(tran_ptr,'TransportFormula','Name',name(l))
              !
-             iform(l) = 15
+             if (sedtyp <= max_mud_sedtyp) then
+                iform(l) = 21 ! user defined version of EROSILT
+             else
+                iform(l) = 15 ! user defined version of EQTRAN
+             endif
              write(rec,'(3a)') SHARED_LIB_PREFIX, trim(dll_name(l)), SHARED_LIB_EXTENSION
              !
-             ! Get handle to the DLL
+             ! Get handle to the shared library (dll/so)
              !
              istat = 0
              istat = open_shared_library(dll_handle(l), rec)
@@ -559,9 +572,13 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
              endif
              dll_func(l) = ' '
              call prop_get_string(tran_ptr,'TransportFormula','function',dll_func(l))
+             call prop_get_string(tran_ptr,'TransportFormula','TranspFunction',dll_func(l))
              !
              dll_usrfil(l) = ' '
              call prop_get_string(tran_ptr,'TransportFormula','InputFile',dll_usrfil(l))
+             call prop_get_string(tran_ptr,'TransportFormula','TranspInput',dll_usrfil(l))
+             !
+             write (lundia, '(4a)') '    User defined routine ',trim(dll_func(l)),' from ',trim(dll_name(l))
           else
              iform(l) = -999
              call prop_get(tran_ptr,'TransportFormula','Number',iform(l))
@@ -619,13 +636,50 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     !
     ! Get transport formula name, parameter names and default values
     !
-    call traparams(iform(l),name(l),nparreq   ,nparopt   ,parkeyw   , &
-                 & pardef, nodef, noutpar(l), outpar_name(:,l), outpar_longname(:,l))
-    if (name(l) == ' ') then
-       error      = .true.
-       write(errmsg,'(A,I0,A)') 'Transport formula number ',iform(l),' is not implemented'
-       call write_error(errmsg, unit=lundia)
-       return
+    if (iform(l) == 15 .or. iform(l) == 21) then
+       rec  = ' '
+       call prop_get_string(sed_ptr,'Sediment','DLL',rec)
+       call prop_get_string(sed_ptr,'Sediment','TranspLib',rec)
+       dll_name(l) = rec
+       if (rec == ' ') then
+          ! No Library name found ...
+       else
+          name(l) = ' '
+          call prop_get_string(sed_ptr,'Sediment','Name',name(l))
+          !
+          write(rec,'(3a)') SHARED_LIB_PREFIX, trim(dll_name(l)), SHARED_LIB_EXTENSION
+          !
+          ! Get handle to the shared library (dll/so)
+          !
+          istat = 0
+          istat = open_shared_library(dll_handle(l), rec)
+          if (istat /= 0) then
+             errmsg = 'Can not open shared library '//trim(rec)
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
+          dll_func(l) = ' '
+          call prop_get_string(sed_ptr,'Sediment','function',dll_func(l))
+          call prop_get_string(sed_ptr,'Sediment','TranspFunction',dll_func(l))
+          !
+          dll_usrfil(l) = ' '
+          call prop_get_string(sed_ptr,'Sediment','InputFile',dll_usrfil(l))
+          call prop_get_string(sed_ptr,'Sediment','TranspInput',dll_usrfil(l))
+          !
+          write (lundia, '(4a)') '    User defined routine ',trim(dll_func(l)),' from ',trim(dll_name(l))
+       endif
+       nparreq = 0
+       nparopt = 0
+    else
+       call traparams(iform(l),name(l),nparreq   ,nparopt   ,parkeyw   , &
+                    & pardef, nodef, noutpar(l), outpar_name(:,l), outpar_longname(:,l))
+       if (name(l) == ' ') then
+          error      = .true.
+          write(errmsg,'(A,I0,A)') 'Transport formula number ',iform(l),' is not implemented'
+          call write_error(errmsg, unit=lundia)
+          return
+       endif
     endif
     !
     ! Overrule default values with values read from mor file
@@ -1277,10 +1331,21 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        parkeyw(4) = 'CritCd'
        parkeyw(5) = '[dummy]' !don't remove: backward compatibility!
        pardef(5)  = 1.0_fp
-       parkeyw(6) = 'RouKs'
+       parkeyw(6) = '[dummy]' !don't remove: backward compatibility!
+       pardef(6)  = 1.0_fp
        parkeyw(7) = 'WSettle'
+       pardef(7)  = -999.0_fp
        parkeyw(8) = 'Porosity'
+       pardef(8)  = -999.0_fp
        parkeyw(9) = 'TWave'
+       pardef(9)  = -999.0_fp
+       nparopt    = 3
+       parkeyw(10) = 'FacA'
+       pardef(10) = 0.0_fp
+       parkeyw(11) = 'FacU'
+       pardef(11) = 0.0_fp
+       parkeyw(12) = 'EpsSL'
+       pardef(12) = 0.0_fp
     !elseif (iform == 6) then
     !   name       = 'Bailard'
     !   nparreq    = 10
@@ -1339,6 +1404,21 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        nparopt    = 1
        parkeyw(1) = 'ACal'
        pardef(1)  = 1.0_fp
+       if (present(noutpar)) then
+          noutpar = 6
+          outpar_name( 1)     = 'wistar'
+          outpar_longname( 1) = 'dimensionless bedload transport rate' ! -
+          outpar_name( 2)     = 'ustar'
+          outpar_longname( 2) = 'shear velocity' ! m/s
+          outpar_name( 3)     = 'phi'
+          outpar_longname( 3) = 'ratio of shear stress over ref shear stress' ! -
+          outpar_name( 4)     = 'tauri'
+          outpar_longname( 4) = 'ref shear stress at fraction mean diameter' ! kg/(m s2)
+          outpar_name( 5)     = 'taurm'
+          outpar_longname( 5) = 'ref shear stress at geometric mean diameter' ! kg/(m s2)
+          outpar_name( 6)     = 'b'
+          outpar_longname( 6) = 'exponent b' ! -
+       endif
     elseif (iform == 17) then
        name       = 'Gaeuman et. al. (2009) lab calibration'
        nparreq    = 2

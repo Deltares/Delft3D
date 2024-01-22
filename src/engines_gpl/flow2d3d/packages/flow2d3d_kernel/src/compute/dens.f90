@@ -92,6 +92,8 @@ subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
     integer  :: nm
     integer  :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
     real(fp) :: dummy
+    real(fp) :: sal
+    real(fp) :: temp
 
 !
 !! executable statements -------------------------------------------------------
@@ -123,76 +125,33 @@ subroutine dens(j         ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
     !
     ! COMPUTE DENSITIES AFTER SALINITY OR TEMPERATURE-COMPUTATION
     !
-    if (lsal/=0 .or. ltem/=0) then
-       if (ltem == 0) then
-          select case (idensform)
-          case( dens_Eckart )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_eck(temeqs, r1(nm,k,lsal),rhowat(nm,k), dummy, dummy )
-                enddo
-             enddo
-          case( dens_UNESCO )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_unes(temeqs, r1(nm,k,lsal),rhowat(nm,k), dummy, dummy )
-                enddo
-             enddo
-          end select
-       elseif (lsal == 0) then
-          !
-          ! CONSTANT SALINITY; TEMPERATURE IS TIME and SPACE DEPENDENT
-          !
-          select case (idensform)
-          case( dens_Eckart )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_eck   (r1(nm,k,ltem), saleqs, rhowat(nm,k), dummy, dummy)
-                enddo
-             enddo
-          case( dens_UNESCO )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_unes   (r1(nm,k,ltem), saleqs, rhowat(nm,k), dummy, dummy)
-                enddo
-             enddo
-          end select
-       else
-          !
-          ! SALINITY AND TEMPERATURE ARE TIME and SPACE DEPENDENT (COMPUTED)
-          !
-          select case (idensform)
-          case( dens_Eckart )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_eck   ( r1(nm,k,ltem), r1(nm,k,lsal), rhowat(nm,k), dummy, dummy )
-                enddo
-             enddo
-          case( dens_UNESCO )
-             do nm = 1, nmmax
-                if (kcs(nm) <= 0) cycle
-                do k = 1, kmax
-                   call dens_unes  ( r1(nm,k,ltem), r1(nm,k,lsal), rhowat(nm,k), dummy, dummy )
-                enddo
-             enddo
-          end select
-       endif
-    else
-       !
-       ! CONSTANT DENSITY
-       !
+    do k = 1, kmax
        do nm = 1, nmmax
-          if (kcs(nm) <= 0) cycle
-          do k = 1, kmax
-             rhowat(nm,k) = rhow
-          enddo
+          if (lsal/=0 .or. ltem/=0)then
+             !
+             ! Either salinity or temperature is varying
+             !
+             temp = temeqs
+             sal  = saleqs
+             if (ltem/=0) temp = r1(nm,k,ltem)
+             if (lsal/=0) sal  = r1(nm,k,lsal)
+
+             select case (idensform)
+             case( dens_Eckart )
+                call dens_eck (temp, sal, rhowat(nm,k), dummy, dummy )
+             case( dens_UNESCO )
+                call dens_unes(temp, sal, rhowat(nm,k), dummy, dummy )
+             case( dens_NaClSol)
+                call dens_nacl(temp, sal, rhowat(nm,k), dummy, dummy )
+             end select
+          else
+             !
+             ! CONSTANT DENSITY
+             !
+             rhowat(nm, k) = rhow
+          endif
        enddo
-    endif
+    enddo
     !
     ! COPY RHOWAT TO RHO
     !

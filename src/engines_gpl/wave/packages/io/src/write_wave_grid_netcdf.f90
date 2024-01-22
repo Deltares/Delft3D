@@ -45,6 +45,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     use wave_data
     use swan_flow_grid_maps
     use netcdf
+    use dwaves_version_module
     !
     implicit none
 !
@@ -88,10 +89,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     real(hp), dimension(:,:)  , allocatable     :: yshift
     integer , dimension(:,:)  , allocatable     :: elemconn
     byte    , dimension(:)    , allocatable     :: nelemconn
-    character(256)                              :: version_full
-    character(256)                              :: company
-    character(256)                              :: companyurl
-    character(256)                              :: programname
+    character(256)                              :: full_version
     character(8)                                :: cdate
     character(10)                               :: ctime
     character(5)                                :: czone
@@ -288,10 +286,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        ! Nothing to do
     endif
     !
-    call getfullversionstring_WAVE(version_full)
-    call getprogramname_WAVE(programname)
-    call getcompany_WAVE(company)
-    call getcompanyurl_WAVE(companyurl)
+    call getfullversionstring_dwaves(full_version)
     call date_and_time(cdate, ctime, czone)
     !
     ! define name of output file
@@ -312,11 +307,11 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     ! global attributes
     !
     ierror = nf90_put_att(idfile, nf90_global,  'institution', trim(company)); call nc_check_err(ierror, "put_att global institution", filename)
-    ierror = nf90_put_att(idfile, nf90_global,  'references', trim(companyurl)); call nc_check_err(ierror, "put_att global references", filename)
-    ierror = nf90_put_att(idfile, nf90_global,  'source', trim(version_full)); call nc_check_err(ierror, "put_att global source", filename)
+    ierror = nf90_put_att(idfile, nf90_global,  'references', trim(company_url)); call nc_check_err(ierror, "put_att global references", filename)
+    ierror = nf90_put_att(idfile, nf90_global,  'source', trim(full_version)); call nc_check_err(ierror, "put_att global source", filename)
     ierror = nf90_put_att(idfile, nf90_global,  'history', &
            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
-           ', '//trim(programname)); call nc_check_err(ierror, "put_att global history", filename)
+           ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
     if (.not.sg%sferic) then
        ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename)
        ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename)

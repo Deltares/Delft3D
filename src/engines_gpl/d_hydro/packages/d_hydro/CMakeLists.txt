@@ -17,20 +17,19 @@ message(STATUS "Configuring '${executable_name}' with the following deltares_com
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
-set(ini_version_file "${absolute_header_path}/version_number.ini")
+set(rc_version_file "${absolute_header_path}/d_hydro_version.rc")
 set(header_version_file "${absolute_header_path}/d_hydro_version.h")
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 include_directories(${include_path}
                     ${deltares_common_c_include_path}
-                    ${d_hydro_lib_include_path})
+                    ${d_hydro_lib_include_path}
+                    ${version_include_dir})
 
 if (UNIX)    
     include_directories(${NETCDF_INCLUDEDIR}) 
     add_definitions(-DD3D_PLUGIN_EXT=".so")
 endif(UNIX)
-
-# Generate the version files
-generate_version_files(${header_version_file} ${ini_version_file})
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)
@@ -39,13 +38,7 @@ set(d_hydro_src_path "${d_hydro_lib_path}/src")
 
 add_executable(${executable_name}   ${source}
                                     ${rc_version_file} 
-                                    ${header_version_file} 
-                                    ${ini_version_file})
-
-# Define prebuild events
-prebuild_version_number(${executable_name}  ${header_version_file} 
-                                            ${checkout_src_root}
-                                            ${ini_version_file})
+                                    ${header_version_file})
 
 # Common UNIX and WIN32 link library dependency
 if(UNIX)

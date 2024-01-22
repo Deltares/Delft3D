@@ -37,7 +37,6 @@ use unstruc_ini
 use unstruc_files
 use properties
 use unstruc_messages
-!use unstruc_version
 
 implicit none
 
@@ -62,7 +61,7 @@ subroutine initProgram()
     call initGUI(1) ! READINI + INTINI
 
     ! Read hlp file
-    FILNAM = trim(unstruc_basename)//'.hlp'
+    FILNAM = trim(base_name)//'.hlp'
     INQUIRE(FILE = FILNAM,EXIST = JAWEL)
     IF (JAWEL) THEN
         call oldfil(MHLP,FILNAM)
@@ -73,7 +72,7 @@ subroutine initProgram()
 
     CALL HELPIN() ! TODO: help module? [AvD]
 
-    !CALL IUPPERCASE(unstruc_program)
+    !CALL IUPPERCASE(product_name)
 
     CALL SETCOLTABFILE(coltabfile,0)
     CALL SETCOLTABFILE(coltabfile2,1)
@@ -86,7 +85,7 @@ END subroutine initProgram
 !! Used to be biggest part of SUBROUTINE OPENING()
 subroutine initSysEnv()
     use unstruc_files
-    use unstruc_version_module, only : unstruc_program, unstruc_basename
+    use dflowfm_version_module, only : product_name, base_name
     use string_module, only: get_dirsep
     implicit none
 
@@ -117,13 +116,13 @@ subroutine initSysEnv()
          d3dhom = .false.
          lendum = LEN(pathdi) - 1
          nval   = 0
-         if (unstruc_program .eq. 'QUICKIN' ) then
+         if (product_name .eq. 'QUICKIN' ) then
             errtxt = 'QN_PATH'
-         else if (unstruc_program .eq. 'rgfgrid')then
+         else if (product_name .eq. 'rgfgrid')then
             errtxt = 'RGF_PATH'
-         else if (unstruc_program .eq. 'KERNfl' ) then
+         else if (product_name .eq. 'KERNfl' ) then
             errtxt = 'FLS_PATH'
-         else if (unstruc_program .eq. 'NETWORK' ) then
+         else if (product_name .eq. 'NETWORK' ) then
             errtxt = 'NET_PATH'
          endif
          LERTXT = len_trim(ERRTXT)
@@ -157,9 +156,9 @@ subroutine initSysEnv()
          LARCH  = len_trim(ARCH)
          if (d3dhom) then
             if (larch .eq. 0) then
-               pathdi = hlpstr(:lendum)//slash//unstruc_basename//slash
+               pathdi = hlpstr(:lendum)//slash//base_name//slash
             else
-               pathdi = hlpstr(:lendum)//slash//arch  (:larch)//slash//unstruc_basename//slash
+               pathdi = hlpstr(:lendum)//slash//arch  (:larch)//slash//base_name//slash
             endif
          else
 !-----------------------------------------------------------------------
@@ -202,7 +201,7 @@ SUBROUTINE HCACCESS(nval     ,larch     ,arch      )
 subroutine initGUI(INTINIT)
     USE M_MISSING
     use unstruc_display
-    use unstruc_version_module, only : unstruc_basename
+    use dflowfm_version_module, only : base_name
     use m_arcinfo
 
     implicit none
@@ -276,7 +275,7 @@ subroutine initGUI(INTINIT)
     type(tree_data), pointer :: ini_ptr !< Unstruc.ini settings in tree_data
 
     ! Read ini file
-    FILNAM = trim(unstruc_basename)//'.ini'
+    FILNAM = trim(base_name)//'.ini'
     INQUIRE(FILE = FILNAM,EXIST = JAWEL)
     IF (JAWEL) THEN
         inifilename = filnam

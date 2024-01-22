@@ -1,9 +1,0 @@
-
---  Change references to DelftOnline in all Makefile.am files
-    from absolute path on devux32 to path to third_party_open.
-
---  What to do with resolve_path in hydra.cpp?
-
---  Deal with version numbering.
-    Generate (?) engines_gpl/flow2d3d/packages/flow2d3d/src/flow2d3d_version.f90
-    Preferable convert to C and store version strings in GDP

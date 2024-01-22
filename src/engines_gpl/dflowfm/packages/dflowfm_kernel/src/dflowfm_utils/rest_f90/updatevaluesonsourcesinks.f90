@@ -36,6 +36,7 @@ use m_missing
 use m_flowtimes, only: ti_his, time_his
 use precision
 use m_flowparameters, only: eps10
+use m_alloc
 implicit none
    double precision, intent(in) :: tim1 !< Current (new) time
 
@@ -44,12 +45,8 @@ implicit none
    integer                                       :: i
 
    if (timprev < 0d0) then
-      allocate(qsrcavg(numsrc))
-      allocate(vsrccum(numsrc))
-      allocate(vsrccum_pre(numsrc))
-      vsrccum = 0d0
-      vsrccum_pre = 0d0
-      qsrcavg = 0d0
+      ! This realloc should not be needed
+      call reallocsrc(numsrc)
    else
       timstep = tim1 - timprev
       ! cumulative volume from Tstart

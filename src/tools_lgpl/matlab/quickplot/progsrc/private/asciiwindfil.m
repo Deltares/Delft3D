@@ -145,7 +145,8 @@ x=[];
 y=[];
 if XYRead
     switch FI.Header.filetype
-        case {'meteo_on_equidistant_grid','meteo_on_computational_grid'}
+        case {'meteo_on_equidistant_grid','field_on_equidistant_grid', ...
+                'meteo_on_computational_grid','field_on_computational_grid'}
             gidx{M_} = [idx{M_} max(idx{M_})+1];
             gidx{N_} = [idx{N_} max(idx{N_})+1];
         otherwise
@@ -153,7 +154,7 @@ if XYRead
     end
     [x,y,grid_unit] = asciiwind('grid',FI,idx{T_},gidx{[M_ N_]});
     switch FI.Header.filetype
-        case {'meteo_on_equidistant_grid','meteo_on_computational_grid'}
+        case {'meteo_on_equidistant_grid','field_on_equidistant_grid','meteo_on_computational_grid','field_on_computational_grid'}
             if ~DataInCell && Props.NVal>0
                 [x,y] = corner2center(x,y);
             end
@@ -163,7 +164,7 @@ end
 val2 = [];
 if DataRead && Props.NVal>0
     switch FI.Header.filetype
-        case 'meteo_on_computational_grid'
+        case {'meteo_on_computational_grid','field_on_computational_grid'}
             idx{M_} = idx{M_}+1;
             idx{N_} = idx{N_}+1;
         otherwise
@@ -245,11 +246,11 @@ DataProps={'grid'               ''        [0 0 1 1 0]  0         0         0    
 Out = cell2struct(DataProps,PropNames,2);
 %------------------------------------------------------------------------------
 switch FI.Header.filetype
-    case 'meteo_on_equidistant_grid'
+    case {'meteo_on_equidistant_grid','field_on_equidistant_grid'}
         Out(3).DataInCell = 1;
-    case 'meteo_on_computational_grid'
+    case {'meteo_on_computational_grid','field_on_computational_grid'}
         Out(3).DataInCell = 1;
-    case 'meteo_on_spiderweb_grid'
+    case {'meteo_on_spiderweb_grid','field_on_spiderweb_grid'}
         Out(1).DimFlag(1) = 1;
 end
 %
@@ -299,13 +300,14 @@ end
 %--- set UseGrid options ...
 [Out(:).UseGrid]=deal(1);
 %switch FI.Header.filetype
-%    case 'meteo_on_equidistant_grid'
+%    case {'meteo_on_equidistant_grid','field_on_equidistant_grid'}
 %        [Out(:).MName]=deal('row');
 %        [Out(:).NName]=deal('column');
-%    case 'meteo_on_spiderweb_grid'
+%    case {'meteo_on_spiderweb_grid','field_on_spiderweb_grid'}
 %        [Out(:).MName]=deal('radius');
 %        [Out(:).NName]=deal('direction');
-%    case {'meteo_on_curvilinear_grid','meteo_on_flow_grid'}
+%    case {'meteo_on_curvilinear_grid','field_on_curvilinear_grid', ...
+%          'meteo_on_flow_grid','field_on_flow_grid'}
 %end
 % -----------------------------------------------------------------------------
 
@@ -318,13 +320,13 @@ sz=[0 0 0 0 0];
 %======================== SPECIFIC CODE =======================================
 if Props.DimFlag(M_) && Props.DimFlag(N_)
     switch lower(FI.Header.filetype)
-        case 'meteo_on_equidistant_grid'
+        case {'meteo_on_equidistant_grid','field_on_equidistant_grid'}
            sz([M_ N_])=[FI.Header.n_rows FI.Header.n_cols];
-        case 'meteo_on_spiderweb_grid'
+        case {'meteo_on_spiderweb_grid','field_on_spiderweb_grid'}
            sz([M_ N_])=[FI.Header.n_rows FI.Header.n_cols]+1;
-        case 'meteo_on_curvilinear_grid'
+        case {'meteo_on_curvilinear_grid','field_on_curvilinear_grid'}
            sz([M_ N_])=size(FI.Header.grid_file.X);
-        case 'meteo_on_computational_grid'
+        case {'meteo_on_computational_grid','field_on_computational_grid'}
            sz([M_ N_])=size(FI.Header.grid_file.X)-1;
     end
 end

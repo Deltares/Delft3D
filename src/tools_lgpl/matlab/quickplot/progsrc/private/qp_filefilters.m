@@ -46,18 +46,20 @@ filtertbl={...
     '*.mesh'                                               'Mike Flexible Mesh Files'          'mikemesh'           0
     '*.14;*.gr3'                                           'Adcirc Mesh Files'                 'adcircmesh'         0
     '*.shy'                                                'SHYFEM Mesh Files'                 'SHYFEM mesh'        0
-    '*_grd.dat'                                            'SMS Mesh Files'                    'smsmesh'            0
+    '*_grd.dat;*.2dm'                                      'SMS Mesh Files'                    'smsmesh'            0
     '*.mesh;*.node;*.ele;*.n;*.e'                          'EasyMesh and Triangle Mesh Files'  'nodelemesh'         0
     '*.gem'                                                'GeoSystems Mesh Files'             'geomesh'            0
+    '*.msh'                                                'Gmsh Files'                        'gmsh'               0
     '*.bct;*.bcc;*.bcb;*.bc'                               'Delft3D-FLOW Bound. Cond. Files'   'bct'                0
     'bagdpt*.*'                                            'Delft3D-MOR Ascii Dredging Output' 'bagdpt'             0
     '*.am?;*.spw;*.wnd'                                    'Delft3D/SOBEK Meteo Files'         'asciiwind'          0
     'gcmplt.*;gcmtsr.*'                                    'ECOMSED Binary Files'              'ecomsed-binary'     0
     '*.stu;*.pst'                                          'JSPost Files'                      'JSPost'             0
+    '*.csv'                                                'CSV Files (Exported from QP)'      'samples'            0
     '*.xyz'                                                'Sample Files'                      'samples'            0
+    '*.grb;*.grib;*.grib1;*.grib2'                         'GRIB Files'                        'grib'               0
     '*.nc'                                                 'NetCDF Files'                      'NetCDF'             0
     '*.hdf;*.hdf5'                                         'HDF5 Files'                        'HDF5'               0
-    '*.grib;*.grib1;*.grib2'                               'GRIB Files'                        'grib'               0
     'sds-*'                                                'SIMONA SDS Files'                  'waquasds'           0
     '*.*'                                                  'SIMONA Box Files'                  'boxfile'            0
     '*.his;*.map;*.plo;*.psf;*.lga'                        'Delwaq Binary Files'               'delwaqbin'          0
@@ -116,9 +118,8 @@ switch filters
         if strcmp(filters,'selected+')
             lasttp  = qp_settings('LastFileType','nefis');
             ilasttp = find(strncmp(lasttp,filtertbl(:,3),length(lasttp)));
-            if ~isempty(ilasttp) && ~any(iFull==ilasttp)
-                iFull(end+1)=ilasttp;
-            end
+            ilasttp = ilasttp(~ismember(ilasttp,iFull));
+            iFull = [iFull;ilasttp(:)];
         end
         %
         filtertbl = filtertbl(iFull,:);

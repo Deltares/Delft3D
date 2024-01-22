@@ -103,6 +103,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     real(fp)                            , pointer :: xlo
     integer                             , pointer :: iro
     type (flwoutputtype)                , pointer :: flwoutput
+    integer                             , pointer :: max_mud_sedtyp
 !
 ! Global variables
 !
@@ -270,6 +271,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     iro         => gdp%gdphysco%iro
     xlo         => gdp%gdturcoe%xlo
     ck          => gdp%gdturcoe%ck
+    max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
     !
     ddb = gdp%d%ddbound
     icxy = max(icx, icy) 
@@ -704,8 +706,8 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
        lst = max(lsal, ltem)
        do l = 1, lsed
           ll = lst + l
-          if ((eqmbcsand .and. sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) .or. &
-            & (eqmbcmud  .and. sedtyp(l) == SEDTYP_COHESIVE)             ) then
+          if ((eqmbcsand .and. sedtyp(l) > max_mud_sedtyp) .or. &
+            & (eqmbcmud  .and. sedtyp(l) <= max_mud_sedtyp)) then
              if (kcu(nmf) == 1) then
                 do k = 1, kmax
                    ddkl(nmf, k, ll) = max(0.0_fp, r0(nmfu, k, ll))

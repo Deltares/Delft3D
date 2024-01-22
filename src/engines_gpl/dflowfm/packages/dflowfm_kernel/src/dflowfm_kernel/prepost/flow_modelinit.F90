@@ -34,7 +34,7 @@
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult)                     ! initialise flowmodel
  use timers
- use m_flowgeom,    only: jaFlowNetChanged, ndx
+ use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx
  use waq,           only: reset_waq
  use m_flow,        only: kmx, jasecflow, iperot
  use m_flowtimes
@@ -48,7 +48,7 @@
  use unstruc_files, only: mdia
  use unstruc_netcdf
  use MessageHandling
- use m_flowparameters, only: jawave, jatrt, jacali, jacreep, jatransportmodule, flowWithoutWaves, jasedtrails, jajre, modind
+ use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl 
  use dfm_error
  use m_fm_wq_processes, only: jawaqproc
  use m_vegetation
@@ -56,6 +56,7 @@
  use m_integralstats, is_is_numndvals=>is_numndvals
  use m_xbeach_data, only: bccreated
  use m_oned_functions
+ use m_nearfield, only: reset_nearfieldData
  use m_alloc
  use m_bedform
  use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
@@ -69,6 +70,11 @@
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
  use fm_statistical_output
  use unstruc_display, only : ntek, jaGUI
+ use m_debug
+ use m_flow_flowinit
+ use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
+ use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
+ 
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -77,7 +83,6 @@
  implicit none
 
  integer              :: istat, L, ierr
- integer, external    :: flow_flowinit
  integer, external    :: init_openmp
  integer, external    :: set_model_boundingbox
  !
@@ -113,8 +118,10 @@
  call reset_unstruc_netcdf_map_class()
 
  call resetflow()
- 
+
  call reset_waq()
+
+ call reset_nearfieldData()
 
  call timstop(handle_extra(1)) ! End basic steps
 
@@ -274,7 +281,7 @@
  call timstop(handle_extra(12)) ! vertical administration
 
 #ifdef _OPENMP
-   ierr = init_openmp(md_numthreads, jampi) 
+ ierr = init_openmp(md_numthreads, jampi)
 #endif
 
  call timstrt('Net link tree 0     ', handle_extra(13)) ! netlink tree 0
@@ -323,10 +330,6 @@
  call ini_transport()
  call timstop(handle_extra(19)) ! end transport module
 
-! initialize part
- call timstrt('Part init           ', handle_extra(20)) ! part init
- call ini_part(1, md_partfile, md_partrelfile, md_partjatracer, md_partstarttime, md_parttimestep, md_part3Dtype)
- call timstop(handle_extra(20)) ! end part init
 
  call timstrt('Observations init   ', handle_extra(21)) ! observations init
  call flow_obsinit()                                 ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
@@ -335,12 +338,22 @@
  end if
  call timstop(handle_extra(21)) ! end observations init
 
+ call timstrt('Ice init', handle_extra(84)) ! ice
+ call fm_ice_alloc(ndx) ! needs to happen after flow_geominit to know ndx, but before flow_flowinit where we need the arrays for the external forcings
+ call timstop(handle_extra(84)) ! End ice
+
  call timstrt('Flow init           ', handle_extra(23)) ! flow init
  iresult = flow_flowinit()                           ! initialise flow arrays and time dependent params for a given user time
  if (iresult /= DFM_NOERR) then
     goto 1234
  end if
  call timstop(handle_extra(23)) ! end flow init
+
+ ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
+ call timstrt('Ice init', handle_extra(84)) ! ice
+ call fm_ice_echo(mdia)
+ call timstop(handle_extra(84)) ! End ice
+
 
  if (jadhyd == 1) then
     call init_hydrology()                          ! initialise the hydrology module (after flow_flowinit())
@@ -389,12 +402,12 @@
     call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
     if (jampi==0) then
        if (nwbnd==0) then
-          call mess(LEVEL_ERROR, 'unstruc::flow_modelinit - No wave boundary defined for surfbeat model')
+          call mess(LEVEL_ERROR, 'unstruc::flow_modelinit - No wave boundary defined for surfbeat model. Do you use the correct ext file?')
              end if
           endif
     call xbeach_wave_init()
     call timstop(handle_extra(27))
-       endif
+ endif
 
  call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
  call flow_obsinit()                                 ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
@@ -411,7 +424,7 @@
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then
     call flow_trachyupdate()                         ! Perform a trachy update step to correctly set initial field quantities
- endif                                               ! Generally flow_trachyupdate() is called from flow_setexternalforcings()
+ endif                                               ! Generally flow_trachyupdate() is called from set_external_forcings()
  call timstop(handle_extra(30)) ! end trachy update
 
  call timstrt('Set friction values for MOR        ', handle_extra(31)) ! set fcru mor
@@ -420,6 +433,11 @@
     call set_frcu_mor(2)
  endif
  call timstop(handle_extra(31)) ! end set fcru mor
+
+! Initialise debug array
+ !if (jawritedebug) then
+ !  call init_debugarr(lnx,stmpar%lsedtot)
+ !endif
 
  call flow_initimestep(1, iresult)                   ! 1 also sets zws0
 
@@ -437,6 +455,11 @@
   if (jasedtrails>0) then
     call default_sedtrails_stats()
     call alloc_sedtrails_stats()
+  endif
+ 
+ ! Extrapolate bed level
+ if (jaextrapbl == 1) then
+     call extrapolate_bedlevel_at_boundaries()
  endif
  
  call timstrt('MDU file pointer    ', handle_extra(34)) ! writeMDUFilepointer

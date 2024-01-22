@@ -201,7 +201,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
           else
              sink = max(0.0_fp,min(depeff,1.0_fp))
           endif
-       elseif (iform == 15) then
+       elseif (iform == 21) then
           !
           ! Initialisation of output variables of user defined transport formulae
           !

@@ -32,7 +32,7 @@
 
       SUBROUTINE CHANGEISOPARAMETERS()
       use unstruc_display
-      use unstruc_version_module, only : unstruc_company, unstruc_program
+      use dflowfm_version_module, only : company, product_name
 
       implicit none
       double precision :: dv, dv2
@@ -159,7 +159,7 @@
       CALL IWinAction('FPC')
       CALL IWinOpen(IXP,IYP,IW,1)
       CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-      CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program) // ' ISOPARAMETER FORM')
+      CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name) // ' ISOPARAMETER FORM')
       CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !     Explain keyfunctions in bottom window

@@ -153,6 +153,8 @@ module m_readstructures
       minor = 0
       call prop_get_version_number(md_ptr, major = major, minor = minor, success = success1)
       if (.not. success1) then
+         msgbuf = ' Early return, file '//trim(structurefile)//' is a 2D3D structure file, it will be read by function flow_init_structurecontrol.'
+         call msg_flush()
          return
       endif
       ! For now majorVersion = 2.xx is supported for all structures, except for the bridge. 
@@ -1070,7 +1072,7 @@ module m_readstructures
       call prop_get_string(md_ptr, '', key, tmpstr, success1)
       if (success1) then
          read(tmpstr, *, iostat = istat) value
-         if (istat /= 0) then ! No number, so assume it was a filename
+         if (istat /= 0 .or. index(tmpstr,'/') == 1) then ! No number or a string starting with '/': assume it was a filename
             forcinglist%Count = forcinglist%Count+1
             if (forcinglist%Count > forcinglist%Size) then
                call realloc(forcinglist)

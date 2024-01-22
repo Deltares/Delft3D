@@ -44,6 +44,7 @@
 !!--declarations----------------------------------------------------------------
       use precision
       use time_module
+      use flow2d3d_version_module
       use globaldata
             
       implicit none
@@ -104,7 +105,7 @@
       integer       n, m, nl           !! grid indices
       real     ( 4) anl                !! for waq layers
       integer  ( 4) kfmin, kfmax       !! help variables z-model
-      character(256) version_full      !! Delft3D FLOW version information
+      character(256) full_version      !! Delft3D FLOW version information
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
       character(256) filstring, file1, file2
@@ -121,10 +122,10 @@
       file2 = trim(filnam)//'_unstructured.hyd'
       open  ( newunit = lunout2 , file=trim(file2) )
 
-      version_full  = ' '
-      call getfullversionstring_flow2d3d(version_full)
-      write(lunout1,'(a,a)') 'file-created-by  '//trim(version_full)
-      write(lunout2,'(a,a)') 'file-created-by  '//trim(version_full)
+      full_version  = ' '
+      call getfullversionstring_flow2d3d(full_version)
+      write(lunout1,'(a,a)') 'file-created-by  '//trim(full_version)
+      write(lunout2,'(a,a)') 'file-created-by  '//trim(full_version)
 
       call dattim(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)

@@ -102,88 +102,119 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
 !
 ! Local variables
 !
-    integer :: iopsus
-    real(fp):: pangle
-    real(fp):: fpco
-    real(fp):: taubcw
-    integer :: subiw
-    logical :: epspar
-    !
-    real(fp):: ag       
-    real(fp):: chezy    
-    real(fp):: d10      
-    real(fp):: d90      
-    real(fp):: di50     
-    real(fp):: dstar
-    real(fp):: h1       
-    real(fp):: hidexp   
-    real(fp):: hrms     
-    real(fp):: mudfrac  
-    real(fp):: rhosol   
-    real(fp):: rhowat   
-    real(fp):: rlabda   
-    real(fp):: salinity 
-    real(fp):: salmax
-    real(fp):: teta     
-    real(fp):: tp       
-    real(fp):: umod     
-    real(fp):: uorb     
-    real(fp):: uuu      
-    real(fp):: vicmol   
-    real(fp):: vonkar   
-    real(fp):: vvv      
-    real(fp):: ws0
-    real(fp):: z0cur    
-    real(fp):: z0rou    
-    real(fp):: zumod    
-    real(fp):: gamtcr
-    !
+
+    logical  :: epspar
+    
+    integer  :: iopsus
     integer  :: k
+    integer  :: subiw
     integer  :: wform
+
+    ! SANTOSS flags
+    integer  :: as_effects
+    integer  :: pl_effects
+    integer  :: sl_effects
+    integer  :: sw_effects
+    
+    real(fp) :: ag       
+    real(fp) :: as
     real(fp) :: avgcu
     real(fp) :: avgu
     real(fp) :: awb
     real(fp) :: bakdif
     real(fp) :: betam
+    real(fp) :: chezy    
+    real(fp) :: d10      
+    real(fp) :: d90      
     real(fp) :: delm
     real(fp) :: deltas
     real(fp) :: delw
+    real(fp) :: di50     
     real(fp) :: drho
     real(fp) :: dss
+    real(fp) :: dstar
     real(fp) :: dz
     real(fp) :: epsmax
     real(fp) :: epsmxc
     real(fp) :: fc1
     real(fp) :: fcc
+    real(fp) :: fcwc
+    real(fp) :: fcwt
     real(fp) :: ff
     real(fp) :: fi
+    real(fp) :: fpco
     real(fp) :: fsilt
     real(fp) :: fw1
+    real(fp) :: gamtcr
+    real(fp) :: h1       
+    real(fp) :: hidexp   
+    real(fp) :: hrms     
+    real(fp) :: ksc
+    real(fp) :: ksw
     real(fp) :: lci
     real(fp) :: muc
+    real(fp) :: mudfrac  
+    real(fp) :: occ
+    real(fp) :: oct
+    real(fp) :: otc
+    real(fp) :: ott
+    real(fp) :: pangle
+    real(fp) :: pc
+    real(fp) :: phi_phase
     real(fp) :: phicur
+    real(fp) :: phicx
+    real(fp) :: phitx
     real(fp) :: psi
+    real(fp) :: pt
+    real(fp) :: qsu
+    real(fp) :: r
     real(fp) :: ra
+    real(fp) :: rh
+    real(fp) :: rhosol   
+    real(fp) :: rhowat   
+    real(fp) :: rlabda   
+    real(fp) :: salinity 
+    real(fp) :: salmax
+    real(fp) :: screpr
+    real(fp) :: sk
+    real(fp) :: strepr
     real(fp) :: ta
+    real(fp) :: taubcw
     real(fp) :: tauc
     real(fp) :: taucr1
     real(fp) :: tauwav
+    real(fp) :: tc
+    real(fp) :: teta     
+    real(fp) :: tp       
+    real(fp) :: tt
     real(fp) :: u
     real(fp) :: u2dhim
+    real(fp) :: ucrepr
+    real(fp) :: umod     
     real(fp) :: uoff
     real(fp) :: uon
+    real(fp) :: uorb     
     real(fp) :: ustarc
     real(fp) :: usus
     real(fp) :: utot
+    real(fp) :: utrepr
+    real(fp) :: uuu      
     real(fp) :: uwb
     real(fp) :: uwbih
     real(fp) :: uwc
+    real(fp) :: uwt
     real(fp) :: v
     real(fp) :: vcr
+    real(fp) :: vicmol   
+    real(fp) :: vonkar   
+    real(fp) :: vvv      
+    real(fp) :: ws0
     real(fp) :: z
+    real(fp) :: z0cur    
+    real(fp) :: z0rou    
+    real(fp) :: zumod    
     real(fp) :: zusus
-    real(fp) :: phi_phase
-    real(fp) :: r
+
 !
 !! executable statements -------------------------------------------------------
 !
@@ -230,7 +261,13 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     salmax = par(17)
     betam  = par(18)
     wform  = int(par(19))
-    ! NOTE ADDING PARAMETERS HERE INFLUENCES SANTOSS PARAMETERS AS WELL: numbers in santoss.f90 continue from here!
+    ! ----
+    ! SANTOSS only
+    sw_effects = int(par(20))
+    as_effects = int(par(21))
+    pl_effects = int(par(22))
+    sl_effects = int(par(23))
+    ! ----
     !
     tp = max(tp, 1e-2_fp)
     drho  = (rhosol-rhowat) / rhowat
@@ -431,9 +468,39 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
            par(17) = rksrs
        elseif (iform == -4) then
            ! extended SANTOSS bed load
-           call santoss(numrealpar, realpar, par, npar, dzduu, dzdvv, i2d3d, &
+           call santoss(h1, di50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
+                      & ag, vicmol, rhosol, rhowat, sw_effects, as_effects, &
+                      & pl_effects, sl_effects, dzduu, dzdvv, i2d3d, &
                       & sbcu, sbcv, sbwu, sbwv, sswu, sswv , &
+                      & uwc, uwt, rh, ksw, ksc, ucrepr, utrepr, fcwc, fcwt, &
+                      & screpr, strepr, pc, pt, occ, otc, ott, oct, tc, tt, &
+                      & phicx, phitx, qsu, sk, as, &
                       & error, message)
+           par     = -999.0_fp
+           par( 1) = uwc
+           par( 2) = uwt
+           par( 3) = rh
+           par( 4) = ksw
+           par( 5) = ksc
+           par( 6) = ucrepr
+           par( 7) = utrepr
+           par( 8) = fcwc
+           par( 9) = fcwt
+           par(10) = screpr
+           par(11) = strepr
+           par(12) = pc
+           par(13) = pt
+           par(14) = occ
+           par(15) = otc
+           par(16) = ott
+           par(17) = oct
+           par(18) = tc
+           par(19) = tt
+           par(20) = phicx
+           par(21) = phitx
+           par(22) = qsu
+           par(23) = sk
+           par(24) = as
        endif
     else
        !par   = -999.0_fp

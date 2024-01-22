@@ -119,7 +119,7 @@
 
  !real            , allocatable    :: tkepro   (:)      ! vertical production t
  !real            , allocatable    :: tkedis   (:)      ! vertical dissipation
- double precision, allocatable, target :: rho      (:)      ! density at cell centres (kg/m3)
+ double precision, allocatable, target     :: rho      (:)      ! density at cell centres (kg/m3)
  double precision, allocatable     :: rho0     (:)      ! density at cell centres (kg/m3), previous step
  double precision, allocatable     :: rhosww   (:)      ! deviatoric density at vertical interfaces, w points (kg/m3)
  double precision, allocatable     :: rhowat   (:)      ! density at cell centres (kg/m3), only salt and temp

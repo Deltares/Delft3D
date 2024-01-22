@@ -152,6 +152,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: itimtt
     integer                              , pointer :: itnflf
     integer                              , pointer :: itnfli
+    integer                              , pointer :: itnfll
+    integer                              , pointer :: itnflrf
+    integer                              , pointer :: itnflri
     integer                              , pointer :: ittrtu
     integer                              , pointer :: itiwei
     integer                              , pointer :: itdiag
@@ -246,7 +249,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: disinp
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: disnf
     integer(pntrsize)                    , pointer :: dldeta
     integer(pntrsize)                    , pointer :: dldksi
     integer(pntrsize)                    , pointer :: dp
@@ -367,7 +369,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: sinkw
     integer(pntrsize)                    , pointer :: soumud
     integer(pntrsize)                    , pointer :: sour
-    integer(pntrsize)                    , pointer :: sournf
     integer(pntrsize)                    , pointer :: sourr
     integer(pntrsize)                    , pointer :: sourw
     integer(pntrsize)                    , pointer :: stbf
@@ -491,7 +492,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: kadu
     integer(pntrsize)                    , pointer :: kadv
     integer(pntrsize)                    , pointer :: kcs
-    integer(pntrsize)                    , pointer :: kcs_nf
     integer(pntrsize)                    , pointer :: kcu
     integer(pntrsize)                    , pointer :: kcv
     integer(pntrsize)                    , pointer :: kfs
@@ -530,6 +530,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: namsrc
     integer(pntrsize)                    , pointer :: tprofc
     integer(pntrsize)                    , pointer :: tprofu
+    integer(pntrsize)                    , pointer :: namcon
     integer(pntrsize)                    , pointer :: ubnd
     integer(pntrsize), dimension(:, :)   , pointer :: nprptr
     integer                              , pointer :: nrcmp
@@ -591,6 +592,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                 :: imode
     integer                 :: itype
     integer                 :: n
+    integer                 :: nflrwmode
     integer                 :: nhystp
     integer                 :: nmaxddb
     integer                 :: nreal       ! Pointer to real array RCOUSR for UDF particle wind factor parameters 
@@ -697,6 +699,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     itimtt              => gdp%gdinttim%itimtt
     itnflf              => gdp%gdinttim%itnflf
     itnfli              => gdp%gdinttim%itnfli
+    itnfll              => gdp%gdinttim%itnfll
+    itnflrf             => gdp%gdinttim%itnflrf
+    itnflri             => gdp%gdinttim%itnflri
     ittrtu              => gdp%gdinttim%ittrtu
     itiwei              => gdp%gdinttim%itiwei
     itdiag              => gdp%gdinttim%itdiag
@@ -791,7 +796,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     disch               => gdp%gdr_i_ch%disch
     disinp              => gdp%gdr_i_ch%disinp
     discum              => gdp%gdr_i_ch%discum
-    disnf               => gdp%gdr_i_ch%disnf
     dldeta              => gdp%gdr_i_ch%dldeta
     dldksi              => gdp%gdr_i_ch%dldksi
     dp                  => gdp%gdr_i_ch%dp
@@ -912,7 +916,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     sinkw               => gdp%gdr_i_ch%sinkw
     soumud              => gdp%gdr_i_ch%soumud
     sour                => gdp%gdr_i_ch%sour
-    sournf              => gdp%gdr_i_ch%sournf
     sourr               => gdp%gdr_i_ch%sourr
     sourw               => gdp%gdr_i_ch%sourw
     stbf                => gdp%gdr_i_ch%stbf
@@ -1036,7 +1039,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     kadu                => gdp%gdr_i_ch%kadu
     kadv                => gdp%gdr_i_ch%kadv
     kcs                 => gdp%gdr_i_ch%kcs
-    kcs_nf              => gdp%gdr_i_ch%kcs_nf
     kcu                 => gdp%gdr_i_ch%kcu
     kcv                 => gdp%gdr_i_ch%kcv
     kfs                 => gdp%gdr_i_ch%kfs
@@ -1075,6 +1077,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     namsrc              => gdp%gdr_i_ch%namsrc
     tprofc              => gdp%gdr_i_ch%tprofc
     tprofu              => gdp%gdr_i_ch%tprofu
+    namcon              => gdp%gdr_i_ch%namcon
     ifirst              => gdp%gdtrisol%ifirst
     nubnd               => gdp%gdtrisol%nubnd
     ubnd                => gdp%gdtrisol%ubnd
@@ -1155,6 +1158,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(s1)     ,d(dps)    ,ifirst    ,gdp       )
           endif
        endif
+       !
        ifirst = 0
     endif
     !
@@ -1412,13 +1416,44 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! Run near field model and calculate source terms from
        ! this near field computation
        !
-       if (nfl .and. nst == itnflf) then
+       if (nfl .and. (nst==itnflf .or. nst==itnflrf)) then
+          if (nst == itnflf) then
+             ! Write near field files
+             if (nst == itnflrf) then
+                ! Also read near field files
+                if (itnflri > 0) then
+                   ! Read old files
+                   nflrwmode = NFLWRITEREADOLD
+                else
+                   ! Write files, wait until they appear and read them
+                   ! This is the default
+                   nflrwmode = NFLWRITEREADNEW
+                endif
+             else
+                ! Only write, do not read
+                nflrwmode = NFLWRITE
+             endif
+          else
+             ! Only read, do not write
+             nflrwmode = NFLREADOLD
+          endif
+          call near_field(r(u0)  , r(v0)     , r(rho)    , r(thick)  , &
+                        & kmax   , r(alfas)  , d(dps)    , r(s0)     , &
+                        & lstsci , lsal      , ltem      , r(xz)     , &
+                        & r(yz)  , nmmax     , nflrwmode , ch(namcon), &
+                        & i(kcs) , i(kfu)    , i(kfv)    , &
+                        & r(r0)  , 2*nst*hdt , saleqs    , temeqs    , &
+                        & r(s1)  , i(kfsmn0) , i(kfsmx0) , r(dzs0)   , &
+                        & r(sig) , r(sig)    , gdp       )
+          if (nflrwmode==NFLWRITE .or. nflrwmode == NFLWRITEREADOLD) then
+             itnflrf = itnflf + itnflri
+          endif
+          if (nst==itnflf .and. (itnflf+itnfli<=itnfll)) then
           itnflf = itnflf + itnfli
-          call near_field(r (u1    )  , r (v1    ), r (rho   ), r (thick), &
-                        & kmax        , r (alfas ), d (dps   ), r (s1)   , &
-                        & r (disnf)   , r (sournf), lstsci    , lsal     , &
-                        & ltem        , r (xz    ), r (yz    ), nmmax    , &
-                        & i (kcs)     , i (kcs_nf), r (r1    ), gdp      )
+          endif
+          if (nflrwmode==NFLWRITEREADNEW) then
+             itnflrf = itnflf
+          endif
        endif
        !
        ! Calculate source and sink terms for fluid mud layer
@@ -1645,7 +1680,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
        call timer_stop(timer_1stadi, gdp)
        if (roller) then
           !
@@ -1835,10 +1870,13 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & i(kfs)    ,i(kcs)    ,r(sour)   ,r(sink)   ,r(volum1) ,r(volum0) , &
                     & r(r0)     ,r(disch)  ,r(rint)   ,r(rintsm) ,r(thick)  ,bubble    , &
                     & gdp       )
+          !
+          ! Addition from nearfield-farfield model
+          !
           if (nfl) then
              call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)  ,r(sink)   , &
-                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,r(disnf) ,r(sournf) , &
-                          & gdp       )
+                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,i(kfsmn0) ,i(kfsmx0) , &
+                          & i(kcs)    ,gdp )
           endif
           call timer_stop(timer_discha, gdp)
        endif
@@ -1894,14 +1932,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
+             call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
+                       & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
-                       & i(kcs)    ,i(kfs)    ,r(wrkb1)  ,r(u0)     ,r(v0)     , &
+                       & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
                        & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
-                       & lstsci    ,gdp       )        
+                       & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )        
              call timer_stop(timer_fallve, gdp)
           endif
           !
@@ -1980,7 +2020,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
                  & gdp       )
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)
@@ -2664,7 +2704,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
        call timer_stop(timer_2ndadi, gdp)
        if (roller) then
           !
@@ -2903,10 +2943,13 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & i(kfs)    ,i(kcs)    ,r(sour)   ,r(sink)   ,r(volum1) ,r(volum0) , &
                     & r(r0)     ,r(disch)  ,r(rint)   ,r(rintsm) ,r(thick)  ,bubble    , &
                     & gdp       )
+          !
+          ! Addition from nearfield-farfield model
+          !
           if (nfl) then
-             call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)  ,r(sink)   , &
-                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,r(disnf) ,r(sournf) , &
-                          & gdp       )
+             call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)   ,r(sink)   , &
+                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,i(kfsmn0) ,i(kfsmx0) , &
+                          & i(kcs)    ,gdp )
           endif
           call timer_stop(timer_discha, gdp)
        endif
@@ -2962,14 +3005,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
+             call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
+                       & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
-                       & i(kcs)    ,i(kfs)    ,r(wrkb1)  ,r(u0)     ,r(v0)     , &
+                       & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
                        & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
-                       & lstsci    ,gdp       )
+                       & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )
              call timer_stop(timer_fallve, gdp)
           endif
           !
@@ -3048,7 +3093,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
                  & gdp       )
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)

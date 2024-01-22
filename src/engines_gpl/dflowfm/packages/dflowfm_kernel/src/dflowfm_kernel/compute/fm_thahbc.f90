@@ -54,7 +54,7 @@
 
    use m_flowexternalforcings
    use m_flowparameters
-   use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itrac2const
+   use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itrac2const, ifrac2const
    use m_sediment
 
    implicit none
@@ -62,15 +62,15 @@
    integer :: i, iconst, ised
 
    if(jasal > 0 .and. nbnds>0) then
-   call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
+      call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
    endif
 
    if(jatem > 0 .and. nbndtm>0) then
-   call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
+      call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
    endif
 
    if(jased > 0 .and. nbndsd>0 .and. .not. stm_included) then
-   call thconst(ISED1, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd)
+      call thconst(ISED1, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd)
    endif
 
    if(allocated(bndtr)) then
@@ -92,7 +92,9 @@
       enddo
    endif
    if (jased > 0 .and. stm_included .and. allocated(bndsf)) then
-      do i = 1, numfracs
+      do i = 1, numfracs ! only valid suspended fractions
+         iconst = ifrac2const(i)
+         if (iconst==0) cycle
          if ( .not. allocated(bndsf(i)%z) ) then
             allocate( bndsf(i)%z(0) )
          endif
@@ -105,7 +107,7 @@
          if ( .not. allocated(bndsf(i)%thz) ) then
             allocate( bndsf(i)%thz(0) )
          endif
-         call thconst(i+ISED1-1, nbndsf(i), bndsf(i)%z, bndsf(i)%k, bndsf(i)%tht, bndsf(i)%thz)
+         call thconst(iconst, nbndsf(i), bndsf(i)%z, bndsf(i)%k, bndsf(i)%tht, bndsf(i)%thz)
       end do
    end if
 

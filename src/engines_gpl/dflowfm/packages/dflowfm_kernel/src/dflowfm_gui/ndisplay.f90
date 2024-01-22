@@ -41,7 +41,7 @@
    use m_plotdots
    use m_transport
    use m_waves, only: waveparopt, numoptwav
-   use m_xbeach_data,   only: windmodel
+   !use m_xbeach_data,   only: windmodel
    use gridoperations
 
    implicit none
@@ -1096,8 +1096,10 @@
       OPTION(3) = 'Wave  rel. bedload transport    (kg/s/m)'
       OPTION(4) = 'Wave  rel. susp. transport      (kg/s/m)'
       OPTION(5) = 'Total transport                 (kg/s/m)'
+      OPTION(6) = 'Bermslope correction            (kg/s/m)'
+      OPTION(7) = 'Bermslope index                      (-)'
 
-      MAXOPT    = 5
+      MAXOPT    = 7
       NWHAT2    = NDRAW(29)
       CALL MENUV3(NWHAT2,OPTION,MAXOPT,EXP,MAXEXP)
       NDRAW(29) = NWHAT2
@@ -1115,10 +1117,9 @@
       OPTION(1) = 'Bottom level change in last timestep (m)'
       OPTION(2) = 'Sediment source adv. eq.       (kg/m3/s)'
       OPTION(3) = 'Sediment sink   adv. eq.           (1/s)'
-      !OPTION(4) = 'Wave  rel. susp. transport      (kg/s/m)'
-      !OPTION(5) = 'Total transport                 (kg/s/m)'
+      OPTION(4) = 'Total transport magnitude       (kg/s/m)'
 
-      MAXOPT    = 3
+      MAXOPT    = 4
       NWHAT2    = NDRAW(28)
       CALL MENUV3(NWHAT2,OPTION,MAXOPT,EXP,MAXEXP)
       NDRAW(28) = NWHAT2

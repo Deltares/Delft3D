@@ -116,8 +116,13 @@ end
 checkgrids = strcmp(FI.DiffType,'renum');
 JRI = [];
 if Props.NVal>0 && checkgrids
-    [success,Grid1,FI.Files(1)] = qp_getdata(FI.Files(1),domain1,Props.Q1,'grid');
-    [success,Grid2,FI.Files(2)] = qp_getdata(FI.Files(2),domain2,Props.Q2,'grid');
+    if isempty(Props.SubFld)
+        [success,Grid1,FI.Files(1)] = qp_getdata(FI.Files(1),domain1,Props.Q1,'grid');
+        [success,Grid2,FI.Files(2)] = qp_getdata(FI.Files(2),domain2,Props.Q2,'grid');
+    else % subfld index is the first index of varargin, so pass that one ...
+        [success,Grid1,FI.Files(1)] = qp_getdata(FI.Files(1),domain1,Props.Q1,'grid',varargin{1});
+        [success,Grid2,FI.Files(2)] = qp_getdata(FI.Files(2),domain2,Props.Q2,'grid',varargin{1});
+    end
     if isfield(Grid1,'ValLocation')
         X1 = Grid1.X;
         Y1 = Grid1.Y;

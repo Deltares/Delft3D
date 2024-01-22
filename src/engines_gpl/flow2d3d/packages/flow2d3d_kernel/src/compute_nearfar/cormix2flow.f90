@@ -1,9 +1,9 @@
-subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
+subroutine cormix2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
                      & lstsci ,lsal  ,ltem  ,xz    ,yz       ,nmmax   , &
                      & kcs    ,gdp   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2020.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -48,11 +48,10 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer           , pointer :: m_diff
-    integer           , pointer :: n_diff
-    real(fp)          , pointer :: q_diff
-    real(fp)          , pointer :: t0_diff
-    real(fp)          , pointer :: s0_diff
+    integer ,dimension(:)          , pointer :: m_diff
+    integer ,dimension(:)          , pointer :: n_diff
+    real(fp),dimension(:)          , pointer :: q_diff
+    real(fp),dimension(:,:)        , pointer :: const_diff
 !
 ! Global variables
 !
@@ -62,7 +61,7 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
     integer                                                    , intent(in)  :: ltem     !  Description and declaration in tricom.igs
     integer                                                    , intent(in)  :: nmmax    !  Description and declaration in tricom.igs
     integer    , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: kcs      !  Description and declaration in
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: s1       !  Description and declaration in esm_alloc_real.f90 gs
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: s0       !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: xz       !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in)  :: yz       !  Description and declaration in esm_alloc_real.f90
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(out) :: disch_nf !  Description and declaration in esm_alloc_real.f90
@@ -72,6 +71,7 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
 !
 ! Local variables
 !
+    integer                                     :: ierror
     integer                                     :: nm_diff
     integer                      , external     :: newlun
     integer                                     :: luntmp
@@ -94,15 +94,14 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
     m_diff         => gdp%gdnfl%m_diff
     n_diff         => gdp%gdnfl%n_diff
     q_diff         => gdp%gdnfl%q_diff
-    t0_diff        => gdp%gdnfl%t0_diff
-    s0_diff        => gdp%gdnfl%s0_diff
+    const_diff     => gdp%gdnfl%const_diff
     !
-    allocate (x_jet(1000))
-    allocate (y_jet(1000))
-    allocate (z_jet(1000))
-    allocate (s_jet(1000))
+    allocate (x_jet(1000), stat=ierror)
+    allocate (y_jet(1000), stat=ierror)
+    allocate (z_jet(1000), stat=ierror)
+    allocate (s_jet(1000), stat=ierror)
     !
-    call n_and_m_to_nm(n_diff, m_diff, nm_diff, gdp)
+    call n_and_m_to_nm(n_diff(1), m_diff(1), nm_diff, gdp)
     !
     ! Open cormix output file and read jet characteristics end of near field
     ! end of corjet computation
@@ -141,17 +140,17 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s1    ,disch_nf ,sour_nf , &
     !
     ! Fill sources and sinks following the Desa Method of Prof. Lee
     !
-    call desa(x_jet   ,y_jet    ,z_jet   ,s_jet   ,nrow    , &
-            & kcs     ,xz       ,yz      ,dps     ,s1      , &
-            & nmmax   ,thick    ,kmax    ,lstsci  ,lsal    , &
-            & ltem    ,disch_nf ,sour_nf ,gdp     )
+    !call desa(x_jet   ,y_jet    ,z_jet   ,s_jet   ,nrow    , &
+    !        & kcs     ,xz       ,yz      ,dps     ,s0      , &
+    !        & nmmax   ,thick    ,kmax    ,lstsci  ,lsal    , &
+    !        & ltem    ,disch_nf ,sour_nf ,1       ,gdp     )
     !
     ! Deallocate temporary arrays
     !
-    deallocate (x_jet)
-    deallocate (y_jet)
-    deallocate (z_jet)
-    deallocate (s_jet)
+    deallocate (x_jet, stat=ierror)
+    deallocate (y_jet, stat=ierror)
+    deallocate (z_jet, stat=ierror)
+    deallocate (s_jet, stat=ierror)
     !
     close(luntmp)
 end subroutine cormix2flow

@@ -151,6 +151,7 @@ subroutine gdp_alloc(gdp)
     if (.not. associated(gdp%runid)) then
        allocate (gdp%runid)
     endif
+    allocate (gdp%uniqueid)
     !
     allocate (gdp%arch)
     allocate (gdp%errorcode)

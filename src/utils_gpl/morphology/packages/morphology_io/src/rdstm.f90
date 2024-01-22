@@ -64,6 +64,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                & lundia, lsal, ltem, ltur, lsec, lfbedfrm, &
                & julrefday, dtunit, nambnd, error)
     use grid_dimens_module
+    use sediment_basics_module, only: TRA_ADVDIFF
     use properties ! includes tree_structures
     use m_ini_noderel ! for node relation definitions
     !
@@ -148,7 +149,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     if (ltem>0) then
        stm%namcon(ltem) = 'TEMPERATURE'
     endif
-    do l=1,stm%lsedsus
+       do l = 1, stm%lsedsus
        stm%namcon(max(0,lsal,ltem) + l) = stm%sedpar%namsed(l)
     enddo
     !
@@ -194,25 +195,44 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     !
     ipardef = 0
     rpardef = 0.0_fp
+    ! Van Rijn (1993)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 1, stm%morpar%iopsus)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 2, stm%morpar%aksfac)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 3, stm%morpar%rwave)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 4, stm%morpar%rdc)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 5, stm%morpar%rdw)
     call setpardef(ipardef, rpardef, NPARDEF, -1, 6, stm%morpar%iopkcw)
-    call setpardef(ipardef, rpardef, NPARDEF, -1, 7, stm%morpar%epspar)
+    call setpardef(ipardef, rpardef, NPARDEF, -1, 7, stm%morpar%epspar) ! explicitly not for Delft3D-FLOW ... ?
+    ! Van Rijn (2007)
     call setpardef(ipardef, rpardef, NPARDEF, -2, 1, stm%morpar%iopsus)   ! jre
     call setpardef(ipardef, rpardef, NPARDEF, -2, 2, stm%morpar%pangle)
     call setpardef(ipardef, rpardef, NPARDEF, -2, 3, stm%morpar%fpco)
     call setpardef(ipardef, rpardef, NPARDEF, -2, 4, stm%morpar%subiw)
     call setpardef(ipardef, rpardef, NPARDEF, -2, 5, stm%morpar%epspar)
+    ! SANTOSS copy of Van Rijn (2007)
+    call setpardef(ipardef, rpardef, NPARDEF, -4, 1, stm%morpar%iopsus)
+    call setpardef(ipardef, rpardef, NPARDEF, -4, 2, stm%morpar%pangle)
+    call setpardef(ipardef, rpardef, NPARDEF, -4, 3, stm%morpar%fpco)
+    call setpardef(ipardef, rpardef, NPARDEF, -4, 4, stm%morpar%subiw)
+    call setpardef(ipardef, rpardef, NPARDEF, -4, 5, stm%morpar%epspar)
     !
     call rdtrafrm(lundia, error, filtrn, stm%lsedtot, &
                 & ipardef, rpardef, NPARDEF, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
                 & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
-                & griddim)
+                & griddim, stm%sedpar%max_mud_sedtyp)
     if (error) return
+    !
+    ! update tratyp based on the transport formula selected
+    ! switch off the bed load component when a transport formula based on
+    ! entrainment and deposition terms is selected (Partheniades-Krone or
+    ! user defined).
+    !
+    do l = 1, stm%lsedsus
+       if (stm%trapar%iform(l) == -3 .or. stm%trapar%iform(l) == 21) then
+          stm%sedpar%tratyp(l) = TRA_ADVDIFF
+       endif
+    enddo
     !--------------------------------------------------------------------------
     !
     ! Echo sediment and transport parameters

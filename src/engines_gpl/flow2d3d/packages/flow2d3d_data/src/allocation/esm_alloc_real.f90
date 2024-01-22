@@ -1201,11 +1201,6 @@ subroutine esm_alloc_real(lundia, error, gdp)
     ierr = mkfpnt(pntnam, nsrc, gdp)
     if (ierr <= -9) goto 9999
     !
-    pntnam = 'disnf'         !  Discharge values [m3/sec]
-                             !  following from near field model
-    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*kmax, gdp)
-    if (ierr <= -9) goto 9999
-    !
     pntnam = 'voldis'        !  Total volume discharged by discharge [m3]
     ierr = mkfpnt(pntnam, nsrc, gdp)
     if (ierr <= -9) goto 9999    
@@ -1263,10 +1258,6 @@ subroutine esm_alloc_real(lundia, error, gdp)
     if (ierr <= -9) goto 9999
     !
     pntnam = 'sour'          !  Source terms advection-diffusion equation (added to Right Hand Side DDKL)
-    ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*kmax*lstsci, gdp)
-    if (ierr <= -9) goto 9999
-    !
-    pntnam = 'sournf'        !  Sources for near field model (added to Right Hand Side DDKL)
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb*kmax*lstsci, gdp)
     if (ierr <= -9) goto 9999
     !

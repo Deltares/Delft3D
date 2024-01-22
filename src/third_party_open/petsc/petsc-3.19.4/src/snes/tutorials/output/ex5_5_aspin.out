@@ -1,0 +1,125 @@
+  0 SNES Function norm 6.61942 
+    0 KSP Residual norm 6.61942 
+    1 KSP Residual norm 2.31191 
+    2 KSP Residual norm 1.86097 
+    3 KSP Residual norm 1.32498 
+    4 KSP Residual norm 0.38112 
+    5 KSP Residual norm 0.104722 
+    6 KSP Residual norm 0.0173509 
+    7 KSP Residual norm 0.00612586 
+    8 KSP Residual norm 0.00134469 
+    9 KSP Residual norm 0.00043695 
+   10 KSP Residual norm 8.91998e-05 
+   11 KSP Residual norm 1.21254e-05 
+  1 SNES Function norm 0.276602 
+    0 KSP Residual norm 0.276602 
+    1 KSP Residual norm 0.116835 
+    2 KSP Residual norm 0.0552827 
+    3 KSP Residual norm 0.0332203 
+    4 KSP Residual norm 0.00554311 
+    5 KSP Residual norm 0.00114928 
+    6 KSP Residual norm 0.000359537 
+    7 KSP Residual norm 0.000103556 
+    8 KSP Residual norm 3.36437e-05 
+    9 KSP Residual norm 9.98437e-06 
+   10 KSP Residual norm 3.82372e-06 
+   11 KSP Residual norm 2.05596e-07 
+  2 SNES Function norm 0.00114263 
+    0 KSP Residual norm 0.00114263 
+    1 KSP Residual norm 0.000514134 
+    2 KSP Residual norm 0.000217556 
+    3 KSP Residual norm 0.000141758 
+    4 KSP Residual norm 2.24943e-05 
+    5 KSP Residual norm 4.0278e-06 
+    6 KSP Residual norm 1.94568e-06 
+    7 KSP Residual norm 4.39092e-07 
+    8 KSP Residual norm 1.20951e-07 
+    9 KSP Residual norm 3.88106e-08 
+   10 KSP Residual norm 1.47473e-08 
+   11 KSP Residual norm 8.100e-10 
+  3 SNES Function norm 2.04173e-08 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=33
+  total number of function evaluations=0
+  norm schedule ALWAYS
+  Jacobian is built using a DMDA local Jacobian
+  SNESLineSearch Object: 4 MPI processes
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  SNES Object: (npc_) 4 MPI processes
+    type: nasm
+      total subdomain blocks = 4
+      Local solver information for first block on rank 0:
+      Use -npc_snes_view ::ascii_info_detail to display information for all blocks
+      SNES Object: (npc_sub_) 1 MPI process
+        type: newtonls
+        maximum iterations=50, maximum function evaluations=10000
+        tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+        total number of linear solver iterations=1
+        total number of function evaluations=3
+        norm schedule ALWAYS
+        Jacobian is built using a DMDA local Jacobian
+        SNESLineSearch Object: (npc_sub_) 1 MPI process
+          type: bt
+            interpolation: cubic
+            alpha=1.000000e-04
+          maxstep=1.000000e+08, minlambda=1.000000e-12
+          tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+          maximum iterations=40
+        KSP Object: (npc_sub_) 1 MPI process
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object: (npc_sub_) 1 MPI process
+          type: lu
+            out-of-place factorization
+            tolerance for zero pivot 2.22045e-14
+            matrix ordering: nd
+            factor fill ratio given 5., needed 4.91439
+              Factored matrix follows:
+                Mat Object: (npc_sub_) 1 MPI process
+                  type: seqaij
+                  rows=784, cols=784
+                  package used to perform factorization: petsc
+                  total: nonzeros=18714, allocated nonzeros=18714
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI process
+            type: seqaij
+            rows=784, cols=784
+            total: nonzeros=3808, allocated nonzeros=3808
+            total number of mallocs used during MatSetValues calls=0
+              not using I-node routines
+    maximum iterations=1, maximum function evaluations=10000
+    tolerances: relative=0., absolute=0., solution=0.
+    total number of function evaluations=4
+    Jacobian is built using a DMDA local Jacobian
+  KSP Object: 4 MPI processes
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 4 MPI processes
+    type: none
+    linear system matrix followed by preconditioner matrix:
+    Mat Object: 4 MPI processes
+      type: shell
+      rows=2401, cols=2401
+    Mat Object: 4 MPI processes
+      type: mpiaij
+      rows=2401, cols=2401
+      total: nonzeros=11809, allocated nonzeros=11809
+      total number of mallocs used during MatSetValues calls=0

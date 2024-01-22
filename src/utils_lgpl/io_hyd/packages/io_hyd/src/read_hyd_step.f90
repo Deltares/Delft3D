@@ -31,6 +31,7 @@
 
       ! global declarations
 
+      use m_srstop
       use hydmod
       implicit none
 

@@ -38,8 +38,10 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts, only: pi, ee
-    use sediment_basics_module, only: dgravel, dsand, SEDTYP_COHESIVE, SEDTYP_NONCOHESIVE_SUSPENDED
+    use sediment_basics_module, only: dgravel, dsand
     use morphology_data_module
+    use flocculation, only: macro_floc_settling_manning, micro_floc_settling_manning, floc_manning, &
+        & macro_floc_settling_chassagne, micro_floc_settling_chassagne, floc_chassagne
     use message_module, only: write_error
     use iso_c_binding, only: c_char
     !
@@ -76,16 +78,25 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                                                   ! Solved by using "message_c"
     integer                     :: i
     integer                     :: l = 0
-    real(fp)                    :: rhoint
+    logical                     :: apply_hinset
+    real(fp)                    :: rhow
     real(fp)                    :: rhosol
     real(fp)                    :: temint
     real(fp)                    :: salint
     real(fp)                    :: dss
     real(fp)                    :: ag
     real(fp)                    :: d50
+    real(fp)                    :: cclay
     real(fp)                    :: ctot
     real(fp)                    :: csoil
     real(fp)                    :: s
+    real(fp)                    :: tdiss
+    real(fp)                    :: tshear
+    real(fp)                    :: vonkar
+    real(fp)                    :: settling_flux
+    real(fp)                    :: macro_frac  ! macro floc fraction
+    real(fp)                    :: ws_macro
+    real(fp)                    :: ws_micro
     real(fp)                    :: vcmol
     real(fp)                    :: coefw
     real(fp)                    :: ffloc
@@ -96,36 +107,53 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
     real(fp)                    :: ffloc0
     real(fp)                    :: a
     real(fp)                    :: b
+    real(fp)                    :: cflocc
+    real(fp)                    :: enhfac ! settling enhancement factor in salinity function
     real(fp)                    :: ws0
     real(fp)                    :: wsm
     real(fp)                    :: salmax
+    real(fp)                    :: sedtc
     real(fp)                    :: gamflc
+    real(fp)                    :: npow
 !
 !! executable statements -------------------------------------------------------
 !
     error = .false.
-    if (iform_settle == 1) then
+    apply_hinset = .false.
+    select case (iform_settle)
+    case (WS_FORM_FUNCTION_SALTEMCON)
        salint = real(dll_reals(WS_RP_SALIN),fp)
+       temint = real(dll_reals(WS_RP_TEMP ),fp)
        ctot   = real(dll_reals(WS_RP_CTOT ),fp)
-       csoil  = real(dll_reals(WS_RP_CSOIL),fp)
        salmax = parloc(1)
        ws0    = parloc(2)
        wsm    = parloc(3)
+       sedtc  = parloc(4)
+       cflocc = parloc(5)
+       npow   = parloc(6)
+       !
+       ! salinity effect
        !
        if (salint<salmax .and. salmax>0.0_fp) then
-          a = 1.0_fp + wsm/ws0
-          b = a - 2.0_fp
+          enhfac = wsm/ws0
+          a = 1.0_fp + enhfac
+          b = enhfac - 1.0_fp
           wsloc = 0.5_fp * ws0 * (a-b*cos(pi*salint/salmax))
        else
           wsloc = wsm
        endif
        !
-       ! hindered settling Richardson and Zaki/Mehta
+       ! temperature effect
        !
-       hinset = max(0.0_fp , (1.0_fp - max(0.0_fp , ctot)/csoil))
-       wsloc = wsloc * hinset**5
-    elseif (iform_settle == 2 .or. iform_settle == -2) then
-       rhoint = real(dll_reals(WS_RP_RHOWT),fp)
+       wsloc = wsloc * sedtc**(temint - 20.0_fp)
+       !
+       ! simple flocculation effect
+       !
+       wsloc = wsloc * min((ctot/cflocc)**npow, 1.0_fp)
+       apply_hinset = .true.
+
+    case (WS_FORM_FUNCTION_DSS, WS_FORM_FUNCTION_DSS_2004)
+       rhow   = real(dll_reals(WS_RP_RHOWT),fp)
        rhosol = real(dll_reals(WS_RP_RHOSL),fp)
        temint = real(dll_reals(WS_RP_TEMP ),fp)
        salint = real(dll_reals(WS_RP_SALIN),fp)
@@ -137,7 +165,7 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        salmax = parloc(1)
        gamflc = parloc(2)
        !
-       s = rhosol / rhoint
+       s = rhosol / rhow
        !
        ! Molecular viscosity vcmol computed according to Van Rijn (2004) sediment tranport
        ! vicmol only matches this value if temperature is not explicitly modeled.
@@ -159,9 +187,9 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        endif
        !
        ffloc = 1.0_fp
-       if (  iform_settle == -2                &
-           & .and. d50 < dsand                 &
-           & .and. salint > 0.0_fp  ) then
+       if (  iform_settle == WS_FORM_FUNCTION_DSS_2004 &
+           & .and. d50 < dsand                         &
+           & .and. salint > 0.0_fp                     ) then
           !
           ! Hindered settling (Van Rijn, 2004)
           !
@@ -183,17 +211,79 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
              ffloc = max(min(ffloc , 10.0_fp) , 1.0_fp)
           endif
        else
-          !
-          ! hindered settling Richardson and Zaki formula
-          ! Previous approach: Oliver's formula
-          !
+          ! call hinset_Richardson_and_Zaki()
           hinset = max(0.0_fp , (1.0_fp - max(0.0_fp , ctot)/csoil)) 
        endif
        wsloc = ffloc * wsloc * hinset**5
-    elseif (iform_settle == 15) then
+       apply_hinset = .false.
+
+    case (WS_FORM_MANNING_DYER_MACRO)
+       !
+       ! Settling velocity for macro flocs according Manning and Dyer
+       !
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       call macro_floc_settling_manning( cclay, tshear, wsloc )
+       apply_hinset = .true.
+
+    case (WS_FORM_MANNING_DYER_MICRO)
+       !
+       ! Settling velocity for micro flocs according Manning and Dyer
+       !
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       call micro_floc_settling_manning( tshear, wsloc )
+       apply_hinset = .true.
+
+    case (WS_FORM_MANNING_DYER)
+       !
+       ! Settling velocity based on flocculation model by Manning and Dyer
+       !
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       call floc_manning( cclay, tshear, wsloc, macro_frac, ws_macro, ws_micro )
+       apply_hinset = .true.
+
+    case (WS_FORM_CHASSAGNE_SAFAR_MACRO)
+       !
+       ! Settling velocity for macro flocs according Chassagne and Safar
+       !
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
+       ag     = real(dll_reals(WS_RP_GRAV ),fp)
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
+       rhow   = real(dll_reals(WS_RP_RHOWT),fp)
+       vcmol  = real(dll_reals(WS_RP_VICML),fp)
+       call macro_floc_settling_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, wsloc )
+       apply_hinset = .true.
+
+    case (WS_FORM_CHASSAGNE_SAFAR_MICRO)
+       !
+       ! Settling velocity for macro flocs according Chassagne and Safar
+       !
+       ag     = real(dll_reals(WS_RP_GRAV ),fp)
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
+       rhow   = real(dll_reals(WS_RP_RHOWT),fp)
+       vcmol  = real(dll_reals(WS_RP_VICML),fp)
+       call micro_floc_settling_chassagne( tshear, tdiss, ag, vcmol, rhow, wsloc )
+       apply_hinset = .true.
+
+    case (WS_FORM_CHASSAGNE_SAFAR)
+       !
+       ! Settling velocity based on flocculation model by Chassagne and Safar
+       !
+       cclay  = real(dll_reals(WS_RP_CCLAY),fp) * 1000.0_fp ! convert kg/m3 to g/m3
+       ag     = real(dll_reals(WS_RP_GRAV ),fp)
+       tshear = real(dll_reals(WS_RP_SHTUR),fp)
+       tdiss  = real(dll_reals(WS_RP_EPTUR),fp)
+       rhow   = real(dll_reals(WS_RP_RHOWT),fp)
+       vcmol  = real(dll_reals(WS_RP_VICML),fp)
+       call floc_chassagne( cclay, tshear, tdiss, ag, vcmol, rhow, wsloc, macro_frac, ws_macro, ws_micro )
+       apply_hinset = .true.
+
+    case (WS_FORM_USER_ROUTINE)
        !
        ! Settling velocity routine supplied by the user in a DLL
-       !
        !
        ! Initialisation of output variables of user defined settling velocity routine
        !
@@ -233,10 +323,28 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
        ! Output parameters
        !
        wsloc = real(ws_dll,fp)
-    else
+       apply_hinset = .false.
+
+    case default
        errmsg = 'Settling formula not recognized'
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
+    end select
+    
+    if (apply_hinset) then
+        call hinset_Richardson_and_Zaki()
     endif
+
+    contains
+
+    subroutine hinset_Richardson_and_Zaki()
+       !
+       ! hindered settling Richardson and Zaki/Mehta
+       !
+       ctot   = real(dll_reals(WS_RP_CTOT ),fp)
+       csoil  = real(dll_reals(WS_RP_CSOIL),fp) ! TODO: in Van Rijn (2005) csoil = cgel/0.65, can we make this consistent?
+       hinset = max(0.0_fp , (1.0_fp - max(0.0_fp , ctot)/csoil))
+       wsloc = wsloc * hinset**5
+    end subroutine hinset_Richardson_and_Zaki
 end subroutine eqsettle

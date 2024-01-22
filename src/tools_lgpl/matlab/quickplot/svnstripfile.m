@@ -1,4 +1,4 @@
-function svnstripfile(basedir)
+function svnstripfile(basedir, varargin)
 %SVNSTRIPFILE Strip $-sign from SVN keywords in files.
 %    SVNSTRIPFILE(BaseDir) recursively processes all .m, .c and .cpp files in
 %    the directory BaseDir and below, stripping away the $-signs from the SVN
@@ -40,6 +40,7 @@ function svnstripfile(basedir)
 %   $HeadURL$
 %   $Id$
 
+nstrings = length(varargin);
 d = dir(basedir);
 for i = 1:length(d)
     if d(i).isdir
@@ -52,7 +53,7 @@ for i = 1:length(d)
         %
         % recursive processing of child directories
         %
-        svnstripfile([basedir filesep d(i).name])
+        svnstripfile([basedir filesep d(i).name],varargin{:})
     else
         [p,f,e] = fileparts(d(i).name);
         if ~strcmp(e,'.m') && ~strcmp(e,'.c') && ~strcmp(e,'.cpp') && ~strcmp(e,'.ini')
@@ -81,11 +82,15 @@ for i = 1:length(d)
         Keywords = {'HeadURL','Id'};
         for l = 1:length(c)
             for k = 1:length(Keywords)
-                j = strfind(c{l},['$' Keywords{k} ':']);
+                j = strfind(c{l},['$' Keywords{k}]);
                 if ~isempty(j)
                     j2 = strfind(c{l},'$');
                     j2 = min(j2(j2>j));
-                    c{l} = [c{l}(1:j-1) c{l}(j+1:j2-1) c{l}(j2+1:end)];
+                    if k > nstrings
+                        c{l} = [c{l}(1:j-1) c{l}(j+1:j2-1) c{l}(j2+1:end)];
+                    else
+                        c{l} = [c{l}(1:j-1) varargin{k} c{l}(j2+1:end)];
+                    end
                 end
             end
         end

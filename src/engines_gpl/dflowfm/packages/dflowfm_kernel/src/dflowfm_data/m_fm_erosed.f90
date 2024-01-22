@@ -30,36 +30,6 @@
 ! 
 ! 
 
-   !----- AGPL --------------------------------------------------------------------
-   !
-   !  Copyright (C)  Stichting Deltares, 2017-2023.
-   !
-   !  This file is part of Delft3D (D-Flow Flexible Mesh component).
-   !
-   !  Delft3D is free software: you can redistribute it and/or modify
-   !  it under the terms of the GNU Affero General Public License as
-   !  published by the Free Software Foundation version 3.
-   !
-   !  Delft3D  is distributed in the hope that it will be useful,
-   !  but WITHOUT ANY WARRANTY; without even the implied warranty of
-   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   !  GNU Affero General Public License for more details.
-   !
-   !  You should have received a copy of the GNU Affero General Public License
-   !  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-   !
-   !  contact: delft3d.support@deltares.nl
-   !  Stichting Deltares
-   !  P.O. Box 177
-   !  2600 MH Delft, The Netherlands
-   !
-   !  All indications and logos of, and references to, "Delft3D",
-   !  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-   !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-   !
-   !-------------------------------------------------------------------------------
-   !  
-   !  
    !>  pointer data
    module m_fm_erosed
    use precision
@@ -75,12 +45,12 @@
    integer, dimension(:),                 pointer :: link1sign => NULL()
    logical                                        :: link1_initialized = .false.
 
-   real(fp), dimension(:,:),              pointer :: seddif
-   real(fp), dimension(:,:),              pointer :: sed
+   real(fp), dimension(:,:),              pointer :: seddif        !< Sediment diffusion
+   real(fp), dimension(:,:),              pointer :: sed           !< Sediment concentration work array
    real(fp), dimension(:),                pointer :: blchg         !< Bed level change (> 0 = sedimentation, < 0 = erosion)
    real(fp), dimension(:),                pointer :: dzbdt         !< Bed level change time rate
-   real(fp), dimension(:),                pointer :: uau
-   real(fp), dimension(:,:),              pointer :: ws
+   real(fp), dimension(:),                pointer :: uau           !< velocity asymmetry
+   real(fp), dimension(:,:),              pointer :: ws            !< settling velocity
 
    real(fp), dimension(:)               , pointer :: ucxq_mor
    real(fp), dimension(:)               , pointer :: ucyq_mor
@@ -110,12 +80,22 @@
    real(fp)         , dimension(:)      , pointer :: pmcrit
    integer          , dimension(:)      , pointer :: nseddia
    integer          , dimension(:)      , pointer :: sedtyp
+   integer          , dimension(:)      , pointer :: tratyp
    logical                              , pointer :: anymud
    real(fp)         , dimension(:)      , pointer :: sedtrcfac
    logical                              , pointer :: bsskin
    real(fp)         , dimension(:)      , pointer :: thcmud
    real(fp)         , dimension(:)      , pointer :: tpsnumber
    real(fp)         , dimension(:, :)   , pointer :: dss
+
+   integer                              , pointer :: max_mud_sedtyp
+   integer                              , pointer :: min_dxx_sedtyp
+   integer                              , pointer :: flocmod
+   integer                              , pointer :: nflocpop
+   integer                              , pointer :: nflocsizes
+   integer          , dimension(:, :)   , pointer :: floclist
+   real(fp)                             , pointer :: tbreakup
+   real(fp)                             , pointer :: tfloc
 
    ! morpar
    real(fp)                             , pointer :: thresh
@@ -166,6 +146,13 @@
    logical                              , pointer :: eqmbcmud
    logical                              , pointer :: eulerisoglm
    logical                              , pointer :: l_suscor
+   logical                              , pointer :: bermslopetransport     !< switch on bermslope transport or not
+   logical                              , pointer :: bermslopebed           !< include bermslope nudging on bedload
+   logical                              , pointer :: bermslopesus           !< include bermslope nudging on suspended load
+   real(fp)                             , pointer :: bermslope              !< slope to be nudged toward
+   real(fp)                             , pointer :: bermslopefac           !< calibration factor
+   real(fp)                             , pointer :: bermslopegamma         !< bermslope nudging applied for region where Hrms/h>bermslopegamma
+   real(fp)                             , pointer :: bermslopedepth         !< minimum depth to apply nudging
 
    ! trapar
    integer          , dimension(:)      , pointer :: iform

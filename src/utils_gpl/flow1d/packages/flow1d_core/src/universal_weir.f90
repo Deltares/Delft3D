@@ -163,22 +163,6 @@ module m_Universal_Weir
          uniweir%crestlevel_actual = uniweir%crestlevel
       endif
       !
-      !     Check on flooding or drying with treshold
-      if ((smax - uniweir%crestlevel_actual) < thresholdDry) then
-         kfum = 0
-      elseif ((smax - uniweir%crestlevel_actual) > thresholdFlood) then
-         kfum = 1
-      else
-      endif
-      if (kfum == 0) then
-         fum = 0.0
-         rum = 0.0
-         !        same as weir
-         u1m = 0.0
-         qm = 0.0
-         return
-      endif
-      !
       !     Switchfactor is the transition factor between free and
       !     submerged flow (0.667 for a broad crested weir)
       !     switchfactor is taken as a fixed value according to

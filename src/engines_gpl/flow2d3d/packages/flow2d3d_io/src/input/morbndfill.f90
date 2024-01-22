@@ -90,6 +90,8 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
     real(fp) :: width2
     real(fp) :: widthprev
     real(fp) :: totdist
+    !
+    character(120) :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -156,15 +158,15 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
           ! in v/n direction, we need to add a minus sign if the direction
           ! of u/m and v/n directions are opposite.
           !
-          if (kcs(nmu) == 1) then
+          if (abs(kcs(nmu)) == 1) then
              idir  = 1  ! u boundary
              nxmx  = nmu
              width = guu(nm)
-             if (kcs(num) == 1) then
+             if (abs(kcs(num)) == 1) then
                 nxmx2  = num
                 idir2  = 2  ! v boundary
                 width2 = gvv(nm)
-             elseif (kcs(ndm) == 1) then
+             elseif (abs(kcs(ndm)) == 1) then
                 nxmx2 = ndm
                 idir2 = 2  ! v boundary
                 !
@@ -175,18 +177,18 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
                 width2 = 0.0
              endif
              totwidth = sqrt(width**2 + width2**2)
-          elseif (kcs(nmd) == 1) then
+          elseif (abs(kcs(nmd)) == 1) then
              idir  = 1  ! u boundary
              nxmx  = nmd
              width = guu(nmd)
-             if (kcs(num) == 1) then
+             if (abs(kcs(num)) == 1) then
                 nxmx2 = num
                 idir2 = 2  ! v boundary
                 !
                 ! negative since v/n direction is reversed compared to u/m direction
                 !
                 width2 = -gvv(nm)
-             elseif (kcs(ndm) == 1) then
+             elseif (abs(kcs(ndm)) == 1) then
                 nxmx2  = ndm
                 idir2  = 2  ! v boundary
                 width2 = gvv(ndm)
@@ -196,12 +198,16 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
              totwidth = sqrt(width**2 + width2**2)
           else
              idir = 2  ! v boundary
-             if (kcs(ndm) == 0) then
+             if (abs(kcs(num)) == 1) then
                 nxmx  = num
                 width = gvv(nm)
-             elseif (kcs(num) == 0) then
+             elseif (abs(kcs(ndm)) == 1) then
                 nxmx  = ndm
                 width = gvv(ndm)
+             else
+                write(errmsg,'(A,I0,A,I0,A)') 'MORBNDFIL: unable to determine orientation of mor boundary at M=',m,' N=',n,'.'
+                call prterr(lundia, 'U021', errmsg)
+                call d3stop(1, gdp)
              endif
              totwidth = width
           endif

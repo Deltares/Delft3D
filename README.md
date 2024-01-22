@@ -1,6 +1,6 @@
 # Tarball
 Please use the tarball containing the latest released version of the source code, located at:    
-??? Location of tarball ???    
+https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code    
 See section "Workflow" below in case you want to contribute to the source code.
 
 
@@ -13,11 +13,12 @@ See section "Workflow" below in case you want to contribute to the source code.
   Currently used as default build process: "build.bat all -vs 2019 -ifort 21"   
   This will execute "Microsoft_VisualStudio\vcvarsall.bat". When using other versions, modifications will be needed.   
 
-#### Linux:   
+#### Linux: 
 - build.sh   
   Execute "./build.sh --help" to show the usage   
   Currently used as default build process: "./build.sh all --compiler intel21"   
-  This will execute "src/setenv.sh" on Deltares systems. On other systems, the environment must be prepared upfront.   
+  This will execute "src/setenv.sh" on Deltares systems. On other systems, the environment must be prepared upfront. 
+  For instructions, see [Setup your own Linux environment](Linux_setup.md).
 
 #### Alternative: without build-script (Windows and Linux)
 See ...\src\cmake\README   
@@ -67,12 +68,25 @@ Replace "..." by the actual path on your system to the checkout directory.
 
 \<kernel\>/\<type\>/\<ISSUENR\>_short_description
 with:
-- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave    
-  -> Use all/none to trigger all/none tests
+- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave, tc
+  -> Use all/none/\<specific\> to trigger all/none/specific tests
+  -> Not needed for type \<research\>.
 - \<type\>    : one of: bugfix, doc, feature, poc, release, research, task    
-  -> Use research for branches that will not be merged into trunk directly
+  -> Use \<research\> for branches that will not be merged into trunk directly.
 - \<ISSUENR\> : JIRA issue number    
-  -> Not needed for type research
+  -> Not needed for type \<research\>.
 
-Example:    
-fm/feature/UNST-1234_improve_partition_file
+Examples:    
+- fm/feature/UNST-1234_improve_partition_file
+- research/improve_flow_scheme
+
+# Unit tests
+## Running Unit tests
+- After building the source code, execute "ctest" in the build directory
+- Then run ctest followed by the config  
+
+```
+  cd build_all
+  ctest -C debug
+```
+- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](unit-testing.md).

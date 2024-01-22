@@ -34,7 +34,7 @@
 subroutine change_kml_parameters(jacancelled)
    use m_kml_parameters
    use unstruc_display
-   use unstruc_version_module, only : unstruc_company, unstruc_program
+   use dflowfm_version_module, only : company, product_name
 
    implicit none
    integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.
@@ -114,7 +114,7 @@ subroutine change_kml_parameters(jacancelled)
    CALL IWinAction('FPC')
    CALL IWinOpen(IXP,IYP,IW,1)
    CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-   CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program)// ' PARAMETER FORM')
+   CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name)// ' PARAMETER FORM')
    CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 
    ! Explain keyfunctions in bottom window

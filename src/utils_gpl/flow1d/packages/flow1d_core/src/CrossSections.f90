@@ -248,8 +248,8 @@ module m_CrossSections
                                                             !! Necessary for reallocation of arrays
        type(t_CSType), pointer      :: tabDef => null()
        logical                      :: hasTimeDependentConveyance !< Flag indicates whether the cross section has time dependent roughness
-       type(t_crsu), pointer        :: convTab1 => null()   !< Conveyance table for YZ-cross sections
-       type(t_crsu), pointer        :: convTab2 => null()   !< Conveyance table for YZ-cross sections at new time level, in case the friction
+       type(t_convtab), pointer        :: convTab1 => null()   !< Conveyance table for YZ-cross sections
+       type(t_convtab), pointer        :: convTab2 => null()   !< Conveyance table for YZ-cross sections at new time level, in case the friction
                                                             !< for this cross section is time dependent
        
        integer                                  :: frictionSectionsCount = 0 !< Number of actual friction sections
@@ -957,7 +957,8 @@ end subroutine interpolateWidths
 subroutine useBranchOrdersCrs(crs, brs)
    ! modules
    use messageHandling
-   use sorting_algorithms, only: dpquicksort
+   use stdlib_kinds, only: int32
+   use stdlib_sorting, only: sort_index
    implicit none
    ! variables
    type(t_CrossSectionSet), intent(inout)          :: crs       !< Current cross-section set
@@ -969,47 +970,55 @@ subroutine useBranchOrdersCrs(crs, brs)
    integer  crsCount
    integer, allocatable, dimension(:,:)         :: orderNumber       !< first index contains orderNumber, second contains start position for this ordernumber
    double precision, allocatable, dimension(:)  :: crsData
-   integer, allocatable, dimension(:)           :: crsIndices
+   integer(int32), allocatable, dimension(:)    :: crsIndices
    type(t_CrossSection)                         :: cross
    type(t_CrossSectionSet)                      :: tempset
-   integer                                      :: maxBranchOrder
+   integer                                      :: maxBranchId, maxBranchOrder
    double precision                             :: maxChainage
    double precision                             :: F1, F2 !< sorting multiplication factors
 
    crsCount = crs%count
+   tempset%size = crsCount
    tempset%count = crsCount
-   call reallocCrossSections(tempset)
    
-   maxBranchOrder = max(1,maxval(brs%branch(:)%ordernumber))
+   maxBranchId    = max(1,maxval(crs%cross(:)%branchId))
+   maxBranchOrder = max(1,maxval(brs%branch(:)%ordernumber)+1)
    maxChainage    = maxval(crs%cross(:)%chainage)
-   
+
    ! Multiplication factors for sorting 
    F2 = maxChainage+1
-   F1 = (maxBranchOrder+1)*F2
-   
-   allocate(crsData(crsCount),crs%crossSectionIndex(crscount),crsIndices(crsCount),orderNumber(maxBranchOrder+2,2))
-   ! We want to sort the array on branchid, followed by order number and finally by chainage.
+   F1 = (maxBranchId+1)*F2
+
+   allocate(crsData(crsCount),crs%crossSectionIndex(crscount),crsIndices(crsCount),tempset%cross(crsCount),orderNumber(maxBranchOrder+2,2))
+   ! We want to sort the array by branch order and chainage, but in groups:
+   ! first cross sections that are not on any branch (order by crs index),
+   ! then cross sections on branches that have no branch order (order by chainage),
+   ! and finally by both order number and chainage.
    ! To this end we multiply branch id by F1 and branch order by F2 to be able to sort them all at once.
-   ! see: UNST-3680
+   ! See: UNST-3680
    do ics = 1, crsCount
-      crsIndices(ics) = ics
       ibr = crs%cross(ics)%branchid
       if (ibr <= 0) then ! crs without branch first
          crsData(ics) = crs%cross(ics)%chainage
-      else if (getOrderNumber(brs, ibr) <= 0) then
-         crsData(ics) = crs%cross(ics)%branchid*F1 + crs%cross(ics)%chainage
+      else if (getOrderNumber(brs, ibr) < 0) then
+         crsData(ics) = crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
       else   
-         crsData(ics) = crs%cross(ics)%branchid*F1 + getOrderNumber(brs, ibr)*F2 + crs%cross(ics)%chainage
+         crsData(ics) = (getOrderNumber(brs, ibr)+1)*F1 + crs%cross(ics)%branchid*F2 + crs%cross(ics)%chainage
       endif
    enddo
-   
-   call dpquicksort(crsData,crsIndices)
-   
+
+   call sort_index(crsData,crsIndices)
+
    do ics = 1, crsCount !copy data to temp array
       tempset%cross(ics) = crs%cross(crsIndices(ics))
       crs%crossSectionIndex(crsIndices(ics)) = ics 
    enddo
    crs%cross(:) = tempset%cross(:) !copy temp array to real array
+   
+   !ENABLE THIS LOOP TO DEBUG SORTED BRANCH ORDERS IN CASE OF PROBLEMS IN USEBRANCHORDERSCRS
+   !do ics = 1, crsCount 
+   !   crsData(ics) = getOrderNumber(brs,crs%cross(ics)%branchId)    
+   !enddo
    
    !check for multiple crossSections on a branch and fill OrderNumber array
    minordernumber = -1
@@ -1074,7 +1083,7 @@ integer function getOrderNumber(brs, ibr)
    type(t_branchSet), intent(in)    :: brs       !< Set of reaches
    integer, intent(in)              :: ibr       !< branch index
 
-   if (ibr <= brs%count) then
+   if (ibr <= brs%count .and. ibr > 0) then
       getOrderNumber = brs%branch(ibr)%orderNumber
    else
       getOrderNumber = -1
@@ -2514,7 +2523,7 @@ subroutine YZProfile(dpt, convtab, i012, area, width, maxwidth, perimeter, u1, c
 
    double precision, intent(in)              :: dpt            !< Water depth
    integer,          intent(in)              :: i012           !< 0: use u point, 1: use water level point 1, 2: use water level point 2
-   type(t_crsu),     intent(inout)           :: convtab        !< Conveyance table
+   type(t_convtab),     intent(inout)        :: convtab        !< Conveyance table
    double precision, intent(out)             :: width          !< Width at given water depth
    double precision, intent(out)             :: maxwidth       !< Maximum width for wetted area
    double precision, intent(out)             :: area           !< Wet area
@@ -2526,7 +2535,7 @@ subroutine YZProfile(dpt, convtab, i012, area, width, maxwidth, perimeter, u1, c
    double precision, intent(out),   optional :: frictionValue  !< friction value
    
 ! locals
-integer            :: nr, i1, i2, i, japos
+integer            :: nr, i1, i2, i
 double precision   :: a1, a2, c1, c2, z1, z2, hu1, hu2, hh1, hh2, dh1, dh2
 double precision   :: c_a, c_b !< variables related to extrapolation
                               !! above defined profile
@@ -2539,14 +2548,14 @@ if (convtab%last_position == 0) then
    area  = 0d0
 else if (i012 == 0) then                                ! look at u points, mom. eq.
 
-   nr = convtab%nru                                    ! number of table entries
+   nr = convtab%levelscount                                    ! number of table entries
    i  = convtab%last_position                                ! last index found
 
-   do while ( i + 1 < nr .and. convtab%water_depth(i+1) < dpt ) ! look up, imax = nr - 1
+   do while ( i + 1 < nr .and. convtab%height(i+1) < dpt ) ! look up, imax = nr - 1
       i = i + 1
    enddo
 
-   do while ( i     > 1  .and. convtab%water_depth(i)   > dpt ) ! look down, imin = 1
+   do while ( i     > 1  .and. convtab%height(i)   > dpt ) ! look down, imin = 1
       i = i - 1   
    enddo
    convtab%iolu = i                                    ! and store last index found
@@ -2557,9 +2566,9 @@ else if (i012 == 0) then                                ! look at u points, mom.
    
    i1  = i                                            ! so i1, i2 always inside table
    i2  = i+1
-   hu2 = convtab%water_depth(i2) ; dh2 = hu2 - dpt
-   if (dpt .LE. convtab%water_depth(i2) ) then !  .and. convtab%jopen .eq. 0) then     ! weightfactors. If profile closed no extrapolation
-      hu1 = convtab%water_depth(i1) ; dh1 = dpt - hu1
+   hu2 = convtab%height(i2) ; dh2 = hu2 - dpt
+   if (dpt .LE. convtab%height(i2) ) then !  .and. convtab%jopen .eq. 0) then     ! weightfactors. If profile closed no extrapolation
+      hu1 = convtab%height(i1) ; dh1 = dpt - hu1
       a1  = dh2 / ( hu2-hu1)                          ! eis parser: hu = wel monotoon stijgend
       a2 = 1d0 - a1
       !
@@ -2576,26 +2585,12 @@ else if (i012 == 0) then                                ! look at u points, mom.
       area  = a1*(z1+ar1)   + a2*(z2-ar2)
       !
       if (present(conv)) then
-         japos = 1
-         if (convtab%negcon .eq. 1) then
-            if (u1 .lt. 0) japos = 0
-         endif
          !
-         if (japos .eq. 1) then
-            z1 = convtab%chezy_pos(i1)
-            z2 = convtab%chezy_pos(i2)   ! positive flow direction
-            if (convtab%conveyType==CS_VERT_SEGM) then
-            c1 = convtab%conveyance_pos(i1)
-            c2 = convtab%conveyance_pos(i2)
-            endif
-         else
-            z1 = convtab%chezy_neg(i1)
-            z2 = convtab%chezy_neg(i2)   ! negative flow direction
-         
-            if (convtab%conveyType==CS_VERT_SEGM) then
-               c1 = convtab%conveyance_neg(i1)
-               c2 = convtab%conveyance_neg(i2)
-            endif
+         z1 = convtab%chezy(i1)
+         z2 = convtab%chezy(i2)   ! positive flow direction
+         if (convtab%conveyType==CS_VERT_SEGM) then
+            c1 = convtab%conveyance(i1)
+            c2 = convtab%conveyance(i2)
          endif
          !
          if (convtab%conveyType==CS_LUMPED) then
@@ -2617,8 +2612,6 @@ else if (i012 == 0) then                                ! look at u points, mom.
       endif
       
    ELSE                                               ! when above profile
-   ! positive direction/ negative direction? -> japos == 1 || japos != 1
-   !
 !(*)!  document SOBEK-21942: Change of roughness formulations in "Y-Z" and
    ! "Asymetrical Trapezium" profiles, Author:     Thieu van Mierlo
    !                                   Programmer: Daniel Abel
@@ -2626,7 +2619,7 @@ else if (i012 == 0) then                                ! look at u points, mom.
       perimeter = convtab%perimeter (i2)
       AREA  = convtab%flow_area (i2)
       if (present(conv)) then
-         CONV  = convtab%conveyance_pos(i2)
+         CONV  = convtab%conveyance(i2)
       endif
       
       !
@@ -2637,20 +2630,9 @@ else if (i012 == 0) then                                ! look at u points, mom.
          if (present(conv)) then
             r3    = AREA/perimeter                        ! actual hydraulic radius
 
-            ! Determine Flow Direction
-            if ( (convtab%negcon .eq. 1) .and. (u1 .lt. 0) ) then
-               japos = 0
-            else
-               japos = 1
-            endif
             if (convtab%conveyType==CS_VERT_SEGM) then
-               if (japos .eq. 1) then
-                  c_b = convtab%b_pos_extr
-                  c_a = convtab%a_pos_extr
-               else
-                  c_b = convtab%b_neg_extr
-                  c_a = convtab%a_neg_extr
-               endif
+               c_b = convtab%b_extr
+               c_a = convtab%a_extr
                !
                conv = c_a*((dpt)**(c_b))
                ! Actual Chezy Value for ChezyFromConveyance
@@ -2667,25 +2649,25 @@ else if (i012 == 0) then                                ! look at u points, mom.
 
 else                                                      ! look at left or right h, cont. eq.
 
-   nr = convtab%nru                                  ! number of entries
+   nr = convtab%levelscount                                  ! number of entries
    i  = convtab%last_position                                  ! last found
 
-   do while ( i + 1 < nr .and. convtab%water_depth(i+1) < dpt ) ! look up
+   do while ( i + 1 < nr .and. convtab%height(i+1) < dpt ) ! look up
       i = i + 1
    enddo
 
-   do while ( i     > 1  .and. convtab%water_depth(i) > dpt ) ! look down
+   do while ( i     > 1  .and. convtab%height(i) > dpt ) ! look down
       i = i - 1
    enddo
    convtab%last_position = i
 
    i1 = i                                                  ! so i1, i2 always inside table
    i2 = i+1
-   hh2 = convtab%water_depth(i2) ; dh2 = hh2 - dpt
-   if (i2 .eq. nr .and. dpt .ge. convtab%water_depth(i2) ) then ! Weightfactors. If profile closed no extrapolation
+   hh2 = convtab%height(i2) ; dh2 = hh2 - dpt
+   if (i2 .eq. nr .and. dpt .ge. convtab%height(i2) ) then ! Weightfactors. If profile closed no extrapolation
       a1 = 0d0 ; dh1 = 0
    else
-      hh1 = convtab%water_depth(i1) ; dh1 = dpt - hh1
+      hh1 = convtab%height(i1) ; dh1 = dpt - hh1
       a1  = dh2 / ( hh2-hh1 )                              ! parser: hh = wel monotoon stijgend
    endif
    a2 = 1d0 - a1
@@ -2718,7 +2700,7 @@ use messageHandling
    integer nc
    type(t_CrossSection), intent(inout)    :: crs   !< cross section
    
-   type(t_crsu), pointer   :: convTab
+   type(t_convtab), pointer   :: convTab
    integer                 :: i
    allocate(convtab)
 
@@ -2732,12 +2714,10 @@ use messageHandling
    enddo
 
    if (associated(crs%tabDef)) then
-      nc = crs%tabDef%levelsCount
-      call generateConvtab(convtab, crs%tabDef%levelsCount, crs%shift, crs%tabDef%groundLayer%thickness, crs%tabDef%crossType, &
-                        nc, crs%tabDef%frictionSectionsCount, crs%branchid, crs%frictionTypePos(1),                               &
-                        crs%groundFriction, crs%tabdef%y, crs%tabdef%z,                                                        &
+      call generateConvtab(convtab, crs%tabDef%levelsCount, crs%csid, crs%tabdef%y, crs%tabdef%z,     &
                         crs%tabDef%segmentToSectionIndex, crs%frictionTypePos,              &
-                        crs%frictionValuePos, crs%frictionTypeNeg, crs%frictionValueNeg )
+                        crs%frictionValuePos)
+      
       convTab%conveyType = crs%tabDef%conveyanceType
    end if
 
@@ -2785,8 +2765,8 @@ double precision function getHighest1dLevelSingle(cross)
       case (CS_EGG)
          getHighest1dLevelSingle = 1.5d0 * cross%tabdef%diameter + cross%bedlevel
       case (CS_YZ_PROF)
-         levelsCount = cross%convtab1%nru
-         getHighest1dLevelSingle = cross%convtab1%water_depth(levelsCount) + cross%bedlevel
+         levelsCount = cross%convtab1%levelscount
+         getHighest1dLevelSingle = cross%convtab1%height(levelsCount) + cross%bedlevel
       case default
          call SetMessage(LEVEL_ERROR, 'INTERNAL ERROR: Unknown type of cross-section in getHighest1dLevelSingle')
    end select
@@ -2969,83 +2949,69 @@ end function CopyCrossDef
 
 !> Returns a Copy from the given CrossSection Conveyance
 !! DEALLOCATE this Copy after Use!!!!!!!!!!!!!!!!!!!!!!!!!!
-type(t_crsu) function CopyCrossConv(CrossConvFrom)
+type(t_convtab) function CopyCrossConv(CrossConvFrom)
 
 
-   type(t_crsu) :: CrossConvFrom        !< conveyance table
+   type(t_convtab) :: CrossConvFrom        !< conveyance table
    
    CopyCrossConv%jopen      = CrossConvFrom%jopen
-   CopyCrossConv%msec       = CrossConvFrom%msec
    CopyCrossConv%iolu       = CrossConvFrom%iolu
-   CopyCrossConv%negcon     = CrossConvFrom%negcon
    CopyCrossConv%conveyType = CrossConvFrom%conveyType
 
-   CopyCrossConv%a_pos_extr = CrossConvFrom%a_pos_extr
-   CopyCrossConv%a_neg_extr = CrossConvFrom%a_neg_extr
-   CopyCrossConv%b_pos_extr = CrossConvFrom%b_pos_extr
-   CopyCrossConv%b_neg_extr = CrossConvFrom%b_neg_extr
+   CopyCrossConv%a_extr = CrossConvFrom%a_extr
+   CopyCrossConv%b_extr = CrossConvFrom%b_extr
 
    CopyCrossConv%last_position = CrossConvFrom%last_position
    CopyCrossConv%bedlevel      = CrossConvFrom%bedlevel
       
    CopyCrossConv%chezy_act  = CrossConvFrom%chezy_act
       
-   CopyCrossConv%nru        = CrossConvFrom%nru
+   CopyCrossConv%levelscount        = CrossConvFrom%levelscount
 
-   if (CrossConvFrom%nru > 0) then
+   if (CrossConvFrom%levelscount > 0) then
       
-      if (allocated(CrossConvFrom%water_depth)) then
-         allocate(CopyCrossConv%water_depth(CrossConvFrom%nru))
-         CopyCrossConv%water_depth = CrossConvFrom%water_depth
+      if (allocated(CrossConvFrom%height)) then
+         allocate(CopyCrossConv%height(CrossConvFrom%levelscount))
+         CopyCrossConv%height = CrossConvFrom%height
       endif
          
       if (allocated(CrossConvFrom%flow_area)) then
-         allocate(CopyCrossConv%flow_area(CrossConvFrom%nru))
+         allocate(CopyCrossConv%flow_area(CrossConvFrom%levelscount))
          CopyCrossConv%flow_area = CrossConvFrom%flow_area
       endif
          
       if (allocated(CrossConvFrom%flow_width)) then
-         allocate(CopyCrossConv%flow_width(CrossConvFrom%nru))
+         allocate(CopyCrossConv%flow_width(CrossConvFrom%levelscount))
          CopyCrossConv%flow_width = CrossConvFrom%flow_width
       endif
          
       if (allocated(CrossConvFrom%perimeter)) then
-         allocate(CopyCrossConv%perimeter(CrossConvFrom%nru))
+         allocate(CopyCrossConv%perimeter(CrossConvFrom%levelscount))
          CopyCrossConv%perimeter = CrossConvFrom%perimeter
       endif
          
-      if (allocated(CrossConvFrom%conveyance_pos)) then
-         allocate(CopyCrossConv%conveyance_pos(CrossConvFrom%nru))
-         CopyCrossConv%conveyance_pos = CrossConvFrom%conveyance_pos
+      if (allocated(CrossConvFrom%conveyance)) then
+         allocate(CopyCrossConv%conveyance(CrossConvFrom%levelscount))
+         CopyCrossConv%conveyance = CrossConvFrom%conveyance
       endif
          
-      if (allocated(CrossConvFrom%conveyance_neg)) then
-         allocate(CopyCrossConv%conveyance_neg(CrossConvFrom%nru))
-         CopyCrossConv%conveyance_neg = CrossConvFrom%conveyance_neg
+      if (allocated(CrossConvFrom%chezy)) then
+         allocate(CopyCrossConv%chezy(CrossConvFrom%levelscount))
+         CopyCrossConv%chezy = CrossConvFrom%chezy
       endif
          
-      if (allocated(CrossConvFrom%chezy_pos)) then
-         allocate(CopyCrossConv%chezy_pos(CrossConvFrom%nru))
-         CopyCrossConv%chezy_pos = CrossConvFrom%chezy_pos
-      endif
-         
-      if (allocated(CrossConvFrom%chezy_neg)) then
-         allocate(CopyCrossConv%chezy_neg(CrossConvFrom%nru))
-         CopyCrossConv%chezy_neg = CrossConvFrom%chezy_neg
-      endif
-         
-      if (allocated(CrossConvFrom%water_depth)) then
-         allocate(CopyCrossConv%water_depth(CrossConvFrom%nru))
-         CopyCrossConv%water_depth = CrossConvFrom%water_depth
+      if (allocated(CrossConvFrom%height)) then
+         allocate(CopyCrossConv%height(CrossConvFrom%levelscount))
+         CopyCrossConv%height = CrossConvFrom%height
       endif
          
       if (allocated(CrossConvFrom%total_area)) then
-         allocate(CopyCrossConv%total_area(CrossConvFrom%nru))
+         allocate(CopyCrossConv%total_area(CrossConvFrom%levelscount))
          CopyCrossConv%total_area = CrossConvFrom%total_area
       endif
          
       if (allocated(CrossConvFrom%total_width)) then
-         allocate(CopyCrossConv%total_width(CrossConvFrom%nru))
+         allocate(CopyCrossConv%total_width(CrossConvFrom%levelscount))
          CopyCrossConv%total_width = CrossConvFrom%total_width
       endif
          
@@ -3376,11 +3342,6 @@ subroutine createTablesForTabulatedProfile(crossDef)
          write(msgbuf, '(''Bed level            = '', f14.2)') cross%bedlevel
          call msg_flush()
          
-         if (cross%crossType == CS_YZ_PROF) then
-            call write_conv_tab(cross%convTab1)
-            call write_conv_tab(cross%convTab2)
-         endif
-         
       enddo
           msgbuf = '  '
          call msg_flush()
@@ -3489,3 +3450,4 @@ subroutine createTablesForTabulatedProfile(crossDef)
    end subroutine getSummerDikeData
    
 end module m_CrossSections
+

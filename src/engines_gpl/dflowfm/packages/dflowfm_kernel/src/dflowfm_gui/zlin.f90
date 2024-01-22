@@ -263,6 +263,14 @@
              dum = dum+sedtra%e_sswn(LL,lll)+sedtra%e_sbwn(LL,lll) +sedtra%e_sbcn(LL,lll)
           end do
           zlin = dum
+       case (6)
+          dum=0d0
+          do lll = 1, stmpar%lsedtot
+             dum = dum+bermslopecontrib(LL,lll)
+          end do
+          zlin=dum
+       case (7)
+          zlin=bermslopeindex(LL)
     end select
  else if ( linval == 49) then
     zlin = Ltop(LL) - Lbot(LL) + 1 ; zlin=max(zlin,0d0)

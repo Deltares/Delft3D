@@ -32,11 +32,11 @@
 #include "dimr_lib_version.h"
 
 #if defined(_WIN64)
-static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_revision "." modname_build " (Win64), " __DATE__ ", " __TIME__ "" };
+static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Win64), " __DATE__ ", " __TIME__ "" };
 #elif defined(LINUX64)
-static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_revision "." modname_build " (Linux64), " __DATE__ ", " __TIME__ "" };
+static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Linux64), " __DATE__ ", " __TIME__ "" };
 #else
-static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_revision "." modname_build " (Unknown), " __DATE__ ", " __TIME__ "" };
+static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Unknown), " __DATE__ ", " __TIME__ "" };
 #endif
 
 

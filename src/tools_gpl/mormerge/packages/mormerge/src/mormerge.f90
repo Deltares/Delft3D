@@ -46,11 +46,11 @@ integer                                   :: iindex
 integer                                   :: windex
 integer                                   :: rindex
 character(256), dimension(:), allocatable :: arguments
-character(256)                            :: version_full   ! by calling getfullversionstring_MORMERGE, the version number is visible with the what command
+character(256)                            :: full_version   ! by calling getfullversionstring_MORMERGE, the version number is visible with the what command
 !
 !! executable statements -------------------------------------------------------
 !
-call get_full_versionstring_mormerge_full(version_full)
+call getfullversionstring_mormerge(full_version)
 !
 if (COMMAND_ARGUMENT_COUNT() /= numarg) then
    call printUsage()

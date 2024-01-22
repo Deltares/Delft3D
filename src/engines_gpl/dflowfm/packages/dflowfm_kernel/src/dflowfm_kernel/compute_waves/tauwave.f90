@@ -132,7 +132,7 @@
          !
          ! wave friction factor and drag coefficient
          !
-         astar  = tpu*uorbu/max(z0,1d-5)
+         astar  = tpu*uorbu/max(z0,epsz0)
 
          if (astar>astarc) then
             fw = 0.00251d0*exp(14.1d0/(astar**0.19))

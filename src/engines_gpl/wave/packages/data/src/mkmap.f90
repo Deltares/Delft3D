@@ -37,6 +37,7 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
 !!--declarations----------------------------------------------------------------
     use precision_basics
     use buffer
+    use stdlib_sorting, only: sort_index
     !
     implicit none
 !
@@ -73,7 +74,6 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
     integer                           :: iin
     integer                           :: inout
     integer                           :: ip
-    integer                           :: ipt
     integer                           :: j1
     integer                           :: lomaxx
     integer                           :: lominx
@@ -132,23 +132,17 @@ subroutine mkmap(code      ,x1        ,y1        ,m1        ,n1        , &
     m1max = m1
     n1min = 1
     n1max = n1
-    do i2 = 1, n2
-       nrx(i2)   = 0
-       nry(i2)   = 0
-       iflag(i2) = 0
-       nrin(i2)  = 0
-       xs(i2)    = 0.
-       ys(i2)    = 0.
-       do ipt = 1, 4
-          iref(ipt, i2) = 0
-          w(ipt, i2)    = 0.
-       enddo
-    enddo
-    !
-    ! Sort X2 en Y2
-    !
-    call sort(n2        ,x2        ,xs        ,nrx       )
-    call sort(n2        ,y2        ,ys        ,nry       )
+    nrx  = 0
+    nry = 0
+    iflag = 0
+    nrin = 0
+    xs = x2
+    ys = y2
+    iref = 0
+    w = 0.
+
+    call sort_index(xs, nrx)
+    call sort_index(ys, nry)
     !
     ! Loop over all cels of grid1
     !

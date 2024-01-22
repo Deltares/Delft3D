@@ -299,24 +299,24 @@
       real   (4)                      time
 
       handle = 0
-      if ( ihandl .eq. 0 ) then                              !  first time that the timer is called for
+      if ( ihandl == 0 ) then                              !  first time that the timer is called for
          noshndl = noshndl + 1                               !  this handle
-         if ( noshndl .eq. nohmax ) call timinc ( )          !  allocate new batch of memory
+         if ( noshndl == nohmax ) call timinc ( )          !  allocate new batch of memory
          ihandl  = noshndl
       else                                                   !  find its occurence in the call trees
          do i = 1, ncontxt(ihandl)
-            if ( context(i,1,ihandl) .eq. prevhnd ) then
+            if ( context(i,1,ihandl) == prevhnd ) then
                handle = context(i,2,ihandl)
                exit
             endif
          enddo
       endif
-      if ( handle .eq. 0 ) then                              !  this is new call tree entry
+      if ( handle == 0 ) then                              !  this is new call tree entry
          i               = ncontxt(ihandl) + 1               !  increase context counter for this ihandl
          ncontxt(ihandl) = i
          context(i,1,ihandl) = prevhnd                       !  save unique timer handle of the caller,
          nohandl = nohandl + 1                               !  to allow to find the calling context
-         if ( nohandl .eq. nohmax ) call timinc ( )
+         if ( nohandl == nohmax ) call timinc ( )
          handle  = nohandl                                   !  make a new timer handle
          context(i,2,ihandl) = handle                        !  save this handle for this context
          context(1,3,handle) = ihandl
@@ -358,7 +358,7 @@
       dlevel = dlevel-1                                      !  we return, decrease the level
       handle = -1
       do i = 1, ncontxt(ihandl)                              !  find the context of the timer handle
-         if ( context(i,2,ihandl) .eq. prevhnd ) then        !  (prevhnd) that we close now
+         if ( context(i,2,ihandl) == prevhnd ) then        !  (prevhnd) that we close now
             handle  = prevhnd                               !  this is the handle that we close
             prevhnd = context(i,1,ihandl)                    !  we retrieve the calling handle from
             exit                                             !  context
@@ -413,7 +413,7 @@
       total_perc_cpu = 0d0
       total_perc_wc  = 0d0
       do i = 1, nohandl
-         if ( level(i) .eq. -1 ) cycle
+         if ( level(i) == -1 ) cycle
          call timline ( i, lun, perc_cpu_local, perc_wc_local, write_total_time_local )
          total_perc_cpu = total_perc_cpu  + perc_cpu_local
          total_perc_wc  = total_perc_wc   + perc_wc_local
@@ -469,10 +469,10 @@
       perc_wc_total = 0d0
       count = 0
       do i = ihandl+1, nohandl
-         if ( level(i) .eq. -1 ) cycle
+         if ( level(i) == -1 ) cycle
          j = context(1,3,i)
          do k = 1, ncontxt(j)
-            if ( context(k,1,j) .eq. ihandl .and. context(k,2,j) .eq. i ) then
+            if ( context(k,1,j) == ihandl .and. context(k,2,j) == i ) then
                call timline ( i, lun, perc_cpu_local, perc_wc_local, write_total_time)
                count = count + 1
                perc_cpu_total = perc_cpu_total  + perc_cpu_local

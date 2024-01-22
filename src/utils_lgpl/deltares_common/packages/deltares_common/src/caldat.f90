@@ -36,7 +36,7 @@
  integer :: igreg
  parameter (igreg=2299161)
  integer :: jalpha, ja, jb, jc, jd, je
- if(julian.ge.igreg)then
+ if(julian >= igreg)then
    jalpha=int(((julian-1867216)-0.25)/36524.25)
    ja=julian+1+jalpha-int(0.25*jalpha)
  else
@@ -48,9 +48,9 @@
  je=int((jb-jd)/30.6001)
  id=jb-jd-int(30.6001*je)
  mm=je-1
- if(mm.gt.12)mm=mm-12
+ if(mm > 12)mm=mm-12
  iyyy=jc-4715
- if(mm.gt.2)iyyy=iyyy-1
- if(iyyy.le.0)iyyy=iyyy-1
+ if(mm > 2)iyyy=iyyy-1
+ if(iyyy <= 0)iyyy=iyyy-1
  return
  end subroutine caldat

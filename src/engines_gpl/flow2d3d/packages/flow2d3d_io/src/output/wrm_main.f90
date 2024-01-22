@@ -40,6 +40,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     use datagroups
     use netcdf
     use dffunctionals, only: dffind_duplicate
+    use flow2d3d_version_module
     !
     use globaldata
     !
@@ -218,7 +219,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     character(256)                                    :: filename
     integer(pntrsize)                                 :: velu           ! U velocity array (FSM r-index)
     integer(pntrsize)                                 :: velv           ! V velocity array (FSM r-index)
-    character(256)                                    :: version_full
+    character(256)                                    :: full_version
     character(8)                                      :: cdate
     character(10)                                     :: ctime
     character(5)                                      :: czone
@@ -454,7 +455,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     simdat(13:14) = rundat(15:16)
     simdat(15:16) = rundat(18:19)
     !
-    call getfullversionstring_flow2d3d(version_full)
+    call getfullversionstring_flow2d3d(full_version)
     call date_and_time(cdate, ctime, czone)
     !
     filetype = getfiletype(gdp, ifile)
@@ -535,7 +536,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
              ierror = nf90_put_att(fds, nf90_global,  'Conventions', 'CF-1.6 SGRID-0.3'); call nc_check_err(lundia, ierror, "put_att global Conventions", filename)
              ierror = nf90_put_att(fds, nf90_global,  'institution', trim('Deltares')); call nc_check_err(lundia, ierror, "put_att global institution", filename)
              ierror = nf90_put_att(fds, nf90_global,  'references', trim('www.deltares.nl')); call nc_check_err(lundia, ierror, "put_att global references", filename)
-             ierror = nf90_put_att(fds, nf90_global,  'source', trim(version_full)); call nc_check_err(lundia, ierror, "put_att global source", filename)
+             ierror = nf90_put_att(fds, nf90_global,  'source', trim(full_version)); call nc_check_err(lundia, ierror, "put_att global source", filename)
              ierror = nf90_put_att(fds, nf90_global,  'history', &
                     'This file is created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
                     ', '//trim('Delft3D')); call nc_check_err(lundia, ierror, "put_att global history", filename)

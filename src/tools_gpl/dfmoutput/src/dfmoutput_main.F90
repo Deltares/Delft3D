@@ -73,8 +73,8 @@ logical :: force
 
 !-----------------------------------------------------------------------------------------------------------------------------------
 !! initializing Command Line Interface
-call cli%init(progname    = dfmoutput_basename,                                            &
-              version     = dfmoutput_version,                                             &
+call cli%init(progname    = base_name,                                            &
+              version     = version,                                             &
               description = 'Tool for handling D-Flow FM output files',                    &
               examples    = ["dfmoutput mapmerge         --infile model_0000_map.nc model_0001_map.nc", &
                              "dfmoutput max_running_mean --infile hisfile.nc                         ", &

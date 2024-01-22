@@ -45,6 +45,7 @@
  use m_observations, only : mxls
  use unstruc_files, only : defaultFilename
  use m_sediment, only: stm_included
+ use m_transport, only: maserrsed
 #ifdef _OPENMP
  use omp_lib
 #endif
@@ -82,7 +83,7 @@
   do i = 1,size(handle_extra)
      if (handle_extra(i) > 0) then
         time_cpu = tim_get_wallclock(handle_extra(i))
-        if ( time_cpu > 0.01d0) then ! only the relevant
+        if ( time_cpu > 0.01d0) then                     ! only the relevant
            write(msgbuf,'(a,a,F25.10)') 'extra timer:' , tim_get_label(handle_extra(i)), time_cpu      ; call msg_flush()
         endif
      endif
@@ -178,10 +179,18 @@
     call msg_flush()
     endif
     if (jased > 0 .and. stm_included) then
-    write(msgbuf,'(a,F25.10)') 'time erosed            (s)  :' , gettimer(1,IEROSED)
+       write(msgbuf,'(a,F25.10)') 'time erosed            (s)  :' , gettimer(1,IEROSED)
+       call msg_flush()
+       write(msgbuf,'(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :' , maserrsed/1d6
        call msg_flush()
     endif 
  end if
+ 
+ if ( number_steps_limited_visc_flux_links > 0 ) then
+      msgbuf = ' ' ; call msg_flush()
+      write(msgbuf,'(a)') 'Viscosity coefficient/Horizontal transport flux were limited on some links in the course of computation.' 
+      call msg_flush()
+ end if 
 
  do k = 1,3
     msgbuf = ' ' ; call msg_flush()

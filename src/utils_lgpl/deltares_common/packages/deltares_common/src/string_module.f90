@@ -1008,7 +1008,7 @@ module string_module
          
          slash  = CHAR  (47)
          lslash = INDEX (hlpstr,slash)
-         if (lslash .eq. 0) then
+         if (lslash == 0) then
             slash  = CHAR  (92)
          endif
          get_dirsep = slash

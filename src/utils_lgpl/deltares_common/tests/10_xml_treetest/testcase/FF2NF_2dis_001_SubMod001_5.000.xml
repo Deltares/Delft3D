@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COSUMO>
+    <fileVersion>0.3</fileVersion>
+    <comm>
+        <Filename>c:\code\branches\nearfield\examples\08_nf_2dis_simple\sigma\COSUMO\FF2NF\FF2NF_2dis_001_SubMod001_5.000.xml</Filename>
+        <waitForFile>c:\code\branches\nearfield\examples\08_nf_2dis_simple\sigma\COSUMO\NF2FF\NF2FF_2dis_001_SubMod001_5.000.txt</waitForFile>
+        <FFrundir>c:\code\branches\nearfield\examples\08_nf_2dis_simple\sigma\</FFrundir>
+        <FFinputFile>2dis.mdf</FFinputFile>
+    </comm>
+    <SubgridModel>
+        <SubgridModelNr>1</SubgridModelNr>
+        <TIME>0.50000000000000000E+01</TIME>
+        <cormix>
+            <HA>0.10159614755097280E+02</HA>
+            <HD>0.10209745263299377E+02</HD>
+            <UA>0.20709978620121569E+00</UA>
+            <UorS>U</UorS>
+            <RHOAM>1022.891</RHOAM>
+            <STYPE>-</STYPE>
+            <RHOAS>-</RHOAS>
+            <RHOAB>-</RHOAB>
+            <HINT>-</HINT>
+            <DROHJ>-</DROHJ>
+            <Q0>0.10000000000000000E+02</Q0>
+            <RHO0>0.10203233673619197E+04</RHO0>
+            <D0>0.25000000000000000E+01</D0>
+            <PHI>0.000</PHI>
+            <S1>0.20974526329937765E+00</S1>
+            <h_dps>0.10000000000000000E+02</h_dps>
+            <x_diff>0.55000000000000000E+03</x_diff>
+            <y_diff>0.35000000000000000E+03</y_diff>
+            <taua>0.35999999999762633E+03</taua>
+        </cormix>
+        <FFIntake>
+            <XYZ>1365.65 349.8342 0.5
+                 1365.65 349.8342 1.2
+                 1365.65 349.8342 1.5
+                 1365.65 349.8342 1.8
+                 1365.65 349.8342 2.2
+                 1365.65 349.8342 2.5
+            </XYZ>
+            <waterLevel>0.12</waterLevel>
+            <XYvelocity>0.01	 0.00005
+                       0.009342	 0.00004342
+                       0.009032	 0.00004032
+                       -0.0004	 0.00004
+                       -0.0002	 0.00002
+                       -0.00001	 0.00001
+            </XYvelocity>
+            <rho>1012.12
+                 1012.10
+                 1012.07
+                 1001.8
+                 1001.4
+                 1001.0
+            </rho>
+            <constituents>12.0    33.2  1.0
+                          12.01   33.1  1.0
+                          12.02   33.0  1.0
+                          15.0    28.5  1.0
+                          15.01   28.4  1.0
+                          15.02   28.3  1.0
+            </constituents>
+        </FFIntake>
+        <FFAmbient>
+            <XYZ>1689.34 832.789 0.5
+                 1689.34 832.789 1.2
+                 1689.34 832.789 1.5
+                 1689.34 832.789 1.8
+                 1689.34 832.789 2.2
+                 1689.34 832.789 2.5
+                 1308.27 712.603 0.5
+                 1308.27 712.603 1.2
+                 1308.27 712.603 1.5
+                 1308.27 712.603 1.8
+                 1308.27 712.603 2.2
+                 1308.27 712.603 2.5
+            </XYZ>
+            <waterLevel>0.12
+                        -0.02
+            </waterLevel>
+            <XYvelocity>0.01	 0.00005
+                       0.009342	 0.00004342
+                       0.009032	 0.00004032
+                       -0.0004	 0.00004
+                       -0.0002	 0.00002
+                       -0.00001	 0.00001
+                       0.01	 0.00005
+		       0.009342	 0.00004342
+		       0.009032	 0.00004032
+		       -0.0004	 0.00004
+		       -0.0002	 0.00002
+                       -0.00001	 0.00001
+            </XYvelocity>
+            <rho>1012.12
+                 1012.10
+                 1012.07
+                 1001.8
+                 1001.4
+                 1001.0
+                 1012.12
+                 1012.10
+                 1012.07
+                 1001.8
+                 1001.4
+                 1001.0
+            </rho>
+            <constituents>12.0   33.2   1.0
+                          12.01  33.1   1.0
+                          12.02  33.0   1.0
+                          15.0   28.5   1.0
+                          15.01  28.4   1.0
+                          15.02  28.3   1.0
+                          12.0   33.2   1.0
+                          12.01  33.1   1.0
+                          12.02  33.0   1.0
+                          15.0   28.5   1.0
+                          15.01  28.4   1.0
+                          15.02  28.3   1.0
+            </constituents>
+        </FFAmbient>
+    </SubgridModel>
+</COSUMO>

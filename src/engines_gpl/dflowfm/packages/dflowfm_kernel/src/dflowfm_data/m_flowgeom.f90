@@ -73,6 +73,7 @@
  integer                           :: ja1D2Dinternallinktype = 1
 
  type (griddimtype)                :: griddim
+ type (griddimtype)                :: trachy_griddim
 
  ! Flow node numbering:
  ! 1:ndx2D, ndx2D+1:ndxi, ndxi+1:ndx1Db, ndx1Db+1:ndx

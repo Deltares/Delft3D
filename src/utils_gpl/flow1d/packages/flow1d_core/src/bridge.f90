@@ -175,17 +175,6 @@ contains
          endif
          bridge%bedLevel_actual = crestLevel
 
-         if ((smax - crestLevel - gl_thickness) < thresholdDry) then
-            kfum = 0
-         elseif ((smax - crestLevel - gl_thickness) > thresholdFlood) then
-            kfum = 1
-         endif
-         if (kfum == 0) then
-            fum = 0.0
-            rum = 0.0
-            return
-         endif
-
          depth = smax - crestLevel
          call GetCSParsFlow(bridge%pcross, depth, aum, wPerimeter, dadsm)   
          if (bridge%pcross%closed .and. smax > getHighest1dLevel(bridge%pcross)) then

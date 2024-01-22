@@ -269,8 +269,8 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
           ierror = ierror+ 1
        endif
        if (ztbml .and. rst_layer_model == 'UNKNOWN') then
-          call prterr(lundia    ,'P004'    ,'Restarting with modified layering (ZTBML=#Y#) only allowed')
-          write (lundia, '(a)') '          from MAP-files with correct layer model'
+          call prterr(lundia    ,'U190'    ,'Restarting with modified layering (ZTBML=#Y#) from a restart/map')
+          write (lundia, '(a)') '          file without layer model information. Restart may be non-conservative.'
           ierror = ierror + 1
        endif    
        if (.not. ztbml .and. rst_layer_model == 'Z-MODEL, ZTBML') then

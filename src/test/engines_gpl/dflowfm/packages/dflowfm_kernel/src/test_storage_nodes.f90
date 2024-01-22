@@ -82,14 +82,14 @@ subroutine test_storage_nodes_nodeID_table
     istat = CHANGEDIRQQ("..")
     ! compare
     call assert_equal     (network%storS%stor(1)%id,     refids(1),     'Id of the storage node incorrect' )
-    call assert_equal     (network%storS%stor(1)%nodeId, refnodeIds(1), 'Node Id of the storage node incorrect' )
-    call assert_comparable(network%storS%stor(1)%storageArea%x(1), reftable(1,1), eps, 'the first value of "levels" incorrect' )
-    call assert_comparable(network%storS%stor(1)%storageArea%x(2), reftable(2,1), eps, 'the second value of "levels" incorrect' )
-    call assert_comparable(network%storS%stor(1)%storageArea%x(3), reftable(3,1), eps, 'the third value of "levels" incorrect' )
+    call assert_equal     (network%storS%stor(1)%node_Id, refnodeIds(1), 'Node Id of the storage node incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%x(1), reftable(1,1), eps, 'the first value of "levels" incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%x(2), reftable(2,1), eps, 'the second value of "levels" incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%x(3), reftable(3,1), eps, 'the third value of "levels" incorrect' )
     
-    call assert_comparable(network%storS%stor(1)%storageArea%y(1), reftable(1,2), eps, 'the first value of "storageArea" incorrect' )
-    call assert_comparable(network%storS%stor(1)%storageArea%y(2), reftable(2,2), eps, 'the second value of storageArea incorrect' )
-    call assert_comparable(network%storS%stor(1)%storageArea%y(3), reftable(3,2), eps, 'the third value of storageArea incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%y(1), reftable(1,2), eps, 'the first value of "storageArea" incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%y(2), reftable(2,2), eps, 'the second value of storageArea incorrect' )
+    call assert_comparable(network%storS%stor(1)%storage_area%y(3), reftable(3,2), eps, 'the third value of storageArea incorrect' )
     
 end subroutine test_storage_nodes_nodeID_table
 

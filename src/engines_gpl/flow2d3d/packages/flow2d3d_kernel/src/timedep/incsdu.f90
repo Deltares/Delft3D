@@ -102,7 +102,7 @@ subroutine incsdu(timhr  ,dps  ,s1  ,kcs  ,kfs,  gdp    )
        !
        !  Update dps point 
        !
-       if (kcs(nm) > 0) then 
+       if (kcs(nm) /= 0) then 
            dps(nm) = dps(nm) - sdu_tn(nm) + sdu_tp(nm)
            if (kfs(nm) == 0 .or. lfsdus1) then 
                s1(nm)  = s1(nm)  + sdu_tn(nm) - sdu_tp(nm)                  

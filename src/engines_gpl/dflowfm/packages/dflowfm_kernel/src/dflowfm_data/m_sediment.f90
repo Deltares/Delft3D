@@ -87,13 +87,19 @@ module m_sediment
 
  integer,          allocatable     :: kcsmor(:)
  double precision, allocatable     :: mergebodsed(:,:)
+ logical         , allocatable     :: bermslopeindex(:)      !< index where nudging needs to be applied
+ logical         , allocatable     :: bermslopeindexbed(:)   !< index where nudging needs to be applied for bedload
+ logical         , allocatable     :: bermslopeindexsus(:)   !< index where nudging needs to be applied for suspended load
+ double precision, allocatable     :: bermslopecontrib(:,:)  !< bermslope nudging sediment transport
+ double precision, allocatable     :: ssccum(:,:)            !< water column integrated sediment transport in dry points (kg/s)
 
- integer                           :: jased         !< Include sediment, 1=Krone, 2=Soulsby van Rijn 2007, 3=Bert's morphology module
+ integer                           :: jased                  !< Include sediment, 1=Krone, 2=Soulsby van Rijn 2007, 4=Delft3D morphology module
  integer                           :: jaseddenscoupling=0    !< Include sediment in rho 1 = yes , 0 = no
- integer                           :: mxgr          !< nr of grainsizes
- integer                           :: jatranspvel   !< transport velocities: 0=all lagr, 1=eul bed+lagr sus, 2=all eul; default=1
- integer, allocatable              :: sedtot2sedsus(:) !< mapping of suspended fractions to total fraction index; name is somewhat misleading, but hey, who said this stuff should make sense..
- integer                           :: sedparopt=1   !< for interactor plotting
+ integer                           :: jasubstancedensitycoupling = 0 !< Include Delwaq substances in rho 1 = yes , 0 = no
+ integer                           :: mxgr                   !< nr of grainsizes
+ integer                           :: jatranspvel            !< transport velocities: 0=all lagr, 1=eul bed+lagr sus, 2=all eul; default=1
+ integer, allocatable              :: sedtot2sedsus(:)       !< mapping of suspended fractions to total fraction index; name is somewhat misleading, but hey, who said this stuff should make sense..
+ integer                           :: sedparopt=1            !< for interactor plotting
  integer                           :: numoptsed
  integer                           :: jaBndTreatment
  integer                           :: jamorcfl

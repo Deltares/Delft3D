@@ -63,6 +63,10 @@ if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
 endif()
 
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
+endif()
+
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -102,6 +106,9 @@ endif()
 if(NOT TARGET io_hyd)
     add_subdirectory(${checkout_src_root}/${io_hyd_module} io_hyd)
 endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
+
 
 # Nefis
 if(NOT TARGET nefis)

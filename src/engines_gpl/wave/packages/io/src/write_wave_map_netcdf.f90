@@ -36,6 +36,7 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
     use swan_flow_grid_maps
     use netcdf
     use precision_basics
+    use dwaves_version_module
     !
     implicit none
 !
@@ -112,10 +113,7 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
     character(100)                              :: string
     character(256)                              :: filename
     character(256)                              :: gridnam
-    character(256)                              :: version_full
-    character(256)                              :: company
-    character(256)                              :: companyurl
-    character(256)                              :: programname
+    character(256)                              :: full_version
     character(8)                                :: cdate
     character(10)                               :: ctime
     character(5)                                :: czone
@@ -133,10 +131,7 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
     endif
     
     dearthrad = 6378137.0_hp
-    call getfullversionstring_WAVE(version_full)
-    call getprogramname_WAVE(programname)
-    call getcompany_WAVE(company)
-    call getcompanyurl_WAVE(companyurl)
+    call getfullversionstring_dwaves(full_version)
     call date_and_time(cdate, ctime, czone)
     year  = wavedata%time%refdate / 10000
     month = (wavedata%time%refdate - year*10000) / 100
@@ -192,11 +187,11 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
        ! global attributes
        !
        ierror = nf90_put_att(idfile, nf90_global,  'institution', trim(company)); call nc_check_err(ierror, "put_att global institution", filename)
-       ierror = nf90_put_att(idfile, nf90_global,  'references', trim(companyurl)); call nc_check_err(ierror, "put_att global references", filename)
-       ierror = nf90_put_att(idfile, nf90_global,  'source', trim(version_full)); call nc_check_err(ierror, "put_att global source", filename)
+       ierror = nf90_put_att(idfile, nf90_global,  'references', trim(company_url)); call nc_check_err(ierror, "put_att global references", filename)
+       ierror = nf90_put_att(idfile, nf90_global,  'source', trim(full_version)); call nc_check_err(ierror, "put_att global source", filename)
        ierror = nf90_put_att(idfile, nf90_global,  'history', &
               'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
-              ', '//trim(programname)); call nc_check_err(ierror, "put_att global history", filename)
+              ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
        !
        ! dimensions
        !

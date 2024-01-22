@@ -1675,6 +1675,9 @@ subroutine rdarray_nmkl(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff4gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl,lk:uk,ul))
         rbuff4gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff4gl(1,1,1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -1684,7 +1687,7 @@ subroutine rdarray_nmkl(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff4gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff4gl)
+    deallocate(rbuff4gl)
 end subroutine rdarray_nmkl
 
 
@@ -1727,6 +1730,9 @@ subroutine rdarray_nmll(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff4gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl,u3,u4))
         rbuff4gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff4gl(1,1,1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -1736,7 +1742,7 @@ subroutine rdarray_nmll(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff4gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff4gl)
+    deallocate(rbuff4gl)
 end subroutine rdarray_nmll
 
 
@@ -1823,6 +1829,9 @@ subroutine rdarray_nmk(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff3gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl,lk:uk))
         rbuff3gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff3gl(1,1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -1832,7 +1841,7 @@ subroutine rdarray_nmk(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff3gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff3gl)
+    deallocate(rbuff3gl)
 end subroutine rdarray_nmk
 
 
@@ -1960,6 +1969,9 @@ subroutine rdarray_nml(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff3gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl,ul))
         rbuff3gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff3gl(1,1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -1969,7 +1981,7 @@ subroutine rdarray_nml(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff3gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff3gl)
+    deallocate(rbuff3gl)
 end subroutine rdarray_nml
 
 subroutine rdarray_nm_sp_1d_ptr(fds, filename, filetype, grpnam, &
@@ -2215,6 +2227,9 @@ subroutine rdarray_nm_sp(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff2gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl))
         rbuff2gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff2gl(1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -2224,7 +2239,7 @@ subroutine rdarray_nm_sp(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff2gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff2gl)
+    deallocate(rbuff2gl)
 end subroutine rdarray_nm_sp
 
 subroutine rdarray_nm_hp(fds, filename, filetype, grpnam, &
@@ -2265,6 +2280,9 @@ subroutine rdarray_nm_hp(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(rbuff2gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl))
         rbuff2gl = fillval
+    else
+       ! Needed for debugging
+       allocate(rbuff2gl(1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -2274,7 +2292,7 @@ subroutine rdarray_nm_hp(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(rbuff2gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(rbuff2gl)
+    deallocate(rbuff2gl)
 end subroutine rdarray_nm_hp
 
 subroutine rdarray_nm_int(fds, filename, filetype, grpnam, &
@@ -2314,6 +2332,9 @@ subroutine rdarray_nm_int(fds, filename, filetype, grpnam, &
     if (inode==master) then
         allocate(ibuff2gl(gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl))
         ibuff2gl = fillval
+    else
+       ! Needed for debugging
+       allocate(ibuff2gl(1,1))
     endif
     var = fillval
     call rdvar(fds, filename, filetype, grpnam, &
@@ -2323,7 +2344,7 @@ subroutine rdarray_nm_int(fds, filename, filetype, grpnam, &
     else
        call dfscatter_seq(ibuff2gl, var, 1-gdp%d%nlb, 1-gdp%d%mlb, gdp%gdparall%nmaxgl, gdp%gdparall%mmaxgl)
     endif
-    if (inode==master) deallocate(ibuff2gl)
+    deallocate(ibuff2gl)
 end subroutine rdarray_nm_int
 
 end module rdarray

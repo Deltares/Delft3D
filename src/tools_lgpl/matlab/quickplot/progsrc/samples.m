@@ -299,17 +299,34 @@ else
             %
             % Column labels may occur on one line separated by commas.
             %
-            try
+            csv = true;
+            while true
                 X = textscan(Line,' %[^,],','returnonerror',0);
                 if length(X{1}) < 2
-                    error('Too few columns for a sample file.')
+                    % no comma ... no csv file (could be a short header in
+                    % a csv file, but there is no clear use case yet ... so
+                    % ignore this option)
+                    csv = false;
+                    break
                 else
-                    csv = true;
-                    Params = X{1}';
-                    skiplines=skiplines+1;
-                    Line=fgetl(fid);
+                    try
+                        tvec = datenum(X{1}{2});
+                    catch
+                        tvec = [];
+                    end
+                    if length(X{1}) == 2 && strcmp(X{1}{1},'time') && ~isempty(tvec)
+                        % time stamp line:
+                        % time,2015-08-10 04:00:00
+                        xyz.Header{end+1} = ['time = ',datestr(tvec,'yyyymmdd HHMMSS.FFF')];
+                        skiplines=skiplines+1;
+                        Line=fgetl(fid);
+                    else
+                        Params = X{1}';
+                        skiplines=skiplines+1;
+                        Line=fgetl(fid);
+                        break
+                    end
                 end
-            catch
             end
         end
         %
@@ -323,7 +340,7 @@ else
             X = textscan(Line,' %[^ \t]','returnonerror',0);
         end
         n = length(X{1});
-        if n<3
+        if n<2
             error('Not enough values for sample data (X,Y,Value1,...)')
         end
         %
@@ -352,12 +369,25 @@ else
             Params=Params(1:n);
         end
         fclose(fid);
-    catch
+    catch err
         fclose(fid);
-        rethrow(lasterror)
+        rethrow(err)
     end
     
-    xyz.XYZ=asciiload(filename,'skiplines',skiplines,'comment','*');
+    formatting = cell(size(Params));
+    for i = 1:length(formatting)
+        switch lower(Params{i})
+            case 'date'
+                formatting{i} = 'date';
+            case 'time'
+                formatting{i} = 'time';
+            case {'datetime','date and time'}
+                formatting{i} = 'datetime';
+            otherwise
+                formatting{i} = 'number';
+        end
+    end
+    xyz.XYZ=asciiload(filename,'skiplines',skiplines,'comment','*','format',formatting);
     xyz.Params=Params;
     xyz.FileType='samples';
     xyz.FileName=filename;
@@ -383,7 +413,7 @@ if isstruct(xyz)
                 else
                     xyz.Time = i;
                 end
-            case 'datetime'
+            case {'datetime','date and time'}
                 xyz.Time = i;
         end
     end
@@ -492,7 +522,7 @@ if ~isempty(Cmnt)
     for i=1:length(Cmnt)
         [Tk,Rm]=strtok(Cmnt{i});
         if (length(Cmnt{i})>10) && strcmpi(Tk,'time')
-            [a,c,err,idx]=sscanf(Rm,'%*[ :=]%i %i',2);
+            [a,c,err,idx]=sscanf(Rm,'%*[ :=]%i %f',2);
             if c==2
                 yr = floor(a(1)/10000);
                 mo = floor((a(1)-yr*10000)/100);

@@ -74,7 +74,6 @@ module m_network
       type(t_chainage2cross), pointer :: line2cross(:,:) => null()         !< List containing cross section indices per flow link: (L,1) for gridpoint at 
                                                                            !< the start of the flow link, (L,2) for the flow link itself and (L,1) for gridpoint at 
                                                                            !< the end of the flow link.
-      type(t_chainage2cross), pointer :: gpnt2cross(:) => null()         !< list containing cross section indices per gridpoint-chainage at begin and end of a link
       logical, allocatable            :: hysteresis_for_summerdike(:,:)    !< array indicating for hysteresis in summerdikes
 
    end type
@@ -91,7 +90,7 @@ module m_network
       type(t_CompoundSet)                       :: cmps                    !< Administration compound structures
       type(t_RoughnessSet)                      :: rgs                     !< set containing roughness sections
       type(t_ObservationPointSet)               :: obs                     !< set of observation points
-      type(t_storageSet)                        :: storS                   !< set containing storage in gridpoints
+      type(t_storage_set)                       :: storS                   !< set containing storage in gridpoints
       type(t_CSDefinitionSet)                   :: CSDefinitions
       type(t_spatial_dataSet)                   :: spData
       type(t_ObservCrossSectionSet)             :: observcrs               !< set of observation Cross-Sections 
@@ -114,7 +113,6 @@ contains
       if (.not. allocated(adm%lin2local))    allocate(adm%lin2local (links_count_1d)) 
       if (.not. allocated(adm%lin2grid))     allocate(adm%lin2grid  (links_count_1d)) 
       if (.not. associated(adm%line2cross))  allocate(adm%line2cross(links_count_1d, 3))
-      if (.not. associated(adm%gpnt2cross))  allocate(adm%gpnt2cross(gridp_count_1d))
       if (.not. allocated(adm%hysteresis_for_summerdike)) allocate(adm%hysteresis_for_summerdike(2,links_count_1d))
       adm%hysteresis_for_summerdike = .true.
       
@@ -128,7 +126,6 @@ contains
       if (allocated(adm%lin2local))    deallocate(adm%lin2local)
       if (associated(adm%line2cross))  deallocate(adm%line2cross)
       if (allocated(adm%lin2grid))    deallocate(adm%lin2grid)
-      if (associated(adm%gpnt2cross))  deallocate(adm%gpnt2cross)
       if (allocated(adm%hysteresis_for_summerdike)) deallocate(adm%hysteresis_for_summerdike)
 
    end subroutine dealloc_1dadmin
@@ -437,136 +434,6 @@ contains
             call SetMessage(LEVEL_FATAL, 'Incompatible CrossSections have been detected, see previous messages.')
          endif
 
-         ! Cross-Section indices for gridpoints
-         timerHandle = 0
-         call timstrt('Interpolation to grid points', timerHandle)
-         do ibran = 1, network%brs%Count
-            
-            pbran   => network%brs%branch(ibran)
-
-            if (size(pbran%grd) == 0) then
-               cycle
-            endif
-
-            if (ibran .eq. 1) then
-               icrsBeg = 1
-            else
-               icrsBeg =lastAtBran(ibran - 1) + 1
-            endif
-            icrsEnd = lastAtBran(ibran)
-            
-            if (icrsBeg > icrsEnd) then
-               ! branch without cross sections
-               do m = 1, 2
-                  igpt = pbran%grd(m)
-                  adm%gpnt2cross(igpt)%c1 = 0
-                  adm%gpnt2cross(igpt)%c2 = 0
-                  adm%gpnt2cross(igpt)%f  = 1.0d0
-               enddo
-               cycle   
-            endif
-            
-            icrs1 = icrsBeg
-            icrs2 = icrsBeg
-            
-            xBeg = network%crs%cross(crossOrder(icrsBeg))%chainage
-            xEnd = network%crs%cross(crossOrder(icrsEnd))%chainage
-            
-            do m = 1, pbran%gridPointsCount
-               
-               chainageg = pbran%gridPointschainages(m)
-               igpt = pbran%grd(m)
-               
-               ! Skip gridpoints not in this partition
-               if (igpt > size(adm%gpnt2cross)) cycle ! this is probably not always caused by parallel models: igpt includes auto-added branch start/end grid points
-               
-               if (icrsBeg == icrsEnd) then
-                  
-                  ! Just one Cross-Section
-                  adm%gpnt2cross(igpt)%c1 = crossOrder(icrsBeg)
-                  adm%gpnt2cross(igpt)%c2 = crossOrder(icrsBeg)
-                  adm%gpnt2cross(igpt)%f  = 1.0d0
-                  interpolDone            = .true.   
-                  
-                  elseif (chainageg <= xBeg) then
-                     
-                     ! Before First Cross-Section
-                  adm%gpnt2cross(igpt)%c1 = crossOrder(icrsBeg)
-                  adm%gpnt2cross(igpt)%c2 = crossOrder(icrsBeg)
-                  adm%gpnt2cross(igpt)%f  = 1.0d0
-                  interpolDone            = .true.   
-                  
-                  elseif (chainageg >= xEnd) then
-                     
-                     ! After Last Cross-Section
-                     adm%gpnt2cross(igpt)%c1 = crossOrder(icrsEnd)
-                     adm%gpnt2cross(igpt)%c2 = crossOrder(icrsEnd)
-                     adm%gpnt2cross(igpt)%f  = 1.0d0
-                     interpolDone            = .true.   
-                     
-                  else
-                     
-                     chainage1 = network%crs%cross(crossOrder(icrs1))%chainage
-                     chainage2 = network%crs%cross(crossOrder(icrs2))%chainage
-                     
-                  if (.not. ((chainage1 <= chainageg) .and. (chainage2 >= chainageg))) then
-                     
-                     do i = icrs1, icrsEnd
-                        if (network%crs%cross(crossOrder(i))%chainage >= chainageg) then
-                           chainage2 = network%crs%cross(crossOrder(i))%chainage
-                           icrs2 = i
-                           exit
-                        endif
-                     enddo
-                     
-                     do i = icrsEnd, icrsBeg, -1
-                        if (network%crs%cross(crossOrder(i))%chainage <= chainageg) then
-                           chainage1 = network%crs%cross(crossOrder(i))%chainage
-                           icrs1 = i
-                           exit
-                        endif
-                     enddo
-                     
-                  endif
-                  
-                  interpolDone = .false.   
-                  
-               endif
-               
-               ! Interpolation data for Grid Point
-               if (igpt > 0) then
-                  if (ibran == network%crs%cross(crossOrder(icrs2))%branchid) then
-                     
-                     if (.not. interpolDone) then
-                        adm%gpnt2cross(igpt)%c1 = crossOrder(icrs1)
-                        adm%gpnt2cross(igpt)%c2 = crossOrder(icrs2)
-                        if (icrs1 == icrs2) then 
-                           f = 1.0d0
-                        else    
-                           if (chainage1 == chainage2) then 
-                              write(msgbuf, '(A,F10.3,A)') 'Multiple cross sections defined at same chainage (', chainage1, ') on branch '//trim(pbran%id)//'.'
-                              call err_flush()
-                              initError = .true.
-                           endif
-                           f = (chainageg - chainage1) / (chainage2 - chainage1)
-                        endif    
-                        f = max(f, 0.0d0) 
-                        f = min(f, 1.0d0) 
-                        adm%gpnt2cross(igpt)%f = f
-                     endif
-                     
-                  else
-                     adm%gpnt2cross(igpt)%c1 = crossOrder(icrs1)
-                     adm%gpnt2cross(igpt)%c2 = crossOrder(icrs1)
-                     adm%gpnt2cross(igpt)%f  = 1.0d0
-                  endif
-               endif
-               
-            enddo
-            
-         enddo
-         call timstop(timerhandle)
-
          deallocate(crossOrder)
          deallocate(lastAtBran)
          
@@ -803,7 +670,7 @@ contains
       stor => network%stors%stor
       
       do i = 1, network%stors%count
-         if (stor(i)%gridPoint == gridpoint) then
+         if (stor(i)%grid_point == gridpoint) then
             id = stor(i)%id
             return
          endif
@@ -1163,16 +1030,11 @@ subroutine getRoughnessForProfile(network, crs)
         
       iRough = hashsearch(network%rgs%hashlist, crs%frictionSectionID(i))
       if (iRough <= 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
+         call SetMessage(LEVEL_FATAL, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
          cycle
       endif
       
       pRgs => network%rgs%rough(iRough)
-      if (len_trim(pRgs%frictionValuesFile)== 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
-         cycle
-      endif
-      
 
       if (network%rgs%version == network%rgs%roughnessFileMajorVersion) then
          frictionValue = crs%frictionValuePos(i)

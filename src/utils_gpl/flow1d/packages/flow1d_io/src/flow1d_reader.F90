@@ -43,7 +43,6 @@ module m_flow1d_reader
       use m_globalParameters
       use messageHandling
       use m_readCrossSections
-      use m_readSpatialData
       use m_read_roughness
       use m_network
       use m_readstructures
@@ -124,6 +123,9 @@ module m_flow1d_reader
      
      ! Stop in case of errors
      maxErrorLevel = getMaxErrorLevel()
+     if (maxErrorLevel >= LEVEL_ERROR) then
+        call SetMessage(LEVEL_FATAL, 'Error(s) while reading 1D attribute files')
+     endif
      
      call SetMessage(LEVEL_INFO, 'All 1D-Reading Done')
 

@@ -142,8 +142,8 @@ subroutine windtostress(mmax      ,nmax      ,nmaxus    ,grdang    ,kcs       , 
              windsv(n,m) = windcd(n,m) * wsp2 * sin(wangle) * rhoa
              w10mag(n,m) = wsp
              if((sdlake == 1) .and. (wslake == 1)) then
-                gdp%gdheat%stanton = windcd(n, m)
-                gdp%gdheat%dalton  = windcd(n, m)
+                gdp%gdheat%stanton = windcd(n,m) * gdp%gdheat%mulsta
+                gdp%gdheat%dalton  = windcd(n,m) * gdp%gdheat%muldal
              endif
           endif
        enddo

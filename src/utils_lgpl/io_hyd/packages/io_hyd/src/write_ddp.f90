@@ -33,6 +33,8 @@
 
       ! global declarations
 
+      use m_srstop
+      use m_monsys
       use hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 

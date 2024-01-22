@@ -160,10 +160,10 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
        !
        ! Calculate critical (depth averaged) velocity
        !
-       if (d50 >= 0.0005) then
-          vcr = 8.5 *(d50)**0.6*log10(4.0*h1/d90)
-       elseif (d50 > 0.0001) then
-          vcr = 0.19*(d50)**0.1*log10(4.0*h1/d90)
+       if (d50 >= 0.0005_fp) then
+          vcr = 8.5_fp *(d50)**0.6_fp*log10(4.0_fp*h1/d90)
+       elseif (d50 > 0.0001_fp) then
+          vcr = 0.19_fp*(d50)**0.1_fp*log10(4.0_fp*h1/d90)
        else
           message = 'd50 < 0.0001 not allowed'
           error = .true.
@@ -227,7 +227,7 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
           uon  = umax*(0.5_fp + (rmax - 0.5_fp)*tanh((ra1 - 0.5_fp)/(rmax - 0.5_fp)))
           uon  = max(0.5_fp*umax, uon)
           uoff = umax - uon
-      else
+       else
           uon  = 0.0_fp
           uoff = 0.0_fp
        endif
@@ -274,9 +274,12 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
        if (umod > eps) then
           qbcu = qbc*uuu/umod
           qbcv = qbc*vvv/umod
-       elseif (qbc > 1.0e-4_fp) then
-          message = 'umod<eps and qbc>1e-4'
-          error = .true.
+	   !
+       !Following `elseif` should be studied in detail (UNST-7050)
+       !	   
+       !elseif (qbc > 1.0e-4_fp) then
+       !   message = 'umod<eps and qbc>1e-4'
+       !   error = .true.
        else
           qbcu = 0.0_fp
           qbcv = 0.0_fp
@@ -351,8 +354,12 @@ subroutine bedtr1993(uuu       ,vvv       ,u2dh      ,d50       ,d90       , &
        qbwv = 0.0_fp
        qswu = 0.0_fp
        qswv = 0.0_fp
+       !
+       uon  = 0.0_fp
+       uoff = 0.0_fp
+       vcr  = 0.0_fp
+    endif
     !
     ! end of computing bed-load transport on flat plane
     !
-    endif
 end subroutine bedtr1993

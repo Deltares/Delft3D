@@ -125,6 +125,7 @@ implicit none
           maxnval = maxnval + 1
        endif
        maxnval = maxnval + stmpar%lsedtot
+       maxnval = maxnval + stmpar%lsedsus
     endif
 
 

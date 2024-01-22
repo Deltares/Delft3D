@@ -1,0 +1,183 @@
+<testCases>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c001_frisianinlet_schematized_2D" ref="dimr_default">
+        <path>e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
+        <programs>
+            <program ref="dimr" seq="1">
+                <arguments>
+                    <argument>-m dimr.xml</argument>
+                    <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+                </arguments>
+            </program>
+            <program ref="checkhydbal" seq="2">
+                <arguments>
+                <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+                </arguments>
+            </program>
+        </programs>
+        <maxRunTime>15000.0000000</maxRunTime>
+        <checks>
+            <file name="DFM_DELWAQ_f34/f34-relerrvavg.txt" type="ASCII">
+            <parameters>
+                <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+            <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+            <parameters>
+                <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+            </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c002_frisianinlet_schematized_3D_s" ref="dimr_default">
+      <path>e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
+      <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>-m dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c003_frisianinlet_schematized_3D_z" ref="dimr_default">
+      <path>e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
+      <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>-m dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_f34/f34.hyd</argument>
+            <argument>-fb</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_f34/f34-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_f34/f34-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c010_sourcesink_2D" ref="dimr_default">
+      <path>e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
+      <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>-m dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dimr_default">
+      <path>e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
+      <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>-m dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dimr_default">
+      <path>e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
+      <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>-m dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_sourcesink/sourcesink.hyd</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvavg" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_sourcesink/sourcesink-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="relerrvmax" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+</testCases>

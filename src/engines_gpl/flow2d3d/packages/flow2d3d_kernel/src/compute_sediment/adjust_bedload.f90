@@ -68,7 +68,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     real(fp)                         , pointer :: alfpa
     real(fp)                         , pointer :: thcrpa
     integer                          , pointer :: islope
-    integer       , dimension(:)     , pointer :: sedtyp
+    integer       , dimension(:)     , pointer :: tratyp
     real(fp)                         , pointer :: eps
     real(fp)                         , pointer :: morfac
     real(fp)                         , pointer :: hdt
@@ -165,7 +165,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     rhosol              => gdp%gdsedpar%rhosol
     sedd50              => gdp%gdsedpar%sedd50
     sedd50fld           => gdp%gdsedpar%sedd50fld
-    sedtyp              => gdp%gdsedpar%sedtyp
+    tratyp              => gdp%gdsedpar%tratyp
     alfabs              => gdp%gdmorpar%alfabs
     alfabn              => gdp%gdmorpar%alfabn
     wetslope            => gdp%gdmorpar%wetslope
@@ -187,7 +187,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     tphi = tan(phi)
     !
     do l = 1, lsedtot
-       if (sedtyp(l) /= SEDTYP_COHESIVE) then
+       if (has_bedload(tratyp(l))) then
           di50        = sedd50(l)
           di50spatial = .false.
           if (di50<0 .and. lsedtot==1) di50spatial = .true.

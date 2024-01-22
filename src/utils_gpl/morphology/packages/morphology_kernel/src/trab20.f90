@@ -30,12 +30,12 @@
 !> computes sediment transport according to the transport formula of Soulsby / Van Rijn, XBeach flavour
 subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h         ,tp        , &
                 & d50       ,d15       ,d90       ,npar      ,par       ,dzbdt     ,vicmol    , &
-                & poros     ,chezy     ,dzdx      ,dzdy      ,sbotx     ,sboty     ,ssusx     , &
-                & ssusy     ,ua        ,va        ,ubot      ,kwtur     ,vonkar    ,ubot_from_com )
+                & poros     ,chezy     ,dzdx      ,dzdy      ,sbotx     ,sboty     ,cesus     , &
+                & ua        ,va        ,ubot      ,kwtur     ,ubot_from_com )
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts
-    use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry
+    use sed_support_routines, only: calculate_critical_velocities, calculate_velocity_asymmetry, calculate_urms
     !
     implicit none
 !
@@ -48,7 +48,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                 , intent(in)    :: d50
     real(fp)                 , intent(in)    :: d90
     real(fp)                 , intent(in)    :: dzbdt    !<  Erosion/sedimentation velocity
-    real(fp)                 , intent(in)    :: dzdx
+    real(fp)                 , intent(in)    :: dzdx   
     real(fp)                 , intent(in)    :: dzdy
     real(fp)                                 :: h
     real(fp)                                 :: hrms
@@ -58,16 +58,14 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                 , intent(in)    :: rlabda   
     real(fp)                 , intent(in)    :: teta     
     real(fp)                                 :: tp     
-    real(fp)                 , intent(in)    :: ubot
+    real(fp)                 , intent(in)    :: ubot   
     real(fp)                 , intent(in)    :: u
     real(fp)                 , intent(in)    :: v
     real(fp)                 , intent(in)    :: vicmol
-    real(fp)                 , intent(in)    :: vonkar
     !
     real(fp)                 , intent(out)   :: sbotx
     real(fp)                 , intent(out)   :: sboty
-    real(fp)                 , intent(out)   :: ssusx
-    real(fp)                 , intent(out)   :: ssusy
+    real(fp)                 , intent(out)   :: cesus
     real(fp)                 , intent(out)   :: ua
     real(fp)                 , intent(out)   :: va
     !
@@ -83,7 +81,6 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     integer                        :: bedslpeffini
     real(fp)                       :: ag
     real(fp)                       :: delta
-    real(fp)                       :: rnu
     real(fp)                       :: facua
     real(fp)                       :: facas
     real(fp)                       :: facsk
@@ -95,25 +92,22 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                       :: cf
     real(fp)                       :: utot    !< Velocity magnitude
     real(fp)                       :: uamag   
-    real(fp)                       :: phi   
-    real(fp)                       :: uorb   
-    real(fp)                       :: b2   
-    real(fp)                       :: ucrw  
-    real(fp)                       :: ucrc   
+    real(fp)                       :: phi     
     real(fp)                       :: dster   
-    real(fp)                       :: ucr   
+    real(fp)                       :: ucr  
+    real(fp)                       :: urms     
     real(fp)                       :: urms2
     real(fp)                       :: ucrb, ucrs, asb, ass, term1, ceqb, ceqs
     real(fp)                       :: z0
     real(fp)                       :: cd
+    real(fp)                       :: cmax2h
     !
     !
     !! executable statements -------------------------------------------------------
     !
     sbotx = 0.0_fp
     sboty = 0.0_fp
-    ssusx = 0.0_fp
-    ssusy = 0.0_fp
+    cesus = 0.0_fp
     ua    = 0.0_fp
     va    = 0.0_fp
     
@@ -122,7 +116,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
     !     Initialisations
     !
-    ag    = par(1)
+    ag = par(1)
     delta = par(4)
     facua = par(11)
     facas = par(12)
@@ -159,10 +153,12 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
     cf = ag / chezy / chezy
     !
-    call calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ubot, ag, tp, &
-                            reposeangle, ubot_from_com, kwtur, uamag, phi, uorb, urms2)
+    call calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
     !
-    dster=(delta*ag/1e-12_fp)**ONETHIRD * d50        ! 1e-12 = nu**2
+    call calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
+    !
+    phi = reposeangle*degrad ! Angle of internal friction
+    dster=(delta*ag/1e-12_fp)**onethird*d50        ! 1e-12 = nu**2
     !
     if(d50<=0.0005_fp) then
        Ucr=0.19_fp*d50**0.1_fp*log10(4.0_fp*h/d90)
@@ -186,22 +182,22 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    term1=sqrt(term1)
    !
    ceqb = 0.0_fp
-   ceqs = 0.0_fp
+   ceqs = 0.0_fp   
    ! 
-   if( term1 > Ucrb .and. h > DTOL ) then
+   if(term1>Ucrb .and. h>dtol) then
       ceqb=Asb*(term1-Ucrb)**2.4_fp
    end if
-   if( term1 > Ucrs .and. h > DTOL ) then
+   if(term1>Ucrs .and. h>dtol) then
       ceqs=Ass*(term1-Ucrs)**2.4_fp
    end if
    !
-   ceqb = min(ceqb/h,   cmax/2.0_fp)*h      ! maximum equilibrium bed concentration
-   ceqs = min(ceqs/h,   cmax/2.0_fp)*h      ! maximum equilibrium suspended concentration
+   cmax2h = cmax*h/2.0_fp
+   ceqb = min(ceqb,   cmax2h)         ! maximum equilibrium bed concentration
+   cesus = min(ceqs,   cmax2h)/h      ! maximum equilibrium suspended concentration
    ua = uamag*cos(teta*degrad)
    va = uamag*sin(teta*degrad)
    sbotx = (u+ua)*ceqb
    sboty = (v+va)*ceqb
-   ssusx = (u+ua)*ceqs                  ! this is now eulerian, correct?
-   ssusy = (v+va)*ceqs
-
+   !
+  999 continue
 end subroutine trab20

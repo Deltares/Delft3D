@@ -54,6 +54,7 @@ module m_tables
    public integrate
    public dealloc
    public realloc
+   public hasTableData
    public printData
 
    interface interpolate
@@ -71,6 +72,7 @@ module m_tables
 
    interface realloc
       module procedure reallocTable
+      module procedure reallocTableSet
    end interface
 
    interface dealloc
@@ -187,6 +189,25 @@ contains
 
    end subroutine ShiftValuesTbl
 
+   !> Reallocates a table's internal memory such that it can store a particular table length.
+   !!
+   !! @See setTable for setting actual new values into this table.
+   subroutine reallocTable(table, new_length)
+
+      ! Input/output parameters
+      type(t_table), pointer       :: table      !< Table to reallocate; any existing data will be preserved.
+      integer,       intent(in   ) :: new_length !< Desired new length of the table arrays. Note that the length attribute will not be changed, as no new values will added yet.
+
+      if (.not. associated(table)) then
+         allocate(table)
+      end if
+      
+      call reallocP(table%x, new_length, keepExisting = .true.)
+      call reallocP(table%y, new_length, keepExisting = .true.)
+      
+   end subroutine reallocTable
+
+
    subroutine deallocTable(table)
       ! Modules
 
@@ -207,7 +228,7 @@ contains
 
    end subroutine deallocTable
 
-   subroutine reallocTable(tbs)
+   subroutine reallocTableSet(tbs)
       ! Modules
    
       implicit none
@@ -239,7 +260,7 @@ contains
       endif
       tbs%Size = tbs%Size+tbs%growsBy
    
-   end subroutine realloctable
+   end subroutine realloctableSet
    
    subroutine dealloctableSet(tbs)
       ! Modules
@@ -266,13 +287,31 @@ contains
       
    end subroutine deallocTableSet
 
+   !> Checks whether a table contains any data.
+   !! Combines the pointer and length > 0 check for convenience at call site.
+   logical function hasTableData(table)
+      implicit none
+
+      type(t_table), pointer, intent(in) :: table !< Table to test, may be unassociated.
+
+      if (associated(table)) then
+         hasTableData = table%length > 0
+      else
+         hasTableData = .false.
+      end if
+   end function hasTableData
+
+
+   !> Interpolate/look up a value in a table.
+   !! Result value is determined by the input value and the table's interpolation type.
+
    double precision function InterpolateTable(table, xs)
        implicit none
    !
    ! Global variables
    !
-       type(t_table)                  :: table
-       double precision, intent(in)   :: xs
+       type(t_table),    intent(inout) :: table !< Table containing two-column data. When empty, the result value is undefined.
+       double precision, intent(in   ) :: xs    !< Value to look up
    !
    !
    ! Local variables
@@ -299,6 +338,11 @@ contains
    !
        !     Period defined ?
        len = table%length
+       if (len <= 0) then
+          ! No table contents, return with undefined result value.
+          return
+       end if
+       
        period = table%interpoltype/10==1
        interpoltype = mod(table%interpoltype, 10)
        si = table%stCount

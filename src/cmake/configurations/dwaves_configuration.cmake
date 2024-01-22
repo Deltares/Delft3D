@@ -11,8 +11,8 @@ add_subdirectory(${checkout_src_root}/${wave_module} wave)
 # Utils
 # =====
 
-# Deltares common 
-if(NOT TARGET deltares_common) 
+# Deltares common
+if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
 if(NOT TARGET deltares_common_c)
@@ -33,6 +33,10 @@ endif()
 # io_netcdf
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
+endif()
+
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
 endif()
 
 # ec_module
@@ -65,6 +69,11 @@ endif()
 # Third party
 # ===========
 
+# fortrangis
+if(NOT TARGET fortrangis)
+    add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
+endif()
+
 # triangle
 if(NOT TARGET triangle_c)
     add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
@@ -84,6 +93,10 @@ endif()
 
 if(NOT TARGET kdtree_wrapper)
     add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
+endif()
+
+if(NOT TARGET shp)
+    add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
 # Swan

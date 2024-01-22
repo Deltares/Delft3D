@@ -1,5 +1,5 @@
-subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
-                    & s1    ,alfas ,gdp    )
+subroutine wri_cormix(u0    ,v0    ,rho    ,thick ,kmax  ,dps   ,&
+                    & s0    ,alfas ,gdp    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -48,28 +48,27 @@ subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer           , pointer :: m_diff
-    integer           , pointer :: n_diff
-    integer           , pointer :: m_amb
-    integer           , pointer :: n_amb
-    real(fp)          , pointer :: q_diff
-    real(fp)          , pointer :: t0_diff
-    real(fp)          , pointer :: s0_diff
-    real(fp)          , pointer :: rho0_diff
-    real(fp)          , pointer :: d0
-    real(fp)          , pointer :: h0
-    real(fp)          , pointer :: sigma0
-    real(fp)          , pointer :: theta0
+    integer ,dimension(:)          , pointer :: m_diff
+    integer ,dimension(:)          , pointer :: n_diff
+    integer ,dimension(:,:)        , pointer :: m_amb
+    integer ,dimension(:,:)        , pointer :: n_amb
+    real(fp),dimension(:)          , pointer :: q_diff
+    real(fp),dimension(:,:)        , pointer :: const_diff
+    real(fp),dimension(:)          , pointer :: rho0_diff
+    real(fp),dimension(:)          , pointer :: d0
+    real(fp),dimension(:)          , pointer :: h0
+    real(fp),dimension(:)          , pointer :: sigma0
+    real(fp),dimension(:)          , pointer :: theta0
     character(256)    , pointer :: nflmod
 !
 ! Global variables
 !
     integer                                             , intent(in) :: kmax  !  Description and declaration in tricom.igs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in) :: alfas !  Description and declaration in esm_alloc_real.f90 gs
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in) :: s1    !  Description and declaration in esm_alloc_real.f90 gs
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in) :: s0    !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax) , intent(in) :: rho   !  Description and declaration in esm_alloc_real.f90 gs
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax) , intent(in) :: u1    !  Description and declaration in esm_alloc_real.f90 gs
-    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax) , intent(in) :: v1    !  Description and declaration in esm_alloc_real.f90 gs
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax) , intent(in) :: u0    !  Description and declaration in esm_alloc_real.f90 gs
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax) , intent(in) :: v0    !  Description and declaration in esm_alloc_real.f90 gs
     real(fp)   , dimension(kmax)                        , intent(in) :: thick !  Description and declaration in esm_alloc_real.f90 gs
     real(prec) , dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in) :: dps   !  Description and declaration in esm_alloc_real.f90 gs
 !
@@ -87,7 +86,6 @@ subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
     real(fp)                               :: thck
     real(fp)                               :: uuu
     real(fp)                               :: vvv
-    real(fp)                               :: u0
     real(fp)                               :: rhohulp
     real(fp) , dimension(:) , allocatable  :: h1
     real(fp) , dimension(:) , allocatable  :: ua
@@ -102,8 +100,7 @@ subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
     m_amb          => gdp%gdnfl%m_amb
     n_amb          => gdp%gdnfl%n_amb
     q_diff         => gdp%gdnfl%q_diff
-    t0_diff        => gdp%gdnfl%t0_diff
-    s0_diff        => gdp%gdnfl%s0_diff
+    const_diff     => gdp%gdnfl%const_diff
     rho0_diff      => gdp%gdnfl%rho0_diff
     d0             => gdp%gdnfl%d0
     h0             => gdp%gdnfl%h0
@@ -118,28 +115,28 @@ subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
     !
     ! Read the general diffusor characteritics from jet3d input file
     !
-    call n_and_m_to_nm(n_diff    , m_diff     , nm_diff  , gdp)
-    call n_and_m_to_nm(n_diff - 1, m_diff     , ndm_diff , gdp)
-    call n_and_m_to_nm(n_diff    , m_diff - 1 , nmd_diff , gdp)
-    call n_and_m_to_nm(n_amb     , m_amb      , nm_amb   , gdp)
-    call n_and_m_to_nm(n_amb  - 1, m_amb      , ndm_amb  , gdp)
-    call n_and_m_to_nm(n_amb     , m_amb  - 1 , nmd_amb  , gdp)
+    call n_and_m_to_nm(n_diff(1)    , m_diff(1)     , nm_diff  , gdp)
+    call n_and_m_to_nm(n_diff(1) - 1, m_diff(1)     , ndm_diff , gdp)
+    call n_and_m_to_nm(n_diff(1)    , m_diff(1) - 1 , nmd_diff , gdp)
+    call n_and_m_to_nm(n_amb(1,1)   , m_amb(1,1)    , nm_amb   , gdp)
+    call n_and_m_to_nm(n_amb(1,1)- 1, m_amb(1,1)    , ndm_amb  , gdp)
+    call n_and_m_to_nm(n_amb(1,1)   , m_amb(1,1)- 1 , nmd_amb  , gdp)
     !
     ! Compute heights above bed
     !
-    h1(1) = 0.5_fp * thick(kmax) * (s1(nm_amb)+real(dps(nm_amb),fp))
+    h1(1) = 0.5_fp * thick(kmax) * (s0(nm_amb)+real(dps(nm_amb),fp))
     !
     do k = 2, kmax
        thck   = 0.5_fp * (thick(kmax-k+2) + thick(kmax-k+1))
-       h1 (k) = h1(k-1) + thck*(s1(nm_amb) + real(dps(nm_amb),fp))
+       h1 (k) = h1(k-1) + thck*(s0(nm_amb) + real(dps(nm_amb),fp))
     enddo
     !
     ! Compute velocity magnitude and direction
     ! Fill rhojet with densities
     !
     do k = 1, kmax
-       uuu      = 0.5_fp * (u1(nm_amb ,kmax-k+1) + u1(nmd_amb ,kmax-k+1))
-       vvv      = 0.5_fp * (v1(nm_amb ,kmax-k+1) + v1(ndm_amb ,kmax-k+1))
+       uuu      = 0.5_fp * (u0(nm_amb ,kmax-k+1) + u0(nmd_amb ,kmax-k+1))
+       vvv      = 0.5_fp * (v0(nm_amb ,kmax-k+1) + v0(ndm_amb ,kmax-k+1))
        ua   (k) = sqrt (uuu*uuu + vvv*vvv)
        taua (k) = atan2(vvv,uuu)*raddeg + alfas(nm_amb)
        taua (k) = mod(taua(k) + 360.0_fp,360.0_fp)
@@ -171,12 +168,12 @@ subroutine wri_cormix(u1    ,v1    ,rho    ,thick ,kmax  ,dps   ,&
     !
     write (luntmp,'(''# empty'')')
     write (luntmp,'(''# empty'')')
-    u0 = q_diff / (0.25_fp*pi*d0*d0)
+    uuu = q_diff(1) / (0.25_fp*pi*d0(1)*d0(1))
     !
-    write (luntmp,'(i5,8f12.3,2i5)') 1, d0, h0, u0, theta0, sigma0, 100.0_fp, 0.0_fp, rho0_diff, 1, 1
+    write (luntmp,'(i5,8f12.3,2i5)') 1, d0, h0, uuu, theta0(1), sigma0(1), 100.0_fp, 0.0_fp, rho0_diff, 1, 1
     write (luntmp,'(''# empty'')')
     write (luntmp,'(''# empty'')')
-    write (luntmp,'(3f12.3,i5)') s1(nm_diff)+real(dps(nm_diff),fp), 0.0_fp, 1000.0_fp, 10
+    write (luntmp,'(3f12.3,i5)') s0(nm_diff)+real(dps(nm_diff),fp), 0.0_fp, 1000.0_fp, 10
     close (luntmp)
     !
     deallocate (h1)

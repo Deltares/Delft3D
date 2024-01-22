@@ -186,6 +186,8 @@ module network_data
 
   integer                          :: makeorthocenters = 0              !< shift from circumcentre to orthocentre (acts as a maxiter)
 
+  integer                          :: strip_mesh = 0                    !< Strip unused nodes and links from the mesh after clipping
+
   integer, parameter               :: I1D2DTP_1TO1     = 0              !< 1D2D link generation algorithm for 1-to-1 mapping HK algorithm, depending on filetype.
   integer, parameter               :: I1D2DTP_1TON_EMB = 1              !< 1D2D link generation algorithm for 1-to-1 mapping, for embedded ('rural') links.
   integer, parameter               :: I1D2DTP_1TON_LAT = 2              !< 1D2D link generation algorithm for 1-to-n mapping, for lateral ('river') links.
@@ -358,6 +360,7 @@ module network_data
    CONNECT1DEND = 0d0              
    Unidx1D = 100d0                   
    makeorthocenters = 0             
+   strip_mesh = 0
    imake1d2dtype = I1D2DTP_1TO1 ! HK algorithm
    searchRadius1D2DLateral = defaultSearchRadius1D2DLateral
    xkmin = 0

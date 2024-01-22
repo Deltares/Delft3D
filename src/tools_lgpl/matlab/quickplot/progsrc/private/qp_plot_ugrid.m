@@ -252,7 +252,7 @@ switch NVal
     case {1,5,6}
         switch axestype
             case {'X-Y','Lon-Lat','X-Y-Val','X-Y-Z','Lon-Lat-Val','Lon-Lat-Z'}
-                if isfield(data,'EdgeGeometry') && ~isempty(data.EdgeGeometry)
+                if strcmp(Ops.presentationtype,'edges') && isfield(data,'EdgeGeometry') && ~isempty(data.EdgeGeometry)
                     NP = cellfun(@numel,data.EdgeGeometry.X);
                     uNP = unique(NP);
                     for i = length(uNP):-1:1
@@ -322,6 +322,7 @@ switch NVal
                 if multiple(K_)
                     switch data.ValLocation
                         case 'FACE'
+                            data.FaceNodeConnect(isnan(data.FaceNodeConnect)) = [];
                             szX = size(data.X);
                             szX(1) = 1;
                             data.X = reshape(mean(data.X(data.FaceNodeConnect,:)),szX);
@@ -338,9 +339,28 @@ switch NVal
                         end
                     end
                     [hNew,Param,Parent] = qp_plot_xzt(hNew,Parent,Param,data,Ops,Props,PName,TStr,stn,Quant,Units);
+                elseif length(data.Time)>1 && numel(data.Time) == numel(data.Val)
+                    if FirstFrame
+                        hNew=line(data.Time,data.Val, ...
+                            'parent',Parent, ...
+                            Ops.LineParams{:});
+                        set(Parent,'layer','top')
+                    elseif ishandle(hNew)
+                        set(hNew,'xdata',data.Time, ...
+                            'ydata',data.Val)
+                    else
+                        return
+                    end
+                    tit = {};
+                    if ~isempty(stn)
+                        tit{end+1}=stn;
+                    end
+                    if ~isempty(TStr)
+                        tit{end+1}=TStr;
+                    end
+                    qp_title(Parent,tit,'quantity',Quant,'unit',Units)
                 else
                     % what is this code for?
-                    % --> Time series plot of single point.
                     % --> Slice of m grid points.
                     switch data.ValLocation
                         case 'FACE'
@@ -431,69 +451,47 @@ switch NVal
                     end
                     if length(data.Time)>1
                         nx = numel(x);
-                        if nx == 1
-                            if FirstFrame
-                                hNew=line(data.Time,val, ...
-                                    'parent',Parent, ...
-                                    Ops.LineParams{:});
-                                set(Parent,'layer','top')
-                            elseif ishandle(hNew)
-                                set(hNew,'xdata',data.Time, ...
-                                    'ydata',val)
-                            else
-                                return
-                            end
-                            tit = {};
-                            if ~isempty(stn)
-                                tit{end+1}=stn;
-                            end
-                            if ~isempty(TStr)
-                                tit{end+1}=TStr;
-                            end
-                            qp_title(Parent,tit,'quantity',Quant,'unit',Units)
+                        nt = numel(data.Time);
+                        if strcmp(Ops.axestype,'X-Time')
+                            c1 = repmat(reshape(x, [1 nx]), [nt 1]);
+                            c2 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
+                            v = squeeze(data.Val);
                         else
-                            nt = numel(data.Time);
-                            if strcmp(Ops.axestype,'X-Time')
-                                c1 = repmat(reshape(x, [1 nx]), [nt 1]);
-                                c2 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
-                                v = squeeze(data.Val);
-                            else
-                                c1 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
-                                c2 = repmat(reshape(x, [1 nx]), [nt 1]);
-                                v = squeeze(data.Val);
-                            end
-                            set(Parent,'NextPlot','add');
-                            switch Ops.presentationtype
-                                case 'values'
-                                    I=~isnan(data.Val);
-                                    hNew=gentextfld(hNew,Ops,Parent,v,c1,c2);
-                                    
-                                case 'continuous shades'
-                                    hNew=gensurface(hNew,Ops,Parent,v,c1,c2,v);
-                                    
-                                case 'markers'
-                                    hNew=genmarkers(hNew,Ops,Parent,v,c1,c2);
-                                    
-                                case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
-                                    if isequal(size(c1),size(v)+1)
-                                        [c1,c2,v]=face2surf(c1,c2,v);
-                                    end
-                                    v(isnan(c1) | isnan(c2))=NaN;
-                                    ms=max(c1(:));
-                                    mz=max(c2(:));
-                                    c1(isnan(c1))=ms;
-                                    c2(isnan(c2))=mz;
-                                    hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
-                                    
-                            end
-                            if FirstFrame
-                                set(Parent,'view',[0 90],'layer','top');
-                            end
-                            if strcmp(Ops.colourbar,'none')
-                                qp_title(Parent,PName,'quantity',Quant,'unit',Units)
-                            else
-                                qp_title(Parent,'','quantity',Quant,'unit',Units)
-                            end
+                            c1 = repmat(reshape(data.Time, [nt 1]), [1 nx]);
+                            c2 = repmat(reshape(x, [1 nx]), [nt 1]);
+                            v = squeeze(data.Val);
+                        end
+                        set(Parent,'NextPlot','add');
+                        switch Ops.presentationtype
+                            case 'values'
+                                I=~isnan(data.Val);
+                                hNew=gentextfld(hNew,Ops,Parent,v,c1,c2);
+                                
+                            case 'continuous shades'
+                                hNew=gensurface(hNew,Ops,Parent,v,c1,c2,v);
+                                
+                            case 'markers'
+                                hNew=genmarkers(hNew,Ops,Parent,v,c1,c2);
+                                
+                            case {'contour lines','coloured contour lines','contour patches','contour patches with lines'}
+                                if isequal(size(c1),size(v)+1)
+                                    [c1,c2,v]=face2surf(c1,c2,v);
+                                end
+                                v(isnan(c1) | isnan(c2))=NaN;
+                                ms=max(c1(:));
+                                mz=max(c2(:));
+                                c1(isnan(c1))=ms;
+                                c2(isnan(c2))=mz;
+                                hNew=gencontour(hNew,Ops,Parent,c1,c2,v,Thresholds);
+                                
+                        end
+                        if FirstFrame
+                            set(Parent,'view',[0 90],'layer','top');
+                        end
+                        if strcmp(Ops.colourbar,'none')
+                            qp_title(Parent,PName,'quantity',Quant,'unit',Units)
+                        else
+                            qp_title(Parent,'','quantity',Quant,'unit',Units)
                         end
                     else
                         if strcmp(Ops.facecolour,'none')
@@ -1079,3 +1077,4 @@ else
         setappdata(Parent(i),'linkedaxes',Parent)
     end
 end
+

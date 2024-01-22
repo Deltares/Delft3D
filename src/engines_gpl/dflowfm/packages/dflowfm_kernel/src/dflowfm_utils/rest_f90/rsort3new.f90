@@ -30,8 +30,8 @@
 ! 
 ! 
 
-      SUBROUTINE RSORT3new (X, Y, Z, N) ! 1 !!  second faster than
-      use sorting_algorithms, only: indexx
+      SUBROUTINE RSORT3new (X, Y, Z, N)
+      use stdlib_sorting, only: sort_index
       implicit none
       double precision              :: X(N), Y(N), Z(N)
       integer, allocatable          :: ind(:)
@@ -40,12 +40,7 @@
 
       allocate(ind(n), h(n))
 
-      call indexx(n,x,ind)
-
-      h = x
-      do k = 1,n
-         x(k) = h(ind(k))
-      enddo
+      call sort_index(x, ind)
 
       h = y
       do k = 1,n

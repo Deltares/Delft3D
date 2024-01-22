@@ -235,6 +235,7 @@ module globaldata
        ! runid (copy); needed to debug DD models
        !
        character(256)     , pointer :: runid
+       character(6)       , pointer :: uniqueid ! 6 capitals, randomly set in initialization phase
        !
        ! data fields for parallel Delft3D-FLOW
        !

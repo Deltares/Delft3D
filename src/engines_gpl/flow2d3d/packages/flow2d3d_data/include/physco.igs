@@ -88,3 +88,4 @@ end type gd_physco
 !
 integer, parameter             :: dens_Eckart = 0
 integer, parameter             :: dens_UNESCO = 1
+integer, parameter             :: dens_NaClSol = 2

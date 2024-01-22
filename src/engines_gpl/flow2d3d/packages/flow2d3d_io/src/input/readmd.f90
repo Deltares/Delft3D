@@ -226,6 +226,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     integer                       , pointer :: itnflf
     integer                       , pointer :: itnfli
     integer                       , pointer :: itnfll
+    integer                       , pointer :: itnflrf
+    integer                       , pointer :: itnflri
     integer                       , pointer :: itrsti
     integer                       , pointer :: iphisf
     integer                       , pointer :: iphisi
@@ -397,6 +399,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     itnflf              => gdp%gdinttim%itnflf
     itnfli              => gdp%gdinttim%itnfli
     itnfll              => gdp%gdinttim%itnfll
+    itnflrf             => gdp%gdinttim%itnflrf
+    itnflri             => gdp%gdinttim%itnflri
     itrsti              => gdp%gdinttim%itrsti
     iphisf              => gdp%gdinttim%iphisf
     iphisi              => gdp%gdinttim%iphisi
@@ -808,7 +812,8 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
               & nprttm    ,itfinish  ,iphisf    ,iphisi    ,iphisl    , &
               & itmapf    ,itmapi    ,itmapl    ,ithisf    ,ithisi    , &
               & ithisl    ,itcomf    ,itcomi    ,itcoml    ,itrsti    , &
-              & itnflf    ,itnfli    ,itnfll    ,lstsci    ,gdp       )
+              & itnflf    ,itnfli    ,itnfll    ,itnflrf   ,itnflri   , &
+              & lstsci    ,gdp       )
     if (error) goto 9999
     !
     ! Read waq parameters, such as output flag for writing binary waq files

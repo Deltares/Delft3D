@@ -39,8 +39,6 @@ module m_GlobalParameters
    logical                          :: anyGroundLayer                = .false.
    logical                          :: anySummerDike                 = .false.
    !TODO: Remove these drying and flooding options and also in all compute structure subroutines. This should be handled by Hu(L)
-   double precision                 :: thresholdDry                  = 0.001d0
-   double precision                 :: thresholdFlood                = 0.01d0
    double precision                 :: summerDikeTransitionHeight    = 0.50d0 !read from CrossSectionDefinitions.ini 
    double precision                 :: strucalfa                     = 0.9d0
    double precision                 :: sl                            = 0.01d0        !< width at top of closed profile (Preisman lock)
@@ -87,12 +85,5 @@ module m_GlobalParameters
    integer, public, parameter              :: INDTP_1D      = 1  !< Type code for flow nodes that are 1D
    integer, public, parameter              :: INDTP_2D      = 2  !< Type code for flow nodes that are 2D
    integer, public, parameter              :: INDTP_ALL     = 3  !< Type code for flow nodes that are 1D or 2D
-
-
-   ! quantity integer ids
-   integer, public, parameter :: CFiWaterlevel              = 1
-   integer, public, parameter :: CFiWaterDepth              = 2
-   integer, public, parameter :: CFiDischarge               = 3
-   integer, public, parameter :: CFiPumpCapacity            = 4
    
 end module m_GlobalParameters                                 

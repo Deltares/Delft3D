@@ -267,13 +267,6 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !
-    pntnam = 'kcs_nf'        !  Mask array to identify points coupled to a near field model (time INdependent)
-                             !  =0 inactive point
-                             !  =1 active   point
-                             !  =2 open boundary point
-    ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
-    if (ierr <= -9) goto 9999
-    !
     ! arrays for: mask arrays (temporary)
     !
     pntnam = 'kfu'           !  Mask array for the u-velocity point (time dependent)

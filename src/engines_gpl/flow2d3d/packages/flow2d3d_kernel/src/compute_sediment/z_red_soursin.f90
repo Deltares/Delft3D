@@ -66,7 +66,7 @@ subroutine z_red_soursin(nmmax     ,kmax      ,thick     , &
     logical                          , pointer :: bedupd
     real(fp)                         , pointer :: hdt
     real(fp)      , dimension(:)     , pointer :: cdryb
-    integer       , dimension(:)     , pointer :: sedtyp
+    integer       , dimension(:)     , pointer :: tratyp
 !
 ! Local parameters
 !
@@ -129,7 +129,7 @@ subroutine z_red_soursin(nmmax     ,kmax      ,thick     , &
     bedupd              => gdp%gdmorpar%bedupd
     hdt                 => gdp%gdnumeco%hdt
     cdryb               => gdp%gdsedpar%cdryb
-    sedtyp              => gdp%gdsedpar%sedtyp
+    tratyp              => gdp%gdsedpar%tratyp
     !
     lstart         = max(lsal,ltem)
     reducmesscount = 0
@@ -139,7 +139,7 @@ subroutine z_red_soursin(nmmax     ,kmax      ,thick     , &
        !
        ! Reduction is not applied to mud and not to bedl
        !
-       if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
+       if (tratyp(l) == TRA_COMBINE) then
           do nm = 1, nmmax
              if (kfs(nm) == 1) then
                 !
@@ -201,10 +201,10 @@ subroutine z_red_soursin(nmmax     ,kmax      ,thick     , &
                    sour_im(nm, l) = sour_im(nm, l)*fixfac(nm,l)
                    rsedeq(nm, l)  = rsedeq(nm, l) *fixfac(nm,l)
                 endif
-              endif
-          enddo
-       endif
-    enddo
+              endif           ! kfs
+          enddo               ! nm
+       endif                  ! tratyp
+    enddo                     ! lsedtot
     if (reducmesscount > reducmessmax) then
        write (lundia,'(12x,a,i0,a)') 'Reduction messages skipped (more than ',reducmessmax,')'
        write (lundia,'(12x,2(a,i0))') 'Total number of reduction messages for timestep ', &

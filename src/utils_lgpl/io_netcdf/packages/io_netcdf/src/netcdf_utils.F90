@@ -25,14 +25,14 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> Utility module for additional manipulation/inquiry of NetCDF files, on top of the basic nf90* primitives.
 module netcdf_utils
 use netcdf
 use ionc_constants
-use coordinate_reference_system, only: nc_attribute
+use m_ug_nc_attribute
 implicit none
 
 private
@@ -87,7 +87,7 @@ type nc_att_set
    integer                                   :: size = 0      !< Actual size of attribute set
    integer                                   :: growsby = 1   !< Increment for attribute set
    integer                                   :: count = 0     !< Actual number of attributes in set
-   type(nc_attribute), pointer, dimension(:) :: atts          !< Buffered array with the nc_attribute elements
+   type(ug_nc_attribute), pointer, dimension(:) :: atts          !< Buffered array with the nc_attribute elements
 end type nc_att_set
 
 interface ncu_set_att
@@ -123,7 +123,7 @@ end interface
    
       ! Local variables
       integer :: ierr
-      type(nc_attribute), pointer, dimension(:) :: oldvalues => null()
+      type(ug_nc_attribute), pointer, dimension(:) :: oldvalues => null()
       integer :: newsize_
       logical :: keepExisting_
 
@@ -211,7 +211,7 @@ function ncu_ensure_define_mode(ncid, originally_in_define) result(ierr)
 
    ! Put dataset in define mode (possibly again)
    originally_in_define = .false.
-   
+
    ierrloc = nf90_redef(ncid)
    if (ierrloc == nf90_eindefine) then
       originally_in_define = .true.
@@ -237,7 +237,7 @@ function ncu_ensure_data_mode(ncid, originally_in_define) result(ierr)
 
    ! Put dataset in data mode (possibly again)
    originally_in_define = .true.
-   
+
    ierrloc = nf90_enddef(ncid)
    if (ierrloc == nf90_enotindefine) then
       originally_in_define = .false.
@@ -344,7 +344,7 @@ function ncu_copy_atts( ncidin, ncidout, varidin, varidout, forbidden_atts, appl
    ierr = nf90_noerr
 end function ncu_copy_atts
 
-!> For variable varid in netcdf file ncid append extension to attribute attname 
+!> For variable varid in netcdf file ncid append extension to attribute attname
 !! Returns:
 !     nf90_noerr if all okay, otherwise an error code
 !!
@@ -363,7 +363,7 @@ function ncu_append_atts(ncid, varid, attname, extension, separator, check_prese
    character(len=:), allocatable  :: separator_
    logical :: check_presence_
    integer :: ifound
-   
+
    ierr = -1
 
    if (present(separator)) then
@@ -378,7 +378,7 @@ function ncu_append_atts(ncid, varid, attname, extension, separator, check_prese
       check_presence_ = .false.
    end if
 
-   
+
    atttype = 0
    ierr = nf90_inquire_attribute(ncid, varid, attname, xtype=atttype, len=attlen)
    if (ierr == nf90_noerr) then
@@ -486,11 +486,12 @@ end function ncu_clone_vardef
 
 
 !> Compatibility function: returns the fill settings for a variable in a netCDF-3 file.
-function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value) result(ierr)
-   integer,                   intent(in)  :: ncid        !< ID of the NetCDF dataset
-   integer,                   intent(in)  :: varid       !< ID of the variable in the data set
-   integer,                   intent(out) :: no_fill     !< An integer that will always get 1 (for forward compatibility).
-   integer(kind=FourByteInt), intent(out) :: fill_value  !< This will get the fill value for this variable.
+function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value, fill_value_customed) result(ierr)
+   integer,                   intent(in   ) :: ncid                !< ID of the NetCDF dataset
+   integer,                   intent(in   ) :: varid               !< ID of the variable in the data set
+   integer, optional,         intent(in   ) :: fill_value_customed !< User customed fill value
+   integer,                   intent(  out) :: no_fill             !< An integer that will always get 1 (for forward compatibility).
+   integer(kind=FourByteInt), intent(  out) :: fill_value          !< This will get the fill value for this variable.
 
    integer :: ierr ! Error status, nf90_noerr = if successful.
 
@@ -498,26 +499,35 @@ function ncu_inq_var_fill_int4( ncid, varid, no_fill, fill_value) result(ierr)
 
    ierr = nf90_get_att(ncid, varid, '_FillValue', fill_value)
    if (ierr /= nf90_noerr) then
-      fill_value = nf90_fill_int
+      if (present(fill_value_customed)) then
+         fill_value = fill_value_customed
+      else
+         fill_value = nf90_fill_int
+      end if
       ierr = nf90_noerr
    end if
 end function ncu_inq_var_fill_int4
 
 
 !> Compatibility function: returns the fill settings for a variable in a netCDF-3 file.
-function ncu_inq_var_fill_real8( ncid, varid, no_fill, fill_value) result(ierr)
-   integer,                   intent(in)  :: ncid        !< ID of the NetCDF dataset
-   integer,                   intent(in)  :: varid       !< ID of the variable in the data set
-   integer,                   intent(out) :: no_fill     !< An integer that will always get 1 (for forward compatibility).
-   real(kind=EightByteReal),  intent(out) :: fill_value  !< This will get the fill value for this variable.
+function ncu_inq_var_fill_real8( ncid, varid, no_fill, fill_value, fill_value_customed) result(ierr)
+   integer,                            intent(in   ) :: ncid                !< ID of the NetCDF dataset
+   integer,                            intent(in   ) :: varid               !< ID of the variable in the data set
+   real(kind=EightByteReal), optional, intent(in   ) :: fill_value_customed !< User customed fill value
+   integer,                            intent(  out) :: no_fill             !< An integer that will always get 1 (for forward compatibility).
+   real(kind=EightByteReal),           intent(  out) :: fill_value          !< This will get the fill value for this variable.
 
    integer :: ierr ! Error status, nf90_noerr = if successful.
-   
+
    no_fill = 1
 
    ierr = nf90_get_att(ncid, varid, '_FillValue', fill_value)
    if (ierr /= nf90_noerr) then
-      fill_value =  nf90_fill_double
+      if (present(fill_value_customed)) then
+         fill_value = fill_value_customed
+      else
+         fill_value =  nf90_fill_double
+      end if
       ierr = nf90_noerr
    end if
 end function ncu_inq_var_fill_real8
@@ -597,7 +607,7 @@ function ncu_get_att(ncid, varid, att_name, att_value) result(status)
             status = istat
             return
          end if
-      end if 
+      end if
 
       allocate( character(len=att_value_len) :: att_value, stat = istat )
       if (istat /= 0) then
@@ -619,7 +629,7 @@ function ncu_get_var_attset(ncid, varid, attset) result(ierr)
 
    integer,                         intent(in)  :: ncid      !< NetCDF dataset id
    integer,                         intent(in)  :: varid     !< NetCDF variable id (1-based).
-   type(nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
+   type(ug_nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
    integer                                      :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=64) :: attname
@@ -644,8 +654,8 @@ function ncu_get_var_attset(ncid, varid, attset) result(ierr)
       select case(atttype)
       case(NF90_CHAR)
          tmpstr = ''
-         ierr = ncu_get_att(ncid, varid, attname, tmpstr)   
-         
+         ierr = ncu_get_att(ncid, varid, attname, tmpstr)
+
          allocate(attset(i)%strvalue(attlen))
          nlen = min(len(tmpstr), attlen)
          do j=1,nlen
@@ -689,7 +699,7 @@ function ncu_put_var_attset(ncid, varid, attset) result(ierr)
 
    integer,             intent(in)  :: ncid      !< NetCDF dataset id
    integer,             intent(in)  :: varid     !< NetCDF variable id (1-based).
-   type(nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
+   type(ug_nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
    integer                          :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=1024) :: tmpstr
@@ -730,7 +740,7 @@ end function ncu_put_var_attset
 !! For example: mesh2d:face_node_connectivity
 function ncu_att_to_varid(ncid, varid, attname, id) result(ierr)
    use ionc_constants
-   
+
    integer         , intent(in   ) :: ncid    !< NetCDF dataset ID
    integer         , intent(in   ) :: varid   !< NetCDF variable ID from which the attribute will be gotten (1-based).
    character(len=*), intent(in   ) :: attname !< Name of attribute in varid that contains the variable name.
@@ -839,7 +849,7 @@ end function ncu_copy_var_atts
 subroutine ncu_set_att_string(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    character(len=*),             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -859,7 +869,7 @@ end subroutine ncu_set_att_string
 subroutine ncu_set_att_int(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    integer,                      intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -873,7 +883,7 @@ end subroutine ncu_set_att_int
 subroutine ncu_set_att_ints(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    integer, dimension(:),        intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -888,7 +898,7 @@ end subroutine ncu_set_att_ints
 subroutine ncu_set_att_double(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    double precision,             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -902,7 +912,7 @@ end subroutine ncu_set_att_double
 subroutine ncu_set_att_doubles(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),              intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),              intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),                intent(in   ) :: attname         !< Name of the NETCDF attribute.
    double precision, dimension(:),  intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -917,7 +927,7 @@ end subroutine ncu_set_att_doubles
 subroutine ncu_set_att_real(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    real,                         intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 
@@ -931,7 +941,7 @@ end subroutine ncu_set_att_real
 subroutine ncu_set_att_reals(att, attname, attvalue)
    use coordinate_reference_system
 
-   type(nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
    character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
    real, dimension(:),           intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
 

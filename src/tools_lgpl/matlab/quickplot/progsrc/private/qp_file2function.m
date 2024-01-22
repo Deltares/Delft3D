@@ -122,9 +122,11 @@ F={'Delft3D-com'                'd3d_comfil'
     'GeoSystems mesh'            'flexmeshfil'
     'Gmsh'                       'flexmeshfil'
     'SMS mesh'                   'flexmeshfil'
+    'SMS mesh2d'                 'flexmeshfil'
     'diff'                       'difffil'
     'shipma'                     'shipmafil'
     'geodata'                    'geodatafil'
+    'analytical'                 'analytical_solution'
     '<user defined variables>'   'usrdeffil'   };
 
 %
@@ -179,6 +181,7 @@ F={'Delft3D-com'                'd3d_comfil'
 %#function shipmafil
 %#function flexmeshfil
 %#function geodatafil
+%#function analytical_solution
 
 tp=qp_gettype(Info);
 %

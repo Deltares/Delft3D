@@ -56,4 +56,5 @@ subroutine initheat(gdp)
     nullify(gdp%gdheat%hfree_out)
     nullify(gdp%gdheat%efree_out)
     nullify(gdp%gdheat%qmis_out)
+    nullify(gdp%gdheat%flbcktemp)
 end subroutine initheat

@@ -1,17 +1,12 @@
 #ifndef NEFIS_VERSION
 #define NEFIS_VERSION
 
-#define nefis_major "VN_MAJOR"
-#define nefis_minor "VN_MINOR"
-#define nefis_revision "VN_REVISION"
-#define nefis_build "VN_BUILD_NUMBER"
+#define NEFIS_MAJOR "5"
+#define NEFIS_MINOR "09"
+#define NEFIS_REVISION "00"
+#define COMPONENT_NAME "NEFIS"
 
-#define nefis_company "Deltares"
-#define nefis_company_url  = "http://www.deltares.nl"
-#define nefis_program "NEFIS"
-
-#include "version_number.h"
-
+#include "version_definition.h"
 /*=================================================== DO NOT MAKE CHANGES BELOW THIS LINE ===================================================================== */
 
 

@@ -24,14 +24,10 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id: d_hydro_lib_version.cpp 933 2011-10-25 10:01:26Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/d_hydro_lib_version.cpp $
-//------------------------------------------------------------------------------
 
 #include <stdio.h>
-#include "d_hydro_lib_version.h"
 
-static char d_hydro_lib_version_id [] = {"@(#)Deltares, " d_hydro_lib_program " Version " d_hydro_lib_major "." d_hydro_lib_minor "." d_hydro_lib_revision "." d_hydro_lib_build ", " __DATE__ ", " __TIME__ ""};
+static char d_hydro_lib_version_id [] = {"@(#)Deltares, D_HYDRO_LIB Version 1.00.00, " __DATE__ ", " __TIME__ ""};
 
 char * getfullversionstring_d_hydro_lib(void)
 {

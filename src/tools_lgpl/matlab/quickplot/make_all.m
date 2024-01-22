@@ -1,4 +1,4 @@
-function make_all
+function make_all(release)
 %MAKE_ALL Build various tools based on the QUICKPLOT source
 %   Builds
 %     * Delft3D-MATLAB interface
@@ -38,7 +38,12 @@ function make_all
 %   $Id$
 
 if ~license('checkout','compiler')
-    error('Compiler license currently not available.')
+    if matlabversionnumber >= 9.06 && batchStartupOptionUsed
+        fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
+        return
+    else
+        error('Compiler license currently not available.')
+    end
 end
 curdir = pwd;
 sourcedir = [curdir,filesep,'progsrc'];
@@ -46,11 +51,18 @@ sourcedir = [curdir,filesep,'progsrc'];
 [qpversion,hash,repo_url] = read_identification(sourcedir,'d3d_qp.m');
 T = now;
 
-make_quickplot(curdir,qpversion,repo_url,hash,T)
-make_ecoplot(curdir,qpversion,T)
-c = computer;
-if c(end-1:end) == '64'
-   make_d3dmatlab(curdir,qpversion,T)
+if nargin == 0
+    Tvec = datevec(T);
+    yr = Tvec(1);
+    mn = Tvec(2);
+    release = sprintf('Build %d.%2.2d',yr,mn);
 end
-make_delwaq2raster(curdir,qpversion,T)
-make_sim2ugrid(curdir,qpversion,T)
+
+c = computer;
+if strcmp(c(end-1:end),'64')
+   make_d3dmatlab(curdir,'version',qpversion,'url',repo_url,'hash',hash,'time',T,'release',release)
+end
+make_quickplot(curdir,qpversion,repo_url,hash,T)
+make_ecoplot(curdir,qpversion,repo_url,hash,T)
+make_delwaq2raster(curdir,qpversion,repo_url,hash,T)
+make_sim2ugrid(curdir,qpversion,repo_url,hash,T)

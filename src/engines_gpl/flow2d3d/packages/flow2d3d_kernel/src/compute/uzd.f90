@@ -125,6 +125,11 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp), dimension(:)            , pointer :: mom_m_windforce     ! wind shear in u dir
     real(fp), dimension(:)            , pointer :: mom_m_bedforce      ! bed shear in u dir
     real(fp), dimension(:,:)          , pointer :: mom_m_waveforce     ! wave forces in u dir
+    integer                           , pointer :: no_dis
+    logical                           , pointer :: nf_src_mom
+    real(fp), dimension(:,:,:)        , pointer :: nf_src_momu
+    real(fp), dimension(:,:,:)        , pointer :: nf_src_momv
+    real(fp)                          , pointer :: momrelax
 !
 ! Global variables
 !
@@ -237,6 +242,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     integer            :: idifc
     integer            :: idifd
     integer            :: idifu  ! Work space, Identification if numeri- cal diffusive flux is added 
+    integer            :: idis
     integer            :: isrc
     integer            :: istat
     integer            :: iter
@@ -319,6 +325,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: termdy
     real(fp)           :: termuy
     real(fp)           :: tidegforce
+    real(fp)           :: trelaxi
     real(fp)           :: tsg1
     real(fp)           :: tsg2
     real(fp)           :: twothird
@@ -362,6 +369,11 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     veg3d      => gdp%gdprocs%veg3d
     mfg        => gdp%gdparall%mfg
     nfg        => gdp%gdparall%nfg
+    no_dis         => gdp%gdnfl%no_dis
+    nf_src_mom     => gdp%gdnfl%nf_src_mom
+    nf_src_momu    => gdp%gdnfl%nf_src_momu
+    nf_src_momv    => gdp%gdnfl%nf_src_momv
+    momrelax       => gdp%gdnfl%momrelax
     !
     !  INITIALIZE
     !
@@ -737,6 +749,37 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
           endif
        endif
     enddo
+    if (nf_src_mom) then
+       !
+       ! DISCHARGE ADDITION OF MOMENTUM FROM NEARFIELD
+       !
+       ! Instead of weighting the nearfield momentum with the volume added via the nearfield source,
+       ! it is choosen to use a trelax, based on the time step.
+       ! This should force the cell velocity to get the a value "growing" fast to the nearfield momentum value.
+       !
+       ! Only change ddk/bbk when the momentum source in the present direction is non-negative
+       !
+       trelaxi = 1.0 / (momrelax*2.0*hdt)
+       do nm = 1, nmmax
+          if (kfu(nm) == 1) then
+             do k = 1, kmax
+                do idis = 1, no_dis
+                   if (icx == 1) then
+                      if (comparereal(nf_src_momv(nm,k,idis), 0.0_fp) /= 0) then
+                         ddk(nm,k) = ddk(nm,k) + nf_src_momv(nm,k,idis)*trelaxi
+                         bbk(nm,k) = bbk(nm,k) + trelaxi
+                      endif
+                   else
+                      if (comparereal(nf_src_momu(nm,k,idis), 0.0_fp) /= 0) then
+                         ddk(nm,k) = ddk(nm,k) + nf_src_momu(nm,k,idis)*trelaxi
+                         bbk(nm,k) = bbk(nm,k) + trelaxi
+                      endif
+                   endif
+                enddo
+             enddo
+          endif
+       enddo
+    endif
     call timer_stop(timer_uzd_dismmt, gdp)
     !
     ! HORIZONTAL VISCOSTY

@@ -343,7 +343,7 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     character(len=*)                       , intent(in)     :: filmor
     character(11)                          , intent(in)     :: fmttmp !< Format file ('formatted  ')
     integer                                , intent(in)     :: nto
-    logical                       , pointer, intent(in)     :: anymud
+    logical                                , intent(in)     :: anymud
     integer                                , intent(in)     :: lundia  !<  Description and declaration in inout.igs
     real(fp)                               , intent(out)    :: fwfac
     logical                                , intent(out)    :: error
@@ -534,21 +534,6 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! === flag for correction of doublecounting sus/bed transport below aks
     !
     call prop_get(mor_ptr, 'Morphology', 'SusCor', morpar%l_suscor)
-    if (morpar%l_suscor) then
-       call prop_get(mor_ptr, 'Morphology', 'SusCorFac', morpar%suscorfac)
-       if (morpar%suscorfac > 1.0_fp) then
-          errmsg = 'Suspended sediment correction factor too large. SusCorFac set to 1.'
-          call write_warning(errmsg, unit=lundia)
-          morpar%suscorfac = 1.0_fp
-       elseif (morpar%suscorfac <= 0.0_fp) then
-          errmsg = 'Suspended sediment correction switched off because of 0 or negative SusCorFac.'
-          call write_warning(errmsg, unit=lundia)
-          morpar%l_suscor = .FALSE.
-          morpar%suscorfac = 0.0_fp
-       end if
-    else
-       morpar%suscorfac = 0.0_fp
-    end if
     !
     ! === phase lead for bed shear stress of Nielsen (1992) in TR2004
     !
@@ -584,6 +569,22 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get_logical(mor_ptr, 'Morphology', 'Multi', morpar%multi)
     !
+       ! === bermslope (FM only)
+       !
+       call prop_get_logical(mor_ptr, 'Morphology', 'bermslopetransport' , morpar%bermslopetransport)
+       if (morpar%bermslopetransport) then
+          call prop_get(mor_ptr, 'Morphology', 'bermslope'          , morpar%bermslope         )
+          call prop_get(mor_ptr, 'Morphology', 'bermslopefac'       , morpar%bermslopefac      )
+          call prop_get(mor_ptr, 'Morphology', 'bermslopegamma'     , morpar%bermslopegamma    )
+          call prop_get(mor_ptr, 'Morphology', 'bermslopedepth'     , morpar%bermslopedepth    )
+          call prop_get(mor_ptr, 'Morphology', 'bermslopesus'       , morpar%bermslopesus      )
+          call prop_get(mor_ptr, 'Morphology', 'bermslopebed'       , morpar%bermslopebed      )
+          if (morpar%bermslopefac>30) then
+             errmsg = 'bermslopefac set to value higher than 30. It is advised to lower the value in order to maintain stable morphology.'
+             call write_warning(errmsg, unit=lundia)
+          endif
+       endif
+       !
     if (morpar%updinf) then
         !
         ! set bed boundary conditions to "free boundaries"
@@ -642,7 +643,7 @@ subroutine read_morsys_parameters(mor_ptr, morpar, filmor, lsec, islope, lundia,
     type(morpar_type)             , pointer, intent(inout)  :: morpar
     character(len=*)                       , intent(in)     :: filmor
     integer                                , intent(in)     :: lsec
-    integer                       , pointer, intent(in)     :: islope
+    integer                                , intent(inout)  :: islope
     integer                                , intent(in)     :: lundia  !<  Description and declaration in inout.igs
     logical                                , intent(out)    :: error  
     
@@ -773,6 +774,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get_logical(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
+    call prop_get_double(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
     call prop_get_string(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)
@@ -1322,6 +1324,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     integer                                , pointer :: nxx
     integer                                , pointer :: nmudfrac
     integer                , dimension(:)  , pointer :: sedtyp
+    integer                , dimension(:)  , pointer :: tratyp
     real(fp)                               , pointer :: morfac
     real(fp)                               , pointer :: thresh
     real(fp)                               , pointer :: aksfac
@@ -1336,7 +1339,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: tcmp
     real(fp)              , dimension(:)   , pointer :: thetsd
     real(fp)                               , pointer :: thetsduni
-    real(fp)                               , pointer :: suscorfac
     real(fp)                               , pointer :: susw
     real(fp)                               , pointer :: sedthr
     real(fp)                               , pointer :: hmaxth
@@ -1363,6 +1365,14 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: avaltime
     real(fp)                               , pointer :: hswitch
     real(fp)                               , pointer :: dzmaxdune
+    logical                                , pointer :: bermslopetransport
+    logical                                , pointer :: bermslopebed
+    logical                                , pointer :: bermslopesus
+    real(fp)                               , pointer :: bermslope
+    real(fp)                               , pointer :: bermslopefac
+    real(fp)                               , pointer :: bermslopegamma
+    real(fp)                               , pointer :: bermslopedepth
+    real(fp)                               , pointer :: suscorfac
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
     logical                                , pointer :: cmpupd
@@ -1487,6 +1497,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     nmudfrac            => sedpar%nmudfrac
     namsed              => sedpar%namsed
     sedtyp              => sedpar%sedtyp
+    tratyp              => sedpar%tratyp
     pangle              => morpar%pangle
     fpco                => morpar%fpco
     factcr              => morpar%factcr
@@ -1505,6 +1516,13 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
     pure1d_mor          => mornum%pure1d
+    bermslopetransport  => morpar%bermslopetransport
+    bermslopebed        => morpar%bermslopebed
+    bermslopesus        => morpar%bermslopesus
+    bermslope           => morpar%bermslope
+    bermslopefac        => morpar%bermslopefac
+    bermslopegamma      => morpar%bermslopegamma
+    bermslopedepth      => morpar%bermslopedepth
     !
     ! output values to file
     !
@@ -1672,9 +1690,9 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     txtput3 = 'Correct 3D suspended load for doublecounting' //       &
              & ' below the reference height aks (SUSCOR)'
     if (l_suscor) then
-       if (suscorfac >= 1.0_fp) then
-          txtput2 = '                 YES'
-       else
+      if (suscorfac >= 1.0_fp) then
+       txtput2 = '                 YES'
+    else
           txtput2 = '          YES (___%)'
           write(txtput2(16:18),'(I3)') int(suscorfac * 100.0_fp)
        end if
@@ -1823,6 +1841,34 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     end if
     write (lundia, '(3a)') txtput1, ':', txtput2 
     !
+    if (morpar%bermslopetransport) then
+       txtput1 = 'Berm slope adjustment mechanism activated'
+       txtput2 = '                 YES'
+       write (lundia, '(3a)') txtput1,':', txtput2
+       txtput1 = 'Berm slope adjustment for bedload'
+       if (morpar%bermslopebed) then
+          txtput2 = '                 YES'
+       else
+          txtput2 = '                  NO'
+       endif       
+       write (lundia, '(3a)') txtput1,':', txtput2
+       txtput1 = 'Berm slope adjustment for suspended load'
+       if (morpar%bermslopesus) then
+          txtput2 = '                 YES'
+       else
+          txtput2 = '                  NO'
+       endif       
+       write (lundia, '(3a)') txtput1,':', txtput2
+       txtput1 = '   Equilibrium slope'
+       write (lundia, '(2a,f20.4)') txtput1, ':', morpar%bermslope
+       txtput1 = '   Transport proportionality factor'
+       write (lundia, '(2a,f20.4)') txtput1, ':', morpar%bermslopefac
+       txtput1 = '   Breaker index to activate cells'
+       write (lundia, '(2a,f20.4)') txtput1, ':', morpar%bermslopegamma
+       txtput1 = '   Depth limit to activate cells'
+       write (lundia, '(2a,f20.4)') txtput1, ':', morpar%bermslopedepth 
+    endif
+    !
     ! User requested sediment percentiles
     !
     txtput1 = 'Requested percentile(s)'
@@ -1870,6 +1916,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        error = .true.
        return
     end if
+    parnames = ' '
     do j = 1, nto
        txtput1 = 'Boundary name'
        write (lundia, '(2a,a20)') txtput1, ':', trim(nambnd(j))
@@ -1959,7 +2006,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
                 else
                    i = 0
                    do l = 1, lsedtot
-                      if (sedtyp(l) /= SEDTYP_COHESIVE) then
+                      if (has_bedload(tratyp(l))) then
                          i = i + 1
                          parnames(i) = trim(parname) // ' ' // trim(namsed(l))
                       end if
@@ -1986,7 +2033,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
                 else
                    i = 0
                    do l = 1, lsedtot
-                      if (sedtyp(l) /= SEDTYP_COHESIVE) then
+                      if (has_bedload(tratyp(l))) then
                          i = i + 1
                          parnames(i)      = trim(parname) // ' ' // trim(namsed(l)) // ' end A'
                          parnames(nval+i) = trim(parname) // ' ' // trim(namsed(l)) // ' end B'
@@ -2036,7 +2083,6 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use sediment_basics_module, only: SEDTYP_COHESIVE
     use morphology_data_module
     use message_module, only: write_error !, write_warning, FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
     use grid_dimens_module, only: griddimtype
@@ -2112,7 +2158,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     mflfil = ' '
     do l = 1,lsed
         sedblock_ptr => sedpar%sedblock(l)
-        if (sedpar%sedtyp(l) == SEDTYP_COHESIVE) then
+        if (sedpar%sedtyp(l) <= sedpar%max_mud_sedtyp) then
             call prop_get(sedblock_ptr, '*', 'IniFluffMass', mflfil(l))
             !
             ! Intel 7.0 crashes on an inquire statement when file = ' '
@@ -2276,7 +2322,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
         do l = 2, lsed
             depfac(l,:) = depfac(1,:)
         enddo 
-    end if
+    end if                                                                                                                                                         
 end subroutine rdflufflyr
 
 

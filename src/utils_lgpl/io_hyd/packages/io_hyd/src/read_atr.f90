@@ -33,6 +33,9 @@
 
       ! global declarations
 
+      use m_srstop
+      use m_monsys
+      use m_evaluate_waq_attribute
       use filmod                   ! module contains everything for the files
       use hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
@@ -186,8 +189,8 @@
                   goto 200
                endif
                do i_atr = 1 , no_atr
-                  call dhkmrk(i_atr,atr,atr_i_atr)
-                  call dhkmrk(atr_num(i_atr),attributes(iseg),atr_prev)
+                  call evaluate_waq_attribute(i_atr,atr,atr_i_atr)
+                  call evaluate_waq_attribute(atr_num(i_atr),attributes(iseg),atr_prev)
                   attributes(iseg) = attributes(iseg) + atr_i_atr*atr_ioff(i_atr) - atr_prev*atr_ioff(i_atr)
                enddo
             enddo

@@ -380,7 +380,6 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: kadu
     integer(pntrsize) , pointer :: kadv
     integer(pntrsize) , pointer :: kcs
-    integer(pntrsize) , pointer :: kcs_nf
     integer(pntrsize) , pointer :: kcu
     integer(pntrsize) , pointer :: kcv
     integer(pntrsize) , pointer :: kfs
@@ -736,7 +735,6 @@ function getpointer(pntnam, gdp)
     kadu       => gdp%gdr_i_ch%kadu
     kadv       => gdp%gdr_i_ch%kadv
     kcs        => gdp%gdr_i_ch%kcs
-    kcs_nf     => gdp%gdr_i_ch%kcs_nf
     kcu        => gdp%gdr_i_ch%kcu
     kcv        => gdp%gdr_i_ch%kcv
     kfs        => gdp%gdr_i_ch%kfs
@@ -1407,8 +1405,6 @@ function getpointer(pntnam, gdp)
        returnval = kadv
     case ('kcs')
        returnval = kcs
-    case ('kcs_nf')
-       returnval = kcs_nf
     case ('kcscut')
        returnval = kcscut
     case ('kcu')

@@ -71,6 +71,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
     real(fp)               , pointer :: dicoww
     real(fp)               , pointer :: xlo
     real(fp)               , pointer :: ck
+    logical , dimension(:) , pointer :: flbcktemp
 !
 ! Global variables
 !
@@ -153,6 +154,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
     dicoww      => gdp%gdphysco%dicoww
     xlo         => gdp%gdturcoe%xlo
     ck          => gdp%gdturcoe%ck
+    flbcktemp   => gdp%gdheat%flbcktemp
     !
     ! Forester filter for UV only if FORFUV = 'Y'
     !
@@ -269,6 +271,10 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
        do l = 1, lstsci
           !
           ! Vertical Forester filter not only for salinity and temperature but also for tracers
+          !
+          if (l/=lsal .and. l/=ltem .and. (.not. flbcktemp(l))) then
+             cycle
+          endif
           !
           ! iteration loop over computational grid
           !

@@ -38,13 +38,13 @@
 #define strdup _strdup
 #endif
 
-static char ident   [] = {"@(#)"COMPANY", "PROGRAM" Version "PROG_VERSION"."BUILD_NUMBER", "__DATE__", "__TIME__""};
-static char company [] = {COMPANY};
-static char file_version [] = {FILE_VERSION};
-static char version [] = {PROG_VERSION};
-static char program_name [] = {PROGRAM};
-static char short_program_name [] = {SHORT_PROGRAM};
-static char svn_revision [] = {BUILD_NUMBER};
+static char ident   [] = {"@(#)"COMPANY_NAME", "PRODUCT_NAME" Version "VERSION_FULL", "__DATE__", "__TIME__""};
+static char company [] = {COMPANY_NAME};
+static char file_version [] = {VERSION_FULL};
+static char version [] = {VERSION_FULL};
+static char program_name [] = {PRODUCT_NAME};
+static char short_program_name [] = {PRODUCT_NAME};
+static char git_revision [] = {BUILD_NR};
 
 /*==========================================================================*/
 const char * FUNC_CAT( version_getFileVersionString_, MOD_NAME)()
@@ -81,7 +81,7 @@ const char * FUNC_CAT( version_getShortProgramNameString_, MOD_NAME)()
 /*==========================================================================*/
 const char * FUNC_CAT( version_getSvnRevisionString_, MOD_NAME)()
 {
-    return svn_revision;
+    return git_revision;
 }
 /*==========================================================================*/
 const char * FUNC_CAT( version_getFeatureNumberString_, MOD_NAME)()

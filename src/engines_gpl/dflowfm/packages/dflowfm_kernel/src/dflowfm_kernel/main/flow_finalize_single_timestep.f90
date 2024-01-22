@@ -42,14 +42,13 @@ use dfm_signals
 use m_mass_balance_areas, only: jamba
 use m_partitioninfo, only: jampi, my_rank
 use m_integralstats, is_is_numndvals=>is_numndvals
-use m_fourier_analysis
 use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, updateTotalInflowLat, &
                             updateFreeboard, updateDepthOnGround, updateVolOnGround
 use unstruc_channel_flow, only : network
 use m_sedtrails_stats, st_is_numndvals=>is_numndvals
-use m_update_wl_at_links, only : update_wl_at_links
 use fm_statistical_output
 use m_statistical_output, only: update_statistical_output, update_source_data
+use m_update_fourier, only : update_fourier
 
 implicit none
 integer, intent(out) :: iresult
@@ -80,13 +79,15 @@ integer, intent(out) :: iresult
 !          alternative: move this to flow_externaloutput
    call timstrt('update HIS data DtUser', handle_extra(75))
    if (ti_his > 0) then
+
+      call updateValuesOnObservationStations()
+
       if (comparereal(time1, time_his, eps10)>=0) then
          !do_fourier = do_fourier .or. (md_fou_step == 2)
-         call updateValuesOnObservationStations()
          if (jampi == 1) then
             call updateValuesOnCrossSections_mpi(time1)
             call updateValuesOnRunupGauges_mpi()
-            call reduce_particles()
+            !call reduce_particles()
          endif
          if (jahisbal > 0) then ! Update WaterBalances etc.
             call updateBalance()
@@ -143,8 +144,11 @@ integer, intent(out) :: iresult
  call update_source_data(out_variable_set_map)
  call update_source_data(out_variable_set_clm)
 
- call update_statistical_output(out_variable_set_his%statout,dts)
- call update_statistical_output(out_variable_set_map%statout,dts)
+ if (out_variable_set_his%count > 0) then
+    call update_statistical_output(out_variable_set_his%statout,dts)
+ endif
+ 
+!call update_statistical_output(out_variable_set_map%statout,dts)
 !call update_statistical_output(out_variable_set_clm%statout,dts)
  
  dnt    = dnt + 1
@@ -168,25 +172,8 @@ integer, intent(out) :: iresult
 
 888 continue
 
-   if (fourierIsActive() .and. md_fou_step == 1) then
-      if (fourierWithUc()) then
-         call getucxucyeulmag(ndkx, workx, worky, ucmag, jaeulervel, 1)
-      endif
-      if (fourierWithSul()) then
-         call update_wl_at_links()
-      end if
-      if (network%loaded) then
-         if (fourierWithFb()) then
-            call updateFreeboard(network)
-         end if
-         if (fourierWithWdog()) then
-            call updateDepthOnGround(network)
-         end if
-         if (fourierWithVog()) then
-            call updateVolOnGround(network)
-         end if
-      end if
-      call postpr_fourier(time0, dts)
-   endif
+   if (md_fou_step == 1) then
+      call update_fourier(dts)
+   end if
 
 end subroutine flow_finalize_single_timestep

@@ -53,6 +53,7 @@ module m_waves
 
  double precision, allocatable, target      :: dsurf(:)             !< [w/m2] wave energy dissipation rate due to breaking at the free surface, "DISSURF" in WAVE
  double precision, allocatable, target      :: dwcap(:)             !< [w/m2] wave energy dissipation rate due to white capping
+ double precision, allocatable, target      :: distot(:)            !< [w/m2] total wave energy dissipation rate, "DISTOT" in WAVE
 
  double precision                           :: hwavuni   = 0d0      !< uniform (*.mdu) value of ...
  double precision                           :: twavuni   = 0d0      !< uniform (*.mdu) value of ...

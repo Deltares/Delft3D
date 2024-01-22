@@ -39,7 +39,7 @@ subroutine upwbed(su        ,sv        ,suu       ,svv       ,kfu       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module
+    use sediment_basics_module, only: has_bedload
     !
     use globaldata
     !
@@ -49,7 +49,7 @@ subroutine upwbed(su        ,sv        ,suu       ,svv       ,kfu       , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer, dimension(:)                , pointer :: sedtyp
+    integer, dimension(:)                , pointer :: tratyp
     real(fp)                             , pointer :: bed
     type (mornumericstype)               , pointer :: mornum
 !
@@ -88,7 +88,7 @@ subroutine upwbed(su        ,sv        ,suu       ,svv       ,kfu       , &
 !
 !! executable statements -------------------------------------------------------
 !
-    sedtyp              => gdp%gdsedpar%sedtyp
+    tratyp              => gdp%gdsedpar%tratyp
     bed                 => gdp%gdmorpar%bed
     mornum              => gdp%gdmorpar%mornum
     !
@@ -96,7 +96,8 @@ subroutine upwbed(su        ,sv        ,suu       ,svv       ,kfu       , &
     laterallyaveragedbedload = mornum%laterallyaveragedbedload
     !
     do l = 1, lsedtot
-       if (sedtyp(l) /= SEDTYP_COHESIVE) then
+       ! if the transport of the fraction may include a bedload component
+       if (has_bedload(tratyp(l))) then
           do nm = 1, nmmax
              !
              ! Try a scheme that reverts to central if transport directions oppose (G. Lesser) 

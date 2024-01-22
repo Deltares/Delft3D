@@ -1,5 +1,53 @@
 function [xy,cLabels,cv] = process_polygons(xy,fc,cv,Thresholds)
-%PROCESS_POLYGONS Process the patch data obtained from (tri)contourf before polygon export
+%PROCESS_POLYGONS Convert MATLAB patch data to polygons (with holes).
+%   [XYP,CLABEL,CVP] = PROCESS_POLYGONS(XY,FC,CV,MINMAX) expects as input
+%   a cell array of vertices of the patches plotted by (tri)contourf (XY),
+%   a cell array of faces (definitions) of the patches plotted (FC), a cell
+%   array of the facevertexcdata (color) data of patches plotted (CV) and
+%   an Nx2 array containing the Min and Max Threshold values for each
+%   patch. It returns a cell array of length K containing the coordinates
+%   of each polygon (XYP), a cell array of length 2 containing the names of
+%   the values (cLabels), and an array of size Kx2 with the minimum and
+%   maximum value per polygon (CVP).
+%
+%   The contourf function plots a number of overlapping patches creating
+%   the illusion of shaded areas between contour lines. The area may even
+%   have holes represented by patches copying the color of the axes/figure.
+%   This function processes the geometric data and generates complex patch
+%   definitions (possibly with holes) that can be exported to GIS as
+%   polygons.
+%
+%   The tricontourf function plots a large number of triangles creating the
+%   illusion of large shaded areas between contour lines. This function
+%   processes the geometric data and generates merged complex partch
+%   definitions (possibly with holes) that can be exported to GIS as
+%   polygons.
+%
+%   Example:
+%      [C, H] = contourf(...);
+%      XY = get(H,'vertices');
+%      FC = get(H,'faces');
+%      CV = get(H,'facevertexcdata');
+%      MINMAX = zeros(length(H),2);
+%      for ip = 1:length(H)
+%         MINMAX(ip,:) = [getappdata(H(ip),'MinThreshold') ...
+%                         getappdata(H(ip),'MaxThreshold')];
+%      end
+%      [XYP,CLABEL,CVP] = process_polygons(XY,FC,CV,MINMAX);
+%
+%   Example:
+%      H = contourf(...);
+%      XY = get(H,'vertices');
+%      FC = get(H,'faces');
+%      CV = get(H,'facevertexcdata');
+%      MINMAX = zeros(length(H),2);
+%      for ip = 1:length(H)
+%         MINMAX(ip,:) = [getappdata(H(ip),'MinThreshold') ...
+%                         getappdata(H(ip),'MaxThreshold')];
+%      end
+%      [XYP,CLABEL,CVP] = process_polygons(XY,FC,CV,MINMAX);
+%
+%   See also contourf, tricontourf.
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               

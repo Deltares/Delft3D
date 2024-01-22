@@ -279,11 +279,13 @@ contains
       character(len=len_trim(output_config%input_value)) :: valuestring
       integer :: ierr
       valuestring = output_config%input_value
-      
+
       do while (len_trim(valuestring) > 0) 
          ierr = parse_next_stat_type_from_valuestring(valuestring, item%operation_type, item%moving_average_window)
          if (ierr /= SO_NOERR) then
             goto 999
+         else if (item%operation_type == SO_NONE) then
+            cycle
          else
             output_set%count = output_set%count + 1
             if (output_set%count > output_set%size) then
@@ -396,7 +398,9 @@ contains
       integer :: j, input_size
       logical :: success
       
-      call realloc_stat_output(output_set,output_set%count) ! set size to count
+      if (output_set%count > 0) then
+         call realloc_stat_output(output_set,output_set%count) ! set size to count
+      endif
       
       do j = 1, output_set%count
          item => output_set%statout(j)
@@ -423,6 +427,8 @@ contains
             item%timesteps = 0
             item%timestep_sum = 0
             item%current_step = 1
+         case (SO_NONE)
+            continue
          case default
             write (msgbuf,'(a,i0,a,a,a,a)') 'initialize_statistical_output: invalid operation_type ', item%operation_type, '. Original input for item was: ', trim(item%output_config%key), ' = ', trim(item%output_config%input_value)
             call err_flush()

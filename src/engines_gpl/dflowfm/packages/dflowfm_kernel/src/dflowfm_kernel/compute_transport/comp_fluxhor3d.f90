@@ -31,13 +31,16 @@
 ! 
 
 !> compute horizontal transport fluxes at flowlink
-subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
+subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
+             viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
    use m_flowgeom,  only: Ndx, Lnx, Lnxi, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx  ! static mesh information
    use m_flowtimes, only: dts, dnt
    use m_flowparameters, only: cflmx
-   use m_flow,      only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu
+   use m_flow,      only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu, &
+                          number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
    use m_transport, only: ISALT, ITEMP
    use m_missing
+   use MessageHandling
    use timers
 
    implicit none
@@ -90,6 +93,9 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
 
    double precision                                          :: dlimiter, dlimitercentral
    double precision                                          :: dlimiter_nonequi
+   
+   integer                                                   :: number_limited_links
+   double precision                                          :: flux_max_limit
 
    integer(4) ithndl /0/
    if (timon) call timstrt ( "comp_fluxhor3D", ithndl )
@@ -284,9 +290,9 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
 
 !  diffusion
    if (dicouv >= 0d0 .and. jalimitdiff .ne. 3) then
-
+      number_limited_links = 0
       !$OMP PARALLEL DO                             &
-      !$OMP PRIVATE(LL,dfac1,dfac2,Lb,Lt,L,k1,k2,fluxfacMaxL,fluxfacMaxR,j,difcoeff,fluxfac,diuspL) &
+      !$OMP PRIVATE(LL,dfac1,dfac2,Lb,Lt,L,k1,k2,fluxfacMaxL,fluxfacMaxR,j,difcoeff,fluxfac,diuspL,flux_max_limit) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do LL=1,Lnx
          if ( nsubsteps.gt.1 ) then
@@ -299,7 +305,7 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
             dt_loc = dts
          end if
 
-         if ( jalimitdiff.eq.1 ) then
+         if ( jalimitdiff == 1 ) then
             !monotinicity criterion, safe for triangles, quad and pentagons, but not for hexahedrons
             !dfac1 = 0.2d0
             !dfac2 = 0.2d0
@@ -319,7 +325,7 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
          do L=Lb,Lt
             k1 = ln(1,L)
             k2 = ln(2,L)
-            if ( jalimitdiff.eq.1 ) then
+            if ( jalimitdiff == 1 ) then
                fluxfacMaxL  = dfac1*( vol1(k1)/dt_loc - sqi(k1) )
                fluxfacMaxR  = dfac2*( vol1(k2)/dt_loc - sqi(k2) )
             end if
@@ -331,8 +337,13 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
                                                                    ! so then you only get user specified value
 
                fluxfac   = difcoeff*dxiAu(L)
-               if ( jalimitdiff.eq.1 ) then
-                  fluxfac   = min(fluxfac, fluxfacMaxL, fluxfacMaxR)  ! zie Borsboom sobek note
+               if ( jalimitdiff == 1 ) then
+                  flux_max_limit = min(fluxfacMaxL, fluxfacMaxR)
+                  if ( fluxfac > flux_max_limit ) then
+                     fluxfac   = flux_max_limit  ! zie Borsboom sobek note
+                     !$omp atomic
+                     number_limited_links = number_limited_links + 1
+                  end if 
                end if
                fluxfac   = max(fluxfac, 0d0)
                if (jacreep .ne. 1) then
@@ -360,8 +371,14 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
          end do
       end do
       !$OMP END PARALLEL DO
+      if ( number_limited_links > 0 .and. number_steps_limited_visc_flux_links <= MAX_PRINTS_LIMITED_VISC_FLUX_LINKS) then
+          number_steps_limited_visc_flux_links = number_steps_limited_visc_flux_links + 1
+         write(msgbuf,'(a,i0,a)') 'Horizontal transport flux was limited for ', number_limited_links,' links.'
+         call mess(LEVEL_WARN, msgbuf)
+      end if
    end if
 
    if (timon) call timstop( ithndl )
    return
+
 end subroutine comp_fluxhor3D

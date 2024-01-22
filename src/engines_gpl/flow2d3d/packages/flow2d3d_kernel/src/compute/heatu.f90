@@ -74,6 +74,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)                , pointer :: timjan
     real(fp)                , pointer :: stanton
     real(fp)                , pointer :: dalton
+    real(fp)                , pointer :: mulsd
+    real(fp)                , pointer :: betasd
     real(fp)                , pointer :: albedo
     real(fp)                , pointer :: qtotmx
     real(fp)                , pointer :: lambda
@@ -99,6 +101,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp) , dimension(:) , pointer :: tairarr
     real(fp) , dimension(:) , pointer :: clouarr
     real(fp) , dimension(:) , pointer :: swrfarr
+    logical  , dimension(:) , pointer :: flbcktemp
     logical                 , pointer :: rhum_file
     logical                 , pointer :: tair_file
     logical                 , pointer :: clou_file
@@ -169,6 +172,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     integer       :: k1
     integer       :: k2
     integer       :: kstep
+    integer       :: l
     integer       :: m
     integer       :: msgcount
     integer       :: n
@@ -190,6 +194,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: ew      ! Saturation pressure of water vapour near water surface
     real(fp)      :: ewl     ! Saturation pressure of water vapour in air remote
     real(fp)      :: extinc  ! Extinction coefficient light absorbed
+    real(fp)      :: extish  ! Extinction coefficient light absorbed in shallow part
+    real(fp)      :: extide  ! Extinction coefficient light absorbed in deep part 
+    real(fp)      :: explo   ! Exponential value bottom of layer
+    real(fp)      :: expup   ! Exponential value top of layer
     real(fp)      :: ffclou
     real(fp)      :: fheat
     real(fp)      :: flux
@@ -221,6 +229,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: qtot    ! Total heat flux 
     real(fp)      :: qtotk
     real(fp)      :: qw      ! Specific humidity of air at air temperature
+    real(fp)      :: ratio   ! coefficient in exponential relation	
     real(fp)      :: rcpa
     real(fp)      :: rdry
     real(fp)      :: rhoa0
@@ -265,6 +274,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     timjan      => gdp%gdheat%timjan
     stanton     => gdp%gdheat%stanton
     dalton      => gdp%gdheat%dalton
+    mulsd       => gdp%gdheat%mulsd
+    betasd      => gdp%gdheat%betasd
     albedo      => gdp%gdheat%albedo
     qtotmx      => gdp%gdheat%qtotmx
     lambda      => gdp%gdheat%lambda
@@ -308,6 +319,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     wave        => gdp%gdprocs%wave
     struct      => gdp%gdprocs%struct
     zmodel      => gdp%gdprocs%zmodel
+    flbcktemp   => gdp%gdheat%flbcktemp
     !
     msgcount = 0
     htrsh    = 0.5_fp * dryflc
@@ -364,6 +376,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     endif
     !
     !
+do l=1,lstsci
+   if ( l==ltem .or. flbcktemp(l) ) then   
+    !
+    !
     ! ---------------------------------------------------------------
     ! KTEMP=1
     !
@@ -394,10 +410,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! Latent heat tl
              !
-             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,ltem)
+             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
-             easp     = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb         +fCtoKelvin) )
-             esvp     =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,ltem)+fCtoKelvin) )
+             easp     = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb      +fCtoKelvin) )
+             esvp     =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,l)+fCtoKelvin) )
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -432,11 +448,11 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! HEAT FLUX CONVECTION
              !
-             qco = 0.61_fp * (r0(nm, k0, ltem) - tdryb) * fwind * (3.5_fp + 2.05_fp*w10mag(nm))
+             qco = 0.61_fp * (r0(nm, k0, l) - tdryb) * fwind * (3.5_fp + 2.05_fp*w10mag(nm))
              !
              ! BACK RADIATION
              !
-             qbl = 303.0_fp + 5.2_fp*r0(nm, k0, ltem)
+             qbl = 303.0_fp + 5.2_fp*r0(nm, k0, l)
              !
              ! TOTAL HEAT LOSS
              !
@@ -456,10 +472,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              qtot = (qin - ql) / (rhow*cp)
              if (zmodel) then
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtot*gsqs(nm)
+                sour(nm, k0, l) = sour(nm, k0, l) + qtot*gsqs(nm)
              else
                 h0old              = max( htrsh, s0(nm)+real(dps(nm),fp) ) * thick(k0)
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtot/h0old
+                sour(nm, k0, l) = sour(nm, k0, l) + qtot/h0old
              endif
              !
              ! Filling of output arrays
@@ -525,10 +541,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! Latent heat tl
              !
-             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,ltem)
+             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
-             easp = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb         +fCtoKelvin) )
-             esvp =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,ltem)+fCtoKelvin) )
+             easp = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb      +fCtoKelvin) )
+             esvp =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,l)+fCtoKelvin) )
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -563,11 +579,11 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! HEAT FLUX CONVECTION
              !
-             qco = 0.61_fp * ( r0(nm, k0, ltem) - tdryb ) * fwind * (3.5_fp + 2.05_fp*w10mag(nm))
+             qco = 0.61_fp * ( r0(nm, k0, l) - tdryb ) * fwind * (3.5_fp + 2.05_fp*w10mag(nm))
              !
              ! BACK RADIATION
              !
-             qbl = 303.0_fp + 5.2_fp*r0(nm, k0, ltem)
+             qbl = 303.0_fp + 5.2_fp*r0(nm, k0, l)
              !
              ! TOTAL HEAT LOSS
              !
@@ -579,10 +595,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              qtot = (qin - ql) / (rhow*cp)
              if (zmodel) then
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtot*gsqs(nm)
+                sour(nm, k0, l) = sour(nm, k0, l) + qtot*gsqs(nm)
              else
                 h0old              = max(htrsh, s0(nm)+real(dps(nm),fp) ) * thick(k0)
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtot/h0old
+                sour(nm, k0, l) = sour(nm, k0, l) + qtot/h0old
              endif
              !
              ! Filling of output arrays
@@ -638,8 +654,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                 k0 = 1
              endif
              !
-             hlc = 4.48_fp + 0.049_fp * r0(nm, k0, ltem) + fwind * ( 3.5_fp + 2.05_fp*w10mag(nm) ) &
-                 & * ( 1.12_fp + 0.018_fp*r0(nm, k0, ltem) + 0.00158_fp * r0(nm, k0, ltem)**2 )
+             hlc = 4.48_fp + 0.049_fp * r0(nm, k0, l) + fwind * ( 3.5_fp + 2.05_fp*w10mag(nm) ) &
+                 & * ( 1.12_fp + 0.018_fp*r0(nm, k0, l) + 0.00158_fp * r0(nm, k0, l)**2 )
              if (lambda > 0.0_fp ) then
                 hlc = lambda
              endif
@@ -653,24 +669,24 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              ! limiting value of qle by updating hlc
              !
              if (qtotmx > 0.0_fp) then
-                qltemp = -hlc*(r0(nm, k0, ltem) - tback)
+                qltemp = -hlc*(r0(nm, k0, l) - tback)
                 if (abs(qltemp) > qtotmx) then
-                   if (abs(r0(nm, k0, ltem) - tback) > eps) then
-                      hlc   = qtotmx / abs(r0(nm, k0, ltem) - tback)
+                   if (abs(r0(nm, k0, l) - tback) > eps) then
+                      hlc   = qtotmx / abs(r0(nm, k0, l) - tback)
                    endif
                 endif
              endif
              !
-             if (r0(nm, k0, ltem) <= tback) then
-                qle = -hlc*(r0(nm, k0, ltem) - tback)
+             if (r0(nm, k0, l) <= tback) then
+                qle = -hlc*(r0(nm, k0, l) - tback)
                 flux = qle/(rhow*cp)
              else
                 qle = hlc*tback
                 flux = qle/(rhow*cp)
                 if (zmodel) then
-                   sink(nm, k0, ltem) = sink(nm, k0, ltem) + hlc*gsqs(nm)/(rhow*cp)
+                   sink(nm, k0, l) = sink(nm, k0, l) + hlc*gsqs(nm)/(rhow*cp)
                 else
-                   sink(nm, k0, ltem) = sink(nm, k0, ltem) + hlc/(rhow*cp*h0new)
+                   sink(nm, k0, l) = sink(nm, k0, l) + hlc/(rhow*cp*h0new)
                 endif
              endif
              !
@@ -678,17 +694,17 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              ! (consistent with use in DIFU and Z_DIFU)
              !
              if (zmodel) then
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + flux*gsqs(nm)
+                sour(nm, k0, l) = sour(nm, k0, l) + flux*gsqs(nm)
              else
                 h0old = max(htrsh, s0(nm)+real(dps(nm),fp) ) * thick(k0)
-                sour(nm, k0, ltem) = sour(nm, k0, ltem) + flux/h0old
+                sour(nm, k0, l) = sour(nm, k0, l) + flux/h0old
              endif
              !
              ! Filling of output arrays
              !
              if (flwoutput%temperature) then
                 hlc_out(nm)  = hlc 
-                qnet_out(nm) = -hlc*(r0(nm, k0, ltem) - tback)
+                qnet_out(nm) = -hlc*(r0(nm, k0, l) - tback)
              endif
           else  ! dry points
              if (flwoutput%temperature) then
@@ -740,14 +756,14 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! Latent heat tl
              !
-             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,ltem)
+             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
              if (ivapop == 0) then
-                easp = (rhum/100.0_fp) * 23.38_fp * exp(18.1_fp - 5303.3_fp/(tair           + fCtoKelvin))
+                easp = (rhum/100.0_fp) * 23.38_fp * exp(18.1_fp - 5303.3_fp/(tair        + fCtoKelvin))
              else
                 easp = vapres
              endif
-             esvp =                      23.38_fp * exp(18.1_fp - 5303.3_fp/(r0(nm,k0,ltem) + fCtoKelvin))
+             esvp =                      23.38_fp * exp(18.1_fp - 5303.3_fp/(r0(nm,k0,l) + fCtoKelvin))
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -782,10 +798,11 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              ! HEAT FLUX CONVECTION: Bowens ratio * QEVA
              !                       Bowens ratio = 0.66*(r0-tair)/(esvp-easp)
              !
+             bowrat = 0.66_fp * (r0(nm, k0, l) - tair) / (esvp - easp)
              if (delvap > eps) then
-                bowrat = 0.66_fp * (r0(nm, k0, ltem) - tair) / delvap
+                bowrat = 0.66_fp * (r0(nm, k0, l) - tair) / delvap
              else
-                bowrat = 0.66_fp * (r0(nm, k0, ltem) - tair) / eps
+                bowrat = 0.66_fp * (r0(nm, k0, l) - tair) / eps
              endif
              qco    = bowrat * qeva
              !
@@ -802,7 +819,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              endif
              ffclou = (1.0_fp - 0.65_fp*fclou*fclou)
              qbl    = em*sboltz*(0.39_fp - 0.058_fp*sq_ea)*tkcube*tkelvi*ffclou +        &
-                    & 4.0_fp*em*sboltz*tkcube*(r0(nm, k0, ltem) - tair)
+                    & 4.0_fp*em*sboltz*tkcube*(r0(nm, k0, l) - tair)
              !
              ! TOTAL HEAT LOSS
              !
@@ -845,17 +862,17 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              endif    
              if (zmodel) then
                 if (qtotk > 0.0_fp) then
-                   sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtotk*gsqs(nm)
-                elseif (r0(nm, k0, ltem) > 0.0_fp) then
-                   sink(nm, k0, ltem) = sink(nm, k0, ltem) - qtotk*gsqs(nm)/r0(nm, k0, ltem)
+                   sour(nm, k0, l) = sour(nm, k0, l) + qtotk*gsqs(nm)
+                elseif (r0(nm, k0, l) > 0.0_fp) then
+                   sink(nm, k0, l) = sink(nm, k0, l) - qtotk*gsqs(nm)/r0(nm, k0, l)
                 else
                    msgcount = msgcount + 1
                 endif
              else
                 if (qtotk > 0.0_fp) then
-                   sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtotk/(thick(k0)*h0old)
-                elseif ( r0(nm,k0,ltem) > 0.0_fp ) then
-                   sink(nm, k0, ltem) = sink(nm, k0, ltem) - qtotk/(thick(k0)*h0new*r0(nm, k0, ltem))
+                   sour(nm, k0, l) = sour(nm, k0, l) + qtotk/(thick(k0)*h0old)
+                elseif ( r0(nm,k0,l) > 0.0_fp ) then
+                   sink(nm, k0, l) = sink(nm, k0, l) - qtotk/(thick(k0)*h0new*r0(nm, k0, l))
                 else
                    msgcount = msgcount + 1
                 endif
@@ -870,9 +887,9 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                 qink  = corr * qsn * (exp(extinc*ztop)-exp(extinc*zdown)) / extinc
                 qtotk = qink / (rhow*cp)
                 if (zmodel) then
-                   sour(nm, k, ltem) = sour(nm, k, ltem) + qtotk*gsqs(nm)
+                   sour(nm, k, l) = sour(nm, k, l) + qtotk*gsqs(nm)
                 else
-                   sour(nm, k, ltem) = sour(nm, k, ltem) + qtotk/(thick(k)*h0old)
+                   sour(nm, k, l) = sour(nm, k, l) + qtotk/(thick(k)*h0old)
                 endif
              enddo
              !
@@ -1032,7 +1049,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! Latent heat tl
              !
-             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,ltem)
+             tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
              ! Calculate heat loss at the sea surface
              ! CFCLOU = fraction => multiply by 10-4 removed
@@ -1040,8 +1057,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              ! Saturation pressure of water vapour in air remote (ewl) and
              ! near water surface (ew)
              !
-             ew  = 10.0_fp**(  ( 0.7859_fp + 0.03477_fp*r0(nm,k0,ltem) ) &
-                 & / ( 1.0_fp + 0.00412_fp*r0(nm,k0,ltem) )  )
+             ew  = 10.0_fp**(  ( 0.7859_fp + 0.03477_fp*r0(nm,k0,l) ) &
+                 & / ( 1.0_fp + 0.00412_fp*r0(nm,k0,l) )  )
              ewl = 10.0_fp**( (0.7859_fp + 0.03477_fp*tair) / (1.0_fp + 0.00412_fp*tair) )
              !
              ! Vapour pressure in air remote (eal) for given humidity
@@ -1093,7 +1110,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              !
              ! Heat loss of water by forced convection of sensible heat
              !
-             qco = stanton * rhoa * hcp * w10mag(nm) * (r0(nm,k0,ltem)-tair)
+             qco = stanton * rhoa * hcp * w10mag(nm) * (r0(nm,k0,l)-tair)
              !
              if (free_convec) then
                 !
@@ -1113,7 +1130,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                 ! Reduced gravity GRED
                 !
                 pvap   = 100.0_fp * ew
-                rhoa0  = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / ( r0(nm,k0,ltem)+tkelvn )
+                rhoa0  = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / ( r0(nm,k0,l)+tkelvn )
                 pvap   = 100.0_fp * eal
                 rhoa10 = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / (tair+tkelvn)
                 !
@@ -1129,7 +1146,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                 ! Add to heat loss by forced convection
                 !
                 rcpa  = hcp * (rhoa0+rhoa10) / 2.0_fp
-                hfree = rcpa * fheat * (r0(nm,k0,ltem)-tair)
+                hfree = rcpa * fheat * (r0(nm,k0,l)-tair)
                 qco   = qco + hfree
                 !
                 ! Latent heat by free convection
@@ -1165,7 +1182,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
              ! heat loss by effective infrared back radiation hl, restricted by
              ! presence of clouds and water vapour in air
              !
-             qbl = em * sboltz * ( (r0(nm,k0,ltem) + fCtoKelvin)**4.0_fp )                 &
+             qbl = em * sboltz * ( (r0(nm,k0,l) + fCtoKelvin)**4.0_fp )                 &
                  & * (0.39_fp - 0.05_fp*sq_eal) * (1.0_fp - 0.6_fp*cfclou*cfclou)
              !
              qbl = max(0.0_fp, qbl)
@@ -1207,10 +1224,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                 !
                 if (zmodel) then
                    if (qtotk > 0.0_fp) then
-                      sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtotk*gsqs(nm)
-                   elseif (r0(nm, k0, ltem) > 0.01_fp) then
-                      sink(nm, k0, ltem) = sink(nm, k0, ltem) - qtotk*gsqs(nm)/r0(nm, k0, ltem)
-                   elseif (r0(nm, k0, ltem) > 0.0_fp .and. r0(nm, k0, ltem) < 0.01_fp) then
+                      sour(nm, k0, l) = sour(nm, k0, l) + qtotk*gsqs(nm)
+                   elseif (r0(nm, k0, l) > 0.01_fp) then
+                      sink(nm, k0, l) = sink(nm, k0, l) - qtotk*gsqs(nm)/r0(nm, k0, l)
+                   elseif (r0(nm, k0, l) > 0.0_fp .and. r0(nm, k0, l) < 0.01_fp) then
                       !
                       ! No addition to sink when the water temperature is lower than 0.01 degree.
                       !
@@ -1219,10 +1236,10 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                    endif
                 else
                    if (qtotk > 0.0_fp) then
-                      sour(nm, k0, ltem) = sour(nm, k0, ltem) + qtotk/(thick(k0)*h0old)
-                   elseif (r0(nm, k0, ltem) > 0.01_fp) then
-                      sink(nm, k0, ltem) = sink(nm, k0, ltem) - qtotk/(thick(k0)*h0new*r0(nm, k0, ltem))
-                   elseif (r0(nm, k0, ltem) > 0.0_fp .and. r0(nm, k0, ltem) < 0.01_fp) then
+                      sour(nm, k0, l) = sour(nm, k0, l) + qtotk/(thick(k0)*h0old)
+                   elseif (r0(nm, k0, l) > 0.01_fp) then
+                      sink(nm, k0, l) = sink(nm, k0, l) - qtotk/(thick(k0)*h0new*r0(nm, k0, l))
+                   elseif (r0(nm, k0, l) > 0.0_fp .and. r0(nm, k0, l) < 0.01_fp) then
                       !
                       ! No addition to sink when the water temperature is lower than 0.01 degree.
                       !                   
@@ -1240,9 +1257,9 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
                    qink  = corr * qsn * (exp(extinc*ztop) - exp(extinc*zdown)) / extinc
                    qtotk = qink / (rhow*cp)
                    if (zmodel) then
-                      sour(nm, k, ltem) = sour(nm, k, ltem) + qtotk*gsqs(nm)
+                      sour(nm, k, l) = sour(nm, k, l) + qtotk*gsqs(nm)
                    else
-                      sour(nm, k, ltem) = sour(nm, k, ltem) + qtotk/(thick(k)*h0old)
+                      sour(nm, k, l) = sour(nm, k, l) + qtotk/(thick(k)*h0old)
                    endif
                 enddo
              else
@@ -1306,4 +1323,8 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
             & 'Timestep ', ntstep, ': No heat flux to air; water temperature is 0 degrees in ', msgcount, ' points.'
        call prterr(lundia, 'U190', trim(errmsg))
     endif
+    !
+   endif
+enddo
+!
 end subroutine heatu

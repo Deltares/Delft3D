@@ -37,6 +37,7 @@ public shld
 public ruessink_etal_2012
 public calculate_critical_velocities
 public calculate_velocity_asymmetry
+public calculate_urms
 
 contains
 
@@ -166,7 +167,7 @@ subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vic
        ! Permeability, Adel 1987
        kl = ag/(160.0_fp*vicmol)*(d15**2)*((poros**3)/(1.0_fp-poros)**2)
        ! Reduction factor on the critical Shields parameter by dilatancy (Van Rhee, 2010)
-       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-poros)*rheea/delta
+       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-pormax)*rheea/delta
     endif
     !
     if (bedslpeffini == 0) then
@@ -210,64 +211,74 @@ subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vic
 end subroutine calculate_critical_velocities
 
 
-subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ubot, ag, &
-    tp, reposeangle, ubot_from_com, kwtur, uamag, phi, uorb, urms2)
+subroutine calculate_velocity_asymmetry(waveform, facas, facsk, sws, h, hrms, rlabda, ag, tp, urms, uamag)
     use precision
     use mathconsts
     implicit none
     
     integer                     , intent(in)     :: waveform
     integer                     , intent(in)     :: sws
-    logical                     , intent(in)     :: ubot_from_com
     real(fp)                    , intent(in)     :: facas
     real(fp)                    , intent(in)     :: facsk
     real(fp)                    , intent(in)     :: h
     real(fp)                    , intent(in)     :: hrms
     real(fp)                    , intent(in)     :: rlabda
-    real(fp)                    , intent(in)     :: ubot
     real(fp)                    , intent(in)     :: ag
-    real(fp)                    , intent(inout)  :: tp
-    real(fp)                    , intent(in)     :: reposeangle
-    real(fp)                    , intent(in)     :: kwtur    !<  Breaker induced turbulence
-    real(fp)                    , intent(inout)  :: uamag
-    real(fp)                    , intent(inout)  :: phi
-    real(fp)                    , intent(inout)  :: uorb
-    real(fp)                    , intent(inout)  :: urms2
-    
-    real(fp)                       :: k
-    real(fp)                       :: urms
-    
+    real(fp)                    , intent(in)     :: tp
+    real(fp)                    , intent(in)     :: urms
+    real(fp)                    , intent(out)    :: uamag
+        
     uamag = 0.0_fp
     if (waveform==1) then
        call ua_rvr(facas    ,facsk  ,sws   ,h   ,hrms   , &
-                 & rlabda   ,ubot   ,uamag )
+                 & rlabda   ,urms   ,uamag )
     else if (waveform==2) then
        call ua_vt(facas    ,facsk   ,sws   ,h      ,   &
-                & hrms     ,tp      ,ag    ,ubot   ,   &
+                & hrms     ,tp      ,ag    ,urms   ,   &
                 & uamag    )
     end if
-    !
-    phi = reposeangle*degrad ! Angle of internal friction
-    !
-    !     Wave number k, urms orbital velocity
-    !
+
+end subroutine calculate_velocity_asymmetry
+
+subroutine calculate_urms(hrms, tp, h, ag, ubot_from_com, ubot, kwtur, urms, urms2)
+    use precision
+    use mathconsts
+
+    implicit none
+
+    logical , intent(in)           :: ubot_from_com
+    real(fp), intent(in)           :: hrms
+    real(fp), intent(in)           :: tp
+    real(fp), intent(in)           :: h
+    real(fp), intent(in)           :: ag
+    real(fp), intent(in)           :: ubot
+    real(fp), intent(in)           :: kwtur
+    real(fp), intent(out)          :: urms
+    real(fp), intent(out)          :: urms2
+
+    real(fp)                       :: tp2
+    real(fp)                       :: k
+    real(fp)                       :: uorb
+
     if ( tp > 1.e-6_fp ) then
        !
        !     Prevent small tp
        !
-       tp = max(tp, 1.0_fp)
+       tp2 = max(tp, 1.0_fp)
        !
-       call wavenr(h         ,tp        ,k         ,ag        )
+       call wavenr(h         ,tp2        ,k         ,ag        )
        if (ubot_from_com) then
           uorb = ubot
        else
-          uorb = pi*hrms/tp/sinh(k*h)
+          uorb = pi*hrms/tp2/sinh(k*h)
        endif
        urms = uorb*0.7071_fp
        urms2 = urms**2 + 1.45_fp*kwtur
     else
+       urms  = 0.0_fp
        urms2 = 0.0_fp
     endif
-end subroutine calculate_velocity_asymmetry
+
+end subroutine calculate_urms
 
 end module sed_support_routines

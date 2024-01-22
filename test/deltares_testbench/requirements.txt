@@ -1,0 +1,15 @@
+netCDF4
+lxml
+python-dateutil
+pandas
+matplotlib
+numpy
+numexpr
+paramiko
+pathlib
+tk
+minio
+pytest
+
+# TODO can be removed once minio production server is up and running, see DEVOPSDSC-41.
+python-certifi-win32

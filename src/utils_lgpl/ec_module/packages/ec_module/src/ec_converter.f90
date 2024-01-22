@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!  
-!  
+!
+!
 
 !> This module contains all the methods for the datatype tEcConverter.
 !! @author adri.mourits@deltares.nl
@@ -1226,7 +1226,7 @@ module m_ec_converter
                end if
 
                select case(connection%converterPtr%operandType)
-                  case(operand_replace)
+                  case(operand_replace, operand_replace_if_value)
                      ! Write all values to one target Item or each value to its own target Item.
                      if (connection%nTargetItems == 1) then                               ! All in one target item
                         targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1356,10 +1356,11 @@ module m_ec_converter
                return
          end select
          success = .true.
+         deallocate(valuesT, stat=istat)
       end function ecConverterUniform
 
-      
-      
+
+
 
 
 
@@ -1408,7 +1409,7 @@ module m_ec_converter
                magnitude = sqrt(windXT*windXT + windYT*windYT)
                ! ===== operation =====
                select case(connection%converterPtr%operandType)
-                  case(operand_replace)
+                  case(operand_replace, operand_replace_if_value)
                      if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                         call setECMessage("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
                         return
@@ -1498,7 +1499,7 @@ module m_ec_converter
                targetU = windspeed * cos(winddirection)
                targetV = windspeed * sin(winddirection)
                select case(connection%converterPtr%operandType)
-                  case(operand_replace)
+                  case(operand_replace, operand_replace_if_value)
                      do i=1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
                         u(i) = targetU
                         v(i) = targetV
@@ -1583,7 +1584,7 @@ module m_ec_converter
          logical, save :: alreadyPrinted = .false.
          real(hp) :: wwL, wwR  !<
          real(hp), dimension(:), allocatable :: valL, valR, valL1, valL2, valR1, valR2, val !<
-         real(hp), dimension(:), allocatable :: sigmaL, sigmaR, sigma, sigmaLL, sigmaRR 
+         real(hp), dimension(:), allocatable :: sigmaL, sigmaR, sigma, sigmaLL, sigmaRR
          logical,  dimension(:), allocatable :: vmaskL, vmaskR
          real(hp), dimension(:),     pointer :: zmin => null() !< vertical min
          real(hp), dimension(:),     pointer :: zmax => null() !< vertical max
@@ -1660,7 +1661,7 @@ module m_ec_converter
                   wL = connection%converterPtr%indexWeight%weightFactors(1,i)
                   wR = connection%converterPtr%indexWeight%weightFactors(2,i)
                   select case(connection%converterPtr%operandType)
-                     case(operand_replace_element, operand_replace, operand_add)
+                     case(operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
                         ! Are the subproviders 3D or 2D?
                         if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. &     ! source has a vertical coordinate
                                associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then    ! target has a vertical coordinate
@@ -1711,7 +1712,7 @@ module m_ec_converter
                                     from = vectormax*maxlay_src*(kR-1)+vectormax*(k-1)+1
                                     thru = vectormax*maxlay_src*(kR-1)+vectormax*(k)
                                     ! check if all vector components are unequal missing for this layer
-                                    if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru)/=missing) .and. (sigmaR(k)>0.5*ec_undef_hp)) then 
+                                    if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru)/=missing) .and. (sigmaR(k)>0.5*ec_undef_hp)) then
                                        maxlay_srcR = maxlay_srcR + 1
                                        valR((maxlay_srcR-1)*vectormax+1:maxlay_srcR*vectormax) = connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru)
                                        sigmaRR(maxlay_srcR) = sigmaR(k)
@@ -1746,7 +1747,7 @@ module m_ec_converter
                                     return
                                  end if
 
-                                 
+
                                  if (connection%sourceItemsPtr(1)%ptr%quantityPtr%zInterpolationType == zinterpolate_mean) then
                                     valL1 = ecConverterVerticalMean(sigmaLL,valL,zmin(i),zmax(i),ndxmin,ndxmax)
                                     if (ndxmax-ndxmin<1) then
@@ -1764,7 +1765,9 @@ module m_ec_converter
                                     end if
                                     val = wL*valL1  + wR*valR1
                                     do k=kbegin,kend         ! Set the average value for all vertical positions
-                                       if ((connection%converterPtr%operandType == operand_replace) .or. (connection%converterPtr%operandType == operand_replace_element)) then
+                                       if ((connection%converterPtr%operandType == operand_replace) .or. &
+                                           (connection%converterPtr%operandType == operand_replace_element) .or. &
+                                           (connection%converterPtr%operandType == operand_replace_if_value)) then
                                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k-1)*vectormax+1:k*vectormax) = val(1:vectormax)
                                        else if (connection%converterPtr%operandType == operand_add) then
                                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k-1)*vectormax+1:k*vectormax)   &
@@ -1805,7 +1808,9 @@ module m_ec_converter
                                              return
                                           end select
                                        !
-                                       if ((connection%converterPtr%operandType == operand_replace) .or. (connection%converterPtr%operandType == operand_replace_element)) then
+                                       if ((connection%converterPtr%operandType == operand_replace) .or. &
+                                           (connection%converterPtr%operandType == operand_replace_element) .or. &
+                                           (connection%converterPtr%operandType == operand_replace_if_value)) then
                                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k-1)*vectormax+1:k*vectormax) = val(1:vectormax)
                                        else if (connection%converterPtr%operandType == operand_add) then
                                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k-1)*vectormax+1:k*vectormax)   &
@@ -1836,7 +1841,9 @@ module m_ec_converter
                               do k = 1,maxlay_tgt
                                  from = (i-1)*maxlay_tgt*vectormax+(k-1)*vectormax+1
                                  thru = (i-1)*maxlay_tgt*vectormax+k*vectormax
-                                 if (connection%converterPtr%operandType == operand_replace .or. connection%converterPtr%operandType == operand_replace_element) then
+                                 if ((connection%converterPtr%operandType == operand_replace) .or. &
+                                     (connection%converterPtr%operandType == operand_replace_element) .or. &
+                                     (connection%converterPtr%operandType == operand_replace_if_value)) then
                                      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
                                  else if (connection%converterPtr%operandType == operand_add) then
@@ -1970,7 +1977,8 @@ module m_ec_converter
                      end do
 
                      if (nmiss == 0) then     ! if sufficient data for bi-linear interpolation
-                        if (connection%converterPtr%operandType==operand_replace) then
+                        if ((connection%converterPtr%operandType == operand_replace) .or. &
+                            (connection%converterPtr%operandType == operand_replace_if_value)) then
                            targetValues(i) = 0.0_hp
                         end if
                         wf_i = indexWeight%weightFactors(1:4,i)
@@ -2108,7 +2116,7 @@ module m_ec_converter
                   call time_weight_factors(a0, a1, timesteps, t0, t1)
                   rr = a0*vv0 + a1*vv1
                   select case(connection%converterPtr%operandType)
-                     case(operand_replace)
+                     case(operand_replace, operand_replace_if_value)
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
                      case(operand_add)
@@ -2278,7 +2286,7 @@ module m_ec_converter
                deflection = deflection + magnitude * cos(phase)
             end do
             select case(connection%converterPtr%operandType)
-               case(operand_replace)
+               case(operand_replace, operand_replace_if_value)
                   connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = deflection
                case(operand_replace_element)
                   ! Only used by poly_tim.
@@ -2556,7 +2564,7 @@ module m_ec_converter
 
             endif
             select case(connection%converterPtr%operandType)
-               case(operand_replace)
+               case(operand_replace, operand_replace_if_value)
                   if (twx>0) then
                      connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = uintp
                      connection%targetItemsPtr(twx)%ptr%targetFieldPtr%timesteps = timesteps
@@ -2648,6 +2656,7 @@ module m_ec_converter
          type(tEcItem), pointer  :: windxPtr ! pointer to item for windx
          type(tEcItem), pointer  :: windyPtr ! pointer to item for windy
          logical :: has_x_wind, has_y_wind
+         logical :: has_harmonics            !< Indicate if the quantity is defined in phase and amplitude instead of time.
          real(hp), dimension(:), pointer     :: targetValues
          real(hp), dimension(:), allocatable :: zsrc
          real(hp)                :: ztgt
@@ -2665,6 +2674,14 @@ module m_ec_converter
          real(hp), dimension(:), allocatable :: x_extrapolate    ! temporary array holding targetelementset x for setting up kdtree for interpolation
          integer                    :: col0, row0, col1, row1    ! bounding box in meteo-space spanned by the target elementset
 
+         real(hp) :: amplitude       ! harmonics: amplitude
+         real(hp) :: omega           ! harmonics: omega of current component (radians/second)
+         real(hp) :: delta_t         ! harmonics: time delta (in seconds) relative to reference time.
+         real(hp) :: phase0          ! harmonics: current phase offset angle (in radians)
+         integer  :: n_phase_rows    ! harmonics: number of phase rows
+         integer  :: n_phase_cols    ! harmonics: number of phase columns
+         integer  :: index1d         ! harmonics: 1d array index.
+
          integer                        :: issparse
          integer, dimension(:), pointer :: ia                    ! sparsity pattern in CRS format, startpointers
          integer, dimension(:), pointer :: ja                    ! sparsity pattern in CRS format, column numbers
@@ -2681,6 +2698,7 @@ module m_ec_converter
          indexWeight => null()
          sourceElementSet => null()
          targetElementSet => null()
+         has_harmonics = .false.
          ! ===== preprocessing: rotate windx and windy of the source fields if the array of rotations exists in the filereader =====
          windxPtr   => null()
          windyPtr   => null()
@@ -2727,10 +2745,10 @@ module m_ec_converter
                   sourceItem => connection%sourceItemsPtr(i)%ptr
                   sourceT0Field => sourceItem%sourceT0FieldPtr
                   sourceT1Field => sourceItem%sourceT1FieldPtr
-!                 sourceMissing = sourceT0Field%MISSINGVALUE
                   sourceMissing = sourceItem%quantityPtr%fillvalue
                   sourceElementSet => sourceItem%elementSetPtr
                   time_interpolation = sourceItem%quantityptr%timeint
+                  has_harmonics = associated(sourceItem%hframe)
 
                   indexWeight => connection%converterPtr%indexWeight
 
@@ -2739,7 +2757,6 @@ module m_ec_converter
                   targetValues => targetField%arr1dPtr
                   targetMissing = targetField%MISSINGVALUE
                   targetElementSet => targetItem%elementSetPtr
-
 
                   if (sourceElementSet%ofType == elmSetType_samples) then
                      ! call interpolation based on nearest neighbours
@@ -2752,13 +2769,18 @@ module m_ec_converter
                      call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
                      if (n_layers==0) then
                         do j=1,n_points
-                           if (connection%converterPtr%operandType==operand_replace) then ! Dit hoort in de loop beneden per target gridpunt!
+                           if ((connection%converterPtr%operandType == operand_replace) .or. &
+                               (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
                               targetValues(j) = 0.0_hp
                            end if
                            mp = indexWeight%indices(1,j)
                            if (mp>0 .and. mp<=n_cols) then
-                              targetValues(j) = targetValues(j) + a0 * sourceItem%sourceT0FieldPtr%arr1d(mp) &
-                                                                + a1 * sourceItem%sourceT1FieldPtr%arr1d(mp)
+                              if ( comparereal(sourceT0Field%arr1d(mp), sourceMissing, .true.)==0 .or.   &
+                                   comparereal(sourceT1Field%arr1d(mp), sourceMissing, .true.)==0 ) then
+                                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: 1D arrays with _FillValue not yet supported for meteo from stations.")
+                                  return
+                              end if
+                              targetValues(j) = targetValues(j) + a0 * sourceT0Field%arr1d(mp) + a1 * sourceT1Field%arr1d(mp)
                            end if
                         end do
                      else
@@ -2788,7 +2810,57 @@ module m_ec_converter
                      t0 = sourceT0Field%timesteps
                      t1 = sourceT1Field%timesteps
 
-                     call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+                     if (has_harmonics) then
+                        ! No time interpolation, but we DO have to update source values based on phase and amplitude.
+                        ! FieldT0 should contain the currently calculated values. (hence a0 = 1, a1 = 0)
+                        a0 = 1.0
+                        a1 = 0.0
+                        ! FOR SIMPLE HARMONIC only one step needed:
+                        !   1. calculate with cosine, and time, phase and source (T1) amplitude.
+                        ! note: source file Amplitude lives in T1. Phases are indexed: col, row
+                        n_phase_rows = sourceElementSet%n_rows
+                        n_phase_cols = sourceElementSet%n_cols
+                        omega = 2.0_hp*PI/sourceItem%hframe%ec_period
+                        delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_hp  !< convert to seconds since refdate.
+                        if ( issparse == 1 ) then
+                            do j = 1, n_rows
+                                if ( ia(j+1) > ia(j) ) then
+                                    do ipt = ia(j),ia(j+1)-1
+                                        amplitude = sourceT1Field%arr1d(ipt)
+                                        phase0 = sourceItem%hframe%phases(ja(ipt), j)
+                                        if ( comparereal(amplitude, sourceMissing, .true.)==0 .or. &
+                                            comparereal(phase0, sourceMissing, .true.)==0 ) then
+                                            sourceT0Field%arr1d(ipt) = sourceMissing
+                                        else
+                                            sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                        end if
+                                    end do
+                                end if
+                            end do
+                        else
+                            do j = 1,n_points
+                                np = indexWeight%indices(1,j) ! row
+                                mp = indexWeight%indices(2,j) ! col
+                                if ( np > 0 .and. mp > 0 ) then
+                                    do jj = 0,1
+                                        do ii = 0,1
+                                            ipt = (mp-1+ii) * n_cols + np-1+jj
+                                            amplitude = sourceT1Field%arr1d(ipt)
+                                            phase0 = sourceItem%hframe%phases(mp+ii, np+jj)
+                                             if ( comparereal(amplitude, sourceMissing, .true.)==0 .or. &
+                                                comparereal(phase0, sourceMissing, .true.)==0 ) then
+                                                sourceT0Field%arr1d(ipt) = sourceMissing
+                                            else
+                                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                            end if
+                                        end do
+                                    end do
+                                end if
+                            end do
+                        end if
+                     else
+                        call time_weight_factors(a0, a1, timesteps, t0, t1, timeint=time_interpolation)
+                     end if
 
                      if (n_layers>0 .and. associated(targetElementSet%z) .and. associated(sourceElementSet%z)) then
                         allocate(zsrc(n_layers))
@@ -2806,7 +2878,8 @@ module m_ec_converter
                            np = indexWeight%indices(1,j)
                            mp = indexWeight%indices(2,j)
                            if (mp > 0 .and. np > 0) then
-                              if (connection%converterPtr%operandType==operand_replace) then
+                              if ((connection%converterPtr%operandType == operand_replace) .or. &
+                                  (connection%converterPtr%operandType == operand_replace_if_value)) then
                                  targetValues(kbot:ktop) = 0.0_hp
                               end if
                               ! The save horizontal weigths are used. The vertical weights are recalculated because z changes.
@@ -2917,8 +2990,13 @@ module m_ec_converter
                                     wb = min(max(wb,0.0_hp),1.0_hp)                       ! zeroth-order extrapolation beyond range of source vertical coordinates
                                     wt = (1.0_hp - wb)
 
-                                    ! interpolating between times and between vertical layers
-                                    targetValues(k) = targetValues(k) + a0*(wb*val(1,1) + wt*val(2,1)) + a1*(wb*val(1,2) + wt*val(2,2))
+                                    if (has_harmonics) then
+                                       call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
+                                       return
+                                    else
+                                       ! interpolating between times and between vertical layers
+                                       targetValues(k) = targetValues(k) + a0*(wb*val(1,1) + wt*val(2,1)) + a1*(wb*val(1,2) + wt*val(2,2))
+                                    end if
                                  end if
                               end do
 
@@ -2988,13 +3066,14 @@ module m_ec_converter
                                  end do
                               end if
 
-                              if (connection%converterPtr%operandType==operand_replace) then
+                              if (connection%converterPtr%operandType == operand_replace) then
                                  targetValues(j) = 0.0_hp
                               end if
-                     kloop2D: do jj=0,1
+
+                              kloop2D: do jj=0,1
                                  do ii=0,1
                                     if ( comparereal(sourcevals(1+ii, 1+jj, 1, 1), sourceMissing, .true.)==0 .or.   &
-                                         comparereal(sourcevals(1+ii, 1+jj, 1, 2), sourceMissing, .true.)==0 ) then
+                                       comparereal(sourcevals(1+ii, 1+jj, 1, 2), sourceMissing, .true.)==0 ) then
                                        jamissing = jamissing + 1
                                        exit kloop2D
                                     end if
@@ -3004,6 +3083,9 @@ module m_ec_converter
                                  missing(j) = .True.    ! Mark missings in the target grid in a temporary logical array
                                  if (allocated(x_extrapolate)) x_extrapolate(j)=ec_undef_hp                                ! no-data -> unelectable for kdtree later
                               else
+                                 if (connection%converterPtr%operandType==operand_replace_if_value) then
+                                    targetValues(j) = 0.0_hp
+                                 end if
                                  targetValues(j) = targetValues(j) + a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1,j)        !  4                 3
                                  targetValues(j) = targetValues(j) + a1 * sourcevals(1, 1, 1, 2) * indexWeight%weightFactors(1,j)
                                  targetValues(j) = targetValues(j) + a0 * sourcevals(2, 1, 1, 1) * indexWeight%weightFactors(2,j)
@@ -3058,7 +3140,7 @@ module m_ec_converter
                      endif
                      ! ===== operation =====
                      select case(connection%converterPtr%operandType)
-                        case(operand_replace)
+                        case(operand_replace, operand_replace_if_value)
                            if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                               call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                               return
@@ -3084,7 +3166,7 @@ module m_ec_converter
                      endif
                      ! ===== operation =====
                      select case(connection%converterPtr%operandType)
-                        case(operand_replace)
+                        case(operand_replace, operand_replace_if_value)
                            if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                               call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                               return
@@ -3115,7 +3197,7 @@ module m_ec_converter
 
       ! =======================================================================
 
-      !> For every connected target item, 
+      !> For every connected target item,
       !> if the target field has an associated scalar pointer, fill it with the first element of the arr1DPtr array.
       !> This scalar pointer is connected with a scalar in a kernel, such as a single field in a derived type
       function ecConverterUpdateScalar(connection) result (success)

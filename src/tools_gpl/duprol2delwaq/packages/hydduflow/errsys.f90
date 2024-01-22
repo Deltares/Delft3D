@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-subroutine errsys(string,ierr)
+subroutine write_error_message(string,ierr)
 !**********************************************************************
 !     +------------------------+
 !     |    D E L T A R E S     |
@@ -59,4 +59,4 @@ subroutine errsys(string,ierr)
     read (*,*)
     stop (1)
 
-end subroutine errsys
+end subroutine write_error_message

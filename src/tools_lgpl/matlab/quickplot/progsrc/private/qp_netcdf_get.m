@@ -44,18 +44,16 @@ if isempty(var)
     error(errmsg)
 elseif ischar(var)
     varstr = var;
-    var = strmatch(varstr,{FI.Dataset.Name},'exact')-1;
-    if isempty(var)
+    varid = strmatch(varstr,{FI.Dataset.Name},'exact')-1;
+    if isempty(varid)
         error('Variable ''%s'' not found in file.',varstr)
     end
 elseif isstruct(var)
-    var = var.Varid;
+    varid = var.Varid;
+else
+    varid = var;
 end
-Info = FI.Dataset(var+1);
-varid = Info.Varid;
-if isempty(Info)
-    error('Variable ''%s'' not found in file.',Info.Name)
-end
+Info = FI.Dataset(varid+1);
 %
 RequestDims = {};
 RequestedSubset = {};
@@ -95,7 +93,7 @@ if isempty(RequestedSubset)
     end
 end
 %
-if iscell(Info.Mesh) && strcmp(Info.Mesh{1},'ugrid')
+if isfield(Info,'Mesh') && iscell(Info.Mesh) && strcmp(Info.Mesh{1},'ugrid')
     imesh = Info.Mesh{3};
     imdim = Info.Mesh{4};
     mInfo = FI.Dataset(imesh);
@@ -104,7 +102,8 @@ else
     mdim = '';
 end
 %
-rank=Info.Rank;
+rank = length(Info.Dimension);
+base_rank = rank;
 N=length(RequestDims);
 permuted=zeros(1,N);
 for d=1:N
@@ -146,7 +145,7 @@ for d=1:N
     end
 end
 %
-for d=1:Info.Rank
+for d=1:base_rank
     if all(permuted~=d)
         errmsg=sprintf('Dimension ''%s'' of ''%s'' could not be matched to any of the requested dimensions: ',Info.Dimension{d},Info.Name);
         errmsg=cat(2,errmsg,sprintf('''%s'', ',RequestDims{permuted~=0}));
@@ -155,7 +154,7 @@ for d=1:Info.Rank
     end
 end
 %
-if isempty(Info.Dimid) || nargin==3
+if nargin==3 || base_rank == 0
     Data = nc_vargetr(FI.Filename,FI.Dataset(varid+1).Name);
     if length(FI.Dataset(varid+1).Size)>1 && ~isequal(size(Data),FI.Dataset(varid+1).Size)
         Data = reshape(Data,FI.Dataset(varid+1).Size);
@@ -164,9 +163,9 @@ else
     %
     % Convert data subset in QP dimension order to NetCDF dimension order
     %
-    RS_netcdf=cell(1,Info.Rank);
-    start_coord=zeros(1,Info.Rank);
-    count_coord=zeros(1,Info.Rank);
+    RS_netcdf=cell(1,base_rank);
+    start_coord=zeros(1,base_rank);
+    count_coord=zeros(1,base_rank);
     %fprintf('%s: %d %d %d %d %d\n',FI.Dataset(varid+1).Name,permuted);
     %
     % The following block selection procedure is inefficient if a relatively
@@ -175,7 +174,7 @@ else
     %
     for d=1:N
         p=permuted(d);
-        if p>0 && p<=Info.Rank
+        if p>0 && p<=base_rank
             RS_netcdf(p)=RequestedSubset(d);
             start_coord(p)=min(RS_netcdf{p})-1;
             count_coord(p)=max(RS_netcdf{p})-start_coord(p);
@@ -255,7 +254,7 @@ if ~isempty(Info.Attribute)
                 Data(Data<=-32767)=NaN;
             case 'int'
                 Data(Data<=-2147483647)=NaN;
-            case {'float','double'}
+            case {'single','double'}
                 Data(Data>=9.9692099683868690e+36)=NaN;
         end
     end

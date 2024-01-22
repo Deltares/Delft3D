@@ -49,6 +49,7 @@
       use dfparall
       use io_ugrid, only: t_ug_meta
       use m_write_waqgeom_curvilinear
+      use flow2d3d_version_module
 !
       use globaldata
       !

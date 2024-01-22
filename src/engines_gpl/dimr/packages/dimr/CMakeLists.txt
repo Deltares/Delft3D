@@ -7,18 +7,11 @@ set(dimr_lib_path "${CMAKE_CURRENT_SOURCE_DIR}/../dimr_lib/")
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
-set(ini_version_file "${absolute_header_path}/version_number.ini")
 set(rc_version_file "${absolute_header_path}/dimr_exe_version.rc")
 set(header_version_file "${absolute_header_path}/dimr_exe_version.h")
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-if (UNIX)    
-    include_directories(${NETCDF_INCLUDEDIR}) 
-    add_definitions(-DD3D_PLUGIN_EXT=".so")
-endif(UNIX)
-
-# Generate the version files
-generate_version_files(${rc_version_file} ${ini_version_file})
-generate_version_files(${header_version_file} ${ini_version_file})
+include_directories(${version_include_dir})
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)
@@ -33,21 +26,13 @@ set(executable_name dimr)
 add_executable(${executable_name}   ${source}
                                     ${dimr_lib_sources}
                                     ${rc_version_file} 
-                                    ${header_version_file} 
-                                    ${ini_version_file})
-
-# Define prebuild events
-prebuild_version_number(${executable_name}  ${rc_version_file} 
-                                            ${checkout_src_root}
-                                            ${ini_version_file})
-prebuild_version_number(${executable_name}  ${header_version_file} 
-                                            ${checkout_src_root}
-                                            ${ini_version_file})
+                                    ${header_version_file})
 
 # Common UNIX and WIN32 link library dependency
 target_link_libraries(${executable_name} netcdf)
 
 if(UNIX)
+   add_definitions(-DD3D_PLUGIN_EXT=".so")
 
    set(oss_dependencies    deltares_common_c
                            dimr_lib
@@ -59,6 +44,7 @@ if(UNIX)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
+                               ${NETCDF_INCLUDEDIR}
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
@@ -126,6 +112,7 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/run_dimr.sh             DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr.sh          DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr_h7.sh       DESTINATION bin)
 endif(UNIX)
 
 if (WIN32)

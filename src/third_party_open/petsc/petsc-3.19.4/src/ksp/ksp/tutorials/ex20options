@@ -1,0 +1,12 @@
+-ksp_gmres_unmodifiedgramschmidt
+-mg_coarse_ksp_type preonly
+-mg_coarse_pc_type redundant
+-mg_coarse_redundant_pc_type lu
+-mg_levels_ksp_max_it 1
+-mg_levels_ksp_type richardson
+-mg_levels_pc_type asm
+-mg_levels_sub_pc_ilu_levels 1
+-pc_mg_type multiplicative
+
+
+

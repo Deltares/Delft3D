@@ -150,6 +150,8 @@ subroutine ini_transport()
          end do
       else
          !
+         maserrsed = 0d0  ! initialise mass error counter
+         !
          ! Map fraction names from sed to constituents (moved from ini_transport)
          !
          do i=ISED1,ISEDN

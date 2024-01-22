@@ -1,6 +1,6 @@
 #include "meminfo.h"
 #if linux
-#include <sys/sysctl.h>
+#include <sys/sysinfo.h>
 #endif
 
 #ifdef WIN32

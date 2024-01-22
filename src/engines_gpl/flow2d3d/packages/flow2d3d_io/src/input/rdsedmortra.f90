@@ -39,6 +39,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
+    use sediment_basics_module, only: TRA_ADVDIFF
     use m_rdmor
     use m_rdsed
     use m_rdtrafrm
@@ -55,25 +56,25 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !
 ! Global variables
 !
-    integer                                  , intent(in)  :: lsal    !  Description and declaration in dimens.igs
-    integer                                  , intent(in)  :: lsed    !  Description and declaration in iidim.f90
-    integer                                  , intent(in)  :: lsedtot !  Description and declaration in iidim.f90
-    integer                                  , intent(in)  :: lstsci  !  Description and declaration in iidim.f90
-    integer                                  , intent(in)  :: ltem    !  Description and declaration in dimens.igs
-    integer                                  , intent(in)  :: ltur    !  Description and declaration in iidim.f90
-    integer                                                :: lundia  !  Description and declaration in inout.igs
-    logical                                  , intent(out) :: error   !!  Flag=TRUE if an error is encountered
-    character(20) , dimension(lstsci + ltur)               :: namcon  !  Description and declaration in ckdim.f90
-    integer                                                :: iopsus
-    integer                                  , intent(in)  :: mmax
-    integer                                  , intent(in)  :: nmax
-    integer                                  , intent(in)  :: nmaxus
-    integer                                  , intent(in)  :: nmmax
-    integer                                  , intent(in)  :: nto
-    integer                                  , intent(in)  :: lsec
-    real(fp)                                 , intent(in)  :: tstart
-    real(fp)                                 , intent(in)  :: tunit
-    character(20) , dimension(nto)                         :: nambnd  !  Description and declaration in ckdim.f90
+    integer                                  , intent(in)  :: lsal    !< constituent index of salinity (0 if not included)
+    integer                                  , intent(in)  :: lsed    !< number of suspended sediment fractions
+    integer                                  , intent(in)  :: lsedtot !< total number of sediment fractions
+    integer                                  , intent(in)  :: lstsci  !< total number of constituents (including secondary flow)
+    integer                                  , intent(in)  :: ltem    !< constituent index of temperature (0 if not included)
+    integer                                  , intent(in)  :: ltur    !< number of turbulent quantities
+    integer                                                :: lundia  !< unit number of log file
+    logical                                  , intent(out) :: error   !< flag indicating whether an error occurred
+    character(20) , dimension(lstsci + ltur)               :: namcon  !< names of the constituents and turbulent quantities
+    integer                                                :: iopsus  !<
+    integer                                  , intent(in)  :: mmax    !< number of grid cells in M direction
+    integer                                  , intent(in)  :: nmax    !< number of grid cells in N direction
+    integer                                  , intent(in)  :: nmaxus  !< number of grid cells in N direction communicated to user
+    integer                                  , intent(in)  :: nmmax   !< total number of grid cells
+    integer                                  , intent(in)  :: nto     !< number of open boundaries
+    integer                                  , intent(in)  :: lsec    !< secondary flow flag
+    real(fp)                                 , intent(in)  :: tstart  !< start time
+    real(fp)                                 , intent(in)  :: tunit   !< time unit
+    character(20) , dimension(nto)                         :: nambnd  !< names of open boundaries
 !
 ! Local variables
 !
@@ -95,6 +96,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     morft               => gdp%gdmorpar%morft
     morft0              => gdp%gdmorpar%morft0
     lfbedfrm            => gdp%gdbedformpar%lfbedfrm
+    !    
+    error = .false.
     !
     if (morft == 0.0_hp) then
         !
@@ -112,7 +115,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call prop_get_string(gdp%mdfile_ptr,'*','TraFrm',filtrn)
     !
     call initrafrm(lundia    ,error     ,lsedtot   ,gdp%gdtrapar)
-    if (error) goto 999
+    if (.not.error) then
     !
     ! Read name of sediment input file
     !
@@ -130,7 +133,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              & lsedtot   ,lstsci    ,ltur      ,namcon    ,iopsus    , &
              & gdp%d%nmlb,gdp%d%nmub,filsed    ,sed_ptr   , &
              & gdp%gdsedpar,gdp%gdtrapar, gdp%griddim)
-    if (error) goto 999
+    endif
+    if (.not.error) then
     !
     ! Read name of morphology input file
     !
@@ -148,7 +152,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              & lsed       ,nmaxus     ,nto      ,lfbedfrm  , &
              & nambnd     ,gdp%gdinttim%julday  ,mor_ptr   ,gdp%gdsedpar, &
              &gdp%gdmorpar,fwfacmor  ,gdp%gdmorlyr, gdp%griddim)
-    if (error) goto 999
+    endif
+    if (.not.error) then
     !
     ! FWFac is independent of sediment transport. Use the value historically
     ! specified in mor file only if it hasn't been specified in the mdf file.
@@ -189,9 +194,20 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
                 & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
-                & gdp%griddim)
-    if (error) goto 999
-    !
+                   & gdp%griddim, gdp%gdsedpar%max_mud_sedtyp)
+    endif
+    if (.not.error) then
+     !
+
+       ! update tratyp based on the transport formula selected
+       ! switch off the bed load component when Partheniades-Krone is used.
+       !
+       do i = 1, lsed
+          if (gdp%gdtrapar%iform(i) == -3) then
+             gdp%gdsedpar%tratyp(i) = TRA_ADVDIFF
+          endif     
+       enddo    
+       !
     !--------------------------------------------------------------------------
     if (gdp%gdprocs%flmd2l) then
        if (gdp%gdmorpar%bedupd) then
@@ -209,7 +225,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     !
     call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
                & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
-    if (error) goto 999
+    endif
+    if (.not.error) then
     !
     ! Echo morphology parameters
     !
@@ -217,11 +234,14 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     cmpupdany = any(gdp%gdsedpar%cmpupdfrac)
     call echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto        , &
                & nambnd    ,gdp%gdsedpar, gdp%gdmorpar, gdp%gdexttim%tunitstr, cmpupdall, cmpupdany)
-    if (error) goto 999
+    endif
+    if (.not.error) then
     !
     ! Read scour and echo parameters
     !
     call rdscour(lundia    ,error     ,nmmax     ,gdp       )
+    endif
+    if (.not.error) then
     !
     ! If either Van Rijn 2004 transport formula (iform = -2) or the extended
     ! SANTOSS version (iform = -4) is used, switch on the bed roughness height
@@ -238,6 +258,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           exit
        endif
     enddo
-999 continue
+    endif
+    
     if (error) call d3stop(1, gdp)
 end subroutine rdsedmortra

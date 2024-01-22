@@ -76,7 +76,7 @@ subroutine update_constituents(jarhoonly)
    use m_physcoef,   only: vicouv
    use m_transport
    use m_mass_balance_areas
-   use m_flowparameters, only: limtypsa, limtyptm, limtypsed
+   use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
    use m_alloc
    use m_partitioninfo
    use m_timer
@@ -160,7 +160,7 @@ subroutine update_constituents(jarhoonly)
       end if
 
 !     compute horizontal fluxes, explicit part
-      if (.not. stm_included) then     ! just do the normal stuff
+      if ((.not. stm_included) .or. flowwithoutwaves ) then     ! just do the normal stuff
          call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop,  kmxn, kmxL, constituents, difsedu, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst,fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
       else
          if ( jatranspvel.eq.0 .or. jatranspvel.eq.1 ) then       ! Lagrangian approach
@@ -168,8 +168,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)                         ! prefer this, as Ltop gets messed around with in hk specials
                do L=Lb,Lt
-                  u1sed(L) = u1(L)!+mtd%uau(L)                    ! JRE to do, discuss with Dano
-                  q1sed(L) = q1(L)!+mtd%uau(L)*Au(L)
+                  u1sed(L) = u1(L)!+mtd%uau(LL)                    ! JRE to do, discuss with Dano
+                  q1sed(L) = q1(L)!+mtd%uau(LL)*Au(L)
                end do
             end do
          else if (jatranspvel .eq. 2) then                        ! Eulerian approach
@@ -177,8 +177,8 @@ subroutine update_constituents(jarhoonly)
             do LL=1,Lnx
                call getLbotLtop(LL,Lb,Lt)
                do L=Lb,Lt
-                  u1sed(L) = u1(L)-ustokes(L)
-                  q1sed(L) = q1(L)-ustokes(L)*Au(L)
+                  u1sed(L) = u1(L)-ustokes(L)       !+mtd%uau(LL)
+                  q1sed(L) = q1(L)-ustokes(L)*Au(L) !+mtd%uau(LL)*Au(L)
                end do
             end do
          end if
@@ -244,6 +244,10 @@ subroutine update_constituents(jarhoonly)
       enddo
    endif
 
+!  Move here, needed in two following subroutines
+!  restore dts
+   dts = dts_store
+
    if (jarhoonly == 1) then
       call extract_rho() ; numconst = numconst_store
    else
@@ -255,9 +259,6 @@ subroutine update_constituents(jarhoonly)
 
    ierror = 0
 1234 continue
-
-!  restore dts
-   dts = dts_store
 
    if (timon) call timstop( ithndl )
    return

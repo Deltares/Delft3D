@@ -91,6 +91,9 @@
  type (listc), allocatable     :: ia(:)
  type (listd), allocatable     :: row(:)
 
+ integer, allocatable          :: intbuf(:) !< Work array in pointonstack>ijtrue
+ logical, allocatable          :: logbuf(:) !< Work array in pointonstack>ijtrue
+
  double precision              :: epscg   = 1d-14    ! epsilon waterlevels cg method (maximum)
  double precision              :: epsdiff = 1d-3     ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
  integer                       :: maxmatvecs  = 100000 ! maximum number of matrix-vector multiplications in Saad solver

@@ -193,36 +193,6 @@ contains
       gl_thickness = getGroundLayer(CrossSection)
 
       ! Check on Valve
-      if (culvert%has_valve .and. ((culvert%valveOpening - gl_thickness) < thresholdDry)) then
-         kfum  = 0
-         fum   = 0.0d0
-         rum   = 0.0d0
-         u1m   = 0.0d0
-         u0m   = 0.0d0
-         qm    = 0.0d0
-         q0m   = 0.0d0
-         culvert%state = 0
-         return
-      endif
-
-      if ((smax - culvertCrest - gl_thickness) < thresholdDry) then
-         kfum = 0
-      else
-         kfum = 1
-      endif
-
-      if (kfum==0) then 
-         kfum  = 0
-         fum   = 0.0d0
-         rum   = 0.0d0
-         u1m   = 0.0d0
-         u0m   = 0.0d0
-         qm    = 0.0d0
-         q0m   = 0.0d0
-         culvert%state = 0
-         return
-      endif
-      
       !     First find out the critical depth that can be used in free flow equations
       !     pjo, 13-04-2000, ars 4952, when flow direction changes, critical
       !     depth is taken as zero.

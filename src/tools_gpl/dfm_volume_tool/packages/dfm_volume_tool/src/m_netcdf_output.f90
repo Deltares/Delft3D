@@ -87,7 +87,7 @@ function nc_create(ncfile) result (ioutput)
 end function nc_create
 
 !> Write the volumes and surfaces per gridpoint to an open Netcdf file
-subroutine write_volume_table_gridpoint_data(ioutput,bedlevel,topheight,volume,surface,count,numnodes,increment)
+subroutine write_volume_table_gridpoint_data(ioutput,bedlevel,topheight,volume,surface,storage,deadstorage,wl_deadstorage,count,numnodes,increment)
  use MessageHandling
 
    integer,                            intent(in)  :: ioutput           !< NetCDF dataset ID for the already opened output file.
@@ -95,13 +95,16 @@ subroutine write_volume_table_gridpoint_data(ioutput,bedlevel,topheight,volume,s
    double precision, dimension(:),     intent(in)  :: topheight         !< (numnodes) Array of highest tabulated waterlevel w.r.t. the bed level, for each gridpoint.
    double precision, dimension(:,:),   intent(in)  :: volume            !< (numnodes, count) Tabulated volumes.
    double precision, dimension(:,:),   intent(in)  :: surface           !< (numnodes, count) Tabulated wet surface area.
+   double precision, dimension(:,:),   intent(in)  :: storage           !< (numnodes, count) Tabulated storage
+   double precision, dimension(:,:),   intent(in)  :: deadstorage       !< (numnodes, count) Tabulated dead storage
+   double precision, dimension(:),     intent(in)  :: wl_deadstorage    !< (numnodes) dead storage water level on gridpoint
    integer         , dimension(:),     intent(in)  :: count             !< Number of levels in the volume/surface table
    integer,                            intent(in)  :: numnodes          !< Number of nodes (gridpoints) in the volume table
    double precision,                   intent(in)  :: increment         !< increment between two volume table levels
 
 
    integer :: dimid_levels, dimid_nodes, dimid_increment
-   integer :: varid_volume, varid_surface, varid_numlevels, varid_bedlevel, varid_topheight, varid_increment
+   integer :: varid_volume, varid_surface, varid_numlevels, varid_bedlevel, varid_topheight, varid_increment, varid_storage, varid_deadstorage, varid_wl_deadstorage
    integer :: ierr
    integer :: numlevels, mesh1d_nNodes
    character (len =  NF90_MAX_NAME) :: mesh1d_nNodes_name
@@ -124,12 +127,15 @@ subroutine write_volume_table_gridpoint_data(ioutput,bedlevel,topheight,volume,s
    ierr = nf90_def_dim(ioutput, 'increment', 1, dimid_increment)
    call nc_error(ierr, 'nc_write')
    
-   varid_volume      = SetupVariable(ioutput,'volume',      nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Volume',    'm3') 
-   varid_surface     = SetupVariable(ioutput,'surface',     nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Surface',   'm2') 
-   varid_numlevels   = SetupVariable(ioutput,'numlevels',   nf90_int   , (/ dimid_nodes/), '', 'Number of levels',   '') 
-   varid_bedlevel    = SetupVariable(ioutput,'bedlevel' ,   nf90_double, (/ dimid_nodes/), '', 'Bedlevel',   'm') 
-   varid_topheight   = SetupVariable(ioutput,'topheight',   nf90_double, (/ dimid_nodes/), '', 'TopHeight',   'm') 
-   varid_increment   = SetupVariable(ioutput,'increment',   nf90_double, (/ dimid_increment/), '', 'Increment',   'm') 
+   varid_volume         = SetupVariable(ioutput,'volume',      nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Volume',    'm3') 
+   varid_surface        = SetupVariable(ioutput,'surface',     nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Surface',   'm2') 
+   varid_numlevels      = SetupVariable(ioutput,'numlevels',   nf90_int   , (/ dimid_nodes/), '', 'Number of levels',   '') 
+   varid_bedlevel       = SetupVariable(ioutput,'bedlevel' ,   nf90_double, (/ dimid_nodes/), '', 'Bedlevel',   'm') 
+   varid_topheight      = SetupVariable(ioutput,'topheight',   nf90_double, (/ dimid_nodes/), '', 'TopHeight',   'm') 
+   varid_increment      = SetupVariable(ioutput,'increment',   nf90_double, (/ dimid_increment/), '', 'Increment',   'm') 
+   varid_storage        = SetupVariable(ioutput,'storage',     nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Storage',    'm3') 
+   varid_deadstorage    = SetupVariable(ioutput,'deadstorage', nf90_double, (/ dimid_levels, dimid_nodes/), '', 'Dead Storage',    'm3') 
+   varid_wl_deadstorage = SetupVariable(ioutput,'wl_deadstorage' ,   nf90_double, (/ dimid_nodes/), '', 'Dead Storage Water Level',   'm') 
    
    ierr = nf90_enddef(ioutput)
    call nc_error(ierr, 'nc_write_enddef')
@@ -144,8 +150,14 @@ subroutine write_volume_table_gridpoint_data(ioutput,bedlevel,topheight,volume,s
    call nc_error(ierr, 'nc_write_put_bedl')
    ierr = nf90_put_var(ioutput, varid_topheight , topheight, start=(/1/)  , count = (/numnodes/))
    call nc_error(ierr, 'nc_write_put_toph')
-   ierr = nf90_put_var(ioutput, varid_increment, increment)
+   ierr = nf90_put_var(ioutput, varid_increment , increment)
    call nc_error(ierr, 'nc_write_put_incr')
+   ierr = nf90_put_var(ioutput, varid_storage         , storage, start=(/1,1/), count = (/numlevels, numnodes/))
+   call nc_error(ierr, 'nc_write_put_stor')
+   ierr = nf90_put_var(ioutput, varid_deadstorage     , deadstorage, start=(/1,1/), count = (/numlevels, numnodes/))
+   call nc_error(ierr, 'nc_write_put_deadstor')
+   ierr = nf90_put_var(ioutput, varid_wl_deadstorage  , wl_deadstorage, start=(/1/)  , count = (/numnodes/))
+   call nc_error(ierr, 'nc_write_put_bedl')
    
    ierr = nf90_close(ioutput)
    call nc_error(ierr, 'nc_write_close')
@@ -182,7 +194,7 @@ subroutine  write_volume_surface_arrays(ioutput, ids, levels, volume, surface, s
    ! Create 1D-array of location ID's
    varid_id          = SetupVariable(ioutput,'id',          nf90_char,   (/ dimid_chars,dimid_ids /),  '', 'Id',       '-')     
    ierr = nf90_put_att(ioutput, varid_id, 'cf_role', 'timeseries_id')
-   varid_levels      = SetupVariable(ioutput,'levels',      nf90_double, (/ dimid_levels/),            '', 'Levels',    'm AD') 
+   varid_levels      = SetupVariable(ioutput,'levels',      nf90_double, (/ dimid_levels/),            '', 'Levels',    'm') 
    varid_volume      = SetupVariable(ioutput,'volume',      nf90_double, (/ dimid_levels, dimid_ids/), '', 'Volume',    'm3') 
    varid_surface     = SetupVariable(ioutput,'surface',     nf90_double, (/ dimid_levels, dimid_ids/), '', 'Surface',   'm2') 
    varid_deadstorage = SetupVariable(ioutput,'dead_storage',nf90_double, (/ dimid_levels, dimid_ids/), '', 'Dead storage',    'm3') 

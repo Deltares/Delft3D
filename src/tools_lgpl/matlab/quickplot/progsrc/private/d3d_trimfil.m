@@ -51,15 +51,50 @@ T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 if nargin<2
     error('Not enough input arguments')
-elseif nargin==2
+end
+
+OrigFI = FI;
+nPartitions = 1; % single partition
+mergeParts = false;
+mergeDim = -1;
+if isfield(FI,'NEFIS')
+    nPartitions = length(FI.NEFIS); 
+    if domain <= nPartitions
+        FI = FI.NEFIS(domain);
+        nPartitions = 1;
+    else
+        mergeParts = (domain == nPartitions+2); % merged partitions
+        switch FI.Merge.Dimension
+            case 'M'
+                mergeDim = M_;
+            case 'N'
+                mergeDim = N_;
+        end
+        FI = FI.NEFIS(1);
+    end
+    if isfield(OrigFI,'QP_Options')
+        FI.QP_Options = OrigFI.QP_Options;
+    end
+end
+
+if nargin==2
     varargout={infile(FI,domain)};
+    if nPartitions > 1 && ~mergeParts
+        Out = varargout{1};
+        for i = 1:length(Out)
+            if Out(i).DimFlag(mergeDim)
+                Out(i).DimFlag(mergeDim) = inf;
+            end
+        end
+        varargout{1} = Out;
+    end
     return
 elseif ischar(field)
     switch field
         case 'options'
-            [varargout{1:2}]=options(FI,cmd,varargin{:});
+            [varargout{1:2}]=options(OrigFI,cmd,varargin{:});
         case 'domains'
-            varargout={domains(FI)};
+            varargout={domains(OrigFI)};
         case 'dimensions'
             varargout={dimensions(FI)};
         case 'locations'
@@ -80,6 +115,9 @@ cmd=lower(cmd);
 switch cmd
     case 'size'
         varargout={getsize(FI,Props)};
+        if mergeParts && Props.DimFlag(mergeDim)
+            varargout{1}(mergeDim) = OrigFI.Merge.Length;
+        end
         return
     case 'dimlabels'
         varargout={getlabels(FI,Props)};
@@ -112,6 +150,24 @@ if DataInCell==0.5 && strcmp(Props.ReqLoc,'z')
 elseif strcmp(Props.Name,'grid')
     DataInCell = 1;
 end
+
+hasSubfields = ~isempty(getsubfields(OrigFI,Props));
+[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,hasSubfields,varargin{:});
+
+varargout{2} = OrigFI;
+varargout{1} = Ans;
+
+function Domains = domains(FI)
+if isfield(FI,'Partitions')
+    Domains = multiline(sprintf('partition %3.3d-',1:FI.Partitions{1}+1),'-','cell');
+    Domains{end-1} = 'all partitions';
+    Domains{end} = 'merged partitions';
+else
+    Domains = {};
+end
+
+function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,varargin)
+T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 DimFlag=Props.DimFlag;
 
@@ -459,9 +515,23 @@ if DataRead
         case {'velocity in depth averaged flow direction','velocity normal to depth averaged flow direction'}
             % always load 3D field to determine depth averaged flow direction
             elidx{K_-1}=0;
-        case {'thin dams','temporarily inactive velocity points','domain decomposition boundaries','open boundaries','closed boundaries'}
+        case {'thin dams','temporarily inactive velocity points'}
             Props.NVal=2;
             ThinDam=1;
+        case {'domain decomposition boundaries','open boundaries','closed boundaries','partition boundaries'}
+            Props.NVal=2;
+            ThinDam=1;
+            % These quantities are determined by comparing a cell value
+            % with a neighbouring cell value. To make sure that this works
+            % properly for the high M/N boundary, we need to make sure that
+            % the neighbour on those sides is included when requesting the
+            % data.
+            if elidx{2}(end)<sz(3) % M_
+                elidx{2}(end+1) = elidx{2}(end)+1;
+            end
+            if elidx{3}(end)<sz(4) % N_
+                elidx{3}(end+1) = elidx{3}(end)+1;
+            end
         case {'sediment thickness','base level of sediment layer'}
             switch Props.Val1
                 case 'THLYR'
@@ -662,6 +732,17 @@ if DataRead
             %
             val2 = double((val1(:,1:end,:)~=bval | val1(:,[2:end end],:)~=1) & (val1(:,1:end,:)~=1 | val1(:,[2:end end],:)~=bval));
             val1 = double((val1(:,:,1:end)~=bval | val1(:,:,[2:end end])~=1) & (val1(:,:,1:end)~=1 | val1(:,:,[2:end end])~=bval));
+        case {'partition boundaries'}
+            %
+            % A partition boundary is a change in partition number. The
+            % current implementation follows the KFU convention (i.e. 1 is
+            % no marker, 0 is marker), so we check whether the partition
+            % numbers are equal. The N and M direction are still reversed,
+            % so val2 is associated with the first dimension of the data
+            % and val1 is associated with the second dimension of the data.
+            %
+            val2 = double(val1(:,1:end,:) == val1(:,[2:end end],:));
+            val1 = double(val1(:,:,1:end) == val1(:,:,[2:end end]));
         case {'velocity'}
             [val3,Chk]=vs_let(FI,Props.Group,idx(T_),'WPHY',elidx,'quiet');
             if ~Chk
@@ -798,37 +879,6 @@ if DataRead
         if zlayermodel
             val1(val1==0)=NaN;
             val2(val2==0)=NaN;
-        end
-        if 0 && isstruct(vs_disp(FI,'map-series','KFU'))
-            if size(elidx,2) ==3 %added because in 3D it wanted a cell with 2 components not 3. 
-                elidx2D = elidx;
-                elidx2D(end)=[]; 
-            else
-                elidx2D = elidx;
-            end
-            kfu=vs_let(FI,'map-series',idx(T_),'KFU',elidx2D,'quiet!');
-            kfv=vs_let(FI,'map-series',idx(T_),'KFV',elidx2D,'quiet!');
-            % remove the following lines when kfu/kfv correct
-            if isstruct(vs_disp(FI,'map-series','aguu'))
-                aguu=vs_let(FI,Props.Group,idx(T_),'aguu',elidx2D,'quiet!');
-                agvv=vs_let(FI,Props.Group,idx(T_),'agvv',elidx2D,'quiet!');
-                kfsc=vs_let(FI,Props.Group,idx(T_),'kfs_cc',elidx2D,'quiet!');
-                kfu = kfu; %| (aguu>0 & kfsc>=0);
-                kfv = kfv; %| (agvv>0 & kfsc>=0);
-            end
-            % remove until here
-            if size(elidx,2)==3 & length(elidx{3})~=1 % maybe there is a better way to do this. For section of 3D velocity field the old version was setting to NaN only
-                                        % the velocity point in the upper layer
-                for k=1:size(val1,ndims(val1))
-                    kfu_3d(:,:,:,k) = kfu(:,:,:);
-                    kfv_3d(:,:,:,k) = kfv(:,:,:);
-                end
-            else
-                kfu_3d = kfu;
-                kfv_3d = kfv;
-            end
-            val1(kfu_3d==0) = NaN;
-            val2(kfv_3d==0) = NaN;
         end
         [val1,val2]=uv2cen(val1,val2);
     end
@@ -975,38 +1025,36 @@ if DataInCell
         end
     end
 end
-if 1%~all(allidx(DimMask & DimFlag))
-    if XYRead
-        if DataInCell
-            if DimFlag(M_) && DimFlag(N_) && DimFlag(K_)
+if XYRead
+    if DataInCell
+        if DimFlag(M_) && DimFlag(N_) && DimFlag(K_)
+            z=z(:,ind{[M_ N_]},:);
+        end
+    else
+        if DimFlag(M_) && DimFlag(N_)
+            if DimFlag(K_)
+                x=x(:,ind{[M_ N_]},:);
+                y=y(:,ind{[M_ N_]},:);
                 z=z(:,ind{[M_ N_]},:);
-            end
-        else
-            if DimFlag(M_) && DimFlag(N_)
-                if DimFlag(K_)
-                    x=x(:,ind{[M_ N_]},:);
-                    y=y(:,ind{[M_ N_]},:);
-                    z=z(:,ind{[M_ N_]},:);
-                else
-                    x=x(ind{[M_ N_]});
-                    y=y(ind{[M_ N_]});
-                end
+            else
+                x=x(ind{[M_ N_]});
+                y=y(ind{[M_ N_]});
             end
         end
     end
-    DimMask=[0 1 1 1 1];
-    ind=ind(DimMask & DimFlag);
-    switch Props.NVal
-        case {1,5,6}
-            val1=val1(:,ind{:});
-        case 2
-            val1=val1(:,ind{:});
-            val2=val2(:,ind{:});
-        case 3
-            val1=val1(:,ind{:});
-            val2=val2(:,ind{:});
-            val3=val3(:,ind{:});
-    end
+end
+DimMask=[0 1 1 1 1];
+ind=ind(DimMask & DimFlag);
+switch Props.NVal
+    case {1,5,6}
+        val1=val1(:,ind{:});
+    case 2
+        val1=val1(:,ind{:});
+        val2=val2(:,ind{:});
+    case 3
+        val1=val1(:,ind{:});
+        val2=val2(:,ind{:});
+        val3=val3(:,ind{:});
 end
 
 % permute n and m dimensions into m and n if necessary
@@ -1238,8 +1286,6 @@ end
 if DimFlag(T_)
     Ans.Time=readtim(FI,Props,idx{T_});
 end
-
-varargout={Ans FI};
 % -------------------------------------------------------------------------
 
 % -------------------------------------------------------------------------
@@ -1255,10 +1301,6 @@ end
 
 % -------------------------------------------------------------------------
 function Out=infile(FI,domain)
-if domain>1
-    Out=[];
-    return
-end
 FI = guarantee_options(FI);
 %======================== SPECIFIC CODE ===================================
 PropNames={'Name'                   'Units'   'DimFlag' 'DataInCell' 'NVal' 'Geom'  'Coords' 'VecType' 'Loc' 'ReqLoc'  'Loc3D' 'Group'          'Val1'    'Val2'  'SubFld' 'MNK' };
@@ -1282,6 +1324,7 @@ DataProps={'morphologic grid'          ''       [0 0 1 1 0]  0         0    'sQU
     'bottom active layer at velocity points (kfu/vmin)' ...
                                        ''       [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'KFUMIN'  'KFVMIN' []       0
     'parallel partition numbers'       ''       [0 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-const'      'PPARTITION'  ''       []       0
+    'partition boundaries'             ''       [0 0 1 1 0]  0         0    'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-const'      'PPARTITION' ''    []       0
     '-------'                          ''       [0 0 0 0 0]  0         0    ''      ''       ''        ''    ''        ''      ''               ''        ''       []       0
     'air pressure'                     'N/m^2'  [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-series'     'PATM'    ''       []       0
     'air temperature'                  '°C'     [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-series'     'AIRTEM'  ''       []       0
@@ -1434,6 +1477,9 @@ DataProps={'morphologic grid'          ''       [0 0 1 1 0]  0         0    'sQU
     'maximum bed shear stress'         'N/m^2'  [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-series'     'TAUMAX'  ''       []       0
     'bed shear stress for morphology'  'N/m^2'  [1 0 1 1 0]  1         2    'sQUAD' 'xy'     'u'       'u'   'z'       ''      'map-sed-series' 'TAUB'    ''       []       0
     'excess bed shear ratio'           '-'      [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-sed-series' 'TAURAT'  ''       'sb1'    0
+    'bed roughness'                    ''       [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'ROUMETU' 'ROUMETV' []      0
+    'currents related z0 roughness'    'm'      [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'Z0UCUR'  'Z0VCUR' []       0
+    'wave enhanced z0 roughness'       'm'      [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'Z0UROU'  'Z0VROU' []       0
     'initial bed level'                'm'      [0 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-const'      'DP0'     ''       []       0
     'bed level in water level points'  'm'      [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'd'   'z'       ''      'map-const'      'DP0'     ''       []       0
     'bed level in velocity points'     'm'      [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-const'      'DPU0'    'DPV0'   []       0
@@ -3061,12 +3107,33 @@ switch cmd,
             end
             t=get(findobj(mfig,'tag','Erestart'),'userdata');
             if ustrcmpi('tri-rst',f)>0 || (ustrcmpi('.dat',e)<0 && ustrcmpi('.nc',e)<0 && ~isempty(e))
-                trim2rst(FI,t,pf);
+                if isfield(FI,'NEFIS')
+                    for ip = 1:length(FI.NEFIS)
+                        pfPart = [pf sprintf('-%3.3i',ip)];
+                        trim2rst(FI.NEFIS(ip),t,pfPart);
+                    end
+                else
+                    trim2rst(FI,t,pf);
+                end
             elseif ustrcmpi('.nc',e)>0
-                write_nctrimfile(FI,pf,t);
+                if isfield(FI,'NEFIS')
+                    for ip = 1:length(FI.NEFIS)
+                        pfPart = [fullfile(p,f),sprintf('-%3.3i',ip),e];
+                        write_nctrimfile(FI,pfPart,t);
+                    end
+                else
+                    write_nctrimfile(FI,pf,t);
+                end
             else
                 pf = fullfile(p,f); % get rid of .dat extension
-                write_trimfile(FI,pf,t);
+                if isfield(FI,'NEFIS')
+                    for ip = 1:length(FI.NEFIS)
+                        pfPart = [pf,sprintf('-%3.3i',ip)];
+                        write_trimfile(FI,pfPart,t);
+                    end
+                else
+                    write_trimfile(FI,pf,t);
+                end
             end
         end
     case 'reduce_trim'
@@ -3110,9 +3177,23 @@ switch cmd,
             t=get(findobj(mfig,'tag','Erestart'),'userdata');
             switch op
                 case 'compress'
-                    write_trimfile(FI,pf,t);
+                    if isfield(FI,'NEFIS')
+                        for ip = 1:length(FI.NEFIS)
+                            pfPart = [pf,sprintf('-%3.3i',ip)];
+                            write_trimfile(FI,pfPart,t);
+                        end
+                    else
+                        write_trimfile(FI,pf,t);
+                    end
                 otherwise
-                    average_trim(FI,pf,t,op)
+                    if isfield(FI,'NEFIS')
+                        for ip = 1:length(FI.NEFIS)
+                            pfPart = [pf,sprintf('-%3.3i',ip)];
+                            average_trim(FI,pfPart,t,op)
+                        end
+                    else
+                        average_trim(FI,pf,t,op)
+                    end
             end
         end
     case 'simsteps'

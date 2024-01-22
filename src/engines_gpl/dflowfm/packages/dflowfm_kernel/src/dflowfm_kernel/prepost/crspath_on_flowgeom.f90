@@ -44,7 +44,7 @@ subroutine crspath_on_flowgeom(path,includeghosts,jalinklist,numlinks,linklist, 
     use network_data
     use m_sferic
     use m_partitioninfo
-    use sorting_algorithms, only: indexx
+    use stdlib_sorting, only: sort_index
     use geometry_module, only: dbdistance, normalout
     use m_missing, only: dmiss, dxymis
     use m_alloc
@@ -140,7 +140,7 @@ subroutine crspath_on_flowgeom(path,includeghosts,jalinklist,numlinks,linklist, 
             path%sp(i) = dble(path%indexp(i)) + (1d0-path%wfp(i))
          end do
 
-         call indexx(path%lnx,path%sp,path%iperm)
+         call sort_index(path%sp(1:path%lnx), path%iperm(1:path%lnx))
 
       !  compute arc length
          allocate(dpl(path%np))

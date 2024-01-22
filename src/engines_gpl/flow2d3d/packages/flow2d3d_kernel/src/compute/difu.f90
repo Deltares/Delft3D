@@ -108,6 +108,7 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
 
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: xlo
+    integer                , pointer :: max_mud_sedtyp
 !
 ! Global variables
 !
@@ -309,6 +310,7 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     ad_epsabs   => gdp%gdnumeco%ad_epsabs
     ad_epsrel   => gdp%gdnumeco%ad_epsrel
     dryflc      => gdp%gdnumeco%dryflc
+    max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
     !
     ! INITIALISATION
     !
@@ -674,8 +676,8 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        lst = max(lsal, ltem)
        do l = 1, lsed
           ll = lst + l
-          if ((eqmbcsand .and. sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) .or. &
-            & (eqmbcmud  .and. sedtyp(l) == SEDTYP_COHESIVE)             ) then
+          if ((eqmbcsand .and. sedtyp(l) > max_mud_sedtyp) .or. &
+            & (eqmbcmud  .and. sedtyp(l) <= max_mud_sedtyp)) then
              if (kcu(nmf) == 1) then
                 do k = 1, kmax
                    ddkl(nmf, k, ll) = max(0.0_fp, r0(nmfu, k, ll))

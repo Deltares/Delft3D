@@ -38,7 +38,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
 !    Function: - Reads physical coefficients for temperature
 !                model, rigid wall, tidal forces, density &
 !                wind: KTEMP, FCLOU, SAREA, IVAPOP, SECCHI,
-!                      STANTON, DALTON ,IROV, Z0V, TGFCMP,
+!                      STANTON, mulsta, DALTON, muldal, IROV, Z0V, TGFCMP,
 !                      TEMPW, SALW, WSTRES, RHOA , SDlake, Wslake
 ! Method used:
 !
@@ -63,7 +63,9 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                   , pointer :: fclou
     real(fp)                   , pointer :: gapres
     real(fp)                   , pointer :: stanton
+    real(fp)                   , pointer :: mulsta
     real(fp)                   , pointer :: dalton
+    real(fp)                   , pointer :: muldal
     real(fp)                   , pointer :: qtotmx
     real(fp)                   , pointer :: lambda
     integer                    , pointer :: wslake
@@ -160,6 +162,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                    :: rsmall      ! Help variable 
     real(fp), dimension(6)      :: rval        ! Help array (real) where the data, recently read from the MD-file, are stored temporarily 
     real(sp)                    :: sprval      ! same, but for one single single precision value    
+    real(fp)                    :: fprval      ! same, but for one single flexible precision value    
     character(1)                :: cdef        ! Help var. containing default value(s) for character variable 
     character(1)                :: chulp       ! Help variabele where the data, recently read from the MD-file, are stored temporarily 
     character(6)                :: keyw        ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM) 
@@ -182,7 +185,9 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     wslake              => gdp%gdheat%wslake
     sdlake              => gdp%gdheat%sdlake
     stanton             => gdp%gdheat%stanton
+    mulsta              => gdp%gdheat%mulsta
     dalton              => gdp%gdheat%dalton
+    muldal              => gdp%gdheat%muldal
     qtotmx              => gdp%gdheat%qtotmx
     lambda              => gdp%gdheat%lambda
     ivapop              => gdp%gdheat%ivapop
@@ -246,7 +251,9 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     ztbml        = .false.
     !
     stanton     = 1.30e-3
+    mulsta      = 1.0_fp
     dalton      = 1.30e-3
+    muldal      = 1.0_fp
     maseva      = 0
     !
     irov        = 0
@@ -492,6 +499,22 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
              call prterr(lundia, 'G051', trim(message))
           endif
           !
+          ! Locate and read optional real 'mulsta'
+          !
+          fprval = -999.0_fp
+          call prop_get(gdp%mdfile_ptr, '*', 'mulsta', fprval)
+          if (comparereal(fprval, -999.0_fp) /= 0) then
+             mulsta = fprval
+             if (comparereal(mulsta, 0.7_fp) == -1 .or. comparereal(mulsta, 1.3_fp) == 1) then
+                write(message,'(a,f12.3)') 'Stanton multiplication factor mulsta has a value outside the region [0.7,1.3]: ', mulsta
+                call prterr(lundia, 'P004', trim(message))
+                call d3stop(1, gdp)
+             else
+                write(message,'(a,f12.3)') 'Stanton multiplication factor mulsta: ', mulsta
+                call prterr(lundia, 'G051', trim(message))
+             endif
+          endif
+          !
           ! reset RDEF
           !
           rdef = 0.0
@@ -531,6 +554,22 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
              call prterr(lundia, 'G051', trim(message))
           endif
           !
+          ! Locate and read optional real 'muldal'
+          !
+          fprval = -999.0_fp
+          call prop_get(gdp%mdfile_ptr, '*', 'muldal', fprval)
+          if (comparereal(fprval, -999.0_fp) /= 0) then
+             muldal = fprval
+             if (comparereal(muldal, 0.7_fp) == -1 .or. comparereal(muldal, 1.3_fp) == 1) then
+                write(message,'(a,f12.3)') 'Dalton multiplication factor muldal has a value outside the region [0.7,1.3]: ', muldal
+                call prterr(lundia, 'P004', trim(message))
+                call d3stop(1, gdp)
+             else
+                write(message,'(a,f12.3)') 'Dalton multiplication factor muldal: ', muldal
+                call prterr(lundia, 'G051', trim(message))
+             endif
+          endif
+          !
           ! Locate and read 'Wslake'
           ! 
           Wslake = 0
@@ -553,6 +592,39 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           if (SDlake<0 .or. SDlake>1) then
              call prterr(lundia    ,'U061'    ,' '       )
              SDlake = 0
+          endif
+          !
+          ! Some combination checks:
+          !
+          ! Error: SDlake=1 is useless when Wslake=0
+          !
+          if (Wslake==0 .and. SDlake==1) then
+             write(message,'(a,f12.3)') 'SDlake=1 is not allowed when Wslake=0'
+             call prterr(lundia, 'P004', trim(message))
+             call d3stop(1, gdp)
+          endif
+          !
+          ! Error: mulsta<>1.0 is useless when SDlake=0
+          ! Error: muldal<>1.0 is useless when SDlake=0
+          !
+          if (SDlake == 0) then
+             if (comparereal(mulsta, 1.0_fp) /= 0) then
+                write(message,'(a,f12.3)') 'mulsta<>1.0 is not allowed when SDlake=0'
+                call prterr(lundia, 'P004', trim(message))
+                call d3stop(1, gdp)
+             endif
+             if (comparereal(muldal, 1.0_fp) /= 0) then
+                write(message,'(a,f12.3)') 'muldal<>1.0 is not allowed when SDlake=0'
+                call prterr(lundia, 'P004', trim(message))
+                call d3stop(1, gdp)
+             endif
+          endif
+          !
+          ! Message: SDlake=1: Stanton and Dalton values will be replaced by windcd
+          !
+          if (SDlake == 1) then
+             write(message,'(a,f12.3)') 'SDlake=1: Stanton and Dalton values will be replaced by windCD'
+             call prterr(lundia, 'G051', trim(message))
           endif
           !
           ! reset RDEF
@@ -664,6 +736,9 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
         case( 'unesco' )
             idensform = dens_UNESCO
             call prterr(lundia, 'G051', 'Using UNESCO density formulation')
+        case( 'nacl' )
+            idensform = dens_NaClSol
+            call prterr(lundia, 'G051', 'Using NaCl   density formulation', gdp)
         case( ' '      )
             idensform = dens_UNESCO
             call prterr(lundia, 'G051', 'Using UNESCO density formulation by default')

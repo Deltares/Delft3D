@@ -394,8 +394,6 @@
          call swapsamples()
         else if (nwhat2 == 8) then
          call copygridtosam()
-        else if (nwhat2 == 9) then
-         call copy_sam2part()
         else if (nwhat2 == 10 ) then
          call copy_dots2sam()
         else if (nwhat2 == 11 ) then

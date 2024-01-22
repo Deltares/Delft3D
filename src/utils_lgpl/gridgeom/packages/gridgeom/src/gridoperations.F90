@@ -2,7 +2,7 @@
    module gridoperations
 
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR, LEVEL_WARN
-   use meshdata, only: t_ug_meshgeom
+   use m_ug_meshgeom
    implicit none
 
    !new functions
@@ -53,6 +53,7 @@
    public :: sort_links_ccw
    public :: get_cellpolygon
    public :: make_dual_cell
+   public :: dlinkangle
  
    
    ! unstruct.F90
@@ -717,8 +718,6 @@
    double precision :: sl, sm, xcr, ycr
 
    INTEGER, ALLOCATABLE          ::  KC2(:), KN2(:,:), KCK(:)
-   double precision, allocatable :: arglin(:)
-   integer, allocatable          :: linnrs(:), inn(:)
    double precision              :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle, phi0
 
    double precision :: X(4), Y(4)
@@ -1008,11 +1007,9 @@
 
    ! Sort nod%lin in counterclockwise order
    maxlin = maxval(nmk(1:numk))
-   allocate(linnrs(maxlin), arglin(maxlin), inn(maxlin))
    do k=1,numk
-      call sort_links_ccw(k, maxlin, linnrs, arglin, inn)
+      call sort_links_ccw(k, maxlin)
    end do
-   deallocate(linnrs, arglin, inn)
 
    ! Reset small link count for linkbadqual (net link based).
    ! Will only be recomputed in flow_geominit.
@@ -2350,12 +2347,12 @@
    end function is_in_netcell
 
    !> sort links in nod%lin counterclockwise (copy-paste from setnodadm)
-   subroutine sort_links_ccw(k,maxlin,linnrs,arglin,inn)
+   subroutine sort_links_ccw(k,maxlin)
    !LC use m_netw
    use network_data
    use m_sferic
    use geometry_module, only: getdxdy, dcosphi, getdx, getdy
-   use sorting_algorithms, only: indexx
+   use stdlib_sorting, only: sort_index
 
    implicit none
 
@@ -2363,8 +2360,8 @@
    integer,          intent(in)    :: maxlin                      !< array size
 
 
-   double precision, intent(inout) :: arglin(maxlin)              ! dummy array
-   integer,          intent(inout) :: linnrs(maxlin), inn(maxlin) ! dummy arrays
+   double precision, allocatable   :: arglin(:)                   ! dummy array
+   integer,          allocatable   :: linnrs(:), inn(:)           ! dummy arrays
 
    integer                         :: k1, k2, L, LL
 
@@ -2373,6 +2370,7 @@
 
    double precision                :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle
 
+   allocate(arglin(maxlin), linnrs(maxlin), inn(maxlin))
    do L=1,NMK(K)
       K1 = KN(1,nod(K)%lin(L)); K2 = KN(2,nod(K)%lin(L))
       if (K2 == K) then
@@ -2400,7 +2398,7 @@
       if ( arglin(L).lt.0d0 ) arglin(L) = arglin(L) + 2d0*pi
    end do
 
-   call indexx(nmk(k), arglin(1:nmk(k)), inn(1:nmk(k)))
+   call sort_index(arglin(1:nmk(k)), inn(1:nmk(k)))
 
    linnrs(1:nmk(k)) = nod(k)%lin(1:nmk(k))
    do L=1,nmk(k)
@@ -3731,7 +3729,6 @@
    !< converter function
    function ggeo_convert(meshgeom, start_index) result(ierr)
 
-   use meshdata
    use network_data
    use m_missing, only : dmiss
 
@@ -4514,8 +4511,8 @@
    function ggeo_map_2d_cells(meshgeom, mapping) result(ierr)
 
    use network_data
-   use m_missing, only : dmiss, imiss
-   use sorting_algorithms
+   use m_missing, only: dmiss, imiss
+   use stdlib_sorting, only: radix_sort
 
    implicit none
    type(t_ug_meshgeom), intent(in)             :: meshgeom
@@ -4523,8 +4520,7 @@
    double precision, allocatable               :: sorted_faces_x_meshgeom(:,:), sorted_faces_y_meshgeom(:,:)
    double precision, allocatable               :: sorted_faces_x_lib_state(:,:), sorted_faces_y_lib_state(:,:)
    double precision, parameter                 :: tolerance = 1e-8
-   integer                                     :: indexses_x(meshgeom%maxnumfacenodes), indexses_y(meshgeom%maxnumfacenodes), shift
-   double precision                            :: array_x_to_sort(meshgeom%maxnumfacenodes), array_y_to_sort(meshgeom%maxnumfacenodes)
+   integer                                     :: shift
    logical                                     :: isFound
    integer                                     :: i,j,k, ierr
 
@@ -4542,14 +4538,10 @@
    sorted_faces_x_meshgeom = dmiss
    sorted_faces_y_meshgeom = dmiss
    do i = 1,meshgeom%numface
-      array_x_to_sort = meshgeom%nodex(meshgeom%face_nodes(:,i) + shift)
-      array_y_to_sort = meshgeom%nodey(meshgeom%face_nodes(:,i) + shift)
-      call indexx(meshgeom%maxnumfacenodes, array_x_to_sort,indexses_x)
-      call indexx(meshgeom%maxnumfacenodes, array_y_to_sort,indexses_y)
-      do j=1,meshgeom%maxnumfacenodes
-         sorted_faces_x_meshgeom(j,i) = array_x_to_sort(indexses_x(j))
-         sorted_faces_y_meshgeom(j,i) = array_y_to_sort(indexses_y(j))
-      enddo
+      sorted_faces_x_meshgeom(:,i) = meshgeom%nodex(meshgeom%face_nodes(:,i) + shift)
+      sorted_faces_y_meshgeom(:,i) = meshgeom%nodey(meshgeom%face_nodes(:,i) + shift)
+      call radix_sort(sorted_faces_x_meshgeom(:,i))
+      call radix_sort(sorted_faces_y_meshgeom(:,i))
    enddo
 
    !server mesh, sort coordinate of the cells
@@ -4558,16 +4550,12 @@
    sorted_faces_x_lib_state = dmiss
    sorted_faces_y_lib_state = dmiss
    do i = 1,nump
-      array_x_to_sort = meshgeom%nodex(1)
-      array_x_to_sort(1:netcell(i)%N) = XK(netcell(i)%NOD)
-      array_y_to_sort = meshgeom%nodey(1)
-      array_y_to_sort(1:netcell(i)%N) = YK(netcell(i)%NOD)
-      call indexx(meshgeom%maxnumfacenodes, array_x_to_sort,indexses_x)
-      call indexx(meshgeom%maxnumfacenodes, array_y_to_sort,indexses_y)
-      do j=1,meshgeom%maxnumfacenodes
-         sorted_faces_x_lib_state(j,i) = array_x_to_sort(indexses_x(j))
-         sorted_faces_y_lib_state(j,i) = array_y_to_sort(indexses_y(j))
-      enddo
+      sorted_faces_x_lib_state(:,i) = meshgeom%nodex(1)
+      sorted_faces_x_lib_state(1:netcell(i)%N,i) = XK(netcell(i)%NOD)
+      sorted_faces_y_lib_state(:,i) = meshgeom%nodey(1)
+      sorted_faces_y_lib_state(1:netcell(i)%N,i) = YK(netcell(i)%NOD)
+      call radix_sort(sorted_faces_x_lib_state(:,i))
+      call radix_sort(sorted_faces_y_lib_state(:,i))
    enddo
 
    !build the mapping2dCells. Note: O(n2) time complexity 
@@ -4591,7 +4579,7 @@
          endif
       enddo
    enddo
-   
+
    ierr = 0
 
    end function ggeo_map_2d_cells
@@ -4615,6 +4603,27 @@
    msgbuf = ' ' ; call msg_flush()
 
    end subroutine network_dimensions_message
+   
+   !> Get link angle for a (signed) net link between -pi and pi
+   double precision function dLinkangle(L_signed)
+      use m_sferic, only: jsferic
+      use geometry_module, only: getdxdy 
+      use network_data, only: kn, xk, yk
+      implicit none
+      integer,          intent(in) :: L_signed  !< Signed net link number. May be negative to indicate that this link's orientation is flipped w.r.t. the parent item that it's part of.
+      double precision              :: dx, dy
+      integer                       :: k1, k2
 
-
+      if (L_signed > 0) then
+         k1 = kn(1,L_signed)
+         k2 = kn(2,L_signed)
+      else
+         k1 = kn(2,-L_signed)
+         k2 = kn(1,-L_signed)
+      end if
+      call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
+      dLinkangle = atan2(dy,dx)
+      return
+   end function dLinkangle
+   
    end module gridoperations

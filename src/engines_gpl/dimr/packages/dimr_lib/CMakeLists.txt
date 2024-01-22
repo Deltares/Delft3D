@@ -18,35 +18,22 @@ endif(UNIX)
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
-set(ini_version_file "${absolute_header_path}/version_number.ini")
 set(rc_version_file "${absolute_header_path}/dimr_lib_version.rc")
 set(header_version_file "${absolute_header_path}/dimr_lib_version.h")
-
-# Generate the version files
-generate_version_files(${rc_version_file} ${ini_version_file})
-generate_version_files(${header_version_file} ${ini_version_file})
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)
 file(GLOB headers ${header_path}/*.h)
 
 # Define library
-include_directories(${header_path})
+include_directories(${header_path}
+                    ${version_include_dir})
 set(library_name dimr_lib)
 add_library(${library_name} SHARED  ${source}
                                     ${headers}
-                                    ${ini_version_file}
                                     ${rc_version_file}
                                     ${header_version_file})
-
-# Define prebuild events
-prebuild_version_number(${library_name} ${rc_version_file} 
-                                        ${checkout_src_root}
-                                        ${ini_version_file})
-prebuild_version_number(${library_name} ${header_version_file}
-                                        ${checkout_src_root}
-                                        ${ini_version_file})
-
 
 if(UNIX)
     set(oss_dependencies    deltares_common_c

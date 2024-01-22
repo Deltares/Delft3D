@@ -38,7 +38,7 @@
  idum=ieor(idum,MASK)
  k=idum/IQ
  idum=IA*(idum-k*IQ)-IR*k
- if (idum.lt.0) idum=idum+IM
+ if (idum < 0) idum=idum+IM
  ran0=AM*idum
  idum=ieor(idum,MASK)
  return

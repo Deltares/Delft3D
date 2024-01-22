@@ -19,12 +19,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 
-
-
-
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
-
-execute_process(COMMAND find "${CMAKE_INSTALL_PREFIX}/lib" -type l -exec echo "remove destination of symlink:" {} \; -exec bash -c "cp --remove-destination $(readlink {}) {};"  {} \; WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib" )
-

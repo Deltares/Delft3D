@@ -45,6 +45,8 @@
  use MessageHandling
  use m_sobekdfm
  use m_subsidence
+ use m_fm_bott3d, only: fm_bott3d
+ use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
 
  implicit none
 
@@ -54,18 +56,21 @@
  integer            :: key, jposhchk_sav, LL, L, k1,k2, itype
  integer            :: ja, k, ierror, n, kt, num, js1, noddifmaxlevm, nsiz
  character (len=40) :: tex
- logical            :: firstnniteration
+ logical            :: firstnniteration, last_iteration
  double precision   :: dif, difmaxlevm
- double precision   :: thresh
 
  character(len=128) :: msg
 
 !-----------------------------------------------------------------------------------------------
  numnodneg = 0
- if (wrwaqon.and.allocated(qsrcwaq)) then
-    qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
-    qlatwaq0 = qlatwaq
- end if
+ last_iteration = .false.
+
+ if (numsrc > 0) then 
+   if (wrwaqon.and. size(qsrcwaq) > 0) then 
+     qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step
+     qlatwaq0 = qlatwaq
+   endif
+ endif
 
  111 continue
 
@@ -93,7 +98,7 @@
 
    222 if (nonlin == 2 .or. (nonlin ==3 .and. .not. firstnniteration)) then                               ! only for pressurised
        ! Nested newton iteration, start with s1m at bed level.
-       s1m = bl !  s1mini
+       s1m(:) = bl(:)
        call volsur()
        difmaxlevm = 0d0 ;  noddifmaxlevm = 0
     endif
@@ -103,10 +108,18 @@
 
  !-----------------------------------------------------------------------------------------------
 
-444 call s1nod()                                        ! entry point for non-linear continuity
+444 call s1nod()                                        ! entry point for non-linear continuityc
+    if (ifixedWeirScheme1d2d == 1) then
+       if (last_iteration) then 
+          ! Impose previously computed 1d2d discharge on 1d2d fixed weirs to keep mass conservation
+          call set_discharge_on_1d2d_fixedweirs()
+       else
+          call compute_1d2d_fixedweirs()
+       endif
+    endif
 
     call solve_matrix(s1, ndx,itsol)                    ! solve s1
-
+      
     ! if (NDRAW(18) > 1) then
     !    nsiz = ndraw(18)-1
     !    call tekrai(nsiz,ja)
@@ -145,10 +158,13 @@
          goto 222
        endif
 
-       if (wrwaqon.and.allocated(qsrcwaq)) then
-          qsrcwaq = qsrcwaq0                            ! restore cumulative qsrc for waq from start of this time step to avoid
-          qlatwaq = qlatwaq0                            ! double accumulation and use of incorrect dts in case of time step reduction
-       end if                                           
+       if (numsrc > 0) then 
+         if (wrwaqon.and. size(qsrcwaq) > 0) then     
+           qsrcwaq = qsrcwaq0                            ! restore cumulative qsrc for waq from start of this time step to avoid
+           qlatwaq = qlatwaq0                            ! double accumulation and use of incorrect dts in case of time step reduction
+         endif 
+       endif
+                                       
        call setkfs()
        if (jposhchk == 2 .or. jposhchk == 4) then       ! redo without timestep reduction, setting hu=0 => 333 s1ini
           if (nonlin >= 2) then
@@ -177,7 +193,7 @@
 
  call volsur()
 
- if (nonlin > 0) then
+   if (nonlin > 0) then
 
     difmaxlev = 0d0 ; noddifmaxlev = 0
 
@@ -185,7 +201,7 @@
        dif = abs(s1(k)-s00(k))
 
        if (dif  > difmaxlev ) then
-          difmaxlev    = dif
+          difmaxlev    = dif 
            noddifmaxlev = k
        endif
        s00(k) = s1(k)
@@ -230,9 +246,16 @@
        if ( jatimer.eq.1 ) call stoptimer (IMPIREDUCE)
     end if
 
-    if ( difmaxlev > epsmaxlev) then
+    if ( difmaxlev > epsmaxlev .and. .not. last_iteration) then
        ccr = ccrsav                                   ! avoid redo s1ini, ccr is altered by solve
        goto 444                                       ! standard non-lin iteration s1 => 444
+    else if (ifixedweirscheme1d2d==1 .and. .not. last_iteration) then
+      if (check_convergence_1d2d_fixedweirs()) then
+         last_iteration = .true. 
+      end if
+      ccr = ccrsav                                ! avoid redo s1ini, ccr is altered by solve
+      goto 444                                    ! when s1 .ne. s1m again do outer loop
+             
     endif
 
     ! beyond or past this point s1 is converged
@@ -281,8 +304,16 @@
     if ( jatimer.eq.1 ) call starttimer(IEROSED)
     !
     call setucxucy_mor (u1)
+    call fm_flocculate()               ! fraction transitions due to flocculation
+    
+    call timstrt('Settling velocity   ', handle_extra(87))
     call fm_fallve()                   ! update fall velocities
+    call timstop(handle_extra(87))
+    
+    call timstrt('Erosed_call         ', handle_extra(88))
     call fm_erosed()                   ! source/sink, bedload/total load
+    call timstop(handle_extra(88))
+    
     if ( jatimer.eq.1 ) call stoptimer(IEROSED)
  end if
 
@@ -300,8 +331,6 @@
  call transport()
  if ( jatimer.eq.1 ) call stoptimer (ITRANSPORT)
 
- !update particles
- call update_part()
 
  if (jased > 0 .and. stm_included) then
     call fm_bott3d() ! bottom update

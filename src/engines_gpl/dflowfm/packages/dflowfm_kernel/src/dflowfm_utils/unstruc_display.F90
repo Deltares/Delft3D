@@ -192,7 +192,7 @@ contains
 subroutine load_displaysettings(filename)
     use properties
     use unstruc_messages
-    use unstruc_version_module
+    use dflowfm_version_module
     use m_missing
     use M_RAAITEK
     use M_isoscaleunit
@@ -430,7 +430,7 @@ end subroutine load_displaysettings
 subroutine save_displaysettings(filename)
     use properties
     use unstruc_messages
-    use unstruc_version_module
+    use dflowfm_version_module
     use m_missing
     use M_RAAITEK
     use m_sferzoom
@@ -643,7 +643,7 @@ subroutine save_displaysettings(filename)
     
     call datum(rundat)
     write(mfil, '(a,a)') '# Generated on ', trim(rundat)
-    write(mfil, '(a,a)') '# ', trim(unstruc_version_full)
+    write(mfil, '(a,a)') '# ', trim(version_full)
     call prop_write_inifile(mfil, dis_ptr, istat)
 
 

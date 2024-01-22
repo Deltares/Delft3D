@@ -154,7 +154,7 @@ function convert_start_index(arr, imiss, providedIndex, requestedIndex) result(i
     !
     ! Body
     shift = requestedIndex - providedIndex
-    where(arr .ne. imiss) 
+    where(arr /= imiss) 
       arr= arr + shift   
     end where
     ierr = 0

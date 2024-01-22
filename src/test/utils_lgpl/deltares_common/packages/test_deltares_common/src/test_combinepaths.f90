@@ -63,6 +63,5 @@ subroutine test_combine
     enddo
 end subroutine test_combine
 
-! TODO: INDEXI and INDEXX?
 end module test_combinepaths
 

@@ -40,27 +40,15 @@ subroutine setdt()
    use unstruc_display,  only: jaGUI
    use m_sediment,       only: jased, stm_included, stmpar, jamorcfl, jamormergedtuser
    use m_fm_erosed,      only: duneavalan
+   use m_mormerge
    implicit none
 
    double precision :: dtsc_loc
-   double precision :: dim_real
-
    integer          :: nsteps
    integer          :: jareduced
 
 !  compute CFL-based maximum time step and limiting flownode/time step, per subomdain
    call setdtorg(jareduced) ! 7.1 2031
-
-   dtsc_loc = dtsc
-   dim_real = 1.0d0
-
-!  globally reduce time step
-   if ( jampi.eq.1 .and. jareduced.eq.0 ) then
-!     globally reduce dts (dtsc may now be larger)
-      if ( jatimer.eq.1 ) call starttimer(IMPIREDUCE)
-      call reduce_double_min(dts)
-      if ( jatimer.eq.1 ) call stoptimer(IMPIREDUCE)
-   end if
 
    ! morphological timestep reduction
    if (stm_included  .and. jamorcfl>0) then
@@ -81,8 +69,10 @@ subroutine setdt()
       endif
    end if
 
+   dtsc_loc = dtsc
+
    !  globally reduce time step
-   if ( jampi.eq.1 ) then
+   if ( jampi.eq.1 .and. jareduced.eq.0 ) then
       !     globally reduce dts (dtsc may now be larger)
       if ( jatimer.eq.1 ) call starttimer(IMPIREDUCE)
       call reduce_double_min(dts)
@@ -128,13 +118,19 @@ subroutine setdt()
       kkcflmx = 0   ! SPvdP: safety, was undefined but could be used later
    endif
 
-   if (stm_included .and. jased>0) then
-      if (stmpar%morpar%multi .and. jamormergedtuser==0) then
-         call putarray (stmpar%morpar%mergehandle,dim_real,1)
-         call putarray (stmpar%morpar%mergehandle,dts,1)
-         call getarray (stmpar%morpar%mergehandle,dts,1)
-      endif
-   endif
+   if (stm_included .and. jased > 0) then
+      if (stmpar%morpar%multi .and. jamormergedtuser == 0 ) then
+          if ( jampi == 0 ) then
+             call put_get_time_step(stmpar%morpar%mergehandle, dts)
+          else
+              call reduce_double_min(dts)
+              if ( my_rank == 0 ) then
+                  call put_get_time_step(stmpar%morpar%mergehandle, dts)
+              end if
+              call reduce_double_min(dts)
+         end if 
+      end if
+   end if
 
    call timestepanalysis(dtsc_loc)
 

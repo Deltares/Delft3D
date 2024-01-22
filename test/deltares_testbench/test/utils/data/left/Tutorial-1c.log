@@ -1,0 +1,6 @@
+[LOG FILE]
+
+INPUT WARNINGS:
+ConformanceCheck Warning: The Terzaghi model uses one consolidation coefficient for loading/unloading. This can underestimate residual settlements after unloading. Switch to Darcy for, more accurate calculations of the consolidation stage.
+
+[END OF LOG FILE]

@@ -34,10 +34,13 @@
  !! That is: snap observation stations to flow cells, cross sections to flow links.
  !! And bookkeeping for time series output on structures.
  subroutine flow_obsinit()
- use m_observations, only: init_valobs
- use m_wind
- use m_structures
- implicit none
+    use m_observations, only : init_valobs
+    use unstruc_model,  only : md_delete_observation_points_outside_grid
+    use m_wind
+    use m_structures
+    
+    implicit none
+ 
     call crosssections_on_flowgeom()
     call runupgauges_on_flowgeom()
 
@@ -46,6 +49,11 @@
     endif 
 
     call obs_on_flowgeom(0)
+    
+    if ( md_delete_observation_points_outside_grid ) then
+       call delete_static_observation_points_outside_grid()
+    end if
+
 
 !   for the following, it is assumed that the moving observation stations have been initialized (in flow_initexternalforcings)
     call init_valobs()   ! (re)initialize work array and set pointers for observation stations
@@ -53,5 +61,31 @@
     call updateValuesOnObservationStations() ! and fill first value
 
     call init_structure_hisvalues()
+   
+    contains
+    
+    !> delete_static_observation_points_outside_grid
+   subroutine delete_static_observation_points_outside_grid()
+      use m_observations, only : kobs, numobs, deleteObservation, purgeObservations
+      use MessageHandling
+   
+      integer :: point
+      integer :: number_of_deleted_points
+      
+      number_of_deleted_points = 0
+      do point = 1, numobs
+         if ( kobs(point) == 0 ) then
+            call deleteObservation(point)
+            number_of_deleted_points = number_of_deleted_points + 1
+         end if
+      end do
+      
+      if (number_of_deleted_points > 0) then 
+         call purgeObservations()
+         write(msgbuf, '(a,i0)') 'Number of deleted observation points outside of the grid is ', number_of_deleted_points
+         call msg_flush()
+     end if
+   
+   end subroutine delete_static_observation_points_outside_grid
 
  end subroutine flow_obsinit

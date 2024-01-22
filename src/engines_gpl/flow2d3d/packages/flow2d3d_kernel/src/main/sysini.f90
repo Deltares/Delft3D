@@ -44,6 +44,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     use string_module
     use deltares_common_version_module
     use dfparall
+    use flow2d3d_version_module
     !
     implicit none
     !
@@ -85,7 +86,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     character(10)              :: date        ! Date to be filled in the header
     character(message_len)     :: txthlp       ! Help var.
     character(20)              :: rundat       ! Current date and time containing a combination of DATE and TIME
-    character(256)             :: version_full
+    character(256)             :: full_version
     character(256)             :: filtmp       ! Help var. to specify file name
     character(55)              :: txtput       ! Texts to be filled in the header
     type(message_stack)        :: stack
@@ -149,15 +150,15 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     !
     ! check userfile consistency
     !
-    version_full  = ' '
+    full_version  = ' '
     version_short = ' '
     !
     ! Force the version information of the module precision to be displayed within the what tool
     !
-    call getfullversionstring_deltares_common(version_full)
-    call getfullversionstring_flow2d3d(version_full)
+    call getfullversionstring_deltares_common(full_version)
+    call getfullversionstring_flow2d3d(full_version)
     call getshortversionstring_flow2d3d(version_short)
-    call flwlic(lunscr    ,version_full ,prgnm     ,gdp       )
+    call flwlic(lunscr    ,full_version ,prgnm     ,gdp       )
     !
     ! put header on screen
     !
@@ -207,10 +208,11 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     write (lundia, '(a)')
     write (lundia, '(80a1)') ('*', n = 1, 80)
     write (lundia, '(a)')   '***'
-    write (lundia, '(2a)')  '*** ', trim(version_full)
+    write (lundia, '(2a)')  '*** ', trim(full_version)
     write (lundia, '(2a)')  '***           built from : ', trim(txthlp)
     write (lundia, '(a)')   '***'
     write (lundia, '(2a)')  '***           runid      : ', trim(runid)
+    write (lundia, '(2a)')  '***           uniqueid   : ', trim(gdp%uniqueid)
     write (lundia, '(4a)')  '***           date,time  : ', date, ',', rundat(11:19)
     write (lundia, '(a)')   '***'
     write (lundia, '(80a1)') ('*', n = 1, 80)

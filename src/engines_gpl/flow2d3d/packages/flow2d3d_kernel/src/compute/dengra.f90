@@ -397,6 +397,8 @@ subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                             call dens_eck ( temp, sal, dummy, rhods, dummy )
                          case( dens_UNESCO )
                             call dens_unes( temp, sal, dummy, rhods, dummy )
+                         case( dens_NaClSol)
+                            call dens_nacl( temp, sal, dummy, rhods, dummy )
                       end select
                       drho = rhods*grad
                       dsal = grad
@@ -413,6 +415,8 @@ subroutine dengra(icreep    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                             call dens_eck ( temp, sal, dummy, dummy, rhodt )
                          case( dens_UNESCO )
                             call dens_unes( temp, sal, dummy, dummy, rhodt )
+                         case( dens_NaClSol)
+                            call dens_nacl( temp, sal, dummy, dummy, rhodt )
                       end select
                       drho = rhodt*grad
                       dsal = 0.0

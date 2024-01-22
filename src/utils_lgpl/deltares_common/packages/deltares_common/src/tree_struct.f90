@@ -85,7 +85,7 @@ module TREE_STRUCTURES
    !
    public  :: TREE_DATA
    public  :: tree_create, tree_create_node, tree_add_node, tree_get_node_by_name, tree_num_nodes, &
-              tree_count_nodes_byname,                                                             &
+              tree_count_nodes_byname, tree_disconnect_node,                                       &
               tree_get_data_ptr, tree_put_data, tree_get_name, tree_get_data,                      &
               tree_get_datatype, tree_get_data_string,                                             &
               tree_traverse, tree_traverse_level, print_tree,                                      &
@@ -121,14 +121,14 @@ subroutine tree_create( name, tree, maxlenpar )
 
    allocate( tree, stat = error )
 
-   if ( error .ne. 0 ) then
+   if ( error /= 0 ) then
       nullify( tree )
    else
       newsize = size( transfer( name, node_value ) )
       !GD: memory leak here
       !if(associated(tree%node_name)) deallocate(tree%node_name)
       allocate( tree%node_name(1:newsize), stat = error )
-      if ( error .ne. 0 ) then
+      if ( error /= 0 ) then
          deallocate( tree )
          return
       else
@@ -216,7 +216,7 @@ subroutine tree_remove_child_by_name(tree,name,ierror)
   end if
   
   allocate( children(1:newsize), stat = ierror )
-  if ( ierror .ne. 0 ) then
+  if ( ierror /= 0 ) then
     return
   else
     if ( newsize > 1 ) then
@@ -256,10 +256,10 @@ subroutine tree_add_node(tree, node, ierror)
       endif
 
       allocate( children(1:newsize), stat = ierror )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          return
       else
-         if ( newsize .gt. 1 ) then
+         if ( newsize > 1 ) then
             children(1:newsize-1) = tree%child_nodes
             deallocate( tree%child_nodes )
             children(newsize-1)%node_ptr%bf_next_node => node    ! chain previous node in the breadth-first sense to the new node
@@ -272,6 +272,55 @@ subroutine tree_add_node(tree, node, ierror)
       ierror = 2
    endif
 end subroutine tree_add_node
+
+
+!> Disconnect an existing node , in the children array, from a tree.
+!! Both the tree and the new node are pointers, use this to efficiently
+!! disconnect existing trees without destroying them.
+subroutine tree_disconnect_node(tree, inode, ierror)
+   type(TREE_DATA), pointer        :: tree   !< Pointer to the root of an existing tree, from which the node should be disconnected.
+   integer,            intent(in ) :: inode  !< Index of child node to be disconnected
+   integer,            intent(out) :: ierror !< Error status, 0 if succesful.
+   !
+   ! Locals
+   type(TREE_DATA_PTR), dimension(:), pointer :: children
+   integer                                    :: i
+   integer                                    :: i_new
+   integer                                    :: newsize
+   !
+   ! Body
+   ierror = 0
+
+   if (.not. associated(tree)) then
+      ierror = 1
+      return
+   end if
+   if (.not. associated(tree%child_nodes) ) then
+      ierror = 1
+      return
+   end if
+       
+   newsize = size(tree%child_nodes) - 1
+   if (newsize <= 0) then
+       deallocate(tree%child_nodes, stat=ierror)
+       ierror = 0
+       return
+   endif
+   
+   allocate( children(1:newsize), stat=ierror)
+   if ( ierror .ne. 0 ) then
+      return
+   else
+      i_new = 1
+      do i=1, size(tree%child_nodes)
+         if ( i /= inode ) then
+            children(i_new) = tree%child_nodes(i)
+            i_new = i_new + 1
+         endif
+      enddo
+      tree%child_nodes => children
+   endif
+end subroutine tree_disconnect_node
 
 
 !> Returns the number of nodes in a tree.
@@ -409,13 +458,13 @@ subroutine tree_get_node_by_name( tree, name, node, i_return )
 
    node_name = tree_get_name( tree )
 
-   if ( node_name .eq. low_name ) then
+   if ( node_name == low_name ) then
       node => tree
    elseif ( associated(tree%child_nodes) ) then
       do i = 1,size(tree%child_nodes)
          node_name = str_tolower(tree_get_name( tree%child_nodes(i)%node_ptr ))
 
-         if ( node_name .eq. low_name ) then
+         if ( node_name == low_name ) then
             node => tree%child_nodes(i)%node_ptr
             if (present(i_return)) i_return = i
             exit
@@ -487,17 +536,17 @@ subroutine tree_put_data( tree, data, data_type, success )
 !    GD: memory leak
 !    if(associated(tree%node_data)) deallocate(tree%node_data)
     allocate( tree%node_data(1:size(data)), stat = error )
-    if ( error .eq. 0 ) then
+    if ( error == 0 ) then
        tree%node_data = data
        allocate( tree%node_data_type(1:len_trim(data_type)), &
           stat = error )
-       if ( error .eq. 0 ) then
+       if ( error == 0 ) then
           tree%node_data_type = transfer( data_type, tree%node_data_type )
        endif
     endif
 
     if ( present( success ) ) then
-       success = error .eq. 0
+       success = error == 0
     endif
 
 end subroutine tree_put_data
@@ -768,19 +817,17 @@ subroutine tree_get_data_string( tree, string, success )
       if ( .not. associated(data_ptr) ) then
          return
       endif
-      if ( data_type /= 'STRING' ) then
+      if ( data_type(1:6) /= 'STRING' ) then
          return
       endif
 
       success = .true.
       length  = size(data_ptr)
       string  = ' '
-      if (length <= len(string)) then
-         length = min(length,len(string))
-         do i=1, length
-            string(i:i) = data_ptr(i)
-         end do
-      endif
+      length = min(length,len(string))
+      do i=1, length
+         string(i:i) = data_ptr(i)
+      end do
    endif
 
 end subroutine tree_get_data_string
@@ -808,7 +855,7 @@ subroutine tree_get_data_alloc_string( tree, string, success )
       if ( .not. associated(data_ptr) ) then
          return
       endif
-      if ( data_type /= 'STRING' ) then
+      if ( data_type(1:6) /= 'STRING' ) then
          return
       endif
 

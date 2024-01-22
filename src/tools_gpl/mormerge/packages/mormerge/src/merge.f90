@@ -91,14 +91,14 @@ subroutine merge (inputfile, workdir, runid)
     character(256)                                      :: filnam
     character(256)                                      :: value
     character(256)                                      :: mmsyncfilnam
-    character(256)                                      :: version_full   ! by calling getfullversionstring_DELFTFLOW, the version number is visible with the what command
+    character(256)                                      :: full_version   ! by calling getfullversionstring_DELFTFLOW, the version number is visible with the what command
     type(tree_data)    , pointer                        :: infile_root
     type(tree_data)    , pointer                        :: infile_ptr
     type(tree_data)    , pointer                        :: node_ptr
 !
 !! executable statements -------------------------------------------------------
 !
-   call get_full_versionstring_mormerge_full(version_full)
+   call getfullversionstring_mormerge(full_version)
    !
    call util_getenv('ARCH',value)
    call small(value,1000)
@@ -117,7 +117,7 @@ subroutine merge (inputfile, workdir, runid)
    !
    write(filnam,'(3a)') 'mormerge_', trim(runid), '.log'
    open(newunit = lundia, file=trim(filnam), status='replace', action='write')
-   write(lundia,'( a)') trim(version_full(5:))
+   write(lundia,'( a)') trim(full_version(5:))
    write(lundia,'( a)') ' '
    write(lundia,'( a)') 'COMMAND LINE ARGUMENTS'
    write(lundia,'(2a)') '   inputfile : ',trim(inputfile)
@@ -224,7 +224,7 @@ subroutine merge (inputfile, workdir, runid)
       write(*,'(a)') '   Connection established, continuing...'
    enddo
    !
-   ! Get dimensions from Delft3D-FLOW
+   ! Get dimensions for the arrays
    !
    do icond=1,ncond
       call getarray(handles(icond),rn,2)

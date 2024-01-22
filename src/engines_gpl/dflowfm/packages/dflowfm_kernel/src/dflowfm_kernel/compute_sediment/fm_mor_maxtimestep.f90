@@ -41,37 +41,38 @@
    implicit none
 
    integer           :: k, k1, k2, kk, L, ised, ac1, ac2
-   double precision  :: dum, sx, sy, sL, dt, dtmaxmor, dhmax, kkcflmxloc
+   double precision  :: dum, sx, sy, sL, dt, dtmaxmor, dhmax, kkcflmxloc, mf
 
    dtmaxmor = huge(0d0)
    kkcflmxloc = 0
+   mf = max(morfac,1d0)
 
    do k = 1, ndx
-      dum = 0.d0
       if (kcsmor(k)==0) then
          cycle
       endif
+      !
+      dum = 0.d0
+      do kk = 1, nd(k)%lnx
+         L = iabs(nd(k)%ln(kk))
+         k1 = ln(1,L)
+         k2 = ln(2,L)
+         ac1 = acl(L)
+         ac2 = 1d0-ac1
 
-      do ised = 1, lsedtot
-         !
-         do kk = 1, nd(k)%lnx
-            L = iabs(nd(k)%ln(kk))
-            k1 = ln(1,L)
-            k2 = ln(2,L)
-            ac1 = acl(L)
-            ac2 = 1d0-ac1
-
-            sx = (ac1*sxtot(k1,ised) + ac2*sxtot(k2,ised))/cdryb(ised)*max(morfac,1d0)
-            sy = (ac1*sytot(k1,ised) + ac2*sytot(k2,ised))/cdryb(ised)*max(morfac,1d0)
+         do ised = 1, lsedtot
+            sx = (ac1*sxtot(k1,ised) + ac2*sxtot(k2,ised))/cdryb(ised)*mf
+            sy = (ac1*sytot(k1,ised) + ac2*sytot(k2,ised))/cdryb(ised)*mf
             sL = csu(L)*sx + snu(L)*sy
-
+            !
             if (k2 .eq. k) sL = -sL
-
+            !
             if (sL .ge. 0d0) then        ! outgoing transport fluxes only
                dum = dum + sL*wu(L)
             end if
          end do
-      end do
+      enddo
+      !
       if (dum > tiny(0d0)) then
          dt = dzbdtmax*ba(k) / max(dum,eps10)   ! safety
          if ( dt.lt.dtmaxmor ) then
@@ -81,7 +82,7 @@
       end if
    end do
    !
-   if (dtmaxmor > dts) then    ! dts already reduced, okay
+   if (dtmaxmor > dts) then   
       dtmaxmor = dts
    else
       kkcflmx = kkcflmxloc    ! overwrite cell number for numlimdt when new smallest timestep

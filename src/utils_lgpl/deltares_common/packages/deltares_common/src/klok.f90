@@ -49,9 +49,9 @@
    call date_and_time(date, time, zone, timing)
 
 !  check for new day
-   if ( dayprev.eq.-999 ) then
+   if ( dayprev == -999 ) then
       dayprev = timing(3)    ! initialization to
-   else if ( timing(3).ne.dayprev ) then
+   else if ( timing(3) /= dayprev ) then
       ndays = ndays+1
       write(mesg, "('new wall clock day: previous day=', I2, ', new day=', I2)") dayprev, timing(3)
       call mess(LEVEL_INFO, trim(mesg))

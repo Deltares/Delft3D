@@ -41,7 +41,7 @@
  use unstruc_channel_flow
  use m_structures
  use m_longculverts
- use unstruc_caching, only: cacheRetrieved, copyCachedLongCulverts
+ use unstruc_caching, only: cacheRetrieved
  !\ DEBUG
  use m_missing
 
@@ -99,7 +99,12 @@
     if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then     ! tegeldieptes celcentra
        bl1      = bl(n1)
        bl2      = bl(n2)
-       bob(1,L) = max( bl1, bl2 )
+       if (jadpuopt==1) then !original
+            bob(1,L) = max( bl1, bl2 )
+       elseif (jadpuopt==2) then
+            bob(1,L) = (bl1+bl2)/2
+       endif
+              
        bob(2,L) = bob(1,L)
     else if (ibedlevtyp == 2) then                     ! rechtstreeks op u punten interpoleren,
        k1  = ln(1,L) ; k2 = ln(2,L)                    ! haal waarde uit blu, gedefinieerd op xu,yu
@@ -279,7 +284,10 @@
 
      n1       = ln(1,L) ; n2  = ln(2,L)
      if (jaupdbndbl == 1) then
-        bl(n1)   = bl(n2)
+         !if `jadpuopt==1`, the bed level at the boundaries has been extrapolated in `setbedlevelfromextfile` and we do not want to overwrite it.
+         if (jadpuopt==1) then
+            bl(n1)   = bl(n2) !original
+         endif
      endif
 
      if (kcu(L) == -1) then                       ! 1D randjes extrapoleren voor 1D straight channel convecyance testcase
@@ -322,7 +330,11 @@
            bob(1,L) = bl(n1)                           ! uniform bobs only for tiledepths
            bob(2,L) = bl(n1)
            if (stm_included) then
-              bob(1,L) = max( bl(n1), bl(n2) )
+              if (jadpuopt==1) then
+                   bob(1,L) = max( bl(n1), bl(n2) )
+              elseif (jadpuopt==2) then
+                   bob(1,L) = (bl(n1)+bl(n2))/2
+              endif
               bob(2,L) = bob(1,L)
               bob0(:,L) = bob(1,L)
            endif
@@ -364,5 +376,4 @@
  endif
 
  jaupdbndbl = 0    ! after first run of setbobs set to 0 = no update
-
  end subroutine setbobs

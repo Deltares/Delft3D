@@ -110,6 +110,11 @@
  double precision,        external :: lin2nodx, lin2nody
  double precision,        external :: nod2linx, nod2liny
  double precision,        external :: dlimiter, dslim
+ 
+ double precision :: am
+ double precision :: qv
+ double precision :: u_ene
+ double precision :: u_mom
 
  japiaczek33 = 0
 
@@ -342,12 +347,11 @@
  enddo
 
  nfw = 0
-
  if (kmx == 0) then
      
 
  !$OMP PARALLEL DO                                                                   &
- !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2)
+ !$OMP PRIVATE(L, advel,k1,k2,iadvL,qu1,qu2,volu,ai,ae,iad,volui,abh,hh,v12t,ku,kd,isg,n12, ucxku, ucyku, ucin, fdx, vol_k1, vol_k2, u_ene, u_mom, am, qv)
 
  do L  = 1,lnx
 
@@ -440,29 +444,83 @@
           advel = (qu1 + qu2)/volu                   ! dimension: ((m4/s2) / m3) =   (m/s2)
        endif
 
-   else if (iadvL == 103) then                       ! explicit first order mom conservative
-                                                     ! based upon cell center excess advection velocity
-       qu1 = 0                                       ! and Perot control volume
-       qu2 = 0
+    else if (iadvL == 103) then
+       ! Pure1D consistent with default FM implementation, just less bend losses
+        
        if (jaPure1D == 1) then
           vol_k1 = vol1_f(k1)
           vol_k2 = vol1_f(k2)
-       else
+       else ! jaPure1D == 0 .or. jaPure1D == 2
           vol_k1 = vol1(k1)
           vol_k2 = vol1(k2)
        endif
-       
+
        if (vol_k1 > 0) then
           qu1 = QucPerPure1D(1,L)                    ! excess momentum in/out u(L) dir. from k1
           qu1 = qu1*acl(L)                           ! Perot weigthing
+       else
+          qu1 = 0
        endif
        if (vol_k2 > 0) then
           qu2 = QucPerPure1D(2,L)                    ! excess momentum in/out u(L) dir. from k2
           qu2 = qu2*(1d0-acl(L))                     ! Perot weigthing
+       else
+          qu2 = 0           
        endif
        volu = acl(L)*vol_k1 + (1d0-acl(L))*vol_k2
        if (volu > 0) then
           advel = (qu1 + qu2)/volu                   ! dimension: ((m4/s2) / m3) =   (m/s2)
+       endif
+
+    else if (iadvL == 104) then
+       ! Pure1D implementation SOBEK style
+        
+       advel = 0d0
+       ! weight of momentum versus energy conservation
+       select case (jaPure1D)
+       case (3) ! momentum conserving
+           am = 1d0
+       case (4) ! weighted
+           am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+       case (5) ! weighted in contractions, otherwise momentum conserving
+           if ((u1(L) > 0d0 .and. au1D(1,L) > au1D(2,L)) .or. &
+             & (u1(L) < 0d0 .and. au1D(1,L) < au1D(2,L))) then
+               am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+           else
+               am = 1d0
+           endif  
+       case (6) ! weighted in expansions, otherwise momentum conserving
+           if ((u1(L) > 0d0 .and. au1D(1,L) < au1D(2,L)) .or. &
+             & (u1(L) < 0d0 .and. au1D(1,L) > au1D(2,L))) then
+               am = min(au1d(1,L), au1d(2,L)) / max(1d-4, au1d(1,L), au1d(2,L))
+           else
+               am = 1d0
+           endif  
+       case (7) ! energy conserving
+           am = 0d0
+       end select
+       
+       if (q1D(1,L) > 0) then
+           ! flow entering link at node 1
+           qv = q1D(1,L)/max(1d-5,volu1D(L))
+           u_mom =  alpha_mom_1D(k1) * q1D(1,L) / au1D(1,L)
+           u_ene =  alpha_ene_1D(k1) * q1D(1,L) / au1D(1,L)
+           advel = advel -        am  * (u_mom - u1(L)) * qv &
+                       & - (1d0 - am) * (u_ene - u1(L)) * qv
+       else
+           ! flow leaving link at node 1
+           ! outflow u = local u, so no contribution
+       endif
+       
+       if (q1D(2,L) < 0) then ! flow entering link at node 2
+           qv = q1D(2,L)/max(1d-5,volu1D(L))
+           u_mom =  alpha_mom_1D(k2) * q1D(2,L) / au1D(2,L)
+           u_ene =  alpha_ene_1D(k2) * q1D(2,L) / au1D(2,L)
+           advel = advel +        am  * (u_mom - u1(L)) * qv &
+                       & + (1d0 - am) * (u_ene - u1(L)) * qv
+       else
+           ! flow leaving link at node 2
+           ! outflow u = local u, so no contribution
        endif
 
     else if (iadvL == 333) then                      ! explicit first order mom conservative
@@ -569,10 +627,18 @@
 
     else if (iadvL == 5 .or. iadvL ==6) then         ! 5,6 = advection like 3,4, now Piaczek teta
 
-       if (kcu(L) ==1) then
-          volu = acl(L)*vol1_f(k1) + (1d0-acl(L))*vol1_f(k2)
+       if (jarhoxu == 0) then
+          if (kcu(L) == 1) then
+             volu  = acl(L)*vol1_f(k1) + (1d0-acl(L))*vol1_f(k2)
+          else
+             volu  = acl(L)*vol1(k1) + (1d0-acl(L))*vol1(k2)
+          endif
        else
-          volu = acl(L)*vol1(k1) + (1d0-acl(L))*vol1(k2)
+          if (kcu(L) == 1) then
+             volu  = acl(L)*vol1_f(k1)*rho(k1) + (1d0-acl(L))*vol1_f(k2)*rho(k2)
+          else
+             volu  = acl(L)*vol1(k1)*rho(k1) + (1d0-acl(L))*vol1(k2)*rho(k2)
+          endif
        endif
 
        if (volu > 0) then

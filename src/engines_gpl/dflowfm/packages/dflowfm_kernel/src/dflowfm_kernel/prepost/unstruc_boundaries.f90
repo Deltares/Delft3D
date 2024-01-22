@@ -68,8 +68,6 @@ integer            :: max_ext_bnd_items      = 64  ! Starting size, will grow dy
 character(len=max_registered_item_id), allocatable :: registered_items(:)
 integer            :: num_registered_items = 0
 
-private :: countUniqueKeys
-
 contains
 
 subroutine findexternalboundarypoints()             ! find external boundary points
@@ -257,7 +255,7 @@ subroutine findexternalboundarypoints()             ! find external boundary poi
  do while (ja_ext_force .eq. 1)                      ! read *.ext file
 
     call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja_ext_force,varname)
-    call resolvePath(filename, md_extfile_dir, filename)
+    call resolvePath(filename, md_extfile_dir)
 
     if (num_bc_ini_blocks > 0 .and. qid(len_trim(qid)-2:len_trim(qid)) == 'bnd') then
        write(msgbuf, '(a)') 'Boundaries in BOTH external forcing and bound.ext.force file is not allowed'
@@ -390,7 +388,7 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
        endif
 
        if (property_ok)  then
-          call resolvePath(locationfile, basedir, locationfile)
+          call resolvePath(locationfile, basedir)
        else
           call qnerror( 'Expected property' , 'locationFile', ' for boundary definition' )
        end if
@@ -399,7 +397,7 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , property_ok)
        if (property_ok)  then
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        else
           call qnerror( 'Expected property' , 'forcingFile', ' for boundary definition' )
        end if
@@ -496,12 +494,11 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
  use m_ship
  use properties
  use m_transport
- use sediment_basics_module, only: SEDTYP_NONCOHESIVE_SUSPENDED, SEDTYP_COHESIVE
  use m_meteo, qid_meteo => qid, filetype_meteo => filetype
  use m_sobekdfm
  use m_flowparameters, only: jawave
  use string_module
- use m_strucs, only: numgeneralkeywrd
+ use m_strucs, only: NUMGENERALKEYWRD
  use m_missing, only: dmiss
 
  implicit none
@@ -516,7 +513,7 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
                                           numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf      !
  double precision      , intent(in)    :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
- double precision, dimension(numgeneralkeywrd), optional, intent(in) :: tfc
+ double precision, dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
  double precision, optional, intent(in) :: width1D !< Optional custom width for boundary flow link.
  double precision, optional, intent(in) :: blDepth !< Optional custom bed level depths below water level boundaries's initial value for boundary points.
 
@@ -637,8 +634,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      nbndu = nbndu + numu
 
   else if (qidfm == 'salinitybnd' .and. jasal>0 ) then
-
-     kce   = abs(kce) ! switch kce back on, but only for all net boundaries (some of which may have been set to -1 by a flow boundary)
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds+1:nx), nums, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells' ; call msg_flush()
      if (nums>0) then
@@ -647,8 +642,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      end if
 
   else if (qidfm == 'waveenergybnd' ) then
-
-     kce   = abs(kce) ! switch kce back on, but only for all net boundaries (some of which may have been set to -1 by a flow boundary)
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw+1:nx), numw, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells' ; call msg_flush()
 
@@ -662,8 +655,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      fnamwbnd(nwbnd) = trim(filename)
      
   else if (qidfm == 'temperaturebnd' .and. jatem > 0 ) then
-
-     kce   = abs(kce) ! switch kce back on, but only for all net boundaries (some of which may have been set to -1 by a flow boundary)
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm+1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells' ; call msg_flush()
      if (numtm>0) then
@@ -672,8 +663,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      end if
 
   else if (qidfm == 'sedimentbnd' ) then
-
-     kce   = abs(kce) ! switch kce back on, but only for all net boundaries (some of which may have been set to -1 by a flow boundary)
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd+1:nx), numsd, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells' ; call msg_flush()
      if (numsd>0) then
@@ -682,8 +671,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      end if
 
   else if (qidfm(1:9) == 'tracerbnd' ) then
-
-     kce   = abs(kce) ! switch kce back on, but only for all net boundaries (some of which may have been set to -1 by a flow boundary)
      call get_tracername(qidfm, tracnam, qidnam)
      tracunit = " "
      call add_bndtracer(tracnam, tracunit, itrac, janew)
@@ -692,8 +679,6 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
 !       realloc ketr
         call realloc(ketr, (/ Nx, numtracers /), keepExisting=.true., fill=0 )
      end if
-
-     ! kce   = 1 ! switch kce back on as points to be potentially flagged
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac)+1:,itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numtr, ' nr of tracer bndcells' ; call msg_flush()
      if (numtr>0) then
@@ -712,13 +697,11 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
         call realloc(ketr, (/ Nx, numtracers /), keepExisting=.true., fill=0 )
      end if
 
-  else if (qidfm(1:10) == 'sedfracbnd' .and. jased > 0) then
-
-     kce = abs(kce)   ! kce=1
+  else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
      call get_sedfracname(qidfm, sfnam, qidnam)
      isf = findname(numfracs, sfnames, sfnam)
 
-     if ( isf.eq.0 ) then   ! add
+     if ( isf.eq.0) then   ! add
 
         numfracs = numfracs+1
 !       realloc
@@ -740,33 +723,24 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
      endif
 
   else if (qidfm == 'tangentialvelocitybnd' ) then
-
-     ! kce   = 1 ! switch kce back on as points to be potentially flagged
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt+1:nx), numt, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numt, ' nr of tangentialvelocity bndcells' ; call msg_flush()
 
      nbndt = nbndt + numt
 
   else if (qidfm == 'uxuyadvectionvelocitybnd' ) then
-
-     ! kce   = 1 ! switch kce back on as points to be potentially flagged
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy+1:nx), numuxy, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numuxy, ' nr of uxuyadvectionvelocity bndcells' ; call msg_flush()
 
      nbnduxy = nbnduxy + numuxy
 
-
   else if (qidfm == 'normalvelocitybnd' ) then
-
-     ! kce   = 1 ! switch kce back on as points to be potentially flagged
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn+1:nx), numn, usemask=.false., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , numn, ' nr of normalvelocity bndcells' ; call msg_flush()
 
      nbndn = nbndn + numn
 
   else if (qidfm == '1d2dbnd' ) then ! SOBEK1D-FM2D
-
-     ! kce   = 1 ! switch kce back on as points to be potentially flagged
      call selectelset( filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d+1:nx), num1d2d, usemask=.true., rrtolrel=rrtolrel)
      write(msgbuf,'(a,x,a,i8,a)') trim(qid), trim(filename) , num1d2d, ' nr of SOBEK1D-FM2D bndcells' ; call msg_flush()
 
@@ -1070,7 +1044,7 @@ logical function initboundaryblocksforcings(filename)
        endif
 
        if (retVal) then
-          call resolvePath(locationfile, basedir, locationfile)
+          call resolvePath(locationfile, basedir)
        else
           initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''locationfile'' is missing.'
@@ -1080,7 +1054,7 @@ logical function initboundaryblocksforcings(filename)
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , retVal)
        if (retVal) then
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        else
           initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
@@ -1088,6 +1062,8 @@ logical function initboundaryblocksforcings(filename)
           cycle
        end if
 
+       oper = '-'
+       call prop_get_string(node_ptr, '', 'operand ', oper , retVal)
 
        num_items_in_block = 0
        if (associated(node_ptr%child_nodes)) then
@@ -1105,19 +1081,21 @@ logical function initboundaryblocksforcings(filename)
                 quantity = property_value ! We already knew this
              else if (property_name == 'locationfile') then
                 locationfile = property_value ! We already knew this
-                call resolvePath(locationfile, basedir, locationfile)
+                call resolvePath(locationfile, basedir)
              else if (property_name == 'forcingfile') then
                 forcingfile = property_value
-                call resolvePath(forcingfile, basedir, forcingfile)
-                oper = 'O'
-                if (quantity_pli_combination_is_registered(quantity, locationfile)) then
-                   oper = '+'
-                endif
+                call resolvePath(forcingfile, basedir)
+                if ( oper /= 'O' .and. oper /= '+' ) then
+	               oper = 'O'
+                   if (quantity_pli_combination_is_registered(quantity, locationfile)) then
+                      oper = '+'
+                   endif
+		        end if 
                 call register_quantity_pli_combination(quantity, locationfile)
                 if (filetype == node_id .or. quantity == 'qhbnd') then
                    select case(quantity)
                    case ('waterlevelbnd')
-                      targetIndex = itpenzr(ib)
+                     targetIndex = itpenzr(ib)
                    case ('qhbnd')
                       ibqh = ibqh + 1
                       targetindex = (/ibqh/)
@@ -1135,20 +1113,25 @@ logical function initboundaryblocksforcings(filename)
                       ! so, also do *not* connect it as a spacetimerelation here.
                       retVal = .true. ! No failure: boundaries are allowed to remain disconnected.
                    else if (forcingfile == '-') then
-                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=node_id, method=fmmethod, operand=oper, &
-                                                               targetindex=targetindex(1))
+                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=node_id, method=fmmethod, &
+                             operand=oper, targetindex=targetindex(1))
                    else
-                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=node_id, method=fmmethod, operand=oper, forcingfile = forcingfile, &
-                                                               targetindex=targetindex(1))
+                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=node_id, method=fmmethod, &
+                             operand=oper, forcingfile = forcingfile, targetindex=targetindex(1))
                    endif
                 else
                    if (forcingfile == '-') then
-                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=filetype, method=fmmethod, operand=oper)
+                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=filetype, method=fmmethod, &
+                             operand=oper)
                    else
-                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=filetype, method=fmmethod, operand=oper, forcingfile = forcingfile)
+                      retVal = addtimespacerelation_boundaries(quantity, locationfile, filetype=filetype, method=fmmethod, &
+                             operand=oper, forcingfile = forcingfile)
                    endif
                 endif
                 initboundaryblocksforcings = initboundaryblocksforcings .and. retVal ! Remember any previous errors.
+                oper = '-'
+             else if (property_name == 'operand') then
+                continue
              else if (property_name == 'returntime' .or. property_name == 'return_time') then
                 continue                   ! used elsewhere to set Thatcher-Harleman delay
              else if (property_name == 'openboundarytolerance') then
@@ -1166,7 +1149,7 @@ logical function initboundaryblocksforcings(filename)
                 cycle
              endif
           endif
-       enddo
+       enddo	      
        if (.not. retVal) then ! This addtimespace was not successful
           rec = getmeteoerror()
           if (len_trim(rec)>0) then
@@ -1174,6 +1157,7 @@ logical function initboundaryblocksforcings(filename)
           endif
           call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)//'''. Check preceding log lines for details.')
        end if
+       
     case ('lateral')
        ! [Lateral]
        ! Id = ...
@@ -1254,7 +1238,7 @@ logical function initboundaryblocksforcings(filename)
              call warn_flush()
              cycle
           else
-             call resolvePath(locationfile, basedir, locationfile)
+             call resolvePath(locationfile, basedir)
           end if
        end if
        if (loc_spec_type == imiss) then
@@ -1289,7 +1273,7 @@ logical function initboundaryblocksforcings(filename)
           call prop_get(node_ptr, '', 'flow', rec, success)
        end if
        if (len_trim(rec) > 0) then
-          call resolvePath(rec, basedir, rec)
+          call resolvePath(rec, basedir)
        else
           write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
           call warn_flush()
@@ -1326,7 +1310,7 @@ logical function initboundaryblocksforcings(filename)
           call warn_flush()
           cycle
        else
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        end if
        oper = 'O'
        call prop_get_string(node_ptr, '', 'operand', oper , retVal)
@@ -1528,7 +1512,10 @@ subroutine prepare_lateral_mask(kc, ilattype)
       enddo
    case (ILATTP_ALL)      ! both to everything 2D, and 1D, except to 1D pipes
       do L = 1,lnx1D
-         if (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0 ) then ! no pipes pos or neg, others only if pos
+         ! When is lateral allowed?
+         ! * (X)YZ profiles pointering to profiles number: always allow
+         ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
+         if (prof1D(1,L) < 0 .or. (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0) ) then
             k1 = ln(1,L) ; kc(k1) = 1
             k2 = ln(2,L) ; kc(k2) = 1
          else
@@ -1577,6 +1564,7 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
    double precision, pointer  :: dbleptr(:)
    integer            :: tgtitem
    integer, pointer   :: intptr, multuniptr
+   logical            :: file_exists
 
    success = .true.   ! initialization
    xdum = 1d0 ; ydum = 1d0; kdum = 1
@@ -1588,6 +1576,15 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
       ! Prepare time series relation, if the .pli file has an associated .tim file.
       L = index(locationfile,'.', back=.true.) - 1
       valuestring = locationfile(1:L)//'_0001.tim'
+      inquire(file=valuestring, exist=file_exists)
+      if ( .not. file_exists ) then
+          valuestring = locationfile(1:L)//'.tim'
+          inquire(file=valuestring, exist=file_exists)
+          if ( .not. file_exists ) then
+             call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(locationfile(1:L)//'_0001.tim')//''' do not exist.')
+          end if
+      end if
+
    else
       ! TODO: AvD: error msg?
       success = .false.
@@ -1598,7 +1595,7 @@ function adduniformtimerelation_objects(qid, locationfile, objtype, objid, param
    targetarrayptr => targetarray
    tgtitem = ec_undef_int
 
-   if (ierr /= 0) then ! No number, so check for timeseries filename
+   if (ierr /= 0 .or. index(valuestring,'/') == 1) then ! No number or a string starting with '/': check for timeseries filename
       if (strcmpi(trim(valuestring), 'REALTIME')) then
          success = .true.
          ! targetarray(targetindex) should be filled via DLL's API
@@ -1775,9 +1772,11 @@ subroutine init_threttimes()
        ierr = 0
        call get_sedfracname(qidfm, sedfracnam, qidnam)
        ifrac = findname(numfracs, sfnames, sedfracnam)
-       if (allocated(bndsf)) then
-          nseg = bndsf(ifrac)%k(5,thrtn(i))
-          if (nseg /=i) cycle
+       if (allocated(bndsf).and.thrtn(i)<=nbndsf(ifrac)) then      ! i      = no of TH boundaries (i.e. 1 per fraction bnd)
+                                                                   ! thrtn  = no of boundaries per fraction
+                                                                   ! nbndsf = total no of bnd links per fractions
+          nseg = bndsf(ifrac)%k(5,thrtn(i))  ! 5, has open bnd section where TH bnd applies
+          !if (nseg /=i) cycle
           if (nseg == 0 .or. nseg > nopenbndsect) then
              ierr = 1
           endif
@@ -1859,64 +1858,6 @@ subroutine init_threttimes()
     enddo
  endif
 
-end subroutine
-
-!> helper function to check combined usage of old style and new style keywords in General Structure.
-!! note that some keywords are used both in old style and new style
-subroutine checkCombinationOldNewKeywordsGeneralStructure(janewformat, str_ptr)
-   use m_strucs,         only : numgeneralkeywrd, generalkeywrd, generalkeywrd_old
-   use tree_structures,  only : TREE_DATA
-   use unstruc_messages, only : mess, LEVEL_ERROR
-   integer, intent(out)          :: janewformat
-   type(TREE_DATA), pointer      :: str_ptr
-
-   integer                       :: cnt_new, cnt_old
-
-   cnt_new = countUniqueKeys(str_ptr, generalkeywrd, generalkeywrd_old)
-   cnt_old = countUniqueKeys(str_ptr, generalkeywrd_old, generalkeywrd)
-
-   if (cnt_new > 0 .and. cnt_old > 0) then
-      call mess(LEVEL_ERROR, 'Combination of old and new keywords for a general structure is not supported ...' )
-   endif
-
-   if (cnt_old > 0) then
-      janewformat = 0
-   else
-      janewformat = 1
-   endif
-
-end subroutine checkCombinationOldNewKeywordsGeneralStructure
-
-!> helper function for checkCombinationOldNewKeywordsGeneralStructure
-function countUniqueKeys(str_ptr, list1, list2) result(cnt)
-   use properties,       only : prop_get
-   use tree_structures,  only : TREE_DATA
-   use string_module,    only : strcmpi
-   type(TREE_DATA), pointer      :: str_ptr
-   character(len=*), intent(in)  :: list1(:), list2(:)   !< list with keywords
-   integer                       :: cnt                  !< function result
-
-   integer                        :: k, l, length1, length2
-   character (len=256)            :: rec
-   character (len=:), allocatable :: key
-   logical             :: success
-
-   cnt = 0
-   length1 = size(list1)
-   length2 = size(list2)
-   outer: do k = 1,length1        ! count unique old keywords
-      key = trim(list1(k))
-      do l = 1,length2
-         if (strcmpi(key, list2(l))) then
-            cycle outer
-         endif
-      end do
-      call prop_get(str_ptr, '', key, rec, success)
-      if (success) then
-         cnt = cnt + 1
-      endif
-   enddo outer
-
-end function countUniqueKeys
+end subroutine init_threttimes
 
 end module unstruc_boundaries

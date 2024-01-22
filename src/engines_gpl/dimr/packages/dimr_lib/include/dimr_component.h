@@ -32,6 +32,7 @@ typedef void (CDECLOPT *BMI_GETCURRENTTIME) (double *);
 typedef void (CDECLOPT *BMI_GETATTRIBUTE)   (const char *, char *);
 typedef void (CDECLOPT *BMI_GETVAR)         (const char *, void **);
 typedef void (CDECLOPT *BMI_SETVAR)         (const char *, const void *);
+typedef void (CDECLOPT *BMI_GETVARSHAPE)    (const char *, int *);
 
 
 
@@ -65,6 +66,7 @@ struct dimr_component {
 	BMI_GETVAR         dllGetVar;         // entry point in dll
 	BMI_SETVAR         dllSetVar;         // entry point in dll
 	BMI_GETATTRIBUTE   dllGetAttribute;   // entry point in dll
+	BMI_GETVARSHAPE    dllGetVarShape;    // entry point in dll
 	BMI_SET_LOGGER	   setLogger;   // entry point in dll
 	int                result;            // return value when calling an entry point in dll
 	keyValueLL      *  settings;          // list of settings

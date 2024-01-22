@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
 !> Specifies the interface for MessageHandling's callback functionality.
 ! (A bit awkward, but including it in MessageHandling's module header
@@ -46,7 +46,7 @@ module MHCallBack
         character(c_char), intent(in) :: msg(MAXSTRINGLEN) !< c message null terminated
       end subroutine c_callbackiface
    end interface
-   
+
    abstract interface
       subroutine progress_iface(msg, progress)
         character(len=*), intent(in) :: msg !< c message null terminated
@@ -130,7 +130,7 @@ module MessageHandling
    public set_progress_callback
    public progress
    public stringtolevel
-   
+
    integer,parameter, public     :: LEVEL_ALL   = 0
    integer,parameter, public     :: LEVEL_DEBUG = 1
    integer,parameter, public     :: LEVEL_INFO  = 2
@@ -218,7 +218,7 @@ function stringtolevel(levelname) result(ilevel)
    character(len=*), intent(in) :: levelname !< Name of the level, 'DEBUG'/'INFO', etc.
    integer                      :: ilevel    !< The numeric value of the given level
 
-   ilevel = LEVEL_NONE  
+   ilevel = LEVEL_NONE
 
    select case (trim(levelname))
    case ('ALL')
@@ -386,7 +386,7 @@ recursive subroutine SetMessage(level, string)
         end if
      endif
 
-     if (lunMess .ne. 0) then
+     if (lunMess /= 0) then
         if (level >= thresholdLvl_file) then
            write (lunMess, '(a)') level_prefix(levelact)//trim(string)
         end if
@@ -408,7 +408,7 @@ recursive subroutine SetMessage(level, string)
         write (*, '(a)') trim(string)
      endif
 
-     if (lunMess .ne. 0) then
+     if (lunMess /= 0) then
         write (lunMess, '(a)') trim(string)
      end if
 
@@ -425,7 +425,7 @@ recursive subroutine SetMessage(level, string)
      if (level >= thresholdLvl_callback) then
         alreadyInCallback = .true.
         msg = trim(prefix_callback)//': '//trim(string)
-        c_string = string_to_char_array(trim(msg))        
+        c_string = string_to_char_array(trim(msg))
         call c_logger(level, c_string)
         alreadyInCallback = .false.
      endif
@@ -708,7 +708,7 @@ subroutine message2double(level, d1, d2)
     character(MAXSTRINGLEN) :: rec
 
     rec = ' '
-    write (rec,'(2F20.6)') d1,d2 
+    write (rec,'(2F20.6)') d1,d2
     call SetMessage(level, rec)
 end subroutine message2double
 

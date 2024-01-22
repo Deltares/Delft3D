@@ -132,7 +132,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     integer                              , pointer :: nmudfrac
     real(fp)      , dimension(:)         , pointer :: rhosol
     real(fp)      , dimension(:)         , pointer :: cdryb
-    integer       , dimension(:)         , pointer :: sedtyp
+    integer       , dimension(:)         , pointer :: tratyp
     integer                              , pointer :: julday
     integer                              , pointer :: ntstep
     real(fp), dimension(:,:,:)           , pointer :: fluxu
@@ -326,7 +326,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     cmpupdfrac          => gdp%gdsedpar%cmpupdfrac
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
-    sedtyp              => gdp%gdsedpar%sedtyp
+    tratyp              => gdp%gdsedpar%tratyp
     julday              => gdp%gdinttim%julday
     ntstep              => gdp%gdinttim%ntstep
     fluxu               => gdp%gdflwpar%fluxu
@@ -370,7 +370,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        if (kmax > 1) then
           do l = 1, lsed
              ll = lstart + l
-             if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
+             if (tratyp(l) == TRA_COMBINE) then
                 do nm = 1, nmmax
                    nmu = nm + icx
                    num = nm + icy
@@ -567,7 +567,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                       endif
                    endif
                 enddo ! nm
-             endif    ! sedtyp = SEDTYP_NONCOHESIVE_SUSPENDED
+             endif    ! tratyp = TRA_COMBINE
           enddo       ! l
        endif          ! kmax>1
        !
@@ -614,8 +614,18 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           enddo     ! l
        endif        ! sscomp .or. nst>=itmor
     endif           ! sus /= 0.0
+    ! make sure that the transport layer thickness is known
+    ! if the bed composition computations have started or
+    ! if dredging is active
     !
-    ! if bed composition computations have started
+    if ((nst >= itcmp .and. cmpupd) .or. dredge) then
+       !
+       ! Determine new thickness of transport layer
+       !
+       call compthick(dps       ,s1        ,nmmax     ,gdp       )
+    endif
+    !
+    ! if the bed composition computations have started ...
     !
     if (nst >= itcmp) then
        !
@@ -676,9 +686,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 lsedbed = lsedtot - nmudfrac
                 do l = 1, lsedtot
                    !
-                   ! bed load transport always zero for mud fractions
+                   ! bed load transport only for fractions with bedload component
                    !
-                   if (sedtyp(l) == SEDTYP_COHESIVE) cycle
+                   if (.not. has_bedload(tratyp(l))) cycle
                    li = li + 1
                    !
                    if (morbnd(jb)%ibcmt(3) == lsedbed) then
@@ -726,7 +736,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        !
        bedchangemesscount = 0
        do l = 1, lsedtot
-          bedload = sedtyp(l)==SEDTYP_NONCOHESIVE_TOTALLOAD
+          bedload = is_bedload(tratyp(l))
           ll = lstart + l
           do nm = 1, nmmax
              !
@@ -763,7 +773,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                    !
                    ! mass balance includes entrainment and deposition
                    !
-                   if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
+                   if (tratyp(l) == TRA_COMBINE) then
                       !
                       ! l runs from 1 to lsedtot, kmxsed is defined for 1:lsed
                       ! The first lsed fractions are the suspended fractions,
@@ -1039,11 +1049,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
           enddo
           !
-          ! Determine new thickness of transport layer
-          !
-          call compthick(dps       ,s1        , &
-                       & nmmax     ,gdp       )
-          !
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
@@ -1185,7 +1190,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        do nm = 1, nmmax
           depchg(nm) = 0.0_fp
        enddo
-    endif
+    endif ! nst >= itmor
     !
     ! Update bottom elevations
     !

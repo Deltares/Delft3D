@@ -1,0 +1,13 @@
+Report for D-Sheet Piling
+Report with version: 22.2.1.38119
+Calculated with version: 22.2.1.38119
+File name: ComplexProjects01
+
+Factors on loads - Geotechnical loads
+- Permanent load, unfavourable          1.000
+- Permanent load, favourable            1.000
+- Variable load,  unfavourable          1.000
+				 
+ Node   Level     Force         Moment
+number   [m]       [kN]         [kNm]
+ 7   2.55      -2386.12     -21525.22

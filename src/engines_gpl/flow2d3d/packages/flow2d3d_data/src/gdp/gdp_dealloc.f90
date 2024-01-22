@@ -177,6 +177,7 @@ subroutine gdp_dealloc(gdp)
     if (localswrf_file) then
        if (associated(gdp%gdheat%swrfarr)) deallocate (gdp%gdheat%swrfarr, STAT = istat)
     endif
+    if (associated(gdp%gdheat%flbcktemp)) deallocate (gdp%gdheat%flbcktemp, STAT = istat)
     deallocate (gdp%gdheat    , STAT = istat)
     deallocate (gdp%gdhtur2d  , STAT = istat)
     deallocate (gdp%gdinout   , STAT = istat)
@@ -358,6 +359,7 @@ subroutine gdp_dealloc(gdp)
     deallocate (gdp%iopartit , STAT = istat)
     !
     !success = free(gdp%gd_ECHandle)
+    deallocate (gdp%uniqueid , STAT = istat)
     deallocate (gdp%arch     , STAT = istat)
     deallocate (gdp%errorcode, STAT = istat)
     !

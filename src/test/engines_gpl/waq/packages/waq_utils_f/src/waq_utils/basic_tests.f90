@@ -27,76 +27,32 @@ module basic_tests
     implicit none
 
 contains
-subroutine tests_zoek
-    call test( test_zoek, 'Tests for ZOEK routines - arrays of strings' )
-end subroutine tests_zoek
+    subroutine tests_zoek
+        call test(test_zoek, 'Tests for ZOEK routines - arrays of strings')
+    end subroutine tests_zoek
 
-subroutine test_zoek
+    subroutine test_zoek
 
-    character(len=10), dimension(5) :: names = &
-        ['Name 1    ', 'Name 2    ', 'Name 3    ', 'Name 4    ', 'NAME 3    ']
-    character(len=10) :: lookup
-    integer           :: i, idx, string_length
+        character(len=10), dimension(5) :: names = &
+                                           ['Name 1    ',
+                                            'Name 2    ',
+                                            'Name 3    ',
+                                            'Name 4    ',
+                                            'NAME 3    ']
+        character(len=10) :: lookup
+        integer           :: idx
 
-    !
-    ! Case-sensitive search
-    !
-    lookup        = 'Name 3'
-    string_length = len(names)
-    call zoekcs( lookup, size(names), names, string_length, idx )
+        !
+        ! Case-insensitive search
+        !
+        idx = index_in_array('NAME 3', names)
 
-    call assert_equal( idx, 3, 'Returned location correct (full string, case-sensitive)' )
+        call assert_equal(idx, 3, 'Returned location correct (full string, case-insensitive)')
 
-    ! Truncate the search to a short prefix
-    string_length = 4
-    call zoekcs( lookup, size(names), names, string_length, idx )
+        ! Truncate the search to a short prefix
+        idx = index_in_array(lookup(1:4), names)
 
-    call assert_equal( idx, 1, 'Returned location correct (short prefix, case-sensitive)' )
+        call assert_equal(idx, 1, 'Returned location correct (short prefix, case-insensitive))')
 
-    ! Unknown string
-    lookup        = 'Unknown'
-    string_length = len(names)
-    call zoekcs( lookup, size(names), names, string_length, idx )
-
-    call assert_equal( idx, -1, 'Returned location correct (unknown string, case-sensitive)' )
-
-    !
-    ! Case-insensitive search
-    !
-    lookup        = 'NAME 3'
-    string_length = len(names)
-    call zoekns( lookup, size(names), names, string_length, idx )
-
-    call assert_equal( idx, 3, 'Returned location correct (full string, case-insensitive)' )
-
-    ! Truncate the search to a short prefix
-    string_length = 4
-    call zoekns( lookup, size(names), names, string_length, idx )
-
-    call assert_equal( idx, 1, 'Returned location correct (short prefix, case-insensitive))' )
-
-    ! Unknown string
-    lookup        = 'Unknown'
-    string_length = len(names)
-    call zoekcs( lookup, size(names), names, string_length, idx )
-
-    call assert_equal( idx, -1, 'Returned location correct (unknown string, case-insensitive)' )
-
-    !
-    ! Configured case-(in)sensitive search
-    !
-    do i = 0,1
-        call setzmo( i )
-
-        lookup        = 'NAME 3'
-        string_length = len(names)
-        call zoek( lookup, size(names), names, string_length, idx )
-
-        if ( i == 0 ) then
-            call assert_equal( idx, 3, 'Returned location correct (full string, case-insensitive)' )
-        else
-            call assert_equal( idx, 5, 'Returned location correct (full string, case-sensitive)' )
-        endif
-    enddo
-end subroutine test_zoek
+    end subroutine test_zoek
 end module basic_tests

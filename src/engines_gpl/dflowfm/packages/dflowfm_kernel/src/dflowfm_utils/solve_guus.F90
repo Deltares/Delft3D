@@ -250,15 +250,29 @@ endif
  return
  end subroutine mindegree
 
- subroutine ijtrue(i,j)
+ !> Put new fill in on stack of Gauss-CG solver
+ subroutine ijtrue(i, j)
  use m_reduce
  use m_alloc
- !
- ! this subroutine puts new fill in on stack
- !
  implicit none
- integer i,j,n,intbuf(2000),k1,k2,ierr
- logical logbuf(2000)
+ integer, intent(in) :: i !< First node number
+ integer, intent(in) :: j !< Second node number
+ integer :: n,k1,k2,ierr
+ integer :: cursize, minsize
+
+ if (allocated(intbuf)) then
+    cursize = size(intbuf)
+ else
+    cursize = 0
+ end if
+ minsize = max(2000, cursize, ij(i)%l, ij(j)%l)
+
+ if (cursize < minsize) then
+    ! Exponential growth to prevent 1000s of buffer realloc calls
+    minsize = ceiling(1.2*minsize)
+    call realloc(intbuf, minsize, stat = ierr, keepExisting = .false.)
+    call realloc(logbuf, minsize, stat = ierr, keepExisting = .false.)
+ end if
 
  k1 = ij(i)%l
  do n=1,ij(i)%l
@@ -1762,6 +1776,8 @@ subroutine gauss_eliminationjipjan
 
  deallocate(ij)
  deallocate(nbrstk, nodstk, nodbr2)
+ if (allocated(intbuf)) deallocate(intbuf)
+ if (allocated(logbuf)) deallocate(logbuf)
  if ( allocated( jagauss) ) deallocate(jagauss)
 
  call allocate_arrays()

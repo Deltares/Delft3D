@@ -76,6 +76,7 @@ subroutine d3stop(iexit, gdp)
     integer :: idate
     integer :: idumda ! Dummy Date 
     integer :: istate ! Status for RTC
+    integer :: waittime ! millisec
 !
 !! executable statements -------------------------------------------------------
 !
@@ -125,12 +126,14 @@ subroutine d3stop(iexit, gdp)
        write(*,*) '--------------'
     endif
     !
-    ! Check if Wave-connection is active and if so send (negative) status
-    ! to shut down Wave.
+    ! Check if Wave-connection is active and if so then only the master partition
+    ! sends a (negative) status to shut down Wave.
     !
     if (waveol==2) then
+       if (.not.parll .or. (parll .and. inode == master)) then
        ierror = flow_to_wave_command(flow_wave_comm_finalize, &
                                    & numdomains, mudlay, -1)
+       endif
     endif
     !
     ! Check if Wave-Mud-connection is active and if so send (negative) status
@@ -157,8 +160,11 @@ subroutine d3stop(iexit, gdp)
     endif
     !
     ! Abort mpi, if needed
-    ! This may also cause a direct termination
+    ! This may also cause a direct termination, so wait a while to give other partitions the chance to finish properly.
+    ! Do not call dfsync: this may block the FLOW termination, when an error occurs in only one partition.
     !
+    waittime = 10000
+    call CUTIL_SLEEP(waittime)
     if (parll) then
        call dfexitmpi(1)
     endif

@@ -40,7 +40,7 @@
  use m_missing
  use unstruc_messages
  use m_partitioninfo
- use sorting_algorithms, only: indexx
+ use stdlib_sorting, only: sort_index
  use geometry_module, only: dbdistance
  use m_sferic, only: jsferic, jasfer3D
  use m_samples
@@ -56,8 +56,8 @@
  INTEGER                       :: NSBRMX               ! MX NR OF PROFILES ON BRANCH
  INTEGER, allocatable          :: IDX(:)               ! INDEX ARR, SIZE = NSBRMX
  INTEGER, allocatable          :: KLH(:), KLHH(:)      ! INDEX  ARR, + SORTED BY IDX
- double precision, allocatable :: XLH(:), XLHH(:)      ! LENGTH ARR, + SORTED BY IDX
- double precision, allocatable :: ZLH(:), ZLHH(:)      ! VALUE  ARR, + SORTED BY IDX
+ double precision, allocatable :: XLH(:)               ! LENGTH ARR
+ double precision, allocatable :: ZLH(:)               ! VALUE  ARR
  integer                       :: nyz
 
  type tKBSAM                                           !< TEMP
@@ -261,8 +261,7 @@
              end if
           enddo
 
-          ALLOCATE ( KLH (NSBRMX), XLH (NSBRMX), ZLH (NSBRMX), IDX(NSBRMX) )
-          ALLOCATE ( KLHH(NSBRMX), XLHH(NSBRMX), ZLHH(NSBRMX)              )
+          ALLOCATE (KLH(NSBRMX), XLH(NSBRMX), ZLH(NSBRMX), IDX(NSBRMX), KLHH(NSBRMX))
 
           DO IBR = 1,MXNETBR                                      ! ORDER SAMPLES ON BRANCH AND INTERP LINKS INTO IT
 
@@ -273,9 +272,8 @@
                    !ZLH(KK)  = Zpr(K)
                    KLH(KK)  = K
                 ENDDO
-                CALL INDEXX(NSBR(IBR),XLH,IDX)
+                call sort_index(XLH(1:NSBR(IBR)), IDX(1:NSBR(IBR)))
                 DO KK = 1,NSBR(IBR)                               ! NU GESORTEERD NAAR AFSTAND
-                   XLHH(KK) = XLH(IDX(KK))
                    !ZLHH(KK) = ZLH(IDX(KK))
                    KLHH(KK) = KLH(IDX(KK))
                 ENDDO
@@ -286,11 +284,11 @@
                    !       Not a problem as long as *no* netlinks are discarded during geominit. (Then: numl1d == lnx1d.)
                    LA = IABS( NETBR(IBR)%LN(LL) )
                    XL = XLLIN(LA)
-                   DO WHILE (XL > XLHH(K2) .AND. K2 < NSBR(IBR) )
+                   DO WHILE (XL > XLH(K2) .AND. K2 < NSBR(IBR) )
                       K2 = K2 + 1; K1 = K1 + 1
                    ENDDO
 
-                   IF ( XL > XLHH(K2) ) THEN
+                   IF ( XL > XLH(K2) ) THEN
                       K1 = K2
                    ENDIF
 
@@ -299,7 +297,7 @@
                    ELSE IF (K1 == NSBR(IBR) ) THEN               ! IN LAST  SEGMENT, VALUE IS THAT OF K2
                       ALFA = 1D0
                    ELSE                                          ! IN BETWEEN, REGULAR INTERPOLATION
-                      ALFA = ( XL - XLHH(K1) ) / ( XLHH(K2) - XLHH(K1) )
+                      ALFA = ( XL - XLH(K1) ) / ( XLH(K2) - XLH(K1) )
                    ENDIF
                    IF (K1 == 0) THEN
                        KA = KLHH(K2)
@@ -330,9 +328,7 @@
 
           ENDDO
 
-          DEALLOCATE ( IBN  , LIB  , K1BR , NRLB)
-          DEALLOCATE ( KLH  , XLH  , ZLH  , IDX )
-          DEALLOCATE ( KLHH , XLHH , ZLHH       )
+          DEALLOCATE(IBN, LIB, K1BR, NRLB, KLH, XLH, ZLH, IDX, KLHH)
 
           IF (jainterpolatezk1D > 0) THEN
 

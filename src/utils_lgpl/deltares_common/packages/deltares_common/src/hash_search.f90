@@ -134,7 +134,7 @@ module m_hash_search
 
          !      write(*,*) ' Hashfill ', id,' ', hashcode
 
-         if (hashlist%hashfirst(hashcode) .eq. 0) then
+         if (hashlist%hashfirst(hashcode) == 0) then
 
             hashlist%hashfirst(hashcode) = icount
             hashlist%hashnext(icount)    = 0
@@ -144,7 +144,7 @@ module m_hash_search
             inr  = hashlist%hashfirst(hashcode)
             next = hashlist%hashnext(inr)
 
-            do while (next .ne. 0)
+            do while (next /= 0)
                inr  = next
                next = hashlist%hashnext (inr)
             enddo
@@ -205,7 +205,7 @@ module m_hash_search
 
       !      write(*,*) ' Hashfill ', id,' ', hashcode
 
-      if (hashlist%hashfirst(hashcode) .eq. 0) then
+      if (hashlist%hashfirst(hashcode) == 0) then
 
          hashlist%hashfirst(hashcode) = icount
          hashlist%hashnext(icount)    = 0
@@ -215,7 +215,7 @@ module m_hash_search
          inr  = hashlist%hashfirst(hashcode)
          next = hashlist%hashnext(inr)
 
-         do while (next .ne. 0)
+         do while (next /= 0)
             inr  = next
             next = hashlist%hashnext (inr)
          enddo
@@ -264,12 +264,12 @@ module m_hash_search
         inr  = hashlist%hashfirst(hashcode)
         next = inr
 
-        do while (next .ne. 0)
+        do while (next /= 0)
 
           idtest = hashlist%id_list(next)
           call str_upper (idtest)
 
-          if (locid .ne. idtest) then
+          if (locid /= idtest) then
             inr  = next
             next = hashlist%hashnext (inr)
           else
@@ -326,12 +326,12 @@ module m_hash_search
         inr  = hashlist%hashfirst(hashcode)
         next = inr
 
-        do while (next .ne. 0)
+        do while (next /= 0)
 
           idtest = hashlist%id_list(next)
           call str_upper (idtest)
 
-          if (locid .ne. idtest) then
+          if (locid /= idtest) then
             inr  = next
             next = hashlist%hashnext (inr)
           else
@@ -357,7 +357,7 @@ module m_hash_search
          hashlist%id_list(hashlist%id_count) = id
          ifound = hashlist%id_count
 
-         if (hashlist%hashfirst(hashcode) .eq. 0) then
+         if (hashlist%hashfirst(hashcode) == 0) then
 
             hashlist%hashfirst(hashcode) = ifound
             hashlist%hashnext(ifound)    = 0
@@ -367,7 +367,7 @@ module m_hash_search
             inr  = hashlist%hashfirst(hashcode)
             next = hashlist%hashnext(inr)
 
-            do while (next .ne. 0)
+            do while (next /= 0)
                inr  = next
                next = hashlist%hashnext (inr)
             enddo

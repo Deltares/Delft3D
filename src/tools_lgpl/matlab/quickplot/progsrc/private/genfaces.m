@@ -101,25 +101,72 @@ else
         % ---> X and Y
         %
         nX = size(X,1);
-        nZ = size(Y,2);
-        if isequal(size(Val),[nX-1 nZ-1]) && isequal(size(Y),[nX nZ])
+        nY = size(Y,1);
+        nVal = size(Val,1);
+        if nX == nVal+1
+            % ok, Values between X
+            if nY == nVal || nY == nVal+1
+                % ok, Y at Values or at X
+            else
+                error('First dimension of Y (%i entries) and Val (%i entries) can''t be matched.',nY,nVal)
+            end
+        elseif nX == nVal
+            % Values at X can't be used for patches, so need to generate
+            % more X or less Values. Do the former ...
+            X = (X([1 1:end],:) + X([1:end end],:))/2;
+            nX = nX+1;
+            if nY == nVal
+                % ok, Y now also in between X
+            elseif nY == nVal-1
+                % Y only available at the middle entries of X
+                Y = Y([1 1:end end],:);
+            else
+                error('First dimension of X (%i entries) and Y (%i entries) can''t be matched.',nX,nY)
+            end
+        else
+            error('First dimension of X (%i entries) and Value (%i entries) can''t be matched.',nX,nVal)
+        end
+        %
+        nX2 = size(X,2);
+        nY2 = size(Y,2);
+        nVal2 = size(Val,2);
+        if nY2 == nVal2+1
+            % ok, Values between Y
+            if nX2 == nVal2
+                % X at Values ... we'll need an X at every Y
+                X = (X(:,[1 1:end]) + X(:,[1:end end]))/2;
+            elseif nX2 == nVal2+1
+                % ok, X already at Y
+            else
+                error('Second dimension of X (%i entries) and Val (%i entries) can''t be matched.',nX2,nVal2)
+            end
+        elseif nY2 == nVal2
+            % Values at Y can't be used for patches, so need to generate
+            % more X or less Values. Do the former ...
+            Y = (Y(:,[1 1:end]) + Y(:,[1:end end]))/2;
+            nY2 = nY2+1;
+            if nX2 == nVal2
+                % X at Values ... we'll need an X at every Y
+                X = (X(:,[1 1:end]) + X(:,[1:end end]))/2;
+            elseif nY2 == nX2-1
+                % X only available at the middle entries of Y
+                X = X(:,[1 1:end end]);
+            else
+                error('Second dimension of X (%i entries) and Y (%i entries) can''t be matched.',nX2,nY2)
+            end
+        else
+            error('Second dimension of Y (%i entries) and Value (%i entries) can''t be matched.',nY2,nVal2)
+        end
+        %
+        if isequal(size(X),size(Val)+1) && isequal(size(X),size(Y))
             % Val at centre, X and Y defined at corners
             faces=reshape(1:numel(Y),size(Y));
             faces=faces(1:end-1,1:end-1);
             faces=faces(:);
             xv=[X(:) Y(:)];
             fv=[faces faces+1 faces+size(X,1)+1 faces+size(X,1)];
-        elseif isequal(size(Val),[nX-1 nZ-1]) && isequal(size(Y),[nX-1 nZ])
-            faces=reshape(1:numel(Y),size(Y));
-            faces=faces(:,1:end-1);
-            faces=faces(:);
-            X0=X(1:end-1,:);
-            X1=X(2:end,:);
-            xv=[X0(:) Y(:); X1(:) Y(:)];
-            fv=[faces faces+numel(X0) faces+size(X0,1)+numel(X0) faces+size(X0,1)];
-        elseif isequal(size(Val),[nX-1 nZ]) && isequal(size(Y),[nX-1 nZ])
-            Y = (Y(:,[1:end end]) + Y(:,[1 1:end]))/2;
-            X(:,end+1) = X(:,end);
+        elseif isequal(size(X),size(Val)+1) && isequal(size(Y),size(Val)+[0 1])
+            % Val and Y defined in between X in dim 1, and Val between Y in dim 2
             faces=reshape(1:numel(Y),size(Y));
             faces=faces(:,1:end-1);
             faces=faces(:);

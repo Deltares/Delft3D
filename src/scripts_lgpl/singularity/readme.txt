@@ -7,5 +7,6 @@ delft3dfm_202x.0x_lnx64_sif1xxx.tar.gz:
    They are example scripts for executing Singularity computations. You'll need to modify them for your own needs.
    "Working folder" is the location of your dimr configuration file.
    Check the comments in there.
+5. The scripts "submit_singularity_h7.sh" and "execute_singularity_h7.sh" are suitable for submitting computations to a Slurm workload manager.
 
 More information: see User manual and Installation manual, see https://download.deltares.nl/en/download/delft3d-fm/

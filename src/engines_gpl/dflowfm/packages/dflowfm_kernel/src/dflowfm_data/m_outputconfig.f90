@@ -3,7 +3,7 @@
 module m_output_config
    use MessageHandling
    use netcdf_utils, only: realloc, nc_att_set
-   use coordinate_reference_system, only: nc_attribute
+   use m_ug_nc_attribute, only: nc_attribute => ug_nc_attribute
    use netcdf, only: nf90_double
    implicit none
 private
@@ -289,6 +289,7 @@ private
    integer, public :: IDX_HIS_OBSCRS_CONST_N
    integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT
    integer, public :: IDX_HIS_OBSCRS_SED_STRANSPORT
+   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT
    integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_1
    integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_N
 
@@ -461,7 +462,7 @@ private
       character(len=Idlen)             :: long_name       !< Long name of the output item on the NETCDF file.      
       character(len=Idlen)             :: unit            !< unit of the output item on the NETCDF file.      
       character(len=Idlen)             :: standard_name   !< Standard name of the output item on the NETCDF file.                     
-      character(len=Idlen)             :: input_value     !< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.         
+      character(len=Idlen)             :: input_value = ''!< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.         
       character(len=Idlen)             :: description     !< Description of the input paragraph, key combination.
       integer                          :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
                                                              !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)

@@ -243,8 +243,8 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_strucs, only: generalkeywrd_old, numgeneralkeywrd
-     use MessageHandling, only : LEVEL_INFO, mess
+     use m_flowexternalforcings, only: NTRANSFORMCOEF
+     use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
      integer,           intent(out)           :: filetype         !< File type of current quantity.
@@ -262,6 +262,36 @@ contains
      character (len=maxnamelen)       :: rec, keywrd
      integer                          :: l1, l2, jaopt, k, extrapolation
      logical, save                    :: alreadyPrinted = .false.  !< flag to avoid printing the same message many times
+     
+     integer, parameter :: NUMGENERALKEYWRD_OLD = 26
+     character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = (/ character(len=256) :: &
+      'widthleftW1',             & ! ( 1)
+      'levelleftZb1',            & ! ( 2)
+      'widthleftWsdl',           & ! ( 3)
+      'levelleftZbsl',           & ! ( 4)
+      'widthcenter',             & ! ( 5)
+      'levelcenter',             & ! ( 6)
+      'widthrightWsdr',          & ! ( 7)
+      'levelrightZbsr',          & ! ( 8)
+      'widthrightW2',            & ! ( 9)
+      'levelrightZb2',           & ! (10)
+      'gateheight',              & ! (11)
+      'gateheightintervalcntrl', & ! (12)
+      'pos_freegateflowcoeff',   & ! (13)
+      'pos_drowngateflowcoeff',  & ! (14)
+      'pos_freeweirflowcoeff',   & ! (15)
+      'pos_drownweirflowcoeff',  & ! (16)
+      'pos_contrcoeffreegate',   & ! (17)
+      'neg_freegateflowcoeff',   & ! (18)
+      'neg_drowngateflowcoeff',  & ! (19)
+      'neg_freeweirflowcoeff',   & ! (20)
+      'neg_drownweirflowcoeff',  & ! (21)
+      'neg_contrcoeffreegate',   & ! (22)
+      'extraresistance',         & ! (23)
+      'dynstructext',            & ! (24)
+      'gatedoorheight',          & ! (25)
+      'door_opening_width'       & ! (26)
+     /)
 
      if (minp == 0) then
         ja = 0
@@ -365,8 +395,12 @@ contains
 
      call readTransformcoefficients(minp, transformcoef)
 
-    if (qid == 'generalstructure') then 
-        do k = 1,numgeneralkeywrd        ! generalstructure 
+     if (qid == 'generalstructure') then 
+        call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
+                               Please use a structure file <*.ini> instead.')
+        if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN,'Not all expected keywords are provided.')
+        if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN,'More keywords provided than expected.')
+        do k = 1,NUMGENERALKEYWRD_OLD
            call readandchecknextrecord(minp, rec, generalkeywrd_old(k), jaopt)
            if (jaopt == 1) then
                L1 = index(rec,'=') + 1
@@ -479,20 +513,26 @@ contains
    !
    !
    ! ==========================================================================
-   !> 
-   subroutine read1polylin(minp,xs,ys,ns,pliname)
+   !> Reads a single polyline from an open file.
+   !! Assumes two-column data with x,y pairs.
+   subroutine read1polylin(minp,xs,ys,ns,pliname, has_more_records)
       use m_alloc
-      integer          :: minp                          ! unit number of poly file
-      double precision, allocatable :: xs(:)            ! x-coordinates read from file    
-      double precision, allocatable :: ys(:)            ! y-coordinates read from file
-      integer                       :: ns               ! number of pli-points
-      character(len=:),allocatable,optional :: pliname  ! Optional, name (identifier) of pli
-   
+      integer,                                 intent(inout) :: minp     !< Unit number of poly file (already opened), will be closed after successful read.
+      double precision, allocatable,           intent(  out) :: xs(:)    !< x-coordinates read from file    
+      double precision, allocatable,           intent(  out) :: ys(:)    !< y-coordinates read from file
+      integer,                                 intent(  out) :: ns       !< Number of pli-points read
+      character(len=:), allocatable, optional, intent(  out) :: pliname  !< (Optional) Name (identifier) of the polyline read
+      logical,                       optional, intent(  out) :: has_more_records !< (Optional) Whether or not more polyline data exists in the remainder of the file, after reading this one polyline.
+
       character (len=maxnamelen)   :: rec
       integer                      :: k
    
       ns = 0
-   
+
+      if (present(has_more_records)) then
+         has_more_records = .false.
+      end if
+
    10 read(minp,'(a)',end = 999) rec
       if  (rec(1:1) == '*' ) goto 10
       if (present(pliname)) then
@@ -519,6 +559,10 @@ contains
          read(rec ,*    ,err = 777) xs(k), ys(k)
       enddo
    
+      if (present(has_more_records)) then
+         has_more_records = polyfile_has_more_records(minp)
+      end if
+
       call doclose(minp)
    
       return
@@ -534,17 +578,55 @@ contains
        return
    
    end subroutine read1polylin
+
+   
+   
+   !> Determine whether there is more data still left in the open polyfile.
+   !! Returns .true. when more non-whitepace/non-comment lines exist beyond
+   !! the current file pointer position.
+   !! After checking, 'backspaces' the filepointer to the first new data position.
+   function polyfile_has_more_records(minp) result(has_more)
+      integer, intent(inout) :: minp     !< Unit number of poly file, already open, filepointer can be anywhere in the file.
+      logical                :: has_more !< Result, whether or not more polyline data may exist in the remainder of the file.
+   
+      character (len=maxnamelen)   :: rec
+   
+      has_more = .false.
+
+      do
+         read(minp,'(a)',end = 999) rec
+         if (rec(1:1) == '*') then
+            cycle
+         end if
+         
+         if (len_trim(rec) == 0) then
+            cycle
+         else
+            ! We encountered a non-comment line, non-whitespace line before EOF
+            has_more = .true.
+            backspace(minp)
+            exit
+         end if
+      end do
+
+      return
+   
+   999 continue
+      ! EOF reached, simply return (.false.)
+      return
+   
+   end function polyfile_has_more_records
    !
    !
    ! ==========================================================================
    !> 
    subroutine settimespacerefdat(refda, jul00, tz, timjan)
    use m_itdate
+   use m_julday
    character (len=8) :: refda
    integer           :: jul00
    double precision  :: tz, timjan
    
-   integer, external :: julday
    integer           :: juljan
    
    refdat = refda
@@ -5645,6 +5727,7 @@ contains
      integer                         :: JACROS
      integer                         :: ierr
      double precision                :: SL,SM,XCR,YCR,CRP
+     logical                         :: has_more_pli
    
      num = 0
    
@@ -5653,8 +5736,13 @@ contains
      if (filetype == poly_tim) then
 
         call oldfil(minp, filename)
-        call read1polylin(minp,xs,ys,ns,pliname)
-   
+        call read1polylin(minp,xs,ys,ns,pliname, has_more_records=has_more_pli)
+        
+        if (has_more_pli) then
+           call mess(LEVEL_WARN, 'While reading polyline file '''//trim(filename)//''': multiple polylines are not supported in a single file.')
+           call mess(LEVEL_WARN, 'Only using first polyline '''//trim(pliname)//''' and ignoring the rest.')
+        end if
+
         if (.not. allocated(kcs)) then
           allocate(kcs(ns))
         else if (ns > size(kcs)) then
@@ -5676,9 +5764,8 @@ contains
                        cycle
                     end if
                  end if
-
                  if (usemask .and. kc(m) .eq. -1 ) then
-                   write(errormessage,'(a,i8.8,a,f12.4,a,f12.4,a)') 'Boundary link ',m,' already claimed [',(x(m)+xyen(1,m))/2.,',',(y(m)+xyen(2,m))/2.,']'
+                    write(errormessage,'(a,i8.8,a,f12.4,a,f12.4,a)') 'Boundary link ',m,' already claimed [',(x(m)+xyen(1,m))/2.,',',(y(m)+xyen(2,m))/2.,']'
                     call mess(LEVEL_WARN, errormessage)
                     cycle
                  else
@@ -5746,7 +5833,6 @@ contains
      use dfm_error
      use messageHandling
      use m_polygon
-     use sorting_algorithms, only: sort
      
      implicit none
      
@@ -6024,7 +6110,7 @@ contains
    
    ! b = factor*b + offset ! todo doorplussen
    
-   if (operand == 'O') then              ! Override, regardless of what was specified before 
+   if (operand == 'O' .or. operand == 'V') then              ! Override, regardless of what was specified before 
       a = b
    else if (operand == 'A') then         ! Add, means: only if nothing was specified before   
       if (a == dmiss_default ) then 
@@ -6500,6 +6586,7 @@ module m_meteo
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
+   use m_fm_icecover, only: ice_af, ice_h
    
    implicit none
    
@@ -6520,13 +6607,18 @@ module m_meteo
    integer, target :: item_stressy                                           !< Unique Item id of the ext-file's 'stressy' quantity's y-component.
    integer, target :: item_stressxy_x                                        !< Unique Item id of the ext-file's 'stressxy_x' quantity's x-component.
    integer, target :: item_stressxy_y                                        !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
+   
+   integer, target :: item_frcu                                              !< Unique Item id of the ext-file's 'frcu' quantity's component.
       
    integer, target :: item_apwxwy_p                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
    integer, target :: item_apwxwy_y                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'y'.
-   integer, target :: item_apwxwy_c                                          !< Unique Item id of the ext-file's 'space var Charnock' quantity 'C'.
+   integer, target :: item_apwxwy_c                                          !< Unique Item id of the ext-file's 'airpressure_windx_windy_charnock' quantity 'c' (space var Charnock).
+   integer, target :: item_charnock                                          !< Unique Item id of the ext-file's 'space var Charnock' quantity 'C'.
    integer, target :: item_waterlevelbnd                                     !< Unique Item id of the ext-file's 'waterlevelbnd' quantity's ...-component.
    integer, target :: item_atmosphericpressure                               !< Unique Item id of the ext-file's 'atmosphericpressure' quantity
+   integer, target :: item_sea_ice_area_fraction                             !< Unique Item id of the ext-file's 'sea_ice_area_fraction' quantity
+   integer, target :: item_sea_ice_thickness                                 !< Unique Item id of the ext-file's 'sea_ice_thickness' quantity
    integer, target :: item_velocitybnd                                       !< Unique Item id of the ext-file's 'velocitybnd' quantity
    integer, target :: item_dischargebnd                                      !< Unique Item id of the ext-file's 'discharge' quantity
    integer, target :: item_salinitybnd                                       !< Unique Item id of the ext-file's 'salinitybnd' quantity
@@ -6537,6 +6629,7 @@ module m_meteo
    integer, target :: item_normalvelocitybnd                                 !< Unique Item id of the ext-file's 'normalvelocitybnd' quantity
    integer, target :: item_rainfall                                          !< Unique Item id of the ext-file's 'rainfall' quantity
    integer, target :: item_rainfall_rate                                     !< Unique Item id of the ext-file's 'rainfall_rate' quantity
+   integer, target :: item_airdensity                                        !< Unique Item id of the ext-file's 'airdensity' quantity
    integer, target :: item_qhbnd                                             !< Unique Item id of the ext-file's 'qhbnd' quantity
    integer, target :: item_shiptxy                                           !< Unique Item id of the ext-file's 'shiptxy' quantity
    integer, target :: item_movingstationtxy                                  !< Unique Item id of the ext-file's 'movingstationtxy' quantity
@@ -6577,7 +6670,7 @@ module m_meteo
    integer, target :: item_hac_airtemperature                                !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hac_cloudiness                                    !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_humidity                                          !< 'humidity' quantity
+   integer, target :: item_humidity                                          !< 'humidity' (or 'dewpoint') quantity
    integer, target :: item_airtemperature                                    !< 'airtemperature' quantity
    integer, target :: item_cloudiness                                        !< 'cloudiness' quantity
    integer, target :: item_solarradiation                                    !< 'solarradiation' quantity
@@ -6595,6 +6688,7 @@ module m_meteo
    integer, target :: item_my                                                !< Unique Item id of the ext-file's 'item_my' quantity
    integer, target :: item_dissurf                                           !< Unique Item id of the ext-file's 'item_dissurf' quantity
    integer, target :: item_diswcap                                           !< Unique Item id of the ext-file's 'item_diswcap' quantity
+   integer, target :: item_distot                                            !< Unique Item id of the ext-file's 'item_distot'  quantity
    integer, target :: item_ubot                                              !< Unique Item id of the ext-file's 'item_ubot' quantity
 
    integer, target :: item_nudge_tem                                         !< 3D temperature for nudging
@@ -6602,6 +6696,7 @@ module m_meteo
    integer, target :: item_dambreakLevelsAndWidthsFromTable                  !< Dambreak heights and widths
    
    integer, target :: item_subsiduplift
+   integer, target :: item_ice_cover                                         !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
 
    integer, allocatable, dimension(:) :: countbndpoints(:) 
    !
@@ -6634,13 +6729,18 @@ module m_meteo
       item_stressy                               = ec_undef_int
       item_stressxy_x                            = ec_undef_int
       item_stressxy_y                            = ec_undef_int
-   
+
+      item_frcu                                  = ec_undef_int
+            
       item_apwxwy_p                              = ec_undef_int
       item_apwxwy_x                              = ec_undef_int
       item_apwxwy_y                              = ec_undef_int
       item_apwxwy_c                              = ec_undef_int
+      item_charnock                              = ec_undef_int
       item_waterlevelbnd                         = ec_undef_int
       item_atmosphericpressure                   = ec_undef_int
+      item_sea_ice_area_fraction                 = ec_undef_int
+      item_sea_ice_thickness                     = ec_undef_int
       item_velocitybnd                           = ec_undef_int
       item_dischargebnd                          = ec_undef_int
       item_salinitybnd                           = ec_undef_int
@@ -6651,6 +6751,7 @@ module m_meteo
       item_normalvelocitybnd                     = ec_undef_int
       item_rainfall                              = ec_undef_int
       item_rainfall_rate                         = ec_undef_int
+      item_airdensity                            = ec_undef_int
       item_qhbnd                                 = ec_undef_int
       item_shiptxy                               = ec_undef_int
       item_movingstationtxy                      = ec_undef_int
@@ -6704,6 +6805,7 @@ module m_meteo
       item_my                                    = ec_undef_int
       item_dissurf                               = ec_undef_int
       item_diswcap                               = ec_undef_int
+      item_distot                                = ec_undef_int
       item_ubot                                  = ec_undef_int
       item_dambreakLevelsAndWidthsFromTable      = ec_undef_int 
       item_subsiduplift                          = ec_undef_int
@@ -6835,6 +6937,8 @@ module m_meteo
       select case (operand)
          case ('O')
             ec_operand = operand_replace
+         case ('V')
+            ec_operand = operand_replace_if_value
          case ('+')
             ec_operand = operand_add
          case default
@@ -6909,17 +7013,26 @@ module m_meteo
             dataPtr1 => wx
             itemPtr2 => item_windxy_y
             dataPtr2 => wy
-       case ('stressx')
+         case ('sea_ice_area_fraction')
+            itemPtr1 => item_sea_ice_area_fraction
+            dataPtr1 => ice_af
+         case ('sea_ice_thickness')
+            itemPtr1 => item_sea_ice_thickness
+            dataPtr1 => ice_h
+         case ('stressx')
             itemPtr1 => item_stressx
             dataPtr1 => wdsu_x
          case ('stressy')
             itemPtr1 => item_stressy
             dataPtr1 => wdsu_y
-         case ( 'stressxy')
+         case ('stressxy')
             itemPtr1 => item_stressxy_x
             dataPtr1 => wdsu_x
             itemPtr2 => item_stressxy_y
             dataPtr2 => wdsu_y
+         case ('friction_coefficient_time_dependent')
+            itemPtr1 => item_frcu
+            dataPtr1 => frcu
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
             itemPtr1 => item_apwxwy_p
             dataPtr1 => patm
@@ -6936,6 +7049,9 @@ module m_meteo
             dataPtr3 => ec_pwxwy_y
             itemPtr4 => item_apwxwy_c
             dataPtr4 => ec_pwxwy_c
+         case ('charnock')
+            itemPtr1 => item_charnock
+            dataPtr1 => ec_charnock
          case ('waterlevelbnd', 'neumannbnd', 'riemannbnd', 'outflowbnd')
             itemPtr1 => item_waterlevelbnd
             dataPtr1 => zbndz
@@ -6957,10 +7073,10 @@ module m_meteo
          case ('tangentialvelocitybnd')
             itemPtr1 => item_tangentialvelocitybnd
             dataPtr1 => zbndt
-        case ('uxuyadvectionvelocitybnd')
+         case ('uxuyadvectionvelocitybnd')
             itemPtr1 => item_uxuyadvectionvelocitybnd
             dataPtr1 => zbnduxy
-        case ('normalvelocitybnd')
+         case ('normalvelocitybnd')
             itemPtr1 => item_normalvelocitybnd
             dataPtr1 => zbndn
          case ('airpressure','atmosphericpressure')
@@ -6972,6 +7088,9 @@ module m_meteo
          case ('rainfall_rate')
             itemPtr1 => item_rainfall_rate
             dataPtr1 => rain
+         case ('airdensity')
+            itemPtr1 => item_airdensity
+            dataPtr1 => airdensity 
          case ('qhbnd')
             itemPtr1 => item_qhbnd
             dataPtr1 => qhbndz
@@ -7063,9 +7182,12 @@ module m_meteo
             dataPtr3 => clou
             itemPtr4 => item_dacs_solarradiation 
             dataPtr4 => qrad
-         case ('humidity')
+         case ('humidity')      
             itemPtr1 => item_humidity
-            dataPtr1 => rhum                 ! Relative humidity 
+            dataPtr1 => rhum                 ! Relative humidity                
+         case ('dewpoint')                   
+            itemPtr1 => item_humidity
+            dataPtr1 => rhum                 ! Relative humidity array used to store dewpoints              
          case ('airtemperature')
             itemPtr1 => item_airtemperature
             dataPtr1 => tair
@@ -7082,10 +7204,13 @@ module m_meteo
             itemPtr2 => item_nudge_sal
             dataPtr2 => nudge_sal 
             itemPtr1 => item_nudge_tem
-            dataPtr1 => nudge_tem            ! Relative humidity array used to store dewpoints
+            dataPtr1 => nudge_tem
          case ('discharge_salinity_temperature_sorsin')
             itemPtr1 => item_discharge_salinity_temperature_sorsin
-            dataPtr1 => qstss
+            ! Do not point to array qstss here.
+            ! qstss might be reallocated after initialization (when coupled to Cosumo) 
+            ! and must be an argument when calling ec_gettimespacevalue.
+            nullify(dataPtr1)
          case ('hrms', 'wavesignificantheight')
             itemPtr1 => item_hrms
             dataPtr1 => hwavcom
@@ -7098,15 +7223,15 @@ module m_meteo
             itemPtr1 => item_dir
             dataPtr1 => phiwav
             jamapwav_phiwav = 1
-         case ('fx')
+         case ('fx','xwaveforce')
             itemPtr1 => item_fx
             dataPtr1 => sxwav
             jamapwav_sxwav = 1
-         case ('fy')
+         case ('fy','ywaveforce')
             itemPtr1 => item_fy
             dataPtr1 => sywav
             jamapwav_sywav = 1
-         case ('wsbu')
+        case ('wsbu')
             itemPtr1 => item_wsbu
             dataPtr1 => sbxwav
             jamapwav_sxbwav = 1
@@ -7122,14 +7247,18 @@ module m_meteo
             itemPtr1 => item_my
             dataPtr1 => mywav
             jamapwav_mywav = 1
-         case ('dissurf')
+         case ('dissurf','freesurfacedissipation')
             itemPtr1 => item_dissurf
             dataPtr1 => dsurf
             jamapwav_dsurf = 1
-         case ('diswcap')
+         case ('diswcap','whitecappingdissipation')
             itemPtr1 => item_diswcap
             dataPtr1 => dwcap
             jamapwav_dwcap = 1
+         case ('totalwaveenergydissipation')
+            itemPtr1 => item_distot
+            dataPtr1 => distot
+            jamapwav_distot = 1
          case ('ubot')
             itemPtr1 => item_ubot
             dataPtr1 => uorbwav            
@@ -7687,8 +7816,8 @@ module m_meteo
          if (success) success = ecSetConverterElement(ecInstancePtr, converterId, n_qhbnd)
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
-      case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', &
-            'airpressure_windx_windy_charnock', 'airpressure_stressx_stressy','humidity','airtemperature','cloudiness','solarradiation', 'longwaveradiation' )
+      case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy','airdensity', &
+            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy','humidity','dewpoint','airtemperature','cloudiness','solarradiation', 'longwaveradiation')
          if (present(srcmaskfile)) then 
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not.ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -7904,8 +8033,9 @@ module m_meteo
                 ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
                 fileReaderPtr%one_time_field = .true.
             endif
-         case ('wavesignificantheight', 'waveperiod', 'wavedirection')
-            ! the name of the source item created by the file reader will be the same as the ext.force. quant name
+            case ('wavesignificantheight', 'waveperiod', 'wavedirection', 'xwaveforce', 'ywaveforce', &
+                  'freesurfacedissipation','whitecappingdissipation', 'totalwaveenergydissipation')
+             ! the name of the source item created by the file reader will be the same as the ext.force. quant name
             sourceItemName = varname
          case ('airpressure', 'atmosphericpressure')
             if (ec_filetype == provFile_arcinfo) then
@@ -7982,6 +8112,23 @@ module m_meteo
             if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
             if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+        case ('charnock')
+            if (ec_filetype == provFile_netcdf) then
+               sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
+               if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+               return
+            end if
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
+         case ('friction_coefficient_time_dependent')
+             if (ec_filetype == provFile_netcdf) then
+               sourceItemName = 'friction_coefficient' 
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+               return
+            end if
          case ('windxy')
             ! special case: m:n converter, (for now) handle here in case switch
             if (ec_filetype == provFile_unimagdir) then
@@ -8090,7 +8237,7 @@ module m_meteo
             end if
          case ('humidity_airtemperature_cloudiness')
             ! special case: m:n converter, (for now) handle seperately
-            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform) then
+            if (ec_filetype == provFile_curvi .or. ec_filetype == provFile_uniform .or. ec_filetype == provFile_netcdf) then
                if (ec_filetype == provFile_curvi) then
                   sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_1')
                   sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'curvi_source_item_2')
@@ -8107,6 +8254,16 @@ module m_meteo
                      goto 1234
                   end if
                   success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               else if (ec_filetype == provFile_netcdf) then
+                  sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
+                  sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
+                  sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
+                  if (sourceItemId == ec_undef_int .or. sourceItemId_2 == ec_undef_int .or. sourceItemId_3 == ec_undef_int) then
+                     goto 1234 
+                  end if
+                  success              = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
+                  if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_3)
                end if
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_humidity)
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_hac_airtemperature)
@@ -8218,6 +8375,8 @@ module m_meteo
             if (success) success = ecAddItemConnection(ecInstancePtr, item_dacs_solarradiation, connectionId)
          case ('humidity')
             sourceItemName = 'relative_humidity'
+         case ('dewpoint')
+            sourceItemName = 'dew_point_temperature'
          case ('airtemperature')
             if (ec_filetype == provFile_uniform) then
                sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'uniform_item')
@@ -8227,11 +8386,29 @@ module m_meteo
                success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
                if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
                if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+            elseif (ec_filetype == provFile_netcdf) then
+               sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
+               success              = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+               if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airtemperature)
+               if (success) success = ecAddItemConnection(ecInstancePtr, item_airtemperature, connectionId)
+               if (.not. success) then
+                  goto 1234
+               end if
             else
                sourceItemName = 'air_temperature'
             end if
          case ('cloudiness')
-            sourceItemName = 'cloudfraction'
+            sourceItemName = 'cloud_area_fraction'
+         case ('airdensity')
+            if (ec_filetype == provFile_netcdf) then
+               sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')
+               success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
+            else
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+               return
+            end if
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_airdensity)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_airdensity, connectionId)
          case ('solarradiation')
             if (ec_filetype == provFile_netcdf) then
                sourceItemName = 'surface_net_downward_shortwave_flux'
@@ -8272,15 +8449,17 @@ module m_meteo
             if (ec_filetype == provFile_netcdf) then
                sourceItemName = name(14:)
             end if
-         case ('bedrock_surface_elevation')
+         case ('bedrock_surface_elevation','sea_ice_area_fraction','sea_ice_thickness')
             if (ec_filetype == provFile_arcinfo) then
-               sourceItemName = 'bedrock_surface_elevation'
+               sourceItemName = name
             else if (ec_filetype == provFile_curvi) then
                sourceItemName = 'curvi_source_item_1'
+            else if (ec_filetype == provFile_netcdf) then
+               sourceItemName = name
             else if (ec_filetype == provFile_uniform) then
                sourceItemName = 'uniform_item'
             else 
-               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity bedrock_surface_elevation.')
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(name)//'.')
                return
             end if   
          case default
@@ -8307,6 +8486,12 @@ module m_meteo
                         if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr4, connectionId)
                      endif
                   endif
+               endif
+               if (success) then
+                  ! all statements executed successfully ... this must be good
+                  ec_addtimespacerelation = .true.
+               else
+                  call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Error while default processing of ext-file (connect source and target) for : '//trim(target_name)//'.')
                endif
             else
                call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')
@@ -8455,6 +8640,9 @@ module m_meteo
       if (trim(group_name) == 'rainfall_rate') then
          if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) return
       end if
+      if (trim(group_name) == 'airdensity') then
+         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_airdensity, irefdate, tzone, tunit, timesteps)) return
+      end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness') then
          if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) return
       end if
@@ -8467,10 +8655,16 @@ module m_meteo
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation') then
          if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dewpoint, irefdate, tzone, tunit, timesteps)) return
       end if
+      if (trim(group_name) == 'dewpoint') then
+         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_humidity, irefdate, tzone, tunit, timesteps)) return ! Relative humidity array used to store dewpoints
+         if (.not.ec_gettimespacevalue_by_itemID(instancePtr, item_airtemperature, irefdate, tzone, tunit, timesteps)) return ! update tair for conversion of dewpoint to humidity
+      end if
       
       if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dewpoint/=ec_undef_int)    &
           .or.       & 
-          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint/=ec_undef_int)) then
+          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint/=ec_undef_int)    &
+          .or.       &
+          (trim(group_name) == 'dewpoint' .and. item_humidity/=ec_undef_int)) then
           ! Conversion of dewpoint to relative humidity
           ptd => rhum
           prh => rhum

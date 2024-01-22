@@ -108,7 +108,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
       if (wavedata%output%write_wavm) then
          call setoutputcount(wavedata%output, wavedata%output%count + 1)
       endif
-      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3) then
+      if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
          !
          ! SWANFile is going to contain two datasets: from tstart and tend
          ! Output from tend will always be written
@@ -359,7 +359,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          write(*,'(a)') '  Read SWAN output'
          offset = 0
-         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3) then
+         if (wavedata%time%calccount == 1 .and. swan_run%modsim == 3 .and. swan_run%inputtemplatefile == '') then
             ! SWANFile contains two datasets: from tstart and tend
             ! First read the first dataset
             ! This must be placed in output%count-1

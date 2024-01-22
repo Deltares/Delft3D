@@ -40,6 +40,8 @@ use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN
 implicit none
 integer                    :: L,LL,Lb,Lt,n, k, lnxbc
 
+if (jabarocterm==0) return
+
 if (jabarocponbnd == 0) then 
    lnxbc = lnxi
 else

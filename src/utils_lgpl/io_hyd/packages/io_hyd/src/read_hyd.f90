@@ -1,31 +1,31 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine read_hyd(hyd)
 
@@ -33,8 +33,13 @@
 
       ! global declarations
 
+      use m_monsys
+      use time_module
+      use m_get_filepath_and_pathlen
       use hydmod
+      use m_write_error_message
       use rd_token       ! tokenized reading
+      use m_string_utils, only: index_in_array
 
       implicit none
 
@@ -81,9 +86,8 @@
       integer             :: is                     ! second
       integer             :: idate                  ! date
       integer             :: itime                  ! time
-      real*8              :: julian                 ! julian function
       logical, parameter  :: untileol = .true.      ! read until the end of the line
-      
+
       key(1)  = 'task'
       key(2)  = 'geometry'
       key(3)  = 'horizontal-aggregation'
@@ -184,7 +188,7 @@
       ierr = 0
 
       hyd%description = ' '
-      call dhpath ( hyd%file_hyd%name, filpath, pathlen)
+      call get_filepath_and_pathlen ( hyd%file_hyd%name, filpath, pathlen)
 
       hyd%wasteload_coll%cursize = 0
       hyd%wasteload_coll%maxsize = 0
@@ -240,13 +244,13 @@
          if (itype .ne. 1) then
              goto 900
          end if
-         
-         call zoek ( ctoken, nokey , key , 30 , ikey )
+
+         ikey = index_in_array( ctoken(1:30), key )
          if ( ikey .eq. 1 ) then
 
             ! task
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            call zoek ( ctoken, nokey , key , 30 , ikey2 )
+            ikey2 = index_in_array( ctoken(1:30), key )
             if ( ikey2 .eq. 61 ) then
                hyd%task = HYD_TASK_FULL
             elseif ( ikey2 .eq. 62 ) then
@@ -260,7 +264,7 @@
          elseif ( ikey .eq. 2 ) then
             ! geometry
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            call zoek ( ctoken, nokey , key , 30 , ikey2 )
+            ikey2 = index_in_array( ctoken(1:30), key )
             if ( ikey2 .eq. 65 ) then
                hyd%geometry = HYD_GEOM_CURVI
             elseif ( ikey2 .eq. 69 ) then
@@ -274,12 +278,12 @@
             ! layer type
             hyd%layer_type = HYD_LAYERS_SIGMA ! Always assume sigma layers, unless otherwise stated
             if ( gettoken( ctoken, ierr) .eq. 0 ) then
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 82 ) then
                   hyd%layer_type = HYD_LAYERS_Z
                else
                   if ( puttoken( ctoken ) .ne. 0 ) goto 900
-               end if         
+               end if
             else
                if ( puttoken( ctoken ) .ne. 0 ) goto 900
             end if
@@ -289,7 +293,7 @@
             do
                ! look for end-description token
                if ( gettoken ( ctoken, ierr) .ne. 0 ) goto 900
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 7 ) exit
                ! it is a description line, store up to three
                i_desc = i_desc + 1
@@ -302,7 +306,7 @@
             ! convert to julian
             read (hyd%hyd_ref(1:8),'(i8)') idate
             read (hyd%hyd_ref(9:14),'(i6)') itime
-            hyd%time_ref = julian ( idate , itime )
+            hyd%time_ref = julian_with_leapyears ( idate , itime )
 
          elseif ( ikey .eq. 9 ) then
             ! hydrodynamic start
@@ -538,7 +542,7 @@
                if ( token_used ) then
                   if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
                endif
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 53 ) exit
 
                ! a new wasteload
@@ -551,7 +555,7 @@
                if ( gettoken(wasteload%k, ierr) .ne. 0 ) goto 900
                if ( gettoken(wasteload%name, ierr) .ne. 0 ) goto 900
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 58 .or. ikey2 .eq. 59 .or. ikey2 .eq. 60 .or. ikey2 .eq. 77 ) then
                   token_used = .true.
                   if ( ikey2 .eq. 58 ) then
@@ -579,7 +583,7 @@
             do
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
                ! look for end-domains keyword
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 55 ) exit
 
                ! key is domain name , read mmax nmax and dido file do not store dido file
@@ -598,7 +602,7 @@
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
                ! look for end-dd-boundaries keyword
-               call zoek ( ctoken, nokey , key , 30 , ikey2 )
+               ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 57 ) exit
 
                ! ctokenis domain name 1 , read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
@@ -647,9 +651,9 @@
             ! file-created-by string.
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%created_by = line(1:80)
-             
+
          elseif ( ikey .eq. 79) then
-            ! file-creation-date 
+            ! file-creation-date
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%creation_date = line(1:40)
 
@@ -657,9 +661,9 @@
             ! sink-sources
             do
                if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
-                  if(itype==1) then 
+                  if(itype==1) then
                      ! look for end-domains keyword
-                     call zoek ( ctoken, nokey , key , 30 , ikey2 )
+                     ikey2 = index_in_array( ctoken(1:30), key )
                      if ( ikey2 .eq. 81 ) exit
                   endif
 !               ! key is domain name , read mmax nmax and dido file do not store dido file
@@ -672,7 +676,7 @@
 !               i_domain = domain_coll_add(hyd%domain_coll, domain)
             enddo
 
-         else    
+         else
             ! unknown keyword, ignore until the end of the line
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
 
@@ -694,5 +698,5 @@
       endif
 
       return
- 900  call dherrs('error reading hyd file ('//trim(key(ikey))//')')
+ 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd

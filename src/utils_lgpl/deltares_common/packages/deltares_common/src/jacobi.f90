@@ -65,8 +65,8 @@ SUBROUTINE jacobi(a,n,np,d,v,nrot)
             sm=sm+abs(a(ip,iq))
          enddo r14
       enddo r15
-      if(sm.eq.0.)return      ! The normal return, which relies on quadratic conver
-      if(i.lt.4)then          !    gence to machine underflow.
+      if(sm == 0.)return      ! The normal return, which relies on quadratic conver
+      if(i < 4)then          !    gence to machine underflow.
          tresh=0.2*sm/n**2    !  ...on the first three sweeps.
       else
          tresh=0.             !    ...thereafter.
@@ -75,16 +75,16 @@ SUBROUTINE jacobi(a,n,np,d,v,nrot)
          r21:do iq=ip+1,n
             g=100.*abs(a(ip,iq))
 !              After four sweeps, skip the rotation if the o-diagonal element is small.
-            if((i.gt.4).and.(abs(d(ip))+g.eq.abs(d(ip))) .and.(abs(d(iq))+g.eq.abs(d(iq))))then
+            if((i > 4).and.(abs(d(ip))+g == abs(d(ip))) .and.(abs(d(iq))+g == abs(d(iq))))then
                   a(ip,iq)=0.
-            else if(abs(a(ip,iq)).gt.tresh)then
+            else if(abs(a(ip,iq)) > tresh)then
                h=d(iq)-d(ip)
-               if(abs(h)+g.eq.abs(h))then
+               if(abs(h)+g == abs(h))then
                   t=a(ip,iq)/h      ! t = 1=(2)
                else
                   theta=0.5*h/a(ip,iq)    ! Equation (11.1.10).
                   t=1./(abs(theta)+sqrt(1.+theta**2))
-                  if(theta.lt.0.)t=-t
+                  if(theta < 0.)t=-t
                endif
                c=1./sqrt(1+t**2)
                s=t*c

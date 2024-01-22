@@ -32,7 +32,7 @@
 
       SUBROUTINE HELP(WRDKEY,NLEVEL)
       use unstruc_display
-      use unstruc_version_module, only : unstruc_company, unstruc_program
+      use dflowfm_version_module, only : company, product_name
       implicit none
       integer :: i
       integer :: ih
@@ -106,7 +106,7 @@
       CALL IWinOpen(IXP,IYP,IW,1)
       NUMWNT = InfoWindow(1)
       CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-      TEXLIN = '               '//trim(unstruc_company)//'-'//trim(unstruc_program)//' HELPWINDOW'
+      TEXLIN = '               '//trim(company)//'-'//trim(product_name)//' HELPWINDOW'
       CALL IWinOutSTRINGXY(1,1,TEXLIN)
       CALL IWinOutStringXY (IW-16,1,'page =    of   ')
       CALL IWinOutIntegerXY(IW-3,1,NUMPAG,2)
@@ -185,7 +185,7 @@
          IF (JAPOP .EQ. 0) THEN
             CALL IWinSelect(NUMWNT)
             CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-            TEXLIN = '               '//trim(unstruc_company)//'-'//trim(unstruc_program)//' KEYWORDWINDOW'
+            TEXLIN = '               '//trim(company)//'-'//trim(product_name)//' KEYWORDWINDOW'
             CALL IWinOutSTRINGXY(1,1,TEXLIN)
             CALL IWinOutStringXY (IW-16,1,'page =    of   ')
             CALL IWinOutIntegerXY(IW-3,1,NUMPGK,2)
@@ -206,7 +206,7 @@
             JAPOP  = 0
             CALL IWinSelect(NUMWNT)
             CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-            TEXLIN = '               '//trim(unstruc_company)//'-'//trim(unstruc_program)//' HELPWINDOW'
+            TEXLIN = '               '//trim(company)//'-'//trim(product_name)//' HELPWINDOW'
             CALL IWinOutSTRINGXY(1,1,TEXLIN)
             CALL IWinOutStringXY (IW-16,1,'page =    of   ')
             CALL IWinOutIntegerXY(IW-3,1,NUMPAG,2)

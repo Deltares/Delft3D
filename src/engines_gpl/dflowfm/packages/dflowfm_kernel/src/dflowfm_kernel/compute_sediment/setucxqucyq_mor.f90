@@ -47,6 +47,7 @@
    integer          :: L, LL, k, k1, k2, Lt, Lb, kk, kb, kt
    double precision :: wcxu, wcyu, cs, sn, uin, huL
    logical, pointer :: maximumwaterdepth
+   double precision, pointer :: maximumwaterdepthfrac
    double precision, dimension(:), allocatable :: area
    integer                                     :: qsign
    double precision :: area_L
@@ -55,6 +56,7 @@
    integer          :: nstruc
 
    maximumwaterdepth => stmpar%morpar%mornum%maximumwaterdepth
+   maximumwaterdepthfrac => stmpar%morpar%mornum%maximumwaterdepthfrac
 
    allocate(area(ndx))
 
@@ -126,20 +128,16 @@
       deallocate(area)
 
    else    ! 2D/3D
-      ucxq_mor = 0d0 ; ucyq_mor = 0d0; hs_mor = 0d0
+      ucxq_mor = 0d0 ; ucyq_mor = 0d0;
       
       if( .not. maximumwaterdepth ) then
          if (kmx==0) then
             do k = 1,ndx
                ucxq_mor(k) = ucxq(k)
                ucyq_mor(k) = ucyq(k)
-               hs_mor(k)   = hs(k)
             enddo
          else
             do k=1,ndx
-               !ucxq_mor(k) = ucxq(k)   ! not used in 3D
-               !ucyq_mor(k) = ucyq(k)
-               hs_mor(k)   = hs(k)
                call getkbotktop(k,kb,kt)
                do kk=kb,kt
                   ucxq_mor(kk) = ucxq(kk)
@@ -166,8 +164,8 @@
       
          do L = lnxi+1,lnx
             k1 = ln(1,L) ; k2 = ln(2,L)
-            cs = csu(L) ; sn = snu(L)
             if ( jacstbnd == 0 ) then
+               cs = csu(L) ; sn = snu(L)
                uin = ucxq_mor(k2) * cs + ucyq_mor(k2) * sn
                ucxq_mor(k1) = uin * cs
                ucyq_mor(k1) = uin * sn
@@ -179,10 +177,9 @@
          enddo
       
          do k = 1,ndx
-            hs_mor(k) = hs(k)
             do L = 1,nd(k)%lnx
                LL = abs( nd(k)%ln(L) )
-               hs_mor(k) = max( hs_mor(k), hu(LL) )
+               hs_mor(k) = max( hs_mor(k), maximumwaterdepthfrac*hu(LL) )
             enddo
          enddo
       
@@ -228,7 +225,6 @@
          enddo
          !
          do k = 1,ndx
-            hs_mor(k) = hs(k)
             do L = 1,nd(k)%lnx
                LL = abs( nd(k)%ln(L) )
                hs_mor(k) = max( hs_mor(k), hu(LL) )

@@ -56,60 +56,72 @@ endif
 do k = kt+1 , kb + kmxn(kk) - 1
    rho(k) = rho(kt)
 enddo
+
 end subroutine setrhokk
 
-double precision function setrho(k,p0)
-use m_physcoef
+!> set density in a cell 
+double precision function setrho(cell, p0)
+
 use m_flow
 use m_sediment
-use sediment_basics_module, only: SEDTYP_NONCOHESIVE_TOTALLOAD
+use sediment_basics_module, only: has_advdiff
 use m_transport
 use m_turbulence, only: rhowat
 
 implicit none
-integer          :: k
-double precision :: p0           ! in as cell ceiling pressure, out as cell floorpressure (pascal) 
-double precision :: rhok         ! in as previous density, reduces required nr of iterations 
 
-integer                         :: j, l, lsed, i    
+integer,          intent(in)    :: cell   !< cell number
+double precision, intent(inout) :: p0     !< in as cell ceiling pressure, out as cell floorpressure (pascal) 
+
+double precision                :: rhok   !< in as previous density, reduces required nr of iterations 
+
+integer                         :: i, lsed   
 double precision, external      :: densfm
 double precision                :: rhom, sal, temp, p1, dzz
 
-call getsaltemk(k,sal, temp)
+double precision, parameter     :: SAND_DENSITY = 2600d0 
+
+call getsaltemk(cell,sal, temp)
 
 if (idensform < 10) then 
    setrho = densfm(sal,temp,p0)
 else 
-   dzz  = zws(k) - zws(k-1)
-   rhok = rho(k)
-   do i  = 1,Maxitpresdens 
+   dzz  = zws(cell) - zws(cell-1)
+   rhok = rho(cell)
+   do i  = 1, Maxitpresdens 
       p1 = p0 + ag*dzz*rhok
       rhok =  densfm(sal,temp,0.5d0*(p1+p0) )
-   enddo
+   end do
    setrho = rhok
    p0     = p1
-endif
+end if
 
 if (jased > 0 .and. stm_included) then
    rhom = setrho                     ! UNST-5170 for mor, only use salt+temp, not sediment effect
    rhom = min(rhom, 1250d0)           ! check overshoots at thin water layers
    rhom = max(rhom,  990d0)           !
-   rhowat(k) = rhom
-   if (stmpar%morpar%densin) then     ! sediment effects
-      l = ISED1
+   rhowat(cell) = rhom
+   if (stmpar%morpar%densin) then     ! sediment density effects
+      i    = ised1
       rhom = setrho
       do lsed = 1,stmpar%lsedtot
-         if (stmpar%sedpar%sedtyp(lsed) /= SEDTYP_NONCOHESIVE_TOTALLOAD) then  ! suspended sand or mud
-            setrho = setrho + constituents(l,k)*(stmpar%sedpar%rhosol(lsed) - rhom)/stmpar%sedpar%rhosol(lsed)
-            l = l+1
+         if (has_advdiff(stmpar%sedpar%tratyp(lsed))) then ! has suspended component
+            setrho = setrho + constituents(i,cell)*(stmpar%sedpar%rhosol(lsed) - rhom)/stmpar%sedpar%rhosol(lsed)
+            i = i+1
          end if
       end do
    end if
+else if (jasubstancedensitycoupling > 0) then ! for now, DELWAQ concentrations in g/m3
+   rhom = setrho
+   do i = itra1, itran 
+      setrho = setrho + (1d-3)*constituents(i,cell)*(SAND_DENSITY - rhom)/SAND_DENSITY ! Herman's suggestion 
+    enddo
 else if (jaseddenscoupling > 0) then  ! jased < 4
    rhom = setrho
-   do j = 1,mxgr
-      setrho = setrho + sed(j,k)*(rhosed(j) - rhom)/rhosed(j) ! good to see this is also adopted officially above %
+   do i = 1,mxgr
+      setrho = setrho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i) ! good to see this is also adopted officially above %
    enddo
+
 end if
 
 setrho = min(setrho, 1250d0)          ! check overshoots at thin water layers
@@ -120,8 +132,10 @@ end function setrho
 double precision function setrhofixedp(k,p0)
 
 implicit none
-integer          :: k
-double precision :: p0           ! some given pressure 
+
+integer,          intent(in)    :: k    !< cell number
+double precision, intent(in)    :: p0   !< some given pressure 
+
 double precision, external      :: densfm
 
 double precision :: sal, temp
@@ -148,7 +162,7 @@ else
 endif
 
 if (jatem > 0) then
-   temp = max(0d0, constituents(itemp,k))  ! should be changed to -2d0 at some point in future
+   temp = max( -5d0, constituents(itemp,k) ) 
 else
    temp = backgroundwatertemperature
 endif

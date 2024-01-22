@@ -46,11 +46,11 @@ if [%2] EQU [-d] (
         set argfile=dimr_config.xml
         goto readyreading
     ) else (
-        set argfile=%4
+        set argfile=%~4
         goto readyreading
     )
 ) else (
-    set argfile=%2
+    set argfile=%~2
 )
 if [%3] EQU [-d] (
     set debuglevel=%4
@@ -61,7 +61,7 @@ if [%3] EQU [-d] (
 
     rem Check configfile
 echo Configfile:%argfile%
-if not exist %argfile% (
+if not exist "%argfile%" (
     echo ERROR: configfile "%argfile%" does not exist
     goto usage
 )
@@ -111,6 +111,7 @@ set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
 set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
 set sharedir=%D3D_HOME%\%ARCH%\share\bin
 set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
+set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
 
 
     rem
@@ -118,7 +119,7 @@ set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
     rem
 
     rem Run
-set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%sharedir%
+set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
 if exist %sharedir%\vars.bat (
     echo executing: "%sharedir%\vars.bat"
         call "%sharedir%\vars.bat"
@@ -126,8 +127,8 @@ if exist %sharedir%\vars.bat (
     echo "WARNING: File not found: %sharedir%\vars.bat"
     echo "         Problems may occur when using IntelMPI"
 )
-echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% %argfile%
-                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% %argfile%
+echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
+                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
 
 goto end
 

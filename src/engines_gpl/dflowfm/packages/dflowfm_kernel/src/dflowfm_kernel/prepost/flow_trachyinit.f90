@@ -152,21 +152,21 @@ subroutine flow_trachyinit()
     ! Construct a default griddim struct (dimension is lnx = number of flow links )  ! (better dimension is numl based on number of net links)
     ! (Contrary to the morphology routine call (where the dimension is ndxi)
     ! [TO DO: make uniform, or adjust griddim structure to allow both flow nodes, net links (& flow-links)?]
-    call simplegrid_dimens(griddim, numl, 1)
+    call simplegrid_dimens(trachy_griddim, numl, 1)
 
     ! Construct memory structure for trachytopes on flow links
     call inittrachy(trachy_fl, 1, istat)
 
     ! Read dimensions of trachytope memory structure
     call dimtrt(mdia    ,error     ,trachy_fl,   trtdef_ptr , &
-              & griddim )
+              & trachy_griddim )
     if (error) then
         call SetMessage(LEVEL_FATAL, 'flow_trachyinit:: Error reading trachytope dimensions (dimtrt)')
     end if
 
     call rdtrt(mdia      ,error     ,lftrto    , dt_user   , &                !lftrto = jatrt (read twice, in unstruc_model and rdtrt), so always true after rdtrt
              & kmaxtrt   ,itimtt    ,trachy_fl , &
-             & griddim   ,0.1_fp    ,trtdef_ptr    ,.false.   , &
+             & trachy_griddim   ,0.1_fp    ,trtdef_ptr    ,.false.   , &
              & ddbval    ,dummy_tunit)
     if (error) then
         call SetMessage(LEVEL_FATAL, 'flow_trachyinit:: Error reading trachytopes (rdtrt)')
@@ -179,7 +179,7 @@ subroutine flow_trachyinit()
     enddo
 
     ! Check if trachytopes are defined
-    call chktrt(mdia     , error  , griddim, &
+    call chktrt(mdia     , error  , trachy_griddim, &
               & trachy_fl, flnmD50, flnmD50, lfbedfrmrou, stm_included, ddbval)
     if (error) then
         call SetMessage(LEVEL_FATAL, 'unstruc::flow_trachyinit - Error reading trachytope definitions')

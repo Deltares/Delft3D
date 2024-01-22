@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set the directory of where the source code is located
 set(src_path src) 
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Gather the source files
 set(headers include/swanout1_deltares.inc)
@@ -17,23 +18,24 @@ list(FILTER swan_sourcefiles EXCLUDE REGEX ".*swanhcat.for$")
 set(library_name swan)
 set(library_source_list     ${headers}
                             ${swan_sourcefiles})
-add_library(${library_name} ${library_source_list})
+add_library(${library_name} ${library_source_list})  
 
 # Add dependencies
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
+ # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     target_link_libraries(${library_name}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         netcdff)
 
-
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+    message (${CMAKE_BINARY_DIR}/netcdff)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
+                        ${version_include_dir}
+                        ${CMAKE_BINARY_DIR}/netcdff)
 
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
@@ -44,7 +46,8 @@ if (WIN32)
     oss_include_libraries(${library_name} ${oss_dependencies})
     target_link_libraries(${library_name} ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        ${mpi_include_path})
+                        ${mpi_include_path}
+                        ${version_include_dir})
 endif(WIN32)
 
 

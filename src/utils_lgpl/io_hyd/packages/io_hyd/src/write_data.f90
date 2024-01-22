@@ -1,37 +1,39 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine write_data ( afile , itime , notim , noq1  , noq2  , &
                               noq3  , noval , nosca , flagsf, valnam, &
                               ardata, funtyp)
 
       use filmod
+      use m_convert_seconds_to_date
+
       implicit none
 !
 !     Deltares
@@ -40,7 +42,7 @@
 !
 !     function            : writes data to delwaq auxiliary input file.
 !
-!     subroutines called  : dhctim, conversion of an integer variable in seconds to dd:hh:mm:ss or yy:ddd:hh format.
+!     subroutines called  : convert_seconds_to_date, conversion of an integer variable in seconds to dd:hh:mm:ss or yy:ddd:hh format.
 !                           jbputa, puts a real array to a dos binary file.
 !                           jbputi, puts an integer value to a dos binary file.
 !
@@ -146,7 +148,7 @@
    40          continue
             endif
          else
-            call dhctim(itime,itime2,.true.,.false.)
+            call convert_seconds_to_date(itime,itime2,.true.,.false.)
             write ( lun , 2060 ) itime2
             do 50 il = 1 , noloc
                write ( lun , 2070 ) (ardata(i+(il-1)*noval),i=1,noval)

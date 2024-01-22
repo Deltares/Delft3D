@@ -33,7 +33,7 @@
       SUBROUTINE HISTOR()
       use unstruc_files
       use unstruc_display
-      use unstruc_version_module, only : unstruc_company, unstruc_program
+      use dflowfm_version_module, only : company, product_name
       implicit none
       integer :: ih
       integer :: infoinput
@@ -103,7 +103,7 @@
       CALL IWinAction('FPC')
       CALL IWinOpen(IXP,IYP,IW,1)
       CALL ITEXTCOLOURN(LBLFOR,LBLBCK)
-      CALL IWinOutCentre(1,trim(unstruc_company)//'-'//trim(unstruc_program)// ' HISTORY')
+      CALL IWinOutCentre(1,trim(company)//'-'//trim(product_name)// ' HISTORY')
       CALL ITEXTCOLOURN(HLPFOR,HLPBCK)
 !
 !     Explain keyfunctions in bottom window

@@ -1,5 +1,5 @@
 subroutine ua_vt(facas,      facsk,        sws,      h,   &
-               & hrms,       tp,           ag,       uorb,&
+               & hrms,       tp,           ag,       urms,&
                & ua)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -50,7 +50,7 @@ subroutine ua_vt(facas,      facsk,        sws,      h,   &
    real(fp), intent(in)     :: hrms
    real(fp), intent(in)     :: tp
    real(fp), intent(in)     :: ag
-   real(fp), intent(in)     :: uorb
+   real(fp), intent(in)     :: urms
    real(fp), intent(out)    :: ua
    !
    ! Locals
@@ -98,6 +98,6 @@ subroutine ua_vt(facas,      facsk,        sws,      h,   &
    as = f0*RF(2,ih0,it0)+f1*RF(2,ih1,it0)+ f2*RF(2,ih0,it1)+f3*RF(2,ih1,it1)
    !
    ! Sediment advection velocity from Skewness and Asymmetry
-   ua = sws*(facsk*sk-facas*as)*uorb
+   ua = sws*(facsk*sk-facas*as)*urms   ! urms, not uorb
    
 end subroutine ua_vt

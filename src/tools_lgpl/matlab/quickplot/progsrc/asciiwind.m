@@ -134,16 +134,10 @@ else
 end
 fid = fopen(Structure.FileName,'r');
 for i = 1:length(t)
-    fseek(fid,Structure.Data(t(i)).offset,-1);
-    OneTime = fscanf(fid,'%f',[Structure.NVal Structure.Header.n_quantity]);
-    OneTime = OneTime(:,Quant);
     switch lower(Structure.Header.filetype)
         case {'meteo_on_equidistant_grid','field_on_equidistant_grid'}
-            %TODO: nQuant>1
-            OneTime = reshape(OneTime,[Structure.Header.n_cols Structure.Header.n_rows])';
-            OneTime = flipud(OneTime);
+            sz = [Structure.Header.n_cols Structure.Header.n_rows];
         case {'meteo_on_curvilinear_grid','field_on_curvilinear_grid'}
-            %TODO: nQuant>1
             if ~isfield(Structure.Header,'data_row')
                 Structure.Header.data_row = 'grid_row';
             end
@@ -154,10 +148,43 @@ for i = 1:length(t)
             switch Structure.Header.data_row
                 case 'grid_row' % which corresponds to column here
                     sz = size(Structure.Header.grid_file.X);
-                    OneTime = reshape(OneTime,sz);
                 case {'grid_col','grid_column'} % which corresponds to row here
                     sz = size(Structure.Header.grid_file.X);
                     sz = fliplr(sz);
+            end
+        case {'meteo_on_spiderweb_grid','field_on_spiderweb_grid'}
+            sz = [Structure.Header.n_cols Structure.Header.n_rows];
+        case {'meteo_on_computational_grid','field_on_computational_grid'}
+            if isfield(Structure.Header,'grid_file')
+                sz = size(Structure.Header.grid_file.X)+1;
+            end
+    end
+    sz(3) = max(Quant);
+    
+    fseek(fid,Structure.Data(t(i)).offset,-1);
+    if isfield(Structure.Data,'use_fortran_read') && ...
+            Structure.Data(t(i)).use_fortran_read
+        OneTime = zeros(sz);
+        for iqnt = 1:sz(3)
+            for iline = 1:sz(2)
+                OneTime(:,iline) = fscanf(fid,'%f',sz(1));
+                fgetl(fid);
+            end
+        end
+    else
+        OneTime = fscanf(fid,'%f',[Structure.NVal sz(3)]);
+        OneTime = reshape(OneTime,sz);
+    end
+    OneTime = OneTime(:,:,Quant);
+    
+    switch lower(Structure.Header.filetype)
+        case {'meteo_on_equidistant_grid','field_on_equidistant_grid'}
+            OneTime = flipud(OneTime');
+        case {'meteo_on_curvilinear_grid','field_on_curvilinear_grid'}
+            switch Structure.Header.data_row
+                case 'grid_row' % which corresponds to column here
+                    % data already ok
+                case {'grid_col','grid_column'} % which corresponds to row here
                     OneTime = reshape(OneTime,sz)';
             end
             switch Structure.Header.first_data_value
@@ -171,7 +198,6 @@ for i = 1:length(t)
                     OneTime = rot90(OneTime,2);
             end
         case {'meteo_on_spiderweb_grid','field_on_spiderweb_grid'}
-            OneTime = reshape(OneTime,[Structure.Header.n_cols Structure.Header.n_rows nQuant]);
             OneTime = permute(OneTime,[2 1 3]);
             OneTime = OneTime([1 1:end],[1:end 1],:);
             % fill the eye -- Delft3D approach (FM? also for 4?)
@@ -181,10 +207,7 @@ for i = 1:length(t)
             % fill the eye -- SFINCS approach
             % OneTime(1,:,:) = 2*OneTime(2,:,:) - OneTime(3,:,:); % linearly extrapolate trend of innermost pair of data points
         case {'meteo_on_computational_grid','field_on_computational_grid'}
-            %TODO: nQuant>1
-            if isfield(Structure.Header,'grid_file')
-                OneTime = reshape(OneTime,size(Structure.Header.grid_file.X)+1);
-            end
+            % data ok
     end
     if ~isempty(varargin)
         OneTime = OneTime(rows,cols,:);
@@ -523,7 +546,8 @@ if Structure.Header.fileversion<1.03 ...
     ui_message('error',{Structure.FileName,'This curvilinear grid meteo file is interpreted incorrectly by Delft3D versions 3.28.00 until 3.28.09!'})
 end
 if Structure.Header.fileversion>1.0 ...
-        && strcmp(Structure.Header.filetype,'meteo_on_curvilinear_grid') ...
+        && (strcmp(Structure.Header.filetype,'meteo_on_curvilinear_grid') ...
+            || strcmp(Structure.Header.filetype,'field_on_curvilinear_grid')) ...
         && (~strcmp(Structure.Header.first_data_value,'grid_ulcorner') ...
             || ~strcmp(Structure.Header.data_row,'grid_row'))
     msg = {Structure.FileName,'This curvilinear grid meteo file is interpreted incorrectly by D-Flow FM.'};
@@ -564,16 +588,23 @@ while 1
     % skip data
     %
     Structure.Data(itime).offset = offset;
+    Structure.Data(itime).use_fortran_read = false;
+    Structure.Data(itime).nval = 0;
     dummy = fscanf(fid,'%f',nval);
     if ~isfinite(nval)
         nval = length(dummy);
     elseif nval > length(dummy)
         fclose(fid);
-        error('Not enough data available for data block %i (%s) - expecting %i values, read %i..',itime,datestr(Structure.Data(itime).time,0),nval,length(dummy))
+        error('Not enough values available in data block %i (%s).\nExpected %i values, but found only %i.',itime,datestr(Structure.Data(itime).time,0),nval,length(dummy))
     end
     %
     % read next time
     %
+    dummy2 = fscanf(fid,'%f',inf);
+    if ~isempty(dummy2)
+        Structure.Data(itime).nval = nval+length(dummy2);
+        Structure.Data(itime).use_fortran_read = true;
+    end
     [keyw,value] = fgetl_keyval(fid);
     if timeformat == 2 && strcmp(strtok(value),'/*')
         fgetl_noncomment(fid); % skip the line, fgetl_keyval reset the reading point to before this line since it didn't contain an equal sign
@@ -600,6 +631,30 @@ while 1
 end
 %
 Structure.Data(itime+1:end) = [];
+if none([Structure.Data(:).use_fortran_read])
+    Structure.Data = rmfield(Structure.Data,'use_fortran_read');
+else
+    nval_vec = [Structure.Data.nval];
+    nval_too_large = sum(nval_vec>0);
+    itime = find(nval_vec>0,1,'first');
+    if nval_too_large == length(Structure.Data)
+        base_str = 'Too many values available in all data blocks.';
+        if all(nval_vec(nval_vec>0) == nval_vec(itime))
+            ui_message('warning','%s\nExpected %i values, but all blocks contain %i values.',base_str,nval,nval_vec(itime))
+            itime = [];
+        end
+    elseif nval_too_large == 1
+        base_str = sprintf('Too many values available in data block %i (%s).', itime,datestr(Structure.Data(itime).time,0));
+        ui_message('warning','%s\nExpected %i values, but found %i.',base_str,nval,nval_vec(itime))
+        itime = [];
+    else
+        base_str = sprintf('Too many values available in %i data blocks.', nval_too_large);
+    end
+    if ~isempty(itime)
+        ui_message('warning','%s\nFor example, block %i (%s): expected %i values, but found %i.',base_str,itime,datestr(Structure.Data(itime).time,0),nval,nval_vec(itime))
+    end
+end
+Structure.Data = rmfield(Structure.Data,'nval');
 Structure.NVal = nval/Structure.Header.n_quantity;
 Structure.Check = 'OK';
 fclose(fid);
@@ -988,6 +1043,8 @@ end
 dRefDate = RefDateNew - RefDate;
 TimeZone = (X(9)+X(10)/60)*(44-abs(X(8)));
 switch lower(tunit)
+    case {'seconds','s'}
+        Time = dRefDate + X(1)/24/60/60;
     case {'minutes','min','m'}
         Time = dRefDate + X(1)/24/60;
     case {'hours','hrs','h'}

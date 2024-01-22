@@ -45,9 +45,15 @@
 #include "config.h"
 #endif 
 
-!> the parameters and enumeraters are taken from
-!>   ../third_party_open/metis-<version>/include/metis.h
+!> @file partition.f90
+!! Data and parameter modules for partitioning & parallelizing D-Flow FM models.
+!!
+!! Includes FM's own partition data as well as some handling of METIS and PETSc.
+
+!> Interface module to METIS's native error codes.
 module m_metis
+! the parameters and enumerators are taken from
+!   ../third_party_open/metis-<version>/include/metis.h
    integer, parameter :: METIS_NOPTIONS=40
    
    integer, dimension(METIS_NOPTIONS) :: opts
@@ -59,11 +65,13 @@ module m_metis
    integer, parameter :: METIS_ERROR           = -4   !< Some other errors
 end module
 
+!> Administration data for D-Flow FM's partitions and MPI-communication patterns.
 module m_partitioninfo
 
 use m_tpoly
 use precision_basics, only : hp
 use meshdata, only : ug_idsLen, ug_idsLongNamesLen
+use gridoperations, only: dlinkangle
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -77,10 +85,9 @@ implicit none
    !! In case of C/C++ calling side, construct an MPI communicator, and call
    !! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
    !! to a FORTRAN comm handle.
-   integer, target :: DFM_COMM_DFMWORLD  = NAMECLASH_MPI_COMM_WORLD !< [-] The MPI communicator for dflowfm (FORTRAN handle). {"rank": 0}
+   integer, target :: DFM_COMM_DFMWORLD = NAMECLASH_MPI_COMM_WORLD !< [-] The MPI communicator for dflowfm (FORTRAN handle). {"rank": 0}
    integer         :: DFM_COMM_ALLWORLD                             !< [-] The MPI communicator for dflowfm including the fetch proc (FORTRAN handle). {"rank": 0}#endif
 #endif
-
    type tghost
       integer, allocatable       :: list(:)            !< list of ghost nodes or links, in order of their corresponding other domain, dim(1:number of ghost nodes/links)
       integer, allocatable       :: N(:)               !< cumulative number of ghost nodes/links per domain in the list, starts with fictitious domain 0, dim(0:numdomains)
@@ -93,7 +100,7 @@ implicit none
    integer                       :: ndomains = 0       !< number of domains
    integer                       :: numranks = 1       !< number of ranks
    integer                       :: my_rank            !< own rank
-
+   
    integer                       :: use_fetch_proc = 0   !< if 1, then a separate proc is dedicated to calculate fetch parlength and depth
    integer                       :: fetch_proc_rank = -1 !< the rank of the fetch proc. it is the last proc of the entire proc group when it is active 
    
@@ -952,7 +959,7 @@ implicit none
       use network_data, only: nump, nump1d2d, numL, lnn, lne, numl1d, netcell, xzw, yzw
       use m_flowgeom, only: xz, yz
       use unstruc_channel_flow, only: network
-      use sorting_algorithms, only : indexxi
+      use stdlib_sorting, only: sort_index
       implicit none
       
       integer,  intent(in   ) :: L2Lorg(:)     !< Mapping table current (new) to original net link numbers
@@ -961,7 +968,7 @@ implicit none
 
       integer, dimension(:,:),      allocatable :: icandidate  ! two original cell number candidates, dim(nump1d2d)
       integer, dimension(:,:),      allocatable :: tmp_lne
-      integer, dimension(:)  ,      allocatable :: indx, indxinv, cellnrs, tmpNetcellNod
+      integer, dimension(:)  ,      allocatable :: indx, indxinv, tmpNetcellNod
       real(kind=hp), dimension(:),  allocatable :: tmpCoord
       integer                                   :: i, k, kother, LL, L, L_org, nc
       integer                                   :: ic1, ic2, ic3, ic4
@@ -1052,13 +1059,14 @@ implicit none
          ! * calculation points (flow nodes) are order such that branch indices are always increasing,
          ! * and calculation points (flow nodes) within a branch are always ordered by increasing offset/chainage.
 
-         allocate(indx(nump1d2d), indxinv(nump1d2d), cellnrs(nump1d2d), tmpCoord(nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
-         cellnrs = iorg
-         call indexxi(size(iorg), cellnrs, indx)
+         allocate(indx(nump+1:nump1d2d), indxinv(nump+1:nump1d2d), tmpCoord(nump+1:nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
+         call sort_index(iorg(nump+1:nump1d2d), indx(nump+1:nump1d2d))
+         do i = nump+1,nump1d2d
+            indx(i) = indx(i) + nump
+         end do
 
          do i = nump+1,nump1d2d
             indxinv(indx(i)) = i       ! Construct helper table with inverse of sorting permutation indx.
-            iorg(i) = cellnrs(indx(i)) ! Global cell numbers, after the 1D netcell sorting
          end do
 
          do i = nump+1,nump1d2d
@@ -1652,7 +1660,7 @@ implicit none
        send_list, nr_send_list, ierror)
       
       use m_alloc
-      use network_data,    only: numk, xzw, yzw, xk, yk
+      use network_data,    only: numk,xzw, yzw, xk, yk
       use m_flowgeom,      only: xu, yu
       use geometry_module, only: dbdistance
       use m_missing,       only: dmiss
@@ -1674,9 +1682,9 @@ implicit none
       double precision, pointer           :: x_local(:), y_local(:)       !< pointers on flow nodes/links/corners
       integer                             :: i, ii, j, ghost_level, num, numnew
       integer                             :: numdomains, idum
+      integer                             :: node
       
       integer                             :: jafound
-	  integer                             :: node
       double precision, parameter         :: TOLERANCE=1d-4
       character(len=80)                   :: message2, message3
 
@@ -1732,10 +1740,10 @@ implicit none
                        exit
                    end if
                 end do  
-            end if
-            if ( jafound == 0 ) then
-               call qnerror('partition_fill_sendlist: numbering error', message2, message3)
-               goto 1234
+               if ( jafound == 0 ) then
+                  call qnerror('partition_fill_sendlist: numbering error', message2, message3)
+                  goto 1234
+               endif
             end if
          endif
       end do
@@ -4398,37 +4406,6 @@ end subroutine partition_make_globalnumbers
          return
       end subroutine connect_branches
       
-!>    gives link angle, changes sign when link has negative number      
-      double precision function dLinkangle(L)
-         use m_sferic, only: jsferic
-         use geometry_module, only: getdxdy 
-         
-         implicit none
-         
-         integer,          intent(in) :: L  !< link number
-         double precision              :: dx, dy       
-         integer                       :: k1, k2
-         
-         
-         if ( L.gt.0 ) then
-            k1 = kn(1,L)
-            k2 = kn(2,L)
-         else
-            k1 = kn(2,-L)
-            k2 = kn(1,-L)
-         end if
-         
-         call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
-         !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-         !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
-         
-         dLinkangle = atan2(dy,dx)
-         
-         return
-      end function dLinkangle
-      
-
-      
 !> find the global branch connectivity
 !>    sets ibr_glob_left, ibr_glob_right, Lother_left, Lother_right
       subroutine find_branch_conn(ibr_glob_left, ibr_glob_right, Lother_left, Lother_right, ierror)
@@ -4898,20 +4875,6 @@ end subroutine partition_make_globalnumbers
       
       return
    end subroutine generate_partition_pol_from_idomain
-   
-!> reduce error level, note that it is assumed that DFM_NOERR=0 and that all error levels >=0 
-   subroutine reduce_error(ierror) 
-      implicit none 
-      integer, intent(inout) :: ierror
-      
-      integer, dimension(1)  :: idum
-      
-      idum(1) = ierror
-      call reduce_int_max(1, idum)
-      ierror = idum(1)
-
-      return 
-   end subroutine reduce_error 
    
 !> Gathers integer data from all processes and delivers it to a speicified root process.
 !! Note: the same number of data from each subdomain are sent.

@@ -363,31 +363,39 @@ module m_VolumeTables
 
          nod = n+ndx2d
          summerDikeIndex = 0
-
-         ! compute volumes, NOTE the volume at the first level is 0 by design
-         do LL = 1, nd(nod)%lnx
-            L = iabs(nd(nod)%ln(LL))
-            if (L > lnxi) then
-               L = lbnd1d(L)
-            endif
-            if (line2cross(L, 2)%c1 > 0) then
-               if (cross(line2cross(L, 2)%c1)%hasSummerDike() .or. cross(line2cross(L, 2)%c2)%hasSummerDike()) then
-                  summerDikeIndex = summerDikeIndex+1
-               endif
-            endif
-            
-            ! Reset L to original value
-            L = iabs(nd(nod)%ln(LL))
-            if (generateVLTBOnLinks) then
-               call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb, vltbOnLinks)
-            else
-               call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb)
-            endif
-         enddo
          
-         if (vltb(n)%numberOfSummerDikes>0) then
-            vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
-            vltb(n)%inundationPhase = .true.
+         ! Only generate volume tables for 1d nodes (so skip the 2d boundary points)
+         if (iabs(kcs(nod)) == 1) then
+
+            ! compute volumes, NOTE the volume at the first level is 0 by design
+            do LL = 1, nd(nod)%lnx
+               L = iabs(nd(nod)%ln(LL))
+               if (L > lnxi) then
+                  L = lbnd1d(L)
+               endif
+               if (kcu(L) /=1) then
+                  ! This is a 1d2d link and is not added to the volume tables
+                  cycle
+               endif
+            
+               if (line2cross(L, 2)%c1 > 0) then
+                  if (cross(line2cross(L, 2)%c1)%hasSummerDike() .or. cross(line2cross(L, 2)%c2)%hasSummerDike()) then
+                     summerDikeIndex = summerDikeIndex+1
+                  endif
+               endif
+               ! Reset L to original value
+               L = iabs(nd(nod)%ln(LL))
+               if (generateVLTBOnLinks) then
+                  call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb, vltbOnLinks)
+               else
+                  call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb)
+               endif
+            enddo
+         
+            if (vltb(n)%numberOfSummerDikes>0) then
+               vltb(n)%sdinArea(i, vltb(n)%count) = 0d0
+               vltb(n)%inundationPhase = .true.
+            endif
          endif
       enddo
       
@@ -518,10 +526,10 @@ module m_VolumeTables
       if (nstor > 0) then
          stors => network%stors%stor
          do i = 1, nstor
-            nod = stors(i)%gridPoint 
+            nod = stors(i)%grid_Point 
             n = nod-ndx2d
             if (n > 0) then
-               vltb(n)%topHeight = max(vltb(n)%topHeight, getTopLevel(stors(i))) - bl(nod)
+               vltb(n)%topheight = max(vltb(n)%topheight, get_top_level(stors(i))) - bl(nod)
             endif
          enddo
       endif
@@ -545,16 +553,16 @@ module m_VolumeTables
       nstor = network%stors%count
       ! Compute the contribution of all the storage nodes to the volume table of the corresponding node
       do i = 1, nstor
-         nod = stors(i)%gridPoint 
+         nod = stors(i)%grid_point 
          n = nod-ndx2d
          if (n > 0) then
 
             do j = 1, vltb(n)%count
                level = bl(nod) + (j-1)*tableIncrement
-               vltb(n)%vol(j) = vltb(n)%vol(j) + getVolume(stors(i), level)
+               vltb(n)%vol(j) = vltb(n)%vol(j) + get_volume(stors(i), level)
                ! NOTE: %sur follows at the end as an average for each level
             enddo
-            vltb(n)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) + GetSurface(stors(i), level)
+            vltb(n)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) + get_surface(stors(i), level)
          endif
       enddo
    end subroutine addStorageToVltb

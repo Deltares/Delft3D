@@ -109,6 +109,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
     logical                             , pointer :: nonhyd
     integer                             , pointer :: nh_level
     integer                             , pointer :: nudge
+    integer                             , pointer :: max_mud_sedtyp
 !
 ! Global variables
 !
@@ -295,6 +296,7 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
     dryflc      => gdp%gdnumeco%dryflc
     nudge       => gdp%gdnumeco%nudge
     dzmin       => gdp%gdzmodel%dzmin
+    max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
     !
     if (lstsci == 0) goto 9999
     !
@@ -622,8 +624,8 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
              !
              ! for sediment fraction
              !
-             if (     (eqmbcsand .and. sedtyp(ls) == SEDTYP_NONCOHESIVE_SUSPENDED) &
-               & .or. (eqmbcmud  .and. sedtyp(ls) == SEDTYP_COHESIVE             )  ) then
+             if ((eqmbcsand .and. sedtyp(ls) > max_mud_sedtyp) .or. &
+               & (eqmbcmud  .and. sedtyp(ls) <= max_mud_sedtyp)) then
                 if (kcu(nmf) == 1) then
                    do k = 1, kmax
                       ddkl(nmf, k, l) = max(0.0_fp, r0(nmfu, k, l))
@@ -681,8 +683,8 @@ subroutine z_difu(lundia    ,nst       ,icx       ,icy       ,j         , &
                 !
                 ! for sediment fraction
                 !
-                if (     (eqmbcsand .and. sedtyp(ls) == SEDTYP_NONCOHESIVE_SUSPENDED) &
-                  & .or. (eqmbcmud  .and. sedtyp(ls) == SEDTYP_COHESIVE             )  ) then
+                if ((eqmbcsand .and. sedtyp(ls) > max_mud_sedtyp) .or. &
+                  & (eqmbcmud  .and. sedtyp(ls) <= max_mud_sedtyp)) then
                    if (kcv(nfm) == 1) then
                       do k = 1, kmax
                          ddkl(nfm, k, l) = r0(nfum, k, l)

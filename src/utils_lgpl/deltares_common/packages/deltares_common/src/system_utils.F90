@@ -258,7 +258,7 @@ function makedir(dirname) result(istat)
    
     slash = char(47)
     lslash = index (pathstr,slash)
-    if (lslash .eq. 0) then
+    if (lslash == 0) then
        slash = char(92)
     endif
 
@@ -272,7 +272,7 @@ function makedir(dirname) result(istat)
        return
     end if
 
-    if ( slash .eq. char(47)) then
+    if ( slash == char(47)) then
 !      linux
        command = "mkdir -p "//trim(dirname)
     else

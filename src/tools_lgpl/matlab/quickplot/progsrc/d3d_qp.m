@@ -1,4 +1,4 @@
-function outdata = d3d_qp(cmd,varargin)
+function varargout = d3d_qp(cmd,varargin)
 %D3D_QP QuickPlot user interface: plotting interface for Delft3D output data.
 %   To start the interface type: d3d_qp
 %
@@ -33,12 +33,13 @@ function outdata = d3d_qp(cmd,varargin)
 %   http://www.deltaressystems.com
 %   $HeadURL$
 %   $Id$
+
 try
     if nargin==0
         cmd='initialize';
     end
     if nargout>0
-        outdata=d3d_qp_core(cmd,varargin{:});
+        varargout = d3d_qp_core(cmd,varargin{:});
     else
         d3d_qp_core(cmd,varargin{:});
     end
@@ -82,20 +83,20 @@ end
 cmd=lower(cmd);
 if nargout~=0
     if strcmp(cmd,'initialize')
-        outdata = [];
+        outdata = {[]};
     elseif strcmp(cmd,'iswl')
-        outdata = isequal(qp_settings('WLextensions','off'),'on');
+        outdata = {isequal(qp_settings('WLextensions','off'),'on')};
         return
     elseif strcmp(cmd,'version')
         if nargin>1
-            outdata = qp_checkversion(varargin{:});
+            outdata = {qp_checkversion(varargin{:})};
         else
-            outdata = qpversion;
+            outdata = {qpversion};
         end
         return
     elseif isstandalone % allow standalone auto start ...
-        outdata = [];
-    elseif none(strcmp(cmd,{'loaddata','selected','selectedfigure','selectedaxes','selecteditem','selectfield','selectedfield','qpmanual','matlabmanual'}))
+        outdata = {[]};
+    elseif none(strcmp(cmd,{'loaddata','selected','selectedfigure','selectedaxes','selecteditem','selectfield','selectedfield','qpmanual','matlabmanual','selecteddomain'}))
         error('Too many output arguments.')
     end
 end
@@ -140,9 +141,7 @@ switch cmd
         qck_anim(cmd,cmdargs{:});
 
     case 'set'
-        if length(cmdargs)==2
-            qp_settings(cmdargs{:})
-        end
+        qp_settings(cmdargs{:})
         
     case 'debug'
         error('Insert a break point HERE for debugging!')
@@ -166,7 +165,7 @@ switch cmd
         qp_plotmanager(cmd,UD,logfile,logtype,cmdargs);
         
     case {'selectedfigure', 'selectedaxes', 'selecteditem'}
-        outdata = qp_plotmanager(cmd,UD,logfile,logtype,cmdargs);
+        outdata = {qp_plotmanager(cmd,UD,logfile,logtype,cmdargs)};
         
     case {'geodata','geodata_gshhs','geodata_border','geodata_river','geodata_wms'}
         if length(cmd)>7
@@ -396,6 +395,70 @@ switch cmd
             writelog(logfile,logtype,cmd,FileName,Otherargs{:});
         end
         d3d_qp selectfile*
+        
+    case 'analytical'
+        if ~isempty(cmdargs)
+            FI.Type = cmdargs{1};
+            FI.Name = cmdargs{2};
+            FI.Args = struct(cmdargs(3:end));
+        else
+            defaults = [];
+            [DomainNr,Props,subf] = qpfield;
+            if ~isempty(Props)
+                if Props.DimFlag(T_)
+                    try
+                        cFI = qpfile;
+                        sz = qpread(cFI,DomainNr,Props,'size');
+                        if sz(T_) > 0
+                            times = qpread(cFI,DomainNr,Props,'times',1:2);
+                            refDate = times(1);
+                            dtSec = (times(2)-times(1))*86400;
+                            defaults.refDate = datestr(refDate,0);
+                            defaults.dt = dtSec;
+                            defaults.dtUnit = 'seconds';
+                            defaults.nTimeSteps = sz(T_);
+                        end
+                    catch
+                    end
+                end
+            end
+            FI = analytical_solution(defaults);
+        end
+        if ~isempty(FI)
+            FileName = FI.Name;
+            
+            NewRecord.QPF=1;
+            NewRecord.Name=FileName;
+            NewRecord.Data=FI;
+            NewRecord.FileType='analytical';
+            NewRecord.Options=0;
+            NewRecord.Otherargs={};
+            
+            Handle_SelectFile=findobj(mfig,'tag','selectfile');
+            File=get(Handle_SelectFile,'userdata');
+            Str=get(Handle_SelectFile,'string');
+            
+            if isempty(File)
+                Str={abbrevfn(FileName,60)};
+                NrInList=1;
+                File=NewRecord;
+            else
+                FileNameList={File.Name};
+                NrInList=find(strcmp(FileName,FileNameList));
+                if isempty(NrInList)
+                    NrInList=length(File)+1;
+                end
+                Str{NrInList}=abbrevfn(FileName,60);
+                File(NrInList)=NewRecord;
+            end
+            set(Handle_SelectFile,'userdata',File,'string',Str,'value',NrInList,'enable','on','backgroundcolor',Active);
+            d3d_qp selectfile*
+            %
+            if logfile
+                parameters = [fieldnames(FI.Args) struct2cell(FI.Args)]';
+                writelog(logfile,logtype,cmd,FI.Type,FI.Name,parameters{:});
+            end
+        end
         
     case {'difffiles','diff_files','diff_files_one_domain'}
         pos = get(mfig,'position');
@@ -1220,6 +1283,12 @@ switch cmd
         end
         d3d_qp updatedatafields
         
+    case 'selecteddomain'
+        domains = findobj(mfig,'tag','selectdomain');
+        Domains = get(domains,'string');
+        i = get(domains,'value');
+        outdata = {i, Domains{i}};
+        
     case 'selectdomain'
         domains = findobj(mfig,'tag','selectdomain');
         Domains = get(domains,'string');
@@ -1324,7 +1393,7 @@ switch cmd
         sf   = findobj(mfig,'tag','selectfield');
         ifld = get(sf,'value');
         ud   = get(sf,'userdata');
-        outdata = ud(ifld);
+        outdata = {ud(ifld)};
         
     case {'selectfield','selectsubfield'}
         sf=findobj(mfig,'tag',cmd);
@@ -1346,7 +1415,7 @@ switch cmd
             writelog(logfile,logtype,cmd,flds{get(sf,'value')});
         end
         if nargout>0
-            outdata = found;
+            outdata = {found};
         end
         
     case 'updatetimezone'
@@ -1978,6 +2047,7 @@ switch cmd
                 outdata.M = selected{3};
                 outdata.N = selected{4};
                 outdata.K = selected{5};
+                outdata = {outdata};
                 return
             
             case 'defvariable'
@@ -2206,7 +2276,7 @@ switch cmd
                             set(Handle_SelectFile, 'userdata', File);
                             % return data ...
                             if nargout>0
-                                outdata = hNew;
+                                outdata = {hNew};
                             else
                                 assignin('base', 'data', hNew)
                             end
@@ -2614,12 +2684,12 @@ switch cmd
                 update_option_positions(UD,'main',pos(4)-30+1)
         end
         
-    case {'climmin','climmax','1vecunit','vscale','thinfact','thindist','fontsize','markersize','linewidth'}
+    case {'climmin','climmax','1vecunit','vscale','thinfact','thindist','thincount','fontsize','markersize','linewidth'}
         switch cmd
             case {'climmin','climmax'}
                 pos=0;
                 int=0;
-            case 'thinfact'
+            case {'thinfact','thincount'}
                 pos=1;
                 int=1;
             case {'1vecunit','vscale','thindist','fontsize','markersize','linewidth'}
@@ -2802,7 +2872,7 @@ switch cmd
             end
         end
         if nargout>0
-            outdata = found;
+            outdata = {found};
         end
         
     case {'about','version'}
@@ -3706,6 +3776,17 @@ switch cmd
             end
         end
         
+    case 'axesaspectreset'
+        ax = qpsa;
+        PM = UD.PlotMngr;
+        hordas_auto = getappdata(ax,'haspectdefaultvalue');
+        if ~isempty(hordas_auto)
+            set(PM.Y.AspectValue, ...
+                'string',num2str(1/hordas_auto), ...
+                'userdata',1/hordas_auto);
+        end
+        d3d_qp axesaspect
+        
     case 'axesaspect'
         ax = qpsa;
         PM = UD.PlotMngr;
@@ -3737,15 +3818,11 @@ switch cmd
             end
         end
         if ~isempty(cmdargs)
-            if getappdata(ax,'haspectenforced')
-                % ok
-            else
-                y = cmdargs{1};
-                if strcmpi(y,'auto')
-                    yaspect = 'auto';
-                elseif isscalar(y) && isnumeric(y) && y>0
-                    yaspect = y;
-                end
+            y = cmdargs{1};
+            if strcmpi(y,'auto')
+                yaspect = 'auto';
+            elseif isscalar(y) && isnumeric(y) && y>0
+                yaspect = y;
             end
             if length(cmdargs)>1
                 z = cmdargs{2};
@@ -3760,7 +3837,12 @@ switch cmd
             zaspect = [];
         end
         if strcmp(yaspect,'auto')
-            set(ax,'dataAspectratioMode','auto');
+            hordas_auto = getappdata(ax,'haspectautovalue');
+            %if isempty(hordas_auto) %truly auto
+                set(ax,'dataAspectratioMode','auto');
+            %else
+            %    set(ax,'dataAspectratio',[1 1/hordas_auto 1]);
+            %end
             if ~getappdata(ax,'axes2d')
                 zaspect = 'auto';
             end
@@ -4441,8 +4523,15 @@ switch cmd
                     else
                         sld=findobj(Fig,'tag','animslid');
                         psh=findobj(Fig,'tag','animpush');
+                        ax=findall(Fig,'type','axes');
+                        try
+                            axtb = [ax.Toolbar];
+                        catch
+                            axtb = [];
+                        end
                         set(sld,'vis','off')
                         set(psh,'vis','off')
+                        set(axtb,'vis','off')
                         switch cmd
                             case 'clipbitmap'
                                 I.PrtID='Bitmap to clipboard';
@@ -4490,11 +4579,19 @@ switch cmd
                                     elseif ~isequal(Fig,FigNew)
                                         set(sld,'vis','on')
                                         set(psh,'vis','on')
+                                        set(axtb,'vis','on')
                                         Fig=FigNew;
                                         sld=findobj(Fig,'tag','animslid');
                                         psh=findobj(Fig,'tag','animpush');
+                                        ax=findall(Fig,'type','axes');
+                                        try
+                                            axtb = [ax.Toolbar];
+                                        catch
+                                            axtb = [];
+                                        end
                                         set(sld,'vis','off')
                                         set(psh,'vis','off')
+                                        set(axtb,'vis','off')
                                     end
                                     I=rmfield(I,'SelectFrom');
                                     args={I};
@@ -4505,6 +4602,7 @@ switch cmd
                                 if isequal(I.PrtID,0) || ~ischar(filename)
                                     set(sld,'vis','on')
                                     set(psh,'vis','on')
+                                    set(axtb,'vis','on')
                                     return
                                 end
                                 qp_settings('print_ID',I.PrtID);
@@ -4517,6 +4615,7 @@ switch cmd
                         end
                         set(sld,'vis','on')
                         set(psh,'vis','on')
+                        set(axtb,'vis','on')
                     end
             end
             if logfile
@@ -4960,6 +5059,7 @@ switch cmd
         set(findobj(UOH,'tag','thinfld=?'),'value',1)
         set(findobj(UOH,'tag','thinfact=?'),'userdata',1,'string','1')
         set(findobj(UOH,'tag','thindist=?'),'userdata',50,'string','50')
+        set(findobj(UOH,'tag','thincount=?'),'userdata',1000,'string','1000')
         %
         % ------ data clipping values ...
         %
@@ -4971,8 +5071,8 @@ switch cmd
         %
         % ------ x/y clipping values ...
         %
-        set(findobj(UOH,'tag','xclipping'),'string','')
-        set(findobj(UOH,'tag','yclipping'),'string','')
+        set(findobj(UOH,'tag','xclipping=?'),'string','')
+        set(findobj(UOH,'tag','yclipping=?'),'string','')
         %
         % ------ export data ...
         %

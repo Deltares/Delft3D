@@ -32,7 +32,7 @@
 
       SUBROUTINE INTINI()
       use m_sferic
-      use unstruc_version_module, only : unstruc_company, unstruc_program, unstruc_version
+      use dflowfm_version_module, only : company, product_name, version_full
       use m_wearelt
       use m_devices
       implicit none
@@ -76,7 +76,7 @@
       ENDIF
       CALL ISCREENOPEN(' ','GR',NXPIX,NYPIX,NCOLR)
 
-      CALL ISCREENTITLE('G',trim(unstruc_company)//'-'//trim(unstruc_program)//' '//trim(unstruc_version))
+      CALL ISCREENTITLE('G',trim(company)//'-'//trim(product_name)//' '//trim(version_full))
 
       !CALL ISCREENTITLE('G', PROGNM)
 

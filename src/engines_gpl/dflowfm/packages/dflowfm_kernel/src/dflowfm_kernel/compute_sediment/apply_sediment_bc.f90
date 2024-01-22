@@ -47,7 +47,7 @@
    !
       ! Find sand fractions
       do ll=1,lsed    ! sediment-fraction index
-         if (stmpar%sedpar%sedtyp(sedtot2sedsus(ll))==SEDTYP_NONCOHESIVE_SUSPENDED) then
+         if (stmpar%sedpar%sedtyp(sedtot2sedsus(ll)) > stmpar%sedpar%max_mud_sedtyp) then
             j=ll+ISED1-1 ! constituent index
             do LLL=Lnxi+1,Lnx
                call getLbotLtop(LLL,Lb,Lt)
@@ -64,7 +64,7 @@
       do ll = 1, numfracs
          iconst = ifrac2const(ll)
          if (iconst==0) cycle
-         if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst-ISED1+1))==SEDTYP_NONCOHESIVE_SUSPENDED) then
+         if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst-ISED1+1)) > stmpar%sedpar%max_mud_sedtyp) then
             do k=1,nbndsf(ll)
                LLL = bndsf(ll)%k(3,k)
                call getLbotLtop(LLL,Lb,Lt)
@@ -94,7 +94,7 @@
    !
       ! Find mud fractions
       do ll=1,lsed    ! sediment-fraction index
-         if (stmpar%sedpar%sedtyp(sedtot2sedsus(ll))==SEDTYP_COHESIVE) then
+         if (stmpar%sedpar%sedtyp(sedtot2sedsus(ll)) <= stmpar%sedpar%max_mud_sedtyp) then
             j=ll+ISED1-1 ! constituent index
             do LLL=Lnxi+1,Lnx
                call getLbotLtop(LLL,Lb,Lt)
@@ -111,7 +111,7 @@
       do ll = 1, numfracs
          iconst = ifrac2const(ll)   ! allow for combo equilibrium/dirichlet bc concentrations
          if (iconst==0) cycle
-         if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst-ISED1+1))==SEDTYP_COHESIVE) then
+         if (stmpar%sedpar%sedtyp(sedtot2sedsus(iconst-ISED1+1)) <= stmpar%sedpar%max_mud_sedtyp) then
             do k=1,nbndsf(ll)
                LLL = bndsf(ll)%k(3,k)
                call getLbotLtop(LLL,Lb,Lt)

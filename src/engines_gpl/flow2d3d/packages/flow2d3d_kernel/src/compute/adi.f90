@@ -30,7 +30,7 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
              & wrkb1     ,wrkb2     ,wrkb3     ,wrkb4     ,wrkb5     , &
              & wrkb6     ,wrkb7     ,wrkb8     ,wrkb9     ,wrkb10    , &
              & wrkb11    ,wrkb12    ,wrkb13    ,wrkb14    ,wrkb15    , &
-             & wrkb16    ,sbkol     ,dis_nf    ,precip    ,gdp       )
+             & wrkb16    ,sbkol     ,precip    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -244,7 +244,6 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         :: wrkb7   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         :: wrkb8   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         :: wrkb9   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         :: dis_nf  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci) :: r0      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                                :: sig     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                                :: thick   !  Description and declaration in esm_alloc_real.f90
@@ -383,7 +382,7 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & wrka2     ,wrka3     ,wrka4     ,wrka5     ,wrka6     , &
               & wrka7     ,wrka8     ,wrka15    ,wrkb1     ,wrkb2     , &
               & wrkb3     ,wrkb4     ,wrkb5     ,wrkb6     ,wrkb7     , &
-              & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,dis_nf    , &
+              & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,            &
               & precip    ,ustokes   ,gdp       )
        call timer_stop(timer_1stsud, gdp)
        call timer_stop(timer_sud, gdp)
@@ -541,7 +540,7 @@ subroutine adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & wrka2     ,wrka3     ,wrka4     ,wrka5     ,wrka6     , &
               & wrka7     ,wrka8     ,wrka16    ,wrkb1     ,wrkb2     , &
               & wrkb3     ,wrkb4     ,wrkb5     ,wrkb6     ,wrkb7     , &
-              & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,dis_nf    , &
+              & wrkb8     ,wrkb15    ,wrkb16    ,soumud    ,            &
               & precip    ,vstokes   ,gdp       )
        call timer_stop(timer_2ndsud, gdp)
        call timer_stop(timer_sud, gdp)

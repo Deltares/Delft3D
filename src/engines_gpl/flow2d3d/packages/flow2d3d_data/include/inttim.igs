@@ -70,9 +70,11 @@ type gd_inttim
     integer               :: itcomf = 0        !  First time to write communication file (expressed in multiples of DT)
     integer               :: itcomi = 0        !  Interval   to write communication file (expressed in multiples of DT)
     integer               :: itcoml = 0        !  Last time  to write communication file (expressed in multiples of DT)
-    integer               :: itnflf = 0        !  First time to perform near field computations
-    integer               :: itnfli = 0        !  Interval  to perform near field computations
-    integer               :: itnfll = 0        !  Last time to perform near field computations
+    integer               :: itnflf = 0        !  First time to write near field files
+    integer               :: itnfli = 0        !  Interval   to write near field files
+    integer               :: itnfll = 0        !  Last time  to write near field files
+    integer               :: itnflrf = 0       !  First time to read near field files and perform near field computations
+    integer               :: itnflri = 0       !  Interval   to read near field files and perform near field computations
     integer               :: itdrof = 0        !  First time to write drogue file (expressed in multiples of DT)
     integer               :: itdroi = 0        !  Interval   to write drogue file (expressed in multiples of DT)
     integer               :: itdrol = 0        !  Last time  to write drogue file (expressed in multiples of DT)

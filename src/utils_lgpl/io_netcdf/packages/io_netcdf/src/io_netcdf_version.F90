@@ -28,17 +28,18 @@ module io_netcdf_version_module
 !
 !
 #INCLUDE "version_definition.h"
+#INCLUDE "io_netcdf_version.h"
 
 implicit none
 
-    character(*),  public, parameter :: io_netcdf_major        = '1'
-    character(*),  public, parameter :: io_netcdf_minor        = '01'
-    character(*),  public, parameter :: io_netcdf_revision     = '00'
+    character(*),  public, parameter :: io_netcdf_major        = MAJOR_STR
+    character(*),  public, parameter :: io_netcdf_minor        = MINOR_STR
+    character(*),  public, parameter :: io_netcdf_revision     = REVISION_STR
     character(*),  public, parameter :: io_netcdf_build_number = BUILD_NR
 
     character(*),  public, parameter :: io_netcdf_company      = COMPANY_NAME
     character(*),  public, parameter :: io_netcdf_company_url  = COMPANY_URL
-    character(*),  public, parameter :: io_netcdf_program      = 'IO_NETCDF'
+    character(*),  public, parameter :: io_netcdf_program      = PROGRAM
 
 #if defined(WIN32)
     character(*),  public, parameter :: io_netcdf_architecture = 'Win32' ! used in about box
@@ -51,7 +52,7 @@ implicit none
 #endif
 
     character(*),  public, parameter :: io_netcdf_version      = io_netcdf_major//'.'//io_netcdf_minor//'.'//io_netcdf_revision//'.'//io_netcdf_build_number
-    character(*),  public, parameter :: io_netcdf_version_full = 'Deltares, '//io_netcdf_program//' Version '//io_netcdf_version//' ('//io_netcdf_architecture// '), '//__DATE__//', '//__TIME__
+    character(*),  public, parameter :: io_netcdf_version_full = io_netcdf_company//', '//io_netcdf_program//' Version '//io_netcdf_version//' ('//io_netcdf_architecture// '), '//__DATE__//', '//__TIME__
     character(*),  public, parameter :: io_netcdf_version_id   = '@(#)'//io_netcdf_version_full
 
 contains

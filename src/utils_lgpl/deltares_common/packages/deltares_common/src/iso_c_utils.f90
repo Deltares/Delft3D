@@ -12,7 +12,7 @@ contains
     integer :: inull, i
     strlen = 0
     do i = 1, size(char_array)
-       if (char_array(i) .eq. C_NULL_CHAR) then
+       if (char_array(i) == C_NULL_CHAR) then
           strlen = i-1
           exit
        end if

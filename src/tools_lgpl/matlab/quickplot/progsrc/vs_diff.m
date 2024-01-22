@@ -302,6 +302,7 @@ for i=1:length(gNamesMatch)
                         end
                     end
                 else
+                    gSel{gInfo1.VarDim} = 1:gSizeDim;
                     eData1=vs_let(VS1,gNamesMatch{i},gSel,eNamesMatch{j},eSel{:},'quiet','nowarn');
                     eData2=vs_let(VS2,gNamesMatch{i},gSel,eNamesMatch{j},eSel{:},'quiet','nowarn');
                     LDiffFound=0;

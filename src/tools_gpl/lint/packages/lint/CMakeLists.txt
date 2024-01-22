@@ -6,17 +6,17 @@ if (UNIX)
     include(FortranCInterface)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include) 
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
+
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
 # Gather source files
 file(GLOB source_files ${src_path}/*.cpp)
 
-file(GLOB version_files ${lint_version_number_include_path}/*.rc) 
+file(GLOB version_files ${lint_version_number_include_path}/*.rc)
 
 # Define executable
 add_executable(${executable_name} ${source_files}
@@ -27,7 +27,6 @@ set(oss_dependencies    deltares_common
                         deltares_common_c
                         deltares_common_mpi
                         lint_f
-                        lint_version_number
                         nefis)
 oss_include_libraries(${executable_name} oss_dependencies)
 
@@ -61,9 +60,9 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 post_build_target (${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
+                   ${install_dir}
+                   ${build_dir}
+                   ${checkout_src_root}
                    ${executable_name})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)

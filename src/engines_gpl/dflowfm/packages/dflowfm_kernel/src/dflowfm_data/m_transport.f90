@@ -46,8 +46,8 @@ module m_transportdata
    integer, parameter                            :: NAMLEN = 128
    integer                                       :: NUMCONST       ! Total number of constituents
    integer                                       :: NUMCONST_MDU   ! number of constituents as specified in mdu/ext file
-   integer                                       :: ISALT  ! salt
-   integer                                       :: ITEMP  ! temperature
+   integer, target                               :: ISALT  ! salt
+   integer, target                               :: ITEMP  ! temperature
    integer                                       :: ISED1  ! first sediment fraction
    integer                                       :: ISEDN  ! last  sediment fraction
    integer                                       :: ISPIR  ! secondary flow intensity
@@ -60,7 +60,7 @@ module m_transportdata
    integer,          dimension(:),   allocatable :: ifrac2const   ! constituent number of sediment fractions
    double precision, dimension(:,:), allocatable, target :: constituents    ! constituents, dim(NUMCONST,Ndkx)
 
-   character(len=NAMLEN), dimension(:), allocatable :: const_names    ! constituent names
+   character(len=NAMLEN), dimension(:), allocatable, target :: const_names    ! constituent names
    character(len=NAMLEN), dimension(:), allocatable :: const_units    ! constituent units
    character(len=NAMLEN), parameter                 :: DEFTRACER = 'default_tracer'
 
@@ -117,6 +117,7 @@ module m_transport
    integer :: jalimitdtdiff
 
    double precision :: dsum
+   double precision :: maserrsed !< cumulative sediment mass error because of volume truncation in shallow areas
 
 
    double precision, dimension(:),   allocatable :: u1sed

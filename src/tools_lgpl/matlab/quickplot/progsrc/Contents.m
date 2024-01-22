@@ -1,5 +1,5 @@
 % Delft3D-MATLAB interface toolbox.
-% Version <VERSION> (<CREATIONDATE>)
+% Version <VERSION> (<RELEASE>) <CREATIONDATE>
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
 %   Copyright (C) 2011-2023 Stichting Deltares.                                     
