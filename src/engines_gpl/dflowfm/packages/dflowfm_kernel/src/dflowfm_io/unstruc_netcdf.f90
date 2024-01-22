@@ -800,11 +800,16 @@ function unc_def_var_nonspatial(ncid, id_var, itype, idims, var_name, standard_n
    endif
    if (len_trim(long_name) > 0) then
       ierr = nf90_put_att(ncid, id_var, 'long_name'    , long_name)
+<<<<<<< HEAD
    end if
    if (len_trim(unit) > 0) then
       ierr = nf90_put_att(ncid, id_var, 'units'        , unit)
    end if
 
+=======
+   endif
+   ierr = nf90_put_att(ncid, id_var, 'units'        , unit)
+>>>>>>> fm/feature/UNST-6079_statistical_output
 
 end function unc_def_var_nonspatial
 
@@ -17398,12 +17403,21 @@ subroutine definencvar(ncid, idq, itype, idims, n, name, desc, unit, namecoord, 
    endif
 
    if (present(fillVal)) then
+<<<<<<< HEAD
       if (itype == nf90_short .or. itype == nf90_int) then
          ierr = nf90_put_att(ncid, idq, '_FillValue', int(fillVal))
       elseif (itype == nf90_float .or. itype == nf90_double) then
          ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
       end if
    end if
+=======
+       if ( itype == nf90_double ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
+       else if ( itype == nf90_float ) then
+          ierr = nf90_put_att(ncid, idq, '_FillValue', SNGL(fillVal))
+       end if
+   endif
+>>>>>>> fm/feature/UNST-6079_statistical_output
 
    if (present(attset)) then
       if (attset%count > 0) then

@@ -171,6 +171,17 @@ integer, intent(out) :: iresult
  if (iresult /= DFM_NOERR) goto 888
 
 888 continue
+<<<<<<< HEAD
+=======
+   
+!call update_source_data(out_variable_set_his)
+!call update_source_data(out_variable_set_map)
+!call update_source_data(out_variable_set_clm)
+!
+!call update_statistical_output(out_variable_set_his%statout,dts)
+!call update_statistical_output(out_variable_set_map%statout,dts)
+!call update_statistical_output(out_variable_set_clm%statout,dts)
+>>>>>>> fm/feature/UNST-6079_statistical_output
 
    if (md_fou_step == 1) then
       call update_fourier(dts)

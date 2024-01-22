@@ -2,10 +2,15 @@
 !! MDU file.
 module m_output_config
    use MessageHandling
+<<<<<<< HEAD
    use netcdf_utils, only: realloc, nc_att_set
    use m_ug_nc_attribute, only: nc_attribute => ug_nc_attribute
    use netcdf, only: nf90_double
    implicit none
+=======
+   use coordinate_reference_system
+   use m_ug_nc_attribute
+>>>>>>> fm/feature/UNST-6079_statistical_output
 private
    
    public scan_input_tree
@@ -462,7 +467,12 @@ private
       character(len=Idlen)             :: description     !< Description of the input paragraph, key combination.
       integer                          :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
                                                              !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
+<<<<<<< HEAD
       type(nc_att_set)                 :: additional_attributes !< optional additional NetCDF attributes for this quantity
+=======
+      integer                          :: num_additional_attributes  !< number of additional attributes
+      type(ug_nc_attribute), pointer      :: additional_attributes(:)   !< optional additional attributes for this entity
+>>>>>>> fm/feature/UNST-6079_statistical_output
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set

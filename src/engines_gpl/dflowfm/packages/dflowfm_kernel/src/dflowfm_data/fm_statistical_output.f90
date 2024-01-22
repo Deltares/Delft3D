@@ -248,10 +248,13 @@ private
    
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
+<<<<<<< HEAD
       use netcdf_utils, only: ncu_set_att
       use m_ug_nc_attribute
       use netcdf, only: nf90_int
       use m_flow
+=======
+>>>>>>> fm/feature/UNST-6079_statistical_output
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils
       use m_missing
