@@ -39,7 +39,7 @@ use unstruc_messages
 use m_globalparameters, only : t_filenames
 use time_module, only : ymd2modified_jul, datetimestring_to_seconds
 use dflowfm_version_module, only: getbranch_dflowfm
- 
+use m_fm_icecover, only: ice_mapout
 implicit none
 
     !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
@@ -287,6 +287,7 @@ subroutine resetModel()
 use m_trachy, only: trtdef_ptr
 use unstruc_netcdf, only: UNC_CONV_UGRID
 use unstruc_channel_flow
+use m_fm_icecover, only: fm_ice_null
 
     call tree_destroy(md_ptr)
     nullify(trtdef_ptr) ! trtdef_ptr was only pointing to subtree of md_ptr, so is now a dangling pointer: model's responsibility to nullify it here.
@@ -414,6 +415,7 @@ use unstruc_channel_flow
     !md_findcells       = 0      !< If it is not zero, then the codes call findcells
     !md_pressakey       = 0      !< press a key (1) or not (0)
     !md_jasavenet = 0
+    call fm_ice_null()
 
 end subroutine resetModel
 
@@ -733,6 +735,7 @@ subroutine readMDUFile(filename, istat)
     use unstruc_channel_flow
     use m_bedform, only: bfm_included
     use m_debug
+    use m_fm_icecover, only: fm_ice_read
     use m_sediment
     use m_waves, only: hwavuni, twavuni, phiwavuni
     use m_sedtrails_data, only: sedtrails_analysis
@@ -1383,6 +1386,9 @@ subroutine readMDUFile(filename, istat)
        call mess(LEVEL_ERROR, 'Invalid value specified for breach growth.')
     end select
 
+    ierror = DFM_NOERR
+    call fm_ice_read(md_ptr, ierror)
+
     call prop_get_integer(md_ptr, 'veg',     'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
     if( japillar == 2 ) then
        javeg = 1
@@ -2021,6 +2027,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
     call prop_get_integer(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
+    call prop_get_integer(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
 
     !if (md_mapformat /= 4 .and. jamapwindstress /= 0) then
      !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
@@ -2038,6 +2045,9 @@ subroutine readMDUFile(filename, istat)
       jamapsal = 0
       jahissal = 0
     end if
+    if (jamapice > 0) then
+        ice_mapout = .true.
+    endif     
 
     call prop_get_integer(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
 
@@ -3597,7 +3607,7 @@ endif
        endif
     endif
 
-    call prop_set(prop_ptr,    'wind', 'ICdtyp',               ICdtyp,   'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: 4+viscous).' )
+    call prop_set(prop_ptr,    'wind', 'ICdtyp',               ICdtyp,   'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.' )
     if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
        call prop_set(prop_ptr, 'wind', 'Cdbreakpoints',        Cdb(1:1), 'Wind drag coefficient (may be overridden by space-varying input)')
     else if (ICdtyp == 2) then
@@ -4270,6 +4280,9 @@ endif
     endif
     if (jaeverydt > 0 .or. writeall) then
       call prop_set(prop_ptr, 'output', 'Wrimap_every_dt', jaeverydt, 'Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes')
+    endif
+    if (jamapice > 0 .or. writeall) then
+      call prop_set(prop_ptr, 'output', 'Wrimap_ice', jamapice, 'Write output to map file for ice cover, 0=no (default), 1=yes')
     endif
 
 

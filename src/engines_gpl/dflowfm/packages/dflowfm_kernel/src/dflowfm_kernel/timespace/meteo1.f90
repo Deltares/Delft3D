@@ -6586,6 +6586,7 @@ module m_meteo
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
+   use m_fm_icecover, only: ice_af, ice_h
    
    implicit none
    
@@ -6616,6 +6617,8 @@ module m_meteo
    integer, target :: item_charnock                                          !< Unique Item id of the ext-file's 'space var Charnock' quantity 'C'.
    integer, target :: item_waterlevelbnd                                     !< Unique Item id of the ext-file's 'waterlevelbnd' quantity's ...-component.
    integer, target :: item_atmosphericpressure                               !< Unique Item id of the ext-file's 'atmosphericpressure' quantity
+   integer, target :: item_sea_ice_area_fraction                             !< Unique Item id of the ext-file's 'sea_ice_area_fraction' quantity
+   integer, target :: item_sea_ice_thickness                                 !< Unique Item id of the ext-file's 'sea_ice_thickness' quantity
    integer, target :: item_velocitybnd                                       !< Unique Item id of the ext-file's 'velocitybnd' quantity
    integer, target :: item_dischargebnd                                      !< Unique Item id of the ext-file's 'discharge' quantity
    integer, target :: item_salinitybnd                                       !< Unique Item id of the ext-file's 'salinitybnd' quantity
@@ -6693,6 +6696,7 @@ module m_meteo
    integer, target :: item_dambreakLevelsAndWidthsFromTable                  !< Dambreak heights and widths
    
    integer, target :: item_subsiduplift
+   integer, target :: item_ice_cover                                         !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
 
    integer, allocatable, dimension(:) :: countbndpoints(:) 
    !
@@ -6735,6 +6739,8 @@ module m_meteo
       item_charnock                              = ec_undef_int
       item_waterlevelbnd                         = ec_undef_int
       item_atmosphericpressure                   = ec_undef_int
+      item_sea_ice_area_fraction                 = ec_undef_int
+      item_sea_ice_thickness                     = ec_undef_int
       item_velocitybnd                           = ec_undef_int
       item_dischargebnd                          = ec_undef_int
       item_salinitybnd                           = ec_undef_int
@@ -7007,6 +7013,12 @@ module m_meteo
             dataPtr1 => wx
             itemPtr2 => item_windxy_y
             dataPtr2 => wy
+         case ('sea_ice_area_fraction')
+            itemPtr1 => item_sea_ice_area_fraction
+            dataPtr1 => ice_af
+         case ('sea_ice_thickness')
+            itemPtr1 => item_sea_ice_thickness
+            dataPtr1 => ice_h
          case ('stressx')
             itemPtr1 => item_stressx
             dataPtr1 => wdsu_x
@@ -8437,15 +8449,17 @@ module m_meteo
             if (ec_filetype == provFile_netcdf) then
                sourceItemName = name(14:)
             end if
-         case ('bedrock_surface_elevation')
+         case ('bedrock_surface_elevation','sea_ice_area_fraction','sea_ice_thickness')
             if (ec_filetype == provFile_arcinfo) then
-               sourceItemName = 'bedrock_surface_elevation'
+               sourceItemName = name
             else if (ec_filetype == provFile_curvi) then
                sourceItemName = 'curvi_source_item_1'
+            else if (ec_filetype == provFile_netcdf) then
+               sourceItemName = name
             else if (ec_filetype == provFile_uniform) then
                sourceItemName = 'uniform_item'
             else 
-               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity bedrock_surface_elevation.')
+               call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(name)//'.')
                return
             end if   
          case default
@@ -8472,6 +8486,12 @@ module m_meteo
                         if (success) success = ecAddItemConnection(ecInstancePtr, targetItemPtr4, connectionId)
                      endif
                   endif
+               endif
+               if (success) then
+                  ! all statements executed successfully ... this must be good
+                  ec_addtimespacerelation = .true.
+               else
+                  call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Error while default processing of ext-file (connect source and target) for : '//trim(target_name)//'.')
                endif
             else
                call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported quantity specified in ext-file (connect source and target): '//trim(target_name)//'.')

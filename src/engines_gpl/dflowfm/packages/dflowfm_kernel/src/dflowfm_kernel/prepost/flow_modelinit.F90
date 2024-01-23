@@ -72,6 +72,7 @@
  use m_debug
  use m_flow_flowinit
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
+ use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
  use m_dad, only: dad_included
  !use m_restart_debug 
  use m_fixedweirs, only: weirdte
@@ -341,12 +342,22 @@
  end if
  call timstop(handle_extra(21)) ! end observations init
 
+ call timstrt('Ice init', handle_extra(84)) ! ice
+ call fm_ice_alloc(ndx) ! needs to happen after flow_geominit to know ndx, but before flow_flowinit where we need the arrays for the external forcings
+ call timstop(handle_extra(84)) ! End ice
+
  call timstrt('Flow init           ', handle_extra(23)) ! flow init
  iresult = flow_flowinit()                           ! initialise flow arrays and time dependent params for a given user time
  if (iresult /= DFM_NOERR) then
     goto 1234
  end if
  call timstop(handle_extra(23)) ! end flow init
+
+ ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
+ call timstrt('Ice init', handle_extra(84)) ! ice
+ call fm_ice_echo(mdia)
+ call timstop(handle_extra(84)) ! End ice
+
 
  if (jadhyd == 1) then
     call init_hydrology()                          ! initialise the hydrology module (after flow_flowinit())

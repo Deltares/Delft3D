@@ -46,6 +46,7 @@
  use m_sethu
  use m_external_forcings, only: calculate_wind_stresses
  use m_wind, only: update_wind_stress_each_time_step
+ use m_fm_icecover, only: update_icecover
  implicit none
 
  integer              :: jazws0
@@ -196,6 +197,7 @@ endif
  if (jatem > 1 .and. jaheat_eachstep == 1) then
     call heatu(tim1bnd/3600d0)                                  ! from externalforcings
  endif
+ call update_icecover()
 
   if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
     infiltcap0 = infiltcap/mmphr_to_mps

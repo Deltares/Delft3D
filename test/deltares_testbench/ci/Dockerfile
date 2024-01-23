@@ -15,4 +15,4 @@ RUN python3 -m pip install --upgrade pip \
     && pip3 install -r requirements.txt
 
 # Set the default command to run pytest
-CMD pytest test --junitxml=logs/pytest_results.xml
+CMD python -m pytest --collect-only test/utils test/suite --junitxml=logs/pytest_results.xml

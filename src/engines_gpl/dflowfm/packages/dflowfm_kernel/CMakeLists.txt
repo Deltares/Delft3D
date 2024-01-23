@@ -132,6 +132,8 @@ if (UNIX)
                             flow1d_core
                             flow1d_io
                             gridgeom
+                            ice_data
+                            ice_io
                             io_netcdf
                             io_netcdf_data
                             kdtree_wrapper
@@ -177,6 +179,8 @@ set(oss_dependencies    deltares_common
                         flow1d_core
                         flow1d_io
                         gridgeom
+                        ice_data
+                        ice_io
                         io_netcdf
                         io_netcdf_data
                         kdtree_wrapper

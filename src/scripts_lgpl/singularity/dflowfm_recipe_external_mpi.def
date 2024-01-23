@@ -1,6 +1,6 @@
 Bootstrap: yum
-OSVersion: 7
-MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/x86_64/
+OSVersion: 8
+MirrorURL: https://repo.almalinux.org/almalinux/%{OSVERSION}/BaseOS/x86_64/os/
 include: yum
 
 %environment
@@ -16,6 +16,9 @@ include: yum
     export PATH="$MPI_DIR/bin:$PATH"
     export LD_LIBRARY_PATH="$MPI_DIR/lib:$LD_LIBRARY_PATH"
 
+    # Set PSM3_MULTI_EP environment variable
+    export PSM3_MULTI_EP=1
+    
 %setup
     mkdir ${SINGULARITY_ROOTFS}/host
     mkdir ${SINGULARITY_ROOTFS}/mpi
@@ -39,7 +42,7 @@ include: yum
 %post
     echo "Installing required packages..."
     mkdir -p /opt/tmp \
-        && yum -y -v install libgomp &> /opt/tmp/libgomp.log
+        && yum -y -v install libgomp libfabric &> /opt/tmp/libgomp.log
     
     # This sets the version in the metadata
     filename=`ls /opt/tmp/delft3dfm*.rpm`

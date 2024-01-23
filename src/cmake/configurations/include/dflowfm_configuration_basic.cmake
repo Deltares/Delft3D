@@ -11,6 +11,15 @@ if(NOT TARGET deltares_common_mpi)
     add_subdirectory(${checkout_src_root}/${deltares_common_mpi_module} deltares_common_mpi)
 endif()
 
+# Ice
+if(NOT TARGET ice_data)
+    add_subdirectory(${checkout_src_root}/${ice_data_module} ice_data)
+endif()
+
+if(NOT TARGET ice_io)
+    add_subdirectory(${checkout_src_root}/${ice_io_module} ice_io)
+endif()
+
 # Trachytopes
 if(NOT TARGET trachytopes_kernel)
     add_subdirectory(${checkout_src_root}/${trachytopes_kernel_module} trachytopes_kernel)
@@ -170,6 +179,11 @@ endif()
 # gridgeom
 if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
+endif()
+
+# icepack
+if(NOT TARGET icepack)
+    add_subdirectory(${checkout_src_root}/${icepack_module} icepack)
 endif()
 
 if(NOT WITH_INTERACTER)

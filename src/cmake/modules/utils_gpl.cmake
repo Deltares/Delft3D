@@ -1,6 +1,11 @@
 # File to define the utils_gpl components and their corresponding tests
 set(utils_gpl_path utils_gpl)
 
+# Ice
+set(ice_module_path "${utils_gpl_path}/ice/packages")
+set(ice_data_module ${ice_module_path}/ice_data)
+set(ice_io_module ${ice_module_path}/ice_io)
+
 # Trachytopes
 set(trachytopes_path "${utils_gpl_path}/trachytopes/packages")
 set(trachytopes_kernel_module ${trachytopes_path}/trachytopes_kernel)

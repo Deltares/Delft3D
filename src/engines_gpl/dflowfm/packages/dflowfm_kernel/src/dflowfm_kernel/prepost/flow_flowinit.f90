@@ -58,7 +58,7 @@ contains
    use m_flow
    use m_flowtimes
    use m_sferic
-   use unstruc_model,    only : md_netfile, md_input_specific
+   use unstruc_model,    only : md_netfile, md_input_specific, md_restartfile
    use m_reduce,         only : nodtot, lintot
    use m_transport
    use dfm_error
@@ -70,6 +70,7 @@ contains
    use m_sethu
    use m_external_forcings
    use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
+   use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
    use m_fixedweirs, only: weirdte
@@ -218,6 +219,15 @@ contains
    if( is_error_at_any_processor(error) ) then
        call qnerror('Error occurred when setting external forcings.',' ', ' ')
        return
+   end if
+
+   if (len_trim(md_restartfile) == 0 ) then
+       if (ice_apply_pressure) then
+          call fm_ice_update_press(ag)
+          s1 = s1 - ice_p / (ag*rhomean)
+          s0 = s1
+          hs     = s0 - bl
+       endif
    end if
 
    ! Actual boundary forcing (now that initial water levels, etc. are also known):
