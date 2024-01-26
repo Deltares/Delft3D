@@ -5,7 +5,7 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
                        & bbk       ,bdy       ,ddk       ,buy       ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

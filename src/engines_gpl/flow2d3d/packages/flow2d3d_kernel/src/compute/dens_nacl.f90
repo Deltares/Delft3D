@@ -1,6 +1,6 @@
 subroutine dens_nacl(temp, salt, rhonacl, rhods, rhodt)
 !!--copyright-------------------------------------------------------------------
-! Copyright (c) 2006, WL | Delft Hydraulics. All rights reserved.
+! Copyright (c) 2006-2024, WL | Delft Hydraulics. All rights reserved.
 !!--disclaimer------------------------------------------------------------------
 ! This code is part of the Delft3D software system. WL|Delft Hydraulics has
 ! developed c.q. manufactured this code to its best ability and according to the

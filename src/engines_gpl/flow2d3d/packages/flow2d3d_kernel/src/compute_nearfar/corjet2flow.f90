@@ -3,7 +3,7 @@ subroutine corjet2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
                      & kcs    ,time  ,gdp   )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2016.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by

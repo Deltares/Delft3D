@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,7 @@
 /*   Program:    GETDIM.C                                             */
 /*   Version:    1.03                                                 */
 /*   Programmer: Andr‚ Hendriks                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   1.02 -- 6 Dec 1993 -- 13:00 -- Operating System: DOS             */
 /*   1.01 -- 5 Aug 1993 -- 16:21 -- Operating System: DOS             */

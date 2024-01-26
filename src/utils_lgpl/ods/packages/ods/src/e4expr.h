@@ -1,4 +1,4 @@
-/* e4expr.h   (c)Copyright Sequiter Software Inc., 1990-2023.  All rights reserved. */
+/* e4expr.h   (c)Copyright Sequiter Software Inc., 1990-2024.  All rights reserved. */
 
 #define   E4MAX_PARMS          3
 #define   E4MAX_STACK_ENTRIES 20
