@@ -7,11 +7,11 @@ function varargout=ui_type(varargin)
 %   returned as SelectedNr.
 %
 %   Default type can be specified as an additional input arguments:
-%   ...=UI_TYPEANDNAME(Types,DefaultType)
+%   ...=UI_TYPE(Types,DefaultType)
 %
 %   The dialog name/title is by default empty. It can be set by
 %   specifying the keyword WINDOWTITLE and the title:
-%   ...=UI_TYPEANDNAME(...,'windowtitle',Title)
+%   ...=UI_TYPE(...,'windowtitle',Title)
 %
 %   See also UI_TYPEANDNAME
 

@@ -138,7 +138,9 @@ fstrrep([targetdir,filesep,'Contents.m'], '<RELEASE>', release)
 fstrrep([targetdir,filesep,'Contents.m'], '<CREATIONDATE>', DateStr) % MATLAB toolboxes don't have a time stamp
 
 fprintf('Stripping files ...\n');
-svnstripfile(targetdir)
+HeadURL_str = ['Source ', repo_url, ': ', hash];
+Id_str = ['Release ', release, ': ', DateTimeStr];
+svnstripfile(targetdir, HeadURL_str, Id_str)
 
 %fprintf('Pcoding files ...\n');
 %pmfile('dir',targetdir,targetdir,'-verbose')

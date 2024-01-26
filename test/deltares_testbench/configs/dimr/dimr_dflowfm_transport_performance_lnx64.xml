@@ -18,11 +18,11 @@
     <locations>
       <location name="dsctestbench-cases">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+        <root>{server_base_url}/cases</root>
       </location>
       <location name="dsctestbench-references">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+        <root>{server_base_url}/references</root>
       </location>
       <location name="local">
         <root>./data/engines</root>
@@ -105,7 +105,7 @@
         </program>
         <program ref="python" seq="2">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -120,7 +120,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -135,7 +135,7 @@
         </program>
         <program ref="python" seq="6">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -144,7 +144,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -169,7 +169,7 @@
         </program>
         <program ref="python" seq="2">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -184,7 +184,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -199,7 +199,7 @@
         </program>
         <program ref="python" seq="6">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -208,7 +208,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -233,7 +233,7 @@
         </program>
         <program ref="python" seq="2">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -248,7 +248,7 @@
         </program>
         <program ref="python" seq="4">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -263,7 +263,7 @@
         </program>
         <program ref="python" seq="6">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -272,7 +272,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -318,7 +318,7 @@
         </program>
         <program ref="python" seq="5">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -334,7 +334,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -350,7 +350,7 @@
         </program>
         <program ref="python" seq="9">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -359,7 +359,7 @@
         </program>
         <program ref="python" seq="10">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -371,6 +371,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
     <testCase name="e02_f031_c102_westerschelde_3d_s_performance_3_domains" ref="dflowfm_default">
@@ -403,7 +404,7 @@
         </program>
         <program ref="python" seq="5">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -419,7 +420,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -435,7 +436,7 @@
         </program>
         <program ref="python" seq="9">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -444,7 +445,7 @@
         </program>
         <program ref="python" seq="10">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -456,6 +457,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
     <testCase name="e02_f031_c103_westerschelde_3d_z_performance_3_domains" ref="dflowfm_default">
@@ -488,7 +490,7 @@
         </program>
         <program ref="python" seq="5">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_0subst/westerscheldt01_0subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -504,7 +506,7 @@
         </program>
         <program ref="python" seq="7">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_5subst/westerscheldt01_5subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -520,7 +522,7 @@
         </program>
         <program ref="python" seq="9">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/extractlines.py</argument>
+            <argument>../../../thirdparty/scripts/extractlines.py</argument>
             <argument>DFM_OUTPUT_westerscheldt01_20subst/westerscheldt01_20subst_0000.dia</argument>
             <argument>timing.out</argument>
             <argument>"total computation time \(s\)"</argument>
@@ -529,7 +531,7 @@
         </program>
         <program ref="python" seq="10">
           <arguments>
-            <argument>../../../../../thirdparty/scripts/chk_timings.py</argument>
+            <argument>../../../thirdparty/scripts/chk_timings.py</argument>
           </arguments>
         </program>
       </programs>
@@ -541,6 +543,7 @@
           </parameters>
         </file>
       </checks>
+      <processCount>3</processCount>
     </testCase>
 
   </testCases>

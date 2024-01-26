@@ -426,12 +426,11 @@ extern "C" {
 			throw Exception(true, Exception::ERR_INVALID_INPUT, "dimr::get_var: Unrecognized component \"%s\". Expecting \"componentName/parameterName\"\n", componentName);
 		}
 		// Get the pointer to the variable being asked for and put it in argument "ref"
-		double * transfer = new double[compPtr->numProcesses];
+		double transfer = -999000.0;
 
 		thisDimr->getAddress(sourceName, compPtr->type, compPtr->dllGetVar, &sourceVarPtr, compPtr->processes, compPtr->numProcesses, transfer);
-		*ref = thisDimr->send(sourceName, compPtr->type, sourceVarPtr, compPtr->processes, compPtr->numProcesses, transfer);
+		*ref = thisDimr->send(sourceName, compPtr->type, sourceVarPtr, compPtr->processes, compPtr->numProcesses, &transfer);
 
-		delete[] transfer;
 		delete[] componentName;
 	}
 

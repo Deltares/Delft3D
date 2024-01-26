@@ -1,9 +1,11 @@
 function S = smsmesh(cmd,FileName)
 %SMSMESH Read a Surface-water Modeling System mesh topology file.
-%   MESH = SMSMESH('open',FILENAME) reads a Surface-water Modelling System
-%   mesh topology file and returns a structure containing all mesh information.
-%   This format is for example accepted by FVCOM. The returned structure
-%   contains fields
+%   MESH = SMSMESH('open',FILENAME) reads:
+%    * a Surface-water Modelling System (SMS) mesh topology file, or
+%    * a SMS mesh2d file
+%   and returns a structure containing all mesh information. The former
+%   format is for example accepted by FVCOM, and the latter by TUFLOW.
+%   The returned structure contains at least the following fields
 %    * NodeCoor: NNODES x 3 array with XYZ coordinates of NNODES mesh
 %                nodes.
 %    * Faces:    NELM x MAXNODE array with the indices of nodes for each of
@@ -82,45 +84,59 @@ while 1
 end
 
 function S = local_open(FileName)
-S.FileName = FileName;
-S.FileType = 'SMS mesh';
 [fid,msg] = fopen(FileName,'r','n','US-ASCII');
 if fid<0
     error('%s: %s',FileName,msg)
 end
+S.FileName = FileName;
 try
     Line = fgetl(fid);
-    nNodes = sscanf(Line,'Node Number = %i',1);
-    Line = fgetl(fid);
-    nElm = sscanf(Line,'Cell Number = %i',1);
-    if isempty(nNodes)
-       error('Invalid mesh: expecting "Node Number =" on first line of file')
-    elseif nNodes==0
-       error('Invalid mesh: number of nodes = 0')
-    elseif isempty(nElm)
-       error('Invalid mesh: expecting "Cell Number =" on second line of file')
-    elseif nElm==0
-       error('Invalid mesh: number of cells = 0')
+    fseek(fid,0,-1);
+    if strcmpi(strtrim(Line),'MESH2D')
+        S.FileType = 'SMS mesh2d';
+        S = local_open_mesh2d(fid,S);
+    else
+        S.FileType = 'SMS mesh';
+        S = local_open_grd(fid,S);
+        S = local_open_dep(S);
     end
-    %
-    Elm = readmat(fid,5,nElm,'cell node indices');
-    if ~isequal(Elm(1,:),1:nElm)
-        error('Cell numbers in file don''t match 1:%i',nElm)
-    end
-    S.Faces = Elm(2:4,:)'; % last column contains element type
-    %
-    Coords = readmat(fid,4,nNodes,'node coordinates');
-    if ~isequal(Coords(1,:),1:nNodes)
-        error('Node numbers in file don''t match 1:%i',nNodes)
-    end
-    S.NodeCoor = Coords(2:4,:)';
     fclose(fid);
 catch err
     fclose(fid);
     rethrow(err)
 end
+
+
+function S = local_open_grd(fid,S)
+Line = fgetl(fid);
+nNodes = sscanf(Line,'Node Number = %i',1);
+Line = fgetl(fid);
+nElm = sscanf(Line,'Cell Number = %i',1);
+if isempty(nNodes)
+    error('Invalid mesh: expecting "Node Number =" on first line of file')
+elseif nNodes==0
+    error('Invalid mesh: number of nodes = 0')
+elseif isempty(nElm)
+    error('Invalid mesh: expecting "Cell Number =" on second line of file')
+elseif nElm==0
+    error('Invalid mesh: number of cells = 0')
+end
 %
-[p,f,e] = fileparts(FileName);
+Elm = readmat(fid,5,nElm,'cell node indices');
+if ~isequal(Elm(1,:),1:nElm)
+    error('Cell numbers in file don''t match 1:%i',nElm)
+end
+S.Faces = Elm(2:4,:)'; % last column contains element type
+%
+Coords = readmat(fid,4,nNodes,'node coordinates');
+if ~isequal(Coords(1,:),1:nNodes)
+    error('Node numbers in file don''t match 1:%i',nNodes)
+end
+S.NodeCoor = Coords(2:4,:)';
+
+
+function S = local_open_dep(S)
+[p,f,e] = fileparts(S.FileName);
 if length(f)>4 && strcmpi(f(end-3:end),'_grd') && all(S.NodeCoor(:,3)==0)
     f(end-2:end) = f(end-2:end)-'grd'+'dep';
     depFil = fullfile(p,[f e]);
@@ -145,3 +161,85 @@ if length(f)>4 && strcmpi(f(end-3:end),'_grd') && all(S.NodeCoor(:,3)==0)
         end
     end
 end
+
+
+function S = local_open_mesh2d(fid,S)
+Line = fgetl(fid);
+if ~strcmpi(strtrim(Line),'MESH2D')
+    error('Expecting MESH2D on the first line of the file; found "%s".',Line)
+end
+%
+Line = fgetl(fid);
+S.MeshName = sscanf(Line,'MESHNAME "%[^"]');
+%
+nMaxElm = 1000;
+Elm = zeros(6,nMaxElm); % [1] type, [2-5] up to 4 coordinates, [6] material
+Line = fgetl(fid);
+[tok,rem] = strtok(Line);
+nElm = 0;
+while 1
+    switch tok
+        case 'E3T'
+            elmType = 3;
+        case 'E4Q'
+            elmType = 4;
+        case 'ND'
+            break
+        otherwise
+            error('Unknown element type "%s" encountered.',tok)
+    end
+    nElm = nElm+1;
+    if nElm > nMaxElm
+        nMaxElm = 2*nMaxElm;    
+        Elm(6,nMaxElm) = 0;
+    end
+    elm = sscanf(rem,'%i');
+    if elm(1) ~= nElm
+        error('The elements are not defined in sequence. Not yet supported!')
+    end
+    switch elmType
+        case 3
+            if length(elm) ~= 5
+                error('Unexpected number of parameters on line "%s".',Line)
+            end
+            Elm(:,nElm) = [3; elm(2:4); 0; elm(5)];
+        case 4
+            if length(elm) ~= 6
+                error('Unexpected number of parameters on line "%s".',Line)
+            end
+            Elm(:,nElm) = [4; elm(2:6)];
+    end
+    %
+    Line = fgetl(fid);
+    if ~ischar(Line)
+        error('End-of-file while reading element definitions.')
+    end
+    [tok,rem] = strtok(Line);
+end
+Elm(:,nElm+1:end) = [];
+%
+nMaxNodes = max(max(Elm(2:5,:)));
+Coords = zeros(3,nMaxNodes);
+nNodes = 0;
+while ismember(tok,{'ND'})
+    nNodes = nNodes+1;
+    if nNodes > nMaxNodes % shouldn't need this based on the highest node number in the element table
+        nMaxNodes = 2*nMaxNodes;
+        Coords(3,nMaxNodes) = 0;
+    end
+    node = sscanf(rem,'%i %f %f %f');
+    if node(1) ~= nNodes
+        error('The node coordinates are not specified in sequence. Not yet supported!')
+    end
+    Coords(:,nNodes) = node(2:end);
+    %
+    Line = fgetl(fid);
+    if ~ischar(Line)
+        break
+    end
+    [tok,rem] = strtok(Line);
+end
+S.NodeCoor = Coords(:,1:nNodes)';
+S.FaceType = Elm(1,:);
+S.Faces = Elm(2:5,:)';
+S.FaceMaterial = Elm(6,:);

@@ -167,7 +167,7 @@ subroutine calculate_critical_velocities(dilatancy, bedslpeffini, dzbdt, ag, vic
        ! Permeability, Adel 1987
        kl = ag/(160.0_fp*vicmol)*(d15**2)*((poros**3)/(1.0_fp-poros)**2)
        ! Reduction factor on the critical Shields parameter by dilatancy (Van Rhee, 2010)
-       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-poros)*rheea/delta
+       srfRhee = vero/kl*(pormax-poros)/(1.0_fp-pormax)*rheea/delta
     endif
     !
     if (bedslpeffini == 0) then

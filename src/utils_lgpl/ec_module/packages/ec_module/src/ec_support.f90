@@ -23,8 +23,8 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!  
-!  
+!
+!
 
 !> This module contains support methods for the EC-module.
 !! @author adri.mourits@deltares.nl
@@ -62,6 +62,7 @@ module m_ec_support
    public :: ecSupportFindBCFileByFilename
    public :: ecSupportNetcdfCheckError
    public :: ecSupportNCFindCFCoordinates
+   public :: ecSupportTimestringToRefdate
    public :: ecSupportTimestringToUnitAndRefdate
    public :: ecSupportTimeUnitConversionFactor
    public :: ecSupportThisTimeToMJD
@@ -127,7 +128,7 @@ module m_ec_support
 
          integer                       :: unit
          real(kind=hp)                 :: ref_date, tzone, time_in
-         integer                       :: i, posTimeUnit !< position in string of 'since'
+         integer                       :: i, posTimeUnit !< position of time_unit(s) in string
          character(len=:), allocatable :: time_string
          character(len=*), parameter   :: time_units(4) = ['seconds', 'minutes', 'hours  ', 'days   ']
          !
@@ -499,7 +500,7 @@ end subroutine ecInstanceListSourceItems
          itemPtr => null()
          !
          if (associated(instancePtr)) then
-            if (itemId>0 .and. itemId<=instancePtr%nItems) then 
+            if (itemId>0 .and. itemId<=instancePtr%nItems) then
                itemPtr => instancePtr%ecItemsPtr(itemId)%ptr
             end if
          else
@@ -518,7 +519,7 @@ end subroutine ecInstanceListSourceItems
          connectionPtr => null()
          !
          if (associated(instancePtr)) then
-            if (connectionId>0 .and. connectionId<=instancePtr%nConnections) then 
+            if (connectionId>0 .and. connectionId<=instancePtr%nConnections) then
                connectionPtr => instancePtr%ecConnectionsPtr(connectionId)%ptr
             end if
          else
@@ -537,7 +538,7 @@ end subroutine ecInstanceListSourceItems
          converterPtr => null()
          !
          if (associated(instancePtr)) then
-            if (converterId>0 .and. converterId<=instancePtr%nConverters) then 
+            if (converterId>0 .and. converterId<=instancePtr%nConverters) then
                 converterPtr => instancePtr%ecConvertersPtr(converterId)%ptr
             end if
          else
@@ -556,7 +557,7 @@ end subroutine ecInstanceListSourceItems
          fileReaderPtr => null()
          !
          if (associated(instancePtr)) then
-            if (fileReaderId>0 .and. fileReaderId<=instancePtr%nFileReaders) then 
+            if (fileReaderId>0 .and. fileReaderId<=instancePtr%nFileReaders) then
                 fileReaderPtr => instancePtr%ecFileReadersPtr(fileReaderId)%ptr
             end if
          else
@@ -603,7 +604,7 @@ end subroutine ecInstanceListSourceItems
          bcBlockPtr => null()
          !
          if (associated(instancePtr)) then
-            if (bcBlockId>0 .and. bcBlockId<=instancePtr%nBCBlocks) then 
+            if (bcBlockId>0 .and. bcBlockId<=instancePtr%nBCBlocks) then
                bcBlockPtr => instancePtr%ecbcBlocksPtr(bcBlockId)%ptr
             end if
          else
@@ -622,7 +623,7 @@ end subroutine ecInstanceListSourceItems
          netCDFPtr => null()
          !
          if (associated(instancePtr)) then
-            if (netCDFId>0 .and. netCDFId<=instancePtr%nNetCDFs) then 
+            if (netCDFId>0 .and. netCDFId<=instancePtr%nNetCDFs) then
                netCDFPtr => instancePtr%ecNetCDFsPtr(netCDFId)%ptr
             end if
          else
@@ -687,6 +688,100 @@ end subroutine ecInstanceListSourceItems
 
       ! =======================================================================
 
+      !> Extracts reference date from a standard time string.
+      !! ASCII example: "TIME = 0 hours since 2006-01-01 00:00:00 +00:00"
+      !! NetCDF example: "1970-01-01 00:00:00.0 +0000"
+      !! also ISO_8601 is supported: 2020-11-16T07:47:33Z
+      function ecSupportTimestringToRefdate(rec, ref_date, tzone) result(success)
+         !
+         logical                                :: success       !< function status
+         character(len=*),        intent(in)    :: rec           !< units string (at out in lowercase)
+         real(kind=hp),           intent(out)   :: ref_date      !< reference date formatted as Modified Julian Date
+         real(kind=hp), optional, intent(out)   :: tzone         !< time zone
+         !
+         integer                       :: i        !< helper index for location of 'since'
+         integer                       :: jcomment !< helper index for location of '#'
+         logical                       :: ok       !< check of refdate is found
+         character(len=20)             :: date     !< parts of string for date
+         character(len=20)             :: time     !< parts of string for time
+         character(len=20)             :: tz       !< parts of string for time zone
+         character(len=:), allocatable :: string   !< unit string without comments and in lowercase
+         !
+         success = .false.
+         !
+         ! copy only relevant part of rec into string:
+         jcomment = index(rec, '#')
+         if (jcomment == 1) then
+            call setECMessage("ec_support::ecSupportTimestringToRefdate: only found comments.")
+            return
+         else if (jcomment > 1) then
+            string = trim(rec(:jcomment - 1))
+         else
+            string = trim(rec)
+         endif
+
+         call str_lower(string)
+
+         ! Determine the reference date.
+
+         ok = split_date_time(str_toupper(string), date, time, tz)
+         if (.not. ok) then
+            call setECMessage("ec_support::ecSupportTimestringToRefdate: splitting of date and time fails. Date time = ", string(i:))
+            return
+         end if
+
+         ! Date
+         if (ymd2modified_jul(date, ref_date)) then
+            ! Time
+            if ( time /= ' ') then
+               ref_date = ref_date + parse_time(time, ok)
+            end if
+         else
+            ref_date = -999.0_hp
+            ok = .false.
+         endif
+
+         if (.not. ok) then
+            call setECMessage("ec_support::ecSupportTimestringToRefdate: Unable to parse date time in: ", rec)
+            return
+         end if
+
+         ! Determine the timezone
+         if (present(tzone)) then
+             if (tz /= ' ') then
+                 success = parseTimezone(tz, tzone)
+             else
+                 tzone = 0.0_hp
+                 success = .true.
+             endif
+         else
+             success = .true.
+         end if
+         !
+      end function ecSupportTimestringToRefdate
+
+      !> Extracts time unit from a string.
+      function ecSupportTimeUnitstringToUnitEnum(string, unit) result (success)
+         !
+         logical                         :: success   !< function status
+         character(len=*), intent(in)    :: string    !< units string (at out in lowercase)
+         integer, intent(out)            :: unit      !< unit enum: ec_second, ec_minute, ec_hour, ec_day or 0 on error.
+         !
+         success = .true.
+         if (index(string, 'seconds') /= 0) then
+            unit = ec_second
+         else if (index(string, 'minutes') /= 0) then
+            unit = ec_minute
+         else if (index(string, 'hours') /= 0 .or. index( string, 'hrs') /= 0) then
+            unit = ec_hour
+         else if (index(string, 'days') /= 0) then
+            unit = ec_day
+         else
+            unit = 0
+            success = .false.
+         end if
+      end function ecSupportTimeUnitstringToUnitEnum
+
       !> Extracts time unit and reference date from a standard time string.
       !! ASCII example: "TIME = 0 hours since 2006-01-01 00:00:00 +00:00"
       !! NetCDF example: "minutes since 1970-01-01 00:00:00.0 +0000"
@@ -704,7 +799,6 @@ end subroutine ecInstanceListSourceItems
          logical                       :: ok       !< check of refdate is found
          character(len=20)             :: date     !< parts of string for date
          character(len=20)             :: time     !< parts of string for time
-         character(len=20)             :: tz       !< parts of string for time zone
          character(len=:), allocatable :: string   !< unit string without comments and in lowercase
          !
          success = .false.
@@ -723,15 +817,7 @@ end subroutine ecInstanceListSourceItems
          call str_lower(string)
 
          ! Determine the time unit.
-         if (index(string, 'seconds') /= 0) then
-            unit = ec_second
-         else if (index(string, 'minutes') /= 0) then
-            unit = ec_minute
-         else if (index(string, 'hours') /= 0 .or. index( string, 'hrs') /= 0) then
-            unit = ec_hour
-         else if (index(string, 'days') /= 0) then
-            unit = ec_day
-         else
+         if (.not. ecSupportTimeUnitstringToUnitEnum(string, unit)) then
             call setECMessage("unitstring = '"//trim(string)//"'.")
             call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify the time unit.")
             return
@@ -739,25 +825,10 @@ end subroutine ecInstanceListSourceItems
          ! Determine the reference date.
          i = index(string, 'since') + 6
          if (i /= 6) then
-            ok = split_date_time(str_toupper(string(i:)), date, time, tz)
-            if (.not. ok) then
-               call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: splitting of date and time fails. Date time = ", string(i:))
-               return
-            end if
-
-            ! Date
-            if (ymd2modified_jul(date, ref_date)) then
-               ! Time
-               if ( time /= ' ') then
-                  ref_date = ref_date + parse_time(time, ok)
-               end if
-            else
-               ref_date = -999.0_hp
-               ok = .false.
-            endif
+            ok = ecSupportTimestringToRefdate(string(i:), ref_date, tzone=tzone)
          else if (ecSupportTimestringArcInfo(string, ref_date)) then
             ok = .true.
-            tz = ' '
+            tzone = 0.0_hp
          else
             call setECMessage("ec_support::ecSupportTimestringToUnitAndRefdate: Unable to identify keyword: since and not an ArcInfo format.")
             return
@@ -768,17 +839,7 @@ end subroutine ecInstanceListSourceItems
             return
          end if
 
-         ! Determine the timezone
-         if (present(tzone)) then
-             if (tz /= ' ') then
-                 success = parseTimezone(tz, tzone)
-             else
-                 tzone = 0.0_hp
-                 success = .true.
-             endif
-         else
-             success = .true.
-         end if
+         success = .true.
          !
       end function ecSupportTimestringToUnitAndRefdate
 
@@ -1043,7 +1104,7 @@ end subroutine ecInstanceListSourceItems
          ierr = nf90_inquire_variable(ncid, ivar, dimids=dimids)
          cf_role=''
          ierr = nf90_get_att(ncid, ivar, 'cf_role', cf_role)
-         if (strcmpi(cf_role,'timeseries_id')) then 
+         if (strcmpi(cf_role,'timeseries_id')) then
             series_varid = ivar                                                 ! store last timeseries_id variable
             series_dimid = dimids(ndim)
          end if

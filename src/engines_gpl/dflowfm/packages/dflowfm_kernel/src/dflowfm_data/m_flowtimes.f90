@@ -167,7 +167,7 @@
  integer                           :: handle_steps    !< timer handle for timesteps
  integer                           :: handle_umod     !< timer handle for set-umod
  integer                           :: handle_sol      !< timer handle for conj-grad
- integer                           :: handle_furu     !< timer handle for conj-grad
+ integer                           :: handle_furu     !< timer handle for furu
  integer                           :: handle_all      !< timer handle for steps + plots
  integer                           :: handle_inistep  !< timer handle for inistep
  integer                           :: handle_iniext   !< timer handle for init externalforcings

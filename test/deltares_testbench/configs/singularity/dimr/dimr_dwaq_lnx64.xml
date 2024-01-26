@@ -12,19 +12,19 @@
         <locations>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -67,7 +67,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>execute_singularity.sh</path>
+            <path>execute_singularity_tc.sh</path>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
                 <environment name="PROC_DEF_DIR" type="path">/opt/delft3dfm_latest/lnx64/share/delft3d</environment> <!-- this directory points to the binaries in the container -->

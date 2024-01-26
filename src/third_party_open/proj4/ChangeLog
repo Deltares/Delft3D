@@ -1965,4 +1965,3 @@ Reports of errno 25 persist.  Do not know what platform.  Reviewed
 Unknown platform has problem with pj_errno global and linker storage
 	allocation.  Seems similar to SG problem that was over come with
 	-common switch.
-

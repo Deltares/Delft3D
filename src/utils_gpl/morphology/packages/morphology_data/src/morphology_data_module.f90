@@ -285,8 +285,10 @@ type mornumericstype
     logical :: pure1d                   ! temporary switch for 1D treatment in FM
     logical :: upwindbedload            ! switch for upwind bedload in UPWBED
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
-    logical :: maximumwaterdepth        ! water depth at zeta point in DWNVEL given by
-                                        ! at least water depth at active velocity points
+    logical :: maximumwaterdepth        ! limit minimum water depth at zeta point for morphodynamics 
+    double precision :: maximumwaterdepthfrac   ! if `maximumwaterdepth=.true.`, the minimum water depth
+                                        ! at zeta point is `maximumwaterdepthfrac` times the 
+                                        ! maximum water depth at active velocity points.
     integer :: fluxlim                  ! flux limiter choice
 end type mornumericstype
 
@@ -1548,6 +1550,7 @@ subroutine nullmorpar(morpar)
     morpar%mornum%upwindbedload            = .true.
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
+    morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
     !
     rmissval           = -999.0_fp
     imissval           = -999

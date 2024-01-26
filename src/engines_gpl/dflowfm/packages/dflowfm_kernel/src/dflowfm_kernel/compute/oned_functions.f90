@@ -263,9 +263,9 @@ module m_oned_functions
       do i = 1, network%storS%count
          pstor => network%storS%stor(i)
          if (pstor%node_index > 0) then
-            pStor%gridPoint = network%nds%node(pstor%node_index)%gridNumber
+            pStor%grid_point = network%nds%node(pstor%node_index)%gridNumber
          else if (pstor%branch_index > 0) then
-            ierr = findnode(pStor%branch_index, pstor%chainage, pstor%gridPoint)
+            ierr = findnode(pStor%branch_index, pstor%chainage, pstor%grid_point)
          else
             nxy = nxy + 1
             ixy2stor(nxy) = i
@@ -281,7 +281,7 @@ module m_oned_functions
          do i = 1, nxy
             if (k_tmp(i) > 0) then
                pstor => network%storS%stor(ixy2stor(i))
-               pstor%gridPoint = k_tmp(i)
+               pstor%grid_point = k_tmp(i)
             else if (jampi == 0) then
                call SetMessage(LEVEL_ERROR, 'Error when snapping storage node '''//trim(name_tmp(i))//''' to a flow node. Are coordinates correct?')
             end if
@@ -517,9 +517,9 @@ module m_oned_functions
    nstor = network%storS%count
    do i = 1, nstor
       pstor => network%storS%stor(i)
-      n1 = pstor%gridPoint
+      n1 = pstor%grid_point
       if (n1 > 0) then
-      bl(n1) = min(bl(n1), pstor%storageArea%x(1))
+      bl(n1) = min(bl(n1), pstor%storage_area%x(1))
       end if
    enddo
       
@@ -568,12 +568,12 @@ module m_oned_functions
       nstor = network%storS%count
       do i = 1, nstor
          pstor => network%storS%stor(i)
-         n1 = pstor%gridPoint
+         n1 = pstor%grid_point
          if (n1 <= 0) cycle
-         if (bl(n1) < pstor%storageArea%x(1)) then
+         if (bl(n1) < pstor%storage_area%x(1)) then
             call setmessage(LEVEL_WARN, 'At node '//trim(network%nds%node(i)%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
             write(msgbuf, '(''The bedlevel (due to invert levels of incoming channels/pipes) = '', g14.2, '' and the bottom level of the storage area is '', g14.2)') &
-                        bl(n1), pstor%storageArea%x(1)
+                        bl(n1), pstor%storage_area%x(1)
             call setmessage(-LEVEL_WARN, msgbuf)
          
          endif
@@ -884,12 +884,12 @@ module m_oned_functions
    ! set for storage nodes (either from a table, or a prescribed street level (storageType is reservoir or closed))
     do istor = 1, network%storS%Count
       pSto => network%storS%stor(istor)
-      if (pSto%gridPoint < 1) cycle
-      i = pSto%gridPoint-ndx2d
-      if (.not. pSto%useTable) then ! Manhole
-         if (pSto%useStreetStorage) then
-            groundLevel(i) = pSto%streetArea%x(1)
-            if (pSto%storageType == nt_Closed) then
+      if (pSto%grid_point < 1) cycle
+      i = pSto%grid_point-ndx2d
+      if (.not. pSto%use_table) then ! Manhole
+         if (pSto%use_street_storage) then
+            groundLevel(i) = pSto%street_area%x(1)
+            if (pSto%storage_type == nt_closed) then
                groundStorage(i) = 0
             else
                groundStorage(i) = 1
@@ -898,8 +898,8 @@ module m_oned_functions
             groundStorage(i) = 0
          end if
       else ! storage node on open storage table, the ground level is set to the top level of the definition table.
-         length = pSto%storageArea%length
-         groundLevel(i) = maxval(pSto%storageArea%x(1:length))
+         length = pSto%storage_area%length
+         groundLevel(i) = maxval(pSto%storage_area%x(1:length))
          groundStorage(i) = 1
       end if
     end do

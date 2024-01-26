@@ -205,16 +205,17 @@ switch cmd
         % line segment
         G=findobj(gcbf,'tag','GRID');
         GRID=get(G,'userdata');
-        if length(GRID.Selected.Range)==2
-            ij0=GRID.Selected.Range;
-        else
-            ij0=GRID.Selected.Range([1 3]);
-        end
-        i0=ij0(1);
-        j0=ij0(2);
         %
         switch GRID.Type
             case 'sgrid'
+                if length(GRID.Selected.Range)>2
+                    ij0=GRID.Selected.Range([1 3]);
+                else
+                    ij0=GRID.Selected.Range;
+                end
+                i0=ij0(1);
+                j0=ij0(2);
+                %
                 [i,j]=trackpnt(gcbf);
                 midist=abs(i-i0);
                 mjdist=abs(j-j0);
@@ -1089,6 +1090,7 @@ switch selection.Type
                 end
             otherwise
                 i = Range(1);
+                selection.Range = i; % remove second index for UGRID points
                 switch GRID.ValLocation
                     case 'NODE'
                         set(SelectedPatch,'vertices',[],'faces',[])
@@ -1201,87 +1203,75 @@ switch selection.Type
                         end
                 end
             case 'ugrid'
+                CNECT = []; % no faces
+                ledge = []; % no edges
+                ip = []; % no nodes
                 switch GRID.ValLocation
                     case 'NODE'
                         ip    = Range{1};
-                        if isfield(GRID,'FaceNodeConnect')
-                            lface = all(ismember(GRID.FaceNodeConnect,ip) | isnan(GRID.FaceNodeConnect),2);
-                            ip    = ip(~ismember(ip,GRID.FaceNodeConnect(lface,:)));
-                            CNECT = GRID.FaceNodeConnect(lface,:);
-                        else
-                            lface = [];
-                            CNECT = [];
-                        end
-                        ledge = all(ismember(GRID.EdgeNodeConnect,ip),2);
+                        ledge = all(ismember(GRID.EdgeNodeConnect,Range{1}),2);
                         ip    = ip(~ismember(ip,GRID.EdgeNodeConnect(ledge,:)));
-                        set(SelectedPoint, ...
-                            'xdata',GRID.X(ip), ...
-                            'ydata',GRID.Y(ip))
-                        Edges = GRID.EdgeNodeConnect(ledge,:)';
-                        X = GRID.X(Edges);
-                        Y = GRID.Y(Edges);
-                        X(3,:) = NaN;
-                        Y(3,:) = NaN;
-                        set(SelectedLine, ... %TODO
-                            'xdata',X(:), ...
-                            'ydata',Y(:))
+                        ledge = find(ledge);
                     case 'EDGE'
-                        if isfield(GRID,'FaceNodeConnect')
-                            % determine Edge-Face relationship (code copy)
-                            Faces = GRID.FaceNodeConnect;
-                            missing = isnan(Faces);
-                            NEdges = sum(~missing(:));
-                            Edges = zeros(3,NEdges);
-                            ie = 0;
-                            for j = 1:size(Faces,2)
-                                for i = 1:size(Faces,1)
-                                    if ~isnan(Faces(i,j))
-                                        ie = ie+1;
-                                        Edges(1,ie) = Faces(i,j);
-                                        if j==size(Faces,2) || isnan(Faces(i,j+1))
-                                            Edges(2,ie) = Faces(i,1);
-                                        else
-                                            Edges(2,ie) = Faces(i,j+1);
-                                        end
-                                        Edges(3,ie) = i;
-                                    end
-                                end
-                            end
-                            Edges(1:2,:) = sort(Edges(1:2,:));
-                            Edges = Edges';
-                            % determine for which Faces all Edges have been selected
-                            EdgeSel = sort(GRID.EdgeNodeConnect(Range{1},:),2);
-                            yEdges = ismember(Edges(:,1:2),EdgeSel,'rows');
-                            NEdgesIncluded = accumarray(Edges(:,3),double(yEdges));
-                            NEdgesTotal    = sum(~missing,2);
-                            lface = NEdgesIncluded==NEdgesTotal;
-                            CNECT = GRID.FaceNodeConnect(lface,:);
-                            % determine which Edges are not part of the selected faces
-                            FacesIncluded  = find(lface);
-                            ledge = ismember(Edges(:,3),FacesIncluded);
-                            Edges = EdgeSel(~ismember(EdgeSel,Edges(ledge,1:2),'rows'),:)';
-                        else
-                            % no faces, so faces are empty and all edges
-                            % should be drawn
-                            CNECT = [];
-                            Edges = GRID.EdgeNodeConnect(Range{1},:);
-                        end
-                        X = GRID.X(Edges);
-                        Y = GRID.Y(Edges);
-                        X(3,:) = NaN;
-                        Y(3,:) = NaN;
-                        set(SelectedLine, ...
-                            'xdata',X(:), ...
-                            'ydata',Y(:))
-                        set(SelectedPoint,'xdata',[],'ydata',[])
+                        ledge = Range{1};
                     case 'FACE'
                         CNECT = GRID.FaceNodeConnect(Range{1},:);
-                        set(SelectedLine,'xdata',[],'ydata',[])
-                        set(SelectedPoint,'xdata',[],'ydata',[])
                 end
+                %
+                if ~isempty(ledge) && isfield(GRID,'FaceNodeConnect')
+                    % determine Edge-Face relationship (code copy)
+                    Faces = GRID.FaceNodeConnect;
+                    missing = isnan(Faces);
+                    NEdges = sum(~missing(:));
+                    Edges = zeros(3,NEdges);
+                    ie = 0;
+                    for j = 1:size(Faces,2)
+                        for i = 1:size(Faces,1)
+                            if ~isnan(Faces(i,j))
+                                ie = ie+1;
+                                Edges(1,ie) = Faces(i,j);
+                                if j==size(Faces,2) || isnan(Faces(i,j+1))
+                                    Edges(2,ie) = Faces(i,1);
+                                else
+                                    Edges(2,ie) = Faces(i,j+1);
+                                end
+                                Edges(3,ie) = i;
+                            end
+                        end
+                    end
+                    Edges(1:2,:) = sort(Edges(1:2,:));
+                    Edges = Edges';
+                    % determine for which Faces all Edges have been selected
+                    EdgeSel = sort(GRID.EdgeNodeConnect(ledge,:),2);
+                    yEdges = ismember(Edges(:,1:2),EdgeSel,'rows');
+                    NEdgesIncluded = accumarray(Edges(:,3),double(yEdges));
+                    NEdgesTotal    = sum(~missing,2);
+                    lface = NEdgesIncluded==NEdgesTotal;
+                    CNECT = GRID.FaceNodeConnect(lface,:);
+                    % determine which Edges are not part of the selected faces
+                    FacesIncluded  = find(lface);
+                    faceEdges = ismember(Edges(:,3),FacesIncluded);
+                    ledge = ledge(~ismember(EdgeSel,Edges(faceEdges,1:2),'rows'));
+                end
+                if ~isempty(ledge)
+                    Edges = GRID.EdgeNodeConnect(ledge,:)';
+                    X = GRID.X(Edges);
+                    Y = GRID.Y(Edges);
+                    X(3,:) = NaN;
+                    Y(3,:) = NaN;
+                else
+                    X = [];
+                    Y = [];
+                end
+                set(SelectedLine,'xdata',X(:),'ydata',Y(:))
+                set(SelectedPoint,'xdata',GRID.X(ip),'ydata',GRID.Y(ip))
                 for l = 1:size(CNECT,1)
                     np = sum(~isnan(CNECT(l,:)));
-                    CNECT(l,np+1:end) = CNECT(l,np);
+                    if np == 0
+                        CNECT(l,:) = 1;
+                    else
+                        CNECT(l,np+1:end) = CNECT(l,np);
+                    end
                 end
                 set(SelectedPatch,'vertices',[GRID.X GRID.Y],'faces',CNECT)
                 set(SelectedGrid,'xdata',[],'ydata',[],'zdata',[])
@@ -1838,8 +1828,12 @@ switch NewLoc
                 else
                     % find node numbers associated with the selected edges
                     iEdge = OldRange.Range{1};
+                    find_point = length(iEdge)==1;
                     iNode = GRID.EdgeNodeConnect(iEdge,:);
                     iNode = unique(iNode(:));
+                    if find_point
+                        iNode = iNode(1);
+                    end
                     NewRange.Type = 'range';
                     NewRange.Range = {iNode};
                 end
@@ -1894,8 +1888,12 @@ switch NewLoc
                         case 'range'
                             iFace = OldRange.Range{1};
                     end
+                    find_point = length(iFace) == 1;
                     iNode = GRID.FaceNodeConnect(iFace,:);
                     iNode = unique(iNode(~isnan(iNode)));
+                    if find_point
+                        iNode = iNode(1);
+                    end
                     NewRange.Type = 'range';
                     NewRange.Range = {iNode};
                 end
@@ -1920,15 +1918,35 @@ switch NewLoc
                 else
                     if strcmp(OldLoc,'FACE')
                         % find node numbers associated with the selected nodes
-                        iFace = OldRange.Range{1};
+                        switch OldRange.Type
+                            case 'point'
+                                iFace = OldRange.Range(1);
+                            otherwise
+                                iFace = OldRange.Range{1};
+                        end
+                        find_point = length(iFace)==1;
                         iNode = GRID.FaceNodeConnect(iFace,:);
                         iNode = unique(iNode(~isnan(iNode)));
                     else
-                        iNode = OldRange.Range{1};
+                        switch OldRange.Type
+                            case 'point'
+                                iNode = OldRange.Range(1);
+                            otherwise
+                                iNode = OldRange.Range{1};
+                        end
+                        find_point = length(iNode)==1;
                     end
-                    % find edges for which all nodes are selected
-                    lEdge = all(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    if find_point
+                        % find any edge connected to this node
+                        lEdge = any(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    else
+                        % find edges for which all nodes are selected
+                        lEdge = all(ismember(GRID.EdgeNodeConnect,iNode),2);
+                    end
                     iEdge = find(lEdge);
+                    if find_point
+                        iEdge = iEdge(1);
+                    end
                     NewRange.Type = 'range';
                     NewRange.Range = {iEdge};
                 end
@@ -1993,14 +2011,18 @@ switch NewLoc
                     switch OldRange.Type
                         case 'point'
                             iLocation = OldRange.Range(1);
-                            if strcmp(OldLoc,'NODE')
-                                MatchLevel = 1;
-                            else
-                                MatchLevel = 2;
-                            end
                         case 'range'
                             iLocation = OldRange.Range{1};
-                            MatchLevel = 3;
+                    end
+                    find_point = length(iLocation)==1;
+                    if find_point
+                        if strcmp(OldLoc,'NODE')
+                            MatchLevel = 1;
+                        else
+                            MatchLevel = 2;
+                        end
+                    else
+                        MatchLevel = 3;
                     end
                     if strcmp(OldLoc,'EDGE')
                         % find node numbers associated with the selected edges
@@ -2021,16 +2043,12 @@ switch NewLoc
                             iFace = find(lFace==2);
                             iFace = iFace(1);
                         case 3 % select all faces for which all nodes match
-                            lFace = all(ismember(GRID.FaceNodeConnect,iNode) | isnan(GRID.FaceNodeConnect),2);
+                            lFace = all(ismember(GRID.FaceNodeConnect,iNode) | isnan(GRID.FaceNodeConnect),2) ...
+                                & ~all(isnan(GRID.FaceNodeConnect),2);
                             iFace = find(lFace);
                     end
-                    if length(iFace)==1
-                        NewRange.Type = 'point';
-                        NewRange.Range = [iFace 1];
-                    else
-                        NewRange.Type = 'range';
-                        NewRange.Range = {iFace};
-                    end
+                    NewRange.Type = 'range';
+                    NewRange.Range = {iFace};
                 end
             otherwise
                 error('Transition from %s to %s not yet implemented',OldLoc,NewLoc)

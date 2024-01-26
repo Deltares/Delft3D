@@ -16,7 +16,6 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
-from src.utils.logging.i_logger import ILogger
 from src.utils.xml_config_parser import XmlConfigParser
 
 
@@ -49,6 +48,9 @@ class TestBenchParameterParser:
 
         credentials = cls.__get_credentials(args)
 
+        # Additionally, extra TeamCity messages will be produced.
+        server_base_url = cls.__get_argument_value("server_base_url", args) or ""
+
         # Parse the xml file.
         xml_config_parser = XmlConfigParser()
 
@@ -57,7 +59,9 @@ class TestBenchParameterParser:
             new_settings.local_paths,
             new_settings.programs,
             new_settings.configs,
-        ) = xml_config_parser.load(config_file, args.__dict__["or_paths"], credentials)
+        ) = xml_config_parser.load(
+            config_file, args.__dict__["or_paths"], credentials, server_base_url
+        )
 
         new_settings.config_file = config_file
 
@@ -76,6 +80,9 @@ class TestBenchParameterParser:
 
         # automatically commit reference run if succesfull
         new_settings.autocommit = cls.__get_argument_value("autocommit", args) or False
+
+        # Enables running the tests in parallel (multi-process)
+        new_settings.parallel = cls.__get_argument_value("parallel", args) or False
 
         # If option is used, all logging is decorated with TeamCity messages.
         # Additionally, extra TeamCity messages will be produced.
@@ -107,7 +114,7 @@ class TestBenchParameterParser:
 
         if not return_value and is_interactive:
             if secret_value:
-                return getpass.getpass(f"{name}")
+                return getpass.getpass(f"{name} : ")
 
             return input(f"{name}")
 
@@ -294,6 +301,12 @@ class TestBenchParameterParser:
             dest="only_post",
         )
         parser.add_argument(
+            "--parallel",
+            action="store_true",
+            help="Turns on running in parallel.",
+            dest="parallel",
+        )
+        parser.add_argument(
             "--autocommit",
             action="store_true",
             help="Turns on autocommit when doing a reference run.",
@@ -306,15 +319,22 @@ class TestBenchParameterParser:
             dest="teamcity",
         )
         parser.add_argument(
+            "--server-base-url",
+            help="e.g. SVN, S3, Git LFS",
+            default="https://repos.deltares.nl/repos/DSCTestbench/trunk",
+            required=False,
+            dest="server_base_url",
+        )
+        parser.add_argument(
             "--username",
-            help="Subversion username.",
+            help="Server username (e.g. git, SVN, MinIO).",
             default=None,
             # required=True,
             dest="username",
         )
         parser.add_argument(
             "--password",
-            help="Subversion password.",
+            help="Server password (e.g. git, SVN, MinIO).",
             default=None,
             # required=True,
             dest="password",

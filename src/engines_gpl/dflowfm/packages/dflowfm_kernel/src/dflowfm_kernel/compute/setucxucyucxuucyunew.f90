@@ -881,97 +881,166 @@ else if (icorio == 10) then                             ! vol2D type weigthings
  if (kmx < 1) then
     ucxu = 0d0
     ucyu = 0d0
-    if (jasfer3D == 1) then
-       !$OMP PARALLEL DO           &
-       !$OMP PRIVATE(L,i)
-       do i = 1, wetLinkCount
-          L = onlyWetLinks(i)
-          if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
-             ucxu(L) = nod2linx(L,1,ucx(ln(1,L)),ucy(ln(1,L)))
-             ucyu(L) = nod2liny(L,1,ucx(ln(1,L)),ucy(ln(1,L)))
-          else if (qa(L) < 0) then
-             ucxu(L) = nod2linx(L,2,ucx(ln(2,L)),ucy(ln(2,L)))
-             ucyu(L) = nod2liny(L,2,ucx(ln(2,L)),ucy(ln(2,L)))
-          endif
-       enddo
-       !$OMP END PARALLEL DO
-    else
-       !$OMP PARALLEL DO           &
-       !$OMP PRIVATE(L,i)
-       do i = 1, wetLinkCount
-          L = onlyWetLinks(i)
-          if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
-             ucxu(L) = ucx(ln(1,L))
-             ucyu(L) = ucy(ln(1,L))
-          else if (qa(L) < 0) then
-             ucxu(L) = ucx(ln(2,L))
-             ucyu(L) = ucy(ln(2,L))
-          endif
-       enddo
-       !$OMP END PARALLEL DO
+    if (jarhoxu == 0) then  
+
+       if (jasfer3D == 1) then
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(L,i)
+          do i = 1, wetLinkCount
+             L = onlyWetLinks(i)
+             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                ucxu(L) = nod2linx(L,1,ucx(ln(1,L)),ucy(ln(1,L)))
+                ucyu(L) = nod2liny(L,1,ucx(ln(1,L)),ucy(ln(1,L)))
+             else if (qa(L) < 0) then
+                ucxu(L) = nod2linx(L,2,ucx(ln(2,L)),ucy(ln(2,L)))
+                ucyu(L) = nod2liny(L,2,ucx(ln(2,L)),ucy(ln(2,L)))
+             endif
+          enddo
+          !$OMP END PARALLEL DO
+       else
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(L,i)
+          do i = 1, wetLinkCount
+             L = onlyWetLinks(i)
+             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                ucxu(L) = ucx(ln(1,L))
+                ucyu(L) = ucy(ln(1,L))
+             else if (qa(L) < 0) then
+                ucxu(L) = ucx(ln(2,L))
+                ucyu(L) = ucy(ln(2,L))
+             endif
+          enddo
+          !$OMP END PARALLEL DO
+       endif
+
+    else 
+
+       if (jasfer3D == 1) then
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(L,i)
+          do i = 1, wetLinkCount
+             L = onlyWetLinks(i)
+             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                ucxu(L) = nod2linx(L,1,ucx(ln(1,L)),ucy(ln(1,L)))*rho(ln(1,L))
+                ucyu(L) = nod2liny(L,1,ucx(ln(1,L)),ucy(ln(1,L)))*rho(ln(1,L))
+             else if (qa(L) < 0) then
+                ucxu(L) = nod2linx(L,2,ucx(ln(2,L)),ucy(ln(2,L)))*rho(ln(2,L))
+                ucyu(L) = nod2liny(L,2,ucx(ln(2,L)),ucy(ln(2,L)))*rho(ln(2,L))
+             endif
+          enddo
+          !$OMP END PARALLEL DO
+       else
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(L,i)
+          do i = 1, wetLinkCount
+             L = onlyWetLinks(i)
+             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                ucxu(L) = ucx(ln(1,L))*rho(ln(1,L))
+                ucyu(L) = ucy(ln(1,L))*rho(ln(1,L))
+             else if (qa(L) < 0) then
+                ucxu(L) = ucx(ln(2,L))*rho(ln(2,L))
+                ucyu(L) = ucy(ln(2,L))*rho(ln(2,L))
+             endif
+          enddo
+          !$OMP END PARALLEL DO
+       endif
+
     endif
 
  else
 
-    if (jasfer3D == 1) then
-       !$OMP PARALLEL DO           &
-       !$OMP PRIVATE(LL,L,Lb,Lt)
-       do LL = 1,lnx
-          call getLbotLtop(LL,Lb,Lt)
-          do L = Lb,Lt
-             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
-                ucxu(L) = nod2linx(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))
-                ucyu(L) = nod2liny(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))
-                if (jarhoxu > 0) then
-                   ucxu(L) = ucxu(L)*rho(ln(1,L))
-                   ucyu(L) = ucyu(L)*rho(ln(1,L))
+    if (jarhoxu == 0) then 
+
+       if (jasfer3D == 1) then
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(LL,L,Lb,Lt)
+          do LL = 1,lnx
+             call getLbotLtop(LL,Lb,Lt)
+             do L = Lb,Lt
+                if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                   ucxu(L) = nod2linx(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))
+                   ucyu(L) = nod2liny(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))
+                else if (qa(L) < 0) then
+                   ucxu(L) = nod2linx(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))
+                   ucyu(L) = nod2liny(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))
+                else
+                   ucxu(L) = 0d0
+                   ucyu(L) = 0d0
                 endif
-             else if (qa(L) < 0) then
-                ucxu(L) = nod2linx(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))
-                ucyu(L) = nod2liny(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))
-                if (jarhoxu > 0) then
-                   ucxu(L) = ucxu(L)*rho(ln(2,L))
-                   ucyu(L) = ucyu(L)*rho(ln(2,L))
-                endif
-             else
-                ucxu(L) = 0d0
-                ucyu(L) = 0d0
-             endif
+             enddo
           enddo
-       enddo
-       !$OMP END PARALLEL DO
+          !$OMP END PARALLEL DO
+   
+       else
+   
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(LL,L,Lb,Lt)
+          do LL = 1,lnx
+             call getLbotLtop(LL,Lb,Lt)
+             do L = Lb,Lt
+                if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                   ucxu(L) = ucx(ln0(1,L))
+                   ucyu(L) = ucy(ln0(1,L))
+                else if (qa(L) < 0) then
+                   ucxu(L) = ucx(ln0(2,L))
+                   ucyu(L) = ucy(ln0(2,L))
+                else
+                   ucxu(L) = 0d0
+                   ucyu(L) = 0d0
+                endif
+             enddo
+          enddo
+          !$OMP END PARALLEL DO
+   
+       endif
 
     else
 
-       !$OMP PARALLEL DO           &
-       !$OMP PRIVATE(LL,L,Lb,Lt)
-       do LL = 1,lnx
-          call getLbotLtop(LL,Lb,Lt)
-          do L = Lb,Lt
-             if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
-                ucxu(L) = ucx(ln0(1,L))
-                ucyu(L) = ucy(ln0(1,L))
-                if (jarhoxu > 0) then
-                   ucxu(L) = ucxu(L)*rho(ln(1,L))
-                   ucyu(L) = ucyu(L)*rho(ln(1,L))
+       if (jasfer3D == 1) then
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(LL,L,Lb,Lt)
+          do LL = 1,lnx
+             call getLbotLtop(LL,Lb,Lt)
+             do L = Lb,Lt
+                if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                   ucxu(L) = nod2linx(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))*rho(ln0(1,L))
+                   ucyu(L) = nod2liny(LL,1,ucx(ln0(1,L)),ucy(ln0(1,L)))*rho(ln0(1,L))
+                else if (qa(L) < 0) then
+                   ucxu(L) = nod2linx(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))*rho(ln0(2,L))
+                   ucyu(L) = nod2liny(LL,2,ucx(ln0(2,L)),ucy(ln0(2,L)))*rho(ln0(2,L))
+                else
+                   ucxu(L) = 0d0
+                   ucyu(L) = 0d0
                 endif
-             else if (qa(L) < 0) then
-                ucxu(L) = ucx(ln0(2,L))
-                ucyu(L) = ucy(ln0(2,L))
-                if (jarhoxu > 0) then
-                   ucxu(L) = ucxu(L)*rho(ln(2,L))
-                   ucyu(L) = ucyu(L)*rho(ln(2,L))
-                endif
-             else
-                ucxu(L) = 0d0
-                ucyu(L) = 0d0
-             endif
+             enddo
           enddo
-       enddo
-       !$OMP END PARALLEL DO
+          !$OMP END PARALLEL DO
+   
+       else
+   
+          !$OMP PARALLEL DO           &
+          !$OMP PRIVATE(LL,L,Lb,Lt)
+          do LL = 1,lnx
+             call getLbotLtop(LL,Lb,Lt)
+             do L = Lb,Lt
+                if (qa(L) > 0) then                               ! set upwind ucxu, ucyu  on links
+                   ucxu(L) = ucx(ln0(1,L))*rho(ln0(1,L))
+                   ucyu(L) = ucy(ln0(1,L))*rho(ln0(1,L))
+                else if (qa(L) < 0) then
+                   ucxu(L) = ucx(ln0(2,L))*rho(ln0(2,L))
+                   ucyu(L) = ucy(ln0(2,L))*rho(ln0(2,L))
+                else
+                   ucxu(L) = 0d0
+                   ucyu(L) = 0d0
+                endif
+             enddo
+          enddo
+          !$OMP END PARALLEL DO
+   
+       endif
 
     endif
-
+   
  endif
 
  if (kmx == 0 .and. lnx1D > 0 ) then ! setuc

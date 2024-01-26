@@ -348,9 +348,10 @@ for m_ = 2:10 % limit to 10 supported dimensions
     % Get handles of relevant controls ...
     %
     if m_==3 || m_==4 % M or N
-        vis = {'visible','off'};
         if v==1
             vis = {'visible','on'};
+        else
+            vis = {'visible','off'};
         end
     else
         vis = {};

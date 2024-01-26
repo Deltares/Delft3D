@@ -117,7 +117,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
       if (success) then
          loc_spec_type = LOCTP_POLYLINE_FILE
          plifile = str_buf
-         call resolvePath(plifile, md_structurefile_dir, plifile)
+         call resolvePath(plifile, md_structurefile_dir)
       else
          write(msgbuf, '(a,a,A)') 'Field ''polylinefile'' missing in structure ''', trim(strid), '''. Skip this structure.'
          call msg_flush()

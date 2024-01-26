@@ -1,0 +1,30 @@
+test_solve 
+  0 KSP Residual norm 1.73205 
+  1 KSP Residual norm 114.018 
+  2 KSP Residual norm 0.296129 
+  3 KSP Residual norm 3.06774 
+  4 KSP Residual norm 0.142475 
+  5 KSP Residual norm < 1.e-11
+x1 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=3
+x2 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=2
+test_solve_matgetvecs 
+  0 KSP Residual norm 1.73205 
+  1 KSP Residual norm 114.018 
+  2 KSP Residual norm 0.296129 
+  3 KSP Residual norm 3.06774 
+  4 KSP Residual norm 0.142475 
+  5 KSP Residual norm < 1.e-11
+x1 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=3
+x2 
+Vec Object: 2 MPI processes
+  type: mpi
+  length=2

@@ -85,6 +85,11 @@ switch expType
     case {'netcdf4 file'}
         ext={'*.nc' 'Generic netCDF file (*.nc)'
             '*_net.nc' 'D-Flow FM grid file (*_net.nc)'};
+    case 'gmsh file'
+        ext={'*.msh' 'Gmsh 4.1 ascii file (*.msh)'
+            '*.msh' 'Gmsh 4.1 binary file (*.msh)'
+            '*.msh' 'Gmsh 2.2 ascii file (*.msh)'
+            '*.msh' 'Gmsh 2.2 binary file (*.msh)'};
     case {'quickin file','morsys field file','delft3d-mor field file','box file','simona box file'}
         % assumptions: 2D, one timestep
         % morsys field file: NVal=1
@@ -229,6 +234,43 @@ for f=1:ntim
     end
     data = qp_clipvalues(data, Ops);
 
+    if length(data) == 1 && ...
+            (strcmp(Ops.axestype,'Time-Z') || ...
+            strcmp(Ops.axestype,'Val-Z'))
+        if isfield(data,'ValLocation')
+            switch data.ValLocation
+                case 'FACE'
+                    FNC = data.FaceNodeConnect;
+                    missing = isnan(FNC);
+                    nNodes = size(missing,2)-sum(missing,2);
+                    FNC(missing) = 1;
+                    data.X = reshape(data.X(FNC),size(FNC));
+                    data.X(missing) = 0;
+                    data.X = sum(data.X,2)./nNodes;
+                    if isfield(data,'Y')
+                        data.Y = reshape(data.Y(FNC),size(FNC));
+                        data.Y(missing) = 0;
+                        data.Y = sum(data.Y,2)./nNodes;
+                    end
+                case 'EDGE'
+                    ENC = data.EdgeNodeConnect;
+                    data.X = reshape(data.X(ENC),size(ENC));
+                    data.X = sum(data.X,2)/2;
+                    if isfield(data,'Y')
+                        data.Y = reshape(data.Y(ENC),size(ENC));
+                        data.Y = sum(data.Y,2)/2;
+                    end
+            end
+            data.Geom = 'sSEG';
+            for c = {'FaceNodeConnect','EdgeNodeConnect','ValLocation','ZLocation','SEG','XY','XYZ','TRI','EdgeGeometry'}
+                s = c{1};
+                if isfield(data,s)
+                    data = rmfield(data,s);
+                end
+            end
+        end
+    end
+
     if strcmp(Ops.presentationtype,'vector') || ...
             strcmp(Ops.presentationtype,'markers') || ...
             strcmp(Ops.presentationtype,'values') || ...
@@ -267,7 +309,7 @@ for f=1:ntim
             end
             data(2:end) = [];
         end
-        for c = {'FaceNodeConnection','EdgeNodeConnection','ValLocation'}
+        for c = {'FaceNodeConnect','EdgeNodeConnect','EdgeFaceConnect','ValLocation'}
             s = c{1};
             if isfield(data,s)
                 data = rmfield(data,s);
@@ -407,7 +449,13 @@ for f=1:ntim
             end
             Val = zeros(nCrd + nVal*nTim,numel(data.(flds{1}))/nTim);
             for i = 1:nCrd
-                Val(i,:) = data.(crds{i})(:)';
+                crd = data.(crds{i})(:)';
+                if numel(crd) == size(Val,2)+1
+                    Val(i,:) = (crd(1:end-1) + crd(2:end))/2;
+                else
+                    Val(i,:) = crd;
+                end
+                    
             end
             if charOutput
                 Val = num2cell(Val);
@@ -558,6 +606,18 @@ for f=1:ntim
             end
         case {'netcdf3 file','netcdf4 file'}
             export_netcdf(expType,data,cmdargs{:})
+        case {'gmsh file'}
+            switch cmdargs{2}
+                case 'Gmsh 4.1 ascii file (*.msh)'
+                    options = {'version',4.1};
+                case 'Gmsh 4.1 binary file (*.msh)'
+                    options = {'version',4.1,'binary','l'};
+                case 'Gmsh 2.2 ascii file (*.msh)'
+                    options = {'version',2.2};
+                case 'Gmsh 2.2 binary file (*.msh)'
+                    options = {'version',2.2,'binary','l'};
+            end
+            gmsh('write',cmdargs{1},data,options{:})
         case {'quickin file','morsys field file','delft3d-mor field file','box file','simona box file'}
             for fld=1:length(flds)
                 Temp=getfield(data,flds{fld});

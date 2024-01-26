@@ -7,18 +7,19 @@ Copyright (C)  Stichting Deltares, 2023
 import copy
 import os
 from abc import ABC
-from distutils import dir_util
 from typing import List, Optional
 
 from src.config.credentials import Credentials
 from src.config.types.handler_type import HandlerType
 from src.suite.program import Program
+from src.utils.common import delete_directory
 from src.utils.handlers.ftp_handler import FTPHandler
 from src.utils.handlers.http_handler import HTTPHandler
 from src.utils.handlers.i_handler import IHandler
 from src.utils.handlers.local_net_handler import LocalNetHandler
 from src.utils.handlers.resolve_handler import ResolveHandler
 from src.utils.handlers.svn_handler import SvnHandler
+from src.utils.handlers.minio_handler import MinIOHandler
 from src.utils.logging.i_logger import ILogger
 from src.utils.paths import Paths
 from src.utils.unzipper import Unzipper
@@ -66,6 +67,9 @@ class HandlerFactory(ABC):
         if handler_type == HandlerType.NET or handler_type == HandlerType.PATH:
             logger.debug(f"using LocalNet handler for {to_path}")
             handler = LocalNetHandler()
+        if handler_type == HandlerType.MINIO:
+            logger.debug(f"using MinIO handler for {to_path}")
+            handler = MinIOHandler()
         if handler_type == HandlerType.NONE:
             raise AttributeError("upload :: no type specified")
 
@@ -136,7 +140,8 @@ class HandlerFactory(ABC):
         """
         rtp = Paths().rebuildToLocalPath(to_path)
         if os.path.exists(rtp):
-            dir_util.remove_tree(rtp)
+            delete_directory(rtp, logger)
+
         os.makedirs(rtp)
 
         handler = cls.__get_handler(

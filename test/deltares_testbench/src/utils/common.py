@@ -5,6 +5,7 @@ Copyright (C)  Stichting Deltares, 2013
 """
 import os
 import platform
+import shutil
 import string
 import subprocess
 import tempfile
@@ -322,21 +323,28 @@ def log_table(
 def __create_table_row(row: List, max_lengths: List[int]) -> str:
     row_str = ""
     for column_index, row_value in enumerate(row):
-        if isinstance(row_value, float):
-            value_to_print = f"{row_value:.3e}"
-        else:
-            value_to_print = row_value
+        value_to_print = DictTable.format_value(row_value)
         row_str += f"|{value_to_print:{max_lengths[column_index]}}"
 
     return f"{row_str}|"
 
 
-# meta class for singleton type
-class Singleton(type):
-    _instances = {}
+def delete_directory(directory: str, logger: ILogger):
+    """Delete a directory recursively
 
-    # singleton constructor instance
-    def __call__(self, *args, **kwargs):
-        if self not in self._instances:
-            self._instances[self] = super(Singleton, self).__call__(*args, **kwargs)
-        return self._instances[self]
+    Args:
+        directory (str): directory to remove
+        logger (ILogger): logger for logging errors
+    """
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as exc:
+            logger.warning(f"error removing {directory}: {exc}")
+
+    if os.path.exists(directory):
+        os.rmdir(directory)

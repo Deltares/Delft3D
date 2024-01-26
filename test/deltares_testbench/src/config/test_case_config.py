@@ -11,13 +11,16 @@ from typing import List, Optional
 from src.config.file_check import FileCheck
 from src.config.location import Location
 from src.config.program_config import ProgramConfig
+from src.config.dependency import Dependency
 
 
 class TestCaseConfig:
     # constructor: initialize variables
     def __init__(self):
         self.__name: str = ""
+        self.__version: str = ""
         self.__path: str = ""
+        self.__dependency: Optional[Dependency] = None
         self.__locations: List[Location] = []
         self.__shell: Optional[ProgramConfig] = None
         self.__shell_arguments = []
@@ -32,6 +35,7 @@ class TestCaseConfig:
         self.__absolute_test_case_reference_path: str = ""
         self.__run_file = ""
         self.__ignore = False
+        self.__process_count: int = 1
 
     @property
     def name(self) -> str:
@@ -43,6 +47,15 @@ class TestCaseConfig:
         self.__name = value
 
     @property
+    def version(self) -> str:
+        """version of the test case"""
+        return self.__version
+
+    @version.setter
+    def version(self, value: str):
+        self.__version = value
+
+    @property
     def path(self) -> str:
         """relative paths for test case"""
         return self.__path
@@ -50,6 +63,15 @@ class TestCaseConfig:
     @path.setter
     def path(self, value: str):
         self.__path = value
+
+    @property
+    def dependency(self) -> Optional[Dependency]:
+        """Data that the testcase depends on"""
+        return self.__dependency
+
+    @dependency.setter
+    def dependency(self, value: Optional[Dependency]):
+        self.__dependency = value
 
     @property
     def locations(self) -> List[Location]:
@@ -170,3 +192,11 @@ class TestCaseConfig:
     @ignore.setter
     def ignore(self, value: bool):
         self.__ignore = value
+
+    @property
+    def process_count(self) -> int:
+        return self.__process_count
+
+    @process_count.setter
+    def process_count(self, value: int):
+        self.__process_count = value

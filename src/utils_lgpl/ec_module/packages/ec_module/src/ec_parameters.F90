@@ -50,6 +50,8 @@ module m_ec_parameters
    integer,  parameter :: ec_undef_int = -987
    real(fp), parameter :: ec_undef_fp = -9.87e+05_fp
    real(hp), parameter :: ec_undef_hp = -9.87e+10_hp
+   real(fp), parameter :: ec_huge_fp  = 3.402823466e+38_fp
+   real(hp), parameter :: ec_huge_hp  = 1.7976931348623158e+308_hp
 
    integer, parameter :: ec_second = 1
    integer, parameter :: ec_minute = 2
@@ -150,6 +152,7 @@ module m_ec_parameters
    integer, parameter :: operand_replace         = 2
    integer, parameter :: operand_replace_element = 3
    integer, parameter :: operand_add_element     = 4
+   integer, parameter :: operand_replace_if_value= 5
    !
    ! enumeration for tEcConverter types
    integer, parameter :: convType_undefined = 0

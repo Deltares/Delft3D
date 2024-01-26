@@ -1,0 +1,30 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 4
+  Number of 1-cells per rank: 4
+  Number of 2-cells per rank: 1
+Labels:
+  marker: 1 strata with value/size (1 (8))
+  Face Sets: 4 strata with value/size (4 (1), 2 (1), 1 (1), 3 (1))
+  depth: 3 strata with value/size (0 (4), 1 (4), 2 (1))
+  celltype: 3 strata with value/size (4 (1), 0 (4), 1 (4))
+Time     Step Part     Energy
+0.000000    0    0   500.0000
+0.000000    0    1   250.0000
+t 0.1: p0 error [0.013 0.44] sol [(-0.999422 -0.033577) (1.089034 -31.604488)] exact [(-0.999786 -0.020684) (0.654071 -31.616012)] energy/exact energy 500.015 / 500. (0.0029649888%)
+t 0.1: p1 error [0.0025 0.039] sol [(0.873854 1.796181) (-20.144867 9.769979)] exact [(0.874902 1.798484) (-20.107666 9.781706)] energy/exact energy 250.634 / 250. (0.2536347978%)
+Time     Step Part     Energy
+0.000000    0    0   500.0000
+0.000000    0    1   250.0000
+t 0.1: p0 error [0.0032 0.11] sol [(-0.999712 -0.023911) (0.760887 -31.613679)] exact [(-0.999786 -0.020684) (0.654071 -31.616012)] energy/exact energy 500.002 / 500. (0.0003618430%)
+t 0.1: p1 error [0.00063 0.0097] sol [(0.874641 1.797909) (-20.116950 9.778778)] exact [(0.874902 1.798484) (-20.107666 9.781706)] energy/exact energy 250.158 / 250. (0.0632330726%)
+Time     Step Part     Energy
+0.000000    0    0   500.0000
+0.000000    0    1   250.0000
+t 0.1: p0 error [0.00081 0.027] sol [(-0.999769 -0.021491) (0.680657 -31.615462)] exact [(-0.999786 -0.020684) (0.654071 -31.616012)] energy/exact energy 500. / 500. (0.0000723897%)
+t 0.1: p1 error [0.00016 0.0024] sol [(0.874837 1.798340) (-20.109986 9.780975)] exact [(0.874902 1.798484) (-20.107666 9.781706)] energy/exact energy 250.039 / 250. (0.0157973251%)
+L_2 convergence rate: 2.0
+Time     Step Part     Energy
+0.000000    0    0   500.0000
+0.000000    0    1   250.0000

@@ -5,7 +5,7 @@
 		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\include;$(SolutionDir)third_party_open\petsc\petsc-3.10.2\include" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\include;$(SolutionDir)third_party_open\petsc\petsc-3.19.4\include" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -14,7 +14,7 @@
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/></Configuration>
 		<Configuration Name="Release|Win32" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\include;$(SolutionDir)third_party_open\petsc\petsc-3.10.2\include" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\include;$(SolutionDir)third_party_open\petsc\petsc-3.19.4\include" RuntimeLibrary="rtMultiThreadedDLL"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
@@ -23,7 +23,7 @@
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/></Configuration>
 		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\$(PlatformName)\include;$(SolutionDir)third_party_open\petsc\petsc-3.10.2\include" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\$(PlatformName)\include;$(SolutionDir)third_party_open\petsc\petsc-3.19.4\include" WarnInterfaces="true" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
@@ -32,7 +32,7 @@
 				<Tool Name="VFPreBuildEventTool"/>
 				<Tool Name="VFPostBuildEventTool"/></Configuration>
 		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
-				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\$(PlatformName)\include;$(SolutionDir)third_party_open\petsc\petsc-3.10.2\include" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="$(SolutionDir)third_party_open\mpich2\$(PlatformName)\include;$(SolutionDir)third_party_open\petsc\petsc-3.19.4\include" RuntimeLibrary="rtMultiThreadedDLL"/>
 				<Tool Name="VFLibrarianTool"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
@@ -44,13 +44,13 @@
 		<Filter Name="Header Files" Filter="fi;fd"/>
 		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
 		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
-		<File RelativePath=".\petsc-3.10.2\src\dm\f90-mod\petscdmmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\dm\f90-mod\petscdmplexmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\ksp\f90-mod\petsckspmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\mat\f90-mod\petscmatmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\snes\f90-mod\petscsnesmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\sys\f90-mod\petscsysmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\tao\f90-mod\petsctaomod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\ts\f90-mod\petsctsmod.F"/>
-		<File RelativePath=".\petsc-3.10.2\src\vec\f90-mod\petscvecmod.F"/></Filter></Files>
+		<File RelativePath=".\petsc-3.19.4\src\dm\f90-mod\petscdmmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\dm\f90-mod\petscdmplexmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\ksp\f90-mod\petsckspmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\mat\f90-mod\petscmatmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\snes\f90-mod\petscsnesmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\sys\f90-mod\petscsysmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\tao\f90-mod\petsctaomod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\ts\f90-mod\petsctsmod.F"/>
+		<File RelativePath=".\petsc-3.19.4\src\vec\f90-mod\petscvecmod.F"/></Filter></Files>
 	<Globals/></VisualStudioProject>

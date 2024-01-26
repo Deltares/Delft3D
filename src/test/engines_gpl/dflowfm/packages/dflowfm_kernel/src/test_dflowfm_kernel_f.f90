@@ -32,6 +32,7 @@ program test_dflowfm_kernel
     use test_storage_nodes
     use test_1d_grid
     use test_read_property
+    use test_airdensity
     
     implicit none
     
@@ -45,8 +46,9 @@ program test_dflowfm_kernel
     call tests_MDU_fileversion
     call tests_1d_grid
     call tests_storageNodes
-    !call tests_iniField_1dField
+    call tests_iniField_1dField
     call tests_read_property
+    call tests_compute_airdensity
     !
     ! Done - properly finalize
     !
@@ -68,7 +70,6 @@ subroutine prepareTests
 end subroutine prepareTests
 
 !> Start the browser to show the result
-!!
 subroutine showResult
     !character(len=1) :: answer
     !

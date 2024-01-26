@@ -12,19 +12,19 @@
         <locations>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+                <root>{server_base_url}/references/bin</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -87,7 +87,7 @@
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/default</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
             </environments>
         </program>
         <program name="dimr4" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -103,7 +103,7 @@
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/default</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
             </environments>
         </program>
         <program name="dfmoutput" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">

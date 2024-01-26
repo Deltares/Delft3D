@@ -99,7 +99,6 @@ subroutine flow_finalize_usertimestep(iresult)
             if (jampi == 1) then
                call updateValuesOnCrossSections_mpi(time1)
                call updateValuesOnRunupGauges_mpi()
-               call reduce_particles()
             endif
             if (jahisbal > 0) then ! Update WaterBalances etc.
                call updateBalance()

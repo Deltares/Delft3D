@@ -36,7 +36,7 @@
     use m_flowgeom, only : xz, yz
     use m_netstore
     use m_missing
-    use sorting_algorithms, only: indexx
+    use stdlib_sorting, only: sort_index
     use gridoperations
     implicit none
 
@@ -93,7 +93,7 @@
     end do
 
 !   get permutation array, increasing orthogonality
-    call indexx(numL,dortho,iperm)
+    call sort_index(dortho, iperm)
 
     do i=numL,1,-1   ! decreasing order of orthogonality
        L = iperm(i)

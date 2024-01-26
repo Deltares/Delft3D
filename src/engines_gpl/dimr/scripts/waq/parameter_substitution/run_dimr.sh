@@ -15,7 +15,7 @@
 
     #
     # Set the config file
-    # 
+    #
 argfile=dimr_config.xml
 
     #
@@ -26,19 +26,18 @@ export D3D_HOME=../../bin/
 
 dimrexedir=$D3D_HOME/$ARCH/dimr/bin
 waqexedir=$D3D_HOME/$ARCH/waq/bin
-export proc_def_dir=../../bin/lnx64/waq/default
- 
+export proc_def_dir=../../bin/lnx64/waq/resources
+
     #
     # No adaptions needed below
     #
 
     # Run
 export LD_LIBRARY_PATH=$dimrexedir:$waqexedir:$LD_LIBRARY_PATH
-export PATH=$PATH 
+export PATH=$PATH
 # $dimrexedir/dimr.exe $argfile -d 0xFFFFFFFF
 $dimrexedir/dimr.exe $argfile
 
 
     # Wait until all child processes are finished
 wait
-

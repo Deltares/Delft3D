@@ -1,6 +1,5 @@
 set(library_name trachytopes_kernel)
-get_fortran_source_files(src source_files)
-add_library(${library_name} ${source_files})
+create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir src)
 
 # Add dependencies
 target_link_libraries(${library_name} deltares_common)
@@ -15,5 +14,4 @@ if (UNIX)
    target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/trachytopes)

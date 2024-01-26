@@ -48,6 +48,31 @@ namespace Deltares.UGrid.Entities
         [DllImport(GRIDDLL_NAME, EntryPoint = "ionc_close", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ionc_close_dll([In] ref int ioncid);
 
+        /// <summary>
+        /// Tries to end define mode of an open io_netcdf data set.
+        /// </summary>
+        /// <param name="ioncid">The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.</param>
+        /// <returns>Result status (NoErrorCode if successful).</returns>
+        [DllImport(GRIDDLL_NAME, EntryPoint = "ionc_end_define_mode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ionc_end_define_mode_dll([In] ref int ioncid);
+        
+        /// <summary>
+        /// Tries to start define mode of an open io_netcdf data set.
+        /// </summary>
+        /// <param name="ioncid">The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.</param>
+        /// <returns>Result status (NoErrorCode if successful).</returns>
+        [DllImport(GRIDDLL_NAME, EntryPoint = "ionc_start_define_mode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ionc_start_define_mode_dll([In] ref int ioncid);
+        
+        /// <summary>
+        /// Given an error number, return an error message.
+        /// Use this when a previous function call has returned a nonzero error status.
+        /// Note that the error number may be an IONC error, but also an underlying UG error.
+        /// </summary>
+        /// <param name="ierr">The error number.</param>
+        /// <returns>Result error message.</returns>
+        [DllImport(GRIDDLL_NAME, EntryPoint = "ionc_strerror", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr ionc_strerror_dll([In] ref int ierr);
 
         [DllImport(GRIDDLL_NAME, EntryPoint = "ionc_write_geom_ugrid", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ionc_write_geom_ugrid_dll(string filename);

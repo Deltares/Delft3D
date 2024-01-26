@@ -19,6 +19,7 @@ if(UNIX)
                             ftnunit
                             gridgeom
                             io_netcdf
+                            io_netcdf_data
                             kdtree_wrapper
                             kdtree2
                             waq_utils_f)
@@ -43,6 +44,7 @@ if(WIN32)
                          ftnunit
                          gridgeom
                          io_netcdf
+                         io_netcdf_data
                          kdtree_wrapper
                          kdtree2
                          netcdf4

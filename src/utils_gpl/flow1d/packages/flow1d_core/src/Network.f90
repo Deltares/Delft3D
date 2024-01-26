@@ -90,7 +90,7 @@ module m_network
       type(t_CompoundSet)                       :: cmps                    !< Administration compound structures
       type(t_RoughnessSet)                      :: rgs                     !< set containing roughness sections
       type(t_ObservationPointSet)               :: obs                     !< set of observation points
-      type(t_storageSet)                        :: storS                   !< set containing storage in gridpoints
+      type(t_storage_set)                       :: storS                   !< set containing storage in gridpoints
       type(t_CSDefinitionSet)                   :: CSDefinitions
       type(t_spatial_dataSet)                   :: spData
       type(t_ObservCrossSectionSet)             :: observcrs               !< set of observation Cross-Sections 
@@ -670,7 +670,7 @@ contains
       stor => network%stors%stor
       
       do i = 1, network%stors%count
-         if (stor(i)%gridPoint == gridpoint) then
+         if (stor(i)%grid_point == gridpoint) then
             id = stor(i)%id
             return
          endif
@@ -1030,16 +1030,11 @@ subroutine getRoughnessForProfile(network, crs)
         
       iRough = hashsearch(network%rgs%hashlist, crs%frictionSectionID(i))
       if (iRough <= 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
+         call SetMessage(LEVEL_FATAL, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
          cycle
       endif
       
       pRgs => network%rgs%rough(iRough)
-      if (len_trim(pRgs%frictionValuesFile)== 0) then
-         call SetMessage(LEVEL_ERROR, 'No Data found for Section '//trim(crs%frictionSectionID(i))//' of Cross-Section ID: '//trim(crs%csid))
-         cycle
-      endif
-      
 
       if (network%rgs%version == network%rgs%roughnessFileMajorVersion) then
          frictionValue = crs%frictionValuePos(i)

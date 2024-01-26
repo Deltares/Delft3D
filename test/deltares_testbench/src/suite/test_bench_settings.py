@@ -30,6 +30,7 @@ class TestBenchSettings:
     autocommit: bool = False
     only_post: bool = False
     teamcity: bool = False
+    parallel: bool = False
     test_bench_root: Optional[str] = None
     test_bench_script_name: Optional[str] = None
     test_bench_startup_dir: Optional[str] = None

@@ -38,18 +38,18 @@
 !
       call getmlu(LUNREP)
       if ( LUNREP .ne. 0 ) then
-         write(LUNREP,'(a)') string
+         write(LUNREP,'(/,1x,a,/)') string
       else
-         write(*,*) string
+         write(*,'(/,1x,a,/)') string
       endif
 !
       call srstop(1)
 !
 
       end subroutine write_error_message
-      
-      
-      
+
+
+
       subroutine write_error_message_with_values ( name  , value , iseg  , module )
       character*(*) name
       real          value
@@ -60,16 +60,18 @@
 
 !     message to screen
 
+      write (*,*) ' '
       write (*,*) ' coefficient value out of range'
       write (*,*) ' coefficient name:',name
       write (*,*) ' coefficient value',value
-      write (*,*) ' coefficient value',module
       if ( iseg .gt. 0 ) write(*,*) ' in segment number:',iseg
+      write (*,*) ' in subroutine',module
 
 !     message to monitor or report file
 
       call getmlu(lunrep)
       if ( lunrep .gt. 0 ) then
+         write (lunrep,*) ' '
          write (lunrep,*) ' coefficient value out of range'
          write (lunrep,*) ' coefficient name:',name
          write (lunrep,*) ' coefficient value',value
@@ -80,8 +82,8 @@
       call srstop(1)
 
       end subroutine write_error_message_with_values
-        
+
       end module m_write_error_message
 
 
- 
+

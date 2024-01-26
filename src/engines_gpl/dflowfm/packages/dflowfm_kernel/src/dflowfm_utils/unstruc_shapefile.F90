@@ -1028,6 +1028,7 @@ end subroutine unc_write_shp_fxw
 subroutine unc_write_shp_src()
 use m_flowexternalforcings, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
 use m_flowgeom, only: xz, yz
+use m_transportdata, only : NUMCONST
 implicit none
 
 integer, parameter          :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
@@ -1036,7 +1037,7 @@ type(shpobject)             :: shpobj
 integer                     :: i, j, k1, k2, ishape, maxnr
 character(len=lencharattr)  :: filename, objectid
 integer                     :: id_objectid, id_area, id_origxsnk, id_origysnk, id_origxsrc, id_origysrc
-double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy, tmp_qsrc
+double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy
    if (jampi .eq. 0) then
       call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for source-sinks.')
    else
@@ -1141,8 +1142,7 @@ double precision            :: tmp_x(2), tmp_y(2), snkx, snky, srcx, srcy, tmp_q
          endif
          
          ! determine source and sink points
-         tmp_qsrc = qstss(3*(i-1)+1)
-         if (tmp_qsrc > 0) then
+         if (qstss((NUMCONST+1)*(i-1)+1) > 0) then
             snkx = xsrc(i,1)
             snky = ysrc(i,1)
             srcx = xsrc(i,maxnr)

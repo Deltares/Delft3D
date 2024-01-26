@@ -1331,10 +1331,21 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        parkeyw(4) = 'CritCd'
        parkeyw(5) = '[dummy]' !don't remove: backward compatibility!
        pardef(5)  = 1.0_fp
-       parkeyw(6) = 'RouKs'
+       parkeyw(6) = '[dummy]' !don't remove: backward compatibility!
+       pardef(6)  = 1.0_fp
        parkeyw(7) = 'WSettle'
+       pardef(7)  = -999.0_fp
        parkeyw(8) = 'Porosity'
+       pardef(8)  = -999.0_fp
        parkeyw(9) = 'TWave'
+       pardef(9)  = -999.0_fp
+       nparopt    = 3
+       parkeyw(10) = 'FacA'
+       pardef(10) = 0.0_fp
+       parkeyw(11) = 'FacU'
+       pardef(11) = 0.0_fp
+       parkeyw(12) = 'EpsSL'
+       pardef(12) = 0.0_fp
     !elseif (iform == 6) then
     !   name       = 'Bailard'
     !   nparreq    = 10

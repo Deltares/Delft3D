@@ -12,11 +12,11 @@
         <locations>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="reference_engines">
                 <credential ref="commandline"/>
@@ -93,6 +93,9 @@
         </testCase>
     </defaultTestCases>
     <!-- ======================================================================== -->
-    <xi:include href="../include/dimr_dflowfm_drr_drtc.xml"/>
+    <!-- NOTE: temporarily disabled for Linux, see https://issuetracker.deltares.nl/browse/UNST-7256 -->
+    <!-- <xi:include href="../include/dimr_dflowfm_drr_drtc.xml"/> -->
+    <testCases>
+    </testCases>
     <!-- ======================================================================== -->
 </deltaresTestbench_v3>

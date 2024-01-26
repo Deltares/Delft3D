@@ -297,6 +297,7 @@ module m_fourier_analysis
       use mathconsts
       use string_module
       use unstruc_messages
+      use m_flowtimes, only: Tudunitstr
       implicit none
       !
       ! Global variables
@@ -355,7 +356,7 @@ module m_fourier_analysis
       character(len=300)                    :: message
       character(len=132)                    :: line               ! Used for format free reading
       character(len=30), allocatable        :: columns(:)          ! each line is split into separate fields (columns)
-      character(len=3)                      :: cref                ! ref. number converted into a string
+      character(len=:), allocatable         :: cref                ! ref. number converted into a string
       character(len=1)                      :: foutyp_new          ! new (Fourier) analysis flag
       integer                               :: iostat              ! error code file io
       integer                               :: ierr                ! error code allocate
@@ -625,9 +626,29 @@ module m_fourier_analysis
                   call init_running_mean(fousma(ifou)%running, RMmeta)
                   icol1 = min(icol+1,ncols)
                   if (cdummy == 'max') then
-                     foutyp_new = merge('r', 'R', columns(icol1) /= 'time')
-                  else if (cdummy == 'min') then
-                     foutyp_new = merge('u', 'U', columns(icol1) /= 'time')
+                     if (columns(icol1) == 'time') then
+                         foutyp_new = 'R'
+                         icol = icol+1
+                     elseif (icol < ncols) then
+                         write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                               & ': invalid quantity ', trim(columns(icol+1)),' after max; only time supported for running mean quantities.'
+                         call warn_flush()
+                         goto 6666
+                     else
+                         foutyp_new = 'r'
+                     endif
+                  elseif (cdummy == 'min') then
+                     if (columns(icol1) == 'time') then
+                         foutyp_new = 'U'
+                         icol = icol+1
+                     elseif (icol < ncols) then
+                         write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                               & ': invalid quantity ', trim(columns(icol+1)),' after min; only time supported for running mean quantities.'
+                         call warn_flush()
+                         goto 6666
+                     else
+                         foutyp_new = 'u'
+                     end if
                   end if
                   isRunningMean = .true.
                end if
@@ -639,25 +660,35 @@ module m_fourier_analysis
                   case ('max')
                      foutyp_new = 'x'
                      if (icol < ncols) then
-                        if (valid_combi(founam(ifou), columns(icol+1))) then
+                        if (columns(icol+1) == 'time') then
+                           gdfourier%withTime(ifou) = .true.
+                           icol = icol + 1
+                        else if (valid_combi(founam(ifou), columns(icol+1))) then
                            foutyp_new = 'c'
                            gdfourier%founamc(ifou) = columns(icol+1)
                            icol = icol + 1
-                        else if (columns(icol+1) == 'time') then
-                           gdfourier%withTime(ifou) = .true.
-                           icol = icol + 1
+                        else
+                           write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                                 & ': invalid quantity ', trim(columns(icol+1)),' after max; maybe its location isn''t consistent with that of the primary quantity.'
+                           call warn_flush()
+                           goto 6666
                         end if
                     end if
                   case ('min')
                      foutyp_new = 'i'
                      if (icol < ncols) then
-                        if (valid_combi(founam(ifou), columns(icol+1))) then
+                        if (columns(icol+1) == 'time') then
+                           gdfourier%withTime(ifou) = .true.
+                           icol = icol + 1
+                        else if (valid_combi(founam(ifou), columns(icol+1))) then
                            foutyp_new = 'C'
                            gdfourier%founamc(ifou) = columns(icol+1)
                            icol = icol + 1
-                        else if (columns(icol+1) == 'time') then
-                           gdfourier%withTime(ifou) = .true.
-                           icol = icol + 1
+                        else
+                           write (msgbuf, '(3a,i0,3a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                                 & ': invalid quantity ', trim(columns(icol+1)),' after min; maybe its location isn''t consistent with that of the primary quantity.'
+                           call warn_flush()
+                           goto 6666
                         end if
                      end if
                   case ('avg')
@@ -669,22 +700,29 @@ module m_fourier_analysis
             fnumcy(ifou) = 0
             foufas(ifou) = 0.0_fp
             
-            icol = icol + 1
-            cdummy = trim(columns(icol))
-            select case (cdummy)
-            case ('above')
-               foutyp_new = '>'
-            case ('below')
-               foutyp_new = '<'
-            case default
+            if (icol < ncols-1) then
+               icol = icol + 1
+               cdummy = trim(columns(icol))
+               select case (cdummy)
+               case ('above')
+                  foutyp_new = '>'
+               case ('below')
+                  foutyp_new = '<'
+               case default
+                  write (msgbuf, '(3a,i0,2a)') 'in file ', trim(filfou), ' line ', linenumber, &
+                        & ': expecting above or below after "time", instead of ', trim(cdummy)
+                  call warn_flush()
+                  goto 6666
+               end select
+            
+               icol = icol + 1
+               read (columns(icol), *, err=6666) fthresh(ifou)
+            else
                write (msgbuf, '(3a,i0,2a)') 'in file ', trim(filfou), ' line ', linenumber, &
-                     & ': expecting above or below, instead of ', trim(cdummy)
+                     & ': incomplete "time above/below <threshold>" flag found.'
                call warn_flush()
                goto 6666
-            end select
-            
-            icol = icol + 1
-            read (columns(icol), *, err=6666) fthresh(ifou)
+            endif
             
          case default
             if (cdummy /= 'mean') then
@@ -720,7 +758,7 @@ module m_fourier_analysis
       ivar = 0
       do ifou = 1, nofou
          fouref(ifou,2)   = ivar + 1
-         write(cref,'(i3.3)') fouref(ifou,1)
+         cref = fouref2string(fouref(ifou,1))
          select case (foutyp(ifou))
          case ('x', 'r', 'R')
             ivar = ivar + 1
@@ -744,7 +782,7 @@ module m_fourier_analysis
                ivar = ivar + 1
                fouvarnam(ivar) = "maximum" // cref // "_time"
                fouvarnamlong(ivar) = "time of maximum value"
-               call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
+               fouvarunit(ivar) = trim(Tudunitstr)
                fouvarnamstd(ivar) = "time_max"
             end if
          case ('i', 'u', 'U')
@@ -769,7 +807,7 @@ module m_fourier_analysis
                ivar = ivar + 1
                fouvarnam(ivar) = "minimum" // cref // "_time"
                fouvarnamlong(ivar) = "time of minimum value"
-               call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
+               fouvarunit(ivar) = trim(Tudunitstr)
                fouvarnamstd(ivar) = "time_min"
             end if
          case ('c', 'C')
@@ -784,7 +822,6 @@ module m_fourier_analysis
             call remove_leading_spaces(message)
             fouvarnam(ivar) = "time_" // cref // "_above"
             fouvarnamlong(ivar) = "cumulative time above "//trim(message)
-            ! call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
             fouvarunit(ivar) = "s"
             fouvarnamstd(ivar) = ""
          case ('<')
@@ -793,7 +830,6 @@ module m_fourier_analysis
             call remove_leading_spaces(message)
             fouvarnam(ivar) = "time_" // cref // "_below"
             fouvarnamlong(ivar) = "cumulative time below "//trim(message)
-            ! call setfouunit(founam(ifou), lsal, ltem, fconno(ifou), fouvarunit(ivar))
             fouvarunit(ivar) = "s"
             fouvarnamstd(ivar) = ""
          case ('l')
@@ -1616,7 +1652,6 @@ module m_fourier_analysis
       real(kind=fp)                 :: tfastr       ! Start time in minutes
       character(len=:), allocatable :: namfun       ! Local name for fourier function
       character(len=:), allocatable :: namfunlong   ! Local name for fourier function, including reference to the line in the fourier input file
-      character(len=3)              :: cnumber      ! temp string for int2str conversion
       integer, parameter            :: imissval = -1
       integer                       :: unc_loc
       integer, allocatable          :: all_unc_loc(:)
@@ -1759,8 +1794,7 @@ module m_fourier_analysis
          end select
 
          all_unc_loc(ifou) = unc_loc
-         write(cnumber,'(i3.3)') fouref(ifou,1)
-         namfunlong = cnumber // ": " // namfun
+         namfunlong = fouref2string(fouref(ifou,1)) // ": " // namfun
          !
          idvar(:,ivar) = imissval
          if (index(founam(ifou),'fb') > 0 .or. index(founam(ifou),'wdog') > 0 .or. index(founam(ifou),'vog') > 0) then
@@ -2049,5 +2083,23 @@ module m_fourier_analysis
          end if
       enddo
    end subroutine fourier_final
+   
+   !> convert a fourier variable reference number into a string
+   function fouref2string(ifourier) result(string)
+   
+   integer, intent(in)           :: ifourier !< reference number of fourier variable
+   
+   character(len=10)             :: string10
+   character(len=:), allocatable :: string
+   
+   if ( ifourier < 1000 ) then
+      write(string10,'(i3.3)') ifourier
+   else
+      write(string10,'(i0)') ifourier
+   endif
+
+   string = trim(string10)
+   
+   end function fouref2string
 
 end module m_fourier_analysis

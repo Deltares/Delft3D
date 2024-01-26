@@ -128,7 +128,11 @@ sz = getsize(FI,idom,Props);
 allidx=zeros(size(sz));
 for i=1:length(sz)
     if DimFlag(i)
-        if isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
+        if i == T_ && isempty(idx{i})
+            idx{T_}=sz(T_);
+        elseif i == ST_ && isempty(idx{i})
+            % skip --> nothing
+        elseif  isempty(idx{i}) || isequal(idx{i},0) || isequal(idx{i},1:sz(i))
             idx{i}=1:sz(i);
             allidx(i)=1;
         end
@@ -210,6 +214,11 @@ switch FI.FileType(9:end)
                 Ans.X = FI.latXY(idx{M_},1);
                 Ans.Y = FI.latXY(idx{M_},2);
                 Ans.Val = lId(idx{M_});
+            case 'grid'
+                FI = check_gpXY(FI);
+                Ans.X = FI.gpXY(idx{M_},1);
+                Ans.Y = FI.gpXY(idx{M_},2);
+                Ans.EdgeNodeConnect = FI.gpConnect;
             case 'grid points'
                 FI = check_gpXY(FI);
                 Ans.X = FI.gpXY(idx{M_},1);
@@ -325,10 +334,47 @@ switch FI.FileType(9:end)
                         [time,data] = delwaq('read',FI.(Props.varid{1}),Props.varid{2},idx{M_},idx{T_});
                         Ans.Time = time;
                         Ans.Val = permute(data,[3 2 1]);
+                    case 'output'
+                        nc = FI.output.(Props.varid{2});
+                        var = nc.Dataset(Props.varid{3});
+                        idxT = idx{T_};
+                        switch Props.varid{2}
+                            case 'gridpoints'
+                                FI = check_gpXY(FI);
+                                Ans.X = FI.gpXY(idx{M_},1);
+                                Ans.Y = FI.gpXY(idx{M_},2);
+                                Ans.EdgeNodeConnect = FI.gpConnect;
+                                Ans.ValLocation = 'NODE';
+                                idxLoc = idx{M_};
+                            case 'reachsegments'
+                                FI = check_gpXY(FI);
+                                Ans.X = FI.gpXY(:,1);
+                                Ans.Y = FI.gpXY(:,2);
+                                Ans.EdgeNodeConnect = FI.gpConnect(idx{M_},:);
+                                Ans.ValLocation = 'EDGE';
+                                idxLoc = idx{M_};
+                            case 'observations'
+                                % TODO!
+                                %lId = inifile('hcgetstringi',FI.obs,'ObservationPoint','id');
+                                FI = check_obsXY(FI);
+                                %
+                                Ans.X = FI.obsXY(idx{ST_},1);
+                                Ans.Y = FI.obsXY(idx{ST_},2);
+                                %Ans.Val = lId(idx{M_});
+                                %
+                                idxLoc = idx{ST_};
+                            otherwise
+                                idxLoc = idx{M_};
+                        end
+                        Ans.Val = qp_netcdf_get(nc,var.Name,{'time','id'},{idxT idxLoc});
+                        Ans.Time = readtim(FI,idom,Props,idx{T_});
+                        if length(Ans.Time) == 1
+                            Ans.Val = permute(Ans.Val, [2:ndims(Ans.Val) 1]);
+                        end
                     otherwise
                         % only for debug purposes ...
                 end
-                if ~isequal(idx{M_},0)
+                if ~isequal(idx{M_},0) && ~strcmp(Props.varid{1},'output')
                     Ans.LocationName = FI.(Props.varid{1}).SegmentName(idx{M_});
                 end
         end
@@ -688,23 +734,60 @@ switch FI.FileType
             end
         end
         %
-        Out(2:5+nCT+hasCxyz+1+nBT+hasLAT+1+nST+1+hasObs+1+nFLD) = Out(1);
-        Out(2).Name = 'network';
-        Out(2).Geom = 'POLYL';
+        if isfield(FI,'output')
+            netcdf_files = fieldnames(FI.output);
+            nfiles = length(netcdf_files);
+            netcdf_fields = zeros(1,nfiles);
+            n_netcdf_geovars = zeros(1,nfiles);
+            for i = 1:nfiles
+                switch netcdf_files{i}
+                    case {'gridpoints','reachsegments'}
+                        n_netcdf_geovars(i) = 6;
+                    case 'observations'
+                        n_netcdf_geovars(i) = 4;
+                    %case 'waterbalance' % no good data set yet to implement this ...
+                    %    n_netcdf_geovars(i) = 2;
+                    otherwise
+                        % netcdf_data(i) = 0;
+                        continue
+                end
+                n_netcdf_vars = length(FI.output.(netcdf_files{i}).Dataset);
+                if FI.output.(netcdf_files{i}).Dimension(1).Length > 0
+                    netcdf_fields(i) = max(0, n_netcdf_vars - n_netcdf_geovars(i)) + 1;
+                end
+            end
+        else
+            netcdf_fields = [];
+        end
+        %
+        nItems = 6+nCT+hasCxyz+1+nBT+hasLAT+1+nST+1+hasObs+1+nFLD+sum(netcdf_fields);
+        %
+        Out(2:nItems) = Out(1);
+        Out(1).Name = 'network';
+        Out(1).Geom = 'POLYL';
+        Out(1).Coords = 'xy';
+        Out(1).DimFlag(M_) = 1;
+        %
+        Out(2).Name = 'nodes';
+        Out(2).Geom = 'PNT';
         Out(2).Coords = 'xy';
+        Out(2).NVal = 4;
         Out(2).DimFlag(M_) = 1;
         %
-        Out(3).Name = 'nodes';
-        Out(3).Geom = 'PNT';
+        modelGrid = 3;
+        Out(3).Name = 'grid';
+        Out(3).Geom = 'UGRID1D_NETWORK-NODE';
         Out(3).Coords = 'xy';
-        Out(3).NVal = 4;
+        Out(3).NVal = 0;
         Out(3).DimFlag(M_) = 1;
+        Out(3).UseGrid = modelGrid;
         %
         Out(4).Name = 'grid points';
-        Out(4).Geom = 'PNT';
+        Out(4).Geom = 'UGRID1D-NODE';
         Out(4).Coords = 'xy';
         Out(4).NVal = 4;
         Out(4).DimFlag(M_) = 1;
+        Out(4).UseGrid = modelGrid;
         nFLD = 4;
         %
         nFLD = nFLD+1; % skip one for separator
@@ -810,6 +893,65 @@ switch FI.FileType
                         Out(nFLD).DimFlag([T_ M_]) = 1;
                     end
                     Out(nFLD).varid = {flds{i} j};
+                end
+            end
+        end
+        %
+        if ~isempty(netcdf_fields)
+            for i = 1:length(netcdf_files)
+                if netcdf_fields(i) == 0
+                    continue
+                end
+                nc = FI.output.(netcdf_files{i});
+                
+                nFLD = nFLD+1; % skip one for separator
+                for j = (n_netcdf_geovars(i)+1):length(nc.Dataset)
+                    nFLD = nFLD+1;
+                    Atts = {nc.Dataset(j).Attribute.Name};
+                    %
+                    is_long_name = strcmp('long_name',Atts);
+                    if any(is_long_name)
+                        Out(nFLD).Name = nc.Dataset(j).Attribute(is_long_name).Value;
+                    else
+                        Out(nFLD).Name = nc.Dataset(j).Name;
+                    end
+                    %
+                    is_units = strcmp('units',Atts);
+                    if any(is_units)
+                        Out(nFLD).Units = nc.Dataset(j).Attribute(is_units).Value;
+                    else
+                        Out(nFLD).Units = '';
+                    end
+                    %
+                    Out(nFLD).DimFlag([T_ M_]) = 1;
+                    switch netcdf_files{i}
+                        case 'gridpoints'
+                            Out(nFLD).Geom  = 'UGRID1D_NETWORK-NODE';
+                            Out(nFLD).UseGrid = modelGrid;
+                        case 'reachsegments'
+                            Out(nFLD).Geom  = 'UGRID1D_NETWORK-EDGE';
+                            Out(nFLD).UseGrid = modelGrid;
+                        case 'observations'
+                            if isempty(strfind(lower(Out(nFLD).Name),'observ'))
+                                % introduced to separater "water level" at
+                                % observation points from "water level" at
+                                % grid points, but also encountered
+                                % Observedwaterlevel (yes, ugly one word)
+                                % but that doesn't need the addition at
+                                % observation point.
+                                Out(nFLD).Name = [Out(nFLD).Name ' at observation point'];
+                            end
+                            Out(nFLD).Geom  = 'PNT';
+                            Out(nFLD).DimFlag(M_) = 0;
+                            Out(nFLD).DimFlag(ST_) = 3;
+                            Out(nFLD).UseGrid = 0;
+                        case 'waterbalance'
+                            Out(nFLD).Geom  = ''; % still unknown to me ...
+                            Out(nFLD).UseGrid = 0;
+                    end
+                    Out(nFLD).Coords = 'xy';
+                    Out(nFLD).NVal  = 1;
+                    Out(nFLD).varid = {'output', netcdf_files{i}, j};
                 end
             end
         end
@@ -1255,7 +1397,7 @@ switch FI.FileType
             case 'nodes'
                 F=inifile('chaptersi',FI.ntw);
                 sz(M_) = sum(strcmpi(F,'Node'));
-            case 'grid points'
+            case {'grid','grid points'}
                 F=inifile('hcgeti',FI.ntw,'Branch','gridPointsCount');
                 sz(M_) = sum([F{:}]);
             case 'lateral discharges';
@@ -1280,6 +1422,14 @@ switch FI.FileType
                     % for development purposes only ...
                 elseif strcmp(Props.varid{1},'qwb')
                     sz(T_) = FI.(Props.varid{1}).NTimes;
+                elseif strcmp(Props.varid{1},'output')
+                    nc = FI.output.(Props.varid{2});
+                    sz(T_) = nc.Dimension(1).Length; % time
+                    if Props.DimFlag(ST_)
+                        sz(ST_) = nc.Dimension(2).Length; % id
+                    else
+                        sz(M_) = nc.Dimension(2).Length; % id
+                    end
                 else
                     sz(T_) = FI.(Props.varid{1}).NTimes;
                     sz(M_) = FI.(Props.varid{1}).NumSegm;
@@ -1359,10 +1509,16 @@ end
 
 % -----------------------------------------------------------------------------
 function T = readtim(FI, idom, Props, t)
-if nargin <4 || t == 0
+if nargin <4 || isequal(t,0)
     t = ':';
 end
 switch FI.FileType
+    case 'Delft3D D-Flow1D'
+        if iscell(Props.varid) && strcmp(Props.varid{1},'output')
+            nc = FI.output.(Props.varid{2});
+            timevar = nc.Dataset(1);
+            T = qp_netcdf_gettime(nc, timevar.Name, t);
+        end
     case 'Delft3D D-Flow FM'
         switch Props.Name
             otherwise
@@ -1385,25 +1541,27 @@ end
 function S=readsts(FI,Props,t)
 S={};
 switch FI.FileType
+    case 'Delft3D D-Flow1D'
+        nc = FI.output.observations;
+        var = nc.Dataset(2);
+        Labels = qp_netcdf_get(nc,var.Name);
+        S = cellstr(Labels);
     case 'Delft3D D-Flow FM'
         switch Props.Name
             case 'dambreak start points'
                 ids = inifile('hcgetstringi',FI.Structure,'structure','id');
                 types = inifile('hcgetstringi',FI.Structure,'structure','type');
                 S = ids(strcmpi(types,'dambreak'));
-                if ~isequal(t,0)
-                    S = S(t);
-                end
             otherwise
                 if length(Props.Name)>11 && strcmp(Props.Name(end-10:end),' structures')
                     ids = inifile('hcgetstringi',FI.Structure,'structure','id');
                     types = inifile('hcgetstringi',FI.Structure,'structure','type');
                     S = ids(strcmpi(types,Props.Name(1:end-11)));
-                    if ~isequal(t,0)
-                        S = S(t);
-                    end
                 end
         end
+end
+if ~isempty(S) && ~isequal(t,0)
+    S = S(t);
 end
 % -----------------------------------------------------------------------------
 
@@ -1476,19 +1634,25 @@ if ~isfield(FI,'gpXY')
     gpI = inifile('hcgetstringi',FI.ntw,'Branch','gridPointIds');
     gpCnt = [gpCnt{:}];
     nGP   = sum(gpCnt);
+    nEdges = sum(gpCnt-1);
     FI.gpXY       = zeros(nGP,2);
     FI.gpInternal = true(nGP,1);
     FI.gpId       = cell(nGP,1);
+    FI.gpConnect  = zeros(nEdges,2);
     oM = 0;
+    oE = 0;
     for i = 1:length(gpCnt)
         nPnt = gpCnt(i);
         iM   = oM + (1:nPnt);
+        iE   = oE + (1:nPnt-1);
         oM   = oM + nPnt;
+        oE   = oE + nPnt-1;
         %
         FI.gpInternal(iM(1))   = false;
         FI.gpInternal(iM(end)) = false;
         FI.gpXY(iM,:) = [gpX{i}(:) gpY{i}(:)];
         FI.gpId(iM)   = multiline(gpI{i},';','cell');
+        FI.gpConnect(iE,:) = [iM(1:end-1); iM(2:end)]';
     end
 end
 % -----------------------------------------------------------------------------

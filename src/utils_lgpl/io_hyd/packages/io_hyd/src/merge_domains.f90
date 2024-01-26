@@ -1,31 +1,31 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2023.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
       subroutine merge_domains(hyd, domain_hyd_coll)
 
       ! function : merge the domains, make pointers to final domain
@@ -92,12 +92,12 @@
       integer                                :: l_inode                ! node index
       integer                                :: l_face                 ! linked face
       integer                                :: face_link              ! current linked face
-      double precision                       :: d_x1                   ! x-coordinate of first edge node 
-      double precision                       :: d_y1                   ! y-coordinate of first edge node 
-      double precision                       :: d_x2                   ! x-coordinate of first edge node 
-      double precision                       :: d_y2                   ! y-coordinate of first edge node 
-      double precision                       :: l_x1                   ! x-coordinate of first linked edge node 
-      double precision                       :: l_y1                   ! y-coordinate of first linked edge node 
+      double precision                       :: d_x1                   ! x-coordinate of first edge node
+      double precision                       :: d_y1                   ! y-coordinate of first edge node
+      double precision                       :: d_x2                   ! x-coordinate of first edge node
+      double precision                       :: d_y2                   ! y-coordinate of first edge node
+      double precision                       :: l_x1                   ! x-coordinate of first linked edge node
+      double precision                       :: l_y1                   ! y-coordinate of first linked edge node
       integer, allocatable                   :: globface_domain(:)     ! domain of global face
       integer, allocatable                   :: globface_face(:)       ! local face number of global face
       integer, parameter                     :: edge_type_orde(4) = [1, 2, 0, 3]
@@ -134,7 +134,7 @@
       hyd%cnv_stop    = d_hyd%cnv_stop
       hyd%cnv_step    = d_hyd%cnv_step
       hyd%cnv_step_sec= d_hyd%cnv_step_sec
-	  
+
       hyd%openbndsect_coll%maxsize = 0
       hyd%openbndsect_coll%cursize = 0
       hyd%wasteload_coll%cursize = 0
@@ -144,7 +144,7 @@
 
       ! initialise
       nosegl = 0
-      
+
       ! count the number of faces
       hyd%waqgeom%numface = 0
       do i_domain = 1, n_domain ! loop over domains
@@ -284,13 +284,13 @@
                               if(comparereal(l_x1, d_x1) == 0 .and. comparereal(l_y1, d_y1) == 0) then
                                  ! it is the first node of the edge
                                  l_hyd%global_node(l_node) = d_hyd%global_node(inode1)
-                              end if                           
+                              end if
                               if(comparereal(l_x1, d_x2) == 0 .and. comparereal(l_y1, d_y2) == 0) then
                                  ! it is the second node of the edge
                                  l_hyd%global_node(l_node) = d_hyd%global_node(inode2)
                               end if
-                           end if                           
-                        end if                           
+                           end if
+                        end if
                      end do
                   end if
                end if
@@ -312,7 +312,7 @@
       end do
 
       ! allocate all arrays needed for the waqgeom data
-      
+
       ! nodes
       call reallocP(hyd%waqgeom%nodex     ,  hyd%waqgeom%numnode , fill = -999d0)                              !< x-coordinates of the mesh nodes
       call reallocP(hyd%waqgeom%nodey     ,  hyd%waqgeom%numnode , fill = -999d0)                              !< y-coordinates of the mesh nodes
@@ -335,7 +335,7 @@
       call reallocP(hyd%waqgeom%facez     ,  hyd%waqgeom%numface , fill = -999d0)                              !< z-coordinates of the mesh faces
 
       ! now fill all waqgeom arrays
-      
+
       ! fill the nodes data
       do i_domain = 1, n_domain  ! loop over domains
          idmn = i_domain - 1
@@ -404,7 +404,7 @@
             end if
          end do
       end do
-      
+
       ! sequentially fill in segment numbers in the third dimension (when hyd nolay > 1)
       if (hyd%nolay.gt.1) then
          do i_domain = 1, n_domain
@@ -568,7 +568,7 @@
             end do
          end do
       end if
-      
+
       ! make final pointer table
       nobnd  = 0
       nobndl = hyd%nobndl
@@ -704,6 +704,7 @@
       ! global declarations
 
       use hydmod
+      use MessageHandling
       use m_alloc
       implicit none
 
@@ -744,7 +745,7 @@
       type(t_openbndsect)                    :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
-      
+
       integer                                :: ik                     ! node counter
       integer                                :: il                     ! link counter
       integer                                :: nodeoffset             ! node offset
@@ -782,7 +783,7 @@
       hyd%cnv_stop    = domain_hyd_coll%hyd_pnts(1)%cnv_stop
       hyd%cnv_step    = domain_hyd_coll%hyd_pnts(1)%cnv_step
       hyd%cnv_step_sec= domain_hyd_coll%hyd_pnts(1)%cnv_step_sec
-	  
+
       hyd%openbndsect_coll%maxsize = 0
       hyd%openbndsect_coll%cursize = 0
       hyd%wasteload_coll%cursize = 0
@@ -821,7 +822,7 @@
          call msg_flush()
          write (msgbuf, '(a)') 'and update the global segment numbers in each domain.'
          call msg_flush()
-         
+
          call realloc (iglobal_active, nosegl, fill=0)
          call realloc (iglobal_new, nosegl, fill=0)
          do i_domain = 1, n_domain
@@ -843,7 +844,7 @@
             call msg_flush()
             write (msgbuf, '(a,i10,a,i10)') 'Highest new global number: ', inew, ', number of active cells:', hyd%nump
             call err_flush()
-            write(*,*) 
+            write(*,*)
             stop
          end if
          write (msgbuf, '(a)')  'New numbering is fine!'
@@ -859,7 +860,7 @@
             end do
          end do
       end if
-      
+
       ! sequentially fill in segment numbers in the third dimension (when hyd nolay > 1)
 
       if (hyd%nolay.gt.1) then
@@ -900,7 +901,7 @@
                   domain_hyd%iglobal_bnd(-ip1) = -nobnd
                   call renum_bnd(domain_hyd%openbndsect_coll,ip1,-nobnd)
                else if (domain_hyd%idomain(ip2) .ne. idmn) then
-                  ! from cell is in ghost domain, revert addition of exchange 
+                  ! from cell is in ghost domain, revert addition of exchange
                   domain_hyd%iglobal_link(iq) = 0
                   noq1 = noq1 - 1
                end if
@@ -910,7 +911,7 @@
                   domain_hyd%iglobal_bnd(-ip2) = -nobnd
                   call renum_bnd(domain_hyd%openbndsect_coll,ip2,-nobnd)
                else if (domain_hyd%idomain(ip1) .ne. idmn) then
-                  ! from cell is in ghost domain, revert addition of exchange 
+                  ! from cell is in ghost domain, revert addition of exchange
                   domain_hyd%iglobal_link(iq) = 0
                   noq1 = noq1 - 1
                end if
@@ -944,7 +945,7 @@
             end do
          end do
       end if
-      
+
       ! make final pointer table
 
       nobnd  = 0

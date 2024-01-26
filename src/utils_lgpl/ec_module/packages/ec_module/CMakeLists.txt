@@ -17,22 +17,17 @@ set(library_name ec_module)
 add_library(${library_name} ${meteo_sources} ${sources})
 
 # Add dependencies
-if (UNIX)
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         kdtree2
-                         kdtree_wrapper
-                         io_netcdf)
-endif(UNIX)
-if (WIN32)
+
+
     set(oss_dependencies deltares_common
                          gridgeom
                          kdtree2
                          kdtree_wrapper
                          io_netcdf
+                         io_netcdf_data
                          netcdf4
                          netcdff)
-endif(WIN32)
+
 oss_include_libraries(${library_name} oss_dependencies)
 
 if(UNIX)
@@ -54,9 +49,9 @@ set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/ec_module)
 # EC_MODULE_DLL
 ###############
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
-if ( ${configuration_type} STREQUAL "DFLOWFM" OR 
-     ${configuration_type} STREQUAL "DELFT3D4" OR 
-     ${configuration_type} STREQUAL "ALL" OR 
+if ( ${configuration_type} STREQUAL "DFLOWFM" OR
+     ${configuration_type} STREQUAL "DELFT3D4" OR
+     ${configuration_type} STREQUAL "ALL" OR
      ${configuration_type} STREQUAL "TOOLS" )
 
     set(library_name ec_module_dll)
@@ -66,7 +61,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     include_directories(${version_include_dir})
     set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
     oss_include_libraries(${library_name} oss_dependencies)
-	
+
 	target_link_libraries(${library_name} ${oss_dependencies})
 
     # Set additional compilation properties, specific for Debug mode

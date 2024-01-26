@@ -186,6 +186,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                    :: poros
     real(fp)                    :: ua
     real(fp)                    :: va
+    real(fp)                    :: wsb
     !
     ! Interface to dll is in High precision!
     !
@@ -239,7 +240,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     d90       = real(realpar(RP_D90MX),fp)
     mudfrac   = real(realpar(RP_MUDFR),fp)
     hidexp    = real(realpar(RP_HIDEX),fp)
-    !ws        = real(realpar(RP_SETVL),fp)
+    wsb       = real(realpar(RP_SETVL),fp)
     rhosol    = real(realpar(RP_RHOSL),fp)
     rhowat    = real(realpar(RP_RHOWT),fp)
     salinity  = real(realpar(RP_SALIN),fp)
@@ -386,8 +387,9 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        !
        call tranb5(u         ,v         ,di50      ,d90       ,chezy     , &
                  & h1        ,hrms      ,tp        ,teta      ,npar      , &
-                 & par       ,dzduu     ,dzdvv     ,sbcu      ,sbcv      , &
-                 & sscu      ,sscv      ,cesus     ,vonkar    )
+                 & par       ,dzduu     ,dzdvv     ,vonkar    ,wsb       , &
+                 & poros     ,sbcu      ,sbcv      ,sscu      ,sscv      , &
+                 & cesus     )
        !
        sbc_total = .false.
        sus_total = .false.

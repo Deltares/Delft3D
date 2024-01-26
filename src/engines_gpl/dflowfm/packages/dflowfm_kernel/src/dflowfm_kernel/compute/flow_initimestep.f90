@@ -44,7 +44,9 @@
  use m_partitioninfo
  use m_sediment, only: stm_included
  use m_sethu
-
+ use m_external_forcings, only: calculate_wind_stresses
+ use m_wind, only: update_wind_stress_each_time_step
+ use m_fm_icecover, only: update_icecover
  implicit none
 
  integer              :: jazws0
@@ -53,6 +55,7 @@
  double precision, parameter :: mmphr_to_mps = 1d-3/3600d0
 
  iresult = DFM_GENERICERROR
+
 
  call timstrt('Initialise timestep', handle_inistep)
 
@@ -117,6 +120,14 @@
  call timstrt('Setumod     ', handle_extra(43)) ! Start setumod
     call setumod(jazws0)                             ! set cell center velocities, should be here as prior to 2012 orso
  call timstop(handle_extra(43)) ! End setumod
+
+ if (update_wind_stress_each_time_step > 0) then ! Update wind in each computational timestep
+    call calculate_wind_stresses(time0, iresult)
+    if (iresult /= DFM_NOERR) then
+       return
+    end if
+ end if
+
 
  call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi
  call setcfuhi()                                     ! set current related frictioncoefficient
@@ -186,6 +197,7 @@ endif
  if (jatem > 1 .and. jaheat_eachstep == 1) then
     call heatu(tim1bnd/3600d0)                                  ! from externalforcings
  endif
+ call update_icecover()
 
   if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
     infiltcap0 = infiltcap/mmphr_to_mps

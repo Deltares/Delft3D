@@ -41,6 +41,7 @@
     use unstruc_channel_flow
     use m_1d_structures
     use m_compound
+    use m_1d2d_fixedweirs, only: set_iadvec
 
     implicit none
 
@@ -167,4 +168,8 @@
       enddo
    end if
 
+   if (ifixedweirscheme1D2D == 1) then
+      call set_iadvec()
+   endif
+   return
    end subroutine adjust_bobs_for_dams_and_structs

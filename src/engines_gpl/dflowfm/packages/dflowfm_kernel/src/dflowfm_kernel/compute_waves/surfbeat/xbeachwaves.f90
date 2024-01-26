@@ -2768,7 +2768,7 @@ subroutine xbeach_spectral_wave_init()
    use m_flowtimes, only: time0
    use m_partitioninfo
    use m_alloc
-   use sorting_algorithms, only: indexx
+   use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
 
    implicit none
@@ -3041,10 +3041,10 @@ subroutine xbeach_spectral_wave_init()
                   darc = darc + dbdistance(xa,ya,xb,yb, jsferic, jasfer3D, dmiss)
                end do      ! ip
             end do         ! i
-   
-            ! sort drL without changing array, order is in iperm
-            call indexx(waveSpectrumAdministration(ibnd)%nspectra,drL,iperm)
-            
+
+            ! sort drL, order is in iperm
+            call sort_index(drL, iperm)
+
             !  compute weights from mesh to spectrum locations
             do i=1,LL2-LL1+1
                !  determine arc length along polyline
@@ -3065,7 +3065,7 @@ subroutine xbeach_spectral_wave_init()
             
                !  determine weights from spectrum locations to boundary links
                j = 1
-               do while ( drL(iperm(j)).lt.darc .and. j.lt.waveSpectrumAdministration(ibnd)%nspectra )
+               do while ( drL(j).lt.darc .and. j.lt.waveSpectrumAdministration(ibnd)%nspectra )
                   j=j+1   ! j is right pointer
                end do
                if ( j.gt.1 ) then
@@ -3080,7 +3080,7 @@ subroutine xbeach_spectral_wave_init()
                wavespectrumadministration(ibnd)%wR(i) = 0d0
                if ( j+1.le.waveSpectrumAdministration(ibnd)%nspectra ) then
                   wavespectrumadministration(ibnd)%kR(i) = wavespectrumadministration(ibnd)%ispectra(iperm(j+1))
-                  wavespectrumadministration(ibnd)%wL(i) = min(max( 1d0-(darc-drL(iperm(j))) / (drL(iperm(j+1))-drL(iperm(j))), 0d0), 1d0)
+                  wavespectrumadministration(ibnd)%wL(i) = min(max( 1d0-(darc-drL(j)) / (drL(j+1)-drL(j)), 0d0), 1d0)
                   wavespectrumadministration(ibnd)%wR(i) = 1d0 - wavespectrumadministration(ibnd)%wL(i)
                end if
             end do         ! i

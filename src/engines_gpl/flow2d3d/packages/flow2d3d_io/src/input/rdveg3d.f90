@@ -30,7 +30,7 @@ subroutine rdveg3d(mmax      ,nmax      ,nmaxus    , &
 !  
 !!--description-----------------------------------------------------------------
 !
-! Reads Dredge and Dump input file.
+! Reads 3D vegetation input file.
 ! Allocates related arrays.
 !
 !!--pseudo code and references--------------------------------------------------

@@ -577,6 +577,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_platform_specific_refs">
@@ -653,6 +654,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_platform_specific_refs">
@@ -729,6 +731,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c304_hyd_file_westerschelde_2d_hag_3dom" ref="dflowfm_default">
@@ -805,6 +808,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom" ref="dflowfm_default">
@@ -881,6 +885,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c306_hyd_file_westerschelde_3d_z_vag_3dom" ref="dflowfm_default">
@@ -957,6 +962,7 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 
 <testCase name="e02_f029_c307_hyd_file_westerschelde_3d_z_hvag_3dom" ref="dflowfm_default">
@@ -1033,5 +1039,6 @@
       </parameters>
     </file>
   </checks>
+  <processCount>3</processCount>
 </testCase>
 </testCases>

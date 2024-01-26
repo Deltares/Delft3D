@@ -1,0 +1,300 @@
+# Deltares,Delft3D FM 2018 Suite Version 4.13.0.6732, D-Flow FM Version Deltares, D-Flow FM1.2.184.4a31aea51d1d200d4eb2f3262c805687584974a0
+*
+# Generated on 2023-11-24 10:22:37
+# Deltares,Delft3D FM 2018 Suite Version 4.13.0.6732, D-Flow FM Version Deltares, D-Flow FM1.2.184.4a31aea51d1d200d4eb2f3262c805687584974a0
+
+[General]
+Program           = D-Flow FM
+Version           = Deltares, D-Flow FM1.2.184.4a31aea51d1d200d4eb2f3262c805687584974a0
+fileType          = modelDef
+fileVersion       = 1.09
+GuiVersion        = 4.13.0.6732
+AutoStart         = 0
+PathsRelativeToParent= 0
+
+[geometry]
+NetFile           = FlowFM_net.nc
+BathymetryFile    =
+DryPointsFile     =
+GridEnclosureFile =
+WaterLevIniFile   =
+LandBoundaryFile  =
+ThinDamFile       =
+FixedWeirFile     =
+PillarFile        =
+StructureFile     =
+VertplizFile      =
+CrossDefFile      =
+CrossLocFile      =
+FrictFile         =
+StorageNodeFile   =
+BranchFile        =
+RoofsFile         =
+ProfdefxyzFile    =
+IniFieldFile      = initialFields.ini
+Uniformwidth1D    = 2
+ManholeFile       =
+WaterLevIni       = 0
+Bedlevuni         = 0
+Bedslope          = 0
+BedlevType        = 1
+Blmeanbelow       = -999
+Blminabove        = -999
+PartitionFile     =
+AngLat            = 0
+AngLon            = 0
+Conveyance2D      = -1
+Nonlin2D          = 0
+Nonlin1D          = 1
+dxDoubleAt1DEndNodes= 0
+Slotw2D           = 0
+Slotw1D           = 0.005
+Dxmin1D           = 1
+Sillheightmin     = 0
+Makeorthocenters  = 0
+Dcenterinside     = 1
+Bamin             = 1E-06
+OpenBoundaryTolerance= 3
+RenumberFlowNodes = 1
+Kmx               = 0
+Layertype         = 1
+Numtopsig         = 0
+SigmaGrowthFactor = 1
+AllowBndAtBifurcation= 1
+ChangeVelocityAtStructures= 1
+ChangeStructureDimensions= 0
+UseCaching        = 0
+
+[numerics]
+CFLMax            = 0.7
+AdvecType         = 33
+TimeStepType      = 2
+Limtyphu          = 0
+Limtypmom         = 4
+Limtypsa          = 4
+Vertadvtypsal     = 5
+Icgsolver         = 4
+Maxdegree         = 6
+FixedWeirScheme   = 6
+FixedWeirContraction= 1
+FixedWeirfrictscheme= 0
+Fixedweirtopwidth = 3
+Fixedweirtopfrictcoef= -999
+Fixedweirtalud    = 4
+Izbndpos          = 0
+Tlfsmo            = 0
+Slopedrop2D       = 0.3
+Drop1D            = 1
+Chkadvd           = 0.1
+Teta0             = 0.55
+Qhrelax           = 0.01
+Jbasqbnddownwindhs= 0
+cstbnd            = 0
+Maxitverticalforestersal= 0
+Maxitverticalforestertem= 0
+Turbulencemodel   = 3
+Turbulenceadvection= 3
+AntiCreep         = 0
+Maxwaterleveldiff = 0
+Maxvelocitydiff   = 0
+Epshu             = 0.0001
+EpsMaxlev         = 0.0001
+EpsMaxlevm        = 0.0001
+maxNonlinearIterations= 100
+setHorizontalBobsFor1d2d= 0
+Pure1D            = 0
+jposhchk          = 2
+
+[grw]
+groundwater       = 0
+Infiltrationmodel = 2
+
+[physics]
+UnifFrictCoef     = 0.023
+UnifFrictType     = 1
+UnifFrictCoef1D   = 0.023
+UnifFrictCoefLin  = 0
+Umodlin           = 0
+Vicouv            = 1
+Dicouv            = 1
+Vicoww            = 5E-05
+Dicoww            = 5E-05
+Vicwminb          = 0
+Smagorinsky       = 0
+Elder             = 0
+Irov              = 0
+wall_ks           = 0
+Rhomean           = 1000
+Idensform         = 2
+Ag                = 9.81
+TidalForcing      = 0
+Doodsonstart      = 55.565
+Doodsonstop       = 375.575
+Doodsoneps        = 0
+Salinity          = 0
+InitialSalinity   = 0
+Sal0abovezlev     = -999
+DeltaSalinity     = -999
+Backgroundsalinity= 30
+InitialTemperature= 6
+Secchidepth       = 2
+Stanton           = -1
+Dalton            = -1
+Backgroundwatertemperature= 6
+SecondaryFlow     = 0
+EffectSpiral      = 0
+BetaSpiral        = 0
+Temperature       = 0
+
+[wind]
+ICdtyp            = 2
+Cdbreakpoints     = 0.00063 0.00723
+Windspeedbreakpoints= 0 100
+Rhoair            = 1.205
+PavBnd            = 0
+PavIni            = 0
+
+[waves]
+Wavemodelnr       = 0
+WaveNikuradse     = 0.01
+Rouwav            = FR84
+Gammax            = 1
+
+[time]
+RefDate           = 20231124
+Tzone             = 0
+DtUser            = 60
+DtNodal           =
+DtMax             = 30
+DtInit            = 1
+UpdateRoughnessInterval= 86400
+Tunit             = S
+TStart            = 0
+TStop             = 86400
+AutoTimestepNoStruct= 1
+AutoTimestepNoQout= 1
+
+[restart]
+RestartFile       =
+RestartDateTime   = 20231124100555
+
+[external forcing]
+ExtForceFile      =
+ExtForceFileNew   =
+QExt              = 0
+
+[trachytopes]
+TrtRou            = N
+TrtDef            =
+TrtL              =
+DtTrt             = 60
+
+[output]
+Wrishp_crs        = 0
+Wrishp_weir       = 0
+Wrishp_gate       = 0
+Wrishp_fxw        = 0
+Wrishp_thd        = 0
+Wrishp_obs        = 0
+Wrishp_emb        = 0
+Wrishp_dryarea    = 0
+Wrishp_enc        = 0
+Wrishp_src        = 0
+Wrishp_pump       = 0
+OutputDir         = DFM_OUTPUT_
+WAQOutputDir      =
+FlowGeomFile      =
+ObsFile           =
+CrsFile           =
+HisFile           =
+HisInterval       = 600
+XLSInterval       =
+MapFile           =
+MapInterval       = 3600
+RstInterval       = 0
+S1incinterval     =
+MapFormat         = 4
+Wrihis_balance    = 0
+Wrihis_sourcesink = 0
+Wrihis_structure_gen= 0
+Wrihis_structure_dam= 0
+Wrihis_structure_pump= 0
+Wrihis_structure_gate= 0
+Wrihis_structure_weir= 0
+Wrihis_structure_orifice= 0
+Wrihis_structure_bridge= 0
+Wrihis_structure_culvert= 0
+Wrihis_structure_damBreak= 0
+Wrihis_structure_uniWeir= 0
+Wrihis_structure_compound= 0
+Wrihis_turbulence = 0
+Wrihis_wind       = 0
+Wrihis_rain       = 0
+Wrihis_temperature= 0
+Wrihis_heat_fluxes= 0
+Wrihis_salinity   = 0
+Wrihis_density    = 0
+Wrihis_waterlevel_s1= 0
+Wrihis_waterdepth = 0
+Wrihis_velocity_vector= 0
+Wrihis_upward_velocity_component= 0
+Wrihis_sediment   = 0
+Wrihis_constituents= 0
+Wrihis_infiltration= 0
+Wrihis_lateral    = 0
+Wrihis_taucurrent = 0
+Wrimap_waterlevel_s0= 0
+Wrimap_waterlevel_s1= 0
+Wrimap_velocity_component_u0= 0
+Wrimap_velocity_component_u1= 0
+Wrimap_velocity_vector= 0
+Wrimap_upward_velocity_component= 0
+Wrimap_density_rho= 0
+Wrimap_horizontal_viscosity_viu= 0
+Wrimap_horizontal_diffusivity_diu= 0
+Wrimap_flow_flux_q1= 0
+Wrimap_spiral_flow= 0
+Wrimap_numlimdt   = 0
+Wrimap_taucurrent = 0
+Wrimap_chezy      = 0
+Wrimap_turbulence = 0
+Wrimap_wind       = 0
+Wrimap_heat_fluxes= 0
+Wrimap_time_water_on_ground= 0
+Wrimap_freeboard  = 0
+Wrimap_waterdepth_on_ground= 0
+Wrimap_volume_on_ground= 0
+Wrimap_total_net_inflow_1d2d= 0
+Wrimap_total_net_inflow_lateral= 0
+Wrimap_flow_analysis= 0
+Wrimap_evaporation= 0
+Wrimap_interception= 0
+Wrimap_bnd        = 0
+Wrimap_Qin        = 0
+MapOutputTimeVector=
+FullGridOutput    = 0
+EulerVelocities   = 0
+WaqInterval       = 0
+ClassMapFile      =
+WaterlevelClasses = 0
+WaterdepthClasses = 0
+ClassMapInterval  = 0
+VelocityMagnitudeClasses= 0
+VelocityDirectionClassesInterval= 30
+StatsInterval     =
+TimingsInterval   =
+Richardsononoutput= 1
+NcFormat          = 3
+NcNoUnlimited     = 0
+NcNoForcedFlush   = 0
+Wrimap_wet_waterdepth_threshold= 0.01
+FouFile           =
+FouUpdateStep     = 0
+
+[volumeTables]
+useVolumeTables   = 0
+increment         = 0.1
+useVolumeTablesFile= 0
+
+[hydrology]
+InterceptionModel = 0

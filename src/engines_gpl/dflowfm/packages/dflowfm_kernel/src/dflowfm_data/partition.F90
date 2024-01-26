@@ -71,6 +71,7 @@ module m_partitioninfo
 use m_tpoly
 use precision_basics, only : hp
 use meshdata, only : ug_idsLen, ug_idsLongNamesLen
+use gridoperations, only: dlinkangle
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -958,7 +959,7 @@ implicit none
       use network_data, only: nump, nump1d2d, numL, lnn, lne, numl1d, netcell, xzw, yzw
       use m_flowgeom, only: xz, yz
       use unstruc_channel_flow, only: network
-      use sorting_algorithms, only : indexxi
+      use stdlib_sorting, only: sort_index
       implicit none
       
       integer,  intent(in   ) :: L2Lorg(:)     !< Mapping table current (new) to original net link numbers
@@ -967,7 +968,7 @@ implicit none
 
       integer, dimension(:,:),      allocatable :: icandidate  ! two original cell number candidates, dim(nump1d2d)
       integer, dimension(:,:),      allocatable :: tmp_lne
-      integer, dimension(:)  ,      allocatable :: indx, indxinv, cellnrs, tmpNetcellNod
+      integer, dimension(:)  ,      allocatable :: indx, indxinv, tmpNetcellNod
       real(kind=hp), dimension(:),  allocatable :: tmpCoord
       integer                                   :: i, k, kother, LL, L, L_org, nc
       integer                                   :: ic1, ic2, ic3, ic4
@@ -1058,13 +1059,14 @@ implicit none
          ! * calculation points (flow nodes) are order such that branch indices are always increasing,
          ! * and calculation points (flow nodes) within a branch are always ordered by increasing offset/chainage.
 
-         allocate(indx(nump1d2d), indxinv(nump1d2d), cellnrs(nump1d2d), tmpCoord(nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
-         cellnrs = iorg
-         call indexxi(size(iorg), cellnrs, indx)
+         allocate(indx(nump+1:nump1d2d), indxinv(nump+1:nump1d2d), tmpCoord(nump+1:nump1d2d), tmpNetcellNod(nump+1:nump1d2d))
+         call sort_index(iorg(nump+1:nump1d2d), indx(nump+1:nump1d2d))
+         do i = nump+1,nump1d2d
+            indx(i) = indx(i) + nump
+         end do
 
          do i = nump+1,nump1d2d
             indxinv(indx(i)) = i       ! Construct helper table with inverse of sorting permutation indx.
-            iorg(i) = cellnrs(indx(i)) ! Global cell numbers, after the 1D netcell sorting
          end do
 
          do i = nump+1,nump1d2d
@@ -4403,37 +4405,6 @@ end subroutine partition_make_globalnumbers
          
          return
       end subroutine connect_branches
-      
-!>    gives link angle, changes sign when link has negative number      
-      double precision function dLinkangle(L)
-         use m_sferic, only: jsferic
-         use geometry_module, only: getdxdy 
-         
-         implicit none
-         
-         integer,          intent(in) :: L  !< link number
-         double precision              :: dx, dy       
-         integer                       :: k1, k2
-         
-         
-         if ( L.gt.0 ) then
-            k1 = kn(1,L)
-            k2 = kn(2,L)
-         else
-            k1 = kn(2,-L)
-            k2 = kn(1,-L)
-         end if
-         
-         call getdxdy(xk(k1), yk(k1), xk(k2), yk(k2),dx,dy,jsferic)
-         !dx = getdx(xk(k1), yk(k1), xk(k2), yk(k2))
-         !dy = getdy(xk(k1), yk(k1), xk(k2), yk(k2))
-         
-         dLinkangle = atan2(dy,dx)
-         
-         return
-      end function dLinkangle
-      
-
       
 !> find the global branch connectivity
 !>    sets ibr_glob_left, ibr_glob_right, Lother_left, Lother_right

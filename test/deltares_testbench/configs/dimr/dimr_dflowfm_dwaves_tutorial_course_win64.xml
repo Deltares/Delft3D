@@ -12,19 +12,19 @@
         <locations>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin</root>
+                <root>{server_base_url}/references/bin</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -57,7 +57,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>

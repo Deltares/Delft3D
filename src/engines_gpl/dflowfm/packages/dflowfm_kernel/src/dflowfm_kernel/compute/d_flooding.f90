@@ -99,10 +99,10 @@ module m_sobekdfm   !
    double precision, parameter :: cw = 1d0
    double precision            :: dx_1d2d
    double precision, public    :: sbkdfm_umin
-   double precision, public    :: sbkdfm_relax = 0.1d0
-   integer,          public    :: sbkdfm_umin_method
+   double precision            :: sbkdfm_relax = 0.1d0
+   integer                     :: sbkdfm_umin_method
    double precision, parameter :: dryingAccur = 1d-4
-   double precision, public    :: minimal_1d2d_embankment !< Minimal crest height of 1D2D SOBEK-DFM embankments (height, not level).
+   double precision            :: sbkdfm_minimal_1d2d_embankment !< Minimal crest height of 1D2D SOBEK-DFM embankments (height, not level).
  
 
    contains
@@ -112,7 +112,7 @@ module m_sobekdfm   !
 subroutine default_sobekdfm()
 !   dx_1d2d     = 10d0
    sbkdfm_umin = 0d0
-   minimal_1d2d_embankment = 0.01d0
+   sbkdfm_minimal_1d2d_embankment = 0.01d0
 
    call reset_sobekdfm()
 end subroutine default_sobekdfm
@@ -204,8 +204,8 @@ end subroutine reset_sobekdfm
 
          zs      = zcrest1d2d(ibnd)
 
-         if (zs < bob(1,l) + minimal_1d2d_embankment) then
-            zs = bob(1,l) + minimal_1d2d_embankment
+         if (zs < bob(1,l) + sbkdfm_minimal_1d2d_embankment) then
+            zs = bob(1,l) + sbkdfm_minimal_1d2d_embankment
          endif
          
          s0_up = max(zbnd1d2d0(ibnd), s0(k2))
@@ -379,8 +379,8 @@ end subroutine reset_sobekdfm
          
          zs      = zcrest1d2d(ibnd)
 
-         if (zs < bob(1,l) + minimal_1d2d_embankment) then
-            zs = bob(1,l) + minimal_1d2d_embankment
+         if (zs < bob(1,l) + sbkdfm_minimal_1d2d_embankment) then
+            zs = bob(1,l) + sbkdfm_minimal_1d2d_embankment
          endif
       
          dx_i    = wu(L)

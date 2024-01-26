@@ -81,7 +81,7 @@ end module wqm_profiles
  integer                           :: nv             !< max nr of nodes describing an element
  integer                           :: nump           !< number of elements
  integer, allocatable              :: netcellnod(:,:)!< element nodes
- 
+
  ! node (s) related : dim=ndx
  type tnode                                          !< node administration
    integer                         :: lnx            !< max nr of links attached to this node
@@ -144,16 +144,16 @@ end module wqm_profiles
  double precision, allocatable     :: wcl   (:,:)    !< link weights (2,lnx) for center scalar , 1,L for k1, 2,L for k2
 !double precision, allocatable     :: wcxyl (:,:)    !< link weights (4,lnx) for center velocities 1=1-x, 2=1-y, 3=2-x, 4=2y
 !double precision, allocatable     :: wcnxyl(:,:)    !< link weights (4,lnx) for corner velocities 1=3-x, 2=3-y, 3=4-x, 4=4y
- double precision, allocatable     :: wcx1(:)        !< link weights (lnx) for corner velocities k3 
+ double precision, allocatable     :: wcx1(:)        !< link weights (lnx) for corner velocities k3
  double precision, allocatable     :: wcy1(:)        !< link weights (lnx) for corner velocities k3
- double precision, allocatable     :: wcx2(:)        !< link weights (lnx) for corner velocities k4 
+ double precision, allocatable     :: wcx2(:)        !< link weights (lnx) for corner velocities k4
  double precision, allocatable     :: wcy2(:)        !< link weights (lnx) for corner velocities k4
- double precision, allocatable     :: wcnx3(:)       !< link weights (lnx) for corner velocities k3 
+ double precision, allocatable     :: wcnx3(:)       !< link weights (lnx) for corner velocities k3
  double precision, allocatable     :: wcny3(:)       !< link weights (lnx) for corner velocities k3
- double precision, allocatable     :: wcnx4(:)       !< link weights (lnx) for corner velocities k4 
+ double precision, allocatable     :: wcnx4(:)       !< link weights (lnx) for corner velocities k4
  double precision, allocatable     :: wcny4(:)       !< link weights (lnx) for corner velocities k4
 
- 
+
  double precision, allocatable     :: slnup (:,:)    !< link upwind cell weight, if q> 0 use (1:3,L), else (4:6,L)
  double precision, allocatable     :: econsfacL(:)   !< link upwind cell weight, if q> 0 use (1:3,L), else (4:6,L)
  integer                           :: jaecons        !< use this array or not 1,0
@@ -240,31 +240,31 @@ real            , allocatable     :: sncnw (:)      !< closed wall alignment sin
 
  end module wqm_waqgeom
 
-    
+
 
  module wqm_sferic
  implicit none
  integer                           :: jsferic = 0       ! xy pair is in : 0=cart, 1=sferic coordinates
  integer                           :: jsfertek= 0       ! drawn in 0=cart, 1=stereografisch
- integer                           :: jasferdistance = 0 ! 1 = local dx and dy based upon greatcircledistances , 0=original form   
+ integer                           :: jasferdistance = 0 ! 1 = local dx and dy based upon greatcircledistances , 0=original form
  integer                           :: jglobe  = 0       ! if (jsferic==1) do we need extra tests for 360-0 transgression
  double precision                  :: pi                ! pi
  double precision                  :: twopi             ! 2pi
  double precision                  :: dg2rd             ! degrees to radians
  double precision                  :: rd2dg             ! and vice versa
- double precision                  :: ra = 6378137d0    ! earth radius (m) 
+ double precision                  :: ra = 6378137d0    ! earth radius (m)
  double precision                  :: omega             ! earth angular velocity (rad/s)
  double precision                  :: fcorio            ! 2omegasinfi
- double precision                  :: anglat = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude 
- double precision                  :: anglon = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude 
+ double precision                  :: anglat = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude
+ double precision                  :: anglon = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude
  double precision                  :: dy2dg             ! from dy in m to lat in degrees
  double precision                  :: csphi             ! cosphi of latest requested
 
  double precision, parameter       :: dtol_pole = 1d-4   ! pole tolerance in degrees
  end module wqm_sferic
 
-    
-    
+
+
 module wqm_partitioninfo
 
    integer, dimension(:), allocatable      :: idomain            !< cell-based domain number, dim(nump1d2d or ndx)
@@ -272,13 +272,13 @@ module wqm_partitioninfo
    integer                                 :: my_rank = 0        !< domainnumber
 
 end module wqm_partitioninfo
-   
+
 ! TODO: FB: #define NC_CHECK if(ierr .ne. 0 ) call mess(LEVEL_ERROR, nf90_strerror(ierr))
 
 !> Reads and writes unstructured net/flow data in netCDF format.
 module wq_unstruc_netcdf
 
-! 
+!
 
 use precision
 use netcdf
@@ -326,7 +326,7 @@ subroutine unc_addglobalatts(ncid, version_full)
     !use unstruc_model, only : md_ident
     integer, intent(in) :: ncid
     character(len=*), intent(in) ::  version_full
-    
+
     character*8  :: cdate
     character*10 :: ctime
     character*5  :: czone
@@ -459,7 +459,7 @@ function unc_addcoordatts(ncid, id_varx, id_vary, jsferic)
     integer, intent(in) :: id_vary  !< NetCDF vertical variable id
     integer, intent(in) :: jsferic  !< Sferical coords or not (1/0)
     integer             :: unc_addcoordatts !< Result status of NetCDF primitives
-    
+
     integer :: ierr
 
     if (jsferic == 0) then
@@ -494,7 +494,7 @@ function unc_add_lonlat_vars(ncid, varnameprefix, varnamepostfix, id_dims, id_va
     integer, dimension(:), intent(in)  :: id_dims        !< Array with NetCDF dimension ids for the coordinate variables.
     integer,               intent(out) :: id_varlon      !< NetCDF horizontal variable id
     integer,               intent(out) :: id_varlat      !< NetCDF vertical variable id
-    integer,               intent(in)  :: jsferic        !< Spherical coords or not (1/0). If 1, nothing happens. 
+    integer,               intent(in)  :: jsferic        !< Spherical coords or not (1/0). If 1, nothing happens.
     integer                            :: ierr           !< Result status of NetCDF primitives
 
     ierr = 0
@@ -510,7 +510,7 @@ function unc_add_lonlat_vars(ncid, varnameprefix, varnamepostfix, id_dims, id_va
     ierr = nf90_def_var(ncid, trim(varnameprefix)//'_lat'//trim(varnamepostfix), nf90_double, id_dims, id_varlat)
     call check_error(ierr, 'Add latitude variable for '//trim(varnameprefix))
 
-    ! Add standard spherical coordinate attributes 
+    ! Add standard spherical coordinate attributes
     ierr = unc_addcoordatts(ncid, id_varlon, id_varlat, 1)
 
 !    ierr = unc_add_coordmapping(ncid, jsferic)
@@ -570,7 +570,7 @@ function unc_add_coordmapping(ncid, crs) result(ierr)
       ierr = nf90_put_att(ncid, id_crs, 'epsg',                       epsg                ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'grid_mapping_name',          'latitude_longitude') ! CF
       ierr = nf90_put_att(ncid, id_crs, 'longitude_of_prime_meridian', 0d0                ) ! CF
-      ierr = nf90_put_att(ncid, id_crs, 'semi_major_axis',             6378137d0          ) ! CF 
+      ierr = nf90_put_att(ncid, id_crs, 'semi_major_axis',             6378137d0          ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'semi_minor_axis',             6356752.314245d0   ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'inverse_flattening',          298.257223563d0    ) ! CF
 !      ierr = nf90_put_att(ncid, id_crs, 'proj4_params',                ' '                ) ! ADAGUC
@@ -656,7 +656,7 @@ end function unc_add_gridmapping_att
 subroutine unc_write_waqgeom(filename, version_full)
     character(len=*), intent(in) :: filename
     character(len=*), intent(in) :: version_full
-    
+
     integer :: igeomfile, ierr
 
     ierr = unc_create(filename, version_full, 0, igeomfile)
@@ -740,7 +740,7 @@ subroutine unc_write_waqgeom_filepointer(igeomfile)
     ierr = nf90_def_dim(igeomfile, 'nNetLinkPts',         2,          id_netlinkptsdim)
     ierr = nf90_def_dim(igeomfile, 'nNetElemMaxNode',     nv,         id_netelemmaxnodedim)
     ierr = nf90_def_dim(igeomfile, 'nNetElem',            nump,       id_netelemdim)
-        
+
     ierr = nf90_def_dim(igeomfile, 'nFlowElem',           ndxi,       id_flowelemdim)
 
     if (numNodes > 0) then
@@ -754,7 +754,7 @@ subroutine unc_write_waqgeom_filepointer(igeomfile)
         ierr = nf90_def_dim(igeomfile, 'nFlowLinkPts',        2,          id_flowlinkptsdim)
     end if
 
-    ! Node data   
+    ! Node data
     ierr = nf90_def_var(igeomfile, 'NetNode_x', nf90_double, id_netnodedim, id_netnodex)
     ierr = nf90_def_var(igeomfile, 'NetNode_y', nf90_double, id_netnodedim, id_netnodey)
     ierr = nf90_def_var(igeomfile, 'NetNode_z', nf90_double, id_netnodedim, id_netnodez)
@@ -767,7 +767,7 @@ subroutine unc_write_waqgeom_filepointer(igeomfile)
     ierr = nf90_put_att(igeomfile, id_netnodex, 'long_name'    , 'x-coordinate of net nodes')
     ierr = nf90_put_att(igeomfile, id_netnodey, 'long_name'    , 'y-coordinate of net nodes')
     ierr = nf90_put_att(igeomfile, id_netnodey, 'long_name'    , 'z-coordinate of net nodes')
-    
+
     ! Link data
     ierr = nf90_def_var(igeomfile, 'NetLink', nf90_int, (/ id_netlinkptsdim, id_netlinkdim /) , id_netlink)
     ierr = nf90_put_att(igeomfile, id_netlink, 'standard_name', 'netlink')
@@ -777,7 +777,7 @@ subroutine unc_write_waqgeom_filepointer(igeomfile)
     ! Countour data
     ierr = nf90_def_var(igeomfile, 'NetElemNode', nf90_int, (/ id_netelemmaxnodedim, id_netelemdim /), id_netelemnode)
     ierr = nf90_put_att(igeomfile, id_netelemnode, 'long_name', 'mapping from net cell to net nodes (counterclockwise)')
-    
+
     ! Flow cells
     ierr = nf90_def_var(igeomfile, 'FlowElem_xcc', nf90_double, id_flowelemdim, id_flowelemxcc)
     ierr = nf90_def_var(igeomfile, 'FlowElem_ycc', nf90_double, id_flowelemdim, id_flowelemycc)
@@ -968,7 +968,7 @@ end subroutine check_error
 function ug_get_var_attset(ncid, varid, attset) result(ierr)
    integer,                         intent(in)  :: ncid      !< NetCDF dataset id
    integer,                         intent(in)  :: varid     !< NetCDF variable id
-   type(nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
+   type(ug_nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
    integer                                      :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=64) :: attname
@@ -1024,7 +1024,7 @@ function ug_get_var_attset(ncid, varid, attset) result(ierr)
    return ! Return with success
 
 888 continue
-    
+
 end function ug_get_var_attset
 
 
@@ -1035,7 +1035,7 @@ end function ug_get_var_attset
 function ug_put_var_attset(ncid, varid, attset) result(ierr)
    integer,             intent(in)  :: ncid      !< NetCDF dataset id
    integer,             intent(in)  :: varid     !< NetCDF variable id
-   type(nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
+   type(ug_nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
    integer                          :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=1024) :: tmpstr
@@ -1148,7 +1148,7 @@ type t_ug_meshids
    integer :: id_facey           = -1 !< Coordinate variable ID for face y-coordinate.
    integer :: id_facexbnd        = -1 !<            variable ID for face boundaries' x-coordinate.
    integer :: id_faceybnd        = -1 !<            variable ID for face boundaries' y-coordinate.
-   
+
    !
    ! Topology variables
    !
@@ -1224,7 +1224,7 @@ end function ug_addglobalatts
 function ug_get_var_attset(ncid, varid, attset) result(ierr)
    integer,                         intent(in)  :: ncid      !< NetCDF dataset id
    integer,                         intent(in)  :: varid     !< NetCDF variable id
-   type(nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
+   type(ug_nc_attribute), allocatable, intent(out) :: attset(:) !< Resulting attribute set.
    integer                                      :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=64) :: attname
@@ -1280,7 +1280,7 @@ function ug_get_var_attset(ncid, varid, attset) result(ierr)
    return ! Return with success
 
 888 continue
-    
+
 end function ug_get_var_attset
 
 
@@ -1291,7 +1291,7 @@ end function ug_get_var_attset
 function ug_put_var_attset(ncid, varid, attset) result(ierr)
    integer,             intent(in)  :: ncid      !< NetCDF dataset id
    integer,             intent(in)  :: varid     !< NetCDF variable id
-   type(nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
+   type(ug_nc_attribute),  intent(in)  :: attset(:) !< Attribute set to be put into the variable.
    integer                          :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=1024) :: tmpstr
@@ -1410,7 +1410,7 @@ function ug_add_coordmapping(ncid, crs) result(ierr)
       ierr = nf90_put_att(ncid, id_crs, 'epsg',                       epsg                ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'grid_mapping_name',          'latitude_longitude') ! CF
       ierr = nf90_put_att(ncid, id_crs, 'longitude_of_prime_meridian', 0d0                ) ! CF
-      ierr = nf90_put_att(ncid, id_crs, 'semi_major_axis',             6378137d0                               ) ! CF 
+      ierr = nf90_put_att(ncid, id_crs, 'semi_major_axis',             6378137d0                               ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'semi_minor_axis',             6356752.314245d0   ) ! CF
       ierr = nf90_put_att(ncid, id_crs, 'inverse_flattening',          298.257223563d0    ) ! CF
 !      ierr = nf90_put_att(ncid, id_crs, 'proj4_params',                ' '                ) ! ADAGUC
@@ -1570,7 +1570,7 @@ function ug_write_meshtopology(ncid, meshids, meshName, dim, dataLocsCode) resul
    if (ug_checklocation(dataLocsCode, UG_LOC_FACE)) then
       ierr = nf90_put_att(ncid, meshids%id_meshtopo, 'face_coordinates', prefix//'_face_x '//prefix//'_face_y')
    end if
-   ! TODO: AvD: UNST-476: 
+   ! TODO: AvD: UNST-476:
    ! Consider adding 1. face_edge_connectivity, 2. edge_face_connectivity.
 
    if (dim >= 3) then
@@ -1592,7 +1592,7 @@ function ug_write_meshtopology(ncid, meshids, meshName, dim, dataLocsCode) resul
 end function ug_write_meshtopology
 
 
-   
+
 
 !> Defines a new variable in an existing dataset.
 !! Does not write the actual data yet.
@@ -1618,7 +1618,7 @@ function ug_def_var(ncid, meshids, id_var, id_dims, itype, iloc, mesh_name, var_
    ierr = UG_SOMEERR
 
    prefix = trim(mesh_name)
-   
+
    ierr = nf90_def_var(ncid, prefix//'_'//trim(var_name), itype, id_dims, id_var)
    ierr = nf90_put_att(ncid, id_var, 'mesh',   trim(mesh_name))
    select case (iloc)
@@ -1741,9 +1741,9 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
                      meshName, 'node_z', 'altitude', 'z-coordinate of mesh nodes', 'm', '', dfill=dmiss)
 !   ierr = nf90_put_att(ncid, meshids%id_nodez, 'positive',       'up') ! Not allowed for non-coordinate variables.
 
-   ierr = ug_put_gridmapping_att(ncid, (/ meshids%id_nodez /), crs) ! Not: meshids%id_nodex, meshids%id_nodey, 
+   ierr = ug_put_gridmapping_att(ncid, (/ meshids%id_nodez /), crs) ! Not: meshids%id_nodex, meshids%id_nodey,
 
-   
+
 
    ! Edges
    if (dim == 1 .or. ug_checklocation(dataLocs, UG_LOC_EDGE)) then
@@ -1820,7 +1820,7 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
 
    ierr = nf90_enddef(ncid)
 ! -- end of header --
-   
+
    ! Write the actual data
    ! Nodes:
    ierr = nf90_put_var(ncid, meshids%id_nodex,    xn(1:numNode))
@@ -1874,13 +1874,13 @@ function ug_write_mesh_arrays(ncid, meshids, meshName, dim, dataLocs, numNode, n
       ierr = nf90_put_var(ncid, meshids%id_faceybnd, faceybnd)
       deallocate(facexbnd, faceybnd)
    end if
-   
+
    if (ug_checklocation(dataLocs, UG_LOC_FACE)) then
       ierr = nf90_put_var(ncid, meshids%id_facex,    xf(1:numFace))
       ierr = nf90_put_var(ncid, meshids%id_facey,    yf(1:numFace))
    end if
 
-   
+
    ! Check for any remaining native NetCDF errors
    if (ierr /= nf90_noerr) then
       goto 888
@@ -1903,7 +1903,7 @@ end function ug_write_mesh_arrays
 !> Gets the number of mesh topologies in an open dataset.
 !! use this to determine on how many different meshes, data is defined in the dataset.
 !!
-!! \see 
+!! \see
 function ug_get_meshcount(ncid, numMesh) result(ierr)
    integer,        intent(in)  :: ncid     !< NetCDF dataset id
    integer,        intent(out) :: numMesh  !< Number of mesh topologies in the dataset (>= 0).

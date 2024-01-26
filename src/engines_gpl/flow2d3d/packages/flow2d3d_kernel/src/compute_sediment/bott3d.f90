@@ -582,7 +582,18 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
        endif        ! sscomp .or. nst>=itmor
     endif           ! sus /= 0.0
     !
-    ! if bed composition computations have started
+    ! make sure that the transport layer thickness is known
+    ! if the bed composition computations have started or
+    ! if dredging is active
+    !
+    if ((nst >= itcmp .and. cmpupd) .or. dredge) then
+       !
+       ! Determine new thickness of transport layer
+       !
+       call compthick(dps       ,s1        ,nmmax     ,gdp       )
+    endif
+    !
+    ! if the bed composition computations have started ...
     !
     if (nst >= itcmp) then
        !
@@ -1005,11 +1016,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 dbodsd(l, :) = 0.0_fp 
              endif
           enddo
-          !
-          ! Determine new thickness of transport layer
-          !
-          call compthick(dps       ,s1        , &
-                       & nmmax     ,gdp       )
           !
           ! Update layers and obtain the depth change
           !

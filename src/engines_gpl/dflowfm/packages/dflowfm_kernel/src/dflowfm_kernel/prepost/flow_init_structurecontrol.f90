@@ -106,7 +106,7 @@ do i=1,network%forcinglist%Count
 
    fnam = trim(pfrc%filename)
    if (.not. strcmpi(fnam, 'REALTIME')) then
-      call resolvePath(fnam, md_structurefile_dir, fnam)
+      call resolvePath(fnam, md_structurefile_dir)
    end if
 
    ! Time-interpolated value will be placed in structure's appropriate member field, available in %targetptr, when calling ec_gettimespacevalue.
@@ -220,7 +220,7 @@ endif
 !      if not
 !      error message met md_structurefile, forcing%st_id, forcing%param_name, pForcing%filename
 !      else
-!      ! call resolvePath(filename, md_structurefile_dir, filename)
+!      ! call resolvePath(filename, md_structurefile_dir)
 !         ! TODO: addtimespacerelation (EC..)
 !      end if
 !end do
@@ -270,7 +270,7 @@ do i=1,nstr
    if (success) then
       loc_spec_type = LOCTP_POLYLINE_FILE
       plifile = str_buf
-      call resolvePath(plifile, md_structurefile_dir, plifile)
+      call resolvePath(plifile, md_structurefile_dir)
    else
       istrtmp = hashsearch(network%sts%hashlist_structure, strid) ! Assumes unique names across all structure types.
       if (istrtmp == -1) then
@@ -524,7 +524,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
 
       plifile = ' '
       call prop_get_string(str_ptr, '', 'polylinefile', plifile, successloc) ! TODO: Remove? This plifile is nowhere used below
-      call resolvePath(plifile, md_structurefile_dir, plifile)
+      call resolvePath(plifile, md_structurefile_dir)
 
       ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
       if (strtype /= 'generalstructure') then
@@ -580,7 +580,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
             else
                qid = 'generalstructure' ! TODO: werkt dit als je de losse quantities (crest/gateloweredge/width) dezelfde id geeft, maar wel netjes correct veschillende offset?
                fnam = trim(rec)
-               call resolvePath(fnam, md_structurefile_dir, fnam)
+               call resolvePath(fnam, md_structurefile_dir)
                ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                if (index(trim(fnam)//'|','.tim|')>0) then
                   success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n-1)*kx+1) ! Hook up 1 component at a time, even when target element set has kx=3
@@ -641,7 +641,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
             else
                qid = 'generalstructure'
                fnam = trim(rec)
-               call resolvePath(fnam, md_structurefile_dir, fnam)
+               call resolvePath(fnam, md_structurefile_dir)
                ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                if (index(trim(fnam)//'|','.tim|')>0) then
                   success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n-1)*kx+1) ! Hook up 1 component at a time, even when target element set has kx=3
@@ -690,7 +690,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
             else
                qid = 'generalstructure'
                fnam = trim(rec)
-               call resolvePath(fnam, md_structurefile_dir, fnam)
+               call resolvePath(fnam, md_structurefile_dir)
                ! Time-interpolated value will be placed in zcgen((n-1)*3+2) when calling ec_gettimespacevalue.
                if (index(trim(fnam)//'|','.tim|')>0) then
                    success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n-1)*kx+2) ! Hook up 1 component at a time, even when target element set has kx=3
@@ -724,7 +724,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                else
                   qid = 'generalstructure' ! todo: check met Hermans gatewidth, if any
                   fnam = trim(rec)
-                  call resolvePath(fnam, md_structurefile_dir, fnam)
+                  call resolvePath(fnam, md_structurefile_dir)
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+3) when calling ec_gettimespacevalue.
                   if (index(trim(fnam)//'|','.tim|')>0) then
                       success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n-1)*kx+3) ! Hook up 1 component at a time, even when target element set has kx=3
@@ -811,7 +811,7 @@ if (ncgensg > 0) then  ! All generalstructure, i.e., the weir/gate/generalstruct
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+...) when calling ec_gettimespacevalue.
                      qid = 'generalstructure'
                      fnam = trim(rec)
-                     call resolvePath(fnam, md_structurefile_dir, fnam)
+                     call resolvePath(fnam, md_structurefile_dir)
                      if (index(trim(fnam)//'|','.tim|')>0) then
                          success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n-1)*kx+ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                      endif
@@ -889,7 +889,7 @@ if (ngate > 0) then ! Old-style controllable gateloweredgelevel
 
       plifile = ' '
       call prop_get_string(str_ptr, '', 'polylinefile', plifile, success) ! TODO: Remove? This plifile is nowhere used below
-      call resolvePath(plifile, md_structurefile_dir, plifile)
+      call resolvePath(plifile, md_structurefile_dir)
 
       key = 'lower_edge_level'
       call read_property(strs_ptr%child_nodes(gateidx(n)), trim(key), rec, tmpval, is_double, strid, successloc)
@@ -910,7 +910,7 @@ if (ngate > 0) then ! Old-style controllable gateloweredgelevel
          else
             qid = 'gateloweredgelevel'
             fnam = trim(rec)
-            call resolvePath(fnam, md_structurefile_dir, fnam)
+            call resolvePath(fnam, md_structurefile_dir)
             if (index(trim(fnam)//'|','.tim|')>0) then
                ! Time-interpolated value will be placed in zgate(n) when calling ec_gettimespacevalue.
                success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
@@ -961,7 +961,7 @@ if (ncdamsg > 0) then ! Old-style controllable damlevel
 
       plifile = ' '
       call prop_get_string(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
-      call resolvePath(plifile, md_structurefile_dir, plifile)
+      call resolvePath(plifile, md_structurefile_dir)
 
       rec = ' '
       key = 'crest_level'
@@ -984,7 +984,7 @@ if (ncdamsg > 0) then ! Old-style controllable damlevel
          else
             qid = 'damlevel'
             fnam = trim(rec)
-            call resolvePath(fnam, md_structurefile_dir, fnam)
+            call resolvePath(fnam, md_structurefile_dir)
             if (index(trim(fnam)//'|','.tim|')>0) then
                ! Time-interpolated value will be placed in zcdam(n) when calling ec_gettimespacevalue.
                success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
@@ -1003,21 +1003,20 @@ endif
 ! pumps, including staged pumps
 !
 if (npumpsg > 0) then
-   if (allocated   (qpump)   ) deallocate( qpump)
-
-   if (allocated   (pump_ids)   ) deallocate( pump_ids)
+   if (allocated(qpump)   ) deallocate( qpump)
+   if (allocated(pump_ids)) deallocate( pump_ids)
    allocate (pump_ids(npumpsg))
-   allocate ( qpump(npumpsg), stat=ierr)
-   call aerr('qpump(npumpsg)', ierr, npumpsg*1)
+   allocate (qpump(npumpsg), stat=ierr)
+   call aerr('qpump(npumpsg)', ierr, npumpsg)
    qpump = 0d0
-end if
 
-if (npump > 0) then
-   if (allocated   (kpump)   ) deallocate( kpump)
+   if (npump > 0) then
+      if (allocated(kpump)) deallocate( kpump)
+      allocate ( kpump(3,npump), stat=ierr)
+      call aerr('kpump(3,npump)', ierr, npump*3)
+      kpump = 0
+   end if
 
-   allocate ( kpump(3,npump), stat=ierr)
-   call aerr('kpump(3,npump)', ierr, npump*3)
-   kpump = 0d0
    kx = 1
 
    do n = 1, npumpsg
@@ -1097,7 +1096,7 @@ if (npump > 0) then
 
          plifile = ' '
          call prop_get_string(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
-         call resolvePath(plifile, md_structurefile_dir, plifile)
+         call resolvePath(plifile, md_structurefile_dir)
 
          rec = ' '
          key = 'capacity'
@@ -1119,7 +1118,7 @@ if (npump > 0) then
             else
                qid = 'pump'
                fnam = trim(rec)
-               call resolvePath(fnam, md_structurefile_dir, fnam)
+               call resolvePath(fnam, md_structurefile_dir)
                if (index(trim(fnam)//'|','.tim|')>0) then
                   ! Time-interpolated value will be placed in qpump(n) when calling ec_gettimespacevalue.
                   success  = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)

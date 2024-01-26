@@ -35,7 +35,7 @@ if(NOT TARGET delftio)
     add_subdirectory(${checkout_src_root}/${delftio_module} delftio)
 endif()
 
-if(NOT TARGET deltares_common) 
+if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
 
@@ -57,6 +57,10 @@ endif()
 
 if(NOT TARGET io_netcdf)
     add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
+endif()
+
+if(NOT TARGET io_netcdf_data)
+    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
 endif()
 
 if(NOT TARGET fortrangis)

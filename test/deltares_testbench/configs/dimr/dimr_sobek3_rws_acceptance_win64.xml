@@ -15,19 +15,19 @@
         <locations>
             <location name="reference_engines">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
-            <location name="cases">
+            <location name="cases">:qandadiv
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases/</root>
+                <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+                <root>{server_base_url}/references</root>
             </location>
             <location name="local">
                 <root>./data/engines</root>
@@ -72,7 +72,7 @@
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="skillbed_default">
+        <testCase name="sobek3_default">
             <programs>
                 <program ref="PYTHON" seq="1">
                     <arguments>
@@ -103,7 +103,8 @@
             <programs>
                 <program ref="dimr">
                     <arguments>
-                        <argument>dimr.xml</argument>
+                        <argument>dimr_config.xml</argument>
+                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>

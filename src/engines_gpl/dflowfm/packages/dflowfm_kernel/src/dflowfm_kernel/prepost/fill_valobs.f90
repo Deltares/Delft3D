@@ -162,9 +162,6 @@ subroutine fill_valobs()
                valobs(IPNT_wx,i) = valobs(IPNT_wx,i) + wx(LLL) * wcL(k3,LLL)
                valobs(IPNT_wy,i) = valobs(IPNT_wy,i) + wy(LLL) * wcL(k3,LLL)
             enddo
-            !LL = iabs(nd(k)%ln(1))
-            !valobs(IPNT_wx,i)  = wx(LL)
-            !valobs(IPNT_wy,i)  = wy(LL)
          endif
          if (jaPATM > 0 .and. allocated(patm)) then
             valobs(IPNT_PATM,i)  = PATM(k)
@@ -178,7 +175,7 @@ subroutine fill_valobs()
             valobs(IPNT_WAVEH,i) = hwav(k)*wavfac
             valobs(IPNT_WAVET,i) = twav(k)
             if (.not. flowWithoutWaves) then
-               valobs(IPNT_WAVED,i) = 270d0-phiwav(k)  ! Direction from
+               valobs(IPNT_WAVED,i) = modulo(270d0 - phiwav(k), 360d0)  ! Direction from
                valobs(IPNT_WAVEL,i) = rlabda(k)
                valobs(IPNT_WAVEU,i) = uorb(k)
             endif
@@ -357,20 +354,6 @@ subroutine fill_valobs()
                if (idensform > 10 ) then  
                   valobs(IPNT_RHO+klay-1,i) = rho(kk)
                endif
-               if (kmx > 0) then 
-                   if (zws(kt) - zws(kb-1) > epshu .and. kk < kt ) then
-                      if (idensform > 10 ) then           
-                         prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
-                         drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)    ! FIXME!!!!
-                      else 
-                         drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
-                      endif
-                      rhomea  = 0.5d0*( rho(kk+1) + rho(kk) )
-                      valobs(IPNT_BRUV+klay-1,i) = -ag*drhodz/rhomea
-                  else
-                      valobs(IPNT_BRUV+klay-1,i) = 0d0 
-                  endif
-               endif
             end if
             if (jahisvelocity > 0) then
                valobs(IPNT_UMAG+klay-1,i) = ucmag(kk)
@@ -423,34 +406,24 @@ subroutine fill_valobs()
          end do
          valobs(IPNT_SMX,i) = max( smxobs(i), s1(k) )
 
-!         if ( kmx.gt.0 ) then
-!            LL = iabs(nd(k)%ln(1))
-!            call getLbotLtop(LL,Lb,Lt)
-!            do L = Lb-1, Lt
-!               klay = L-Lb+2
-!               valobs(IPNT_ZWS+klay-1,i) = zws(kb + L-Lb)
-!!               if (klay > 1) then
-!!                  valobs(IPNT_ZCS+klay-2,i) = 0.5d0*(zws(kb + klay-2)+zws(kb + klay-3))
-!!               endif
-!               if ( iturbulencemodel.ge.2 ) then
-!                  valobs(IPNT_VICWW + klay-1,i) = vicwwu (L)
-!               end if
-!               if ( iturbulencemodel.ge.3 ) then
-!                  valobs(IPNT_TKIN  + klay-1,i) = turkin1(L)
-!                  valobs(IPNT_TEPS  + klay-1,i) = tureps1(L)
-!               endif
-!               if (idensform > 0 .and. jaRichardsononoutput > 0) then
-!                  valobs(IPNT_RICH + klay-1,i) = rich(L)
-!               endif
-!            enddo
-!         end if
-
          if ( kmx.gt.0 ) then
             call getkbotktop(k, kb, kt)
             call getlayerindices(k, nlayb, nrlay)
             do kk = kb-1, kt
                klay = kk - kb + nlayb + 1
                valobs(IPNT_ZWS+klay-1,i) = zws(kk)
+               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
+                     if (idensform > 10 ) then           
+                        prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
+                        drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)
+                     else 
+                        drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
+                     endif
+                     rhomea  = 0.5d0*( rho(kk+1) + rho(kk) )
+                     valobs(IPNT_BRUV+klay-1,i) = -ag*drhodz/rhomea
+                  endif
+               end if
             enddo
 
             call getlink1(k,LL)
@@ -524,6 +497,10 @@ subroutine fill_valobs()
          if (jarain > 0 .and. jahisrain > 0) then
             valobs(IPNT_RAIN,i) = rain(k)
          end if
+         
+         if (allocated(airdensity) .and. jahis_airdensity > 0) then
+            valobs(IPNT_AIRDENSITY,i) = airdensity(k)
+         end if
 
 !        Infiltration
          if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
@@ -534,11 +511,6 @@ subroutine fill_valobs()
                valobs(IPNT_INFILTACT,i) = 0d0
             end if
          end if
-
-!        Tau
-         !if (jahistaucurrent > 0) then
-         !   valobs(IPNT_TAU,i) = taus(k)
-         !end if
 
 !        Heatflux
          if (jatem > 0 .and. jahisheatflux > 0) then

@@ -93,13 +93,13 @@ subroutine flow_sedmorinit()
     if (.not. ex) then
        call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - *.sed file in mdu file does not exist.')
        return
-    end if
+    endif
 
     inquire (file = trim(md_morfile), exist = ex)
     if (.not. ex) then
        call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - *.mor file in mdu file does not exist.')
        return
-    end if
+    endif
 
     if( allocated( nambnd) ) deallocate( nambnd )
     allocate( nambnd(nopenbndsect) )
@@ -116,29 +116,29 @@ subroutine flow_sedmorinit()
           case (3,4)
              ltur_ = 2
        end select
-    end if
+    endif
 
     call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
     if (error) then
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
         return
-    end if
+    endif
 
     do i = 1, stmpar%lsedtot
        if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
           if (jawave .ne. 4) then
              call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Sediment transport formula '//trim(stmpar%trapar%name(i))//' is not supported without the surfbeat model.')
              return
-          end if
-       end if
-    end do
+          endif
+       endif
+    enddo
 
     ! Set transport velocity definitions according to morfile settings
     !
     jatranspvel = 1                              ! default eul bedload, lag susp load
     if (stmpar%morpar%eulerisoglm .and. jawave > 0) then
         jatranspvel = 2                          ! everything euler
-    end if
+    endif
 
     if (stmpar%morpar%eulerisoglm .and. jawave == 0) then
         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - EulerISOGLM set to .false., as waves are not modeled.')
@@ -146,7 +146,7 @@ subroutine flow_sedmorinit()
 
     if (stmpar%morpar%glmisoeuler) then
         jatranspvel = 0                          ! everything lagrangian
-    end if
+    endif
     !
     call nullsedtra(sedtra)
     call allocsedtra(sedtra, stmpar%morpar%moroutput, max(kmx,1), stmpar%lsedsus, stmpar%lsedtot, 1, ndx, 1, lnx, stmpar%morpar%nxx, stmpar%morpar%moroutput%nstatqnt)
@@ -184,7 +184,7 @@ subroutine flow_sedmorinit()
         else
            call mess(LEVEL_WARN , 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')
         endif
-    end if
+    endif
 
     nbr = network%brs%count
     if ( jased.eq.4 .and. nbr > 0) then
@@ -265,7 +265,7 @@ subroutine flow_sedmorinit()
 
        call clearstack (mtd%messages)
        deallocate(mtd%messages)
-    end if
+    endif
 
     ! ad hoc allocation of dummy variables
     allocate(mtd%dzbdt(ndx))
@@ -293,7 +293,7 @@ subroutine flow_sedmorinit()
        allocate(ssccum(stmpar%lsedsus,Ndkx))
        sed    = 0d0
        ssccum = 0d0
-    end if
+    endif
     !
     call rdinimorlyr(stmpar%lsedtot, stmpar%lsedsus, mdia, error, &
                    & griddim, stmpar%morlyr, stmpar%morpar, stmpar%sedpar, &
@@ -301,10 +301,13 @@ subroutine flow_sedmorinit()
     if (error) then
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdinimorlyr.')
         return
-    end if
+    endif
     !    set pointers
     call inipointers_erosed()
-    call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
+    !    update d50 and bed composition if there is no restartfile (if a restartfile exists, this is done inside unc_read_map_or_rst instead)
+    if (len_trim(md_restartfile) == 0 ) then
+        call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
+    endif
     !
     !   for boundary conditions: map suspended fractions index to total fraction index
     !
@@ -326,8 +329,8 @@ subroutine flow_sedmorinit()
           else
              isussand = isussand + 1
           endif
-       end if
-    end do
+       endif
+    enddo
     !
     if (numfracs > 0) then    ! fractions from boundaries
        !
@@ -340,9 +343,9 @@ subroutine flow_sedmorinit()
              have_mudbnd = .true.
           else
              have_sandbnd = .true.
-          end if
-       end do
-    end if
+          endif
+       enddo
+    endif
     !
     !
     ! If Van Rijn 2004 transport formula is used (iform = -2), switch on the
@@ -372,7 +375,7 @@ subroutine flow_sedmorinit()
        success = .true.
        if (.not. size(stmpar%morpar%moroutput%avgintv,1)==3) then
           success = .false.
-       end if
+       endif
        call getOutputTimeArrays(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, success)
        if (ti_sed > (tstop_user-tstart_user)) then
           ti_sed = tstop_user-tstart_user
@@ -385,7 +388,7 @@ subroutine flow_sedmorinit()
        time_sed = ti_seds
        !
        call morstats_setflags()
-    end if
+    endif
     !
     ! Arrays for transports before upwinding and bed slope effects
     if (stmpar%morpar%moroutput%rawtransports) then
@@ -464,15 +467,15 @@ subroutine flow_sedmorinit()
        call selectelset_internal_nodes(xz, yz, kcs, ndx, kp, pointscount, LOC_FILE=md_morphopol, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE)
        do k=1,pointscount
           kcsmor(kp(k)) = inmorphopol
-       end do
-    end if
+       enddo
+    endif
 
     if (stmpar%morpar%multi) then
        if (initialize_mormerge_mpi(stmpar%morpar, stmpar%lsedtot, ndxi, jampi, my_rank, ndomains, DFM_COMM_DFMWORLD) &
            /= DFM_NOERR) then
           call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Mormerge initialization failed')
           goto 1234
-       end if 
+       endif 
 
        allocate (stmpar%morpar%mergebuf(ndxi*stmpar%lsedtot), stat = ierr)
        if (ierr /= 0) then

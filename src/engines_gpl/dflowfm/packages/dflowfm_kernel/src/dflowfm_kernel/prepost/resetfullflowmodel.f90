@@ -69,6 +69,7 @@
  use unstruc_caching
  use m_subsidence
  use m_sferic, only : default_sferic
+ use m_1d2d_fixedweirs, only : default_1d2d_fixedweirs
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
@@ -95,6 +96,8 @@
     call default_waves()
 
     call default_sobekdfm()
+
+    call default_1d2d_fixedweirs()
 
     call dealloc(network) ! flow1d
 

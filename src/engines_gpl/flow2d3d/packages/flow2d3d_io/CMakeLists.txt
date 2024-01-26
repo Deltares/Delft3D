@@ -1,13 +1,13 @@
 set(library_name flow2d3d_io)
 
 # Define include directories
-get_module_include_path(${checkout_src_root}/${deltares_common_module} 
+get_module_include_path(${checkout_src_root}/${deltares_common_module}
                         ${library_name}
                         deltares_common_include_path)
-get_module_include_path(${checkout_src_root}/${esmfsm_module} 
-                        ${library_name} 
+get_module_include_path(${checkout_src_root}/${esmfsm_module}
+                        ${library_name}
                         esmfsm_module_include_path)
-get_module_include_path(${checkout_src_root}/${flow2d3d_data_module} 
+get_module_include_path(${checkout_src_root}/${flow2d3d_data_module}
                         ${library_name}
                         flow2d3d_data_include_path)
 
@@ -52,10 +52,11 @@ set(oss_dependencies_general    deltares_common
                                 flow2d3d_data
                                 io_hyd
                                 io_netcdf
+                                io_netcdf_data
                                 morphology_data
                                 morphology_io
                                 morphology_kernel
-                                morphology_plugins_c) 
+                                morphology_plugins_c)
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
@@ -63,15 +64,13 @@ if (UNIX)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
-    set(oss_dependencies ${oss_dependencies_general})
+    set(oss_dependencies ${oss_dependencies_general}
+                         netcdff)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
-         PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
-    
+         PkgConfig::NETCDF)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}

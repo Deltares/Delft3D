@@ -1,4 +1,4 @@
-function [revstring,repo_url,hash] = determine_revision(dirname,dbid)
+function [revString,repoUrl,hash] = determine_revision(dirname,dbid)
 %DETERMINE_REVISION Determine the Git hash or Subversion revision string.
 %   STR = DETERMINE_REVISION(DIR) determines a revision string representing
 %   the code status in the provided DIR using information from Subversion
@@ -38,7 +38,7 @@ function [revstring,repo_url,hash] = determine_revision(dirname,dbid)
 %   $Id$
 
 Id = '$Id$';
-repo_url = '$HeadURL$';
+repoUrl = '$HeadURL$';
 hash = 'N/A';
 if ~strcmp(Id(2:end-1),'Id')
     % Subversion keyword expansion seems to be active.
@@ -52,67 +52,70 @@ if ~strcmp(Id(2:end-1),'Id')
         switch iter
             case 1
                 if strncmp(computer,'PCWIN',5)
-                    SvnVersion = '../../../../third_party_open/subversion/bin/win32/svnversion.exe';
+                    svnVersion = '../../../../third_party_open/subversion/bin/win32/svnversion.exe';
                 else
-                    SvnVersion = '/usr/bin/svnversion';
+                    svnVersion = '/usr/bin/svnversion';
                 end
             case 2
-                if strncmp(SvnVersion,'../',3)
-                    SvnVersion = SvnVersion(4:end); % one level less deep
+                if strncmp(svnVersion,'../',3)
+                    svnVersion = svnVersion(4:end); % one level less deep
                 end
             case 3
-                svnbin = getenv('SVN_BIN_PATH');
-                SvnVersion = [svnbin filesep 'svnversion.exe'];
+                svnPath = getenv('SVN_BIN_PATH');
+                svnVersion = [svnPath filesep 'svnversion.exe'];
             case 4
-                svnbin = 'c:\Program Files\Subversion\bin';
-                SvnVersion = [svnbin filesep 'svnversion.exe'];
+                svnPath = 'c:\Program Files\Subversion\bin';
+                svnVersion = [svnPath filesep 'svnversion.exe'];
             case 5
-                [s,SvnVersion] = system('which svnversion');
+                [s,svnVersion] = system('which svnversion');
                 if s~=0
-                    SvnVersion = 'The WHICH command failed';
+                    svnVersion = 'The WHICH command failed';
                 end
             case 6
-                dprintf(dbid,'Unable to locate SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
-                [revmin,revmax,changed] = svnversion(dirname,dbid);
-                return
+                svnVersion = '';
+                break
         end
         %
-        if exist(SvnVersion,'file')
+        if exist(svnVersion,'file')
             break
         end
         iter = iter+1;
     end
 
-    [s,revstring] = system(['"' SvnVersion '" "' dirname '"']);
+    if ~isempty(svnVersion)
+        [s,revString] = system(['"' svnVersion '" "' dirname '"']);
+    else
+        s = 0;
+    end
     if s==0
-        changed = ismember('M',revstring);
-        rev = sscanf(revstring,'%i:%i');
+        changed = ismember('M',revString);
+        rev = sscanf(revString,'%i:%i');
         if isempty(rev) %exported
-            revmin = 0;
-            revmax = 0;
+            revMin = 0;
+            revMax = 0;
             changed = 1;
         elseif length(rev)==1
-            revmin = rev;
-            revmax = rev;
+            revMin = rev;
+            revMax = rev;
         else
-            revmin = rev(1);
-            revmax = rev(2);
+            revMin = rev(1);
+            revMax = rev(2);
         end
     else
         dprintf(dbid,'Unable to execute SVNVERSION program.\nUsing built-in implementation of svnversion.\n')
-        [revmin,revmax,changed] = svnversion(dirname,dbid);
+        [revMin,revMax,changed] = svnversion(dirname,dbid);
     end
 
-    if revmax<0
-        revstring = '[unknown revision]';
+    if revMax<0
+        revString = '[unknown revision]';
     else
-        revstring = sprintf('%05.5i',revmax);
-        if changed || revmin<revmax
-            revstring = [revstring ' (changed)'];
+        revString = sprintf('%05.5i',revMax);
+        if changed || revMin<revMax
+            revString = [revString ' (changed)'];
         end
     end
 
-    repo_url = repo_url(11:end-23);
+    repoUrl = repoUrl(11:end-23);
 else
     % Use Git
 
@@ -121,7 +124,7 @@ else
     [commit,b] = strtok(b);
     [hash,b] = strtok(b);
     b = strsplit(b,local_newline);
-    has_local_commits = isempty(strfind(b{1},'origin/'));
+    hasLocalCommits = isempty(strfind(b{1},'origin/'));
     % if we could remove -n 1, we could look for the latest hash available
     % at the origin, but that triggers a pager to wait for keypresses. The
     % option --no-pagers before log seems to work on the command line, but
@@ -130,7 +133,7 @@ else
     % get repository
     [a,b] = system('git remote -v');
     [origin,b] = strtok(b);
-    [repo_url,b] = strtok(b);
+    [repoUrl,b] = strtok(b);
 
     % git describe
     %[a,b] = system(['git describe "' dirname '"']);
@@ -141,14 +144,48 @@ else
     % get status
     [a,b] = system(['git status "' dirname '"']);
     b = strsplit(b,local_newline);
+    
     staged = strncmp(b,'Changes to be committed:',24);
+    hasStagedChanges = any(staged);
+    
     unstaged = strncmp(b,'Changes not staged for commit:',30);
-    untracked = strncmp(b,'Untracked files:',16);
+    hasUnstagedChanges = any(unstaged);
+    
+    hasUntrackedChanges = check_and_list_files(b,'Untracked files:','Untracked files:\n');
 
     % we should also check if we have local commits to be pushed.
-    revstring = hash(1:9);
-    if has_local_commits || any(staged) || any(unstaged) || any(untracked)
-        revstring = [revstring ' (changed)'];
+    revString = hash(1:9);
+    if hasLocalCommits || hasStagedChanges || hasUnstagedChanges || hasUntrackedChanges
+        revString = [revString ' (changed)'];
+    end
+end
+
+function needsCheck = check_and_list_files(b,checkString,printString)
+isCheckString = strncmp(b,checkString,length(checkString));
+needsCheck = any(isCheckString);
+if needsCheck
+    i = find(isCheckString);
+    % i+1: (use "git add <file>..." ...
+    needsCheck = false;
+    i = i+2;
+    checkHeaderPrinted = false;
+    while i < length(b) && abs(b{i}(1)) == 9
+        file = b{i}(2:end);
+        folderAndFile = strsplit(file,'/');
+        if length(folderAndFile) == 1 || strcmp(folderAndFile{1},'progsrc')
+            % file in current folder
+            % or file in progsrc folder or below
+            needsCheck = true;
+            if ~checkHeaderPrinted
+                fprintf(printString);
+                checkHeaderPrinted = true;
+            end
+            fprintf(' * %s\n',file);
+        end
+        i = i+1;
+    end
+    if checkHeaderPrinted
+        fprintf('\n');
     end
 end
 

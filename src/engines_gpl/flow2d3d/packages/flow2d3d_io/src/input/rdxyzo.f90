@@ -50,6 +50,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     use globaldata
     use dfparall
     use system_utils, only: exifil
+    use m_rdrgf_paral
     !
     implicit none
     !
@@ -198,8 +199,8 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        ! Read sferic, xcor and ycor
        !
-       call rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
-                & xcor      ,ycor      ,sferic    ,gdp       )
+       call rdrgf_paral(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
+                      & xcor      ,ycor      ,sferic    ,gdp       )
     else
        !
        ! No grid file

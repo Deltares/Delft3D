@@ -57,6 +57,6 @@
  tsec  =  timsec - ndag*24d0*3600d0
  ihour =   tsec/3600d0
  imin  =  (tsec - ihour*3600d0)/60d0
- isec  =  (tsec - ihour*3600d0 - imin*60d0)
+ isec  =  nint(tsec - ihour*3600d0 - imin*60d0)
 
  end subroutine datetime_from_refdat

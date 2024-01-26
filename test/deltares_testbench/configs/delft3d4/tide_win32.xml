@@ -18,17 +18,15 @@
                     https://repos.deltares.nl/repos/ds/tags/delft3d/wix (msi)/4.01.00/source/delft3d/win32
                     ../../engines_for_reference/trunk/bin/delft3d_closed_source/win32/tide/bin/
                 </root-->
-                <root>
-                    https://repos.deltares.nl/repos/DSCTestbench/trunk/references/bin
-                </root>
+                <root>{server_base_url}/references/bin</root>
             </location>
             <location name="reference_results">
-                <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+               <credential ref="commandline"/>
+               <root>{server_base_url}/references</root>
             </location>
             <location name="cases">
-                <credential ref="commandline"/>
-                <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+               <credential ref="commandline"/>
+               <root>{server_base_url}/cases</root>
             </location>
             <location name="engines_to_compare">
                 <!--root>

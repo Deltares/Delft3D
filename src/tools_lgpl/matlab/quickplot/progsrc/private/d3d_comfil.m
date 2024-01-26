@@ -47,17 +47,54 @@ function varargout=d3d_comfil(FI,domain,field,cmd,varargin)
 %   $Id$
 
 %========================= GENERAL CODE =======================================
+T_=1; ST_=2; M_=3; N_=4; K_=5;
+
 if nargin<2
     error('Not enough input arguments')
-elseif nargin==2
+end
+
+OrigFI = FI;
+nPartitions = 1; % single partition
+mergeParts = false;
+mergeDim = -1;
+if isfield(FI,'NEFIS')
+    nPartitions = length(FI.NEFIS); 
+    if domain <= nPartitions
+        FI = FI.NEFIS(domain);
+        nPartitions = 1;
+    else
+        mergeParts = (domain == nPartitions+2); % merged partitions
+        switch FI.Merge.Dimension
+            case 'M'
+                mergeDim = M_;
+            case 'N'
+                mergeDim = N_;
+        end
+        FI = FI.NEFIS(1);
+    end
+    if isfield(OrigFI,'QP_Options')
+        FI.QP_Options = OrigFI.QP_Options;
+    end
+end
+
+if nargin==2
     varargout={infile(FI,domain)};
+    if nPartitions > 1 && ~mergeParts
+        Out = varargout{1};
+        for i = 1:length(Out)
+            if Out(i).DimFlag(mergeDim)
+                Out(i).DimFlag(mergeDim) = inf;
+            end
+        end
+        varargout{1} = Out;
+    end
     return
 elseif ischar(field)
     switch field
         case 'options'
-            [varargout{1:2}]=options(FI,cmd,varargin{:});
+            [varargout{1:2}]=options(OrigFI,cmd,varargin{:});
         case 'domains'
-            varargout={domains(FI)};
+            varargout={domains(OrigFI)};
         case 'dimensions'
             varargout={dimensions(FI)};
         case 'locations'
@@ -78,7 +115,10 @@ cmd=lower(cmd);
 switch cmd
     case 'size'
         varargout={getsize(FI,Props)};
-        return;
+        if mergeParts && Props.DimFlag(mergeDim)
+            varargout{1}(mergeDim) = OrigFI.Merge.Length;
+        end
+        return
     case 'times'
         varargout={readtim(FI,Props,varargin{:})};
         return
@@ -98,29 +138,23 @@ end
 if strcmp(Props.Name,'grid')
     DataInCell = 1;
 end
-if isfield(FI,'Partitions')
-    if domain<=FI.Partitions{1}
-        [Ans,FI.NEFIS(domain)] = get_single_partition(FI.NEFIS(domain),1,Props,XYRead,DataRead,DataInCell,varargin);
-    else
-        for d = FI.Partitions{1}:-1:1
-            [Ans(d),FI.NEFIS(d)] = get_single_partition(FI.NEFIS(d),1,Props,XYRead,DataRead,DataInCell,varargin);
-        end
-    end
-else
-    [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,varargin);
-end
-varargout{2} = FI;
+
+hasSubfields = ~isempty(getsubfields(OrigFI,Props));
+[Ans,OrigFI] = merge_trim_com(OrigFI,domain,Props,XYRead,DataRead,DataInCell,@get_single_partition,nPartitions,mergeParts,mergeDim,hasSubfields,varargin{:});
+
+varargout{2} = OrigFI;
 varargout{1} = Ans;
 
 function Domains = domains(FI)
 if isfield(FI,'Partitions')
-    Domains = multiline(sprintf('partition %3.3d-',1:FI.Partitions{1}),'-','cell');
-    Domains{end} = 'all partitions';
+    Domains = multiline(sprintf('partition %3.3d-',1:FI.Partitions{1}+1),'-','cell');
+    Domains{end-1} = 'all partitions';
+    Domains{end} = 'merged partitions';
 else
     Domains = {};
 end
 
-function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,var_arg_in)
+function [Ans,FI] = get_single_partition(FI,domain,Props,XYRead,DataRead,DataInCell,varargin)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
 DimFlag=Props.DimFlag;
@@ -130,11 +164,11 @@ fidx=find(DimFlag);
 subf=getsubfields(FI,Props);
 if isempty(subf)
     % initialize and read indices ...
-    idx(fidx(1:length(var_arg_in)))=var_arg_in;
+    idx(fidx(1:length(varargin)))=varargin;
 else
     % initialize and read indices ...
-    Props.SubFld=cat(2,var_arg_in{1},Props.SubFld);
-    idx(fidx(1:(length(var_arg_in)-1)))=var_arg_in(2:end);
+    Props.SubFld=cat(2,varargin{1},Props.SubFld);
+    idx(fidx(1:(length(varargin)-1)))=varargin(2:end);
 end
 
 % select appropriate timestep ...

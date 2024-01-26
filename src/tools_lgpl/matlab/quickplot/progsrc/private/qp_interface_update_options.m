@@ -31,7 +31,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 %   $HeadURL$
 %   $Id$
 
-[DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(mfig,UD.MainWin);
+[DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(UD.MainWin);
 if isnumeric(Props.NVal) && Props.NVal < 0
     try
         Handle_SelectFile=findobj(mfig,'tag','selectfile');
@@ -56,30 +56,16 @@ setappdata(qv,'animate',strcmp(PlotType,'Animate'))
 set(findobj(mfig,'tag','loaddata'),'enable',onoff(EnableLoad))
 
 
-function [DomainNr,Props,subf,selected,stats,vslice,hslice]=get_basics(mfig,MW)
+function [DomainNr,Props,subf,selected,stats,vslice,hslice]=get_basics(MW)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
-Handle_Domain=findobj(mfig,'tag','selectdomain');
-DomainNr=get(Handle_Domain,'value');
-
-datafields=findobj(mfig,'tag','selectfield');
-Props=get(datafields,'userdata');
-subf = [];
+[DomainNr,Props,subf] = qpfield;
 selected = [];
 stats =[];
 vslice=0;
 hslice=0;
 if isempty(Props)
     return
-end
-
-fld=get(datafields,'value');
-Props=Props(fld);
-
-if strcmp(get(MW.SubFld,'enable'),'on')
-    subf={get(MW.SubFld,'value')};
-else
-    subf={};
 end
 
 DimFlag=Props.DimFlag;
@@ -1471,14 +1457,16 @@ if ask_for_thinningmode
     thinfld=findobj(OH,'tag','thinfld=?');
     set(thinfld,'enable','on','backgroundcolor',Active)
     thinmodes = {'none','uniform','distance'}'; %,'regrid'
-    %if unstructured % no uniform thinning for unstructured meshes
-    %    thinmodes(2)=[];
-    %end
+    switch Ops.presentationtype
+        case {'values','labels'}
+            thinmodes = cat(1,thinmodes,{'dynamic'});
+    end
     prevthinmodes = get(thinfld,'string');
     thinmode = prevthinmodes{get(thinfld,'value')};
     if ~isequal(prevthinmodes,thinmodes)
-        thinmode=thinmodes{1};
-        set(thinfld,'string',thinmodes,'value',1)
+        ithinmode = max(1,ustrcmpi(thinmode,thinmodes));
+        set(thinfld,'string',thinmodes,'value',ithinmode)
+        thinmode = thinmodes{ithinmode};
     end
     Ops.thinningmode=thinmode;
     switch lower(Ops.thinningmode)
@@ -1493,6 +1481,11 @@ if ask_for_thinningmode
             thindist=findobj(OH,'tag','thindist=?');
             set(thindist,'enable','on','backgroundcolor',Active);
             Ops.thinningdistance=get(thindist,'userdata');
+        case {'dynamic'}
+            set(findobj(OH,'tag','thincount'),'enable','on');
+            thincount=findobj(OH,'tag','thincount=?');
+            set(thincount,'enable','on','backgroundcolor',Active);
+            Ops.thinningcount = get(thincount,'userdata');
     end
 end
 
@@ -1800,6 +1793,7 @@ if nval>=0
     if strncmp(geometry,'UGRID',5) && multiple(M_) && (~multiple(K_) || hslice) && ~multiple(T_)
         ExpTypes{end+1}='netCDF3 file';
         ExpTypes{end+1}='netCDF4 file';
+        ExpTypes{end+1}='Gmsh file';
     end
     if sum(multiple)==1 && sum(multiple([M_ N_]))==1 && nval==0
         ExpTypes{end+1}='spline';

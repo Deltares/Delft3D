@@ -1461,7 +1461,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                endif 
             endif
          else
-            call mess(LEVEL_ERROR, 'TcrEro can only be set for fractions governed by the Parteniades-Krone transport formula.')
+            call mess(LEVEL_WARN, 'TcrEro values ignored for fractions not governed by the Parteniades-Krone transport formula.')
          endif
       enddo
       return
@@ -1485,7 +1485,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                endif 
             endif
          else
-            call mess(LEVEL_ERROR, 'TcrSed can only be set for fractions governed by the Parteniades-Krone transport formula.')
+            call mess(LEVEL_WARN, 'TcrSed values ignored for fractions not governed by the Parteniades-Krone transport formula.')
          endif
       enddo
       return
@@ -1901,7 +1901,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    use m_wind
    use unstruc_channel_flow, only: network
    use unstruc_messages
-   use m_transport, only: NUMCONST, constituents, const_names, ITRA1
+   use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
   
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2136,13 +2136,19 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       endif
       select case(field_name)
       case("discharge")
-         x = c_loc(qstss((item_index-1)*3+1))
+         x = c_loc(qstss((item_index-1)*(NUMCONST+1)+1))
          return
       case("change_in_salinity")
-         x = c_loc(qstss((item_index-1)*3+2))
+         if (ISALT == 0) then
+             return
+         endif
+         x = c_loc(qstss((item_index-1)*(NUMCONST+1)+ISALT+1))
          return
       case("change_in_temperature")
-         x = c_loc(qstss((item_index-1)*3+3))
+         if (ITEMP == 0) then
+             return
+         endif
+         x = c_loc(qstss((item_index-1)*(NUMCONST+1)+ITEMP+1))
          return
       end select
    ! Dambreak
@@ -2332,6 +2338,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
    use m_wind
    use unstruc_channel_flow, only: network
    use m_General_Structure, only: update_widths
+   use m_transport, only: NUMCONST, ISALT, ITEMP
 
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2525,15 +2532,21 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       select case(field_name)
       case("discharge")
          call c_f_pointer(xptr, x_0d_double_ptr)
-         qstss((item_index-1)*3+1) = x_0d_double_ptr
+         qstss((item_index-1)*(NUMCONST+1)+1) = x_0d_double_ptr
          return
       case("change_in_salinity")
+         if (ISALT == 0) then
+             return
+         endif
          call c_f_pointer(xptr, x_0d_double_ptr)
-         qstss((item_index-1)*3+2) = x_0d_double_ptr
+         qstss((item_index-1)*(NUMCONST+1)+ISALT+1) = x_0d_double_ptr
          return
       case("change_in_temperature")
+         if (ITEMP == 0) then
+             return
+         endif
          call c_f_pointer(xptr, x_0d_double_ptr)
-         qstss((item_index-1)*3+3) = x_0d_double_ptr
+         qstss((item_index-1)*(NUMCONST+1)+ITEMP+1) = x_0d_double_ptr
          return
       end select
 	 

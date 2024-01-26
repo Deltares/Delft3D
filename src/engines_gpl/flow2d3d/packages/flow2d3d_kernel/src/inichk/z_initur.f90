@@ -356,6 +356,8 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ! exchange turbulence values with neighbours for parallel runs
     !
     call dfexchg ( rtur0(:,:,1), 0, kmax, dfloat, nm_pos, gdp )
-    call dfexchg ( rtur0(:,:,2), 0, kmax, dfloat, nm_pos, gdp )
+    if (ltur == 2) then
+       call dfexchg ( rtur0(:,:,2), 0, kmax, dfloat, nm_pos, gdp )
+    endif
     !
 end subroutine z_initur

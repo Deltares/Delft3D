@@ -306,6 +306,7 @@ else
                     file = s(4:i-1);
                     line = sscanf(s(i+9:end),'%i',1);
                     file = which(file);
+                    %#exclude opentoline
                     opentoline(file,line,0)
                 end
             end

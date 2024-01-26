@@ -1054,6 +1054,15 @@ else
     error('Unable to locate obsPointsFile keyword in [Files] chapter.');
 end
 %
+outputfolder = relpath(md_path,'output');
+outputfiles = {'gridpoints','observations','reachsegments','waterbalance'};
+for i = 1:length(outputfiles)
+    outputfile = outputfiles{i};
+    try
+        MF.output.(outputfile) = nc_info(fullfile(outputfolder,[outputfile '.nc']));
+    catch
+    end
+end
 
 
 function MF = mduread(MF,md_path)
@@ -1072,10 +1081,10 @@ if ~isempty(mshname)
             if ismesh(i)
                 if strcmp(Q(i).Geom, 'UGRID1D_NETWORK-NODE')
                     mesh1d_id = Q(i).varid{2};
-                    Mesh1D = F.Dataset(mesh1d_id+1);
+                    Mesh1D = NetFile.Dataset(mesh1d_id+1);
                     csp = ustrcmpi('coordinate_space', {Mesh1D.Attribute.Name});
                     Network = Mesh1D.Attribute(csp).Value;
-                    network_id = ustrcmpi(Network,{F.Dataset.Name})-1;
+                    network_id = ustrcmpi(Network,{NetFile.Dataset.Name})-1;
                     for j = 1:length(ismesh)
                         if ismesh(j)
                             if isequal(Q(j).varid{2}, network_id)

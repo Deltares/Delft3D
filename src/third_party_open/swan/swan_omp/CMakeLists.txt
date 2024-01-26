@@ -2,6 +2,9 @@
 
 message(STATUS "swan omp:")
 
+# Don't put the Fortran modules of the SWAN OpenMP executable build in a central location
+unset(CMAKE_Fortran_MODULE_DIRECTORY)
+
 # Set directory which contains all source files
 set(src_path ../src)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
@@ -27,8 +30,9 @@ add_executable(${executable_name}   ${headers}
 
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies    netcdf4
-                        netcdff) 
+    set(exe_dependencies netcdf4
+                         netcdff)
+
     oss_include_libraries(${executable_name} exe_dependencies)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
@@ -55,17 +59,17 @@ if(UNIX)
 
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
 
     target_link_libraries(${executable_name}
          PkgConfig::NETCDF
-         PkgConfig::NETCDF_FTN)
+         netcdff)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
-                        ${version_include_dir})
+                        ${version_include_dir}
+                        ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
     add_definitions(-DHAVE_CONFIG_H=1)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS "${openmp_flag}")
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
@@ -80,7 +84,7 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
 
-# Define preprocessor definitions 
+# Define preprocessor definitions
 if (WIN32)
     target_compile_definitions(${executable_name} PRIVATE "WIN32;SWANEXE")
 endif(WIN32)
@@ -88,9 +92,6 @@ endif(WIN32)
 if (UNIX)
     target_compile_definitions(${executable_name} PRIVATE "SWANEXE")
 endif(UNIX)
-
-
-
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${checkout_src_root}/third_party_open/swan FILES ${executable_files})
@@ -122,4 +123,3 @@ endif(UNIX)
 if (WIN32)
     install(PROGRAMS ../scripts/swan.bat DESTINATION bin)
 endif(WIN32)
-

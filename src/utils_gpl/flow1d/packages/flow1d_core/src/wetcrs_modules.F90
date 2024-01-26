@@ -249,7 +249,7 @@ subroutine CalcConveyanceTable(convtab, frictype, friction_value_per_segment, y,
    integer,          dimension(:),    intent(in   )     :: segmentToSectionIndex       !< Table returns frictionIndex for segment (i)
    integer,          dimension(:),    intent(in   )     :: frictionType                !< Friction type
    double precision, dimension(:),    intent(in   )     :: frictionValue               !< Friction value
-   integer,                           intent(  out)     :: levelscount_convtab         !< Number of levels in new conveyance table.
+   integer,                           intent(inout)     :: levelscount_convtab         !< Number of levels in new conveyance table.
    
    ! Local variables
    
@@ -333,10 +333,6 @@ subroutine CalcConveyanceTable(convtab, frictype, friction_value_per_segment, y,
             
             levels(j) = zh
             numlevels = numlevels + 1
-            if (numlevels == levelscount_convtab) then
-               ! no more space in conveyance table
-               j = numlevels+1
-            endif
             
             convtab%flow_width(j)      = total_width
             convtab%flow_area(j)       = total_area

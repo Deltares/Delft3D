@@ -280,7 +280,7 @@
    !     set default kmxsed layer
    !     set kfsed
    !
-   lstart = ised1 - 1
+   lstart = ISED1 - 1
    !
    ! Reset Sourse and Sinkse arrays for all (l,nm)
    !

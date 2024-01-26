@@ -90,16 +90,18 @@ end
 
 
 %=======================
-function dd = exeroot
+function folder = exeroot
 c = computer;
 if strcmp(c(1:2),'PC')
    [status, result] = system('set PATH');
    eql = strfind(result,'=');
    col = strfind(result,';');
-   dd = strtrim(result(eql(1)+1:col(1)-1));
+   folder = strtrim(result(eql(1)+1:col(1)-1));
+   filename = check_path([folder filesep 'd3d_qp.version']);
+   folder = fileparts(filename);
 else % Unix
    % call a mex file
-   dd = fileparts(exepath);
+   folder = fileparts(exepath);
 end
 
 %=======================

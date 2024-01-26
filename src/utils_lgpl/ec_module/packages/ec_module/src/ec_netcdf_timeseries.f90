@@ -48,7 +48,6 @@ module m_ec_netcdf_timeseries
     public   :: ecNetCDFScan
     public   :: ecNetCDFGetTimeseriesValue
     public   :: ecNetCDFGetAttrib
-    public   :: ecNetCDFGetVectormax
 
    contains 
 
@@ -159,6 +158,8 @@ module m_ec_netcdf_timeseries
     integer    :: iDims, nDims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr 
     integer    :: tslen
     integer    :: dimids_tsid(2)
+    integer    :: len_vectordef      
+    logical    :: isVector
     integer, allocatable :: var_dimids(:,:)
     integer, allocatable :: var_ndims(:)
     
@@ -185,6 +186,7 @@ module m_ec_netcdf_timeseries
     allocate (ncptr%standard_names(nVars))
     allocate (ncptr%long_names(nVars))
     allocate (ncptr%variable_names(nVars))
+    allocate (ncptr%vector_definitions(nVars))
     allocate (ncptr%fillvalues(nVars))
     allocate (ncptr%scales(nVars))
     allocate (ncptr%offsets(nVars))
@@ -198,6 +200,14 @@ module m_ec_netcdf_timeseries
     allocate(var_ndims(nVars))
     var_ndims = 0
     do iVars = 1, nVars                                                                     ! Inventorize variables
+       ierr = nf90_inquire_attribute(ncptr%ncid,iVars,'vector',len=len_vectordef)           ! Check if this variable is just a reference to vector
+       if (ierr == 0) then
+            isVector = .True.
+            allocate(character(len=len_vectordef) :: ncptr%vector_definitions(iVars)%s)
+            ierr = nf90_get_att(ncptr%ncid,iVars,'vector',ncptr%vector_definitions(iVars)%s)  
+       else
+            isVector = .False.
+       endif
        ierr = nf90_inquire_variable(ncptr%ncid,iVars,name=ncptr%variable_names(iVars))      ! Variable name
        ierr = nf90_get_att(ncptr%ncid,iVars,'standard_name',ncptr%standard_names(iVars))    ! Standard name if available
        if (ierr /= 0) ncptr%standard_names(iVars) = ncptr%variable_names(iVars)             ! Variable name as fallback for standard_name
@@ -210,6 +220,8 @@ module m_ec_netcdf_timeseries
        ierr = nf90_get_att(ncptr%ncid,iVars,'add_offset',ncptr%offsets(iVars))
        if (ierr/=NF90_NOERR)   ncptr%offsets(iVars) = 0.0_hp
        ierr = nf90_inquire_variable(ncptr%ncid,iVars,ndims=var_ndims(iVars),dimids=var_dimids(:,iVars))
+
+       if (isVector) cycle    ! vector placeholder, not a real variable with data in the file
 
        ! Check for important var: was it the stations?
        cf_role = ''
@@ -269,33 +281,6 @@ module m_ec_netcdf_timeseries
        end if
     enddo 
 
-    !VECTORMAX SUPPORT WILL BE IMPLEMENTED LATER 
-    !vectormax = 1 ! default
-    !do iVars = 1, nVars                                                                     ! Inventorize variables 
-    !   ierr = nf90_inquire_variable(ncptr%ncid,iVars,ndims=var_ndims, dimids=var_dimids)
-    !   n = var_ndims(iVar)
-    !   if (n <= 1) then
-    !      cycle ! Timeseries should at least have the station *and* time dimension
-    !   end if
-    !
-    !   if (var_dimids(n,iVars) == ncptr%ts_dimid) then        ! Check 1: This var is defined on the stations
-    !      if (var_dimids(n-1,iVars) == ncptr%time_dimid) then ! Check 2: this var is also defined in the time dimension
-    !         if (n >= 3) then
-    !            if (var_dimids(n-2,iVars) == ncptr%layer_dimid) then ! Check 3: This vasr is also defined in the layering dimension
-    !               idimvectcandidate = n-3
-    !            else
-    !               idimvectcandidate = n-2
-    !            end if
-    !            
-    !            if (idimvectcandidate >= 1) then
-    !               ! This remaining dimension is then by default interpreted as a vectormax dimension for this var.
-    !               var_vectormax(iVar) = ncptr%dimlen(idimvectcandidate) ! This var has a third dimension, must be the vectormax
-    !            end if
-    !            ! TODO: warning if var contains even more dimensions (var_ndims>4)
-    !         end if ! n>=3 dim
-    !      end if ! time dim
-    !   end if ! station dim
-    !enddo 
     deallocate(cf_role)
     deallocate(positive)
     deallocate(zunits)
@@ -304,19 +289,23 @@ module m_ec_netcdf_timeseries
     end function ecNetCDFInit
 
     !> Scan netcdf instance for a specific quantity name and location label 
-    function ecNetCDFScan (ncptr, quantity, location, q_id, l_id, dimids) result (success)
+    recursive function ecNetCDFScan (ncptr, quantity, location, q_id, l_id, dimids, vectormax) result (success)
     use string_module
     implicit none
     logical                          :: success
     type (tEcNetCDF),   pointer      :: ncptr
     character(len=*),   intent(in)   :: quantity
     character(len=*),   intent(in)   :: location
-    integer, intent(out)             :: q_id
-    integer, intent(out)             :: l_id
-    integer, dimension(:), allocatable, intent(out) :: dimids
+    integer, allocatable             :: q_id(:)
+    integer, intent(out)             :: l_id 
+    integer, allocatable             :: dimids(:)
+    integer, intent(out), optional   :: vectormax
+
     integer    :: ndims
-    integer    :: ivar, itim, ltl
-    integer    :: ierr
+    integer    :: ivar, itim, ltl, iv
+    integer    :: ierr, vmax
+    character(len=30), allocatable   :: elmnames(:)
+    integer, allocatable :: dimids_check(:)
 
     ! initialization
     success = .False.
@@ -324,8 +313,9 @@ module m_ec_netcdf_timeseries
     ! search for standard_name
     do ivar=1, ncptr%nVars
        ltl = len_trim(quantity)
-       if (strcmpi(ncptr%standard_names(ivar), quantity, ltl)) exit
+       if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
     enddo
+    vmax = 1
 
     ! if standard_name not found, search for long_name
     if (ivar > ncptr%nVars) then
@@ -339,91 +329,97 @@ module m_ec_netcdf_timeseries
     if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
        do ivar=1, ncptr%nVars
           ltl = len_trim(quantity)
-          if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
+          if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit 
        enddo
     endif
 
     if (ivar <= ncptr%nVars) then
-       q_id = ivar
+       q_id(1) = ivar
+       if (allocated(ncptr%vector_definitions(ivar)%s)) then
+          call strsplit(ncptr%vector_definitions(ivar)%s,1,elmnames,1,sep=",")
+          vmax = size(elmnames)
+          if (allocated(q_id)) deallocate(q_id)
+          allocate(q_id(vmax))
+          do iv = vmax, 1, -1
+              if (.not. ecNetCDFScan (ncptr, trim(elmnames(iv)), location, &
+                                     q_id, l_id, dimids)) return
+              q_id(iv) = q_id(1)
+          enddo
+        endif
     else
        call setECMessage("Quantity '"//trim(quantity)//"' not found in file '"//trim(ncptr%ncfilename)//"'.")
-       q_id = -1 
+       q_id(1) = -1 
     endif 
-    do itim=1,ncptr%nTims
-       ltl = len_trim(location)
+    do itim = 1, ncptr%nTims
+       ltl  = len_trim(location)
        if (strcmpi(ncptr%tsid(itim), location)) exit ! Found
     enddo 
-    if (itim<=ncptr%nTims) then 
+    if (itim <= ncptr%nTims) then 
        l_id = itim
     else 
        l_id = -1 
     endif 
-    if (l_id<=0 .or. q_id<=0) then 
+    if (l_id <= 0 .or. q_id(1) <= 0) then 
        return                 ! l_id<0 means : location not found, q_id<0 means quantity not found 
     endif  
-    ierr = nf90_Inquire_Variable(ncptr%ncid, q_id, ndims=ndims)
-    allocate(dimids(ndims))
-    ierr = nf90_Inquire_Variable(ncptr%ncid, q_id, dimids=dimids)
+    ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), ndims=ndims)
+    if (.not.allocated(dimids)) then 
+        allocate(dimids(ndims))
+        ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids)
+    else
+        allocate(dimids_check(ndims))
+        ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids_check)
+        if (.not.(all(dimids==dimids_check) .and. ndims==size(dimids))) then
+            ! sanity check: all elements should have the same dimensions vector 
+            return ! unsuccessfully
+        endif
+    endif
     !  TODO: Retrieve relevant variable attributes and store them in the bc-instance this netcdf is connected to  
 
+    if (present(vectormax)) then
+        vectormax = vmax
+    endif
     success = .True. 
     end function ecNetCDFScan
    
     ! Reader of timeseries to be implemented here .... 
-    function ecNetCDFGetTimeseriesValue (ncptr, q_id, l_id, dims, timelevel, nctime, ncvalue) result (success)   
-    logical                          :: success
-    type (tEcNetCDF),   pointer      :: ncptr              
-    integer, intent(in)              :: q_id
-    integer, intent(in)              :: l_id
-    integer, intent(in), dimension(:):: dims
-    integer, intent(in)              :: timelevel 
-    integer                          :: ierr           
-!   double precision, intent(out), dimension (:)   :: nctime 
-!   double precision, intent(out), dimension (:)   :: ncvalue 
-    real(hp), intent(out), dimension (:)   :: nctime 
-    real(hp), intent(out), dimension (:)   :: ncvalue 
+    function ecNetCDFGetTimeseriesValue (ncptr, q_id, l_id, dims, timelevel, nctime, ncvalue, buffer) result (success)   
+    logical                              :: success
+    type (tEcNetCDF),   pointer          :: ncptr              
+    integer, intent(in)                  :: q_id(:)
+    integer, intent(in)                  :: l_id
+    integer, intent(in)                  :: dims(:)
+    integer, intent(in)                  :: timelevel 
+    real(hp), intent(out)                :: nctime(:)
+    real(hp), intent(out)                :: ncvalue(:)
+    real(hp), intent(inout), allocatable :: buffer(:)
     
+    integer                              :: vectormax, iv, il, ierr           
+
     success = .False.
-    if (ncptr%nLayer<0) then           ! no 3rd dimension, get single data value, maybe should be <=0
-       ierr = nf90_get_var(ncptr%ncid,q_id,ncvalue(1:1),(/l_id,timelevel/),(/1,1/))  
+
+    vectormax = size(q_id)
+    if (ncptr%nLayer < 0) then           ! no 3rd dimension, get single data value, maybe should be <=0
+        do iv   = 1, vectormax
+           ierr = nf90_get_var(ncptr%ncid,q_id(iv),ncvalue(iv:iv),(/l_id,timelevel/),(/1,1/))  
+           if (ierr /= NF90_NOERR) return 
+        enddo
     else                               ! yes 3rd dimension, get a rank-1 vector, num. of layers
-       ierr = nf90_get_var(ncptr%ncid,q_id,ncvalue(1:ncptr%nLayer),(/1,l_id,timelevel/),(/ncptr%nLayer,1,1/))          
-     end if
-    if (ierr/=NF90_NOERR) return 
+        call realloc(buffer, ncptr%nLayer)
+        do iv   = 1, vectormax
+           ierr = nf90_get_var(ncptr%ncid,q_id(iv),buffer(1:ncptr%nLayer),(/1,l_id,timelevel/),(/ncptr%nLayer,1,1/))          
+           if (ierr /= NF90_NOERR) return 
+           do il = 1, ncptr%nLayer
+               ncvalue(iv+(il-1)*vectormax) = buffer(il)    ! interleaving three quantities from netCDF into one array
+           enddo
+        enddo
+    end if
+
     ierr = nf90_get_var(ncptr%ncid,ncptr%timevarid,nctime(1:1),(/timelevel/),(/1/))    ! get one single time value 
-    if (ierr/=NF90_NOERR) return 
+    if (ierr /= NF90_NOERR) return 
     success = .True.
     end function ecNetCDFGetTimeseriesValue
 
-    !> Acquire the vectormax, vector dimensionality, from the variable's metadata (attribute:vectormax)
-    !> RL: Currently, vectormax in netcdf-timeseries is not used, one of the reasons being that vectors
-    !>     are traditionally stored differently in netcdf: each component is a variable, rather than
-    !>     interpreting the vector dimensionality as a dimension in netcdf .... 
-    !>     This should be dealt with analogous to the ascii-bc format: a string attribute named 'vector'
-    !>     with a list of names of variables to be packed into a vector.
-    function ecNetCDFGetVectormax (ncptr, q_id, vectormax) result (success)   
-    use netcdf_utils, only: ncu_get_att
-    use io_ugrid
-    
-    implicit none
-    logical                          :: success 
-    type (tEcNetCDF),   pointer      :: ncptr              
-    integer, intent(in)              :: q_id
-    integer, intent(out)             :: vectormax 
-    integer                          :: ierr 
-    
-    character(len=:), allocatable   :: str
-    
-    allocate(character(len=0) :: str)
-    success = .False. 
-    str = ''
-    ierr = ncu_get_att(ncptr%ncid,q_id,'vectormax',str)
-    if (ierr/=NF90_NOERR) return 
-    read(str,*,iostat=ierr) vectormax
-    if (ierr/=0) return 
-    deallocate(str)
-    success = .True. 
-    end function ecNetCDFGetVectormax
 
     !> Scan netcdf instance for a specific quantity name and location label 
     !> Retrieve an arbitrary attrib from the variable's metadata (returns attribute string)

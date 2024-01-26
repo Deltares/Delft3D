@@ -255,7 +255,7 @@ subroutine findexternalboundarypoints()             ! find external boundary poi
  do while (ja_ext_force .eq. 1)                      ! read *.ext file
 
     call readprovider(mext,qid,filename,filetype,method,operand,transformcoef,ja_ext_force,varname)
-    call resolvePath(filename, md_extfile_dir, filename)
+    call resolvePath(filename, md_extfile_dir)
 
     if (num_bc_ini_blocks > 0 .and. qid(len_trim(qid)-2:len_trim(qid)) == 'bnd') then
        write(msgbuf, '(a)') 'Boundaries in BOTH external forcing and bound.ext.force file is not allowed'
@@ -388,7 +388,7 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
        endif
 
        if (property_ok)  then
-          call resolvePath(locationfile, basedir, locationfile)
+          call resolvePath(locationfile, basedir)
        else
           call qnerror( 'Expected property' , 'locationFile', ' for boundary definition' )
        end if
@@ -397,7 +397,7 @@ subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blo
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , property_ok)
        if (property_ok)  then
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        else
           call qnerror( 'Expected property' , 'forcingFile', ' for boundary definition' )
        end if
@@ -697,11 +697,11 @@ subroutine processexternalboundarypoints(qid, filename, filetype, return_time, n
         call realloc(ketr, (/ Nx, numtracers /), keepExisting=.true., fill=0 )
      end if
 
-  else if (qidfm(1:10) == 'sedfracbnd' .and. jased > 0) then
+  else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
      call get_sedfracname(qidfm, sfnam, qidnam)
      isf = findname(numfracs, sfnames, sfnam)
 
-     if ( isf.eq.0 ) then   ! add
+     if ( isf.eq.0) then   ! add
 
         numfracs = numfracs+1
 !       realloc
@@ -1044,7 +1044,7 @@ logical function initboundaryblocksforcings(filename)
        endif
 
        if (retVal) then
-          call resolvePath(locationfile, basedir, locationfile)
+          call resolvePath(locationfile, basedir)
        else
           initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''locationfile'' is missing.'
@@ -1054,7 +1054,7 @@ logical function initboundaryblocksforcings(filename)
 
        call prop_get_string(node_ptr, '', 'forcingFile ', forcingfile , retVal)
        if (retVal) then
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        else
           initboundaryblocksforcings = .false.
           write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''forcingFile'' is missing.'
@@ -1081,10 +1081,10 @@ logical function initboundaryblocksforcings(filename)
                 quantity = property_value ! We already knew this
              else if (property_name == 'locationfile') then
                 locationfile = property_value ! We already knew this
-                call resolvePath(locationfile, basedir, locationfile)
+                call resolvePath(locationfile, basedir)
              else if (property_name == 'forcingfile') then
                 forcingfile = property_value
-                call resolvePath(forcingfile, basedir, forcingfile)
+                call resolvePath(forcingfile, basedir)
                 if ( oper /= 'O' .and. oper /= '+' ) then
 	               oper = 'O'
                    if (quantity_pli_combination_is_registered(quantity, locationfile)) then
@@ -1238,7 +1238,7 @@ logical function initboundaryblocksforcings(filename)
              call warn_flush()
              cycle
           else
-             call resolvePath(locationfile, basedir, locationfile)
+             call resolvePath(locationfile, basedir)
           end if
        end if
        if (loc_spec_type == imiss) then
@@ -1273,7 +1273,7 @@ logical function initboundaryblocksforcings(filename)
           call prop_get(node_ptr, '', 'flow', rec, success)
        end if
        if (len_trim(rec) > 0) then
-          call resolvePath(rec, basedir, rec)
+          call resolvePath(rec, basedir)
        else
           write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
           call warn_flush()
@@ -1310,7 +1310,7 @@ logical function initboundaryblocksforcings(filename)
           call warn_flush()
           cycle
        else
-          call resolvePath(forcingfile, basedir, forcingfile)
+          call resolvePath(forcingfile, basedir)
        end if
        oper = 'O'
        call prop_get_string(node_ptr, '', 'operand', oper , retVal)
@@ -1772,9 +1772,11 @@ subroutine init_threttimes()
        ierr = 0
        call get_sedfracname(qidfm, sedfracnam, qidnam)
        ifrac = findname(numfracs, sfnames, sedfracnam)
-       if (allocated(bndsf)) then
-          nseg = bndsf(ifrac)%k(5,thrtn(i))
-          if (nseg /=i) cycle
+       if (allocated(bndsf).and.thrtn(i)<=nbndsf(ifrac)) then      ! i      = no of TH boundaries (i.e. 1 per fraction bnd)
+                                                                   ! thrtn  = no of boundaries per fraction
+                                                                   ! nbndsf = total no of bnd links per fractions
+          nseg = bndsf(ifrac)%k(5,thrtn(i))  ! 5, has open bnd section where TH bnd applies
+          !if (nseg /=i) cycle
           if (nseg == 0 .or. nseg > nopenbndsect) then
              ierr = 1
           endif

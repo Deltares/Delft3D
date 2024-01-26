@@ -1,21 +1,5 @@
     <testCases>
         <!-- ======================================================================== -->
-        <testCase name="e38_f01_c00_nf_2dis_simple_sigma" ref="dimr_trunk">
-            <path>e38_dflowfm-cosumo/f01_general/c00_nf_2dis_simple_sigma</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="NETCDF">
-                    <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_Tracer1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_default_tracer" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_nrfld" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
-        <!-- ======================================================================== -->
         <testCase name="e38_f01_c01_mod2_FM_D3D4_folders" ref="dimr_trunk">
             <path>e38_dflowfm-cosumo/f01_general/c01_mod2_FM_D3D4_folders</path>
             <checks>

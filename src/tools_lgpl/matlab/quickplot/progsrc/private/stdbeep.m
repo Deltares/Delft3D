@@ -40,8 +40,7 @@ if isempty(state)
 end
 if nargin==0
     if isequal(state,'on')
-        mversion=version;
-        if mversion(1)-'0'>5
+        if matlabversionnumber>5
             beep
         else
             fprintf(char(7))

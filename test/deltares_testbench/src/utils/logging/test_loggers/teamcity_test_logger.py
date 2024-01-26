@@ -68,10 +68,11 @@ class TeamcityTestLogger(ITestLogger):
                 "testFailed", "Comparison: differences above tolerance"
             )
         elif result_type == TestResultType.Exception:
+            escaped_message = stripEscapeCharacters(error_message)
             self.write_tc_message(
                 "testFailed",
                 "Exception occurred",
-                extra_tags=[f"details='{error_message}'"],
+                extra_tags=[f"details='{escaped_message}'"],
             )
         elif result_type == TestResultType.Passed:
             self.write_tc_message("testFinished", "Comparison passed")
@@ -96,6 +97,10 @@ class TeamcityTestLogger(ITestLogger):
         if message:
             escaped_message = stripEscapeCharacters(message)
             tc_message += f"text='{escaped_message}' "
+
+        if command == "testFailed" and message:
+            escaped_message = stripEscapeCharacters(message)
+            tc_message += f"message='{escaped_message}' "
 
         tc_message += "]"
 

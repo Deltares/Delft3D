@@ -43,7 +43,6 @@ module m_flow1d_reader
       use m_globalParameters
       use messageHandling
       use m_readCrossSections
-      use m_readSpatialData
       use m_read_roughness
       use m_network
       use m_readstructures

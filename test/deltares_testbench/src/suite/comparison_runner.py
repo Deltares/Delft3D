@@ -1,10 +1,12 @@
 import os
+from datetime import datetime
 from typing import List, Tuple
 
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.presence_type import PresenceType
+from src.suite.run_data import RunData
 from src.suite.test_case_result import TestCaseResult
 from src.suite.test_set_runner import TestSetRunner
 from src.utils.common import log_header, log_separator, log_table
@@ -24,12 +26,16 @@ class ComparisonRunner(TestSetRunner):
     """Test runner that compares files"""
 
     def post_process(
-        self, test_case_config: TestCaseConfig, logger: ITestLogger
+        self,
+        test_case_config: TestCaseConfig,
+        logger: ITestLogger,
+        run_data: RunData,
     ) -> TestCaseResult:
-        test_result = TestCaseResult(test_case_config)
+        test_result = TestCaseResult(test_case_config, run_data)
         skip_report = self.__skip_test_case(test_case_config)
         if skip_report:
             logger.warning("No checks performed for this testcase (ignored)")
+            run_data.end_time = datetime.now()
             return test_result
 
         logger.info("Comparing results with reference")
@@ -69,6 +75,7 @@ class ComparisonRunner(TestSetRunner):
         if len(test_result.results) == 0:
             logger.warning("No results to display")
             logger.test_Result(TestResultType.Empty)
+            run_data.end_time = datetime.now()
             return test_result
 
         # Step 3: Write the results to a .txt file in the test case directory.
@@ -123,6 +130,7 @@ class ComparisonRunner(TestSetRunner):
         elif self.settings.teamcity and failed:
             logger.test_Result(TestResultType.Differences)
 
+        run_data.end_time = datetime.now()
         return test_result
 
     def __compare_files(
@@ -285,14 +293,16 @@ class ComparisonRunner(TestSetRunner):
         log_table(table, logger)
         log_separator(logger)
 
-    def create_error_result(self, test_case_config: TestCaseConfig) -> TestCaseResult:
+    def create_error_result(
+        self, test_case_config: TestCaseConfig, run_data: RunData
+    ) -> TestCaseResult:
         comparison_result = ComparisonResult()
         comparison_result.maxAbsDiff = 0.0
         comparison_result.maxRelDiff = 0.0
         comparison_result.passed = False
         comparison_result.error = True
         comparison_result.result = "ERROR"
-        result = TestCaseResult(test_case_config)
+        result = TestCaseResult(test_case_config, run_data)
         result.results.append(
             (test_case_config.name, FileCheck(), Parameter(), comparison_result)
         )

@@ -38,7 +38,12 @@ function make_all(release)
 %   $Id$
 
 if ~license('checkout','compiler')
-    error('Compiler license currently not available.')
+    if matlabversionnumber >= 9.06 && batchStartupOptionUsed
+        fprintf('##teamcity[buildStop comment=''Compiler license currently not available.'' readdToQueue=''true'']\n');
+        return
+    else
+        error('Compiler license currently not available.')
+    end
 end
 curdir = pwd;
 sourcedir = [curdir,filesep,'progsrc'];

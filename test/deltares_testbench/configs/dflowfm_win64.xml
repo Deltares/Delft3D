@@ -19,11 +19,11 @@
     <locations>
       <location name="dsctestbench-cases">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/cases</root>
+        <root>{server_base_url}/cases</root>
       </location>
       <location name="dsctestbench-references">
         <credential ref="commandline" />
-        <root>https://repos.deltares.nl/repos/DSCTestbench/trunk/references</root>
+        <root>{server_base_url}/references</root>
       </location>
       <location name="local">
         <root>./data/engines</root>
@@ -88,7 +88,7 @@
         <from>bin/dflowfm/win64</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/bin/dflowfm/win64</from>
+        <from>teamcity_artifacts/x64/dflowfm/bin</from>
       </location>
       <path>dflowfm-cli.exe</path>
       <arguments>

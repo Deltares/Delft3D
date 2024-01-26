@@ -43,6 +43,9 @@
  use unstruc_channel_flow
  use m_sferic
  use m_trachy, only: trachy_resistance
+ use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
+ use m_flowparameters, only: ifixedWeirScheme1d2d
+ use fm_manhole_losses, only: calculate_manhole_losses
 
  implicit none
 
@@ -69,9 +72,11 @@
  call timstrt('Furu', handle_furu)
 
  if (kmx == 0 .or. ifixedweirscheme > 0)  then  ! original 2D coding
+    
+    call calculate_manhole_losses(network%storS,advi)
 
     !$OMP PARALLEL DO                       &
-    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp)
+    !$OMP PRIVATE(L,k1,k2,slopec,hup,gdxi,cu,du,du0,ds,u1L,v2,itu1,frL,bui,u1L0,st2,agp,uorbL)
     do L  = 1,lnx
 
        if (hu(L) > 0) then
@@ -126,8 +131,12 @@
              st2  = sin(dg2rd*yu(L))**2
              agp  = 9.7803253359*(1d0+0.00193185265241*st2)/sqrt(1d0-0.00669437999013*st2)
           endif
-          gdxi  = agp*dxi(L)
-          cu    = gdxi*teta(L)
+          gdxi  = agp*dxi(L) 
+          if (jarhoxu >= 2) then
+             gdxi = gdxi*rhomean/rhou(L)
+          endif
+
+          cu    = gdxi*teta(L) 
           du    = dti*u0(L) - adve(L) + gdxi*slopec
           ds    = s0(k2) - s0(k1)
           if (teta(L) /= 1d0) then
@@ -183,8 +192,8 @@
               frL = cfuhi(L)*sqrt(u1L*u1L + v2)      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
           endif
 
-          bui   = 1d0 / ( dti + advi(L) + frL )
-          fu(L) = cu*bui
+          bui   = 1d0 / ( dti + advi(L) + frL ) 
+          fu(L) = cu*bui 
           ru(L) = du*bui
           u1L0  = u1L
           u1L   = ru(L) - fu(L)*ds
@@ -196,8 +205,9 @@
        endif
 
     enddo
-    !$OMP END PARALLEL DO   ! todo check difference
+    !$OMP END PARALLEL DO
 
+    
     if (npump > 0) then ! model has at least one pump link
     do np = 1,npumpsg  ! loop over pump signals, sethu
        qp    = qpump(np)
@@ -388,6 +398,9 @@
  endif
 ! END DEBUG
 
+ if (ifixedWeirScheme1d2d ==1) then
+    call compfuru_1d2d_fixedweirs()
+ endif
  call timstop(handle_furu)
 
  end subroutine furu

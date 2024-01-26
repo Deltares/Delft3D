@@ -41,7 +41,7 @@
  use unstruc_channel_flow
  use m_structures
  use m_longculverts
- use unstruc_caching, only: cacheRetrieved, copyCachedLongCulverts
+ use unstruc_caching, only: cacheRetrieved
  !\ DEBUG
  use m_missing
 
@@ -376,5 +376,4 @@
  endif
 
  jaupdbndbl = 0    ! after first run of setbobs set to 0 = no update
-
  end subroutine setbobs

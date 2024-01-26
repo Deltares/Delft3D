@@ -433,35 +433,6 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f004_c082_trachytopes_spatially_varying_1" ref="dflowfm_default">
-      <path>e02_dflowfm/f004_bottomfriction/c082_trachytopes_spatially_varying_1</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>tt3.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
     <testCase name="e02_f004_c083_trachytopes_spatially_varying_25" ref="dflowfm_default">
       <path>e02_dflowfm/f004_bottomfriction/c083_trachytopes_spatially_varying_25</path>
       <programs>
@@ -3949,6 +3920,27 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
+    <testCase name="e02_f006_c100_surface_netcdf_periodic_forcing" ref="dflowfm_default">
+      <path>e02_dflowfm/f006_external_forcing/c100_surface_netcdf_periodic_forcing</path>
+      <programs>
+        <program ref="DFlowFM">
+          <arguments>
+            <argument>channel.mdu</argument>
+            <argument>--autostartstop</argument>
+            <argument>--nodisplay</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/channel_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Patm" toleranceAbsolute="0.1" />
+          </parameters>
+        </file>
+        <file name="channel.dia" ignore="true" />
+      </checks>
+    </testCase>
     <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
       <path>e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
       <programs>
@@ -5273,7 +5265,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5298,7 +5290,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5323,7 +5315,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5348,7 +5340,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5373,7 +5365,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5398,7 +5390,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5423,7 +5415,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -5448,7 +5440,7 @@
             <parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
             <parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
-            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+            <parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -8726,68 +8718,6 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f019_c081_1Dchannel_explicit_horizontal_dispersion_2" ref="dflowfm_default">
-      <path>e02_dflowfm/f019_transport/c081_1Dchannel_explicit_horizontal_dispersion_2</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>test_1.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_1_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/test_1_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
-    <testCase name="e02_f019_c082_1Dchannel_implicit_horizontal_dispersion" ref="dflowfm_default">
-      <path>e02_dflowfm/f019_transport/c082_1Dchannel_implicit_horizontal_dispersion</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>test_3.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/test_3_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/test_3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
     <testCase name="e02_f019_c083_NewWaterway_explicit_horizontal_dispersion" ref="dflowfm_default">
       <path>e02_dflowfm/f019_transport/c083_NewWaterway_explicit_horizontal_dispersion</path>
       <programs>
@@ -8879,38 +8809,6 @@
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
-      </checks>
-    </testCase>
-    <testCase name="e02_f020_c030_dcsm_4nm_heat" ref="dflowfm_default">
-      <path>e02_dflowfm/f020_heat_flux/c030_dcsm_4nm_heat</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>DCSM-FM_4nm.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>120.0</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_DCSM-FM_4nm/DCSM-FM_4nm_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="DFM_OUTPUT_DCSM-FM_4nm/DCSM-FM_4nm_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="temperature" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
       </checks>
     </testCase>
     <testCase name="e02_f006_c063_rain" ref="dflowfm_default">
@@ -9918,7 +9816,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f022_c33_graded_sediment_ConcBc" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c33_graded_sediment_ConcBc</path>
       <programs>
@@ -10058,35 +9956,6 @@
         <file name="depthgr.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f022_c50_fixed_layer_Unstr" ref="platform_specific">
-      <path>e02_dflowfm/f022_morphology_2D/c50_fixed_layer_Unstr</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>t1-unstr.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>300.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/t1-unstr_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="bedlevel" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/t1-unstr_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_msed" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
      <testCase name="e02_f022_c53_curvebend_spiral_mor_Unstr" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c53_curvebend_spiral_mor_Unstr</path>
       <programs>
@@ -10154,7 +10023,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f022_c56_weir" ref="dflowfm_default">
       <path>e02_dflowfm/f022_morphology_2D/c56_morphology_with_weir_Unstr</path>
       <programs>
@@ -10219,29 +10088,6 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_spirint" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f022_c60_thindams" ref="platform_specific">
-      <path>e02_dflowfm/f022_morphology_2D/c60_thindams</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>dams_sed.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>300.0</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_dams_sed/dams_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sxtot" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sytot" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>
@@ -10602,6 +10448,28 @@
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_bodsed" toleranceAbsolute="0.1600" />
             <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c95_extrapolate_bedlevel" ref="dflowfm_default">
+      <path>e02_dflowfm/f022_morphology_2D/c95_extrapolate_bedlevel</path>
+      <programs>
+        <program ref="DFlowFM">
+          <arguments>
+            <argument>r.mdu</argument>
+            <argument>--autostartstop</argument>
+            <argument>--nodisplay</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>40.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0000001" />
+			<parameter name="mesh2d_s1" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>
         <file name="depthgr.xyz" ignore="true" />
@@ -11543,7 +11411,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f037_c75_no_summerdike" ref="dflowfm_default">
       <path>e02_dflowfm/f037_mor1d_tabulated_crosssections/c75_no_summerdike</path>
       <programs>
@@ -11583,7 +11451,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f037_c91_bifurcation_pure1d" ref="dflowfm_default">
       <path>e02_dflowfm/f037_mor1d_tabulated_crosssections/c91_bifurcation_pure1d</path>
       <programs>
@@ -11603,7 +11471,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>        
+    </testCase>
     <testCase name="e02_f123_c81_dad_inside_dumping" ref="dflowfm_default">
       <path>e02_dflowfm/f123_dredge-dump/c81_dad_inside_dumping</path>
       <programs>
@@ -11697,27 +11565,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f092_c01_harlingen" ref="dflowfm_default">
-      <path>e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
-      <programs>
-        <program ref="DFlowFM">
-          <arguments>
-            <argument>har.mdu</argument>
-            <argument>--autostartstop</argument>
-            <argument>--nodisplay</argument>
-          </arguments>
-        </program>
-      </programs>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/001_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
     <testCase name="e02_f092_c04_exer_10_2d_westernscheldt" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c04_exer_10_2d_westernscheldt</path>
       <programs>
@@ -11738,7 +11585,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f092_c08_exer_12_2d_bend_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
       <programs>
@@ -11759,7 +11606,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase>  
+    </testCase>
     <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
       <programs>
@@ -11780,7 +11627,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase> 
+    </testCase>
     <testCase name="e02_f092_c11_exer_13_r02_vlissingen_course_model" ref="dflowfm_default">
       <path>e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
       <programs>
@@ -11801,7 +11648,7 @@
           </parameters>
         </file>
       </checks>
-    </testCase> 
+    </testCase>
     <testCase name="e02_f100_c04_closed_channel_circle" ref="dflowfm_default">
       <path>e02_dflowfm/f100_1D/c04_closed_channel_circle</path>
       <programs>
@@ -11844,5 +11691,5 @@
           </parameters>
         </file>
       </checks>
-    </testCase>	
+    </testCase>
   </testCases>

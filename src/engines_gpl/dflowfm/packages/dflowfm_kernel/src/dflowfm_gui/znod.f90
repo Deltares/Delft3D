@@ -280,7 +280,7 @@ else if (nodval == 27) then
  else if (nodval == 48) then
    if (nonlin >= 2) then
       znod = a1m(kk)
-   else if (japure1D > 0) then ! visualise
+   else if (jaPure1D > 0) then ! visualise
       znod = uc1d(kk)
    else if (kmx > 0) then 
       znod = kmxn(kk)

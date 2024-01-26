@@ -38,7 +38,6 @@ subroutine setumod(jazws0)                          ! set cell center Perot velo
  use timers
  use m_flow
  use m_flowgeom
- use m_flowparameters, only : ja_vis_diff_limit
  use m_flowtimes
  use m_sferic
  use m_wind
@@ -574,7 +573,8 @@ if (ihorvic > 0 .or. NDRAW(29) == 37) then
      end if
    end if
    
-   if ( number_limited_links > 0 .and. ja_vis_diff_limit == 1) then
+   if ( number_limited_links > 0 .and. number_steps_limited_visc_flux_links <= MAX_PRINTS_LIMITED_VISC_FLUX_LINKS) then
+      number_steps_limited_visc_flux_links = number_steps_limited_visc_flux_links + 1
       write(msgbuf,'(a,i0,a)') 'Viscosity coefficient was limited for ', number_limited_links,' links.'
       call mess(LEVEL_WARN, msgbuf)
    end if 

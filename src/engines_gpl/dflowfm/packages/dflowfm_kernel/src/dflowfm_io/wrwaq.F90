@@ -1080,7 +1080,7 @@ function add_layers_to_meshgeom(meshgeom) result(ierr)
    call get_layer_data_ugrid(layer_count, layer_type, layer_zs, interface_zs)
 
    ! Store layer info in mesh geometry.
-   meshgeom%numlayer = layer_count
+   meshgeom%num_layers = layer_count
    meshgeom%layertype = layer_type
    call reallocP(meshgeom%layer_zs, layer_count, fill=dmiss)
    call reallocP(meshgeom%interface_zs, layer_count + 1, fill=dmiss)
@@ -1090,7 +1090,7 @@ function add_layers_to_meshgeom(meshgeom) result(ierr)
    select case (meshgeom%layertype)
    case (LAYERTYPE_OCEANSIGMA)
       ! Set trivial value for numtopsig: same as total layer count
-      meshgeom%numtopsig = meshgeom%numLayer
+      meshgeom%numtopsig = meshgeom%num_layers
    case (LAYERTYPE_Z)
       ! Set trivial value for numtopsig: 0, all layers are fixed z.
       meshgeom%numtopsig = 0
@@ -1340,7 +1340,7 @@ function aggregate_ugrid_geometry(input, output, input_edge_type, output_edge_ty
    ! Store remaining output variables in output mesh geometry.
    output%meshName = trim(input%meshName)//'_agg'
    output%dim = input%dim
-   output%numlayer = input%numlayer
+   output%num_layers = input%num_layers
    output%layertype = input%layertype
    output%layer_zs => input%layer_zs
    output%interface_zs => input%interface_zs

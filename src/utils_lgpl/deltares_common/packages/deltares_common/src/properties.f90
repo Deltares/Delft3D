@@ -1739,10 +1739,10 @@ subroutine prop_get_alloc_string(tree, chapterin ,keyin, value, success)
      !
      ! Handle chapters
      !
-     if (len(chapter) == 0) then
+     if (len_trim(chapter) == 0) then
         ignore = .true.
      else
-        ignore = chapter(1:1)=='*' .or. len_trim(chapter) == 0
+        ignore = chapter(1:1)=='*'
      endif
      !
      ! Find the chapter first
@@ -2995,7 +2995,7 @@ subroutine pp_double(value, strvalue)
 end subroutine pp_double
 subroutine count_occurrences(input_ptr, group, keyword, npars)
     !
-    ! Global variables
+    ! Dummy variables
     !
     integer                    :: npars
     character(*)               :: group
