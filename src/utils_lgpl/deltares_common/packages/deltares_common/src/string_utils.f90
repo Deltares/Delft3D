@@ -181,6 +181,11 @@ module m_string_utils
         ! local variables
         character(len=len(string_to_search)) :: string_to_compare
 
+        if (len(string_to_check)<len(string_to_search)) then
+            starts_with = .false.
+            return
+        end if
+
         string_to_compare = string_to_check(1:len(string_to_search))
 
         if (present(case_sensitive) .and. case_sensitive) then
@@ -188,7 +193,6 @@ module m_string_utils
             return
         end if
 
-        !starts_with = str_tolower(string_to_search) == str_tolower(string_to_compare)
         starts_with = check_case_insensitive(string_to_search, string_to_compare)
     end function
 

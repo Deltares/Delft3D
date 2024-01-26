@@ -129,7 +129,7 @@ contains
       if (associated(ioptraai)) deallocate (ioptraai)
 
       deltim = otime
-      call dlwq05(lun, lchar, filtype, car(k), iar, &
+      call dlwq05(lun, lchar, filtype, car, iar, &
                   rar, nrftot, nrharm, nobnd, nosys, &
                   notot, nobtyp, rmax, imax, dtflg1, &
                   iwidth, intsrt, ierr, dtflg3, syname, &

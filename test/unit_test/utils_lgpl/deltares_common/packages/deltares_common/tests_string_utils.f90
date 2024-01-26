@@ -108,6 +108,8 @@ program tests_string_utils
 
         call assert_true (string_equals("ab", "abc"), "string_equals should match using starts with by default")
         call assert_false(string_equals("bc", "abc"), "string_equals should match using starts with by default")
+        
+        call assert_false(string_equals("short", "looooong"), "string_equals should be able to handle string_to_check and string_to_search of different length")
 
     end subroutine test_string_equals_default_settings
 

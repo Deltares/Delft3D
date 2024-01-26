@@ -89,17 +89,18 @@ cjvb  ook voor constanten hebben we in delwaq2 initieel werkruimte nodig als dez
       use m_conver
       use timers       !   performance timers
 
-      LOGICAL               ::  SCALE  , ODS    , BINFIL , DEFLTS
-      LOGICAL               ::  DTFLG1 , DTFLG3
-      CHARACTER*(*)         :: STRNG1 , STRNG2 , STRNG3 , CAR(*)
-      integer(kind=int_wp) ::  NODIM
-      integer(kind=int_wp) ::  k, ie, IE2, NOITM, i1, i2
-      integer               :: nodi2, iorder, lunut, lunwr, iar(:), iopt, ipro
-      integer(kind=int_wp) ::  ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
-      integer(kind=int_wp) ::  iskip, iskp2, notot, iss, ioutpt, iwidth
-      integer(kind=int_wp) ::  itel2, itfact, i1dum, i2dum
-      integer(kind=int_wp) ::  itels, itel, i3
-      real(kind=real_wp)        :: rar(:), rmat(:)
+      LOGICAL              :: SCALE  , ODS    , BINFIL , defaults_on
+      LOGICAL              :: DTFLG1 , DTFLG3
+      CHARACTER*(*)        :: STRNG1 , STRNG2 , STRNG3 , CAR(:)
+      integer(kind=int_wp) :: NODIM
+      integer(kind=int_wp) :: k, ie, IE2, NOITM, i1, i2
+      integer(kind=int_wp) :: nodi2, iorder, lunut, lunwr, iar(:)
+      integer(kind=int_wp) :: iopt, ipro
+      integer(kind=int_wp) :: ifilsz, jfilsz, nobrk, ioffb, ioffi, ioffs
+      integer(kind=int_wp) :: iskip, iskp2, notot, iss, ioutpt, iwidth
+      integer(kind=int_wp) :: itel2, itfact, i1dum, i2dum
+      integer(kind=int_wp) :: itels, itel, i3
+      real(kind=real_wp)   :: rar(:), rmat(:)
 !
 !     Local declarations
 
@@ -108,8 +109,8 @@ cjvb  ook voor constanten hebben we in delwaq2 initieel werkruimte nodig als dez
 !
 !     Write headers
 !
-      DEFLTS = .FALSE.
-      IF ( NODIM .LT. 0 ) DEFLTS = .TRUE.
+      defaults_on = .FALSE.
+      IF ( NODIM .LT. 0 ) defaults_on = .TRUE.
       NODI2 = NODIM
       IF ( NODIM .LE. 0 ) NODI2 = 1
       IF ( IORDER .EQ. 1 ) THEN
@@ -190,9 +191,9 @@ cjvb1
          IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1040 ) STRNG3, NOBRK
          IF ( .NOT. ODS )
      *          CALL CONVER ( IAR(IOFFB:), NOBRK, ITFACT, DTFLG1, DTFLG3)
-         IF ( DEFLTS .AND. IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
+         IF ( defaults_on .AND. IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
       ELSE
-         IF ( DEFLTS ) THEN
+         IF ( defaults_on ) THEN
             IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1050 )
          ELSE
             IF ( IOUTPT .GE. 4 ) WRITE ( LUNUT , 1060 )
@@ -234,9 +235,9 @@ cjvb1    ENDIF
             DO 50 I2 = 1,NODI2,IWIDTH
                IE2 = MIN(I2+IWIDTH-1,NODI2)
                IF ( NODIM .GT. 0 ) THEN
-                  WRITE ( LUNUT, 1100 ) STRNG2, (IAR(IOFFS+K) ,K=I2,IE2)
+                  WRITE ( LUNUT, 1100 ) STRNG2, (IAR(IOFFS+K) ,K=I2,IE2)         !Substance ******
                   WRITE ( LUNUT, 1150 ) STRNG1,
-     *                           (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE2)
+     *                           (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE2)         ! car(i) (i>0), 'FLOW' (i=0), 'ignored' (i<0)
                ENDIF
                ITEL = ITELS
                DO 40 I3 = 1,NOITM
