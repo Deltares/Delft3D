@@ -13036,30 +13036,37 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call realloc(tmp_sqi, um%nbnd_read, stat=ierr, keepExisting=.false.)
 
           ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
-          if (ierr/=0) goto 999
+          if (ierr==0) then
+             ierr = nf90_get_var(imapfile, id_s0bnd, tmp_s0, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+             call check_error(ierr, 's0_bnd')
+          endif
+          
           ierr = nf90_inq_varid(imapfile, 's1_bnd', id_s1bnd)
-          if (ierr/=0) goto 999
+          if (ierr==0) then 
+              ierr = nf90_get_var(imapfile, id_s1bnd, tmp_s1, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 's1_bnd')
+          endif
+          
           if (jarstignorebl .eq. 0) then
              ierr = nf90_inq_varid(imapfile, 'bl_bnd', id_blbnd)
-             if (ierr/=0) goto 999
+             if (ierr==0) then 
+                 ierr = nf90_get_var(imapfile, id_blbnd, tmp_bl, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+                 call check_error(ierr, 'bl_bnd')
+             endif
           endif
+          
           ierr = nf90_inq_varid(imapfile, 'sqi_bnd', id_sqibnd)
-          if (ierr/=0) goto 999
-          ierr = nf90_inq_varid(imapfile, 'squ_bnd', id_squbnd)
-          if (ierr/=0) goto 999
-
-          ierr = nf90_get_var(imapfile, id_s0bnd, tmp_s0, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-          call check_error(ierr, 's0_bnd')
-          ierr = nf90_get_var(imapfile, id_s1bnd, tmp_s1, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-          call check_error(ierr, 's1_bnd')
-          if (jarstignorebl .eq. 0) then
-              ierr = nf90_get_var(imapfile, id_blbnd, tmp_bl, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-              call check_error(ierr, 'bl_bnd')
+          if (ierr==0) then 
+              ierr = nf90_get_var(imapfile, id_sqibnd, tmp_sqi, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 'sqi_bnd')
           endif
-          ierr = nf90_get_var(imapfile, id_squbnd, tmp_squ, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-          call check_error(ierr, 'squ_bnd')
-          ierr = nf90_get_var(imapfile, id_sqibnd, tmp_sqi, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
-          call check_error(ierr, 'sqi_bnd')
+          
+          ierr = nf90_inq_varid(imapfile, 'squ_bnd', id_squbnd)
+          if (ierr==0) then
+              ierr = nf90_get_var(imapfile, id_squbnd, tmp_squ, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 'squ_bnd')
+          endif
+
           if (nerr_/=0) goto 999
 
           if (jampi==0) then
