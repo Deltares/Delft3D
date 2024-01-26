@@ -1,6 +1,18 @@
 #!/bin/bash
 ###############################################
-### load your build environment 	    ###
+### load your build environment for Deltares 
+#   Linux systems (H7/Teamcity)
+#
+# Usage:
+#   source setenv.sh $COMPILER_TOOLCHAIN
+# Depending on what is specified for 
+# $COMPILER_TOOLCHAIN different modules are loaded.
+#
+# Options are:
+#       - intel23     -> intel23 modules with IFORT
+#       - intel24     -> intel24 modules with IFORT
+#       - intel24LLVM -> intel24 modules with IFX (LLVM based Fortran compiler)
+#
 ###############################################
 echo "Module Load"
 
