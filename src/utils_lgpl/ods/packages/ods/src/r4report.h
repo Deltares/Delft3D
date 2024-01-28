@@ -1,4 +1,4 @@
-/* r4report.h   (c)Copyright Sequiter Software Inc., 1991-2023.  All rights reserved. */
+/* r4report.h   (c)Copyright Sequiter Software Inc., 1991-2024.  All rights reserved. */
 
 #define text4displayed 1
 #define text4disp_once 2

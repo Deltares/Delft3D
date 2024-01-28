@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,10 +29,10 @@
       contains
 
 
-      subroutine dlwq5c ( fname  , lunut  , car    , iar    , rar    ,
-     *                    icmax  , iimax  , irmax  , drar   , noitm  ,
-     *                    nodim  , iorder , scale  , itmnr  , idmnr  ,
-     *                             amiss  , nobrk  , ierr   , iwar   )
+      subroutine dlwq5c ( fname  , lunut  , car    , iar    , rar    , &
+                         icmax  , iimax  , irmax  , drar   , noitm  , &
+                         nodim  , iorder , scale  , itmnr  , idmnr  , &
+                                  amiss  , nobrk  , ierr   , iwar   )
 !
 !
 !     Deltares        Sector Waterresources And Environment
@@ -119,9 +119,9 @@
 
 
       integer(kind=int_wp) :: icmax  , iimax  , irmax
-      character*(*) car(*) , fname
-      integer(kind=int_wp) :: iar(*)
-      real(kind=real_wp) :: rar(*)
+      character*(*) car(:) , fname
+      integer(kind=int_wp) :: iar(:)
+      real(kind=real_wp) :: rar(:)
       logical       scale
       real(kind=dp) :: drar(*)
       character     cfile(3)*256
@@ -137,7 +137,7 @@
       integer(kind=int_wp) ::  nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
       integer(kind=int_wp) ::  noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
       integer(kind=int_wp) ::  iy1, im1, id1, ih1, in1, is1
-      integer(kind=int_wp) ::  iy2, im2, id2, ih2, in12 is2
+      integer(kind=int_wp) ::  iy2, im2, id2, ih2, in12
       integer(kind=int_wp) ::  i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
       integer(kind=int_wp) ::  kl, ig2
  !
@@ -167,8 +167,8 @@
       cfile(1) = fname
       cfile(3) = ' '
       k1   = nottt + 1
-      call getdim ( cfile  , 0      , cdummy , 0      , 0       ,
-     *                       0      , iar(k1), ierror , cfile(3))
+      call getdim ( cfile  , 0      , cdummy , 0      , 0       , &
+                            0      , iar(k1:k1), ierror , cfile(3))
       nsubs = iar(k1)
       nlocs = iar(k1+1)
       ntims = iar(k1+2)
@@ -191,9 +191,9 @@
 !
 !    get the available locations
       car(j1)  = '*'
-      call getloc ( cfile  , 0  , car(j1), 1      , 0       ,
-     *              0      , k3 , car(j2), iar(k1), iar(k2) ,
-     *                            noloc  , ierror , cfile(3))
+      call getloc ( cfile  , 0  , car(j1), 1      , 0       , &
+                   0      , k3 , car(j2), iar(k1:k1), iar(k2:k2) , &
+                                 noloc  , ierror , cfile(3))
 !
 !    fill an array with wanted locations
       noit2 = 0
@@ -211,7 +211,7 @@
             cycle
          end if
          i = index_in_array(car(ioffa+j)(:20),car(j1+1:noloc))
-         if ( i .ge. 1 ) then
+         if ( i >= 1 ) then
             noit2 = noit2 + 1
             car(ioffa+noit2) = car(ioffa+j)
             car(ioffc+noit2) = car(ioffc+j)
@@ -222,8 +222,7 @@
          end if
          write ( lunut , 1070 ) iar(ioffa+j), car(ioffa+j)
          iwar = iwar + 1
-         if (   iar(ioffa+j  ) < 0 .or.
-     *        ( iar(ioffa+j+1) < 0 .and. j /= noitm ) ) then
+         if (   iar(ioffa+j  ) < 0 .or. ( iar(ioffa+j+1) < 0 .and. j /= noitm ) ) then
             write ( lunut , 1080 )
             ierr = 2
             if (timon) call timstop( ithndl )
@@ -274,9 +273,9 @@
       end if
 !
 !    get the available substances
-      call getpar ( cfile  , 0      , car(j1), 1      , 0       ,
-     *              0      , k3     , 0      , car(j2), car(j3) ,
-     *              iar(k1), iar(k2), nopar  , ierror , cfile(3))
+      call getpar ( cfile  , 0      , car(j1), 1      , 0       , &
+                   0      , k3     , 0      , car(j2), car(j3) , &
+                   iar(k1:k1), iar(k2:k2), nopar  , ierror , cfile(3))
 !
 !     fill an array with wanted substances
       icnt = 0
@@ -291,9 +290,9 @@
             iar(k5+k) = i
             cycle
          end if
-         call compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
-     *                             nodim  , iorder , car    , k5     , ioffb  ,
-     *                             nshft  , ioffd  , k      , icnt   , ierr, iwar)
+         call compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  , &
+                                  nodim  , iorder , car    , k5     , ioffb  , &
+                                  nshft  , ioffd  , k      , icnt   , ierr, iwar)
          if (timon) call timstop( ithndl )
          return
       end do
@@ -310,7 +309,7 @@
       k4 = min ( k3 , k4 )
 !
 !     see if storage is available
-      if ( k4 .lt. ntims ) then
+      if ( k4 < ntims ) then
          write ( lunut , 1010 ) k4, ntims
          ierr = 1
          if (timon) call timstop( ithndl )
@@ -321,9 +320,9 @@
 !
 !     get the available time values
       drar(k2  ) = 0
-      call gettme ( cfile  , 0      , drar(k2), 1      , 0       ,
-     *              0      , k4     , drar(k5), iar(k1), nobrk   ,
-     *                                          ierror , cfile(3))
+      call gettme ( cfile  , 0      , drar(k2), 1      , 0       , &
+                   0      , k4     , drar(k5), iar(k1:k1), nobrk   , &
+                                               ierror , cfile(3))
 !
 !     see if the found time values are within the range
       if ( nobrk >= 1 ) then
@@ -333,8 +332,8 @@
          i1 = 1
          i2 = 1
          do i = 1 , nobrk
-            if ( drar(k5+i-1) .le. a1 ) i1 = i
-            if ( drar(k5+i-1) .lt. a2 ) i2 = i
+            if ( drar(k5+i-1) <= a1 ) i1 = i
+            if ( drar(k5+i-1) < a2 ) i2 = i
          end do
          if ( i2 /= nobrk ) i2 = i2 + 1
          k6 = k5+nobrk-1
@@ -343,15 +342,15 @@
          if ( drar(k5) > a1 ) then
             call gregor ( drar(k5), iy1, im1, id1, ih1, in1, is1, dummy)
             call gregor ( a1      , iy2, im2, id2, ih2, in2, is2, dummy)
-            write ( lunut , 1030 )  iy1, im1, id1, ih1, in1, is1,
-     *                              iy2, im2, id2, ih2, in2, is2
+            write ( lunut , 1030 )  iy1, im1, id1, ih1, in1, is1, &
+                                   iy2, im2, id2, ih2, in2, is2
             iwar = iwar + 1
          end if
          if ( drar(k6) < a2 ) then
             call gregor ( drar(k6), iy1, im1, id1, ih1, in1, is1, dummy)
             call gregor ( a2      , iy2, im2, id2, ih2, in2, is2, dummy)
-            write ( lunut , 1040 )  iy1, im1, id1, ih1, in1, is1,
-     *                              iy2, im2, id2, ih2, in2, is2
+            write ( lunut , 1040 )  iy1, im1, id1, ih1, in1, is1, &
+                                   iy2, im2, id2, ih2, in2, is2
             iwar = iwar + 1
          end if
          nobrk = i2-i1+1
@@ -392,7 +391,7 @@
       d_end = drar(k5+i2-1) + afact/2.0
       drar(is2  ) = d_beg
       drar(is2+1) = d_end
-CJVB
+!CJVB
 !
 !             get the data themselves
 !
@@ -404,7 +403,7 @@ CJVB
 ! this should correspond with the found substance numbers
          kp = iar(nottt+noitm+i)
          if ( kp < 0 ) cycle
-         if ( iorder .eq. 1 ) then
+         if ( iorder == 1 ) then
             ig  = igs
             igs = igs + 1
             if ( scale ) ig = ig + nscle
@@ -415,9 +414,9 @@ CJVB
             if ( kl > 0 ) then
                 loc(1) = kl
                 loc(2) = kl
-                call getmat ( cfile, 0, kp, loc, drar(is2),
-     *                        amiss, maxd, rar(is), ierror,
-     *                                         cfile(3) )
+                call getmat ( cfile, 0, kp, loc, drar(is2), &
+                             amiss, maxd, rar(is:is), ierror, &
+                                              cfile(3) )
             end if
             ig2 = ig
 !           this loop is per location, so skip the amount of substances if iorder is 1
@@ -446,22 +445,16 @@ CJVB
 !      formats
 !
  1000 format(' DATA will be retrieved from ODS-file: ',A )
- 1010 format(' ERROR: Insufficient memory ! Available:',I10,
-     *                                         ', needed:',I10,' !' )
+ 1010 format(' ERROR: Insufficient memory ! Available:',I10, ', needed:',I10,' !' )
  1020 format(' This block consists of a time function.' )
- 1030 format(' WARNING: file start time   : ',
-     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
-     *       ' after simulation start time: ',
-     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
- 1040 format(' WARNING: file stop  time   : ',
-     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/
-     *       ' before simulation stop time: ',
-     *                   I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
+ 1030 format(' WARNING: file start time   : ', I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/ &
+            ' after simulation start time: ', I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
+ 1040 format(' WARNING: file stop  time   : ', I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,/  &
+             ' before simulation stop time: ', I4,'.',I2,'.',I2,' ',I2,':',I2,':',I2,' !' )
  1050 format(' Number of valid time steps found: ',I6 )
  1060 format(' This block consists of constant data.' )
  1070 format(' WARNING: location : ',I8,' not found. Name is: ',A )
- 1080 format(' ERROR  : location is used in a computation',
-     *          ' that will become corrupted !' )
+ 1080 format(' ERROR  : location is used in a computation', ' that will become corrupted !' )
 !
       END SUBROUTINE DLWQ5C
 

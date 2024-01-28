@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,7 +35,7 @@
 /*   Program:    OPNCLOSE.C                                           */
 /*   Version:    1.02                                                 */
 /*   Programmer: Eric Verschuur                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   1.01 -- 24 Jan 1996 -- 09:13 -- Operating System: DOS            */
 /*   1.00 -- 29 Juni 1994 -- 15:55 -- Operating System: DOS           */

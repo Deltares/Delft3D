@@ -11,7 +11,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
                & wrka3     ,dep2      ,umea      ,vmea      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

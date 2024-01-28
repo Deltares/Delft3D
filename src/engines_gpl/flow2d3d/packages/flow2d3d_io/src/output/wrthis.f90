@@ -12,7 +12,7 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
                 & ntruvgl   ,order_tra ,nsluv     ,cbuv      ,zwndcd    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

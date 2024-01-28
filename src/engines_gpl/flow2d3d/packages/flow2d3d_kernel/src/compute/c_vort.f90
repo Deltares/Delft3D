@@ -3,7 +3,7 @@ subroutine c_vort(mmax      ,nmax      ,kmax      ,nmaxus    ,kcs       ,kfu    
                 & vortic    ,enstro    ,wrkarr    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

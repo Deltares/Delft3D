@@ -1,7 +1,7 @@
 module xmlparse
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2016.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ module xmlparse
 ! - Properly report comment tags as '!--'
 ! - Keep track of level also when reading
 !
-! Copyright (c) Arjen Markus, 2012.
+! Copyright (c) Arjen Markus, 2012-2024.
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
