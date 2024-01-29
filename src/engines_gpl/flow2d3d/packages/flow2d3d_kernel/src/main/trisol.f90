@@ -564,7 +564,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: distr_qtq
     logical                              , pointer :: distr_qtq_per
     integer(pntrsize)                    , pointer :: typbnd
-    integer(pntrsize)                    , pointer :: disnf
     integer                   , pointer :: cutcell
     integer                   , pointer :: GhostMethod
     integer                   , pointer :: dim_nmlist
@@ -1237,7 +1236,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
-    disnf               => gdp%gdr_i_ch%disnf !V: was not in branch. Not sure if this is the one. 
     !
     icx     = 0
     icy     = 0
@@ -1827,7 +1825,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,            &
+              & r(wrkb16) ,sbkol     ,r(precip) ,                       &
               & r(dzs1)   ,r(dp)     ,r(alfas)  ,timnow    ,gdp       )             
        call timer_stop(timer_1stadi, gdp)
        if (roller) then
@@ -3093,7 +3091,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,            &
+              & r(wrkb16) ,sbkol     ,r(precip) ,                       &
               & r(dzs1)   ,r(dp)     ,r(alfas)  ,timnow    ,gdp       )   
        call timer_stop(timer_2ndadi, gdp)
        if (roller) then

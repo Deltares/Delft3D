@@ -826,6 +826,20 @@ subroutine intCELLS(gsqs,kfs,kcs,s1,u1,v1,dps,lunscr,Irov,mmax,nmax,nmaxus,kmax,
                    POROSpart(Np,n,m) =  (AREAdry/gsqs(n,m))                   
                 ENDIF
              enddo
+!             !BEGIN DEBUG
+!write(42,"(A)") 'intCELLS'                             !name of the location where file is written
+!write(42,"(E19.12E2)") 0                                          !time 
+!write(42,"(A)") 'xz, yz, POROSpart '                       !variables written to file
+!write(42,"(A)") 'ndx, NP'                                           !variables over which it is looped (e.g., space and sediment fraction)
+!write(42,"(I6.6,X,I6.6,X,I6.6,X,I6.6)") 1, mmax*nmaxus, 1, Np    !limits of the variables over which it is looped.
+!do m=1,mmax   
+!    do n=1,nmaxus!loop 1
+!    do Np=1,Npoly                                                  !loop 2 
+!        write(42,"(X,E15.8E2,X,E15.8E2,X,E15.8E2)") xG(n,m), yG(n,m), POROSpart(Np,n,m)
+!    enddo
+!    enddo
+!enddo
+!            !END DEBUG
              IF (ANY(CELLinPOLY(:,n,m).eq.2)) then !Interfacial cell
                 POROS(n,m) = 1._fp - SUM(POROSpart(:,n,m))
                  if (comparereal(POROS(n,m),0.9999999999_fp).ge.0)  then !CHANNEL cell (!it could be 1.0000000000000003124 i set it to 1._fp)
