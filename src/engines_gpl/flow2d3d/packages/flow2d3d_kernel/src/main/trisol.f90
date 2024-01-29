@@ -382,6 +382,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: sinkw
     integer(pntrsize)                    , pointer :: soumud
     integer(pntrsize)                    , pointer :: sour
+    integer(pntrsize)                    , pointer :: sournf
     integer(pntrsize)                    , pointer :: sourr
     integer(pntrsize)                    , pointer :: sourw
     integer(pntrsize)                    , pointer :: stbf
@@ -1058,6 +1059,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     sinkw               => gdp%gdr_i_ch%sinkw
     soumud              => gdp%gdr_i_ch%soumud
     sour                => gdp%gdr_i_ch%sour
+    sournf              => gdp%gdr_i_ch%sournf
     sourr               => gdp%gdr_i_ch%sourr
     sourw               => gdp%gdr_i_ch%sourw
     stbf                => gdp%gdr_i_ch%stbf
@@ -2240,7 +2242,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
                  & i(nob)    , &
                  & nrob      ,nto       ,gdp       )
       ! write(*,*) 'here6'
@@ -3553,7 +3555,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
                  & i(nob)    , &
                  & nrob      ,nto       ,gdp       )
           call timer_stop(timer_tritra, gdp)
