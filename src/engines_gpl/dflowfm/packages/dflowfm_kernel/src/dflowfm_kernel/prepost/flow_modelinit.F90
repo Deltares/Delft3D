@@ -388,20 +388,20 @@
  endif
  call timstop(handle_extra(24)) ! end MBA init
 
- call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level
- if (stm_included) then
-    call fm_update_mor_width_area()
-    if (len_trim(md_dredgefile) > 0 .or. ndxi>ndx2d) then
-       call fm_update_mor_width_mean_bedlevel()
-    endif
- endif
- call timstop(handle_extra(25)) ! end update MOR width
-
  call timstrt('Dredging init       ', handle_extra(26)) ! dredging init
  if ( len_trim(md_dredgefile) > 0 .and. stm_included) then
     call flow_dredgeinit()          ! dredging and dumping. Moved here because julrefdate needed
  endif
  call timstop(handle_extra(26)) ! end dredging init
+ 
+ call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level
+ if (stm_included) then
+    call fm_update_mor_width_area()
+    if (dad_included > 0 .or. ndxi>ndx2d) then
+       call fm_update_mor_width_mean_bedlevel()
+    endif
+ endif
+ call timstop(handle_extra(25)) ! end update MOR width
 
  if (jawave .eq. 4 .and. jajre .eq. 1) then
     call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
