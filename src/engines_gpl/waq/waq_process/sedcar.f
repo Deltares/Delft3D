@@ -65,7 +65,7 @@
 !     ------   -----  ------------
 
       use m_monsys
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use m_evaluate_waq_attribute
       USE BottomSet     !  Module with definition of the waterbottom segments
 
@@ -87,7 +87,7 @@
       INTEGER(kind=int_wp) ::LUNREP
 
       IF ( FIRST ) THEN
-         CALL GETCOM('-psedmin', 2 , SW_PSEDMIN, IDUMMY, PSEDMIN, CDUMMY, IERR2)
+         CALL retrieve_command_argument('-psedmin', 2 , SW_PSEDMIN, IDUMMY, PSEDMIN, CDUMMY, IERR2)
          IF ( SW_PSEDMIN ) THEN
             CALL GETMLU(LUNREP)
             IF ( IERR2 .EQ. 0 ) THEN

@@ -21,71 +21,65 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_startup_screen
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine startup_screen(lunrep)
+    subroutine startup_screen(lunrep)
+        !! Write intro to screen and report file
 
-!>\File
-!>        Write intro to screen and report file
+        use m_getidentification
+        use timers
+        use m_dattim
 
-      ! Declaration of arguments
+        implicit none
 
-      use m_getidentification
-      use timers
-      use m_dattim
+        integer(kind = int_wp), intent(in) :: lunrep   !< Unit number report file
 
-      implicit none
+        ! local declarations
+        save
 
-      integer(kind=int_wp)      , intent(in   ) ::lunrep   !< Unit number report file
+        character*20  run_date_time
+        character*120 version_string
+        logical       first
+        integer(kind = int_wp) :: i, j
+        save          first
+        character*75  startup_screen_text(8)
 
-      ! local declarations
+        data     first /.true./
+        data     startup_screen_text  / &
+                '+-----------------------------------------------------------------------+', &
+                '|                      Delft3D / D-HYDRO - DELWAQ                       |', &
+                '|                                                                       |', &
+                '| D-Water Quality         Water quality simulation and                  |', &
+                '|                         algae simulation in 1D/2D/3D models           |', &
+                '|                                                                       |', &
+                '| Version xx.xxxx  xx-xx-xxxx                                           |', &
+                '+-----------------------------------------------------------------------+'/
 
-      save
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("startup_screen", ithndl)
 
-      character*20  run_date_time
-      character*120 version_string
-      logical       first
-      integer(kind=int_wp)  ::   i, j
-      save          first
-      character*75  startup_screen_text(8)
+        ! set version_string
+        call getidentification(version_string)
 
-      data     first /.true./
-      data     startup_screen_text  / &
-      '+-----------------------------------------------------------------------+', &
-      '|                      Delft3D / D-HYDRO - DELWAQ                       |', &
-      '|                                                                       |', &
-      '| D-Water Quality         Water quality simulation and                  |', &
-      '|                         algae simulation in 1D/2D/3D models           |', &
-      '|                                                                       |', &
-      '| Version xx.xxxx  xx-xx-xxxx                                           |', &
-      '+-----------------------------------------------------------------------+'/
+        if (first) then
+            first = .false.
+            do i = 1, size(startup_screen_text)
+                if (startup_screen_text(i)(3:15) == 'Version xx.xx') then
+                    write(startup_screen_text(i)(3:72), '(a)') version_string(1:70)
+                end if
+                write(*, *) startup_screen_text(i)
+            enddo
+        endif
+        write (lunrep, '(1x,a)') trim(version_string)
+        call dattim(run_date_time)
+        write (lunrep, '(2a)') ' Execution start: ', run_date_time
 
-      integer(kind=int_wp)  ::ithndl = 0
-      if ( timon ) call timstrt( "startup_screen", ithndl )
+        if (timon) call timstop(ithndl)
 
-      ! set version_string
-      call getidentification(version_string)
-
-      if ( first ) then
-         first = .false.
-         do i = 1 , size(startup_screen_text)
-            if ( startup_screen_text(i)(3:15) .eq. 'Version xx.xx' ) then
-               write(startup_screen_text(i)(3:72),'(a)') version_string(1:70)
-            end if
-            write(*,*) startup_screen_text(i)
-         enddo
-      endif
-      write (lunrep,'(1x,a)') trim(version_string)
-      call dattim(run_date_time)
-      write (lunrep,'(2a)') ' Execution start: ',run_date_time
-
-      if ( timon ) call timstop( ithndl )
-
-      end subroutine startup_screen
+    end subroutine startup_screen
 end module m_startup_screen

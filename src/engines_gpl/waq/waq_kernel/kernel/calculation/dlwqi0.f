@@ -34,10 +34,8 @@
       use m_dlwqi2
       use m_delpar00
       use m_chknmr
-      use m_zero
+      use m_array_manipulation, only : initialize_real_array, copy_real_array_elements, create_pointer_table
       use m_srstop
-      use m_move
-      use m_makpnt
       use m_open_waq_files
 
       contains
@@ -76,7 +74,7 @@
 !
       use m_dhisys
       use dlwqgrid_mod
-      use waqmem
+      use memory_mangement
       use delwaq2_data
       use timers
       use workspace
@@ -234,7 +232,7 @@
          read  ( lun( 8) ) ( j(i1+k), k=1,mmax*nmax )
          i2 = ikbnd-1
 
-         call makpnt( nmax    , mmax    , kmax    , noseg   , nobnd   ,
+         call create_pointer_table( nmax    , mmax    , kmax    , noseg   , nobnd   ,
      &                noq     , noq1    , noq2    , j(ilgra:), j(ixpnt:),
      &                cellpnt , flowpnt )
          finam = lchar(8)(1:index(lchar(8),'.',.true.))//'cco'
@@ -365,18 +363,18 @@
       ELSE
          NOSUBz = NOSYS
       ENDIF
-      CALL MOVE   ( A(IBSET:), A(IBOUN:), NOBND*NOSUBz )
-      CALL MOVE   ( A(IBSET:), A(IBSAV:), NOBND*NOSUBz )
-      CALL ZERO   ( A(IDERV:), NOTOT*NOSSS )
-      CALL ZERO   ( A(IMAS2:), NOTOT*5     )
-      CALL ZERO   ( A(IWDMP:), NOTOT*NOWST*2  )
+      call copy_real_array_elements   ( A(IBSET:), A(IBOUN:), NOBND*NOSUBz )
+      call copy_real_array_elements   ( A(IBSET:), A(IBSAV:), NOBND*NOSUBz )
+      call initialize_real_array   ( A(IDERV:), NOTOT*NOSSS )
+      call initialize_real_array   ( A(IMAS2:), NOTOT*5     )
+      call initialize_real_array   ( A(IWDMP:), NOTOT*NOWST*2  )
       IF ( MOD(INTOPT,16) .GT. 7 ) THEN
-         CALL ZERO( A(IDMPQ:), NOSYS*NDMPQ*2  )
-         CALL ZERO( A(IDMPS:), NOTOT*NDMPS*3  )
-         CALL ZERO( A(ISMAS:), NOTOT*NDMPAR*6 )
-         CALL ZERO( A(IFLXI:), NDMPAR*NFLUX   )
-         CALL ZERO( A(IFLXD:), NDMPS*NFLUX    )
-         CALL ZERO( A(ITRRA:), NOSYS*NORAAI   )
+         call initialize_real_array( A(IDMPQ:), NOSYS*NDMPQ*2  )
+         call initialize_real_array( A(IDMPS:), NOTOT*NDMPS*3  )
+         call initialize_real_array( A(ISMAS:), NOTOT*NDMPAR*6 )
+         call initialize_real_array( A(IFLXI:), NDMPAR*NFLUX   )
+         call initialize_real_array( A(IFLXD:), NDMPS*NFLUX    )
+         call initialize_real_array( A(ITRRA:), NOSYS*NORAAI   )
       ENDIF
 
 !         make start masses for dynamic and iterative computation

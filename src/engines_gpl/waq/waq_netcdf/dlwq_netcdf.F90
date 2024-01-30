@@ -26,7 +26,7 @@
 !
 module dlwq_netcdf
     use netcdf
-    use output, only: ncopt
+    use results, only: ncopt
     use ISO_FORTRAN_ENV, only: int64
 
     implicit none

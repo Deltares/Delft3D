@@ -115,11 +115,11 @@
       use m_dlwq14
       use m_dlwq13
       use m_delpar01
-      use m_move
-      use m_fileutils
+      use m_array_manipulation, only: copy_real_array_elements
+      use data_processing, only : close_files
       use dlwqgrid_mod
       use timers
-      use waqmem                         ! Global memory with allocatable GMRES arrays
+      use memory_mangement                         ! Global memory with allocatable GMRES arrays
       use delwaq2_data
       use m_waq_openda_exchange_items, only : get_openda_buffer
       use m_actions
@@ -266,7 +266,7 @@
 
 ! initialize second volume array with the first one
 
-          call move   ( a(ivol: ), a(ivol2:) , nosss   )
+          call copy_real_array_elements   ( a(ivol: ), a(ivol2:) , nosss   )
       endif
 
 !
@@ -421,7 +421,7 @@
          itime  = itime + idt
          select case ( ivflag )
             case ( 1 )                 !     computation of volumes for computed volumes only
-               call move   ( a(ivol:) , a(ivol2:), noseg   )
+               call copy_real_array_elements   ( a(ivol:) , a(ivol2:), noseg   )
                call dlwqb3 ( a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot   ,
      &                       noq     , nvdim   , j(ivpnw:), a(ivol2:), intopt  ,
      &                       a(imas2:), idt     , iaflag  , nosys   , a(idmpq:),
@@ -570,10 +570,10 @@
          if ( lrewin .and. lstrec ) then
             call dlwqce ( a(imass:), a(ivoll:), a(ivol2:), nosys , notot ,
      &                    noseg   , lun(19) )
-            call move   ( a(ivoll:), a(ivol:) , noseg   )
+            call copy_real_array_elements   ( a(ivoll:), a(ivol:) , noseg   )
          else
 !     replace old by new volumes
-            call move   ( a(ivol2:), a(ivol:) , noseg   )
+            call copy_real_array_elements   ( a(ivol2:), a(ivol:) , noseg   )
          endif
 
 !     integrate the fluxes at dump segments fill asmass with mass

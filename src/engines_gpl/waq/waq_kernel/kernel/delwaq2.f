@@ -47,8 +47,7 @@
       use m_startup_screen
       use m_srstop
       use m_monsys
-      use m_gkwini
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use m_open_waq_files
 
 
@@ -108,7 +107,7 @@
       use m_sysa          ! Pointers in real array workspace
       use m_sysj          ! Pointers in integer array workspace
       use m_sysc          ! Pointers in character array workspace
-      use m_dhgnam
+      use m_cli_utils, only : get_input_filename
 
       implicit none
 
@@ -181,7 +180,7 @@
 !
 !        boot the system; read dimensions of sysn from delwaq03.wrk-file
 !
-         CALL DHGNAM(RUNID,'.mon')
+         CALL get_input_filename(RUNID,'.mon')
          LCHAR(1) = TRIM(RUNID)//'-delwaq03.wrk'
 
 !

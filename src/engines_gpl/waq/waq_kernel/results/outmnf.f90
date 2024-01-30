@@ -41,17 +41,17 @@
       !
       !     function           : gives map dump to nefis files
       !
-      !     subroutines called : dhdelf, deletes a file
-      !                          filldm, fills elements dimension array
-      !                          putgtc, handles i/o to nefis file for char's
+      !     subroutines called : delete_file, deletes a file
+      !                          fill_element_dimensions, fills elements dimension array
+      !                          manage_nefis_data_character, handles i/o to nefis file for char's
       !                          putget, handles i/o to nefis file for int/real(kind=real_wp) ::!
 
       use m_srstop
-      use m_putgtc
+      use nefis_data, only : manage_nefis_data_character
       use m_monsys
-      use m_filldm
+      use m_array_manipulation, only : fill_element_dimensions
       use timers
-      use m_dhdelf
+      use data_processing, only : delete_file
 
       implicit none
 
@@ -190,8 +190,8 @@
 
          ! delete existing nefis files
 
-         call dhdelf ( datnam, ierr )
-         call dhdelf ( defnam, ierr )
+         call delete_file ( datnam, ierr )
+         call delete_file ( defnam, ierr )
 
          ! initialize window
 
@@ -231,40 +231,40 @@
 
          ! group 1
 
-         call filldm (elmdms,1   ,1   ,1     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,2   ,1   ,4     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,3   ,1   ,notot ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,4   ,1   ,1     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,5   ,1   ,6     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,6   ,1   ,4     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,7   ,1   ,7     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,1   ,1   ,1     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,2   ,1   ,4     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,3   ,1   ,notot ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,4   ,1   ,1     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,5   ,1   ,6     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,6   ,1   ,4     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,7   ,1   ,7     ,0     ,0    ,0     ,0    )
 
          ! group 2
 
-         call filldm (elmdms,noparm,1       ,1    ,0    ,0     ,0     ,0    )
+         call fill_element_dimensions (elmdms,noparm,1       ,1    ,0    ,0     ,0     ,0    )
          do isys = 1, notot
-            call filldm (elmdms,noparm+isys ,1    ,noseg,0     ,0     ,0     ,0     )
+            call fill_element_dimensions (elmdms,noparm+isys ,1    ,noseg,0     ,0     ,0     ,0     )
          enddo
 
          ! write all elements to file; all definition and creation of files,
          ! data groups, cells and elements is handled by putget.
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(1), celid1, &
                     lwrite, ierr  , type  , fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(2), celid1, &
                     lwrite, ierr  , moname, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(3), celid1, &
                     lwrite, ierr  , syname, fd_nef)
          if (ierr .ne. 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(4), celid1, &
                     lwrite, ierr  , duname, fd_nef)
          if (ierr .ne. 0) goto 110

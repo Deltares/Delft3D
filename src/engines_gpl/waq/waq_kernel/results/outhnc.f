@@ -44,7 +44,7 @@
       use m_srstop
       use timers
       use dlwq_netcdf  !   read/write grid in netcdf
-      use output, only: ncopt
+      use results, only: ncopt
       implicit none
 
 !     Parameters          :

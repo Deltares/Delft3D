@@ -88,18 +88,18 @@
       write ( lunut ,   *  )
 
       if ( iorder == 1 ) then ! items first
-          ntt  = idmnr !nr of subst for assignment
-          nitm = nodim !nr of subst in computational rule
+          ntt  = idmnr
+          nitm = nodim
       else ! subst first
-          ntt  = itmnr ! nr of items for assignment
-          nitm = noitm ! nr of items in computational rule
+          ntt  = itmnr
+          nitm = noitm
       endif
 !
 !       look backwards
 !
       i4 = 0
       do i1 = idx_missing,1,-1
-         i2 = iar(ioffc + i1) ! ioffc???!?!!?!
+         i2 = iar(ioffc + i1)
          if ( i2 > -100000 ) exit
       end do
 !

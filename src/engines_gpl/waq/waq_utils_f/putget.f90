@@ -21,29 +21,17 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine putget(defnam    ,datnam    ,grpnam    ,nelems    ,
-     *                  elmnms    ,elmdms    ,elmtps    ,nbytsg    ,
-     *                  elmnam    ,celidt    ,wrilog    ,error     ,
-     *                  buffr     ,fd_nef                          )
+      subroutine putget(defnam    ,datnam    ,grpnam    ,nelems    , &
+                       elmnms    ,elmdms    ,elmtps    ,nbytsg    , &
+                       elmnam    ,celidt    ,wrilog    ,error     , &
+                       buffr     ,fd_nef                          )
       implicit none
-!-----------------------------------------------------------------------
-!     Small adjustment wrt Delft3D-FLOW code
-!     element description
-!     element quantity
-!     element unity
-!-----------------------------------------------------------------------
-cf    subroutine putgtc(filnam    ,grpnam    ,nelems    ,elmnms    ,
-cf   *                  elmdms               ,elmqty    ,elmunt    ,
-cf   *                  elmdes    ,elmtps    ,nbytsg    ,elmnam    ,
-cf   *                  celidt    ,wrilog    ,error     ,buffr     )
-!-----------------------------------------------------------------------
-!
+
       integer         elmdms( 6, *),nbytsg(    *)
       integer         celidt,nelems,error
-!
+
       integer         buffr(*)
       character*(*)   elmnms(nelems),elmtps(     nelems)
-cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
       character*(*)   elmnam,grpnam
 !
       logical         wrilog
@@ -71,10 +59,10 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
 !
 !-External Functions
 !
-      integer         clsnef, credat, crenef, defcel, defelm,
-     *                defgrp, getelt, inqelm, neferr, putelt
-      external        clsnef, credat, crenef, defcel, defelm,
-     *                defgrp, getelt, inqelm, neferr, putelt
+      integer         clsnef, credat, crenef, defcel, defelm, &
+                     defgrp, getelt, inqelm, neferr, putelt
+      external        clsnef, credat, crenef, defcel, defelm, &
+                     defgrp, getelt, inqelm, neferr, putelt
 !
 !AM
 !     save fd_nef
@@ -101,8 +89,8 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
       endif
 !
       if ( fd_nef < 0 ) then
-        error  = CRENEF (fd_nef, datnam, defnam,
-     *                           coding, access)
+        error  = CRENEF (fd_nef, datnam, defnam, &
+                                coding, access)
         if (error.ne.0 .and. .not.wrilog) then
           error = -211
           goto 10000
@@ -111,8 +99,8 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
       endif
 
       if (wrilog) then
-        error  = putelt(fd_nef,grpnam,elmnam,
-     *                  uindex,1     ,buffr        )
+        error  = putelt(fd_nef,grpnam,elmnam, &
+                       uindex,1     ,buffr        )
       else
         j=0
  123    continue
@@ -124,8 +112,8 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
         do i= 1, elmdms(1,j)
           buflen = buflen*elmdms(i+1,j)
         enddo
-        error  = getelt(fd_nef,grpnam,elmnam,
-     *                  uindex,1     ,buflen,buffr )
+        error  = getelt(fd_nef,grpnam,elmnam, &
+                       uindex,1     ,buflen,buffr )
         if (error.ne.0) goto 9999
       endif
 !-----------------------------------------------------------------------
@@ -136,13 +124,11 @@ cf   *                elmqty(    *),elmunt(    *),elmdes(     *)
       if ( error .ne. 0 .and. wrilog ) then
 ! Create elements
         do 110 lelmnr=1,nelems
-          error  = DEFELM(fd_nef        ,elmnms(  lelmnr),
-     *                    elmtps(lelmnr),nbytsg(  lelmnr),
-cf   *                    elmqty(lelmnr),elmunt(  lelmnr),
-cf   *                    elmdes(lelmnr),elmdms(1,lelmnr),
-     *                    elmqta        ,elmant          ,
-     *                    elmdas        ,elmdms(1,lelmnr),
-     *                    elmdms(2,lelmnr)               )
+          error  = DEFELM(fd_nef        ,elmnms(  lelmnr), &
+                         elmtps(lelmnr),nbytsg(  lelmnr), &
+                         elmqta        ,elmant          , &
+                         elmdas        ,elmdms(1,lelmnr), &
+                         elmdms(2,lelmnr)               )
 !      most likely error, element already exist
           error = 0
   110   continue
@@ -156,8 +142,8 @@ cf   *                    elmdes(lelmnr),elmdms(1,lelmnr),
         error  = CREDAT(fd_nef,grpnam,grpnam)
         if ( error .ne. 0 ) goto 9999
 ! try again to write data
-        error  = putelt(fd_nef,grpnam,elmnam,
-     *                  uindex,1     ,buffr        )
+        error  = putelt(fd_nef,grpnam,elmnam, &
+                       uindex,1     ,buffr        )
         if ( error .ne. 0 ) goto 9999
       endif
 !
@@ -170,8 +156,8 @@ cf   *                    elmdes(lelmnr),elmdms(1,lelmnr),
 	write(*,*) elmqta
 	write(*,*) elmant
 	write(*,*) elmdas
-        error = INQELM(fd_nef,elmnam,elmtps,nbytsg,
-     *                 elmqta,elmant,elmdas,elmndm,elmdim)
+        error = INQELM(fd_nef,elmnam,elmtps,nbytsg, &
+                      elmqta,elmant,elmdas,elmndm,elmdim)
 
         if (error  .ne. 0) goto 9999
         lelmnr = 0

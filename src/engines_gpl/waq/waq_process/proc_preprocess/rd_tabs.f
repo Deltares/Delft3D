@@ -58,7 +58,7 @@
       use m_rd_filid
       use m_dhpfil
       use timers         !< performance timers
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
       use m_process_lib_data
 
       implicit none
@@ -105,7 +105,7 @@
 !
 !     initialize proces definition file
 !
-      call dhfext (pdffil, filext, extpos, extlen)
+      call extract_file_extension (pdffil, filext, extpos, extlen)
       if ( filext .ne. ' ' ) then
 
          ! files with extension, assume nefis file made out of one file, fildat equals fildef

@@ -69,10 +69,10 @@
 
 !     Routines            : zoek  - to search the DRY_TRESH constant
 !                                     and SURF parameter/segfunction
-!                           dhkmst  - to set features
+!                           set_feature  - to set features
 !                           evaluate_waq_attribute  - to get features
 
-      use m_dhkmst
+      use waq_attribute_utils, only: set_feature
       use m_evaluate_waq_attribute
       use timers
       implicit none
@@ -152,9 +152,9 @@
                      call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )         ! get second one of cell above
                      select case ( ikm )
                         case ( 1 )                                     ! the cell above is surface cell
-                           call dhkmst(2, iknmrk(ivol-nosegl), 0 )     ! now it also has a bed
+                           call set_feature(2, iknmrk(ivol-nosegl), 0 )     ! now it also has a bed
                         case ( 2 )                                     ! the cell on top is middle cell
-                           call dhkmst(2, iknmrk(ivol-nosegl), 3 )     ! now it is the bed
+                           call set_feature(2, iknmrk(ivol-nosegl), 3 )     ! now it is the bed
                      end select
                      do isub = nosys+1,notot
                         conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)
@@ -185,9 +185,9 @@
                         call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )
                         select case ( ikm )
                            case ( 1 )                                  ! the cell on top is surface cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
                            case ( 2 )                                  ! the cell on top is middle cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
                         end select
                         do isub = nosys+1,notot
                            conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)
@@ -216,9 +216,9 @@
                         call evaluate_waq_attribute(2, iknmrk(ivol-nosegl), ikm )
                         select case ( ikm )
                            case ( 1 )                                  ! the cell on top is surface cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 0 )  ! now it also has a bed
                            case ( 2 )                                  ! the cell on top is middle cell
-                              call dhkmst(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
+                              call set_feature(2, iknmrk(ivol-nosegl), 3 )  ! now it is the bed
                         end select
                         do isub = nosys+1,notot
                            conc(isub,ivol-nosegl) = conc(isub,ivol-nosegl) + conc(isub,ivol)

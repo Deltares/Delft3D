@@ -23,7 +23,7 @@
       module m_algrep
       use m_waq_precision
       use m_string_utils
-      use m_dhslen
+      use m_string_manipulation, only : get_trimmed_length
       use processet
       use timers       !   performance timers
 
@@ -123,7 +123,7 @@
             do icof = 1 , nocof
                name1 = cofnam(icof)
                name2 = cofnam(icof)
-               call dhslen(name1,ilen)
+               call get_trimmed_length(name1,ilen)
                write(name1(ilen+1:),'(i2.2)') nalg
                name2(ilen-2:) = abrtyp(ialg)
 
@@ -150,7 +150,7 @@
             do iout = 1 , nouttyp
                name1 = outtyp(iout)
                name2 = outtyp(iout)
-               call dhslen(name1,ilen)
+               call get_trimmed_length(name1,ilen)
                write(name1(ilen+1:),'(i2.2)') nalg
                name2(ilen-2:) = abrtyp(ialg)
                call replace_process_property_names(procesdef, name1, name2)
@@ -173,7 +173,7 @@
          do iout = 1 , noutgrp
             name1 = outgrp(iout)
             name2 = outgrp(iout)
-            call dhslen(name1,ilen)
+            call get_trimmed_length(name1,ilen)
             write(name1(ilen+1:),'(i2.2)') igrp
             name2(ilen-2:) = grpabr(igrp)
             call replace_process_property_names(procesdef, name1, name2)

@@ -95,7 +95,6 @@ contains
       !     Note: defined by BMI 2.0
       !
       !DEC$ ATTRIBUTES DLLEXPORT::set_var
-      use dhcommand
       character(kind=c_char), intent(in)    :: c_key(MAXSTRLEN)  !< Incoming string, determines the variable to be set
       type(c_ptr), value, intent(in)    :: xptr              !< C-pointer to the actual value to be picked up by DELWAQ
       !
@@ -168,7 +167,6 @@ contains
       !     Note: defined by BMI 2.0
       !
       !DEC$ ATTRIBUTES DLLEXPORT::initialize
-      use dhcommand
       use m_actions
       use m_sysi
 

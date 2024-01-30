@@ -45,7 +45,7 @@
 
 !     Routines            : SRSTOP, stops execution (on error)
 
-      use partition_arrays ! module for computing the pointers into the arrays
+      use m_array_manipulation, only : make_pointer, memory_partition, char_type ! module for computing the pointers into the arrays
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
       use m_sysa          ! Pointers in real array workspace
@@ -70,7 +70,7 @@
       integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
       integer(kind=int_wp), intent(inout)  ::itotc     ! Required array space
-      type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
+      type(memory_partition), intent(inout) :: part ! Private variables for make_pointer
 
 
 !     Local declarations
@@ -120,7 +120,7 @@
 !
       DO I_CAR = IASIZE + IJSIZE + 1 , IASIZE + IJSIZE + NR_CAR
          ARRNAM(I_CAR) = ' '
-         ARRTYP(I_CAR) = CHTYP
+         ARRTYP(I_CAR) = char_type
          ARRBYT(I_CAR) = 4
          ARRKND(I_CAR) = 1
          ARRDM1(I_CAR) = 0
@@ -250,7 +250,7 @@ cjvb                                     ??lp
             iarlen = arrlen(i_car)
             namarr = arrnam(i_car)
             if ( iarlen .gt. 0 ) then
-               ip = makptr(part, namarr, iartyp ,iarlen)
+               ip = make_pointer(part, iartyp ,iarlen)
                if ( ip .le. 0 ) then
                   write(lunrep,2010) namarr
                   call srstop(1)

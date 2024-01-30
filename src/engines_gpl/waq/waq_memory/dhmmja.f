@@ -39,21 +39,22 @@
 !>                             - Sets the array pointers in the SYSJ common block
 !>                             - Gives array space of the kind J(pointer), for output
 !>                             - Declares memory through C-interface if asked for
-!>                             - Also has a new part allocating arrays in the waqmem module
+!>                             - Also has a new part allocating arrays in the memory_mangement module
 !>                             .
 !>                          Routine is also called by preprocessor to report memory use.
 
 !     Created             : June 1998 by Jan van Beek
 !     Modified            : May  2010 by Leo Postma
 !                           Adds a number of arrays with normal names through
-!                           the Fortran allocate feature and the waqmem module
+!                           the Fortran allocate feature and the memory_mangement module
 
 !     Files               : LUNREP - monitoring output file
 
 !     Routines            : SRSTOP, stops execution (on error)
 
-      use waqmem           ! module with the more recently added arrays
-      use partition_arrays ! module for computing the pointers into the arrays
+      use memory_mangement           ! module with the more recently added arrays
+      !! module for computing the pointers into the arrays
+      use m_array_manipulation, only : make_pointer, memory_partition, int_type
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
       use m_sysa          ! Pointers in real array workspace
@@ -79,7 +80,7 @@
       integer(kind=int_wp), intent(inout)  ::arrdm2(:) ! dimension 2
       integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
-      type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
+      type(memory_partition), intent(inout) :: part ! Private variables for make_pointer
 
       integer(kind=int_wp), intent(inout)  ::itoti     ! Required array space
 
@@ -171,21 +172,21 @@
 
 !     Some logicals
 
-      fluxco = intsrt .eq.  5 .or. intsrt .eq. 12 .or. intsrt .eq. 14 .or.
-     &         intsrt .eq. 24
-      steady = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq.  8 .or.
-     &         intsrt .eq.  9 .or. intsrt .eq. 17 .or. intsrt .eq. 18
-      iterat = intsrt .eq.  8 .or. intsrt .eq.  9
-      delmat = intsrt .eq.  6 .or. intsrt .eq.  7
-      f_solv = intsrt .eq. 15 .or. intsrt .eq. 16 .or. intsrt .eq. 17 .or.
-     &         intsrt .eq. 18 .or. intsrt .eq. 21 .or. intsrt .eq. 22
+      fluxco = intsrt ==  5 .or. intsrt == 12 .or. intsrt == 14 .or.
+     &         intsrt == 24
+      steady = intsrt ==  6 .or. intsrt ==  7 .or. intsrt ==  8 .or.
+     &         intsrt ==  9 .or. intsrt == 17 .or. intsrt == 18
+      iterat = intsrt ==  8 .or. intsrt ==  9
+      delmat = intsrt ==  6 .or. intsrt ==  7
+      f_solv = intsrt == 15 .or. intsrt == 16 .or. intsrt == 17 .or.
+     &         intsrt == 18 .or. intsrt == 21 .or. intsrt == 22
       balans = btest(intopt,3)
 
 !     Set defaults, no name no length
 
       DO I_JAR = 9 + IASIZE , NR_JAR + IASIZE
          ARRNAM(I_JAR) = ' '
-         ARRTYP(I_JAR) = ITYP
+         ARRTYP(I_JAR) = int_type
          ARRBYT(I_JAR) = 4
          ARRKND(I_JAR) = 0
          ARRDM1(I_JAR) = 0
@@ -325,9 +326,9 @@
       ARRNAM(IIKNMR) = 'IKNMRK'
       ARRKND(IIKNMR) = 3
       ARRDM1(IIKNMR) = NOSEG+NSEG2
-      IF ( IFIOPK .EQ. 0 ) THEN
+      IF ( IFIOPK == 0 ) THEN
          ARRDM2(IIKNMR) = 1
-      ELSEIF ( IFIOPK .EQ. 1 ) THEN
+      ELSEIF ( IFIOPK == 1 ) THEN
          ARRDM2(IIKNMR) = 3
       ELSE
          ARRDM2(IIKNMR) = 4
@@ -336,9 +337,9 @@
 !
       ARRNAM(IIKTIM) = 'IKTIM '
       ARRKND(IIKTIM) = 1
-      IF ( IFIOPK .EQ. 0 ) THEN
+      IF ( IFIOPK == 0 ) THEN
          ARRDM1(IIKTIM) = 0
-      ELSEIF ( IFIOPK .EQ. 1 ) THEN
+      ELSEIF ( IFIOPK == 1 ) THEN
          ARRDM1(IIKTIM) = 0
       ELSE
          ARRDM1(IIKTIM) = 3
@@ -432,7 +433,7 @@
       ARRDM2(IISYSI) = 1
       ARRDM3(IISYSI) = 1
 !
-      if ( nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax > 0 ) then
 
          ARRNAM(IILGRA) = 'LGRACT'
          ARRKND(IILGRA) = 1
@@ -562,7 +563,7 @@
          arrlen(i_jar) = arrdm1(i_jar)*arrdm2(i_jar)*arrdm3(i_jar)
          if ( .not. l_decl ) write ( 328, 2040 ) i_jar-iasize, arrnam(i_jar), arrlen(i_jar)
          itoti = itoti + arrlen(i_jar)
-         if ( itoti .lt. 0 ) then
+         if ( itoti < 0 ) then
             write(lunrep,2005)
             call srstop(1)
          endif
@@ -575,9 +576,9 @@
             iartyp = arrtyp(i_jar)
             iarlen = arrlen(i_jar)
             namarr = arrnam(i_jar)
-            if ( iarlen .gt. 0 ) then
-               ip = makptr(part, namarr,iartyp ,iarlen)
-               if ( ip .le. 0 ) then
+            if ( iarlen > 0 ) then
+               ip = make_pointer(part, iartyp ,iarlen)
+               if ( ip <= 0 ) then
                   write(lunrep,2010) namarr
                   call srstop(1)
                endif
@@ -595,7 +596,7 @@
 !
 !     Reset new disp and velo pointers if array's are the same
 !
-      if ( ndspn .eq. 0 ) then
+      if ( ndspn == 0 ) then
          idpnw = idpnt
          arrpoi(iidpnw) = arrpoi(iidpnt)
          arrlen(iidpnw) = arrlen(iidpnt)
@@ -604,7 +605,7 @@
          arrdm2(iidpnw) = arrdm2(iidpnt)
          arrdm3(iidpnw) = arrdm3(iidpnt)
       endif
-      if ( nveln .eq. 0 ) then
+      if ( nveln == 0 ) then
          ivpnw = ivpnt
          arrpoi(iivpnw) = arrpoi(iivpnt)
          arrlen(iivpnw) = arrlen(iivpnt)
@@ -621,22 +622,22 @@
       itoti = itoti +  (noseg+nseg2)*nogrid
       nr_jar_new = nr_jar_new+1                                    ! iknmkv
       if ( l_decl ) allocate ( iknmkv( noseg+nseg2, nogrid ) , stat=ierr )
-      if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iknmkv              " ; call srstop(1) ; endif
+      if ( ierr /= 0 ) then ; write(lunrep,2010) "iknmkv              " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iknmkv              ", (noseg+nseg2)*nogrid
       itoti = itoti +  nowst  ;  nr_jar_new = nr_jar_new+1                                    ! iwstkind
       if ( l_decl ) allocate ( iwstkind(nowst) , stat=ierr )
-      if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iwstkind            " ; call srstop(1) ; endif
+      if ( ierr /= 0 ) then ; write(lunrep,2010) "iwstkind            " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iwstkind            ", nowst
-      if ( nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax > 0 ) then
          itoti = itoti +   noseg
          nr_jar_new = nr_jar_new+1                 ! kcu
          if ( l_decl ) allocate ( cellpnt( noseg )                      , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "cellpnt             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "cellpnt             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "cellpnt             ",  noseg
          itoti = itoti +   noq
          nr_jar_new = nr_jar_new+1                 ! kcu
          if ( l_decl ) allocate ( flowpnt( noq   )                      , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "flowpnt             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "flowpnt             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "flowpnt             ",  noq
       endif
       if ( f_solv ) then
@@ -645,71 +646,71 @@
          itoti = itoti +  noseg+nobnd + 1
          nr_jar_new = nr_jar_new+1                 ! rowpnt
          if ( l_decl ) allocate ( rowpnt (  0:noseg+nobnd               ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "rowpnt              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "rowpnt              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "rowpnt              ",  noseg+nobnd + 1
 
          itoti = itoti +  noq
          nr_jar_new = nr_jar_new+1                 ! fmat
          if ( l_decl ) allocate ( fmat   (  noq                         ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "fmat                " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "fmat                " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "fmat                ",  noq
 
          itoti = itoti +  noq
          nr_jar_new = nr_jar_new+1                 ! tmat
          if ( l_decl ) allocate ( tmat   (  noq                         ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "tmat                " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "tmat                " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "tmat                ",  noq
 
          itoti = itoti + (noseg+nobnd)*noth
          nr_jar_new = nr_jar_new+1                 ! iexseg
          if ( l_decl ) allocate ( iexseg (  noseg+nobnd           ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iexseg              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "iexseg              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iexseg              ", (noseg+nobnd)          *noth
 
       endif
-      if ( intsrt .eq. 24 ) then
+      if ( intsrt == 24 ) then
 
          itoti  = itoti  +  noseg               ! ibas
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( ibas ( noseg ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "ibas                " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "ibas                " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "ibas                ", noseg
 
          itoti  = itoti  +  noq                 ! ibaf
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( ibaf ( noq   ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "ibaf                " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "ibaf                " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "ibaf                ", noq
 
          itoti  = itoti  +  noseg               ! iords
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( iords( noseg ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iords               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "iords               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iords               ", noseg
 
          itoti  = itoti  +  noq                 ! iordf
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( iordf( noq   ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "iordf               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "iordf               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "iordf               ", noq
 
          itoti  = itoti  +  2*noseg             ! nvert
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( nvert(2,noseg), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "nvert               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "nvert               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "nvert               ", 2*noseg
 
          itoti  = itoti  +  noseg               ! ivert
          nr_jar_new = nr_jar_new+1
          if ( l_decl ) allocate ( ivert(noseg), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "ivert               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "ivert               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "ivert               ", noseg
 
       endif
       itoti = itoti +  (noseg+nseg2)
       nr_jar_new = nr_jar_new+1                             ! isegcol
       if ( l_decl ) allocate ( isegcol( noseg+nseg2 ) , stat=ierr )
-      if ( ierr .ne. 0 ) then ; write(lunrep,2010) "isegcol             " ; call srstop(1) ; endif
+      if ( ierr /= 0 ) then ; write(lunrep,2010) "isegcol             " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_jar_new, "isegcol             ", noseg+nseg2
 
       if ( .not. l_decl ) write ( 328, '(/5x,a20,i12)' ) "Total (4 byte words)",itoti

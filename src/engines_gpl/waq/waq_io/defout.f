@@ -45,7 +45,7 @@
 !     COMMON's            : SYSI  , Timer characteristics
 
       use timers       !   performance timers
-      use output
+      use results, only : ncopt, idmp, ihi3, imap, iba3, iba2, ibal, ima2, imo4, imo3
       use m_sysi          ! Timer characteristics
 
       implicit none

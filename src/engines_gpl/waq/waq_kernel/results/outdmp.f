@@ -73,7 +73,7 @@
 !
 !     Declaration of arguments
 !
-      use m_reptim
+      use date_time_utils, only : report_time
       use timers
 
       INTEGER(kind=int_wp) ::IOUT  , ITIME , NX    , NY    , NOTOT ,
@@ -137,7 +137,7 @@
            WRITE (IOUT,2040 ) ( MNAME(K),K=1,4)
       ENDIF
       IP(4) = IP(4) + 1
-      CALL REPTIM ( IOUT  , ITIME , ISFLAG, -999.)
+      CALL report_time ( IOUT  , ITIME , ISFLAG, -999.)
       WRITE(IOUT,2000) SNAME(ITOT) ,ISCALE
 !
 !      Put concentration values in grid layout
@@ -195,7 +195,7 @@
            WRITE (IOUT,2040 ) ( MNAME(K),K=1,4)
       ENDIF
       IP(4) = IP(4) + 1
-      CALL REPTIM ( IOUT  , ITIME , ISFLAG, -999.)
+      CALL report_time ( IOUT  , ITIME , ISFLAG, -999.)
       WRITE(IOUT,2000) SYNAM2(ITOT) ,ISCALE
 !
 !      Put concentration values in grid layout

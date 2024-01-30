@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      SUBROUTINE DHDELF ( FILNAM, IERROR )
+      SUBROUTINE delete_file ( FILNAM, IERROR )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
 !

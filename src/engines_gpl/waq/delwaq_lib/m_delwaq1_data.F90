@@ -28,9 +28,8 @@ module m_delwaq1_data
 
    use dlwqgrid_mod        !   for the storage of contraction grids
    use dlwq_hyd_data    !   for definition and storage of data
-   use Output       !   for the output names and pointers
+   use results, only : OutputPointers       !!   for the output names and pointers
    use timers       !   performance timers
-   use dhcommand
 
    use ProcesSet
    use Workspace
@@ -110,7 +109,7 @@ module m_delwaq1_data
    integer                        :: iwar                     ! cumulative number of warnings
    logical                        :: chkpar(2)                ! flags to check for parameters SURF and LENGTH (used for special waste loads)
    type(GridPointerColl) GridPs
-   type(OutputColl) Outputs
+   type(OutputPointers)           :: Outputs
    integer                        :: narg        ! nr of command line arguments
    character(lchmax)              :: arg         ! a command line argument
 

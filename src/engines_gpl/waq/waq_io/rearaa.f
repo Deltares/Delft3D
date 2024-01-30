@@ -68,6 +68,7 @@
       use m_opt1
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
+      use date_time_utils, only : convert_string_to_time_offset
 
       implicit none
 
@@ -136,7 +137,7 @@
             if ( gettoken( option, noraai, itype, ierr2 ) .gt. 0 ) goto 20
             push = .true.                ! look to see what will be next
             if ( itype .eq. 1 ) then     ! a string, so first dump-ID from 2 areas
-               call dlwq0t ( option, noraai, .false., .false., ierr2 )
+               call convert_string_to_time_offset ( option, noraai, .false., .false., ierr2 )
                if ( ierr2 .ne. 0 ) then
                   noraai = iropt1
                else

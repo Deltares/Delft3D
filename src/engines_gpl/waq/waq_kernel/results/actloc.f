@@ -78,9 +78,9 @@
 !     Declaration of arguments
 !
       use m_dhgvar
-      use m_dhgpoi
+      use m_array_manipulation, only : set_array_parameters
       use timers
-      use m_dhdagg
+      use aggregation, only : resample_v2
 
       INTEGER(kind=int_wp) ::NRVAR , NOCONS, NOPA  , NOFUN , NOSFUN,
      +           NOTOT , NOSEG , NOLOC , NOGRID, NOVAR,
@@ -164,13 +164,13 @@
 !
 !                    Determine characteristics of variable
 !
-                     CALL DHGPOI( IVAR  , IARR  ,
+                     CALL set_array_parameters( IVAR  , IARR  ,
      +                            IARKND, IV_IDX,
      +                            IDIM1 , IDIM2 ,
      +                            IP_ARR, IGRID ,
      +                            ISYSI , NOTOTI,
      +                            IP_ARI)
-                     CALL DHGPOI( IVAR  , IARR  ,
+                     CALL set_array_parameters( IVAR  , IARR  ,
      +                            IARKND, IV_IDX,
      +                            IDIM1 , IDIM2 ,
      +                            IP_ARR, 1     ,
@@ -198,13 +198,13 @@
                         IP_DA  = ARRPOI(IA_DA)
                         ID1_DA = ARRDM1(IA_DA)
                         ID2_DA = ARRDM2(IA_DA)
-                        CALL DHGPOI( IV_DA , IA_DA ,
+                        CALL set_array_parameters( IV_DA , IA_DA ,
      +                               IK_DA , IX_DA ,
      +                               ID1_DA, ID2_DA,
      +                               IP_DA , 1     ,
      +                               ISYSW , NOTOTW,
      +                               IP_ARW)
-                        CALL DHGPOI( IV_HLP, IA_HLP,
+                        CALL set_array_parameters( IV_HLP, IA_HLP,
      +                               IK_HLP, IX_HLP,
      +                               ID1HLP, ID2HLP,
      +                               IP_HLP, IGRID ,
@@ -218,13 +218,13 @@
                         IP_DA  = ARRPOI(IA_DA)
                         ID1_DA = ARRDM1(IA_DA)
                         ID2_DA = ARRDM2(IA_DA)
-                        CALL DHGPOI( IV_DA , IA_DA ,
+                        CALL set_array_parameters( IV_DA , IA_DA ,
      +                               IK_DA , IX_DA ,
      +                               ID1_DA, ID2_DA,
      +                               IP_DA , 1     ,
      +                               ISYSW , NOTOTW,
      +                               IP_ARW)
-                        CALL DHGPOI( IV_HLP, IA_HLP,
+                        CALL set_array_parameters( IV_HLP, IA_HLP,
      +                               IK_HLP, IX_HLP,
      +                               ID1HLP, ID2HLP,
      +                               IP_HLP, IGRID ,
@@ -245,7 +245,7 @@
                      ENDIF
 !
                      ISWCUM = 0
-                     CALL DHDAGG( NOSEG          , NOSEG2   ,
+                     CALL resample_v2( NOSEG          , NOSEG2   ,
      +                            NOTOTI         , NOTOTW   ,
      +                            NOTOTH         , NOTOTO   ,
      +                            ISYSI          , ISYSW    ,

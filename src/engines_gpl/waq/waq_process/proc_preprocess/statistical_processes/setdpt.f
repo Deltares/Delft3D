@@ -60,7 +60,7 @@
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
       use m_srstop
-      use m_dhslen
+      use m_string_manipulation, only : get_trimmed_length
       USE ProcesSet
       use timers       !   performance timers
 !
@@ -170,7 +170,7 @@
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          aItemProp%name    = 'DPTAVG_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name

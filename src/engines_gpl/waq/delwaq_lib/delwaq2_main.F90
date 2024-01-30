@@ -53,7 +53,6 @@ contains
       use m_delwaq2_main_finalise
       use delwaq2
       use delwaq2_data
-      use dhcommand
       use m_actions
       use m_sysn
       use m_sysi

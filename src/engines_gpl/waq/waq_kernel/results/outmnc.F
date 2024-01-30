@@ -39,7 +39,7 @@
       use timers
       use dlwq_netcdf  !   read/write grid in netcdf
       use delwaq_version_module
-      use output, only: ncopt
+      use results, only: ncopt
       implicit none
 
 !     Parameters          :

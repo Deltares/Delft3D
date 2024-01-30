@@ -50,7 +50,6 @@ contains
 
 
       use timers
-      use dhralloc
       use ProcesSet
 
       implicit      none

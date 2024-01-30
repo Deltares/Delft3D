@@ -72,7 +72,7 @@
 
 !     Routines called     : none
 
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use timers
       implicit none
 
@@ -157,7 +157,7 @@
 
       if ( init .eq. 1 ) then
          init = 0
-         call getcom('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
+         call retrieve_command_argument('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
          if ( sw_settling ) write( lun, * ) ' option -settling_backwards found'
       endif
 

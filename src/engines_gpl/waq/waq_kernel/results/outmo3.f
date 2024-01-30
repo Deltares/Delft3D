@@ -45,7 +45,7 @@
 !
 !     SUBROUTINES CALLED  : OUTMO1, print routine
 !                           OUTMO2, print routine
-!                           REPTIM, writes time in specific formats
+!                           report_time, writes time in specific formats
 !
 !     PARAMETERS          :
 !
@@ -71,7 +71,7 @@
 !
 !
       use m_outmo2
-      use m_reptim
+      use date_time_utils, only : report_time
       use timers
 
       INTEGER(kind=int_wp) ::IOUT  , ITIME , NOTOT , ISFLAG, IBFLAG,
@@ -112,9 +112,9 @@
          PERCIT = 100.
       ENDIF
       WRITE ( IOUT, 2080 ) PERCIT
-      CALL REPTIM ( 6     , ITIME , ISFLAG, PERCIT)
+      CALL report_time ( 6     , ITIME , ISFLAG, PERCIT)
       WRITE ( IOUT, 2000 )
-      CALL REPTIM ( IOUT  , ITIME , ISFLAG, -999.)
+      CALL report_time ( IOUT  , ITIME , ISFLAG, -999.)
       WRITE ( IOUT, *    )
 !
       DO 50 ID = 1 , NOTOT , IP(2)

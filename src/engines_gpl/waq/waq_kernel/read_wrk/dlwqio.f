@@ -81,7 +81,7 @@
       use m_srstop
       use m_open_waq_files
       use timers
-      use output
+      use results
 
       INTEGER(kind=int_wp) ::LUNWRO, LUREP , NOUTP , NRVART, NBUFMX, NOSYS,
      +              IERR, NOTOT

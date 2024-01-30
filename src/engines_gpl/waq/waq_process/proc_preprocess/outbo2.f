@@ -63,7 +63,7 @@
 !     Declaration of arguments
 !
       use timers       !   performance timers
-      use output
+      use results
 
       INTEGER(kind=int_wp) ::NOUTP , NOSEG , NODUMP, NX    , NY    ,
      +            NRVART, NBUFMX, NDMPAR, NOTOT , NCBUFM,

@@ -44,7 +44,7 @@
 !     SUBROUTINES CALLED  : -
 
       use timers       !   performance timers
-      use output
+      use results
 
       implicit none
 

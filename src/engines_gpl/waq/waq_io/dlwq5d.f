@@ -81,7 +81,7 @@
 !
 !
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       logical, intent(in) :: time_dependent !< True if the BC or Waste load definition is time dependent (linear, harmonic or Fourier), and false if it is constant.
 
@@ -125,7 +125,7 @@
       IF ( IERR  .NE. 0 ) goto 9999
 !          A token has arrived
       IF ( ITYPE .EQ. 1 ) THEN                                     ! that must be an absolute timer string
-         CALL DLWQ0T ( CHULP , IHULP, .FALSE., .FALSE., IERR )    !  2^31 =  2147483648
+         CALL convert_string_to_time_offset ( CHULP , IHULP, .FALSE., .FALSE., IERR )    !  2^31 =  2147483648
          IF ( IHULP .EQ. -999 ) THEN                              !       YYYYDDDHHMMSS so 64 bits integer
             IERR = 1
             WRITE ( LUNUT , 1020 ) TRIM(CHULP)
@@ -141,7 +141,7 @@
          ENDIF
          IHULP = ITFACT * IHULP
       ELSEIF ( ITYPE .EQ. 2 ) THEN
-         CALL Cnvtim ( IHULP, 1      , DTFLG1 , DTFLG3 )
+         call convert_relative_time ( IHULP, 1      , DTFLG1 , DTFLG3 )
       else
          ihulp = 0
       ENDIF

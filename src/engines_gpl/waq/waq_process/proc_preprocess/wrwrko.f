@@ -38,10 +38,10 @@
 !>      write output work file
 
 !     Created   : Nov   1994 by Jan van Beek
-!     Modified  : Aug   2012 by Jan van Beek, use output structure, modern look and feel
+!     Modified  : Aug   2012 by Jan van Beek, use results structure, modern look and feel
 
       use timers         !< performance timers
-      use output
+      use results, only : OutputPointers, ncopt
 
       implicit none
 
@@ -49,7 +49,7 @@
       integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
       integer(kind=int_wp), intent(in   )  ::nbufmx                 !< maximum buffer length
       integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
-      type(outputcoll)    , intent(in   ) :: outputs                !< output structure
+      type(OutputPointers)    , intent(in   ) :: outputs                !< output structure
       integer(kind=int_wp), intent(in   )  ::notot                  !< total number of substances
       character*100       , intent(in   ) :: substdname(notot)      !< substance standard name
       character*40        , intent(in   ) :: subunit(notot)         !< substance unit
@@ -79,9 +79,9 @@
       if (nrvart.gt.0) then
          write ( lunwro ) ( outputs%pointers(k)   , k = 1 , nrvart)
          write ( lunwro ) ( outputs%names   (k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%stdnames(k)   , k = 1 , nrvart)
+         write ( lunwro ) ( outputs%std_var_name(k)   , k = 1 , nrvart)
          write ( lunwro ) ( outputs%units   (k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%descrs  (k)   , k = 1 , nrvart)
+         write ( lunwro ) ( outputs%description  (k)   , k = 1 , nrvart)
       end if
       if (notot.gt.0) then
          write ( lunwro ) ( substdname(k)   , k = 1 , notot)

@@ -24,17 +24,12 @@ module m_dlwq5b
 
     use timers, only : timon, timstrt, timstop
     use m_waq_precision
-    
+    use m_array_manipulation, only : shift_array_right
+    use m_string_manipulation, only : shift_char_subarray
     implicit none
     
     private
     public :: dlwq5b
-
-
-    interface shift_subarray
-        module procedure shift_int_subarray, shift_char_subarray
-    end interface
-
 
 contains
 
@@ -47,9 +42,7 @@ contains
             error_ind, iwar)
 
         use m_string_utils, only : index_in_array, join_strings, string_equals
-        use m_movint
-        use m_movchr
-        !use timers
+        use m_array_manipulation, only : shift_array_right
 
         !   Arguments
         integer(kind = int_wp), intent(in) :: icmax        !< Max. Char workspace dimension
@@ -130,7 +123,6 @@ contains
         ioffc = 0
         ioffi = 0
         nconst = 0
-        !
         ! Get a token string (and return if any error was found)
         read_and_process : do
             itype = -3
@@ -170,7 +162,7 @@ contains
                     end if
                     parsed_items_count = parsed_items_count + 1
                     noits = noits + 1
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
                     iar(itmnr + parsed_items_count + parsed_items_count) = 0
                     select case(parsed_str)
                     case ('*')
@@ -250,9 +242,10 @@ contains
                 if (string_equals(trim(parsed_str), 'FLOW') .and. caller == 'CONCENTR. ') then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
-                    call movint(iar, itmnr, itmnr + parsed_items_count * 2)
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    call movchr(car, itmnr + ioff, icm)
+
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car, itmnr + ioff, icm)
                     iar (itmnr) = 0
                     iar (itmnr + parsed_items_count) = itmnr
                     iar (itmnr + parsed_items_count + parsed_items_count) = noits
@@ -270,9 +263,11 @@ contains
                 if (ifound >= 1) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
-                    call movint(iar, itmnr, itmnr + parsed_items_count * 2)
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    call movchr(car, itmnr + ioff, icm)
+
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car, itmnr + ioff, icm)
+
                     iar(itmnr) = ifound
                     iar(itmnr + parsed_items_count) = itmnr
                     iar(itmnr + parsed_items_count + parsed_items_count) = noits
@@ -290,9 +285,11 @@ contains
                 if (ifound >= 1) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
-                    call movint(iar, itmnr, itmnr + parsed_items_count * 2)
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    call movchr(car, itmnr + ioff, icm)
+
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car, itmnr + ioff, icm)
+
                     iar(itmnr) = -ifound
                     iar(itmnr + parsed_items_count) = itmnr
                     iar(itmnr + parsed_items_count + parsed_items_count) = noits
@@ -312,12 +309,11 @@ contains
                 if (chkflg == 1) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
-                    call shift_subarray(iar, itmnr, itmnr + parsed_items_count * 2)
-                    !call movint(iar, itmnr      , itmnr + noitm*2)
-                    call shift_subarray(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    !call movint(iar, itmnr + noitm, itmnr + noitm*2)
-                    call shift_subarray(car(:icm + 1), itmnr + ioff, icm)
-                    !call movchr(car, itmnr+ioff , icm)
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car(:icm + 1), itmnr + ioff, icm)
+
                     iar (itmnr) = -1300000000 ! pointer should be ignored
                     iar (itmnr + parsed_items_count) = 1300000000 ! item number should be ignored
                     iar (itmnr + parsed_items_count + parsed_items_count) = noits
@@ -332,16 +328,19 @@ contains
                     bc_wl_count = bc_wl_count + 1
                     ioff = ioff + 1
                     icm = icmax + bc_wl_count
-                    call movchr(all_names, bc_wl_count, icm)
+
+                    call shift_char_subarray(all_names, bc_wl_count, icm)
                     all_names(bc_wl_count) = parsed_str
                     ! plus normal procedure
                     parsed_items_count = parsed_items_count + 1
                     noits = noits + 1
                     itmnr = itmnr + 1
                     icm = itmnr + parsed_items_count + ioff
-                    call movint(iar, itmnr, itmnr + parsed_items_count * 2)
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    call movchr(car, itmnr + ioff, icm)
+
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car, itmnr + ioff, icm)
+
                     iar(itmnr) = bc_wl_count
                     iar(itmnr + parsed_items_count) = itmnr
                     iar(itmnr + parsed_items_count + parsed_items_count) = noits
@@ -390,9 +389,11 @@ contains
                 if (parsed_int <=  bc_wl_count .and. parsed_int >= -bc_wl_types_count) then
                     call update_counters(parsed_items_count, noits, itmnr)
                     icm = itmnr + parsed_items_count + ioff
-                    call movint(iar, itmnr, itmnr + parsed_items_count * 2)
-                    call movint(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
-                    call movchr(car, itmnr + ioff, icm)
+
+                    call shift_array_right(iar, itmnr, itmnr + parsed_items_count * 2)
+                    call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count * 2)
+                    call shift_char_subarray(car, itmnr + ioff, icm)
+
                     iar (itmnr) = parsed_int
                     iar (itmnr + parsed_items_count) = itmnr
                     iar (itmnr + parsed_items_count + parsed_items_count) = noits
@@ -440,15 +441,7 @@ contains
                 end if
             end if
         end do read_and_process
-        !
-        ! 1000 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
-        !               A20,' and local substitution: ',A20)
-        ! 1001 format(' Input ',A,' nr:',I5,' is ',A,' nr:',I5,' with ID  : ',&
-        !               A20,' and local substitution: ',E15.6)
-        ! 1010 format(' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
-        !               ' with type: ',A20,' and local substitution: ',A20)
-        ! 1011 format(' Input ',A,' nr:',I5,' is ',A,' type:',I5,&
-        !               ' with type: ',A20,' and local substitution: ',E15.6)
+
         1015 format(' Input ', A, ' nr:', I5, ' is ', A, ' nr:', I5)
         1020 format(' Input ', A, ' nr:', I5, ' is ', A, ' nr:', I5, ' with ID  : ', &
                 A20)
@@ -472,26 +465,6 @@ contains
         counter_b = counter_b + 1
         counter_c = counter_c + 1
     end subroutine update_counters
-
-    subroutine shift_int_subarray(total_array, start_shift, end_shift)
-        integer(kind = int_wp), dimension(:), intent(inout) :: total_array
-        integer(kind = int_wp), intent(in) :: start_shift, end_shift
-
-        integer i
-        do i = end_shift, start_shift, -1
-            total_array(i + 1) = total_array(i)
-        end do
-    end subroutine shift_int_subarray
-
-    subroutine shift_char_subarray(total_array, start_shift, end_shift)
-        character(len = *), dimension(:), intent(inout) :: total_array
-        integer(kind = int_wp), intent(in) :: start_shift, end_shift
-
-        integer i
-        do i = end_shift, start_shift, -1
-            total_array(i + 1) = total_array(i)
-        end do
-    end subroutine shift_char_subarray
 
     subroutine log_local_substitution(index, log_unit, string)
         integer(kind = int_wp), intent(in) :: index

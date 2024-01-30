@@ -25,7 +25,6 @@ MODULE WORKSPACE
 
     use m_waq_precision
     use m_srstop
-    USE PARTITION_ARRAYS
     USE DHMMAR_MOD
     USE DHMMCA_MOD
     USE DHMMJA_MOD
@@ -35,6 +34,7 @@ MODULE WORKSPACE
     use m_sysa          ! Pointers in real array workspace
     use m_sysj          ! Pointers in integer array workspace
     use m_sysc          ! Pointers in character array workspace
+    use m_array_manipulation, only : memory_partition ! module for computing the pointers into the arrays
 
 
     CONTAINS
@@ -152,7 +152,7 @@ MODULE WORKSPACE
 
             DEALLOCATE( A )                ! It was allocated at the start
 
-            ALLOCATE( CNEW(part%cpoint) )
+            ALLOCATE( CNEW(part%char_pointer) )
             CNEW = ' '
             DO K2 = 1,SIZE(CNAME)
                 DO K1 = 1,20
@@ -162,13 +162,13 @@ MODULE WORKSPACE
             DEALLOCATE( C )
             C = CNEW
 
-            ALLOCATE( JNEW(part%jpoint) )
+            ALLOCATE( JNEW(part%index_pointer) )
             JNEW = 0
             JNEW(1:SIZE(J)) = J
             DEALLOCATE( J )
             J = JNEW
 
-            ALLOCATE( A(part%apoint) )
+            ALLOCATE( A(part%alpha_pointer) )
             A    = 0.0
 
         ENDIF

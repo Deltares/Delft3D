@@ -285,7 +285,7 @@ subroutine fm_wq_processes_ini_sub()
       allocate( vsto(0) )
     endif
 
-    call rd_sub(Lallocated,substance_file,nosys,notot,nocons,noout_sub,syname_sub,syunit_sub,coname_sub, &
+    call read_substances(Lallocated,substance_file,nosys,notot,nocons,noout_sub,syname_sub,syunit_sub,coname_sub, &
               covalue_sub,ouname_sub,oudesc_sub,ierr_sub,cerr)
     if (ierr_sub /= 0) call mess(LEVEL_ERROR, cerr)
     call realloc (syname_sub, notot, keepExisting=.false., fill=' ')
@@ -295,7 +295,7 @@ subroutine fm_wq_processes_ini_sub()
     call realloc (ouname_sub, noout_sub, keepExisting=.false., fill=' ')
     call realloc (oudesc_sub, noout_sub, keepExisting=.false., fill=' ')
     Lallocated = .true.
-    call rd_sub(Lallocated,substance_file,nosys,notot,nocons,noout_sub,syname_sub,syunit_sub,coname_sub, &
+    call read_substances(Lallocated,substance_file,nosys,notot,nocons,noout_sub,syname_sub,syunit_sub,coname_sub, &
               covalue_sub,ouname_sub,oudesc_sub,ierr_sub,cerr)
     if (ierr_sub /= 0) call mess(LEVEL_ERROR, cerr)
     noout_map = noout_sub
@@ -303,14 +303,14 @@ subroutine fm_wq_processes_ini_sub()
     if (Leho) then
      call mess(LEVEL_INFO, 'Opening extra history output file: ', trim(his_output_file))
      Lallocated = .false.
-     call rd_sub(Lallocated,his_output_file,nosys_eho,notot_eho,nocons_eho,noout_eho,syname_eho,syunit_eho,coname_eho, &
+     call read_substances(Lallocated,his_output_file,nosys_eho,notot_eho,nocons_eho,noout_eho,syname_eho,syunit_eho,coname_eho, &
                  covalue_eho,ouname_eho,oudesc_eho,ierr_eho,cerr)
      if (ierr_eho /= 0) call mess(LEVEL_ERROR, cerr)
      if (nosys_eho==0 .and. notot_eho==0 .and. nocons_eho==0) then
         call realloc (ouname_eho, noout_eho, keepExisting=.false., fill=' ')
         call realloc (oudesc_eho, noout_eho, keepExisting=.false., fill=' ')
         Lallocated = .true.
-        call rd_sub(Lallocated,his_output_file,nosys_eho,notot_eho,nocons_eho,noout_eho,syname_eho,syunit_eho,coname_eho, &
+        call read_substances(Lallocated,his_output_file,nosys_eho,notot_eho,nocons_eho,noout_eho,syname_eho,syunit_eho,coname_eho, &
                     covalue_eho,ouname_eho,oudesc_eho,ierr_eho,cerr)
         if (ierr_eho /= 0) call mess(LEVEL_ERROR, cerr)
      else
@@ -386,7 +386,7 @@ subroutine fm_wq_processes_ini_proc()
     use m_flowtimes
     use timers
     use m_wind, only: jawind, jarain
-    use computeRefday
+    use date_time_utils, only : compute_reference_day
 
     implicit none
 
@@ -734,25 +734,25 @@ subroutine fm_wq_processes_ini_proc()
     noout = noout_user
 
     allocate(outputs%names(noout_user))
-    allocate(outputs%stdnames(noout_user))
+    allocate(outputs%std_var_name(noout_user))
     allocate(outputs%pointers(noout_user))
     allocate(outputs%units(noout_user))
-    allocate(outputs%descrs(noout_user))
+    allocate(outputs%description(noout_user))
 
     outputs%cursize  = noout_user
     do i = 1, noout_sub
       outputs%names(i) = ouname_sub(i)
-      outputs%stdnames(i) = ' '
+      outputs%std_var_name(i) = ' '
       outputs%units(i) = ' '
-      outputs%descrs(i) = trim(oudesc_sub(i))//' ('//trim(ouname_sub(i))//') '
+      outputs%description(i) = trim(oudesc_sub(i))//' ('//trim(ouname_sub(i))//') '
       outputs%pointers(i) = -1
     enddo
     do j = 1, noout_eho
       i = noout_map+j
       outputs%names(i) = ouname_eho(j)
-      outputs%stdnames(i) = ' '
+      outputs%std_var_name(i) = ' '
       outputs%units(i) = ' '
-      outputs%descrs(i) = trim(oudesc_eho(j))//' ('//trim(ouname_eho(j))//') '
+      outputs%description(i) = trim(oudesc_eho(j))//' ('//trim(ouname_eho(j))//') '
       outputs%pointers(i) = -1
     enddo
 
@@ -772,7 +772,7 @@ subroutine fm_wq_processes_ini_proc()
     otime = dble(julrefdat)-0.5d0 !refdate_mjd
 
     !     Compute refday needed for daylight process
-    call compute_refday(refdat, refdayNr)
+    call compute_reference_day(refdat, refdayNr)
 
 
     !     Finally, evaluate the processes using the proces library

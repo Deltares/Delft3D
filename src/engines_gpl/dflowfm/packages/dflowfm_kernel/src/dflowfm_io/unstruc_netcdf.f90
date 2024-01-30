@@ -5372,7 +5372,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
                write (tmpstr, "('water_quality_output_',I0)") j
                ierr = unc_def_var_map(mapids%ncid,  mapids%id_tsp, mapids%id_waq(:,j), nc_precision, iLocS, tmpstr, &
                                       '', outputs%names(j), outputs%units(j), jabndnd=jabndnd_)
-               tmpstr = trim(outputs%names(j))//' - '//trim(outputs%descrs(j))//' in flow element'
+               tmpstr = trim(outputs%names(j))//' - '//trim(outputs%description(j))//' in flow element'
                call replace_multiple_spaces_by_single_spaces(tmpstr)
                ierr = nf90_put_att(mapids%ncid, mapids%id_waq(2,j),  'description'  , tmpstr)
             enddo
@@ -5385,7 +5385,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
                write (tmpstr, "('water_quality_stat_',I0)") j
                ierr = unc_def_var_map(mapids%ncid,  mapids%id_tsp, mapids%id_wqst(:,j), nc_precision, iLocS, tmpstr, &
                                       '', outputs%names(jj), outputs%units(jj), jabndnd=jabndnd_)
-               tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+               tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                call replace_multiple_spaces_by_single_spaces(tmpstr)
                ierr = nf90_put_att(mapids%ncid, mapids%id_wqst(2,j),  'description'  , tmpstr)
             enddo
@@ -5398,7 +5398,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
                write (tmpstr, "('water_quality_stat_',I0)") noout_statt + j
                ierr = unc_def_var_map(mapids%ncid,  mapids%id_tsp, mapids%id_wqse(:,j), nc_precision, iLocS, tmpstr, &
                                       '', outputs%names(jj), outputs%units(jj), 0, jabndnd=jabndnd_)
-               tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+               tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                call replace_multiple_spaces_by_single_spaces(tmpstr)
                ierr = nf90_put_att(mapids%ncid, mapids%id_wqse(2,j),  'description'  , tmpstr)
             enddo
@@ -8196,7 +8196,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                     else
                        ierr = nf90_def_var(imapfile, tmpstr, nf90_double, (/ id_flowelemdim (iid), id_timedim (iid)/) , id_waq(iid,j))
                     endif
-                    tmpstr = trim(outputs%names(j))//' - '//trim(outputs%descrs(j))//' in flow element'
+                    tmpstr = trim(outputs%names(j))//' - '//trim(outputs%description(j))//' in flow element'
                     call replace_multiple_spaces_by_single_spaces(tmpstr)
                     ierr = nf90_put_att(imapfile, id_waq(iid,j),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
                     ierr = nf90_put_att(imapfile, id_waq(iid,j),  'long_name'    , trim(outputs%names(j)))
@@ -8216,7 +8216,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                     else
                        ierr = nf90_def_var(imapfile, tmpstr, nf90_double, (/ id_flowelemdim (iid), id_timedim (iid)/) , id_wqst(iid,j))
                     endif
-                    tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                    tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                     call replace_multiple_spaces_by_single_spaces(tmpstr)
                     ierr = nf90_put_att(imapfile, id_wqst(iid,j),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
                     ierr = nf90_put_att(imapfile, id_wqst(iid,j),  'long_name'    , trim(outputs%names(jj)))
@@ -8236,7 +8236,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                     else
                        ierr = nf90_def_var(imapfile, tmpstr, nf90_double, (/ id_flowelemdim (iid)/) , id_wqse(iid,j))
                     endif
-                    tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                    tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                     call replace_multiple_spaces_by_single_spaces(tmpstr)
                     ierr = nf90_put_att(imapfile, id_wqse(iid,j),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
                     ierr = nf90_put_att(imapfile, id_wqse(iid,j),  'long_name'    , trim(outputs%names(jj)))

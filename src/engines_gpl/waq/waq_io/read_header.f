@@ -42,6 +42,7 @@
       use dlwq_hyd_data ! for definition and storage of data
       use rd_token
       use timers       !   performance timers
+      use date_time_utils, only : convert_string_to_time_offset
 
       implicit none
 
@@ -85,7 +86,7 @@
             !  a string has arrived, check for date string
 
             if ( itype .eq. 1 ) then
-               call dlwq0t ( ctoken , itoken, .false., .false., ierr2 )
+               call convert_string_to_time_offset ( ctoken , itoken, .false., .false., ierr2 )
                if ( ierr2 .eq. 0 ) then
 
                   ! date string found, push back, exit input loop

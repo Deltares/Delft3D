@@ -88,7 +88,7 @@
 !
       use m_dlwq5h
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       integer(kind=int_wp) :: i_max
       character*(*) lch   (lstack) , chulp , names_to_check(:)
@@ -138,9 +138,8 @@
 
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
-             ! try to get time (ihulp) from string (chulp)
-             call dlwq0t ( chulp , ihulp, .false., .false., error_idx )
-             if ( error_idx .eq. 0 ) then !chulp was a time definition, now stored in ihulp
+             call convert_string_to_time_offset ( chulp , ihulp, .false., .false., error_idx )
+             if ( error_idx .eq. 0 ) then
                 error_idx = -2
                 if ( first ) then
                    if (timon) call timstop( ithndl )
@@ -168,7 +167,7 @@
              write ( lunut , 1000 ) nocol, chulp, strng
           else
              if ( itype .eq. 2 ) then ! an integer has arrived
-                call cnvtim ( ihulp  , itfact, dtflg1 , dtflg3 )
+                call convert_relative_time ( ihulp  , itfact, dtflg1 , dtflg3 )
              endif
              error_idx = -1
              must_read_more = .false.
@@ -191,7 +190,7 @@
      *                count_items_comp_rule, count_subs_assign,
      *                count_subs_comp_rule, index_first, names_to_check,
      *                offset_i_array, offset_names,
-     *                iods, offset_common, k, icnt, error_idx, iwar)  ! this should have removd all traces of second column (EColi) so it's ignored
+     *                iods, offset_common, k, icnt, error_idx, iwar)
          end if
       end do
 !

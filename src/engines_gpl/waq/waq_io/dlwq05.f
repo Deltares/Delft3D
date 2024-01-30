@@ -65,10 +65,10 @@
       use m_conver
       use m_check
       use m_srstop
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_relative_time
 
 !     kind           function         name                Descriptipon
 
@@ -212,7 +212,7 @@
 
          ! check for unique ID, error if non-truncated ID is unique otherwise warning, can be skipped if input is generated
 
-         call getcom ( '-no_id_check' , 0    , no_id_check, idummy, rdummy, cdummy, ierr2)
+         call retrieve_command_argument ( '-no_id_check' , 0    , no_id_check, idummy, rdummy, cdummy, ierr2)
          if ( .not. no_id_check ) then
             IFOUND = index_in_array(BNDID(I),BNDID(:I-1))
             IF ( IFOUND >= 0 ) THEN
@@ -380,7 +380,7 @@
      *              ITYPE , IERR2 )
       IF ( IERR2 .GT. 0 ) GOTO 170
       IF ( DTFLG1 ) THEN
-         CALL CNVTIM ( idef , IFACT , DTFLG1, DTFLG3 )
+         call convert_relative_time ( idef , IFACT , DTFLG1, DTFLG3 )
          WRITE ( LUNUT , 2210 )
      *           idef /31536000       , MOD(idef ,31536000)/86400,
      *           MOD(idef ,86400)/3600, MOD(idef ,3600)/60       ,

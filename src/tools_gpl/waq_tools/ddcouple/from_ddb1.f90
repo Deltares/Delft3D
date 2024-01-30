@@ -28,7 +28,7 @@
       ! global declarations
 
       use hydmod                   
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
@@ -84,7 +84,7 @@
 
       ! some prelim initialisation of hyd
 
-      call dhfext(hyd%file_hyd%name,filext, extpos, extlen)
+      call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
       outhydname = 'com-'//trim(hyd%file_hyd%name(1:extpos-1))
       call set_hyd(hyd,outhydname)
       hyd%task = HYD_TASK_FULL

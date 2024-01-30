@@ -184,11 +184,11 @@
       use m_dlwq13
       use m_baldmp
       use m_actloc
-      use m_zero
+      use m_array_manipulation, only : initialize_real_array
       use m_srstop
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use timers
-      use output
+      use results
       use nan_check_module
       use m_outmnc
       implicit none
@@ -299,7 +299,7 @@
          allocate(mncwqid1(notot,3) , mncwqid2(novar,3))
          allocate(hncwqid1(notot,2) , hncwqid2(novar,2))
 !        allow switching of NAN concentrations check
-         call getcom ( '-nonancheck', 0, lfound, idummy, rdummy, adummy, ierr2)
+         call retrieve_command_argument ( '-nonancheck', 0, lfound, idummy, rdummy, adummy, ierr2)
          lnancheck = .not. lfound
          first = .false.
       endif
@@ -355,7 +355,7 @@
 
          if ( noraai .gt. 0 ) then
             if ( lhfirs ) then
-               call zero   (trraai, noraai*nosys  )
+               call initialize_real_array   (trraai, noraai*nosys  )
             else
                call raatra (nosys , ndmpq , noraai, ntraaq, ioraai,
      +                         nqraai, iqraai, iqdmp , dmpq  , trraai)

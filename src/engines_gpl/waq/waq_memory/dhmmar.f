@@ -40,7 +40,8 @@
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 
-      use partition_arrays ! module for computing the pointers into the arrays
+      use m_array_manipulation, only : make_pointer, memory_partition, char_type, int_type ! module for computing the
+      ! pointers into the arrays
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
       use m_sysa          ! Pointers in real array workspace
@@ -60,7 +61,7 @@
       INTEGER(kind=int_wp) ::LUNREP
       INTEGER(kind=int_wp) ::J(:)
       CHARACTER*(*) C(:)
-      type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
+      type(memory_partition), intent(inout) :: part ! Private variables for make_pointer
 
 !
 !     Local declarations
@@ -82,7 +83,7 @@
 !     directly use the array with pointers
 !
       ARRNAM = 'ARRPOI'
-      IAPOI  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IAPOI  = make_pointer(PART, int_type ,NOARR)
       IF ( IAPOI .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -92,8 +93,8 @@
       IAPOI = IAPOI + 1
 !
       ARRNAM = 'ARRTYP'
-      IATYP  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
-      IF ( IATYP .EQ. 0 ) THEN
+      IATYP  = make_pointer(PART, int_type ,NOARR)
+      IF ( IATYP == 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
          WRITE(LUNREP,2030) NOARR
@@ -102,7 +103,7 @@
       IATYP = IATYP + 1
 !
       ARRNAM = 'ARRBYT'
-      IABYT  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IABYT  = make_pointer(PART, int_type ,NOARR)
       IF ( IABYT .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -112,7 +113,7 @@
       IABYT = IABYT + 1
 !
       ARRNAM = 'ARRLEN'
-      IALEN  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IALEN  = make_pointer(PART, int_type ,NOARR)
       IF ( IALEN .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -122,7 +123,7 @@
       IALEN = IALEN + 1
 !
       ARRNAM = 'ARRKND'
-      IAKND  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IAKND  = make_pointer(PART, int_type ,NOARR)
       IF ( IAKND .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -132,7 +133,7 @@
       IAKND = IAKND + 1
 !
       ARRNAM = 'ARRDM1'
-      IADM1  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IADM1  = make_pointer(PART, int_type ,NOARR)
       IF ( IADM1 .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -142,7 +143,7 @@
       IADM1 = IADM1 + 1
 !
       ARRNAM = 'ARRDM2'
-      IADM2  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
+      IADM2  = make_pointer(PART, int_type ,NOARR)
       IF ( IADM2 .EQ. 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
@@ -152,8 +153,8 @@
       IADM2 = IADM2 + 1
 !
       ARRNAM = 'ARRDM3'
-      IADM3  = MAKPTR(PART, ARRNAM,ITYP ,NOARR)
-      IF ( IADM3 .EQ. 0 ) THEN
+      IADM3  = make_pointer(PART, int_type ,NOARR)
+      IF ( IADM3 == 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
          WRITE(LUNREP,2030) NOARR
@@ -162,8 +163,8 @@
       IADM3 = IADM3 + 1
 !
       ARRNAM = 'ARRNAM'
-      IANAM  = MAKPTR(PART, ARRNAM,CHTYP ,NOARR*20)
-      IF ( IANAM .EQ. 0 ) THEN
+      IANAM  = make_pointer(PART, char_type ,NOARR*20)
+      IF ( IANAM == 0 ) THEN
          WRITE(LUNREP,2010)
          WRITE(LUNREP,2020) ARRNAM
          WRITE(LUNREP,2030) NOARR*20
@@ -184,15 +185,15 @@
       J(IAPOI+IIADM3-1) = IADM3
       J(IAPOI+IIANAM-1) = IANAM
 !
-      J(IATYP+IIAPOI-1) = ITYP
-      J(IATYP+IIATYP-1) = ITYP
-      J(IATYP+IIABYT-1) = ITYP
-      J(IATYP+IIALEN-1) = ITYP
-      J(IATYP+IIAKND-1) = ITYP
-      J(IATYP+IIADM1-1) = ITYP
-      J(IATYP+IIADM2-1) = ITYP
-      J(IATYP+IIADM3-1) = ITYP
-      J(IATYP+IIANAM-1) = CHTYP
+      J(IATYP+IIAPOI-1) = int_type
+      J(IATYP+IIATYP-1) = int_type
+      J(IATYP+IIABYT-1) = int_type
+      J(IATYP+IIALEN-1) = int_type
+      J(IATYP+IIAKND-1) = int_type
+      J(IATYP+IIADM1-1) = int_type
+      J(IATYP+IIADM2-1) = int_type
+      J(IATYP+IIADM3-1) = int_type
+      J(IATYP+IIANAM-1) = char_type
 !
       J(IABYT+IIAPOI-1) = 4
       J(IABYT+IIATYP-1) = 4

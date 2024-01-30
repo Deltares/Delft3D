@@ -36,7 +36,7 @@
      +                   bound , noloc , proloc, nodef , defaul,
      +                   ncout , ntdmpq, paname, sfname, funame,
      +                   danam )
-      use m_zero
+      use m_array_manipulation, only : initialize_real_array
       use timers
 
       implicit none
@@ -125,7 +125,7 @@
 !
 !     Zero the output buffer for it is used as accumulation variable.
 !
-      call zero(outval,(ncout+nrvar)*ndmpar)
+      call initialize_real_array(outval,(ncout+nrvar)*ndmpar)
 !
 !     Fill the output buffer OUTVAL
 !

@@ -74,7 +74,7 @@
       use partmem      !   for PARTicle tracking
       use timers       !   performance timers
       use dlwq_netcdf  !   read/write grid in netcdf
-      use output       !   output settings
+      use results, only : lncout       !   output settings
       use m_sysn          ! System characteristics
 
 

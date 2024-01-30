@@ -53,7 +53,7 @@
 !     Declaration of arguments
 !
 
-      use m_dhzeri
+      use m_array_manipulation, only : initialize_integer_array
       use timers
 
       INTEGER(kind=int_wp) ::LUREP , NOCONS, NOPA  , NOFUN , NOSFUN,
@@ -178,7 +178,7 @@
 !
 !
 !
-      CALL DHZERI(VGRSET,NOVAR*NOGRID)
+      CALL initialize_integer_array(VGRSET,NOVAR*NOGRID)
 !
 !     Volume
 !

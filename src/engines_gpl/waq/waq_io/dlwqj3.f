@@ -235,9 +235,9 @@ cjvb1    ENDIF
             DO 50 I2 = 1,NODI2,IWIDTH
                IE2 = MIN(I2+IWIDTH-1,NODI2)
                IF ( NODIM .GT. 0 ) THEN
-                  WRITE ( LUNUT, 1100 ) STRNG2, (IAR(IOFFS+K) ,K=I2,IE2)         !Substance ******
+                  WRITE ( LUNUT, 1100 ) STRNG2, (IAR(IOFFS+K) ,K=I2,IE2)
                   WRITE ( LUNUT, 1150 ) STRNG1,
-     *                           (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE2)         ! car(i) (i>0), 'FLOW' (i=0), 'ignored' (i<0)
+     *                           (CAR_OF_DUM(CAR,IAR(IOFFS+K)),K=I2,IE2)
                ENDIF
                ITEL = ITELS
                DO 40 I3 = 1,NOITM

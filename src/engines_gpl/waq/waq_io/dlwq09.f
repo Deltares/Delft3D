@@ -64,7 +64,7 @@
       use m_rdwrk4
       use m_open_waq_files
       use rd_token     !   for the reading of tokens
-      use Output
+      use results, only : OutputPointers, lncout
       use timers       !   performance timers
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -85,7 +85,7 @@
       integer(kind=int_wp), intent(in   ) ::  ibflag             !< mass balance option flag
       integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       integer(kind=int_wp), intent(  out) ::  ioutps(7,noutp)    !< output administration array
-      type(OutputColl)                Outputs           !< output collection
+      type(OutputPointers)                Outputs           !< output collection
       integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
       integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
 
@@ -268,8 +268,8 @@
          ioutps(6,i) = igrdou(i)
       enddo
 
-      allocate( Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%stdnames(nrvart),
-     &          Outputs%units(nrvart), Outputs%descrs(nrvart) )
+      allocate( Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart),
+     &          Outputs%units(nrvart), Outputs%description(nrvart) )
       Outputs%cursize = nrvart
 
       ivar = 0
@@ -279,9 +279,9 @@
             ip = (i-1)*nrvarm + iv
             Outputs%pointers(ivar) = iar(ip)
             Outputs%names   (ivar) = car(ip)
-            Outputs%stdnames(ivar) = car(ip)
+            Outputs%std_var_name(ivar) = car(ip)
             Outputs%units   (ivar) = ' '
-            Outputs%descrs  (ivar) = ' '
+            Outputs%description  (ivar) = ' '
          enddo
       enddo
 

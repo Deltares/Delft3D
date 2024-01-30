@@ -101,13 +101,13 @@ C
 C
 C     delete existing NEFIS files
 C
-      CALL DHDELF ( DEFNAM, IERROR )
+      CALL delete_file ( DEFNAM, IERROR )
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*)'ERROR deleting existing NEFIS DEF file:',DEFNAM
          WRITE(LUNREP,*)'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      CALL DHDELF ( DATNAM, IERROR )
+      CALL delete_file ( DATNAM, IERROR )
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*)'ERROR deleting existing NEFIS DAT file:',DATNAM
          WRITE(LUNREP,*)'ERROR number:',IERROR
