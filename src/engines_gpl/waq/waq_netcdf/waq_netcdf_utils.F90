@@ -34,7 +34,7 @@ module waq_netcdf_utils
             nf90_inq_libvers, nf90_nowrite, nf90_open, nf90_strerror, nf90_create, nf90_netcdf4, nf90_clobber, &
             nf90_format_classic, nf90_global, nf90_char, nf90_max_var_dims, nf90_sync, nf90_double
 
-    use results, only: ncopt
+    use results, only : ncopt
     use ISO_FORTRAN_ENV, only : int64
 
     implicit none
@@ -67,7 +67,8 @@ module waq_netcdf_utils
     public :: nf90_max_name, nf90_inq_libvers, nf90_nowrite, nf90_noerr, nf90_get_att, nf90_open, nf90_strerror, &
             nf90_inquire_variable, nf90_max_var_dims, nf90_max_dims, nf90_create, nf90_netcdf4, nf90_clobber, &
             nf90_format_classic, nf90_global, nf90_put_att, nf90_def_dim, nf90_char, nf90_sync, nf90_enddef, &
-            nf90_redef, nf90_get_var, nf90_def_var, nf90_double, nf90_put_var, nf90_float, nf90_enameinuse, nf90_inq_dimid
+            nf90_redef, nf90_get_var, nf90_def_var, nf90_double, nf90_put_var, nf90_float, nf90_enameinuse, &
+            nf90_inq_dimid
     public :: set_debug_status, find_mesh_by_attributes, write_time, dlwqnc_write_wqvariable, &
             create_variable, create_time_variable, create_layer_dimension, create_dimension, &
             copy_mesh, copy_variable_attributes, read_dimensions
@@ -106,7 +107,8 @@ contains
         enddo
     end function lowercase
 
-    integer function find_mesh_by_attributes(netcdf_id, var_id_2d, ugrid_type, var_id_1d, var_id_network, var_id_network_geometry)
+    integer function find_mesh_by_attributes(netcdf_id, var_id_2d, ugrid_type, var_id_1d, var_id_network, &
+            var_id_network_geometry)
         !! Find the grid(s) by their particular attribute(s)
         !!
         !! Returns:
@@ -386,7 +388,8 @@ contains
         endif
 
         ! Copy the associated data
-        ierror = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_coordinates", dimsizes)
+        ierror = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                "node_coordinates", dimsizes)
         if (ierror /= nf90_noerr) then
             if (dlwqnc_debug) write(*, *) 'Copy associated failed (copying mesh)  - ', ierror
             copy_mesh = ierror
@@ -396,51 +399,76 @@ contains
         ierrorn = 0
         select case (ugrid_type)
         case (type_ugrid_face_crds)
-            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_coordinates", dimsizes)
-            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "face_coordinates", dimsizes)
-            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_node_connectivity", dimsizes)
-            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_face_connectivity", dimsizes)
-            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "face_node_connectivity", dimsizes)
-            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "face_edge_connectivity", dimsizes)
+            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_coordinates", dimsizes)
+            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "face_coordinates", dimsizes)
+            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_node_connectivity", dimsizes)
+            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_face_connectivity", dimsizes)
+            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "face_node_connectivity", dimsizes)
+            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "face_edge_connectivity", dimsizes)
             ierrorn(7) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
                     trim(mesh_name) // "_edge_bc", dimsizes, use_attribute = .false.)
-            ierrorn(8) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "projected_coordinate_system", &
-                    dimsizes, use_attribute = .false.)
+            ierrorn(8) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "projected_coordinate_system", dimsizes, use_attribute = .false.)
         case (type_ugrid_node_crds)
             warning_message = .true.
-            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_coordinates", dimsizes)
-            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "face_coordinates", dimsizes)
-            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_node_connectivity", dimsizes)
-            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_face_connectivity", dimsizes)
-            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "face_node_connectivity", dimsizes)
-            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "projected_coordinate_system", &
-                    dimsizes, use_attribute = .false.)
+            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_coordinates", dimsizes)
+            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "face_coordinates", dimsizes)
+            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_node_connectivity", dimsizes)
+            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_face_connectivity", dimsizes)
+            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "face_node_connectivity", dimsizes)
+            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "projected_coordinate_system", dimsizes, use_attribute = .false.)
             warning_message = .false.
         case (type_ugrid_mesh1d)
             warning_message = .true.
-            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_node_connectivity", dimsizes)
-            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_coordinates", dimsizes)
-            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_node_connectivity", dimsizes)
-            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_id", dimsizes)
-            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_long_name", dimsizes)
-            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "projected_coordinate_system", &
+            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_node_connectivity", dimsizes)
+            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_coordinates", dimsizes)
+            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_node_connectivity", dimsizes)
+            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_id", dimsizes)
+            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_long_name", dimsizes)
+            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "projected_coordinate_system", &
                     dimsizes, use_attribute = .false.)
             warning_message = .false.
         case (type_ugrid_network)
             warning_message = .true.
-            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_node_connectivity", dimsizes)
-            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "branch_id", dimsizes)
-            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "branch_long_name", dimsizes)
-            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "edge_length", dimsizes)
-            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_id", dimsizes)
-            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_long_name", dimsizes)
-            ierrorn(7) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "projected_coordinate_system", &
-                    dimsizes, use_attribute = .false.)
+            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_node_connectivity", dimsizes)
+            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "branch_id", dimsizes)
+            ierrorn(3) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "branch_long_name", dimsizes)
+            ierrorn(4) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "edge_length", dimsizes)
+            ierrorn(5) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_id", dimsizes)
+            ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_long_name", dimsizes)
+            ierrorn(7) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "projected_coordinate_system", dimsizes, use_attribute = .false.)
             warning_message = .false.
         case (type_ugrid_network_geometry)
             warning_message = .true.
-            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_count", dimsizes)
-            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, "node_coordinates", dimsizes)
+            ierrorn(1) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_count", dimsizes)
+            ierrorn(2) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
+                    "node_coordinates", dimsizes)
             warning_message = .false.
         end select
 
@@ -470,7 +498,8 @@ contains
 
             ierror = nf90_inq_varid(source_nc_id, var_name, source_var_id)
             if (ierror /= nf90_noerr) then
-                if (dlwqnc_debug) write(*, *) 'Failed to find the coordinate information (' // trim(var_name) // ') - ', ierror
+                if (dlwqnc_debug) write(*, *) 'Failed to find the coordinate information ('  &
+                        // trim(var_name) // ') - ', ierror
                 copy_mesh = ierror
                 return
             endif
@@ -569,7 +598,8 @@ contains
             ! Define the dimension in the destination file
             ierror = nf90_def_dim(destination_nc_id, dim_name, dim_value, new_dim)
             if (new_dim /= dim_id .and. ierror /= nf90_enameinuse) then
-                if (dlwqnc_debug) write(*, *) 'WARNING: different dimension IDs - ', trim(dim_name), ' - ', dim_id, new_dim, ierror
+                if (dlwqnc_debug) write(*, *) 'WARNING: different dimension IDs - ', trim(dim_name), ' - ', &
+                        dim_id, new_dim, ierror
             endif
         enddo
 
@@ -627,7 +657,8 @@ contains
             ierror = ncu_get_att(source_nc_id, source_mesh_id, attribute, attribute_value)
             if (ierror /= nf90_noerr .and. .not. suppress_message) then
                 if (warning_message) then
-                    if (dlwqnc_debug) write(*, *) 'Warning: retrieving attribute ', trim(attribute), ' failed -- ', ierror
+                    if (dlwqnc_debug) write(*, *) 'Warning: retrieving attribute ', trim(attribute), &
+                            ' failed -- ', ierror
                     copy_result = -999
                 else
                     if (dlwqnc_debug) write(*, *) 'Error retrieving attribute ', trim(attribute), ' -- ', ierror
@@ -673,10 +704,11 @@ contains
             !       Should you require NetCDF 3, then use the commented call to nf90_def_var
             !       instead.
             if (ncopt(4) == 1 .and. ncopt(2) /= 0) then
-                ierror = nf90_def_var(destination_nc_id, trim(var_name), xtype, dimension_ids(1:num_dimensions), new_variable_id, &
-                        deflate_level = dlwqnc_deflate)
+                ierror = nf90_def_var(destination_nc_id, trim(var_name), xtype, dimension_ids(1:num_dimensions), &
+                        new_variable_id, deflate_level = dlwqnc_deflate)
             else
-                ierror = nf90_def_var(destination_nc_id, trim(var_name), xtype, dimension_ids(1:num_dimensions), new_variable_id)
+                ierror = nf90_def_var(destination_nc_id, trim(var_name), xtype, dimension_ids(1:num_dimensions), &
+                        new_variable_id)
             endif
             if (ierror /= nf90_noerr) then
                 copy_result = ierror
@@ -732,8 +764,8 @@ contains
         copy_result = nf90_noerr
     end function copy_associated_variables
 
-    integer function copy_integer_variable(source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
-            num_dimensions, dimension_ids, dimension_sizes)
+    integer function copy_integer_variable(source_nc_id, destination_nc_id, source_variable_id, &
+            destination_variable_id, num_dimensions, dimension_ids, dimension_sizes)
         !! Copy integer data of a variable to the output NetCDF file
         !! Returns nf90_noerr if all okay, otherwise an error code
         !! Note:
@@ -786,10 +818,11 @@ contains
         copy_integer_variable = nf90_noerr
     end function copy_integer_variable
 
-    integer function copy_integer64_variable(source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
-            num_dimensions, dimension_ids, dimension_sizes)
+    integer function copy_integer64_variable(source_nc_id, destination_nc_id, source_variable_id, &
+            destination_variable_id, num_dimensions, dimension_ids, dimension_sizes)
 
-        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, num_dimensions
+        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
+                num_dimensions
         integer, intent(in), dimension(:) :: dimension_ids, dimension_sizes
 
         integer :: total_size
@@ -831,7 +864,8 @@ contains
 
     integer function copy_real_variable(source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
             num_dimensions, dimension_ids, dimension_sizes)
-        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, num_dimensions
+        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
+                num_dimensions
         integer, intent(in), dimension(:) :: dimension_ids, dimension_sizes
 
         integer :: total_size
@@ -876,9 +910,10 @@ contains
         copy_real_variable = nf90_noerr
     end function copy_real_variable
 
-    integer function copy_double_variable(source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
-            num_dimensions, dimension_ids, dimension_sizes)
-        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, num_dimensions
+    integer function copy_double_variable(source_nc_id, destination_nc_id, source_variable_id, &
+            destination_variable_id, num_dimensions, dimension_ids, dimension_sizes)
+        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
+                num_dimensions
         integer, intent(in), dimension(:) :: dimension_ids, dimension_sizes
 
         integer :: total_size
@@ -923,10 +958,11 @@ contains
         copy_double_variable = nf90_noerr
     end function copy_double_variable
 
-    integer function copy_character_variable(source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
-            num_dimensions, dimension_ids, dimension_sizes)
+    integer function copy_character_variable(source_nc_id, destination_nc_id, source_variable_id, &
+            destination_variable_id, num_dimensions, dimension_ids, dimension_sizes)
 
-        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, num_dimensions
+        integer, intent(in) :: source_nc_id, destination_nc_id, source_variable_id, destination_variable_id, &
+                num_dimensions
         integer, intent(in), dimension(:) :: dimension_ids, dimension_sizes
 
         integer :: dim1, dim2
@@ -1153,8 +1189,8 @@ contains
 
     end function create_time_variable
 
-    integer function create_variable(nc_id, mesh_name, variable_name, long_name, standard_name, unit, time_dimension_id, &
-            segments_num, layers_num, variable_id)
+    integer function create_variable(nc_id, mesh_name, variable_name, long_name, standard_name, unit, &
+            time_dimension_id, segments_num, layers_num, variable_id)
         !! Create a WQ variable in the output file
         !!
         !! Returns:
@@ -1168,7 +1204,8 @@ contains
         character(len = *), intent(in) :: mesh_name !! Name of the mesh
         character(len = *), intent(in) :: variable_name    !! DELWAQ name of the WQ variable
         character(len = *), intent(in) :: long_name  !! Long descriptive name of the WQ variable
-        character(len = *), intent(in) :: standard_name   !! Standard name according to CF convention (or identical to wqname)
+        character(len = *), intent(in) :: standard_name
+        !! Standard name according to CF convention (or identical to wqname)
         character(len = *), intent(in) :: unit      !! String defining the unit of the WQ variable
         integer, intent(in) :: time_dimension_id              !! Dimension: number of times
         integer, intent(in) :: segments_num             !! Dimension: number of cells per layer
@@ -1217,10 +1254,11 @@ contains
         ! TODO: support for chunking - this requires an array of chunksizes per dimension
         if (layers_num /= dlwqnc_type2d .and. layers_num /= dlwqnc_type1d) then
             if (ncopt(1) == 4 .and. ncopt(2) /= 0) then
-                ierror = nf90_def_var(nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), variable_id, &
-                        deflate_level = ncopt(2))
+                ierror = nf90_def_var(nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), &
+                        variable_id, deflate_level = ncopt(2))
             else
-                ierror = nf90_def_var(nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), variable_id)
+                ierror = nf90_def_var(nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), &
+                        variable_id)
             endif
         else if (layers_num == dlwqnc_type2d) then
             if (ncopt(1) == 4 .and. ncopt(2) /= 0) then
@@ -1237,7 +1275,7 @@ contains
                 ierror = nf90_def_var(nc_id, name, nf90_float, (/ segments_num, time_dimension_id /), variable_id)
             endif
         endif
-        !    ierror = nf90_def_var( nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), variable_id )
+        !ierror = nf90_def_var( nc_id, name, nf90_float, (/ segments_num, layers_num, time_dimension_id /), variable_id)
         if (ierror /= 0 .and. ierror /= nf90_enameinuse) then
             if (dlwqnc_debug) write(*, *) 'Error creating WQ variable: ', ierror
             create_variable = ierror
@@ -1489,7 +1527,7 @@ contains
         integer, intent(in) :: nc_id          !! ID of the output NetCDF file
         integer, intent(in) :: num_segments   !! Number of segments per layer according to DELWAQ
         integer, intent(in) :: num_layers     !! Number of layers according to DELWAQ
-        integer, intent(inout), dimension(:) :: dimension_ids !! Array of dimension IDs for the corresponding DELWAQ mesh
+        integer, intent(inout), dimension(:) :: dimension_ids !!Array of dimension IDs for the corresponding DELWAQ mesh
         integer, intent(inout), dimension(:) :: dimension_sizes !! Array of dimensions (with new dimensions added)
 
         integer :: inc_error
