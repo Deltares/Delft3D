@@ -928,6 +928,13 @@
                call mess(LEVEL_FATAL, errmsg)
             end if
             !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
+            !
             if (iflufflyr>0) then
                if (iflufflyr==2) then
                   sinkf(l,nm)  = sinktot*(1.0_fp - depfac(l,nm))
@@ -1090,6 +1097,13 @@
                call mess(LEVEL_FATAL, errmsg)
             end if
             !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
+            !
             if (suspfrac) then
                aks(nm, l) = taks
                dss(nm, l) = tdss
@@ -1173,6 +1187,13 @@
                write(errmsg,'(a)') 'fm_erosed::eqtran in 2D returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
 
             if (suspfrac) then
                aks   (nm, l)       = taks
