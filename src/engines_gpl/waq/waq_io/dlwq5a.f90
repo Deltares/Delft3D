@@ -43,54 +43,36 @@
                          nttype , drar   , dtflg1 , dtflg3 , &
                          ioutpt , ierr2  , ierr   , iwar   )
 
-!       Deltares Software Centre
+      !> Boundary and waste data new style
+      !>
+      !> This routine reads blocks of input of the kind:
+      !>    - ITEM
+      !>    - bnd/wst item-IDs, nrs or type nrs
+      !>    - CONCEN
+      !>    - substance IDs or nrs (or FLOW or 0 for wastes)
+      !>    - DATA
+      !>    - the associated data
+      !> Reading proceeds untill group end #5 or #6\n
+      !> At run time the arrays are filled by wandering
+      !> through the blocks and picking the values at the
+      !> right time.\n
+      !> At multiple definitions the last one counts.
+      !> Writing starts with defaults that are all zero.
+      !>    - many keywords apply
+      !>    - ITEM and CONCEN sections may be interchanged
+      !>    - the last section runs fastest in the matrix
+      !>    - USEFOR with simple computational rules apply
+      !>    - the data block may have column headers
+      !>    - time indicator is absolute time string or integer
+      !>    - ODS files are read here and data placed in the blocks
+      !>    - BINARY files are resolved at run time
 
-!>\file
-!>                          boundary and waste data new style
-!>
-!>                          This routine reads blocks of input of the kind:
-!>                             - ITEM
-!>                             - bnd/wst item-IDs, nrs or type nrs
-!>                             - CONCEN
-!>                             - substance IDs or nrs (or FLOW or 0 for wastes)
-!>                             - DATA
-!>                             - the associated data
-!>                          Reading proceeds untill group end #5 or #6\n
-!>                          At run time the arrays are filled by wandering
-!>                          through the blocks and picking the values at the
-!>                          right time.\n
-!>                          At multiple definitions the last one counts.
-!>                          Writing starts with defaults that are all zero.
-!>                             - many keywords apply
-!>                             - ITEM and CONCEN sections may be interchanged
-!>                             - the last section runs fastest in the matrix
-!>                             - USEFOR with simple computational rules apply
-!>                             - the data block may have column headers
-!>                             - time indicator is absolute time string or integer
-!>                             - ODS files are read here and data placed in the blocks
-!>                             - BINARY files are resolved at run time
-
-!     CREATED            : May '96  by L. Postma
-
-!     MODIFIED           : March 2000 by L. Postma
-!                               Introduction DLWQ5G.F for column headers
-
-!     SUBROUTINES CALLED : RDTOK1 - tokenized input
-!                          open_waq_files - opens a file
-!                          DLWQ5B - gets names of items/concentrations
-!                          DLWQ5C - gets ODS data
-!                          DLWQ5D - gets block of breakpoint data
-!                          DLWQ5E - performs computations where needed
-!                          read_time_delay - reads time delay variables
-!                          DLWQ5G - reads optional column headers
-!                          DLWQJ3 - writes a data block
-!                          CHECK  - checks completion of data group
-
-!     LOGICAL UNITS      : LUN(27) = unit stripped DELWAQ input file
-!                          LUN(29) = unit formatted output file
-!                          LUN( 2) = unit intermediate file (system)
-!                          LUN(14) = unit intermediate file (boundaries)
-!                          LUN(15) = unit intermediate file (wastes)
+      ! LOGICAL UNITS: 
+      ! LUN(27) = unit stripped DELWAQ input file
+      ! LUN(29) = unit formatted output file
+      ! LUN( 2) = unit intermediate file (system)
+      ! LUN(14) = unit intermediate file (boundaries)
+      ! LUN(15) = unit intermediate file (wastes)
 
       use m_dlwq5b
       use m_check
@@ -105,29 +87,33 @@
 
       implicit none
 
-      integer(kind=int_wp), intent(inout) :: lun  (*)      !< array with unit numbers
-      character( *),        intent(inout) :: lchar(*)      !< filenames
-      integer(kind=int_wp), intent(in   ) :: iu            !< index in LUN array of workfile
-      integer(kind=int_wp), intent(in   ) :: iwidth        !< width of the output file
-      integer(kind=int_wp), intent(in   ) :: icmax         !< maximum size of character workspace
-      character( *),        intent(inout) :: car(:)  !< character workspace !icmax
-      integer(kind=int_wp), intent(in   ) :: iimax         !< maximum size of integer workspace
+      integer(kind=int_wp), intent(inout) :: lun  (:)      !< array with unit numbers
       integer(kind=int_wp), intent(inout) :: iar  (iimax)  !< integer workspace
-      integer(kind=int_wp), intent(in   ) :: irmax         !< maximum size of real workspace
-      real(kind=real_wp),   intent(inout) :: rar  (irmax)  !< real workspace
-      character( *),        intent(inout) :: sname(:)      !< substances names
-      character( *),        intent(inout) :: aname(:)      !< ID's of the boundaries/wastes
-      character( *),        intent(in   ) :: atype(:)      !< Types of the boundaries/wastes
-      integer(kind=int_wp), intent(inout) :: bc_wl_count         !< number of bounds/wastes
-      integer(kind=int_wp), intent(inout) :: substances_count         !< number of substances
-      integer(kind=int_wp), intent(in   ) :: nttype        !< number of boundary/waste types
-      real(kind=dp),        intent(inout) :: drar (*)      !< Double precision workspace
-      logical      ,        intent(in   ) :: dtflg1        !< 'date'-format 1st time scale
-      logical      ,        intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      integer(kind=int_wp), intent(in   ) :: ioutpt        !< how extensive will the output be
-      integer(kind=int_wp), intent(  out) :: ierr2         !< return code of this routine
-      integer(kind=int_wp), intent(inout) :: ierr          !< cumulative error   count
-      integer(kind=int_wp), intent(inout) :: iwar          !< cumulative warning count
+
+      character(*), intent(inout) :: lchar(:) !< filenames
+      character(*), intent(inout) :: car(:)   !< character workspace !icmax
+      character(*), intent(inout) :: sname(:) !< substances names
+      character(*), intent(inout) :: aname(:) !< ID's of the boundaries/wastes
+      character(*), intent(in   ) :: atype(:) !< Types of the boundaries/wastes
+
+      integer(kind=int_wp), intent(in   ) :: iu               !< index in LUN array of workfile
+      integer(kind=int_wp), intent(in   ) :: iwidth           !< width of the output file
+      integer(kind=int_wp), intent(in   ) :: icmax            !< maximum size of character workspace
+      integer(kind=int_wp), intent(in   ) :: iimax            !< maximum size of integer workspace
+      integer(kind=int_wp), intent(inout) :: bc_wl_count      !< number of bounds/wastes
+      integer(kind=int_wp), intent(inout) :: substances_count !< number of substances
+      integer(kind=int_wp), intent(in   ) :: nttype           !< number of boundary/waste types
+      integer(kind=int_wp), intent(in   ) :: irmax            !< maximum size of real workspace
+      integer(kind=int_wp), intent(in   ) :: ioutpt           !< how extensive will the output be
+      integer(kind=int_wp), intent(  out) :: ierr2            !< return code of this routine
+      integer(kind=int_wp), intent(inout) :: ierr             !< cumulative error   count
+      integer(kind=int_wp), intent(inout) :: iwar             !< cumulative warning count
+      
+      real(kind=real_wp),   intent(inout) :: rar  (irmax) !< real workspace
+      real(kind=dp),        intent(inout) :: drar (*)     !< Double precision workspace
+
+      logical, intent(in) :: dtflg1 !< 'date'-format 1st time scale
+      logical, intent(in) :: dtflg3 !< 'date'-format (F;ddmmhhss,T;yydddhh)
 
 !     Local declarations
 

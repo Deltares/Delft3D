@@ -4,8 +4,9 @@ set(dependencies delwaq_lib
                 )
 
 create_test(
-    tests_dlwq5b
+    tests_dlwq5a
     dependencies ${dependencies}
     visual_studio_folder tests/unit_test/engines_gpl/waq/waq_io
-    test_files tests_dlwq5b.f90
+    test_files tests_dlwq5a.f90
+    include_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/
     )

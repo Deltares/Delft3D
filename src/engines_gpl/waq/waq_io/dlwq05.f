@@ -73,8 +73,8 @@
 !     kind           function         name                Descriptipon
 
       integer(kind=int_wp), intent(in   ) :: irmax              !< size of the real workspace
-      integer(kind=int_wp), intent(inout) :: lun(*)             !< array with unit numbers
-      character( *),        intent(inout) :: lchar(*)           !< array with file names of the files
+      integer(kind=int_wp), intent(inout) :: lun(:)             !< array with unit numbers
+      character( *),        intent(inout) :: lchar(:)           !< array with file names of the files
       integer(kind=int_wp), intent(inout) :: filtype(*)         !< type of binary file
       character( *),        intent(inout) :: car(:)             !< character workspace
       integer(kind=int_wp), intent(inout) :: iar(:)             !< integer workspace ( dump locations at entrance )

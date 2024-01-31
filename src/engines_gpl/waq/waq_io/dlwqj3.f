@@ -205,7 +205,7 @@ cjvb1
       IF ( LUNWR .GT. 0 ) THEN
          I1DUM = 0
          I2DUM = 0
-         CALL DLWQJ2 ( LUNWR , NOBRK , NOTOT  , 1      , IAR(IOFFB:) ,
+         CALL DLWQJ2 ( LUNWR , NOBRK , NOTOT  , 1      , IAR(IOFFB:) , ! write table in binary format to wrk file.
      *                                 RMAT   , I1DUM  , I2DUM      )
 cjvb1    IF ( IOPT .NE. 0 ) THEN
             IFILSZ = IFILSZ + I1DUM
@@ -265,7 +265,7 @@ cjvb1    ENDIF
  1070 FORMAT ( ' ',A,' ',I7,' :',I10 )
  1080 FORMAT ( ' Harmonic: ',I3,' :',I10,' Phase: ',10E12.4 )
  1090 FORMAT ( ' Fourier : ',I3,' :',I10,' Phase: ',10E12.4 )
- 1100 FORMAT ( ' ',A,I6,9I12)
+ 1100 FORMAT ( ' ',A,I20,9I12)  ! ( ' ',A,I6,9I12)
  1150 FORMAT ( ' ',A,' ' , 10('  ',A10) )
  1120 FORMAT (   I10,2X,1P,10E12.4 )
  1130 FORMAT ( ' Info comes at runtime from binary file at unit: ',I3 )

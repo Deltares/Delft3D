@@ -34,7 +34,7 @@ module m_string_utils
 
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
-    public :: starts_with, index_in_array, string_equals
+    public :: starts_with, index_in_array, remove_duplicates, string_equals
 
     contains
 
@@ -148,6 +148,18 @@ module m_string_utils
             end if
         end do
     end function index_in_array
+
+    recursive function remove_duplicates( array ) result(unique_array)
+    !< Takes an array of strings which may contain duplicated strings and returns an array in which all duplicates have been removed.
+        character(*), dimension(:)         :: array            !< input array containing (possibly) duplicate strings.
+        character(len(array)), allocatable :: unique_array(:)  !< output array containing only unique elements.
+
+        if (size(array) > 0) then
+            unique_array = [array(1), remove_duplicates(pack(array(2:), array(2:) /= array(1)))]
+        else
+            allocate(unique_array(0))
+        endif
+    end function remove_duplicates
 
     logical function string_equals(source_string, target_string, exact_match, case_sensitive) result(found)
         !< Checks two strings to see if they are equal with the given conditions.

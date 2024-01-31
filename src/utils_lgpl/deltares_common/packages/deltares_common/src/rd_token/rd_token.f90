@@ -27,15 +27,15 @@
 
 !         publicly accessable ( this allows for mixed use with direct calls to rdtok1/2 )
 
-      integer  , parameter :: lstack = 6      ! size include files stack
-      integer  , parameter :: lchmax = 255    ! string length file name variables
-      integer              :: ilun(lstack)    ! unit numbers include files stack
-      character(lchmax)    :: lch (lstack)    ! file names include files stack
-      character(  1   )    :: cchar           ! comment character
-      integer              :: lunut           ! unit number output file
-      integer              :: iposr           ! location on the record
-      integer              :: npos            ! record length
-      logical              :: push            ! use previous token if true
+      integer  , parameter :: lstack = 6      !< size include files stack
+      integer  , parameter :: lchmax = 255    !< string length file name variables
+      integer              :: ilun(lstack)    !< unit numbers include files stack
+      character(lchmax)    :: lch (lstack)    !< file names include files stack
+      character(  1   )    :: cchar           !< comment character
+      integer              :: lunut           !< unit number output file
+      integer              :: iposr           !< location on the record
+      integer              :: npos            !< record length
+      logical              :: push            !< use previous token if true
 
 !         private
 

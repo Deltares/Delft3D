@@ -81,11 +81,11 @@
 
 !     Arguments:
 
-      integer(kind=int_wp), intent(inout) ::  lun    (*)      !< array with unit numbers
-      character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
+      integer(kind=int_wp), intent(inout) ::  lun    (:)      !< array with unit numbers
+      character( *), intent(inout)        ::  lchar  (:)     !< Filenames for the items
       integer(kind=int_wp), intent(inout) ::  filtype(*)      !< type of binary files
       integer(kind=int_wp), intent(in   ) ::  icmax           !< size of the character workspace
-      character(20), intent(inout) :: car   (icmax)  !< local character workspace
+      character(20), intent(inout)        ::  car   (icmax)  !< local character workspace
       integer(kind=int_wp), intent(in   ) ::  iimax           !< size of the integer   workspace
       integer(kind=int_wp), intent(inout) ::  iar   (iimax)   !< local integer   workspace
       integer(kind=int_wp), intent(in   ) ::  irmax           !< size of the real      workspace
