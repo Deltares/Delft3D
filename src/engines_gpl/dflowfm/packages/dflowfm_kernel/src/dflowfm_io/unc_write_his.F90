@@ -378,6 +378,43 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_put_att(ihisfile, id_varruh, 'coordinates', 'rug_x_coordinate rug_y_coordinate rug_name')
            ierr = nf90_put_att(ihisfile, id_varruh, '_FillValue', dmiss)
         endif
+        
+        !if (stm_included .and. ISED1 > 0 .and. jahissed > 0) then
+        !       ! New implementation, sedsus fraction is additional dimension
+        !       ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
+        !       ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
+        !       !
+        !       ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
+        !       ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
+        !       !
+        !       if (kmx>0) then
+        !          ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_laydim, id_statdim, id_sedsusdim, id_timedim /), id_sf)
+        !          ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_ws)
+        !          ierr = nf90_def_var(ihisfile, 'seddif', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_seddif)
+        !          ierr = nf90_put_att(ihisfile, id_seddif, 'long_name', 'Sediment vertical diffusion')
+        !          ierr = nf90_put_att(ihisfile, id_seddif, 'units', 'm2 s-1')
+        !          ierr = write_real_fill_value(id_seddif)
+        !          ierr = nf90_put_att(ihisfile, id_seddif, 'coordinates', statcoordstring)
+        !          ierr = nf90_put_att(ihisfile, id_seddif, 'geometry', station_geom_container_name)
+        !          !
+        !          jawrizc = 1
+        !          jawrizw = 1
+        !       else
+        !          ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_statdim, id_sedsusdim, id_timedim /), id_sf)
+        !          ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/ id_statdim, id_sedsusdim, id_timedim /), id_ws)
+        !       endif
+        !       !
+        !       ierr = nf90_put_att(ihisfile, id_sf, 'long_name', 'Sediment concentration')
+        !       ierr = nf90_put_att(ihisfile, id_sf, 'units', 'kg m-3')
+        !       ierr = nf90_put_att(ihisfile, id_sf, 'coordinates', statcoordstring)
+        !       ierr = nf90_put_att(ihisfile, id_sf, 'geometry', station_geom_container_name)
+        !       !
+        !       ierr = nf90_put_att(ihisfile, id_ws, 'long_name', 'Sediment settling velocity')
+        !       ierr = nf90_put_att(ihisfile, id_ws, 'units', 'm s-1')
+        !       ierr = nf90_put_att(ihisfile, id_ws, 'coordinates', statcoordstring)
+        !       ierr = nf90_put_att(ihisfile, id_ws, 'geometry', station_geom_container_name)
+        !       !
+        !    endif
 
         ! Source-sinks
         if (jahissourcesink > 0 .and. numsrc > 0) then

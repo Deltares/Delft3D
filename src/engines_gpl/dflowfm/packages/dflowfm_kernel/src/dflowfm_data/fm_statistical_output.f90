@@ -1563,7 +1563,7 @@ private
       use m_structures
       use m_observations
       use m_statistical_callback
-      use m_transport, only: NUMCONST, itemp, isalt
+      use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included
       use m_longculverts, only: nlongculverts
       USE m_monitoring_crosssections, only: ncrs
@@ -1574,6 +1574,7 @@ private
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
       double precision, pointer, dimension(:) :: temp_pointer
+
       procedure(process_data_double_interface),  pointer :: function_pointer => NULL()
 
       integer :: i, ntot, num_const_items
@@ -1993,25 +1994,101 @@ private
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
          if (kmx >0) then
-               call c_f_pointer (c_loc(valobs(IPNT_SED:IPNT_SED+kmx,1:ntot)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
+            call c_f_pointer (c_loc(valobs(IPNT_SED:IPNT_SED+kmx,1:ntot)), temp_pointer, [kmx*ntot])
+            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
          else
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),valobs(IPNT_SED,:)                                  )
          endif
+      else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
+         if (kmx > 0) then
+            call c_f_pointer (c_loc(valobs(IVAL_SF1:IVAL_SFN+(IVAL_SFN-IVAL_SF1*kmx),1:ntot)), temp_pointer, [(IVAL_SFN-IPNT_SF1+1)*kmx*ntot])
+         else
+            temp_pointer => valobs(IPNT_SF1,:)
+            call pointer_cast(valobs(IPNT_SF1:IPNT_SFN,1:ntot),temp_pointer)
+         end if
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
       endif
       if (IVAL_WS1 > 0) then
          if (kmx > 0) then
-            call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+            call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
          else
-            call c_f_pointer (c_loc(valobs(IPNT_WS1:IVAL_WSN,1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*ntot])
-            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
+            call c_f_pointer (c_loc(valobs(IPNT_WS1:IVAL_WSN,1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*ntot])
          endif
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WS),temp_pointer                                                        )
       endif
       if (IVAL_SEDDIF1 > 0) then
-         call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1)*kmx*ntot])
+         call c_f_pointer (c_loc(valobs(IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx),1:ntot)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SEDDIF),temp_pointer                                          )
       endif
+      !if (stm_included .and. ISED1 > 0 .and. jahissed > 0) then
+      !   ! New implementation, sedsus fraction is additional dimension
+      !   ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
+      !   ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
+      !   !
+      !   ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
+      !   ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
+      !   !
+      !   if (kmx>0) then
+      !      ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_laydim, id_statdim, id_sedsusdim, id_timedim /), id_sf)
+      !      ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_ws)
+      !      ierr = nf90_def_var(ihisfile, 'seddif', nc_precision, (/  id_laydimw, id_statdim, id_sedsusdim, id_timedim /), id_seddif)
+      !      ierr = nf90_put_att(ihisfile, id_seddif, 'long_name', 'Sediment vertical diffusion')
+      !      ierr = nf90_put_att(ihisfile, id_seddif, 'units', 'm2 s-1')
+      !      ierr = write_real_fill_value(id_seddif)
+      !      ierr = nf90_put_att(ihisfile, id_seddif, 'coordinates', statcoordstring)
+      !      ierr = nf90_put_att(ihisfile, id_seddif, 'geometry', station_geom_container_name)
+      !      !
+      !      jawrizc = 1
+      !      jawrizw = 1
+      !   else
+      !      ierr = nf90_def_var(ihisfile, 'sed', nc_precision, (/  id_statdim, id_sedsusdim, id_timedim /), id_sf)
+      !      ierr = nf90_def_var(ihisfile, 'ws', nc_precision, (/ id_statdim, id_sedsusdim, id_timedim /), id_ws)
+      !   endif
+      !   !
+      !   ierr = nf90_put_att(ihisfile, id_sf, 'long_name', 'Sediment concentration')
+      !   ierr = nf90_put_att(ihisfile, id_sf, 'units', 'kg m-3')
+      !   ierr = nf90_put_att(ihisfile, id_sf, 'coordinates', statcoordstring)
+      !   ierr = nf90_put_att(ihisfile, id_sf, 'geometry', station_geom_container_name)
+      !   !
+      !   ierr = nf90_put_att(ihisfile, id_ws, 'long_name', 'Sediment settling velocity')
+      !   ierr = nf90_put_att(ihisfile, id_ws, 'units', 'm s-1')
+      !   ierr = nf90_put_att(ihisfile, id_ws, 'coordinates', statcoordstring)
+      !   ierr = nf90_put_att(ihisfile, id_ws, 'geometry', station_geom_container_name)
+      !   !
+      !   if (IVAL_SF1 > 0) then
+      !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
+      !      do j = IVAL_SF1,IVAL_SFN
+      !         i = j - IVAL_SF1 + 1
+      !         toutputx(:,i) = valobsT(:,IPNT_SF1 + (i-1)*(kmx+1)+kk-1)
+      !      enddo
+      !      ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/)
+      !   endif
+      !   if (IVAL_SF1 > 0) then
+      !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
+      !      do j = IVAL_SF1,IVAL_SFN
+      !         i = j - IVAL_SF1 + 1
+      !         toutputx(:,i) = valobsT(:,IPNT_SF1 + i-1)
+      !      end do
+      !      ierr = nf90_put_var(ihisfile, id_sf, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
+      !   end if
+      !   if (IVAL_WS1 > 0) then
+      !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
+      !      do j = IVAL_WS1,IVAL_WSN
+      !         i = j - IVAL_WS1 + 1
+      !         toutputx(:,i) = valobsT(:,IPNT_WS1 + (i-1)*(kmx+1)+kk-1)
+      !      enddo
+      !      ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ kk, 1, 1, it_his /), count = (/ 1, ntot, stmpar%lsedsus, 1/))
+      !   end if
+      !   if (IVAL_WS1 > 0) then
+      !      call realloc(toutputx, (/ntot, stmpar%lsedsus /), keepExisting=.false., fill = dmiss)
+      !      do j = IVAL_WS1,IVAL_WSN
+      !         i = j - IVAL_WS1 + 1
+      !         toutputx(:,i) = valobsT(:,IPNT_WS1 + i-1)
+      !         ierr = nf90_put_var(ihisfile, id_ws, toutputx, start = (/ 1, 1, it_his /), count = (/ ntot, stmpar%lsedsus, 1/))
+      !      enddo
+      !   end if
+      !
+      !endif
 
       !
       ! Variables on observation cross sections
@@ -2208,5 +2285,12 @@ private
       call initialize_statistical_output(output_set)
          
    end subroutine flow_init_statistical_output_his
-         
+   
+   subroutine pointer_cast( x, p )
+    !real, contiguous, intent(inout), target :: x(:,:)
+    double precision, contiguous, intent(in), target :: x(:,:)
+    double precision, intent(out), pointer :: p(:)
+
+    p(1:size(x)) => x
+   end subroutine pointer_cast
 end module fm_statistical_output
