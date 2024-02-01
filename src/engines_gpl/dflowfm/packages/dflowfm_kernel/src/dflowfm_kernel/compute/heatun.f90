@@ -172,6 +172,12 @@ else if (jatem == 5) then
       endif
    endif
 
+   if (jaSolradfac > 0) then
+      if (solradfac(n) /= dmiss) then
+         qsu = qsu * solradfac(n)
+      end if
+   end if
+
    rcpiba = rcpi*ba(n)
    qsn    = qsu*rcpiba
 
