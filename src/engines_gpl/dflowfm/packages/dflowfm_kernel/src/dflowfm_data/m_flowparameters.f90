@@ -162,9 +162,9 @@
 
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
- integer                           :: jaWindspeedfac    !< if 1 wind speed multiplication factor is used
+ integer                           :: ja_wind_speed_factor !< if 1 wind speed multiplication factor is used
  
- integer                           :: jaSolradfac       !< if 1 solar radiation multiplication factor is used
+ integer                           :: ja_solar_radiation_factor !< if 1 solar radiation multiplication factor is used
  
  integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
@@ -756,9 +756,9 @@ subroutine default_flowparameters()
 
     jaCdwusp = 0
 
-    jawindspeedfac = 0 !< use windspeedfac 1/0
+    ja_wind_speed_factor = 0 !< use wind speed multiplication factor 1/0
 
-    jaSolradfac = 0    !< use solradfac 1/0
+    ja_solar_radiation_factor = 0 !< use solar radiation multiplication factor 1/0
 
     ihorvic  = 0      !< 0=no visc, 1=do visc
 
