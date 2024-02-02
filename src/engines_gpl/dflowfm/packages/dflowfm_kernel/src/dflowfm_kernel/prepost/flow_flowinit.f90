@@ -821,6 +821,7 @@ subroutine load_restart_file(file_exist, error)
          end if
          call fill_onlyWetLinks()
          call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         call flow_obsinit() 
          call fill_valobs() 
        end if
    end if
