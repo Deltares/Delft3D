@@ -334,13 +334,6 @@
  call timstop(handle_extra(19)) ! end transport module
 
 
- call timstrt('Observations init   ', handle_extra(21)) ! observations init
- call flow_obsinit()                                 ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
- if (ncrs > 0) then
-    call fill_geometry_arrays_crs()
- end if
- call timstop(handle_extra(21)) ! end observations init
-
  call timstrt('Ice init', handle_extra(84)) ! ice
  call fm_ice_alloc(ndx) ! needs to happen after flow_geominit to know ndx, but before flow_flowinit where we need the arrays for the external forcings
  call timstop(handle_extra(84)) ! End ice
@@ -352,6 +345,13 @@
  end if
  call timstop(handle_extra(23)) ! end flow init
 
+ call timstrt('Observations init   ', handle_extra(21)) ! observations init
+ call flow_obsinit()                                 ! initialise stations and cross sections on flow grid + structure his (1st call required for call to flow_trachy_update)
+ if (ncrs > 0) then
+    call fill_geometry_arrays_crs()
+ end if
+ call timstop(handle_extra(21)) ! end observations init
+ 
  ! report on final configuration of ice module; needs to happen after flow_flowinit where external forcings are initialized
  call timstrt('Ice init', handle_extra(84)) ! ice
  call fm_ice_echo(mdia)
