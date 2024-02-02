@@ -212,7 +212,8 @@ contains
          dpt = max(CrossSection%charHeight, dpt)
       endif
       call GetCSParsFlow(CrossSection, dpt, wArea, wPerimiter, wWidth)
-      if (abs(wArea) < eps10 .or. abs(culvert%valveOpening) < eps10) then 
+
+      if (abs(wArea) < eps10 .or. (culvert%has_valve .and. abs(culvert%valveOpening) < eps10)) then
          kfum  = 0
          fum   = 0.0d0
          rum   = 0.0d0
