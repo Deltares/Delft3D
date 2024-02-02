@@ -12706,6 +12706,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
                id_bodsed,                       &
                id_blbnd, id_s0bnd, id_s1bnd, &
                id_squbnd, id_sqibnd, &
+               id_czs, &
                id_morft,                         &
                id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn
 
@@ -12988,6 +12989,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call readyy('Reading map data',0.35d0)
 
     ! Read chezy roughness (flow elem)
+    call gettaus(2,1)       ! It can happen that `czs` is not allocated at this point (e.g., if `jamap_chezy_elements = 0`)
     ierr = get_var_and_shift(imapfile, 'czs', czs, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
                              um%inode_merge)
 
