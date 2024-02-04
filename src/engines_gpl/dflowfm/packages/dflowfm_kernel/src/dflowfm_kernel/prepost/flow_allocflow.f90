@@ -85,11 +85,11 @@
  end if
 
  allocate ( s0  (ndx) , s1 ( ndx) , stat = ierr)
- call aerr('s0  (ndx) , s1  (ndx)', ierr, ndx) ; s0   = 0 ; s1   = 0
+ call aerr('s0  (ndx) , s1  (ndx)', ierr, 2*ndx) ; s0   = 0 ; s1   = 0
  allocate ( a0  (ndx) , a1  (ndx) , stat = ierr)
- call aerr('a0  (ndx) , a1  (ndx)', ierr, ndx) ; a0   = 0 ; a1   = 0
- allocate ( hs  (ndx), stat = ierr)
- call aerr('hs  (ndx)', ierr, ndx) ; hs   = 0
+ call aerr('a0  (ndx) , a1  (ndx)', ierr, 2*ndx) ; a0   = 0 ; a1   = 0
+ allocate ( hs  (ndx) , s00 (ndx) , stat = ierr)
+ call aerr('hs  (ndx) , s00 (ndx)', ierr, 2*ndx) ; hs   = 0 ; s00  = 0
  allocate ( cfs (ndx) , stat = ierr)
  call aerr('cfs (ndx)', ierr,   ndx) ; cfs = 0
 
