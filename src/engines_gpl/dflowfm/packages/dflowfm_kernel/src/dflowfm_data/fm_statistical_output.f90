@@ -867,14 +867,16 @@ private
                      'Wrihis_velocity_vector', 'depth_averaged_y_velocity', 'flow element center depth-averaged velocity vector, y-component', &
                      'sea_water_depth-averaged_y_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                     &
                      nc_dim_ids = nc_dims_2D)
-      call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE,                                 &
-                     'Wrihis_velocity', 'velocity_magnitude',                              &
-                     'velocity magnitude',                                                                          &
-                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity magnitude to his file')
-      call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN,                        &
-                     'Wrihis_velocity', 'velocity_magnitude',                              &
-                     'Eulerian velocity magnitude',                                                                 &
-                     'sea_water_eulerian_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1))
+      call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE,                                                                        &
+                     'Wrihis_velocity', 'velocity_magnitude',                                                                              &
+                     'velocity magnitude',                                                                                                 &
+                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity magnitude to his file', &
+                     nc_dim_ids = nc_dims_3D_center)
+      call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN,                    &
+                     'Wrihis_velocity', 'velocity_magnitude',                                   &
+                     'Eulerian velocity magnitude',                                             &
+                     'sea_water_eulerian_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), &
+                     nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_DISCHARGE_MAGNITUDE,                                            &
                      'Wrihis_discharge', 'discharge_magnitude',                                                 &
                      'average discharge magnitude',                                                             &
@@ -1203,8 +1205,7 @@ private
                      'ucyq_velocity', 'm s-1', UNC_LOC_S)
       call addoutval(out_quan_conf_map, IDX_MAP_UCMAG,                                                                             &
                      'Wrimap_velocity_magnitude', 'ucmag', 'Flow element center velocity magnitude',                               &
-                     'sea_water_speed', 'm s-1', UNC_LOC_S, description='Write cell-center velocity vector magnitude to map file', &
-                     nc_dim_ids = nc_dims_3D_center)
+                     'sea_water_speed', 'm s-1', UNC_LOC_S, description='Write cell-center velocity vector magnitude to map file')
       call addoutval(out_quan_conf_map, IDX_MAP_UCMAG_EULER,                                        &
                      'Wrimap_velocity_magnitude', 'ucmag', 'Flow element center eulerian velocity magnitude',                               &
                      'sea_water_eulerian_speed', 'm s-1', UNC_LOC_S)
