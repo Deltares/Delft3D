@@ -9,8 +9,8 @@ private
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydimw_center = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydimw_edge = .true., statdim = .true., timedim = .true.)
+   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
+   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
 
    type(t_output_quantity_config_set), public :: out_quan_conf_his
@@ -1052,11 +1052,11 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_WS,                         &
                      'Wrihis_sediment', 'ws', 'Sediment settling velocity', &
                      '', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),     &
-                     nc_dim_ids = t_nc_dim_ids(laydimw_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
+                     nc_dim_ids = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_SEDDIF,                          &
                      'Wrihis_sediment', 'seddif', 'Sediment vertical diffusion', &
                      '', 'm2 s-1', UNC_LOC_STATION, nc_atts = atts(1:1),         &
-                     nc_dim_ids = t_nc_dim_ids(laydimw_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
+                     nc_dim_ids = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
 
       !
       ! HIS: Variables on observation cross sections
@@ -2290,8 +2290,8 @@ private
 
       if (.not. (kmx > 0)) then ! Turn off layer dimensions in 2D
          nc_dim_ids%laydim = .false.
-         nc_dim_ids%laydimw_center = .false.
-         nc_dim_ids%laydimw_edge = .false.
+         nc_dim_ids%laydim_interface_center = .false.
+         nc_dim_ids%laydim_interface_edge = .false.
       end if
    end subroutine process_nc_dim_ids
 end module fm_statistical_output

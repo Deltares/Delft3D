@@ -686,9 +686,9 @@ subroutine unc_write_his(tim)            ! wrihis
                if (allocated(config%nc_dim_ids)) then
                   if (config%nc_dim_ids%laydim) then
                      local_statcoordstring = trim(statcoordstring) // ' zcoordinate_c'
-                  else if (config%nc_dim_ids%laydimw_center) then
+                  else if (config%nc_dim_ids%laydim_interface_center) then
                      local_statcoordstring = trim(statcoordstring) // ' zcoordinate_w'
-                  else if (config%nc_dim_ids%laydimw_edge) then
+                  else if (config%nc_dim_ids%laydim_interface_edge) then
                      local_statcoordstring = trim(statcoordstring) // ' zcoordinate_wu'
                   else
                      local_statcoordstring = statcoordstring
@@ -2097,7 +2097,7 @@ function build_nc_dimension_id_list(nc_dim_ids) result(res)
       logical :: sedtotdim = .false.
       logical :: timedim = .false.
    res = pack([id_laydim, id_laydimw, id_nlyrdim, id_statdim, id_sedsusdim, id_sedtotdim, id_timedim], &
-              [nc_dim_ids%laydim, nc_dim_ids%laydimw_center .or. nc_dim_ids%laydimw_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
+              [nc_dim_ids%laydim, nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, nc_dim_ids%nlyrdim, nc_dim_ids%statdim, nc_dim_ids%sedsusdim, nc_dim_ids%sedtotdim, nc_dim_ids%timedim])
 end function build_nc_dimension_id_list
 
 end subroutine unc_write_his

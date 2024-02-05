@@ -476,8 +476,8 @@ private
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
    type, public :: t_nc_dim_ids
       logical :: laydim = .false.
-      logical :: laydimw_center = .false.
-      logical :: laydimw_edge = .false.
+      logical :: laydim_interface_center = .false.
+      logical :: laydim_interface_edge = .false.
       logical :: nlyrdim = .false.
       logical :: statdim = .false.
       logical :: sedsusdim = .false.
@@ -541,7 +541,7 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    character(len=*),                intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
    character(len=*),                intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
    integer,                         intent(in   ) :: location_specifier  !< Location specifier of the variable.
-   type(t_nc_dim_ids), optional,    intent(in   ) :: nc_dim_ids          !< Included NetCDF dimension
+   type(t_nc_dim_ids), optional,    intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
    integer,          optional,      intent(in   ) :: nc_type             !< NetCDF variable type, one of: nf90_double, nf90_int, etc. Default: nf90_double.
    type(nc_attribute), optional,    intent(in   ) :: nc_atts(:)          !< (optional) list of additional NetCDF attributes to be stored for this output variable.
    character(len=*), optional,      intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
