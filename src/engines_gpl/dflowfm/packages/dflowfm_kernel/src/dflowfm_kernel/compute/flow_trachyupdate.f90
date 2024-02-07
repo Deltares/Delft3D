@@ -116,7 +116,7 @@ subroutine flow_trachyupdate()
     do itrtobs=1,ntrtobs
         iobs = trachy_fl%gen%obs(itrtobs)%id
         if (.not. (iobs == TRACHY_UNDEFINED)) then
-            trachy_fl%gen%obs(itrtobs)%val = valobs(IPNT_S1, iobs)
+            trachy_fl%gen%obs(itrtobs)%val = valobs( iobs,IPNT_S1)
         endif
     end do
     !

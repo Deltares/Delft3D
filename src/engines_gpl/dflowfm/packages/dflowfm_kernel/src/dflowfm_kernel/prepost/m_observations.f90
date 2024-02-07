@@ -346,7 +346,7 @@ subroutine alloc_valobs()
    end if
 
    if ( IPNT_NUM.gt.0 ) then
-      allocate(valobs(IPNT_NUM,numobs+nummovobs))
+      allocate(valobs(numobs+nummovobs,IPNT_NUM))
       valobs = 0d0   ! should not be DMISS, since DMISS is used for global reduction in parallel computations
    end if
 

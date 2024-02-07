@@ -75,13 +75,14 @@ subroutine unc_write_his(tim)            ! wrihis
     use fm_statistical_output
     use m_output_config
     use m_particles
+    use MessageHandling, only: err
    
     implicit none
 
     double precision, intent(in) :: tim                  !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
 
-    integer :: id_laydim , id_laydimw, &
+    integer, save :: id_laydim , id_laydimw, &
                id_statdim, id_strlendim, id_crsdim, id_crslendim, id_crsptsdim, id_timedim, &
                id_statx, id_staty, id_stat_id, id_statname, id_time, id_timestep, &
                id_statlon, id_statlat, id_crs_id, id_crsname, &
@@ -130,7 +131,7 @@ subroutine unc_write_his(tim)            ! wrihis
                id_ustx, id_usty, id_nlyrdim, id_bodsed, id_dpsed, id_msed, id_thlyr, id_poros, id_lyrfrac, id_frac, id_mudfrac, id_sandfrac, id_fixfac, id_hidexp, id_taub, id_mfluff, &
                id_rugdim, id_rugx, id_rugy, id_rugid, id_rugname, id_varruh, id_taux, id_tauy
     ! ids for geometry variables, only use them once at the first time of history output
-    integer :: id_statgeom_node_count,        id_statgeom_node_coordx,        id_statgeom_node_coordy,    &
+    integer, save :: id_statgeom_node_count,        id_statgeom_node_coordx,        id_statgeom_node_coordy,    &
                                               id_statgeom_node_lon,           id_statgeom_node_lat,       &
                id_crsgeom_node_count,         id_crsgeom_node_coordx,         id_crsgeom_node_coordy,     &
                id_weirgengeom_input_node_count, id_weirgengeom_input_node_coordx, id_weirgengeom_input_node_coordy,&
@@ -161,13 +162,13 @@ subroutine unc_write_his(tim)            ! wrihis
     integer                      :: IP, num, ngenstru_, n, nlyrs
 
     double precision, save       :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
-    integer                      :: ntot, k, i, j, jj, ierr, kk, idims(3),L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
+    integer                      :: ntot, k, i, j, ierr, kk, L, Lf, k3, k4, nNodeTot, nNodes, L0, k1, k2, nlinks
     double precision             :: cof0
 
     integer                      :: strlen_netcdf  ! string length definition for (station) names on history file
     character(len=255)           :: filename
     character(len=25)            :: transpunit
-    character(len=1024)          :: statcoordstring
+    character(len=1024)          :: statcoordstring, local_statcoordstring
     integer                      :: igen, istru
     integer                      :: ndims
     character(len=255)           :: tmpstr
@@ -293,6 +294,12 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_def_dim(ihisfile, 'laydim', kmx, id_laydim)
            ierr = nf90_def_dim(ihisfile, 'laydimw', kmx+1, id_laydimw)
         end if
+
+        if (stm_included .and. ISED1 > 0 .and. jahissed > 0) then
+           ! New implementation, sedsus fraction is additional dimension
+           ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
+           ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
+        endif
 
         !
         ! Time
@@ -652,42 +659,56 @@ subroutine unc_write_his(tim)            ! wrihis
 
             select case(config%location_specifier)
             case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_srcdim,         id_timedim /), 2, var_name, var_long_name, config%unit, 'source_sink_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_rugdim,         id_timedim /), 2, var_name, var_long_name, config%unit, 'rug_x_coordinate rug_y_coordinate rug_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_x_coordinate rug_y_coordinate rug_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GENSTRU)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_genstrudim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_DAM)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_cdamdim,        id_timedim /), 2, var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_PUMP)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_pumpdim,        id_timedim /), 2, var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GATE)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_gategendim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_WEIRGEN)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_weirgendim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_ORIFICE)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_orifgendim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_BRIDGE)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_bridgedim,      id_timedim /), 2, var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_CULVERT)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_culvertdim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_DAMBREAK)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_dambreakdim,    id_timedim /), 2, var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_UNIWEIR)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_uniweirdim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_CMPSTRU)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_cmpstrudim,     id_timedim /), 2, var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_LONGCULVERT)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_longculvertdim, id_timedim /), 2, var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_LATERAL)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_latdim,         id_timedim /), 2, var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_STATION)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_statdim, id_timedim /), 2, var_name, var_long_name, config%unit, statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
+               if (allocated(config%nc_dim_ids)) then
+                  if (config%nc_dim_ids%laydim) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_c'
+                  else if (config%nc_dim_ids%laydim_interface_center) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_w'
+                  else if (config%nc_dim_ids%laydim_interface_edge) then
+                     local_statcoordstring = trim(statcoordstring) // ' zcoordinate_wu'
+                  else
+                     local_statcoordstring = statcoordstring
+                  end if
+                  call definencvar(ihisfile, id_var, config%nc_type, build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
+                                   config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
+               else
+                  call err('Programming error: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
+               end if
             case (UNC_LOC_OBSCRS)
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_crsdim, id_timedim /), 2, var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GLOBAL)
                if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
-               call definencvar(ihisfile, id_var, config%nc_type, (/ id_timedim /), 1, var_name, var_long_name, config%unit, "", fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, config%nc_type, (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, attset=config%additional_attributes)
                if (timon) call timstop (handle_extra(59))
             end select
 
@@ -1001,8 +1022,7 @@ subroutine unc_write_his(tim)            ! wrihis
       end if
 
       select case(config%location_specifier)
-      case (UNC_LOC_STATION, &
-         UNC_LOC_OBSCRS, &
+      case ( UNC_LOC_OBSCRS, &
          UNC_LOC_SOSI, &
          UNC_LOC_RUG, &
          UNC_LOC_GENSTRU, &
@@ -1019,7 +1039,9 @@ subroutine unc_write_his(tim)            ! wrihis
          UNC_LOC_LONGCULVERT, &
          UNC_LOC_LATERAL &
          )
-         ierr = nf90_put_var(ihisfile, id_var,   out_variable_set_his%statout(ivar)%stat_output,    start = (/ 1, it_his /))
+         ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /))
+      case (UNC_LOC_STATION)
+         ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, count = build_nc_dimension_id_count_array(config%nc_dim_ids), start = build_nc_dimension_id_start_array(config%nc_dim_ids))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /))
@@ -2073,6 +2095,54 @@ contains
       end if
 
    end function unc_def_his_structure_static_vars
+
+!> Convert t_nc_dim_ids to integer array of NetCDF dimension ids
+function build_nc_dimension_id_list(nc_dim_ids) result(res)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
+   integer, allocatable           :: res(:)     !< Array of NetCDF dimension ids
+
+   res = pack([id_laydim, id_laydimw, id_nlyrdim, id_statdim, id_sedsusdim, id_sedtotdim, id_timedim], &
+              make_mask_from_dim_ids(nc_dim_ids))
+end function build_nc_dimension_id_list
+
+!> Return array of NetCDF dimension start indices corresponding to NetCDF dimensions
+function build_nc_dimension_id_start_array(nc_dim_ids) result(starts)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
+   integer, allocatable           :: starts(:)  !< Array of start indices for each NetCDF dimension
+   
+   starts = pack([1, 1, 1, 1, 1, 1, it_his], &
+              make_mask_from_dim_ids(nc_dim_ids))
+end function build_nc_dimension_id_start_array
+
+!> Return array of NetCDF dimension counts corresponding to NetCDF dimensions
+function build_nc_dimension_id_count_array(nc_dim_ids) result(counts)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
+   integer, allocatable           :: counts(:)  !< NetCDF dimension counts
+   
+   counts = pack([get_dimid_len(id_laydim),get_dimid_len(id_laydimw), get_dimid_len(id_nlyrdim), get_dimid_len(id_statdim), get_dimid_len(id_sedsusdim), get_dimid_len(id_sedtotdim), 1], &
+              make_mask_from_dim_ids(nc_dim_ids))
+end function build_nc_dimension_id_count_array
+
+!> Build mask of which dimensions to include in netcdf variable, based on nc_dim_ids
+pure function make_mask_from_dim_ids(nc_dim_ids) result(mask)
+   type(t_nc_dim_ids), intent(in) :: nc_dim_ids  !< The active NetCDF dimensions for this variable
+   logical                        :: mask(7)     !< The same but as a 1-D array of logicals
+   
+   mask = [nc_dim_ids%laydim, &
+           nc_dim_ids%laydim_interface_center .or. nc_dim_ids%laydim_interface_edge, &
+           nc_dim_ids%nlyrdim, &
+           nc_dim_ids%statdim, &
+           nc_dim_ids%sedsusdim, &
+           nc_dim_ids%sedtotdim, &
+           nc_dim_ids%timedim]
+end function make_mask_from_dim_ids
+
+!> Gets dimension length from NetCDF dimension id
+integer function get_dimid_len(id)
+   integer, intent(in) :: id !< NetCDF id obtained from nf90_def_dim
+
+   ierr =  nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
+end function get_dimid_len
 
 end subroutine unc_write_his
 

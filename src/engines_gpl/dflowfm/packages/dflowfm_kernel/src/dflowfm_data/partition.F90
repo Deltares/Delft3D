@@ -3769,7 +3769,7 @@ end subroutine partition_make_globalnumbers
    end subroutine reduce_kobs
    
 !> reduce outputted values at observation stations
-   subroutine reduce_valobs(numvals, numobs, valobs, valobs_all)
+   subroutine reduce_valobs( numobs, valobs, valobs_all,numvals)
       use m_missing
 #ifdef HAVE_MPI
       use mpi
@@ -3797,8 +3797,8 @@ end subroutine partition_make_globalnumbers
 !     disable observation stations with missing values in this domain
       do iobs=1,numobs
          do ival=1,numvals
-            if ( valobs(ival,iobs).eq.DMISS ) then
-                valobs(ival,iobs) = dsmall
+            if ( valobs(iobs,ival).eq.DMISS ) then
+                valobs(iobs,ival) = dsmall
             end if
          end do
       end do
@@ -3809,12 +3809,12 @@ end subroutine partition_make_globalnumbers
 !     set values of observation stations that were not found in any subdomain
       do iobs=1,numobs
          do ival=1,numvals
-            if ( valobs(ival,iobs).eq.dsmall ) then   ! safety, check all vals until not found (not necessary)
-               valobs(ival,iobs) = DMISS
+            if ( valobs(iobs,ival).eq.dsmall ) then   ! safety, check all vals until not found (not necessary)
+               valobs(iobs,ival) = DMISS
             end if
          end do
       end do
-!      write(6,"(I4, ':', E12.5)") my_rank, valobs(1,10)
+!      write(6,"(I4, ':', E12.5)") my_rank, valobs(10,1)
       
 #endif
       return

@@ -7855,28 +7855,28 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
             idims(2) = id_timedim(iid)
 
             if (jamaphs > 0) then
-                call definencvar(imapfile,id_hs(iid)   ,nf90_double,idims,2, 'waterdepth'  , 'water depth', 'm', 'FlowElem_xcc FlowElem_ycc')
+                call definencvar(imapfile,id_hs(iid)   ,nf90_double,idims, 'waterdepth'  , 'water depth', 'm', 'FlowElem_xcc FlowElem_ycc')
             endif
 
             if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
-               call definencvar(imapfile,id_tair(iid)   ,nf90_double,idims,2, 'Tair'  , 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile,id_rhum(iid)   ,nf90_double,idims,2, 'rhum'  , 'Relative humidity', ' ','FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile,id_clou(iid)   ,nf90_double,idims,2, 'clou'  , 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_tair(iid)   ,nf90_double,idims, 'Tair'  , 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_rhum(iid)   ,nf90_double,idims, 'rhum'  , 'Relative humidity', ' ','FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_clou(iid)   ,nf90_double,idims, 'clou'  , 'cloudiness', ' ', 'FlowElem_xcc FlowElem_ycc')
 
                if (jatem == 5) then
-                  call definencvar(imapfile,id_qsun(iid)   ,nf90_double,idims,2, 'Qsun'  , 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile,id_Qeva(iid)   ,nf90_double,idims,2, 'Qeva'  , 'evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile,id_Qcon(iid)   ,nf90_double,idims,2, 'Qcon'  , 'sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile,id_Qlong(iid)  ,nf90_double,idims,2, 'Qlong' , 'long wave back radiation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile,id_Qfreva(iid) ,nf90_double,idims,2, 'Qfreva', 'free convection evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-                  call definencvar(imapfile,id_Qfrcon(iid) ,nf90_double,idims,2, 'Qfrcon', 'free convection sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_qsun(iid)   ,nf90_double,idims, 'Qsun'  , 'solar influx', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_Qeva(iid)   ,nf90_double,idims, 'Qeva'  , 'evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_Qcon(iid)   ,nf90_double,idims, 'Qcon'  , 'sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_Qlong(iid)  ,nf90_double,idims, 'Qlong' , 'long wave back radiation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_Qfreva(iid) ,nf90_double,idims, 'Qfreva', 'free convection evaporative heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+                  call definencvar(imapfile,id_Qfrcon(iid) ,nf90_double,idims, 'Qfrcon', 'free convection sensible heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
                endif
 
-               call definencvar(imapfile,id_Qtot(iid)   ,nf90_double,idims,2, 'Qtot'  , 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_Qtot(iid)   ,nf90_double,idims, 'Qtot'  , 'total heat flux', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
             endif
 
             if (jamapnumlimdt > 0) then
-                call definencvar(imapfile,id_numlimdt(iid)  ,nf90_double,idims,2, 'numlimdt' , 'number of times flow element was Courant limiting', '1', 'FlowElem_xcc FlowElem_ycc')
+                call definencvar(imapfile,id_numlimdt(iid)  ,nf90_double,idims, 'numlimdt' , 'number of times flow element was Courant limiting', '1', 'FlowElem_xcc FlowElem_ycc')
             endif
 
             if (jamaptaucurrent > 0) then
@@ -8711,10 +8711,10 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
 
               if (jaceneqtr .ne. 1) then
                  idims(1) = id_erolaydim(iid)
-                 call definencvar(imapfile,id_zk(iid)   ,nf90_double,idims,2, 'netnode_bedlevel_zk'  , 'Flow element corner bedlevel (zk)', 'm', 'NetNode_x NetNode_y')
+                 call definencvar(imapfile,id_zk(iid)   ,nf90_double,idims, 'netnode_bedlevel_zk'  , 'Flow element corner bedlevel (zk)', 'm', 'NetNode_x NetNode_y')
               endif
               idims(1) = id_flowelemdim(iid)
-              call definencvar(imapfile,id_bl(iid)   ,nf90_double,idims,2, 'flowelem_bedlevel_bl'  , 'Flow element center bedlevel (bl)', 'm', 'FlowElem_xcc FlowElem_ycc')
+              call definencvar(imapfile,id_bl(iid)   ,nf90_double,idims, 'flowelem_bedlevel_bl'  , 'Flow element center bedlevel (bl)', 'm', 'FlowElem_xcc FlowElem_ycc')
 
            endif
 
@@ -8933,17 +8933,17 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
         endif
 
         if (jamapwind > 0 .and. japatm > 0) then
-            call definencvar(imapfile,id_patm(iid)   ,nf90_double,idims,2, 'Patm'  , 'Atmospheric Pressure', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+            call definencvar(imapfile,id_patm(iid)   ,nf90_double,idims, 'Patm'  , 'Atmospheric Pressure', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
         endif
 
         if (ice_mapout) then
-            call definencvar(imapfile,id_ice_af(iid)  ,nf90_double,idims,2, 'ice_af' , 'Fraction of the surface area covered by floating ice', '1', 'FlowElem_xcc FlowElem_ycc')
-            call definencvar(imapfile,id_ice_h(iid)   ,nf90_double,idims,2, 'ice_h'  , 'Thickness of floating ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
-            call definencvar(imapfile,id_ice_p(iid)   ,nf90_double,idims,2, 'ice_p'  , 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+            call definencvar(imapfile,id_ice_af(iid)  ,nf90_double,idims, 'ice_af' , 'Fraction of the surface area covered by floating ice', '1', 'FlowElem_xcc FlowElem_ycc')
+            call definencvar(imapfile,id_ice_h(iid)   ,nf90_double,idims, 'ice_h'  , 'Thickness of floating ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
+            call definencvar(imapfile,id_ice_p(iid)   ,nf90_double,idims, 'ice_p'  , 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
             if (ja_icecover == ICECOVER_SEMTNER) then
-               call definencvar(imapfile,id_ice_t(iid)   ,nf90_double,idims,2, 'ice_t'  , 'Temperature of the floating ice cover', 'degC', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile,id_snow_h(iid)  ,nf90_double,idims,2, 'snow_h'  , 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile,id_snow_t(iid)  ,nf90_double,idims,2, 'snow_t'  , 'Temperature of the snow layer', 'degC', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_ice_t(iid)   ,nf90_double,idims, 'ice_t'  , 'Temperature of the floating ice cover', 'degC', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_snow_h(iid)  ,nf90_double,idims, 'snow_h'  , 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile,id_snow_t(iid)  ,nf90_double,idims, 'snow_t'  , 'Temperature of the snow layer', 'degC', 'FlowElem_xcc FlowElem_ycc')
             endif
         endif
 
@@ -17346,7 +17346,7 @@ subroutine read_structure_dimensions_from_rst(ncid, filename, istrtypein, struna
 end subroutine read_structure_dimensions_from_rst
 
 !> Defines a new variable in a NetCDF dataset, also setting some frequently used attributes.
-subroutine definencvar(ncid, idq, itype, idims, n, name, desc, unit, namecoord, geometry, fillVal, add_gridmapping, attset)
+subroutine definencvar(ncid, idq, itype, idims, name, desc, unit, namecoord, geometry, fillVal, add_gridmapping, attset)
    use netcdf
    use netcdf_utils
    use m_sferic
@@ -17355,8 +17355,7 @@ subroutine definencvar(ncid, idq, itype, idims, n, name, desc, unit, namecoord, 
    integer,                   intent(in   ) :: ncid  !< NetCDF dataset id.
    integer,                   intent(inout) :: idq   !< NetCDF variable id for the newly created variable.
    integer,                   intent(in   ) :: itype !< data type, one of the standard nf90_* data types.
-   integer,                   intent(in   ) :: n     !< Rank of the variable
-   integer,                   intent(in   ) :: idims(n) !< NetCDF dimension id(s) for this variable.
+   integer,                   intent(in   ) :: idims(:) !< NetCDF dimension id(s) for this variable.
    character(len=*),          intent(in   ) :: name  !< Variable name in the dataset
    character(len=*),          intent(in   ) :: desc  !< Description of the variable, used in the :long_name attribute.
    character(len=*),          intent(in   ) :: unit  !< Units of the variable (udunit-compatible), used in the :units attribute.
