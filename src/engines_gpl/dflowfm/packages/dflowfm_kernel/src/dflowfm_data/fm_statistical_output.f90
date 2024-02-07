@@ -945,6 +945,10 @@ private
                      'Wrihis_waves', 'rlabda', 'Wave length',                              &
                      'sea_surface_wave_length', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_2D)
+      call addoutval(out_quan_conf_his, IDX_HIS_RWAV,                                                    &
+                     'Wrihis_waves', 'R', 'Sea surface bulk roller energy',                              &
+                     'roller_energy_per_square_meter', 'J m-2', UNC_LOC_STATION, nc_atts = atts(1:1),    &
+                     nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_UORB,                                                    &
                      'Wrihis_waves', 'uorb', 'Orbital velocity',                                         &
                      'sea_surface_wave_orbital_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), &
@@ -2029,7 +2033,10 @@ private
          ! TODO: hwav sig vs. rms
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TWAV    ),valobs(:,IPNT_WAVET)                                    )
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PHIWAV  ),valobs(:,IPNT_WAVED)                                    )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(:,IPNT_WAVEL)                              )
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RLABDA  ),valobs(:,IPNT_WAVEL)  
+         if (jawave .eq. 4) then
+           call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RWAV  ),valobs(:,IPNT_WAVER)                              )
+         end if                            )
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(:,IPNT_WAVEU)                              )
          if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCXST:IPNT_UCXST+kmx)), temp_pointer, [kmx*ntot])

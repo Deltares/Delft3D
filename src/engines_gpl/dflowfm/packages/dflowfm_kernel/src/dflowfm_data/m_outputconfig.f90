@@ -250,6 +250,7 @@ private
    integer, public :: IDX_HIS_TWAV
    integer, public :: IDX_HIS_PHIWAV
    integer, public :: IDX_HIS_RLABDA
+   integer, public :: IDX_HIS_RWAV
    integer, public :: IDX_HIS_UORB
    integer, public :: IDX_HIS_USTOKES
    integer, public :: IDX_HIS_VSTOKES
