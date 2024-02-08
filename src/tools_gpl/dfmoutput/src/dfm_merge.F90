@@ -2483,30 +2483,28 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   !         end if
                   !      end if
                   !   end if
-                  else if (jaugrid == 1) then
-                     if (jaugrid == 1 .and. topodim(imesh,ii) == 1 .and. var_loctype(iv,itopo) == UNC_LOC_CN) then
+                  else if (jaugrid == 1 .and. topodim(imesh,ii) == 1 .and. var_loctype(iv,itopo) == UNC_LOC_CN) then
                      ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
                      ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
-                        ja1DCNVar = 1
-                        nnodecount(itopo) = sum(numk(itopo,1:ii-1))
-                        do ip=1,item_counts(ii)
-                           if (item_domain(nnodecount(itopo)+ip) == ii-1) then ! only for the node which belongs to the current domain
-                              inodeglob = node_c2g(nnodecount(itopo)+ip,itopo)
-                              if (inodeglob > 0) then
-                                 if (var_types(iv,itopo) == nf90_double) then
-                                    tmpvar1D_tmp(inodeglob) = tmpvar1D(nnodecount(itopo)+ip)
-                                 else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
-                                    itmpvar1D_tmp(inodeglob) = itmpvar1D(nnodecount(itopo)+ip)
-                                 else if (var_types(iv,itopo) == nf90_byte) then
-                                    btmpvar1D_tmp(inodeglob,itm:itm) = btmpvar1D(nnodecount(itopo)+ip,itm:itm)
-                                 else if (var_types(iv,itopo) == nf90_char) then
-                                    ctmpvar2D_tmp(:,inodeglob) = ctmpvar2D(:,nnodecount(itopo)+ip)
-                                 end if
+                     ja1DCNVar = 1
+                     nnodecount(itopo) = sum(numk(itopo,1:ii-1))
+                     do ip=1,item_counts(ii)
+                        if (item_domain(nnodecount(itopo)+ip) == ii-1) then ! only for the node which belongs to the current domain
+                           inodeglob = node_c2g(nnodecount(itopo)+ip,itopo)
+                           if (inodeglob > 0) then
+                              if (var_types(iv,itopo) == nf90_double) then
+                                 tmpvar1D_tmp(inodeglob) = tmpvar1D(nnodecount(itopo)+ip)
+                              else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
+                                 itmpvar1D_tmp(inodeglob) = itmpvar1D(nnodecount(itopo)+ip)
+                              else if (var_types(iv,itopo) == nf90_byte) then
+                                 btmpvar1D_tmp(inodeglob,itm:itm) = btmpvar1D(nnodecount(itopo)+ip,itm:itm)
+                              else if (var_types(iv,itopo) == nf90_char) then
+                                 ctmpvar2D_tmp(:,inodeglob) = ctmpvar2D(:,nnodecount(itopo)+ip)
                               end if
                            end if
-                        end do
-                        nitemglob  = nnodecount(itopo) + item_counts(ii) ! This variable needs to be updated for reading variables from input map files.
-                     end if
+                        end if
+                     end do
+                     nitemglob  = nnodecount(itopo) + item_counts(ii) ! This variable needs to be updated for reading variables from input map files.
                   else
                      needshift = .false. ! The get_var above started at the right place, so no shifting needed yet.
                      if (var_types(iv,itopo) == nf90_double) then ! TODO: AvD: try to remove this ugly code-copy for just different types
