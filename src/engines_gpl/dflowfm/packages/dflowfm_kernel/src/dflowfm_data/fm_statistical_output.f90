@@ -1164,14 +1164,6 @@ private
                      'wrihis_sediment', 'taub',              &
                      'Bed shear stress for morphology',             &
                      '', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), nc_dim_ids = nc_dims_2D)
-       select case(stmpar%morpar%moroutput%transptype)
-       case (0)
-          transpunit = 'kg s-1 m-1'
-       case (1)
-          transpunit = 'm3 s-1 m-1'
-       case (2)
-          transpunit = 'm3 s-1 m-1'
-       end select
        call addoutval(out_quan_conf_his, IDX_HIS_SBCX,                 &
                      'wrihis_sediment', 'sbcx',              &
                      'Current related bedload transport, x-component',             &

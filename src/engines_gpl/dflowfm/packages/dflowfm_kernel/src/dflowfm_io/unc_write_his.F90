@@ -594,6 +594,21 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_def_var(ihisfile, 'num_timesteps', nf90_int, id_timedim, id_num_timesteps)
            ierr = nf90_def_var(ihisfile, 'comp_time', nc_precision, id_timedim, id_comp_time)
         end if
+        
+        if (jahissed>0 .and. jased>0 .and. stm_included) then
+           select case(stmpar%morpar%moroutput%transptype)
+           case (0)
+              transpunit = 'kg s-1 m-1'
+           case (1)
+              transpunit = 'm3 s-1 m-1'
+           case (2)
+              transpunit = 'm3 s-1 m-1'
+           end select
+           do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY ! set sediment transport unit just in time
+              out_variable_set_his%statout(ivar)%output_config%unit = transpunit
+           enddo
+        endif
+        
 
          do ivar = 1,out_variable_set_his%count
             config => out_variable_set_his%statout(ivar)%output_config
