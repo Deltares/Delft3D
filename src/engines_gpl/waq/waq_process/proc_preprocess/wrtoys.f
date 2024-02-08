@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -38,10 +38,10 @@
 !>      writes altoys input files.
 
 !     Created   : Nov   1994 by Jan van Beek
-!     Modified  : Aug   2012 by Jan van Beek, use output structure, modern look and feel
+!     Modified  : Aug   2012 by Jan van Beek, use results structure, modern look and feel
 
       use timers         !< performance timers
-      use output
+      use results, only : OutputPointers, ihi3, ihi4, ibal
 
       implicit none
 
@@ -51,7 +51,7 @@
       character(len=20)   , intent(in   ) :: syname(*)              !< substance names
       integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
       integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
-      type(outputcoll)    , intent(in   ) :: outputs                !< output structure
+      type(OutputPointers)    , intent(in   ) :: outputs                !< output structure
 
       ! local
 

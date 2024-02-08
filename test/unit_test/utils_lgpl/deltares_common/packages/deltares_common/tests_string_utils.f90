@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -56,6 +56,9 @@ program tests_string_utils
         case ('test_index_in_array_custom_settings')
             write(*,*) "Running test_index_in_array_custom_settings"
             call runtests(call_test_index_in_array_custom_settings)
+        case ('test_remove_duplicates')
+            write(*,*) "Running test_remove_duplicates"
+            call runtests(call_test_remove_duplicates)
         end select
     else
         write(*,*) "No test specified, running all tests"
@@ -63,6 +66,7 @@ program tests_string_utils
         call runtests(call_test_string_equals_with_custom_settings)
         call runtests(call_test_index_in_array_default_settings)
         call runtests(call_test_index_in_array_custom_settings)
+        call runtests(call_test_remove_duplicates)
     end if
 
     call runtests_final()
@@ -99,6 +103,11 @@ program tests_string_utils
         call test(test_index_in_array_custom_settings, 'index_in_array: with custom settings')
     end subroutine call_test_index_in_array_custom_settings
 
+    subroutine call_test_remove_duplicates
+        call test(test_remove_duplicates, 'remove_duplicates in array')
+    end subroutine call_test_remove_duplicates
+
+
     subroutine test_string_equals_default_settings
       ! test default settings for string_equals
 
@@ -108,6 +117,8 @@ program tests_string_utils
 
         call assert_true (string_equals("ab", "abc"), "string_equals should match using starts with by default")
         call assert_false(string_equals("bc", "abc"), "string_equals should match using starts with by default")
+        
+        call assert_false(string_equals("short", "looooong"), "string_equals should be able to handle string_to_check and string_to_search of different length")
 
     end subroutine test_string_equals_default_settings
 
@@ -160,7 +171,25 @@ program tests_string_utils
         call assert_true (3 == index_in_array("ghi", strings_to_search, case_sensitive=.true., exact_match=.true.), "case_sensitive and exact_match finds match for full name right case")
         call assert_false(3 == index_in_array("gh", strings_to_search, case_sensitive=.true., exact_match=.true.), "case_sensitive and exact_match does not find match for short name right case")
         call assert_false(3 == index_in_array("gHi", strings_to_search, case_sensitive=.true., exact_match=.true.), "case_sensitive and exact_match does not find match for full name wrong case")
-
     end subroutine test_index_in_array_custom_settings
+
+    subroutine test_remove_duplicates
+        character(2) :: array(8)
+        character(2), allocatable :: unique_values(:)
+
+        !! Arrange
+        array = ['AA', 'BB', 'CB', 'AA', 'BB', 'CB', 'DD', 'AA']
+
+        !! Act
+        unique_values = remove_duplicates(array)
+
+        !! Assert
+        call assert_true('AA' == unique_values(1), '1st element of array with no duplicates')
+        call assert_true('BB' == unique_values(2), '2nd element of array with no duplicates')
+        call assert_true('CB' == unique_values(3), '3rd element of array with no duplicates')
+        call assert_true('DD' == unique_values(4), '4th element of array with no duplicates')
+
+    end subroutine test_remove_duplicates
+
 
 end program tests_string_utils

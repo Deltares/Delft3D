@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -96,13 +96,13 @@
       use m_dlwq15
       use m_dlwq13
       use m_delmat
-      use m_zero
-      use m_fileutils
+      use m_array_manipulation, only : initialize_real_array
+      use data_processing, only : close_files
       use dlwqgrid_mod
       use timers
       use delwaq2_data
       use m_waq_openda_exchange_items, only : get_openda_buffer
-      use waqmem          ! module with the more recently added arrays
+      use memory_mangement          ! module with the more recently added arrays
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -164,7 +164,7 @@
       ITIME   = ITSTRT+IDT
       IBFLAG  = 0
       IF ( MOD(INTOPT,16) .GE. 8 ) IBFLAG = 1
-      CALL ZERO ( A(IMAS2:) , NOTOT*5 )
+      call initialize_real_array ( A(IMAS2:) , NOTOT*5 )
       LDUMMY = .FALSE.
       LSTREC = .FALSE.
       nosss  = noseg + nseg2
@@ -184,7 +184,7 @@
 !
       IF ( IDT.EQ.0 ) THEN
 
-         CALL ZERO ( A(IVOL2:), NOSEG )
+         call initialize_real_array ( A(IVOL2:), NOSEG )
       ELSE IF ( J(INRH2+1).GE.0 .AND. IVFLAG.EQ.0 ) THEN
          CALL DLWQ41 ( LUN     , ITIME   , ITIMEL  , A(IHARM:), A(IFARR:),
      *                 J(INRHA:), J(INRH2:), J(INRFT:), NOSEG   , A(IVOL2:),
@@ -193,7 +193,7 @@
      *                 LSTREC  , LREWIN  , A(IVOLL:), dlwqd   )
          CALL DLWQ65 ( A(IVOL2:), A(IVOL:) , IDT     , NOSEG   )
       ELSE
-         CALL ZERO ( A(IVOL2:) , NOSEG   )
+         call initialize_real_array ( A(IVOL2:) , NOSEG   )
          WRITE ( LUN(19), 1000 )
       ENDIF
 !

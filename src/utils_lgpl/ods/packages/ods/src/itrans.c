@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@
 /*   Program:    ITRANS.C                                             */
 /*   Version:    1.04                                                 */
 /*   Programmer: Andr‚ Hendriks                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   1.03 -- 4 Aug 1993 -- 09:58 -- Operating System: DOS             */
 /*   1.02 -- 4 Aug 1993 -- 09:57 -- Operating System: DOS             */

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -72,7 +72,7 @@
       use m_conver
       use rd_token       ! for the reading of tokens
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_relative_time
 
       implicit none
 
@@ -145,7 +145,7 @@
                   if ( gettoken( value(k,i), ierr2 ) .gt. 0 ) goto 100
               enddo
             enddo
-            call cnvtim ( ibase , ifact , dtflg , dtflg3 )
+            call convert_relative_time ( ibase , ifact , dtflg , dtflg3 )
             value(1,1) = float(nhar)
             do i = 2,nhar+1
                iperio(i)  = ibase/(i-1)

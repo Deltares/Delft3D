@@ -8,7 +8,7 @@
 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -60,7 +60,7 @@
       use m_open_waq_files
       use timers         !< performance timers
       use processet      !< use processet definitions
-      use output         !< use output definitions
+      use results, only : OutputPointers         !< use results definitions
       implicit none
 
       ! arguments
@@ -99,7 +99,7 @@
       character(len=*)    , intent(in   ) :: lchar(*)               !< filenames
       integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
       integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
-      type(outputcoll)    , intent(in   ) :: outputs                !< output structure
+      type(OutputPointers)    , intent(in   ) :: outputs                !< output structure
       integer(kind=int_wp), intent(in   )  ::ndmpar                 !< number of dump areas
       integer(kind=int_wp), intent(in   )  ::nbufmx                 !< maximum buffer length
       real(kind=real_wp), intent(in   )  ::versio                 !< version number proces definition file

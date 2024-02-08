@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,8 +32,7 @@
       use m_srstop
       use hydmod
       use m_aggregate_waqgeom
-      use m_aggregation_types
-      use m_dhaggr
+      use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
 
       implicit none
 
@@ -172,12 +171,12 @@
 
       allocate(output_hyd%surf(output_hyd%noseg),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
-      call dhaggr( input_hyd%nosegl, output_hyd%nosegl,
+      call aggregate_extended( input_hyd%nosegl, output_hyd%nosegl,
      +             1               , 1                ,
      +             1               , 1                ,
      +             1               , 0                ,
      +             0               , 1                ,
-     +             ipnt            , IAGTYP_ACCUM     ,
+     +             ipnt            , AGGREGATION_TYPE_ACCUMULATE     ,
      +             input_hyd%surf  , rdumar           ,
      +             rdumar          , output_hyd%surf  )
       do iseg = 1 , output_hyd%nosegl
@@ -201,12 +200,12 @@
       if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
       allocate(rwork(output_hyd%nosegl),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
-      call dhaggr( input_hyd%nosegl, output_hyd%nosegl,
+      call aggregate_extended( input_hyd%nosegl, output_hyd%nosegl,
      +             1               , 1                ,
      +             1               , 1                ,
      +             1               , 1                ,
      +             1               , 1                ,
-     +             ipnt            , IAGTYP_WAVG      ,
+     +             ipnt            , AGGREGATION_TYPE_WEIGHTED_AVERAGE      ,
      +             input_hyd%depth , input_hyd%surf   ,
      +             rwork           , output_hyd%depth )
       deallocate(rwork,stat=ierr_alloc)

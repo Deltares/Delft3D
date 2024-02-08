@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -252,7 +252,7 @@ subroutine unc_write_his(tim)            ! wrihis
             filename = defaultFilename('his')
         end if
 
-        ierr = unc_create(filename, 0, ihisfile, .false.)
+        ierr = unc_create(filename, 0, ihisfile)
         if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'Could not create history file.')
         end if
@@ -747,7 +747,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim, id_timedim /), id_hwq(j))
                         ierr = nf90_put_att(ihisfile, id_hwq(j), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(j))//' - '//trim(outputs%descrs(j))//' in flow element'
+                     tmpstr = trim(outputs%names(j))//' - '//trim(outputs%description(j))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(j))
                      ierr = nf90_put_att(ihisfile, id_hwq(j), 'long_name', trim(outputs%names(j)))
@@ -769,7 +769,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim, id_timedim /), id_hwq(jj))
                         ierr = nf90_put_att(ihisfile, id_hwq(jj), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(jj))
                      ierr = nf90_put_att(ihisfile, id_hwq(jj), 'long_name', trim(outputs%names(jj)))
@@ -791,7 +791,7 @@ subroutine unc_write_his(tim)            ! wrihis
                         ierr = nf90_def_var(ihisfile, trim(tmpstr), nc_precision, (/ id_statdim /), id_hwq(jj))
                         ierr = nf90_put_att(ihisfile, id_hwq(jj), 'coordinates', statcoordstring)
                      end if
-                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%descrs(jj))//' in flow element'
+                     tmpstr = trim(outputs%names(jj))//' - '//trim(outputs%description(jj))//' in flow element'
                      call replace_multiple_spaces_by_single_spaces(tmpstr)
                      ierr = write_real_fill_value(id_hwq(jj))
                      ierr = nf90_put_att(ihisfile, id_hwq(jj), 'long_name', trim(outputs%names(jj)))

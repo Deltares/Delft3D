@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -67,12 +67,12 @@
 
 !     Subroutines called  : PROCAL, Compute fluxes with call to a module
 !                           PRODER, Make derivatives, store fluxes
-!                           DHDAGG, De-aggregation of a variable
+!                           resample_v2, De-aggregation of a variable
 !                           DLWQ14, set deriv array
 !                           DLWQP0, set a step
 !                           PROINT, integrate fluxes at dump segments
 !                           PROVEL, calculate new velocities/dispersions
-!                           DHAGGR, aggrgation of a variable
+!                           aggregate_extended, aggrgation of a variable
 !                           GETMLU, get unit number monitor file
 !                           SRSTOP, stops execution with an error indication
 
@@ -82,15 +82,12 @@
       use m_dlwq14
       use m_srstop
       use m_monsys
-      use m_getcom
-      use m_dhagg2
+      use m_cli_utils, only : retrieve_command_argument
+      use aggregation, only : aggregate, aggregate_extended, resample, aggregate_attributes
       use m_dhgvar
-      use m_dhgpoi
+      use m_array_manipulation, only : set_array_parameters
       use timers
       use process_registration
-      use m_dhaggr
-      use m_dhagkm
-      use m_dhdag2
 
       implicit none
 
@@ -132,7 +129,7 @@
       integer(kind=int_wp), intent(in   )  ::intopt                      !< Integration suboptions
       real(kind=real_wp), intent(inout)  ::flxint(ndmpar,noflux)       !< Integrated fluxes at dump areas
       integer(kind=int_wp), intent(in   )  ::iexpnt(4,*)                 !< Exchange pointer
-      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg,nogrid)        !< Integration suboptions
+      integer(kind=int_wp), intent(inout)  ::iknmrk(noseg,nogrid)        !< Integration suboptions
       integer(kind=int_wp), intent(in   )  ::noq1                        !< Number of exchanges first direction
       integer(kind=int_wp), intent(in   )  ::noq2                        !< Number of exchanges second direction
       integer(kind=int_wp), intent(in   )  ::noq3                        !< Number of exchanges vertical
@@ -245,7 +242,7 @@
 
       if ( ifirst .eq. 1 ) then
          call getmlu(lunrep)
-         call getcom ( '-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
+         call retrieve_command_argument ( '-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
          if ( lfound ) then
             if ( ierr2.eq. 0 ) then
                write(lunrep,*) ' -openpb command line argument found'
@@ -303,7 +300,7 @@
       maxgrid= maxval(progrd(1:nproc))
       iiknmr = 78 + 30                 !   = iasize + 30
       if ( maxgrid .gt. 1 ) then
-         call dhagkm ( noseg  , arrdm2(iiknmr) , nogrid , iknmrk , grdnos ,
+         call aggregate_attributes ( noseg  , arrdm2(iiknmr) , nogrid , iknmrk , grdnos ,
      &                 grdseg )
       endif
 
@@ -345,18 +342,18 @@
                ix_cnc = 1
                ia_cnc = 6
                call dhgvar( ia_cnc , ix_cnc , iv_cnc )
-               call dhgpoi( iv_hlp , ia_hlp , ik_hlp , ix_hlp , id1hlp ,
+               call set_array_parameters( iv_hlp , ia_hlp , ik_hlp , ix_hlp , id1hlp ,
      &                      id2hlp , ip_hlp , igrblo , isysh  , nototh ,
      &                      ip_arh )
 
 !              actives and inactives if applicable
 
-               call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
+               call aggregate( noseg         , noseg2           , notot , 1     , nototh    ,
      &                      notot         , 1                , 1     , isysh , 1         ,
      &                      nosys         , grdseg(1,igrblo) , 3     , conc  , volume    ,
      &                      a(ip_arh)     , conc(1,1,igrblo) )
                if ( notot - nosys .gt. 0 )     !   inactives
-     &         call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
+     &         call aggregate( noseg         , noseg2           , notot , 1     , nototh    ,
      &                      notot         , nosys + 1        , 1     , isysh , nosys + 1 ,
      &                      notot - nosys , grdseg(1,igrblo) , 3     , conc  , surfac    ,
      &                      a(ip_arh)     , conc(1,1,igrblo) )
@@ -401,7 +398,7 @@
 !              If necessary set volume for this grid. Volume is always variable 1
 
                if ( vgrset(1,igrid) .ne. 1 ) then
-                  call dhaggr( noseg           , noseg2 , 1      , 1      , 1      ,
+                  call aggregate_extended( noseg           , noseg2 , 1      , 1      , 1      ,
      &                         1               , 1      , 1      , 1      , 1      ,
      &                         grdseg(1,igrid) , 1      , volume , volume , volume ,
      &                         volume(1,igrid) )
@@ -428,7 +425,7 @@
             if ( noflux .gt. 0 .and. igrblo .gt. 1 ) then
                iswcum = 1
                noseg2 = grdnos(igrblo)
-               call dhdag2( noseg   , noseg2             , notot  , notot             , notot  ,
+               call resample( noseg   , noseg2             , notot  , notot             , notot  ,
      &                      notot   , 1                  , 1      , 1                 , 1      ,
      &                      notot   , grdseg(1  ,igrblo) , 2      , deriv(1,1,igrblo) , amass  ,
      &                      iswcum  , amass (1,1,igrblo) , deriv  )
@@ -479,18 +476,18 @@
          call dhgvar( ia_cnc, ix_cnc, iv_cnc)
          do igrid = 2 , nogrid
             noseg2 = grdnos(igrid)
-            call dhgpoi( iv_hlp , ia_hlp , ik_hlp , ix_hlp , id1hlp ,
+            call set_array_parameters( iv_hlp , ia_hlp , ik_hlp , ix_hlp , id1hlp ,
      &                   id2hlp , ip_hlp , igrid  , isysh  , nototh ,
      &                   ip_arh )
 
 !           actives and inactives if applicable
 
-            call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
+            call aggregate( noseg         , noseg2           , notot , 1     , nototh    ,
      &                   notot         , 1                , 1     , isysh , 1         ,
      &                   nosys         , grdseg(1,igrid)  , 3     , conc  , volume    ,
      &                   a(ip_arh)     , conc(1,1,igrid)  )
             if ( notot - nosys .gt. 0 )     !   inactives
-     &      call dhagg2( noseg         , noseg2           , notot , 1     , nototh    ,
+     &      call aggregate( noseg         , noseg2           , notot , 1     , nototh    ,
      &                   notot         , nosys + 1        , 1     , isysh , nosys + 1 ,
      &                   notot - nosys , grdseg(1,igrid)  , 3     , conc  , surfac    ,
      &                   a(ip_arh)     , conc(1,1,igrid)  )
@@ -592,7 +589,7 @@
 
             iswcum = 1
             noseg2 = grdnos(igrd)
-            call dhdag2( noseg   , noseg2           , notot  , notot           , notot  ,
+            call resample( noseg   , noseg2           , notot  , notot           , notot  ,
      &                   notot   , 1                , 1      , 1               , 1      ,
      &                   notot   , grdseg(1  ,igrd) , 2      , deriv(1,1,igrd) , amass  ,
      &                   iswcum  , amass (1,1,igrd) , deriv  )
@@ -670,10 +667,8 @@
 !
       use timers
       use process_registration
-      use m_dhaggr
-      use m_dhdag2
-      use m_dhdagg
-      use m_dhgpoi
+      use aggregation, only : aggregate_extended, resample, resample_v2
+      use m_array_manipulation, only : set_array_parameters
       use m_dhgvar
 !
       INTEGER(kind=int_wp) ::IPROC , K     , IDT   , ITFACT, NOGRID,
@@ -758,13 +753,13 @@
 !
 !                          Determine characteristics of variable
 !
-                           CALL DHGPOI( IVAR  , IARR  ,
+                           CALL set_array_parameters( IVAR  , IARR  ,
      +                                  IARKND, IV_IDX,
      +                                  IDIM1 , IDIM2 ,
      +                                  IP_ARR, IGR3  ,
      +                                  ISYSI , NOTOTI,
      +                                  IP_ARI)
-                           CALL DHGPOI( IVAR  , IARR  ,
+                           CALL set_array_parameters( IVAR  , IARR  ,
      +                                  IARKND, IV_IDX,
      +                                  IDIM1 , IDIM2 ,
      +                                  IP_ARR, 1     ,
@@ -792,13 +787,13 @@
                               IP_DA  = ARRPOI(IA_DA)
                               ID1_DA = ARRDM1(IA_DA)
                               ID2_DA = ARRDM2(IA_DA)
-                              CALL DHGPOI( IV_DA , IA_DA ,
+                              CALL set_array_parameters( IV_DA , IA_DA ,
      +                                     IK_DA , IX_DA ,
      +                                     ID1_DA, ID2_DA,
      +                                     IP_DA , 1     ,
      +                                     ISYSW , NOTOTW,
      +                                     IP_ARW)
-                              CALL DHGPOI( IV_HLP, IA_HLP,
+                              CALL set_array_parameters( IV_HLP, IA_HLP,
      +                                     IK_HLP, IX_HLP,
      +                                     ID1HLP, ID2HLP,
      +                                     IP_HLP, IGR3  ,
@@ -812,13 +807,13 @@
                               IP_DA  = ARRPOI(IA_DA)
                               ID1_DA = ARRDM1(IA_DA)
                               ID2_DA = ARRDM2(IA_DA)
-                              CALL DHGPOI( IV_DA , IA_DA ,
+                              CALL set_array_parameters( IV_DA , IA_DA ,
      +                                     IK_DA , IX_DA ,
      +                                     ID1_DA, ID2_DA,
      +                                     IP_DA , 1     ,
      +                                     ISYSW , NOTOTW,
      +                                     IP_ARW)
-                              CALL DHGPOI( IV_HLP, IA_HLP,
+                              CALL set_array_parameters( IV_HLP, IA_HLP,
      +                                     IK_HLP, IX_HLP,
      +                                     ID1HLP, ID2HLP,
      +                                     IP_HLP, IGR3  ,
@@ -839,7 +834,7 @@
                            ENDIF
 !
                            ISWCUM = 0
-                           CALL DHDAGG( NOSEG         , NOSEG3   ,
+                           CALL resample_v2( NOSEG         , NOSEG3   ,
      +                                  NOTOTI        , NOTOTW   ,
      +                                  NOTOTH        , NOTOTO   ,
      +                                  ISYSI         , ISYSW    ,
@@ -859,13 +854,13 @@
 !
 !                    Determine characteristics of variable
 !
-                     CALL DHGPOI( IVAR  , IARR  ,
+                     CALL set_array_parameters( IVAR  , IARR  ,
      +                            IARKND, IV_IDX,
      +                            IDIM1 , IDIM2 ,
      +                            IP_ARR, 1     ,
      +                            ISYSI , NOTOTI,
      +                            IP_ARI)
-                     CALL DHGPOI( IVAR  , IARR  ,
+                     CALL set_array_parameters( IVAR  , IARR  ,
      +                            IARKND, IV_IDX,
      +                            IDIM1 , IDIM2 ,
      +                            IP_ARR, IGRID ,
@@ -883,13 +878,13 @@
                         IP_AG  = ARRPOI(IA_AG)
                         ID1_AG = ARRDM1(IA_AG)
                         ID2_AG = ARRDM2(IA_AG)
-                        CALL DHGPOI( IV_AG , IA_AG ,
+                        CALL set_array_parameters( IV_AG , IA_AG ,
      +                               IK_AG , IX_AG ,
      +                               ID1_AG, ID2_AG,
      +                               IP_AG , 1     ,
      +                               ISYSW , NOTOTW,
      +                               IP_ARW)
-                        CALL DHGPOI( IV_HLP, IA_HLP,
+                        CALL set_array_parameters( IV_HLP, IA_HLP,
      +                               IK_HLP, IX_HLP,
      +                               ID1HLP, ID2HLP,
      +                               IP_HLP, IGRID ,
@@ -909,7 +904,7 @@
 !
                      ENDIF
 !
-                     CALL DHAGGR( NOSEG          , NOSEG2   ,
+                     CALL aggregate_extended( NOSEG          , NOSEG2   ,
      +                            NOTOTI         , NOTOTW   ,
      +                            NOTOTH         , NOTOTO   ,
      +                            ISYSI          , ISYSW    ,
@@ -1045,13 +1040,12 @@
 
 !     Modified  :
 
-!     Subroutines called :  dhaggr - fills a variable on a specific grid from its values on another grid
+!     Subroutines called :  aggregate_extended - fills a variable on a specific grid from its values on another grid
 !                           prodr2 - updates the derivatives from the fluxes
 !                           profld - fills the dump array for fluxes used in a mass balance
 
       use timers
-      use m_dhaggr
-      use m_dhdag2
+      use aggregation, only : aggregate_extended, resample
 
       implicit none
 
@@ -1108,7 +1102,7 @@
          igrid  = progrd(iproc)
          noseg2 = grdnos(igrid)
          if ( vgrset(1,igrid) .ne. 1 ) then  !
-            call dhaggr( noseg          , noseg2  , 1       , 1       , 1       ,
+            call aggregate_extended( noseg          , noseg2  , 1       , 1       , 1       ,
      &                   1              , 1       , 1       , 1       , 1       ,
      &                   grdseg(1,igrid), 1       , volume  , volume  , volume  ,
      &                   volume(1,igrid))

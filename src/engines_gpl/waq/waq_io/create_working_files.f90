@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,19 +43,18 @@ contains
 
       use m_srstop
       use m_monsys
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument, get_input_filename
       use m_get_filepath_and_pathlen
       use m_open_waq_files
       use timers
-      use m_dhdelf
-      use m_dhgnam
+      use data_processing, only : delete_file
 
       implicit none
 
       integer(kind=int_wp), intent(in   ) :: nolun           !< Amount of unit numbers
       integer(kind=int_wp), intent(inout) :: lun(nolun)      !< Unit numbers
       character( *), intent(inout)        :: lchar(nolun)    !< File names
-      character( *), intent(in   )        :: runid           !< Runid
+      character( *), intent(inout)        :: runid           !< Runid
 
       ! Local
 
@@ -79,10 +78,10 @@ contains
       ! Get filename  ( keyboard / command line )
 
       check = lchar(29)
-      call dhgnam(runid,check)
+      call get_input_filename(runid, check)
 
       ! Specific output dir?
-      call getcom ( '-output', 3, specout, idummy, rdummy, outputpath, ierr2)
+      call retrieve_command_argument ( '-output', 3, specout, idummy, rdummy, outputpath, ierr2)
       if (specout) then
          if (ierr2.eq.0) then
             write (*,'(A)') 'Found -output switch with the following path:'
@@ -117,7 +116,7 @@ contains
       ! Remove any existing work files
 
       do ilun = 1 , nolun
-         if ( index( lchar(ilun), '.wrk' ) .gt. 0 ) call dhdelf( lchar(ilun), ioerr )
+         if ( index( lchar(ilun), '.wrk' ) .gt. 0 ) call delete_file( lchar(ilun), ioerr )
       enddo
 
       ! Open the neccessary unit numbers

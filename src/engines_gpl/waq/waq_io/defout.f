@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -45,7 +45,7 @@
 !     COMMON's            : SYSI  , Timer characteristics
 
       use timers       !   performance timers
-      use output
+      use results, only : ncopt, idmp, ihi3, imap, iba3, iba2, ibal, ima2, imo4, imo3
       use m_sysi          ! Timer characteristics
 
       implicit none

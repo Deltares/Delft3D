@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@
 /*   Program:    PHARMAP.C                                            */
 /*   Version:    1.00                                                 */
 /*   Programmer: Peter van den Bosch                                  */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   Project:     PHAROS koppeling GPP                                */
 /*   Module:      GetParameter/GetDimensions                          */

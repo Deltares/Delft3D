@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -104,8 +104,8 @@
       use m_dmpsurf
       use m_srstop
       use m_monsys
-      use m_gkwini
-      use m_getcom
+      use data_processing, only : extract_value_from_group
+      use m_cli_utils, only : retrieve_command_argument
       use m_open_waq_files
       use timers
       INTEGER(kind=int_wp) ::NOTOT , ITIME , NOSYS , NOSEG , LUNOUT,
@@ -237,7 +237,7 @@
 
 !         from ini file
 
-          call getcom ( '-i'  , 3    , lfound, idummy, rdummy,
+          call retrieve_command_argument ( '-i'  , 3    , lfound, idummy, rdummy,
      +                  inifil, ierr2)
           if ( lfound ) then
              if ( ierr2.ne. 0 ) then
@@ -247,16 +247,16 @@
              inifil = 'delwaq.ini'
           endif
           open ( newunit = lunini, file=inifil , status='old' , err=123 )
-          call gkwini ( lunini ,'Balance Options','LumpProcessesContributions' , c2 )
+          call extract_value_from_group ( lunini ,'Balance Options','LumpProcessesContributions' , c2 )
           if ( c2 .eq. '-1' ) lumppr = .true.
           if ( c2 .eq. '0' ) lumppr = .false.
-          call gkwini ( lunini ,'Balance Options','LumpBoundaryContributions' , c2 )
+          call extract_value_from_group ( lunini ,'Balance Options','LumpBoundaryContributions' , c2 )
           if ( c2 .eq. '-1' ) lumpem = .true.
           if ( c2 .eq. '0' ) lumpem = .false.
-          call gkwini ( lunini ,'Balance Options','SumOfMonitoringAreas' , c2 )
+          call extract_value_from_group ( lunini ,'Balance Options','SumOfMonitoringAreas' , c2 )
           if ( c2 .eq. '-1' ) onlysm = .true.
           if ( c2 .eq. '0' ) onlysm = .false.
-          call gkwini ( lunini ,'Balance Options','SuppressTimeDependentOutput' , c2 )
+          call extract_value_from_group ( lunini ,'Balance Options','SuppressTimeDependentOutput' , c2 )
           if ( c2 .eq. '-1' ) suppft = .true.
           if ( c2 .eq. '0' ) suppft = .false.
           close ( lunini )

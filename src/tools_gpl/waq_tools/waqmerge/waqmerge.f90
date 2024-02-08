@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -29,7 +29,7 @@ program waqmerge
       use m_alloc
       use delwaq_version_module
       use m_dattim
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
@@ -88,7 +88,7 @@ program waqmerge
          endif
 
          ! report
-         call dhfext(hyd%file_hyd%name,filext, extpos, extlen)
+         call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
          hyd%file_hyd%name = hyd%file_hyd%name(1:extpos-1)
          file_rep%name   = trim(hyd%file_hyd%name)//'-waqmerge.log'
          file_rep%type   = FT_ASC

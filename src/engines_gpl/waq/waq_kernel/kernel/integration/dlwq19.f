@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -79,7 +79,7 @@
 
 !     Routines            : none
 
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use timers
       implicit none
 
@@ -241,7 +241,7 @@
          else
             write ( lunut, '(A)' ) ' Using central discretisation for vertical advection.'
          endif
-         call getcom('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
+         call retrieve_command_argument('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
          if ( sw_settling ) write( lunut, * ) ' option -settling_backwards found'
          i = index_in_array( 'Number_of_baskets   ', coname)
          if ( i .gt. 0 ) then

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -316,17 +316,17 @@
          IOFF0  = ITMNR
          IOFF2  = NOITM+ITMNR
          DO 20 I = 1,IDMNR
-            IAR(IOFF0+I) = IAR(IOFF2+I)
+            IAR(IOFF0+I) = IAR(IOFF2+I) ! it's here where the value -1300000000 gets in
    20    CONTINUE
          DO 30 I = 1,NOBRK
             IAR(IOFF0+IDMNR+I) = IAR(IOFF1+I)
    30    CONTINUE
       ENDIF
-      IF ( IORDER .EQ. 2 ) THEN
+      IF ( IORDER .EQ. 2 ) THEN ! concentration first
          IOFF0  = IDMNR
          IOFF2  = NODIM+IDMNR
          DO 40 I = 1,ITMNR
-            IAR(IOFF0+I) = IAR(IOFF2+I)
+            IAR(IOFF0+I) = IAR(IOFF2+I) ! it's here where the value -1300000000 gets in
    40    CONTINUE
          DO 50 I = 1,NOBRK
             IAR(IOFF0+ITMNR+I) = IAR(IOFF1+I)

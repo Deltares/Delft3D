@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,7 +28,7 @@
       ! global declarations
 
       use hydmod                   
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
@@ -84,7 +84,7 @@
 
       ! some prelim initialisation of hyd
 
-      call dhfext(hyd%file_hyd%name,filext, extpos, extlen)
+      call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
       outhydname = 'com-'//trim(hyd%file_hyd%name(1:extpos-1))
       call set_hyd(hyd,outhydname)
       hyd%task = HYD_TASK_FULL

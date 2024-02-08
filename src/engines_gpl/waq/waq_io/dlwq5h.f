@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,8 +30,8 @@
 
 
       subroutine compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
-     *                    nodim  , iorder , cnames , ioffi  , ioffc  ,
-     *                             iods   , ioffd, i , icnt, ierr, iwar)
+     *                    nodim  , iorder , car , ioffi  , ioffc  ,
+     *                             iods   , ioffd, idx_missing , count_missing, ierr, iwar)
 !
 !
 !     Deltares        Sector Waterresources And Environment
@@ -58,24 +58,24 @@
 !     idmnr   integer    1         in/out  nr of subst for assignment
 !     nodim   integer    1         in      nr of subst in computational rule
 !     iorder  integer    1         in      1 = items first, 2 is subst first
-!     cnames  char*(*)  nitm       input   items to check for presence
+!     car     char*(*)  nitm       input   items to check for presence
 !     ioffi   integer    1         in/out  offset in input array
 !     ioffc   integer    1         in/out  offset in character array
 !     ioffd   integer    1         in/out  base offset in both arrays
 !     iods    integer    1         input   shift counter ods files
-!     i       integer    1         input   loop counter
-!     icnt    integer    1         in/out  counter
+!     idx_missing       integer    1         input   loop counter (index of missing table header, in list USEFOR's)
+!     count_missing    integer    1         in/out  counter of missing column headers (wrt USEFOR's)
 !
 !
       use timers       !   performance timers
 
-      character*(*) cnames(*)
-      dimension     iar(*)
+      character*(*) car(:)
+      integer(kind=int_wp), intent(inout) :: iar(:)
       character*20  chulp,  message_type
       integer(kind=int_wp) ::  ithndl = 0
       integer(kind=int_wp) ::  i1, i3, i4, i5
-      integer(kind=int_wp) ::  lunut, i, icnt, ioffc, iorder, ntt, idmnr, nitm, nodim
-      integer(kind=int_wp) ::  itmnr, noitm, i2, iar, ioffd, ishft, ioffi, iods
+      integer(kind=int_wp) ::  lunut, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim
+      integer(kind=int_wp) ::  itmnr, noitm, i2, ioffd, ishft, ioffi, iods
        
       integer(kind=int_wp) ::  ierr, iwar
       
@@ -98,21 +98,21 @@
 !       look backwards
 !
       i4 = 0
-      do i1 = i,1,-1
-         i2 = iar(i1+ioffc)
+      do i1 = idx_missing,1,-1
+         i2 = iar(ioffc + i1)
          if ( i2 > -100000 ) exit
       end do
 !
 !       additional messages for this sequence
-      if ( i2 <= 0 .and. i2 > -100000 ) then
+      if ( i2 > -100000 .and. i2 <= 0 ) then
 !       try to find the reference
-         do i3 = 1 , i
-            i5 = iar(i3+ioffc)
-            if ( i5 > 0 )   i4 = iar(i3+ioffc)
-            if ( i5 <= 0 .and. i5 > -100000 )   i4 = i4 + 1
+         do i3 = 1 , idx_missing
+            i5 = iar(ioffc + i3)
+            if ( i5 > -100000 .and. i5 <= 0 )  i4 = i4 + 1
+            if ( i5 > 0 )                      i4 = iar(ioffc + i3)
          end do
-         chulp = cnames(i4+ioffd)
-         if ( cnames(i+ioffc) /= chulp ) then
+         chulp = car(ioffd + i4)
+         if ( car(ioffc + idx_missing) /= chulp ) then ! log not resolved
             if ( iorder == 2 ) then
                write (lunut,1030) i4,chulp
             else
@@ -121,16 +121,16 @@
          end if
       else if ( i2 > 0 .and. i2 <  100000 ) then
          i4 = i2
-         chulp = cnames( i2+ioffd)
-         if ( cnames(i+ioffc) == chulp ) then
-             iwar = iwar + 1
-             message_type = "WARNING"
-             write ( lunut , 1010 ) message_type, i+icnt, cnames(i+ioffc)
-         else
-             message_type = "ERROR"
-             write ( lunut , 1010 ) message_type, i+icnt, cnames(i+ioffc)
-             ierr = 1
-             if ( iorder == 2 ) then
+         chulp = car(ioffd + i2)
+         if ( car(ioffc + idx_missing) == chulp ) then !warning
+            iwar = iwar + 1
+            message_type = "WARNING"
+            write ( lunut , 1010 ) message_type, idx_missing + count_missing, car(ioffc + idx_missing)
+         else ! pseudo-error
+            message_type = "ERROR"
+            write ( lunut , 1010 ) message_type, idx_missing + count_missing, car(ioffc + idx_missing)
+            ierr = 1
+            if ( iorder == 2 ) then
                write (lunut,1030)  message_type, i2, chulp
             else
                write (lunut,1040)  message_type, i2, chulp
@@ -141,38 +141,38 @@
 !
 !     determine the shift in locations
       ishft = 1
-      do i4 = i1+1,nitm
-         i3 = iar(i4+ioffc)
+      do i4 = i1 + 1,nitm
+         i3 = iar(ioffc + i4)
          if ( i3 > -1000000 ) exit
          ishft = ishft + 1
       end do
 !
 !     shift the third array heap
       do i4 = i1, nitm
-         iar   (i4+ioffi) = iar(i4+ioffi+ishft)
+         iar(ioffi + i4) = iar(ioffi + i4 + ishft)
       end do
 !
 !     shift the second array heap
       do i4 = i1, nitm*2+iods
-         iar   (i4+ioffc) = iar   (i4+ioffc+ishft)
-         cnames(i4+ioffc) = cnames(i4+ioffc+ishft)
+         iar(ioffc + i4) = iar(ioffc + i4 + ishft)
+         car(ioffc + i4) = car(ioffc + i4 + ishft)
       end do
       nitm  = nitm  - ishft
       ioffi = ioffi - ishft
       ioffc = ioffc - 1
       ioffi = ioffi - 1
-      icnt  = icnt  + ishft
+      count_missing  = count_missing  + ishft
 !
 !     shift the base array heap
-      do i5 = i2+ioffd , ntt+ioffd+nitm*2+iods
-         iar   (i5) = iar   (i5+1)
-         cnames(i5) = cnames(i5+1)
+      do i5 = ioffd + i2, ioffd + ntt + nitm*2 + iods
+         iar(i5) = iar(i5 + 1)
+         car(i5) = car(i5 + 1)
       end do
 !
 !      renumber the second array heap
       do i4 = i1 , nitm
-         if ( iar(i4+ioffc) > i2 ) then
-             iar(i4+ioffc) = iar(i4+ioffc) -1
+         if ( iar(ioffc + i4) > i2 ) then
+            iar(ioffc + i4) = iar(ioffc + i4) -1
          end if
       end do
 !

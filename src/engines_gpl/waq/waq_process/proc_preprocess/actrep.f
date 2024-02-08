@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -39,8 +39,8 @@
 
       use m_srstop
       use m_monsys
-      use m_dhucas
-      use m_dhslen
+      use m_string_manipulation, only : upper_case
+      use m_string_manipulation, only : get_trimmed_length
       use timers         !< performance timers
       use dlwq_hyd_data      !< data definitions
       use processet      !< use processet definitions
@@ -77,7 +77,7 @@
       nocons = constants%no_item
       nocon2 = constants%no_item
       do ico = 1 , nocons
-         call dhucas(constants%name(ico),name20,20)
+         call upper_case(constants%name(ico),name20,20)
          if ( name20(1:6) .eq. 'ACTIVE' ) then
 
             ! the one to one processes
@@ -93,7 +93,7 @@
             do ipro = 1 , nopralg
                if ( nampralg(ipro) .eq. name20(8:17) ) then
                   name1 = nampralg(ipro)
-                  call dhslen(name1,ilen)
+                  call get_trimmed_length(name1,ilen)
                   do ialg = 1 , noalg
                      write(name1(ilen+1:),'(i2.2)') ialg
                      if ( ialg .eq. 1 ) then

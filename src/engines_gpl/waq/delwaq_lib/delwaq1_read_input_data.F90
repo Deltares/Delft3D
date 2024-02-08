@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -129,7 +129,7 @@ contains
       if (associated(ioptraai)) deallocate (ioptraai)
 
       deltim = otime
-      call dlwq05(lun, lchar, filtype, car(k), iar, &
+      call dlwq05(lun, lchar, filtype, car, iar, &
                   rar, nrftot, nrharm, nobnd, nosys, &
                   notot, nobtyp, rmax, imax, dtflg1, &
                   iwidth, intsrt, ierr, dtflg3, syname, &

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,6 +63,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use m_nearfield,            only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity,           only : get_airdensity
    use dfm_error
+   use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
 
    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
    logical,          intent(in   ) :: initialization   !< initialization phase
@@ -88,6 +89,11 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    call timstrt('External forcings', handle_ext)
 
    success = .true.
+
+   if (ja_icecover == ICECOVER_EXT) then
+       ice_af = 0.d0
+       ice_h  = 0.d0
+   endif
 
    if (allocated(patm)) then
       ! To prevent any pressure jumps at the boundary, set (initial) patm in interior to PavBnd.
@@ -125,6 +131,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    call set_wave_parameters()
 
+   call retrieve_icecover()
    call retrieve_rainfall()
 
    if (ncdamsg > 0) then
@@ -547,6 +554,20 @@ elemental function convert_wave_direction_from_nautical_to_cartesian(nautical_wa
 
 end function convert_wave_direction_from_nautical_to_cartesian
 
+!> retrieve icecover
+subroutine retrieve_icecover()
+
+   if (ja_icecover == ICECOVER_EXT) then
+      if (item_sea_ice_area_fraction /= ec_undef_int) then
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction)
+      endif
+      if (item_sea_ice_thickness /= ec_undef_int) then
+         call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_thickness)
+      endif
+   endif
+
+end subroutine retrieve_icecover
+
 !> retrieve_rainfall
 subroutine retrieve_rainfall()
 
@@ -658,7 +679,7 @@ end subroutine print_error_message
 subroutine prepare_wind_model_data(time_in_seconds, iresult)
    use m_wind
    use m_flowparameters, only: jawave, flowWithoutWaves
-   use m_flow, only: windspeedfac
+   use m_flow, only: wind_speed_factor
    use m_meteo
    use m_flowgeom, only: ln, lnx, ndx
    use precision_basics
@@ -749,11 +770,11 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
       end do
    end if
 
-   if (jawindspeedfac > 0) then
+   if (ja_wind_speed_factor > 0) then
       do link = 1, lnx
-         if (windspeedfac(link) /= dmiss) then
-            wx(link) = wx(link) * windspeedfac(link)
-            wy(link) = wy(link) * windspeedfac(link)
+         if (wind_speed_factor(link) /= dmiss) then
+            wx(link) = wx(link) * wind_speed_factor(link)
+            wy(link) = wy(link) * wind_speed_factor(link)
          end if
       end do
    end if

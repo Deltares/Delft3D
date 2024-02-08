@@ -7,9 +7,6 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . resource_files ${rc_version_file})
 
-# Link libraries
-target_link_libraries(${library_name} ${oss_dependencies})
-
 # Set dependencies
 set(oss_dependencies waq_definition
                      deltares_common
@@ -19,7 +16,9 @@ set(oss_dependencies waq_definition
                      waq_utils_c
                      waq_utils_f)
 
-set(oss_dependencies ${oss_dependencies})
+# Link libraries
+target_link_libraries(${library_name} ${oss_dependencies})
+
 oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties

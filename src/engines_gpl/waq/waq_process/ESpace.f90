@@ -9,7 +9,7 @@ contains
       subroutine ESPACE     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-      use m_gkwini
+      use data_processing, only : extract_value_from_group
       use m_write_error_message
       use m_evaluate_waq_attribute
 
@@ -288,10 +288,10 @@ contains
 
             ! pick up elements from STU file
             open (lu_ini,file='espace.ini')
-            call gkwini(lu_ini,'Espace','file_in_names',file_in_names)
-            call gkwini(lu_ini,'Espace','file_out_nodes',file_out_nodes)
-            call gkwini(lu_ini,'Espace','file_usefor',file_usefor)
-            call gkwini(lu_ini,'Espace','file_subs',file_subs)
+            call extract_value_from_group(lu_ini,'Espace','file_in_names',file_in_names)
+            call extract_value_from_group(lu_ini,'Espace','file_out_nodes',file_out_nodes)
+            call extract_value_from_group(lu_ini,'Espace','file_usefor',file_usefor)
+            call extract_value_from_group(lu_ini,'Espace','file_subs',file_subs)
 
             ! Headers of output files
             open (lu_loc,file=file_in_names)

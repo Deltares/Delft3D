@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -45,7 +45,7 @@
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
 !                           ZOEK  , finds string in character array
-!                           DLWQ0T, converts absolute time to system time (seconds)
+!                           convert_string_to_time_offset, converts absolute time to system time (seconds)
 !
 !
 !     PARAMETERS          :
@@ -62,11 +62,10 @@
 !     NOWARN  INTEGER        1  IN/OUT  cummulative warning count
 !
       use m_srstop
-      use m_dhslen
+      use m_string_manipulation, only : get_trimmed_length
 
       use timers       !   performance timers
-      use m_cnvper
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_period_to_timer, convert_relative_time
 !
       IMPLICIT NONE
 !
@@ -159,14 +158,14 @@
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) istart
          IF ( IERR2 .NE. 0 ) THEN
-            CALL DLWQ0T( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
+            CALL convert_string_to_time_offset( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
             IF ( IERR2 .NE. 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting start time:',
      +                         KEYVAL(IKEY)
                IERR = IERR + 1
             ENDIF
          ELSE
-            CALL CNVTIM ( istart, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time ( istart, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
 
@@ -183,13 +182,13 @@
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) iperiod
          IF ( IERR2 .NE. 0 ) THEN
-            CALL CNVPER( KEYVAL(IKEY), iperiod, .FALSE., .FALSE., IERR2)
+            CALL convert_period_to_timer( KEYVAL(IKEY), iperiod, .FALSE., .FALSE., IERR2)
             IF ( IERR2 .NE. 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting period:',KEYVAL(IKEY)
                IERR = IERR + 1
             ENDIF
          ELSE
-            CALL CNVTIM ( iperiod, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time ( iperiod, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
 
@@ -246,7 +245,7 @@
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name

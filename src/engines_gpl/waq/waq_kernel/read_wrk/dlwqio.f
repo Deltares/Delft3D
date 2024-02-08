@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -81,7 +81,7 @@
       use m_srstop
       use m_open_waq_files
       use timers
-      use output
+      use results
 
       INTEGER(kind=int_wp) ::LUNWRO, LUREP , NOUTP , NRVART, NBUFMX, NOSYS,
      +              IERR, NOTOT

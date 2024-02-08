@@ -481,6 +481,10 @@ class XmlConfigParser(object):
         if "shell" in element:
             localShellName = str(element["shell"][0]["txt"])
             test_case.shell = self.__getPrograms__(localShellName)
+
+        if "processCount" in element:
+            test_case.process_count = int(element["processCount"][0]["txt"])
+
         return test_case
 
         # parse roots

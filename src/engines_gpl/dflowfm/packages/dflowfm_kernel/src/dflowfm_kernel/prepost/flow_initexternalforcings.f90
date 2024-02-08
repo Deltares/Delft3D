@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -70,6 +70,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use unstruc_inifields, only: initInitialFields, set_friction_type_values
    use Timers
    use m_subsidence
+ use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
 
    implicit none
    character(len=256)            :: filename, sourcemask
@@ -913,15 +914,27 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
             else if (qid == 'windspeedfactor') then
 
-               if (jawindspeedfac == 0) then
-                  if (allocated (Windspeedfac) ) deallocate(Windspeedfac)
-                  allocate ( Windspeedfac(lnx) , stat=ierr )
-                  call aerr('Windspeedfac(lnx)', ierr, lnx )
-                  Windspeedfac = dmiss
+               if (ja_wind_speed_factor == 0) then
+                  if (allocated (wind_speed_factor) ) deallocate(wind_speed_factor)
+                  allocate ( wind_speed_factor(lnx) , stat=ierr )
+                  call aerr('wind_speed_factor(lnx)', ierr, lnx )
+                  wind_speed_factor(:) = dmiss
                endif
 
-               jawindspeedfac = 1
-               success = timespaceinitialfield(xu, yu, Windspeedfac, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+               ja_wind_speed_factor = 1
+               success = timespaceinitialfield(xu, yu, wind_speed_factor, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+
+            else if (qid == 'solarradiationfactor') then
+
+               if (ja_solar_radiation_factor == 0) then
+                  if (allocated (solar_radiation_factor) ) deallocate(solar_radiation_factor)
+                  allocate ( solar_radiation_factor(ndx) , stat=ierr )
+                  call aerr('solar_radiation_factor(ndx)', ierr, lnx )
+                  solar_radiation_factor(:) = dmiss
+               endif
+
+               ja_solar_radiation_factor = 1
+               success = timespaceinitialfield(xz, yz, solar_radiation_factor, ndx, filename, filetype, method, operand, transformcoef, 1)
 
             else if (qid == 'secchidepth') then
 
@@ -1640,6 +1653,24 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   dewpoint_available = .true.
                endif
 
+        else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
+
+           ! if ice properties not yet read before, initialize ...
+           if (.not. (ja_ice_area_fraction_read .or. ja_ice_thickness_read)) then
+               call fm_ice_activate_by_ext_forces(ndx)
+           endif
+           ! add the EC link
+           if (len_trim(sourcemask)>0)  then
+              success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+           else
+              success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+           endif
+           ! update the administration
+           if (success) then
+               if (qid == 'sea_ice_area_fraction') ja_ice_area_fraction_read = 1
+               if (qid == 'sea_ice_thickness') ja_ice_thickness_read = 1
+           endif
+
             else if (qid == 'cloudiness') then
 
                if (.not. allocated(clou) ) then
@@ -2314,7 +2345,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
          if (allocated (pumponoff)) deallocate( pumponoff)
          allocate ( xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg) , stat=ierr     )
          call aerr('xpump(npumpsg), ypump(npumpsg), qpump(npumpsg), xy2pump(2,npumpsg), kpump(3,npump), kdp(npumpsg)',ierr, npump*10 )
-         kpump = 0d0; qpump = 0d0; kdp = 1
+         kpump = 0; qpump = 0d0; kdp = 1
 
          if ( allocated( pump_ids ) ) deallocate( pump_ids )
          allocate( pump_ids(npumpsg) ) ! TODO: names are not stored here yet (they are in init_structure_control, but not for old ext file)

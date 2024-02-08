@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -40,7 +40,7 @@
       use dlwq_hyd_data
       use rd_token
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       implicit none
 
@@ -130,14 +130,14 @@
             ! check if character is a time string and convert
 
             if ( t_token .eq. TYPE_CHAR ) then
-               call dlwq0t ( ctoken , itoken , .false., .false., ierr )
+               call convert_string_to_time_offset ( ctoken , itoken , .false., .false., ierr )
                if ( ierr .ne. 0 ) then
                   ierr = 0
                   push = .true.
                   exit breakpoints
                endif
             else
-               call cnvtim ( itoken , itfact , dtflg1 , dtflg3 )
+               call convert_relative_time ( itoken , itfact , dtflg1 , dtflg3 )
             endif
 
             nobrk = nobrk + 1

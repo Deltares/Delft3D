@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -61,6 +61,8 @@
     write (msgbu, '(a)') '* Hans Hersbach, July 2010, ECMWF fit (CHarnock plus viscous term), (e.g. Charnock=0.018 and alfvisc=0.11)'
  else if (icdtyp == 8) then
     write (msgbu, '(a)')  '* Charnock 1955 (2 parameters, Charnock plus viscous, e.g. 0.025     0.11)'
+ else if (icdtyp == 9) then
+    write (msgbu, '(a)') '* Garratt, 1977 (fixed parameters)'
  endif
 
  write (msgbu, '(a)')     '* column 1 : Wind speed               (m/s) '

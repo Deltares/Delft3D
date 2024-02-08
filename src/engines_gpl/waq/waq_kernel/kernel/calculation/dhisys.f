@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -49,7 +49,7 @@
 !     ISYSN   INTEGER       *     OUTPUT  copy of the SYSI common block
 !
 !     declarations
-      use m_dhimov
+      use m_array_manipulation, only : copy_integer_array_elements
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
 !
@@ -57,8 +57,8 @@
 
 !     Fill the array's
 !
-      CALL DHIMOV( II    , ISYSI , IISIZE )
-      CALL DHIMOV( IN    , ISYSN , INSIZE )
+      CALL copy_integer_array_elements( II    , ISYSI , IISIZE )
+      CALL copy_integer_array_elements( IN    , ISYSN , INSIZE )
 !
       RETURN
       END

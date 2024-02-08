@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      SUBROUTINE DHDELF ( FILNAM, IERROR )
+      SUBROUTINE delete_file ( FILNAM, IERROR )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
 !

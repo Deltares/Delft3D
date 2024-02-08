@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -105,13 +105,13 @@
       use m_dlwq14
       use m_dlwq13
       use m_delpar01
-      use m_move
-      use m_fileutils
+      use m_array_manipulation, only: copy_real_array_elements
+      use data_processing, only : close_files
       use dlwqgrid_mod
       use timers
       use delwaq2_data
       use m_waq_openda_exchange_items, only : get_openda_buffer
-      use waqmem          ! module with the more recently added arrays
+      use memory_mangement          ! module with the more recently added arrays
       use m_actions
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
@@ -195,7 +195,7 @@
 !          initialize second volume array with the first one
 !
           nosss  = noseg + nseg2
-          CALL MOVE   ( A(IVOL: ), A(IVOL2:) , nosss   )
+          call copy_real_array_elements   ( A(IVOL: ), A(IVOL2:) , nosss   )
       ENDIF
 
 !
@@ -365,7 +365,7 @@
          itime  = itime + idt
          select case ( ivflag )
             case ( 1 )                 !     computation of volumes for computed volumes only
-               call move   ( a(ivol:) , a(ivol2:), noseg   )
+               call copy_real_array_elements   ( a(ivol:) , a(ivol2:), noseg   )
                call dlwqb3 ( a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot   ,
      &                       noq     , nvdim   , j(ivpnw:), a(ivol2:), intopt  ,
      &                       a(imas2:), idt     , iaflag  , nosys   , a(idmpq:),
@@ -476,10 +476,10 @@
          if ( lrewin .and. lstrec ) then
             call dlwqce ( a(imass:), a(ivoll:), a(ivol2:), nosys , notot ,
      &                       noseg   , lun(19) )
-            call move   ( a(ivoll:), a(ivol:) , noseg   )
+            call copy_real_array_elements   ( a(ivoll:), a(ivol:) , noseg   )
          else
 !           replace old by new volumes
-            call move   ( a(ivol2:), a(ivol:) , noseg   )
+            call copy_real_array_elements   ( a(ivol2:), a(ivol:) , noseg   )
          endif
 
 !          integrate the fluxes at dump segments fill ASMASS with mass

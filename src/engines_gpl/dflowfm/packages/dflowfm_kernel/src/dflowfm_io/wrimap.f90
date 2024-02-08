@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -106,7 +106,9 @@ subroutine wrimap(tim)
              if (jamapbnd > 0) jabndnd = 1
              call unc_write_map_filepointer_ugrid(mapids, tim, jabndnd)  ! wrimap
           else
-             call unc_write_map_filepointer(mapids%ncid, tim)  ! wrimap
+             jabndnd = 0
+             if (jamapbnd > 0) jabndnd = 1
+             call unc_write_map_filepointer(mapids%ncid, tim, jabndnd)  ! wrimap
           endif
        endif
 

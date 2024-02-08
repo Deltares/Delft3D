@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -169,6 +169,10 @@
     enddo
     cd10 = (ust/uwi)**2
 
+ else if (icdtyp == 9) then   ! Garratt, J. R., 1977: Review of Drag Coefficients over Oceans and Continents. Mon. Wea. Rev., 105, 915–929.
+     
+     cd10 = min(1.0d-3 * (0.75d0 + 0.067d0 * uwi), 0.0035d0)
+     
  endif
 
  if (jalightwind == 1 .and. icdtyp .ne. 8 .and. icdtyp .ne. 7 .and. icdtyp .ne. 6 .and. icdtyp .ne. 5) then

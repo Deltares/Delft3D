@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -43,17 +43,20 @@ module unstruc_caching
     !use m_crspath, only: tcrspath
     use md5_checksum
     use m_alloc
+    use network_data
 
     implicit none
 
     logical, private :: cache_success
 
-    character(len=20), dimension(3), private :: section = ['OBSERVATIONS        ', &
+    character(len=20), dimension(4), private :: section = ['OBSERVATIONS        ', &
                                                            'FIXED WEIRS         ', &
-                                                           'CROSS_SECTIONS      ']
+                                                           'CROSS_SECTIONS      ', &
+                                                           'DRY_POINTS_AND_AREAS']
     integer, parameter, private :: key_obs = 1
     integer, parameter, private :: key_fixed_weirs = 2
     integer, parameter, private :: key_cross_sections = 3
+    integer, parameter, private :: key_dry_points_and_areas = 4
 
     double precision, dimension(:), allocatable, private :: cache_xobs
     double precision, dimension(:), allocatable, private :: cache_yobs
@@ -68,6 +71,17 @@ module unstruc_caching
     integer, dimension(:), allocatable, private          :: cache_ipol
 
     type(tcrs), dimension(:), allocatable                :: cache_cross_sections
+    
+    integer, private                                     :: cached_nump_dry
+    integer, private                                     :: cached_nump1d2d_dry
+    integer, dimension(:,:), allocatable, private        :: cached_lne_dry
+    integer, dimension(:), allocatable, private          :: cached_lnn_dry
+    double precision, dimension(:), allocatable, private :: cached_xzw_dry
+    double precision, dimension(:), allocatable, private :: cached_yzw_dry
+    double precision, dimension(:), allocatable, private :: cached_bottom_area_dry
+    double precision, dimension(:), allocatable, private :: cached_xz_dry
+    double precision, dimension(:), allocatable, private :: cached_yz_dry
+    type (tface), dimension(:), allocatable, private     :: cached_netcell_dry
 
 
     character(len=30), parameter, private :: version_string = "D-Flow FM, cache file, 1.0"
@@ -79,18 +93,26 @@ subroutine default_caching()
 
    cache_success = .false.
 
-   if (allocated(cache_xobs))        deallocate(cache_xobs)
-   if (allocated(cache_yobs))        deallocate(cache_yobs)
-   if (allocated(cache_xpl_fixed))   deallocate(cache_xpl_fixed)
-   if (allocated(cache_ypl_fixed))   deallocate(cache_ypl_fixed)
-   if (allocated(cache_dsl_fixed))   deallocate(cache_dsl_fixed)
-   if (allocated(cache_locTpObs))    deallocate(cache_locTpObs)
-   if (allocated(cache_kobs))        deallocate(cache_kobs)
-   if (allocated(cache_ilink_fixed)) deallocate(cache_ilink_fixed)
-   if (allocated(cache_ipol_fixed))  deallocate(cache_ipol_fixed)
-   if (allocated(cache_linklist))    deallocate(cache_linklist)
-   if (allocated(cache_ipol))        deallocate(cache_ipol)
-
+   if (allocated(cache_xobs))           deallocate(cache_xobs)
+   if (allocated(cache_yobs))           deallocate(cache_yobs)
+   if (allocated(cache_xpl_fixed))      deallocate(cache_xpl_fixed)
+   if (allocated(cache_ypl_fixed))      deallocate(cache_ypl_fixed)
+   if (allocated(cache_dsl_fixed))      deallocate(cache_dsl_fixed)
+   if (allocated(cache_locTpObs))       deallocate(cache_locTpObs)
+   if (allocated(cache_kobs))           deallocate(cache_kobs)
+   if (allocated(cache_ilink_fixed))    deallocate(cache_ilink_fixed)
+   if (allocated(cache_ipol_fixed))     deallocate(cache_ipol_fixed)
+   if (allocated(cache_linklist))       deallocate(cache_linklist)
+   if (allocated(cache_ipol))           deallocate(cache_ipol)
+   if (allocated(cached_lne_dry))       deallocate(cached_lne_dry)
+   if (allocated(cached_lnn_dry))       deallocate(cached_lnn_dry)
+   if (allocated(cached_xzw_dry))       deallocate(cached_xzw_dry)
+   if (allocated(cached_yzw_dry))       deallocate(cached_yzw_dry)
+   if (allocated(cached_bottom_area_dry))        deallocate(cached_bottom_area_dry)
+   if (allocated(cached_xz_dry))        deallocate(cached_xz_dry)
+   if (allocated(cached_yz_dry))        deallocate(cached_yz_dry)
+   if (allocated(cached_netcell_dry))   deallocate(cached_netcell_dry)
+   
    if (allocated(cache_cross_sections)) call deallocCrossSections(cache_cross_sections)
 
    md5current = ''
@@ -111,7 +133,7 @@ subroutine loadCachingFile( basename, netfile, usecaching )
 
     integer :: lun
     integer :: ierr
-    integer :: number, number_links, number_sections
+    integer :: number, number_links, number_sections, number_nodes, number_netcells
     character(len=30) :: version_file
     character(len=20) :: key
     character(len=md5length) :: md5checksum
@@ -250,12 +272,71 @@ subroutine loadCachingFile( basename, netfile, usecaching )
     endif
 
     !
+    ! Load the information on grid with deleted dry points and areas:
+    !
+    read( lun, iostat = ierr ) key, cached_nump_dry, cached_nump1d2d_dry, number_nodes, number_links, number_netcells
+    if ( ierr /= 0 .or. key /= section(key_dry_points_and_areas) ) then
+        close( lun )
+        return
+    endif
+    allocate( cached_bottom_area_dry(number_nodes) )
+    allocate( cached_lne_dry(2,number_links) )
+    allocate( cached_lnn_dry(number_links) )
+    allocate( cached_xzw_dry(number_nodes) )
+    allocate( cached_yzw_dry(number_nodes) )
+    allocate( cached_xz_dry(number_nodes) )
+    allocate( cached_yz_dry(number_nodes) )
+    read( lun, iostat = ierr ) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry ; okay = ierr == 0
+    if ( .not. okay ) then
+        close( lun )
+        return
+    endif
+    allocate( cached_netcell_dry(number_netcells) )
+    call load_netcell( lun, number_netcells, cached_netcell_dry, ierr)
+    if ( ierr /= 0 ) then
+        close( lun )
+        return
+    endif
+
+    !
     ! All cached values were loaded, so all is well
     !
     close( lun )
     cache_success = .true.
 
 end subroutine loadCachingFile
+
+!> Load cached netcell from a caching file.
+subroutine load_netcell( lun, number_netcell, netcell , ierr)
+    integer,                    intent(in   ) :: lun            !< LU-number of the caching file
+    integer,                    intent(in   ) :: number_netcell !< Number of netcells
+    type (tface), dimension(:), intent(  out) :: netcell        !< (nump1d2d) 1D&2D net cells (nodes and links), a cell with net nodes as vertices.
+    integer,                    intent(  out) :: ierr           !< Error code
+
+    integer                              :: i, number_links, number_nodes
+    
+    do i=1,number_netcell
+        read( lun, iostat = ierr ) netcell(i)%n 
+        if ( ierr /= 0 ) then
+            close( lun )
+            exit
+        endif
+        if (netcell(i)%n > 0) then
+            read( lun, iostat = ierr ) number_nodes, number_links
+            if ( ierr /= 0 ) then
+                close( lun )
+                exit
+            endif
+            allocate(netcell(i)%nod(number_nodes),netcell(i)%lin(number_links))
+            read( lun, iostat = ierr ) netcell(i)%nod, netcell(i)%lin
+            if ( ierr /= 0 ) then
+                close( lun )
+                exit
+            endif
+        endif
+    enddo
+
+end subroutine load_netcell
 
 !> Load cached cross sections from a caching file.
 subroutine loadCachedSections( lun, linklist, ipol, sections, ierr )
@@ -393,11 +474,38 @@ subroutine storeCachingFile( basename, usecaching )
     call storeSections( lun, crs, cache_linklist, cache_ipol )
 
     !
+    ! Store the data for the dry points and areas
+    !
+    write( lun ) section(key_dry_points_and_areas), cached_nump_dry, cached_nump1d2d_dry,  size(cached_bottom_area_dry), size(cached_lnn_dry), size(cached_netcell_dry,1)
+    write( lun ) cached_bottom_area_dry, cached_lne_dry, cached_lnn_dry, cached_xz_dry, cached_yz_dry, cached_xzw_dry, cached_yzw_dry
+    call store_netcell(lun, cached_netcell_dry)
+    
+    !
     ! We are done, so close the file
     !
     close( lun )
 
 end subroutine storeCachingFile
+
+!> Store netcell to a caching file.
+subroutine store_netcell( lun, netcell )
+    integer,                    intent(in   ) :: lun     !< LU-number of the caching file
+    type (tface), dimension(:), intent(in   ) :: netcell !< Nr. of 2d netcells.
+
+    integer                              :: i, number_netcell, number_links, number_nodes
+    number_netcell = size(netcell,1)
+    
+    do i=1,number_netcell
+        write( lun ) netcell(i)%n
+        if (netcell(i)%n > 0) then
+            number_nodes = size(netcell(i)%nod)
+            number_links = size(netcell(i)%lin)
+            write( lun ) number_nodes, number_links
+            write( lun ) netcell(i)%nod(1:number_nodes), netcell(i)%lin(1:number_links)
+        endif
+    enddo
+
+end subroutine store_netcell
 
 !> Store cross sections to a caching file.
 subroutine storeSections( lun, sections, linklist, ipol )
@@ -567,5 +675,78 @@ subroutine cacheFixedWeirs( npl, xpl, ypl, number_links, iLink, iPol, dSL )
     cache_iPol_fixed  = iPol(1:number_links)
     cache_dSL_fixed   = dSL(1:number_links)
 end subroutine cacheFixedWeirs
+
+!> Copy grid information, where dry points and areas have been deleted, from cache file: 
+subroutine copy_cached_netgeom_without_dry_points_and_areas(nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell, success)
+    integer,                        intent(  out) :: nump         !< Nr. of 2d netcells.
+    integer,                        intent(  out) :: nump1d2d     !< nr. of 1D and 2D netcells (2D netcells come first)
+    integer, dimension(:,:),        intent(  out) :: lne          !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
+    integer, dimension(:),          intent(inout) :: lnn          !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
+    double precision, dimension(:), intent(inout) :: bottom_area  !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: xz           !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: yz           !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(  out) :: xzw          !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+    double precision, dimension(:), intent(  out) :: yzw          !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+    type (tface), dimension(:),     intent(inout) :: netcell      !< (nump1d2d) 1D&2D net cells (nodes and links)
+    logical,                        intent(  out) :: success      !< The cached information was compatible if true
+    
+    integer number_nodes, number_links, number_netcells
+    
+    number_nodes = size(bottom_area)
+    number_links = size(lnn)
+    number_netcells = size(netcell)
+
+    success = .false.
+    if ( cache_success ) then
+        if (.not. allocated(cached_netcell_dry)) then
+            return
+        endif
+        if ( size(bottom_area) == size(cached_bottom_area_dry) ) then
+            success      = .true.
+            nump = cached_nump_dry
+            nump1d2d = cached_nump1d2d_dry
+            lne = cached_lne_dry(1:2,1:number_links)
+            lnn = cached_lnn_dry(1:number_links)
+            xzw = cached_xzw_dry(1:number_nodes)
+            yzw = cached_yzw_dry(1:number_nodes)
+            bottom_area  = cached_bottom_area_dry(1:number_nodes)
+            xz  = cached_xz_dry(1:number_nodes)
+            yz  = cached_yz_dry(1:number_nodes)
+            netcell = cached_netcell_dry(1:number_netcells)
+        endif
+    endif
+end subroutine copy_cached_netgeom_without_dry_points_and_areas
+
+!> Cache grid information, where dry points and areas have been deleted: 
+subroutine cache_netgeom_without_dry_points_and_areas( nump, nump1d2d, lne, lnn, bottom_area, xz, yz, xzw, yzw, netcell )
+    integer,                        intent(in   ) :: nump         !< Nr. of 2d netcells.
+    integer,                        intent(in   ) :: nump1d2d     !< nr. of 1D and 2D netcells (2D netcells come first)
+    integer, dimension(:,:),        intent(in   ) :: lne          !< (2,numl) Edge administration 1=nd1 , 2=nd2, rythm of kn flow nodes between/next to which this net link lies.
+    integer, dimension(:),          intent(in   ) :: lnn          !< (numl) Nr. of cells in which link participates (ubound for non-dummy values in lne(:,L))
+    double precision, dimension(:), intent(in   ) :: bottom_area  !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: xz           !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: yz           !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+    double precision, dimension(:), intent(in   ) :: xzw          !< [m] x-coordinate, centre of gravity {"shape": ["nump"]}
+    double precision, dimension(:), intent(in   ) :: yzw          !< [m] y-coordinate, centre of gravity {"shape": ["nump"]}
+    type (tface), dimension(:),     intent(in   ) :: netcell      !< (nump1d2d) 1D&2D net cells (nodes and links)
+    integer number_nodes
+    integer number_links
+    integer number_netcells
+    
+    cached_nump_dry = nump
+    cached_nump1d2d_dry = nump1d2d
+    number_nodes = size(bottom_area)
+    number_links = size(lnn)
+    number_netcells = size(netcell)
+    cached_lne_dry = lne(1:2,1:number_links)
+    cached_lnn_dry = lnn(1:number_links)
+    cached_xzw_dry = xzw(1:number_nodes)
+    cached_yzw_dry = yzw(1:number_nodes)
+    cached_bottom_area_dry = bottom_area(1:number_nodes)
+    cached_xz_dry = xz(1:number_nodes)
+    cached_yz_dry = yz(1:number_nodes)
+    cached_netcell_dry = netcell(1:number_netcells)
+
+end subroutine cache_netgeom_without_dry_points_and_areas
 
 end module unstruc_caching

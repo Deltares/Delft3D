@@ -8,7 +8,7 @@
 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -46,7 +46,8 @@
 
       use timers         !< performance timers
       use processet      !< use processet definitions
-      use output         !< use output definitions
+      use results, only : OutputPointers, imo3, imo4, ihi3, ihi4, ihn4, ihn3, imon, imo2,  !< use results definitions
+     +                 idm2, idmp, ihi2, ihis, ihn2, ihnf, imap, ima2, imnf, imn2
       implicit none
 
       ! arguments
@@ -55,7 +56,7 @@
       integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
       integer(kind=int_wp), intent(inout)  ::ioutps(7,*)            !< (old) output structure
       integer(kind=int_wp), intent(inout)  ::nrvart                 !< total number of output parameters
-      type(outputcoll)    , intent(inout) :: outputs                !< output structure
+      type(OutputPointers)    , intent(inout) :: outputs                !< output structure
 
       ! local
 
@@ -225,9 +226,9 @@
 
          ! put the local arrays in the output structure
 
-         deallocate(Outputs%names, Outputs%pointers, Outputs%stdnames, Outputs%units, Outputs%descrs, STAT=ierr)
-         allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%stdnames(nrvart),
-     &          Outputs%units(nrvart), Outputs%descrs(nrvart), STAT=ierr)
+         deallocate(Outputs%names, Outputs%pointers, Outputs%std_var_name, Outputs%units, Outputs%description, STAT=ierr)
+         allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart),
+     &          Outputs%units(nrvart), Outputs%description(nrvart), STAT=ierr)
          outputs%cursize = nrvart
          outputs%pointers(1:nrvart) = iopoi3(1:nrvart)
          outputs%names(1:nrvart)    = ounam3(1:nrvart)

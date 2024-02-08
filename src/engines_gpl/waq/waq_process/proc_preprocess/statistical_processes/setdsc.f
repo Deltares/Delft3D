@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -66,7 +66,7 @@
 !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
       use m_srstop
-      use m_dhslen
+      use m_string_manipulation, only : get_trimmed_length
       USE ProcesSet
       use timers       !   performance timers
 !
@@ -226,13 +226,13 @@
          SUFFIX = KEYVAL(IKEY)
          ISUSED(IKEY) = 1
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          SUFFIX =SUFFIX(1:ISLEN)//'_'//PERSFX
       ELSE
          SUFFIX =PERSFX
       ENDIF
-      CALL DHSLEN(SUFFIX,ISLEN)
+      CALL get_trimmed_length(SUFFIX,ISLEN)
 !
       IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
          aItemProp%name    = 'MAX_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name

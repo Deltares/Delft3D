@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -1003,21 +1003,20 @@ endif
 ! pumps, including staged pumps
 !
 if (npumpsg > 0) then
-   if (allocated   (qpump)   ) deallocate( qpump)
-
-   if (allocated   (pump_ids)   ) deallocate( pump_ids)
+   if (allocated(qpump)   ) deallocate( qpump)
+   if (allocated(pump_ids)) deallocate( pump_ids)
    allocate (pump_ids(npumpsg))
-   allocate ( qpump(npumpsg), stat=ierr)
-   call aerr('qpump(npumpsg)', ierr, npumpsg*1)
+   allocate (qpump(npumpsg), stat=ierr)
+   call aerr('qpump(npumpsg)', ierr, npumpsg)
    qpump = 0d0
-end if
 
-if (npump > 0) then
-   if (allocated   (kpump)   ) deallocate( kpump)
+   if (npump > 0) then
+      if (allocated(kpump)) deallocate( kpump)
+      allocate ( kpump(3,npump), stat=ierr)
+      call aerr('kpump(3,npump)', ierr, npump*3)
+      kpump = 0
+   end if
 
-   allocate ( kpump(3,npump), stat=ierr)
-   call aerr('kpump(3,npump)', ierr, npump*3)
-   kpump = 0d0
    kx = 1
 
    do n = 1, npumpsg

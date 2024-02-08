@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -162,7 +162,9 @@
 
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
- integer                           :: jaWindspeedfac    !< if 1 spatially varying windstress coefficient
+ integer                           :: ja_wind_speed_factor !< if 1 wind speed multiplication factor is used
+ 
+ integer                           :: ja_solar_radiation_factor !< if 1 solar radiation multiplication factor is used
  
  integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
@@ -561,6 +563,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jaeverydt                 !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
  integer                           :: jamapFlowAnalysis         !< Write flow analysis output to map file   
  integer                           :: jamapNearField            !< Nearfield related output
+ integer                           :: jamapice                  !< Ice cover related output
 
 ! read from restart
  integer                           :: jarstignorebl             !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -753,7 +756,9 @@ subroutine default_flowparameters()
 
     jaCdwusp = 0
 
-    jawindspeedfac = 0 !< use windspeedfac 1/0
+    ja_wind_speed_factor = 0 !< use wind speed multiplication factor 1/0
+
+    ja_solar_radiation_factor = 0 !< use solar radiation multiplication factor 1/0
 
     ihorvic  = 0      !< 0=no visc, 1=do visc
 
@@ -1018,6 +1023,7 @@ subroutine default_flowparameters()
     jamapS1Gradient = 0
     jamapFlowAnalysis = 0
     jamapNearField = 0
+    jamapice = 0
 
     jarstignorebl = 0
 

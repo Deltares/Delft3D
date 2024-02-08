@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -51,7 +51,7 @@
 
 !     Subroutines : none
 
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use timers
       implicit none
 
@@ -96,7 +96,7 @@
       if ( timon ) call timstrt ( "dlwq17", ithandl )
 
       if (init) then
-         call getcom ( '-bndmirror', 0, lfound, idummy, rdummy, cdummy, ierr2)
+         call retrieve_command_argument ( '-bndmirror', 0, lfound, idummy, rdummy, cdummy, ierr2)
          if (lfound) then
             write(*,*) 'Using mirroring boundaries'
             bndmirror = .true.

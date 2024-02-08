@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -38,7 +38,10 @@
  use m_missing
  use m_sobekdfm
 
+ use m_fm_icecover, only: ice_apply_pressure, ice_p
+ 
  implicit none
+ 
  integer, intent(in) :: n01          !< Selects whether s0 or s1 has to be set.
  integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
 
@@ -80,7 +83,11 @@
     if (japatm > 0 .and. PavBnd > 0) then
        zb = zb - ( patm(kb) - PavBnd )/(ag*rhomean)
     endif
- 
+
+    if (ice_apply_pressure) then
+       zb = zb - ice_p(kb) /(ag*rhomean)
+    endif
+
 !    zb = max( zb, bl(kb) + 1d-3 )
 
     ! When requested, set bl of bnd nodes to a certain depth below (initial) water level.

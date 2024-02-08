@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ module m_string_utils
 
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
-    public :: starts_with, index_in_array, string_equals
+    public :: starts_with, index_in_array, remove_duplicates, string_equals
 
     contains
 
@@ -149,6 +149,18 @@ module m_string_utils
         end do
     end function index_in_array
 
+    recursive function remove_duplicates( array ) result(unique_array)
+    !< Takes an array of strings which may contain duplicated strings and returns an array in which all duplicates have been removed.
+        character(*), dimension(:)         :: array            !< input array containing (possibly) duplicate strings.
+        character(len(array)), allocatable :: unique_array(:)  !< output array containing only unique elements.
+
+        if (size(array) > 0) then
+            unique_array = [array(1), remove_duplicates(pack(array(2:), array(2:) /= array(1)))]
+        else
+            allocate(unique_array(0))
+        endif
+    end function remove_duplicates
+
     logical function string_equals(source_string, target_string, exact_match, case_sensitive) result(found)
         !< Checks two strings to see if they are equal with the given conditions.
         character(len=*), intent(in) :: source_string !< string to compare
@@ -181,6 +193,11 @@ module m_string_utils
         ! local variables
         character(len=len(string_to_search)) :: string_to_compare
 
+        if (len(string_to_check)<len(string_to_search)) then
+            starts_with = .false.
+            return
+        end if
+
         string_to_compare = string_to_check(1:len(string_to_search))
 
         if (present(case_sensitive) .and. case_sensitive) then
@@ -188,7 +205,6 @@ module m_string_utils
             return
         end if
 
-        !starts_with = str_tolower(string_to_search) == str_tolower(string_to_compare)
         starts_with = check_case_insensitive(string_to_search, string_to_compare)
     end function
 

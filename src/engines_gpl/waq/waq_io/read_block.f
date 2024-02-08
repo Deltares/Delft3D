@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -50,7 +50,7 @@
       use m_print_matrix
       use m_opt1
       use m_compute_matrix
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use dlwqgrid_mod          ! for the storage of contraction grids
       use dlwq_hyd_data  ! for definition and storage of data
       use rd_token
@@ -123,7 +123,7 @@
       integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "read_block", ithndl )
 
-      call getcom ( '-nosegfuncheck', 0, lfound, idummy, rdummy, adummy, ierr2)
+      call retrieve_command_argument ( '-nosegfuncheck', 0, lfound, idummy, rdummy, adummy, ierr2)
       lsegfuncheck = .not. lfound
 
 !     defaults and initialisation

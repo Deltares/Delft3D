@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -79,21 +79,20 @@
       use timers       !   performance timers
       implicit none
 
-!     Parameters    :
-!     type     kind  function         name             description
+!     Arguments:
 
-      integer(kind=int_wp), intent(inout) ::  lun    (*)      !< array with unit numbers
-      character( *), intent(inout) :: lchar  (*)     !< Filenames for the items
+      integer(kind=int_wp), intent(inout) ::  lun    (:)      !< array with unit numbers
+      character( *), intent(inout)        ::  lchar  (:)     !< Filenames for the items
       integer(kind=int_wp), intent(inout) ::  filtype(*)      !< type of binary files
       integer(kind=int_wp), intent(in   ) ::  icmax           !< size of the character workspace
-      character(20), intent(inout) :: car   (icmax)  !< local character workspace
+      character(20), intent(inout)        ::  car   (icmax)  !< local character workspace
       integer(kind=int_wp), intent(in   ) ::  iimax           !< size of the integer   workspace
       integer(kind=int_wp), intent(inout) ::  iar   (iimax)   !< local integer   workspace
       integer(kind=int_wp), intent(in   ) ::  irmax           !< size of the real      workspace
       real(kind=real_wp), intent(inout) ::  rar   (irmax)   !< local real      workspace
       integer(kind=int_wp), intent(in   ) ::  notot           !< total number of substances
       integer(kind=int_wp), intent(in   ) ::  noseg           !< number of computational volumes
-      character(20), intent(in   ) :: sname (notot)  !< IDs of the substances
+      character(20), intent(inout) :: sname (notot)  !< IDs of the substances
       integer(kind=int_wp), intent(  out) ::  nowst           !< number of waste loads
       integer(kind=int_wp), intent(  out) ::  nowtyp          !< number of waste load types
       integer(kind=int_wp), intent(inout) ::  nrftot( 11 )    !< number of function items per kind
@@ -102,11 +101,11 @@
       logical      , intent(in   ) :: dtflg3         !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer(kind=int_wp), intent(in   ) ::  iwidth          !< width of the output file
       integer(kind=int_wp), intent(in   ) ::  ioutpt          !< Degree of output in report file
-      logical      , intent(out   ) :: chkpar(2)     !< Check for parameters SURF and LENGTH
+      logical      , intent(  out) :: chkpar(2)     !< Check for parameters SURF and LENGTH
       integer(kind=int_wp), intent(inout) ::  ierr            !< cumulative error count
       integer(kind=int_wp), intent(inout) ::  iwar            !< cumulative warning count
 
-!     local
+!     Locals
 
       character( 40)                 chulp       (3) !  Help for reading
       character(255)                 cdummy          !  Help for reading
@@ -334,10 +333,11 @@
 !          now get the values
 
       allocate( drar(irmax) )             ! this array is 100 mb lp
-      call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax  ,
-     &              car    , iimax  , iar    , irmax  , rar    ,
-     &              sname  , wstid  , wsttype, nowst  , notot+1,
-     &              nowtyp , drar   , dtflg1 , dtflg3 ,
+      idummy = notot+1
+      call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax ,
+     &              car    , iimax  , iar    , irmax  , rar   ,
+     &              sname  , wstid  , wsttype, nowst  , idummy,
+     &              nowtyp , drar   , dtflg1 , dtflg3 , 
      &              ioutpt , ierr2  , ierr   , iwar   )
       deallocate( drar )
       if ( ierr2 .eq.  0 ) then
