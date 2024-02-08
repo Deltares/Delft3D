@@ -751,7 +751,7 @@ for ivar = 1:nvars
                 case 'aux-time'
                     Info.AuxTime = [Info.AuxTime sicvar];
                 case 'label'
-                    AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name'};
+                    AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
                     if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
                         Info.Station = [Info.Station sicvar];
                     elseif ismember(nc.Dataset(-sicvar).Name,AcceptedStationNames)
