@@ -29,22 +29,11 @@
       contains
 
 
-      subroutine check  ( cdummy , iwidth , iblock , ierr2  , ierr   )
+      subroutine check(cdummy, iwidth, iblock, ierr2, ierr)
 
-!       Deltares Software Centre
-
-!>\file
-!>              Handles delimiter lines and errors during read of the DELWAQ input file
-
-!     Created           : May   1997  by  Leo Postma
-
-!     Modified          : April 2011  by  Leo Postma
-!                                     Fortran 90 look and feel
-
-!     Subroutine called : srstop
-
-!     Logical units     : LUNUT = unitnumber output log-file
-!                         ILUN  = array with input unit nr's stack
+      !< Handles delimiter lines and errors during read of the DELWAQ input file
+      !< Logical units     : LUNUT = unitnumber output log-file
+      !<                     ILUN  = array with input unit nr's stack
 
       use m_srstop
       use rd_token
@@ -54,22 +43,23 @@
 
 !     Parameters
 
-!     kind           function         name                 description
+      character*(*), intent(inout) :: cdummy !< character that may contain block end
 
-      character*(*), intent(inout) :: cdummy            !< character that may contain block end
-      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
-      integer(kind=int_wp), intent(in   ) ::  iblock             !< number of the input block
-      integer(kind=int_wp), intent(inout) ::  ierr2              !< accumulative nr of errors
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error count
+      integer(kind=int_wp), intent(in   ) :: iblock !< number of the input block
+      integer(kind=int_wp), intent(inout) :: ierr   !< cumulative error count
+      integer(kind=int_wp), intent(inout) :: ierr2  !< accumulative nr of errors
+      integer(kind=int_wp), intent(in   ) :: iwidth !< width of the output file
 
 !     Local
+      character(1) :: chulp ! to convert block number to character
 
-      integer(kind=int_wp) :: idummy             ! argument for token reading
-      real(kind=real_wp) :: rdummy             ! argument for token reading
-      integer(kind=int_wp) :: itype              ! argument for token reading
-      character( 1 ) chulp             ! to convert block number to character
-      integer(kind=int_wp) :: ihulp              ! return value gettoken
-      integer(kind=int_wp) ::  ithndl = 0
+      integer(kind=int_wp) :: idummy ! argument for token reading
+      integer(kind=int_wp) :: ihulp  ! return value gettoken
+      integer(kind=int_wp) :: ithndl = 0
+      integer(kind=int_wp) :: itype  ! argument for token reading
+
+      real(kind=real_wp) :: rdummy ! argument for token reading
+
       if (timon) call timstrt( "check", ithndl )
 
 !        First round of dealing with ierr2
