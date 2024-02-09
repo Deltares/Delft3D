@@ -53,20 +53,6 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 
-if(WIN32)
-    if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
-      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/$<CONFIG>/gridgeom.dll)
-      ADD_CUSTOM_COMMAND(TARGET gridgeom_dll POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E rename
-                       $<TARGET_FILE:${library_name}>
-                       ${library_renamed}
-                   COMMENT "Renaming '${library_name}' library to '${library_renamed}'")
-    else() # for Ninja generator on Windows
-      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/gridgeom.dll)
-    endif()
-
-endif(WIN32)
-
 if(UNIX)
     SET(library_renamed libgridgeom.so)
     # Actual rename is done in the the install step below
