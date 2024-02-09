@@ -1841,7 +1841,7 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
     call unc_set_ncformat(md_ncformat)
-    md_nc_his_precision = nf90_double
+    md_nc_his_precision = 0
     call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file

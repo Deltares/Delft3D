@@ -38,7 +38,7 @@ private
    
    if (.not. allocated(array1)) then
          allocate(array1(size))
-      if(present(array2)) then !array 1 and array2 are either both allocated or both not.
+      if (present(array2)) then !array 1 and array2 are either both allocated or both not.
          allocate(array2(size))
       endif
    endif
@@ -56,7 +56,7 @@ private
    integer, intent(in) :: IPNT_X, IPNT_Y              !< location specifier inside valobs array
    integer, intent(in) :: ntot                        !< number of stations
    
-   integer :: l, n
+   integer :: l, k
    double precision :: rhol
    
    do l = 1, stmpar%lsedtot
@@ -68,10 +68,9 @@ private
       case (2)
          rhol = stmpar%sedpar%rhosol(l)
       end select
-      do n = 1,ntot
-         X(ntot*(l-1)+n) = valobs(n,IPNT_X)/rhol
-         Y(ntot*(l-1)+n) = valobs(n,IPNT_Y)/rhol
-      enddo
+      k = ntot*(l-1)
+      X(k+1:k+ntot) = valobs(:,IPNT_X)/rhol
+      Y(k+1:k+ntot) = valobs(:,IPNT_Y)/rhol
    end do
    end subroutine assign_sediment_transport
    
@@ -2066,7 +2065,7 @@ private
       endif
       if( jahisvelvec > 0 ) then
          if (numobs+nummovobs > 0) then
-            if ( kmx>0 ) then
+            if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCX:IPNT_UCX+kmx)), temp_pointer, [kmx*ntot])
                call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
                
@@ -2130,14 +2129,14 @@ private
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TAU     ),temp_pointer                      )
          endif
       endif
-      if (idensform > 0 .and. jaRichardsononoutput > 0 .and. kmx > 0) then
+      if (idensform > 0 .and. jaRichardsononoutput > 0 .and. model_is_3D()) then
          call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RICH:IPNT_RICH+kmx)), temp_pointer, [kmx*ntot])
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RICH),temp_pointer)
       endif
 
       ! Gravity + buoyancy
       if (jasal > 0 .and. jahissal > 0) then
-         if (kmx>0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SA1:IPNT_SA1+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SALINITY   ),temp_pointer                                )
          else
@@ -2146,7 +2145,7 @@ private
       endif
 
       if (jatem > 0 .and. jahistem > 0) then
-         if (kmx > 0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_TEM1:IPNT_TEM1+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_TEMPERATURE),temp_pointer)
          else
@@ -2155,7 +2154,7 @@ private
       end if
 
       if( (jasal > 0 .or. jatem > 0 .or. jased > 0 )  .and. jahisrho > 0) then
-         if (kmx>0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_POTENTIAL_DENSITY   ),temp_pointer                                )
             
@@ -2182,7 +2181,7 @@ private
            call add_stat_output_items(output_set, output_config%statout(IDX_HIS_R     ),valobs(:,IPNT_WAVER)                              )
          end if
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_UORB    ),valobs(:,IPNT_WAVEU)                              )
-         if ( kmx>0 .and. .not. flowwithoutwaves) then
+         if (model_is_3D() .and. .not. flowwithoutwaves) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCXST:IPNT_UCXST+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_USTOKES),temp_pointer)
             
@@ -2240,14 +2239,14 @@ private
 
       ! Sediment model
       if (jased > 0 .and. .not. stm_included) then
-         if (kmx >0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_SED:IPNT_SED+kmx)), temp_pointer, [kmx*ntot])
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)
          else
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),valobs(:,IPNT_SED)                                  )
          endif
       else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
-         if (kmx > 0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IVAL_SF1:IVAL_SFN+(IVAL_SFN-IVAL_SF1*kmx))), temp_pointer, [(IVAL_SFN-IPNT_SF1+1)*kmx*ntot])
          else
             temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
@@ -2255,7 +2254,7 @@ private
          call add_stat_output_items(output_set, output_config%statout(IDX_HIS_SED),temp_pointer)   
       endif
       if (IVAL_WS1 > 0) then
-         if (kmx > 0) then
+         if (model_is_3D()) then
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*kmx*ntot])
          else
             call c_f_pointer (c_loc(valobs(1:ntot,IPNT_WS1:IVAL_WSN)), temp_pointer, [(IVAL_WSN-IPNT_WS1+1)*ntot])

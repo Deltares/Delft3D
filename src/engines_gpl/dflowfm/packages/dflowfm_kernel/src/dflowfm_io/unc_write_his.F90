@@ -2113,12 +2113,6 @@ function build_nc_dimension_id_list(nc_dim_ids) result(res)
    type(t_nc_dim_ids), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable           :: res(:)     !< Array of NetCDF dimension ids
 
-      logical :: laydimw = .false.
-      logical :: nlyrdim = .false.
-      logical :: statdim = .false.
-      logical :: sedsusdim = .false.
-      logical :: sedtotdim = .false.
-      logical :: timedim = .false.
    res = pack([id_laydim, id_laydimw, id_nlyrdim, id_statdim, id_sedsusdim, id_sedtotdim, id_timedim], &
               make_mask_from_dim_ids(nc_dim_ids))
 end function build_nc_dimension_id_list
