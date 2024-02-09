@@ -1,6 +1,7 @@
 netCDF4
 lxml
 python-dateutil
+pyarrow # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
 pandas
 matplotlib
 numpy

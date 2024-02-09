@@ -15,6 +15,8 @@ from src.config.dependency import Dependency
 
 
 class TestCaseConfig:
+    __test__ = False
+
     # constructor: initialize variables
     def __init__(self):
         self.__name: str = ""
