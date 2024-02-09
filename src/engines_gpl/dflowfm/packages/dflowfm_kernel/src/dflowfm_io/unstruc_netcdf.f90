@@ -423,6 +423,8 @@ type t_unc_mapids
    integer :: id_msed(MAX_ID_VAR)       = -1 !
    integer :: id_lyrfrac(MAX_ID_VAR)    = -1 !
    integer :: id_thlyr(MAX_ID_VAR)      = -1 !
+   integer :: id_preload(MAX_ID_VAR)    = -1 !
+   integer :: id_sedshort(MAX_ID_VAR)   = -1 !
    integer :: id_poros(MAX_ID_VAR)      = -1 !
    integer :: id_duneheight(MAX_ID_VAR) = -1 !
    integer :: id_dunelength(MAX_ID_VAR) = -1 !
@@ -3010,7 +3012,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_czs, id_E, id_thetamean, &
         id_sigmwav,  &
         id_tsalbnd, id_zsalbnd, id_ttembnd, id_ztembnd, id_tsedbnd, id_zsedbnd, &
-        id_morbl, id_bodsed, id_msed, id_thlyr, id_lyrfrac, id_mfluff, id_sedtotdim, id_sedsusdim, id_nlyrdim, &
+        id_morbl, id_bodsed, id_msed, id_thlyr, id_lyrfrac, id_preload, id_poros, id_sedshort, id_dpsed, id_mfluff, id_sedtotdim, id_sedsusdim, id_nlyrdim, &
         id_netelemmaxnodedim, id_netnodedim, id_flowlinkptsdim, id_netelemdim, id_netlinkdim, id_netlinkptsdim, &
         id_flowelemdomain, id_flowelemglobalnr, id_flowlink, id_netelemnode, id_netlink,&
         id_flowelemxzw, id_flowelemyzw, id_flowlinkxu, id_flowlinkyu,&
@@ -3030,10 +3032,12 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
 
     integer :: i, itim, k, kb, kt, kk, LL, Lb, iconst, L, j, nv, nv1, nm, ndxbnd, nlayb, nrlay, LTX, nlaybL, nrlaylx, maxNumLinks, numLinks, L0, nlen, istru, maxNumStages, numStages, nfuru
-    double precision              :: dens
+    double precision :: svthick
+    double precision, dimension(:), pointer :: dens
     double precision, allocatable :: max_threttim(:)
     double precision, dimension(:), allocatable       :: dum
     double precision, dimension(:,:,:), allocatable   :: frac
+    double precision, dimension(:,:), allocatable     :: poros
     integer, allocatable, dimension(:,:) :: netcellnod
     integer, allocatable, dimension(:)   :: kn1write, kn2write
     double precision, allocatable, dimension(:)   :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
@@ -3547,7 +3551,11 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
          ierr = nf90_put_att(irstfile, id_bodsed ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_bodsed ,  'long_name'    , 'Available sediment mass in the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_bodsed ,  'units'        , 'kg m-2')
-         !
+         
+         ierr = nf90_def_var(irstfile, 'dpsed' , nf90_double, (/ id_flowelemdim , id_timedim /) , id_thlyr)
+         ierr = nf90_put_att(irstfile, id_dpsed ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_dpsed ,  'long_name'    , 'Sediment thickness in the bed in flow cell center')
+         ierr = nf90_put_att(irstfile, id_dpsed ,  'units'        , 'm')
       case (2)
          ierr = nf90_def_var(irstfile, 'msed' , nf90_double, (/ id_sedtotdim , id_nlyrdim , id_flowelemdim , id_timedim /) , id_msed)
          ierr = nf90_put_att(irstfile, id_msed ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
@@ -3563,7 +3571,24 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
          ierr = nf90_put_att(irstfile, id_thlyr ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_thlyr ,  'long_name'    , 'Thickness of a layer of the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_thlyr ,  'units'        , 'm')
+
+         ierr = nf90_def_var(irstfile, 'preload' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_thlyr)
+         ierr = nf90_put_att(irstfile, id_preload ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_preload ,  'long_name'    , 'Historical largest load on layer of the bed in flow cell center')
+         ierr = nf90_put_att(irstfile, id_preload ,  'units'        , 'kg')
+
+         if (stmpar%morlyr%settings%iporosity>0) then
+           ierr = nf90_def_var(irstfile, 'porosity' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_thlyr)
+           ierr = nf90_put_att(irstfile, id_poros ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+           ierr = nf90_put_att(irstfile, id_poros ,  'long_name'    , 'Porosity of layer of the bed in flow cell center')
+           ierr = nf90_put_att(irstfile, id_poros ,  'units'        , '-')
+         endif
        end select
+         
+       ierr = nf90_def_var(irstfile, 'sedshort' , nf90_double, (/ id_sedtotdim , id_flowelemdim , id_timedim /) , id_thlyr)
+       ierr = nf90_put_att(irstfile, id_sedshort ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+       ierr = nf90_put_att(irstfile, id_sedshort ,  'long_name'    , 'Sediment shortage of transport layer in flow cell center')
+       ierr = nf90_put_att(irstfile, id_sedshort ,  'units'        , 'kg m-2')
 
        ! Fluff layers
        if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
@@ -4429,35 +4454,47 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        case (1)
           ! bodsed
           ierr = nf90_put_var(irstfile, id_bodsed, stmpar%morlyr%state%bodsed(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%lsedtot, ndxi, 1 /))
+          ! dpsed
+          ierr = nf90_put_var(irstfile, id_dpsed, stmpar%morlyr%state%dpsed(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
        case (2)
           ! msed
           ierr = nf90_put_var(irstfile, id_msed, stmpar%morlyr%state%msed(:,:,1:ndxi), (/ 1, 1, 1, itim /), (/ stmpar%lsedtot, stmpar%morlyr%settings%nlyr, ndxi, 1 /))
           ! lyrfrac
-          if (.not. allocated(frac) ) allocate( frac(1:ndx, 1:stmpar%morlyr%settings%nlyr, stmpar%lsedtot) )
+          if (.not. allocated(frac) ) allocate( frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx) )
           frac = -999d0
-          do l = 1, stmpar%lsedtot
-             if (stmpar%morlyr%settings%iporosity==0) then
-                dens = stmpar%sedpar%cdryb(l)
-             else
-                dens = stmpar%sedpar%rhosol(l)
-             endif
+          if (stmpar%morlyr%settings%iporosity==0) then
+             dens => stmpar%sedpar%cdryb
+          else
+             dens => stmpar%sedpar%rhosol
+          endif
+          do nm = 1, ndxi
              do k = 1, stmpar%morlyr%settings%nlyr
-                do nm = 1, ndxi
-                   if (stmpar%morlyr%state%thlyr(k,nm)>0.0_fp) then
-                        frac(nm, k, l) = stmpar%morlyr%state%msed(l, k, nm)/(dens*stmpar%morlyr%state%svfrac(k, nm) * &
-                                         stmpar%morlyr%state%thlyr(k, nm))
-                   else
-                        frac(nm, k, l) = 0d0
-                   endif
-                enddo
+                if (stmpar%morlyr%state%thlyr(k,nm)>0.0_fp) then
+                   svthick = stmpar%morlyr%state%svfrac(k, nm) * stmpar%morlyr%state%thlyr(k, nm)
+                   do l = 1, stmpar%lsedtot
+                      frac(l, k, nm) = stmpar%morlyr%state%msed(l, k, nm)/(dens(l) * svthick)
+                   enddo
+                else
+                     frac(:, k, nm) = 0d0
+                endif
              enddo
           enddo
           ! thlyr
           ierr = nf90_put_var(irstfile, id_thlyr, stmpar%morlyr%state%thlyr(:,1:ndxi), (/ 1, 1, itim /), (/ stmpar%morlyr%settings%nlyr, ndxi, 1 /))
+          ! lyrfrac
           ierr = nf90_put_var(irstfile, id_lyrfrac, frac(1:ndxi, :, :), (/ 1, 1, 1, itim /), (/ ndxi, stmpar%morlyr%settings%nlyr, stmpar%lsedtot, 1 /))
+          ! preload
+          ierr = nf90_put_var(irstfile, id_preload, stmpar%morlyr%state%preload(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%morlyr%settings%nlyr, ndxi, 1 /))
+          ! porosity
+          if (stmpar%morlyr%settings%iporosity>0) then
+            if (.not. allocated(poros) ) allocate( poros(1:stmpar%morlyr%settings%nlyr, 1:ndx ) )
+            poros = 1d0-stmpar%morlyr%state%svfrac
+            ierr = nf90_put_var(irstfile, id_poros, poros(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%morlyr%settings%nlyr, ndxi, 1 /))
+          endif
        end select
-
-       !mfluff
+       ! sedshort
+       ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/ 1, 1, itim /), (/ stmpar%lsedtot, ndxi, 1 /))
+       ! mfluff
        if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
             do l = 1, stmpar%lsedsus
                ierr = nf90_put_var(irstfile, id_mfluff, stmpar%morpar%flufflyr%mfluff(l,1:ndxi), (/ l, 1, itim /), (/ 1, ndxi, 1 /))
@@ -5434,7 +5471,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
          endif
       endif
 
-      ! water quality mass balance areas
+      ! mass balance areas
       if (nomba > 0) then
          ierr = unc_def_var_map(mapids%ncid,  mapids%id_tsp, mapids%id_mba(:), nf90_int, UNC_LOC_S, 'water_quality_mba', '', 'Water quality mass balance areas', '', is_timedep=0, jabndnd=jabndnd_)
          call realloc(flag_val, nomba, keepExisting = .false., fill = 0)
@@ -5737,15 +5774,17 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_bodsed  , nc_precision, UNC_LOC_S, 'bodsed'  , '', 'Available sediment mass in the bed in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, -2, -1 /), jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_dpsed   , nc_precision, UNC_LOC_S, 'dpsed'  , '', 'Sediment thickness in the bed in flow cell center', 'm', dimids = (/ -2, -1 /), jabndnd=jabndnd_)
             case (2)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_msed   , nc_precision, UNC_LOC_S, 'msed'  , '', 'Available sediment mass in a layer of the bed in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_thlyr  , nc_precision, UNC_LOC_S, 'thlyr'  , '', 'Thickness of a layer of the bed in flow cell center', 'm', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_msed    , nc_precision, UNC_LOC_S, 'msed'  , '', 'Available sediment mass in a layer of the bed in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_thlyr   , nc_precision, UNC_LOC_S, 'thlyr'  , '', 'Thickness of a layer of the bed in flow cell center', 'm', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_lyrfrac , nc_precision, UNC_LOC_S, 'lyrfrac'  , '', 'Volume fraction in a layer of the bed in flow cell center', '-', dimids = (/ -2, mapids%id_tsp%id_nlyrdim, mapids%id_tsp%id_sedtotdim, -1 /), jabndnd=jabndnd_)
                !
                if (stmpar%morlyr%settings%iporosity>0) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_poros  , nc_precision, UNC_LOC_S, 'poros'  , '', 'Porosity of a layer of the bed in flow cell center', '-', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_poros, nc_precision, UNC_LOC_S, 'poros'  , '', 'Porosity of a layer of the bed in flow cell center', '-', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
                endif
                !
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_lyrfrac  , nc_precision, UNC_LOC_S, 'lyrfrac'  , '', 'Volume fraction in a layer of the bed in flow cell center', '-', dimids = (/ -2, mapids%id_tsp%id_nlyrdim, mapids%id_tsp%id_sedtotdim, -1 /), jabndnd=jabndnd_)
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_preload , nc_precision, UNC_LOC_S, 'preload'  , '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids = (/ mapids%id_tsp%id_nlyrdim, -2, -1 /), jabndnd=jabndnd_)
          end select
+         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort' , '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids = (/ mapids%id_tsp%id_sedtotdim, -2, -1 /), jabndnd=jabndnd_)
          !
          if (stmpar%morpar%moroutput%taub) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_taub  , nc_precision, UNC_LOC_S, 'taub'  , '', 'Bed shear stress for morphology', 'N m-2', dimids = (/ -2, -1 /), jabndnd=jabndnd_)
@@ -7024,9 +7063,11 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_poros , UNC_LOC_S, poros, locdim=2, jabndnd=jabndnd_)
          endif
          !
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_preload , UNC_LOC_S, stmpar%morlyr%state%preload, locdim=2, jabndnd=jabndnd_)
       case default
          ! do nothing
       end select
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
 
       if (stmpar%morpar%moroutput%taub) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_taub  , UNC_LOC_S, sedtra%taub, jabndnd=jabndnd_)
@@ -13587,6 +13628,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 endif
              endif
           endif
+          
+          ! sedshort, preload, porosity, dpsed?
        end select
        endif
 

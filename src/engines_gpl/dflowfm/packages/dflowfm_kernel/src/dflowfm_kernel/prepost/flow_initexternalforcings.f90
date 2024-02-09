@@ -71,6 +71,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use Timers
    use m_subsidence
  use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
+   use mass_balance_areas_routines, only : get_mbainputname
 
    implicit none
    character(len=256)            :: filename, sourcemask

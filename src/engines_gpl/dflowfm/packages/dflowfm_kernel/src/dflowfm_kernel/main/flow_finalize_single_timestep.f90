@@ -50,6 +50,7 @@ use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, update
 use unstruc_channel_flow, only : network
 use m_sedtrails_stats, st_is_numndvals=>is_numndvals
 use m_update_fourier, only : update_fourier
+use mass_balance_areas_routines, only : comp_horflowmba
 
 implicit none
 integer, intent(out) :: iresult

@@ -73,6 +73,7 @@
  use m_flow_flowinit
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
+ use mass_balance_areas_routines, only : mba_init
  
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:

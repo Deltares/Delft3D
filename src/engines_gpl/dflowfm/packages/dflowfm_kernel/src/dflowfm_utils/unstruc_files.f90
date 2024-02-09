@@ -301,6 +301,9 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     case ('mbacsvmb')
         activeFile = ''
         suffix = '_mass_balances.csv'
+    case ('mbanetcdf')
+        activeFile = ''
+        suffix = '_mass_balances.nc'
         
     !---------------------------------------------------------!
     ! DELWAQ files
@@ -363,7 +366,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     ! Output files are generally stored in a subfolder, so prefix them here with that.
     select case (trim(filecat))
     case ('his', 'map', 'clm', 'rstold', 'rst', 'bal', 'histek', 'inc_s1', 'tec', 'map.plt', 'net.plt', 'avgwavquant', &
-          'com','avgsedquant', 'mba', 'mbacsvm', 'mbacsvmb', 'wq_lsp', 'bloom', 'timers', 'timers_init','sedtrails')
+          'com','avgsedquant', 'mba', 'mbacsvm', 'mbacsvmb', 'mbanetcdf', 'wq_lsp', 'bloom', 'timers', 'timers_init','sedtrails')
         if (prefix_dir) then
             defaultFilename = trim(getoutputdir())//trim(defaultFilename)
         end if
