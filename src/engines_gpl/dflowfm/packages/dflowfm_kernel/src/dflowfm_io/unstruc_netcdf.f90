@@ -3571,7 +3571,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
          ierr = nf90_put_att(irstfile, id_bodsed ,  'long_name'    , 'Available sediment mass in the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_bodsed ,  'units'        , 'kg m-2')
          
-         ierr = nf90_def_var(irstfile, 'dpsed' , nf90_double, (/ id_flowelemdim , id_timedim /) , id_thlyr)
+         ierr = nf90_def_var(irstfile, 'dpsed' , nf90_double, (/ id_flowelemdim , id_timedim /) , id_dpsed)
          ierr = nf90_put_att(irstfile, id_dpsed ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_dpsed ,  'long_name'    , 'Sediment thickness in the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_dpsed ,  'units'        , 'm')
@@ -3591,20 +3591,20 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
          ierr = nf90_put_att(irstfile, id_thlyr ,  'long_name'    , 'Thickness of a layer of the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_thlyr ,  'units'        , 'm')
 
-         ierr = nf90_def_var(irstfile, 'preload' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_thlyr)
+         ierr = nf90_def_var(irstfile, 'preload' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_preload)
          ierr = nf90_put_att(irstfile, id_preload ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_preload ,  'long_name'    , 'Historical largest load on layer of the bed in flow cell center')
          ierr = nf90_put_att(irstfile, id_preload ,  'units'        , 'kg')
 
          if (stmpar%morlyr%settings%iporosity>0) then
-           ierr = nf90_def_var(irstfile, 'porosity' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_thlyr)
+           ierr = nf90_def_var(irstfile, 'porosity' , nf90_double, (/ id_nlyrdim , id_flowelemdim , id_timedim /) , id_poros)
            ierr = nf90_put_att(irstfile, id_poros ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
            ierr = nf90_put_att(irstfile, id_poros ,  'long_name'    , 'Porosity of layer of the bed in flow cell center')
            ierr = nf90_put_att(irstfile, id_poros ,  'units'        , '-')
          endif
        end select
          
-       ierr = nf90_def_var(irstfile, 'sedshort' , nf90_double, (/ id_sedtotdim , id_flowelemdim , id_timedim /) , id_thlyr)
+       ierr = nf90_def_var(irstfile, 'sedshort' , nf90_double, (/ id_sedtotdim , id_flowelemdim , id_timedim /) , id_sedshort)
        ierr = nf90_put_att(irstfile, id_sedshort ,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
        ierr = nf90_put_att(irstfile, id_sedshort ,  'long_name'    , 'Sediment shortage of transport layer in flow cell center')
        ierr = nf90_put_att(irstfile, id_sedshort ,  'units'        , 'kg m-2')
