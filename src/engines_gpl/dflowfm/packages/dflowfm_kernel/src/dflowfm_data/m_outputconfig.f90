@@ -536,6 +536,7 @@ end subroutine dealloc_config_output
 !> Define an output configuration quantity. And set the IDX variable to the current entry
 subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, nc_type, nc_atts, description)
    use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
+   use netcdf, only: nf90_double, nf90_float
    type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
    character(len=*),                intent(in   ) :: key                 !< Key in the MDU file.
