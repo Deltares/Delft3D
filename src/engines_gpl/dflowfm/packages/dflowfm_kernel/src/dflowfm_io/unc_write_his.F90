@@ -715,7 +715,7 @@ subroutine unc_write_his(tim)            ! wrihis
                   call definencvar(ihisfile, id_var, config%nc_type, build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
                                    config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
                else
-                  call err('Programming error: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
+                  call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
                end if
             case (UNC_LOC_OBSCRS)
                call definencvar(ihisfile, id_var, config%nc_type, (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
