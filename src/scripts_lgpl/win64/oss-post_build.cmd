@@ -2465,7 +2465,7 @@ if NOT %ErrorLevel% EQU 0 (
    rem
       rem Only jump to :end when the script is completely finished
       rem
-      exit 0
+      exit %ErrorLevel%
   )
 
 :endproc
