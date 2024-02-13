@@ -53,29 +53,26 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 
- if(WIN32)
-    SET(library_renamed gridgeom.dll)
- endif()
+if(WIN32)
+    if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
+      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/$<CONFIG>/gridgeom.dll)
+      ADD_CUSTOM_COMMAND(TARGET gridgeom_dll POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E rename
+                       $<TARGET_FILE:${library_name}>
+                       ${library_renamed}
+                   COMMENT "Renaming '${library_name}' library to '${library_renamed}'")
+    else() # for Ninja generator on Windows
+      SET(library_renamed ${CMAKE_BINARY_DIR}/gridgeom/gridgeom.dll)
+    endif()
+
+endif(WIN32)
 
 if(UNIX)
     SET(library_renamed libgridgeom.so)
     # Actual rename is done in the the install step below
 endif(UNIX)
 
-if(WIN32)
-    # post-build
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-
-    post_build_target( ${library_name}
-                       ${install_dir}
-                       ${build_dir}
-                       ${checkout_src_root}
-                       ${library_name} )
-
-endif(WIN32)
-
 if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
     # Install the shared library in the lib folder with rename
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME gridgeom.dll DESTINATION lib)
 endif()
