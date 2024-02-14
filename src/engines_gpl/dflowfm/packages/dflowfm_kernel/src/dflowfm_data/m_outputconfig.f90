@@ -13,6 +13,7 @@ private
    public addoutval
    public realloc
    public dealloc
+   public id_nc_type2nc_type_his
 
    interface realloc
       module procedure realloc_config_output
@@ -472,13 +473,21 @@ private
    integer, public :: IDX_CLS_UCMAG_EULER
    integer, public :: IDX_CLS_UCDIR
    integer, public :: IDX_CLS_UCDIR_EULER
+   
+   integer, public, parameter :: id_nc_undefined = -50
+   integer, public, parameter :: id_nc_byte      = -51
+   integer, public, parameter :: id_nc_char      = -52
+   integer, public, parameter :: id_nc_short     = -53
+   integer, public, parameter :: id_nc_int       = -54
+   integer, public, parameter :: id_nc_float     = -55
+   integer, public, parameter :: id_nc_double    = -56
 
    public t_output_quantity_config
    !> Derived type for the input items, defining one entry [output] section of the MDU file.
    type t_output_quantity_config
       character(len=Idlen)             :: key                   !< Key of the input item in the MDU file (e.g. wrimap_s1).
       character(len=Idlen)             :: name                  !< Name of the output item on the NETCDF file.
-      integer                          :: nc_type               !< NetCDF variable type, one of: nf90_double, nf90_int, etc.
+      integer                          :: id_nc_type            !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
       character(len=Idlen)             :: long_name             !< Long name of the output item on the NETCDF file.
       character(len=Idlen)             :: unit                  !< unit of the output item on the NETCDF file.
       character(len=Idlen)             :: standard_name         !< Standard name of the output item on the NETCDF file.
@@ -556,7 +565,7 @@ subroutine dealloc_config_output(confoutput)
 end subroutine dealloc_config_output
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
-subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, nc_type, nc_atts, description)
+subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_atts, description)
    use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
    use netcdf, only: nf90_double, nf90_float
    type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
@@ -568,23 +577,29 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    character(len=*),                intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
    integer,                         intent(in   ) :: location_specifier  !< Location specifier of the variable.
    type(t_nc_dim_ids), optional,    intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
-   integer,          optional,      intent(in   ) :: nc_type             !< NetCDF variable type, one of: nf90_double, nf90_int, etc. Default: nf90_double.
+   integer,          optional,      intent(in   ) :: id_nc_type          !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
    type(nc_attribute), optional,    intent(in   ) :: nc_atts(:)          !< (optional) list of additional NetCDF attributes to be stored for this output variable.
    character(len=*), optional,      intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
 
    integer :: numentries
-   integer :: nc_type_
+   integer :: id_nc_type_
    integer :: numatt
 
-   if (present(nc_type)) then
-      nc_type_ = nc_type
+   if (present(id_nc_type)) then
+      ! Safety
+      if (.not. (id_nc_type == id_nc_undefined .or. &
+                 id_nc_type == id_nc_byte .or. &
+                 id_nc_type == id_nc_char .or. &
+                 id_nc_type == id_nc_short .or. &
+                 id_nc_type == id_nc_int .or. &
+                 id_nc_type == id_nc_float .or. &
+                 id_nc_type == id_nc_double)) then
+         call mess(LEVEL_ERROR,'addoutval - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+      end if
+      id_nc_type_ = id_nc_type
    else
-      ! By default, use the NetCDF precision for his files defined in the MDU (nf90_float for single, nf90_double for double)
-      if ( md_nc_his_precision == SINGLE_PRECISION ) then
-         nc_type_ = nf90_float
-      else
-         nc_type_ = nf90_double
-      endif
+      ! By default, use the netcdf precision that is later read from the mdu
+      id_nc_type_ = id_nc_undefined
    end if
 
    config_set%count = config_set%count+1
@@ -595,7 +610,7 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    idx = numentries
    config_set%statout(numentries)%key                = key
    config_set%statout(numentries)%name               = name
-   config_set%statout(numentries)%nc_type            = nc_type_
+   config_set%statout(numentries)%id_nc_type         = id_nc_type_
    config_set%statout(numentries)%long_name          = long_name
    config_set%statout(numentries)%standard_name      = standard_name
    config_set%statout(numentries)%unit               = unit
@@ -620,6 +635,45 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    endif
 
 end subroutine addoutval
+
+
+!> convert id_nc_type to actual nc_type for his file variables
+function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
+   
+   use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
+   use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
+   
+   implicit none
+   
+   integer, intent(in   ) :: id_nc_type   !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
+   integer                :: nc_type      !> Actual netcdf type, one of: nf90_double, nf90_int, etc.
+  
+   select case (id_nc_type)
+   case default
+      call mess(LEVEL_ERROR,'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+   case (id_nc_undefined)
+      ! Use the netcdf precision for his files defined in the mdu
+      if ( md_nc_his_precision == SINGLE_PRECISION ) then
+         nc_type = nf90_float
+      else
+         nc_type = nf90_double
+      endif
+   case (id_nc_byte)
+      nc_type = nf90_byte
+   case (id_nc_char)
+      nc_type = nf90_char
+   case (id_nc_short)
+      nc_type = nf90_short
+   case (id_nc_int)
+      nc_type = nf90_int
+   case (id_nc_float)
+      nc_type = nf90_float
+   case (id_nc_double)
+      nc_type = nf90_double
+   end select
+  
+end function id_nc_type2nc_type_his
+
 
 !> scan the input tree, using the keys in the statout_set
 subroutine scan_input_tree(tree, paragraph, statout_set)
