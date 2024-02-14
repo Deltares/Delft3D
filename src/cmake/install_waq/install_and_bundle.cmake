@@ -1,15 +1,7 @@
-IF(UNIX)
 set(BUILD_LIBRARIES
    ${CMAKE_INSTALL_PREFIX}/lib/libwaq_plugin_wasteload.so
    ${CMAKE_INSTALL_PREFIX}/lib/libdelwaq.so
 )
-ENDIF(UNIX)
-IF(WIN32)
-set(BUILD_LIBRARIES
-   ${CMAKE_INSTALL_PREFIX}/lib/waq_plugin_wasteload.dll
-   ${CMAKE_INSTALL_PREFIX}/lib/delwaq.dll
-)
-ENDIF(WIN32)
 set(THIRDPARTY_x64_LIB_FOLDERS
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_INSTALL_PREFIX}/bin
@@ -44,4 +36,4 @@ fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/calcage" "${BUILD_LIBRARIES}" "${THIRD
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
-endif()
+endif(UNIX)

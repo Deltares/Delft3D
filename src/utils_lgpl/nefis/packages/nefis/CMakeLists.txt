@@ -87,9 +87,7 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
     set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
   
-    # Set post-build step
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
+
 
     install(TARGETS ${library_name} DESTINATION lib)
 endif()
