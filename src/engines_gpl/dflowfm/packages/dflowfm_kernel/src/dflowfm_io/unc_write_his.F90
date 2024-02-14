@@ -2159,10 +2159,10 @@ contains
       ! If there are moving observation stations, include a time dimension for the x/y-coordinates
       if (nummovobs > 0) then
          allocate( dim_ids( 2))
-         dim_ids = (/ id_statdim, id_timedim /) ! TODO: AvD: decide on UNST-1606 (trajectory_id vs. timeseries_id)
+         dim_ids = [id_statdim, id_timedim] ! TODO: AvD: decide on UNST-1606 (trajectory_id vs. timeseries_id)
       else
          allocate( dim_ids( 1))
-         dim_ids = (/ id_statdim /)
+         dim_ids = [id_statdim ]
       end if
       
       ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nc_precision, dim_ids, id_statx)
@@ -2174,7 +2174,7 @@ contains
       ierr = nf90_put_att(ihisfile, id_statx, 'long_name', 'original x-coordinate of station (non-snapped)')
       ierr = nf90_put_att(ihisfile, id_staty, 'long_name', 'original y-coordinate of station (non-snapped)')
       
-      deallocate( dim_ids)
+      deallocate( dim_ids) ! TODO: TB: paragraph 4.4 of the style guide recommends using deallocate even though it is no longer necessary, should this recommendation be removed?
 
    end function unc_def_his_station_coord_vars_xy
                                                                 
@@ -2219,23 +2219,27 @@ contains
 
       ierr = NF90_NOERR
       
+      if (.not. model_is_3D()) then
+         return
+      end if
+      
       ! If so specified, add the zcoordinate_c
-      if (kmx > 0 .and. jawrizc == 1) then
-         call definencvar(ihisfile, id_zcs, nc_precision, (/ id_laydim, id_statdim, id_timedim /),          &
+      if (jawrizc == 1) then
+         call definencvar(ihisfile, id_zcs, nc_precision, [id_laydim, id_statdim, id_timedim],          &
             'zcoordinate_c' , 'vertical coordinate at center of flow element and layer', 'm',               &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_c', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zcs, 'positive' , 'up')
       end if
       
       ! If so specified, add the zcoordinate_w + zcoordinate_wu
-      if (kmx > 0 .and. jawrizw == 1) then
+      if (jawrizw == 1) then
          
-         call definencvar(ihisfile, id_zws, nc_precision, (/ id_laydimw, id_statdim, id_timedim /),         &
+         call definencvar(ihisfile, id_zws, nc_precision, [id_laydimw, id_statdim, id_timedim],         &
             'zcoordinate_w' , 'vertical coordinate at centre of flow element and at layer interface', 'm',  &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_w', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zws, 'positive' , 'up')
          
-         call definencvar(ihisfile, id_zwu, nc_precision, (/ id_laydimw, id_statdim, id_timedim /),         &
+         call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim],         &
             'zcoordinate_wu' , 'vertical coordinate at edge of flow element and at layer interface', 'm',   &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zwu, 'positive' , 'up')
@@ -2304,21 +2308,17 @@ contains
       
       ! If there are moving observation stations, include a time dimension for the x/y-coordinates
       if ( nummovobs > 0 ) then
-         allocate( start( 2))
-         allocate( count( 2))
-         start = (/ 1, it_his /)
-         count = (/ ntot, 1 /)
+         start = [1, it_his]
+         count = [ntot, 1]
       else
-         allocate( start( 1))
-         allocate( count( 1))
-         start = (/ 1 /)
-         count = (/ ntot /)
+         start = [1]
+         count = [ntot]
       end if
       
       ierr = nf90_put_var(ihisfile, id_statx, xobs(:), start = start, count = count )
       ierr = nf90_put_var(ihisfile, id_staty, yobs(:), start = start, count = count )
       
-      deallocate( start)
+      deallocate( start) ! TODO: TB: paragraph 4.4 of the style guide recommends using deallocate even though it is no longer necessary, should this recommendation be removed?
       deallocate( count)
 
    end function unc_put_his_station_coord_vars_xy
@@ -2342,21 +2342,17 @@ contains
       
       ! If there are moving observation stations, include a time dimension for the lat/lon-coordinates
       if ( nummovobs > 0 ) then
-         allocate( start( 2))
-         allocate( count( 2))
-         start = (/ 1, it_his /)
-         count = (/ ntot, 1 /)
+         start = [1, it_his]
+         count = [ntot, 1]
       else
-         allocate( start( 1))
-         allocate( count( 1))
-         start = (/ 1 /)
-         count = (/ ntot /)
+         start = [1]
+         count = [ntot]
       end if
       
       call transform_and_put_latlon_coordinates(ihisfile, id_statlon, id_statlat, &
                                                 nccrs%proj_string, xobs, yobs, start = start, count = count)
       
-      deallocate( start)
+      deallocate( start) ! TODO: TB: paragraph 4.4 of the style guide recommends using deallocate even though it is no longer necessary, should this recommendation be removed?
       deallocate( count)
 
    end function unc_put_his_station_coord_vars_latlon
@@ -2376,22 +2372,24 @@ contains
       
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
       
-      integer                            :: kk
+      integer                            :: layer
 
       ierr = NF90_NOERR
       
-      if (kmx > 0 .and. jawrizc == 1) then
-         do kk = 1, kmx+1
-            if (kk > 1) then
-               ierr = nf90_put_var(ihisfile, id_zcs, valobs(:,IPNT_ZCS+kk-2), start = (/ kk-1, 1, it_his /), count = (/ 1, ntot, 1 /))
-            end if
+      if (.not. model_is_3D()) then
+         return
+      end if
+      
+      if (jawrizc == 1) then
+         do layer = 1, kmx
+            ierr = nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start = [layer, 1, it_his], count = [ 1, ntot, 1])
          end do
       end if
       
-      if (kmx > 0 .and. jawrizw == 1) then
-         do kk = 1, kmx+1
-            ierr = nf90_put_var(ihisfile, id_zws, valobs(:,IPNT_ZWS+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
-            ierr = nf90_put_var(ihisfile, id_zwu, valobs(:,IPNT_ZWU+kk-1), start = (/ kk, 1, it_his /), count = (/ 1, ntot, 1 /))
+      if (jawrizw == 1) then
+         do layer = 1, kmx+1
+            ierr = nf90_put_var(ihisfile, id_zws, valobs(:, IPNT_ZWS + layer - 1), start = [layer, 1, it_his], count = [ 1, ntot, 1])
+            ierr = nf90_put_var(ihisfile, id_zwu, valobs(:, IPNT_ZWU + layer - 1), start = [layer, 1, it_his], count = [ 1, ntot, 1])
          end do
       end if
 
