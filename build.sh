@@ -79,7 +79,7 @@ function DoCMake () {
     echo "Executing CMake for $1 ..."
     cd    $root/build_$1$2
     echo "cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype}"
-          cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype}
+          cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype} -D CMAKE_INSTALL_PREFIX=../build_$1$2/install/
     if [ $? -ne 0 ]; then
         echo "CMake configure resulted in an error. Check log files."
         exit 1

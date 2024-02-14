@@ -1212,7 +1212,7 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_export\!configuration!\waqpb_export.*"                        !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_export.bat"               !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\waqpb\resources\scripts\run_waqpb_export.bat"               !dest_scripts!
     call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\export_procdef_csvfiles.bat"        !dest_scripts!
 
     rem profiling information
@@ -1237,7 +1237,7 @@ rem ==========================
     call :copyFile "!build_dir!\waqpb_import\!configuration!\waqpb_import.*"              !dest_bin!
 
     rem copy run scripts
-    call :copyFile "!checkout_src_root!\tools_gpl\waqpb\resources\scripts\run_waqpb_import.bat"        !dest_scripts!
+    call :copyFile "!checkout_src_root!\tools_gpl\waq_tools\waqpb\resources\scripts\run_waqpb_import.bat"        !dest_scripts!
     call :copyFile "!checkout_src_root!\engines_gpl\waq\resources\scripts\import_procesasc_changes.bat"            !dest_scripts!
 
     rem profiling information
@@ -2205,7 +2205,7 @@ rem ===========================
 
     call :makeDir !dest_bin!
 
-    call :copyFile "!build_dir!\gridgeom\!configuration!\gridgeom.dll"                                           !dest_bin!
+    xcopy "!build_dir!\gridgeom_dll\!configuration!\gridgeom_dll.dll" "!dest_bin!\gridgeom.dll"* /Y
 
     )
 
@@ -2216,8 +2216,7 @@ rem ===========================
     set dest_share="!install_dir!\x64\Release\share\bin"
 
     call :makeDir !dest_share!
-    call :copyFile "!build_dir!\gridgeom\!configuration!\gridgeom.dll"                                           !dest_share!
-
+    xcopy "!build_dir!\gridgeom_dll\!configuration!\gridgeom_dll.dll" "!dest_share!\gridgeom.dll"* /Y
     )
 
 goto :endproc
