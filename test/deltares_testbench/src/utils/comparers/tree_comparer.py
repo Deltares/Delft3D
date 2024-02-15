@@ -218,34 +218,17 @@ class TreeComparer(IComparer):
         ref_file = os.path.join(left_path, filename)
         results = []
 
-        # Open the test file
         try:
-            ftest = open(test_file, "r")
+            with open(test_file, "r") as ftest:
+                self.testtree = self.buildTrees(ftest)
         except Exception as e:
             raise Exception("Cannot open tested file " + filename + " in " + right_path)
-        # Open the reference file
+
         try:
-            fref = open(ref_file, "r")
+            with open(ref_file, "r") as fref:
+                self.reftree = self.buildTrees(fref)
         except Exception:
-            raise Exception(
-                "Cannot open reference file " + filename + " in " + left_path
-            )
-
-        # Build Tree for test file
-        try:
-            self.testtree = self.buildTrees(ftest)
-        except TreeException as e:
-            raise Exception("Test: " + e.message)
-        finally:
-            ftest.close()
-
-        # Build Tree for reference file
-        try:
-            self.reftree = self.buildTrees(fref)
-        except TreeException as e:
-            raise Exception("Reference: " + e.message)
-        finally:
-            fref.close()
+            raise Exception("Cannot open reference file " + filename + " in " + left_path)
 
         parameters = file_check.parameters["parameters"]
         paramResults = []

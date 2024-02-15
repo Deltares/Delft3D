@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -274,6 +274,7 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
+    character(len=255)                        :: md_nccompress        !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
     integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
@@ -375,6 +376,7 @@ use m_fm_icecover, only: fm_ice_null
     md_unc_conv     = UNC_CONV_UGRID  ! TODO: AvD: does this double now with IFORMAT_UGRID?
 
     md_ncformat     = 3               !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
+    md_nccompress   = 'off'           !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
     md_fou_step     = 0               !< default: fourier analysis is updated on a user-timestep basis
 
@@ -727,7 +729,7 @@ subroutine readMDUFile(filename, istat)
     use m_heatfluxes
     use m_fm_wq_processes
     use m_xbeach_avgoutput
-    use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
+    use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
     use dfm_error
     use MessageHandling
     use system_utils, only: split_filename
@@ -1647,24 +1649,23 @@ subroutine readMDUFile(filename, istat)
     call prop_get_string(md_ptr, 'time', 'Tunit', md_tunit)
     call prop_get_double(md_ptr, 'time', 'TStart', tstart_user)
     tstart_user = max(tstart_user, 0d0)
+    tstart_tlfsmo_user = tstart_user
+    call prop_get_double(md_ptr, 'time', 'TStartTlfsmo', tstart_tlfsmo_user)
     call prop_get_double (md_ptr, 'time', 'TStop', tstop_user)
     select case (md_tunit)                                            ! tfac added here for use in sedmorinit
     case('D')
-        tstart_user = tstart_user*3600*24
-        tstop_user  = tstop_user*3600*24
         tfac = 3600d0*24d0
     case('H')
-        tstart_user = tstart_user*3600
-        tstop_user  = tstop_user*3600
         tfac = 3600d0
     case('M')
-        tstart_user = tstart_user*60
-        tstop_user  = tstop_user*60
         tfac = 60d0
     case default
         tfac = 1d0
     end select
-
+    tstart_tlfsmo_user = tstart_tlfsmo_user*tfac 
+    tstart_user = tstart_user*tfac
+    tstop_user  = tstop_user*tfac
+    
     call setTUDUnitString()
 
     call prop_get_double  (md_ptr, 'time', 'DtUser', dt_user)
@@ -1843,6 +1844,8 @@ subroutine readMDUFile(filename, istat)
     call unc_set_ncformat(md_ncformat)
     md_nc_his_precision = 0
     call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcCompression', md_nccompress, success)
+    call unc_set_nccompress(md_nccompress)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
     call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
@@ -2076,7 +2079,9 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_double (md_ptr, 'output', 'MbaInterval', ti_mba, success)
 
+    call prop_get_integer (md_ptr, 'output', 'MbaWriteTxt', jambawritetxt, success)
     call prop_get_integer (md_ptr, 'output', 'MbaWriteCsv', jambawritecsv, success)
+    call prop_get_integer (md_ptr, 'output', 'MbaWriteNetCDF', jambawritenetcdf, success)
 
     call prop_get_integer (md_ptr, 'output', 'MbaLumpFromToMba', jambalumpmba, success)
     call prop_get_integer (md_ptr, 'output', 'MbaLumpBoundaries', jambalumpbnd, success)
@@ -2398,9 +2403,8 @@ subroutine readMDUFile(filename, istat)
    endif
 
    if (len_trim(md_restartfile)>0 .and. Tlfsmo>0d0) then
-      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. This is no longer allowed. Tlfsmo is set to 0.0.'
+      write (msgbuf, '(a,g16.9,a)') 'MDU settings combine a restart file and a smoothing time: Tlfsmo = ',Tlfsmo, '. Be aware that you need to adjust TStartTlfsmo to obtain the same results between the original and restart simulations.'
       call warn_flush()
-      Tlfsmo = 0d0
    endif
 
    if (len_trim(md_crsfile) == 0 .and. jashp_crs > 0) then
@@ -3760,6 +3764,7 @@ endif
     end select
     call prop_set(prop_ptr, 'time', 'TStart',             tstart_user/tfac,       'Start time w.r.t. RefDate (in TUnit)')
     call prop_set(prop_ptr, 'time', 'TStop',              tstop_user/tfac,        'Stop  time w.r.t. RefDate (in TUnit)')
+    call prop_set(prop_ptr, 'time', 'TStartTlfsmo',       tstart_tlfsmo_user/tfac,       'Start time of smoothing of boundary conditions (Tlfsmo) w.r.t. RefDate (in TUnit)')
 
     if (len_trim(Startdatetime) > 0) then
     call prop_set(prop_ptr, 'time', 'Startdatetime', trim(Startdatetime),  'Computation Startdatetime (yyyymmddhhmmss), when specified, overrides Tstart')
@@ -3855,7 +3860,9 @@ endif
     call prop_set(prop_ptr, 'output', 'RstInterval', ti_rst_array, 'Restart times (s), interval, starttime, stoptime (s), if starttime, stoptime are left blank, use whole simulation period')
     call prop_set(prop_ptr, 'output', 'MbaInterval', ti_mba, 'Mass balance area output interval (s)')
 
+    call prop_set(prop_ptr, 'output', 'MbaWriteTxt', jambawritetxt, 'Write mass balance area output to a txt-file (1: yes, 0: no)')
     call prop_set(prop_ptr, 'output', 'MbaWriteCsv', jambawritecsv, 'Write mass balance area output to a csv-file (1: yes, 0: no)')
+    call prop_set(prop_ptr, 'output', 'MbaWriteNetCDF', jambawritenetcdf, 'Write mass balance area output to a netCDF-file (1: yes, 0: no)')
 
     call prop_set(prop_ptr, 'output', 'MbaLumpFromToMba', jambalumpmba, 'Lump MBA from/to other areas mass balance terms (1: yes, 0: no)')
     call prop_set(prop_ptr, 'output', 'MbaLumpBoundaries', jambalumpbnd, 'Lump MBA boundary mass balance terms (1: yes, 0: no)')
@@ -3917,6 +3924,8 @@ endif
     call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
     call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
 
+    call prop_set(prop_ptr, 'output', 'NcCompression',  md_nccompress      , 'Whether ("on") or not ("off") to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4')
+    
     if (writeall .or. unc_nounlimited /= 0) then
        call prop_set(prop_ptr, 'output', 'NcNoUnlimited',  unc_nounlimited, 'Write full-length time-dimension instead of unlimited dimension (1: yes, 0: no). (Might require NcFormat=4.)')
     end if

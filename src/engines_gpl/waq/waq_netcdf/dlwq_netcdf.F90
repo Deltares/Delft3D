@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -26,7 +26,7 @@
 !
 module dlwq_netcdf
     use netcdf
-    use output, only: ncopt
+    use results, only: ncopt
     use ISO_FORTRAN_ENV, only: int64
 
     implicit none

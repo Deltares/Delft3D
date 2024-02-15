@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -88,12 +88,12 @@
 !
       use m_dlwq5h
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       integer(kind=int_wp) :: i_max
-      character*(*) lch   (lstack) , chulp , names_to_check(*)
+      character*(*) lch   (lstack) , chulp , names_to_check(:)
       character     cchar*1 , strng*8
-      dimension     i_array(*) , ilun( lstack )
+      dimension     i_array(:) , ilun( lstack )
       logical       dtflg1 , dtflg3 , first, must_read_more
       integer(kind=INT64)  :: ihulp8
       integer(kind=int_wp) ::  ithndl = 0
@@ -138,8 +138,7 @@
 
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
-             ! get time (ihulp) from string (chulp)
-             call dlwq0t ( chulp , ihulp, .false., .false., error_idx )
+             call convert_string_to_time_offset ( chulp , ihulp, .false., .false., error_idx )
              if ( error_idx .eq. 0 ) then
                 error_idx = -2
                 if ( first ) then
@@ -168,7 +167,7 @@
              write ( lunut , 1000 ) nocol, chulp, strng
           else
              if ( itype .eq. 2 ) then ! an integer has arrived
-                call cnvtim ( ihulp  , itfact, dtflg1 , dtflg3 )
+                call convert_relative_time ( ihulp  , itfact, dtflg1 , dtflg3 )
              endif
              error_idx = -1
              must_read_more = .false.

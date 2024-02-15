@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -157,14 +157,14 @@ contains
 
    subroutine delwaq2_global_data_finalize()
 
-      use waqmem
+      use memory_mangement
 
       implicit none
 
       integer(kind=int_wp) ::  i
 
-      ! first, all arrays from waqmem
-      call waqmem_deallocate()
+      ! first, all arrays from memory_mangement
+      call deallocate_memory()
 
       if (allocated(argv)) deallocate (argv)
 
@@ -209,7 +209,7 @@ contains
       ! close all files; should have been done already, but this statement
       ! nevertheless proves necessary
       do i = 1, 50
-         if (lun(i) .gt. 0) then
+         if (lun(i) > 0) then
             close (lun(i))
          end if
       end do
@@ -220,12 +220,14 @@ contains
 
       use m_sysn
       use m_sysc
+      use m_sysj
 
       type(delwaq_data) :: dlwqd
 
       character(len=20), dimension(1) :: dlwqname ! Template for entity names
 
       integer(kind=int_wp) ::  iColl, max_waqfiles
+      integer(kind=int_wp) ::  i, ip1, itel2, nsc
 
       ! Copy the relevant character data
       if (allocated(substance_name)) then
@@ -234,13 +236,39 @@ contains
          deallocate (procparam_param)
       end if
 
+      if (allocated(load_name)) then
+         deallocate (load_name)
+      endif
+
+      if (allocated(monitor_name)) then
+         deallocate (monitor_name)
+         deallocate (monitor_cell)
+      endif
+
       allocate (substance_name(1:notot))
       allocate (procparam_const(1:nocons))
       allocate (procparam_param(1:nopa))
 
-      substance_name = transfer(dlwqd%buffer%chbuf(isnam:isnam + 20*notot - 1), dlwqname)
+      allocate (load_name(1:nowst))
+      allocate (monitor_name(1:ndmpar)) ! nodump?
+      allocate (monitor_cell(1:ndmpar))
+
+      substance_name  = transfer(dlwqd%buffer%chbuf(isnam:isnam + 20*notot - 1), dlwqname)
       procparam_const = transfer(dlwqd%buffer%chbuf(icnam:icnam + 20*nocons - 1), dlwqname)
       procparam_param = transfer(dlwqd%buffer%chbuf(ipnam:ipnam + 20*nopa - 1), dlwqname)
+
+      load_name       = transfer(dlwqd%buffer%chbuf(iwsid:iwsid + 20*nowst - 1), dlwqname)
+      monitor_name    = transfer(dlwqd%buffer%chbuf(idana:idana + 20*ndmpar - 1), dlwqname)
+
+      ! Copy the segment numbers - but only the first in case of "dump areas"
+      ! See fiosub.f for the background, calculations copied from there
+      ip1   = ndmpar + ntdmpq
+      itel2 = ndmpar + ntdmpq + ndmpar
+      do i = 1,ndmpar !nodump?
+         nsc = dlwqd%buffer%ibuf(ipdmp+ip1-1+i)
+         monitor_cell(i) = dlwqd%buffer%ibuf(ipdmp+itel2)
+         itel2 = itel2 + nsc
+      enddo
 
       ! administrate state sizes for OpenDA use
       size_dlwq_state%notot = notot

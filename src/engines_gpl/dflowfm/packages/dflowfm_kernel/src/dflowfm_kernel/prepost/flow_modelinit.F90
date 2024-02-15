@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult)                     ! initialise flowmodel
  use timers
- use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx
+ use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi
  use waq,           only: reset_waq
  use m_flow,        only: kmx, jasecflow, iperot
  use m_flowtimes
@@ -74,6 +74,9 @@
  use m_flow_flowinit
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
+ use m_dad, only: dad_included
+ use m_fixedweirs, only: weirdte, nfxw
+ use mass_balance_areas_routines, only : mba_init
  
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -85,6 +88,9 @@
  integer              :: istat, L, ierr
  integer, external    :: init_openmp
  integer, external    :: set_model_boundingbox
+ 
+ double precision, allocatable :: weirdte_save(:)
+ 
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following 3 lines, See also statements below
@@ -384,11 +390,14 @@
     call mba_init()
  endif
  call timstop(handle_extra(24)) ! end MBA init
-
- call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level
+ 
+ call timstrt('Update MOR width    ', handle_extra(25)) ! update MOR width and mean bed level 
  if (stm_included) then
-     call fm_update_mor_width_area()
-     call fm_update_mor_width_mean_bedlevel()
+    call fm_update_mor_width_area()
+    if (len_trim(md_dredgefile) > 0 .or. ndxi>ndx2d) then
+       call flow_bl_ave_init() 
+       call fm_update_mor_width_mean_bedlevel()
+    endif
  endif
  call timstop(handle_extra(25)) ! end update MOR width
 
@@ -397,7 +406,7 @@
     call flow_dredgeinit()          ! dredging and dumping. Moved here because julrefdate needed
  endif
  call timstop(handle_extra(26)) ! end dredging init
-
+ 
  if (jawave .eq. 4 .and. jajre .eq. 1) then
     call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
     if (jampi==0) then
@@ -438,8 +447,15 @@
  !  call init_debugarr(lnx,stmpar%lsedtot)
  !endif
 
+ if (nfxw > 0) then 
+    allocate ( weirdte_save(nfxw), STAT=ierr)
+    weirdte_save=weirdte
+ endif 
  call flow_initimestep(1, iresult)                   ! 1 also sets zws0
-
+ if (nfxw > 0) then 
+    weirdte=weirdte_save
+    deallocate ( weirdte_save)
+ endif 
  jaFlowNetChanged = 0
 
 
@@ -496,7 +512,6 @@
  call writesomeinitialoutput()
 
  iresult = DFM_NOERR
-
 
  return
 1234 continue

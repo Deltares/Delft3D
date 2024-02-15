@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,7 +24,7 @@
       module dhmmra_mod
       use m_waq_precision
       use m_srstop
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
 
       contains
       subroutine dhmmra ( lunrep, l_decl, arrpoi, arrtyp, arrbyt,
@@ -42,14 +42,14 @@
 !     Created             : June 1998 by Jan van Beek
 !     Modified            : May  2010 by Leo Postma
 !                           Adds a number of arrays with normal names through
-!                           the Fortran allocate feature and the waqmem module
+!                           the Fortran allocate feature and the memory_mangement module
 
 !     Files               : LUNREP - monitoring output file
 
 !     Routines            : SRSTOP, stops execution (on error)
 
-      use waqmem           ! module with the more recently added arrays
-      use partition_arrays ! module for computing the pointers into the arrays
+      use memory_mangement           ! module with the more recently added arrays
+      use m_array_manipulation, only : make_pointer, memory_partition, real_type ! module for computing the pointers into the arrays
       use m_sysn          ! System characteristics
       use m_sysi          ! Timer characteristics
       use m_sysa          ! Pointers in real array workspace
@@ -74,7 +74,7 @@
       integer(kind=int_wp), intent(inout)  ::arrdm3(:) ! dimension 3 ( number of grids mostly )
       character(20), intent(inout) :: arrnam(:) ! Array name
       integer(kind=int_wp), intent(inout)  ::itota     ! Required array space
-      type(memory_partition), intent(inout) :: part ! Private variables for MAKPTR
+      type(memory_partition), intent(inout) :: part ! Private variables for make_pointer
 
 
 
@@ -130,11 +130,11 @@
 !     any setting of the number of threads in the input file.
 !     No value or zero for [N] will use the maximum number of available threads
       nothreadsarg = 0
-      call getcom ( '-threads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
+      call retrieve_command_argument ( '-threads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
       if (lfound) then
          nothrd = nothreadsarg
       else
-         call getcom ( '-nothreads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
+         call retrieve_command_argument ( '-nothreads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
          if (lfound) then
             nothrd = nothreadsarg
          end if
@@ -161,7 +161,7 @@
       nr_rar = iasize                   ! total number of arrays
       do i_rar = 1 , nr_rar
          arrnam(i_rar) = ' '
-         arrtyp(i_rar) = rtyp
+         arrtyp(i_rar) = real_type
          arrbyt(i_rar) = 4
          arrknd(i_rar) = 0
          arrdm1(i_rar) = 0
@@ -518,7 +518,7 @@
             iarlen = arrlen(i_rar)
             namarr = arrnam(i_rar)
             if ( iarlen .gt. 0 ) then
-               ip = makptr(part, namarr,iartyp ,iarlen)
+               ip = make_pointer(part, iartyp ,iarlen)
                if ( ip .le. 0 ) then
                   write(lunrep,2010) namarr
                   call srstop(1)

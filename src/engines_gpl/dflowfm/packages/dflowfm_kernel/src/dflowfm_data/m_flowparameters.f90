@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -162,7 +162,9 @@
 
  integer                           :: jaCdwusp          !< if 1 spatially varying windstress coefficient
 
- integer                           :: jaWindspeedfac    !< if 1 spatially varying windstress coefficient
+ integer                           :: ja_wind_speed_factor !< if 1 wind speed multiplication factor is used
+ 
+ integer                           :: ja_solar_radiation_factor !< if 1 solar radiation multiplication factor is used
  
  integer                           :: ja_friction_coefficient_time_dependent !< spatially and time dependent friction coefficient
 
@@ -585,7 +587,9 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jashp_genstruc            !< Write a shape file for general structures
  integer                           :: jashp_dambreak            !< Write a shape file for dam breaks
 
+ integer                           :: jambawritetxt             !< Option to write areas mass balance terms to a txt-file
  integer                           :: jambawritecsv             !< Option to write areas mass balance terms to a csv-file
+ integer                           :: jambawritenetcdf          !< Option to write areas mass balance terms to a netCDF-file
 
  integer                           :: jambalumpmba              !< Lump MBA from/to other areas mass balance terms
  integer                           :: jambalumpbnd              !< Lump MBA boundary mass balance terms
@@ -754,7 +758,9 @@ subroutine default_flowparameters()
 
     jaCdwusp = 0
 
-    jawindspeedfac = 0 !< use windspeedfac 1/0
+    ja_wind_speed_factor = 0 !< use wind speed multiplication factor 1/0
+
+    ja_solar_radiation_factor = 0 !< use solar radiation multiplication factor 1/0
 
     ihorvic  = 0      !< 0=no visc, 1=do visc
 
@@ -1042,7 +1048,9 @@ subroutine default_flowparameters()
     jashp_dry = 0
     jashp_genstruc = 0
     jashp_dambreak = 0
+    jambawritetxt = 1
     jambawritecsv = 0
+    jambawritenetcdf = 0
 
     jambalumpmba = 0
     jambalumpbnd = 0

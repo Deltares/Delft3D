@@ -18,7 +18,7 @@ function varargout=netcdffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2023 Stichting Deltares.                                     
+%   Copyright (C) 2011-2024 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -191,6 +191,10 @@ switch cmd
         return
     case 'plotoptions'
         varargout = {[]};
+        return
+    case 'plot'
+        hNew = plotthis(FI,Props,varargin{:});
+        varargout={hNew FI};
         return
     otherwise
         [XYRead, DataRead, DataInCell, ZRead]=gridcelldata(cmd);
@@ -1934,6 +1938,14 @@ else
         %
         Out(end+1)=Insert;
         %
+        if ismember('balance_quantity',Attribs)
+            Insert.NVal = -1;
+            Insert.varid = {'balance', Insert.varid, Insert.SubFld{2,3}};
+            Insert.SubFld = [];
+            Insert.Name = [Insert.Name ' (graph)'];
+            Out(end+1) = Insert;
+        end
+        %
         if ~isempty(Info.Mesh)
             if isequal(Info.Type,'ugrid_mesh') && isequal(Info.Mesh{4},-1)
                 Nm = Insert.Name;
@@ -2062,24 +2074,10 @@ for m = size(meshes,1):-1:1
 end
 hasCoords = [Out.hasCoords]==1;
 OutNoCoords = Out(~hasCoords);
-Out = Out(hasCoords);
+OutCoords = Out(hasCoords);
 %
-matchDims = 1:length(Out);
-for i = 1:length(Out)
-    for j = 1:i-1
-        if isequal(Out(i).DimName,Out(j).DimName)
-            matchDims(i) = j;
-            break
-        end
-    end
-end
-%
-OutCoords = [];
-if ~isempty(matchDims)
-   for m = unique(matchDims)
-      OutCoords = [OutCoords Out(matchDims==m) Dummy];
-   end
-end
+OutCoords = group_matching_dimensions(OutCoords, Dummy);
+OutNoCoords = group_matching_dimensions(OutNoCoords, Dummy);
 Out = [OutCoords OutNoCoords];
 %
 for i = length(OutCoords)+(1:length(OutNoCoords))
@@ -2326,6 +2324,25 @@ Out = rmfield(Out,'AppendName');
 % -----------------------------------------------------------------------------
 
 
+function OutCoords = group_matching_dimensions(Out, Dummy)
+matchDims = 1:length(Out);
+for i = 1:length(Out)
+    for j = 1:i-1
+        if isequal(Out(i).DimName,Out(j).DimName)
+            matchDims(i) = j;
+            break
+        end
+    end
+end
+%
+OutCoords = [];
+if ~isempty(matchDims)
+   for m = unique(matchDims)
+      OutCoords = [OutCoords Out(matchDims==m) Dummy];
+   end
+end
+
+
 function ivar = get_varid(Props)
 ivar = repmat(-1,size(Props));
 for i = 1:numel(Props)
@@ -2505,7 +2522,7 @@ else
     tinfo = FI.Dataset(tvar).Info;
     if nargin>2
         if isequal(t,0)
-            T = nc_varget(FI.Filename,FI.Dataset(tvar).Name);
+            T = nc_varget(FI.Filename,FI.Dataset(tvar).Name,0,FI.Dataset(tvar).Size);
         elseif length(t)==1
             T = nc_varget(FI.Filename,FI.Dataset(tvar).Name,t-1,1);
         elseif isequal(t,t(1):t(2)-t(1):t(end))
@@ -3328,4 +3345,46 @@ for v = valFields
             Data.(fld)(tDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(tDim{:},masked,:);
         end
     end
+end
+
+function val = get_attrib(Attributes,key)
+val = [];
+if isfield(Attributes,'Name')
+    ikey = ustrcmpi(key,{Attributes.Name});
+    if ikey>0
+       val = Attributes(ikey).Value;
+    end
+end
+
+function hNew = plotthis(FI,Props,Parent,Ops,hOld,varargin)
+hNew = [];
+% balance plot
+switch Props.varid{1}
+    case 'balance'
+        t = varargin{1};
+        idx = {t 0 0};
+        T = readtim(FI,Props,t);
+        varid = Props.varid{2};
+        Info = FI.Dataset(varid+1);
+        [Fluxes, status] = qp_netcdf_get(FI, varid, FI.Dataset(varid+1).Dimension, idx);
+        hold(Parent,'on')
+        hNew1 = area(Parent, T, Fluxes(:,:,1));
+        hNew2 = area(Parent, T, -Fluxes(:,:,2));
+        hNew = [hNew1, hNew2];
+        legend(Props.varid{3})
+        %
+        setappdata(Parent,'AxesType','Time-<blocking>')
+        setappdata(Parent,'BasicAxesType','Time-<blocking>')
+        setappdata(Parent,'xquantity','time')
+        tick(Parent,'x','autodate')
+        %
+        balArea = get_attrib(Info.Attribute,'balance_area');
+        quant = get_attrib(Info.Attribute,'balance_quantity');
+        set(get(Parent,'title'),'string',balArea,'interpreter','none')
+        set(get(Parent,'xlabel'),'string','time \rightarrow')
+        setappdata(Parent,'xtickmode','autodate')
+        set(get(Parent,'ylabel'),'string',[quant,' (',Props.Units,') \rightarrow'])
+        
+    otherwise
+        ui_message('error','Unknown plot type "%s".', Props.varid{1})
 end

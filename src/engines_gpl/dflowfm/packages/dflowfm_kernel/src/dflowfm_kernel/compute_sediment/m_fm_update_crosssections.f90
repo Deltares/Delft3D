@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -383,7 +383,7 @@
       bl_ave(nm) = bl(nm)
    enddo
 
-   do nm = ndx1Db, ndx ! boundary 2d nodes
+   do nm = ndx1Db+1, ndx ! boundary 2d nodes
       bl_ave(nm) = bl(nm)
    enddo
 

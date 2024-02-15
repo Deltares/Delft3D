@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -43,11 +43,11 @@
       ! fills defaults in defaul array
 
       use m_monsys
-      use m_dhrmis
+      use m_array_manipulation, only : is_missing
       use timers       !   performance timers
       use dlwq_hyd_data
       use processet
-      use output
+      use results, only : OutputPointers
       implicit none
 
       ! declaration of arguments
@@ -72,7 +72,7 @@
       integer(kind=int_wp) ::noloc           ! number of local values
       integer(kind=int_wp) ::nodef           ! number of default
       character(len=*)          :: dename(*)       ! default names
-      type(outputcoll)          :: outputs         ! output structure
+      type(OutputPointers)          :: outputs         ! output structure
       integer(kind=int_wp) ::ndspx           ! number of dispersions
       integer(kind=int_wp) ::nvelx           ! number of velocities
       integer(kind=int_wp) ::nlocx           ! number of local values on exchanges
@@ -247,7 +247,7 @@
                   endif
 
                   if ( ivalip .eq. -1 ) then
-                     if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                     if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
                      else
@@ -352,7 +352,7 @@
                   endif
 
                   if ( ivalip .eq. -1 ) then
-                     if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                     if ( is_missing(proc1%input_item(i_input)%actdef) )then
                         nmis        = nmis + 1
                         write ( line1, '(a)' )  'error: not in input'
                      else

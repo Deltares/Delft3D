@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -36,9 +36,7 @@ contains
 
    subroutine delwaq1_init(argc, argv)
       use m_delwaq1_data
-      use m_dhgarg
-
-      implicit none
+      use m_cli_utils, only : get_argument_from_list, store_command_arguments, get_number_of_arguments
 
       integer(kind=int_wp), intent(in) ::  argc
       character(len=*), dimension(argc), intent(in) :: argv
@@ -47,12 +45,12 @@ contains
 
       call timini()                          ! initializes timer
 
-      call dhstore_command(argv)
+      call store_command_arguments(argv)
 
-      narg = dhstored_number_args()            ! but timer is switched 'off' by default
+      narg = get_number_of_arguments()            ! but timer is switched 'off' by default
       if (narg == 0) narg = iargc() + 1
       do ierr = 1, narg
-         call dhgarg(ierr, arg)
+         call get_argument_from_list(ierr, arg)
          if (arg == "timer" .or. arg == "TIMER") then
             timon = .true.                     ! optionally switch it 'on'
             exit

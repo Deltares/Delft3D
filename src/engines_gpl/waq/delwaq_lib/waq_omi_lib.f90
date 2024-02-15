@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -1590,7 +1590,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
 
       use delwaq2_global_data
       use waq_omi_utils
-      use dhcommand
+      use m_cli_utils, only : store_command_arguments
       use m_waq_openda_exchange_items, only: openda_buffer_initialize
       use m_actions
       use m_sysn          ! System characteristics
@@ -1615,7 +1615,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          argv(2) = runid
       end if
 
-      call dhstore_command(argv)
+      call store_command_arguments(argv)
 
       !
       ! Some parameters that still need to be set
@@ -1903,7 +1903,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
 !
       subroutine handle_output_requests(name)
          use processet
-         use output
+         use results
          use m_sysn          ! System characteristics
 
          implicit none
@@ -1946,7 +1946,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
 !
       subroutine handle_processes(name)
          use processet
-         use output
+         use results, only : OutputPointers
          use rd_token
          use m_sysn          ! System characteristics
 
@@ -1957,7 +1957,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          type(procespropcoll)      :: statprocesdef   ! the statistical proces definition
          type(itempropcoll)        :: allitems        ! all items of the proces system
          integer(kind=int_wp) ::  ioutps(7, 10)     ! (old) output structure
-         type(outputcoll)          :: outputs         ! output structure
+         type(OutputPointers)          :: outputs         ! output structure
          integer(kind=int_wp) ::  noinfo           ! count of informative message
          integer(kind=int_wp) ::  nowarn           ! count of warnings
          integer(kind=int_wp) ::  ierr             ! error count
@@ -2221,7 +2221,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
 
       use delwaq2_global_data
       use waq_omi_utils
-      use dhcommand
+      use m_cli_utils, only : store_command_arguments
       use m_waq_openda_exchange_items, only: openda_buffer_initialize
       use m_actions
       use m_sysn          ! System characteristics
@@ -2243,7 +2243,7 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
       argv(2) = runid_given
       argv(3) = '-waq'
 
-      call dhstore_command(argv)
+      call store_command_arguments(argv)
 
       call delwaq2_global_data_initialize(runid_given)
       !

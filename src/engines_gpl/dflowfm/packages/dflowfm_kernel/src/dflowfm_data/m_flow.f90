@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,6 +33,7 @@
  module m_flow   ! flow arrays-999
  use    m_flowparameters
  use    m_flowexternalforcings
+ use    m_flowoutput
  use    m_physcoef
  use    m_turbulence
  use    m_grw
@@ -332,12 +333,12 @@
  double precision, allocatable     :: cftrt(:,:)  !< array for friction coefficients due to trachytopes
  double precision, allocatable     :: cftrtfac(:) !< array for optional multiplication factor for trachytopes's returned roughness values
  integer                           :: jacftrtfac  !< Whether or not (1/0) a multiplication factor field was specified for trachytopes's Chezy roughness values.
- double precision, allocatable     :: czs(:)      !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
  double precision, allocatable     :: czu(:)      !< array for chezy friction at flow links {"location": "edge", "shape": ["lnx"]}
  double precision, allocatable     :: frculin(:)  !< friction coefficient set by initial fields ( todo mag later ook single real worden)
  integer,          allocatable     :: ifrcutp(:)  !< friction coefficient type   initial fields ( todo mag later ook single real worden)
  double precision, allocatable     :: Cdwusp(:)   !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
- double precision, allocatable     :: Windspeedfac(:) !< Wind friction coefficient at u point set by initial fields ( todo mag later ook single real worden)
+ double precision, allocatable     :: wind_speed_factor(:) !< wind speed multiplication factor
+ double precision, allocatable     :: solar_radiation_factor(:) !< solar radiation multiplication factor
  double precision, allocatable     :: z0ucur(:)   !< current related roughness, moved from waves, always needed
  double precision, allocatable     :: z0urou(:)   !< current and wave related roughness
 
@@ -368,7 +369,6 @@
 
  double precision, allocatable     :: zn2rn (:)   !< weight from zn to rn, flownode to netnode
 
- double precision, allocatable, target :: taus (:) !< [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target :: tausx(:) ! vector components shear stress
  double precision, allocatable, target :: tausy(:)
  double precision, allocatable, target :: taubxu(:)!< Maximal bed shear stress

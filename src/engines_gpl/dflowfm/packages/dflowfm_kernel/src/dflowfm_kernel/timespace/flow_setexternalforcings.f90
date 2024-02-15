@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -679,7 +679,7 @@ end subroutine print_error_message
 subroutine prepare_wind_model_data(time_in_seconds, iresult)
    use m_wind
    use m_flowparameters, only: jawave, flowWithoutWaves
-   use m_flow, only: windspeedfac
+   use m_flow, only: wind_speed_factor
    use m_meteo
    use m_flowgeom, only: ln, lnx, ndx
    use precision_basics
@@ -770,11 +770,11 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
       end do
    end if
 
-   if (jawindspeedfac > 0) then
+   if (ja_wind_speed_factor > 0) then
       do link = 1, lnx
-         if (windspeedfac(link) /= dmiss) then
-            wx(link) = wx(link) * windspeedfac(link)
-            wy(link) = wy(link) * windspeedfac(link)
+         if (wind_speed_factor(link) /= dmiss) then
+            wx(link) = wx(link) * wind_speed_factor(link)
+            wy(link) = wy(link) * wind_speed_factor(link)
          end if
       end do
    end if

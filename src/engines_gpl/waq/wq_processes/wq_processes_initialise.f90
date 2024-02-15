@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -71,16 +71,17 @@ contains
       use m_rd_stt
       use m_monsys
       use m_getidentification
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use processes_input
       use processes_pointers
       use process_registration
 
       use dlwq_hyd_data
-      use dlwq0t_data
+      use date_time_utils, only : simulation_start_time_scu, simulation_stop_time_scu, system_time_factor_seconds, &
+                                base_julian_time
       use bloom_data_io, only:runnam
       use processet
-      use output
+      use results, only : OutputPointers
       use string_module
       use m_alloc
       use timers
@@ -98,7 +99,7 @@ contains
       character(len=*)    , intent(inout) :: sttfil          !< filename stt
 
       type(procespropcoll), intent(inout) :: statprocesdef   !< the statistical proces definition
-      type(outputcoll)    , intent(inout) :: outputs         !< output structure
+      type(OutputPointers)    , intent(inout) :: outputs         !< output structure
       character(len=20)                   :: statproc        !< name of statistics proces
       character(len=20)                   :: statname        !< name of stat output variable
       integer(kind=int_wp) ::  statival         !< pointer in waq arrays of stat output
@@ -291,10 +292,10 @@ contains
       statprocesdef%cursize = 0
       statprocesdef%maxsize = 0
       if (sttfil.ne.' ') then
-         dlwq0t_itstrt = itstrt_process
-         dlwq0t_itstop = itstop_process
-         dlwq0t_isfact = isfact
-         dlwq0t_otime  = otime
+         simulation_start_time_scu  = itstrt_process
+         simulation_stop_time_scu = itstop_process
+         system_time_factor_seconds = isfact
+         base_julian_time  = otime
 
          write(lunlsp,*) ' '
          write(lunlsp,*) ' Reading statistics definition file: ', trim(sttfil)
@@ -357,7 +358,7 @@ contains
       ! old serial definitions
       swi_nopro = .false.
       if ( .not. swi_nopro ) then
-         call getcom ( '-target_serial'  , 1    , lfound, target_serial, rdummy, cdummy, ierr2)
+         call retrieve_command_argument ( '-target_serial'  , 1    , lfound, target_serial, rdummy, cdummy, ierr2)
          if ( lfound ) then
             write(line,'(a)' ) ' found -target_serial command line switch'
             call monsys(line,1)
@@ -378,7 +379,7 @@ contains
 
       ! configuration
 
-      call getcom ( '-conf'  , 3    , lfound, idummy, rdummy, config, ierr2)
+      call retrieve_command_argument ( '-conf'  , 3    , lfound, idummy, rdummy, config, ierr2)
       if ( lfound ) then
          write(line,'(a)' ) ' found -conf command line switch'
          call monsys(line,1)
@@ -591,10 +592,10 @@ contains
                      noout = outputs%cursize + 1
                      noout_statt = noout_statt + 1
                      call reallocP(outputs%names, noout, keepExisting = .true., fill=statname)
-                     call reallocP(outputs%stdnames, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill=' ')
                      call reallocP(outputs%pointers, noout, keepExisting = .true., fill=-1)
                      call reallocP(outputs%units, noout, keepExisting = .true., fill=' ')
-                     call reallocP(outputs%descrs, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%description, noout, keepExisting = .true., fill=' ')
                      outputs%cursize = noout
                   endif
                endif
@@ -612,10 +613,10 @@ contains
                      noout = outputs%cursize + 1
                      noout_state = noout_state + 1
                      call reallocP(outputs%names, noout, keepExisting = .true., fill=statname)
-                     call reallocP(outputs%stdnames, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%std_var_name, noout, keepExisting = .true., fill=' ')
                      call reallocP(outputs%pointers, noout, keepExisting = .true., fill=-1)
                      call reallocP(outputs%units, noout, keepExisting = .true., fill=' ')
-                     call reallocP(outputs%descrs, noout, keepExisting = .true., fill=' ')
+                     call reallocP(outputs%description, noout, keepExisting = .true., fill=' ')
                      outputs%cursize = noout
                   endif
                endif
@@ -894,30 +895,30 @@ contains
          call str_lower(outname)
          iindx = index_in_array(outname,ainame)
          if ( iindx .gt. 0) then
-            outputs%stdnames(ioutp) = allitems%itemproppnts(iindx)%pnt%stdn
+            outputs%std_var_name(ioutp) = allitems%itemproppnts(iindx)%pnt%stdn
             outputs%units(ioutp) = allitems%itemproppnts(iindx)%pnt%unit
-            outputs%descrs(ioutp) = allitems%itemproppnts(iindx)%pnt%text//' '//allitems%itemproppnts(iindx)%pnt%unit
+            outputs%description(ioutp) = allitems%itemproppnts(iindx)%pnt%text//' '//allitems%itemproppnts(iindx)%pnt%unit
          else if (outname.eq.'theta') then
-            outputs%stdnames(ioutp) = ' '
+            outputs%std_var_name(ioutp) = ' '
             outputs%units(ioutp) = ' '
-            outputs%descrs(ioutp) = 'Local-theta, generated by numerical scheme (-)'
+            outputs%description(ioutp) = 'Local-theta, generated by numerical scheme (-)'
          else
             ! Is it an algae?
             ialg = index_in_array( outname(1:10), algtyp)
             if ( ialg .gt. 0) then
                if (algcof(icof, ialg) .ge. 0) then
-                  outputs%stdnames(ioutp) = ' '
+                  outputs%std_var_name(ioutp) = ' '
                   outputs%units(ioutp) = 'g m-3'
-                  outputs%descrs(ioutp) = algdsc(ialg)//' (gC/m3)'
+                  outputs%description(ioutp) = algdsc(ialg)//' (gC/m3)'
                else
-                  outputs%stdnames(ioutp) = ' '
+                  outputs%std_var_name(ioutp) = ' '
                   outputs%units(ioutp) = 'g m-2'
-                  outputs%descrs(ioutp) = algdsc(ialg)//' (gC/m2)'
+                  outputs%description(ioutp) = algdsc(ialg)//' (gC/m2)'
                endif
             else
-               outputs%stdnames(ioutp) = ' '
+               outputs%std_var_name(ioutp) = ' '
                outputs%units(ioutp) = ' '
-               outputs%descrs(ioutp) = outputs%names(ioutp)
+               outputs%description(ioutp) = outputs%names(ioutp)
             endif
          endif
       enddo

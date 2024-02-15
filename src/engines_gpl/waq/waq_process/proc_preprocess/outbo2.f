@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -63,7 +63,7 @@
 !     Declaration of arguments
 !
       use timers       !   performance timers
-      use output
+      use results
 
       INTEGER(kind=int_wp) ::NOUTP , NOSEG , NODUMP, NX    , NY    ,
      +            NRVART, NBUFMX, NDMPAR, NOTOT , NCBUFM,

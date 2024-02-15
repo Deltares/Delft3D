@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,13 +24,13 @@
 program ddcouple
 
       use hydmod
-      use m_getcom
-      use m_dhucas
+      use m_cli_utils, only : retrieve_command_argument
+      use m_string_manipulation, only : upper_case
       use merge_step_mod
       use delwaq_version_module
       use m_dattim
-      use m_dhfext
-      use m_dhgarg
+      use m_file_path_utils, only : extract_file_extension
+      use m_cli_utils, only : get_argument_from_list
 
       implicit none
 
@@ -174,7 +174,7 @@ program ddcouple
       n_mode = .false.
 
       ! get commandline
-      call dhgarg(1,hyd%file_hyd%name)
+      call get_argument_from_list(1,hyd%file_hyd%name)
       if ( hyd%file_hyd%name .eq. ' ' ) then
          interactive = .true.
          write(*,'(a,$)') ' Enter hyd/ddb filename: '
@@ -194,7 +194,7 @@ program ddcouple
          call srstop(1)
       endif
 
-      call dhfext(hyd%file_hyd%name,filext, extpos, extlen)
+      call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
 
       file_rep%name   = hyd%file_hyd%name(1:extpos-1)//'-ddcouple.out'
       file_rep%type   = FT_ASC
@@ -205,7 +205,7 @@ program ddcouple
       call setmlu(lunrep)
 
       ! check if input comes from hyd or ddb
-      call dhucas(filext,filext,len(filext))
+      call upper_case(filext, filext, len(filext))
       if ( filext .eq. 'HYD' ) then
          write(*,'(2a)') ' Input hydrodynamic description: ',trim(hyd%file_hyd%name)
          write(lunrep,'(2a)') ' Input hydrodynamic description: ',trim(hyd%file_hyd%name)
@@ -227,7 +227,7 @@ program ddcouple
 
          hyd%description(3) = hyd%file_hyd%name
          call from_ddb1(hyd)
-         call dhfext(hyd%file_hyd%name,filext, extpos, extlen)
+         call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
 
       else
 
@@ -262,10 +262,10 @@ program ddcouple
                parallel = .false.
             endif
          else
-            call getcom ( '-parallel', 0 , parallel, idummy, rdummy, cdummy, ierr )
+            call retrieve_command_argument ( '-parallel', 0 , parallel, idummy, rdummy, cdummy, ierr )
             if (.not. parallel) then
                ! Also allow -p as shorthand for -parallel
-               call getcom ( '-p', 0 , parallel, idummy, rdummy, cdummy, ierr )
+               call retrieve_command_argument ( '-p', 0 , parallel, idummy, rdummy, cdummy, ierr )
             endif
             if ( parallel ) then
                dd_bound => hyd%dd_bound_coll%dd_bound_pnts(1)

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,7 +32,7 @@ contains
    !>                    delwaq1_allocate_workspace
 
    subroutine delwaq1_allocate_workspace(argc, argv, errorcode)
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use m_delwaq1_data
 
       implicit none
@@ -42,7 +42,7 @@ contains
       integer(kind=int_wp), intent(inout) ::  errorcode
 
       !  allocate workspace
-      call getcom('-imax', 1, lfound, imax, rdummy, cdummy, ierr)
+      call retrieve_command_argument('-imax', 1, lfound, imax, rdummy, cdummy, ierr)
       if (lfound) then
          if (ierr .eq. 0) then
             write (lunrep, '(A,I12)') " Command line argument -IMAX, size of integer work array:", imax
@@ -55,7 +55,7 @@ contains
       else
          imax = iimax
       end if
-      call getcom('-rmax', 1, lfound, rmax, rdummy, cdummy, ierr)
+      call retrieve_command_argument('-rmax', 1, lfound, rmax, rdummy, cdummy, ierr)
       if (lfound) then
          if (ierr .eq. 0) then
             write (lunrep, '(A,I12)') " Command line argument -RMAX, size of real work array:", rmax
@@ -68,7 +68,7 @@ contains
       else
          rmax = irmax
       end if
-      call getcom('-cmax', 1, lfound, cmax, rdummy, cdummy, ierr)
+      call retrieve_command_argument('-cmax', 1, lfound, cmax, rdummy, cdummy, ierr)
       if (lfound) then
          if (ierr .eq. 0) then
             write (lunrep, '(A,I12)') " Command line argument -CMAX, size of character work array:", cmax

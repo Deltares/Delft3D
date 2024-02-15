@@ -17,17 +17,18 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
     set( overridden 1 PARENT_SCOPE )
   endif()
 endfunction(gp_item_default_embedded_path_override)
-
-include(BundleUtilities)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
-
-set(BU_CHMOD_BUNDLE_ITEMS 1)
-
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/dfmoutput" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-
-set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
-set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
-set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
-
-file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli ${CMAKE_INSTALL_PREFIX}/bin/dflowfm)
+IF(UNIX)
+   include(BundleUtilities)
+   include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
+   
+   set(BU_CHMOD_BUNDLE_ITEMS 1)
+   
+   fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
+   fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/dfmoutput" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
+   
+   set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
+   set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
+   set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
+   
+   file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/dflowfm-cli ${CMAKE_INSTALL_PREFIX}/bin/dflowfm)
+ENDIF(UNIX)

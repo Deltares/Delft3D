@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,7 +28,7 @@ module m_dlwqdata_save_restore
     use m_waq_precision
     use delwaq2_data
     use dlwq_hyd_data
-    use waqmem
+    use memory_mangement
     use m_sysi
     use m_sysn
 

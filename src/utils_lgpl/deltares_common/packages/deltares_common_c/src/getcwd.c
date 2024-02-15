@@ -1,6 +1,6 @@
 // ---- - LGPL--------------------------------------------------------------------
 //
-// Copyright(C)  Stichting Deltares, 2011-2023 - 2021-2023.
+// Copyright(C)  Stichting Deltares, 2011-2024 - 2021-2024.
 //
 // This library is free software; you can redistribute itand /or
 // modify it under the terms of the GNU Lesser General Public

@@ -286,7 +286,7 @@ private
    integer, public :: IDX_HIS_DPSED
 
    integer, public :: IDX_HIS_OBSCRS_DISCHARGE
-   integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUM
+   integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUMUL
    integer, public :: IDX_HIS_OBSCRS_AREA
    integer, public :: IDX_HIS_OBSCRS_VELOCITY
    integer, public :: IDX_HIS_OBSCRS_CONST_ABSTRACT

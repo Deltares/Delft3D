@@ -7,12 +7,6 @@ module fm_statistical_output
 
 private
 
-   type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
-   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
-
-
    type(t_output_quantity_config_set), public :: out_quan_conf_his
    type(t_output_quantity_config_set), public :: out_quan_conf_map
    type(t_output_quantity_config_set), public :: out_quan_conf_clm
@@ -20,12 +14,16 @@ private
    type(t_output_variable_set), public :: out_variable_set_his
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
-
-   double precision, dimension(:,:), allocatable, target, public :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
-   double precision, dimension(:), allocatable, target, public :: rug_ruheight !< Run-up height on run-up gauges to be written.
-   double precision, dimension(:), allocatable, target, public :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    
    public default_fm_statistical_output, flow_init_statistical_output_his
+
+   type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
+   type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
+   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
+   type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
+
+   double precision, dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
+   double precision, dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
 
    contains
    
@@ -131,6 +129,7 @@ private
    use messagehandling, only : Idlen
    use string_module, only: replace_char
    use netcdf_utils, only: ncu_set_att
+   use MessageHandling, only: err
 
    integer,                            intent(  out) :: num_const_items !< Number of constituent items (including sediment).
    type(t_output_quantity_config_set), intent(inout) :: output_config   !< Output configuration for the HIS file.
@@ -157,6 +156,8 @@ private
    if (.not. allocated(obscrs_data)) then
       allocate(obscrs_data(ncrs, 5 + num_const_items)) ! First 5 are for IPNT_Q1C:IPNT_HUA
       allocate(idx_const(num_const_items))
+   else
+      call err('Internal error, please report: obscrs_data was already allocated')
    endif
 
    do num = 1,NUMCONST_MDU
@@ -182,7 +183,7 @@ private
       endif
 
       ! Just-in-time add *config* item for this constituent current transport
-      call addoutval(out_quan_conf_his, idx_const(2*num-1),                                       &
+      call addoutval(output_config, idx_const(2*num-1),                                       &
             'Wrihis_crs_constituents', 'cross_section_'//trim(conststr), &
             'Flux (based on upwind flow cell) for '//trim(conststr), &
             '', trim(unitstr), UNC_LOC_OBSCRS, nc_atts = atts(1:1))
@@ -235,8 +236,8 @@ private
 
    !> Aggregate observation crossection data from crs()% value arrays into source_input data array.
    !! Will fill *all* obscrs_data, and leave the input data_pointer untouched: it assumes that all
-   !! individual calls to add_stat_output_items() have already pointered their obscrs data_pointer variables
-   !! to their corresponding obscrs_data(:,i) slice.
+   !! individual calls to add_stat_output_items() have already associated their obscrs data_pointer variables
+   !! with their corresponding obscrs_data(:,i) slice.
    !! Structure of data array:
    !! * obscrs_data(1:ncrs, 1:5): basic flow quantities
    !! * obscrs_data(1:ncrs, 5+(1:2*NUMCONST_MDU)): constituent transport quantities
@@ -314,29 +315,6 @@ private
    end if
 
    end subroutine aggregate_obscrs_data
-
-
-   !> Calculates run-up gauge data for his output.
-   !! Will allocate and fill the rug_ruheight array.
-   subroutine calculate_rug_data(source_input)
-      use m_monitoring_runupgauges, only: nrug, rug
-      double precision, pointer, dimension(:), intent(inout) :: source_input
-
-      integer :: i
-
-      if (.not. allocated(rug_ruheight)) then
-         allocate(rug_ruheight(nrug))
-      endif
-
-      if (.not. associated(source_input))then
-         source_input => rug_ruheight
-      endif
-
-      do i=1,nrug
-         rug_ruheight(i) = rug(i)%maxruh
-      end do
-   end subroutine calculate_rug_data
-
 
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
@@ -1246,7 +1224,7 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE,                                       &
                      'Wrihis_crs_flow', 'cross_section_discharge', 'Discharge through observation cross section',    &
                      'ocean_volume_transport_across_line', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
-      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUM,                                       &
+      call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUMUL,                                       &
                      'Wrihis_crs_flow', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
                      'integral_wrt_time_of_ocean_volume_transport_across_line', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_AREA,                                       &
@@ -1805,7 +1783,7 @@ private
       use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
       USE m_monitoring_crosssections, only: ncrs
-      use m_monitoring_runupgauges, only: nrug
+      use m_monitoring_runupgauges, only: nrug, rug
       USE, INTRINSIC :: ISO_C_BINDING
 
       type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
@@ -1890,9 +1868,8 @@ private
       ! Run-up gauge variables
       !
       if (nrug > 0) then
-         function_pointer => calculate_rug_data
-         temp_pointer => null()
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RUG_RUHEIGHT), temp_pointer, function_pointer)
+         temp_pointer => rug%maxruh
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_RUG_RUHEIGHT), temp_pointer)
       endif
 
       !
@@ -2353,10 +2330,10 @@ private
          !
          ! Basic flow quantities
          !
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),     obscrs_data(:,1), aggregate_obscrs_data)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUM), obscrs_data(:,2))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),          obscrs_data(:,3))
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),      obscrs_data(:,4))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE),       obscrs_data(:,1), aggregate_obscrs_data)
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_DISCHARGE_CUMUL), obscrs_data(:,2))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_AREA),            obscrs_data(:,3))
+         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_OBSCRS_VELOCITY),        obscrs_data(:,4))
 
          !
          ! Transported consituents

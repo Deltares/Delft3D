@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -67,7 +67,7 @@
 
 !       Subroutine called : srstop  stops processing with return code
 !                           dlwq0i  checks string agains allowed tokens
-!                           dlwq0t  converts an absolute time string to seconds
+!                           convert_string_to_time_offset  converts an absolute time string to seconds
 !                           cnvtim  converts a 'DATE' integer to seconds
 !                           conver  converts an array of 'DATE' integers to seconds
 !                           open_waq_files  opens files
@@ -96,10 +96,10 @@
       use partmem      !   for PARTicle tracking
       use fileinfo     !   a filename array in PART
       use alloc_mod
-      use dlwq0t_data
       use timers       !   performance timers
       use m_sysi          ! Timer characteristics
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, simulation_start_time_scu, simulation_stop_time_scu,
+     &                             convert_relative_time
 
 
       implicit none
@@ -300,7 +300,7 @@
          if ( ierr2 .eq. 0 ) then
             if ( gettoken( cdummy, idummy, itype, ierr2 ) .gt. 0 ) goto 30
          else                                                        ! it was no keyword but a time string
-            call dlwq0t ( cdummy, itstrt, .false., .false., ierr2 )  ! returns start time in seconds since time offset,
+            call convert_string_to_time_offset ( cdummy, itstrt, .false., .false., ierr2 )  ! returns start time in seconds since time offset,
             if ( itstrt .eq. -999 ) then                             ! max is about 68 year since time offset
                write ( lunut , 2140 ) trim(cdummy)
                goto 30
@@ -314,7 +314,7 @@
       enddo
       if ( itype .eq. 2 ) then
          itstrt = idummy                                             !  it was an integer for start time
-         call cnvtim ( itstrt, 1      , dtflg1 , dtflg3 )    !  convert it to seconds
+         call convert_relative_time ( itstrt, 1      , dtflg1 , dtflg3 )    !  convert it to seconds
       endif
       if ( .not. alone ) then
          if ( itstrt .ne. itstrtp ) then
@@ -327,7 +327,7 @@
 
       if ( gettoken( cdummy, idummy, itype, ierr2 ) .gt. 0 ) goto 30
       if ( itype .eq. 1 ) then                                       !  a time string
-         call dlwq0t ( cdummy, itstop, .false., .false., ierr2 )
+         call convert_string_to_time_offset ( cdummy, itstop, .false., .false., ierr2 )
          if ( itstop .eq. -999 ) then
             write ( lunut , 2140 ) trim(cdummy)
             goto 30
@@ -338,7 +338,7 @@
          endif
       else                                                           !  an integer for stop time
          itstop = idummy
-         call cnvtim ( itstop , 1      , dtflg1 , dtflg3 )
+         call convert_relative_time ( itstop , 1      , dtflg1 , dtflg3 )
       endif
       if ( .not. alone ) then
          if ( itstop .ne. itstopp ) then
@@ -384,7 +384,7 @@
          case ( 0 )                                             !    constant time step
             if ( gettoken( idt   , ierr2 ) .gt. 0 ) goto 30
             if ( dtflg1 ) then
-               call cnvtim ( idt   , 1      , dtflg1 , dtflg3 )
+               call convert_relative_time ( idt   , 1      , dtflg1 , dtflg3 )
                write ( lunut , 2210 )  idt /31536000       , mod(idt ,31536000)/86400,
      &                                 mod(idt ,86400)/3600, mod(idt ,3600)/60       ,
      &                                 mod(idt ,60)
@@ -469,8 +469,8 @@
 
 
 !     Copy timers data to dlwqt0_data
-      dlwq0t_itstrt = itstrt
-      dlwq0t_itstop = itstop
+      simulation_start_time_scu  = itstrt
+      simulation_stop_time_scu = itstop
 
 !     Read monitoring area's
 

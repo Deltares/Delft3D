@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,9 +33,9 @@
 
       ! add attributes to processes from file
 
-      use m_gkwini
-      use m_getcom
-      use m_dhucas
+      use data_processing, only : extract_value_from_group
+      use m_cli_utils, only : retrieve_command_argument
+      use m_string_manipulation, only : upper_case
       use processet
       use timers       !   performance timers
 
@@ -62,7 +62,7 @@
       integer(kind=int_wp) ::ithndl = 0
       if (timon) call timstrt( "add_atrfrc", ithndl )
 
-      call getcom ( '-sfrac', 3    , lfound, idummy, rdummy, patrfil, ierr)
+      call retrieve_command_argument ( '-sfrac', 3    , lfound, idummy, rdummy, patrfil, ierr)
       if ( lfound ) then
          open(newunit=lun_patr,file=patrfil)
 
@@ -72,8 +72,8 @@
          do iproc = 1, nproc
 
             proc => procesdef%procesprops(iproc)
-            call gkwini(lun_patr,proc%name,'sfrac_type',type)
-            call dhucas(type,type,len(type))
+            call extract_value_from_group(lun_patr,proc%name,'sfrac_type',type)
+            call upper_case(type,type,len(type))
             if ( type .eq. 'SPLITFLUX' ) then
                proc%sfrac_type = SFRAC_SPLITFLUX
             elseif ( type .eq. 'DUPLICATE' ) then

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -65,49 +65,49 @@
       use m_conver
       use m_check
       use m_srstop
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_relative_time
 
 !     kind           function         name                Descriptipon
 
-      integer(kind=int_wp), intent(in   ) ::  irmax              !< size of the real workspace
-      integer(kind=int_wp), intent(inout) ::  lun   (*)          !< array with unit numbers
-      character( *), intent(inout) :: lchar (*)         !< array with file names of the files
-      integer(kind=int_wp), intent(inout) ::  filtype(*)         !< type of binary file
-      character( *), intent(inout) :: car   (*)         !< character workspace
-      integer(kind=int_wp), intent(inout) ::  iar   (*)          !< integer workspace ( dump locations at entrance )
-      real(kind=real_wp), intent(inout) ::  rar   (irmax)      !< real    workspace
-      integer(kind=int_wp), intent(inout) ::  nrftot(*)          !< number of function items
-      integer(kind=int_wp), intent(inout) ::  nrharm(*)          !< number of harmonic items
-      integer(kind=int_wp), intent(in   ) ::  nobnd              !< number of open model boundaries
-      integer(kind=int_wp), intent(in   ) ::  notot              !< total number of substances
-      integer(kind=int_wp), intent(in   ) ::  nosys              !< number of transported substances
-      integer(kind=int_wp), intent(  out) ::  nobtyp             !< number of open model boundary types
-      integer(kind=int_wp), intent(in   ) ::  iimax              !< size of the integer workspace
-      logical      , intent(in   ) :: dtflg1            !< 'date'-format 1st timescale
-      integer(kind=int_wp), intent(in   ) ::  iwidth             !< width of the output file
-      integer(kind=int_wp), intent(in   ) ::  intsrt             !< integration option
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
-      logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
-      character(20), intent(in   ) :: sname(*)          !< array with substance names
-      integer(kind=int_wp), intent(in   ) ::  icmax              !< size of the character workspace
-      integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
+      integer(kind=int_wp), intent(in   ) :: irmax              !< size of the real workspace
+      integer(kind=int_wp), intent(inout) :: lun(:)             !< array with unit numbers
+      character( *),        intent(inout) :: lchar(:)           !< array with file names of the files
+      integer(kind=int_wp), intent(inout) :: filtype(*)         !< type of binary file
+      character( *),        intent(inout) :: car(:)             !< character workspace
+      integer(kind=int_wp), intent(inout) :: iar(:)             !< integer workspace ( dump locations at entrance )
+      real(kind=real_wp),   intent(inout) :: rar(irmax)         !< real    workspace
+      integer(kind=int_wp), intent(inout) :: nrftot(*)          !< number of function items
+      integer(kind=int_wp), intent(inout) :: nrharm(*)          !< number of harmonic items
+      integer(kind=int_wp), intent(inout) :: nobnd              !< number of open model boundaries
+      integer(kind=int_wp), intent(in   ) :: notot              !< total number of substances
+      integer(kind=int_wp), intent(inout) :: nosys              !< number of transported substances
+      integer(kind=int_wp), intent(  out) :: nobtyp             !< number of open model boundary types
+      integer(kind=int_wp), intent(in   ) :: iimax              !< size of the integer workspace
+      logical,              intent(in   ) :: dtflg1             !< 'date'-format 1st timescale
+      integer(kind=int_wp), intent(in   ) :: iwidth             !< width of the output file
+      integer(kind=int_wp), intent(in   ) :: intsrt             !< integration option
+      integer(kind=int_wp), intent(inout) :: ierr               !< cumulative error   count
+      integer(kind=int_wp), intent(inout) :: iwar               !< cumulative warning count
+      logical,              intent(in   ) :: dtflg3             !< 'date'-format (F;ddmmhhss,T;yydddhh)
+      character(20),        intent(inout) :: sname(:)           !< array with substance names
+      integer(kind=int_wp), intent(in   ) :: icmax              !< size of the character workspace
+      integer(kind=int_wp), intent(in   ) :: ioutpt             !< flag for more or less output
 
       integer(kind=int_wp) :: idef
  !
       CHARACTER*1   CDUMMY
       CHARACTER*255 CHULP
       LOGICAL       DISPER
-      CHARACTER(LEN=20) , ALLOCATABLE :: BNDID(:)               ! boundary id's 20 character
-      CHARACTER(LEN=40) , ALLOCATABLE :: BNDNAME(:)             ! boundary names
-      CHARACTER(LEN=20) , ALLOCATABLE :: BNDTYPE(:)             ! boundary types
-      CHARACTER(LEN=256), ALLOCATABLE :: BNDID_LONG(:)          ! array to buffer the non truncated boundary id's
-      CHARACTER(LEN=256), ALLOCATABLE :: BNDTYPE_LONG(:)        ! array to buffer the non truncated boundary types
-      INTEGER(kind=int_wp), ALLOCATABLE ::  IBNDTYPE(:)             ! index boundary type
-      real(kind=dp), allocatable ::  drar        (:)  !  double precission workspace (very large !lp)
+      CHARACTER(LEN=20) , ALLOCATABLE   :: BNDID(:)             ! boundary id's 20 character
+      CHARACTER(LEN=40) , ALLOCATABLE   :: BNDNAME(:)           ! boundary names
+      CHARACTER(LEN=20) , ALLOCATABLE   :: BNDTYPE(:)           ! boundary types
+      CHARACTER(LEN=256), ALLOCATABLE   :: BNDID_LONG(:)        ! array to buffer the non truncated boundary id's
+      CHARACTER(LEN=256), ALLOCATABLE   :: BNDTYPE_LONG(:)      ! array to buffer the non truncated boundary types
+      INTEGER(kind=int_wp), ALLOCATABLE ::  IBNDTYPE(:)         ! index boundary type
+      real(kind=dp), allocatable        ::  drar(:)             !  double precission workspace (very large !lp)
       logical                         :: no_id_check            ! command line argument to skip double ID check
       real(kind=real_wp) ::  rdummy                  ! dummy real in argument list
       integer(kind=int_wp) ::  idummy                  ! dummy integer in argument list
@@ -212,7 +212,7 @@
 
          ! check for unique ID, error if non-truncated ID is unique otherwise warning, can be skipped if input is generated
 
-         call getcom ( '-no_id_check' , 0    , no_id_check, idummy, rdummy, cdummy, ierr2)
+         call retrieve_command_argument ( '-no_id_check' , 0    , no_id_check, idummy, rdummy, cdummy, ierr2)
          if ( .not. no_id_check ) then
             IFOUND = index_in_array(BNDID(I),BNDID(:I-1))
             IF ( IFOUND >= 0 ) THEN
@@ -380,7 +380,7 @@
      *              ITYPE , IERR2 )
       IF ( IERR2 .GT. 0 ) GOTO 170
       IF ( DTFLG1 ) THEN
-         CALL CNVTIM ( idef , IFACT , DTFLG1, DTFLG3 )
+         call convert_relative_time ( idef , IFACT , DTFLG1, DTFLG3 )
          WRITE ( LUNUT , 2210 )
      *           idef /31536000       , MOD(idef ,31536000)/86400,
      *           MOD(idef ,86400)/3600, MOD(idef ,3600)/60       ,
@@ -452,10 +452,10 @@
       K = NOBND+1
       L = NOBND+NOBTYP+1
       allocate( drar(irmax) )             ! this array is 100 mb lp
-      call dlwq5a ( lun    , lchar  , 14     , iwidth , icmax  ,
+       call dlwq5a ( lun    , lchar  , 14     , iwidth , icmax  ,
      &              car    , iimax  , iar    , irmax  , rar    ,
-     &              sname  , bndid  , bndtype, nobnd  , nosys  ,
-     &              nobtyp , drar   , dtflg1 , dtflg3 ,
+     &              sname  , bndid  , bndtype(1:nobtyp), nobnd  , nosys  ,
+     &              nobtyp , drar   , dtflg1 , dtflg3 , 
      &              ioutpt , ierr2  , ierr   , iwar   )
       deallocate( drar )
       deallocate( bndid, bndtype )

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,8 +73,9 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    integer, parameter :: int8 = 1     ! also local storage compact in 1 byte
    integer, parameter :: mapclass_time_buffer_size =   1
    integer, parameter :: netnodemaxface = 12
+   integer, parameter :: ikx0 = 1
 
-   integer, allocatable :: id_facedim(:,:), id_edgedim(:,:), id_laydim(:,:), id_wdim(:,:), id_nodedim(:,:), id_sedtotdim(:,:), id_sedsusdim(:,:), &
+   integer, allocatable :: id_facedim(:,:), id_edgedim(:,:), id_laydim(:,:), id_wdim(:,:), id_nodedim(:,:), id_sedtotdim(:,:), id_sedsusdim(:,:), id_nlyrdim(:,:), &
                                    id_netedgedim(:,:), id_netfacedim(:,:), id_netfacemaxnodesdim(:,:), id_bnddim(:,:) !< dim and var ids, maintained for all input files + 1 output file.
    integer, dimension(nfiles+1) :: ncids, id_time, id_timestep, id_mappingVar
    integer, allocatable :: id_timedim(:,:)
@@ -163,7 +164,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    integer,                      allocatable :: var_timdimpos(:,:)   !< Position in var_dimids(1:4,iv) of time dimension (-1 if not timedep)
    integer,                      allocatable :: var_spacedimpos(:,:) !< Position in var_dimids(1:4,iv) of space dimension (-1 if not timedep)
    integer,                      allocatable :: var_laydimpos(:,:)   !< Position in var_dimids(1:4,iv) of layer dimension (-1 if not timedep)
-   integer,                      allocatable :: var_kxdimpos(:,:)    !< Position in var_dimids(1:4,iv) of vectormax dimension (-1 if not timedep)
+   integer,                      allocatable :: var_kxdimpos(:,:,:)    !< Position in var_dimids(1:4,iv) of vectormax dimension (-1 if not timedep)
    integer,                      allocatable :: var_seddimpos(:,:)   !< Position in var_dimids(1:4,iv) of sediment dimension (-1 if not timedep)
    integer,                      allocatable :: var_ndims(:,:)       !< Actual number of dimensions.
    integer,                      allocatable :: var_loctype(:,:)     !< Spatial location type for each var (face/node/etc.)
@@ -173,8 +174,9 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    character(len=NF90_MAX_NAME), allocatable :: mesh_names(:,:)    !< Mesh names in every input file.
    integer,                      allocatable :: nMesh(:)           !< Nr. meshes in every input file
    integer,                      allocatable :: ncontacts(:)       !< Nr. of mesh contacts in every input file.
+   integer,                      allocatable :: numkx(:,:)         !< Nr. of kx dimensions in all variables
 
-   integer :: ivarcandidate, ifirstdim, ilastdim
+   integer :: ivarcandidate, ifirstdim, ilastdim, ikx
    integer, parameter :: MAX_VAR_DIMS = 4 !< Max nr of dimensions for a single var. Support: (vectormax, layers, space, time).
    integer, dimension(MAX_VAR_DIMS) :: start_idx   !< Start index array for calling nf90_get_var(..., start=...)
    integer, dimension(MAX_VAR_DIMS) :: count_read  !< Data size array for calling nf90_get_var(..., count=...)
@@ -420,6 +422,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    call realloc(id_nodedim,            (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
    call realloc(id_sedtotdim,          (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
    call realloc(id_sedsusdim,          (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
+   call realloc(id_nlyrdim,            (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
    call realloc(id_netedgedim,         (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
    call realloc(id_netfacedim,         (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
    call realloc(id_netfacemaxnodesdim, (/maxTopodim,nfiles+1/), keepExisting = .false., fill = -1)
@@ -625,6 +628,10 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                      id_sedsusdim(itopo,ii) = id
                      dimids(id,itopo,ii) = id
                      cycle
+                  else if (strcmpi(dimname, 'nBedLayers')) then
+                     id_nlyrdim(itopo,ii) = id
+                     dimids(id,itopo,ii) = id
+                     cycle
                   end if
                   ! Check if this dimension is related to mesh imesh
                   isOnMesh = ionc_check_dim_on_a_mesh(ioncids(ii), imesh, topodimTmp, id)
@@ -716,6 +723,8 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                      id_sedtotdim(itopo,ii) = id
                   else if (strcmpi(dimname, 'nSedSus')) then
                      id_sedsusdim(itopo,ii) = id
+                  else if (strcmpi(dimname, 'nBedLayers')) then
+                     id_nlyrdim(itopo,ii) = id
                   end if
                end if
             end do ! id
@@ -733,11 +742,12 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    allocate(var_timdimpos(maxnvars, maxTopodim));   var_timdimpos   = -1
    allocate(var_spacedimpos(maxnvars, maxTopodim)); var_spacedimpos = -1
    allocate(var_laydimpos(maxnvars, maxTopodim));   var_laydimpos   = -1
-   allocate(var_kxdimpos(maxnvars, maxTopodim));    var_kxdimpos    = -1
+   allocate(var_kxdimpos(4, maxnvars, maxTopodim)); var_kxdimpos    = -1
    allocate(var_wdimpos(maxnvars, maxTopodim));     var_wdimpos     = -1
    allocate(var_seddimpos(maxnvars, maxTopodim));   var_seddimpos   = -1
    allocate(var_ndims(maxnvars, maxTopodim));       var_ndims       =  0
    allocate(var_loctype(maxnvars, maxTopodim));     var_loctype     =  0
+   allocate(numkx(maxnvars, maxTopodim));           numkx           =  0
 
    ! Allocate arrays for merging
    allocate(nfaceglob(maxTopodim));    nfaceglob = 0 !< total number of flow nodes (faces) without duplicates, on each mesh
@@ -902,9 +912,10 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                var_loctype(ivarcandidate,itopo) = UNC_LOC_SBND
                var_spacedimpos(ivarcandidate,itopo) = ifirstdim
             else
-               if (var_kxdimpos(ivarcandidate,itopo) == -1) then
+               if (var_kxdimpos(numkx(ivarcandidate,itopo)+1,ivarcandidate,itopo) == -1) then
                   ifirstdim = ifirstdim-1
-                  var_kxdimpos(ivarcandidate,itopo) = ifirstdim
+                  var_kxdimpos(numkx(ivarcandidate,itopo)+1,ivarcandidate,itopo) = ifirstdim
+                  numkx(ivarcandidate,itopo) = numkx(ivarcandidate,itopo)+1 ! Add extra detected kxdim for this variable
                   ! count how many times this dimension is used
                   id_infile = tmpdimids(id)
                   dimids_uses(id_infile,itopo) = dimids_uses(id_infile,itopo) + 1
@@ -914,7 +925,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                else
                   if (verbose_mode) then
                      write (*,'(a)')           'Error: mapmerge: detected more than one vectormax dimension for `'//trim(varname)//''':'
-                     write (*,'(a,i0,a,i0,a)') '       current: ', id, ', other: ', var_kxdimpos(ivarcandidate,itopo), '. Skipping this variable.'
+                     ! write (*,'(a,i0,a,i0,a)') '       current: ', id, ', other: ', var_kxdimpos(ivarcandidate,itopo), '. Skipping this variable.'
                   end if
                   isfound = .false.
                   exit ! Stop scanning any remaining dimensions for this var.
@@ -941,7 +952,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                enddo
                var_timdimpos(ivarcandidate,itopo)   = -1
                var_spacedimpos(ivarcandidate,itopo) = -1
-               var_kxdimpos(ivarcandidate,itopo)    = -1
+               var_kxdimpos(:,ivarcandidate,itopo)  = -1
                var_laydimpos(ivarcandidate,itopo)   = -1
                var_wdimpos(ivarcandidate,itopo)     = -1
                var_seddimpos(ivarcandidate,itopo)   = -1
@@ -1666,6 +1677,10 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
       do id=1,ndims
          if (dimids(id,itopo,ifileScan) > 0) then ! For now, just copy the vectormax dimids (if any) from file #1 to output file. Assume same length in all files.
             ierr = nf90_inquire_dimension(ncids(ifileScan), dimids(id,itopo,ifileScan), name = dimname, len = nlen)
+            ! if 'nSedTot', 'nSedSus' or 'nBedLayers' is present, copy to the merged file
+            if (dimname == 'nSedTot' .or. dimname == 'nSedSus' .or. dimname == 'nBedLayers') then
+                dimids_uses(id,itopo) = 1
+            endif
             if (dimids_uses(id,itopo) == 0) then
                write (*,'(a)') 'Info: mapmerge: Dimension `'//trim(dimname)//''' is not merged because no merged variable uses it. '
                cycle
@@ -1741,11 +1756,13 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
          if (ip /= -1) then
             var_dimids(ip,iv,itopo) = id_wdim(itopo,noutfile)
          end if
-         ip = var_kxdimpos(iv,itopo)
-         if (ip /= -1) then
-            var_dimids(ip,iv,itopo) = dimids(var_dimids(ip,iv,itopo),itopo,noutfile) ! this is necessary because in outfile dim IDs will be in different order, even if *all* dim ids have been copied
-            ! Dim ID for this var in outfile === based on *pos* in dimids(:) for *this* noutfile.
-         end if
+         do ikx = 1, numkx(iv, itopo)
+            ip = var_kxdimpos(ikx, iv,itopo)
+            if (ip /= -1) then
+               var_dimids(ip,iv,itopo) = dimids(var_dimids(ip,iv,itopo),itopo,noutfile) ! this is necessary because in outfile dim IDs will be in different order, even if *all* dim ids have been copied
+               ! Dim ID for this var in outfile === based on *pos* in dimids(:) for *this* noutfile.
+            end if
+         end do
 
          ierr = nf90_def_var(ncids(noutfile), var_names(iv,itopo), var_types(iv,itopo), var_dimids(4-var_ndims(iv,itopo)+1:4,iv,itopo), varids_out(iv,itopo))
 
@@ -2003,7 +2020,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
 
          if (var_ndims(iv,itopo) == 0) then  ! For instance, 'Mesh2D'
             cycle
-         else if (var_spacedimpos(iv,itopo) == -1 .and. var_timdimpos(iv,itopo) == -1 .and. var_kxdimpos(iv,itopo) /= -1) then
+         else if (var_spacedimpos(iv,itopo) == -1 .and. var_timdimpos(iv,itopo) == -1 .and. any(var_kxdimpos(:,iv,itopo) /= -1)) then
             ! Some unknown non-space and non-time dimension: impossible to merge in a generic way. Skip it.
             write (*,'(a)') 'Warning: mapmerge: cannot merge vars with non-space/time dimensions: `'//trim(var_names(iv,itopo))//'''. Skipping.'
             cycle
@@ -2017,16 +2034,18 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
          count_write(is:ie) = 1 ! For all relevant dimensions for this var: write counts to be set below
 
          ! 6b.1 Optional kx/vectormax is the same for all files, for all times:
-         if (var_kxdimpos(iv,itopo) /= -1) then
-            id = var_dimids(var_kxdimpos(iv,itopo), iv,itopo) ! Dim ID for this kx dim in outfile
-            ierr = nf90_inquire_dimension(ncids(noutfile), id, name = dimname, len = nlen)
-            if (ierr /= nf90_noerr) then
-               write (*,'(a,i0,a,a,a)') 'Error: mapmerge: Could not inquire vectormax dimension #', id, ' for variable `', trim(var_names(iv,itopo)), '''.'
-               cycle ! iv
+         do ikx = 1, numkx(iv, itopo)
+            if (var_kxdimpos(ikx, iv,itopo) /= -1) then
+               id = var_dimids(var_kxdimpos(ikx,iv,itopo), iv,itopo) ! Dim ID for this kx dim in outfile
+               ierr = nf90_inquire_dimension(ncids(noutfile), id, name = dimname, len = nlen)
+               if (ierr /= nf90_noerr) then
+                  write (*,'(a,i0,a,a,a)') 'Error: mapmerge: Could not inquire vectormax dimension #', id, ' for variable `', trim(var_names(iv,itopo)), '''.'
+                  cycle ! iv
+               end if
+               count_read (var_kxdimpos(ikx, iv,itopo)) = nlen
+               count_write(var_kxdimpos(ikx, iv,itopo)) = nlen
             end if
-            count_read (var_kxdimpos(iv,itopo)) = nlen
-            count_write(var_kxdimpos(iv,itopo)) = nlen
-         end if
+         end do
 
          ! 6b.2 Optional kmx/layer dim is assumed to be the same for all files, for all times:
          if (var_laydimpos(iv,itopo) /= -1) then
@@ -2098,7 +2117,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
             ierr = ncu_inq_var_fill(ncids(ifile(itopo)), varids(ifile(itopo),iv,itopo), nofill, fill_value_int,    fill_value_customed = imiss)
          end if
 
-         if ((var_kxdimpos(iv,itopo) == -1 .and. var_laydimpos(iv,itopo) == -1  .and. var_wdimpos(iv,itopo) == -1) & ! 1D array with no layers and no vectormax (possibly time-dep)
+         if (all(var_kxdimpos(:,iv,itopo) == -1) .and. var_laydimpos(iv,itopo) == -1 .and. var_wdimpos(iv,itopo) == -1 & ! 1D array with no layers and no vectormax (possibly time-dep)
               .or. (var_ndims(iv,itopo) == 1 .and. (var_laydimpos(iv,itopo) > 0 .or. var_wdimpos(iv,itopo) > 0))) then ! 1D array of vertical coordinates
             ! Already allocated at max(lnx, ndx, numk, numl), no risk of stack overflow
             if (var_types(iv,itopo) == nf90_double) then
@@ -2111,24 +2130,29 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                btmpvarptr(1:1,1:1,1:maxitems,1:mapclass_time_buffer_size) => btmpvar1D(:,1:mapclass_time_buffer_size)
             end if
             tmpvarDim = 1
-         else if (var_kxdimpos(iv,itopo) /= -1) then
-            if (var_laydimpos(iv,itopo) /= -1) then   ! Both a vectormax AND a laydim
-               call realloc(tmpvar3D, (/  count_read(var_kxdimpos(iv,itopo)), count_read(var_laydimpos(iv,itopo)), maxitems /), keepExisting=.false.)
+         else if (any(var_kxdimpos(:,iv,itopo) /= -1)) then
+            if (var_laydimpos(iv,itopo) /= -1 ) then   ! Both a vectormax AND a laydim
+               call realloc(tmpvar3D, (/  count_read(var_kxdimpos(ikx0,iv,itopo)), count_read(var_laydimpos(iv,itopo)), maxitems /), keepExisting=.false.)
+               ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
+               tmpvarptr => tmpvar3D
+               tmpvarDim = 3
+            else if (numkx(iv, itopo) > 1) then ! for 4 dimensional sediment variables which has more than 1 sediment dimension, e.g. msed
+               call realloc(tmpvar3D, (/  count_read(var_kxdimpos(ikx0, iv,itopo)), count_read(var_kxdimpos(2,iv,itopo)), maxitems /), keepExisting=.false.)
                ! use maxitems instead of items_count(noutfile) to try and have as few reallocs as possible.
                tmpvarptr => tmpvar3D
                tmpvarDim = 3
             else                                ! Only a vectormax dim
                if (var_types(iv,itopo) == nf90_double) then
-                  call realloc( tmpvar2D, (/  count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_double)
-                  tmpvarptr(1:count_read(var_kxdimpos(iv,itopo)),1:1,1:maxitems)  =>  tmpvar2D(:,:)
-                  call realloc( tmpvar2D_tmp, (/  count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_double)
+                  call realloc( tmpvar2D, (/  count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_double)
+                  tmpvarptr(1:count_read(var_kxdimpos(ikx0,iv,itopo)),1:1,1:maxitems)  =>  tmpvar2D(:,:)
+                  call realloc( tmpvar2D_tmp, (/  count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_double)
                else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
-                  call realloc(itmpvar2D, (/  count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_int)
-                  itmpvarptr(1:count_read(var_kxdimpos(iv,itopo)),1:1,1:maxitems) => itmpvar2D(:,:)
-                  call realloc(itmpvar2D_tmp, (/  count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_int)
+                  call realloc(itmpvar2D, (/  count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_int)
+                  itmpvarptr(1:count_read(var_kxdimpos(ikx0,iv,itopo)),1:1,1:maxitems) => itmpvar2D(:,:)
+                  call realloc(itmpvar2D_tmp, (/  count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill=fill_value_int)
                else if (var_types(iv,itopo) == nf90_char) then ! for variables such as mesh1d_node_id
-                  call realloc(ctmpvar2D, (/ count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill='')
-                  call realloc(ctmpvar2D_tmp, (/ count_read(var_kxdimpos(iv,itopo)), maxitems /), keepExisting=.false., fill='')
+                  call realloc(ctmpvar2D, (/ count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill='')
+                  call realloc(ctmpvar2D_tmp, (/ count_read(var_kxdimpos(ikx0,iv,itopo)), maxitems /), keepExisting=.false., fill='')
                end if
                tmpvarDim = 2
             end if
@@ -2216,14 +2240,14 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   ! should be consistent in the current file. If this dimension is smaller than the maximal nlen, then a seperate array
                   ! "itmpvar2D_tmpmax" will be defined by the current vectormax dimension. We first read values into this new array and then
                   ! put them into array "itmpvar2D" (UNST-1842).
-                  if (var_kxdimpos(iv,itopo) /= -1 .and. (dimname == 'nNetElemMaxNode' .or. dimname == 'max_n'//trim(meshname(itopo,ifile(itopo)))//'_face_nodes' .or. dimname == trim(meshname(itopo,ifile(itopo)))//'_nMax_face_nodes' .or. dimname=='nFlowElemContourPts')) then
+                  if (var_kxdimpos(ikx0,iv,itopo) /= -1 .and. (dimname == 'nNetElemMaxNode' .or. dimname == 'max_n'//trim(meshname(itopo,ifile(itopo)))//'_face_nodes' .or. dimname == trim(meshname(itopo,ifile(itopo)))//'_nMax_face_nodes' .or. dimname=='nFlowElemContourPts')) then
                      count_read(is) = netfacemaxnodes(itopo,ii)
                      if (netfacemaxnodes(itopo,ii) < nlen) then
                         jaread_sep = 1
                      end if
                   end if
 
-                  if (var_kxdimpos(iv,itopo) == -1 .and. var_laydimpos(iv,itopo) == -1  .and. var_wdimpos(iv,itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
+                  if (all(var_kxdimpos(:,iv,itopo) == -1) .and. var_laydimpos(iv,itopo) == -1 .and. var_wdimpos(iv,itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
                      if (var_types(iv,itopo) == nf90_double) then
                         ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo), tmpvar1D(    nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
                      else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
@@ -2231,7 +2255,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                      else if (var_types(iv,itopo) == nf90_byte) then
                         ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo), btmpvar1D(    nitemglob0+1:,itm:itm), count=count_read(is:ie), start=start_idx(is:ie))
                      end if
-                  else if (var_kxdimpos(iv,itopo) /= -1 .neqv. var_laydimpos(iv,itopo) /= -1) then ! Either a vectormax OR a laydim
+                  else if (var_kxdimpos(ikx0,iv,itopo) /= -1 .neqv. var_laydimpos(iv,itopo) /= -1) then ! Either a vectormax OR a laydim
                      if (var_types(iv,itopo) == nf90_double) then
                         if (jaread_sep == 1) then
                            call realloc(tmpvar2D_tmpmax, (/  count_read(is), count_read(ie) /), keepExisting=.false., fill=fill_value_double)
@@ -2240,16 +2264,19 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                            tmpvar2D(1:netfacemaxnodes(itopo,ii),nitemglob0+1:nitemglob0+count_read(ie)) = tmpvar2D_tmpmax(1:count_read(is),1:count_read(ie))
                            jaread_sep = 0
                         else
-                           if (var_seddimpos(iv,itopo) /= -1) then
+                           if (numkx(iv, itopo) == 2) then
+                              ! read sediment variable which has two sediment dimensions, e.g., msed
+                              ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar3D(:,:,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
+                           else if (var_seddimpos(iv,itopo) /= -1) then
                               ! Reading a sediment variable needs to specify the "map" argument in nf90_get_var, because its dimensions are in a different order than other vectormax variables
-                              ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar2D(  :,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie), map = (/ count_read (var_kxdimpos(iv,itopo)), 1, count_read (var_kxdimpos(iv,itopo))*item_counts(ii) /))
+                              ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar2D(  :,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie), map = (/ count_read (var_kxdimpos(ikx0,iv,itopo)), 1, count_read (var_kxdimpos(ikx0,iv,itopo))*item_counts(ii) /))
                            else
                               ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar2D(  :,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
                            end if
                         end if
                      else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
                         if (jaread_sep == 1) then
-                           call realloc(itmpvar2D_tmpmax, (/  count_read(is), count_read(ie) /), keepExisting=.false., fill=fill_value_int)
+                           call realloc(itmpvar2D_tmpmax, (/ count_read(is), count_read(ie) /), keepExisting=.false., fill=fill_value_int)
                            ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo), itmpvar2D_tmpmax, count=count_read(is:ie), start=start_idx(is:ie))
                            itmpvar2D(:,nitemglob0+1:nitemglob0+count_read(ie)) = fill_value_int
                            itmpvar2D(1:netfacemaxnodes(itopo,ii),nitemglob0+1:nitemglob0+count_read(ie)) = itmpvar2D_tmpmax(1:count_read(is),1:count_read(ie))
@@ -2260,7 +2287,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                      else if (var_types(iv,itopo) == nf90_char) then
                            ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo), ctmpvar2D(:,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
                      end if
-                  else if (var_kxdimpos(iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
+                  else if (var_kxdimpos(ikx0,iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
                   ! Either a vectormax OR a wdim/laydim
                      if (var_types(iv,itopo) == nf90_double) then
                         ierr = nf90_get_var(ncids(ii), varids(ii,iv,itopo),  tmpvar2D(  :,nitemglob0+1:), count=count_read(is:ie), start=start_idx(is:ie))
@@ -2457,8 +2484,8 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   !      end if
                   !   end if
                   else if (jaugrid == 1 .and. topodim(imesh,ii) == 1 .and. var_loctype(iv,itopo) == UNC_LOC_CN) then
-                  ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
-                  ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
+                     ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
+                     ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
                      ja1DCNVar = 1
                      nnodecount(itopo) = sum(numk(itopo,1:ii-1))
                      do ip=1,item_counts(ii)
@@ -2538,7 +2565,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   if (.not. verbose_mode) goto 888
                end if
                !! tmpvar is now filled with 1 var, 1 time, across all domains, without overlap, so write it now:
-               if (var_kxdimpos(iv,itopo) == -1 .and. var_laydimpos(iv,itopo) == -1 .and. var_wdimpos(iv,itopo) == -1 .and. var_seddimpos(iv,itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
+               if (all(var_kxdimpos(:,iv,itopo) == -1) .and. var_laydimpos(iv,itopo) == -1 .and. var_wdimpos(iv,itopo) == -1 .and. var_seddimpos(iv,itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
                   if (var_types(iv,itopo) == nf90_double) then
                      ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar1D, count = count_write(is:ie), start = start_idx(is:ie))
                   else if (var_types(iv,itopo) == nf90_int .or. var_types(iv,itopo) == nf90_short) then
@@ -2548,10 +2575,12 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), btmpvar1D, count = [count_write(is), mapclass_time_buffer_size*count_write(ie)], start = [start_idx(is), start_idx(ie) + 1 - mapclass_time_buffer_size])
                      endif
                   end if
-               else if (var_kxdimpos(iv,itopo) /= -1 .neqv. var_laydimpos(iv,itopo) /= -1) then ! Either a vectormax OR a laydim
+               else if (var_kxdimpos(ikx0,iv,itopo) /= -1 .neqv. var_laydimpos(iv,itopo) /= -1) then ! Either a vectormax OR a laydim
                   if (var_types(iv,itopo) == nf90_double) then
-                     if (var_seddimpos(iv,itopo) /= -1) then ! if it is a sediment variable
-                        ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar2D, count = count_write(is:ie), start = start_idx(is:ie), map = (/ count_write (var_kxdimpos(iv,itopo)), 1, count_write (var_kxdimpos(iv,itopo))*item_counts(ii) /))
+                     if (numkx(iv, itopo) == 2) then
+                        ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar3D, count = count_write(is:ie), start = start_idx(is:ie))
+                     else if (var_seddimpos(iv,itopo) /= -1) then ! if it is a sediment variable
+                        ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar2D, count = count_write(is:ie), start = start_idx(is:ie), map = (/ count_write (var_kxdimpos(ikx0,iv,itopo)), 1, count_write (var_kxdimpos(ikx0,iv,itopo))*item_counts(ii) /))
                      else
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar2D, count = count_write(is:ie), start = start_idx(is:ie))
                      end if
@@ -2560,7 +2589,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                   else if (var_types(iv,itopo) == nf90_char) then
                      ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), ctmpvar2D, count = count_write(is:ie), start = start_idx(is:ie))
                   end if
-               else if (var_kxdimpos(iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
+               else if (var_kxdimpos(ikx0,iv,itopo) /= -1 .neqv. (var_laydimpos(iv,itopo) /= -1 .or. var_wdimpos(iv,itopo) /= -1)) then
                   ! Either a vectormax OR a wdim/laydim
                   if (var_types(iv,itopo) == nf90_double) then
                      ierr = nf90_put_var(ncids(noutfile), varids_out(iv,itopo), tmpvar2D, count = count_write(is:ie), start = start_idx(is:ie))

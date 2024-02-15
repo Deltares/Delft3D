@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,7 +31,7 @@ contains
 
       use delwaq2
       use delwaq2_data
-      use dhcommand
+      use m_cli_utils, only : store_command_arguments
       use m_sysn
       use m_sysi
 
@@ -49,7 +49,7 @@ contains
       integer(kind=int_wp), intent(inout) ::  itoti
       integer(kind=int_wp), intent(inout) ::  itotc
 
-      call dhstore_command(argv)
+      call store_command_arguments(argv)
 
       itota = 0
       itoti = 0

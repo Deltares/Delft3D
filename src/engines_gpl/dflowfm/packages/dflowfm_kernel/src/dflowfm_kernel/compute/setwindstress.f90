@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -88,7 +88,7 @@
     wdsu   = 0d0
     numwav = 0
     do L = 1, lnx
-       if ( wx(L) /= 0d0 .or. wy(L) /= 0d0 ) then ! only if some wind
+       if ( wx(L) /= 0d0 .or. wy(L) /= 0d0 .or. relativewind > 0 ) then ! only if some wind
          
           wxL = wx(L)
           wyL = wy(L)

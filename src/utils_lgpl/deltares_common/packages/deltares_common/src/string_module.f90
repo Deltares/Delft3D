@@ -1,7 +1,7 @@
 module string_module
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -68,6 +68,7 @@ module string_module
    public :: real2string, real2stringLeft
    public :: GetLine
    public :: get_dirsep
+   public :: int2str
 
    interface strip_quotes
       module procedure strip_quotes1
@@ -548,7 +549,6 @@ module string_module
       !> Determine the index of the first non-whitespace character in a string.
       !! Failure is indicated by: idx = 0
       function find_first_char(string) result(idx)
-          implicit none
           integer                      :: idx    !< index of the first non-whitespace character in string.
           character(len=*), intent(in) :: string !< string to inspect
 
@@ -785,7 +785,6 @@ module string_module
 
 
       subroutine get_substr_ndx(tgt,ndx0,ndx,sep)
-         implicit none
          character(len=*), intent(in)           ::  tgt
          integer, intent(inout)                 ::  ndx0
          integer, intent(inout)                 ::  ndx
@@ -820,7 +819,6 @@ module string_module
       !> Fill allocatable string array with elements of a space-delimited string
       !> The incoming string array must be unallocated
       recursive subroutine strsplit(tgt, ndx0, pcs, npc, sep)
-         implicit none
          integer,          intent(in)                                 ::  npc   !< element index
          character(len=*), intent(in)                                 ::  tgt   !< input string
          integer, intent(in)                                          ::  ndx0  !< start position in string tgt
@@ -997,8 +995,6 @@ module string_module
       !> Find out if system is PC (directory seperator character \ (92)
       !>   or UNIX (directory seperator character / (47))
       function get_dirsep()
-         implicit none
-         
          character(len=1)     :: get_dirsep
          
          integer :: lslash
@@ -1013,5 +1009,16 @@ module string_module
          endif
          get_dirsep = slash
       end function get_dirsep
+
+      !> convert an integer into a string
+      function int2str(i) result(string)
+         integer          , intent(in) :: i        !< integer to be represented by a string
+         
+         character(len=11)             :: string11 !< temporary fixed-length string: 11 is long enough for any 64bit integer
+         character(len=:), allocatable :: string   !< flexible length string
+         
+         write(string11,'(i0)') i
+         string = trim(string11)
+      end function int2str
 
 end module string_module

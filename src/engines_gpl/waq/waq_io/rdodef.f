@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,7 +28,6 @@
 
       contains
 
-
       subroutine rdodef ( noutp  , nrvar  , nrvarm , isrtou , ounam  ,
      &                    infile , nx     , ny     , nodump , ibflag ,
      &                    lmoutp , ldoutp , lhoutp , lncout , ierr   ,
@@ -46,7 +45,10 @@
 
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
-      use output, enable_netcdf_output => lncout
+      use results, only: enable_netcdf_output => lncout
+      use results, only : imo3, imo2, imon, idm2, ihis, ihnf, ihi2, ihn3, ihi4,
+     +             ihnc, ihnc2, ihnc3, ihnc4, imnf, imn2, imo4, iba2, idmp, 
+     +            ibal, ncopt, imnc2, imnc, ima2, imap, ihn2, ihi3, ihn4
 
       implicit none
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -47,6 +47,7 @@ subroutine flow_finalize_usertimestep(iresult)
    use unstruc_channel_flow, only : network
    use m_oned_functions, only: updateFreeboard, updateDepthOnGround, updateVolOnGround
    use m_update_fourier, only : update_fourier
+   use mass_balance_areas_routines, only : mba_update
    implicit none
 
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.

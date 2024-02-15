@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -65,9 +65,9 @@
 !
 !
       use time_module
-      use m_dhucas
+      use m_string_manipulation, only : upper_case
       use m_open_waq_files
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
 
       CHARACTER*256    FNAME (3) , OPTION
       INTEGER(kind=int_wp) :: ITMTYP(*)
@@ -94,8 +94,8 @@
 
       ! map or his
 
-      call dhfext(fname(1), ext, extpos, extlen)
-      call dhucas(ext, ext, extlen)
+      call extract_file_extension(fname(1), ext, extpos, extlen)
+      call upper_case(ext, ext, extlen)
       if ( ext .eq. 'MAP' ) then
          mapfil = .true.
       else

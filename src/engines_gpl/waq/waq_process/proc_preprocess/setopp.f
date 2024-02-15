@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -37,13 +37,13 @@
       use m_monsys
       use timers         !< performance timers
       use processet      !< processet definitions
-      use output         !< output definitions
+      use results, only : OutputPointers         !< output definitions
       implicit none
 
       ! declaration of arguments
 
       type(procespropcoll)      :: procesdef       !< all processes
-      type(outputcoll)          :: outputs         !< output structure
+      type(OutputPointers)          :: outputs         !< output structure
       integer(kind=int_wp) ::ioff            !< offset to process output in waq data space
 
       ! local decalarations

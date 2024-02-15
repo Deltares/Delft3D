@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -105,11 +105,11 @@
       use m_dlwq41
       use m_dlwq15
       use m_dlwq13
-      use m_zero
-      use m_fileutils
+      use m_array_manipulation, only : initialize_real_array
+      use data_processing, only : close_files
       use dlwqgrid_mod
       use timers
-      use waqmem
+      use memory_mangement
       use delwaq2_data
       use m_waq_openda_exchange_items, only : get_openda_buffer
       use m_actions
@@ -234,7 +234,7 @@
      &                 lstrec  , lrewin    , a(ivoll:), dlwqd   )
          call dlwq65 ( a(ivol2:), a(ivol:)   , idt     , noseg   )
       else
-         call zero   ( a(ivol2:), noseg     )
+         call initialize_real_array   ( a(ivol2:), noseg     )
       endif
 
 !        Determine the volumes and areas that ran dry,

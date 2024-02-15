@@ -2296,6 +2296,44 @@
         <file name="depthgr.xyz" type="xyz" ignore="true" />
       </checks>
     </testCase>
+    <testCase name="e02_f009_c015_beyer004_villemonte_standard" ref="dflowfm_default">
+      <path>e02_dflowfm/f009_weirs/c015_beyer004_villemonte_standard</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/beyer_004f_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>    
+    <testCase name="e02_f009_c017_beyer004_villemonte_standard_rst" ref="dflowfm_default">
+      <path>e02_dflowfm/f009_weirs/c017_beyer004_villemonte_standard_rst</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/beyer_004f_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/beyer_004f_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>        
     <testCase name="e02_f009_c021_beyer004_contr09" ref="dflowfm_default">
       <path>e02_dflowfm/f009_weirs/c021_beyer004_contr09</path>
       <maxRunTime>15000.0000000</maxRunTime>

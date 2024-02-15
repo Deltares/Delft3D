@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,7 +31,7 @@
 
       SUBROUTINE DLWQ5D ( LUNUT  , IAR    , RAR    , IIMAX  , IRMAX  ,
      *                    IPOSR  , NPOS   , ILUN   , LCH    , LSTACK ,
-     *                    CCHAR  , CHULP  , NOTOT  , NOTOTC , ITTIM  , NOBRK  ,
+     *                    CCHAR  , CHULP  , NOTOT  , NOTOTC , time_dependent, NOBRK  ,
      *                    IOPT   , DTFLG1 , DTFLG3 , ITFACT , ITYPE  ,
      *                             IHULP  , RHULP  , IERR   , ierr3  )
 !
@@ -81,7 +81,9 @@
 !
 !
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
+
+      logical, intent(in) :: time_dependent !< True if the BC or Waste load definition is time dependent (linear, harmonic or Fourier), and false if it is constant.
 
       INTEGER(kind=int_wp) :: IIMAX  , IRMAX, I
       CHARACTER*(*) LCH(LSTACK) , CHULP
@@ -90,10 +92,11 @@
       LOGICAL       NEWREC , DTFLG1 , DTFLG3, IGNORE
       integer(kind=int_wp) :: ihulp
       integer(kind=int_wp) ::  ithndl = 0
-      integer(kind=int_wp) ::  ittim, nobrk, itel, itel2, ierr3, itype
+      integer(kind=int_wp) ::  nobrk, itel, itel2, ierr3, itype
       integer(kind=int_wp) ::  lunut, ilun, iposr, npos, ierr, itfact
       integer(kind=int_wp) ::  iar, notot, nototc, lstack, iopt
       real       :: rar(:), rhulp
+
       
       if (timon) call timstrt( "dlwq5d", ithndl )
 !
@@ -101,7 +104,7 @@
 !
       IGNORE = .FALSE.
       NEWREC = .FALSE.
-      IF ( ITTIM .EQ. 1 ) NEWREC = .TRUE.                          ! it is a time function
+      IF (time_dependent) NEWREC = .TRUE.                          ! it is a time function
       NOBRK  = 0
       ITEL   = 1
       ITEL2  = 1
@@ -122,7 +125,7 @@
       IF ( IERR  .NE. 0 ) goto 9999
 !          A token has arrived
       IF ( ITYPE .EQ. 1 ) THEN                                     ! that must be an absolute timer string
-         CALL DLWQ0T ( CHULP , IHULP, .FALSE., .FALSE., IERR )    !  2^31 =  2147483648
+         CALL convert_string_to_time_offset ( CHULP , IHULP, .FALSE., .FALSE., IERR )    !  2^31 =  2147483648
          IF ( IHULP .EQ. -999 ) THEN                              !       YYYYDDDHHMMSS so 64 bits integer
             IERR = 1
             WRITE ( LUNUT , 1020 ) TRIM(CHULP)
@@ -138,12 +141,12 @@
          ENDIF
          IHULP = ITFACT * IHULP
       ELSEIF ( ITYPE .EQ. 2 ) THEN
-         CALL Cnvtim ( IHULP, 1      , DTFLG1 , DTFLG3 )
+         call convert_relative_time ( IHULP, 1      , DTFLG1 , DTFLG3 )
       else
          ihulp = 0
       ENDIF
 !          Getting the data of this block (no strings any more)
-   20 IF ( ITTIM .EQ. 1 .AND. NEWREC ) THEN
+   20 IF (time_dependent .AND. NEWREC ) THEN
 !          it was a non-real and characters has been caught
          IF ( IHULP .EQ. -999 ) THEN
             IGNORE = .TRUE.
@@ -153,7 +156,7 @@
             IF ( NOBRK .LE. IIMAX ) THEN
                IAR(NOBRK) = IHULP
                if ( nobrk .gt. 1 ) then
-                   if ( ihulp .le. iar(nobrk-1) ) then
+                   if ( ihulp .le. iar(nobrk-1) ) then ! times not strinctly ascending
                      write ( lunut, 1030 ) ihulp, iar(nobrk-1)
                      ierr3 = ierr3 + 1
                   endif
@@ -179,7 +182,7 @@
          ITEL = ITEL + NOTOT - NOTOTC
       END IF
 !        it was a constant, so we can now return.
-      IF ( NEWREC .AND. ITTIM .NE. 1 ) THEN
+      IF ( NEWREC .AND. (.not. time_dependent)) THEN
          NOBRK = 1
          IAR(1) =  0
          goto 9999

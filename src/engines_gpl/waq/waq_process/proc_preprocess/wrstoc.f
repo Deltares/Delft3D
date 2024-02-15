@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -37,9 +37,9 @@
       ! set output structure for new balance file
 
       use timers         !< performance timers
-      use dhralloc
+      use m_array_manipulation, only : resize_integer_array, resize_character_array
       use processet
-      use output
+      use results, only : OutputPointers, iba2, iba3
       implicit none
 
       ! declaration of arguments
@@ -51,7 +51,7 @@
       real(kind=real_wp) ::stoch2(notot,*) ! delwaq stochi array
       integer(kind=int_wp) ::noutp           ! number of output variables
       integer(kind=int_wp) ::ioutps(7,noutp) ! output structure
-      type(outputcoll)          :: outputs         ! output structure
+      type(OutputPointers)          :: outputs         ! output structure
       integer(kind=int_wp) ::ndmpar          ! number of stations
       integer(kind=int_wp) ::nbufmx          ! max buffer
       integer(kind=int_wp) ::intopt          ! integration option
@@ -80,7 +80,7 @@
       integer(kind=int_wp) ::nobalt          ! number of balances
       integer(kind=int_wp) ::nocel           ! number of cells
       integer(kind=int_wp) ::nbufou          ! buffer used
-      type(outputcoll)          :: outputl         ! local output structure
+      type(OutputPointers)          :: outputl         ! local output structure
       integer(kind=int_wp) ::nrvarm          ! size of local output structure
       integer(kind=int_wp) ::ithndl = 0        ! handle for performance timer
       if (timon) call timstrt( "wrstoc", ithndl )
@@ -152,10 +152,10 @@
       nrvarm = outputs%cursize*2
       outputl%cursize=nrvarm
       allocate(outputl%names(nrvarm))
-      allocate(outputl%stdnames(nrvarm))
+      allocate(outputl%std_var_name(nrvarm))
       allocate(outputl%pointers(nrvarm))
       allocate(outputl%units(nrvarm))
-      allocate(outputl%descrs(nrvarm))
+      allocate(outputl%description(nrvarm))
       nrvarn = 0
       nrvaro = 0
       do ioutp = 1 , noutp
@@ -165,8 +165,8 @@
             do isys = 1,notot
                if ( nrvarn + nobalt + 4 .gt. nrvarm ) then
                   outputl%cursize=(nrvarn+nobalt+4)*2
-                  call dhralloc_int(outputl%pointers ,outputl%cursize,nrvarm)
-                  call dhralloc_ch20(outputl%names   ,outputl%cursize,nrvarm)
+                  call resize_integer_array(outputl%pointers ,outputl%cursize,nrvarm)
+                  call resize_character_array(outputl%names   ,outputl%cursize,nrvarm)
                   nrvarm = outputl%cursize
                endif
                outputl%names(nrvarn+nobalt+1)( 1:10) = syname(isys)
@@ -193,8 +193,8 @@
                            nobalt = nobalt + 1
                            if ( nrvarn + nobalt .gt. nrvarm ) then
                               outputl%cursize=(nrvarn+nobalt)*2
-                              call dhralloc_int(outputl%pointers ,outputl%cursize,nrvarm)
-                              call dhralloc_ch20(outputl%names   ,outputl%cursize,nrvarm)
+                              call resize_integer_array(outputl%pointers ,outputl%cursize,nrvarm)
+                              call resize_character_array(outputl%names   ,outputl%cursize,nrvarm)
                               nrvarm = outputl%cursize
                            endif
                            outputl%names(nrvarn+nobalt)( 1:10) = syname(isys)
@@ -219,8 +219,8 @@
 
             if ( nrvarn + noflx .gt. nrvarm ) then
                outputl%cursize = (nrvarn+noflx)*2
-               call dhralloc_int(outputl%pointers ,outputl%cursize,nrvarm)
-               call dhralloc_ch20(outputl%names   ,outputl%cursize,nrvarm)
+               call resize_integer_array(outputl%pointers ,outputl%cursize,nrvarm)
+               call resize_character_array(outputl%names   ,outputl%cursize,nrvarm)
                nrvarm = outputl%cursize
             endif
 
@@ -246,8 +246,8 @@
             nrvar = ioutps(4,ioutp)
             if ( nrvarn + nrvar .gt. nrvarm ) then
                outputl%cursize = (nrvarn+nrvar)*2
-               call dhralloc_int(outputl%pointers ,outputl%cursize,nrvarm)
-               call dhralloc_ch20(outputl%names   ,outputl%cursize,nrvarm)
+               call resize_integer_array(outputl%pointers ,outputl%cursize,nrvarm)
+               call resize_character_array(outputl%names   ,outputl%cursize,nrvarm)
                nrvarm = outputl%cursize
             endif
             do ivar = 1 , nrvar
@@ -262,29 +262,29 @@
       ! copy local output structure to argument
 
       deallocate(outputs%names)
-      deallocate(outputs%stdnames)
+      deallocate(outputs%std_var_name)
       deallocate(outputs%pointers)
       deallocate(outputs%units)
-      deallocate(outputs%descrs)
+      deallocate(outputs%description)
       allocate(outputs%names(nrvarn))
-      allocate(outputs%stdnames(nrvarn))
+      allocate(outputs%std_var_name(nrvarn))
       allocate(outputs%pointers(nrvarn))
       allocate(outputs%units(nrvarn))
-      allocate(outputs%descrs(nrvarn))
+      allocate(outputs%description(nrvarn))
       outputs%cursize  = nrvarn
       outputs%names(1:nrvarn) = outputl%names(1:nrvarn)
-      outputs%stdnames(1:nrvarn) = ' ' ! outputl%stdnames(1:nrvarn)
+      outputs%std_var_name(1:nrvarn) = ' ' ! outputl%std_var_name(1:nrvarn)
       outputs%units(1:nrvarn) =    ' ' ! outputl%units(1:nrvarn)
-      outputs%descrs(1:nrvarn) =   ' ' ! outputl%descrs(1:nrvarn)
+      outputs%description(1:nrvarn) =   ' ' ! outputl%description(1:nrvarn)
       outputs%pointers(1:nrvarn) = outputl%pointers(1:nrvarn)
 
       ! deallocate local output structure
 
       deallocate(outputl%names)
-      deallocate(outputl%stdnames)
+      deallocate(outputl%std_var_name)
       deallocate(outputl%pointers)
       deallocate(outputl%units)
-      deallocate(outputl%descrs)
+      deallocate(outputl%description)
 
       if (timon) call timstop( ithndl )
       return

@@ -6,7 +6,7 @@ function varargout = d3d_qp(cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2023 Stichting Deltares.
+%   Copyright (C) 2011-2024 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -598,12 +598,12 @@ switch cmd
             'Enable','on', ...
             'Position',[21+w voffset pos(3)-30-w 20], ...
             'Style','popupmenu', ...
-            'String',{'Simply by Index', 'Correct for Renumbering'}, ...
+            'String',{'Simply by Index', 'Correct for Renumbering', 'Shared Locations Only'}, ...
             'BackgroundColor',Active, ...
             'HorizontalAlignment','left', ...
             'Tag','difftype', ...
             'Tooltip','Select the method of differencing');
-        DTpStr = {'index','renum'};
+        DTpStr = {'index','renum','shared'};
         %
         voffset=voffset-30;
         uicontrol('Parent',dfig, ...
@@ -756,7 +756,7 @@ switch cmd
             NewRecord.Data.DiffDomain = Domains;
             NewRecord.Data.DiffType = DiffType;
             NewRecord.FileType='diff';
-            NewRecord.Options=0;
+            NewRecord.Options=1;
             NewRecord.Otherargs={};
             %
             if isempty(File)
@@ -1400,11 +1400,18 @@ switch cmd
         flds=get(sf,'string');
         found=1;
         if ~isempty(cmdargs)
-            i=ustrcmpi(cmdargs{1},flds,4); % only allow longer names to match
+            if ischar(cmdargs{1})
+                i=ustrcmpi(cmdargs{1},flds,4); % only allow longer names to match
+            else
+                i=cmdargs{1};
+                if ~isnumeric(i) || numel(i)~=1 || i>length(flds)
+                    i=-1;
+                end
+            end
             if i<0
                 found=0;
                 if nargout==0
-                    error('Cannot select %s: %s',cmd(7:end),cmdargs{1})
+                    error('Cannot select %s: %s',cmd(7:end),var2str(cmdargs{1}))
                 end
             else
                 set(sf,'value',i);

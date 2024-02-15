@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -66,7 +66,7 @@
       use m_srstop
       use m_open_waq_files
       use m_evaluate_waq_attribute
-      use m_dhimov
+      use m_array_manipulation, only : copy_integer_array_elements
       use timers
       INTEGER(kind=int_wp) ::ITIME , NOSEG , IS    , ISFLAG, IFFLAG,
      +              IFIOPK, IKMRK1
@@ -95,7 +95,7 @@
 !
          IF ( IFFLAG .EQ. 1 ) THEN
             CALL open_waq_files ( LUN(IS) , LUNTXT(IS) , IS    , 2     , IERR )
-            CALL DHIMOV ( IKNMRK(1,1), IKNMRK(1,2), NOSEG )
+            CALL copy_integer_array_elements ( IKNMRK(1,1), IKNMRK(1,2), NOSEG )
          ENDIF
 !
 !        evaluate file option; read time-dependent kenmerk array into column 3

@@ -1,7 +1,7 @@
 subroutine cortim_xyzs(lun    ,no_modules   ,nrow, modules, modstart, x_cor, y_cor, z_cor, s_cor,bv_cor,bh_cor,v_cor)
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2016.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by

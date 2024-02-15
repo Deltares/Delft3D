@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -65,7 +65,7 @@
 !     DECLARATIONS        :
 !
       use m_srstop
-      use m_dhimov
+      use m_array_manipulation, only : copy_integer_array_elements
       use timers
       INTEGER(kind=int_wp) ::LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 ,
      +              ITIME2 , NFTOT  , ISFLAG , IFFLAG
@@ -102,7 +102,7 @@
 !         a new record required?
 !
    10 IF ( ITIME-IDTIME .LT. ITIME2 ) GOTO 100
-      CALL DHIMOV ( IARRA2 , IARRA1 , NFTOT )
+      CALL copy_integer_array_elements ( IARRA2 , IARRA1 , NFTOT )
       ITIME1 = ITIME2
       READ ( LUNIN , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       GOTO 10

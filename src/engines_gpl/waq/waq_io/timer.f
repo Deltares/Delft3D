@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -51,11 +51,11 @@
 !     Logical units : lunut = unitnumber formatted output file
 
 !     Subroutines called : conver  converts a 'DATE' integer to seconds
-!                          dlwq0t  converts an absolute time string to seconds
+!                          convert_string_to_time_offset  converts an absolute time string to seconds
 
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       implicit none
 
@@ -86,7 +86,7 @@
       ierr = 0
       if ( gettoken( cdummy, it1   , itype, ierr2 ) .gt. 0 ) goto 9999
       if ( itype .eq. 1 ) then
-         call dlwq0t ( cdummy, it1   , .false., .false., ierr )
+         call convert_string_to_time_offset ( cdummy, it1   , .false., .false., ierr )
          if ( it1 .eq. -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
@@ -96,12 +96,12 @@
             goto 9999
          endif
       else
-         call cnvtim ( it1   , 1      , dtflg1 , dtflg3 )
+         call convert_relative_time ( it1   , 1      , dtflg1 , dtflg3 )
       endif
 
       if ( gettoken( cdummy, it2   , itype, ierr  ) .gt. 0 ) goto 9999
       if ( itype .eq. 1 ) then
-         call dlwq0t ( cdummy, it2   , .false., .false., ierr )
+         call convert_string_to_time_offset ( cdummy, it2   , .false., .false., ierr )
          if ( it2 .eq. -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
@@ -111,12 +111,12 @@
             goto 9999
          endif
       else
-         call cnvtim ( it2   , 1      , dtflg1 , dtflg3 )
+         call convert_relative_time ( it2   , 1      , dtflg1 , dtflg3 )
       endif
 
       if ( gettoken( cdummy, it3   , itype, ierr  ) .gt. 0 ) goto 9999
       if ( itype .eq. 1 ) then
-         call dlwq0t ( cdummy, it3   , .false., .false., ierr )
+         call convert_string_to_time_offset ( cdummy, it3   , .false., .false., ierr )
          if ( it3 .eq. -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
@@ -126,7 +126,7 @@
             goto 9999
          endif
       else
-         call cnvtim ( it3   , 1      , dtflg1 , dtflg3 )
+         call convert_relative_time ( it3   , 1      , dtflg1 , dtflg3 )
       endif
 
       write ( lunut , 2000 ) txt(noopt)

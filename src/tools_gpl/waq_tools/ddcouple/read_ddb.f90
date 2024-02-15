@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -30,7 +30,7 @@
       use m_monsys
       use hydmod
       use m_write_error_message
-      use m_dhfext
+      use m_file_path_utils, only : extract_file_extension
       use rd_token       ! tokenized reading
 
       implicit none
@@ -108,9 +108,9 @@
 
          ! fuzzy: get rid of extension of domain name
 
-         call dhfext(dd_bound%name1,filext, extpos, extlen)
+         call extract_file_extension(dd_bound%name1,filext, extpos, extlen)
          if (extpos.gt.1) dd_bound%name1(extpos:) = ' '
-         call dhfext(dd_bound%name2,filext, extpos, extlen)
+         call extract_file_extension(dd_bound%name2,filext, extpos, extlen)
          if (extpos.gt.1) dd_bound%name2(extpos:) = ' '
 
          ! make sure the numbering is always increasing (postpone till overall hyd file is written?)

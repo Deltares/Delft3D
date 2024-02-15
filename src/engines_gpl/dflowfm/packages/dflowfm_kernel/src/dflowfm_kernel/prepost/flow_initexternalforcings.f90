@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -71,6 +71,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use Timers
    use m_subsidence
  use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
+   use mass_balance_areas_routines, only : get_mbainputname
 
    implicit none
    character(len=256)            :: filename, sourcemask
@@ -914,15 +915,27 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
             else if (qid == 'windspeedfactor') then
 
-               if (jawindspeedfac == 0) then
-                  if (allocated (Windspeedfac) ) deallocate(Windspeedfac)
-                  allocate ( Windspeedfac(lnx) , stat=ierr )
-                  call aerr('Windspeedfac(lnx)', ierr, lnx )
-                  Windspeedfac = dmiss
+               if (ja_wind_speed_factor == 0) then
+                  if (allocated (wind_speed_factor) ) deallocate(wind_speed_factor)
+                  allocate ( wind_speed_factor(lnx) , stat=ierr )
+                  call aerr('wind_speed_factor(lnx)', ierr, lnx )
+                  wind_speed_factor(:) = dmiss
                endif
 
-               jawindspeedfac = 1
-               success = timespaceinitialfield(xu, yu, Windspeedfac, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+               ja_wind_speed_factor = 1
+               success = timespaceinitialfield(xu, yu, wind_speed_factor, lnx, filename, filetype, method,  operand, transformcoef, 1) ! zie meteo module
+
+            else if (qid == 'solarradiationfactor') then
+
+               if (ja_solar_radiation_factor == 0) then
+                  if (allocated (solar_radiation_factor) ) deallocate(solar_radiation_factor)
+                  allocate ( solar_radiation_factor(ndx) , stat=ierr )
+                  call aerr('solar_radiation_factor(ndx)', ierr, lnx )
+                  solar_radiation_factor(:) = dmiss
+               endif
+
+               ja_solar_radiation_factor = 1
+               success = timespaceinitialfield(xz, yz, solar_radiation_factor, ndx, filename, filetype, method, operand, transformcoef, 1)
 
             else if (qid == 'secchidepth') then
 

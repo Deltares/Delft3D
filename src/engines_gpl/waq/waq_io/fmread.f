@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,7 +53,7 @@
 !     Subroutines called : none
 
 !     Functions   called : gettoken from rd_token to read the data
-!                          dlwq0t   to convert a time string to seconds
+!                          convert_string_to_time_offset   to convert a time string to seconds
 !                          cnvtim   to convert a time integer to seconds
 !                          scale    to scale the matrix
 
@@ -61,7 +61,7 @@
 
       use timers       !   performance timers
       use rd_token       ! for the reading of tokens
-      use m_cnvtim
+      use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
       implicit none
 
@@ -102,7 +102,7 @@
          if ( gettoken( ctoken, ibrk(i1), itype, ierr2 ) .gt. 0 ) goto 10
          if ( itype .eq. 1 ) then                                    !  a time string
             if ( ioutpt .ge. 4 ) write ( lunut , 2010 ) i1, ctoken
-            call dlwq0t ( ctoken, ibrk(i1), .false., .false., ierr2 )
+            call convert_string_to_time_offset ( ctoken, ibrk(i1), .false., .false., ierr2 )
             if ( ibrk(i1) .eq. -999 ) then
                write ( lunut , 2020 ) trim(ctoken)
                goto 10
@@ -113,7 +113,7 @@
             endif
          else                                                        !  an integer for stop time
             if ( ioutpt .ge. 4 ) write ( lunut , 2040 ) i1, ibrk(i1)
-            call cnvtim ( ibrk(i1) , ifact  , dtflg  , dtflg3 )
+            call convert_relative_time ( ibrk(i1) , ifact  , dtflg  , dtflg3 )
          endif
 
          do i3 = 1, nitem

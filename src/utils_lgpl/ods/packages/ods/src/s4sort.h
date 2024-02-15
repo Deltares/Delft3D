@@ -1,4 +1,4 @@
-/* s4sort.h   (c)Copyright Sequiter Software Inc., 1990-2023.  All rights reserved. */
+/* s4sort.h   (c)Copyright Sequiter Software Inc., 1990-2024.  All rights reserved. */
 
 struct RELATE4_ST ;
 

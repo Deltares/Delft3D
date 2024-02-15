@@ -6,7 +6,7 @@ subroutine desa_kepco(x_jet   ,y_jet    ,z_jet   ,s_jet   ,nrow    , &
               & linkinf ,gdp      )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2012.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by

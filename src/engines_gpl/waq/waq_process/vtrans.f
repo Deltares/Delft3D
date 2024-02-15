@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -45,7 +45,7 @@
 
       use m_srstop
       use m_monsys
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use m_dhnoseg
       use m_dhnolay
       use m_dhltim
@@ -167,8 +167,8 @@
             ! read initial file?
 
             if(.not.fm_vtrans) then
-               call getcom('-vtrans_initial', 3 , l_initial, idummy, rdummy, file_initial, ierr2)
-               call getcom('-vtrans_restart', 3 , l_restart, idummy, rdummy, file_restart, ierr2)
+               call retrieve_command_argument('-vtrans_initial', 3 , l_initial, idummy, rdummy, file_initial, ierr2)
+               call retrieve_command_argument('-vtrans_restart', 3 , l_restart, idummy, rdummy, file_restart, ierr2)
             else
                l_initial = .false.
                l_restart = .false.

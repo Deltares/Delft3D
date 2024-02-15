@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,8 +32,8 @@
       subroutine cnfrep( noalg   , noprot, namprot, nampact, nopralg,
      +                   nampralg)
 
-      use m_dhucas
-      use m_dhslen
+      use m_string_manipulation, only : upper_case
+      use m_string_manipulation, only : get_trimmed_length
       use m_process_lib_data
       use timers       !   performance timers
 
@@ -55,7 +55,7 @@
 
       do iproc=1,nproc
          found = .false.
-         call dhucas(procid(iproc),namep1,10)
+         call upper_case(procid(iproc),namep1,10)
 
          ! the one to one processes
 
@@ -63,7 +63,7 @@
             if ( namep1 .eq. nampact(ipro) ) then
                found = .true.
                do iproc2=1,nproc
-                  call dhucas(procid(iproc2),namep2,10)
+                  call upper_case(procid(iproc2),namep2,10)
                   if ( namep2 .eq. namprot(ipro) ) then
                      do ic = 1 , nconf
                         iprcnf = (iproc-1)*nconf + ic
@@ -85,11 +85,11 @@
             do ipro = 1 , nopralg
                do ialg = 1 , noalg
                   namep3 = nampralg(ipro)
-                  call dhslen(namep3,ilen)
+                  call get_trimmed_length(namep3,ilen)
                   write(namep3(ilen+1:),'(i2.2)') ialg
                   if ( namep1 .eq. namep3 ) then
                      do iproc2=1,nproc
-                        call dhucas(procid(iproc2),namep2,10)
+                        call upper_case(procid(iproc2),namep2,10)
                         if ( namep2 .eq. namprot(ipro) ) then
                            do ic = 1 , nconf
                               iprcnf = (iproc-1)*nconf + ic

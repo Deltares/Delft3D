@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 /*   Program:    GX_DB3.C                                             */
 /*   Version:    1.02                                                 */
 /*   Programmer: Andr‚ Hendriks                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   1.01 -- 7 Jul 1993 -- 13:52 -- Operating System: DOS             */
 /*   1.00 -- 7 Jul 1993 -- 13:48 -- Operating System: DOS             */

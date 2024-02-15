@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -41,8 +41,8 @@
       ! Checks which processes can be activated
 
       use m_monsys
-      use m_dhswtr
-      use m_dhrmis
+      use waq_attribute_utils, only : evaluate_dimension_match
+      use m_array_manipulation, only : is_missing
       use dlwq_hyd_data
       use processet
       use timers       !   performance timers
@@ -120,7 +120,7 @@
          endif
 
          nmis = 0
-         call dhswtr( proc1%swtransp, noq3  , iok )
+         call evaluate_dimension_match( proc1%swtransp, noq3  , iok )
          if (.not. iok ) then
             write (line,'(4a)') ' Input for [',proc1%name,'] ', proc1%text(1:50)
             call monsys( line , 4 )
@@ -140,7 +140,7 @@
 
             if ( proc1%input_item(i_input)%type .eq. IOTYPE_SEGMENT_INPUT ) then
 
-               if ( .not.dhrmis(proc1%input_item(i_input)%actdef) .and. imolev .lt. 7 ) cycle
+               if ( .not.is_missing(proc1%input_item(i_input)%actdef) .and. imolev .lt. 7 ) cycle
                valnam = proc1%input_item(i_input)%name
                valtxt = proc1%input_item(i_input)%item%text
                write(line,'(4a)') '       [',valnam,'] ',valtxt
@@ -206,7 +206,7 @@
                      goto 10
                   endif
 
-                  if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                  if ( is_missing(proc1%input_item(i_input)%actdef) )then
                      write(line,'(a)') '       not found'
                      proc1%linvok = .false.
                      nmis = nmis + 1
@@ -229,7 +229,7 @@
 
             if ( proc1%input_item(i_input)%type .eq. IOTYPE_EXCHANG_INPUT ) then
 
-               if ( .not.dhrmis(proc1%input_item(i_input)%actdef) .and. imolev .lt. 7 ) cycle
+               if ( .not.is_missing(proc1%input_item(i_input)%actdef) .and. imolev .lt. 7 ) cycle
                valnam = proc1%input_item(i_input)%name
                valtxt = proc1%input_item(i_input)%item%text
                write(line,'(4a)') '       [',valnam,'] ',valtxt
@@ -282,7 +282,7 @@
                      goto 20
                   endif
 
-                  if ( dhrmis(proc1%input_item(i_input)%actdef) )then
+                  if ( is_missing(proc1%input_item(i_input)%actdef) )then
                      write(line,'(a)') '       not found'
                      proc1%linvok = .false.
                      nmis = nmis + 1

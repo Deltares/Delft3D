@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -31,7 +31,7 @@
 
       use m_srstop
       use m_monsys
-      use m_getcom
+      use m_cli_utils, only : retrieve_command_argument
       use hydmod
       use MessageHandling
       
@@ -134,7 +134,7 @@
 
       file_gvv=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
       file_guu=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      call getcom ( '-guu'  , 3    , lfound, idummy, rdummy, file_guu%name, ierr2)
+      call retrieve_command_argument ( '-guu'  , 3    , lfound, idummy, rdummy, file_guu%name, ierr2)
       if ( lfound ) then
          if ( ierr2.ne. 0 ) then
             file_guu%name = ' '
@@ -142,7 +142,7 @@
       else
          file_guu%name = ' '
       endif
-      call getcom ( '-gvv'  , 3    , lfound, idummy, rdummy, file_gvv%name, ierr2)
+      call retrieve_command_argument ( '-gvv'  , 3    , lfound, idummy, rdummy, file_gvv%name, ierr2)
       if ( lfound ) then
          if ( ierr2.ne. 0 ) then
             file_gvv%name = ' '

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -101,13 +101,13 @@ C
 C
 C     delete existing NEFIS files
 C
-      CALL DHDELF ( DEFNAM, IERROR )
+      CALL delete_file ( DEFNAM, IERROR )
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*)'ERROR deleting existing NEFIS DEF file:',DEFNAM
          WRITE(LUNREP,*)'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      CALL DHDELF ( DATNAM, IERROR )
+      CALL delete_file ( DATNAM, IERROR )
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*)'ERROR deleting existing NEFIS DAT file:',DATNAM
          WRITE(LUNREP,*)'ERROR number:',IERROR

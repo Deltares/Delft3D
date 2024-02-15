@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -48,7 +48,7 @@ double precision, intent (in) :: timhr, qsno
 integer         , intent (in) :: n
 
 integer          :: i, k, kb, kt, k2, L, LL, j, j2, ncols, lunadh = 0 , jafree = 0 ! D3D
-double precision :: rlon, rlat, sc, qsn, qsu, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn
+double precision :: rlon, rlat, sc, qsn, qsun, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn
 double precision :: ce, ch, qwmx, qahu, tl, Qcon, Qeva, Qlong, sg, pvtamx, pvtwmx, pvtahu, delvap
 double precision :: dexp, zlo, zup, explo, expup, ratio, rcpiba, qheat, atot
 
@@ -80,7 +80,7 @@ rhumn   = 1d-2*backgroundhumidity    ! ( )
 cloun   = 1d-2*backgroundcloudiness  ! ( )
 ce      = Dalton                     ! Dalton  number = 1.50e-3 (Gill, 1982)           evaporative flux
 ch      = Stanton                    ! Stanton number = 1.45e-3 (Friehe&Schmitt, 1976) convective heat flux
-qsu     = 0d0
+qsun    = 0d0
 qsnom   = qsno
 call getlink1(n,L)
 if (relativewind > 0d0) then
@@ -160,20 +160,26 @@ else if (jatem == 5) then
    endif
                              ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
    if (jasol == 1) then      ! Measured solar radiation qradin specified in .tem file
-      qsu = qrad(n) * (1d0-albedo)
+      qsun = qrad(n) * (1d0-albedo)
    else                      ! Calculate solar radiation from cloud coverage specified in file
       if (jsferic == 1) then
           call qsun_nominal(xz(n), yz(n), timhr, qsnom)
       endif
       if (qsnom > 0d0) then
-         qsu   = qsnom * (1d0 - 0.40d0*cloun - 0.38d0*cloun*cloun) * (1d0-albedo)
+         qsun = qsnom * (1d0 - 0.40d0*cloun - 0.38d0*cloun*cloun) * (1d0-albedo)
       else
-         qsu   = 0d0
+         qsun = 0d0
       endif
    endif
 
+   if (ja_solar_radiation_factor > 0) then
+      if (solar_radiation_factor(n) /= dmiss) then
+         qsun = qsun * solar_radiation_factor(n)
+      end if
+   end if
+
    rcpiba = rcpi*ba(n)
-   qsn    = qsu*rcpiba
+   qsn    = qsun*rcpiba
 
    if (qsn > 0d0 ) then
 
@@ -222,7 +228,7 @@ else if (jatem == 5) then
 
    if (kmx > 0 .and. Soiltempthick > 0) then
        if (qsn > 0d0) then
-          qsunsoil = qsu*explo
+          qsunsoil = qsun*explo
        else
           qsunsoil = 0d0
        endif
@@ -317,7 +323,7 @@ else if (jatem == 5) then
           ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW  
           Qlong_ice  = em*stf*(0.39d0-0.05d0*sqrt(pvtahu)) * (1d0 - 0.6d0*cloun**2 ) 
           !
-          qh_air2ice(n) = qsu + qheat
+          qh_air2ice(n) = qsun + qheat
           !
           if (isalt > 0) then
              if (kmx == 0 ) then
@@ -344,13 +350,13 @@ else if (jatem == 5) then
    endif 
   
    if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! todo, only at mapintervals
-      Qsunmap(n)   = Qsu
+      Qsunmap(n)   = Qsun
       Qevamap(n)   = Qeva
       Qconmap(n)   = Qcon
       Qlongmap(n)  = Qlong
       Qfrevamap(n) = Qfreva
       Qfrconmap(n) = Qfrcon
-      Qtotmap(n)   = Qsu + qheat
+      Qtotmap(n)   = Qsun + qheat
    endif
 
   !if (ti_xls > 0) then
@@ -366,8 +372,8 @@ else if (jatem == 5) then
   if (soiltempthick > 0d0) then
      w( 4) = w( 4) + b*tbed(n)       ! tbed
   endif
-  w( 5) = w( 5) + b*(qsu + qheat) ! qtot
-  w( 6) = w( 6) + b*Qsu           ! Qsun
+  w( 5) = w( 5) + b*(qsun + qheat)! qtot
+  w( 6) = w( 6) + b*Qsun          ! Qsun
   w( 7) = w( 7) + b*Qlong         ! QLw
   w( 8) = w( 8) + b*Qcon          ! Qcon
   w( 9) = w( 9) + b*Qeva          ! Qeva

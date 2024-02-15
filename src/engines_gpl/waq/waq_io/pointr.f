@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,7 +24,7 @@
       module pointr_mod
       use m_waq_precision
       use m_bound
-      use m_makpnt
+      use m_array_manipulation, only : create_pointer_table
       use m_open_waq_files
 
       contains
@@ -43,7 +43,7 @@
 !>            - reads and checks the dimensions of the regular matrix
 !>            - reads the regular matrix
 !>            - makes a backpointer from boundary entries to matrix locations
-!>            - calls makpnt.f to make a 'from-to' pointer table
+!>            - calls create_pointer_table.f to make a 'from-to' pointer table
 !>            - calls bound.f to:
 !>              - compute number of open boundaries
 !>              - adds the bed pointers to the pointer set to make noqt
@@ -55,7 +55,7 @@
 
 !     Modified           : May   2011 by Leo Postma, Fortran90 look and feel
 
-!     SUBROUTINES CALLED : makpnt
+!     SUBROUTINES CALLED : create_pointer_table
 !                          bound
 !                          open_waq_files
 
@@ -194,7 +194,7 @@
 
 !     make pointer table
 
-      call makpnt( nmax   , mmax   , kmax   , noseg  , nobnd  ,
+      call create_pointer_table( nmax   , mmax   , kmax   , noseg  , nobnd  ,
      &             noq    , noq1   , noq2   , imat   , ipnt   ,
      &             cellpnt, flowpnt )
 

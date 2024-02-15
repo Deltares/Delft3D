@@ -76,8 +76,8 @@ set sharedir=%D3D_HOME%\%ARCH%\share\bin
 
     rem Run
 set PATH=%dflowfmexedir%;%sharedir%
-echo executing: "%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8 %9
-"%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8 %9
+echo executing: "%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %*
+"%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %*
 
 goto end
 

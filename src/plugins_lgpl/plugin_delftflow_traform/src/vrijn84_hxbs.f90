@@ -6,7 +6,7 @@ subroutine vrijn84_hxbs(dll_integers, max_integers, &
                   error_message_c  )
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VRIJN84_HXBS' :: VRIJN84_HXBS
 !!--copyright-------------------------------------------------------------------
-! Copyright (c) 2005-2023, WL | Delft Hydraulics. All rights reserved.
+! Copyright (c) 2005-2024, WL | Delft Hydraulics. All rights reserved.
 !!--disclaimer------------------------------------------------------------------
 ! This code is part of the Delft3D software system. WL|Delft Hydraulics has
 ! developed c.q. manufactured this code to its best ability and according to the

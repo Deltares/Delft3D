@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -74,7 +74,6 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_statistical_output
     use fm_statistical_output
     use m_output_config
-    use m_particles
     use MessageHandling, only: err
    
     implicit none
@@ -266,7 +265,7 @@ subroutine unc_write_his(tim)            ! wrihis
             filename = defaultFilename('his')
         end if
 
-        ierr = unc_create(filename, 0, ihisfile, .false.)
+        ierr = unc_create(filename, 0, ihisfile)
         if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'Could not create history file.')
         end if
@@ -715,7 +714,7 @@ subroutine unc_write_his(tim)            ! wrihis
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
                                    config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
                else
-                  call err('Programming error: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
+                  call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
                end if
             case (UNC_LOC_OBSCRS)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)

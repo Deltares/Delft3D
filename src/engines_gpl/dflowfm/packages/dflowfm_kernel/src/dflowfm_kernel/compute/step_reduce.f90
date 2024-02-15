@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -47,6 +47,7 @@
  use m_subsidence
  use m_fm_bott3d, only: fm_bott3d
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
+ use mass_balance_areas_routines, only: comp_bedload_fluxmba
 
  implicit none
 
@@ -314,6 +315,7 @@
     call fm_erosed()                   ! source/sink, bedload/total load
     call timstop(handle_extra(88))
     
+    call comp_bedload_fluxmba()
     if ( jatimer.eq.1 ) call stoptimer(IEROSED)
  end if
 

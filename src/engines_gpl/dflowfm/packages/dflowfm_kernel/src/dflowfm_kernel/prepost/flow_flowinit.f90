@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,6 +73,7 @@ contains
    use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
+   use m_fixedweirs, only: weirdte, nfxw
    
    implicit none
 
@@ -83,6 +84,8 @@ contains
    
    integer, external :: flow_initexternalforcings
 
+   double precision, allocatable :: weirdte_save(:)
+   
    error = DFM_NOERR
 
    if (ndx == 0) then
@@ -239,8 +242,10 @@ contains
    if (jaoldrstfile == ON) then ! If the restart file is of old version (which does not have waterlevel etc info on boundaries), then need to set.
       call sets01zbnd(0, 0)
    end if
-   call sets01zbnd(1, 1)
-
+   if (.not. jawelrestart) then
+      call sets01zbnd(1, 1)
+   endif 
+   
    call initialize_values_at_normal_velocity_boundaries()
    call initialize_values_at_discharge_boundaries()
    call copy_boundary_friction_and_skewness_into_flow_links()
@@ -269,7 +274,7 @@ contains
 
    call setkbotktop(1)
 
-   call update_s0_and_hs(jawelrestart)
+   call update_s0_and_hs()
 
    if ( jaselfal > OFF ) then
   !  with hs available: recompute SAL potential
@@ -279,7 +284,15 @@ contains
    call include_ground_water()
    call include_infiltration_model()
 
+   if (nfxw > 0) then 
+      allocate ( weirdte_save(nfxw), STAT=ierror)
+      weirdte_save=weirdte
+   endif
    call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)
+   if (nfxw > 0) then 
+       weirdte=weirdte_save
+      deallocate ( weirdte_save)
+   endif
    call temporary_fix_for_sepr_3D()
 
    call volsur()
@@ -755,7 +768,7 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs
+   use m_flow,             only : u1, u0, s0, hs, s1
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
@@ -796,15 +809,14 @@ subroutine load_restart_file(file_exist, error)
             file_exist = .true.
          end if
          
-         u1_tmp  = u1
-         u1(:)   = u0(:)
-         hs(:)   = s0(:) - bl(:)
+         hs(:)   = s1(:) - bl(:)
          if (iperot == NOT_DEFINED ) then
             call reconst2nd ()
          end if
          call fill_onlyWetLinks()
          call setucxucyucxuucyunew() !reconstruct cell-center velocities
-         u1(:) = u1_tmp(:)
+         call flow_obsinit() 
+         call fill_valobs() 
        end if
    end if
 
@@ -1064,20 +1076,13 @@ subroutine set_data_for_ship_modelling()
 end subroutine set_data_for_ship_modelling
 
 !> update_s0_and_hs
-subroutine update_s0_and_hs(jawelrestart)
+subroutine update_s0_and_hs()
    use m_flow,           only : s1, s0, hs
    use m_flowgeom,       only : bl
 
    implicit none
 
-   logical, intent(in) :: jawelrestart
-
-   if (.not. jawelrestart) then
-      s0(:) = s1(:)
-   else ! If one restarts a simulation, then use s0 to compute hs
-      s0(:) = max(s0(:),bl(:))
-   end if
-
+   s0(:) = s1(:)
    hs(:) = s0(:) - bl(:)
  
 end subroutine update_s0_and_hs
@@ -2278,7 +2283,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav
+   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
    use m_flowgeom,             only : lnx
 
    implicit none
@@ -2287,13 +2292,17 @@ subroutine restore_au_q1_3D_for_1st_history_record()
    double precision, allocatable :: fu_temp(:,:), ru_temp(:,:), au_temp(:,:)
 
    if ( kmx > 0 ) then
-      fu_temp = fusav
-      ru_temp = rusav
-      au_temp = ausav
+      if (ncgen > 0) then
+         fu_temp = fusav
+         ru_temp = rusav
+         au_temp = ausav
+      endif   
       call furusobekstructures() ! to have correct au values but it provides incorrect q1 values for structures
-      fusav = fu_temp
-      rusav = ru_temp
-      ausav = au_temp
+      if (ncgen > 0) then
+         fusav = fu_temp
+         rusav = ru_temp
+         ausav = au_temp
+      endif   
 !  restore correct discharge values
       do i_q1_0 = 1, lnx
          q1(i_q1_0) = 0d0 

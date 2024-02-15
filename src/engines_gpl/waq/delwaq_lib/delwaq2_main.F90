@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,7 +53,6 @@ contains
       use m_delwaq2_main_finalise
       use delwaq2
       use delwaq2_data
-      use dhcommand
       use m_actions
       use m_sysn
       use m_sysi

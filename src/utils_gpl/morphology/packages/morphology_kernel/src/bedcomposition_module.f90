@@ -1,7 +1,7 @@
 module bedcomposition_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -98,8 +98,9 @@ end interface
 ! morphology layers numerical settings
 !
 type morlyrnumericstype
-    real(fp) :: MinMassShortWarning  ! minimum erosion thickness for a shortage warning
-    integer  :: MaxNumShortWarning   ! maximum number of shortage warnings remaining
+    logical  :: track_mass_shortage       ! track the mass shortage
+    real(fp) :: mass_shortage_thresh      ! minimum erosion thickness for a shortage warning
+    integer  :: max_num_shortage_warnings ! maximum number of shortage warnings remaining
 end type morlyrnumericstype
 
    
@@ -221,6 +222,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     !
     ! Local variables
     !
+    logical                                 :: track_shortage
     integer                                 :: l
     integer                                 :: nm
     real(fp)                                :: seddep0
@@ -258,6 +260,7 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
     !
     istat = allocwork(this)
     if (istat /= 0) return
+    track_shortage = this%settings%morlyrnum%track_mass_shortage
     select case(this%settings%iunderlyr)
     case(2)
        do nm = this%settings%nmlb,this%settings%nmub
@@ -269,21 +272,23 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
              do l = 1, this%settings%nfrac
                 temp  = msed(l, 1, nm) + dbodsd(l, nm)
                 if (temp < 0.0_fp) then
-                   if (temp < -morlyrnum%MinMassShortWarning .and. morlyrnum%MaxNumShortWarning>0) then
-                      morlyrnum%MaxNumShortWarning = morlyrnum%MaxNumShortWarning - 1
+                   if (temp < -morlyrnum%mass_shortage_thresh .and. morlyrnum%max_num_shortage_warnings>0) then
+                      morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
                       write(message,'(a,i5,a,i3,a,e20.4,a,e20.4)') &
                          & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
                          & ' Mass available   : ' ,msed(l, 1, nm), &
                          & ' Mass to be eroded: ', dbodsd(l, nm)
                       call addmessage(messages,message)
-                      if (morlyrnum%MaxNumShortWarning == 0) then
+                      if (morlyrnum%max_num_shortage_warnings == 0) then
                          message = 'Sediment erosion shortage messages suppressed'
                          call addmessage(messages,message)
                       endif
                    endif
-                   sedshort(l, nm) = sedshort(l, nm) + temp
+                   if (track_shortage) then
+                      sedshort(l, nm) = sedshort(l, nm) + temp
+                   endif
                    temp = 0.0_fp
-                elseif ( sedshort(l, nm) < 0.0 ) then
+                elseif ( sedshort(l, nm) < 0.0_fp ) then
                    temp = temp + sedshort(l, nm)
                    if ( temp < 0.0_fp ) then
                       sedshort(l, nm) = temp
@@ -392,19 +397,30 @@ function updmorlyr(this, dbodsd, dz, messages) result (istat)
           do l = 1, this%settings%nfrac
              bodsed(l, nm) = bodsed(l, nm) + real(dbodsd(l, nm),prec)
              if (bodsed(l, nm) < 0.0_prec) then
-                if (bodsed(l, nm) < real(-morlyrnum%MinMassShortWarning,prec) .and. morlyrnum%MaxNumShortWarning>0) then
-                   morlyrnum%MaxNumShortWarning = morlyrnum%MaxNumShortWarning - 1
+                if (bodsed(l, nm) < real(-morlyrnum%mass_shortage_thresh,prec) .and. morlyrnum%max_num_shortage_warnings>0) then
+                   morlyrnum%max_num_shortage_warnings = morlyrnum%max_num_shortage_warnings - 1
                    write(message,'(a,i0,a,i0,a,e20.4,a,e20.4)') &
                       & 'Sediment erosion shortage at NM ', nm, ' Fraction: ', l, &
                       & ' Mass available   : ' ,bodsed(l, nm), &
                       & ' Mass to be eroded: ', dbodsd(l, nm)
                    call addmessage(messages,message)
-                   if (morlyrnum%MaxNumShortWarning == 0) then
+                   if (morlyrnum%max_num_shortage_warnings == 0) then
                       message = 'Sediment erosion shortage messages suppressed'
                       call addmessage(messages,message)
                    endif
                 endif
+                if (track_shortage) then
+                   sedshort(l, nm) = sedshort(l, nm) + bodsed(l, nm)
+                endif
                 bodsed(l, nm) = 0.0_prec
+             elseif (sedshort(l, nm) < 0.0_fp .and. bodsed(l, nm) > 0.0_prec) then
+                bodsed(l, nm) = bodsed(l, nm) + real(sedshort(l, nm),prec)
+                if (bodsed(l, nm) > 0.0_prec) then
+                    sedshort(l, nm) = 0.0_fp
+                else
+                    sedshort(l, nm) = real(bodsed(l, nm), fp)
+                    bodsed(l, nm) = 0.0_prec
+                endif
              endif
              dpsed(nm) = dpsed(nm) + real(bodsed(l, nm),fp)/rhofrac(l)
           enddo    
@@ -1951,8 +1967,9 @@ function initmorlyr(this) result (istat)
     !
     allocate (settings%morlyrnum , stat = istat)
     if (istat == 0) then
-       settings%morlyrnum%MinMassShortWarning = 0.0_fp
-       settings%morlyrnum%MaxNumShortWarning = 100
+       settings%morlyrnum%track_mass_shortage = .true.
+       settings%morlyrnum%mass_shortage_thresh = 0.0_fp
+       settings%morlyrnum%max_num_shortage_warnings = 100
     endif
     !
     settings%keuler         = 2
@@ -2078,13 +2095,13 @@ function allocmorlyr(this) result (istat)
        if (istat == 0) state%msed = 0.0_fp
        if (istat == 0) allocate (state%thlyr(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%thlyr = 0.0_fp
-       if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
-       if (istat == 0) state%sedshort = 0.0_fp
        if (istat == 0) allocate (state%svfrac(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%svfrac = 1.0_fp
        if (istat == 0) allocate (state%preload(settings%nlyr,nmlb:nmub), stat = istat)
        if (istat == 0) state%preload = 0.0_fp
     endif
+    if (istat == 0) allocate (state%sedshort(nfrac,nmlb:nmub), stat = istat)
+    if (istat == 0) state%sedshort = 0.0_fp
     !
     ! WARNING: Do not allocate this%work here
     ! For some reason it needs to be allocated/deallocated in updmorlyr/gettoplyr
@@ -2288,6 +2305,8 @@ function bedcomp_getpointer_logical_scalar(this, variable, val) result (istat)
     select case (localname)
     case ('exchange_layer','exchlyr')
        val => this%settings%exchlyr
+    case ('track_mass_shortage')
+       val => this%settings%morlyrnum%track_mass_shortage
     case default
        val => NULL()
     end select
@@ -2335,8 +2354,8 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%ndiff
     case ('number_of_layers','nlyr')
        val => this%settings%nlyr
-    case ('maxnumshortwarning')
-       val => this%settings%morlyrnum%MaxNumShortWarning
+    case ('max_num_shortage_warnings')
+       val => this%settings%morlyrnum%max_num_shortage_warnings
     case ('number_of_eulerian_layers','neulyr')
        val => this%settings%neulyr
     case ('number_of_lagrangian_layers','nlalyr')
@@ -2389,8 +2408,8 @@ function bedcomp_getpointer_fp_scalar(this, variable, val) result (istat)
        val => this%settings%theulyr
     case ('thickness_of_lagrangian_layers','thlalyr')
        val => this%settings%thlalyr
-    case ('minmassshortwarning')
-       val => this%settings%morlyrnum%MinMassShortWarning
+    case ('mass_shortage_thresh')
+       val => this%settings%morlyrnum%mass_shortage_thresh
     case default
        val => NULL()
     end select
