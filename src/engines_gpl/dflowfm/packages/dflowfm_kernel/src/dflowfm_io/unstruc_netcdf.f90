@@ -7105,7 +7105,7 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
                endif
             enddo
          enddo
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_lyrfrac  , UNC_LOC_S, frac, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_lyrfrac, UNC_LOC_S, frac, locdim=3, jabndnd=jabndnd_)
          !
          if (stmpar%morlyr%settings%iporosity>0) then
             if (.not. allocated(poros) ) allocate( poros(1:stmpar%morlyr%settings%nlyr, 1:ndx ) )
