@@ -441,7 +441,6 @@ subroutine loadModel(filename)
     use m_flow1d_reader
     use m_flowexternalforcings, only: pillar
     use m_sferic
-    ! use string_module, only: get_dirsep
     use unstruc_caching
     use m_longculverts
     use unstruc_channel_flow
