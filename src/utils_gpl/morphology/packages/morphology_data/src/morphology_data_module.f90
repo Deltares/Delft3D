@@ -50,6 +50,7 @@ public mornumericstype
 public bedbndtype
 public cmpbndtype
 public sedpar_type
+public partim_type
 public trapar_type
 public sedtra_type
 public fluffy_type
@@ -71,11 +72,16 @@ public allocsedtra
 public clrsedtra
 public allocfluffy
 public initmoroutput
+public get_transport_parameters
 
 ! define a missing value consistent with netCDF _fillvalue
 real(fp), parameter, public :: missing_value = 9.9692099683868690e+36_fp
 
 integer, parameter, public :: CHARLEN = 40
+
+integer, parameter, public :: PARSOURCE_CONST = 0
+integer, parameter, public :: PARSOURCE_FIELD = 1
+integer, parameter, public :: PARSOURCE_TIME  = 2
 
 integer, parameter, public :: RP_TIME  =  1     ! time since reference date [s]
 integer, parameter, public :: RP_EFUMN =  2     ! U component of effective depth averaged velocity [m/s]
@@ -634,6 +640,18 @@ type sedpar_type
     character(256) :: flspmc     ! critical mud fraction for non-cohesive behaviour file
 end type sedpar_type
 
+type partim_type
+    integer                                   :: ipar_ts    !< parameter number within the time series object
+    integer                                   :: irec_ts    !< most recently used time series record
+    integer                                   :: itable_ts  !< table nunber within the time series object
+    integer                                   :: npar_ts    !< number of parameter values within time series object (should be 1)
+    integer                                   :: refjulday  !< Julian reference date
+    real(fp)                                  :: timhr      !< time of previous value
+    real(fp)                                  :: par        !< previous parameter value
+    !
+    type(handletype)                          :: ts         !< time series object
+end type partim_type
+
 type trapar_type
     !
     ! doubles
@@ -650,41 +668,46 @@ type trapar_type
     integer                                    :: max_reals           !  Maximum number of reals which can be delivered to shared library
     integer                                    :: max_strings         !  Maximum number of character strings which can be delivered to shared library
     integer                                    :: npar                !  Maximum number of sediment transport formula parameters
-    integer                                    :: nparfld             !  Number of sediment transport formula 2D field parameters
+    integer                                    :: nparfld             !  Number of sediment transport formula parameters specified as 2D fields
+    integer                                    :: npartim             !  Number of sediment transport formula parameters specified as time-series
     integer                                    :: nouttot             !  Total number of output parameters (sum of noutpar)
     !
     ! pointers
     !
-    integer          , dimension(:)  , pointer :: noutpar             !  (lsedtot) Number of output parameters per sediment fraction i1
-    integer          , dimension(:,:), pointer :: ioutpar             !  (max, lsedtot) Index of output parameter i2 of sediment fraction i1 into XX array
-    real(fp)         , dimension(:,:), pointer :: outpar              !  (noutpar,nmmax) Sediment transport parameters spatially varying
-    character(256)   , dimension(:,:), pointer :: outpar_name         !  (max, lsedtot) Name of sediment transport parameter i2 of sediment fraction i1
-    character(256)   , dimension(:,:), pointer :: outpar_longname     !  (max, lsedtot) Long name of sediment transport parameter i2 of sediment fraction i1
+    integer          , dimension(:)  , pointer :: noutpar             !< (lsedtot) Number of output parameters per sediment fraction i1
+    integer          , dimension(:,:), pointer :: ioutpar             !< (max, lsedtot) Index of output parameter i2 of sediment fraction i1 into XX array
+    real(fp)         , dimension(:,:), pointer :: outpar              !< (noutpar,nmmax) Sediment transport parameters spatially varying
+    character(256)   , dimension(:,:), pointer :: outpar_name         !< (max, lsedtot) Name of sediment transport parameter i2 of sediment fraction i1
+    character(256)   , dimension(:,:), pointer :: outpar_longname     !< (max, lsedtot) Long name of sediment transport parameter i2 of sediment fraction i1
     !
-    character(256)   , dimension(:)  , pointer :: dll_function_settle !  Name of subroutine in DLL that calculates the Settling velocity
-    character(256)   , dimension(:)  , pointer :: dll_name_settle     !  Name of DLL that contains the Settling velocity subroutine
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !  Handle of DLL that contains the Settling velocity subroutine
-    integer          , dimension(:)  , pointer :: dll_integers_settle !  Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals_settle    !  Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings_settle  !  Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil_settle   !  Name of input file to be passed to subroutine in DLL
-    integer          , dimension(:)  , pointer :: iform_settle        !  Number of sediment settling velocity formula
-    real(fp)         , dimension(:,:), pointer :: par_settle          !  Settling velocity formula parameters
+    character(256)   , dimension(:)  , pointer :: dll_function_settle !< Name of subroutine in DLL that calculates the Settling velocity
+    character(256)   , dimension(:)  , pointer :: dll_name_settle     !< Name of DLL that contains the Settling velocity subroutine
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle_settle   !< Handle of DLL that contains the Settling velocity subroutine
+    integer          , dimension(:)  , pointer :: dll_integers_settle !< Input integer array to shared library
+    real(hp)         , dimension(:)  , pointer :: dll_reals_settle    !< Input real array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_strings_settle  !< Input character string array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_usrfil_settle   !< Name of input file to be passed to subroutine in DLL
+    integer          , dimension(:)  , pointer :: iform_settle        !< Number of sediment settling velocity formula
+    real(fp)         , dimension(:,:), pointer :: par_settle          !< Settling velocity formula parameters
     !
-    character(256)   , dimension(:)  , pointer :: dll_function        !  Name of subroutine in DLL that calculates the Sediment transport formula
-    character(256)   , dimension(:)  , pointer :: dll_name            !  Name of DLL that calculates the Sediment transport formula
-    integer(pntrsize), dimension(:)  , pointer :: dll_handle          !  DLL containing Sediment transport formula
-    integer          , dimension(:)  , pointer :: dll_integers        !  Input integer array to shared library
-    real(hp)         , dimension(:)  , pointer :: dll_reals           !  Input real array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_strings         !  Input character string array to shared library
-    character(256)   , dimension(:)  , pointer :: dll_usrfil          !  Name of input file to be passed to subroutine in DLL
-    character(256)   , dimension(:)  , pointer :: flstrn              !  Sediment transport formula file names
-    integer          , dimension(:)  , pointer :: iform               !  Sediment transport formula number
-    character(256)   , dimension(:)  , pointer :: name                !  Sediment transport formula names
-    real(fp)         , dimension(:,:), pointer :: par                 !  Sediment transport formula parameters
-    integer          , dimension(:,:), pointer :: iparfld             !  Index of parameter in parfld array (0 if constant)
-    real(fp)         , dimension(:,:), pointer :: parfld              !  Sediment transport formula 2D field parameters
-    character(256)   , dimension(:,:), pointer :: parfil              !  Sediment transport formula file names
+    character(256)   , dimension(:)  , pointer :: dll_function        !< Name of subroutine in DLL that calculates the Sediment transport formula
+    character(256)   , dimension(:)  , pointer :: dll_name            !< Name of DLL that calculates the Sediment transport formula
+    integer(pntrsize), dimension(:)  , pointer :: dll_handle          !< DLL containing Sediment transport formula
+    integer          , dimension(:)  , pointer :: dll_integers        !< Input integer array to shared library
+    real(hp)         , dimension(:)  , pointer :: dll_reals           !< Input real array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_strings         !< Input character string array to shared library
+    character(256)   , dimension(:)  , pointer :: dll_usrfil          !< Name of input file to be passed to subroutine in DLL
+    character(256)   , dimension(:)  , pointer :: flstrn              !< Sediment transport formula file names
+    integer          , dimension(:)  , pointer :: iform               !< Sediment transport formula number
+    character(256)   , dimension(:)  , pointer :: name                !< Sediment transport formula names
+    real(fp)         , dimension(:,:), pointer :: par                 !< Sediment transport formula parameter values
+    character(25)    , dimension(:,:), pointer :: parname             !< Sediment transport formula parameter names
+    character(256)   , dimension(:,:), pointer :: parfil              !< Sediment transport formula file names
+    integer          , dimension(:,:), pointer :: parsource           !< Source type of parameter (0 if constant, 1 if spatial file, 2 if time series)
+    integer          , dimension(:,:), pointer :: iparfld             !< Index of parameter in parfld array (0 if not PARSOURCE_FIELD)
+    integer          , dimension(:,:), pointer :: ipartim             !< Index of parameter in partim array (0 if not PARSOURCE_TIME)
+    real(fp)         , dimension(:,:), pointer :: parfld              !< Sediment transport parameter - 2D field
+    type(partim_type), dimension(:)  , pointer :: partim              !< Sediment transport parameter - time-varying data
     ! 
     ! logicals
     !
@@ -1894,6 +1917,7 @@ subroutine nulltrapar(trapar  )
     !
     trapar%npar    = 30
     trapar%nparfld = 0
+    trapar%nparfld = 0
     !
     nullify(trapar%dll_function_settle)
     nullify(trapar%dll_name_settle)
@@ -1916,9 +1940,12 @@ subroutine nulltrapar(trapar  )
     nullify(trapar%iform)
     nullify(trapar%name)
     nullify(trapar%par)
+    nullify(trapar%parname)
     nullify(trapar%parfil)
+    nullify(trapar%parsource)
     nullify(trapar%iparfld)
     nullify(trapar%parfld)
+    nullify(trapar%ipartim)
 end subroutine nulltrapar
 
 
@@ -1974,9 +2001,48 @@ subroutine clrtrapar(istat     ,trapar  )
     if (associated(trapar%iform       )) deallocate(trapar%iform       , STAT = istat)
     if (associated(trapar%name        )) deallocate(trapar%name        , STAT = istat)
     if (associated(trapar%par         )) deallocate(trapar%par         , STAT = istat)
+    if (associated(trapar%parname     )) deallocate(trapar%parname     , STAT = istat)
     if (associated(trapar%parfil      )) deallocate(trapar%parfil      , STAT = istat)
+    if (associated(trapar%parsource   )) deallocate(trapar%parsource   , STAT = istat)
     if (associated(trapar%iparfld     )) deallocate(trapar%iparfld     , STAT = istat)
     if (associated(trapar%parfld      )) deallocate(trapar%parfld      , STAT = istat)
+    if (associated(trapar%ipartim     )) deallocate(trapar%ipartim     , STAT = istat)
 end subroutine clrtrapar
+
+subroutine get_transport_parameters(trapar, l, nm, timhr, localpar)
+    use table_handles, only: gettabledata
+    type(trapar_type)     , intent(in)  :: trapar       !< transport settings
+    integer               , intent(in)  :: l            !< sediment fraction
+    integer               , intent(in)  :: nm           !< cell index
+    real(fp)              , intent(in)  :: timhr        !< time since reference date [h]
+    real(fp)              , intent(out) :: localpar(:)  !< collection of sediment parameters
+    
+    integer                    :: i            !< parameter index
+    real(fp)                   :: par          !< scalar to store the value
+    real(fp)                   :: parvec(1)    !< array to receive the value
+    character(256)             :: message      !< error message
+    type(partim_type), pointer :: partim       !< temporary to partim field
+    
+    do i = 1, trapar%npar
+       select case (trapar%parsource(i,l))
+       case (PARSOURCE_CONST)
+           localpar(i) = trapar%par(i,l)
+       case (PARSOURCE_FIELD)
+           j = trapar%iparfld(i,l)
+           localpar(i) = trapar%parfld(nm,j)
+       case (PARSOURCE_TIME)
+           j = trapar%ipartim(i,l)
+           partim => trapar%partim(j)
+           if (timhr > partim%timhr) then
+               message = ' '
+               call gettabledata(partim%ts ,partim%itable_ts, partim%ipar_ts, partim%npar_ts, partim%irec_ts, parvec, timhr, partim%refjulday, message)
+               if (message /= ' ') return ! TODO
+               partim%par = parvec(1)
+               partim%timhr = timhr
+           end if
+           localpar(i) = partim%par
+       end select
+    end do
+end subroutine get_transport_parameters
 
 end module morphology_data_module

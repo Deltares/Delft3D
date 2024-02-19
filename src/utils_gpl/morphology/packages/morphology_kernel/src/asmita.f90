@@ -1,5 +1,5 @@
 subroutine asmita(zb, timhr, npar, par, &
-                & sbot, cesus, t_relax, error, message)
+                & sbot, cesus, t_relax)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2023.                                
@@ -36,7 +36,6 @@ subroutine asmita(zb, timhr, npar, par, &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use table_handles, only: handletype, readtable, gettable, gettabledata
     implicit none
 !
 ! Arguments
@@ -46,65 +45,40 @@ subroutine asmita(zb, timhr, npar, par, &
     real(fp)                 , intent(in)  :: zb      !< bed level [m]
     real(fp), dimension(npar), intent(in)  :: par     !< transport parameter array
     !
-    logical                  , intent(out) :: error       !< flag indicating error
     real(fp)                 , intent(out) :: sbot        !< bed load transport [kg/s]
     real(fp)                 , intent(out) :: cesus       !< equilibrium suspended concentration [kg/m3]
     real(fp)                 , intent(out) :: t_relax     !< relaxation time scale [s]
-    character(256)           , intent(out) :: message     !< place holder for error message
 !
 ! static variable
 !
-    logical                  , save        :: time_series_loaded = .false. !< flag indicating whether s1 data has been initialized
-    integer                  , save        :: ipar_ts                      !< parameter number within the time series object
-    integer                  , save        :: irec_ts                      !< most recently used time series record
-    integer                  , save        :: itable_ts                    !< table nunber within the time series object
-    integer                  , save        :: npar_ts                      !< number of parameter values within time series object (should be 1)
-    real(fp)                 , save        :: s1                           !< representative water level [m] defined as array for getdataquery
-    real(fp)                 , save        :: timhr_prev                   !< previous time for which data was requrested [h]
-    type(handletype)         , save        :: ts                           !< time series object
+    logical                  , save        :: first = .true.                !< flag indicating whether asmita.wlt has been checked
 !
 ! Local variables
 !
-    integer                                :: refjulday                    !< dummy reference date [Julian date]
+    logical                                :: exist                        !< flag indicating whether file exists
     real(fp)                               :: cequi                        !< user-specified equilibrium concentration at equilibrium water depth [kg/m3]
     real(fp)                               :: h                            !< representative water depth [m]
     real(fp)                               :: hequi                        !< user-specified equilibrium water depth [m]
     real(fp)                               :: hmin                         !< minimum water depth-specified equilibrium water depth [m]
     real(fp)                               :: maxhh                        !< maximum value of ration of equilibrium and current water depth [-] Value should be larger than 1.
     real(fp)                               :: n                            !< transport power [-]
-    real(fp), dimension(1)                 :: s1vec                        !< representative water level [m] defined as array for getdataquery
+    real(fp)                               :: reflevel                     !< reference water level [m] for ASMITA depth definition
 !
 !! executable statements -------------------------------------------------------
 !
-    cequi   = par(11)
-    hequi   = par(12)
-    n       = par(13)
-    maxhh   = par(14)
+    cequi    = par(11)
+    hequi    = par(12)
+    n        = par(13)
+    maxhh    = par(14)
+    reflevel = par(15)
     !
-    error = .true.
-    refjulday = 0
-    if (.not. time_series_loaded) then
-        ! load time series data
-        call readtable(ts, 'asmita.wlt', refjulday, message)
-        if (message /= ' ') return
-        !
-        call gettable(ts, 'General' ,'water level' ,itable_ts, ipar_ts, npar_ts, 1, message)
-        if (message /= ' ') return
-        if (npar_ts > 1) then
-           message = 'Only a single water level time series should be specified.'
-           return
-        endif
-        !
-        irec_ts = 1 ! start with record 1
-        time_series_loaded = .true.
-        timhr_prev = timhr - 1.0_fp
-    endif
-    !
-    if (timhr > timhr_prev) then
-        call gettabledata(ts ,itable_ts, ipar_ts, npar_ts, irec_ts, s1vec, timhr, refjulday, message)
-        if (message /= ' ') return
-        s1 = s1vec(1)
-        timhr_prev = timhr
+    if (first) then
+       inquire (file = 'asmita.wlt', exist = exist)
+       if (exist) then
+          write (*, '(A)') 'Obsolete asmita.wlt file found; please use RefLevel keyword.'
+          call throwexception()
+       endif
+       first = .false.
     endif
     !
     ! bed load
@@ -115,12 +89,12 @@ subroutine asmita(zb, timhr, npar, par, &
     !
     if (hequi > 0.0_fp) then
         ! negative depth h may occur since we define the depth here as the difference between the
-        ! reference (i.e. not the simulated) water level and the current bed level. Make sure that
-        ! depth h used is always bigger than the (positive) equilibrium depth divided by maxhh
-        ! such that hequi / h is limited to values less or equal to maxhh.
+        ! reference level and the current bed level. Make sure that depth h used is always bigger
+        ! than the (positive) equilibrium depth divided by maxhh such that hequi / h is limited
+        ! to values less or equal to maxhh.
         !
         hmin = hequi / maxhh
-        h = max(hmin, s1 - zb)
+        h = max(hmin, reflevel - zb)
         !
         cesus = cequi * (hequi / h)**n
         t_relax = 1.0_fp
@@ -131,5 +105,4 @@ subroutine asmita(zb, timhr, npar, par, &
         cesus = 0.0_fp
         t_relax = 1.0e10_fp
     endif
-    error = .false.
 end subroutine asmita

@@ -991,14 +991,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! on localpar, thus ensuring that the global array par is not
           ! messed up with specific, nm-/l-dependent data.
           !
-          do i = 1, npar
-             j = gdp%gdtrapar%iparfld(i,l)
-             if (j>0) then
-                 localpar(i) = gdp%gdtrapar%parfld(nm,j)
-             else
-                 localpar(i) = par(i,l)
-             endif
-          enddo
+          call get_transport_parameters(gdp%gdtrapar, l, nm, timhr, localpar)
           !
           ! fraction specific quantities
           !
@@ -1470,4 +1463,4 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     !
     nhystp = nxtstp(d3dflow_sediment, gdp)
     deallocate (localpar, stat = istat)
-end subroutine erosed
+    end subroutine erosed

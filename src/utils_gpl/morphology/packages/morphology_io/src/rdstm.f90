@@ -220,7 +220,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                 & ipardef, rpardef, NPARDEF, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
                 & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
-                & griddim, stm%sedpar%max_mud_sedtyp)
+                & griddim, julrefday, stm%sedpar%max_mud_sedtyp)
     if (error) return
     !
     ! update tratyp based on the transport formula selected

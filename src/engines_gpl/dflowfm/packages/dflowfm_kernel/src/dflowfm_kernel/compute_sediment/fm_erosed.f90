@@ -868,14 +868,7 @@
          ! on localpar, thus ensuring that the global array par is not
          ! messed up with specific, nm-/l-dependent data.
          !
-         do i = 1, npar
-            j = stmpar%trapar%iparfld(i,l)
-            if (j>0) then
-                localpar(i) = stmpar%trapar%parfld(nm,j)
-            else
-                localpar(i) = par(i,l)
-            endif
-         enddo
+         call get_transport_parameters(stmpar%trapar, l, nm, time1/3600.0_fp, localpar)
          !
          ! fraction specific quantities
          !

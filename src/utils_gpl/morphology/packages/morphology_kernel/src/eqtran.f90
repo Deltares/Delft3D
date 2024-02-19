@@ -567,13 +567,8 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        ! ASMITA
        !
        call asmita(zb, timhr, npar, par, &
-                 & sbot, cesus, t_relax, error, message)
+                 & sbot, cesus, t_relax)
        cesus = cesus/rhosol
-       !
-       if (error) then
-          call write_error(message, unit=lundia)
-          return
-       endif
        !
        sbc_total = .true.
        sus_total = .true.
