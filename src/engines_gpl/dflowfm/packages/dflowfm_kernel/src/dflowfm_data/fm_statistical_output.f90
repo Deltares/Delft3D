@@ -15,7 +15,7 @@ private
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
    
-   public default_fm_statistical_output, flow_init_statistical_output_his
+   public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
