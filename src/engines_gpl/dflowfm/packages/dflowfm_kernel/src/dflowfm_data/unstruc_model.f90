@@ -4536,7 +4536,7 @@ logical function is_not_multiple(time_interval, user_time_step)
 
 end function is_not_multiple
 
-!> Raise an error when provided value is not positive (also to avoid division by zero)
+!> Raise an error when provided value is not positive (also to avoid division by zero) 
 subroutine check_positive_value(mdu_keyword, value)
     use m_flowparameters, only: eps10
     implicit none
