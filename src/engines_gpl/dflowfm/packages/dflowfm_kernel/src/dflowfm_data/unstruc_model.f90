@@ -1295,7 +1295,13 @@ subroutine readMDUFile(filename, istat)
     call prop_get_double (md_ptr, 'physics', 'Vicwminb'       , Vicwminb)
     call prop_get_double (md_ptr, 'physics', 'Xlozmidov'      , Xlozmidov)
 
-
+    call prop_get_double (md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
+    call check_positive_value('SchmidtNumberSalinity', Schmidt_number_salinity)
+    call prop_get_double (md_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature)
+    call check_positive_value('PrandtlNumberTemperature', Prandtl_number_temperature)
+    call prop_get_double (md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
+    call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
+    
     call prop_get_double (md_ptr, 'physics', 'Smagorinsky'    , Smagorinsky)
     call prop_get_double (md_ptr, 'physics', 'Elder   '       , Elder)
     call prop_get_integer(md_ptr, 'physics', 'irov'           , irov)
@@ -1318,7 +1324,6 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'physics', 'Salinity'       , jasal)
     call prop_get_double (md_ptr, 'physics', 'InitialSalinity', salini)
     call prop_get_double (md_ptr, 'physics', 'DeltaSalinity'  , deltasalinity)
-
     call prop_get_double (md_ptr, 'physics', 'Sal0abovezlev'  , Sal0abovezlev)
 !    Secondary Flow
     call prop_get_integer(md_ptr, 'physics', 'SecondaryFlow'  , jasecflow)
@@ -3435,6 +3440,9 @@ endif
        endif
        call prop_set(prop_ptr, 'physics', 'Xlozmidov',     xlozmidov,    'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
     endif
+    call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
+    call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
+    call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
     call prop_set(prop_ptr, 'physics', 'Smagorinsky',      Smagorinsky,  'Smagorinsky factor in horizontal turbulence, e.g. 0.15')
     call prop_set(prop_ptr, 'physics', 'Elder',            Elder,        'Elder factor in horizontal turbulence')
     call prop_set(prop_ptr, 'physics', 'irov',             irov,         '0=free slip, 1 = partial slip using wall_ks')
@@ -4527,5 +4535,18 @@ logical function is_not_multiple(time_interval, user_time_step)
     end if
 
 end function is_not_multiple
+
+!> Raise an error when provided value is not positive (also to avoid division by zero) 
+subroutine check_positive_value(mdu_keyword, value)
+    use m_flowparameters, only: eps10
+    implicit none
+    
+    character(*),     intent(in) :: mdu_keyword !< Keyword in the mdu-file
+    double precision, intent(in) :: value       !< Corresponding value
+    
+    if (value < eps10) then
+       call mess(LEVEL_ERROR, trim(mdu_keyword), ' should be larger than 0.')
+    end if
+end subroutine check_positive_value
 
 end module unstruc_model

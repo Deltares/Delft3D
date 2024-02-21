@@ -44,10 +44,11 @@
  double precision                  :: sigdif
  double precision                  :: sigtke, sigtkei
  double precision                  :: sigeps, sigepsi
- double precision                  :: sigsal, sigsali
- double precision                  :: sigtem, sigtemi
- double precision                  :: sigsed, sigsedi
  double precision                  :: sigrho
+ double precision                  :: sigsal
+ double precision                  :: sigtem
+ double precision                  :: sigsed
+ double precision                  :: sigtracer
 
  !                                    c1e    = c2e-vonkar**2/(sigeps*sqrt(cmukep))
 
@@ -153,9 +154,10 @@ use m_physcoef
     sigtke    = 1.0d0  ; sigtkei = 1d0/sigtke
     sigeps    = 1.3d0  ; sigepsi = 1d0/sigeps
     sigrho    = 0.7d0  ! bouyancy
-    sigsal    = 0.7d0  ; sigsali = 1d0/sigsal
-    sigtem    = 0.7d0  ; sigtemi = 1d0/sigtem
-    sigsed    = 1.0d0  ; sigsedi = 1d0/sigsed
+    sigsal    = Schmidt_number_salinity
+    sigtem    = Prandtl_number_temperature
+    sigsed    = 1.0d0
+    sigtracer = Schmidt_number_tracer
 
     cmukep    = 0.09d0
     sqcmukep  = sqrt(cmukep)
