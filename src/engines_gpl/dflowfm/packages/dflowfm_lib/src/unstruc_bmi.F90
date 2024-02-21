@@ -1902,6 +1902,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    use unstruc_channel_flow, only: network
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
+   use m_lateral, only : outgoing_lat_concentration, incoming_lat_concentration
   
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2270,6 +2271,20 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             k1 = nnlat(n1latsg(item_index))
             if (k1 > 0) then
                x = c_loc(s1(k1))
+            else
+               x = c_null_ptr
+            endif
+            return
+         case("outgoing/water_salinity")
+            if (ISALT > 0) then
+               x = c_loc(outgoing_lat_concentration(:, ISALT, item_index))
+            else
+               x = c_null_ptr
+            endif
+            return
+         case("incoming/water_salinity")
+            if (ISALT > 0) then
+               x = c_loc(incoming_lat_concentration(:, ISALT, item_index))
             else
                x = c_null_ptr
             endif

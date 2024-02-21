@@ -63,6 +63,11 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    const_sour = 0d0
    const_sink = 0d0
 
+   ! User-defined turbulent Prandtl-Schmidt numbers
+   sigsal = Schmidt_number_salinity
+   sigtem = Prandtl_number_temperature
+   sigtracer = Schmidt_number_tracer
+
    do k=1,Ndkx
  
       if( jasecflow > 0 .and. jaequili == 0 .and. kmx == 0 ) then
@@ -137,10 +142,10 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 
    if ( ITRA1.gt.0 ) then
       do i=ITRA1,ITRAN
-         difsedu(i)   =            difmoltr
+         difsedu(i)   =            difmoltracer
          if (dicoww .ge. 0d0) then
-             difsedw(i) = dicoww + difmoltr
-             sigdifi(i) = 1d0
+             difsedw(i) = dicoww + difmoltracer
+             sigdifi(i) = 1d0/sigtracer
          endif
          wsf(i) = wstracers(i - itra1 + 1)
       end do

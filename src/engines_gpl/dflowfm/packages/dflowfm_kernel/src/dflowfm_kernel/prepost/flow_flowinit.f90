@@ -274,8 +274,10 @@ contains
 
    call setkbotktop(1)
 
-   call update_s0_and_hs()
-
+   if (.not. jawelrestart) then
+    call update_s0_and_hs()
+   endif
+   
    if ( jaselfal > OFF ) then
   !  with hs available: recompute SAL potential
      call flow_settidepotential(tstart_user/60d0)

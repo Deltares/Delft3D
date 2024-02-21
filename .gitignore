@@ -8,6 +8,9 @@ install_*/**
 .idea/*
 .vs/**
 
+# python virtual environment
+.venv
+
 # files extensions to exclude
 *.i90
 *.i

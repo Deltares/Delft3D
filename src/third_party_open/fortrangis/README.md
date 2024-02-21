@@ -1,3 +1,10 @@
+[![Build Status](https://simc.arpae.it/moncic-ci/fortrangis/centos7.png)](https://simc.arpae.it/moncic-ci/fortrangis/)
+[![Build Status](https://simc.arpae.it/moncic-ci/fortrangis/rocky8.png)](https://simc.arpae.it/moncic-ci/fortrangis/)
+[![Build Status](https://simc.arpae.it/moncic-ci/fortrangis/rocky9.png)](https://simc.arpae.it/moncic-ci/fortrangis/)
+[![Build Status](https://simc.arpae.it/moncic-ci/fortrangis/fedora36.png)](https://simc.arpae.it/moncic-ci/fortrangis/)
+[![Build Status](https://simc.arpae.it/moncic-ci/fortrangis/fedora38.png)](https://simc.arpae.it/moncic-ci/fortrangis/)
+[![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/fortrangis/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/fortrangis/)
+
 ## [FortranGIS project](http://fortrangis.sourceforge.net/index.php)
 
 FortranGIS project includes a collection of Fortran interfaces to some
@@ -32,11 +39,14 @@ documentation.
 
 #### Proj
 
-[Proj](http://trac.osgeo.org/proj/) is a library for handling a big
-number of geographical projections and coordinate conversions. The
-Fortran interface covers the most common procedures of the proj
-library and is considered stable. Here as well a Fortran-specific
-interface is available for some procedures.
+[Proj](https://proj.org/) is a library for handling a big number of
+geographical projections and coordinate conversions. The Fortran
+interface covers bith the deprecated proj.4 API (available as legacy
+bindings up to proj version 7) and the new proj version 6 API. The
+availability of each of the interfaces is detected automatically at
+configure time. In both cases the most common procedures of the proj
+library are interfaced and they are considered stable. Here as well a
+Fortran-specific interface is available for some procedures.
 
 #### ReadOSM
 

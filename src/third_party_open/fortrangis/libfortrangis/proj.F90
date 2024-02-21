@@ -19,7 +19,7 @@
 !> Fortran 2003 interface to the proj.4 https://github.com/OSGeo/proj.4 library.
 !! The following functions are directly interfaced to their
 !! corresponding C version, so they are undocumented here, please
-!! refer to the original gdal C API documentation, e.g. at the address
+!! refer to the original proj C API documentation, e.g. at the address
 !! https://github.com/OSGeo/proj.4/wiki/ProjAPI , for their use:
 !!  - pj_init_plus() -> FUNCTION pj_init_plus()
 !!  - pj_transform()() -> FUNCTION pj_transform()()
@@ -283,12 +283,21 @@ REAL(kind=c_double), TARGET           :: y(:) !< array of y coordinates
 REAL(kind=c_double), TARGET, OPTIONAL :: z(:) !< optional array of z coordinates
 INTEGER(kind=c_int) :: pj_transform_f
 
+REAL(kind=c_double),POINTER :: px, py, pz
+
+! a fortran pointer is required to avoid compilation errors with some
+! versions of gfortran due to x,y,z being C-incompatible assumed-shape
+! arrays
+px => x(1)
+py => y(1)
+
 IF (PRESENT(z)) THEN
+  pz => z(1)
   pj_transform_f = pj_transform(src, dst, &
-   INT(MIN(SIZE(x),SIZE(y),SIZE(z)), kind=c_long), 1_c_int, C_LOC(x), C_LOC(y), C_LOC(z))
+   INT(MIN(SIZE(x),SIZE(y),SIZE(z)), kind=c_long), 1_c_int, C_LOC(px), C_LOC(py), C_LOC(pz))
 ELSE
   pj_transform_f = pj_transform(src, dst, &
-   INT(MIN(SIZE(x),SIZE(y)), kind=c_long), 1_c_int, C_LOC(x), C_LOC(y), C_NULL_PTR)
+   INT(MIN(SIZE(x),SIZE(y)), kind=c_long), 1_c_int, C_LOC(px), C_LOC(py), C_NULL_PTR)
 ENDIF
 
 END FUNCTION pj_transform_f

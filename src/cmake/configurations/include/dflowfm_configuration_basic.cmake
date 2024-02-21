@@ -153,9 +153,12 @@ if(NOT TARGET shp)
     add_subdirectory(${checkout_src_root}/${shp_module} shp)
 endif()
 
-if(NOT TARGET proj)
-    add_subdirectory(${checkout_src_root}/${proj_module} proj)
-endif()
+# proj
+if(WIN32)
+    if(NOT TARGET proj)
+        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+    endif()
+endif(WIN32)
 
 # netcdf
 if(NOT TARGET netcdff)
@@ -204,7 +207,7 @@ if(NOT TARGET nefis)
 endif()
 
 
-# Unit tests for dflowfm
+# Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter
 if(NOT WITH_INTERACTER)
     if(NOT TARGET ftnunit)
@@ -221,6 +224,10 @@ if(NOT WITH_INTERACTER)
     
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
+    endif()
+
+    if (NOT TARGET test_io_netcdf)
+        add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
     endif()
 endif(NOT WITH_INTERACTER)
 

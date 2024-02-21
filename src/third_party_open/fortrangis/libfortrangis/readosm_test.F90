@@ -13,7 +13,7 @@ INTEGER :: err
 TYPE(c_ptr) :: handle ! readosm file object
 CHARACTER(len=512) :: file
 
-CALL getarg(1, file)
+CALL get_command_argument(1, file)
 IF (LEN_TRIM(file) == 0) file = 'readosm_test.osm'
 
 ! open osm file and get a file object

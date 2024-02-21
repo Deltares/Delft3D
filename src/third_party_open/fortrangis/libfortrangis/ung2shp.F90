@@ -17,7 +17,7 @@ INTEGER,ALLOCATABLE :: shapesize(:)
 INTEGER :: i, j, dot, nshape, id
 DOUBLE PRECISION,ALLOCATABLE :: shp(:,:)
 
-CALL getarg(1, filein)
+CALL get_command_argument(1, filein)
 dot = INDEX(filein, '.', back=.TRUE.)
 IF (dot == 0) THEN
   fileout = TRIM(filein)//'_out'

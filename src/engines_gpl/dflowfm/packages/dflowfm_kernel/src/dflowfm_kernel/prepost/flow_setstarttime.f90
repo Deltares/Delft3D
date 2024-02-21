@@ -34,7 +34,7 @@
  use m_flowtimes
  implicit none
 
- time_user = tstart_user + dt_user
+ time_user = tstart_user
  time0     = tstart_user
  time1     = tstart_user
  dts       = dt_init

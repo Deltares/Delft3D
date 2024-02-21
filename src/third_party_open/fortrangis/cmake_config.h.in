@@ -1,0 +1,13 @@
+! config.h.in
+!
+
+!
+! Use iso_varying_string
+!
+#cmakedefine WITH_VARYING_STRING 1
+
+!
+! Export from DLL - explicit
+!
+#cmakedefine DLL_EXPORT 1
+

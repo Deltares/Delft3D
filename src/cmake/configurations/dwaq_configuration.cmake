@@ -26,7 +26,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_third_party.cmake)
 #=============
 include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_utils.cmake)
 
-
 #
 # Installation
 #=============

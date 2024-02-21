@@ -72,6 +72,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use m_subsidence
  use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
    use mass_balance_areas_routines, only : get_mbainputname
+   use m_lateral, only : alloc_lateraldata
 
    implicit none
    character(len=256)            :: filename, sourcemask
@@ -2806,6 +2807,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    ! Copy NUMCONST to NUMCONST_MDU, before the user (optionally) adds tracers interactively
    NUMCONST_MDU = NUMCONST
+   
+   call alloc_lateraldata(numconst)
 
 end function flow_initexternalforcings
 

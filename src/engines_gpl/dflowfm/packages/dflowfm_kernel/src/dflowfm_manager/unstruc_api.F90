@@ -407,7 +407,9 @@ use MessageHandling, only: FinalizeMessageHandling
 use m_ec_module
 use m_meteo, only: ecInstancePtr
 use m_nearfield
+use m_lateral
     call dealloc_nfarrays()
+    call dealloc_lateraldata()
 
     if (.not.ecFreeInstance(ecInstancePtr)) then
        continue     
