@@ -10,7 +10,7 @@ def get_failed_tests(filename):
         lines = file.readlines()
 
     # Regular expression pattern to match the test case lines
-    pattern = r"\|(.*?)\|.*?\|ERROR"
+    pattern = r"\|(.*?)\|.*?\|(ERROR|NOK)"
 
     failed_tests = []
     for line in lines:
