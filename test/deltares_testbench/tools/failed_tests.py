@@ -51,6 +51,11 @@ def copy_failed_tests(failed_tests, platform):
             dst_ref = os.path.join("failed", src_ref)
             copy_directory(src_ref, dst_ref, copy_log)
 
+            # copy reference resluts directory
+            src_ref_result = src_ref.replace("references", "references_results")
+            dst_ref_result = dst_ref.replace("references", "references_results")
+            copy_directory(src_ref_result, dst_ref_result, copy_log)
+
 
 def main():
     platform = sys.argv[1]
