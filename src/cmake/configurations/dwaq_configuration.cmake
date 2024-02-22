@@ -39,6 +39,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_tests.cmake)
 #intel MPI & MKL
 if(${configuration_type} STREQUAL ${dwaq_configuration})
    add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
+   add_subdirectory(${checkout_src_root}/${pthreads_module} pthreads)
 endif()
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
