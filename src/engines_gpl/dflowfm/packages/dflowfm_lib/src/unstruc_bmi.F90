@@ -1287,7 +1287,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       call str_token(tmp_var_name, item_name, DELIMS='/')
       if (len_trim(item_name) > 0) then
          ! A valid item name, now parse the field name...
-         call str_token(tmp_var_name, field_name, DELIMS='/')
+         field_name = tmp_var_name(2:)
 
          ! field_name is allowed to be empty, call the compound getter and return directly.
          call get_compound_field(string_to_char_array(varset_name), &
