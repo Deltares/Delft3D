@@ -1,5 +1,5 @@
-"C:\Program Files\CMake\bin\cmake.exe" ./src/cmake -D CMAKE_BUILD_TYPE=Release -D CONFIGURATION_TYPE:STRING=all -B build_all -D CMAKE_INSTALL_PREFIX=".\build_all\x64\Release\"
+"C:\Program Files\CMake\bin\cmake.exe" ./src/cmake -D CMAKE_BUILD_TYPE=Debug -D CONFIGURATION_TYPE:STRING=delft3d4 -B build_test -D CMAKE_INSTALL_PREFIX=.\build_test\x64\Debug\
  
-cd build_all
-"C:\Program Files\CMake\bin\cmake.exe" --build . -j --target install --config Release > out.txt
+cd build_test
+"C:\Program Files\CMake\bin\cmake.exe" --build . --target install -j --config Debug > out.txt
 cd ..

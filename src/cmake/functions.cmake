@@ -127,7 +127,7 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.f
                         ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
-
+endfunction()
 # get_fortran_source_files_recursive
 # Gathers Fortran *.f or *.f90 files from a given directory recurcivly.
 #
@@ -172,7 +172,6 @@ function(add_postbuild_event target_name)
                                COMMAND  call ${postbuild_event_path})
         ENDIF()
     endif()
-endfunction()
 endfunction()
 
 # get_module_include_path
