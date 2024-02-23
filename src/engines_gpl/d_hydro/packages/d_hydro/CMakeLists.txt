@@ -101,20 +101,6 @@ if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
 endif(WIN32)
 
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
 message(STATUS "build_config ${build_config}")
 
-
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-if (UNIX)
-#    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/run_d_hydro.sh             DESTINATION bin)
-#    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/lnx64/submit_d_hydro.sh          DESTINATION bin)
-endif(UNIX)
-
-if (WIN32)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/win64/run_d_hydro.bat            DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/generic/win64/run_d_hydro_parallel.bat   DESTINATION bin)
-endif(WIN32)

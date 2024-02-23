@@ -89,6 +89,6 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
   
 
 
-    install(TARGETS ${library_name} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 endif()
 

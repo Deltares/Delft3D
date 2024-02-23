@@ -12,9 +12,3 @@ endif()
 if(UNIX)
   set(DEFAULT_PROJ_ROOT_DIR "/usr/local/")
 endif()
-
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX ${DEFAULT_PROJ_ROOT_DIR}
-    CACHE PATH "Proj install prefix" FORCE)
-endif()

@@ -177,7 +177,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/win64</from>
 			</location>
-			<path>dwaves\bin\wave.exe</path>
+			<path>bin\wave.exe</path>
 			<environments>
 				<environment name="D3D_HOME" type="path">[programpath(WAVE)]\..\..\..</environment>
 				<environment name="ARCH" type="raw">win64</environment>
