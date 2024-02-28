@@ -1782,8 +1782,9 @@ private
       use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
-      USE m_monitoring_crosssections, only: ncrs
+      use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug, rug
+      use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       USE, INTRINSIC :: ISO_C_BINDING
 
       type(t_output_quantity_config_set), intent(inout) :: output_config !< output config for which an output set is needed.
