@@ -1402,7 +1402,7 @@ icnst=strmatch('--constituents',{Out.Name});
 ii=0;
 FI = qp_option(FI,'balancefile','ifnew',0);
 FI = qp_option(FI,'showfractions','ifnew','subfield');
-minlen=20;
+var_name_length = 20;
 if ~isempty(icnst)
     [Out.BedLayer]=deal(0);
     [Out.ShortName]=deal('');
@@ -1418,11 +1418,11 @@ if ~isempty(icnst)
             names=strvcat(names{:});
         end
         if size(names,2)>7 && sum(names(:,7)=='_')>size(names,1)/2
-            minlen = 6;
+            var_name_length = 6;
             var_names = names(:,1:6);
             prc_names = cellstr(names(:,8:end));
         elseif size(names,2)>11
-            minlen = 10;
+            var_name_length = 10;
             var_names = names(:,1:10);
             prc_names = cellstr(names(:,11:end));
         else
@@ -1812,25 +1812,25 @@ if ~isempty(icnst)
             frac = sprintf(' fraction %s', Ins(j).ShortName(length(Ins(j).Name)+1:end));
         end
         if strncmp(Ins(j).Name,'DPTAVG_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['depth average of ' LN1];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         elseif strncmp(Ins(j).Name,'DPTMAX_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['maximum of ' LN1 ' over water depth'];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         elseif strncmp(Ins(j).Name,'DPTMIN_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['minimum of ' LN1 ' over water depth'];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         else
-            [LN,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,'minmatchlen',minlen);
+            [LN,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,var_name_length);
         end
         switch shownames
             case 'expanded'
@@ -2160,7 +2160,7 @@ end
 % -----------------------------------------------------------------------------
 
 
-function [Full,Unit,GroupID]=substdb(Abb,cmd,varargin)
+function [Full,Unit,GroupID]=substdb(Abb,cmd,var_name_length)
 % substance database
 persistent x
 if nargin>=2
@@ -2184,8 +2184,7 @@ else
     cmd = 'n/a'; % mass_per not specified as 2nd argument
 end
 %
-% nargin == 0 or 1
-%
+% nargin == 0 or 1%
 if isempty(x)
     ErrMsg='';
     x=-1;
@@ -2259,22 +2258,18 @@ if nargin==0
     if isstruct(x)
         Full=x.ID;
     else
-        Full='';
+        Full={};
     end
 else
     if isstruct(x)
-        % search for exact match; this can give only one match
-        % note: this exact match may not be correct ... for instance:
-        % Mussel_V is abbreviated to Mussel when only 6 characters are used
-        % for storing the name of the quantity ... this happens in the
-        % classic his format. Unfortunately, here we don't know whether the
-        % provided name may or may not be abbreviated.
-        db = strcmpi(Abb,x.ID);
-        if none(db)
-            % if no exact match, search for a partial match
-            db = strncmpi(Abb,x.ID,length(Abb));
+        if length(Abb) < var_name_length
+            % this must be a full variable name, search for an exact match
+            db = strcmpi(Abb,x.ID);
+        else % length equal to var_name_length
+            % not sure if this is the full name ... search for any match
+            db = strncmpi(Abb,x.ID,var_name_length);
             if sum(db) > 1
-                % if there is more than one, give up ...
+                % only one match allowed
                 db = 0;
             end
         end
