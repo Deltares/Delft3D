@@ -2163,7 +2163,10 @@ end
 function [Full,Unit,GroupID]=substdb(Abb,cmd,var_name_length)
 % substance database
 persistent x
-if nargin>=2
+if nargin<2
+    cmd = 'n/a'; % mass_per not specified as 2nd argument
+    var_name_length = inf;
+elseif nargin==2
     switch cmd
         case 'filename'
             if isempty(x)
@@ -2180,11 +2183,9 @@ if nargin>=2
             substdb;
             return
     end
-else
-    cmd = 'n/a'; % mass_per not specified as 2nd argument
+    var_name_length = inf;
 end
 %
-% nargin == 0 or 1%
 if isempty(x)
     ErrMsg='';
     x=-1;
