@@ -28,12 +28,3 @@ fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/wave_exe" "${BUILD_LIBRARIES}" "${THIR
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
-
-# ESMF. rpath: Don't refer to $ORIGIN/../lib
-#file(COPY ${CMAKE_SOURCE_DIR}/../src/third_party_open/esmf/lnx64/bin/ESMF_RegridWeightGen                        DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-#file(COPY ${CMAKE_SOURCE_DIR}/../src/third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-#file(COPY ${CMAKE_SOURCE_DIR}/../src/third_party_open/esmf/lnx64/bin      DESTINATION ${CMAKE_INSTALL_PREFIX}/share/delft3d/esmf/lnx64/ FILES_MATCHING PATTERN "lib*")
-#file(COPY ${CMAKE_SOURCE_DIR}/../src/third_party_open/esmf/lnx64/bin_COS7 DESTINATION ${CMAKE_INSTALL_PREFIX}/share/delft3d/esmf/lnx64/ FILES_MATCHING PATTERN "lib*")
-#execute_process(COMMAND find "${CMAKE_INSTALL_PREFIX}/share/delft3d/esmf/lnx64" -type f -exec echo "patched rpath of: "  {} \; -exec bash -c "patchelf --set-rpath '$ORIGIN' $1" _ {} \;)
-
-file(RENAME ${CMAKE_INSTALL_PREFIX}/bin/wave_exe ${CMAKE_INSTALL_PREFIX}/bin/wave)
