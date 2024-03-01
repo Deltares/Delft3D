@@ -169,14 +169,23 @@ module m_string_utils
         logical, intent(in), optional :: exact_match     !< needs to be an exact match (not starts with) (default is false)
         logical, intent(in), optional :: case_sensitive  !< check case sensitive (default is false)
 
-        if (present(exact_match) .and. exact_match) then
-            if (present(case_sensitive) .and. case_sensitive) then
+        logical :: exact_match_
+        logical :: case_sensitive_
+
+        exact_match_ = .false.
+        if (present(exact_match)) exact_match_ = exact_match
+
+        case_sensitive_ = .false.
+        if (present(case_sensitive)) case_sensitive_ = case_sensitive
+
+        if (exact_match_) then
+            if (case_sensitive_) then
                 found = source_string == target_string
             else
                 found = str_tolower(source_string) == str_tolower(target_string)
             end if
         else
-            found = starts_with(target_string, source_string, case_sensitive)
+            found = starts_with(target_string, source_string, case_sensitive_)
         end if
 
     end function
@@ -192,6 +201,11 @@ module m_string_utils
 
         ! local variables
         character(len=len(string_to_search)) :: string_to_compare
+        logical :: exact_match_
+        logical :: case_sensitive_
+
+        case_sensitive_ = .false.
+        if (present(case_sensitive)) case_sensitive_ = case_sensitive
 
         if (len(string_to_check)<len(string_to_search)) then
             starts_with = .false.
@@ -200,7 +214,7 @@ module m_string_utils
 
         string_to_compare = string_to_check(1:len(string_to_search))
 
-        if (present(case_sensitive) .and. case_sensitive) then
+        if (case_sensitive_) then
             starts_with = string_to_search == string_to_compare
             return
         end if
