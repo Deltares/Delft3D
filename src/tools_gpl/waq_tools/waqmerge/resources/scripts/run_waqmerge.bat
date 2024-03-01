@@ -39,7 +39,6 @@ set sharedir=%D3D_HOME%\share
 set libdir=%D3D_HOME%\lib
 set waqdir=%~dp0
     rem Run
-set PATH=%sharedir%;%libdir%
 
     rem
     rem No adaptions needed below
