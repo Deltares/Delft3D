@@ -194,7 +194,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>dmor\bin\mormerge.exe</path>
+			<path>bin\mormerge.exe</path>
 		</program>
 		<program name="RTC" logOutputToFile="true" addSearchPaths="true">
 			<location ref="dsctestbench-references_bin" type="reference">
