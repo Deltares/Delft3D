@@ -228,7 +228,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000" )
-	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
 		configure_file(
 		"${CMAKE_BINARY_DIR}/template.vfproj.user"
 		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
@@ -236,7 +236,7 @@ if (WIN32)
 		)
 	endif()
 endif(WIN32)
-message(STATUS ${CMAKE_INSTALL_PREFIX})
+
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 
 if (UNIX)

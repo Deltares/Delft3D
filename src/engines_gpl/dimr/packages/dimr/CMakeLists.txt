@@ -94,7 +94,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${dimr_lib_sources
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.$ENV{USERNAME}.user")
 		configure_file(
 		"${CMAKE_BINARY_DIR}/template.vcxproj.user"
 		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.user"

@@ -59,11 +59,6 @@ set workdir=%CD%
     rem
 set D3D_HOME=%scriptDir%..
 
-rem Remove "\dflow2d3d\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-27%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
 set dflow2d3ddir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
 set swanbatdir=%D3D_HOME%\bin
@@ -95,7 +90,7 @@ start "Delft3D-FLOW" "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 
     rem Start WAVE
 title Delft3D-WAVE simulation
-set PATH=%waveexedir%;%swanbatdir%;%sharedir%
+set PATH=%waveexedir%;%swanbatdir%;%sharedir%;%libdir%
 echo executing in this window: "%waveexedir%\wave.exe" %mdwfile% 1
 "%waveexedir%\wave.exe" %mdwfile% 1
 title %CD%

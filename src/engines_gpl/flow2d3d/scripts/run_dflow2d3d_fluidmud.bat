@@ -96,7 +96,7 @@ start "Delft3D-FLOW water" "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 
     rem Start FLOW for mud phase
 title Delft3D-FLOW mud simulation
-set PATH=%dflow2d3ddir%;%sharedir%
+set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
 echo executing in this window: "%dflow2d3ddir%\d_hydro.exe" %mudConfigFile%
 "%dflow2d3ddir%\d_hydro.exe" %mudConfigFile%
 title %CD%
