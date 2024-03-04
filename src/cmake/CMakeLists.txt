@@ -142,10 +142,8 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 if (CMAKE_GENERATOR MATCHES "Visual Studio")
    # Set root name of the projects in the root UI of Visual Studio
    set(visual_studio_source_group_name "Source Files")
-      # auto-install debug
-   IF (NOT CMAKE_BUILD_TYPE MATCHES Release)
-      set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-   ENDIF()
+   # auto-install debug
+   set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
    
    	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
 	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
@@ -158,9 +156,6 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
 		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
 )
-
-	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
-	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
