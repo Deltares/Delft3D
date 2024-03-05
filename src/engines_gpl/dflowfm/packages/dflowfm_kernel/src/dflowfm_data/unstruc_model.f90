@@ -748,7 +748,7 @@ subroutine readMDUFile(filename, istat)
     integer,      intent(out) :: istat    !< Return status (0=success)
 
     character(len=32):: program
-    logical :: success, ex
+    logical :: success, ex, value_parsed
     character(len=1),dimension(1) :: dummychar
     logical :: dummylog
     character(len=1000) :: charbuf = ' '
@@ -1843,7 +1843,10 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
     md_nc_his_precision = 0
     call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
-    call prop_get_logical(md_ptr, 'output', 'NcCompression', md_nccompress, success)
+    call prop_get_logical(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
+    if (success .and. value_parsed == .false.) then
+       call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
+    endif
     call unc_set_nccompress(md_nccompress)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
