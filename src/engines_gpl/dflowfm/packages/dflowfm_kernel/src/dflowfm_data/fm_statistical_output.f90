@@ -2042,24 +2042,23 @@ private
             call add_stat_output_items(output_set, output_config%statout(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
          endif
       endif
-      if( jahisvelvec > 0 ) then
+      if (jahisvelvec > 0) then
          if (numobs+nummovobs > 0) then
             if (model_is_3D()) then
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCX:IPNT_UCX+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY), temp_pointer)
                
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCY:IPNT_UCY+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY), temp_pointer)
                
                call c_f_pointer (c_loc(valobs(1:ntot,IPNT_UCZ:IPNT_UCZ+kmx)), temp_pointer, [kmx*ntot])
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),temp_pointer)
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY), temp_pointer)
 
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY),valobs(:,IPNT_UCXQ)             )
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY),valobs(:,IPNT_UCYQ)             )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_X_VELOCITY), valobs(:, IPNT_UCXQ))
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DEPTH_AVERAGED_Y_VELOCITY), valobs(:, IPNT_UCYQ))
             else
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY),valobs(:,IPNT_UCX)                             )
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY),valobs(:,IPNT_UCY)                             )
-               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Z_VELOCITY),valobs(:,IPNT_UCZ)                            )
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_X_VELOCITY), valobs(:, IPNT_UCX))
+               call add_stat_output_items(output_set, output_config%statout(IDX_HIS_Y_VELOCITY), valobs(:, IPNT_UCY))
             endif
          endif
       endif
