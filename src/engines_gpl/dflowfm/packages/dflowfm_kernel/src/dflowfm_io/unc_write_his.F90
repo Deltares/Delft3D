@@ -2165,8 +2165,8 @@ contains
          dim_ids = [id_statdim ]
       end if
       
-      ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nc_precision, dim_ids, id_statx)
-      ierr = nf90_def_var(ihisfile, 'station_y_coordinate', nc_precision, dim_ids, id_staty)
+      ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nf90_double, dim_ids, id_statx)
+      ierr = nf90_def_var(ihisfile, 'station_y_coordinate', nf90_double, dim_ids, id_staty)
       
       ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
       ierr = unc_addcoordatts(ihisfile, id_statx, id_staty, jsferic)
@@ -2225,7 +2225,7 @@ contains
       
       ! If so specified, add the zcoordinate_c
       if (jawrizc == 1) then
-         call definencvar(ihisfile, id_zcs, nc_precision, [id_laydim, id_statdim, id_timedim],          &
+         call definencvar(ihisfile, id_zcs, nf90_double, [id_laydim, id_statdim, id_timedim],          &
             'zcoordinate_c' , 'vertical coordinate at center of flow element and layer', 'm',               &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_c', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zcs, 'positive' , 'up')
@@ -2234,12 +2234,12 @@ contains
       ! If so specified, add the zcoordinate_w + zcoordinate_wu
       if (jawrizw == 1) then
          
-         call definencvar(ihisfile, id_zws, nc_precision, [id_laydimw, id_statdim, id_timedim],         &
+         call definencvar(ihisfile, id_zws, nf90_double, [id_laydimw, id_statdim, id_timedim],         &
             'zcoordinate_w' , 'vertical coordinate at centre of flow element and at layer interface', 'm',  &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_w', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zws, 'positive' , 'up')
          
-         call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim],         &
+         call definencvar(ihisfile, id_zwu, nf90_double, [id_laydimw, id_statdim, id_timedim],         &
             'zcoordinate_wu' , 'vertical coordinate at edge of flow element and at layer interface', 'm',   &
             'station_x_coordinate station_y_coordinate station_name zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss)
          ierr = nf90_put_att(ihisfile, id_zwu, 'positive' , 'up')
