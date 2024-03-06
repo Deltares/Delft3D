@@ -300,17 +300,20 @@ switch geometry
                     case 'xyz'
                         if nval == 0
                             axestype={'X-Y','X-Z','X-Y-Z'};
+                            tracks=1;
                         else
                             axestype={'Time-Val','X-Y','X-Z','X-Y-Z'};
                         end
                     case 'xy'
                         if nval == 0
                             axestype={'X-Y'};
+                            tracks=1;
                         else
                             axestype={'Time-Val','X-Y'};
                         end
                     otherwise
                         axestype={'X-Y'};
+                        tracks=1;
                 end
             end
         elseif multiple(T_)
@@ -321,17 +324,20 @@ switch geometry
                     case 'xyz'
                         if nval == 0
                             axestype={'X-Y','X-Z','X-Y-Z'};
+                            tracks=1;
                         else
                             axestype={'Time-Val','X-Y','X-Z','X-Y-Z'};
                         end
                     case 'xy'
                         if nval == 0
                             axestype={'X-Y'};
+                            tracks=1;
                         else
                             axestype={'Time-Val','X-Y'};
                         end
                     otherwise
                         axestype={'X-Y'};
+                        tracks=1;
                 end
             else
                 axestype={'Time-Val'};
@@ -1157,7 +1163,7 @@ if tracks
             trkCLR{end+1} = 'time';
         end
         if nval == 1
-            trkCLR = [{'value'};trkCLR];
+            trkCLR = [{'value'} trkCLR];
         end
         if ~isequal(trkCLR,ptrkCLR)
             % try to find an exact match when switching vector colouring strings
