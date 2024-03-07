@@ -3028,7 +3028,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
         id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
         id_pump_cap, id_pump_ssTrigger, id_pump_dsTrigger, &
-        id_hysteresis, id_flowelemxcc, id_flowelemycc
+        id_hysteresis, id_flowelemxcc, id_flowelemycc, &
+        id_spirint
 
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3753,7 +3754,14 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_flowlinkyu, 'long_name'    , 'y-coordinate of flow link center (velocity point)')
     endif
 
-
+    ! Secondary flow
+    if (jasecflow > 0) then
+        ierr = nf90_def_var(irstfile, 'spirint',  nf90_double, (/ id_flowelemdim, id_timedim /) , id_spirint)
+        ierr = nf90_put_att(irstfile, id_spirint,   'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+        ierr = nf90_put_att(irstfile, id_spirint,   'long_name'    , 'Spiral flow intensity')
+        ierr = nf90_put_att(irstfile, id_spirint,   'units'        , 'm/s')
+    endif
+    
     ! The following variables will be used to merge the rst files, therefore, they are written only in parallel run
     if ( jampi.eq.1 ) then
        !   domain numbers and global node
@@ -4171,6 +4179,10 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         ierr = nf90_put_var(irstfile, id_czs, czs,  (/ 1, itim /), (/ ndxi, 1 /))
     endif
 
+    if (jasecflow > 0) then
+		ierr = nf90_put_var(irstfile, id_spirint, spirint, (/ 1, itim /), (/ ndxi, 1 /))
+    endif
+	
     ! Write the data: velocities (components and magnitudes)
     if (kmx > 0) then
 !      3D
@@ -13329,6 +13341,13 @@ subroutine unc_read_map_or_rst(filename, ierr)
             weirdte(nfxwL(L))=map_fixed_weir_energy_loss(L)
         endif
     enddo
+    
+    ! Read secondary flow
+	if (jasecflow > 0) then
+		ierr = get_var_and_shift(imapfile, 'spirint', spirint, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+								um%inode_merge)
+		call check_error(ierr, 'spirint')
+	endif
     
     ! Read the salinity (flow elem)
     if (jasal > 0) then
