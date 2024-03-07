@@ -167,10 +167,10 @@
 !
       DO I1 = ISTART , NPOINT
       IV = IPOINT(I1)
-      DO 50 I2 = 1,NOSUB
+      DO I2 = 1,NOSUB
       RESULT(I2,IV) = RESULT(I2,IV) + FUNC*AVALUE(ITEL)
       ITEL = ITEL+1
-   50 CONTINUE
+      end do
       end do
 !
 !         increase the record counter

@@ -113,12 +113,12 @@
 !
       CMAX = 0.0
       DO I1 = 1, NY
-      DO 10 I2 = 1, NX
+      DO I2 = 1, NX
       I3 = LGRID ( (I1-1)*NX+I2 )
       IF ( I3 > 0 ) CMAX = AMAX1 ( CMAX, CONC (ITOT, I3) )
       IF ( I3 < 0 .AND. ITOT <= NOSYS )
      *                 CMAX = AMAX1 ( CMAX, BOUND(ITOT,-I3) )
-   10 CONTINUE
+      end do
       end do
 !
 !      Calculate scale factor
@@ -175,9 +175,9 @@
 !
       CMAX = 0.0
       DO I1 = 1, NY
-      DO 60 I2 = 1, NX
+      DO I2 = 1, NX
          CMAX = AMAX1 ( CMAX, CONC2(ITOT+(I2*I1-1)*NOTOT2) )
-   60 CONTINUE
+      end do
       end do
 !
 !      Calculate scale factor

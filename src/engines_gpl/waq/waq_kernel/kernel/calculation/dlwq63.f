@@ -75,24 +75,24 @@
       ISET = 1
       IF ( MOD(INTOPT,16) < 8  ) THEN
          DO ISEG = 1 , NOSEG
-         DO 10 I = ISYS , ISYS+NSYS-1
+         DO I = ISYS , ISYS+NSYS-1
             AMASS2(I,   2) = AMASS2( I, 2 ) + CONC (I,ISEG)*DERIV(ISET)
             CONC  (I,ISEG) = DERIV ( ISET )
             ISET = ISET+1
-   10    CONTINUE
+      end do
       end do
       ELSE
          DO ISEG = 1 , NOSEG
             IP = ISDMP(ISEG)
             I4 = (IP-1)*NOTOT
-            DO 20 I = ISYS , ISYS+NSYS-1
+            DO I = ISYS , ISYS+NSYS-1
                AMASS2(I,   2) = AMASS2(I, 2) + CONC(I,ISEG)*DERIV(ISET)
                IF ( IP > 0 ) THEN
                   DMPS(I4+I) = DMPS(I4+I) + CONC(I,ISEG)*DERIV(ISET)
                ENDIF
                CONC  (I,ISEG) = DERIV (ISET)
                ISET = ISET+1
-   20    CONTINUE
+      end do
       end do
       ENDIF
 !

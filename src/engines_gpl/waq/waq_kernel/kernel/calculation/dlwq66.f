@@ -66,9 +66,9 @@
 !
       DO ISEG = 1 , NOSEG
       V1 = VOLUME(ISEG)
-      DO 10 ISYS = 1 , NOTOT
+      DO ISYS = 1 , NOTOT
       AMASS(ISYS,ISEG) = CONC(ISYS,ISEG)*V1
-   10 CONTINUE
+      end do
       end do
 !
       if ( timon ) call timstop ( ithandl )
