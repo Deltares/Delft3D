@@ -89,4 +89,4 @@ Examples:
   cd build_all
   ctest -C debug
 ```
-- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](unit-testing.md).
+- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).

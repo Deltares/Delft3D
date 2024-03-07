@@ -73,19 +73,6 @@ program tests_string_utils
 
     contains
 
-    subroutine prepare_tests
-        ! prepare_tests
-        !     Routine to start the testing
-        !
-        ! Note:
-        !     This routine merely takes care that the unit tests are indeed run
-        integer :: lunrun
-
-        open (newunit=lunrun, file='ftnunit.run')
-        write (lunrun, '(a)') 'ALL'
-        close (lunrun)
-
-    end subroutine prepare_tests
 
     subroutine call_test_string_equals_default_settings
         call test(test_string_equals_default_settings, 'String equals: is case insensitive and uses starts with as default')
