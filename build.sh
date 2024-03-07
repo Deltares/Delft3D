@@ -190,7 +190,7 @@ prepareonly=0
 mode=quiet
 config=
 generator="Unix Makefiles"
-compiler=intel21
+compiler=intel23
 buildtype=Release
 buildDirExtension=""
 
