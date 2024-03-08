@@ -377,26 +377,28 @@ double precision, external :: setrhofixedp
            adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
         endif
 
-        k1=ln(1,LL); k2=ln(2,LL)
-        ac1=acl(LL); ac2=1d0-ac1
-        hrmsLL  = min(max(ac1*hwav(k1) + ac2*hwav(k2), 1d-2),gammax*hu(LL))
-        if (hrmsLL>0.0) then
-           call wave_fillsurdis(k1,dis1)
-           call wave_fillsurdis(k2,dis2)
-           surdisLL = ac1*dis1 + ac2*dis2
-           if (surdisLL<1d-2) surdisLL = 0d0
-           rhoLL   = rhomean                             
-           !
-           pkwmag=fbreak*2d0*surdisLL/(rhoLL*fwavpendep*hrmsLL)
-           !
-           ! tke dirichlet boundary condition at surface
-           tkesur = tkesur + (pkwmag*vonkar*fwavpendep*hrmsLL/(30.d0*cde))**(2d0/3d0)
-        else
-           pkwmag=0d0
-        endif
-        pkwav = 0d0
-        wdep = hu(LL) - fwavpendep*hrmsLL
-        whit = 0
+        if (jawavesinturbulence > 0) then  
+           k1=ln(1,LL); k2=ln(2,LL)
+           ac1=acl(LL); ac2=1d0-ac1
+           hrmsLL  = min(max(ac1*hwav(k1) + ac2*hwav(k2), 1d-2),gammax*hu(LL))
+           if (hrmsLL>0.0) then
+              call wave_fillsurdis(k1,dis1)
+              call wave_fillsurdis(k2,dis2)
+              surdisLL = ac1*dis1 + ac2*dis2
+              if (surdisLL<1d-2) surdisLL = 0d0
+              rhoLL   = rhomean                             
+              !
+              pkwmag=fbreak*2d0*surdisLL/(rhoLL*fwavpendep*hrmsLL)
+              !
+              ! tke dirichlet boundary condition at surface
+              tkesur = tkesur + (pkwmag*vonkar*fwavpendep*hrmsLL/(30.d0*cde))**(2d0/3d0)
+           else
+              pkwmag=0d0
+           endif
+           pkwav = 0d0
+           wdep = hu(LL) - fwavpendep*hrmsLL
+           whit = 0
+         endif 
      endif
 
      do L  = Lb, Lt - 1                                               ! Loop over layer interfaces. Doesn't work for kmx==1
@@ -557,7 +559,7 @@ double precision, external :: setrhofixedp
 
      enddo  ! Lb, Lt-1
      
-     if (jawave>0) then
+     if (jawavesinturbulence>0) then
         ! check if first layer is thicker than fwavpendep*wave height
         ! Then use JvK solution
         if (hu(LL)-hu(Lt-1)>=fwavpendep*hrmsLL) then
@@ -788,7 +790,7 @@ double precision, external :: setrhofixedp
            sourtu  =  c1e*cmukep*turkin0(L)*dijdij(k)
            !
            ! Add wave dissipation production term
-           if (jawave>0) then
+           if (jawavesinturbulence>0) then
               sourtu =  sourtu + pkwav(k)*c1e*tureps0(L)/max(turkin0(L),1d-7)
               !sourtu = sourtu + c1e*cmukep*turkin0(L)/max(vicwwu(L),vicwminb)*pkwav(k)
            endif
@@ -854,7 +856,7 @@ double precision, external :: setrhofixedp
        bk(kxL) =  1.d0
        ck(kxL) =  0.d0
        dk(kxL) =  4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
-       if (jawave>0) then                 ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
+       if (jawavesinturbulence>0) then                 ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
           dk(kxL) = dk(kxL) + dzu(Lt-Lb+1)*pkwmag/(fwavpendep*hrmsLL)
        endif
 
@@ -1012,7 +1014,7 @@ double precision, external :: setrhofixedp
           enddo
           epsbot =  tureps1(Lb) + dzu(1)*abs(ustb(LL))**3/(vonkar*hdzb*hdzb)
           epssur =  tureps1(Lt-1) - 4d0*abs(ustw(LL))**3/ (vonkar*dzu(Lt-Lb+1))
-          if (jawave>0) then
+          if (jawavesinturbulence>0) then
              epssur = epssur - dzu(Lt-Lb+1)*fwavpendep*pkwmag/hrmsLL
           endif   
           epsbot = max(epsbot,epseps)

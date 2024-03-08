@@ -121,7 +121,7 @@
 
       umod = sqrt( u1Lb*u1Lb + v(Lb)*v(Lb) )
       ! updated ustokes needed before conversion to eulerian velocities
-      if (jawave>0 .and. .not. flowwithoutwaves) then
+      if (jawave>2 .and. .not. flowwithoutwaves) then
          ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
          call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
          !
@@ -138,7 +138,7 @@
 
       ustbLL = sqcf*umod                                   ! ustar based upon bottom layer/layer integral velocity
 
-    if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave>2 .and. .not. flowWithoutWaves) then
          rhoL = rhomean      ! for now
          if (ustw2 > 1d-8) then
             !
@@ -258,12 +258,12 @@
       cfuhi3D   = cfuhiLL*umod                                  ! cfuhi3D = frc. contr. to diagonal
 
     if (jawave==0 .or. flowWithoutWaves) then
-         z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
+        z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
     endif
 
     if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
-         adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-      endif
+        adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
+    endif
 
     else if (ifrctyp == 10) then                                 ! Hydraulically smooth, glass etc
       nit = 0

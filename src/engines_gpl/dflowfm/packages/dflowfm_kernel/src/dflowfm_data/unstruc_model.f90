@@ -1597,13 +1597,17 @@ subroutine readMDUFile(filename, istat)
     
     ! using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
     if (jawave==1 .or. jawave==2) then
-       jawaveStokes = 0
-    endif   
+       jawaveStokes = 0 
+    endif 
+
     call prop_get_integer(md_ptr, 'waves', '3Dstokesprofile'     , jawaveStokes)    ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity 
     if ((jawave==1 .or. jawave==2) .and. jawaveStokes>0) then
        write(msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=',jawave,', and 3Dstokesprofile=',jawavestokes,'. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
        call warn_flush()
     endif   
+
+    if (jawave > 0) jawavesinturbulence = 1
+    call prop_get_integer(md_ptr, 'waves', '3Dwavesinturbulence' , jawavesinturbulence)
     call prop_get_integer(md_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
     call prop_get_integer(md_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta)     ! Boundary layer formulation. 1: Sana
     call prop_get_integer(md_ptr, 'waves', '3Dwaveforces'        , jawaveforces)    ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -3703,6 +3707,7 @@ endif
        endif
        if (writeall .or. kmx>0) then
           call prop_set(prop_ptr, 'waves', '3Dstokesprofile'     , jawaveStokes    ,'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
+          call prop_set(prop_ptr, 'waves', '3Dwavesinturbulence' , jawavesinturbulence  ,'Waves in turbulence, 0=no, 1=yes')
           call prop_set(prop_ptr, 'waves', '3Dwavestreaming'     , jawavestreaming ,'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
           call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer' , jawavedelta     ,'Boundary layer formulation. 1: Sana                                                                                  ')
        endif

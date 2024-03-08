@@ -134,6 +134,8 @@
 
  integer                           :: jawaveStokes      !< Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
+ integer                           :: jawavesinturbulence !< Waves in turbulence, 0=no 
+
  integer                           :: jawavedelta=1     !< Wave boundary layer formulation: 1=Sana 2007
 
  integer                           :: jawaveforces      !< Apply wave forces to model (1, default), or not (0)
@@ -739,6 +741,8 @@ subroutine default_flowparameters()
     jawavestreaming = 0   ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
     jawavestokes = 1      ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+
+    jawavesinturbulence = 0 ! default off    
 
     jawavedelta = 1       ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 
