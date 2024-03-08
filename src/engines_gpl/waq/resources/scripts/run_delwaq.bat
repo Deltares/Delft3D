@@ -35,7 +35,7 @@ echo Working directory: %workdir%
     rem
 set D3D_HOME=%~dp0..
 set waqdir=%D3D_HOME%\bin
-set sharedir=%D3D_HOME%\share
+set sharedir=%D3D_HOME%\share\delft3d
 set libdir=%D3D_HOME%\lib
 set PATH=%sharedir%;%libdir%;%waqdir%
 rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
@@ -75,13 +75,14 @@ goto loop
 :continue
 
 if [%userprocfile%] EQU [none] (
-    set procfile=sharedir\proc_def
+    set procfile=%sharedir%\proc_def
     ) else (
        set procfile=%userprocfile%
     )
+
 if [%eco%] EQU [true] (
     if [%userspefile%] EQU [none] (
-       set spefile=sharedir\bloom.spe
+       set spefile=%sharedir%\bloom.spe
        ) else (
           set spefile=%userspefile%
        )
