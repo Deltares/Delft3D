@@ -37,9 +37,11 @@ endif(WIN32)
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/agrhyd)
 
+install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 if (UNIX)
-    install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.sh  DESTINATION bin)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 endif(UNIX)
+if (WIN32) 
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.bat  DESTINATION bin)
+endif(WIN32)
