@@ -161,7 +161,7 @@ else if (jatem == 5) then
                              ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
    if (jasol == 1) then      ! Solar radiation provided by user (in .tem or .nc file)
       if (ja_solar_radiation_factor > 0) then
-         if (solar_radiation_factor(n) /= dmiss) then
+         if (comparereal(solar_radiation_factor(n), dmiss) /= 0) then
             qrad(n) = qrad(n) * solar_radiation_factor(n) ! qrad is adjusted (and not qsun) as it is used in fm_wq_processes 
          endif
       endif
