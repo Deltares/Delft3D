@@ -6,15 +6,11 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+message(STATUS "Configuring")
 if (UNIX)
-    message(STATUS "Configuring in unix")
     include(linux_scripts.cmake)
     add_definitions(-DCOMMIT_VERSION=${COMMIT_VERSION})
 endif(UNIX)
-
-if (WIN32)
-    message(STATUS "Configuring in windows")
-endif(WIN32)
 
 include(functions.cmake)
 
