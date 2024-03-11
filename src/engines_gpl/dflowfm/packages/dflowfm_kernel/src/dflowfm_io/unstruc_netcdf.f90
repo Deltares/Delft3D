@@ -5267,7 +5267,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
 
       ! Calculated time step per cell based on CFL number
       if (jamapdtcell > 0) then
-          if (ja_timestep_auto < 3) then
+          if (dtcell_is_2D()) then
               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, iLocS,       'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
           else
               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, UNC_LOC_S3D, 'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
@@ -6388,7 +6388,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
    endif
    if (jamapdtcell == 1) then
-       if (ja_timestep_auto < 3) then
+       if (dtcell_is_2D()) then
            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, UNC_LOC_S,   dtcell, jabndnd=jabndnd_)
        else
            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, UNC_LOC_S3D, dtcell, jabndnd=jabndnd_)
@@ -17763,5 +17763,13 @@ function write_array_with_dmiss_for_dry_faces_into_netcdf_file(ncid, id_tsp, id_
    deallocate(temp_array)
 
 end function write_array_with_dmiss_for_dry_faces_into_netcdf_file
+
+!> Check if dtcell was based on 2D/depth-averaged (res = .true.) or 3D flows (res = .false.)
+pure function dtcell_is_2D() result(res)
+   use m_flowtimes, only: ja_timestep_auto 
+   logical :: res !< Return value
+
+   res = (ja_timestep_auto < 3)
+end function dtcell_is_2D
 
 end module unstruc_netcdf
