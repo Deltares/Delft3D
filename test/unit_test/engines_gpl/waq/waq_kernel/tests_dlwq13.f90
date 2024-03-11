@@ -25,11 +25,12 @@ program test_dlwq13
     !! tests_dlwq13.f90 --
     !! Run unit tests for routines in Delft3D-WAQ
 
-    use ftnunit, only: runtests_init, runtests, runtests_final, assert_true, assert_files_comparable, test
-    use m_dlwq13, only: dlwq13
+    use ftnunit, only : runtests_init, runtests, runtests_final, assert_true, assert_files_comparable, test, &
+            prepare_tests
+    use m_dlwq13, only : dlwq13
 
     implicit none
-    character(len=200) :: cmd_arg
+    character(len = 200) :: cmd_arg
     integer :: iargc, getarg
 
     ! Determine the number of command line arguments
@@ -44,49 +45,26 @@ program test_dlwq13
 
         select case (trim(cmd_arg))
         case('test_dlwq13_recognise_nans')
-            write(*,*) "Running test_dlwq13_recognise_nans"
+            write(*, *) "Running test_dlwq13_recognise_nans"
             call runtests(call_test_dlwq13_recognise_nans)
         case ('test_dlwq13_no_nans')
-            write(*,*) "Running test_dlwq13_no_nans"
+            write(*, *) "Running test_dlwq13_no_nans"
             call runtests(call_test_dlwq13_no_nans)
         case ('test_dlwq13_with_nans')
-            write(*,*) "Running test_dlwq13_with_nans"
+            write(*, *) "Running test_dlwq13_with_nans"
             call runtests(call_test_dlwq13_with_nans)
         end select
     else
-        write(*,*) "No test specified, running all tests"
+        write(*, *) "No test specified, running all tests"
         call runtests(call_test_dlwq13_recognise_nans)
         call runtests(call_test_dlwq13_no_nans)
         call runtests(call_test_dlwq13_with_nans)
     end if
 
     call runtests_final
-    
 
-    contains
 
-    subroutine prepare_tests
-        ! prepare_tests
-        !     Routine to start the testing
-        !
-        ! Note:
-        !     This routine merely takes care that the unit tests are indeed run
-        integer :: lunrun
-
-        open (newunit=lunrun, file='ftnunit.run')
-        write (lunrun, '(a)') 'ALL'
-        close (lunrun)
-
-    end subroutine prepare_tests
-
-    ! subroutine show_result
-    !    ! show_result
-    !    !     Start the browser to show the result
-
-    !    call system('ftnunit.html')
-
-    ! end subroutine show_result
-
+contains
 
     subroutine call_test_dlwq13_recognise_nans
         call test(test_dlwq13_recognise_nans, 'Recognising NaNs')
@@ -118,26 +96,26 @@ program test_dlwq13
         ! Note:
         !     There should be no error message
 
-        integer, parameter                :: notot = 10
-        integer, parameter                :: noseg = 23
-        real, dimension(notot, noseg)     :: conc
-        integer                           :: itime
-        integer, dimension(30)            :: lun
-        character(len=200)                :: dataPath
-        character(len=255), dimension(30) :: lchar
-        character(len=40), dimension(4)   :: mname
-        character(len=20), dimension(10)  :: sname
+        integer, parameter :: notot = 10
+        integer, parameter :: noseg = 23
+        real, dimension(notot, noseg) :: conc
+        integer :: itime
+        integer, dimension(30) :: lun
+        character(len = 200) :: dataPath
+        character(len = 255), dimension(30) :: lchar
+        character(len = 40), dimension(4) :: mname
+        character(len = 20), dimension(10) :: sname
 
         conc = 1.0
 
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
 
-        lchar(18) = trim(dataPath)//'/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
-        lchar(19) = trim(dataPath)//'/test_dlwq13_no_nans.mon'
-        lchar(23) = trim(dataPath)//'/test_dlwq13_no_nans.res'
+        lchar(18) = trim(dataPath) // '/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
+        lchar(19) = trim(dataPath) // '/test_dlwq13_no_nans.mon'
+        lchar(23) = trim(dataPath) // '/test_dlwq13_no_nans.res'
 
-        open (newunit=lun(19), file=lchar(19))
+        open (newunit = lun(19), file = lchar(19))
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
@@ -157,27 +135,27 @@ program test_dlwq13
         ! Note:
         !     There should be no error message
 
-        integer, parameter                :: notot = 10
-        integer, parameter                :: noseg = 23
-        real, dimension(notot, noseg)     :: conc
-        integer                           :: itime
-        integer, dimension(30)            :: lun
-        character(len=200)                :: dataPath
-        character(len=255), dimension(30) :: lchar
-        character(len=40), dimension(4)   :: mname
-        character(len=20), dimension(10)  :: sname
+        integer, parameter :: notot = 10
+        integer, parameter :: noseg = 23
+        real, dimension(notot, noseg) :: conc
+        integer :: itime
+        integer, dimension(30) :: lun
+        character(len = 200) :: dataPath
+        character(len = 255), dimension(30) :: lchar
+        character(len = 40), dimension(4) :: mname
+        character(len = 20), dimension(10) :: sname
 
         conc = 1.0
         conc(1, 1) = log10(-1.0)
-        
+
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
-        
-        lchar(18) = trim(dataPath)//'/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
-        lchar(19) = trim(dataPath)//'/test_dlwq13_with_nans.mon'
-        lchar(23) = trim(dataPath)//'/test_dlwq13_with_nans.res'
 
-        open (newunit=lun(19), file=lchar(19))
+        lchar(18) = trim(dataPath) // '/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
+        lchar(19) = trim(dataPath) // '/test_dlwq13_with_nans.mon'
+        lchar(23) = trim(dataPath) // '/test_dlwq13_with_nans.res'
+
+        open (newunit = lun(19), file = lchar(19))
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 

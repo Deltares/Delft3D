@@ -23,6 +23,7 @@
       module m_rearaa
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -31,7 +32,7 @@
 
       subroutine rearaa ( lun     , lchar   , filtype , raname  , nexcraai,
      &                    iexcraai, ioptraai, noraai  , ntraaq  , ioutpt  ,
-     &                    ierr    , iwar    )
+     &                    ierr    , status   )
 
 !       Deltares Software Centre
 
@@ -87,7 +88,8 @@
       integer(kind=int_wp), intent(  out) ::  ntraaq             !< total number of exchanges in monitoring transects
       integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       integer(kind=int_wp), intent(inout) ::  ierr               !< error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local variables
 
@@ -116,7 +118,7 @@
          case ( -1 )                     ! old style <other ASCII file>
             write ( lunut, 2000 )  iropt1
             call opt1   ( iropt1  , lun     , 0       , lchar   , filtype ,
-     &                    ldummy  , ldummy  , 0       , ierr2   , iwar    ,
+     &                    ldummy  , ldummy  , 0       , ierr2   , status ,
      &                    .false. )
             if ( ierr2 .gt. 0 ) goto 20
             if ( gettoken( noraai, ierr2 ) .gt. 0 ) goto 20

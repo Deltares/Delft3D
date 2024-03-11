@@ -35,8 +35,8 @@
 
       subroutine dlwq03 ( lun    , lchar  , filtype, nrftot , nrharm ,
      &                    ivflag , dtflg1 , iwidth , dtflg3 ,
-     &                    ioutpt , gridps , syname , ierr   , iwar   ,
-     &                    has_hydfile     , nexch                    )
+     &                    ioutpt , gridps , syname , status   ,
+     &                    has_hydfile     , nexch)
 
 !       Deltares Software Centre
 
@@ -76,6 +76,7 @@
       use dlwq_netcdf  !   read/write grid in netcdf
       use results, only : lncout       !   output settings
       use m_sysn          ! System characteristics
+      use m_error_status
 
 
       implicit none
@@ -95,11 +96,10 @@
       logical      , intent(in   ) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       character(20), intent(in   ) :: syname (*)        !< array with substance names
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
       logical      , intent(out)   :: has_hydfile       !< if true, much information comes from the hyd-file
       integer(kind=int_wp), dimension(3), intent(out)  ::  nexch  !< number of exchanges as read via hyd-file
       type(GridPointerColl)           GridPs            !< Collection of grid pointers
+      type(error_status), intent(inout) :: status
 
 !     local decalations
 
@@ -109,8 +109,6 @@
       integer(kind=int_wp) :: volume             !  is 1 if opt0 is called for volumes ?
       integer(kind=int_wp) :: ifact              !  needed for call to opt0
       integer(kind=int_wp) :: itype              !  type of token that is returned
-      integer(kind=int_wp) :: ierr2              !  local error indicator
-      integer(kind=int_wp) :: iwar2              !  local warning indicator
       integer(kind=int_wp), allocatable ::  ikmerge(:)         !  array with indicators whether attributes are already set
       integer(kind=int_wp), allocatable ::  iamerge(:)         !  composite attribute array
       integer(kind=int_wp), allocatable ::  ikenm  (:)         !  array with attributes of an input block
@@ -138,9 +136,11 @@
       integer(kind=int_wp) ::  varid, varidout, meshid, timeid, bndtimeid, ntimeid, wqid
       integer(kind=int_wp) ::  meshid2d, type_ugrid, meshid1d, networkid, network_geometryid
       integer(kind=int_wp) ::  inc_error
- 
+
       character(len=nf90_max_name) :: mesh_name
       character(len=nf90_max_name) :: dimname
+
+      type(error_status) :: local_status !< local status
 
       integer(kind=int_wp) ::  ithndl = 0
       if (timon) call timstrt( "dlwq03", ithndl )
@@ -149,19 +149,18 @@
       volume = 1
       ifact  = 1
       ivflag = 0
-      ierr2  = 0
-      iwar2  = 0
       iposr  = 0
-
       nexch  = 0
+
+      call local_status%initialize(0,0,0)
 
 !     Check if there is a keyword for the grid or the hyd-file
       lncout     = .false.
       lchar (46) = ' '
-      if ( gettoken( cdummy, idummy, itype, ierr2 ) .gt. 0 ) goto 240
+      if ( gettoken( cdummy, idummy, itype, local_status%ierr ) .gt. 0 ) goto 240
       has_hydfile = .false.
       if (cdummy .eq. 'HYD_FILE') then
-         if ( gettoken( hydfile, ierr2 ) .gt. 0 ) goto 240
+         if ( gettoken( hydfile, local_status%ierr ) .gt. 0 ) goto 240
          !
          ! Retrieve several file names:
          ! - attributes
@@ -171,8 +170,8 @@
          write ( lunut , 2450 )
          write ( lunut , 2460 ) trim(hydfile)
 
-         call read_hydfile( lunut, hydfile, lchar, noseg, nexch, ierr2 )
-         if ( ierr2 /= 0 ) goto 240
+         call read_hydfile( lunut, hydfile, lchar, noseg, nexch, local_status )
+         if ( local_status%ierr /= 0 ) goto 240
          has_hydfile = .true.
          ugridfile   = lchar(46)
       endif
@@ -185,7 +184,7 @@
          write ( lunut , 2500 )
 
          if ( .not. has_hydfile ) then
-            if ( gettoken( ugridfile, ierr2 ) .gt. 0 ) goto 240
+            if ( gettoken( ugridfile, local_status%ierr ) .gt. 0 ) goto 240
          endif
 
          write ( lunut , 2510 ) trim(ugridfile)
@@ -207,7 +206,7 @@
             if (inc_error /= nf90_noerr ) then
                write ( lunut , 2530 ) trim(ugridfile)
                write ( lunut , 2599 ) trim(nf90_strerror(inc_error))
-               ierr = ierr + 1
+               call status%increase_error_count()
                lncout    = .false.
             end if
          end if
@@ -219,7 +218,7 @@
                write ( lunut , 2540 )
                lncout    = .false.
                lchar(46) = ' '
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
 
             if ( lncout ) then
@@ -227,12 +226,12 @@
                   if ( type_ugrid == type_ugrid_face_crds ) then
                      inc_error = nf90_get_att( ncid, meshid2d, "mesh", mesh_name )
                   else if ( type_ugrid == type_ugrid_node_crds ) then
-                     inc_error  = nf90_inquire_variable( ncid, meshid2d, mesh_name )
+                     inc_error  = nf90_inquire_variable(ncid, meshid2d, mesh_name )
                   endif
                   if (inc_error /= nf90_noerr ) then
                      write ( lunut , 2535 ) trim(ugridfile)
                      write ( lunut , 2599 ) trim(nf90_strerror(inc_error))
-                     ierr = ierr + 1
+                     call status%increase_error_count()
                      lncout    = .false.
                   end if
                   write ( lunut , 2550 ) trim(mesh_name)
@@ -243,7 +242,7 @@
                   if (inc_error /= nf90_noerr ) then
                      write ( lunut , 2535 ) trim(ugridfile)
                      write ( lunut , 2599 ) trim(nf90_strerror(inc_error))
-                     ierr = ierr + 1
+                     call status%increase_error_count()
                      lncout    = .false.
                   end if
                   write ( lunut , 2551 ) trim(mesh_name)
@@ -254,7 +253,7 @@
 
 !       Read number of computational volumes - if required
          if ( .not. has_hydfile ) then
-            if ( gettoken( noseg, ierr2 ) .gt. 0 ) goto 240
+            if ( gettoken( noseg, local_status%ierr ) .gt. 0 ) goto 240
          endif
 
          ! TODO: check the number of segments with the information in the waqgeom-file
@@ -271,25 +270,24 @@
          write ( lunut , 2000 ) noseg
       else
          write ( lunut , 2010 ) noseg
-         ierr = ierr+1
+         call status%increase_error_count()
       endif
       if ( .not. alone ) then
          if ( noseg .ne. nosegp ) then
             write ( lunut , 2015 ) nosegp
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
 
 !       Read optional multiple grids
 
       call grid ( lun    , noseg  , notot  , nototp , nolay  ,
-     &            gridps , nseg2  , nogrid , syname , ierr2  ,
-     &            iwar2  )
-      if ( ierr2 .gt. 0 ) goto 240
+     &            gridps , nseg2  , nogrid , syname , local_status)
+      if ( local_status%ierr .gt. 0 ) goto 240
 
 !       Read grid-layout for visually printed output
 
-      if ( gettoken( cdummy, imopt1, itype, ierr2 ) .gt. 0 ) goto 240
+      if ( gettoken( cdummy, imopt1, itype, local_status%ierr ) .gt. 0 ) goto 240
       if ( itype .eq. 1 ) then
          if ( cdummy .eq. 'NONE' ) then
             write ( lunut , 2050 )
@@ -297,7 +295,7 @@
             ny = 0
          else
             write ( lunut, 2045 ) cdummy
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       else
          write ( lunut , 2030 ) imopt1
@@ -305,7 +303,7 @@
 
             case ( :-2 , 3: )
                write ( lunut, 2040 )
-               ierr = ierr + 1
+               call status%increase_error_count()
             case ( 2 )
                write ( lunut , 2050 )
                nx = 0
@@ -313,20 +311,20 @@
             case default
 !                   call with record length 0 => IMOPT1 of -4 not allowed
                call opt1 ( imopt1  , lun     , 6       , lchar   , filtype ,
-     &                     dtflg1  , dtflg3  , 0       , ierr2   , iwar2   ,
+     &                     dtflg1  , dtflg3  , 0       , local_status%ierr   , local_status   ,
      &                     .false. )
-               if ( ierr2 .gt. 0 ) goto 240
-               if ( gettoken( nx, ierr2 ) .gt. 0 ) goto 240
-               if ( gettoken( ny, ierr2 ) .gt. 0 ) goto 240
+               if ( local_status%ierr .gt. 0 ) goto 240
+               if ( gettoken( nx, local_status%ierr ) .gt. 0 ) goto 240
+               if ( gettoken( ny, local_status%ierr ) .gt. 0 ) goto 240
                write ( lunut , 2060 ) nx, ny
                if ( imopt1 .ne. 0 ) then      !  else an adequate file was given
                   allocate ( pgrid(nx,ny) )
                   do j = 1 , ny
                      do i = 1 , nx
-                        if ( gettoken( pgrid(i,j), ierr2 ) .gt. 0 ) goto 240
+                        if ( gettoken( pgrid(i,j), local_status%ierr ) .gt. 0 ) goto 240
                         if ( pgrid(i,j) .gt. noseg+nseg2 ) then
                            write ( lunut , 2070 ) pgrid(i,j)
-                           ierr = ierr+1
+                           call status%increase_error_count()
                         endif
                      enddo
                   enddo
@@ -341,7 +339,7 @@
                         enddo
                      enddo
                      if ( nx*ny .gt. 0 ) then
-                        call open_waq_files  ( lun(6), lchar(6), 6    , 1   , ierr2 )
+                        call open_waq_files  ( lun(6), lchar(6), 6    , 1   , local_status%ierr )
                         write ( lun(6) ) pgrid
                         close ( lun(6) )
                      else
@@ -365,34 +363,34 @@
       ikmerge = 0
 
       if ( has_hydfile ) then
-         ierr2 = force_include_file( lchar(40) )
-         if ( ierr2 /= 0 ) goto 240
+         local_status%ierr = force_include_file( lchar(40) )
+         if ( local_status%ierr /= 0 ) goto 240
       endif
 
-      if ( gettoken( nkopt, ierr2 ) .gt. 0 ) goto 240
+      if ( gettoken( nkopt, local_status%ierr ) .gt. 0 ) goto 240
       write ( lunut , 2110 ) nkopt                          !   so many blocks of input are provided
 
       do 20 i = 1 , nkopt                                      !   read those blocks
 
-         if ( gettoken( nopt, ierr2 ) .gt. 0 ) goto 240
+         if ( gettoken( nopt, local_status%ierr ) .gt. 0 ) goto 240
          write ( lunut , 2120 ) nopt                           !   number of attributes in this block
          allocate ( ikenm(nopt) )
          do j = 1, nopt                                        !   get the attribute numbers
-            if ( gettoken( ikenm(j), ierr2 ) .gt. 0 ) goto 240
+            if ( gettoken( ikenm(j), local_status%ierr ) .gt. 0 ) goto 240
          enddo
 
-         if ( gettoken( ikopt1, ierr2 ) .gt. 0 ) goto 240      !   the file option for this info
+         if ( gettoken( ikopt1, local_status%ierr ) .gt. 0 ) goto 240      !   the file option for this info
          write ( lunut , 2130 ) ikopt1
          call opt1 ( ikopt1  , lun     , 40      , lchar   , filtype ,
-     &               dtflg1  , dtflg3  , 0       , ierr2   , iwar2   ,
+     &               dtflg1  , dtflg3  , 0       , local_status%ierr   , local_status   ,
      &               .false. )
-         if ( ierr2  .gt. 0 ) goto 240
+         if ( local_status%ierr  .gt. 0 ) goto 240
          if ( ikopt1 .eq. 0 ) then                             !   binary file
-            call open_waq_files  ( lun(40) , lchar(40) , 40 , 2 , ierr2 )
-            read  ( lun(40) , end=250 , err=260 ) ( iread(j), j=1, noseg )
+            call open_waq_files  ( lun(40) , lchar(40) , 40 , 2 , local_status%ierr )
+            read  ( lun(40) , end=250 , err=260 ) (iread(j), j=1, noseg )
             close ( lun(40) )
          else
-            if ( gettoken( ikopt2, ierr2 ) .gt. 0 ) goto 240   !   second option
+            if ( gettoken( ikopt2, local_status%ierr ) .gt. 0 ) goto 240   !   second option
             write ( lunut , 2140 ) ikopt2
 
             select case ( ikopt2 )
@@ -405,14 +403,14 @@
                      write ( lunut , 2170 )
                   endif
                   do j = 1, noseg
-                     if ( gettoken( iread(j), ierr2 ) .gt. 0 ) goto 240
+                     if ( gettoken( iread(j), local_status%ierr ) .gt. 0) goto 240
                      if ( ioutpt .ge. 5 ) write ( lunut , 2180 ) j , iread(j)
                   enddo
 
                case ( 2 )                                      !   default with overridings
                   write ( lunut , 2190 )
-                  if ( gettoken( ikdef, ierr2 ) .gt. 0 ) goto 240
-                  if ( gettoken( nover, ierr2 ) .gt. 0 ) goto 240
+                  if ( gettoken( ikdef, local_status%ierr ) .gt. 0 ) goto 240
+                  if ( gettoken( nover, local_status%ierr ) .gt. 0 ) goto 240
                   write ( lunut , 2200 )ikdef, nover
                   if ( ikerr .eq. 0 ) then                     !   only assign if no previous error
                      do iseg = 1 , noseg
@@ -426,11 +424,11 @@
                         write ( lunut , 2220 )
                      endif
                      do j = 1, nover
-                        if ( gettoken( iover , ierr2 ) .gt. 0 ) goto 240
-                        if ( gettoken( idummy, ierr2 ) .gt. 0 ) goto 240
+                        if ( gettoken( iover , local_status%ierr ) .gt. 0 ) goto 240
+                        if ( gettoken( idummy, local_status%ierr ) .gt. 0 ) goto 240
                         if ( iover .lt. 1 .or. iover .gt. noseg ) then
                            write ( lunut , 2230 ) j, iover
-                           ierr = ierr + 1
+                           call status%increase_error_count()
                         else
                            if ( ioutpt .ge. 3 ) write ( lunut , 2240 ) j, iover, idummy
                            iread(iover) = idummy
@@ -440,7 +438,7 @@
 
                case default
                   write ( lunut , 2250 )
-                  ierr = ierr + 1
+                  call status%increase_error_count()
 
             end select
 
@@ -455,7 +453,7 @@
 
             if ( ikmerge(iknm1) .ne. 0  ) then
                write ( lunut , 2260 ) iknm2, iknm1
-               ierr  = ierr + 1
+               call status%increase_error_count()
                ikerr = 1
                exit
             endif
@@ -465,10 +463,10 @@
             if ( iknm1 .le. 0 .or. iknm1 .gt. 10 ) then
                if ( iknm1 .eq. 0 ) then
                   write ( lunut , 2270 ) iknm2
-                  iwar2 = iwar2 + 1
+                  call local_status%increase_warning_count()
                else
                   write ( lunut , 2280 ) iknm1,iknm2
-                  iwar2 = iwar2 + 1
+                  call local_status%increase_warning_count()
                endif
                cycle                    !  skip
             endif
@@ -488,22 +486,22 @@
 
 !     Time dependent attributes
 
-      if ( gettoken( ikopt2, ierr2 ) .gt. 0 ) goto 240
+      if ( gettoken( ikopt2, local_status%ierr ) .gt. 0 ) goto 240
       write ( lunut , 2300 ) ikopt2
 
       if ( ikopt2 .eq. 1 ) then                                !   this file
          write ( lunut, 2310 )
-         if ( gettoken( nopt, ierr2 ) .gt. 0 ) goto 240
+         if ( gettoken( nopt, local_status%ierr ) .gt. 0 ) goto 240
          write ( lunut, 2120 ) nopt
          do j = 1, nopt
-            if ( gettoken( iknm1, ierr2 ) .gt. 0 ) goto 240
+            if ( gettoken( iknm1, local_status%ierr ) .gt. 0 ) goto 240
             if ( iknm1 .le. 0 .or. iknm1 .gt. 10 ) then
                if ( iknm1 .eq. 0 ) then
                   write ( lunut , 2270 ) j,iknm1
-                  iwar2 = iwar2 + 1
+                  call local_status%increase_warning_count()
                else
                   write ( lunut , 2280 ) iknm2,iknm1
-                  iwar2 = iwar2 + 1
+                  call local_status%increase_warning_count()
                endif
                cycle
             endif
@@ -515,18 +513,18 @@
                ikmerge(iknm1) = 1
             else
                write ( lunut , 2260 ) iknm2,iknm1
-               ierr  = ierr + 1
+               call status%increase_error_count()
                ikerr = 1
             endif
          enddo
 
          ifiopk = 0
-         if ( gettoken( ikopt1, ierr2 ) .gt. 0 ) goto 240
+         if ( gettoken( ikopt1, local_status%ierr ) .gt. 0 ) goto 240
          write ( lunut , 2130 ) ikopt1
          call opt1 ( ikopt1  , lun     , 40      , lchar   , filtype ,
-     &               dtflg1  , dtflg3  , 0       , ierr2   , iwar2   ,
+     &               dtflg1  , dtflg3  , 0       , local_status%ierr   ,  local_status   ,
      &               .false. )
-         if ( ierr2 .gt. 0 ) goto 240
+         if ( local_status%ierr .gt. 0 ) goto 240
          if ( ikopt1 .eq. 0 ) then
             write ( lunut , 2320 )
             ifiopk = 1
@@ -535,7 +533,7 @@
             ifiopk = 2
          else
             write ( lunut , 2340 )
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
 
       else
@@ -564,42 +562,42 @@
 !       read segment volumes
 
       write ( lunut , 2390 )
-      ierr2 = 0
+      local_status%ierr = 0
 
       call opt0   ( lun    , 7      , 0        , 0        , noseg  ,
      &              1      , 1      , nrftot(2), nrharm(2), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
-     &              filtype, dtflg3 , ioutpt   , ierr2  ,
-     &              iwar2  , has_hydfile       )
+     &              filtype, dtflg3 , ioutpt   , local_status%ierr  ,
+     &              local_status  , has_hydfile       )
 
-      call check_volume_time( lunut, lchar(7), noseg, ierr2 )
+      call check_volume_time( lunut, lchar(7), noseg, local_status%ierr )
 
       if ( .not. alone ) then
          if ( lchar(7) .ne. fnamep(6) ) then
             write ( lunut , 2395 ) fnamep(6)
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
       if ( volume .eq.  0 ) ivflag = 1
       if ( volume .eq. -1 ) ivflag = 2
-      ierr  = ierr + ierr2
-      ierr2 = 0
+      call status%increase_error_count_with(local_status%ierr)
+      local_status%ierr = 0
   240 continue
-      if ( ierr2 .gt. 0 ) ierr = ierr + 1
-      if ( ierr2 .eq. 3 ) call srstop(1)
+      if ( local_status%ierr .gt. 0 ) call status%increase_error_count()
+      if ( local_status%ierr .eq. 3 ) call srstop(1)
       goto 270
 
 !     error processing
 
   250 write ( lunut , 2400 ) lun(40), lchar(40)
-      ierr = ierr+1
+      call status%increase_error_count()
       goto 270
 
   260 write ( lunut , 2410 ) lun(40), lchar(40)
-      ierr = ierr+1
+      call status%increase_error_count()
 
-  270 call check  ( cdummy , iwidth , 3      , ierr2  , ierr   )
-      iwar = iwar + iwar2
+  270 call check  ( cdummy , iwidth , 3      , local_status%ierr  , status)
+      call status%increase_warning_count_with(local_status%iwar)
       if ( timon ) call timstop( ithndl )
       return
 
@@ -655,9 +653,9 @@
  2370 format (   ' No second attribute set, using default 0')
  2380 format (   ' Attribute of',I7,' bottom segments set to 2' )
  2390 format ( / ' Volumes:' )
- 2395 format ( / ' ERROR, volumes for Delpar from different file : ',A20 )
- 2400 format ( / ' ERROR, end of file on unit:' ,I3, / ' Filename: ',A20 )
- 2410 format ( / ' ERROR, reading file on unit:',I3, / ' Filename: ',A20 )
+ 2395 format ( / ' ERROR, volumes for Delpar from different file : ',A20)
+ 2400 format ( / ' ERROR, end of file on unit:' ,I3, / ' Filename: ',A20)
+ 2410 format ( / ' ERROR, reading file on unit:',I3, / ' Filename: ',A20)
  2450 format ( / ' Found HYD_FILE keyword' )
  2460 format ( / ' Retrieving file names and grid parameters from: ', A )
  2500 format ( / ' Found UGRID keyword' )

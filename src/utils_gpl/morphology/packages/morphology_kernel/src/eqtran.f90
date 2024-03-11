@@ -163,6 +163,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                    :: sscv
     real(fp)                    :: taub
     real(fp)                    :: teta
+    real(fp)                    :: timhr
     real(fp)                    :: tp
     real(fp)                    :: txg
     real(fp)                    :: tyg
@@ -187,6 +188,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                    :: ua
     real(fp)                    :: va
     real(fp)                    :: wsb
+    real(fp)                    :: zb
     !
     ! Interface to dll is in High precision!
     !
@@ -214,6 +216,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     ierror_ptr = 0
     error      = .false.
     !
+    timhr     = real(realpar(RP_TIME) ,fp)/3600.0_fp
     utot      = real(realpar(RP_EFVLM),fp)
     u         = real(realpar(RP_EFUMN),fp)
     v         = real(realpar(RP_EFVMN),fp)
@@ -259,6 +262,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     dg        = real(realpar(RP_DG)   ,fp)
     dgsd      = real(realpar(RP_DGSD) ,fp)
     sandfrac  = real(realpar(RP_SNDFR),fp)
+    zb        = real(realpar(RP_ZB)   ,fp)
     !
     cesus  = 0.0_fp
     sbot   = 0.0_fp
@@ -558,6 +562,17 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        !
        sbc_total = .false.
        sus_total = .false.
+    elseif (iform == 22) then
+       !
+       ! ASMITA
+       !
+       call asmita(zb, timhr, npar, par, &
+                 & sbot, cesus, t_relax)
+       cesus = cesus/rhosol
+       !
+       sbc_total = .true.
+       sus_total = .true.
+       equi_conc = .true.
     elseif (iform == 15) then
        !
        ! User defined formula in DLL

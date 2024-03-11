@@ -26,8 +26,9 @@ module m_dlwq5b
     use m_waq_precision
     use m_array_manipulation, only : shift_array_right
     use m_string_manipulation, only : shift_char_subarray
+    use m_error_status
     implicit none
-    
+
     private
     public :: dlwq5b
 
@@ -39,7 +40,7 @@ contains
             bc_wl_count, bc_wl_types_count, parsed_items_count, noits, chkflg, &
             caller, ilun, lch, lstack, itype, &
             rar, nconst, itmnr, parsed_str, ioutpt, &
-            error_ind, iwar)
+            error_ind, status)
 
         use m_string_utils, only : index_in_array, join_strings, string_equals
 
@@ -61,7 +62,6 @@ contains
         integer(kind = int_wp), intent(out) :: nconst       !< Number of values in rar
         integer(kind = int_wp), intent(in) :: ioutpt       !< Output file option
         integer(kind = int_wp), intent(out) :: error_ind    !< Error indicator
-        integer(kind = int_wp), intent(out) :: iwar         !< Cumulative warning count
 
         real(kind = real_wp), intent(out) :: rar(:)       !< Array with real values
 
@@ -73,39 +73,41 @@ contains
         character(*), intent(inout) :: lch(lstack)  !< File name stack, 4 deep
         character(*), intent(out) :: parsed_str   !< Input string at end of routine
 
-!   Local variables
-    logical    :: usefor_on, substitution_on, can_compute, operator_on
-    logical    :: logging_on
-    integer(kind=int_wp) :: ithndl = 0
-    integer(kind=int_wp) :: i, parsed_int, ifound, i2, name_index, icm
-    integer(kind=int_wp) :: itmnr, ioff, ioffc, ioffi
-    real(kind=real_wp)       :: parsed_real
-    character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
-    character(*), parameter :: keywords(25) = ['BLOCK'        ,&
-                                              'BINARY_FILE'   ,&
-                                              'CONCENTRATIONS',&
-                                              'CONCENTRATION' ,&
-                                              'CONSTANTS'     ,&
-                                              'DATA'          ,&
-                                              'DATA_ITEM'     ,&
-                                              'LINEAR'        ,&
-                                              'ITEM'          ,&
-                                              'IDENTICALITEM' ,&
-                                              'USEDATA_ITEM'  ,&
-                                              'FORITEM'       ,&
-                                              'TIME_DELAY'    ,&
-                                              'ODS_FILE'      ,&
-                                              'ABSOLUTE'      ,&
-                                              'TIME'          ,&
-                                              'HARMONICS'     ,&
-                                              'FOURIERS'      ,&
-                                              'SCALE'         ,&
-                                              'DEFAULTS'      ,&
-                                              'ALL'           ,&
-                                              'SEGMENTS'      ,&
-                                              'PARAMETERS'    ,&
-                                              'FUNCTIONS'     ,&
-                                              'SEG_FUNCTIONS'  ]
+        type(error_status), intent(inout) :: status !< current error status
+
+        !   Local variables
+        logical    :: usefor_on, substitution_on, can_compute, operator_on
+        logical    :: logging_on
+        integer(kind=int_wp) :: ithndl = 0
+        integer(kind=int_wp) :: i, parsed_int, ifound, i2, name_index, icm
+        integer(kind=int_wp) :: itmnr, ioff, ioffc, ioffi
+        real(kind=real_wp)       :: parsed_real
+        character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
+        character(*), parameter :: keywords(25) = ['BLOCK'        ,&
+                                                'BINARY_FILE'   ,&
+                                                'CONCENTRATIONS',&
+                                                'CONCENTRATION' ,&
+                                                'CONSTANTS'     ,&
+                                                'DATA'          ,&
+                                                'DATA_ITEM'     ,&
+                                                'LINEAR'        ,&
+                                                'ITEM'          ,&
+                                                'IDENTICALITEM' ,&
+                                                'USEDATA_ITEM'  ,&
+                                                'FORITEM'       ,&
+                                                'TIME_DELAY'    ,&
+                                                'ODS_FILE'      ,&
+                                                'ABSOLUTE'      ,&
+                                                'TIME'          ,&
+                                                'HARMONICS'     ,&
+                                                'FOURIERS'      ,&
+                                                'SCALE'         ,&
+                                                'DEFAULTS'      ,&
+                                                'ALL'           ,&
+                                                'SEGMENTS'      ,&
+                                                'PARAMETERS'    ,&
+                                                'FUNCTIONS'     ,&
+                                                'SEG_FUNCTIONS'  ]
 
         if (timon) call timstrt("dlwq5b", ithndl)
 
@@ -255,7 +257,7 @@ contains
                 end if
                 cycle read_and_process
             end if
-        
+
             ! parsed_str == item-NAME
             ifound = index_in_array(parsed_str(1:len(all_names(1))), all_names(1:bc_wl_count))
             if (ifound >= 1) then
@@ -275,7 +277,7 @@ contains
                 end if
                 cycle read_and_process
             end if
-        
+
             ! parsed_str == item-TYPE. IAR now is negative.
             ifound = index_in_array(parsed_str(1:len(all_types(1))),all_types(1:bc_wl_types_count))
             if (ifound >= 1) then
@@ -295,17 +297,17 @@ contains
                 end if
                 cycle read_and_process
             end if
-        
+
             ! If only existing names or types are allowed then
             !        this is the place for an error massage
             ! JVB stick to just a warning keep on reading IAR = 0?, or used for flow??
-        
+
             if (chkflg == 1) then
                 call update_counters(parsed_items_count, noits, itmnr)
                 icm = itmnr + parsed_items_count + ioff
                 call shift_array_right(iar, itmnr      , itmnr + parsed_items_count*2)
                 call shift_array_right(iar, itmnr + parsed_items_count, itmnr + parsed_items_count*2)
-                call shift_char_subarray(car(:icm+1), itmnr+ioff , icm) 
+                call shift_char_subarray(car(:icm+1), itmnr+ioff , icm)
                 iar (itmnr) = -1300000000 ! pointer should be ignored
                 iar (itmnr + parsed_items_count) = 1300000000 ! item number should be ignored
                 iar (itmnr + parsed_items_count + parsed_items_count) = noits
@@ -313,7 +315,8 @@ contains
                 car (itmnr + parsed_items_count + ioff) = parsed_str
                 if (usefor_on) substitution_on = .true.
                 write(lunut , 1040) caller, itmnr, parsed_str
-                iwar = iwar + 1
+
+                call status%increase_warning_count()
             else
                 ! Now a new name is added to the list of names
                 !        the rest is moved upward since it is all 1 array
@@ -342,7 +345,7 @@ contains
             end if
             cycle read_and_process
         end if
-        
+
         ! Scenario: a number (int, 2, or real, 3) is used in computations
         if (itype == 2 .or. itype == 3) then
             if (substitution_on .or. operator_on) then

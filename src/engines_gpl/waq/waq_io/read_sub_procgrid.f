@@ -23,13 +23,14 @@
       module m_read_sub_procgrid
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine read_sub_procgrid( notot  , syname , GridPs , isysg  , ierr   )
+      subroutine read_sub_procgrid( notot  , syname , GridPs , isysg  , status)
 
 !       Deltares Software Centre
 
@@ -58,7 +59,7 @@
       character(20)         , intent(in   ) :: syname(notot) !< substance names
       type(GridPointerColl) , intent(in   ) :: GridPs        !< collection of all grid definitions
       integer(kind=int_wp), intent(inout) ::  isysg (notot)  !< process gridnr of substances
-      integer(kind=int_wp), intent(inout) ::  ierr           !< cummulative error count
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -122,12 +123,12 @@
       return
 
  1000 write ( lunut, 2010 )
-      ierr = ierr + 1
+      call status%increase_error_count()
 
       if (timon) call timstop( ithndl )
       return
 
- 2000 format (/' Reading SUBSTANCE_PROCESSGRID information:')
+ 2000 format ( /' Reading SUBSTANCE_PROCESSGRID information:')
  2010 format ( ' ERROR, reading SUBSTANCE_PROCESSGRID information.')
  2020 format ( ' ERROR, unrecognized token: ',A)
  2030 format ( ' Processgrid will be used for ALL substances')

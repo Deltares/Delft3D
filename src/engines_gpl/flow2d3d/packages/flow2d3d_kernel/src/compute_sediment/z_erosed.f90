@@ -854,7 +854,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! Compute bed stress resulting from skin friction
           !
           if (iflufflyr>0) then
-             afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), gdp%gdtrapar, gdp%gdsedpar)
+             afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), gdp%gdtrapar, gdp%gdsedpar, timhr)
           else
              afluff = 0.0_fp
           endif
@@ -978,6 +978,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        dll_reals(RP_VMEAN) = real(vmean     ,hp)
        dll_reals(RP_VELMN) = real(velm      ,hp)
        dll_reals(RP_USTAR) = real(ustarc         ,hp)
+       dll_reals(RP_ZB   ) = real(-dps(nm)       ,hp)
        !
        if (max_integers < MAX_IP) then
           write(errmsg,'(a)') 'Insufficient space to pass integer values to transport routine.'
@@ -1013,14 +1014,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! on localpar, thus ensuring that the global array par is not
           ! messed up with specific, nm-/l-dependent data.
           !
-          do i = 1, npar
-             j = gdp%gdtrapar%iparfld(i,l)
-             if (j>0) then
-                 localpar(i) = gdp%gdtrapar%parfld(nm,j)
-             else
-                 localpar(i) = par(i,l)
-             endif
-          enddo
+          call get_transport_parameters(gdp%gdtrapar, l, nm, timhr, localpar)
           !
           ! fraction specific quantities
           !

@@ -25,7 +25,7 @@
       use m_string_utils
       use m_opt0
       use m_dlwq5a
-
+      use m_error_status
 
       implicit none
 
@@ -35,8 +35,8 @@
       SUBROUTINE DLWQ05 ( LUN    , LCHAR  , filtype, CAR    , IAR    ,
      &                    RAR    , NRFTOT , NRHARM , NOBND  , NOSYS  ,
      &                    NOTOT  , NOBTYP , IRMAX  , IIMAX  , DTFLG1 ,
-     &                    IWIDTH , INTSRT , IERR   , DTFLG3 , SNAME  ,
-     &                    ICMAX  , IOUTPT , iwar   )
+     &                    IWIDTH , INTSRT , DTFLG3 , SNAME  ,
+     &                    ICMAX  , IOUTPT , status   )
 
 !       Deltares Software Centre
 
@@ -89,14 +89,14 @@
       logical,              intent(in   ) :: dtflg1             !< 'date'-format 1st timescale
       integer(kind=int_wp), intent(in   ) :: iwidth             !< width of the output file
       integer(kind=int_wp), intent(in   ) :: intsrt             !< integration option
-      integer(kind=int_wp), intent(inout) :: ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) :: iwar               !< cumulative warning count
       logical,              intent(in   ) :: dtflg3             !< 'date'-format (F;ddmmhhss,T;yydddhh)
       character(20),        intent(inout) :: sname(:)           !< array with substance names
       integer(kind=int_wp), intent(in   ) :: icmax              !< size of the character workspace
       integer(kind=int_wp), intent(in   ) :: ioutpt             !< flag for more or less output
 
       integer(kind=int_wp) :: idef
+
+      type(error_status) :: status !< current error status
  !
       CHARACTER*1   CDUMMY
       CHARACTER*255 CHULP
@@ -140,7 +140,7 @@
             GOTO 170
          ENDIF
          WRITE ( LUNUT , 2001 )
-         IERR = IERR + 1
+         call status%increase_error_count()
          GOTO 175
       ENDIF
 !
@@ -219,10 +219,10 @@
                IFOUND2 = index_in_array(BNDID_LONG(I),BNDID_LONG(:I-1))
                IF ( IFOUND .EQ. IFOUND2 ) THEN
                   WRITE(LUNUT,2270) BNDID(I)
-                  iwar = iwar + 1
+                  call status%increase_warning_count()
                ELSE
                   WRITE(LUNUT,2280) BNDID(I)
-                  IERR = IERR + 1
+                  call status%increase_error_count()
                ENDIF
             ENDIF
          endif
@@ -233,7 +233,7 @@
          ITYP2 = index_in_array(BNDTYPE_LONG(I),BNDTYPE_LONG(:nobtyp))
          IF ( ITYPE .NE. ITYP2 ) THEN
             WRITE(LUNUT,2290) TRIM(BNDTYPE_LONG(I))
-            IERR = IERR + 1
+            call status%increase_error_count()
          ENDIF
 
          ! if type found set type, otherwise add type
@@ -302,7 +302,7 @@
       WRITE ( LUNUT , 2100 ) IAROPT
       GOTO ( 60 , 70 , 110 ) IAROPT+1
       WRITE ( LUNUT , 2110 )
-      IERR = IERR+1
+      call status%increase_error_count()
       GOTO 160
 !
 !        no time lags
@@ -323,7 +323,7 @@
      *                  ITYPE , IERR2 )
           IF ( IERR2 .GT. 0 ) GOTO 170
    80   CONTINUE
-        IERR = IERR + 1
+        call status%increase_error_count()
         GOTO 160
       ENDIF
       DO 90 K = 1, NOBND
@@ -351,7 +351,7 @@
       DO 100 I=1,NOBND
       IF ( IAR(I) .LT. 0 ) THEN
            WRITE ( LUNUT , 2180 ) IAR(I)
-           IERR = IERR+1
+           call status%increase_error_count()
       ENDIF
   100 CONTINUE
       WRITE ( LUNWR ) ( IAR(K) , K=1,NOBND )
@@ -367,7 +367,7 @@
       IF ( IERR2 .GT. 0 ) GOTO 170
       IF ( IDEF .LT. 0 ) THEN
          WRITE ( LUNUT , 2180 ) IDEF
-         IERR = IERR+1
+         call status%increase_error_count()
       ENDIF
 !            fill the array with the default
       DO 120 I = 1,MIN(IIMAX,NOBND)
@@ -418,7 +418,7 @@
   140 CONTINUE
       IF ( NOVER .GT. MXOVER ) THEN
          WRITE ( LUNUT , 2200 ) NOBND,NOVER,IIMAX,NOBND+NOVER-IIMAX
-         IERR = IERR + 1
+         call status%increase_error_count()
          GOTO 160
       ENDIF
       IF ( DTFLG1 )
@@ -428,7 +428,7 @@
          IBND = IABS( IAR(I+NOBND) )
          IF ( IBND .GT. NOBND .OR. IBND .EQ. 0 ) THEN
               WRITE ( LUNUT , 2180 ) IAR(I+NOBND)
-              IERR = IERR+1
+              call status%increase_error_count()
          ELSEIF ( IOUTPT .GE. 3 ) THEN
             IT =   IAR (IBND)
             IF ( DTFLG1 ) THEN
@@ -455,14 +455,14 @@
        call dlwq5a ( lun    , lchar  , 14     , iwidth , icmax  ,
      &              car    , iimax  , iar    , irmax  , rar    ,
      &              sname  , bndid  , bndtype(1:nobtyp), nobnd  , nosys  ,
-     &              nobtyp , drar   , dtflg1 , dtflg3 , 
-     &              ioutpt , ierr2  , ierr   , iwar   )
+     &              nobtyp , drar   , dtflg1 , dtflg3 ,
+     &              ioutpt , ierr2  , status)
       deallocate( drar )
       deallocate( bndid, bndtype )
 
       IF ( IERR2 .EQ.  0 ) goto 180
       IF ( IERR2 .GT.  0 ) THEN
-         IERR  = IERR + IERR2
+        call status%increase_error_count_with(ierr2)
          IERR2 = 0
          GOTO 170
       ENDIF
@@ -478,16 +478,16 @@
      &              nosubs , nosubs , nrftot(8), nrharm(8), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
      &              filtype, dtflg3 , ioutpt   , ierrh  ,
-     &              iwar   , .false.)
-      IERR = IERR + IERRH
+     &              status   , .false.)
+      call status%increase_error_count_with(ierrh)
 !
       IERR2 = 0
   170 CONTINUE
       IF ( ALLOCATED(BNDID  ) ) DEALLOCATE(BNDID  )
       IF ( ALLOCATED(BNDTYPE) ) DEALLOCATE(BNDTYPE)
-      IF ( IERR2 .GT. 0 ) IERR = IERR + 1
+      IF ( IERR2 .GT. 0 ) call status%increase_error_count()
       IF ( IERR2 .EQ. 3 ) CALL SRSTOP(1)
-  175 call check  ( chulp  , iwidth , 5      , ierr2  , ierr   )
+  175 call check  ( chulp  , iwidth , 5      , ierr2  , status)
   180 if ( timon ) call timstop( ithndl )
       RETURN
 !

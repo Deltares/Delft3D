@@ -23,6 +23,7 @@
       module m_opt1
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -30,7 +31,7 @@
 
 
       subroutine opt1 ( iopt1  , lun    , is     , lchar  , filtype,
-     &                  dtflg1 , dtflg3 , nitem  , ierr   , iwar   ,
+     &                  dtflg1 , dtflg3 , nitem  , ierr   , status   ,
      &                  dont_read                                  )
 
 !     Deltares Software Centre
@@ -75,8 +76,8 @@
       integer(kind=int_wp), intent(in   ) ::  nitem           !< nr of input items expected
       integer(kind=int_wp), intent(inout) ::  filtype(*)      !< type of binary file
       integer(kind=int_wp), intent(inout) ::  ierr            !< Local error flag
-      integer(kind=int_wp), intent(inout) ::  iwar            !< Cumulative warning count
       logical       , intent(in)    :: dont_read      !< do not actually read tokens, if true, the information is already provided
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local
 
@@ -210,7 +211,7 @@
                      goto 30
                   endif
                else
-                  call convert_relative_time ( it1    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it1    , 1, dtflg1 , dtflg3)
                endif
                if ( gettoken( cdummy , it2   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'to' time
                if ( itype .eq. 1 ) then
@@ -225,7 +226,7 @@
                      goto 30
                   endif
                else
-                  call convert_relative_time ( it2    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it2    , 1 , dtflg1 , dtflg3 )
                endif
                if ( gettoken( cdummy , it3   , itype, ierr2 ) .gt. 0 ) goto 30    ! 'step'
                if ( itype .eq. 1 ) then
@@ -240,7 +241,7 @@
                      goto 30
                   endif
                else
-                  call convert_relative_time ( it3    , 1     , dtflg1 , dtflg3 )
+                  call convert_relative_time ( it3    , 1, dtflg1 , dtflg3 )
                endif
                if ( gettoken( sfile , ierr2 ) .gt. 0 ) then       !     Get file string
                   ierr2 = -1
@@ -295,7 +296,7 @@
 
          case ( -2 )
             write ( lunut , 2060 ) cdummy
-            iwar = iwar + 1
+            call status%increase_warning_count()
             ierr = 0
 
          case ( -1 )

@@ -25,7 +25,7 @@
       use m_read_initials
       use m_opt2
       use m_opt1
-
+      use m_error_status
 
       implicit none
 
@@ -34,7 +34,7 @@
 
       subroutine dlwq08 ( lun    , lchar  , filtype, noseg  , notot  ,
      &                    syname , iwidth , ioutpt , inpfil ,
-     &                    gridps , ierr   , iwar   )
+     &                    gridps , status   )
 
 !       Deltares Software Centre
 
@@ -89,42 +89,44 @@
 
 !     Kind                    Function         Name               Description
 
-      integer(kind=int_wp), intent(inout) ::  lun  (*)       !< array with unit numbers
-      character         ( *), intent(inout) :: lchar(*)      !< filenames
-      integer(kind=int_wp), intent(inout) ::  filtype(*)     !< type of binary file
-      integer(kind=int_wp), intent(in   ) ::  noseg          !< nr of computational volumes
-      integer(kind=int_wp), intent(in   ) ::  notot          !< nr of delwaq + delpar state variables
-      character         (20), intent(in   ) :: syname(notot) !< names of the substances
-      integer(kind=int_wp), intent(in   ) ::  iwidth         !< width of the output file
-      integer(kind=int_wp), intent(in   ) ::  ioutpt         !< option for extent of output
-      type(inputfilestack)  , intent(inout) :: inpfil        !< input file strucure with include stack and flags
-      type(gridpointercoll) , intent(in)    :: gridps        !< collection off all grid definitions
-      integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
+      integer(kind=int_wp) , intent(inout) :: lun  (*)       !< array with unit numbers
+      character       ( *) , intent(inout) :: lchar(*)       !< filenames
+      integer(kind=int_wp) , intent(inout) :: filtype(*)     !< type of binary file
+      integer(kind=int_wp) , intent(in   ) :: noseg          !< nr of computational volumes
+      integer(kind=int_wp) , intent(in   ) :: notot          !< nr of delwaq + delpar state variables
+      character       (20) , intent(in   ) :: syname(notot)  !< names of the substances
+      integer(kind=int_wp) , intent(in   ) :: iwidth         !< width of the output file
+      integer(kind=int_wp) , intent(in   ) :: ioutpt         !< option for extent of output
+      type(inputfilestack) , intent(inout) :: inpfil         !< input file strucure with include stack and flags
+      type(gridpointercoll), intent(in)    :: gridps         !< collection off all grid definitions
 
+      type(error_status), intent(inout) :: status !< current error status
+
+      ! local
       integer(kind=int_wp), parameter ::  STRING   =  1
       integer, parameter :: EXTASCII = -1, BINARY   = 0, THISFILE = 1
       integer(kind=int_wp), parameter ::  NODEFAUL =  1, DEFAULTS = 2
- 
+
       real(kind=real_wp), allocatable ::  scales(:)              ! real workspace scale factors
       real(kind=real_wp), allocatable ::  values(:,:)            ! real workspace values
       integer(kind=int_wp), allocatable ::  iover (:)              ! integer space for overridings
 
-      integer(kind=int_wp) :: ierr2                          ! local error indicator
-      integer(kind=int_wp) :: itype                          ! 0 = all, 1 = string, 2 = integer, 3 = real
-      character(255)  cdummy                        ! workspace for reading
-      character(  4)  cext                          ! inital conditions file extention
-      integer(kind=int_wp) :: icopt1                         ! first file option (ASCII/Binary/external etc)
-      integer(kind=int_wp) :: icopt2                         ! constants with or without defaults
-      logical         ldummy                        ! dummy variable
-      integer(kind=int_wp) :: ip                             ! location of the period in the file name
-      integer(kind=int_wp) :: i                              ! loop variable and dummy integer
-      integer(kind=int_wp) :: isys, iseg                     ! substances and volumes loop variables
-      logical         masspm2                       ! is it mass per m2 ?
-      logical         transp            ! input with a transposed matrix (per substance) ?
-      logical         old_input         ! old or new input
-      integer(kind=int_wp) :: itime              ! time in map file
+      integer(kind=int_wp) :: ierr2      ! local error indicator
+      integer(kind=int_wp) :: itype      ! 0 = all, 1 = string, 2 = integer, 3 = real
+      character(255)  cdummy             ! workspace for reading
+      character(  4)  cext               ! inital conditions file extention
+      integer(kind=int_wp) :: icopt1     ! first file option (ASCII/Binary/external etc)
+      integer(kind=int_wp) :: icopt2     ! constants with or without defaults
+      logical         ldummy             ! dummy variable
+      integer(kind=int_wp) :: ip         ! location of the period in the file name
+      integer(kind=int_wp) :: i          ! loop variable and dummy integer
+      integer(kind=int_wp) :: isys, iseg ! substances and volumes loop variables
+      logical         masspm2            ! is it mass per m2 ?
+      logical         transp             ! input with a transposed matrix (per substance) ?
+      logical         old_input          ! old or new input
+      integer(kind=int_wp) :: itime      ! time in map file
       integer(kind=int_wp) ::  ithndl = 0
+
       if (timon) call timstrt( "dlwq08", ithndl )
 
 !        Initialisations
@@ -175,8 +177,8 @@
 
 !        Get the input file name
 
-      call opt1   ( icopt1  , lun     , 18      , lchar   , filtype ,
-     &              ldummy  , ldummy  , 0       , ierr2   , iwar    ,
+      call opt1   ( icopt1  , lun     , 18, lchar, filtype ,
+     &              ldummy  , ldummy  , 0 , ierr2, status ,
      &              .false. )
       if ( ierr2  .gt. 0 ) goto 10
       if ( icopt1 .eq. BINARY ) then
@@ -185,7 +187,7 @@
          call str_lower(cext)
          if ( cext .eq. '.map' .or. cext .eq. '.rmp' .or.
      &        cext .eq. '.rm2' ) then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
-            call open_waq_files  ( lun(18) , lchar(18) , 18    , 2     , ierr2 )
+            call open_waq_files(lun(18) , lchar(18) , 18    , 2     , ierr2 )
             read ( lun(18) ) cdummy(1:160)                        ! read title of simulation
             close ( lun(18) )
             if ( cdummy(114:120) .eq. 'mass/m2' .or.
@@ -193,17 +195,17 @@
                write ( lunut , 2070 )
             else if ( masspm2 ) then
                write ( lunut , 2080 )
-               ierr = ierr + 1
+               call status%increase_error_count()
             else
                write ( lunut , 2090 )
-               iwar = iwar + 1
+               call status%increase_warning_count()
             endif
          else if ( masspm2 ) then
             write ( lunut , 2100 )
-            ierr = ierr + 1
+            call status%increase_error_count()
          else
             write ( lunut , 2110 )
-            iwar = iwar + 1
+            call status%increase_warning_count()
          endif
          goto 10
       endif
@@ -216,7 +218,7 @@
       else
          lchar(18)(ip:ip+3) = '.map'
       endif
-      call open_waq_files  ( lun(18) , lchar(18) , 18    , 1     , ierr2 )
+      call open_waq_files( lun(18) , lchar(18) , 18    , 1     , ierr2 )
       if ( ierr2 .gt. 0 ) goto 10
 
 !        Write the .map header
@@ -284,7 +286,7 @@
          push = .true.
          call read_initials ( lun    , lchar  , filtype, inpfil, notot ,
      &                        syname , iwidth , ioutpt , gridps, noseg ,
-     &                        values , ierr2  , iwar   )
+     &                        values , ierr2  , status)
          itime = 0
          write(lun(18)) itime,values
          close ( lun(18) )
@@ -293,11 +295,11 @@
       endif
 
       ierr2 = 0
-   10 if ( ierr2 .gt. 0 ) ierr = ierr + 1
+   10 if ( ierr2 .gt. 0 ) call status%increase_error_count()
       if ( ierr2 .gt. 0 ) write ( lunut, 2050 )
       if ( ierr2 .eq. 3 ) call SRSTOP(1)
       if ( old_input ) then
-         call check  ( cdummy , iwidth , 8      , ierr2  , ierr   )
+         call check( cdummy , iwidth , 8, ierr2  , status)
       endif
       if ( timon ) call timstop( ithndl )
       return

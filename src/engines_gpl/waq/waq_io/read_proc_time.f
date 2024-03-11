@@ -23,13 +23,14 @@
       module m_read_proc_time
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine read_proc_time( notot  , syname , isyst  , ierr   )
+      subroutine read_proc_time( notot  , syname , isyst  , status   )
 
 !       Deltares Software Centre
 
@@ -56,7 +57,7 @@
       integer(kind=int_wp), intent(in   ) ::  notot           !< nr of substances
       character(20)         , intent(in   ) :: syname(notot)  !< substance names
       integer(kind=int_wp), intent(inout) ::  isyst (notot)   !< process timestep multiplier
-      integer(kind=int_wp), intent(inout) ::  ierr            !< cummulative error count
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -120,12 +121,12 @@
 
  1000 continue
       write(lunut,2010)
-      ierr = ierr + 1
+      call status%increase_error_count()
 
       if (timon) call timstop( ithndl )
       return
 
- 2000 format (/' Reading PROCESS_TIMESTEP_MULTIPLIER information:')
+ 2000 format ( /' Reading PROCESS_TIMESTEP_MULTIPLIER information:')
  2010 format ( ' ERROR, reading PROCESS_TIMESTEP_MULTIPLIER information.')
  2020 format ( ' ERROR, unrecognized token: ',A)
  2030 format ( ' Timestep will be used for ALL substances')

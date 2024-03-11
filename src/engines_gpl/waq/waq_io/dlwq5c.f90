@@ -23,6 +23,7 @@
       module m_dlwq5c
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -32,8 +33,8 @@
       subroutine dlwq5c ( fname  , lunut  , car    , iar    , rar    , &
                          icmax  , iimax  , irmax  , drar   , noitm  , &
                          nodim  , iorder , scale  , itmnr  , idmnr  , &
-                                  amiss  , nobrk  , ierr   , iwar   )
-!
+                         amiss  , nobrk  , ierr   , status   )
+
 !
 !     Deltares        Sector Waterresources And Environment
 !
@@ -126,6 +127,8 @@
       real(kind=dp) :: drar(*)
       character     cfile(3)*256
       real(kind=real_wp) :: amiss
+
+      type(error_status), intent(inout) :: status !< current error status
  !
 !     local declarations
       dimension     loc(3)
@@ -134,7 +137,7 @@
       integer(kind=int_wp) ::  nodim, iorder, ioffa, ioffb, ioffc, ioffd, nscle, lunut
       integer(kind=int_wp) ::  k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
       integer(kind=int_wp) ::  ierr, noloc, noit2, noitv, j
-      integer(kind=int_wp) ::  nottt, itmnr, notim, idmnr, i, iwar, ishft, ltot
+      integer(kind=int_wp) ::  nottt, itmnr, notim, idmnr, i, ishft, ltot
       integer(kind=int_wp) ::  noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
       integer(kind=int_wp) ::  iy1, im1, id1, ih1, in1, is1
       integer(kind=int_wp) ::  iy2, im2, id2, ih2, in12
@@ -221,7 +224,7 @@
             cycle
          end if
          write ( lunut , 1070 ) iar(ioffa+j), car(ioffa+j)
-         iwar = iwar + 1
+         call status%increase_warning_count()
          if (   iar(ioffa+j  ) < 0 .or. ( iar(ioffa+j+1) < 0 .and. j /= noitm ) ) then
             write ( lunut , 1080 )
             ierr = 2
@@ -292,7 +295,7 @@
          end if
          call compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  , &
                                   nodim  , iorder , car    , k5     , ioffb  , &
-                                  nshft  , ioffd  , k      , icnt   , ierr, iwar)
+                                  nshft  , ioffd  , k      , icnt   , ierr, status)
          if (timon) call timstop( ithndl )
          return
       end do
@@ -344,14 +347,14 @@
             call gregor ( a1      , iy2, im2, id2, ih2, in2, is2, dummy)
             write ( lunut , 1030 )  iy1, im1, id1, ih1, in1, is1, &
                                    iy2, im2, id2, ih2, in2, is2
-            iwar = iwar + 1
+            call status%increase_warning_count()
          end if
          if ( drar(k6) < a2 ) then
             call gregor ( drar(k6), iy1, im1, id1, ih1, in1, is1, dummy)
             call gregor ( a2      , iy2, im2, id2, ih2, in2, is2, dummy)
             write ( lunut , 1040 )  iy1, im1, id1, ih1, in1, is1, &
                                    iy2, im2, id2, ih2, in2, is2
-            iwar = iwar + 1
+            call status%increase_warning_count()
          end if
          nobrk = i2-i1+1
       end if

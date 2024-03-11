@@ -37,6 +37,8 @@ contains
 
       character(len=*), dimension(:), intent(in) :: argv
 
+      integer(kind=int_wp) :: arg_index
+
       !     Special system init
 
       call timini()                          ! initializes timer
@@ -45,8 +47,8 @@ contains
 
       narg = get_number_of_arguments()            ! but timer is switched 'off' by default
       if (narg == 0) narg = iargc() + 1
-      do ierr = 1, narg
-         call get_argument_from_list(ierr, arg)
+      do arg_index = 1, narg
+         call get_argument_from_list(arg_index, arg)
          if (arg == "timer" .or. arg == "TIMER") then
             timon = .true.                     ! optionally switch it 'on'
             exit
@@ -56,14 +58,11 @@ contains
 
       !        initialise values
 
-      ierr = 0
-      iwar = 0
       lunrep = lun(29)
       nolun = nlun
       filtype = 0
       noitem = noitm
       noutp = nooutp
-      noinfo = 0
       nharms = 0
       niharm = 0
       nlines = 0

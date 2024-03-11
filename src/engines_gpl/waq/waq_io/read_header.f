@@ -23,6 +23,7 @@
       module m_read_header
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -30,7 +31,7 @@
 
 
       subroutine read_header( waq_param, data_param, nocol , itfact, dtflg1,
-     &                        dtflg3   , ierr      , iwar  )
+     &                        dtflg3   , ierr      , status  )
 
 !     Deltares Software Centre
 
@@ -55,7 +56,8 @@
       logical               , intent(in)    :: dtflg1       ! true if time in 'date' format
       logical               , intent(in)    :: dtflg3       ! true if yyetc instead of ddetc
       integer(kind=int_wp), intent(out) ::  ierr          ! error indication
-      integer(kind=int_wp), intent(inout) ::  iwar          ! cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
       ! local declaration
 
@@ -136,7 +138,7 @@
             if ( data_param%name(k) .eq. '&$&$SYSTEM_NAME&$&$!') cycle
             if ( data_param%sequence(k) .gt. 0 ) cycle
             call compact_usefor( lunut , waq_param, data_param, k      , icnt   )
-            iwar = iwar + 1
+            call status%increase_warning_count()
             if ( i + icnt .ge. nitm ) exit
          enddo
 

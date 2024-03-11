@@ -29,7 +29,7 @@
       use m_read_proc_time
       use m_read_nobottomlay
       use m_read_grid
-
+      use m_error_status
 
       implicit none
 
@@ -37,8 +37,7 @@
 
 
       subroutine grid   ( lun    , noseg  , notot  , nototp , nolay  ,
-     &                    gridps , nseg2  , nogrid , syname , ierr   ,
-     &                    iwarn  )
+     &                    gridps , nseg2  , nogrid , syname , status )
 
 !       Deltares Software Centre
 
@@ -85,8 +84,8 @@
       integer(kind=int_wp), intent(  out) ::  nseg2              !< number of additional bottom volumes
       integer(kind=int_wp), intent(  out) ::  nogrid             !< number of grids
       character(20), intent(in   ) :: syname(notot)     !< names of the substances
-      integer(kind=int_wp), intent(inout) ::  ierr               !< error count of this routine
-      integer(kind=int_wp), intent(inout) ::  iwarn              !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local variables :
 
@@ -239,35 +238,35 @@
 
             case ( 'BOTTOMGRID', 'BEDGRID' )
                aGrid%itype = Bottomgrid
-               call read_grid( lun    , aGrid  , GridPs , .false., nosegl_bottom, ierr   )
+               call read_grid( lun    , aGrid  , GridPs , .false., nosegl_bottom, status)
                igrid = GridPointerCollAdd(GridPs,aGrid)
                if ( GridPs%bottom_grid .ne. 0 ) then
                   write ( lunut, 2070 )
-                  iwarn = iwarn + 1
+                  call status%increase_warning_count()
                else
                   GridPs%bottom_grid = igrid
                endif
 
             case ( 'PROCESSGRID' )
                aGrid%itype = ProcessGrid
-               call read_grid ( lun    , aGrid  , GridPs , .false., nosegl_bottom, ierr   )
+               call read_grid ( lun    , aGrid  , GridPs , .false., nosegl_bottom, status)
                igrid = GridPointerCollAdd(GridPs,aGrid)
 
             case ( 'SUBGRID' )
                aGrid%itype = ProcessGrid
-               call read_grid ( lun    , aGrid  , GridPs , .false., nosegl_bottom, ierr   )
+               call read_grid ( lun    , aGrid  , GridPs , .false., nosegl_bottom, status)
                igrid = GridPointerCollAdd(GridPs,aGrid)
 
             case ( 'NOBOTTOMLAY' )
-               call read_nobottomlay ( GridPs, ierr  )
+               call read_nobottomlay ( GridPs, status  )
 
             case ( 'SUBSTANCE_PROCESSGRID' )
                newinput = .true.
-               call read_sub_procgrid( notot-nototp , syname, GridPs, isysg, ierr )
+               call read_sub_procgrid( notot-nototp , syname, GridPs, isysg, status)
 
             case ( 'PROCESS_TIMESTEP_MULTIPLIER' )
                newinput = .true.
-               call read_proc_time   ( notot-nototp , syname, isyst , ierr )
+               call read_proc_time   ( notot-nototp , syname, isyst , status)
 
             case ( 'END_MULTIGRID' )             ! this keyword ends the
                exit                              ! sequence of new input processing
@@ -276,7 +275,7 @@
                if ( .not. newinput ) then
                   aGrid%itype = ProcessGrid
                   push = .true.
-                  call read_grid ( lun    , aGrid  , GridPs , .true., nosegl_bottom, ierr   )
+                  call read_grid ( lun    , aGrid  , GridPs , .true., nosegl_bottom, status)
                   igrid = GridPointerCollAdd(GridPs,aGrid)
                   exit
                else
@@ -391,11 +390,11 @@
             if ( isysg(isys) .lt. 1      .or.
      &           isysg(isys) .gt. nogrid      ) then
                write(lunut,2110) isysg(isys)
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
             if ( isyst(isys) .lt. 1 ) then
                write(lunut,2120) isyst(isys)
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          enddo
          do isys = notot-nototp+1, notot
@@ -414,7 +413,7 @@
 
  1000 continue
       write( lunut, 2130 )
-      ierr = ierr + 1
+      call status%increase_error_count()
 
       if (timon) call timstop( ithndl )
       return

@@ -26,7 +26,7 @@
       use m_opt1
       use m_opt0
       use m_dlwq5a
-
+      use m_error_status
 
       implicit none
 
@@ -37,7 +37,7 @@
      &                    iimax  , iar    , irmax  , rar    , notot  ,
      &                    noseg  , sname  , nowst  , nowtyp , nrftot ,
      &                    nrharm , dtflg1 , dtflg3 , iwidth ,
-     &                    ioutpt , chkpar , ierr   , iwar            )
+     &                    ioutpt , chkpar , status)
 
 !       Deltares Software Centre
 
@@ -102,8 +102,9 @@
       integer(kind=int_wp), intent(in   ) ::  iwidth          !< width of the output file
       integer(kind=int_wp), intent(in   ) ::  ioutpt          !< Degree of output in report file
       logical      , intent(  out) :: chkpar(2)     !< Check for parameters SURF and LENGTH
-      integer(kind=int_wp), intent(inout) ::  ierr            !< cumulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar            !< cumulative warning count
+
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Locals
 
@@ -147,7 +148,7 @@
       if ( nowst .lt. 0 ) then       !   it says that info comes from auxiliary file
          write ( lunut , 2000 ) nowst
          call opt1   ( -1     , lun    , 15     , lchar  , filtype,
-     &                 dtflg1 , dtflg3 , 0      , ierr2  , iwar   ,
+     &                 dtflg1 , dtflg3 , 0      , ierr2  , status   ,
      &                 .false.)
          if ( ierr2 .gt. 0 ) goto 20
          if ( gettoken( nowst, ierr2 ) .gt. 0 ) goto 20
@@ -259,10 +260,10 @@
             ifound2 = index_in_array( wstid_long(i), wstid_long(:i-1))
             if ( ifound .eq. ifound2 ) then
                write(lunut,2130) wstid(i)
-               iwar = iwar + 1
+               call status%increase_warning_count()
             else
                write(lunut,2140) wstid(i)
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          endif
 
@@ -272,7 +273,7 @@
          ifound2 = index_in_array( wsttype_long(i), wsttype_long(:nowtyp))
          if ( ifound .ne. ifound2 ) then
             write(lunut,2150) trim(wsttype_long(i))
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
 
 !          if type found set type, otherwise add type
@@ -291,7 +292,7 @@
          if ( iwstseg(i) .lt. -3 .or.  iwstseg(i) .gt. noseg .or.
      &        iwstseg(i) .eq.  0                                     ) then
             write ( lunut , 2090 ) iwstseg(i)
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
 
 !          write ID and name to system file
@@ -337,22 +338,22 @@
       call dlwq5a ( lun    , lchar  , 15     , iwidth , icmax ,
      &              car    , iimax  , iar    , irmax  , rar   ,
      &              sname  , wstid  , wsttype, nowst  , idummy,
-     &              nowtyp , drar   , dtflg1 , dtflg3 , 
-     &              ioutpt , ierr2  , ierr   , iwar   )
+     &              nowtyp , drar   , dtflg1 , dtflg3 ,
+     &              ioutpt , ierr2  , status )
       deallocate( drar )
       if ( ierr2 .eq.  0 ) then
          deallocate( wstid, wsttype )
          goto 30
       endif
       deallocate( wstid, wsttype )
-      ierr = ierr + ierr2
+      call status%increase_error_count_with(ierr2)
       ierr2 = 0
 
 !     error processing
 
-   20 if ( ierr2 .gt. 0 ) ierr = ierr + 1       !   if 2, end of block reached
+   20 if ( ierr2 .gt. 0 ) call status%increase_error_count()      !   if 2, end of block reached
       if ( ierr2 .eq. 3 ) call SRSTOP(1)        !   end of file reached
-      call check  ( cdummy , iwidth , 6      , ierr2  , ierr   )
+      call check  ( cdummy , iwidth , 6      , ierr2  , status)
    30 if ( timon ) call timstop( ithndl )
       return
 

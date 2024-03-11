@@ -1,5 +1,6 @@
 # test dependencies
 set(dependencies delwaq_lib
+                 waq_data
                  waq_io
                 )
 

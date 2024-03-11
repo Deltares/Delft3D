@@ -31,11 +31,12 @@ implicit none
 contains
 
 
-   subroutine rd_stt(lunrep, sttfil, statprocesdef, allitems, noinfo, iwar, ierr)
+   subroutine rd_stt(lunrep, sttfil, statprocesdef, allitems, status)
 
    use dlwq_hyd_data      ! for definition and storage of data
    use processet      ! processet definitions
    use rd_token       ! tokenized reading
+   use m_error_status
 
    implicit none
 
@@ -43,33 +44,32 @@ contains
    character(len=256)  , intent(inout) :: sttfil          !< filename stt
    type(procespropcoll), intent(inout) :: statprocesdef   !< the statistical proces definition
    type(itempropcoll)  , intent(inout) :: allitems        !< all items of the proces system
-   integer(kind=int_wp)             , intent(inout) ::noinfo
-   integer(kind=int_wp)             , intent(inout) ::iwar
-   integer(kind=int_wp)             , intent(inout) ::ierr
+   type(error_status), intent(inout) :: status !< current error status
 
-   integer(kind=int_wp)                              ::ioutpt
+   integer(kind=int_wp)                :: iostat
+   integer(kind=int_wp)                :: ioutpt
    logical                             :: dtflg1
    logical                             :: dtflg3
 
    ilun    = 0
    lch (1) = sttfil
-   open ( newunit=ilun(1), file=lch(1), status='old',iostat=ierr)
-   if(ierr.ne.0) then
+   open ( newunit=ilun(1), file=lch(1), status='old',iostat=iostat)
+   if(iostat /= 0) then
        write(*,*) 'Error reading file: ',trim(lch(1))
        call srstop(1)
    endif
    npos   = 1000
    cchar  = ';'
-   noinfo = 0
-   iwar = 0
-   ierr = 0
    ioutpt  = 0
    dtflg1 = .true.
    dtflg3 = .false.
 
+   call status%initialize(0, 0, 0)
+
    call setup_statistical ( lunrep       , npos         , cchar        , ilun         , lch          , &
                  lstack       , ioutpt       , dtflg1       , dtflg3       , statprocesdef, allitems     , &
-                 noinfo       , iwar         , ierr         )
+                 status)
+
    close(ilun(1))
 
    end subroutine rd_stt

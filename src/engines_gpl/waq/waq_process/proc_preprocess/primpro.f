@@ -23,6 +23,7 @@
       module m_primpro
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -31,8 +32,8 @@
 
       subroutine primpro ( procesdef, notot , syname, ndspx , nvelx ,
      &                     ioffx    , nosys , dsto  , vsto  , ndspn ,
-     &                     idpnw    , nveln , ivpnw , noq3  , noinfo,
-     &                     nowarn   , nerror)
+     &                     idpnw    , nveln , ivpnw , noq3  ,
+     &                     status)
 !>\file
 !>       detect and activate primary processes (which act directly on substances)
 
@@ -59,9 +60,8 @@
       integer(kind=int_wp) ::nveln           ! number of new (combined) velocities
       integer(kind=int_wp) ::ivpnw(nosys)    ! pointer for substance to new (combined) velocity
       integer(kind=int_wp) ::noq3            ! number of exhcanges in third direction
-      integer(kind=int_wp) ::noinfo          ! number of informative messages
-      integer(kind=int_wp) ::nowarn          ! number of warnings
-      integer(kind=int_wp) ::nerror          ! number of errors
+
+      type(error_status), intent(inout) :: status !< current error status
 
       ! local decalarations
 
@@ -145,7 +145,7 @@
                         endif
                         proc%fluxstochi(istochi)%subindx = isys
                      else
-                        noinfo = noinfo + 1
+                        call status%increase_info_count()
                         write (line,'(3a)') '   info : can not switch [',proc%name(1:20),'] on, not using flux.'
                         call monsys( line , 4 )
                      endif
@@ -186,7 +186,7 @@
                      write (line,'(4a)') '   from proces [',proc%name,'] ',proc%text(1:50)
                      call monsys( line , 4 )
                      if ( isys .gt. nosys ) then
-                        noinfo = noinfo + 1
+                        call status%increase_info_count()
                         write (line,'(2a)') '   info : inactive substance not using dispersion.'
                         call monsys( line , 4 )
                         cycle
@@ -215,7 +215,7 @@
                            idpnw(isys) = ndspn
                         endif
                      else
-                        noinfo = noinfo + 1
+                        call status%increase_info_count()
                         write (line,'(3a)') '   info : can not switch [',proc%name,'] on, not using disp.'
                         call monsys( line , 4 )
                      endif
@@ -256,7 +256,7 @@
                      write (line,'(4a)') '   from proces [',proc%name,'] ',proc%text(1:50)
                      call monsys( line , 4 )
                      if ( isys .gt. nosys ) then
-                        noinfo = noinfo + 1
+                        call status%increase_info_count()
                         write (line,'(2a)') '   info : inactive substance not using velocity.'
                         call monsys( line , 4 )
                         cycle
@@ -285,7 +285,7 @@
                            ivpnw(isys) = nveln
                         endif
                      else
-                        noinfo = noinfo + 1
+                        call status%increase_info_count()
                         write (line,'(3a)') '   info : can not switch [',proc%name,'] on, not using velo.'
                         call monsys( line , 4 )
                      endif

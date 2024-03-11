@@ -85,6 +85,7 @@ contains
       use string_module
       use m_alloc
       use timers
+      use m_error_status
 
       implicit none
 
@@ -168,6 +169,9 @@ contains
       character*20              :: outname         ! output name
       integer(kind=int_wp), intent(in) ::  refday           ! reference day, varying from 1 till 365
 
+      type(error_status) :: main_status
+      type(error_status) :: temp_status
+
       ! proces definition structure
 
       type(procespropcoll)      :: procesdef       ! the complete process definition
@@ -236,8 +240,8 @@ contains
       integer(kind=int_wp), save ::  ithndl = 0
       if (timon) call timstrt( "wq_processes_initialise", ithndl )
 
-      ierr = 0
-      ierr2 = 0
+      call main_status%initialize(0, nowarn, noinfo)
+      call temp_status%initialize(0, 0, 0)
 
       ! allocate
 
@@ -299,11 +303,12 @@ contains
 
          write(lunlsp,*) ' '
          write(lunlsp,*) ' Reading statistics definition file: ', trim(sttfil)
-         call rd_stt(lunlsp, sttfil, statprocesdef, allitems, noinfo, nowarn, ierr2)
-         if (ierr2.ne.0) then
+         call rd_stt(lunlsp, sttfil, statprocesdef, allitems, temp_status)
+         if (temp_status%ierr /= 0) then
             write(lunlsp,*) ' ERROR: Could not read the statistics definition file.'
             write(*,*) ' ERROR: Could not read the statistics definition file.'
-            ierr = ierr + 1
+            call main_status%increase_error_count()
+            call main_status%sync(ierr, nowarn, noinfo)
             return
          else
          endif
@@ -311,8 +316,9 @@ contains
 
       ! read process definition file
 
-      call rd_tabs( pdffil, lunlsp , versio, serial, noinfo, nowarn, ierr2 )
-      if (ierr2.ne.0) then
+      call rd_tabs( pdffil, lunlsp , versio, serial, temp_status)
+
+      if (temp_status%ierr /= 0) then
          write(lunlsp,*) ' '
          write(lunlsp,*) ' ERROR: Could not read the process definition file.'
          write(lunlsp,*) '        Check if the filename after -p is correct, and exists.'
@@ -324,7 +330,8 @@ contains
          write(*,*) '        Check if the filename after -p is correct, and exists.'
          write(*,*) '        Use -np if you want to run without processes.'
          write(*,*) ' '
-         ierr = ierr + 1
+         call main_status%increase_error_count()
+         call main_status%sync(ierr, nowarn, noinfo)
          return
       else
          write (lunlsp, *  )
@@ -547,8 +554,11 @@ contains
          ! add the processes in the strucure
 
          call prprop ( lunlsp, laswi, config, no_act, actlst, allitems, procesdef, &
-                       noinfo, nowarn, old_items , ierr2 )
-         if ( ierr2 .ne. 0 ) ierr = ierr + 1
+                       old_items , temp_status )
+         if ( temp_status%ierr /= 0 ) then
+             call main_status%increase_error_count()
+             temp_status%ierr = 0
+         end if
          nbpr   = procesdef%cursize
 
       else
@@ -575,7 +585,7 @@ contains
 
       call prsort ( lunlsp , procesdef, notot , nopa     , nosfun, &
                     syname, nocons   , nofun , constants, paname,  &
-                    funame, sfunname , nowarn)
+                    funame, sfunname , main_status)
 
       ! handle output from statistical processes
 
@@ -658,9 +668,13 @@ contains
       call makbar ( procesdef, notot , syname, nocons, constants, &
                     nopa     , paname, nofun , funame, nosfun,    &
                     sfunname , nodisp, diname, novelo, vename,    &
-                    noqtt    , laswi , no_act, actlst, noinfo,    &
-                    nowarn   , ierr2  )
-      if ( ierr2 .ne. 0 ) ierr = ierr + 1
+                    noqtt    , laswi , no_act, actlst,    &
+                    temp_status )
+
+      if ( temp_status%ierr /= 0 ) then
+        call main_status%increase_error_count()
+        temp_status%ierr = 0
+      end if
       deallocate(actlst)
 
       ! determine wich primary processes must be turned on
@@ -674,11 +688,16 @@ contains
       ivpnw  = 0
       dsto   = 0.0
       vsto   = 0.0
+
       call primpro ( procesdef, notot , syname, ndspx , nvelx , &
                      ioffx    , nosys , dsto  , vsto  , ndspn , &
-                     idpnw    , nveln , ivpnw , noqtt , noinfo, &
-                     nowarn   , ierr2 )
-      if ( ierr2 .ne. 0 ) ierr = ierr + 1
+                     idpnw    , nveln , ivpnw , noqtt , &
+                     temp_status)
+
+      if ( temp_status%ierr /= 0 ) then
+        call main_status%increase_error_count()
+        temp_status%ierr = 0
+      end if
 
       ! determine wich processes must be turned on for output purposes
 
@@ -710,13 +729,13 @@ contains
 
       ! report on the use of the delwaq input
 
-      call repuse ( procesdef, nocons, coname, nopa  , paname, nofun    , funame, nosfun, sfunname, noinfo)
+      call repuse ( procesdef, nocons, coname, nopa  , paname, nofun    , funame, nosfun, sfunname, main_status%noinfo)
 
       ! set output pointers to process arrays parloc and defaul
 
       idef = ioff + noloc
       iflx = idef + nodef
-      call setopo ( procesdef, outputs, ioff  , idef  , iflx  , nowarn   )
+      call setopo ( procesdef, outputs, ioff  , idef  , iflx  , main_status)
 
       ! if not all input present , stop with exit code
 
@@ -936,11 +955,12 @@ contains
 
       if (timon) call timstop( ithndl )
 
+      call main_status%sync(ierr, nowarn, noinfo)
       return
  2001 format( ' Using process definition file : ',a    )
  2002 format( ' Version number                : ',f10.2)
  2003 format( ' Serial                        : ',i10  )
- 2004 format( ' Using BLOOM definition file   : ',a    /)
+ 2004 format( ' Using BLOOM definition file   : ',a    / )
  2020 format (//' Model :            ',a40,/20x,a40 )
  2030 format (//' Run   :            ',a40,/20x,a40//)
  2080 format ( /' Number of active (transported) WQ substances       :',I3,/ &

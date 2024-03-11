@@ -32,7 +32,7 @@
 
       subroutine bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &                    ioutpt , GridPs , nobnd  , jtrack , ipoint ,
-     &                    ierr   , iwar   )
+     &                    status )
 
 !       Deltares Software Centre
 
@@ -50,6 +50,7 @@
 
       use dlwqgrid_mod        !   for the storage of contraction grids
       use timers       !   performance timers
+      use m_error_status
 
       implicit none
 
@@ -67,8 +68,8 @@
       integer(kind=int_wp), intent(  out) ::  nobnd              !< number of open boundaries
       integer(kind=int_wp), intent(  out) ::  jtrack             !< number of codiagonals
       integer(kind=int_wp), intent(inout) ::  ipoint(4,noqt)     !< exchange pointers
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+
+      type(error_status) :: status !< current error status
 
 !     local declarations
 
@@ -95,7 +96,7 @@
             ip1 = ipoint(i,iq)
             if ( ip1 .gt. noseg ) then
                write ( lunut , 2000 ) ip1, iq, noseg
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
             nobnd = min( nobnd, ip1 )
          enddo
@@ -120,7 +121,7 @@
       allocate ( ibnd(nobnd,2), stat = ierr2 )
       if ( ierr2 .ne. 0 ) then
          write ( lunut, 2030 ) ierr2
-         ierr = ierr + 1
+         call status%increase_error_count()
          goto 9999
       endif
       ibnd = 0
@@ -175,11 +176,11 @@
 !     Additional pointers and boundaries bottom grid
 
       call pointb ( lun    , ioutpt , gridps , ibnd   , ipoint,
-     &              noqt   , ierr   )
+     &              noqt   , status   )
 
       deallocate(ibnd)
 
-      iwar = iwar + iwar2
+      call status%increase_warning_count_with(iwar2)
  9999 if (timon) call timstop( ithndl )
       return
 

@@ -23,14 +23,14 @@
       module m_setopo
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine setopo ( procesdef, outputs, iloc  , idef  , iflx  ,
-     +                    nowarn   )
+      subroutine setopo ( procesdef, outputs, iloc, idef, iflx, status)
 
       ! set output pointers
 
@@ -47,7 +47,8 @@
       integer(kind=int_wp) ::iloc            ! offset to local array
       integer(kind=int_wp) ::idef            ! offset to default array
       integer(kind=int_wp) ::iflx            ! offset to flux array
-      integer(kind=int_wp) ::nowarn          ! number of warnings
+
+      type(error_status), intent(inout) :: status !< current error status
 
       ! local decalarations
 
@@ -154,7 +155,7 @@
                      ! is it a default ?
 
                      if ( proc%input_item(i_input)%ip_val .gt. idef .and.
-     +                    proc%input_item(i_input)%ip_val .le. iflx      ) then
+     +                    proc%input_item(i_input)%ip_val .le. iflx) then
                         outputs%pointers(iou) = proc%input_item(i_input)%ip_val
                         write ( line , '(5a)' ) ' output [',outputs%names (iou)(1:20),'] default from [',proc%name,']'
                         call monsys( line , 4 )
@@ -165,7 +166,7 @@
                endif
             enddo
 
-            nowarn = nowarn + 1
+            call status%increase_warning_count()
             write (line,'(5a)') ' warning: output [',outputs%names (iou)(1:20),'] not located'
             call monsys( line , 4 )
          endif

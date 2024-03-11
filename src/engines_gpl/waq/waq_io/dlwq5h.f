@@ -22,16 +22,16 @@
 !!  rights reserved.
       module m_dlwq5h
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
-      
+
       contains
 
 
       subroutine compact_usefor_list( lunut  , iar    , itmnr  , noitm  , idmnr  ,
      *                    nodim  , iorder , car , ioffi  , ioffc  ,
-     *                             iods   , ioffd, idx_missing , count_missing, ierr, iwar)
+     *                             iods   , ioffd, idx_missing , count_missing, ierr, status)
 !
 !
 !     Deltares        Sector Waterresources And Environment
@@ -76,10 +76,10 @@
       integer(kind=int_wp) ::  i1, i3, i4, i5
       integer(kind=int_wp) ::  lunut, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim
       integer(kind=int_wp) ::  itmnr, noitm, i2, ioffd, ishft, ioffi, iods
-       
-      integer(kind=int_wp) ::  ierr, iwar
-      
-      
+
+      integer(kind=int_wp) ::  ierr
+      type(error_status), intent(inout) :: status !< current error status
+
       ierr = -1
       if (timon) call timstrt( "compact_usefor_list", ithndl )
 !
@@ -123,7 +123,7 @@
          i4 = i2
          chulp = car(ioffd + i2)
          if ( car(ioffc + idx_missing) == chulp ) then !warning
-            iwar = iwar + 1
+            call status%increase_warning_count()
             message_type = "WARNING"
             write ( lunut , 1010 ) message_type, idx_missing + count_missing, car(ioffc + idx_missing)
          else ! pseudo-error

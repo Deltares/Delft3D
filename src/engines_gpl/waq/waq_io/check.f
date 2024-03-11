@@ -22,14 +22,14 @@
 !!  rights reserved.
       module m_check
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine check(cdummy, iwidth, iblock, ierr2, ierr)
+      subroutine check(cdummy, iwidth, iblock, ierr2, status)
 
       !< Handles delimiter lines and errors during read of the DELWAQ input file
       !< Logical units     : LUNUT = unitnumber output log-file
@@ -46,9 +46,9 @@
       character*(*), intent(inout) :: cdummy !< character that may contain block end
 
       integer(kind=int_wp), intent(in   ) :: iblock !< number of the input block
-      integer(kind=int_wp), intent(inout) :: ierr   !< cumulative error count
       integer(kind=int_wp), intent(inout) :: ierr2  !< accumulative nr of errors
       integer(kind=int_wp), intent(in   ) :: iwidth !< width of the output file
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local
       character(1) :: chulp ! to convert block number to character
@@ -69,12 +69,12 @@
             ihulp = gettoken ( cdummy, idummy, rdummy, itype, ierr2 )
          case ( 1 )               !   with error
             write ( lunut , 2030 ) iblock
-            ierr  = ierr + 1
+            call status%increase_error_count()
             ierr2 = 0
          case ( 2 )               !   normal end of block found
          case ( 3 )               !   fatal
             write ( lunut , 2030 ) iblock
-            write ( lunut , 2040 ) ierr
+            write ( lunut , 2040 ) status%ierr
             call srstop ( 1 )
       end select
 
@@ -82,14 +82,14 @@
 
       select case ( ierr2 )
          case ( 0 )               !   look for end of block
-            ierr = ierr + 1
+            call status%increase_error_count()
             write ( lunut , 2010 ) iblock
             do while ( ierr2 .eq. 0 )
                ihulp = gettoken ( cdummy, idummy, rdummy, itype, ierr2 )
             enddo
          case ( 3 )               !   fatal
             write ( lunut , 2020 ) iblock
-            write ( lunut , 2040 ) ierr
+            write ( lunut , 2040 ) status%ierr
             call srstop ( 1 )
       end select
 
@@ -97,14 +97,14 @@
          write ( chulp , '(i1)' ) iblock
          if ( chulp .ne. cdummy(2:2) ) then
             write ( lunut , 2020 ) iblock
-            ierr = ierr + 1
-            write ( lunut , 2040 ) ierr
+            call status%increase_error_count()
+            write ( lunut , 2040 ) status%ierr
             call srstop ( 1 )
          endif
       ELSE                              !   error reading
-         ierr = ierr + 1
+        call status%increase_error_count()
          write ( lunut , 2030 ) iblock
-         write ( lunut , 2040 ) ierr
+         write ( lunut , 2040 ) status%ierr
          call srstop ( 1 )
       endif
 

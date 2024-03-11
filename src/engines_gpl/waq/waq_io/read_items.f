@@ -23,6 +23,7 @@
       module m_read_items
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -31,7 +32,7 @@
 
       subroutine read_items( lunrep    , inpfil   , ioutpt   , chkflg   , callr ,
      +                       waq_item  , data_item, name_item, type_item, noits ,
-     +                       ierr      , iwar)
+     +                       ierr      , status)
 
 !     Deltares Software Centre
 
@@ -58,7 +59,8 @@
       type(t_dlwq_item)     , intent(in)    :: type_item    ! delwaq (item-) type list
       integer(kind=int_wp), intent(out) ::  noits         ! number of scale factors to be read
       integer(kind=int_wp), intent(inout) ::  ierr          ! cummulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar          ! cummulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -406,7 +408,7 @@
 
             if ( usefor ) setnam = .true.
             write ( lunut , 1040 ) callr, itmnr, trim(ctoken)
-            iwar = iwar + 1
+            call status%increase_warning_count()
             goto 10
          else
 

@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_pointb
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
@@ -30,7 +30,7 @@
 
 
       subroutine pointb ( lun    , ioutpt , gridps , ibnd   , ipoint,
-     &                    noqt   , ierr   )
+     &                    noqt   , status   )
 
 !       Deltares Software Centre
 
@@ -76,7 +76,8 @@
       integer(kind=int_wp), intent(in   ) ::  ibnd  (nobnd, 2  )  !< normal boundary pointers
       integer(kind=int_wp), intent(in   ) ::  noqt                !< total number of exchanges
       integer(kind=int_wp), intent(inout) ::  ipoint(  4  ,noqt)  !< exchange pointers
-      integer(kind=int_wp), intent(inout) ::  ierr                !< cumulative error   count
+
+      type(error_status), intent(inout) :: status !< current error status
 !
 !     COMMON BLOCK  / SYSN / :
 !
@@ -146,7 +147,7 @@
       JBott = GridPs%bottom_grid
       if ( JBott .eq. 0 ) then
          write ( lunut , 1050 )
-         ierr = ierr + 1
+         call status%increase_error_count()
          goto 9999
       endif
 
@@ -274,7 +275,7 @@
    40 continue
       if ( noqt .ne. iqt ) then
          write ( lunut , 1110 ) noq4, iqt-noq
-         ierr = ierr + 1
+         call status%increase_error_count()
          goto 9999
       endif
       write ( lunut , 1060 ) nsegb

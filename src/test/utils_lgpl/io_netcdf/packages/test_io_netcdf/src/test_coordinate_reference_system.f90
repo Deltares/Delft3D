@@ -62,8 +62,8 @@ subroutine test_rd_to_wgs84
     call transform_coordinates(WGS84_PROJ_STRING, RIJKSDRIEHOEK_PROJ_STRING, REF_WGS84_LAT, REF_WGS84_LON, dst_x, dst_y)
 
     ! Assert
-    call assert_comparable_double1d(dst_x, REF_RD_X, MARGIN, "Converted x-coordinates should match reference values")
-    call assert_comparable_double1d(dst_y, REF_RD_Y, MARGIN, "Converted y-coordinates should match reference values")
+    call assert_comparable(dst_x, REF_RD_X, MARGIN, "Converted x-coordinates should match reference values")
+    call assert_comparable(dst_y, REF_RD_Y, MARGIN, "Converted y-coordinates should match reference values")
 end subroutine test_rd_to_wgs84
 
 subroutine test_wgs84_to_rd
@@ -74,8 +74,8 @@ subroutine test_wgs84_to_rd
     call transform_coordinates(RIJKSDRIEHOEK_PROJ_STRING, WGS84_PROJ_STRING, REF_RD_X, REF_RD_Y, dst_x, dst_y)
 
     ! Assert
-    call assert_comparable_double1d(dst_x, REF_WGS84_LAT, MARGIN, "Converted latitude should match reference values")
-    call assert_comparable_double1d(dst_y, REF_WGS84_LON, MARGIN, "Converted longitude should match reference values")
+    call assert_comparable(dst_x, REF_WGS84_LAT, MARGIN, "Converted latitude should match reference values")
+    call assert_comparable(dst_y, REF_WGS84_LON, MARGIN, "Converted longitude should match reference values")
 end subroutine
 
 subroutine test_wgs84_to_utm_zone_32n
@@ -86,8 +86,8 @@ subroutine test_wgs84_to_utm_zone_32n
     call transform_coordinates(WGS84_PROJ_STRING, UTM32N_PROJ_STRING, REF_WGS84_LAT, REF_WGS84_LON, dst_x, dst_y)
 
     ! Assert
-    call assert_comparable_double1d(dst_x, REF_UTM32N_X, MARGIN, "Converted x-coordinates should match reference values")
-    call assert_comparable_double1d(dst_y, REF_UTM32N_Y, MARGIN, "Converted y-coordinates should match reference values")
+    call assert_comparable(dst_x, REF_UTM32N_X, MARGIN, "Converted x-coordinates should match reference values")
+    call assert_comparable(dst_y, REF_UTM32N_Y, MARGIN, "Converted y-coordinates should match reference values")
 end subroutine
 
 subroutine test_utm_zone_32n_to_wgs84
@@ -98,8 +98,8 @@ subroutine test_utm_zone_32n_to_wgs84
     call transform_coordinates(UTM32N_PROJ_STRING, WGS84_PROJ_STRING, REF_UTM32N_X, REF_UTM32N_Y, dst_x, dst_y)
 
     ! Assert
-    call assert_comparable_double1d(dst_x, REF_WGS84_LAT, MARGIN, "Converted latitude  should match reference values")
-    call assert_comparable_double1d(dst_y, REF_WGS84_LON, MARGIN, "Converted longitude should match reference values")
+    call assert_comparable(dst_x, REF_WGS84_LAT, MARGIN, "Converted latitude  should match reference values")
+    call assert_comparable(dst_y, REF_WGS84_LON, MARGIN, "Converted longitude should match reference values")
 end subroutine
 
 end module test_coordinate_reference_system

@@ -23,6 +23,7 @@
       module m_readmp
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -31,7 +32,7 @@
 
       subroutine readmp ( lun    , lchar  , filtype, duname , nsegdmp,
      &                    isegdmp, dmpbal , ndmpar , ntdmps , ioutpt ,
-     &                    ierr   , iwar   )
+     &                    ierr   , status   )
 
 !       Deltares Software Centre
 
@@ -83,7 +84,8 @@
       integer(kind=int_wp), intent(  out) ::  ntdmps             !< total number of volumes in monitoring areas
       integer(kind=int_wp), intent(in   ) ::  ioutpt             !< flag for more or less output
       integer(kind=int_wp), intent(inout) ::  ierr               !< error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local variables
 
@@ -111,8 +113,8 @@
             goto 20
          case ( -1 )                     ! old style <other ASCII file>
             write ( lunut, 2000 )  idopt1
-            call opt1   ( idopt1  , lun     , 0       , lchar   , filtype ,
-     &                    ldummy  , ldummy  , 0       , ierr2   , iwar    ,
+            call opt1   ( idopt1  , lun     , 0, lchar   , filtype ,
+     &                    ldummy  , ldummy  , 0, ierr2 , status,
      &                    .false. )
             if ( ierr2 .gt. 0 ) goto 20
             if ( gettoken( ndmpar, ierr2 ) .gt. 0 ) goto 20

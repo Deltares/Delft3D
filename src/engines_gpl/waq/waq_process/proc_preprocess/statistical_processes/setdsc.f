@@ -23,6 +23,7 @@
       module m_setdsc
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -34,8 +35,7 @@
      +                    PERNAM     , PERSFX     ,
      +                    PSTART     , PSTOP      ,
      +                    IPROC      , aProcesProp,
-     +                    AllItems   , IERR       ,
-     +                    NOWARN     )
+     +                    AllItems   , status)
 !
 !     Deltares
 !
@@ -62,8 +62,6 @@
 !     IPROC   INTEGER(kind=int_wp) ::1  INPUT   index number proces
 !     aProcesProp               OUTPUT  properties for this proces
 !     AllItems                  INPUT   all items known to the proces system
-!     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
-!     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
 !
       use m_srstop
       use m_string_manipulation, only : get_trimmed_length
@@ -74,11 +72,12 @@
 !
 !     Declaration of arguments
 !
-      INTEGER(kind=int_wp) ::LUNREP, NOKEY, PSTART, PSTOP, IPROC, IERR, NOWARN
+      INTEGER(kind=int_wp) ::LUNREP, NOKEY, PSTART, PSTOP, IPROC
       CHARACTER*20        ::PERNAM, PERSFX
       CHARACTER*20        ::KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)    :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)  :: AllItems            ! all items of the proces system
+      type(error_status), intent(inout) :: status !< current error status
 !
 !     Local declarations
 !
@@ -134,7 +133,7 @@
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
       IF ( IKEY .LE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
-         IERR = IERR + 1
+         call status%increase_error_count()
       ELSE
          ISUSED(IKEY) = 1
          aProcesProp%input_item(1)%name=KEYVAL(IKEY)
@@ -319,7 +318,7 @@
 !
       DO IKEY = 1 , NOKEY
          IF ( ISUSED(IKEY) .EQ. 0 ) THEN
-            NOWARN = NOWARN + 1
+            call status%increase_warning_count()
             WRITE(LUNREP,*) 'WARNING: keyword not used'
             WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)
             WRITE(LUNREP,*) 'value :',KEYVAL(IKEY)

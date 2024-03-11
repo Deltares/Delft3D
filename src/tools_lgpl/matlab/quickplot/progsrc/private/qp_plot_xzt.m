@@ -1,4 +1,36 @@
 function [hNew,Param,Parent] = qp_plot_xzt(hNew,Parent,Param,data,Ops,Props,PName,TStr,stn,Quant,Units)
+%QP_PLOT_XZT Plot function of QuickPlot for 2DV data: side views and slices
+
+%----- LGPL --------------------------------------------------------------------
+%                                                                               
+%   Copyright (C) 2011-2023 Stichting Deltares.                                     
+%                                                                               
+%   This library is free software; you can redistribute it and/or                
+%   modify it under the terms of the GNU Lesser General Public                   
+%   License as published by the Free Software Foundation version 2.1.                         
+%                                                                               
+%   This library is distributed in the hope that it will be useful,              
+%   but WITHOUT ANY WARRANTY; without even the implied warranty of               
+%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
+%   Lesser General Public License for more details.                              
+%                                                                               
+%   You should have received a copy of the GNU Lesser General Public             
+%   License along with this library; if not, see <http://www.gnu.org/licenses/>. 
+%                                                                               
+%   contact: delft3d.support@deltares.nl                                         
+%   Stichting Deltares                                                           
+%   P.O. Box 177                                                                 
+%   2600 MH Delft, The Netherlands                                               
+%                                                                               
+%   All indications and logos of, and references to, "Delft3D" and "Deltares"    
+%   are registered trademarks of Stichting Deltares, and remain the property of  
+%   Stichting Deltares. All rights reserved.                                     
+%                                                                               
+%-------------------------------------------------------------------------------
+%   http://www.deltaressystems.com
+%   $HeadURL$
+%   $Id$
+
 % axestype = 'Distance-Val','X-Val','X-Z','X-Time','Time-X','Time-Z','Time-Val'
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 
@@ -7,8 +39,20 @@ if ~isfield(Ops,'plotcoordinate')
     Ops.plotcoordinate = 'time';
     data.X = data.Time;
 end
-if ~isempty(strfind(Ops.basicaxestype,'Z')) && isfield(data,'Z') && Param.multiple(K_)
-    hNew = plotslice(hNew,Parent,data,Ops,Props,Ops.Thresholds);
+if ~isempty(strfind(Ops.basicaxestype,'Z')) && isfield(data,'Z')
+    if Param.multiple(K_)
+        hNew = plotslice(hNew,Parent,data,Ops,Props,Ops.Thresholds);
+    else
+        if isfield(data,'Val')
+            val = data.Val;
+        else
+            val = [];
+        end
+        hNew = qp_plot_line(hNew,Parent,data.X,[],data.Z,val,Ops);
+        if isempty(hNew)
+            return
+        end
+    end
     if FirstFrame
         set(Parent,'view',[0 90],'layer','top');
         %set(get(Parent,'ylabel'),'string','elevation (m) \rightarrow')
@@ -27,15 +71,9 @@ if ~isempty(strfind(Ops.basicaxestype,'Z')) && isfield(data,'Z') && Param.multip
     qp_title(Parent,tit,'quantity',Quant,'unit',Units,'time',TStr)
 elseif strcmp(Ops.plotcoordinate,'time')
     if Param.multiple(T_)
-        if FirstFrame
-            hNew=line(data.Time,data.Val, ...
-                'parent',Parent, ...
-                Ops.LineParams{:});
-            if Props.DimFlag(T_)~=5
-                tick(Parent,'x','autodate')
-            end
-        else
-            set(hNew,'xdata',data.Time,'ydata',data.Val);
+        hNew = qp_plot_line(hNew,Parent,data.Time,data.Val,[],[],Ops);
+        if FirstFrame && Props.DimFlag(T_)~=5
+            tick(Parent,'x','autodate')
         end
         if ~isempty(stn)
             Str=stn;
@@ -152,18 +190,7 @@ else % distance-Val, X-Val, X-Time, Time-X
                     z = z(ceil(1:.5:length(z)-0.5));
                 end
             end
-            if FirstFrame
-                hNew=line(x,y,z, ...
-                    'parent',Parent, ...
-                    Ops.LineParams{:});
-                set(Parent,'layer','top')
-            elseif ishandle(hNew)
-                set(hNew,'xdata',x, ...
-                    'ydata',y, ...
-                    'zdata',z);
-            else
-                return
-            end
+            hNew = qp_plot_line(hNew,Parent,x,y,z,[],Ops);
         else
             if ~FirstFrame
                 delete(hNew)

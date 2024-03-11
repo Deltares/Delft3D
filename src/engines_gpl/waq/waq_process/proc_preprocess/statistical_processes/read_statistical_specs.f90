@@ -23,7 +23,7 @@
 module m_rdstat
 use m_waq_precision
 use m_string_utils, only : index_in_array, string_equals
-
+use m_error_status
 
 implicit none
 
@@ -32,7 +32,7 @@ contains
 
       SUBROUTINE RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , &
                          ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 , &
-                         DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  , &
+                         DTFLG3 , status , NOSTAT , NKEY   , NOKEY  , &
                          KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX , &
                          PSTART , PSTOP  )
       ! Reads statistical output spec. block 10
@@ -56,7 +56,6 @@ contains
       !     IOUTPT  INTEGER(kind=int_wp) ::1           INPUT   output file option
       !     DTFLG1  LOGICAL  1           INPUT   'date'-format 1st timescale
       !     DTFLG3  LOGICAL  1           INPUT   'date'-format (F;ddmmhhss,T;yydddhh)
-      !     IERR    INTEGER(kind=int_wp) ::1           IN/OUT  Cumulative error count
       !     NOSTAT  INTEGER(kind=int_wp) ::1           OUTPUT  number of statistical processes
       !     NKEY    INTEGER(kind=int_wp) ::1           OUTPUT  total number of keywords
       !     NOKEY   INTEGER(kind=int_wp) ::NOSTAT      OUTPUT  number of keywords per stat. proc.
@@ -75,7 +74,7 @@ contains
       implicit none
 
       INTEGER(kind=int_wp)  :: LUNREP , IPOSR  , NPOS   , LSTACK , IOUTPT , &
-                               IERR   , NOSTAT , NKEY
+                               NOSTAT , NKEY
       LOGICAL               :: DTFLG1 , DTFLG3
       INTEGER(kind=int_wp)  :: ILUN(*)
       CHARACTER*(*)         :: LCH  (*)
@@ -88,6 +87,8 @@ contains
       CHARACTER*20, POINTER :: PERSFX(:)
       INTEGER(kind=int_wp) , POINTER :: PSTART(:)
       INTEGER(kind=int_wp) , POINTER :: PSTOP(:)
+
+      type(error_status), intent(inout) :: status !< current error status
 
       ! Local
 
@@ -144,12 +145,12 @@ contains
          IF ( IERR2 == 3 .AND. NOSTAT == 0 ) GOTO 500
          IF ( IERR2 == 3 ) THEN
             WRITE(LUNREP,*) 'ERROR : closing delimiter block 10 not found'
-            IERR = IERR + 1
+            call status%increase_error_count()
             GOTO 500
          ENDIF
          IF ( IERR2 /= 0 ) THEN
             WRITE(LUNREP,*) 'ERROR : reading block 10'
-            IERR = IERR + 1
+            call status%increase_error_count()
             GOTO 500
          ENDIF
 
@@ -158,7 +159,7 @@ contains
             WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
             WRITE(LUNREP,*) 'found    :',KNAM
             WRITE(LUNREP,*) 'expected : OUTPUT-OPERATION'
-            IERR = IERR + 1
+            call status%increase_error_count()
             GOTO 100
          ELSEIF ( IKEY == 1 ) THEN
 
@@ -221,7 +222,7 @@ contains
             IF ( IKEY2 .LE. 0 ) THEN
                WRITE(LUNREP,*) 'ERROR : unexpected keyword found'
                WRITE(LUNREP,*) 'found    :',KNAM
-               IERR = IERR + 1
+               call status%increase_error_count()
                GOTO 200
             ELSEIF ( IKEY2 == 1 ) THEN
 
@@ -248,7 +249,7 @@ contains
                   CALL convert_string_to_time_offset ( KNAM, istart, .FALSE., .FALSE., IERR2 )
                   IF ( IERR2 /= 0 ) THEN
                      WRITE(LUNREP,*)'ERROR interpreting start time:', KNAM
-                     IERR = IERR + 1
+                     call status%increase_error_count()
                   ENDIF
                ELSE
                   call convert_relative_time ( istart, 1     , DTFLG1 , DTFLG3 )
@@ -269,7 +270,7 @@ contains
                   CALL convert_string_to_time_offset ( KNAM, istop , .FALSE., .FALSE., IERR2 )
                   IF ( IERR2 /= 0 ) THEN
                      WRITE(LUNREP,*)'ERROR interpreting stop time:',KNAM
-                     IERR = IERR + 1
+                     call status%increase_error_count()
                   ENDIF
                ELSE
                   call convert_relative_time ( istop , 1     , DTFLG1 , DTFLG3 )
@@ -360,7 +361,7 @@ contains
       ELSE
          WRITE(LUNREP,*) 'ERROR : reading block 10'
       ENDIF
-      IERR = IERR + 1
+      call status%increase_error_count()
       if (timon) call timstop( ithndl )
       RETURN
 

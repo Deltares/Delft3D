@@ -30,7 +30,7 @@
 
 
       subroutine prprop ( lunrep, laswi, config, no_act, actlst, allitems, procesdef,
-     +                    noinfo, nowarn, old_items, ierror  )
+     +                    old_items, status  )
 
 !     Deltares Software Centre
 
@@ -45,6 +45,7 @@
       use timers         !< performance timers
       use processet      !< use processet definitions
       use m_process_lib_data
+      use m_error_status
 
       implicit none
 
@@ -57,10 +58,8 @@
       character(len=*)  , intent(in   ) :: actlst(*)              !< list of activated processes
       type(itempropcoll)                :: allitems               !< all items known
       type(procespropcoll)              :: procesdef              !< the proces definition
-      integer(kind=int_wp), intent(inout)  ::noinfo                 !< cummulative information count
-      integer(kind=int_wp), intent(inout)  ::nowarn                 !< cummulative warning count
       type(old_item_coll)               :: old_items              !< old_items table
-      integer(kind=int_wp), intent(  out)  ::ierror                 !< error indicator
+      type(error_status), intent(inout) :: status
 
 !
 !     Local declarations
@@ -103,7 +102,6 @@
 !
       SWITUI = .FALSE.
       SWIT2D = .FALSE.
-      IERROR = 0
 !
 !     get license infromation on configurations, removed always license
 !
@@ -376,7 +374,7 @@
                   iflux = ItemPropCollFind( AllItems, aItemProp )
                   if ( iflux .le. 0 ) then
                      write(lunrep,*) 'ERROR: unknown ITEM:',aItemProp%name
-                     ierror = 3
+                     call status%increase_error_count()
                      goto 900
                   endif
                   aIOitemProp%item   =>AllItems%ItemPropPnts(iflux)%pnt
@@ -430,7 +428,7 @@
                WRITE(lunrep,*) ' WARNING: activated process not found ',
      +           'in process definition file'
                WRITE(lunrep,*) ' process ID: ',ACTLST(IACT)
-               NOWARN = NOWARN + 1
+               call status%increase_warning_count()
             ENDIF
          ENDDO
       ENDIF

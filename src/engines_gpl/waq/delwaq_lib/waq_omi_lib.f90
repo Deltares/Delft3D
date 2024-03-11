@@ -1869,18 +1869,19 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
       end subroutine write_delwaq04
 
       subroutine write_delwaq04_monitoring
+         use m_error_status
 
          integer(kind=int_wp) ::  ndmpq
          integer(kind=int_wp) ::  ndmps
          integer(kind=int_wp) ::  noraai
          integer(kind=int_wp) ::  ntraaq
-         integer(kind=int_wp) ::  ierr
-         integer(kind=int_wp) ::  noinfo
          integer(kind=int_wp), dimension(1) ::  nexcraai
          integer(kind=int_wp), dimension(1) ::  iexcraai
          integer(kind=int_wp), dimension(1) ::  ioptraai
          integer(kind=int_wp), dimension(ndmpar) ::  nsegdmp
          integer(kind=int_wp), dimension(ndmpar) ::  isegdmp
+
+         type(error_status) :: status !< dummy error status
 
          ntdmps = ndmpar  ! For now
          nsegdmp = 1
@@ -1888,12 +1889,11 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
 
          noraai = 0      ! For now
          ntraaq = 0      ! For now
-         ierr = 0
          lun(2) = 10
 
          call dmpare(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
                      noraai, ntraaq, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
-                     ierr, noinfo)
+                     status)
 
       end subroutine write_delwaq04_monitoring
 
@@ -1958,9 +1958,6 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          type(itempropcoll)        :: allitems        ! all items of the proces system
          integer(kind=int_wp) ::  ioutps(7, 10)     ! (old) output structure
          type(OutputPointers)          :: outputs         ! output structure
-         integer(kind=int_wp) ::  noinfo           ! count of informative message
-         integer(kind=int_wp) ::  nowarn           ! count of warnings
-         integer(kind=int_wp) ::  ierr             ! error count
          integer(kind=int_wp) ::  org_noutp        ! Store the number of output files
          ! Pointers into DELWAQ arrays
          integer(kind=int_wp), parameter ::  nopred = 6       ! Predefined parameters - fioutv.f
@@ -1975,11 +1972,10 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          character(len=20), dimension(icmax)   :: car
          integer(kind=int_wp), dimension(iimax) ::  iar
          integer(kind=int_wp) ::  iwidth
-         integer(kind=int_wp) ::  ibflag
-         integer(kind=int_wp) ::  iwar
          integer(kind=int_wp) ::  ioutpt  ! Dummy
          real                                  :: version = 4.9
          integer(kind=int_wp) ::  refday
+         type(error_status) :: status
 
          StatProcesDef%maxsize = 0
          StatProcesDef%cursize = 0
@@ -2005,22 +2001,21 @@ logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_
          cchar = ';'
          iwidth = 100
          ioutpt = 0
-         ierr = 0
-         iwar = 0
-         ibflag = 0 ! TODO: correct value
+         call status%initialize(0,0,0)
+
          ilun(1) = 9
          lch(1) = trim(name)//'.inp'
 
          call dlwq09(lun, lchar, filtype, car, iar, icmax, &
-                     iimax, iwidth, ibflag, &
-                     ioutpt, ioutps, outputs, ierr, iwar)
+                     iimax, iwidth, &
+                     ioutpt, ioutps, outputs, status)
 
          close (9) ! TODO: status = 'delete'
          close (11)
 
          call dlwqp1(lun, lchar, statprocesdef, allitems, &
                      ioutps, outputs, nomult, mult, constants, &
-                     noinfo, refday, nowarn, ierr)
+                     refday, status)
 
          noutp = org_noutp
 

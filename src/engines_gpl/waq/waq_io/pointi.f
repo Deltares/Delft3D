@@ -22,6 +22,7 @@
 !!  rights reserved.
       module m_pointi
       use m_waq_precision
+      use m_error_status
 
 
       implicit none
@@ -32,7 +33,7 @@
       subroutine pointi ( lun    , lchar  , noseg  , noq    , noq1   ,
      &                    noq2   , noq3   , noqt   , nobnd  , ipnt   ,
      &                    intsrt , ipopt1 , jtrack , ftype  , ioutpt ,
-     &                    GridPs , ierr   , iwar   )
+     &                    GridPs , status   )
 
 !       Deltares Software Centre
 
@@ -83,8 +84,8 @@
       integer(kind=int_wp), intent(in   ) ::  ftype          !< type of the pointer file
       integer(kind=int_wp), intent(in   ) ::  ioutpt         !< flag for more or less output
       type(GridPointerColl)           GridPs        !< Collection of grid pointers
-      integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
+
+      type(error_status) :: status !< current error status
 
 !     Local variables    :
 
@@ -104,7 +105,7 @@
 
       noq12 = noq1 + noq2
       if ( ipopt1 .eq. 0 )  then
-         call open_waq_files  ( lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
+         call open_waq_files(lun(44) , lchar(44) , 44      , 2+ftype, ierr2 )
          if ( ierr2 .ne. 0 ) goto 100
          do iq = 1, noq
             read ( lun(44), iostat = ierr1 ) ipnt(:,iq)
@@ -183,7 +184,7 @@
             if ( noq3.gt.0 ) then
                write ( lunut, 2050 )
                write ( lunut, 2020 )
-               write ( lunut, 2030 ) ( iq, ipnt(:,iq), iq = noq12+1, noq   )
+               write ( lunut, 2030 ) (iq, ipnt(:,iq), iq = noq12+1, noq)
             endif
          endif
       endif
@@ -192,10 +193,10 @@
 
       call bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &              ioutpt , GridPs , nobnd  , jtrack , ipnt   ,
-     &              ierr   , iwar   )
+     &              status   )
 
       close ( lun(8) )
-  100 if ( ierr2 .gt. 0 ) ierr = ierr + 1
+  100 if ( ierr2 .gt. 0 ) call status%increase_error_count()
       if (timon) call timstop( ithndl )
       return
 

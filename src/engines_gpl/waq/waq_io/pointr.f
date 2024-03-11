@@ -32,7 +32,7 @@
      &                    kmax   , noq    , noq1   , noq2   , noq3   ,
      &                    noqt   , nobnd  , ipnt   , intsrt , ipopt1 ,
      &                    jtrack , ioutpt , iwidth , GridPs , cellpnt,
-     &                    flowpnt, ierr   , iwar   )
+     &                    flowpnt, status)
 
 !       Deltares Software Centre
 
@@ -65,6 +65,7 @@
       use dlwqgrid_mod        !   for the storage of contraction grids
       use rd_token     !   for the reading of tokens
       use timers       !   performance timers
+      use m_error_status
 
       implicit none
 
@@ -93,8 +94,8 @@
       type(GridPointerColl)           GridPs        !< Collection of grid pointers
       integer(kind=int_wp), pointer ::  cellpnt(:)     !< backpointer noseg to mnmaxk
       integer(kind=int_wp), pointer ::  flowpnt(:)     !< backpointer noq to 3*mnmaxk-mnmax
-      integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
+
+      type(error_status) :: status !< error status
 
 !     local declarations
 
@@ -202,7 +203,7 @@
 
       call bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &              ioutpt , GridPs , nobnd  , jtrack , ipnt   ,
-     &              ierr   , iwar   )
+     &              status)
 
 !     open cco-file
 
@@ -222,7 +223,7 @@
       endif
 
       deallocate ( imat )
-  100 if ( ierr2 .ne. 0 ) ierr = ierr + 1
+  100 if ( ierr2 .ne. 0 ) call status%increase_error_count()
       close ( lun(8) )
       if (timon) call timstop( ithndl )
       return

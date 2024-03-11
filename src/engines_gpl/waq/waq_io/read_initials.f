@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_read_initials
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
@@ -31,7 +31,7 @@
 
       subroutine read_initials ( lun    , lchar  , filtype, inpfil , notot ,
      &                           syname , iwidth , ioutpt , gridps , noseg ,
-     &                           conc   , ierr   , iwar   )
+     &                           conc   , ierr   , status)
 
 !     Deltares Software Centre
 
@@ -63,7 +63,8 @@
       integer(kind=int_wp), intent(in) ::  noseg         ! nr of segments
       real(kind=real_wp), intent(inout) ::  conc(notot,noseg)   ! initial conditions
       integer(kind=int_wp), intent(inout) ::  ierr          !< cummulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar          !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -123,7 +124,7 @@
             call read_block ( lun       , lchar     , filtype  , inpfil    , ioutpt   ,
      &                        iwidth    , substances, constants, parameters, functions,
      &                        segfuncs  , segments  , gridps    , dlwqdata , ierr2    ,
-     &                        iwar      )
+     &                        status)
             if ( ierr2 .gt. 0 ) goto 30
             if ( dlwqdata%extern ) then
                ierr = dlwqdataReadExtern(lunut,dlwqdata)
@@ -175,7 +176,7 @@
    30 continue
       if ( ierr2 .gt. 0 .and. ierr2 .ne. 2 ) ierr = ierr + 1
       if ( ierr2 .eq. 3 ) call srstop(1)
-      call check( ctoken, iwidth, 8     , ierr2  , ierr  )
+      call check( ctoken, iwidth, 8     , ierr2  , status)
       if (timon) call timstop( ithndl )
       return
 

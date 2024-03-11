@@ -23,7 +23,7 @@
       module m_dlwq07
       use m_waq_precision
       use m_read_block
-
+      use m_error_status
 
       implicit none
 
@@ -32,7 +32,7 @@
 
       subroutine dlwq07 ( lun    , lchar  , filtype, inpfil   , syname ,
      &                    iwidth , ioutpt , gridps , constants, chkpar ,
-     &                    ierr   , iwar   )
+     &                    status)
 
 !     Deltares Software Centre
 
@@ -70,8 +70,9 @@
       type(GridPointerColl) , intent(in   ) :: GridPs       !< collection off all grid definitions
       type(t_dlwq_item)     , intent(inout) :: constants    !< delwaq constants list
       logical               , intent(in)    :: chkpar(2)    !< check for SURF and LENGTH
-      integer(kind=int_wp), intent(inout) ::  ierr          !< cummulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar          !< cumulative warning count
+
+      type(error_status) :: status !< current error status
+
 
 !     local declarations
 
@@ -140,7 +141,7 @@
             call read_block ( lun       , lchar     , filtype   , inpfil    , ioutpt   ,
      &                        iwidth    , substances, constants , parameters, functions,
      &                        segfuncs  , segments  , gridps    , dlwqdata  , ierr2    ,
-     &                        iwar      )
+     &                        status)
 
             if ( ierr2 .gt. 0 ) goto 30
 
@@ -181,7 +182,7 @@
 
             if ( ctoken(1:1) .ne. '#' ) then
                write ( lunut , 2040 ) trim(ctoken)
-               ierr = ierr + 1
+               call status%increase_error_count()
                goto 30
             else
                ierr2 = 2
@@ -197,14 +198,14 @@
                write ( lunut, 2330 )
             else
                write ( lunut, 2340 )
-               iwar = iwar + 1
+               call status%increase_warning_count()
             endif
             if ( layt .gt. 1 ) then
                if ( vdfpart ) then
                   write ( lunut, 2350 )
                else
                   write ( lunut, 2360 )
-                  iwar = iwar + 1
+                  call status%increase_warning_count()
                endif
             endif
          endif
@@ -227,7 +228,7 @@
       if ( segfuncs%no_item   .gt. 0 ) write ( lun(2) ) (segfuncs%name(i)  , i=1, segfuncs%no_item)
 
 
-      call open_waq_files  ( lun(16) , lchar(16) , 16    , 1     , ioerr )
+      call open_waq_files(lun(16), lchar(16), 16, 1, ioerr)
       write(lun(16)) ' 5.000PROCES'
       write(lun(16)) proc_pars%cursize
       do i = 1, proc_pars%cursize
@@ -252,7 +253,7 @@
          if ( special <= 0 ) then
             special = index_in_array( ch20 , segfuncs%name(: segfuncs%no_item))
             if ( special <= 0 ) then
-               ierr = ierr + 1
+               call status%increase_error_count()
                write( lunut, 2410 )
             endif
          endif
@@ -264,7 +265,7 @@
          if ( special <= 0 ) then
             special = index_in_array( ch20 , segfuncs%name(: segfuncs%no_item))
             if ( special <= 0 ) then
-               ierr = ierr + 1
+               call status%increase_error_count()
                write( lunut, 2420 )
             endif
          endif
@@ -279,9 +280,9 @@
       ierr3 = dlwq_cleanup(segments)
 
    30 continue
-      if ( ierr2 .gt. 0 .and. ierr2 .ne. 2 ) ierr = ierr + 1
+      if ( ierr2 .gt. 0 .and. ierr2 .ne. 2 ) call status%increase_error_count()
       if ( ierr2 .eq. 3 ) call srstop(1)
-      call check ( ctoken, iwidth, 7     , ierr2  , ierr  )
+      call check ( ctoken, iwidth, 7     , ierr2  , status)
       if ( timon ) call timstop( ithndl )
       return
 !

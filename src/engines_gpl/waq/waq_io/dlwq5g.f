@@ -23,6 +23,7 @@
       module m_dlwq5g
       use m_waq_precision
       use m_string_utils
+      use m_error_status
 
       implicit none
 
@@ -33,7 +34,7 @@
      *                    count_subs_comp_rule, index_first, i_max , names_to_check , start_in_line,
      *                    npos , ilun  , lch   , lstack , cchar,
      *                    chulp, nocol , dtflg1, dtflg3 , itfact,
-     *                    itype, ihulp , rhulp , error_idx, iwar)
+     *                    itype, ihulp , rhulp , error_idx, status)
 !
 !
 !     Deltares        Sector Waterresources And Environment
@@ -80,7 +81,6 @@
 !     ihulp                  integer        1            output  parameter read to be transferred
 !     rhulp                  real           1            output  parameter read to be transferred
 !     error_idx              integer        1            output  error index within current subroutine
-!     iwar                   integer        1            output  cumulative warning count
 !     offset_i_array         integer        1            output  offset  in i_array
 !     offset_names           integer        1            output  offset in names_to_check
 !     offset_common          integer        1            output  comon offset in i_array and names_to_check
@@ -100,9 +100,11 @@
       integer(kind=int_wp) ::  i, count_items_comp_rule, count_subs_assign, count_subs_comp_rule, index_first, offset_names
       integer(kind=int_wp) ::  offset_common, notim
       integer(kind=int_wp) ::  itype, lunut, ilun, start_in_line, nopos, ihulp, error_idx
-      integer(kind=int_wp) ::  i_array, nocol, ifound, itfact, icnt, iods, k, iwar
+      integer(kind=int_wp) ::  i_array, nocol, ifound, itfact, icnt, iods, k
       integer(kind=int_wp) ::  offset_i_array, count_items_assign, count_names, npos, lstack
       real(kind=real_wp) ::  rhulp
+
+      type(error_status), intent(inout) :: status !< current error status
 
 
       if (timon) call timstrt( "dlwq5g", ithndl )
@@ -138,7 +140,7 @@
 
 !         no error
           if ( itype .eq. 1 ) then ! a string has arrived
-             call convert_string_to_time_offset ( chulp , ihulp, .false., .false., error_idx )
+             call convert_string_to_time_offset (chulp , ihulp, .false., .false., error_idx )
              if ( error_idx .eq. 0 ) then
                 error_idx = -2
                 if ( first ) then
@@ -190,7 +192,7 @@
      *                count_items_comp_rule, count_subs_assign,
      *                count_subs_comp_rule, index_first, names_to_check,
      *                offset_i_array, offset_names,
-     *                iods, offset_common, k, icnt, error_idx, iwar)
+     *                iods, offset_common, k, icnt, error_idx, status)
          end if
       end do
 !

@@ -29,7 +29,7 @@
       use m_dlwq5e
       use m_dlwq5d
       use m_dlwq5c
-
+      use m_error_status
 
       implicit none
 
@@ -41,7 +41,7 @@
                          sname  , aname  , atype  , bc_wl_count  ,&
                          substances_count  ,&
                          nttype , drar   , dtflg1 , dtflg3 , &
-                         ioutpt , ierr2  , ierr   , iwar   )
+                         ioutpt , ierr2  , status)
 
       !> Boundary and waste data new style
       !>
@@ -67,7 +67,7 @@
       !>    - ODS files are read here and data placed in the blocks
       !>    - BINARY files are resolved at run time
 
-      ! LOGICAL UNITS: 
+      ! LOGICAL UNITS:
       ! LUN(27) = unit stripped DELWAQ input file
       ! LUN(29) = unit formatted output file
       ! LUN( 2) = unit intermediate file (system)
@@ -106,14 +106,14 @@
       integer(kind=int_wp), intent(in   ) :: irmax            !< maximum size of real workspace
       integer(kind=int_wp), intent(in   ) :: ioutpt           !< how extensive will the output be
       integer(kind=int_wp), intent(  out) :: ierr2            !< return code of this routine
-      integer(kind=int_wp), intent(inout) :: ierr             !< cumulative error   count
-      integer(kind=int_wp), intent(inout) :: iwar             !< cumulative warning count
-      
+
       real(kind=real_wp),   intent(inout) :: rar  (irmax) !< real workspace
       real(kind=dp),        intent(inout) :: drar (*)     !< Double precision workspace
 
       logical, intent(in) :: dtflg1 !< 'date'-format 1st time scale
       logical, intent(in) :: dtflg3 !< 'date'-format (F;ddmmhhss,T;yydddhh)
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local declarations
 
@@ -227,7 +227,9 @@
                                               itype  , ierr2  )
 !        End of block detected
       if ( ierr2 == 2 ) then
-         if( itype > 0 ) ierr = ierr + 1
+         if( itype > 0 ) then
+            call status%increase_error_count()
+         end if
          goto 530
       endif
       if ( ierr2 /= 0 ) goto 510 !close ( lunwr2 )
@@ -236,7 +238,7 @@
 !
       if ( iabs(itype) == 1 .and. chulp == 'OLD-FILE-STRUCTURE' ) then
          write ( lunut , 1000 )
-         iwar = iwar + 1
+         call status%increase_warning_count()
          ierr2 = -1
          goto 540
       endif
@@ -308,7 +310,7 @@
                       bc_wl_count    , nttype, count_items_in_use_rule , noits , chkflg   , &
                       calit    , ilun  , lch   , lstack, &
                       itype    , rar   , nconst, itmnr , chulp    , &
-                                         ioutpt, ierr2 , iwar     )
+                                         ioutpt, ierr2 , status)
 ! Check if data_item already exists
 
          if (dlwq_data_items%cursize > 0) then
@@ -322,7 +324,7 @@
          endif
          if(dlwq_data_items%used(idata_item)) then
             write( lunut, 1016)
-            iwar = iwar + 1
+            call status%increase_warning_count()
          end if
          do idx_item_in_use_rule = 1, count_items_in_use_rule !count_items_in_use_rule
 !          Already on the list?
@@ -381,7 +383,7 @@
                          bc_wl_count     , nttype, count_items_in_use_rule, noits , chkflg    , &
                          calit     , ilun  , lch  , lstack, itype     , &
                          rar       , nconst, itmnr, chulp , ioutpt    , &
-                         ierr2     , iwar)
+                         ierr2     , status)
          else ! DATA_ITEM
             call dlwq5b ( lunut      , iposr      , npos , cchar , car(ioff:), &
                          iar(ioff:) , icm        , iim  , dlwq_data_items%name(1:ndata_items), &
@@ -389,7 +391,7 @@
                          ndata_items, ndata_items, count_items_in_use_rule, noits , chkflg, &
                          caldit     , ilun       , lch  , lstack, itype, &
                          rar        , nconst     , itmnr, chulp , ioutpt, &
-                         ierr2 , iwar     )
+                         ierr2 , status     )
             if (count_items_in_use_rule/=1) then
                write ( lunut , 1045 )
                ierr2 = 1
@@ -467,7 +469,7 @@
                       substances_count       ,   0   , nodim , nodis , chkflg   , &
                       'CONCENTR. ', ilun  , lch   , lstack, &
                       itype       , rar   , nconst, idmnr , chulp    , &
-                                         ioutpt, ierr2 , iwar     )
+                                         ioutpt, ierr2 , status     )
          nocol = nodis
          if ( ierr2 /= 0 ) goto 510
          goto 30
@@ -486,7 +488,7 @@
                       nodim  , iorder , iimax  , car    , iposr  , &
                       npos   , ilun   , lch    , lstack , cchar  , &
                       chulp  , nocol  , dtflg1 , dtflg3 , itfacw , &
-                      itype  , ihulp  , rhulp  , ierr2  , iwar   )
+                      itype  , ihulp  , rhulp  , ierr2  , status)
          if ( ierr2 > 1 ) goto 510
 !          Reads blocks of data
          if ( iorder == 2 ) then
@@ -517,15 +519,17 @@
                       cchar  , chulp    , nottt   , nottc , time_dependent , nobrk  , &
                       iopt   , dtflg1   , dtflg3  , itfacw, itype  , &
                                ihulp    , rhulp   , ierr2 , ierr3  )
-         ierr = ierr + ierr3
-         if ( ierr2 == 1 .or. ierr2 == 4 ) goto 510
+
+        call status%increase_error_count_with(ierr3)
+
+        if ( ierr2 == 1 .or. ierr2 == 4 ) goto 510
          if ( nobrk == 0 .and. (.not. time_dependent)) then
             write(lunut,1360)
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
          if ( nodim == 0) then
             write(lunut,1370)
-            iwar = iwar + 1
+            call status%increase_warning_count()
          else
 !          Assigns according to computational rules
             nr2 = ntr + nottt*nobrk
@@ -585,7 +589,7 @@
          call dlwq5c ( chulp , lunut  , car   , iar      , rar(ntr:), &
                       icmax , iimax  , irmax , drar     , count_items_in_use_rule   , &
                       nodim , iorder , scale , itmnr    , idmnr   , &
-                              amiss  , nobrk , ierr2    , iwar    )
+                              amiss  , nobrk , ierr2    , status)
          if ( ierr2 /= 0 ) goto 510
          nr2 = ntr + count_items_in_use_rule*nodim*nobrk
          call dlwq5e ( lunut , iar    , count_items_in_use_rule , itmnr    , nodim   , &
@@ -670,7 +674,7 @@
       end do
   530 newrsp = newrsp + file_size_2
       newisp = newisp + file_size_1
-      call check  ( chulp  , iwidth , iblock , ierr2  , ierr   )
+      call check  ( chulp  , iwidth , iblock , ierr2  , status)
   540 if ( timon ) call timstop( ithndl )
       return
 !

@@ -43,6 +43,7 @@ module m_dlwqp1
    use m_outbo2
    use m_makbar
    use m_getinv
+   use m_error_status
 
    implicit none
 
@@ -52,9 +53,8 @@ contains
                      statprocesdef, allitems, &
                      ioutps, outputs, &
                      nomult, imultp, &
-                     constants, noinfo, &
-                     refday, &
-                     nowarn, ierr)
+                     constants, &
+                     refday, status)
       !> Defines process steering for all water quality processing
       !>
       !> This routine processes all information of
@@ -96,10 +96,9 @@ contains
       integer(kind=int_wp), intent(in) ::  nomult           !< number of multiple substances
       integer(kind=int_wp), intent(in) ::  imultp(2, nomult) !< multiple substance administration
       type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
-      integer(kind=int_wp), intent(inout) ::  noinfo           !< count of informative message
       integer(kind=int_wp), intent(in)    ::  refday           !< reference day, varying from 1 till 365
-      integer(kind=int_wp), intent(inout) ::  nowarn           !< count of warnings
-      integer(kind=int_wp), intent(inout) ::  ierr             !< error count
+
+      type(error_status) :: status !< current error status
 
       ! local declarations
 
@@ -351,9 +350,9 @@ contains
          else
             pdffil = lchar(34)
          end if
-         ierr2 = ierr
-         call rd_tabs(pdffil, lurep, versio, serial, noinfo, nowarn, ierr)
-         if (ierr .gt. ierr2) then
+         ierr2 = status%ierr
+         call rd_tabs(pdffil, lurep, versio, serial, status)
+         if (status%ierr .gt. ierr2) then
             write (lurep, *) ' '
             write (lurep, *) ' ERROR: Could not read the process definition file.'
             write (lurep, *) '        Check if the filename after -p is correct, and exists.'
@@ -459,7 +458,7 @@ contains
       if (l_eco) then
          open (newunit=lunblm, file=blmfil, status='old', iostat=ierr2)
          if (ierr2 /= 0) then
-            ierr = ierr + 1
+            call status%increase_error_count()
             write (line, '(3a)') ' eco input file - ', trim(blmfil), ' not found! Exiting'
             call monsys(line, 1)
             return
@@ -610,10 +609,9 @@ contains
          ! add the processes in the structure
 
          call prprop(lurep, laswi, config, no_act, actlst, allitems, procesdef, &
-                     noinfo, nowarn, old_items, ierr2)
-         if (ierr2 .ne. 0) ierr = ierr + 1
-         nbpr = procesdef%cursize
+                     old_items, status)
 
+        nbpr = procesdef%cursize
       else
          nbpr = 0
       end if
@@ -639,7 +637,7 @@ contains
 
       call prsort(lurep, procesdef, notot, nopa, nosfun, &
                   syname, nocons, nofun, constants, paname, &
-                  funame, sfname, nowarn)
+                  funame, sfname, status)
 
       ! handle output from statistical processes
 
@@ -684,8 +682,8 @@ contains
       call makbar(procesdef, notot, syname, nocons, constants, &
                   nopa, paname, nofun, funame, nosfun, &
                   sfname, nodisp, diname, novelo, vename, &
-                  noqtt, laswi, no_act, actlst, noinfo, &
-                  nowarn, ierr)
+                  noqtt, laswi, no_act, actlst, &
+                  status)
       deallocate (actlst, stat=ierr_dalloc)
 
       ! determine wich primary processes must be turned on
@@ -701,8 +699,8 @@ contains
       vsto = 0.0
       call primpro(procesdef, notot, syname, ndspx, nvelx, &
                    ioffx, nosys, dsto, vsto, ndspn, &
-                   idpnw, nveln, ivpnw, noqtt, noinfo, &
-                   nowarn, ierr)
+                   idpnw, nveln, ivpnw, noqtt, &
+                   status)
 
       ! determine wich processes must be turned on for output purposes
 
@@ -743,21 +741,21 @@ contains
       ! report on the use of the delwaq input
 
       call repuse(procesdef, nocons, coname, nopa, paname, &
-                  nofun, funame, nosfun, sfname, noinfo)
+                  nofun, funame, nosfun, sfname, status%noinfo)
 
       ! a table will be made on selected processes
       ! to ensure resolved inputs with parallel processing
 
       call partab(procesdef, notot, syname, nocons, constants, &
                   nopa, paname, nofun, funame, nosfun, &
-                  sfname, proref, nrref, nowarn, nothread, &
+                  sfname, proref, nrref, status, nothread, &
                   nopred, noloc, nodef)
 
       ! set output pointers to process arrays parloc and defaul
 
       idef = ioff + noloc
       iflx = idef + nodef
-      call setopo(procesdef, outputs, ioff, idef, iflx, nowarn)
+      call setopo(procesdef, outputs, ioff, idef, iflx, status)
 
       ! if not all input present , stop with exit code
 

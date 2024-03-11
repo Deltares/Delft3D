@@ -7,6 +7,10 @@ if (WIN32)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads  /MP")
 
+    # Set global C/C++ compiler flags that apply for each C/C++ project
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+
     # Set optional flags:
     message(STATUS "Setting optional Intel Fortran compiler flags in Windows")
     set(file_preprocessor_flag                /fpp)

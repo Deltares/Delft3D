@@ -22,7 +22,7 @@
 !!  rights reserved.
       module m_dmpare
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
@@ -32,7 +32,7 @@
       subroutine dmpare ( lun     , ndmpar  , ntdmps  , noq     , noseg   ,
      &                    nobnd   , ipoint  , ntdmpq  , ndmpq   , ndmps   ,
      &                    noraai  , ntraaq  , nsegdmp , isegdmp , nexcraai,
-     &                    iexcraai, ioptraai, ierr    , iwar    )
+     &                    iexcraai, ioptraai, status)
 
 !       Deltares Software Centre
 
@@ -90,8 +90,8 @@
       integer(kind=int_wp), intent(in   ) ::  nexcraai(noraai)   !< number of exchanges per transect
       integer(kind=int_wp), intent(in   ) ::  iexcraai(ntraaq)   !< exchange numbers
       integer(kind=int_wp), intent(in   ) ::  ioptraai(ntraaq)   !< exchange accumulation option
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local variables
 
@@ -129,7 +129,7 @@
       integer(kind=int_wp) ::  ithndl = 0
       integer(kind=int_wp) ::  ithndl1= 0
       integer(kind=int_wp) ::  ithndl2= 0
- 
+
       if ( ndmpar .eq. 0 .and. noraai .eq. 0 ) return
       if (timon) call timstrt( "dmpare", ithndl )
 
@@ -155,28 +155,29 @@
             iseg = isegdmp(itel)
             if ( iseg .eq. 0 ) then
                write ( lurep , 2000 ) idump, is, iseg
-               ierr = ierr + 1
+               call status%increase_error_count()
             elseif ( iseg .lt. -nobnd ) then
                write ( lurep , 2000 ) idump, is, iseg
-               ierr = ierr + 1
+               call status%increase_error_count()
             elseif ( iseg .lt. 0 ) then
                if ( nsc .gt. 1 ) then
                   write ( lurep , 2010 ) idump, is, iseg
-                  ierr = ierr + 1
+                  call status%increase_error_count()
                else
                   write ( lurep , 2020 ) idump, is, iseg
-                  iwar = iwar + 1
+                  call status%increase_warning_count()
                endif
             elseif ( iseg .gt. noseg ) then
                write ( lurep , 2000 ) idump, is, iseg
-               ierr = ierr + 1
+               call status%increase_error_count()
                isegdmp(itel) = 0
             endif
          enddo
       enddo
 
-      if ( ierr > 0 ) then
-         goto 1000
+      if ( status%ierr > 0 ) then
+        call status%increase_error_count()
+        return
       endif
 
 !     allocate
@@ -186,7 +187,8 @@
       allocate ( ipdmpq(max_ntdmpq), stat = ierr2 )
       if ( ierr2 .ne. 0 ) then
          write ( lurep , 2030 ) ierr2, max_ntdmpq
-         goto 1000
+         call status%increase_error_count()
+         return
       endif
 
       ! analyse pointer table
@@ -266,7 +268,8 @@
                      allocate ( p2_ipdmpq(max_ntdmpq), stat=ierr2 )
                      if ( ierr2 .ne. 0 ) then
                         write ( lurep , 2040 ) ierr2, max_ntdmpq
-                        goto 1000
+                        call status%increase_error_count()
+                        return
                      endif
                      do idmpq = 1, ntdmpq-1
                         p2_ipdmpq(idmpq) = ipdmpq(idmpq)
@@ -306,7 +309,8 @@
                      allocate ( p2_ipdmpq(max_ntdmpq), stat=ierr2 )
                      if ( ierr2 .ne. 0 ) then
                         write ( lurep , 2040 ) ierr2, max_ntdmpq
-                        goto 1000
+                        call status%increase_error_count()
+                        return
                      endif
                      do idmpq = 1, ntdmpq-1
                         p2_ipdmpq(idmpq) = ipdmpq(idmpq)
@@ -348,7 +352,7 @@
             iqr = abs(iexcraai(itel))
             if ( iqr .eq. 0 .or. iqr .gt. noq ) then
                write ( lurep , 2050 ) iraai, iq, iexcraai(itel)
-               ierr = ierr + 1
+               call status%increase_error_count()
             else
                if ( iqdmp(iqr) .eq. 0 ) then
                   ndmpq      = ndmpq + 1
@@ -388,9 +392,6 @@
       endif
 
       if (timon) call timstop( ithndl )
-      return
-
- 1000 ierr = ierr + 1
       return
 
 !       Output formats

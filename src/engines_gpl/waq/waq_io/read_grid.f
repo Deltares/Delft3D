@@ -22,14 +22,14 @@
 !!  rights reserved.
       module m_read_grid
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine read_grid ( lun    , aGrid  , GridPs , oldproc, nosegl_bottom, ierr   )
+      subroutine read_grid ( lun    , aGrid  , GridPs , oldproc, nosegl_bottom, status   )
 
 !       Deltares Software Centre
 
@@ -76,7 +76,8 @@
       type(GridPointerColl) , intent(in   ) :: GridPs        !< collection off all grid definitions
       logical               , intent(in   ) :: oldproc       !< true if old processing
       integer(kind=int_wp), intent(in   ) ::  nosegl_bottom  !< number of segments expected for bottom
-      integer(kind=int_wp), intent(inout) ::  ierr           !< cummulative error count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -161,7 +162,7 @@
 
                case ( 'BOTTOMGRID_FROM_ATTRIBUTES' )       ! it is the filename keyword
                   allocate ( aGrid%iarray(noseg) )
-                  call read_attributes_for_bottomgrid( lunut, aGrid%iarray, nosegl_bottom, ierr )
+                  call read_attributes_for_bottomgrid( lunut, aGrid%iarray, nosegl_bottom, status )
                   exit
 
                case ( 'REFERENCEGRID' )
@@ -173,7 +174,7 @@
                      aGrid%iref      = i_grid
                   else
                      write ( lunut , 2050 )
-                     ierr = ierr + 1
+                     call status%increase_error_count()
                   endif
 !jvb not set yet  noseg     = GridPs%pointers(aGrid%iref)%noseg
                   noseg_lay = GridPs%pointers(aGrid%iref)%noseg_lay
@@ -190,7 +191,7 @@
                if ( gettoken( aGrid%iarray(iseg), ierr2 ) .gt. 0 ) goto 1000
                if ( aGrid%iarray(iseg) .gt. noseg_lay ) then
                   write ( lunut , 2070 ) aGrid%iarray(iseg)
-                  ierr = ierr + 1
+                  call status%increase_error_count()
                endif
             enddo
             exit                                               ! input for the grid is ready
@@ -213,7 +214,7 @@
       do iseg2 = 1 , noseg2
          if ( iwork(iseg2) .eq. 0 ) then
             write ( lunut , 2080 ) iseg2
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       enddo
       aGrid%noseg_lay = noseg2
@@ -224,7 +225,7 @@
 
  1000 continue
       write( lunut, 2090 )
-      ierr = ierr + 1
+      call status%increase_error_count()
       return
 
  2000 format ( ' Name of this grid is: ',A)
@@ -242,12 +243,14 @@
 
       contains
 
-      subroutine read_attributes_for_bottomgrid( lunut, iarray, nosegl, ierr )
+      subroutine read_attributes_for_bottomgrid( lunut, iarray, nosegl, status )
       use m_evaluate_waq_attribute
 
-      integer(kind=int_wp) ::  lunut, nosegl, ierr
+      integer(kind=int_wp) ::  lunut, nosegl
       integer(kind=int_wp), dimension(:) ::  iarray
- 
+
+      type(error_status), intent(inout) :: status !< current error status
+
       integer(kind=int_wp) ::  i, j, nkopt, ikopt1, ikopt2, ierr2, lunbin, iover, ikdef, idummy
       integer(kind=int_wp) ::  noseg, nopt, nover, attrib, active, iknm1, iknm2, iknmrk, ivalk
       integer(kind=int_wp), allocatable, dimension(:)  ::  iamerge         !  composite attribute array
@@ -264,7 +267,7 @@
       ikmerge = 0
       iamerge = 0
       iread = 0
-      
+
       if ( gettoken( nkopt, ierr2 ) .gt. 0 ) goto 900
 
       do i = 1 , nkopt                                      !   read those blocks
@@ -310,7 +313,7 @@
                         if ( gettoken( idummy, ierr2 ) .gt. 0 ) goto 900
                         if ( iover .lt. 1 .or. iover .gt. noseg ) then
                            write ( lunut , 2030 ) j, iover
-                           ierr = ierr + 1
+                           call status%increase_error_count()
                         else
                            iread(iover) = idummy
                         endif
@@ -319,11 +322,11 @@
 
                case default
                   write ( lunut , 2040 ) ikopt2
-                  ierr = ierr + 1
+                  call status%increase_error_count()
 
             end select
          endif
-         
+
 !        Merge file buffer with attributes array in memory
 
          do iknm2 = 1 , nopt
@@ -333,7 +336,7 @@
 
             if ( ikmerge(iknm1) .ne. 0  ) then
                write ( lunut , 2260 ) iknm2, iknm1
-               ierr  = ierr + 1
+               call status%increase_error_count()
                exit
             endif
 
@@ -342,11 +345,11 @@
             if ( iknm1 .le. 0 .or. iknm1 .gt. 10 ) then
                if ( iknm1 .eq. 0 ) then
                   write ( lunut , 2270 ) iknm2
-                  ierr  = ierr + 1
+                  call status%increase_error_count()
                   exit
                else
                   write ( lunut , 2280 ) iknm1,iknm2
-                  ierr  = ierr + 1
+                  call status%increase_error_count()
                   exit
                endif
             endif
@@ -384,29 +387,34 @@
 
       ! Handle errors
   900 continue
-      if ( ierr2 .gt. 0 ) ierr = ierr + 1
+      if ( ierr2 .gt. 0 ) then
+        call status%increase_error_count()
+      end if
+
       if ( ierr2 .eq. 3 ) call srstop(1)
       write( lunut, 2000 )
       return
 
   910 continue
-      if ( ierr2 .gt. 0 ) ierr = ierr + 1
+      if ( ierr2 .gt. 0 ) then
+        call status%increase_error_count()
+      end if
       if ( ierr2 .eq. 3 ) call srstop(1)
       write( lunut, 2001 )
 
       return
 
       ! Formats
- 2000 format(/, ' ERROR. Unexpected value in attributes file - should be an integer')
- 2001 format(/, ' ERROR. Reading name of binary attributes file')
- 2010 format(/, ' ERROR. Reading binary attributes file - too few data?',/,'File: ', a)
- 2020 format(/, ' ERROR. Opening binary attributes file - incorrect name?',/,'File: ', a)
- 2030 format(/, ' ERROR. Overriding out of bounds - overriding: ', i0, ' - segment: ', i0)
- 2040 format(/, ' ERROR. Unknown option for attributes: ', i0)
- 2050 format(/, ' ERROR. The number of time-dependent attributes should be zero - limitation in the implementation')
- 2260 format (/ ' ERROR, Pointer of contribution ',I6,' mapped to attribute',I6,' already specified.')
- 2270 format (/ ' ERROR, Pointer of contribution ',I6,' zero.')
- 2280 format (/ ' ERROR, Pointer of contribution ',I6,'=',I6,' is out of range(1-10).')
+ 2000 format( /, ' ERROR. Unexpected value in attributes file - should be an integer')
+ 2001 format( /, ' ERROR. Reading name of binary attributes file')
+ 2010 format( /, ' ERROR. Reading binary attributes file - too few data?',/,'File: ', a)
+ 2020 format( /, ' ERROR. Opening binary attributes file - incorrect name?',/,'File: ', a)
+ 2030 format( /, ' ERROR. Overriding out of bounds - overriding: ', i0, ' - segment: ', i0)
+ 2040 format( /, ' ERROR. Unknown option for attributes: ', i0)
+ 2050 format( /, ' ERROR. The number of time-dependent attributes should be zero - limitation in the implementation')
+ 2260 format ( / ' ERROR, Pointer of contribution ',I6,' mapped to attribute',I6,' already specified.')
+ 2270 format ( / ' ERROR, Pointer of contribution ',I6,' zero.')
+ 2280 format ( / ' ERROR, Pointer of contribution ',I6,'=',I6,' is out of range(1-10).')
 
       end subroutine read_attributes_for_bottomgrid
 

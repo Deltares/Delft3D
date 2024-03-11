@@ -2168,8 +2168,8 @@ contains
          dim_ids = [id_statdim ]
       end if
       
-      ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nc_precision, dim_ids, id_statx)
-      ierr = nf90_def_var(ihisfile, 'station_y_coordinate', nc_precision, dim_ids, id_staty)
+      ierr = nf90_def_var(ihisfile, 'station_x_coordinate', nf90_double, dim_ids, id_statx)
+      ierr = nf90_def_var(ihisfile, 'station_y_coordinate', nf90_double, dim_ids, id_staty)
       
       ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
       ierr = unc_addcoordatts(ihisfile, id_statx, id_staty, jsferic)

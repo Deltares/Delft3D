@@ -30,6 +30,7 @@ use m_setdsc
 use m_setdpt
 use m_setday
 use m_rdstat
+use m_error_status
 
 implicit none
 
@@ -42,8 +43,7 @@ contains
                          LSTACK       , IOUTPT   , &
                          DTFLG1       , DTFLG3   , &
                          StatProcesDef, AllItems , &
-                         NOINFO       , NOWARN   , &
-                         IERR         )
+                         status )
 
       !! Defines process steering for statistical output processing
       !! This routine deals with the set up of statistical processes
@@ -56,22 +56,23 @@ contains
 
       !     kind           function         name                Descriptipon
 
-      integer(kind=int_wp), intent(in   )  ::lunrep            !! unit nr of output report file
-      integer(kind=int_wp), intent(in   )  ::npos              !! significant line length of input file
-      character( 1), intent(in   )         :: cchar                    !! comment character
-      integer(kind=int_wp), intent(inout)  ::ilun (*)          !! unitnumber include stack
-      character( *), intent(inout)         :: lch  (*)                 !! filename include stack for input
-      integer(kind=int_wp), intent(in   )  ::lstack            !! include file stack size
-      integer(kind=int_wp), intent(  out)  ::ioutpt            !! flag for more or less output
-      logical      , intent(in   )         :: dtflg1                   !! 'date'-format 1st timescale
-      logical      , intent(in   )         :: dtflg3                   !! 'date'-format (F;ddmmhhss,T;yydddhh)
-      type(ProcesPropColl)                 :: StatProcesDef            !! the statistical proces definition
-      type(ItemPropColl)                   :: AllItems                 !! all items of the proces system
-      integer(kind=int_wp), intent(inout)  ::noinfo            !! count of informative message
-      integer(kind=int_wp), intent(inout)  ::nowarn            !! cumulative warning count
-      integer(kind=int_wp), intent(inout)  ::ierr              !! cumulative error   count
+      integer(kind=int_wp), intent(in   )  :: lunrep            !! unit nr of output report file
+      integer(kind=int_wp), intent(in   )  :: npos              !! significant line length of input file
+      character( 1), intent(in   )         :: cchar            !! comment character
+      integer(kind=int_wp), intent(inout)  :: ilun (*)          !! unitnumber include stack
+      character( *), intent(inout)         :: lch  (*)         !! filename include stack for input
+      integer(kind=int_wp), intent(in   )  :: lstack            !! include file stack size
+      integer(kind=int_wp), intent(  out)  :: ioutpt            !! flag for more or less output
+      logical      , intent(in   )         :: dtflg1           !! 'date'-format 1st timescale
+      logical      , intent(in   )         :: dtflg3           !! 'date'-format (F;ddmmhhss,T;yydddhh)
+      type(ProcesPropColl)                 :: StatProcesDef    !! the statistical proces definition
+      type(ItemPropColl)                   :: AllItems         !! all items of the proces system
 
-      type(ProcesProp)                     :: aProcesProp       !! one statistical proces definition
+      type(error_status), intent(inout) :: status !< current error status
+
+      ! local
+
+      type(ProcesProp) :: aProcesProp !! one statistical proces definition
 
       INTEGER(kind=int_wp) , POINTER :: STA_NO_IN(:)
       INTEGER(kind=int_wp) , POINTER :: STA_NO_OUT(:)
@@ -115,7 +116,7 @@ contains
       IPOSR = 0
       CALL RDSTAT ( LUNREP , IPOSR  , NPOS   , CCHAR  , &
                    ILUN   , LCH    , LSTACK , IOUTPT , DTFLG1 ,&
-                   DTFLG3 , IERR   , NOSTAT , NKEY   , NOKEY  ,&
+                   DTFLG3 , status , NOSTAT , NKEY   , NOKEY  ,&
                    KEYNAM , KEYVAL , NPERIOD, PERNAM , PERSFX ,&
                    PSTART , PSTOP  )
 
@@ -214,8 +215,7 @@ contains
                             KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
                             DTFLG1         , DTFLG3         , &
                             ISPROC         , aProcesProp    , &
-                            AllItems       , IERR           , &
-                            NOWARN         )
+                            AllItems       , status)
 
                iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                GOTO 100
@@ -226,8 +226,7 @@ contains
                CALL SETDPT ( LUNREP         , NOKEY(ISTAT)   , &
                             KEYNAM2(IKSTAT), KEYVAL2(IKSTAT), &
                             ISPROC         , aProcesProp    , &
-                            AllItems       , IERR           , &
-                            NOWARN         )
+                            AllItems       , status)
                iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                GOTO 100
             ENDIF
@@ -241,8 +240,7 @@ contains
                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
                                PSTART(IPERIOD), PSTOP(IPERIOD) , &
                                ISPROC         , aProcesProp    , &
-                               AllItems       , IERR           , &
-                               NOWARN         )
+                               AllItems       , status)
                   iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                ENDDO
                GOTO 100
@@ -257,8 +255,7 @@ contains
                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
                                PSTART(IPERIOD), PSTOP(IPERIOD) , &
                                ISPROC         , aProcesProp    , &
-                               AllItems       , IERR           , &
-                               NOWARN         )
+                               AllItems       , status)
                   iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                ENDDO
                GOTO 100
@@ -273,8 +270,7 @@ contains
                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
                                PSTART(IPERIOD), PSTOP(IPERIOD) , &
                                ISPROC         , aProcesProp    , &
-                               AllItems       , IERR           , &
-                               NOWARN         )
+                               AllItems       , status)
                   iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                ENDDO
                GOTO 100
@@ -289,18 +285,17 @@ contains
                                PERNAM(IPERIOD), PERSFX(IPERIOD), &
                                PSTART(IPERIOD), PSTOP(IPERIOD) , &
                                ISPROC         , aProcesProp    , &
-                               AllItems       , IERR           , &
-                               NOWARN         )
+                               AllItems       , status)
                   iret = ProcesPropCollAdd( StatProcesDef , aProcesProp )
                ENDDO
                GOTO 100
             ENDIF
             WRITE(LUNREP,*) 'ERROR unrecognised operation:',KEYVAL(IKEY:)
-            IERR = IERR + 1
+            call status%increase_error_count()
   100       CONTINUE
          ELSE
             WRITE(LUNREP,*) 'ERROR no operation defined for output-operation'
-            IERR = IERR + 1
+            call status%increase_error_count()
          ENDIF
          WRITE(LUNREP,'(A)') 'END-OUTPUT-OPERATION'
          IKSTAT = IKSTAT + NOKEY(ISTAT)

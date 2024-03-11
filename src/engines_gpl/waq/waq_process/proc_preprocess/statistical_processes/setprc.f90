@@ -23,6 +23,7 @@
 module m_setprc
 use m_waq_precision
 use m_string_utils, only: index_in_array
+use m_error_status
 
 implicit none
 
@@ -34,8 +35,7 @@ contains
                         PERNAM     , PERSFX     , &
                         PSTART     , PSTOP      , &
                         IPROC      , aProcesProp, &
-                        AllItems   , IERR       , &
-                        NOWARN     )
+                        AllItems   , status)
 
    !! Sets io list for statistical routine STAPRC
    !
@@ -58,8 +58,6 @@ contains
    !     IPROC   INTEGER(kind=int_wp) ::1  INPUT   index number proces
    !     aProcesProp               OUTPUT  properties for this proces
    !     AllItems                  INPUT   all items known to the proces system
-   !     IERR    INTEGER(kind=int_wp) ::1  IN/OUT  cummulative error count
-   !     NOWARN  INTEGER(kind=int_wp) ::1  IN/OUT  cummulative warning count
    !
    use m_srstop
    use m_string_manipulation, only : get_trimmed_length
@@ -68,12 +66,12 @@ contains
 
    implicit none
 
-   INTEGER(kind=int_wp) :: LUNREP, NOKEY , PSTART, PSTOP , IPROC ,  &
-                           IERR  , NOWARN
+   INTEGER(kind=int_wp) :: LUNREP, NOKEY , PSTART, PSTOP , IPROC
    CHARACTER*20         :: PERNAM, PERSFX
    CHARACTER*20         :: KEYNAM(NOKEY), KEYVAL(NOKEY)
    type(ProcesProp)     :: aProcesProp         ! output statistical proces definition
    type(ItemPropColl)   :: AllItems            ! all items of the proces system
+   type(error_status), intent(inout) :: status !< current error status
 
    ! Local declarations
    INTEGER(kind=int_wp) :: IERR_ALLOC, IKEY  , ISTART, ISTOP , ISLEN ,  &
@@ -128,7 +126,7 @@ contains
    IKEY = index_in_array(KEY,KEYNAM)
    IF ( IKEY <= 0 ) THEN
       WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
-      IERR = IERR + 1
+      call status%increase_error_count()
    ELSE
       ISUSED(IKEY) = 1
       aProcesProp%input_item(1)%name = KEYVAL(IKEY)
@@ -205,14 +203,14 @@ contains
    IKEY = index_in_array(KEY, KEYNAM)
    IF ( IKEY <= 0 ) THEN
       WRITE(LUNREP,*) 'ERROR no critical level specified for percentage'
-      IERR = IERR + 1
+      call status%increase_error_count()
       CCRIT = -999.
    ELSE
       ISUSED(IKEY) = 1
       READ(KEYVAL(IKEY),'(E20.0)',IOSTAT=IERR2) CCRIT
       IF ( IERR2 .NE. 0 ) THEN
          WRITE(LUNREP,*)'ERROR interpreting critical level:', KEYVAL(IKEY)
-         IERR = IERR + 1
+         call status%increase_error_count()
       ENDIF
    ENDIF
    aItemProp%name    = 'CCRIT     '//aProcesProp%name(1:10)
@@ -323,7 +321,7 @@ contains
 
    DO IKEY = 1 , NOKEY
       IF ( ISUSED(IKEY) .EQ. 0 ) THEN
-         NOWARN = NOWARN + 1
+         call status%increase_warning_count()
          WRITE(LUNREP,*) 'WARNING: keyword not used'
          WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)
          WRITE(LUNREP,*) 'value :',KEYVAL(IKEY)

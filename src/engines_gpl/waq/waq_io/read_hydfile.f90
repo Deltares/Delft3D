@@ -22,14 +22,14 @@
 !!  rights reserved.
 module m_read_hydfile
 use m_waq_precision
-
+use m_error_status
 
 implicit none
 
 contains
 
 
-subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, ierr )
+subroutine read_hydfile( lunout, hydfile, lchar, noseg, nexch, status )
 use m_get_filepath_and_pathlen
 
 
@@ -49,7 +49,8 @@ use m_get_filepath_and_pathlen
     character(len=*)      , intent(inout)    :: lchar(*)     !< filenames
     integer(kind=int_wp)            , intent(out)      :: noseg        !< number of segments
     integer(kind=int_wp)   , dimension(*), intent(out) :: nexch        !< number of exchanges
-    integer(kind=int_wp)               , intent(out) ::ierr         !< error code
+
+    type(error_status), intent(inout) :: status !< current error status
 
 !   local variables
 
@@ -81,8 +82,8 @@ use m_get_filepath_and_pathlen
 
     call get_filepath_and_pathlen( hydfile, path, pathlen )
 
-    open( newunit = lunin, file = hydfile, status = 'old', iostat = ierr )
-    if ( ierr /= 0 ) then
+    open( newunit = lunin, file = hydfile, status = 'old', iostat = status%ierr)
+    if ( status%ierr /= 0 ) then
         write( lunout, '(a,a)' ) 'ERROR: Hyd-file does not exist or could not be opened - ', trim(hydfile)
         return
     endif
@@ -94,16 +95,16 @@ use m_get_filepath_and_pathlen
             exit
         endif
         if ( ierr2 > 0 ) then
-            ierr = ierr2
+            status%ierr = ierr2
             write( lunout, '(a,a)' ) 'ERROR: Reading hyd-file failed - ', trim(hydfile)
             return
         endif
 
         do i = 1,8
             if ( index( line, keyword(i) ) > 0 ) then
-                read( line, *, iostat = ierr ) cdummy, lchar(fileno(i))
+                read( line, *, iostat = ierr2 ) cdummy, lchar(fileno(i))
                 if ( ierr2 > 0 ) then
-                    ierr = ierr2
+                    status%ierr= ierr2
                     write( lunout, '(a,a)' ) 'ERROR: Reading hyd-file failed - ', trim(hydfile)
                     write( lunout, '(a,a)' ) '       Line: ', trim(line)
                     return
@@ -157,7 +158,7 @@ use m_get_filepath_and_pathlen
         open( newunit = lunin, file = lchar(idxlga), access = 'stream', iostat = ierr2 )
 
         if ( ierr2 /= 0 ) then
-            ierr = 1
+            call status%increase_error_count()
             write( lunout, '(a,a)' ) 'ERROR: LGA-file does not exist or could not be opened - ', trim(lchar(8))
             return
         endif
@@ -177,7 +178,7 @@ use m_get_filepath_and_pathlen
             read( lunin, iostat = ierr2 ) nx, ny, nosegl, nolay, nexch(1), nexch(2), nexch(3)
 
             if ( ierr2 /= 0 ) then
-                ierr = 1
+                call status%increase_error_count()
                 write( lunout, '(a,a)' ) 'ERROR: Header of LGA-file could not be read - ', trim(lchar(8))
                 return
             endif
@@ -188,7 +189,7 @@ use m_get_filepath_and_pathlen
     else
         close( lunin )
         write( lunout, '(a,a)' ) 'ERROR: Hyd-file does not contain the name for a grid file - ', trim(hydfile)
-        ierr = 1
+        call status%increase_error_count()
         return
     endif
 end subroutine read_hydfile

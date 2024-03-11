@@ -77,7 +77,7 @@
  use m_dad, only: dad_included
  use m_fixedweirs, only: weirdte, nfxw
  use mass_balance_areas_routines, only : mba_init
- 
+ use m_curvature, only: get_spirucm
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -458,6 +458,10 @@
  endif 
  jaFlowNetChanged = 0
 
+ ! Secondary flow
+ if ( jasecflow > 0 .and. kmx == 0 ) then
+    call get_spirucm()
+ endif 
 
  ! Initialise Fourier Analysis
  call timstrt('Fourier init        ', handle_extra(33)) ! Fourier init

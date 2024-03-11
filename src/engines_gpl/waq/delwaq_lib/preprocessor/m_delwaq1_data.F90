@@ -100,8 +100,6 @@ module m_delwaq1_data
    integer(4)                     :: iwidth                 !< width of the output file
    integer(4)                     :: refday                 !< reference day, varying from 1 till 365
    integer(4)                     :: ioutpt                 !< flag for more or less output
-   integer                        :: ierr                   !< cumulative number of errors
-   integer                        :: iwar                   !< cumulative number of warnings
    logical                        :: chkpar(2)              !< flags to check for parameters SURF and LENGTH (used for special waste loads)
    type(GridPointerColl) GridPs
    type(OutputPointers)           :: Outputs
@@ -112,10 +110,8 @@ module m_delwaq1_data
    integer                        :: itota
    integer                        :: itoti
    integer                        :: itotc
-   integer                        :: ibflag
    integer                        :: lunrep
    integer                        :: nosss
-   integer                        :: noinfo
    integer                        :: ierr_alloc
    logical                        :: unitop
    character(len=200)             :: nameoffile

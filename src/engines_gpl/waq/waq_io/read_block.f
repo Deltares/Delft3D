@@ -27,7 +27,7 @@
       use m_read_header
       use m_read_data_ods
       use m_time_validation
-
+      use m_error_status
 
       implicit none
 
@@ -37,7 +37,7 @@
       subroutine read_block ( lun       , lchar     , filtype   , inpfil    , ioutpt   ,
      &                        iwidth    , substances, constants , parameters, functions,
      &                        segfuncs  , segments  , gridps    , data_block, ierr     ,
-     &                        iwar      )
+     &                        status)
 
 !     Deltares Software Centre
 
@@ -76,7 +76,8 @@
       type(GridPointerColl) , intent(in)    :: GridPs       !< collection off all grid definitions
       type(t_dlwqdata)      , intent(out)   :: data_block   !< data block to be filled
       integer(kind=int_wp), intent(out) ::  ierr          !< output error count
-      integer(kind=int_wp), intent(inout) ::  iwar          !< cumulative warning count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -271,7 +272,7 @@
             ! handle file option, should we resolve the use of 17? = work file segment-functions
 
             call opt1( -4    , lun    , 17    , lchar  , filtype,
-     *                 dtflg1, dtflg3 , noseg , ierr2  , iwar   ,
+     *                 dtflg1, dtflg3 , noseg , ierr2  , status   ,
      *                 .false.)
             if ( ierr2 .ne. 0 ) exit
 
@@ -289,7 +290,7 @@
             chkflg = 1
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , callr ,
      +                       waq_param  , data_param, substances, types    , noits ,
-     +                       ierr2      , iwar)
+     +                       ierr2      , status)
 
             if ( ierr2 .ne. 0 ) then
                write ( lunut , 2120 )
@@ -312,7 +313,7 @@
 !
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , callr ,
      +                       waq_param  , data_param, constants , types    , noits ,
-     +                       ierr2      , iwar)
+     +                       ierr2      , status)
 
 
             if ( ierr2 .ne. 0 ) then
@@ -340,7 +341,7 @@
 
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , callr ,
      +                       waq_param  , data_param, functions , types    , noits ,
-     +                       ierr2      , iwar)
+     +                       ierr2      , status)
 
 
             if ( ierr2 .ne. 0 ) then
@@ -359,7 +360,7 @@
 
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , strng1,
      +                       waq_param  , data_param, parameters, types    , noits ,
-     +                       ierr2      , iwar)
+     +                       ierr2      , status)
 
 
             if ( ierr2 .ne. 0 ) then
@@ -379,7 +380,7 @@
 
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , strng1,
      +                       waq_param  , data_param, segfuncs  , types    , noits ,
-     +                       ierr2      , iwar)
+     +                       ierr2      , status)
 
 
             if ( ierr2 .ne. 0 ) then
@@ -429,7 +430,7 @@
 
                call read_items( lunut    , inpfil  , ioutpt  , chkflg, callr    ,
      +                          waq_loc  , data_loc, segments, types , noits_loc,
-     +                          ierr2    , iwar)
+     +                          ierr2    , status)
 
                if ( ierr2 .ne. 0 ) then
                   write ( lunut , 2180 )
@@ -543,7 +544,7 @@
                       write( lunut , 2320 ) ctoken
                   elseif ( ierr2 > 0 ) then
                       ierr2 = 0        ! It is a warning, proceed at your own peril
-                      iwar  = iwar + 1
+                      call status%increase_warning_count()
                       write( lunut , 2330 ) ctoken, filesize, 4*(1+noits*noseg_org), noits, noseg
                       write( lunut , 2340 )
                   endif
@@ -555,7 +556,7 @@
 
                nocol = noits
                call read_header( waq_param, data_param, nocol , itfact, dtflg1,
-     &                           dtflg3   , ierr2     , iwar  )
+     &                           dtflg3   , ierr2     , status  )
                if ( ierr2 .ne. 0 ) goto 100
 
                ! when data_loc is not filled only

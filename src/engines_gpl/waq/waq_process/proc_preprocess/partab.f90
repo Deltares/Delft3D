@@ -37,7 +37,7 @@
 
       subroutine partab ( procesdef, notot  , syname, nocons, constants,                           &
      &                    nopa     , paname , nofun , funame, nosfun   ,                           &
-     &                    sfname   , proref , nrref , nowarn, nothread ,                           &
+     &                    sfname   , proref , nrref , status, nothread ,                           &
      &                    nopred   , noloc , nodef )
 
 !     Deltares Software Department
@@ -56,6 +56,7 @@
       use dlwq_hyd_data
       use ProcesSet
       use timers       !   performance timers
+      use m_error_status
 
       implicit none
 
@@ -76,11 +77,12 @@
       character(20)       , intent(in   ) :: sfname(nosfun)  ! segment function names
       integer(kind=int_wp),  pointer    , intent(  out) :: proref(:,:)     ! input items to be resolved for each process
       integer(kind=int_wp)             , intent(  out) ::nrref           ! maximum nr of references to be resolved
-      integer(kind=int_wp)             , intent(inout) ::nowarn          ! number of warnings
       integer(kind=int_wp)             , intent(inout) ::nothread        ! number of threads to be used
       integer(kind=int_wp)             , intent(in   ) ::nopred          ! number of predefined items
       integer(kind=int_wp)             , intent(in   ) ::noloc           ! number of items in local array
       integer(kind=int_wp)             , intent(in   ) ::nodef           ! number of items in default array
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !     Local declarations
 
@@ -243,7 +245,7 @@
                write(line,'(a,a)') ' WARNING: possibly unresolved input for process: ',               &
      &                                                      ProcesDef%ProcesProps(iproc1)%name
                call monsys( line , 2 )
-               nowarn = nowarn + 1
+               call status%increase_warning_count()
             endif
          enddo
 

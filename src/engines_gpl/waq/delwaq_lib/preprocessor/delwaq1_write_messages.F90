@@ -22,27 +22,28 @@
 !!  rights reserved.
 module m_delwaq1_write_messages
    use m_waq_precision
+   use m_error_status
    implicit none
 
 contains
 
-   subroutine delwaq1_write_messages(errorcode)
+   subroutine delwaq1_write_messages(status)
       use m_open_waq_files
       use m_delwaq1_data
       use m_dattim
 
       implicit none
 
-      integer(kind=int_wp), intent(inout) ::  errorcode
+      type(error_status) :: status !< current error status
 
       write (lunrep, '(//'' Messages presented including .lsp file:'')')
-      write (lunrep, '(  '' Number of WARNINGS            :'',I6)') iwar
-      write (lunrep, '( /'' Number of ERRORS during input :'',I6)') ierr
-      write (*, '(  ''  Number of WARNINGS            :'',I6)') iwar
-      write (*, '(  ''  Number of ERRORS during input :'',I6)') ierr
+      write (lunrep, '(  '' Number of WARNINGS            :'',I6)') status%iwar
+      write (lunrep, '( /'' Number of ERRORS during input :'',I6)') status%ierr
+      write (*, '(  ''  Number of WARNINGS            :'',I6)') status%iwar
+      write (*, '(  ''  Number of ERRORS during input :'',I6)') status%ierr
       write (*, '(  '' '')')
 
-      if (ierr .eq. 0) then
+      if (status%ierr .eq. 0) then
          novec = min(novec, (nosss + nobnd - 1))
          itota = 0
          itoti = 0
@@ -60,7 +61,6 @@ contains
       else
          write (lunrep, '(  '' SIMULATION PROHIBITED !!!!!!!!'')')
          call open_waq_files(lun(1), lchar(1), 1, 3, ioerr)
-         errorcode = 1
       end if
 
       call dattim(rundat)

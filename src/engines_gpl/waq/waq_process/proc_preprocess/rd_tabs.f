@@ -22,15 +22,14 @@
 !!  rights reserved.
       module m_rd_tabs
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine rd_tabs( pdffil, lunrep, versio, serial, noinfo,
-     +                    nowarn, nerror)
+      subroutine rd_tabs( pdffil, lunrep, versio, serial, status)
 
 !     Deltares Software Centre
 
@@ -69,9 +68,8 @@
       integer(kind=int_wp), intent(in   )  ::lunrep                 !< report file
       real(kind=real_wp), intent(  out)  ::versio                 !< version number proces defintion file
       integer(kind=int_wp), intent(  out)  ::serial                 !< serial number proces defintion file
-      integer(kind=int_wp), intent(inout)  ::noinfo                 !< cummulative information count
-      integer(kind=int_wp), intent(inout)  ::nowarn                 !< cummulative warning count
-      integer(kind=int_wp), intent(inout)  ::nerror                 !< cummulative error count
+
+      type(error_status), intent(inout) :: status !< current error status
 
 !
 !     declaration of file identification group
@@ -150,13 +148,13 @@
             endif
          endif
          if ( ierror .ne. 0 ) then
-            nerror = nerror + 1
+            call status%increase_error_count()
             call dhpfil(lunrep,' error opening nefis file(s):',trim(fildat))
             write(lunrep,*) 'error number:',ierror
             goto 900
          endif
       else
-         nerror = nerror + 1
+         call status%increase_error_count()
          call dhpfil(lunrep,'error opening nefis file(s):',trim(fildat))
          write(lunrep,*) 'files do not exist'
          goto 900
@@ -168,7 +166,7 @@
      +                versio, serial, rundat, source, remark,
      +                lunrep, ierror)
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading file identification group'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -181,7 +179,7 @@
      +                sgrpid      , sgrpnm      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table p1'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -200,7 +198,7 @@ cjvb +                itemgr      , itemsx      ,
      +                itemsu      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table p2'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -213,7 +211,7 @@ cjvb +                itemgr      , itemsx      ,
      +                fortid      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table p3'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -227,7 +225,7 @@ cjvb +                itemgr      , itemsx      ,
      +                procfo      , procco      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table p4'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -240,7 +238,7 @@ cjvb +                itemgr      , itemsx      ,
      +                confid      , confnm      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table p5'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -253,7 +251,7 @@ cjvb +                itemgr      , itemsx      ,
      +                nproc        , icnpro      ,
      +                lunrep       , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r1'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -266,7 +264,7 @@ cjvb +                itemgr      , itemsx      ,
      +                r2_cid      , r2_sid      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r2'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -281,7 +279,7 @@ cjvb +                itemgr      , itemsx      ,
      +                inpudo      , inpusx      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r3'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -296,7 +294,7 @@ cjvb +                itemgr      , itemsx      ,
      +                outpsx      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r4'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -310,7 +308,7 @@ cjvb +                itemgr      , itemsx      ,
      +                outfnm      , outfdo      ,
      +                lunrep      , ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r5'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -324,7 +322,7 @@ cjvb +                itemgr      , itemsx      ,
      +                stocsc      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r6'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -338,7 +336,7 @@ cjvb +                itemgr      , itemsx      ,
      +                velosc      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r7'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -352,7 +350,7 @@ cjvb +                itemgr      , itemsx      ,
      +                dispsc      , lunrep      ,
      +                ierror      )
       if ( ierror .ne. 0 ) then
-         nerror = nerror + 1
+         call status%increase_error_count()
          write(lunrep,*) 'error reading table r8'
          write(lunrep,*) 'error number:',ierror
          goto 900
@@ -373,7 +371,7 @@ cjvb +                itemgr      , itemsx      ,
      +                   lunrep      ,
      +                   ierror      )
          if ( ierror .ne. 0 ) then
-            nerror = nerror + 1
+            call status%increase_error_count()
             write(lunrep,*) 'error reading table m1'
             write(lunrep,*) 'error number:',ierror
             goto 900
@@ -386,7 +384,7 @@ cjvb +                itemgr      , itemsx      ,
       if ( ierror .ne. 0 ) then
          write(lunrep,*) 'error closing nefis process defintion file'
          write(lunrep,*) 'error number:',ierror
-         nerror = nerror + 1
+         call status%increase_error_count()
       endif
 
   900 continue

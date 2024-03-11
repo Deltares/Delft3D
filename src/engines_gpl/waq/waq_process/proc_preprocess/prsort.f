@@ -24,6 +24,7 @@
       use m_waq_precision
       use m_string_utils
       use m_valpoi
+      use m_error_status
 
 
       implicit none
@@ -33,7 +34,7 @@
 
       subroutine prsort( lurep , ProcesDef, notot , nopa     , nosfun,
      +                   syname, nocons   , nofun , constants, paname,
-     +                   funame, sfname   , nowarn)
+     +                   funame, sfname   , status)
 
       ! sort processes according to input - output relation, simpel linear sort at the moment
 
@@ -57,7 +58,8 @@
       character(len=*)          :: paname(*)       ! parameter names
       character(len=*)          :: funame(*)       ! function names
       character(len=*)          :: sfname(*)       ! segment function names
-      integer(kind=int_wp) ::nowarn          ! number of warnings
+
+      type(error_status), intent(inout) :: status !< current error status
 
       ! local declaration
 
@@ -163,7 +165,7 @@
 
       if ( nloop .gt. nproc ) then
          write(lurep,'(a)') ' WARNING: circular input output relation detected in process library'
-         nowarn = nowarn + 1
+         call status%increase_warning_count()
       endif
 
       if (timon) call timstop( ithndl )

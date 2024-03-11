@@ -24,7 +24,7 @@
       use m_waq_precision
       use m_opt3
       use m_opt2
-
+      use m_error_status
 
       implicit none
 
@@ -35,7 +35,7 @@
      &                    ndim2  , ndim3  , nrftot , nrharm , ifact  ,
      &                    dtflg1 , disper , volume , iwidth , lchar  ,
      &                    filtype, dtflg3 , ioutpt , ierr   ,
-     &                    iwar   , dont_read   )
+     &                    status   , dont_read   )
 
 !       Deltares Software Centre
 
@@ -105,8 +105,9 @@
       logical      , intent(in   ) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
       integer(kind=int_wp), intent(in   ) ::  ioutpt         !< how extensive is output ?
       integer(kind=int_wp), intent(inout) ::  ierr           !< cumulative error count
-      integer(kind=int_wp), intent(inout) ::  iwar           !< cumulative warning count
       logical      , intent(in)    :: dont_read     !< do not actually read tokens, if true, the information is already provided
+
+      type(error_status), intent(inout) :: status !< current error status
 
 
       logical        bound       !  if .true. then boundary call
@@ -182,7 +183,7 @@
 
       write ( lunut , 2000 ) iopt1
       call opt1   ( iopt1   , lun     , is      , lchar   , filtype ,
-     &              dtflg1  , dtflg3  , ndtot   , ierr2   , iwar    ,
+     &              dtflg1  , dtflg3  , ndtot   , ierr2   , status    ,
      &              dont_read                                       )
       if ( ierr2 .gt. 0 ) goto 50
 

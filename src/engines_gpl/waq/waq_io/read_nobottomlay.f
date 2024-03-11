@@ -22,14 +22,14 @@
 !!  rights reserved.
       module m_read_nobottomlay
       use m_waq_precision
-
+      use m_error_status
 
       implicit none
 
       contains
 
 
-      subroutine read_nobottomlay( GridPs, ierr  )
+      subroutine read_nobottomlay( GridPs, status  )
 
 !       Deltares Software Centre
 
@@ -59,7 +59,7 @@
 !     declaration of arguments
 
       type(GridPointerColl) , intent(inout) :: GridPs     !< collection off all grid definitions
-      integer(kind=int_wp), intent(inout) ::  ierr        !< cummulative error count
+      type(error_status), intent(inout) :: status !< current error status
 
 !     local declarations
 
@@ -198,7 +198,7 @@
 
             ! expand pointers over the layers
 
-            allocate(bottom_matrix(GridPs%Pointers(input_grid)%noseg_lay,max_nolay))
+            allocate(bottom_matrix( GridPs%Pointers(input_grid)%noseg_lay, max_nolay))
             bottom_matrix=0
             iseg2 = 0
             do ilay = 1, max_nolay
@@ -240,18 +240,18 @@
 
  1000 continue
       write(lunut,2000)
-      ierr = ierr + 1
+      call status%increase_error_count()
       if (timon) call timstop( ithndl )
       return
 
- 2000 format (/' ERROR, reading NOBOTTOMLAY information.')
- 2010 format (/' Space varying number of bottom layers:',
+ 2000 format ( /' ERROR, reading NOBOTTOMLAY information.')
+ 2010 format ( /' Space varying number of bottom layers:',
      &        /' Defined on grid: ',A)
- 2020 format (/' ERROR, input grid not defined.')
- 2030 format (/' ERROR, unrecognized token: ',A)
- 2040 format (/' ERROR, input grid has no refrence to the bottom grid')
- 2050 format (/' Default number of bottom layers:',I10)
- 2060 format (/' Space varying number of bottom layers defined on bottom grid')
+ 2020 format ( /' ERROR, input grid not defined.')
+ 2030 format ( /' ERROR, unrecognized token: ',A)
+ 2040 format ( /' ERROR, input grid has no refrence to the bottom grid')
+ 2050 format ( /' Default number of bottom layers:',I10)
+ 2060 format ( /' Space varying number of bottom layers defined on bottom grid')
 
       end
 

@@ -40,7 +40,7 @@
       subroutine dlwq04 ( lun     , lchar   , filtype , nrftot  , nrharm  ,
      &                    ilflag  , dtflg1  , iwidth  , intsrt  , dtflg3  ,
      &                    ioutpt  , nsegdmp , isegdmp , nexcraai,
-     &                    iexcraai, ioptraai, gridps  , ierr    , iwar    ,
+     &                    iexcraai, ioptraai, gridps  , status    ,
      &                    has_hydfile       , nexch   )
 
 !       Deltares Software Centre
@@ -95,7 +95,7 @@
       use partmem
       use timers       !   performance timers
       use m_sysn          ! System characteristics
-
+      use m_error_status
 
       implicit none
 
@@ -119,11 +119,11 @@
       integer(kind=int_wp), intent(in   ) ::  nexcraai(*)        !< number of exchanges in this monitoring transect
       integer(kind=int_wp), intent(in   ) ::  iexcraai(*)        !< exchange area numbers of the transect
       integer(kind=int_wp), intent(in   ) ::  ioptraai(*)        !< option for the transects
-      type(GridPointerColl)           GridPs            !< Collection of grid pointers
-      integer(kind=int_wp), intent(inout) ::  ierr               !< cumulative error   count
-      integer(kind=int_wp), intent(inout) ::  iwar               !< cumulative warning count
+      type(GridPointerColl)        :: GridPs            !< Collection of grid pointers
       logical      , intent(in)    :: has_hydfile       !< if true, much information comes from the hyd-file
       integer(kind=int_wp), dimension(*), intent(in)  ::  nexch   !< nmber of exchanges from the hyd-file
+
+      type(error_status) :: status
 
 !     COMMON BLOCK  :
 
@@ -163,7 +163,6 @@
       integer(kind=int_wp) :: idum       !  multi purpose dummy variable
       integer(kind=int_wp) :: ifact      !  factor between clocks ( 1 in the case of transport )
       integer(kind=int_wp) :: ierr2      !  local error count
-      integer(kind=int_wp) :: iwar2      !  local warning count
       integer(kind=int_wp) :: nosegl     !  number of volumes per layer
       integer(kind=int_wp) :: noq12      !  noq1 + noq2 (number of horizontal exchanges)
       integer(kind=int_wp) :: noq34      !  noq3 + noq4 (number of vertical exchanges)
@@ -196,7 +195,6 @@
       idummy = 0
       ifact  = 1
       ierr2  = 0
-      iwar2  = 0
 
 !        Read exchange dimensions of the system (NOQ1,NOQ2,NOQ3)
 
@@ -263,7 +261,7 @@
       if ( .not. alone ) then
          if ( noq .ne. noqp ) then
             write (lunut, 2020 ) noqp
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
       noq4 = 0
@@ -286,7 +284,7 @@
             ifound = index_in_array( dispnam(i), dispnam(1:i-1))
             if ( ifound .gt. 0 ) then
                write( lunut, 2070 ) dispnam(i)
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          enddo
          if ( ioutpt .ge. 2 ) then
@@ -302,7 +300,7 @@
             if ( gettoken( idisp(i), ierr2 ) .gt. 0 ) goto 100
             if ( idisp(i) .gt. nodisp) then
                write ( lunut , 2100 ) idisp(i), nodisp
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          enddo
       endif
@@ -321,7 +319,7 @@
             ifound = index_in_array( dispnam(i), dispnam(1:i-1))
             if ( ifound .gt. 0 ) then
                write( lunut, 2130 ) dispnam(i)
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          enddo
          if ( ioutpt .ge. 2 ) then
@@ -337,7 +335,7 @@
             if ( gettoken( ivelo(i), ierr2 ) .gt. 0 ) goto 100
             if ( ivelo(i) .gt. novelo) then
                write ( lunut , 2100 ) ivelo(i), novelo
-               ierr = ierr + 1
+               call status%increase_error_count()
             endif
          enddo
       endif
@@ -350,7 +348,7 @@
       if ( noq1 .lt. 0 .or. noq2   .lt. 0 .or. noq3   .lt. 0 .or.
      &     noq  .eq. 0 .or. nodisp .lt. 0 .or. novelo .lt. 0 ) then
            write ( lunut , 2150 )
-           ierr = ierr+1
+           call status%increase_error_count()
       endif
 
 !        Read option variable for input mode
@@ -372,7 +370,7 @@
 
          if ( regular ) then  !        Regular grid
             call opt1 ( iopt1   , lun     , 8      , lchar  ,  filtype ,
-     &                  dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
+     &                  dtflg1  , dtflg3  , 0      , ierr2  ,  status ,
      &                  .false. )
             if ( ierr2  .gt. 0 ) goto 100
             noqt = noq4
@@ -380,12 +378,12 @@
      &                    kmax   , noq    , noq1   , noq2   , noq3   ,
      &                    noqt   , nobnd  , ipnt   , intsrt , iopt1  ,
      &                    jtrack , ioutpt , iwidth , GridPs , cellpnt,
-     &                    flowpnt, ierr   , iwar    )
+     &                    flowpnt, status)
          endif
       endif
       if ( has_hydfile .or. .not. ( regular ) ) then  ! Irregular grid/hyd-file
          call opt1 ( iopt1   , lun     , 44     , lchar  ,  filtype ,
-     &               dtflg1  , dtflg3  , 0      , ierr2  ,  iwar    ,
+     &               dtflg1  , dtflg3  , 0      , ierr2  ,  status,
      &               has_hydfile       )
          if ( ierr2  .gt. 0 ) goto 100
          noqt = noq  + noq4
@@ -398,7 +396,7 @@
          call pointi ( lun    , lchar  , noseg  , noq       , noq1   ,
      &                 noq2   , noq3   , noqt   , nobnd     , ipnt   ,
      &                 intsrt , iopt1  , jtrack , filtype(44), ioutpt ,
-     &                 GridPs , ierr   , iwar   )
+     &                 GridPs , status)
       endif
       noq12 = noq1 + noq2
       noq34 = noq3 + noq4
@@ -408,7 +406,7 @@
       call dmpare ( lun     , ndmpar  , ntdmps  , noqt    , nosss   ,
      &              nobnd   , ipnt    , ntdmpq  , ndmpq   , ndmps   ,
      &              noraai  , ntraaq  , nsegdmp , isegdmp , nexcraai,
-     &              iexcraai, ioptraai, ierr    , iwar    )
+     &              iexcraai, ioptraai, status)
 
 !        calculate size of the fast solvers matrix
 
@@ -432,8 +430,8 @@
      &              nodisp , 1      , nrftot(3), nrharm(3), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
      &              filtype, dtflg3 , ioutpt   , ierr2  ,
-     &              iwar   , .false. )
-      ierr = ierr + ierr2
+     &              status , .false. )
+      call status%increase_error_count_with(ierr2)
       disper = .false.
 
 !        Read areas
@@ -444,8 +442,8 @@
      &              1      ,  1     , nrftot(4), nrharm(4), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
      &              filtype, dtflg3 , ioutpt   , ierr2  ,
-     &              iwar   , has_hydfile       )
-      ierr = ierr + ierr2
+     &              status , has_hydfile       )
+      call status%increase_error_count_with(ierr2)
 
 !        Read flows
 
@@ -455,12 +453,12 @@
      &              1      , 1      , nrftot(5), nrharm(5), ifact  ,
      &              dtflg1 , disper , volume   , iwidth   , lchar  ,
      &              filtype, dtflg3 , ioutpt   , ierr2  ,
-     &              iwar   , has_hydfile       )
-      ierr = ierr + ierr2
+     &              status   , has_hydfile       )
+      call status%increase_error_count_with(ierr2)
       if ( .not. alone ) then
          if ( lchar(11) .ne. fnamep(7) ) then
             write (lunut, 2225 ) fnamep(7)
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       endif
 
@@ -473,8 +471,8 @@
      &                 novelo , 1      , nrftot(6), nrharm(6), ifact  ,
      &                 dtflg1 , disper , volume   , iwidth   , lchar  ,
      &                 filtype, dtflg3 , ioutpt   , ierr2  ,
-     &                 iwar   , .false. )
-         ierr = ierr + ierr2
+     &                 status   , .false. )
+         call status%increase_error_count_with(ierr2)
       endif
 
 !        Read length "to" and "from" surfaces
@@ -503,11 +501,11 @@
      &                     2     , 1      , nrftot(7), nrharm(7), ifact  ,
      &                    dtflg1 , disper , volume   , iwidth   , lchar  ,
      &                    filtype, dtflg3 , ioutpt   , ierr2  ,
-     &                    iwar   , has_hydfile       )
+     &                    status   , has_hydfile       )
 
          case default
             write ( lunut , 2280 )
-            ierr = ierr + 1
+            call status%increase_error_count()
 
       end select
       goto 100
@@ -545,7 +543,7 @@
       idum = 0
 
       call opt1 ( iopt1   , lun     , idum    , lchar   , filtype ,
-     &            dtflg1  , dtflg3  , 0       , ierr2   , iwar    ,
+     &            dtflg1  , dtflg3  , 0       , ierr2   , status ,
      &            .false. )
       if ( ierr2  .gt. 0 ) goto 100
 
@@ -571,14 +569,14 @@
 
       call bound  ( lun    , noseg  , noq    , noqt   , intsrt ,
      &              ioutpt , GridPs , nobnd  , jtrack , ipnt   ,
-     &              ierr   , iwar   )
+     &              status)
 
 !        set dump area structure
 
       call dmpare ( lun     , ndmpar  , ntdmps  , noq     , noseg   ,
      &              nobnd   , ipnt    , ntdmpq  , ndmpq   , ndmps   ,
      &              noraai  , ntraaq  , nsegdmp , isegdmp , nexcraai,
-     &              iexcraai, ioptraai, ierr    , iwar    )
+     &              iexcraai, ioptraai, status)
 
 !        calculate size of the fast solvers matrix
 
@@ -598,14 +596,14 @@
 
       call open_waq_files  ( lun(8) , lchar(8) , 8      , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
-      if ( noq1 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i =       1, noq1  )
-      if ( noq2 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i = noq1 +1, noq12 )
-      if ( noq3 .gt. 0 ) write( lun(8) )( ipnt(:,i) , i = noq12+1, noq   )
+      if ( noq1 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i =       1, noq1  )
+      if ( noq2 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i = noq1 +1, noq12 )
+      if ( noq3 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i = noq12+1, noq   )
       close ( lun(8) )
 
       call open_waq_files  ( lun( 9) , lchar( 9) , 9      , 1     , ierr2 )
       if ( ierr2 .ne. 0 ) goto 100
-      write ( lun( 9) ) idummy, ( rwork(1,i), ( adummy, k=1,nodisp-1 ) , i=1,noq )
+      write ( lun( 9) ) idummy, (rwork(1,i), ( adummy, k=1,nodisp-1 ) , i=1,noq )
       close ( lun( 9) )
 
       call open_waq_files  ( lun(10) , lchar(10) , 10     , 1     , ierr2 )
@@ -643,7 +641,7 @@
 
       if ( noq3 /= 0 ) then
           if ( nolay == 1 ) then
-              iwar = iwar + 1
+              call status%increase_warning_count()
               write( lunut, 3000 ) noseg, noq3, noseg-noq3
               write( lunut, 3005 )
               write( *, '(1x,a)' ) 'WARNING: inconsistency if 3D model',
@@ -653,9 +651,9 @@
           endif
       endif
 
-      if ( ierr2 .gt. 0 ) ierr = ierr + 1
+      if ( ierr2 .gt. 0 ) call status%increase_error_count()
       if ( ierr2 .eq. 3 ) call srstop(1)
-      call check  ( cdummy , iwidth , 4      , ierr2  , ierr   )
+      call check  ( cdummy , iwidth , 4      , ierr2  , status)
       if ( timon ) call timstop( ithndl )
       return
 

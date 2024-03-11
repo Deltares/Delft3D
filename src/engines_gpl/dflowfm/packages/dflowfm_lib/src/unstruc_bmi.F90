@@ -1078,6 +1078,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
    use unstruc_channel_flow, only: network
    use m_lateral, only : numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
    use m_lateral, only : qplatCumPre
+   use morphology_data_module, only : get_one_transport_parameter
 
    character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
    type(c_ptr), intent(inout) :: x
@@ -1242,12 +1243,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       endif
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
-            if (n > 0) then ! if spatially varying
-               TcrEro(:,i) = stmpar%trapar%parfld(:,n)
-            else ! if not spatially varying
-               TcrEro(:,i) = stmpar%trapar%par(13,i)
-            endif
+            call get_one_transport_parameter(TcrEro(:,i), stmpar%trapar, i, 13)
          else ! Other transport formula than Parteniades-Krone
             TcrEro(:,i) = -999
          endif
@@ -1261,12 +1257,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       endif
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
-            if (n > 0) then ! if spatially varying
-               TcrSed(:,i) = stmpar%trapar%parfld(:,n)
-            else ! if not spatially varying
-               TcrSed(:,i) = stmpar%trapar%par(12,i)
-            endif
+            call get_one_transport_parameter(TcrSed(:,i), stmpar%trapar, i, 12)
          else ! Other transport formula than Parteniades-Krone
             TcrSed(:,i) = -999
          endif
@@ -1343,6 +1334,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
    use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
    use m_lateral, only : numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
    use m_lateral, only : qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+   use morphology_data_module, only : PARSOURCE_FIELD
 
    character(kind=c_char), intent(in) :: c_var_name(*)
    type(c_ptr), value, intent(in) :: xptr
@@ -1457,9 +1449,13 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       TcrEro(:,:) = x_2d_double_ptr
       do i = 1,size(TcrEro,2)
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
+            n = stmpar%trapar%iparfile(13,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(:,n) = TcrEro(:,i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(:) = TcrEro(:,i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying
                if (minval(TcrEro(:,i)) == maxval(TcrEro(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(13,i) = TcrEro(1,i)
@@ -1481,9 +1477,13 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       TcrSed(:,:) = x_2d_double_ptr
       do i = 1,size(TcrSed,2)
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
+            n = stmpar%trapar%iparfile(12,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(:,n) = TcrSed(:,i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(:) = TcrSed(:,i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying
                if (minval(TcrSed(:,i)) == maxval(TcrSed(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(12,i) = TcrSed(1,i)
@@ -1620,6 +1620,7 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
    use m_lateral, only : qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
    use m_lateral, only : qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+   use morphology_data_module, only : PARSOURCE_FIELD
 
    integer(c_int), intent(in)         :: c_start(*)
    integer(c_int), intent(in)         :: c_count(*)
@@ -1710,9 +1711,13 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
+            n = stmpar%trapar%iparfile(13,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(c_start(1)+1:(c_start(1)+c_count(1)),n) = TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrEro isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
             endif
@@ -1731,9 +1736,13 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
+            n = stmpar%trapar%iparfile(12,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(c_start(1)+1:(c_start(1)+c_count(1)),n) = TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrSed isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
             endif

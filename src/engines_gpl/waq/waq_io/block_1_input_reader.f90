@@ -26,6 +26,7 @@ module m_block_1_input_reader
    use m_srstop
    use m_read_version_number
    use time_module
+   use m_error_status
    use rd_token     !   tokenized reading
    use timers       !   performance timers
    use m_string_utils, only: string_equals
@@ -38,7 +39,7 @@ module m_block_1_input_reader
 
    subroutine read_block_1_from_input ( lun    , syname , nosys  , notot  , nomult , &
                         multp  , iwidth , otime  , isfact , refday , &
-                        ioutpt , ierr   , iwar   )
+                        ioutpt , status   )
 
    !< Reads the model identification and substances IDs
    !> This routine reads:
@@ -62,10 +63,9 @@ module m_block_1_input_reader
    character(20), dimension(:), pointer :: syname !< array with substance names
 
    integer(kind=int_wp), intent(in   ), dimension(*  ) :: lun    !< array with unit numbers
-   integer(kind=int_wp), intent(inout) :: ierr   !< cumulative error   count
    integer(kind=int_wp), intent(  out) :: ioutpt !< flag for more or less output
    integer(kind=int_wp), intent(  out) :: isfact !< Units (in sec) of the system clock
-   integer(kind=int_wp), intent(inout) :: iwar   !< cumulative warning count
+
    integer(kind=int_wp), intent(  out) :: iwidth !< width of the output file
    integer(kind=int_wp), dimension(:,:), pointer :: multp !< multiple substance administration
    integer(kind=int_wp), intent(  out) :: nomult !< number of multiple substances
@@ -74,6 +74,8 @@ module m_block_1_input_reader
    integer(kind=int_wp), intent(  out) :: refday !< reference day, varying from 1 till 365
 
    real(kind=dp), intent(  out) :: otime !< Offset of the system time (Julian)
+
+   type(error_status), intent(inout) :: status
 
 !     Local
 
@@ -159,7 +161,7 @@ module m_block_1_input_reader
          runid2( 1: 3) /= 't0= ' .and. &
          runid2( 1: 3) /= 'T0= '       ) then
       write ( lunut  , 2030 )
-      iwar  = iwar + 1
+      call status%increase_warning_count()
       isfact= 1
       otime = 0.0d+00
    else
@@ -211,7 +213,7 @@ module m_block_1_input_reader
       if ( gettoken ( cdummy, ierr2 ) > 0 ) goto 100
       if ( idummy <= 0 .or. idummy > notot ) then
          write ( lunut , 2070 ) idummy, cdummy
-         ierr = ierr+1
+         call status%increase_error_count()
       else
          sname(idummy) = cdummy
       endif                                     ! read new substance nr or *n for multiples
@@ -261,7 +263,7 @@ module m_block_1_input_reader
    write ( lunut  , 2080 ) nosys , notot-nosys , notot
    if ( nosys < 0 .or. idummy < 0 .or. notot <= 0 ) then
          write ( lunut , 2090 )
-         ierr = ierr+1
+         call status%increase_error_count()
    endif
 
 !        Fill in their names
@@ -281,7 +283,7 @@ module m_block_1_input_reader
       do isys2 = 1 , isys-1
             if (string_equals(sname(isys), sname(isys2))) then
             write(lunut,2130)
-            ierr = ierr + 1
+            call status%increase_error_count()
          endif
       enddo
 
@@ -318,10 +320,10 @@ module m_block_1_input_reader
 !        Check number of data in inputfile
 
 100 continue
-   if ( ierr2 /= 0 .and. ierr2 /= 2 ) ierr = ierr + 1
+   if ( ierr2 /= 0 .and. ierr2 /= 2 ) call status%increase_error_count()
    if ( ierr2 == 3 ) call srstop(1)
-   call check  ( cdummy, iwidth , 1      , ierr2  , ierr   )
-   iwar = iwar + iwar2
+   call check  ( cdummy, iwidth , 1      , ierr2  , status)
+   call status%increase_warning_count_with(iwar2)
    if ( timon ) call timstop( ithndl )
    return
 
