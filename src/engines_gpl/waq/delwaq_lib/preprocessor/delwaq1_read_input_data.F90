@@ -21,44 +21,31 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_read_input_data
-   use m_dlwq09
-   use m_dlwq08
-   use m_dlwq07
-   use m_dlwq06
-   use m_dlwq05
-   use m_dlwq04
-   use m_dlwq03
-   use m_dlwq02
-   use m_block_1_input_reader
 
-   implicit none
+    implicit none
+
+    private
+    public :: delwaq1_read_input_data
 
 contains
 
-   !>\file
-   !>                    delwaq1_read_user_data
-   !     SUBROUTINES CALLED :
-   !                          read_block_1_from_input, reads block 1 of user data
-   !                          DLWQ02, reads block 2 of user data
-   !                          DLWQ03, reads block 3 of user data
-   !                          DLWQ04, reads block 4 of user data
-   !                          DLWQ05, reads block 5 of user data
-   !                          DLWQ06, reads block 6 of user data
-   !                          DLWQ07, reads block 7 of user data
-   !                          DLWQ08, reads block 8 of user data
-   !                          DLWQ09, reads block 9 of user data
-   !                          DLWQS1, reads block 10 , statistical definition
-   !                          DLWQP1, proces pre-processor
-   !                          SPACE , computes space needed
-
-   subroutine delwaq1_read_input_data(status)
+    subroutine delwaq1_read_input_data(status)
+      !< reads delwaq input file, fills data structure,
+      !< validates the data and writes it to wrk files
 
       use m_delwaq_statistical_process, only: setup_statistical
       use m_dlwqp1
       use m_delwaq1_data
       use m_error_status
-
-      implicit none
+      use m_dlwq09
+      use m_dlwq08
+      use m_dlwq07
+      use m_dlwq06
+      use m_dlwq05
+      use m_dlwq04
+      use m_dlwq03
+      use m_block_2_input_reader, only : read_block_2_from_input
+      use m_block_1_input_reader, only : read_block_1_from_input
 
       ! local
       type(error_status), intent(inout) :: status !< current error status
@@ -99,7 +86,7 @@ contains
       nullify (nexcraai)
       nullify (iexcraai)
       nullify (ioptraai)
-      call dlwq02(lun, lchar, filtype, nrftot, nlines, &
+      call read_block_2_from_input(lun, lchar, filtype, nrftot, nlines, &
                   npoins, dtflg1, dtflg2, nodump, iopt, &
                   noint, iwidth, dtflg3, ndmpar, ntdmps, &
                   noraai, ntraaq, nosys, notot, nototp, &
@@ -190,6 +177,6 @@ contains
       deallocate (syname)
       deallocate (imultp)
 
-   end subroutine delwaq1_read_input_data
+    end subroutine delwaq1_read_input_data
 
 end module m_delwaq1_read_input_data

@@ -173,13 +173,16 @@
       END IF
       IF( INFO.NE.0 )THEN
          CALL XERBLA( 'STRSV ', INFO )
+         if ( timon ) call timstop ( ithandl )
          RETURN
       END IF
 *
 *     Quick return if possible.
 *
-      IF( N.EQ.0 )
-     $   RETURN
+      IF( N.EQ.0 ) THEN
+         if ( timon ) call timstop ( ithandl )
+         RETURN
+      ENDIF
 *
       NOUNIT = LSAME( DIAG, 'N' )
 *
