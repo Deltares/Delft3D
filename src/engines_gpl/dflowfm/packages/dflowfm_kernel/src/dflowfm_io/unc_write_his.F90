@@ -187,9 +187,12 @@ subroutine unc_write_his(tim)            ! wrihis
        jawrizw = 1
     endif
     
-    nc_precision = nf90_double
-    if ( md_nc_his_precision == SINGLE_PRECISION ) then
-       nc_precision = nf90_float
+    if ( strcmpi(md_nc_his_precision, 'double') ) then
+        nc_precision = nf90_double
+    elseif ( strcmpi(md_nc_his_precision, 'float') .or. strcmpi(md_nc_his_precision, 'single') ) then
+        nc_precision = nf90_float
+    else
+        call mess(LEVEL_ERROR, 'Did not recognise NcHisDataPrecision value. It must be "double", "single" or "float".')
     endif
 
     if (timon) call timstrt ( "unc_write_his", handle_extra(54))

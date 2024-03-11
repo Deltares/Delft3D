@@ -5134,9 +5134,12 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    integer, parameter :: FIRST_ARRAY = 1
    integer, parameter :: SECOND_ARRAY = 2
 
-   nc_precision = nf90_double
-   if ( md_nc_map_precision == SINGLE_PRECISION ) then
+   if ( strcmpi(md_nc_map_precision, 'double') ) then
+       nc_precision = nf90_double
+   elseif ( strcmpi(md_nc_map_precision, 'float') .or. strcmpi(md_nc_map_precision, 'single') ) then
        nc_precision = nf90_float
+   else
+       call mess(LEVEL_ERROR, 'Did not recognise NcMapDataPrecision value. It must be "double", "single" or "float".')
    endif
 
    if (ndxi <= 0) then

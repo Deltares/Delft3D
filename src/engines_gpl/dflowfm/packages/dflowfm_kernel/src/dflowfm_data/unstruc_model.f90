@@ -273,6 +273,8 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
+    character(len=255)                        :: md_nc_map_precision  !< Precision for NetCDF data in map files ("double", "single" or "float")
+    character(len=255)                        :: md_nc_his_precision  !< Precision for NetCDF data in his files ("double", "single" or "float")
     character(len=255)                        :: md_nccompress        !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
@@ -375,6 +377,8 @@ use m_fm_icecover, only: fm_ice_null
     md_unc_conv     = UNC_CONV_UGRID  ! TODO: AvD: does this double now with IFORMAT_UGRID?
 
     md_ncformat     = 3               !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
+    md_nc_map_precision   = 'double'  !< Precision for NetCDF data in map files ('double' or 'single'/'float')
+    md_nc_his_precision   = 'double'  !< Precision for NetCDF data in his files ('double' or 'single'/'float')
     md_nccompress   = 'off'           !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
     md_fou_step     = 0               !< default: fourier analysis is updated on a user-timestep basis
@@ -1838,10 +1842,8 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
     call unc_set_ncformat(md_ncformat)
-    md_nc_map_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
-    md_nc_his_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
     call prop_get_string(md_ptr, 'output', 'NcCompression', md_nccompress, success)
     call unc_set_nccompress(md_nccompress)
 
@@ -3919,8 +3921,8 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
-    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision', trim(md_nc_map_precision), 'Precision for NetCDF data in map files ("double", "single" or "float")')
+    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision', trim(md_nc_his_precision), 'Precision for NetCDF data in his files ("double", "single" or "float")')
 
     call prop_set(prop_ptr, 'output', 'NcCompression',  md_nccompress      , 'Whether ("on") or not ("off") to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4')
     
