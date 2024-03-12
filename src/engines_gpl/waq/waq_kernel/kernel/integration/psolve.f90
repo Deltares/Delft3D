@@ -20,176 +20,175 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_psolve
-      use m_waq_precision
-      use m_usolve
+module m_psolve
+    use m_waq_precision
+    use m_usolve
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine psolve (ntrace, x, rhs, nomat, amat, &
+            imat, diag, idiag, nolay, ioptpc, &
+            nobnd, triwrk, iexseg)
 
-      contains
+        !     Deltares - Delft Software Department
 
+        !     Created   : November 1996 by Kian Tan
 
-      subroutine psolve ( ntrace , x      , rhs    , nomat   , amat   , & 
-                         imat   , diag   , idiag  , nolay   , ioptpc , & 
-                         nobnd  , triwrk  , iexseg )
+        !     Function  : Preconditioner for GMRES solver
 
-!     Deltares - Delft Software Department
+        !     Subroutines called: LSOLVE - preconditoner first sweep
+        !                         USOLVE - preconditoner 2nd   sweep
 
-!     Created   : November 1996 by Kian Tan
+        !     Modified  : July     2008, Leo Postma  : WAQ perfomance timers
+        !                 July     2009, Leo Postma  : double precission version
+        !                 November 2009, Leo Postma  : streamlined for parallel computing
 
-!     Function  : Preconditioner for GMRES solver
+        use m_lsolve
+        use m_srstop
+        use timers
+        implicit none
 
-!     Subroutines called: LSOLVE - preconditoner first sweep
-!                         USOLVE - preconditoner 2nd   sweep
+        !     Arguments           :
 
-!     Modified  : July     2008, Leo Postma  : WAQ perfomance timers
-!                 July     2009, Leo Postma  : double precission version
-!                 November 2009, Leo Postma  : streamlined for parallel computing
+        !     Kind        Function         Name                  Description
 
-      use m_lsolve
-      use m_srstop
-      use timers
-      implicit none
+        integer(kind = int_wp), intent(in) :: ntrace               ! dimension of matrix (length of diagonal)
+        real(kind = dp), intent(out) :: x     (ntrace)     ! the solution of Mx = y
+        real(kind = dp), intent(inout) :: rhs   (ntrace)     ! right hand side of P-solve only
+        ! this vector may be changed on exit!!
+        integer(kind = int_wp), intent(in) :: nomat                ! number of off-diagonal entries matrix
+        real(kind = dp), intent(in) :: amat  (nomat)     ! off-diagonal entries matrix LP format
+        integer(kind = int_wp), intent(in) :: imat  (nomat)     ! collumn nrs of off-diagonal entries matrix
+        real(kind = dp), intent(in) :: diag  (ntrace)     ! diagonal entries of matrix
+        integer(kind = int_wp), intent(in) :: idiag (0:ntrace)     ! start of rows in amat
+        integer(kind = int_wp), intent(in) :: nolay                ! number of layers in the vertical
+        integer(kind = int_wp), intent(in) :: ioptpc               ! = 0 no preconditioning
+        ! = 1 L-GS preconditioning
+        ! = 2 U-GS preconditioning
+        ! = 3 SSOR preconditioning
+        integer(kind = int_wp), intent(in) :: nobnd                ! number of open boundaries
+        real(kind = dp), intent(inout) :: triwrk(nolay)     ! work array for vertical double sweep
+        integer(kind = int_wp), intent(in) :: iexseg(ntrace)     ! 0 for explicit volumes
 
-!     Arguments           :
+        !        local variables
 
-!     Kind        Function         Name                  Description
+        integer(kind = int_wp) :: noseg                ! nr of volumes
+        integer(kind = int_wp) :: nsegl                ! nr of volumes per layer
+        integer(kind = int_wp) :: iadd                 ! 0 for 2DH, 2 for 3D
+        integer(kind = int_wp) :: iseg                 ! this volume
+        integer(kind = int_wp) :: jcol                 ! collumn counter for off-diagonals
+        integer(kind = int_wp) :: ilow, ihigh          ! loop boundaries
 
-      integer(kind=int_wp), intent(in   )  ::ntrace               ! dimension of matrix (length of diagonal)
-      real(kind=dp), intent(  out)  ::x     (  ntrace)     ! the solution of Mx = y
-      real(kind=dp), intent(inout)  ::rhs   (  ntrace)     ! right hand side of P-solve only
-                                                        ! this vector may be changed on exit!!
-      integer(kind=int_wp), intent(in   )  ::nomat                ! number of off-diagonal entries matrix
-      real(kind=dp), intent(in   )  ::amat  (  nomat )     ! off-diagonal entries matrix LP format
-      integer(kind=int_wp), intent(in   )  ::imat  (  nomat )     ! collumn nrs of off-diagonal entries matrix
-      real(kind=dp), intent(in   )  ::diag  (  ntrace)     ! diagonal entries of matrix
-      integer(kind=int_wp), intent(in   )  ::idiag (0:ntrace)     ! start of rows in amat
-      integer(kind=int_wp), intent(in   )  ::nolay                ! number of layers in the vertical
-      integer(kind=int_wp), intent(in   )  ::ioptpc               ! = 0 no preconditioning
-                                                        ! = 1 L-GS preconditioning
-                                                        ! = 2 U-GS preconditioning
-                                                        ! = 3 SSOR preconditioning
-      integer(kind=int_wp), intent(in   )  ::nobnd                ! number of open boundaries
-      real(kind=dp), intent(inout)  ::triwrk(  nolay )     ! work array for vertical double sweep
-      integer(kind=int_wp), intent(in   )  ::iexseg(  ntrace)     ! 0 for explicit volumes
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("psolve", ithandl)
 
-!        local variables
+        if (nolay == 1) then
+            iadd = 0
+        else
+            iadd = 2
+        endif
 
-      integer(kind=int_wp) ::noseg                ! nr of volumes
-      integer(kind=int_wp) ::nsegl                ! nr of volumes per layer
-      integer(kind=int_wp) ::iadd                 ! 0 for 2DH, 2 for 3D
-      integer(kind=int_wp) ::iseg                 ! this volume
-      integer(kind=int_wp) ::jcol                 ! collumn counter for off-diagonals
-      integer(kind=int_wp) ::ilow, ihigh          ! loop boundaries
+        noseg = ntrace - nobnd
+        nsegl = noseg / nolay
+        if (nsegl * nolay /= noseg) then
+            write(*, *) 'ERROR in PSOLVE'
+            call srstop(1)
+        endif
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "psolve", ithandl )
+        if (ioptpc == 0) then
 
-      if ( nolay .eq. 1) then
-         iadd = 0
-      else
-         iadd = 2
-      endif
+            x = rhs
 
-      noseg = ntrace - nobnd
-      nsegl = noseg / nolay
-      if ( nsegl*nolay .ne. noseg ) then
-         write(*,*) 'ERROR in PSOLVE'
-         call srstop(1)
-      endif
+        else if(ioptpc == 1) then
 
-      if ( ioptpc .eq. 0 ) then
+            call lsolve (ntrace, noseg, nolay, nsegl, nomat, &
+                    amat, imat, diag, idiag, x, &
+                    rhs, triwrk, iadd, iexseg)
 
-         x = rhs
+        else if(ioptpc == 2) then
 
-      else if( ioptpc .eq. 1 ) then
+            call usolve (ntrace, nolay, nsegl, nomat, amat, &
+                    imat, diag, idiag, x, rhs, &
+                    triwrk, iadd, iexseg)
 
-         call lsolve ( ntrace, noseg , nolay  , nsegl  , nomat  , & 
-                      amat  , imat  , diag   , idiag  , x      , & 
-                      rhs   , triwrk, iadd   , iexseg )
+        else if(ioptpc == 3) then
 
-      else if( ioptpc .eq. 2 ) then
+            !            SSOR (Symmetric Successive Over Relaxation)
 
-         call usolve ( ntrace, nolay  , nsegl  , nomat  , amat   , & 
-                      imat  , diag   , idiag  , x      , rhs    , & 
-                      triwrk , iadd   , iexseg )
+            !            M = (D - L) "D^-1" (D - U)
 
-      else if( ioptpc .eq. 3 ) then
+            call lsolve (ntrace, noseg, nolay, nsegl, nomat, &
+                    amat, imat, diag, idiag, x, &
+                    rhs, triwrk, iadd, iexseg)
 
-!            SSOR (Symmetric Successive Over Relaxation)
+            !        THe "D^{-1}" part, note that due to the b.c entries this is
+            !        a rather peculiar piece of code
 
-!            M = (D - L) "D^-1" (D - U)
+            if (nolay == 1) then
 
-         call lsolve ( ntrace, noseg , nolay  , nsegl  , nomat  , & 
-                      amat  , imat  , diag   , idiag  , x      , & 
-                      rhs   , triwrk, iadd   , iexseg )
+                !              diagonal element is scalar
 
-!        THe "D^{-1}" part, note that due to the b.c entries this is
-!        a rather peculiar piece of code
+                do iseg = 1, ntrace
 
-         if ( nolay .eq. 1) then
+                    rhs(iseg) = diag(iseg) * x(iseg)
 
-!              diagonal element is scalar
+                    !              extra "b.c" entries
 
-            do iseg = 1, ntrace
+                    ilow = idiag(iseg - 1) + 1
+                    ihigh = idiag(iseg)
+                    do jcol = ilow + iadd, ihigh
+                        if (imat(jcol) > noseg) then
+                            rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
+                        endif
+                    enddo
 
-               rhs(iseg) = diag(iseg)*x(iseg)
+                enddo
 
-!              extra "b.c" entries
+            else
 
-               ilow  = idiag(iseg-1) + 1
-               ihigh = idiag(iseg)
-               do jcol = ilow+iadd, ihigh
-                  if ( imat(jcol) .gt. noseg ) then
-                     rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
-                  endif
-               enddo
+                !              diagonal element is tridiagonal K x K matrix
+                !              but we can simply loop over the NOSEG (=N-NOBND) segments
+                !              There has been a bug in this section already from the start.
+                !              the first layer has no layer above and the last layer has
+                !              no layer below.
 
-            enddo
+                do iseg = 1, noseg
+                    ilow = idiag(iseg - 1) + 1
+                    rhs(iseg) = diag(iseg) * x(iseg)
+                    if (imat(ilow) > 0) rhs(iseg) = rhs(iseg) + amat(ilow) * x(imat(ilow))
+                    if (imat(ilow + 1) > 0) rhs(iseg) = rhs(iseg) + amat(ilow + 1) * x(imat(ilow + 1))
 
-         else
+                    !              extra "b.c." entries
 
-!              diagonal element is tridiagonal K x K matrix
-!              but we can simply loop over the NOSEG (=N-NOBND) segments
-!              There has been a bug in this section already from the start.
-!              the first layer has no layer above and the last layer has
-!              no layer below.
+                    if (iexseg(iseg) == 0) cycle
+                    ihigh = idiag(iseg)
+                    do jcol = ilow + iadd, ihigh
+                        if (imat(jcol) > noseg) then
+                            rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
+                        endif
+                    enddo
+                enddo
+                do iseg = noseg + 1, ntrace
+                    rhs(iseg) = diag(iseg) * x(iseg)
+                enddo
 
-            do iseg = 1, noseg
-               ilow = idiag(iseg-1)+1
-               rhs(iseg) = diag(iseg)*x(iseg)
-               if ( imat(ilow  ) .gt. 0 ) rhs(iseg) = rhs(iseg) + amat(ilow  )*x(imat(ilow  ))
-               if ( imat(ilow+1) .gt. 0 ) rhs(iseg) = rhs(iseg) + amat(ilow+1)*x(imat(ilow+1))
+            endif
 
-!              extra "b.c." entries
+            call usolve (ntrace, nolay, nsegl, nomat, amat, &
+                    imat, diag, idiag, x, rhs, &
+                    triwrk, iadd, iexseg)
 
-               if ( iexseg(iseg) .eq. 0 ) cycle
-               ihigh = idiag(iseg)
-               do jcol = ilow+iadd, ihigh
-                  if ( imat(jcol) .gt. noseg ) then
-                     rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
-                  endif
-               enddo
-            enddo
-            do iseg = noseg+1, ntrace
-               rhs(iseg) = diag(iseg)*x(iseg)
-            enddo
+        else
+            write(*, *) ' This option for Pre-Conditioning '
+            write(*, *) ' is not implemented :   ABORT     '
+            call srstop(1)
+        endif
 
-         endif
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-         call usolve ( ntrace, nolay  , nsegl  , nomat  , amat   , & 
-                      imat  , diag   , idiag  , x      , rhs    , & 
-                                       triwrk , iadd   , iexseg )
-
-      else
-          write(*,*) ' This option for Pre-Conditioning '
-          write(*,*) ' is not implemented :   ABORT     '
-          call srstop(1)
-      endif
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_psolve
+end module m_psolve

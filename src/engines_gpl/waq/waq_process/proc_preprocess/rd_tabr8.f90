@@ -123,12 +123,12 @@
                       GRPNAM , ELMNMS(1), & 
                       UINDEX , 1        , & 
                       BUFLEN , NO_DSTO  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_DSTO .GT. NO_DSTO_MAX ) THEN
+      IF ( NO_DSTO > NO_DSTO_MAX ) THEN
          WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
          WRITE(LUNREP,*) 'Actual number of rows in table R8:',NO_DSTO
          WRITE(LUNREP,*) 'greater than maximum:',NO_DSTO_MAX
@@ -146,7 +146,7 @@
                       GRPNAM , ELMNMS(2), & 
                       UINDEX , 1        , & 
                       BUFLEN , R8_DID   )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -157,7 +157,7 @@
                       GRPNAM , ELMNMS(3), & 
                       UINDEX , 1        , & 
                       BUFLEN , R8_SID   )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -168,7 +168,7 @@
                       GRPNAM , ELMNMS(4), & 
                       UINDEX , 1        , & 
                       BUFLEN , R8_SCAL  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(4)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900

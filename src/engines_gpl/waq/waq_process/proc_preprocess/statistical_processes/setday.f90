@@ -92,7 +92,7 @@
 !     init
 !
       ALLOCATE(ISUSED(NOKEY),STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
@@ -101,7 +101,7 @@
       ISUSED = 0
 
       IKEY = index_in_array('OUTPUT-OPERATION',KEYNAM)
-      IF ( IKEY .GT. 0 ) THEN
+      IF ( IKEY > 0 ) THEN
          ISUSED(IKEY) = 1
       ENDIF
 !
@@ -122,7 +122,7 @@
       ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
               aProcesProp%output_item(aProcesProp%no_output), & 
               STAT=IERR_ALLOC)
-      IF ( IERR_ALLOC .NE. 0 ) THEN
+      IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
@@ -130,7 +130,7 @@
       ENDIF
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR no parameter specified for statistics'
          call status%increase_error_count()
       ELSE
@@ -142,7 +142,7 @@
          aProcesProp%input_item(1)%ip_val= 0
          aItemProp%name = KEYVAL(IKEY)
          iret = ItemPropCollFind( AllItems, aItemProp )
-         if ( iret .le. 0 ) then
+         if ( iret <= 0 ) then
             aItemProp%text    = 'input parameter for statistics'
             aItemProp%default = -999.
             aItemProp%waqtype = WAQTYPE_NONE
@@ -152,14 +152,14 @@
       ENDIF
 
       IKEY = index_in_array('TINIT',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          istart = 0
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) istart
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             CALL convert_string_to_time_offset( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
-            IF ( IERR2 .NE. 0 ) THEN
+            IF ( IERR2 /= 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting start time:', & 
                               KEYVAL(IKEY)
                call status%increase_error_count()
@@ -176,14 +176,14 @@
       IOTYPE_SEGMENT_INPUT)
 !
       IKEY = index_in_array('PERIOD',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          iperiod = 86400.
       ELSE
          ISUSED(IKEY) = 1
          READ(KEYVAL(IKEY),'(I20.0)',IOSTAT=IERR2) iperiod
-         IF ( IERR2 .NE. 0 ) THEN
+         IF ( IERR2 /= 0 ) THEN
             CALL convert_period_to_timer(KEYVAL(IKEY), iperiod, .FALSE., .FALSE., IERR2)
-            IF ( IERR2 .NE. 0 ) THEN
+            IF ( IERR2 /= 0 ) THEN
                WRITE(LUNREP,*)'ERROR interpreting period:',KEYVAL(IKEY)
                call status%increase_error_count()
             ENDIF
@@ -200,7 +200,7 @@
 !
       aItemProp%name    = 'ITIME'
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time in calculation'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -219,7 +219,7 @@
 
       aItemProp%name = item_name
       iret = ItemPropCollFind( AllItems, aItemProp )
-      if ( iret .le. 0 ) then
+      if ( iret <= 0 ) then
          aItemProp%default = -999.
          aItemProp%text    = 'time step'
          aItemProp%waqtype = WAQTYPE_DEFAULT
@@ -239,7 +239,7 @@
       call update_process_properties(AllItems, aProcesProp, aItemProp, 0.0, item_desc, item_ind, item_name, IOTYPE_SEGMENT_WORK)
 !
       IKEY = index_in_array('SUFFIX',KEYNAM)
-      IF ( IKEY .LE. 0 ) THEN
+      IF ( IKEY <= 0 ) THEN
          SUFFIX = ' '
       ELSE
          SUFFIX = KEYVAL(IKEY)
@@ -247,7 +247,7 @@
       ENDIF
       CALL get_trimmed_length(SUFFIX,ISLEN)
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'TAVG_'//aProcesProp%input_item(1)%name
@@ -265,7 +265,7 @@
                         '] created with periodic average from [',aProcesProp%input_item(1)%name,']'
 !
       !     work array in input and in output
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'TMIN_'//aProcesProp%input_item(1)%name
@@ -282,7 +282,7 @@
       WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
                        '] created with periodic minimum from [',aProcesProp%input_item(1)%name,']'
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'TMAX_'//aProcesProp%input_item(1)%name
@@ -301,7 +301,7 @@
 !
 !     work array in input and in output
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'T_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'T_'//aProcesProp%input_item(1)%name
@@ -324,7 +324,7 @@
 !
 !     work array in input and in output
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'MINDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'MINDYN_'//aProcesProp%input_item(1)%name
@@ -348,7 +348,7 @@
 !
 !     work array in input and in output
 !
-      IF (SUFFIX(1:ISLEN) .NE. ' ' ) THEN
+      IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
          aItemProp%name    = 'MAXDYN_'//SUFFIX(1:ISLEN)//'_'//aProcesProp%input_item(1)%name
       ELSE
          aItemProp%name    = 'MAXDYN_'//aProcesProp%input_item(1)%name
@@ -385,7 +385,7 @@
 !     check the use of the key words
 !
       DO IKEY = 1 , NOKEY
-         IF ( ISUSED(IKEY) .EQ. 0 ) THEN
+         IF ( ISUSED(IKEY) == 0 ) THEN
             call status%increase_warning_count()
             WRITE(LUNREP,*) 'WARNING: keyword not used'
             WRITE(LUNREP,*) 'key   :',KEYNAM(IKEY)

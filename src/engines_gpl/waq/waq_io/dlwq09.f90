@@ -269,9 +269,9 @@ contains
         !       Output formats
 
         2000 format (//, ' Option selected for output specification :', I4)
-        2010 format ( /, ' ERROR, option not implemented')
-        2020 format ( /, ' Output not specified, using default output parameters')
-        2040 format ( /, ' WARNING, Not able to locate extra output variables', &
+        2010 format (/, ' ERROR, option not implemented')
+        2020 format (/, ' Output not specified, using default output parameters')
+        2040 format (/, ' WARNING, Not able to locate extra output variables', &
                 /, '          because of errors in input')
         2060 format (/1X, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
         2070 format (/1X, 109('*'), ' B L O C K -', I2, ' ', 5('*')/)

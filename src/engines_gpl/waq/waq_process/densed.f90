@@ -20,140 +20,139 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_densed
-      use m_waq_precision
+module m_densed
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine densed (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Denitrification in sediment
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            ----
+        ! CRTEMP  R*4 1 I critical temperature for both processes             [xC]
+        ! DEPTH   R*4 1 I depth                                                [m]
+        ! DENR    R*4 1 I zeroth order denitrification rate              [gN/m2/d]
+        ! DENRC   R*4 1 I firstt order denitrification rate                  [m/d]
+        ! DENTC   R*4 1 I temperature coefficient for denitrif.                [-]
+        ! FL (1)  R*4 1 O denitrification flux                           [gN/m3/d]
+        ! NO3     R*4 1 I nitrate concentration                            [gN/m3]
+        ! TEMP    R*4 1 I ambient temperature                                 [xC]
+        ! TEMP20  R*4 1 L ambient temperature - stand. temp (20)              [xC]
+        ! TEMPC   R*4 1 L temperatuur coefficient                              [-]
 
-      subroutine densed ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Denitrification in sediment
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            ----
-! CRTEMP  R*4 1 I critical temperature for both processes             [xC]
-! DEPTH   R*4 1 I depth                                                [m]
-! DENR    R*4 1 I zeroth order denitrification rate              [gN/m2/d]
-! DENRC   R*4 1 I firstt order denitrification rate                  [m/d]
-! DENTC   R*4 1 I temperature coefficient for denitrif.                [-]
-! FL (1)  R*4 1 O denitrification flux                           [gN/m3/d]
-! NO3     R*4 1 I nitrate concentration                            [gN/m3]
-! TEMP    R*4 1 I ambient temperature                                 [xC]
-! TEMP20  R*4 1 L ambient temperature - stand. temp (20)              [xC]
-! TEMPC   R*4 1 L temperatuur coefficient                              [-]
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        LOGICAL  TMPOPT
+        !
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
+        IN6 = INCREM(6)
+        IN7 = INCREM(7)
+        !
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
+        IP7 = IPOINT(7)
+        !
+        IF (IN1 == 0 .AND. IN3 == 0 .AND. IN4 == 0 .AND. &
+                IN5 == 0 .AND. IN6 == 0) THEN
+            DENR = PMSA(IP1)
+            TEMP = PMSA(IP5)
+            CRTEMP = PMSA(IP6)
+            IF (TEMP <= CRTEMP) THEN
+                TEMFAK = 0.0
+            ELSE
+                DENRC = PMSA(IP3)
+                DENTC = PMSA(IP4)
+                TEMP20 = TEMP - 20.0
+                TEMFAK = DENRC * DENTC ** TEMP20
+            ENDIF
+            TMPOPT = .FALSE.
+        ELSE
+            TMPOPT = .TRUE.
+        ENDIF
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
+                    !
+                    IF (TMPOPT) THEN
+                        DENR = PMSA(IP1)
+                        TEMP = PMSA(IP5)
+                        CRTEMP = PMSA(IP6)
+                        IF (TEMP <= CRTEMP) THEN
+                            TEMFAK = 0.0
+                        ELSE
+                            DENRC = PMSA(IP3)
+                            DENTC = PMSA(IP4)
+                            TEMP20 = TEMP - 20.0
+                            TEMFAK = DENRC * DENTC ** TEMP20
+                        ENDIF
+                    ENDIF
+                    !
+                    NO3 = MAX (0.0, PMSA(IP2))
+                    DEPTH = PMSA(IP7)
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+                    !***********************************************************************
+                    !**** Processes connected to the DENITRIFICATION
+                    !***********************************************************************
+                    !
+                    !     Denitrification is assumed to take place in the sediment
+                    !     Calculation of denitrification flux ( M.L-3.t-1)
 
-      LOGICAL  TMPOPT
-!
-      IN1  = INCREM( 1)
-      IN2  = INCREM( 2)
-      IN3  = INCREM( 3)
-      IN4  = INCREM( 4)
-      IN5  = INCREM( 5)
-      IN6  = INCREM( 6)
-      IN7  = INCREM( 7)
-!
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-      IP6  = IPOINT( 6)
-      IP7  = IPOINT( 7)
-!
-      IF ( IN1 .EQ. 0 .AND. IN3 .EQ. 0 .AND. IN4 .EQ. 0 .AND. & 
-          IN5 .EQ. 0 .AND. IN6 .EQ. 0                        ) THEN
-         DENR   = PMSA(IP1)
-         TEMP   = PMSA(IP5)
-         CRTEMP = PMSA(IP6)
-         IF ( TEMP .LE. CRTEMP ) THEN
-            TEMFAK = 0.0
-         ELSE
-            DENRC  = PMSA(IP3)
-            DENTC  = PMSA(IP4)
-            TEMP20 = TEMP - 20.0
-            TEMFAK = DENRC * DENTC ** TEMP20
-         ENDIF
-         TMPOPT = .FALSE.
-      ELSE
-         TMPOPT = .TRUE.
-      ENDIF
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+                    FL(1 + IFLUX) = (DENR + TEMFAK * NO3) / DEPTH
+                    !
+                ENDIF
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + IN1
+            IP2 = IP2 + IN2
+            IP3 = IP3 + IN3
+            IP4 = IP4 + IN4
+            IP5 = IP5 + IN5
+            IP6 = IP6 + IN6
+            IP7 = IP7 + IN7
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-!
-      IF ( TMPOPT ) THEN
-         DENR   = PMSA(IP1)
-         TEMP   = PMSA(IP5)
-         CRTEMP = PMSA(IP6)
-         IF ( TEMP .LE. CRTEMP ) THEN
-            TEMFAK = 0.0
-         ELSE
-            DENRC  = PMSA(IP3)
-            DENTC  = PMSA(IP4)
-            TEMP20 = TEMP - 20.0
-            TEMFAK = DENRC * DENTC ** TEMP20
-         ENDIF
-      ENDIF
-!
-      NO3    = MAX ( 0.0, PMSA(IP2 ) )
-      DEPTH  = PMSA(IP7)
-
-!***********************************************************************
-!**** Processes connected to the DENITRIFICATION
-!***********************************************************************
-!
-!     Denitrification is assumed to take place in the sediment
-!     Calculation of denitrification flux ( M.L-3.t-1)
-
-      FL( 1 + IFLUX ) = ( DENR +  TEMFAK * NO3 ) / DEPTH
-!
-      ENDIF
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-         IP1 = IP1 + IN1
-      IP2   = IP2   + IN2
-         IP3 = IP3 + IN3
-         IP4 = IP4 + IN4
-         IP5 = IP5 + IN5
-         IP6 = IP6 + IN6
-      IP7   = IP7   + IN7
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_densed
+end module m_densed

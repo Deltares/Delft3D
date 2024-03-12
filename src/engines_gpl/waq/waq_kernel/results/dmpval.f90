@@ -20,64 +20,63 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dmpval
-      use m_waq_precision
+module m_dmpval
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE DMPVAL (NDMPAR, IPDMP, VALSEG, VALDMP)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED:            : dec 2003 by Jan van Beek
+        !
+        !     FUNCTION            : sums values for sub-area's
+        !
+        !     PARAMETERS          : 4
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     NDMPAR  INTEGER       1     INPUT   Number of dump areas
+        !     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
+        !     VALSEG  REAL          *     INPUT   values on segment grid
+        !     VALDMP  REAL          *     INPUT   values on dump grid
+        !
+        !     Declaration of arguments
+        !
+        use timers
 
-      contains
+        INTEGER(kind = int_wp) :: NDMPAR
+        INTEGER(kind = int_wp) :: IPDMP(*)
+        REAL(kind = real_wp) :: VALSEG(*)
+        REAL(kind = real_wp) :: VALDMP(*)
+        !
+        !     Local declarations
+        !
+        INTEGER(kind = int_wp) :: ITEL, IDUMP, NSC, ISC, ISEG
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dmpval", ithandl)
 
+        !     Loop over the dump area's, sum value
 
-      SUBROUTINE DMPVAL (NDMPAR, IPDMP , VALSEG, VALDMP)
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED:            : dec 2003 by Jan van Beek
-!
-!     FUNCTION            : sums values for sub-area's
-!
-!     PARAMETERS          : 4
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     NDMPAR  INTEGER       1     INPUT   Number of dump areas
-!     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-!     VALSEG  REAL          *     INPUT   values on segment grid
-!     VALDMP  REAL          *     INPUT   values on dump grid
-!
-!     Declaration of arguments
-!
-      use timers
+        VALDMP(1:NDMPAR) = 0.0
+        ITEL = 0
+        DO IDUMP = 1, NDMPAR
+            NSC = IPDMP(IDUMP)
+            DO ISC = 1, NSC
+                ITEL = ITEL + 1
+                ISEG = IPDMP(NDMPAR + ITEL)
+                IF (ISEG > 0) THEN
+                    VALDMP(IDUMP) = VALDMP(IDUMP) + VALSEG(ISEG)
+                ENDIF
+            ENDDO
+        ENDDO
 
-      INTEGER(kind=int_wp) ::NDMPAR
-      INTEGER(kind=int_wp) ::IPDMP(*)
-      REAL(kind=real_wp) ::VALSEG(*)
-      REAL(kind=real_wp) ::VALDMP(*)
-!
-!     Local declarations
-!
-      INTEGER(kind=int_wp) ::ITEL  , IDUMP , NSC   , ISC   , ISEG
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dmpval", ithandl )
+        if (timon) call timstop (ithandl)
+        RETURN
+    END
 
-!     Loop over the dump area's, sum value
-
-      VALDMP(1:NDMPAR) = 0.0
-      ITEL              = 0
-      DO IDUMP = 1 , NDMPAR
-         NSC = IPDMP(IDUMP)
-         DO ISC = 1 , NSC
-            ITEL  = ITEL + 1
-            ISEG  = IPDMP(NDMPAR+ITEL)
-            IF ( ISEG .GT. 0 ) THEN
-               VALDMP(IDUMP) = VALDMP(IDUMP) + VALSEG(ISEG)
-            ENDIF
-         ENDDO
-      ENDDO
-
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
-
-      end module m_dmpval
+end module m_dmpval

@@ -84,12 +84,12 @@
 
 !     Check whether certain input parameters are independent of X
 
-      IF ( (INCREM(1) .GT. 0) .OR. & 
-          (INCREM(2) .GT. 0) .OR. & 
-          (INCREM(3) .GT. 0) .OR. & 
-          (INCREM(4) .GT. 0) .OR. & 
-          (INCREM(5) .GT. 0) .OR. & 
-          (INCREM(6) .GT. 0) ) THEN
+      IF ( (INCREM(1) > 0) .OR. &
+          (INCREM(2) > 0) .OR. &
+          (INCREM(3) > 0) .OR. &
+          (INCREM(4) > 0) .OR. &
+          (INCREM(5) > 0) .OR. &
+          (INCREM(6) > 0) ) THEN
 
           CALL GETMLU(LUNREP)
           WRITE (LUNREP,*) & 
@@ -100,7 +100,7 @@
       ENDIF
 
       IFLUX = 1
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
 
           TIMSIM = PMSA(IP1)/PMSA(IP3)
           DELTAT = PMSA(IP4)
@@ -117,10 +117,10 @@
 !         Initialize light variation curve for present cycle
 !         ONLY if fluxes have changed
 
-          IF ( (ISEG .EQ. 1) .OR. & 
-                  (ABS(DAYLEN-DAYLLAST) .GT. 1E-3) .OR. & 
-                  (ABS(FPPTOT-PPLAST) .GT. 1E-3) .OR. & 
-                  (ABS(FRESPI-RELAST) .GT. 1E-3) ) THEN
+          IF ( (ISEG == 1) .OR. &
+                  (ABS(DAYLEN-DAYLLAST) > 1E-3) .OR. &
+                  (ABS(FPPTOT-PPLAST) > 1E-3) .OR. &
+                  (ABS(FRESPI-RELAST) > 1E-3) ) THEN
 
               PPLAST = FPPTOT
               RELAST = FRESPI
@@ -128,13 +128,13 @@
 
 !             Check on conditions for daylength
 
-              IF ( T1MXPP .LT. TRISE .OR. & 
-                  T2MXPP .GT. TSET ) THEN
-                 IF ( NR_MES .LT. 25 ) THEN
+              IF ( T1MXPP < TRISE .OR. &
+                  T2MXPP > TSET ) THEN
+                 IF ( NR_MES < 25 ) THEN
                     NR_MES = NR_MES + 1
                     WRITE(*,*) ' WARNING: VAROXY limited values of T1MXPP/T2MXPP to daylight range'
                  ENDIF
-                 IF ( NR_MES .EQ. 25 ) THEN
+                 IF ( NR_MES == 25 ) THEN
                     NR_MES = NR_MES + 1
                     WRITE(*,*) ' 25 WARNINGS on limiting T1MXPP/T2MXPP'
                     WRITE(*,*) ' Further messages on extinction surpressed'
@@ -153,36 +153,36 @@
               INTEGR(0) = 0.0
               T1 = 0.0
               V1 = 0.0
-              DO 100 I = 1,12*24
+              DO I = 1,12*24
                   T2 = REAL(I)/12.
-                  IF ( T2 .LE. TRISE .OR. T2 .GE. TSET ) THEN
+                  IF ( T2 <= TRISE .OR. T2 >= TSET ) THEN
                       V2 = 0.0
-                  ELSEIF ( T2.GT.TRISE .AND. T2.LT.T1MXPP ) THEN
+                  ELSEIF ( T2>TRISE .AND. T2<T1MXPP ) THEN
                       V2 = PPMAX*(T2-TRISE)/(T1MXPP-TRISE)
-                  ELSEIF ( T2.GE.T1MXPP .AND. T2.LE.T2MXPP ) THEN
+                  ELSEIF ( T2>=T1MXPP .AND. T2<=T2MXPP ) THEN
                       V2 = PPMAX
-                  ELSEIF ( T2.GT.T2MXPP .AND. T2.LT.TSET ) THEN
+                  ELSEIF ( T2>T2MXPP .AND. T2<TSET ) THEN
                       V2 = PPMAX*(1.0-(T2-T2MXPP)/(TSET- T2MXPP) )
                   ENDIF
                   TOTAL = TOTAL + ((V1+V2)/2.0) * (T2-T1)
                   INTEGR(I) = TOTAL
                   V1 = V2
                   T1 = T2
-  100         CONTINUE
+              end do
           ENDIF
 
           IF (BTEST(IKNMRK(ISEG),0)) THEN
 !
 !            Compute FLUX only if SWITCH is 1.0
 !
-             IF ( PMSA(IP11) .GT. 0.5 ) THEN
+             IF ( PMSA(IP11) > 0.5 ) THEN
 
 !               Compute relative time within day of time step to come
 
                 T1 = (TIMSIM-INT(TIMSIM))*24.0 + TIMNUL
-                IF ( T1 .GE. 24.0 ) T1 = T1 - 24.0
+                IF ( T1 >= 24.0 ) T1 = T1 - 24.0
                 T2 = T1 + DELTAT*24.0
-                IF ( T2 .GT. 24.001 ) THEN
+                IF ( T2 > 24.001 ) THEN
                     T2 = 24.
                     T1 = T2 - DELTAT*24.0
                 ENDIF
@@ -216,7 +216,7 @@
           IP11 = IP11 + INCREM(11)
           IP12 = IP12 + INCREM(12)
 !
- 9000 CONTINUE
+      end do
 !
       RETURN
 !

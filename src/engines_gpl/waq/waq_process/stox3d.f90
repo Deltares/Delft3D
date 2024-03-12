@@ -20,88 +20,87 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_stox3d
-      use m_waq_precision
+module m_stox3d
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine stox3d (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Vertical dispersion (segment -> exchange)
 
-      contains
+        IMPLICIT NONE
+        !
+        !     declaration of arguments
+        !
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        !
+        !     i/o from PMSA array
+        !
+        REAL(kind = real_wp) :: SPARAM                      ! process parameter on segment
+        REAL(kind = real_wp) :: FACTOR                      ! scaling factor
+        REAL(kind = real_wp) :: QPARAM                      ! process parameter on segment
+        !
+        !     local declarations
+        !
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3               ! index pointers in PMSA array
+        INTEGER(kind = int_wp) :: IN1, IN2, IN3               ! increments in PMSA array
+        INTEGER(kind = int_wp) :: IQ                          ! loop counter exchanges
+        INTEGER(kind = int_wp) :: IFROM                       ! number from-segment
+        !
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
 
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
 
-      subroutine stox3d ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Vertical dispersion (segment -> exchange)
+        !     Exchange-loop over de eerste twee richtingen
 
-      IMPLICIT NONE
-!
-!     declaration of arguments
-!
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-!
-!     i/o from PMSA array
-!
-      REAL(kind=real_wp) ::SPARAM                      ! process parameter on segment
-      REAL(kind=real_wp) ::FACTOR                      ! scaling factor
-      REAL(kind=real_wp) ::QPARAM                      ! process parameter on segment
-!
-!     local declarations
-!
-      INTEGER(kind=int_wp) ::IP1, IP2, IP3               ! index pointers in PMSA array
-      INTEGER(kind=int_wp) ::IN1, IN2, IN3               ! increments in PMSA array
-      INTEGER(kind=int_wp) ::IQ                          ! loop counter exchanges
-      INTEGER(kind=int_wp) ::IFROM                       ! number from-segment
-!
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
+        DO IQ = 1, NOQ1 + NOQ2
 
-      IN1  = INCREM( 1)
-      IN2  = INCREM( 2)
-      IN3  = INCREM( 3)
+            !        Uitvoer op exchange niveau gelijk aan nul
 
-!     Exchange-loop over de eerste twee richtingen
+            PMSA(IP3) = 0.0
 
-      DO IQ=1,NOQ1+NOQ2
+            IP3 = IP3 + IN3
 
-!        Uitvoer op exchange niveau gelijk aan nul
+        ENDDO
 
-         PMSA(IP3 ) =  0.0
+        !     Exchange-loop over de derde richting
 
-         IP3  = IP3  + IN3
+        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3
 
-      ENDDO
+            IFROM = IEXPNT(1, IQ)
 
-!     Exchange-loop over de derde richting
+            IF (IFROM > 0) THEN
 
-      DO IQ=NOQ1+NOQ2+1,NOQ1+NOQ2+NOQ3
+                !           Invoer op segment niveau naar uitvoer op exchange niveau
 
-         IFROM = IEXPNT(1,IQ)
+                SPARAM = PMSA(IP1 + (IFROM - 1) * IN1)
+                FACTOR = PMSA(IP2 + (IFROM - 1) * IN2)
+                QPARAM = SPARAM * FACTOR
+            ELSE
+                QPARAM = 0.0
+            ENDIF
 
-         IF ( IFROM .GT. 0 ) THEN
+            PMSA(IP3) = QPARAM
 
-!           Invoer op segment niveau naar uitvoer op exchange niveau
+            !        Ophogen pointering uitvoer op exchange niveau
 
-            SPARAM = PMSA(IP1+(IFROM-1)*IN1)
-            FACTOR = PMSA(IP2+(IFROM-1)*IN2)
-            QPARAM = SPARAM*FACTOR
-         ELSE
-            QPARAM = 0.0
-         ENDIF
+            IP3 = IP3 + IN3
 
-         PMSA(IP3) = QPARAM
+        ENDDO
 
-!        Ophogen pointering uitvoer op exchange niveau
+        RETURN
+    END
 
-         IP3  = IP3  + IN3
-
-      ENDDO
-
-      RETURN
-      END
-
-      end module m_stox3d
+end module m_stox3d

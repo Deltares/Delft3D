@@ -20,53 +20,53 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq67
-      use m_waq_precision
+module m_dlwq67
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE DLWQ67 (AMAT, NOSEG, JTRACK)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED: june 1988 by L.Postma
+        !
+        !     FUNCTION            : updates the diagonal if zero
+        !
+        !     LOGICAL UNITNUMBERS : none
+        !
+        !     SUBROUTINES CALLED  : none
+        !
+        !     PARAMETERS          :
+        !
+        !     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
+        !     ----    -----      ------       ------- -----------
+        !     AMAT    REAL (JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
+        !     NOSEG   INTEGER       1         INPUT   number of segments
+        !     JTRACK  INTEGER       1         INPUT   number of codiagonals
+        !
+        use timers
 
-      contains
+        real(kind = real_wp) :: AMAT(*)
+        integer(kind = int_wp) :: noseg, jtrack
+        integer(kind = int_wp) :: ISEG, ISTEP, ISET
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwq67", ithandl)
+        !
+        !         set the diagonal
+        !
+        ISTEP = JTRACK * 2 + 1
+        ISET = JTRACK + 1
+        DO ISEG = 1, NOSEG
+            IF (ABS(AMAT(ISET)) < 1.0E-35) AMAT(ISET) = 1.0
+            ISET = ISET + ISTEP
+        end do
+        !
+        if (timon) call timstop (ithandl)
+        RETURN
+    END
 
-
-      SUBROUTINE DLWQ67 ( AMAT   , NOSEG  , JTRACK )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED: june 1988 by L.Postma
-!
-!     FUNCTION            : updates the diagonal if zero
-!
-!     LOGICAL UNITNUMBERS : none
-!
-!     SUBROUTINES CALLED  : none
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
-!     ----    -----      ------       ------- -----------
-!     AMAT    REAL (JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
-!     NOSEG   INTEGER       1         INPUT   number of segments
-!     JTRACK  INTEGER       1         INPUT   number of codiagonals
-!
-      use timers
-
-      real(kind=real_wp) ::AMAT(*)
-      integer(kind=int_wp) ::noseg, jtrack
-      integer(kind=int_wp) ::ISEG, ISTEP, ISET
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwq67", ithandl )
-!
-!         set the diagonal
-!
-      ISTEP = JTRACK*2 + 1
-      ISET  = JTRACK + 1
-      DO 10 ISEG = 1 , NOSEG
-      IF ( ABS(AMAT(ISET)) .LT. 1.0E-35 ) AMAT(ISET) = 1.0
-   10 ISET = ISET+ISTEP
-!
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
-
-      end module m_dlwq67
+end module m_dlwq67

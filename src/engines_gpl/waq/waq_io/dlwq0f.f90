@@ -20,75 +20,74 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq0f
-      use m_waq_precision
+module m_dlwq0f
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwq0f (noq1, noq2, noq3, noseg, ipoint, &
+            nomat)
 
-      contains
+        !       Deltares Software Centre
 
+        !>\file
+        !>            Compute size of the fast solver matrix
+        !>
+        !>    KHT      note that open boundaries (negative pointers) do not yield/n
+        !>    KHT      off-diagonal elements. This is correct for the moment but needs/n
+        !>    KHT      to be changed (in future) for (advanced) domain decomposition purposes/n
 
-      subroutine dlwq0f ( noq1   , noq2   , noq3   , noseg  , ipoint , & 
-                         nomat  )
+        !     Created             : September 1996 by Leo Postma
 
-!       Deltares Software Centre
+        !     Modified            : May       2011 by Leo Postma  : Fortran90 look and feel
 
-!>\file
-!>            Compute size of the fast solver matrix
-!>
-!>    KHT      note that open boundaries (negative pointers) do not yield/n
-!>    KHT      off-diagonal elements. This is correct for the moment but needs/n
-!>    KHT      to be changed (in future) for (advanced) domain decomposition purposes/n
+        !     Logical unitnumberS : none
 
-!     Created             : September 1996 by Leo Postma
+        !     Subroutines called  : none
 
-!     Modified            : May       2011 by Leo Postma  : Fortran90 look and feel
+        use timers       !   performance timers
 
-!     Logical unitnumberS : none
+        implicit none
 
-!     Subroutines called  : none
+        !     Parameters         :
 
-      use timers       !   performance timers
+        !     kind         function         name                Descriptipon
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: noq1               !< nr of exchanges first direction
+        integer(kind = int_wp), intent(in) :: noq2               !< nr of exchanges second direction
+        integer(kind = int_wp), intent(in) :: noq3               !< nr of exchanges third direction
+        integer(kind = int_wp), intent(in) :: noseg              !< nr of computational volumes
+        integer(kind = int_wp), intent(in) :: ipoint(4, noq1 + noq2 + noq3)   !< exchange pointer
+        integer(kind = int_wp), intent(out) :: nomat              !< size of the fast solver matrix
 
-!     Parameters         :
+        !     Local
 
-!     kind         function         name                Descriptipon
-
-      integer(kind=int_wp), intent(in   ) ::  noq1               !< nr of exchanges first direction
-      integer(kind=int_wp), intent(in   ) ::  noq2               !< nr of exchanges second direction
-      integer(kind=int_wp), intent(in   ) ::  noq3               !< nr of exchanges third direction
-      integer(kind=int_wp), intent(in   ) ::  noseg              !< nr of computational volumes
-      integer(kind=int_wp), intent(in   ) ::  ipoint(4,noq1+noq2+noq3)   !< exchange pointer
-      integer(kind=int_wp), intent(  out) ::  nomat              !< size of the fast solver matrix
-
-!     Local
-
-      integer(kind=int_wp) :: iq            ! loop counter exchanges
-      integer(kind=int_wp) :: ifrom, ito    ! help variables exchanges
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "dlwq0f", ithndl )
+        integer(kind = int_wp) :: iq            ! loop counter exchanges
+        integer(kind = int_wp) :: ifrom, ito    ! help variables exchanges
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("dlwq0f", ithndl)
 
 
-!         compute number of offdiagonals to be stored in the matrix
+        !         compute number of offdiagonals to be stored in the matrix
 
-      nomat = 0
-      do iq = 1, noq1+noq2
-         ifrom = ipoint(1,iq)
-         ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or. ito .eq. 0 ) cycle
-         if ( ifrom .gt. 0 ) nomat = nomat + 1
-         if ( ito   .gt. 0 ) nomat = nomat + 1
-      enddo
+        nomat = 0
+        do iq = 1, noq1 + noq2
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+            if (ifrom == 0 .or. ito == 0) cycle
+            if (ifrom > 0) nomat = nomat + 1
+            if (ito   > 0) nomat = nomat + 1
+        enddo
 
-!         see if there is a third direction
+        !         see if there is a third direction
 
-      if ( noq3 .ne. 0 ) nomat = nomat + 2*noseg
+        if (noq3 /= 0) nomat = nomat + 2 * noseg
 
-      if (timon) call timstop( ithndl )
-      return
-      end
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      end module m_dlwq0f
+end module m_dlwq0f

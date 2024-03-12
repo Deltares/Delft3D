@@ -119,12 +119,12 @@
                       GRPNAM , ELMNMS(1) , & 
                       UINDEX , 1         , & 
                       BUFLEN , NO_CONF_R1)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_CONF_R1 .NE. NO_CONF ) THEN
+      IF ( NO_CONF_R1 /= NO_CONF ) THEN
          WRITE(LUNREP,*) 'ERROR number of configuration combinations:', & 
                         NO_CONF_R1
          WRITE(LUNREP,*) 'not equal to number of configurations:', & 
@@ -137,19 +137,19 @@
                       GRPNAM , ELMNMS(2) , & 
                       UINDEX , 1         , & 
                       BUFLEN , NO_PROC_R1)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_PROC_R1 .NE. NO_PROC ) THEN
+      IF ( NO_PROC_R1 /= NO_PROC ) THEN
          WRITE(LUNREP,*) 'ERROR number of processes combinations:', & 
                         NO_PROC_R1
          WRITE(LUNREP,*) 'not equal to number of processes:',NO_PROC
          IERROR = 2
          GOTO 900
       ENDIF
-      IF ( NO_CONF*NO_PROC .GT. NO_C_P_MAX ) THEN
+      IF ( NO_CONF*NO_PROC > NO_C_P_MAX ) THEN
          WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
          WRITE(LUNREP,*) & 
            'Actual number of configuration-processes combinations:', & 
@@ -170,7 +170,7 @@
                       GRPNAM , ELMNMS(3), & 
                       UINDEX , 1        , & 
                       BUFLEN , CON_PRO  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900

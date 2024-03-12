@@ -21,54 +21,53 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_wq_processes_derivatives
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine wq_processes_derivatives (deriv , notot , noflux, stochi, nflux1, &
-                                           nfluxp, flux  , noseg , volume, ndt)
-!
-      use timers
+    subroutine wq_processes_derivatives (deriv, notot, noflux, stochi, nflux1, &
+            nfluxp, flux, noseg, volume, ndt)
+        !
+        use timers
 
-      implicit none
+        implicit none
 
-      integer(kind=int_wp) :: notot, noflux, nflux1, nfluxp, noseg
-      integer isys, iflux, iseg, ndt 
-      real(kind=real_wp) ::    stochi(notot,noflux), flux(noflux,noseg)
-      real(8) deriv(noseg,notot), volume(noseg)
-      real(kind=dp) :: st, fact
- 
-      integer(kind=int_wp), save ::  ithndl = 0
-      if (timon) call timstrt( "wq_processes_derivatives", ithndl )
-!
-!     Construct the DERIV's
-!
-      do isys = 1,notot
-         do iflux = nflux1 , nflux1 + nfluxp - 1
-            st = stochi(isys,iflux)
-            if ( st .ne. 0.0 ) then
-               fact = real(ndt)*st
-               if ( abs(fact-1.0) .lt. 1.e-10 ) then
-                  do iseg = 1 , noseg
-                     deriv(iseg,isys) = deriv(iseg,isys) + flux(iflux,iseg)
-                  enddo
-               else
-                  do iseg = 1 , noseg
-                     deriv(iseg,isys) = deriv(iseg,isys) + flux(iflux,iseg)*fact
-                  enddo
-               endif
-            endif
-         enddo
-      enddo
-!
-      if (timon) call timstop( ithndl )
-!
-      return
-!
-      end
+        integer(kind = int_wp) :: notot, noflux, nflux1, nfluxp, noseg
+        integer isys, iflux, iseg, ndt
+        real(kind = real_wp) :: stochi(notot, noflux), flux(noflux, noseg)
+        real(8) deriv(noseg, notot), volume(noseg)
+        real(kind = dp) :: st, fact
+
+        integer(kind = int_wp), save :: ithndl = 0
+        if (timon) call timstrt("wq_processes_derivatives", ithndl)
+        !
+        !     Construct the DERIV's
+        !
+        do isys = 1, notot
+            do iflux = nflux1, nflux1 + nfluxp - 1
+                st = stochi(isys, iflux)
+                if (st /= 0.0) then
+                    fact = real(ndt) * st
+                    if (abs(fact - 1.0) < 1.e-10) then
+                        do iseg = 1, noseg
+                            deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg)
+                        enddo
+                    else
+                        do iseg = 1, noseg
+                            deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg) * fact
+                        enddo
+                    endif
+                endif
+            enddo
+        enddo
+        !
+        if (timon) call timstop(ithndl)
+        !
+        return
+        !
+    end
 
 end module m_wq_processes_derivatives

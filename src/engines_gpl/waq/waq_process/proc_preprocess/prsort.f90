@@ -20,156 +20,155 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_prsort
-      use m_waq_precision
-      use m_string_utils
-      use m_valpoi
-      use m_error_status
+module m_prsort
+    use m_waq_precision
+    use m_string_utils
+    use m_valpoi
+    use m_error_status
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine prsort(lurep, ProcesDef, notot, nopa, nosfun, &
+            syname, nocons, nofun, constants, paname, &
+            funame, sfname, status)
 
-      contains
+        ! sort processes according to input - output relation, simpel linear sort at the moment
 
+        use dlwq_hyd_data
+        use ProcesSet
+        use timers       !   performance timers
 
-      subroutine prsort( lurep , ProcesDef, notot , nopa     , nosfun, & 
-                        syname, nocons   , nofun , constants, paname, & 
-                        funame, sfname   , status)
+        implicit none
 
-      ! sort processes according to input - output relation, simpel linear sort at the moment
+        ! decalaration of arguments
 
-      use dlwq_hyd_data
-      use ProcesSet
-      use timers       !   performance timers
+        integer(kind = int_wp) :: lurep           ! unit number report file
+        type(ProcesPropColl) :: ProcesDef       ! all processes
+        integer(kind = int_wp) :: notot           ! number of substances
+        integer(kind = int_wp) :: nopa            ! number of parameters
+        integer(kind = int_wp) :: nosfun          ! number of segment functions
+        character(len = *) :: syname(*)       ! substance name
+        integer(kind = int_wp) :: nocons          ! number of constants
+        integer(kind = int_wp) :: nofun           ! number of functions
+        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        character(len = *) :: paname(*)       ! parameter names
+        character(len = *) :: funame(*)       ! function names
+        character(len = *) :: sfname(*)       ! segment function names
 
-      implicit none
+        type(error_status), intent(inout) :: status !< current error status
 
-      ! decalaration of arguments
+        ! local declaration
 
-      integer(kind=int_wp) ::lurep           ! unit number report file
-      type(ProcesPropColl)      :: ProcesDef       ! all processes
-      integer(kind=int_wp) ::notot           ! number of substances
-      integer(kind=int_wp) ::nopa            ! number of parameters
-      integer(kind=int_wp) ::nosfun          ! number of segment functions
-      character(len=*)          :: syname(*)       ! substance name
-      integer(kind=int_wp) ::nocons          ! number of constants
-      integer(kind=int_wp) ::nofun           ! number of functions
-      type(t_dlwq_item)   , intent(inout) :: constants       !< delwaq constants list
-      character(len=*)          :: paname(*)       ! parameter names
-      character(len=*)          :: funame(*)       ! function names
-      character(len=*)          :: sfname(*)       ! segment function names
+        type(ProcesProp) :: aProces         ! array with proces properties
+        integer(kind = int_wp) :: iproc
+        integer(kind = int_wp) :: iproc1
+        integer(kind = int_wp) :: iproc2
+        integer(kind = int_wp) :: nproc
+        integer(kind = int_wp) :: i_in, i_out
+        integer(kind = int_wp) :: i_flx
+        integer(kind = int_wp) :: ifound
+        integer(kind = int_wp) :: new_rank
+        integer(kind = int_wp) :: i_lowest_rank
+        integer(kind = int_wp) :: nloop
+        character(len = 20) :: valnam
+        integer(kind = int_wp) :: ivalip
+        character(len = 100) :: line
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("prsort", ithndl)
 
-      type(error_status), intent(inout) :: status !< current error status
+        ! loop over the processes
 
-      ! local declaration
+        nproc = ProcesDef%cursize
+        i_lowest_rank = 1
+        nloop = 0
 
-      type(ProcesProp)          :: aProces         ! array with proces properties
-      integer(kind=int_wp) ::iproc
-      integer(kind=int_wp) ::iproc1
-      integer(kind=int_wp) ::iproc2
-      integer(kind=int_wp) ::nproc
-      integer(kind=int_wp) ::i_in, i_out
-      integer(kind=int_wp) ::i_flx
-      integer(kind=int_wp) ::ifound
-      integer(kind=int_wp) ::new_rank
-      integer(kind=int_wp) ::i_lowest_rank
-      integer(kind=int_wp) ::nloop
-      character(len=20)         :: valnam
-      integer(kind=int_wp) ::ivalip
-      character(len=100)        :: line
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "prsort", ithndl )
+        do
 
-      ! loop over the processes
+            if (i_lowest_rank == nproc .or. nloop > nproc) exit
 
-      nproc         = ProcesDef%cursize
-      i_lowest_rank = 1
-      nloop         = 0
+            iproc1 = i_lowest_rank
+            i_lowest_rank = nproc
+            nloop = nloop + 1
+            do iproc = iproc1, ProcesDef%cursize
 
-      do
+                ! check if output is used by previous processes
 
-         if ( i_lowest_rank .eq. nproc .or. nloop .gt. nproc) exit
+                new_rank = iproc
+                do iproc2 = 1, iproc - 1
 
-         iproc1        = i_lowest_rank
-         i_lowest_rank = nproc
-         nloop         = nloop + 1
-         do iproc = iproc1 , ProcesDef%cursize
+                    do i_out = 1, ProcesDef%ProcesProps(iproc)%no_output
+                        do i_in = 1, ProcesDef%ProcesProps(iproc2)%no_input
+                            if (string_equals(ProcesDef%ProcesProps(iproc)%output_item(i_out)%name, &
+                                    ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name)) then
+                                ! see if it not specified in the input, then the process needs to be moved
 
-            ! check if output is used by previous processes
+                                valnam = ProcesDef%ProcesProps(iproc)%output_item(i_out)%name
+                                call valpoi (notot, nopa, nosfun, syname, nocons, &
+                                        nofun, constants, paname, funame, sfname, &
+                                        valnam, ivalip, line)
 
-            new_rank = iproc
-            do iproc2 = 1 , iproc - 1
+                                if (ivalip == -1) then
+                                    new_rank = iproc2
+                                    goto 10
+                                endif
 
-               do i_out = 1 , ProcesDef%ProcesProps(iproc)%no_output
-                  do i_in = 1 , ProcesDef%ProcesProps(iproc2)%no_input
-                     if (string_equals(ProcesDef%ProcesProps(iproc)%output_item(i_out)%name, & 
-                                      ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name)) then
-                        ! see if it not specified in the input, then the process needs to be moved
+                            endif
+                        enddo
+                    enddo
 
-                        valnam = ProcesDef%ProcesProps(iproc)%output_item(i_out)%name
-                        call valpoi ( notot , nopa     , nosfun, syname, nocons, & 
-                                     nofun , constants, paname, funame, sfname, & 
-                                     valnam, ivalip   , line  )
+                    ! also check fluxes
 
-                        if ( ivalip .eq. -1 ) then
-                           new_rank = iproc2
-                           goto 10
-                        endif
+                    do i_flx = 1, ProcesDef%ProcesProps(iproc)%no_fluxoutput
+                        do i_in = 1, ProcesDef%ProcesProps(iproc2)%no_input
+                            if (string_equals(ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name, &
+                                    ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name)) then
 
-                     endif
-                  enddo
-               enddo
+                                ! see if it not specified in the input, then the process needs to be moved
 
-              ! also check fluxes
+                                valnam = ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name
+                                call valpoi (notot, nopa, nosfun, syname, nocons, &
+                                        nofun, constants, paname, funame, sfname, &
+                                        valnam, ivalip, line)
 
-               do i_flx = 1 , ProcesDef%ProcesProps(iproc)%no_fluxoutput
-                  do i_in = 1 , ProcesDef%ProcesProps(iproc2)%no_input
-                     if (string_equals(ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name, & 
-                                      ProcesDef%ProcesProps(iproc2)%input_item(i_in)%name )) then
+                                if (ivalip == -1) then
+                                    new_rank = iproc2
+                                    goto 10
+                                endif
 
-                        ! see if it not specified in the input, then the process needs to be moved
+                            endif
+                        enddo
+                    enddo
 
-                        valnam = ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name
-                        call valpoi ( notot , nopa     , nosfun, syname, nocons, & 
-                                     nofun , constants, paname, funame, sfname, & 
-                                     valnam, ivalip   , line  )
+                enddo
+                10       continue
 
-                        if ( ivalip .eq. -1 ) then
-                           new_rank = iproc2
-                           goto 10
-                        endif
+                ! insert process at new position
 
-                     endif
-                  enddo
-               enddo
+                if (new_rank < iproc) then
+                    i_lowest_rank = min(i_lowest_rank, new_rank)
+                    aProces = ProcesDef%ProcesProps(iproc)
+                    do iproc2 = iproc, new_rank + 1, -1
+                        ProcesDef%ProcesProps(iproc2) = ProcesDef%ProcesProps(iproc2 - 1)
+                    enddo
+                    ProcesDef%ProcesProps(new_rank) = aProces
+                endif
 
             enddo
-   10       continue
+        enddo
 
-            ! insert process at new position
+        ! check if there is conflict, report it but allow it to continue, to be done
+        ! this is tricky because the user has no means to influence the final order
 
-            if ( new_rank .lt. iproc ) then
-               i_lowest_rank = min(i_lowest_rank,new_rank)
-               aProces = ProcesDef%ProcesProps(iproc)
-               do iproc2 = iproc , new_rank + 1 , -1
-                  ProcesDef%ProcesProps(iproc2) = ProcesDef%ProcesProps(iproc2-1)
-               enddo
-               ProcesDef%ProcesProps(new_rank) = aProces
-            endif
+        if (nloop > nproc) then
+            write(lurep, '(a)') ' WARNING: circular input output relation detected in process library'
+            call status%increase_warning_count()
+        endif
 
-         enddo
-      enddo
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      ! check if there is conflict, report it but allow it to continue, to be done
-      ! this is tricky because the user has no means to influence the final order
-
-      if ( nloop .gt. nproc ) then
-         write(lurep,'(a)') ' WARNING: circular input output relation detected in process library'
-         call status%increase_warning_count()
-      endif
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_prsort
+end module m_prsort

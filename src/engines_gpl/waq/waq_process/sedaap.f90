@@ -20,136 +20,135 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_sedaap
-      use m_waq_precision
+module m_sedaap
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine sedaap (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Sedimentation flux and velocity for PAP and AAP (adsorbed PO4)
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !
+        ! Name    T   L I/O   Description                                    Uni
+        ! ----    --- -  -    -------------------                            ---
+        ! SFL1    R*4 1 I  sedimentation flux carriers                 [gC/m2/d]
+        ! Q1      R*4 1 I  quality of carrier                          [gOMV/gC]
+        !     Logical Units : -
 
-      subroutine sedaap ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Modules called : -
 
-!>\file
-!>       Sedimentation flux and velocity for PAP and AAP (adsorbed PO4)
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!
-! Name    T   L I/O   Description                                    Uni
-! ----    --- -  -    -------------------                            ---
-! SFL1    R*4 1 I  sedimentation flux carriers                 [gC/m2/d]
-! Q1      R*4 1 I  quality of carrier                          [gOMV/gC]
-!     Logical Units : -
+        implicit none
 
-!     Modules called : -
+        real(kind = real_wp) :: pmsa  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(20), increm(20), noseg, noflux, &
+                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        integer(kind = int_wp) :: ipnt(20)
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        integer(kind = int_wp) :: iflux, iseg, ikmrk2, iq, ifrom
 
-      implicit none
+        real(kind = real_wp) :: sfl1, sfl2, sfl3
+        real(kind = real_wp) :: sfl1s2, sfl2s2, sfl3s2
+        real(kind = real_wp) :: q1, q2, q3, depth
+        real(kind = real_wp) :: fpim1, fpim2, fpim3
+        real(kind = real_wp) :: vsim1, vsim2, vsim3
 
-      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint( 20) , increm( 20) , noseg , noflux, & 
-              iexpnt(4,*) , iknmrk( * ) , noq1, noq2, noq3, noq4
-      integer(kind=int_wp) ::ipnt(20)
+        ipnt = ipoint
+        iflux = 0
 
-      integer(kind=int_wp) ::iflux, iseg, ikmrk2, iq, ifrom
+        do iseg = 1, noseg
+            if (btest(iknmrk(iseg), 0)) then
+                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                if ((ikmrk2==0).or.(ikmrk2==3)) then
+                    !
 
-      real(kind=real_wp) ::sfl1, sfl2, sfl3
-      real(kind=real_wp) ::sfl1s2, sfl2s2, sfl3s2
-      real(kind=real_wp) ::q1, q2, q3, depth
-      real(kind=real_wp) ::fpim1, fpim2, fpim3
-      real(kind=real_wp) ::vsim1, vsim2, vsim3
+                    sfl1 = pmsa(ipnt (1))
+                    sfl2 = pmsa(ipnt (2))
+                    sfl3 = pmsa(ipnt (3))
+                    sfl1s2 = pmsa(ipnt (4))
+                    sfl2s2 = pmsa(ipnt (5))
+                    sfl3s2 = pmsa(ipnt (6))
+                    q1 = pmsa(ipnt (7))
+                    q2 = pmsa(ipnt (8))
+                    q3 = pmsa(ipnt (9))
+                    depth = pmsa(ipnt (13))
+                    !      switch = pmsa(ipnt (14) ) ignore SWITCH
 
-      ipnt = ipoint
-      iflux = 0
+                    !***********************************************************************
+                    !**** Processes connected to the SEDIMENTATION of AAP
+                    !***********************************************************************
 
-      do 9000 iseg = 1 , noseg
-      if (btest(iknmrk(iseg),0)) then
-      call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
-      if ((ikmrk2.eq.0).or.(ikmrk2.eq.3)) then
-!
+                    !     Sedimentation to S1/S2
+                    pmsa(ipnt(18)) = sfl1 * q1 + sfl2 * q2 + sfl3 * q3
+                    fl(1 + iflux) = pmsa(ipnt(18)) / depth
 
-      sfl1   = pmsa(ipnt (1 ) )
-      sfl2   = pmsa(ipnt (2 ) )
-      sfl3   = pmsa(ipnt (3 ) )
-      sfl1s2 = pmsa(ipnt (4 ) )
-      sfl2s2 = pmsa(ipnt (5 ) )
-      sfl3s2 = pmsa(ipnt (6 ) )
-      q1     = pmsa(ipnt (7 ) )
-      q2     = pmsa(ipnt (8 ) )
-      q3     = pmsa(ipnt (9 ) )
-      depth  = pmsa(ipnt (13) )
-!      switch = pmsa(ipnt (14) ) ignore SWITCH
+                    pmsa(ipnt(19)) = sfl1s2 * q1 + sfl2s2 * q2 + sfl3s2 * q3
+                    fl(2 + iflux) = pmsa(ipnt(19)) / depth
 
-!***********************************************************************
-!**** Processes connected to the SEDIMENTATION of AAP
-!***********************************************************************
+                endif
+            endif
+            !
+            iflux = iflux + noflux
+            ipnt = ipnt + increm
+            !
+        end do
 
-!     Sedimentation to S1/S2
-      pmsa(ipnt(18)) = sfl1 * q1 + sfl2 * q2 + sfl3 * q3
-      fl( 1 + iflux ) = pmsa(ipnt(18)) / depth
+        !.....Reset pointers
+        ipnt = ipoint
 
-      pmsa(ipnt(19)) = sfl1s2 * q1 + sfl2s2 * q2 + sfl3s2 * q3
-      fl( 2 + iflux ) = pmsa(ipnt(19)) / depth
+        !.....Exchangeloop over horizontal direction
+        do iq = 1, noq1 + noq2
 
-      endif
-      endif
-!
-      iflux = iflux + noflux
-      ipnt  = ipnt  + increm
-!
- 9000 continue
+            !........Set VxSedAAP to zero
+            pmsa(ipnt(20)) = 0.0
+            ipnt(20) = ipnt(20) + increm(20)
 
-!.....Reset pointers
-      ipnt = ipoint
+        end do
 
-!.....Exchangeloop over horizontal direction
-      do 8000 iq=1,noq1+noq2
+        !.....Entery point in PMSA for VxSedIMX in the vertical direction
+        ipnt(15) = ipnt(15) + (noq1 + noq2) * increm(15)
+        ipnt(16) = ipnt(16) + (noq1 + noq2) * increm(16)
+        ipnt(17) = ipnt(17) + (noq1 + noq2) * increm(17)
 
-!........Set VxSedAAP to zero
-         pmsa(ipnt(20)) = 0.0
-         ipnt(20) = ipnt(20) + increm(20)
+        !.....Exchange loop over the vertical direction
+        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
 
- 8000 continue
+            ifrom = iexpnt(1, iq)
 
-!.....Entery point in PMSA for VxSedIMX in the vertical direction
-      ipnt(15) = ipnt(15) + ( noq1+noq2 ) * increm(15)
-      ipnt(16) = ipnt(16) + ( noq1+noq2 ) * increm(16)
-      ipnt(17) = ipnt(17) + ( noq1+noq2 ) * increm(17)
+            if (ifrom > 0) then
+                fpim1 = pmsa(ipnt(10) + (ifrom - 1) * increm(10))
+                fpim2 = pmsa(ipnt(11) + (ifrom - 1) * increm(11))
+                fpim3 = pmsa(ipnt(12) + (ifrom - 1) * increm(12))
+                vsim1 = pmsa(ipnt(15))
+                vsim2 = pmsa(ipnt(16))
+                vsim3 = pmsa(ipnt(17))
+                !...........calculate VxSedAAP
+                pmsa(ipnt(20)) = fpim1 * vsim1 + fpim2 * vsim2 + fpim3 * vsim3
+            endif
 
-!.....Exchange loop over the vertical direction
-      do 7000 iq = noq1+noq2+1, noq1+noq2+noq3
+            !........Exchangepointers increment
+            ipnt(15) = ipnt(15) + increm(15)
+            ipnt(16) = ipnt(16) + increm(16)
+            ipnt(17) = ipnt(17) + increm(17)
+            ipnt(20) = ipnt(20) + increm(20)
 
-         ifrom  = iexpnt(1,iq)
+        end do
 
-         if ( ifrom .gt. 0 ) then
-            fpim1 = pmsa(ipnt(10) + (ifrom-1) * increm(10))
-            fpim2 = pmsa(ipnt(11) + (ifrom-1) * increm(11))
-            fpim3 = pmsa(ipnt(12) + (ifrom-1) * increm(12))
-            vsim1 = pmsa(ipnt(15))
-            vsim2 = pmsa(ipnt(16))
-            vsim3 = pmsa(ipnt(17))
-!...........calculate VxSedAAP
-            pmsa(ipnt(20)) = fpim1*vsim1+fpim2*vsim2+fpim3*vsim3
-         endif
+        return
+    end
 
-!........Exchangepointers increment
-         ipnt(15)= ipnt(15)+ increm(15)
-         ipnt(16)= ipnt(16)+ increm(16)
-         ipnt(17)= ipnt(17)+ increm(17)
-         ipnt(20)= ipnt(20)+ increm(20)
-
- 7000 continue
-
-      return
-      end
-
-      end module m_sedaap
+end module m_sedaap

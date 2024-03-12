@@ -20,82 +20,81 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_proint
-      use m_waq_precision
+module m_proint
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine proint (noflux, ndmpar, idt, iturat, flxdmp, &
+            flxint, isdmp, ipdmp, ntdmpq)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>            Integrates the fluxes for dump area's
 
-      subroutine proint ( noflux , ndmpar , idt    , iturat , flxdmp , & 
-                         flxint , isdmp  , ipdmp  , ntdmpq )
+        !     Created:            : march 1993 by Jan van Beek
 
-!     Deltares Software Centre
+        !     Subroutines called  : -
 
-!>\File
-!>            Integrates the fluxes for dump area's
+        !     Files               : -
 
-!     Created:            : march 1993 by Jan van Beek
+        !     Common blocks       : -
 
-!     Subroutines called  : -
+        use timers
 
-!     Files               : -
+        implicit none
 
-!     Common blocks       : -
+        !     Parameters          :
 
-      use timers
+        !     kind           function         name                    description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: noflux                !< Number of fluxes
+        integer(kind = int_wp), intent(in) :: ndmpar                !< Number of dump areas
+        integer(kind = int_wp), intent(in) :: idt                   !< Time step system clock units
+        integer(kind = int_wp), intent(in) :: iturat                !< System clock/proces clock ratio
+        real(kind = real_wp), intent(in) :: flxdmp(noflux, *)      !< Fluxes at dump segments
+        real(kind = real_wp), intent(inout) :: flxint(noflux, ndmpar) !< Integrated fluxes at dump segments
+        integer(kind = int_wp), intent(in) :: isdmp (*)           !< Segment to dumped segment pointer
+        integer(kind = int_wp), intent(in) :: ipdmp (*)           !< Pointer structure dump area's
+        integer(kind = int_wp), intent(in) :: ntdmpq                !< Total number exchanges in dump area
 
-!     Parameters          :
+        !     Local declaration
 
-!     kind           function         name                    description
+        integer(kind = int_wp) :: itel2, idump, nsc, isc, iseg, &
+                ips, iflx, ip1
+        real(kind = real_wp) :: fscale
 
-      integer(kind=int_wp), intent(in   )  ::noflux                !< Number of fluxes
-      integer(kind=int_wp), intent(in   )  ::ndmpar                !< Number of dump areas
-      integer(kind=int_wp), intent(in   )  ::idt                   !< Time step system clock units
-      integer(kind=int_wp), intent(in   )  ::iturat                !< System clock/proces clock ratio
-      real(kind=real_wp), intent(in   )  ::flxdmp(noflux,*)      !< Fluxes at dump segments
-      real(kind=real_wp), intent(inout)  ::flxint(noflux,ndmpar) !< Integrated fluxes at dump segments
-      integer(kind=int_wp), intent(in   )  ::isdmp ( * )           !< Segment to dumped segment pointer
-      integer(kind=int_wp), intent(in   )  ::ipdmp ( * )           !< Pointer structure dump area's
-      integer(kind=int_wp), intent(in   )  ::ntdmpq                !< Total number exchanges in dump area
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("proint", ithandl)
 
-!     Local declaration
+        !     Loop over the dump area's
 
-      integer(kind=int_wp) ::itel2 , idump , nsc   , isc   , iseg  , & 
-                   ips   , iflx  , ip1
-      real(kind=real_wp) ::fscale
+        ip1 = ndmpar + ntdmpq
+        itel2 = ndmpar + ntdmpq + ndmpar
+        fscale = real(idt) / real(iturat)
+        do idump = 1, ndmpar
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "proint", ithandl )
+            !        the segment contributes
 
-!     Loop over the dump area's
+            nsc = ipdmp(ip1 + idump)
+            do isc = 1, nsc
+                itel2 = itel2 + 1
+                iseg = ipdmp(itel2)
+                if (iseg > 0) then    !  integrate the fluxes
+                    ips = isdmp(iseg)
+                    flxint(:, idump) = flxint(:, idump) + flxdmp(:, ips) * fscale
+                endif
+            enddo
 
-      ip1    = ndmpar + ntdmpq
-      itel2  = ndmpar + ntdmpq + ndmpar
-      fscale = real(idt)/real(iturat)
-      do idump = 1 , ndmpar
+        enddo
 
-!        the segment contributes
+        if (timon) call timstop (ithandl)
 
-         nsc  = ipdmp(ip1+idump)
-         do isc = 1 , nsc
-            itel2 = itel2 + 1
-            iseg  = ipdmp(itel2)
-            if ( iseg .gt. 0 ) then    !  integrate the fluxes
-               ips   = isdmp(iseg)
-               flxint(:,idump) = flxint(:,idump) + flxdmp(:,ips) * fscale
-            endif
-         enddo
+        return
+    end
 
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-
-      return
-      end
-
-      end module m_proint
+end module m_proint

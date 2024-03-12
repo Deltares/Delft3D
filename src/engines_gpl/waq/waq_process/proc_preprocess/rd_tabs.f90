@@ -104,7 +104,7 @@
 !     initialize proces definition file
 !
       call extract_file_extension (pdffil, filext, extpos, extlen)
-      if ( filext .ne. ' ' ) then
+      if ( filext /= ' ' ) then
 
          ! files with extension, assume nefis file made out of one file, fildat equals fildef
 
@@ -117,7 +117,7 @@
 
          ilen = len(pdffil)
          iend = len_trim(pdffil)
-         if ( iend .eq. ilen ) iend = max(0,ilen-4)
+         if ( iend == ilen ) iend = max(0,ilen-4)
 
          fildat = trim(pdffil)//'.dat'
          fildef = trim(pdffil)//'.def'
@@ -133,21 +133,21 @@
          access = 'r'
          coding = 'n'
          ierror = crenef(deffds, fildat, fildef, coding, access)
-         if ( ierror .eq. 8023) then
+         if ( ierror == 8023) then
 !           nefis error 8023 means it could not be read as a single file
 !           when the file ends in .dat, try if it works when we specify a def-file
 !           when the file ends in .def, try if it works when we specify a dat-file
             iend = len_trim(fildef)
-            if ( fildef(iend-2:iend).eq.'dat') then
+            if ( fildef(iend-2:iend)=='dat') then
                fildef(iend-2:iend)='def'
                ierror = crenef(deffds, fildat, fildef, coding, access)
             endif
-            if ( fildat(iend-2:iend).eq.'def') then
+            if ( fildat(iend-2:iend)=='def') then
                fildat(iend-2:iend)='dat'
                ierror = crenef(deffds, fildat, fildef, coding, access)
             endif
          endif
-         if ( ierror .ne. 0 ) then
+         if ( ierror /= 0 ) then
             call status%increase_error_count()
             call dhpfil(lunrep,' error opening nefis file(s):',trim(fildat))
             write(lunrep,*) 'error number:',ierror
@@ -165,7 +165,7 @@
       call rd_filid ( deffds,         fform , vfform, conten, & 
                      versio, serial, rundat, source, remark, & 
                      lunrep, ierror)
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading file identification group'
          write(lunrep,*) 'error number:',ierror
@@ -178,7 +178,7 @@
                      nsgrpm      , nsgrp       , & 
                      sgrpid      , sgrpnm      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table p1'
          write(lunrep,*) 'error number:',ierror
@@ -196,7 +196,7 @@
                      itemwk      , itemsn      , & 
                      itemsu      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table p2'
          write(lunrep,*) 'error number:',ierror
@@ -209,7 +209,7 @@
                      nfortm      , nfort       , & 
                      fortid      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table p3'
          write(lunrep,*) 'error number:',ierror
@@ -223,7 +223,7 @@
                      procid      , procnm      , & 
                      procfo      , procco      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table p4'
          write(lunrep,*) 'error number:',ierror
@@ -236,7 +236,7 @@
                      nconfm      , nconf       , & 
                      confid      , confnm      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table p5'
          write(lunrep,*) 'error number:',ierror
@@ -249,7 +249,7 @@
                      nconfm*nprocm, nconf       , & 
                      nproc        , icnpro      , & 
                      lunrep       , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r1'
          write(lunrep,*) 'error number:',ierror
@@ -262,7 +262,7 @@
                      ncnsbm      , ncnsb       , & 
                      r2_cid      , r2_sid      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r2'
          write(lunrep,*) 'error number:',ierror
@@ -277,7 +277,7 @@
                      inpunm      , inpude      , & 
                      inpudo      , inpusx      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r3'
          write(lunrep,*) 'error number:',ierror
@@ -292,7 +292,7 @@
                      outpnm      , outpdo      , & 
                      outpsx      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r4'
          write(lunrep,*) 'error number:',ierror
@@ -306,7 +306,7 @@
                      outfpr      , outffl      , & 
                      outfnm      , outfdo      , & 
                      lunrep      , ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r5'
          write(lunrep,*) 'error number:',ierror
@@ -320,7 +320,7 @@
                      stocfl      , stocsu      , & 
                      stocsc      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r6'
          write(lunrep,*) 'error number:',ierror
@@ -334,7 +334,7 @@
                      veloit      , velosu      , & 
                      velosc      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r7'
          write(lunrep,*) 'error number:',ierror
@@ -348,7 +348,7 @@
                      dispit      , dispsu      , & 
                      dispsc      , lunrep      , & 
                      ierror      )
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          call status%increase_error_count()
          write(lunrep,*) 'error reading table r8'
          write(lunrep,*) 'error number:',ierror
@@ -357,7 +357,7 @@
 !
 !     table m1 (old-items)
 !
-      if ( vfform .gt. 1.99 ) then
+      if ( vfform > 1.99 ) then
          call rd_tabm1 ( deffds      , & 
                         n_old_items_max, & 
                         n_old_items, & 
@@ -369,7 +369,7 @@
                         old_items_action_type, & 
                         lunrep      , & 
                         ierror      )
-         if ( ierror .ne. 0 ) then
+         if ( ierror /= 0 ) then
             call status%increase_error_count()
             write(lunrep,*) 'error reading table m1'
             write(lunrep,*) 'error number:',ierror
@@ -380,7 +380,7 @@
 !     close files
 !
       ierror = clsnef(deffds)
-      if ( ierror .ne. 0 ) then
+      if ( ierror /= 0 ) then
          write(lunrep,*) 'error closing nefis process defintion file'
          write(lunrep,*) 'error number:',ierror
          call status%increase_error_count()

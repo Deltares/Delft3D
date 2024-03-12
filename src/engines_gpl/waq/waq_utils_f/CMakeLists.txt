@@ -10,8 +10,8 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 
 # Set dependencies
 set(oss_dependencies deltares_common
-                     waq_definition
-                     )
+        waq_definition
+)
 
 
 target_link_libraries(${library_name} ${oss_dependencies})
@@ -22,7 +22,7 @@ target_compile_options(${library_name} PRIVATE ${waq_default_flags})
 
 set_source_files_properties(${fortran_static_version_file} PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-target_include_directories(${library_name}  PRIVATE ${version_include_dir}
-                                                    ${waq_version_path})
+target_include_directories(${library_name} PRIVATE ${version_include_dir}
+        ${waq_version_path})
 
-set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/waq)
+set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

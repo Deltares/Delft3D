@@ -20,64 +20,63 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_fioraa
-      use m_waq_precision
+module m_fioraa
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE FIORAA (OUTVAL, NRVAR, TRRAAI, NORAAI, NOSYS)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED:            : september 1995 by Jan van Beek
+        !
+        !     FUNCTION            : Fills output buffer OUTVAL for raaien
+        !
+        !     SUBROUTINES CALLED  : -
+        !
+        !     FILES               : -
+        !
+        !     PARAMETERS          :
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
+        !     NRVAR   INTEGER       1     INPUT   Number of output vars
+        !     TRRAAI  REAL    NOSYS,*     INPUT   Tranport over raai for active substanc
+        !     NORAAI  INTEGER       1     INPUT   Number of raaien
+        !     NOSYS   INTEGER       1     INPUT   Number of parameters in TRRAAI
+        !
+        !     Declaration of arguments
+        !
+        use timers
 
-      contains
+        INTEGER(kind = int_wp) :: NRVAR, NORAAI, NOSYS
+        REAL(kind = real_wp) :: OUTVAL(NRVAR, *), TRRAAI(NOSYS, *)
+        !
+        !     Local
+        !
+        integer(kind = int_wp) :: iraai, isys
+        real(kind = real_wp), PARAMETER :: RMISS = -999.
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("fioraa", ithandl)
+        !
+        !     Copy values into output buffer
+        !
+        DO IRAAI = 1, NORAAI
+            DO ISYS = 1, NOSYS
+                OUTVAL(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI)
+            end do
+            DO ISYS = NOSYS + 1, NRVAR
+                OUTVAL(ISYS, IRAAI) = RMISS
+            end do
+        end do
+        !
+        if (timon) call timstop (ithandl)
+        RETURN
+    END
 
-
-      SUBROUTINE FIORAA (OUTVAL, NRVAR , TRRAAI, NORAAI, NOSYS )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED:            : september 1995 by Jan van Beek
-!
-!     FUNCTION            : Fills output buffer OUTVAL for raaien
-!
-!     SUBROUTINES CALLED  : -
-!
-!     FILES               : -
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
-!     NRVAR   INTEGER       1     INPUT   Number of output vars
-!     TRRAAI  REAL    NOSYS,*     INPUT   Tranport over raai for active substanc
-!     NORAAI  INTEGER       1     INPUT   Number of raaien
-!     NOSYS   INTEGER       1     INPUT   Number of parameters in TRRAAI
-!
-!     Declaration of arguments
-!
-      use timers
-
-      INTEGER(kind=int_wp) ::NRVAR , NORAAI, NOSYS
-      REAL(kind=real_wp) ::OUTVAL(NRVAR,*), TRRAAI(NOSYS,*)
-!
-!     Local
-!
-      integer(kind=int_wp) ::iraai, isys
-      real(kind=real_wp), PARAMETER   ::RMISS = -999.
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "fioraa", ithandl )
-!
-!     Copy values into output buffer
-!
-      DO 30 IRAAI = 1 , NORAAI
-         DO 10 ISYS = 1 , NOSYS
-            OUTVAL(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)
-   10    CONTINUE
-         DO 20 ISYS = NOSYS + 1 , NRVAR
-            OUTVAL(ISYS,IRAAI) = RMISS
-   20    CONTINUE
-   30 CONTINUE
-!
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
-
-      end module m_fioraa
+end module m_fioraa

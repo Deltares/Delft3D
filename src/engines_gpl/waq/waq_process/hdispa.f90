@@ -20,78 +20,77 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_hdispa
-      use m_waq_precision
+module m_hdispa
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine hdispa     (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Facilitate variable (2D) horizontal dispersion defined per segment (instead of per exchanges as in #4)
 
-      contains
+        !
+        !*******************************************************************************
+        !
+        implicit none
+        !
+        !     type    name         i/o description
+        !
+        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
+        integer(kind = int_wp) :: ipoint(2) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: increm(2) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
+        integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
+        integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
+        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: ipnt(2)   !    local work array for the pointering
+        integer(kind = int_wp) :: iq          !    local loop counter for exchanges
+        integer(kind = int_wp) :: iseg1       !    segment number from
+        integer(kind = int_wp) :: iseg2       !    segment number to
 
+        ipnt = ipoint
 
-      subroutine hdispa     ( pmsa   , fl     , ipoint , increm, noseg , & 
-                             noflux , iexpnt , iknmrk , noq1  , noq2  , & 
-                             noq3   , noq4   )
-!>\file
-!>       Facilitate variable (2D) horizontal dispersion defined per segment (instead of per exchanges as in #4)
+        do iq = 1, noq1 + noq2
 
-!
-!*******************************************************************************
-!
-      implicit none
-!
-!     type    name         i/o description
-!
-      real(kind=real_wp) ::pmsa(*)     !i/o process manager system array, window of routine to process library
-      real(kind=real_wp) ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) ::ipoint(  2) ! i  array of pointers in pmsa to get and store the data
-      integer(kind=int_wp) ::increm(  2) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) ::noseg       ! i  number of computational elements in the whole model schematisation
-      integer(kind=int_wp) ::noflux      ! i  number of fluxes, increment in the fl array
-      integer(kind=int_wp) ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer(kind=int_wp) ::noq1        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      integer(kind=int_wp) ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer(kind=int_wp) ::ipnt(  2)   !    local work array for the pointering
-      integer(kind=int_wp) ::iq          !    local loop counter for exchanges
-      integer(kind=int_wp) ::iseg1       !    segment number from
-      integer(kind=int_wp) ::iseg2       !    segment number to
+            ! input on segments
 
-      ipnt        = ipoint
+            iseg1 = iexpnt(1, iq)
+            iseg2 = iexpnt(2, iq)
 
-      do iq = 1 , noq1+noq2
+            ! set output
 
-         ! input on segments
+            if (iseg1 > 0 .and. iseg2 > 0) then
+                ! if both are internal segments use the minimum value of both segments
+                pmsa(ipnt(2)) = min(pmsa(ipnt(1) + (iseg1 - 1) * increm(1)), &
+                        pmsa(ipnt(1) + (iseg2 - 1) * increm(1)))
+            else if (iseg1 > 0) then
+                ! if only 'from' is an internal segment, use this one
+                pmsa(ipnt(2)) = pmsa(ipnt(1) + (iseg1 - 1) * increm(1))
+            else if (iseg2 > 0) then
+                ! if only 'to' is an internal segment, use this one
+                pmsa(ipnt(2)) = pmsa(ipnt(1) + (iseg2 - 1) * increm(1))
+            else
+                ! no internal node available, probably from zero to zero
+                pmsa(ipnt(2)) = 0.0
+            endif
 
-         iseg1 = iexpnt(1,iq)
-         iseg2 = iexpnt(2,iq)
+            ! update pointering in pmsa
 
-         ! set output
+            ipnt(2) = ipnt(2) + increm(2)
 
-         if ( iseg1 .gt. 0 .and. iseg2 .gt. 0 ) then
-         ! if both are internal segments use the minimum value of both segments
-            pmsa(ipnt(2)) = min(pmsa(ipnt(1)+(iseg1-1)*increm(1)), & 
-                               pmsa(ipnt(1)+(iseg2-1)*increm(1)))
-         else if ( iseg1 .gt. 0) then
-         ! if only 'from' is an internal segment, use this one
-            pmsa(ipnt(2)) = pmsa(ipnt(1)+(iseg1-1)*increm(1))
-         else if ( iseg2 .gt. 0) then
-         ! if only 'to' is an internal segment, use this one
-            pmsa(ipnt(2)) = pmsa(ipnt(1)+(iseg2-1)*increm(1))
-         else
-         ! no internal node available, probably from zero to zero
-            pmsa(ipnt(2)) = 0.0
-         endif
+        enddo
 
-         ! update pointering in pmsa
+        return
+    end
 
-         ipnt(2) = ipnt(2) + increm(2)
-
-      enddo
-
-      return
-      end
-
-      end module m_hdispa
+end module m_hdispa

@@ -88,8 +88,8 @@
 
 !     get two integers date and time
 
-      if ( gettoken(idate,ierr2) .ne. 0 ) goto 900
-      if ( gettoken(itime,ierr2) .ne. 0 ) goto 900
+      if ( gettoken(idate,ierr2) /= 0 ) goto 900
+      if ( gettoken(itime,ierr2) /= 0 ) goto 900
 
       write ( lunut , 1010 ) idate, itime
 
@@ -101,28 +101,28 @@
 !     subtract the time delay
 
       isec   = isec   - mod(itime,  100)
-      if ( isec .lt. 0 ) then
+      if ( isec < 0 ) then
          imin  = imin - 1
          isec  = isec +60
       endif
       imin   = imin   - mod(itime,10000)/100
-      if ( imin .lt. 0 ) then
+      if ( imin < 0 ) then
          ihour = ihour- 1
          imin  = imin +60
       endif
       ihour  = ihour  -     itime       /10000
-      if ( ihour .lt. 0 ) then
+      if ( ihour < 0 ) then
          iday  = iday - 1
          ihour = ihour+24
       endif
       iday   = iday   - mod(idate,  100)
-      if ( iday .le. 0 ) then
+      if ( iday <= 0 ) then
          imonth = imonth - 1
          select case ( imonth )
             case ( 1, 3, 5, 7, 8, 10, 12 )
                iday = iday + 31
             case ( 2 )
-               if ( mod(iyear,4) .eq. 0 ) then
+               if ( mod(iyear,4) == 0 ) then
                   iday = iday + 29
                else
                   iday = iday + 28
@@ -132,7 +132,7 @@
          end select
       endif
       imonth = imonth - mod(idate,10000)/100
-      if ( imonth.le. 0 ) then
+      if ( imonth<= 0 ) then
          iyear = iyear - 1
          imonth= imonth+12
       endif

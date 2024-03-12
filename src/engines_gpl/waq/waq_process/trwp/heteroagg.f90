@@ -126,9 +126,9 @@
       iflux = 1
       do iseg = 1 , noseg
           call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
-          if (ikmrk1.eq.1) then
+          if (ikmrk1==1) then
           call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
-          if (ikmrk2.le.4) then   ! surface water
+          if (ikmrk2<=4) then   ! surface water
               
               ! input independentt of fractions
               efficiency     = pmsa(ipnt(ip_Efficiency) )

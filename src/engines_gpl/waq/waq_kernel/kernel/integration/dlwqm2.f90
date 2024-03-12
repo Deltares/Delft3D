@@ -20,133 +20,132 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqm2
-      use m_waq_precision
+module m_dlwqm2
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwqm2(idt, noseg, volnew, nobnd, noq, &
+            ipoint, flowtot, disptot, theta, diag, &
+            iscale, diagcc, nomat, mat, rowpnt, &
+            fmat, tmat, iexseg)
 
-      contains
+        !     Deltares - Delft Software Department
 
+        !     Created   :          2007 by Pauline van Slingerland
 
-      subroutine dlwqm2( idt    , noseg  , volnew , nobnd  , noq    , & 
-                        ipoint , flowtot, disptot, theta  , diag   , & 
-                        iscale , diagcc , nomat  , mat    , rowpnt , & 
-                        fmat   , tmat   , iexseg )
+        !     Function  : fills the matrix
 
-!     Deltares - Delft Software Department
+        !     Modified  : July     2009 by Leo Postma : double precission version
+        !     Modified  : November 2009 by Leo Postma : imat and jmat introduced
 
-!     Created   :          2007 by Pauline van Slingerland
+        use timers
+        implicit none
 
-!     Function  : fills the matrix
+        !     Arguments           :
 
-!     Modified  : July     2009 by Leo Postma : double precission version
-!     Modified  : November 2009 by Leo Postma : imat and jmat introduced
+        !     Kind        Function         Name                  Description
 
-      use timers
-      implicit none
+        integer(kind = int_wp), intent(in) :: idt                   ! time step in scu's
+        integer(kind = int_wp), intent(in) :: noseg                 ! number of segments
+        real(kind = real_wp), intent(in) :: volnew(noseg)       ! segment volumes
+        integer(kind = int_wp), intent(in) :: nobnd                 ! number of boundary segments
+        integer(kind = int_wp), intent(in) :: noq                   ! number of exchanges
+        integer(kind = int_wp), intent(in) :: ipoint(4, noq)       ! exchange pointers (dim: 4 x noq)
+        real(kind = real_wp), intent(in) :: flowtot(noq)         ! flows plus additional velos. (dim: noq)
+        real(kind = real_wp), intent(in) :: disptot(noq)         ! dispersion plus additional dipers. (dim: noq)
+        real(kind = real_wp), intent(in) :: theta (noq)         ! variable theta coefficients
+        real(kind = dp), intent(out) :: diag  (noseg + nobnd) ! (scaled) diagonal matrix elements
+        integer(kind = int_wp), intent(in) :: iscale                ! 0: no diagonal scaling
+        ! 1: diagonal scaling
+        real(kind = dp), intent(out) :: diagcc(noseg + nobnd) ! copy of the unscaled diagonal, needed to scale the rhs later
+        integer(kind = int_wp), intent(in) :: nomat                 ! number of nonzero offdiagonal matrix elements
+        real(kind = dp), intent(out) :: mat   (nomat)       ! (scaled) nonzero offdiagonal matrix elements (elsewhere: amat)
+        integer(kind = int_wp), intent(in) :: rowpnt(0:noseg + nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
+        integer(kind = int_wp), intent(in) :: fmat  (noq)       ! pointer from(iq) in matrix
+        integer(kind = int_wp), intent(in) :: tmat  (noq)       ! pointer to  (iq) in matrix
+        integer(kind = int_wp), intent(in) :: iexseg(noseg + nobnd) ! zero if explicit
 
-!     Arguments           :
+        !     Local declarations
 
-!     Kind        Function         Name                  Description
+        integer(kind = int_wp) :: iseg                  ! current volume
+        integer(kind = int_wp) :: iq                    ! current edge
+        integer(kind = int_wp) :: ito, ifrom            ! from and to volume indices
+        real(kind = real_wp) :: q1, q2                ! flows
 
-      integer(kind=int_wp), intent(in   )  ::idt                   ! time step in scu's
-      integer(kind=int_wp), intent(in   )  ::noseg                 ! number of segments
-      real(kind=real_wp), intent(in   )  ::volnew(  noseg)       ! segment volumes
-      integer(kind=int_wp), intent(in   )  ::nobnd                 ! number of boundary segments
-      integer(kind=int_wp), intent(in   )  ::noq                   ! number of exchanges
-      integer(kind=int_wp), intent(in   )  ::ipoint(  4,noq)       ! exchange pointers (dim: 4 x noq)
-      real(kind=real_wp), intent(in   )  ::flowtot( noq)         ! flows plus additional velos. (dim: noq)
-      real(kind=real_wp), intent(in   )  ::disptot( noq)         ! dispersion plus additional dipers. (dim: noq)
-      real(kind=real_wp), intent(in   )  ::theta (  noq)         ! variable theta coefficients
-      real(kind=dp), intent(  out)  ::diag  (  noseg+nobnd) ! (scaled) diagonal matrix elements
-      integer(kind=int_wp), intent(in   )  ::iscale                ! 0: no diagonal scaling
-                                                         ! 1: diagonal scaling
-      real(kind=dp), intent(  out)  ::diagcc(  noseg+nobnd) ! copy of the unscaled diagonal, needed to scale the rhs later
-      integer(kind=int_wp), intent(in   )  ::nomat                 ! number of nonzero offdiagonal matrix elements
-      real(kind=dp), intent(  out)  ::mat   (  nomat)       ! (scaled) nonzero offdiagonal matrix elements (elsewhere: amat)
-      integer(kind=int_wp), intent(in   )  ::rowpnt(0:noseg+nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
-      integer(kind=int_wp), intent(in   )  ::fmat  (  noq  )       ! pointer from(iq) in matrix
-      integer(kind=int_wp), intent(in   )  ::tmat  (  noq  )       ! pointer to  (iq) in matrix
-      integer(kind=int_wp), intent(in   )  ::iexseg(  noseg+nobnd) ! zero if explicit
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwqm2", ithandl)
 
-!     Local declarations
+        ! set the diagonal
 
-      integer(kind=int_wp) ::iseg                  ! current volume
-      integer(kind=int_wp) ::iq                    ! current edge
-      integer(kind=int_wp) ::ito, ifrom            ! from and to volume indices
-      real(kind=real_wp) ::q1, q2                ! flows
+        do iseg = 1, noseg
+            diag(iseg) = volnew(iseg) / real(idt)
+        enddo
+        do iseg = noseg + 1, noseg + nobnd
+            diag(iseg) = 1.0
+        enddo
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwqm2", ithandl )
+        ! reset the offdiagonal entries
 
-! set the diagonal
+        do iq = 1, nomat
+            mat(iq) = 0.0
+        enddo
 
-      do iseg = 1 , noseg
-         diag(iseg) = volnew(iseg)/real(idt)
-      enddo
-      do iseg = noseg+1, noseg+nobnd
-         diag(iseg) = 1.0
-      enddo
+        do iq = 1, noq
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+            if (ifrom == 0 .or. ito == 0) cycle
 
-! reset the offdiagonal entries
+            if (flowtot(iq) > 0.0) then
+                q1 = (flowtot(iq) + disptot(iq)) * theta(iq)
+                q2 = (0.0 - disptot(iq)) * theta(iq)
+            else
+                q1 = (0.0 + disptot(iq)) * theta(iq)
+                q2 = (flowtot(iq) - disptot(iq)) * theta(iq)
+            endif
 
-      do iq = 1, nomat
-         mat(iq) = 0.0
-      enddo
+            if (ifrom > 0) then
+                diag(ifrom) = diag(ifrom) + q1
+                mat (fmat(iq)) = mat (fmat(iq)) + q2
+            endif
+            if (ito   > 0) then
+                diag(ito) = diag(ito) - q2
+                mat (tmat(iq)) = mat (tmat(iq)) - q1
+            endif
+        enddo
 
-      do iq = 1 , noq
-         ifrom = ipoint(1,iq)
-         ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or. ito .eq. 0 ) cycle
+        ! finally scale the matrix to avoid possible round-off errors in gmres
+        ! this scaling may need some adaption for future domain decomposition b.c.
 
-         if ( flowtot(iq) .gt. 0.0 ) then
-           q1 = ( flowtot(iq) + disptot(iq) ) * theta(iq)
-           q2 = ( 0.0         - disptot(iq) ) * theta(iq)
-         else
-           q1 = ( 0.0         + disptot(iq) ) * theta(iq)
-           q2 = ( flowtot(iq) - disptot(iq) ) * theta(iq)
-         endif
+        if (iscale == 1) then
+            do iseg = 1, noseg + nobnd
+                ifrom = rowpnt(iseg - 1) + 1
+                ito = rowpnt(iseg)
 
-         if ( ifrom .gt. 0  ) then
-            diag( ifrom  ) = diag( ifrom  ) + q1
-            mat (fmat(iq)) = mat (fmat(iq)) + q2
-         endif
-         if ( ito   .gt. 0  ) then
-            diag(  ito   ) = diag(  ito   ) - q2
-            mat (tmat(iq)) = mat (tmat(iq)) - q1
-         endif
-      enddo
+                ! check on zero's required for methods 17 and 18
 
-! finally scale the matrix to avoid possible round-off errors in gmres
-! this scaling may need some adaption for future domain decomposition b.c.
+                if (abs(diag(iseg)) < 1.0e-35) diag(iseg) = 1.0
 
-      if ( iscale .eq. 1 ) then
-         do iseg = 1, noseg + nobnd
-            ifrom = rowpnt(iseg-1) + 1
-            ito = rowpnt(iseg)
+                do iq = ifrom, ito
+                    mat(iq) = mat(iq) / diag(iseg)
+                enddo
 
-! check on zero's required for methods 17 and 18
+                ! copy of diag for later scaling purposes in dlwqf4
 
-            if ( abs(diag(iseg)) .lt. 1.0e-35 ) diag(iseg) = 1.0
-
-            do iq = ifrom, ito
-               mat(iq) = mat(iq) / diag(iseg)
+                diagcc(iseg) = diag(iseg)
+                diag  (iseg) = 1.0
             enddo
+        else
+            do iseg = 1, noseg + nobnd
+                diagcc(iseg) = 1.0
+            enddo
+        endif
 
-! copy of diag for later scaling purposes in dlwqf4
+        if (timon) call timstop (ithandl)
+        return
+    end subroutine dlwqm2
 
-            diagcc(iseg) = diag(iseg)
-            diag  (iseg) = 1.0
-         enddo
-      else
-         do iseg = 1, noseg + nobnd
-            diagcc(iseg) = 1.0
-         enddo
-      endif
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end subroutine dlwqm2
-
-      end module m_dlwqm2
+end module m_dlwqm2

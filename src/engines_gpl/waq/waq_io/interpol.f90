@@ -20,75 +20,74 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_interpol
-      use m_waq_precision
+module m_interpol
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine interpol (result, higher, lower, tset, thigh, &
+            tlow, nvar, ndim2, iftyp)
 
-      contains
+        !       Deltares Software Centre
 
+        !>\file
+        !>       interpolates a (ndim2,nvar) array
+        !>
+        !>       Depending on sign of iftyp routine does:
+        !>       - if negative, choses lower ( block wave, propagate first )
+        !>       - if positive, linear interpolation
+        !>       Note that iftyp may differ per variable in the matrix
 
-      subroutine interpol ( result , higher , lower  , tset   , thigh  , & 
-                           tlow   , nvar   , ndim2  , iftyp  )
+        !     Created       : May   1988  by Leo Postma
+        !     Modified      : March 1993  by Jan van Beek
+        !                   : May   2011  by Leo Postma   : Fortran 90 look and feel
 
-!       Deltares Software Centre
+        !     Logical units : none
 
-!>\file
-!>       interpolates a (ndim2,nvar) array
-!>
-!>       Depending on sign of iftyp routine does:
-!>       - if negative, choses lower ( block wave, propagate first )
-!>       - if positive, linear interpolation
-!>       Note that iftyp may differ per variable in the matrix
+        use timers       !   performance timers
 
-!     Created       : May   1988  by Leo Postma
-!     Modified      : March 1993  by Jan van Beek
-!                   : May   2011  by Leo Postma   : Fortran 90 look and feel
+        implicit none
 
-!     Logical units : none
+        !     Parameters
 
-      use timers       !   performance timers
+        !     kind           function         name                   Descriptipon
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: nvar                  !< number of variables
+        integer(kind = int_wp), intent(in) :: ndim2                 !< data per variable
+        integer(kind = int_wp), intent(in) :: tset                  !< interpolation time
+        integer(kind = int_wp), intent(in) :: thigh                 !< time at end of interval
+        integer(kind = int_wp), intent(in) :: tlow                  !< time at start of interval
+        real(kind = real_wp), intent(out) :: result(ndim2, nvar)    !< resulting array
+        real(kind = real_wp), intent(in) :: lower (ndim2, nvar)    !< lower end array
+        real(kind = real_wp), intent(in) :: higher(ndim2, nvar)    !< higher end array
+        integer(kind = int_wp), intent(in) :: iftyp (nvar)         !< interpolation type per variable
 
-!     Parameters
+        !     local decalations
 
-!     kind           function         name                   Descriptipon
+        real(kind = real_wp) :: factor1       ! weight of the higher end
+        real(kind = real_wp) :: factor2       ! weight of the lower end
+        integer(kind = int_wp) :: ivar          ! loop counter
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("interpol", ithndl)
 
-      integer(kind=int_wp), intent(in   ) ::  nvar                  !< number of variables
-      integer(kind=int_wp), intent(in   ) ::  ndim2                 !< data per variable
-      integer(kind=int_wp), intent(in   ) ::  tset                  !< interpolation time
-      integer(kind=int_wp), intent(in   ) ::  thigh                 !< time at end of interval
-      integer(kind=int_wp), intent(in   ) ::  tlow                  !< time at start of interval
-      real(kind=real_wp), intent(  out) ::  result(ndim2,nvar)    !< resulting array
-      real(kind=real_wp), intent(in   ) ::  lower (ndim2,nvar)    !< lower end array
-      real(kind=real_wp), intent(in   ) ::  higher(ndim2,nvar)    !< higher end array
-      integer(kind=int_wp), intent(in   ) ::  iftyp (nvar )         !< interpolation type per variable
+        !        interpolate
 
-!     local decalations
+        factor1 = float(tset - tlow) / float(thigh - tlow)
+        factor2 = 1.0 - factor1
 
-      real(kind=real_wp) :: factor1       ! weight of the higher end
-      real(kind=real_wp) :: factor2       ! weight of the lower end
-      integer(kind=int_wp) :: ivar          ! loop counter
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "interpol", ithndl )
+        do ivar = 1, nvar
+            if (iftyp(ivar) < 0) then           !    block function
+                result(:, ivar) = lower(:, ivar)
+            else                                     !    linear interpolation
+                result(:, ivar) = lower(:, ivar) * factor2 + higher(:, ivar) * factor1
+            endif
+        enddo
 
-!        interpolate
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      factor1 = float( tset - tlow ) / float( thigh - tlow )
-      factor2 = 1.0 - factor1
-
-      do ivar = 1, nvar
-         if ( iftyp(ivar) .lt. 0 ) then           !    block function
-            result(:,ivar) = lower(:,ivar)
-         else                                     !    linear interpolation
-            result(:,ivar) = lower(:,ivar)*factor2 + higher(:,ivar)*factor1
-         endif
-      enddo
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_interpol
+end module m_interpol

@@ -20,53 +20,52 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq65
-      use m_waq_precision
+module m_dlwq65
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE DLWQ65 (AMASS, VOLUME, IDT, NOSEG)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED             : june 1988 by L.Postma
+        !
+        !     FUNCTION            : makes a closure error correction
+        !                           for steady state computations
+        !
+        !     LOGICAL UNITNUMBERS : none
+        !
+        !     SUBROUTINES CALLED  : none
+        !
+        !     PARAMETERS          :
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     AMASS   REAL      NOSEG     IN/OUT  closure error correction
+        !     VOLUME  REAL      NOSEG     INPUT   volume
+        !     IDT     INTEGER     1       INPUT   Time between AMASS and VOLUME
+        !     NOSEG   INTEGER     1       INPUT   number of segments
+        !
+        use timers
 
-      contains
+        real(kind = real_wp) :: AMASS (*), VOLUME(*)
+        integer(kind = int_wp) :: idt, noseg
+        integer(kind = int_wp) :: i
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwq65", ithandl)
+        !
+        !         loop oversehe number of segments
+        !
+        DO I = 1, NOSEG
+            AMASS(I) = (AMASS(I) - VOLUME(I)) / IDT
+        end do
+        !
+        if (timon) call timstop (ithandl)
+        RETURN
+    END
 
-
-      SUBROUTINE DLWQ65 ( AMASS  , VOLUME , IDT    , NOSEG  )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED             : june 1988 by L.Postma
-!
-!     FUNCTION            : makes a closure error correction
-!                           for steady state computations
-!
-!     LOGICAL UNITNUMBERS : none
-!
-!     SUBROUTINES CALLED  : none
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     AMASS   REAL      NOSEG     IN/OUT  closure error correction
-!     VOLUME  REAL      NOSEG     INPUT   volume
-!     IDT     INTEGER     1       INPUT   Time between AMASS and VOLUME
-!     NOSEG   INTEGER     1       INPUT   number of segments
-!
-      use timers
-
-      real(kind=real_wp) ::AMASS (  *) , VOLUME(*)
-      integer(kind=int_wp) ::idt, noseg
-      integer(kind=int_wp) ::i
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwq65", ithandl )
-!
-!         loop oversehe number of segments
-!
-      DO 10 I = 1 , NOSEG
-      AMASS(I) = ( AMASS(I)-VOLUME(I) )/IDT
-   10 CONTINUE
-!
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
-
-      end module m_dlwq65
+end module m_dlwq65

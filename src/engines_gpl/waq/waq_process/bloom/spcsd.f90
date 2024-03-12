@@ -79,7 +79,7 @@
       do i=1,nn
          il=i+1
          do j=il,n
-            if (dvec(i) .le. dvec(j)) cycle
+            if (dvec(i) <= dvec(j)) cycle
             rtemp=dvec(i)
             dvec(i)=dvec(j)
             dvec(j)=rtemp
@@ -88,21 +88,21 @@
 
 !
 !  Are there any valid intervals?
-      if (dvec(n) .le. 0.0) go to 130
+      if (dvec(n) <= 0.0) go to 130
 
 !  Eliminate intervals whose maximum root is either negative or
 !  (in a dynamic run) smaller than the extinction of the remaining
 !  biomass.
       do k=1,n
-         if (dvec(k) .gt. extlim) exit
+         if (dvec(k) > extlim) exit
       end do
-      if (k.gt.1) k=k-1
+      if (k>1) k=k-1
 
 !  Eliminate duplicates in output vector.
       m=1
       rvec(1)=dvec(k)
       do i=k,nn
-         if (dvec(i+1) .le. dvec(i)) cycle
+         if (dvec(i+1) <= dvec(i)) cycle
          m=m+1
          rvec(m)=dvec(i+1)
       end do
@@ -111,9 +111,9 @@
       ni=m-1
       do i=1,nuspec
          ij=2*i-1
-         if ((svec(ij+1) .lt. 0.)) cycle
+         if ((svec(ij+1) < 0.)) cycle
          do j=1,ni
-            if ((svec(ij) .le. rvec(j)) .and. (svec(ij+1) .ge. rvec(j+1))) aco(j,i)=0.0
+            if ((svec(ij) <= rvec(j)) .and. (svec(ij+1) >= rvec(j+1))) aco(j,i)=0.0
          end do
       end do
       return

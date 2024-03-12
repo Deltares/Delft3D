@@ -126,19 +126,19 @@ MODULE WORKSPACE
                                MOD(ITOT,   1000000)/   1000, &
                                MOD(ITOT,      1000)
         IEFLAG = 0
-        IF ( ITOTA .GT. IMAXA .AND. IMAXA .NE. 0 .AND. L_DECL ) THEN
+        IF ( ITOTA > IMAXA .AND. IMAXA /= 0 .AND. L_DECL ) THEN
             WRITE ( LUNREP, 2010 ) ITOTA, IMAXA
             IEFLAG = 1
         ENDIF
-        IF ( ITOTI .GT. IMAXI .AND. IMAXI .NE. 0 .AND. L_DECL ) THEN
+        IF ( ITOTI > IMAXI .AND. IMAXI /= 0 .AND. L_DECL ) THEN
             WRITE ( LUNREP, 2020 ) ITOTI, IMAXI
             IEFLAG = 1
         ENDIF
-        IF ( ITOTC .GT. IMAXC .AND. IMAXC .NE. 0 .AND. L_DECL ) THEN
+        IF ( ITOTC > IMAXC .AND. IMAXC /= 0 .AND. L_DECL ) THEN
             WRITE ( LUNREP, 2030 ) ITOTC, IMAXC
             IEFLAG = 1
         ENDIF
-        IF ( IEFLAG .EQ.    1 ) THEN
+        IF ( IEFLAG ==    1 ) THEN
             WRITE ( LUNREP, 2040 )
             CALL SRSTOP(1)
         ENDIF

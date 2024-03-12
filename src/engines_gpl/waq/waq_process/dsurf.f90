@@ -20,81 +20,80 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dsurf
-      use m_waq_precision
+module m_dsurf
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dsurf  (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_write_error_message
 
-      contains
+        !>\file
+        !>       Dynamic calculation of the horizontal surface area from volume and depth
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                             ----
+        ! DEPTH   R*4 1 O depth of the water column                            [m]
+        ! SURF    R*4 1 I surface area of segment                             [m2]
+        ! VOLUME  R*4 1 I volume of segment                                   [m3]
 
-      subroutine dsurf  ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_write_error_message
+        !     Logical Units : -
 
-!>\file
-!>       Dynamic calculation of the horizontal surface area from volume and depth
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                             ----
-! DEPTH   R*4 1 O depth of the water column                            [m]
-! SURF    R*4 1 I surface area of segment                             [m2]
-! VOLUME  R*4 1 I volume of segment                                   [m3]
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
-      
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+                VOLUME = PMSA(IP1)
+                DEPTH = PMSA(IP2)
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
+                IF (DEPTH < 1E-30) CALL write_error_message ('DEPTH in DSURF zero')
 
-      VOLUME = PMSA(IP1 )
-      DEPTH  = PMSA(IP2 )
+                !***********************************************************************
+                !**** Calculate SURF
+                !***********************************************************************
+                !
+                SURF = VOLUME / DEPTH
+                !
+                PMSA(IP3) = SURF
+                !
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      IF (DEPTH .LT. 1E-30) CALL write_error_message ('DEPTH in DSURF zero')
-
-!***********************************************************************
-!**** Calculate SURF
-!***********************************************************************
-!
-      SURF = VOLUME / DEPTH
-!
-      PMSA(IP3 ) = SURF
-!
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_dsurf
+end module m_dsurf

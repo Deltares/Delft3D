@@ -717,11 +717,8 @@
 
       return
 
- 2000 format ( ' total integer array space: ',I8)
  2005 format ( ' ERROR  : integer array is too big. Unable to create pointer. ' )
  2010 format ( ' ERROR  : allocating integer array. Name   : ',A)
- 2020 format ( ' Parallel processing with ',i3,' processors')
- 2030 format ('  Parallel processing with ',i3,' processors')
  2040 format (   i4,1x,a20,i12 )
 
       end subroutine

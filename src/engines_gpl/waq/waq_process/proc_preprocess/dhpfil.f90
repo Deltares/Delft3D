@@ -20,39 +20,38 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dhpfil
-      use m_waq_precision
+module m_dhpfil
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE DHPFIL(LUNREP, TEKST, FILNAM)
+        !
+        !     print a filename to file
+        !
+        use timers       !   performance timers
 
-      contains
+        INTEGER(kind = int_wp) :: LUNREP
+        CHARACTER*(*) TEKST, FILNAM
 
+        integer(kind = int_wp) :: i, ilen, iend
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("dhpfil", ithndl)
+        !
+        ILEN = LEN(FILNAM)
+        DO I = ILEN, 1, -1
+            IEND = I
+            IF (FILNAM(I:I) /= ' ') GOTO 10
+        ENDDO
+        10 CONTINUE
+        !
+        WRITE(LUNREP, '(A,A)') TEKST, FILNAM(1:IEND)
+        !
+        if (timon) call timstop(ithndl)
+        RETURN
+    END
 
-      SUBROUTINE DHPFIL(LUNREP,TEKST,FILNAM)
-!
-!     print a filename to file
-!
-      use timers       !   performance timers
-
-      INTEGER(kind=int_wp) ::LUNREP
-      CHARACTER*(*) TEKST , FILNAM
-      
-      integer(kind=int_wp) ::i, ilen, iend
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "dhpfil", ithndl )
-!
-      ILEN = LEN(FILNAM)
-      DO I = ILEN , 1 , -1
-         IEND = I
-         IF ( FILNAM(I:I) .NE. ' ' ) GOTO 10
-      ENDDO
-   10 CONTINUE
-!
-      WRITE(LUNREP,'(A,A)') TEKST,FILNAM(1:IEND)
-!
-      if (timon) call timstop( ithndl )
-      RETURN
-      END
-
-      end module m_dhpfil
+end module m_dhpfil

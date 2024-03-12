@@ -20,105 +20,104 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_watage
-      use m_waq_precision
+module m_watage
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine watage (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_write_error_message
 
-      contains
+        !>\file
+        !>       Age of water through the tracer substances
 
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                             ----
+        ! AGE     R*4 1 O average age of the water
+        ! CONCWA  R*4 1 I fraction of specific water ( conservative )
+        ! CONCTR  R*4 1 I concentration tracer ( 1st order decay )
+        ! DECAYR  R*4 1 I decay rate tracer
+        ! FDECAY  R*4 1 O flux first order decay on tracer
 
-      subroutine watage ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_write_error_message
+        !     Logical Units : -
 
-!>\file
-!>       Age of water through the tracer substances
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                             ----
-! AGE     R*4 1 O average age of the water
-! CONCWA  R*4 1 I fraction of specific water ( conservative )
-! CONCTR  R*4 1 I concentration tracer ( 1st order decay )
-! DECAYR  R*4 1 I decay rate tracer
-! FDECAY  R*4 1 O flux first order decay on tracer
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT NONE
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IFLUX, ISEG
+        REAL(kind = real_wp) :: CONCWA, CONCTR, DECAYR, ARGUM, AGE, FDECAY
 
-      IMPLICIT NONE
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
+                CONCWA = PMSA(IP1)
+                CONCTR = PMSA(IP2)
+                DECAYR = PMSA(IP3)
+                !
+                IF (DECAYR < 1E-20) CALL write_error_message ('RCDECTR in WATAGE zero')
 
-      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IFLUX, ISEG
-      REAL(kind=real_wp) ::CONCWA, CONCTR, DECAYR, ARGUM, AGE, FDECAY
+                !     Calculate age
+                !
+                IF (CONCWA <= 1.0E-20) THEN
+                    AGE = -999.
+                ELSEIF (CONCTR <= 1.0E-20) THEN
+                    AGE = -999.
+                ELSEIF (CONCTR > CONCWA) THEN
+                    AGE = -999.
+                ELSE
+                    ARGUM = CONCTR / CONCWA
+                    IF (ARGUM < 1E-20) THEN
+                        AGE = -999.
+                    ELSEIF (ABS(ARGUM - 1.0) > 1.0E-3) THEN
+                        AGE = - LOG(ARGUM) / DECAYR
+                    ELSE
+                        AGE = - ((ARGUM - 1.0) - (ARGUM - 1.0)**2 / 2.0) / DECAYR
+                    ENDIF
+                ENDIF
+                !
+                !     Calculate decay
+                !
+                FDECAY = DECAYR * CONCTR
+                !
+                !     Output
+                !
+                PMSA(IP4) = AGE
+                FL(1 + IFLUX) = FDECAY
+                !
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            IP4 = IP4 + INCREM (4)
+            !
+        end do
+        !
+        RETURN
+    END
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
-
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
-      CONCWA = PMSA(IP1 )
-      CONCTR = PMSA(IP2 )
-      DECAYR = PMSA(IP3 )
-!
-      IF (DECAYR .LT. 1E-20 ) CALL write_error_message ('RCDECTR in WATAGE zero')
-
-!     Calculate age
-!
-      IF ( CONCWA .LE. 1.0E-20 ) THEN
-          AGE = -999.
-      ELSEIF ( CONCTR .LE. 1.0E-20 ) THEN
-          AGE = -999.
-      ELSEIF ( CONCTR .GT. CONCWA ) THEN
-          AGE = -999.
-      ELSE
-          ARGUM =  CONCTR/CONCWA
-          IF (ARGUM .LT. 1E-20 ) THEN
-              AGE = -999.
-          ELSEIF ( ABS(ARGUM-1.0) > 1.0E-3 ) THEN
-              AGE = - LOG(ARGUM) / DECAYR
-          ELSE
-              AGE = - ( (ARGUM-1.0) - (ARGUM-1.0)**2 / 2.0 ) / DECAYR
-          ENDIF
-      ENDIF
-!
-!     Calculate decay
-!
-      FDECAY  = DECAYR * CONCTR
-!
-!     Output
-!
-      PMSA(IP4) = AGE
-      FL(1 + IFLUX)   = FDECAY
-!
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-      IP4   = IP4   + INCREM (  4 )
-!
- 9000 CONTINUE
-!
-      RETURN
-      END
-
-      end module m_watage
+end module m_watage

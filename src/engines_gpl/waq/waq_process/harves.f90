@@ -90,7 +90,7 @@
       call dhnoseg(nosegw)
       call dhnolay(nolay)
       nosegl = nosegw/nolay
-      if ( nosegl*nolay .ne. nosegw ) then
+      if ( nosegl*nolay /= nosegw ) then
          write(lunrep,*) ' ERROR: unstructured 3d application'
          write(lunrep,*) ' harvesting module not possible'
          call srstop(1)
@@ -98,7 +98,7 @@
 
       ! check if unit switch global, consbl allows it to be variable
 
-      if ( increm(5) .ne. 0 ) then
+      if ( increm(5) /= 0 ) then
          write(lunrep,*) ' ERROR: unit switch not a constant'
          write(lunrep,*) ' harvesting module not possible'
          call srstop(1)
@@ -119,7 +119,7 @@
 
          ! doe alleen als harvest groter is dan 0
 
-         if ( zharvegr .gt. 1e-20 .or. pharvegr .gt. 1e-20 ) then
+         if ( zharvegr > 1e-20 .or. pharvegr > 1e-20 ) then
 
             ! sommeer grazer per laag altijd in gC/m2
 
@@ -132,7 +132,7 @@
                cgrazer = pmsa(ipoint(1)+(iseg-1)*increm(1))
                depth   = pmsa(ipoint(8)+(iseg-1)*increm(8))
 
-               if ( grunitsw .eq. 1 ) then
+               if ( grunitsw == 1 ) then
                   tot_cgrazer = tot_cgrazer + cgrazer
                else
                   tot_cgrazer = tot_cgrazer + cgrazer*depth
@@ -147,11 +147,11 @@
 
             ! maximeer harvest tot de threshold (tgrazer )
 
-            if ( grunitsw .eq. 0 ) then
+            if ( grunitsw == 0 ) then
                tgrazer = tgrazer*tot_depth
             endif
-            if ( harvest .gt. tot_cgrazer-tgrazer  ) then
-               if ( nr_message .lt. max_message ) then
+            if ( harvest > tot_cgrazer-tgrazer  ) then
+               if ( nr_message < max_message ) then
                   nr_message = nr_message + 1
                   write(lunrep,*) ' WARNING: biomass not sufficient to support harvest rate'
                   write(lunrep,*) ' segment  : ',ikol
@@ -159,7 +159,7 @@
                   write(lunrep,*) ' biomass  : ',tot_cgrazer ,'gC/m2'
                   write(lunrep,*) ' threshold: ',tgrazer     ,'gC/m2'
 
-                  if ( nr_message .eq. max_message ) then
+                  if ( nr_message == max_message ) then
                      write(lunrep,*) 'maximum message on harvesting reached, further messages suppressed'
                   endif
                endif
@@ -168,7 +168,7 @@
 
             ! bepaal de harvest als fractie van het totaal
 
-            if ( tot_cgrazer .gt. 1e-20 ) then
+            if ( tot_cgrazer > 1e-20 ) then
                fharvest = harvest/tot_cgrazer
             else
                fharvest = 0.0
@@ -187,7 +187,7 @@
                volume  = pmsa(ipoint(7)+(iseg-1)*increm(7))
                bharvegr= pmsa(ipoint(10)+(iseg-1)*increm(10))
 
-               if ( grunitsw .eq. 1 ) then
+               if ( grunitsw == 1 ) then
                   bharvegr = bharvegr + cgrazer*fharvest*volume/depth
                else
                   bharvegr = bharvegr + cgrazer*fharvest*volume

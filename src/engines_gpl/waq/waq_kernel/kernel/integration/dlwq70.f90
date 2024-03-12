@@ -95,28 +95,28 @@
       if ( timon ) call timstrt ( "dlwq70", ithandl )
 !
       IBAND = 2*JTRACK + 1
-      DO 50 IQ = 1 , NOQ
+      DO IQ = 1 , NOQ
 !
 !         initialisations , check for transport anyhow
 !
       I    = IPOINT(1,IQ)
       J    = IPOINT(2,IQ)
-      IF ( I .EQ. 0 .OR. J .EQ. 0 ) GOTO 50
+      IF ( I == 0 .OR. J == 0 ) GOTO 50
       A    = AREA(IQ)
       Q    = FLOW(IQ)
-      IF ( MOD(IOPT,2) .EQ. 1 .AND. ABS(Q) .LT. 10.0E-25 ) GOTO 50
-           IF ( A .LT. 1.0E-25 )  A = 1.0
+      IF ( MOD(IOPT,2) == 1 .AND. ABS(Q) < 10.0E-25 ) GOTO 50
+           IF ( A < 1.0E-25 )  A = 1.0
       E  = DISP(1)
       AL = ALENG(1)
-      IF ( IQ .GT. NOQ1      ) THEN
+      IF ( IQ > NOQ1      ) THEN
            E  = DISP (2)
            AL = ALENG(2)
       ENDIF
-      IF ( IQ .GT. NOQ1+NOQ2 ) THEN
+      IF ( IQ > NOQ1+NOQ2 ) THEN
            E  = DISP (3)
            AL = ALENG(3)
       ENDIF
-      IF ( ILFLAG .EQ. 1 ) THEN
+      IF ( ILFLAG == 1 ) THEN
            DL = A/(ALENG(2*IQ-1) + ALENG(2*IQ))
            F1 = ALENG(2*IQ  )*DL/A
            F2 = ALENG(2*IQ-1)*DL/A
@@ -126,12 +126,12 @@
            F2 = 0.5
       ENDIF
       E  = E*DL
-      IF (IDPNT(ISYS).GT.0) E = E + DISPER((IQ-1)*NODISP+IDPNT(ISYS))*DL
-      IF (IVPNT(ISYS).GT.0) Q = Q + VELO  ((IQ-1)*NOVELO+IVPNT(ISYS))*A
+      IF (IDPNT(ISYS)>0) E = E + DISPER((IQ-1)*NODISP+IDPNT(ISYS))*DL
+      IF (IVPNT(ISYS)>0) Q = Q + VELO  ((IQ-1)*NOVELO+IVPNT(ISYS))*A
       Q1 = F1*Q
       Q2 = F2*Q
-      IF ( I .LT. 0 ) GOTO 10
-      IF ( J .LT. 0 ) GOTO 30
+      IF ( I < 0 ) GOTO 10
+      IF ( J < 0 ) GOTO 30
 !
 !        the regular case
 !
@@ -147,10 +147,10 @@
 !
 !        The 'from' segment is a boundary
 !
-   10 IF ( J    .LT. 0 ) GOTO 50
-      IF ( MOD(IOPT,4) .GT. 1 ) E = 0.0
-      IF ( MOD(IOPT,8) .GE. 4 ) THEN
-           IF ( Q .GT. 0.0 ) THEN
+   10 IF ( J    < 0 ) GOTO 50
+      IF ( MOD(IOPT,4) > 1 ) E = 0.0
+      IF ( MOD(IOPT,8) >= 4 ) THEN
+           IF ( Q > 0.0 ) THEN
                 Q1 = Q
                 Q2 = 0.0
            ELSE
@@ -160,18 +160,19 @@
       ENDIF
       K1 = (-I-1)*NOTOT
       I4 = ( J-1)*NSYS  + 1
-      DO 20 I3=ISYS,ISYS+NSYS-1
+      DO I3=ISYS,ISYS+NSYS-1
       DERIV(I4) = DERIV(I4) + ( Q1+E) * BOUND(K1+I3)
-   20 I4=I4+1
+      I4=I4+1
+      end do
       IT = (J-1)*IBAND + JTRACK + 1
       AMAT(IT) = AMAT(IT) - Q2 + E
       GOTO 50
 !
 !        The 'to' element was a boundary.
 !
-   30 IF ( MOD(IOPT,4) .GT. 1 ) E = 0.0
-      IF ( MOD(IOPT,8) .GE. 4 ) THEN
-           IF ( Q .GT. 0.0 ) THEN
+   30 IF ( MOD(IOPT,4) > 1 ) E = 0.0
+      IF ( MOD(IOPT,8) >= 4 ) THEN
+           IF ( Q > 0.0 ) THEN
                 Q1 = Q
                 Q2 = 0.0
            ELSE
@@ -181,15 +182,17 @@
       ENDIF
       K2 = (-J-1)*NOTOT
       I4 = ( I-1)*NSYS  + 1
-      DO 40 I3=ISYS,ISYS+NSYS-1
+      DO I3=ISYS,ISYS+NSYS-1
       DERIV(I4) = DERIV(I4) + (-Q2+E) * BOUND(K2+I3)
-   40 I4=I4+1
+      I4=I4+1
+      end do
       JT = (I-1)*IBAND + JTRACK + 1
       AMAT(JT) = AMAT(JT) + Q1 + E
 !
 !        end of the loop over exchanges
 !
    50 CONTINUE
+      end do
 !
       if ( timon ) call timstop ( ithandl )
       RETURN

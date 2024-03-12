@@ -86,7 +86,7 @@
 !
 !     Initialize file
 !
-      IF ( INIT .EQ. 1 ) THEN
+      IF ( INIT == 1 ) THEN
          INIT = 0
 !
 !        Write header

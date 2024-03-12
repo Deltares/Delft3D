@@ -84,7 +84,7 @@
             var4 = 1
       iknmrk(iseg) = var1 + 10*var2 + 100*var3 + 1000*var4
       end do
-      if ( icount .gt. 0 ) then
+      if ( icount > 0 ) then
          write(lunrep ,*) 'number of changes in feature array', icount
       endif
 !

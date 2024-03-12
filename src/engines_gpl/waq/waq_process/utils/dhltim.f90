@@ -20,37 +20,35 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dhltim
+module m_dhltim
 
-      implicit none
+    implicit none
 
-      contains
-
-
-      logical function dhltim(itime,idtact)
-!
-!     Deltares
-!
-!     created             : jul 11 by jan van beek
-!
-!     function            : determines if this is the last step
-!
-!     declarations
-      use m_sysi          ! Timer characteristics
-
-      integer             :: itime     ! actual time in scu
-      integer             :: idtact    ! time step
-      integer             :: ihalf_idt ! half time step
+contains
 
 
+    logical function dhltim(itime, idtact)
+        !
+        !     Deltares
+        !
+        !     created             : jul 11 by jan van beek
+        !
+        !     function            : determines if this is the last step
+        !
+        !     declarations
+        use m_sysi          ! Timer characteristics
 
-      ihalf_idt = idtact/2
-      if ( abs(itime-itstop) .le. ihalf_idt ) then
-         dhltim = .true.
-      else
-         dhltim = .false.
-      endif
+        integer :: itime     ! actual time in scu
+        integer :: idtact    ! time step
+        integer :: ihalf_idt ! half time step
 
-      return
-      end
-      end module m_dhltim
+        ihalf_idt = idtact / 2
+        if (abs(itime - itstop) <= ihalf_idt) then
+            dhltim = .true.
+        else
+            dhltim = .false.
+        endif
+
+        return
+    end
+end module m_dhltim

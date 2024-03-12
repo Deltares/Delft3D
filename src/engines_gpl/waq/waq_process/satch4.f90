@@ -20,84 +20,83 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_satch4
-      use m_waq_precision
+module m_satch4
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine satch4 (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Methane saturation concentration based on atmospheric methane pressure
 
-      contains
+        !
+        !     Description of the module :
+        !
+        !        ----- description of parameters -----
+        ! Name    T   L I/O   Description                                   Units
+        ! ----    --- -  -    -------------------                            ----
+        ! PCH4    R*4 1 I atmospheric methane pressure                       [atm]
+        ! TEMP    R*4 1 I ambient temperature                                 [oC]
+        ! TEMP20  R*4 1 L stand. temperature (20) minus ambient temperature   [oC]
+        !
+        !     Logical Units : -
 
+        !     Modules called : -
 
-      subroutine satch4 ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Methane saturation concentration based on atmospheric methane pressure
+        !     Name     Type   Library
+        !     ------   -----  ------------
+        !
+        IMPLICIT NONE
+        !
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        !
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IN1, IN2, IN3
+        INTEGER(kind = int_wp) :: ISEG, IFLUX
+        !
+        REAL(kind = real_wp) :: PCH4, CCH4S
+        REAL(kind = real_wp) :: TEMP, TEMP20
+        !
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        !
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
+                PCH4 = PMSA(IP1)
+                TEMP = PMSA(IP2)
+                !
+                !           Calculate the saturation concentration
+                !
+                TEMP20 = 20 - TEMP
+                CCH4S = 18.76 * PCH4 * (1.024**TEMP20)
+                !
+                !           The saturation concentration is output
+                !
+                PMSA(IP3) = CCH4S
+                !
+            ENDIF
+            !
+            IP1 = IP1 + IN1
+            IP2 = IP2 + IN2
+            IP3 = IP3 + IN3
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-!
-!     Description of the module :
-!
-!        ----- description of parameters -----
-! Name    T   L I/O   Description                                   Units
-! ----    --- -  -    -------------------                            ----
-! PCH4    R*4 1 I atmospheric methane pressure                       [atm]
-! TEMP    R*4 1 I ambient temperature                                 [oC]
-! TEMP20  R*4 1 L stand. temperature (20) minus ambient temperature   [oC]
-!
-!     Logical Units : -
-
-!     Modules called : -
-
-!     Name     Type   Library
-!     ------   -----  ------------
-!
-      IMPLICIT NONE
-!
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-!
-      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IN1, IN2, IN3
-      INTEGER(kind=int_wp) ::ISEG   , IFLUX
-!
-      REAL(kind=real_wp) ::PCH4   , CCH4S
-      REAL(kind=real_wp) ::TEMP   , TEMP20
-!
-      IN1  = INCREM( 1)
-      IN2  = INCREM( 2)
-      IN3  = INCREM( 3)
-!
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
-            PCH4   = PMSA(IP1 )
-            TEMP   = PMSA(IP2 )
-!
-!           Calculate the saturation concentration
-!
-            TEMP20 = 20 - TEMP
-            CCH4S  = 18.76 * PCH4 * (1.024**TEMP20)
-!
-!           The saturation concentration is output
-!
-            PMSA(IP3 ) = CCH4S
-!
-      ENDIF
-!
-      IP1   = IP1   + IN1
-      IP2   = IP2   + IN2
-      IP3   = IP3   + IN3
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_satch4
+end module m_satch4

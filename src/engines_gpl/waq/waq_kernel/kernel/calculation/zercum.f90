@@ -20,88 +20,87 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_zercum
-      use m_waq_precision
+module m_zercum
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine zercum (notot, nosys, noflux, ndmpar, ndmpq, &
+            ndmps, asmass, flxint, amass2, flxdmp, &
+            dmpq, dmps, noraai, imflag, ihflag, &
+            trraai, ibflag, nowst, wstdmp)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>        Zero's the accumulated balance array's
 
-      subroutine zercum ( notot  , nosys  , noflux , ndmpar , ndmpq  , & 
-                         ndmps  , asmass , flxint , amass2 , flxdmp , & 
-                         dmpq   , dmps   , noraai , imflag , ihflag , & 
-                         trraai , ibflag , nowst  , wstdmp )
+        !     CREATED:            : march 1993 by Jan van Beek
 
-!     Deltares Software Centre
+        !     FILES               : -
 
-!>\File
-!>        Zero's the accumulated balance array's
+        use timers
 
-!     CREATED:            : march 1993 by Jan van Beek
+        implicit none
 
-!     FILES               : -
+        !     Parameters          :
 
-      use timers
+        !     kind           function         name                      description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: notot                   !< Total number of substances
+        integer(kind = int_wp), intent(in) :: nosys                   !< Number of transported substances
+        integer(kind = int_wp), intent(in) :: noflux                  !< Number of fluxes
+        integer(kind = int_wp), intent(in) :: ndmpar                  !< Number of dump areas
+        integer(kind = int_wp), intent(in) :: ndmpq                   !< Number of dump exchanges
+        integer(kind = int_wp), intent(in) :: ndmps                   !< Number of dump segments
+        real(kind = real_wp), intent(out) :: asmass(notot, ndmpar, 6) !< Mass balance terms
+        real(kind = real_wp), intent(out) :: flxint(noflux, ndmpar)   !< Integrated fluxes
+        real(kind = real_wp), intent(out) :: amass2(notot, 5)   !< Mass balance whole system
+        real(kind = real_wp), intent(out) :: flxdmp(noflux, ndmps)   !< Integrated fluxes
+        real(kind = real_wp), intent(out) :: dmpq  (nosys, ndmpq, 2) !< Integrated fluxes
+        real(kind = real_wp), intent(out) :: dmps  (notot, ndmps, 3) !< Integrated fluxes
+        integer(kind = int_wp), intent(in) :: noraai                  !< Number of transects
+        logical, intent(in) :: imflag                  !< True if monitoring step
+        logical, intent(in) :: ihflag                  !< True if history step
+        real(kind = real_wp), intent(out) :: trraai(nosys, noraai)   !< Cummulative transport over transects
+        integer(kind = int_wp), intent(in) :: ibflag                  !< zero or one
+        integer(kind = int_wp), intent(in) :: nowst                   !< number of wasteloads
+        real(kind = real_wp), intent(out) :: wstdmp(notot, nowst, 2) !< accumulated wasteloads 1/2 in and out
 
-!     Parameters          :
+        !     Local declarations
 
-!     kind           function         name                      description
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("zercum", ithandl)
 
-      integer(kind=int_wp), intent(in   )  ::notot                   !< Total number of substances
-      integer(kind=int_wp), intent(in   )  ::nosys                   !< Number of transported substances
-      integer(kind=int_wp), intent(in   )  ::noflux                  !< Number of fluxes
-      integer(kind=int_wp), intent(in   )  ::ndmpar                  !< Number of dump areas
-      integer(kind=int_wp), intent(in   )  ::ndmpq                   !< Number of dump exchanges
-      integer(kind=int_wp), intent(in   )  ::ndmps                   !< Number of dump segments
-      real(kind=real_wp), intent(  out)  ::asmass(notot ,ndmpar,6) !< Mass balance terms
-      real(kind=real_wp), intent(  out)  ::flxint(noflux,ndmpar)   !< Integrated fluxes
-      real(kind=real_wp), intent(  out)  ::amass2(notot ,5     )   !< Mass balance whole system
-      real(kind=real_wp), intent(  out)  ::flxdmp(noflux,ndmps )   !< Integrated fluxes
-      real(kind=real_wp), intent(  out)  ::dmpq  (nosys ,ndmpq ,2) !< Integrated fluxes
-      real(kind=real_wp), intent(  out)  ::dmps  (notot ,ndmps ,3) !< Integrated fluxes
-      integer(kind=int_wp), intent(in   )  ::noraai                  !< Number of transects
-      logical      , intent(in   ) :: imflag                  !< True if monitoring step
-      logical      , intent(in   ) :: ihflag                  !< True if history step
-      real(kind=real_wp), intent(  out)  ::trraai(nosys ,noraai)   !< Cummulative transport over transects
-      integer(kind=int_wp), intent(in   )  ::ibflag                  !< zero or one
-      integer(kind=int_wp), intent(in   )  ::nowst                   !< number of wasteloads
-      real(kind=real_wp), intent(  out)  ::wstdmp(notot ,nowst ,2) !< accumulated wasteloads 1/2 in and out
+        !     Zero all monitor ( and balance ) realted cummulative array's
 
-!     Local declarations
+        if (imflag) then
+            if (ibflag == 1) asmass = 0.0
+            if (ibflag == 1) flxint = 0.0
+            amass2 = 0.0
+            wstdmp = 0.0
+        endif
+        !     flxdmp = 0.0
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "zercum", ithandl )
+        !     Zero all monitor .or. history realted
 
-!     Zero all monitor ( and balance ) realted cummulative array's
+        if (imflag .or. ihflag) then
+            dmpq = 0.0
+            dmps = 0.0
+        endif
 
-      if ( imflag ) then
-         if ( ibflag .eq. 1 ) asmass = 0.0
-         if ( ibflag .eq. 1 ) flxint = 0.0
-         amass2 = 0.0
-         wstdmp = 0.0
-      endif
-!     flxdmp = 0.0
+        !     Zero all history realted
 
-!     Zero all monitor .or. history realted
+        if (ihflag) then
+            trraai = 0.0
+        endif
 
-      if ( imflag .or. ihflag ) then
-         dmpq = 0.0
-         dmps = 0.0
-      endif
+        if (timon) call timstop (ithandl)
 
-!     Zero all history realted
+        return
+    end
 
-      if ( ihflag ) then
-         trraai = 0.0
-      endif
-
-      if ( timon ) call timstop ( ithandl )
-
-      return
-      end
-
-      end module m_zercum
+end module m_zercum

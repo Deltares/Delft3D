@@ -20,46 +20,45 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_blfile
-      use m_waq_precision
+module m_blfile
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine blfile (lunrep)
 
-      contains
+        use m_srstop
+        use bloom_data_io
 
+        implicit none
 
-      subroutine blfile (lunrep)
+        integer(kind = int_wp) :: lunrep       ! Report file for error messages
 
-      use m_srstop
-      use bloom_data_io  
+        character(256) filnam       ! File name with extention
+        integer(kind = int_wp) :: iost         ! I/O-status
 
-      implicit none
+        !  Open statement for BLOOM II input files.
+        filnam = trim(runnam) // '.frm'
+        open (newunit = infrm, file = filnam, iostat = iost)
+        if (iost /= 0) then
+            write (*, *) 'blfile: error opening .frm file'
+            write (lunrep, *) 'blfile: error opening .frm file'
+            call srstop(1)
+        endif
 
-      integer(kind=int_wp) ::lunrep       ! Report file for error messages
+        ! Open statement for BLOOM II debug file.
+        filnam = trim(runnam) // '.dbg'
+        open (newunit = outdbg, file = filnam, iostat = iost)
+        if (iost /= 0) then
+            write (*, *) 'blfile: error opening .dbg file'
+            write (lunrep, *) 'blfile: error opening .dbg file'
+            call srstop(1)
+        endif
 
-      character(256) filnam       ! File name with extention
-      integer(kind=int_wp) ::iost         ! I/O-status
+        return
+    end
 
-!  Open statement for BLOOM II input files.
-      filnam = trim(runnam)//'.frm'
-      open (newunit=infrm,file=filnam,iostat = iost)
-      if (iost .ne. 0) then
-         write (*,*) 'blfile: error opening .frm file'
-         write (lunrep,*) 'blfile: error opening .frm file'
-         call srstop(1)
-      endif
-
-! Open statement for BLOOM II debug file.
-      filnam = trim(runnam)//'.dbg'
-      open (newunit=outdbg,file=filnam,iostat = iost)
-      if (iost .ne. 0) then
-         write (*,*) 'blfile: error opening .dbg file'
-         write (lunrep,*) 'blfile: error opening .dbg file'
-         call srstop(1)
-      endif
-
-      return
-      end
-
-      end module m_blfile
+end module m_blfile

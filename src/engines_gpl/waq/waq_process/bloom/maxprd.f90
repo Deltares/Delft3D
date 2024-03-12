@@ -20,77 +20,76 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_maxprd
-      use m_waq_precision
+module m_maxprd
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    !  *********************************************************************
+    !  *    SUBROUTINE TO CALCULATE MAXIMAL PRIMARY PRODUCTION AND         *
+    !  *                  RESPIRATION RATES                                *
+    !  *********************************************************************
 
-      contains
+    subroutine maxprd(t)
 
+        use bloom_data_dim
+        use bloom_data_size
+        use bloom_data_io
+        use bloom_data_phyt
 
-!  *********************************************************************
-!  *    SUBROUTINE TO CALCULATE MAXIMAL PRIMARY PRODUCTION AND         *
-!  *                  RESPIRATION RATES                                *
-!  *********************************************************************
+        implicit none
 
-      subroutine maxprd(t)
+        real(kind = dp) :: t
+        integer(kind = int_wp) :: i, k
 
-      use bloom_data_dim
-      use bloom_data_size 
-      use bloom_data_io  
-      use bloom_data_phyt    
-
-      implicit none
-
-      real(kind=dp) ::t
-      integer(kind=int_wp) ::i, k
-      
-!  Calculate respiration rate constants.
-!  Calculate the maximum gross growth rate per day as a linear or
-!  exponential function of the temperature T.
-!  It is assumed that the input function should be incremented with
-!  the respiration rate constant. As an option the mortality rate
-!  constant can be added as well (LPMORT=1).
-!  As another option, Pmax can be set to some small number (BASMOR) if
-!  the temperature is below the value stored in TEMLIM.
-!  If, however, NREP is 1, the temperature limitation option is ignored
-!  because otherwise the model does not have an intial solution for the
-!  first time step.
-      if (t .ge. temlim) go to 20
-      if (nrep .eq. 1) go to 20
-         do i = 1,nuspec
+        !  Calculate respiration rate constants.
+        !  Calculate the maximum gross growth rate per day as a linear or
+        !  exponential function of the temperature T.
+        !  It is assumed that the input function should be incremented with
+        !  the respiration rate constant. As an option the mortality rate
+        !  constant can be added as well (LPMORT=1).
+        !  As another option, Pmax can be set to some small number (BASMOR) if
+        !  the temperature is below the value stored in TEMLIM.
+        !  If, however, NREP is 1, the temperature limitation option is ignored
+        !  because otherwise the model does not have an intial solution for the
+        !  first time step.
+        if (t >= temlim) go to 20
+        if (nrep == 1) go to 20
+        do i = 1, nuspec
             resp(i) = res1(i) * res2(i) ** t
             pmax(i) = basmor
-         end do
-         go to 40
-   20 continue
-      do i = 1,nuspec
-         resp(i) = res1(i) * res2(i) ** t
-         if (lpmax(i) .eq. 0) then
-            pmax(i) = (pmax1(i) * pmax2(i) ** t) + resp(i) + lpmort*rmort(i)
-         else
-            if (t .le. pmax2(i)) then
-               pmax(i) = 0.01
+        end do
+        go to 40
+        20 continue
+        do i = 1, nuspec
+            resp(i) = res1(i) * res2(i) ** t
+            if (lpmax(i) == 0) then
+                pmax(i) = (pmax1(i) * pmax2(i) ** t) + resp(i) + lpmort * rmort(i)
             else
-               pmax(i) = pmax1(i) * (t - pmax2(i)) + resp(i) +lpmort*rmort(i)
+                if (t <= pmax2(i)) then
+                    pmax(i) = 0.01
+                else
+                    pmax(i) = pmax1(i) * (t - pmax2(i)) + resp(i) + lpmort * rmort(i)
+                end if
             end if
-         end if
-      end do
-   40 continue
+        end do
+        40 continue
 
-!  If option "dump" was turned on, print pmax, resp and rmort.
-      if (idump .ne. 0) then
-         write (outdbg,50) (pmax(k),k=1,nuspec)
-   50    format ('  Pmax(T,j): ',30(F5.2,1X))
-         write (outdbg,60) (resp(k),k=1,nuspec)
-   60    format ('  Resp(T,j): ',30(F5.2,1X))
-         write (outdbg,70) (rmort (k),k=1,nuspec)
-   70    format ('  Rmort(T,j):',30(F5.2,1X))
-         write (outdbg,80) (sdmix (k),k=1,nuspec)
-   80    format ('  Sdmix(j):  ',30(F5.2,1X))
-      end if
-      return
-      end
+        !  If option "dump" was turned on, print pmax, resp and rmort.
+        if (idump /= 0) then
+            write (outdbg, 50) (pmax(k), k = 1, nuspec)
+            50    format ('  Pmax(T,j): ', 30(F5.2, 1X))
+            write (outdbg, 60) (resp(k), k = 1, nuspec)
+            60    format ('  Resp(T,j): ', 30(F5.2, 1X))
+            write (outdbg, 70) (rmort (k), k = 1, nuspec)
+            70    format ('  Rmort(T,j):', 30(F5.2, 1X))
+            write (outdbg, 80) (sdmix (k), k = 1, nuspec)
+            80    format ('  Sdmix(j):  ', 30(F5.2, 1X))
+        end if
+        return
+    end
 
-      end module m_maxprd
+end module m_maxprd

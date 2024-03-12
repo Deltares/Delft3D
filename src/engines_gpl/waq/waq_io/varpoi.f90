@@ -20,132 +20,132 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_varpoi
-      use m_waq_precision
-      use m_string_utils
+module m_varpoi
+    use m_waq_precision
+    use m_string_utils
 
-      implicit none
+    implicit none
 
-      contains
+contains
 
 
-      subroutine varpoi ( notot  , nopa   , nosfun , syname , nocons , & 
-                         nofun  , coname , paname , funame , sfname , & 
-                         varnam , ivarip , lurep  )
+    subroutine varpoi (notot, nopa, nosfun, syname, nocons, &
+            nofun, coname, paname, funame, sfname, &
+            varnam, ivarip, lurep)
 
-!     Deltares Software Centre
+        !     Deltares Software Centre
 
-!>\file
-!>                sets pointers for output variables
+        !>\file
+        !>                sets pointers for output variables
 
-!     Created:    December  1992 by Jan van Beek
+        !     Created:    December  1992 by Jan van Beek
 
-!     Logical unitnumbers : lurep   - report file
+        !     Logical unitnumbers : lurep   - report file
 
-      use timers       !   performance timers
+        use timers       !   performance timers
 
-      implicit none
+        implicit none
 
-!     kind           function         name                Descriptipon
+        !     kind           function         name                Descriptipon
 
-      integer(kind=int_wp), intent(in   ) ::  notot              !< Total number of substances
-      integer(kind=int_wp), intent(in   ) ::  nopa               !< Number of parameters
-      integer(kind=int_wp), intent(in   ) ::  nosfun             !< Number of segment functions
-      character(20), intent(in   ) :: syname(notot)     !< Names of systems
-      integer(kind=int_wp), intent(in   ) ::  nocons             !< Number of constants used
-      integer(kind=int_wp), intent(in   ) ::  nofun              !< Number of functions ( user )
-      character(20), intent(in   ) :: coname(nocons)    !< Constant names
-      character(20), intent(in   ) :: paname(nopa  )    !< Parameter names
-      character(20), intent(in   ) :: funame(nofun )    !< Function names
-      character(20), intent(in   ) :: sfname(nosfun)    !< Segment function names
-      character(20), intent(in   ) :: varnam            !< Name of variable to be identified
-      integer(kind=int_wp), intent(  out) ::  ivarip             !< Pointer in the SSA
-      integer(kind=int_wp), intent(in   ) ::  lurep              !< Unit nr. report file
+        integer(kind = int_wp), intent(in) :: notot              !< Total number of substances
+        integer(kind = int_wp), intent(in) :: nopa               !< Number of parameters
+        integer(kind = int_wp), intent(in) :: nosfun             !< Number of segment functions
+        character(20), intent(in) :: syname(notot)     !< Names of systems
+        integer(kind = int_wp), intent(in) :: nocons             !< Number of constants used
+        integer(kind = int_wp), intent(in) :: nofun              !< Number of functions ( user )
+        character(20), intent(in) :: coname(nocons)    !< Constant names
+        character(20), intent(in) :: paname(nopa)    !< Parameter names
+        character(20), intent(in) :: funame(nofun)    !< Function names
+        character(20), intent(in) :: sfname(nosfun)    !< Segment function names
+        character(20), intent(in) :: varnam            !< Name of variable to be identified
+        integer(kind = int_wp), intent(out) :: ivarip             !< Pointer in the SSA
+        integer(kind = int_wp), intent(in) :: lurep              !< Unit nr. report file
 
-!     Local
+        !     Local
 
-      integer(kind=int_wp), parameter ::  nopred = 6
-      integer(kind=int_wp) :: indx            !  index in array of names
-      character(20) predef(3)
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "varpoi", ithndl )
+        integer(kind = int_wp), parameter :: nopred = 6
+        integer(kind = int_wp) :: indx            !  index in array of names
+        character(20) predef(3)
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("varpoi", ithndl)
 
-      predef(1) = 'volume'
-      predef(2) = 'itime'
-      predef(3) = 'idt'
+        predef(1) = 'volume'
+        predef(2) = 'itime'
+        predef(3) = 'idt'
 
-!     determine how VAL is modelled
+        !     determine how VAL is modelled
 
-      indx = index_in_array( varnam , predef)
-      if ( indx .eq. 1 ) then
-         write(lurep,*) '       ',varnam,'; Using DELWAQ VOLUME'
-         ivarip = 1
-         goto 800
-      endif
-      if ( indx .eq. 2 ) then
-         write(lurep,*) '       ',varnam,'; Using DELWAQ ITIME'
-         ivarip = 2
-         goto 800
-      endif
-      if ( indx .eq. 3 ) then
-         write(lurep,*) '       ',varnam,'; Using DELWAQ IDT'
-         ivarip = 3
-         goto 800
-      endif
+        indx = index_in_array(varnam, predef)
+        if (indx == 1) then
+            write(lurep, *) '       ', varnam, '; Using DELWAQ VOLUME'
+            ivarip = 1
+            goto 800
+        endif
+        if (indx == 2) then
+            write(lurep, *) '       ', varnam, '; Using DELWAQ ITIME'
+            ivarip = 2
+            goto 800
+        endif
+        if (indx == 3) then
+            write(lurep, *) '       ', varnam, '; Using DELWAQ IDT'
+            ivarip = 3
+            goto 800
+        endif
 
-!     as model variable ?
+        !     as model variable ?
 
-      indx = index_in_array( varnam, syname)
-      if ( indx .gt. 0 ) then
-         write(lurep,*) '       ',varnam,'; Using substance nr',indx
-         ivarip = nopred + nocons + nopa + nofun + nosfun + indx
-         goto 800
-      endif
+        indx = index_in_array(varnam, syname)
+        if (indx > 0) then
+            write(lurep, *) '       ', varnam, '; Using substance nr', indx
+            ivarip = nopred + nocons + nopa + nofun + nosfun + indx
+            goto 800
+        endif
 
-!     as segment function ?
+        !     as segment function ?
 
-      indx = index_in_array( varnam, sfname)
-      if ( indx .gt. 0 ) then
-         write(lurep,*) '       ',varnam,'; Using segment function nr',indx
-         ivarip = nopred + nocons + nopa + nofun + indx
-         goto 800
-      endif
+        indx = index_in_array(varnam, sfname)
+        if (indx > 0) then
+            write(lurep, *) '       ', varnam, '; Using segment function nr', indx
+            ivarip = nopred + nocons + nopa + nofun + indx
+            goto 800
+        endif
 
-!     as function ?
+        !     as function ?
 
-      indx = index_in_array( varnam, funame)
-      if ( indx .gt. 0 ) then
-         write(lurep,*) '       ',varnam,'; Using function nr',indx
-         ivarip = nopred + nocons + nopa + indx
-         goto 800
-      endif
+        indx = index_in_array(varnam, funame)
+        if (indx > 0) then
+            write(lurep, *) '       ', varnam, '; Using function nr', indx
+            ivarip = nopred + nocons + nopa + indx
+            goto 800
+        endif
 
-!     as parameter ?
+        !     as parameter ?
 
-      indx = index_in_array( varnam, paname)
-      if ( indx .gt. 0 ) then
-         write(lurep,*) '       ',varnam,'; Using parameter nr',indx
-         ivarip = nopred + nocons + indx
-         goto 800
-      endif
+        indx = index_in_array(varnam, paname)
+        if (indx > 0) then
+            write(lurep, *) '       ', varnam, '; Using parameter nr', indx
+            ivarip = nopred + nocons + indx
+            goto 800
+        endif
 
-!     as constant ?
+        !     as constant ?
 
-      indx = index_in_array( varnam, coname)
-      if ( indx .gt. 0 ) then
-         write(lurep,*) '       ',varnam,'; Using constant nr',indx
-         ivarip = nopred + indx
-         goto 800
-      endif
+        indx = index_in_array(varnam, coname)
+        if (indx > 0) then
+            write(lurep, *) '       ', varnam, '; Using constant nr', indx
+            ivarip = nopred + indx
+            goto 800
+        endif
 
-!     not found
+        !     not found
 
-      ivarip = -1
+        ivarip = -1
 
-  800 continue
+        800 continue
 
-      if (timon) call timstop( ithndl )
-      return
-      end
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      end module m_varpoi
+end module m_varpoi

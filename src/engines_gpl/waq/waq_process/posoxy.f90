@@ -20,73 +20,72 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_posoxy
-      use m_waq_precision
+module m_posoxy
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine posoxy (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Returns positive oxygen concentration or zero
 
-      contains
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! OXY     R*4 1 I  oxygen concentration (might be negative       [gO2/m3]
+        ! DO      R*4 1 O  dissolved oxygen , always positive            [gO2/m3]
+        !     Logical Units : -
 
+        !     Modules called : -
 
-      subroutine posoxy ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Returns positive oxygen concentration or zero
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! OXY     R*4 1 I  oxygen concentration (might be negative       [gO2/m3]
-! DO      R*4 1 O  dissolved oxygen , always positive            [gO2/m3]
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        integer(kind = int_wp) :: iseg
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
 
-      integer(kind=int_wp) ::iseg
-      
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+                OXY = PMSA(IP1)
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
+                !*******************************************************************************
+                !**** Processes connected to the RESUSENSION
+                !***********************************************************************
 
-      OXY    = PMSA(IP1 )
+                !     CALCULATE POSITIVE DO FROM OXY
 
-!*******************************************************************************
-!**** Processes connected to the RESUSENSION
-!***********************************************************************
+                PMSA(IP2) = MAX (OXY, 0.0)
 
-!     CALCULATE POSITIVE DO FROM OXY
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      PMSA(IP2 ) = MAX (OXY, 0.0)
-
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_posoxy
+end module m_posoxy

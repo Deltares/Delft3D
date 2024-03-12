@@ -20,117 +20,116 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_depave
-      use m_waq_precision
+module m_depave
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine depave (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_srstop
+        use m_monsys
 
-      contains
+        !>\file
+        !>       Average depth for a Bloom time step (typically a day)
 
+        !
+        !     Description of the module :
+        !
+        !     Logical Units : -
 
-      subroutine depave ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_srstop
-      use m_monsys
+        !     Modules called : -
 
-!>\file
-!>       Average depth for a Bloom time step (typically a day)
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-!     Logical Units : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Modules called : -
+        INTEGER(kind = int_wp) :: LUNREP
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6
+        REAL(kind = real_wp) :: DEPTH, ADEPTH
+        INTEGER(kind = int_wp) :: TELLER, NAVERA, NSWITS, ISEG
+        LOGICAL  FIRST
+        SAVE     FIRST
+        DATA     FIRST /.TRUE./
+        SAVE     TELLER
+        DATA     TELLER /0/
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
 
-      INTEGER(kind=int_wp) ::LUNREP
+        !     Check whether certain input parameters are independent of X
 
-      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6
-      REAL(kind=real_wp) ::DEPTH , ADEPTH
-      INTEGER(kind=int_wp) ::TELLER, NAVERA, NSWITS, ISEG
-      LOGICAL  FIRST
-      SAVE     FIRST
-      DATA     FIRST /.TRUE./
-      SAVE     TELLER
-      DATA     TELLER /0/
+        IF (FIRST) THEN
+            FIRST = .FALSE.
+            IF ((INCREM(1) > 0) .OR. &
+                    (INCREM(2) > 0)) THEN
+                CALL GETMLU(LUNREP)
+                WRITE (LUNREP, *) &
+                        ' DEPAVE: INPUT parameters function(x) not ALLOWED'
+                WRITE (*, *) &
+                        ' DEPAVE: INPUT parameters function(x) not ALLOWED'
+                CALL SRSTOP(1)
+            ENDIF
+        ENDIF
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-      IP6  = IPOINT( 6)
+        !     Retrieve switch for averaging and nr. of steps to be averaged
 
-!     Check whether certain input parameters are independent of X
+        NSWITS = NINT(PMSA(IP1))
+        NAVERA = NINT(PMSA(IP2))
 
-      IF (FIRST) THEN
-          FIRST = .FALSE.
-          IF ( (INCREM(1) .GT. 0) .OR. & 
-              (INCREM(2) .GT. 0) ) THEN
-              CALL GETMLU(LUNREP)
-              WRITE (LUNREP,*) & 
-             ' DEPAVE: INPUT parameters function(x) not ALLOWED'
-              WRITE (*,*) & 
-             ' DEPAVE: INPUT parameters function(x) not ALLOWED'
-              CALL SRSTOP(1)
-          ENDIF
-      ENDIF
+        !     Add 1 to counter and check for period
 
-!     Retrieve switch for averaging and nr. of steps to be averaged
+        TELLER = TELLER + 1
+        IF (TELLER > NAVERA) TELLER = TELLER - NAVERA
 
-      NSWITS = NINT(PMSA(IP1))
-      NAVERA = NINT(PMSA(IP2))
+        !     Loop over segments
 
-!     Add 1 to counter and check for period
+        DO ISEG = 1, NOSEG
 
-      TELLER = TELLER + 1
-      IF ( TELLER .GT. NAVERA ) TELLER = TELLER - NAVERA
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-!     Loop over segments
+                DEPTH = PMSA(IP3)
+                ADEPTH = PMSA(IP4)
+                PMSA(IP6) = ADEPTH
 
-      DO 9000 ISEG = 1 , NOSEG
+                IF (NSWITS == 0) THEN
 
-          IF (BTEST(IKNMRK(ISEG),0)) THEN
+                    !                 No averaging: copy depth to average depth
 
-              DEPTH = PMSA(IP3)
-              ADEPTH = PMSA(IP4)
-              PMSA(IP6) = ADEPTH
+                    PMSA(IP5) = DEPTH
 
-              IF ( NSWITS .EQ. 0 ) THEN
+                ELSE
 
-!                 No averaging: copy depth to average depth
+                    !                 Averaging: FANCY FORMULA!!!!!
 
-                  PMSA(IP5) = DEPTH
+                    PMSA(IP5) = (ADEPTH * REAL(TELLER - 1) + DEPTH) &
+                            / REAL(TELLER)
+                ENDIF
+            ENDIF
+            !
+            IP1 = IP1 + INCREM(1)
+            IP2 = IP2 + INCREM(2)
+            IP3 = IP3 + INCREM(3)
+            IP4 = IP4 + INCREM(4)
+            IP5 = IP5 + INCREM(5)
+            IP6 = IP6 + INCREM(6)
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-              ELSE
-
-!                 Averaging: FANCY FORMULA!!!!!
-
-                  PMSA(IP5) = ( ADEPTH*REAL(TELLER-1) + DEPTH ) & 
-                               / REAL(TELLER)
-              ENDIF
-          ENDIF
-!
-          IP1  = IP1  + INCREM( 1)
-          IP2  = IP2  + INCREM( 2)
-          IP3  = IP3  + INCREM( 3)
-          IP4  = IP4  + INCREM( 4)
-          IP5  = IP5  + INCREM( 5)
-          IP6  = IP6  + INCREM( 6)
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_depave
+end module m_depave

@@ -20,93 +20,92 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_get_sfrac
-      use m_waq_precision
+module m_get_sfrac
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine get_sfrac (lunrep, notot, syname, nomult, imultp, &
+            sfracs)
 
-      contains
+        ! identifies the number of subtances which consist of fractions
 
+        use processet
+        use timers       !   performance timers
 
-      subroutine get_sfrac ( lunrep, notot , syname, nomult, imultp, & 
-                            sfracs)
+        implicit none
 
-      ! identifies the number of subtances which consist of fractions
+        ! declaration of arguments
 
-      use processet
-      use timers       !   performance timers
+        integer(kind = int_wp) :: lunrep          !< report file
+        integer(kind = int_wp) :: notot           !< number of substances
+        character(len = 20) :: syname(notot)   !< substance name
+        integer(kind = int_wp), intent(in) :: nomult          !< number of multiple substances
+        integer(kind = int_wp), intent(in) :: imultp(2, nomult)!< multiple substance administration
+        type(sfracsprop) :: sfracs          !< substance fraction properties
 
-      implicit none
+        ! local decalarations
 
-      ! declaration of arguments
+        integer(kind = int_wp) :: isys            ! loop counter substances
+        integer(kind = int_wp) :: isys2           ! loop counter substances
+        integer(kind = int_wp) :: ilen            ! length substance name
+        integer(kind = int_wp) :: ifound          ! ifound
+        integer(kind = int_wp) :: isfrac          ! substance fraction number
+        integer(kind = int_wp) :: isfrac2         ! substance fraction number
+        integer(kind = int_wp) :: io_error        ! read error indication
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("get_sfrac", ithndl)
 
-      integer(kind=int_wp) ::lunrep          !< report file
-      integer(kind=int_wp) ::notot           !< number of substances
-      character(len=20)            :: syname(notot)   !< substance name
-      integer(kind=int_wp), intent(in   )  ::nomult          !< number of multiple substances
-      integer(kind=int_wp), intent(in   )  ::imultp(2,nomult)!< multiple substance administration
-      type(sfracsprop)             :: sfracs          !< substance fraction properties
+        ! allocate sfracs
 
-      ! local decalarations
+        allocate(sfracs%name(nomult), sfracs%nfrac(nomult), sfracs%linked(nomult), sfracs%linklist(nomult, nomult))
+        sfracs%linklist = 0
 
-      integer(kind=int_wp) ::isys            ! loop counter substances
-      integer(kind=int_wp) ::isys2           ! loop counter substances
-      integer(kind=int_wp) ::ilen            ! length substance name
-      integer(kind=int_wp) ::ifound          ! ifound
-      integer(kind=int_wp) ::isfrac          ! substance fraction number
-      integer(kind=int_wp) ::isfrac2         ! substance fraction number
-      integer(kind=int_wp) ::io_error        ! read error indication
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "get_sfrac", ithndl )
+        ! loop over the fractions
 
-      ! allocate sfracs
+        sfracs%nsfrac = nomult
+        do isfrac = 1, nomult
+            isys = imultp(1, isfrac)
+            sfracs%nfrac(isfrac) = imultp(2, isfrac) - imultp(1, isfrac) + 1
+            ilen = len(trim(syname(isys)))
+            sfracs%name(isfrac) = syname(isys)(1:ilen - 2)
 
-      allocate(sfracs%name(nomult),sfracs%nfrac(nomult),sfracs%linked(nomult),sfracs%linklist(nomult,nomult))
-      sfracs%linklist = 0
+            ! report
 
-      ! loop over the fractions
+            write(lunrep, *)
+            write(lunrep, 2000) trim(sfracs%name(isfrac))
+            write(lunrep, 2001) sfracs%nfrac(isfrac)
 
-      sfracs%nsfrac = nomult
-      do isfrac = 1 , nomult
-         isys                 = imultp(1,isfrac)
-         sfracs%nfrac(isfrac) = imultp(2,isfrac) - imultp(1,isfrac) + 1
-         ilen                 = len(trim(syname(isys)))
-         sfracs%name(isfrac)  = syname(isys)(1:ilen-2)
+            ! linked ?
 
-         ! report
+            sfracs%linked(isfrac) = 0
+            do isfrac2 = 1, isfrac - 1
+                if (sfracs%nfrac(isfrac2) == sfracs%nfrac(isfrac)) then
+                    if (sfracs%linked(isfrac2) == 0) then
+                        sfracs%linked(isfrac2) = isfrac2
+                    endif
+                    sfracs%linked(isfrac) = isfrac2
+                    sfracs%linklist(isfrac, isfrac2) = 1
+                    sfracs%linklist(isfrac2, isfrac) = 1
+                    write(lunrep, 2002) trim(sfracs%name(isfrac2))
+                    exit
+                endif
+            enddo
 
-         write(lunrep,*)
-         write(lunrep,2000) trim(sfracs%name(isfrac))
-         write(lunrep,2001) sfracs%nfrac(isfrac)
+        enddo
 
-         ! linked ?
+        write(lunrep, *)
+        write(lunrep, 2003) sfracs%nsfrac
 
-         sfracs%linked(isfrac)= 0
-         do isfrac2 = 1, isfrac - 1
-            if ( sfracs%nfrac(isfrac2) .eq. sfracs%nfrac(isfrac) ) then
-               if ( sfracs%linked(isfrac2) .eq. 0 ) then
-                  sfracs%linked(isfrac2) = isfrac2
-               endif
-               sfracs%linked(isfrac) = isfrac2
-               sfracs%linklist(isfrac,isfrac2) = 1
-               sfracs%linklist(isfrac2,isfrac) = 1
-               write(lunrep,2002) trim(sfracs%name(isfrac2))
-               exit
-            endif
-         enddo
+        if (timon) call timstop(ithndl)
+        return
+        2000 format ('substance fractions detected for substance:', a)
+        2001 format ('number of fractions                       :', i3)
+        2002 format ('substance fractions linked with substance :', a)
+        2003 format ('total number of substances with fractions :', i3)
+    end
 
-      enddo
-
-      write(lunrep,*)
-      write(lunrep,2003) sfracs%nsfrac
-
-      if (timon) call timstop( ithndl )
-      return
- 2000 format ( 'substance fractions detected for substance:',a)
- 2001 format ( 'number of fractions                       :',i3)
- 2002 format ( 'substance fractions linked with substance :',a)
- 2003 format ( 'total number of substances with fractions :',i3)
-      end
-
-      end module m_get_sfrac
+end module m_get_sfrac

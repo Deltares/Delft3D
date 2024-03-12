@@ -20,64 +20,63 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_attout
-      use m_waq_precision
+module m_attout
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine attout (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Returns the selected attribute
 
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! IDX     I*4 1 I  selected attribute number (note the type!)         [-]
+        ! ATTRIB  I*4 1 O  value of the attribute                             [-]
+        !     Logical Units : -
 
-      subroutine attout ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Modules called : -
 
-!>\file
-!>       Returns the selected attribute
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! IDX     I*4 1 I  selected attribute number (note the type!)         [-]
-! ATTRIB  I*4 1 O  value of the attribute                             [-]
-!     Logical Units : -
+        implicit none
 
-!     Modules called : -
+        real(kind = real_wp) :: pmsa  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(2), increm(2), noseg, noflux
+        integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        integer(kind = int_wp) :: ip (2)
+        integer(kind = int_wp) :: iseg
+        integer(kind = int_wp) :: idx
+        integer(kind = int_wp) :: attrib
 
-      implicit none
+        ip = ipoint
 
-      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint(2)   , increm(2) , noseg , noflux
-      integer(kind=int_wp) ::iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
+        do iseg = 1, noseg
+            idx = pmsa(ip(1))
+            if (idx==0) then
+                attrib = iknmrk(iseg)
+            else
+                call evaluate_waq_attribute(idx, iknmrk(iseg), attrib)
+            endif
+            ! Store the value
+            pmsa(ip(2)) = attrib
 
-      integer(kind=int_wp) ::ip (2)
-      integer(kind=int_wp) ::iseg
-      integer(kind=int_wp) ::idx
-      integer(kind=int_wp) ::attrib
+            ! Next segment
+            ip = ip + increm
+        end do
+        return
+    end
 
-      ip = ipoint
-
-      do iseg = 1 , noseg
-         idx    = pmsa(ip(1))
-         if (idx.eq.0) then
-             attrib = iknmrk(iseg)
-         else
-             call evaluate_waq_attribute(idx,iknmrk(iseg),attrib)
-         endif
-         ! Store the value
-         pmsa(ip(2)) = attrib
-
-         ! Next segment
-         ip = ip + increm
-      end do
-      return
-      end
-
-      end module m_attout
+end module m_attout

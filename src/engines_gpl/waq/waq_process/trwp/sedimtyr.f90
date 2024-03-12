@@ -96,7 +96,7 @@
 
       ntrwp = pmsa(ipoint(ip_ntrwp))
       nspm = pmsa(ipoint(ip_nim  ))
-      if (nspm.gt.nspmm) call write_error_message ('Dimension issue in SEDTYR')
+      if (nspm>nspmm) call write_error_message ('Dimension issue in SEDTYR')
       nitem = ip_lastsingle + 3*ntrwp+nspm+2*ntrwp
       delt           = pmsa(ipoint(ip_Delt))
       safe_factor    = pmsa(ipoint(ip_SafeFactor))
@@ -107,9 +107,9 @@
       iflux = 0
       do iseg = 1 , noseg
           call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
-          if (ikmrk1.eq.1) then
+          if (ikmrk1==1) then
           call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
-          if (ikmrk2.eq.0.or.ikmrk2.eq.3) then   ! surface water
+          if (ikmrk2==0.or.ikmrk2==3) then   ! surface water
 
               ! input independentt of fractions
               depth          = pmsa(ipnt(ip_Depth))
@@ -174,7 +174,7 @@
 
          ifrom = IEXPNT(1,IQ)
          ito   = IEXPNT(2,IQ)
-         IF ( ifrom .GT. 0 .AND. Ito .GT. 0 ) THEN
+         IF ( ifrom > 0 .AND. Ito > 0 ) THEN
 
 !rs             merk op: sedimentatie tussen waterlagen: geen taucr correctie,
 !rs             alleen conversie van 1/d naar 1/s. Ten overvloede:

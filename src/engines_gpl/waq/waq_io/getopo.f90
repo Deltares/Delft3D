@@ -20,91 +20,90 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_getopo
-      use m_waq_precision
-      use m_varpoi
+module m_getopo
+    use m_waq_precision
+    use m_varpoi
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine getopo (noutp, nrvar, nrvarm, dlwnam, iopoin, &
+            nmis, notot, syname, nocons, coname, &
+            nopa, paname, nofun, funame, nosfun, &
+            sfname, lurep)
+        !>\file
+        !>                 Sets the pointers for all extra vars
 
-      contains
+        !     Deltares Software Centre
 
+        !     CREATED:    November  1992 by Jan van Beek
 
-      subroutine getopo ( noutp , nrvar , nrvarm, dlwnam, iopoin, & 
-                         nmis  , notot , syname, nocons, coname, & 
-                         nopa  , paname, nofun , funame, nosfun, & 
-                         sfname, lurep )
-!>\file
-!>                 Sets the pointers for all extra vars
+        !     LOGICAL UNITNUMBERS : LUREP   - report file
 
-!     Deltares Software Centre
+        !     SUBROUTINES CALLED  : VARPOI, Sets pointer for one variable
 
-!     CREATED:    November  1992 by Jan van Beek
+        use timers       !   performance timers
 
-!     LOGICAL UNITNUMBERS : LUREP   - report file
+        implicit none
 
-!     SUBROUTINES CALLED  : VARPOI, Sets pointer for one variable
+        !     kind           function         name                    Descriptipon
 
-      use timers       !   performance timers
+        integer(kind = int_wp), intent(in) :: noutp                  !< Number of output files
+        integer(kind = int_wp), intent(in) :: nrvar (noutp)         !< No of output vars per file
+        integer(kind = int_wp), intent(in) :: nrvarm                 !< Maximum of output variables p.p.
+        integer(kind = int_wp), intent(out) :: nmis                   !< Number of missing input vars
+        character*(*), intent(in) :: dlwnam(nrvarm, noutp)  !< Name of input variables
+        integer(kind = int_wp), intent(out) :: iopoin(nrvarm, noutp)   !< Number of missing input vars
+        integer(kind = int_wp), intent(in) :: notot                  !< Total number of substances
+        integer(kind = int_wp), intent(in) :: nopa                   !< Number of parameters
+        integer(kind = int_wp), intent(in) :: nosfun                 !< Number of segment functions
+        character(20), intent(in) :: syname(notot)         !< Names of systems
+        integer(kind = int_wp), intent(in) :: nocons                 !< Number of constants used
+        integer(kind = int_wp), intent(in) :: nofun                  !< Number of functions ( user )
+        character(20), intent(in) :: coname(nocons)        !< Constant names
+        character(20), intent(in) :: paname(nopa)        !< Parameter names
+        character(20), intent(in) :: funame(nofun)        !< Function names
+        character(20), intent(in) :: sfname(nosfun)        !< Segment function names
+        integer(kind = int_wp), intent(in) :: lurep                  !< Unit nr. report file
 
-      implicit none
+        !     Local
 
-!     kind           function         name                    Descriptipon
+        character(20) varnam            ! Name of variable to be identified
+        integer(kind = int_wp) :: ivarip             ! Pointer in the SSA
+        integer(kind = int_wp) :: iout               ! loop variable of outputs
+        integer(kind = int_wp) :: inrv               ! loop variable output number
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("getopo", ithndl)
 
-      integer(kind=int_wp), intent(in   ) ::  noutp                  !< Number of output files
-      integer(kind=int_wp), intent(in   ) ::  nrvar (noutp )         !< No of output vars per file
-      integer(kind=int_wp), intent(in   ) ::  nrvarm                 !< Maximum of output variables p.p.
-      integer(kind=int_wp), intent(  out) ::  nmis                   !< Number of missing input vars
-      character*(*), intent(in   ) :: dlwnam(nrvarm,noutp)  !< Name of input variables
-      integer(kind=int_wp), intent(  out) ::  iopoin(nrvarm,noutp)   !< Number of missing input vars
-      integer(kind=int_wp), intent(in   ) ::  notot                  !< Total number of substances
-      integer(kind=int_wp), intent(in   ) ::  nopa                   !< Number of parameters
-      integer(kind=int_wp), intent(in   ) ::  nosfun                 !< Number of segment functions
-      character(20), intent(in   ) :: syname(notot)         !< Names of systems
-      integer(kind=int_wp), intent(in   ) ::  nocons                 !< Number of constants used
-      integer(kind=int_wp), intent(in   ) ::  nofun                  !< Number of functions ( user )
-      character(20), intent(in   ) :: coname(nocons)        !< Constant names
-      character(20), intent(in   ) :: paname(nopa  )        !< Parameter names
-      character(20), intent(in   ) :: funame(nofun )        !< Function names
-      character(20), intent(in   ) :: sfname(nosfun)        !< Segment function names
-      integer(kind=int_wp), intent(in   ) ::  lurep                  !< Unit nr. report file
+        write(lurep, *)
+        write(lurep, *) ' Determining the place of the output variables'
+        write(lurep, *)
 
-!     Local
+        nmis = 0
 
-      character(20) varnam            ! Name of variable to be identified
-      integer(kind=int_wp) :: ivarip             ! Pointer in the SSA
-      integer(kind=int_wp) :: iout               ! loop variable of outputs
-      integer(kind=int_wp) :: inrv               ! loop variable output number
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "getopo", ithndl )
+        do iout = 1, noutp
+            do inrv = 1, nrvar(iout)
+                varnam = dlwnam(inrv, iout)
+                if (varnam == ' ') then
+                    ivarip = 0
+                else
+                    call varpoi (notot, nopa, nosfun, syname, nocons, &
+                            nofun, coname, paname, funame, sfname, &
+                            varnam, ivarip, lurep)
+                    if (ivarip == -1) then
+                        nmis = nmis + 1
+                        write(lurep, '(3a)') '   INFO:', varnam, &
+                                '; NOT FOUND, delwaq will detect variables from process library'
+                    endif
+                endif
+                iopoin(inrv, iout) = ivarip
+            end do
+        end do
 
-      write( lurep,* )
-      write( lurep,* ) ' Determining the place of the output variables'
-      write( lurep,* )
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      nmis = 0
-
-      do 200 iout = 1 , noutp
-         do 100 inrv = 1 , nrvar(iout)
-            varnam = dlwnam(inrv,iout)
-            if ( varnam .eq. ' ' ) then
-               ivarip = 0
-            else
-               call varpoi ( notot , nopa  , nosfun, syname, nocons, & 
-                            nofun , coname, paname, funame, sfname, & 
-                            varnam, ivarip, lurep )
-               if ( ivarip .eq. -1 ) then
-                  nmis = nmis + 1
-                  write(lurep,'(3a)') '   INFO:',varnam, & 
-                 '; NOT FOUND, delwaq will detect variables from process library'
-               endif
-            endif
-            iopoin(inrv,iout) = ivarip
-  100    continue
-  200 continue
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_getopo
+end module m_getopo

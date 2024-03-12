@@ -86,8 +86,8 @@
       if ( timon ) call timstrt ( "dlwqkb", ithandl )
 !
       MESSGE = 0
-      IF ( NFTOT  .EQ. 0 ) goto 9999
-      IF ( IFFLAG .EQ. 0 ) GOTO 10
+      IF ( NFTOT  == 0 ) goto 9999
+      IF ( IFFLAG == 0 ) GOTO 10
 !
 !         This is the first time, so read.
 !
@@ -97,11 +97,11 @@
 !
 !         Check for start time simulation before start time file
 !
-      IF ( ITIME .LT. ITIME1 ) MESSGE = 2
+      IF ( ITIME < ITIME1 ) MESSGE = 2
 !
 !         a new record required?
 !
-   10 IF ( ITIME-IDTIME .LT. ITIME2 ) GOTO 100
+   10 IF ( ITIME-IDTIME < ITIME2 ) GOTO 100
       CALL copy_integer_array_elements ( IARRA2 , IARRA1 , NFTOT )
       ITIME1 = ITIME2
       READ ( LUNIN , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
@@ -130,8 +130,8 @@
 !
 !         write the messages
 !
-  100 IF ( MESSGE .EQ. 0 ) goto 9999
-      IF ( ISFLAG .NE. 1 ) THEN
+  100 IF ( MESSGE == 0 ) goto 9999
+      IF ( ISFLAG /= 1 ) THEN
            WRITE(LUNOUT,2000) MSGTXT(MESSGE), LUNIN, LUNTXT, & 
                              ITIME, ITIME1
       ELSE
@@ -141,11 +141,11 @@
                              ITIME1/86400, MOD(ITIME1,86400)/3600 , & 
                              MOD(ITIME1,3600)/60, MOD(ITIME1,60)
       ENDIF
-      IF ( MESSGE .EQ. 1 ) THEN
+      IF ( MESSGE == 1 ) THEN
            MESSGE = 0
            GOTO 10
       ENDIF
-      IF ( MESSGE .EQ. 2 ) goto 9999
+      IF ( MESSGE == 2 ) goto 9999
       CALL SRSTOP ( 1 )
  9999 if ( timon ) call timstop ( ithandl )
 

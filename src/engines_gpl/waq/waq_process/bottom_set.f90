@@ -21,79 +21,79 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      module BottomSet
-!
-!          module contains everything for the Jos van Gils bottom collumns
-!          created 11 July 2003 by Leo Postma
-!
-!     contains the fiollowing derived types:
-!          BotColmn               ! a set of information on one bottom collumn
-!          BotColmnColl           ! a collection of these bottom collumns.
-!
-!     contains the following functions:
-!          FilePropCollAdd        ! to add a collumn to the collection
-!
-!     contains the following subroutine:
-!                                 !
-!**WARNING this module also contains a variable Coll, being a collection of
-!          bottom collumns. It is no decent programming practice to let a module
-!          also transport data from one subroutine to another. For the WAQ processes
-!          library routines with fixed calling conventions it is however a reasonable
-!          alternative to the mediocre named common blocks
-!
-!
-      integer, parameter, private :: MAX_NUM = 100      ! array space allocated per bunch
-!
-!          this is the information for one bottom collumn
-!
-      type BotColmn
-         integer          :: fstwatsed         ! first water sediment exchange number
-         integer          :: lstwatsed         ! last  water sediment exchange number
-         integer          :: topsedsed         ! first within collumn exchange number
-         integer          :: botsedsed         ! last exchange of collumn to deeper bnd
-      end type BotColmn
-!
-!          this is the collection of the bottom collumns
-!
-      type BotColmnColl
-         type(BotColmn), pointer :: set(:)     ! array with info for all bottom collumns
-         integer                 :: maxsize    ! maximum size of the current array
-         integer                 :: cursize    ! filled up to this size
-      end type BotColmnColl
+module BottomSet
+    !
+    !          module contains everything for the Jos van Gils bottom collumns
+    !          created 11 July 2003 by Leo Postma
+    !
+    !     contains the fiollowing derived types:
+    !          BotColmn               ! a set of information on one bottom collumn
+    !          BotColmnColl           ! a collection of these bottom collumns.
+    !
+    !     contains the following functions:
+    !          FilePropCollAdd        ! to add a collumn to the collection
+    !
+    !     contains the following subroutine:
+    !                                 !
+    !**WARNING this module also contains a variable Coll, being a collection of
+    !          bottom collumns. It is no decent programming practice to let a module
+    !          also transport data from one subroutine to another. For the WAQ processes
+    !          library routines with fixed calling conventions it is however a reasonable
+    !          alternative to the mediocre named common blocks
+    !
+    !
+    integer, parameter, private :: MAX_NUM = 100      ! array space allocated per bunch
+    !
+    !          this is the information for one bottom collumn
+    !
+    type BotColmn
+        integer :: fstwatsed         ! first water sediment exchange number
+        integer :: lstwatsed         ! last  water sediment exchange number
+        integer :: topsedsed         ! first within collumn exchange number
+        integer :: botsedsed         ! last exchange of collumn to deeper bnd
+    end type BotColmn
+    !
+    !          this is the collection of the bottom collumns
+    !
+    type BotColmnColl
+        type(BotColmn), pointer :: set(:)     ! array with info for all bottom collumns
+        integer :: maxsize    ! maximum size of the current array
+        integer :: cursize    ! filled up to this size
+    end type BotColmnColl
 
-!**WARNING here is the mentioned variable Coll
-      type ( BotColmnColl ) :: Coll
-!
-      contains
-!
-!          function to add a bottom collumn to the collection
-!
-      function BotColmnCollAdd( aBotColmnColl , ifirst , ilast , itop , ibot ) result ( size )
-!
-         type(BotColmnColl)      :: aBotColmnColl
-         integer                 :: ifirst, ilast, itop, ibot, size
-         type(BotColmn), pointer :: tset(:)
-         type(BotColmn)          :: aBotColmn
-!                          check if there is space left
-         if ( aBotColmnColl%cursize .eq. aBotColmnColl%maxsize ) then
-            allocate ( tset( aBotColmnColl%maxsize + MAX_NUM ) ) ! allocate new space
-            do i = 1 , aBotColmnColl%maxsize
-               tset(i) = aBotColmnColl%set(i)                    ! copy the old array
+    !**WARNING here is the mentioned variable Coll
+    type (BotColmnColl) :: Coll
+    !
+contains
+    !
+    !          function to add a bottom collumn to the collection
+    !
+    function BotColmnCollAdd(aBotColmnColl, ifirst, ilast, itop, ibot) result (size)
+        !
+        type(BotColmnColl) :: aBotColmnColl
+        integer :: ifirst, ilast, itop, ibot, size
+        type(BotColmn), pointer :: tset(:)
+        type(BotColmn) :: aBotColmn
+        !                          check if there is space left
+        if (aBotColmnColl%cursize == aBotColmnColl%maxsize) then
+            allocate (tset(aBotColmnColl%maxsize + MAX_NUM)) ! allocate new space
+            do i = 1, aBotColmnColl%maxsize
+                tset(i) = aBotColmnColl%set(i)                    ! copy the old array
             enddo        ! throw away the old array
-            if ( aBotColmnColl%maxsize .ne. 0 ) deallocate ( aBotColmnColl%set )
-            aBotColmnColl%set     => tset     ! put new array in place
-            aBotColmnColl%maxsize =  aBotColmnColl%maxsize + MAX_NUM  ! increase maximum
-         endif
-         aBotColmnColl%cursize = aBotColmnColl%cursize + 1       ! increase current size
-         aBotColmn%fstwatsed   = ifirst                          ! make a new bottom
-         aBotColmn%lstwatsed   = ilast                           ! collumn
-         aBotColmn%topsedsed   = itop                            ! from the parameters
-         aBotColmn%botsedsed   = ibot                            ! of the call
-         aBotColmnColl%set(aBotColmnColl%cursize) = aBotColmn    ! copy the content into the array
-         size = aBotColmnColl%cursize                            ! set the return value
-!
-         return
-!
-      end function BotColmnCollAdd
-!
-      end module BottomSet
+            if (aBotColmnColl%maxsize /= 0) deallocate (aBotColmnColl%set)
+            aBotColmnColl%set => tset     ! put new array in place
+            aBotColmnColl%maxsize = aBotColmnColl%maxsize + MAX_NUM  ! increase maximum
+        endif
+        aBotColmnColl%cursize = aBotColmnColl%cursize + 1       ! increase current size
+        aBotColmn%fstwatsed = ifirst                          ! make a new bottom
+        aBotColmn%lstwatsed = ilast                           ! collumn
+        aBotColmn%topsedsed = itop                            ! from the parameters
+        aBotColmn%botsedsed = ibot                            ! of the call
+        aBotColmnColl%set(aBotColmnColl%cursize) = aBotColmn    ! copy the content into the array
+        size = aBotColmnColl%cursize                            ! set the return value
+        !
+        return
+        !
+    end function BotColmnCollAdd
+    !
+end module BottomSet

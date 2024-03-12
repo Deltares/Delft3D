@@ -30,10 +30,10 @@ module delwaq1_version_module
 
     implicit none
 
-    character(*),  private, parameter :: component_name      = 'DELWAQ1'
+    character(*), private, parameter :: component_name = 'DELWAQ1'
 
-    character(*),  public, parameter :: delwaq1_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*),  public, parameter :: delwaq1_version_id   = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+    character(*), public, parameter :: delwaq1_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*), public, parameter :: delwaq1_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 

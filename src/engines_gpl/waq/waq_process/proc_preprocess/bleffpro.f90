@@ -66,8 +66,9 @@
 !  Read in tables
 !
    15 continue
-      do 20 i=1,npoint
-   20 read (lunblm,*) power(i),(effic(i,j),j=1,nuecog)
+      do i=1,npoint
+   read (lunblm,*) power(i),(effic(i,j),j=1,nuecog)
+      end do
 !
 !  Read, integrate, and transform diurnal intensity distribution
 !  Read number of points in solar radiation distribution
@@ -102,17 +103,19 @@
 !
       done = 1.0d0
       dneg = -1.0d0
-      do 80 j=1,nuecog
-      do 60 k=1,npoint
-   60 sfirst(k)=rfirst(k,j)
+      do j=1,nuecog
+      do k=1,npoint
+   sfirst(k)=rfirst(k,j)
+          end do
       call cvolve(tsol,freq,nval,done,domf,sfirst,npoint,dneg,zvec, & 
                  gfun,nz)
       call cvolve(domf,sfirst,npoint,dneg,tsol,tden,nval,done,zvec, & 
                  gder,nz)
-      do 70 k=1,nz
+      do k=1,nz
       fun(k,j)=gfun(k)
-   70 der(k,j)=gder(k)
-   80 continue
+   der(k,j)=gder(k)
+      end do
+      end do
       return
       end subroutine
 !
@@ -127,20 +130,23 @@
 !
 !  Move lower end of curve away from zero.
 !
-    1 if (power(1) .gt. 0.001*power(2)) go to 15
+    1 if (power(1) > 0.001*power(2)) go to 15
       p=0.001*power(2)
       call interm(power,effic,npoint,nuecog,p,e)
-      do 12 j=1,nuecog
-   12 effic(1,j)=e(j)
+      do j=1,nuecog
+   effic(1,j)=e(j)
+      end do
       power(1)=p
 !
 !  Transform intensity into its logarithmic form
 !
-   15 do 20 i=1,npoint
+   15 do i=1,npoint
       i1=npoint-i+1
-      do 18 j=1,nuecog
-   18 rfirst(i,j)=effic(i1,j)
-   20 domf(i)=-dlog(power(i1))
+      do j=1,nuecog
+   rfirst(i,j)=effic(i1,j)
+      end do
+   domf(i)=-dlog(power(i1))
+      end do
       return
       end
 !
@@ -158,8 +164,9 @@
 !  Find maximum intensity
 !
     1 solmax=solvec(1)
-      do 5 i=1,nsp
-    5 if (solvec(i) .gt. solmax) solmax=solvec(i)
+      do i=1,nsp
+    if (solvec(i) > solmax) solmax=solvec(i)
+      end do
 !
 !  SET CONSTANTS
 !
@@ -171,19 +178,20 @@
 !
       it=0
       i=1
-   12 if (solvec(i) .eq. solmax) it=1
+   12 if (solvec(i) == solmax) it=1
       solna(i)=solvec(i)
       timea(i)=time(i)
-      if (it .eq. 1) go to 15
+      if (it == 1) go to 15
       i=i+1
       go to 12
    15 na=i
       nb=nsp-na+1
-      do 18 j=1,nb
+      do j=1,nb
       jk=j-1
       jkn=nsp-jk
       solnb(j)=solvec(jkn)
-   18 timeb(j)=time(jkn)
+   timeb(j)=time(jkn)
+      end do
 !
 !  Calculate cdf for radiation function
 !  Set endpoints of arrays
@@ -193,13 +201,14 @@
 !
 !  Begin calculation of cdf
 !
-      do 20 j=2,nval
+      do j=2,nval
       rj=j-1
       sol=delsol*rj
       call interp(solna,timea,na,sol,value(1))
       call interp(solnb,timeb,nb,sol,value(2))
       cdf(j)=(value(1)-time(1)+time(nsp)-value(2))/day
-   20 solar(j)=sol
+   solar(j)=sol
+      end do
       return
       end
 !
@@ -221,10 +230,10 @@
 !  Determine density values
 !
       n=nval-1
-      do 10 i=2,n
+      do i=2,n
       ri=i-1
       solc=delsol*ri
-      if (i .eq. 2) go to 6
+      if (i == 2) go to 6
       value(1)=value(2)
       soll=solu
     4 solu=solc+0.5*delsol
@@ -234,7 +243,7 @@
       call interp(solar,cdf,nval,soll,value(1))
       go to 4
     8 dens(i)=(value(2)-value(1))/delsol
-   10 continue
+      end do
       dens(nval)=(1.0-value(2))*2.0/delsol
       return
       end
@@ -250,7 +259,7 @@
 !
 !  Move lower end of curve away from zero
 !
-      if (solar(1) .gt. 0.001*solar(2)) go to 15
+      if (solar(1) > 0.001*solar(2)) go to 15
       s=0.001*solar(2)
       call interp(solar,dens,nval,s,d)
       dens(1)=d
@@ -260,20 +269,22 @@
 !
    15 freq(1)=0.0
       sbar=0.0
-      do 20 i=2,nval
+      do i=2,nval
       del=0.5*(solar(i)-solar(i-1))*(dens(i-1)+dens(i))
       freq(i)=freq(i-1)+del
-   20 sbar=sbar+solar(i)*del
+   sbar=sbar+solar(i)*del
+      end do
       amult=1.0/freq(nval)
       sbar=sbar*amult
 !
 !  Normalize distribution
 !
-      do 30 i=1,nval
+      do i=1,nval
       dens(i)=dens(i)*amult
       freq(i)=freq(i)*amult
       tsol(i)=dlog(solar(i)/sbar)
-   30 tden(i)=solar(i)*dens(i)
+   tden(i)=solar(i)*dens(i)
+      end do
       return
       end
 !
@@ -285,8 +296,9 @@
       integer(kind=int_wp) ::i, nx, ix, nz1, nz, ny, n1, n2, j, k, imin, ixk
       real(kind=dp) ::rat, crat, xvec, yvec, zvec, smin, del 
       
-      do 10 i=1,nx
-   10 ix(i)=1
+      do i=1,nx
+   ix(i)=1
+      end do
       nz1=nz-1
       rat=(nx*ny-1)/nz1
       crat=0.0
@@ -297,40 +309,45 @@
 !
 !  Loop through desired number of z-values
 !
-      do 20 i=2,nz1
+      do i=2,nz1
       n1=n2+1
       crat=crat+rat
       n2=crat+0.5
 !
 !  Loop through next "rat" potential z-values in ascending order
 !
-      do 15 j=n1,n2
+      do j=n1,n2
       smin=zvec(nz)+1.0
       imin=0
-      do 12 k=1,nx
-      if (ix(k) .gt. ny) go to 12
+      do k=1,nx
+      if (ix(k) > ny) go to 12
       ixk=ix(k)
-      if (xvec(k)+yvec(ixk) .ge. smin) go to 12
+      if (xvec(k)+yvec(ixk) >= smin) go to 12
       smin=xvec(k)+yvec(ixk)
       imin=k
    12 continue
-   15 ix(imin)=ix(imin)+1
+      end do
+   ix(imin)=ix(imin)+1
+      end do
 !
 !  Fill in next actual z-value
 !
-   20 zvec(i)=smin
+   zvec(i)=smin
+      end do
 !
 !  Adjust for duplicates
 !
-      do 30 i=2,nz
-      if (zvec(i) .gt. zvec(i-1)) go to 30
-      do 25 j=i,nz
-      if (zvec(j) .gt. zvec(i-1)) go to 26
-   25 continue
+      do i=2,nz
+      if (zvec(i) > zvec(i-1)) go to 30
+      do j=i,nz
+      if (zvec(j) > zvec(i-1)) go to 26
+      end do
    26 del =(zvec(j)-zvec(i-1))/(j-i)
-      do 27 k=i,j
-   27 zvec(k)=zvec(k-1)+del
+      do k=i,j
+   zvec(k)=zvec(k-1)+del
+      end do
    30 continue
+      end do
       return
       end
 !
@@ -350,14 +367,15 @@
 !
       xvec(nx+1)=xvec(nx)+1.0
       fofx(nx+1)=fofx(nx)
-      do 50 i=1,nz
+      do i=1,nz
       fstarg(i)=0.0
       iy=2
       bot=yvec(1)
       ix=nx
-      do 1 j=1,nx
-      if (zvec(i)-xvec(ix) .gt. yvec(1)) go to 20
-    1 ix=ix-1
+      do j=1,nx
+      if (zvec(i)-xvec(ix) > yvec(1)) go to 20
+    ix=ix-1
+      end do
 !
 !  G-domain lies entirely to the right of inverted f-domain
 !  integral must be zero
@@ -383,15 +401,16 @@
 !
 !  Update intervals and stop if x(1) or y(ny) has been reached
 !
-      if (top .ge. yvec(iy)) iy=iy+1
+      if (top >= yvec(iy)) iy=iy+1
 !
       tmp = zvec(i) - xvec(ix) - 1.0d-60
-      if (top .ge. tmp) ix=ix-1
-      if (iy .gt. ny) go to 50
-      if (ix .lt. 1) go to 50
+      if (top >= tmp) ix=ix-1
+      if (iy > ny) go to 50
+      if (ix < 1) go to 50
       bot=top
       go to 20
    50 continue
+      end do
       return
       end
 !
@@ -408,15 +427,15 @@
 !
 !  Check whether x is too low or too high
 !
-      if (x .gt. xvec(1)) go to 20
+      if (x > xvec(1)) go to 20
       f=fofx(1)
       return
-   20 if (x .lt. xvec(n)) go to 40
+   20 if (x < xvec(n)) go to 40
       f=fofx(n)
       return
-   40 do 60 i=2,n
-      if (x .le. xvec(i)) go to 80
-   60 continue
+   40 do i=2,n
+      if (x <= xvec(i)) go to 80
+      end do
    80 alam=(x-xvec(i-1))/(xvec(i)-xvec(i-1))
       f=alam*fofx(i)+(1.0-alam)*fofx(i-1)
       return
@@ -432,20 +451,23 @@
 !
 !  Check whether x is too low or too high
 !
-      if (x .gt. xvec(1)) go to 120
-      do 110 j=1,nuecog
-  110 fm(j)=fofxm(1,j)
+      if (x > xvec(1)) go to 120
+      do j=1,nuecog
+  fm(j)=fofxm(1,j)
+      end do
       return
-  120 if (x .lt. xvec(n)) go to 140
-      do 130 j=1,nuecog
-  130 fm(j)=fofxm(n,j)
+  120 if (x < xvec(n)) go to 140
+      do j=1,nuecog
+  fm(j)=fofxm(n,j)
+      end do
       return
-  140 do 160 i=2,n
-      if (x .le. xvec(i)) go to 180
-  160 continue
+  140 do i=2,n
+      if (x <= xvec(i)) go to 180
+      end do
   180 alam=(x-xvec(i-1))/(xvec(i)-xvec(i-1))
-      do 190 j=1,nuecog
-  190 fm(j)=alam*fofxm(i,j)+(1.0-alam)*fofxm(i-1,j)
+      do j=1,nuecog
+  fm(j)=alam*fofxm(i,j)+(1.0-alam)*fofxm(i-1,j)
+      end do
       return
       end
       end module m_bleffpro

@@ -204,18 +204,18 @@
          noq3 = nexch(3)
       else
          regular = .false.
-         if ( gettoken( cdummy, noq1, itype, ierr2 ) .gt. 0 ) goto 100
-         if ( itype .eq. 1 ) then
-            if ( cdummy(1:12) .eq. 'REGULAR_GRID' ) then
+         if ( gettoken( cdummy, noq1, itype, ierr2 ) > 0 ) goto 100
+         if ( itype == 1 ) then
+            if ( cdummy(1:12) == 'REGULAR_GRID' ) then
                regular = .true.
-               if ( gettoken( noq1, ierr2 ) .gt. 0 ) goto 100
+               if ( gettoken( noq1, ierr2 ) > 0 ) goto 100
             else
                ierr2 = 1
                goto 100
             endif
          endif
-         if ( gettoken( noq2, ierr2 ) .gt. 0 ) goto 100
-         if ( gettoken( noq3, ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( noq2, ierr2 ) > 0 ) goto 100
+         if ( gettoken( noq3, ierr2 ) > 0 ) goto 100
       endif
 
       noq = noq1 + noq2 + noq3
@@ -237,13 +237,13 @@
 
 !        detect number of layers (only structured sigma or z model, otherwise KMAX=0)
 
-         if ( nolay .le. 1 ) then
-            if ( noq3 .gt. 0 ) then
+         if ( nolay <= 1 ) then
+            if ( noq3 > 0 ) then
                kmax = 0
                nosegl = noseg - noq3
-               if ( nosegl .gt. 0 ) then
+               if ( nosegl > 0 ) then
                   nolay = noseg/nosegl
-                  if ( nolay*nosegl .eq. noseg ) then
+                  if ( nolay*nosegl == noseg ) then
                      kmax  = nolay
                   else
                      nolay = 1
@@ -259,13 +259,13 @@
          endif
       endif
       if ( .not. alone ) then
-         if ( noq .ne. noqp ) then
+         if ( noq /= noqp ) then
             write (lunut, 2020 ) noqp
             call status%increase_error_count()
          endif
       endif
       noq4 = 0
-      if ( nseg2 .ne. 0 ) then
+      if ( nseg2 /= 0 ) then
          noq4 = nseg2 + noseg/nolay
          noq4 = noq4 * 2
          write ( lunut , 2040 ) noq4
@@ -273,21 +273,21 @@
 
 !        Read number of additional dispersion arrays NODISP
 
-      if ( gettoken( nodisp, ierr2 ) .gt. 0 ) goto 100
+      if ( gettoken( nodisp, ierr2 ) > 0 ) goto 100
       write ( lunut, 2050 ) nodisp
       idisp = 0
-      if ( nodisp .gt. 0 ) then
+      if ( nodisp > 0 ) then
          allocate ( dispnam(nodisp) )   !    'Dispersion nnnn'
          do i = 1, nodisp
-            if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
-            if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2060 ) i
+            if ( gettoken( dispnam(i), ierr2 ) > 0 ) goto 100
+            if ( dispnam(i) == ' ' ) write ( dispnam(i), 2060 ) i
             ifound = index_in_array( dispnam(i), dispnam(1:i-1))
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write( lunut, 2070 ) dispnam(i)
                call status%increase_error_count()
             endif
          enddo
-         if ( ioutpt .ge. 2 ) then
+         if ( ioutpt >= 2 ) then
             write ( lunut, 2080 ) ( i, dispnam(i), i=1,nodisp )
          else
             write ( lunut, 2090 )
@@ -297,8 +297,8 @@
          deallocate ( dispnam )
 
          do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
-            if ( gettoken( idisp(i), ierr2 ) .gt. 0 ) goto 100
-            if ( idisp(i) .gt. nodisp) then
+            if ( gettoken( idisp(i), ierr2 ) > 0 ) goto 100
+            if ( idisp(i) > nodisp) then
                write ( lunut , 2100 ) idisp(i), nodisp
                call status%increase_error_count()
             endif
@@ -308,21 +308,21 @@
 !        Read number of additional velocity arrays NOVELO in exactly
 !                   the same way (could probably be better 1 code)
 
-      if ( gettoken( novelo, ierr2 ) .gt. 0 ) goto 100
+      if ( gettoken( novelo, ierr2 ) > 0 ) goto 100
       write ( lunut , 2110 ) novelo
       ivelo = 0
-      if ( novelo .gt. 0 ) then
+      if ( novelo > 0 ) then
          allocate ( dispnam(novelo) )   !
          do i = 1, novelo
-            if ( gettoken( dispnam(i), ierr2 ) .gt. 0 ) goto 100
-            if ( dispnam(i) .eq. ' ' ) write ( dispnam(i), 2120 ) i
+            if ( gettoken( dispnam(i), ierr2 ) > 0 ) goto 100
+            if ( dispnam(i) == ' ' ) write ( dispnam(i), 2120 ) i
             ifound = index_in_array( dispnam(i), dispnam(1:i-1))
-            if ( ifound .gt. 0 ) then
+            if ( ifound > 0 ) then
                write( lunut, 2130 ) dispnam(i)
                call status%increase_error_count()
             endif
          enddo
-         if ( ioutpt .ge. 2 ) then
+         if ( ioutpt >= 2 ) then
             write ( lunut, 2080 ) ( i, dispnam(i), i=1,novelo )
          else
             write ( lunut, 2090 )
@@ -332,21 +332,21 @@
          deallocate ( dispnam )
 
          do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
-            if ( gettoken( ivelo(i), ierr2 ) .gt. 0 ) goto 100
-            if ( ivelo(i) .gt. novelo) then
+            if ( gettoken( ivelo(i), ierr2 ) > 0 ) goto 100
+            if ( ivelo(i) > novelo) then
                write ( lunut , 2100 ) ivelo(i), novelo
                call status%increase_error_count()
             endif
          enddo
       endif
 !           write a report if sensible and write binary file
-      if ( (nodisp .gt. 0 .or. novelo .gt. 0) .and. ioutpt .ge. 2  ) & 
+      if ( (nodisp > 0 .or. novelo > 0) .and. ioutpt >= 2  ) &
                write ( lunut, 2140 ) ( i, idisp(i), ivelo(i), i = 1, nosys )
       write ( lun(2) ) idisp
       write ( lun(2) ) ivelo
 !           a very obvious (and rude) check on correctness
-      if ( noq1 .lt. 0 .or. noq2   .lt. 0 .or. noq3   .lt. 0 .or. & 
-          noq  .eq. 0 .or. nodisp .lt. 0 .or. novelo .lt. 0 ) then
+      if ( noq1 < 0 .or. noq2   < 0 .or. noq3   < 0 .or. &
+          noq  == 0 .or. nodisp < 0 .or. novelo < 0 ) then
            write ( lunut , 2150 )
            call status%increase_error_count()
       endif
@@ -356,23 +356,23 @@
       if ( has_hydfile ) then
          iopt1 = 0
       else
-          if ( gettoken( iopt, ierr2 ) .gt. 0 ) goto 100
+          if ( gettoken( iopt, ierr2 ) > 0 ) goto 100
           write ( lunut , 2170 ) iopt
           noqt = noq
-          if ( iopt .eq. 2 ) goto 10
+          if ( iopt == 2 ) goto 10
 
 !***************  first type of input ******************
 
 !        Read exchange pointers
 
-         if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( iopt1, ierr2 ) > 0 ) goto 100
          write ( lunut , 2180 )  iopt1
 
          if ( regular ) then  !        Regular grid
             call opt1 ( iopt1   , lun     , 8      , lchar  ,  filtype , & 
                        dtflg1  , dtflg3  , 0      , ierr2  ,  status , & 
                        .false. )
-            if ( ierr2  .gt. 0 ) goto 100
+            if ( ierr2  > 0 ) goto 100
             noqt = noq4
             call pointr ( lun    , lchar  , noseg  , nmax   , mmax   , & 
                          kmax   , noq    , noq1   , noq2   , noq3   , & 
@@ -385,10 +385,10 @@
          call opt1 ( iopt1   , lun     , 44     , lchar  ,  filtype , & 
                     dtflg1  , dtflg3  , 0      , ierr2  ,  status, & 
                     has_hydfile       )
-         if ( ierr2  .gt. 0 ) goto 100
+         if ( ierr2  > 0 ) goto 100
          noqt = noq  + noq4
          allocate ( ipnt(4,noqt) , stat = ierr2 )
-         if ( ierr2 .ne. 0 ) then
+         if ( ierr2 /= 0 ) then
             write ( lunut , 2160 ) ierr2, 4*noqt
             goto 100
          endif
@@ -410,9 +410,9 @@
 
 !        calculate size of the fast solvers matrix
 
-      if ( intsrt .eq. 15 .or. intsrt .eq. 16 .or. & 
-          intsrt .eq. 17 .or. intsrt .eq. 18 .or. & 
-          intsrt .eq. 21 .or. intsrt .eq. 22      ) then
+      if ( intsrt == 15 .or. intsrt == 16 .or. &
+          intsrt == 17 .or. intsrt == 18 .or. &
+          intsrt == 21 .or. intsrt == 22      ) then
          call dlwq0f ( noq1   , noq2   , noq34  , nosss  , ipnt   , & 
                       nomat  )
          write ( lunut, 2190 ) nomat
@@ -456,7 +456,7 @@
                    status   , has_hydfile       )
       call status%increase_error_count_with(ierr2)
       if ( .not. alone ) then
-         if ( lchar(11) .ne. fnamep(7) ) then
+         if ( lchar(11) /= fnamep(7) ) then
             write (lunut, 2225 ) fnamep(7)
             call status%increase_error_count()
          endif
@@ -464,7 +464,7 @@
 
 !        Read velos
 
-      if ( novelo .gt. 0 ) then
+      if ( novelo > 0 ) then
          write ( lunut , 2230 )
          ierr2 = 0
          call opt0   ( lun    , 12     , noq1     , noq2     , noq3   , & 
@@ -482,7 +482,7 @@
       if ( has_hydfile ) then
          ilflag = 1
       else
-         if ( gettoken( ilflag, ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( ilflag, ierr2 ) > 0 ) goto 100
          write ( lunut , 2250 ) ilflag
       endif
       select case ( ilflag )
@@ -514,28 +514,28 @@
 
    10 continue
       allocate ( ipnt(4,noqt) , stat = ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut , 2160 ) ierr2, 4*noqt
          goto 100
       endif
       ipnt = 0
 
       ilflag = 1
-      if ( nodisp .lt. 1 ) then
+      if ( nodisp < 1 ) then
            write ( lunut , 2290 ) nodisp
            ierr2 = 1
            goto 100
       endif
 
       allocate ( rwork(5,noq) , stat = ierr2 )
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut , 2310 ) ierr2, 5*noq
          goto 100
       endif
 
-      if ( gettoken( iopt1, ierr2 ) .gt. 0 ) goto 100
+      if ( gettoken( iopt1, ierr2 ) > 0 ) goto 100
       write ( lunut , 2320 ) iopt1
-      if ( iopt1 .eq. 0 ) then
+      if ( iopt1 == 0 ) then
            write ( lunut , 2280 )
            ierr2 = 1
            goto 100
@@ -545,18 +545,18 @@
       call opt1 ( iopt1   , lun     , idum    , lchar   , filtype , & 
                  dtflg1  , dtflg3  , 0       , ierr2   , status , & 
                  .false. )
-      if ( ierr2  .gt. 0 ) goto 100
+      if ( ierr2  > 0 ) goto 100
 
       do k = 1, 4
-         if ( gettoken( factor(k), ierr2 ) .gt. 0 ) goto 100
+         if ( gettoken( factor(k), ierr2 ) > 0 ) goto 100
       enddo
 
       do j = 1, noq
          do i = 1, 4
-            if ( gettoken( ipnt (i,j), ierr2 ) .gt. 0 ) goto 100
+            if ( gettoken( ipnt (i,j), ierr2 ) > 0 ) goto 100
          enddo
          do i = 1, 5
-            if ( gettoken( rwork(i,j), ierr2 ) .gt. 0 ) goto 100
+            if ( gettoken( rwork(i,j), ierr2 ) > 0 ) goto 100
          enddo
       enddo
 
@@ -580,9 +580,9 @@
 
 !        calculate size of the fast solvers matrix
 
-      if ( intsrt .eq. 15 .or. intsrt .eq. 16 .or. & 
-          intsrt .eq. 17 .or. intsrt .eq. 18 .or. & 
-          intsrt .eq. 21 .or. intsrt .eq. 22      ) then
+      if ( intsrt == 15 .or. intsrt == 16 .or. &
+          intsrt == 17 .or. intsrt == 18 .or. &
+          intsrt == 21 .or. intsrt == 22      ) then
          call dlwq0f ( noq1   , noq2   , noq34  , nosss  , ipnt   , & 
                       nomat  )
          write ( lunut, 2190 ) nomat
@@ -595,36 +595,36 @@
       write ( lun(2) ) idummy , ( adummy , k = 1,3 )
 
       call open_waq_files  ( lun(8) , lchar(8) , 8      , 1     , ierr2 )
-      if ( ierr2 .ne. 0 ) goto 100
-      if ( noq1 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i =       1, noq1  )
-      if ( noq2 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i = noq1 +1, noq12 )
-      if ( noq3 .gt. 0 ) write( lun(8) )(ipnt(:,i) , i = noq12+1, noq   )
+      if ( ierr2 /= 0 ) goto 100
+      if ( noq1 > 0 ) write( lun(8) )(ipnt(:,i) , i =       1, noq1  )
+      if ( noq2 > 0 ) write( lun(8) )(ipnt(:,i) , i = noq1 +1, noq12 )
+      if ( noq3 > 0 ) write( lun(8) )(ipnt(:,i) , i = noq12+1, noq   )
       close ( lun(8) )
 
       call open_waq_files  ( lun( 9) , lchar( 9) , 9      , 1     , ierr2 )
-      if ( ierr2 .ne. 0 ) goto 100
+      if ( ierr2 /= 0 ) goto 100
       write ( lun( 9) ) idummy, (rwork(1,i), ( adummy, k=1,nodisp-1 ) , i=1,noq )
       close ( lun( 9) )
 
       call open_waq_files  ( lun(10) , lchar(10) , 10     , 1     , ierr2 )
-      if ( ierr2 .ne. 0 ) goto 100
+      if ( ierr2 /= 0 ) goto 100
       write ( lun(10) ) idummy, ( rwork(2,i) , i=1,noq )
       close ( lun(10) )
 
       call open_waq_files  ( lun(11) , lchar(11) , 11     , 1     , ierr2 )
-      if ( ierr2 .ne. 0 ) goto 100
+      if ( ierr2 /= 0 ) goto 100
       write ( lun(11) ) idummy, ( rwork(3,i) , i=1,noq )
       close ( lun(11) )
 
-      if ( novelo .gt. 0 ) then
+      if ( novelo > 0 ) then
          call open_waq_files  ( lun(12) , lchar(12) , 12     , 1     , ierr2 )
-         if ( ierr2 .ne. 0 ) goto 100
+         if ( ierr2 /= 0 ) goto 100
          write ( lun(12) ) idummy,( (adummy,k=1,novelo) , i=1,noq)
          close ( lun(12) )
       endif
 
       call open_waq_files  ( lun(13) , lchar(13) , 13     , 1     , ierr2 )
-      if ( ierr2 .ne. 0 ) goto 100
+      if ( ierr2 /= 0 ) goto 100
       write ( lun(13) ) idummy,(rwork(4,i),rwork(5,i), i=1,noq )
       close ( lun(13) )
 
@@ -651,8 +651,8 @@
           endif
       endif
 
-      if ( ierr2 .gt. 0 ) call status%increase_error_count()
-      if ( ierr2 .eq. 3 ) call srstop(1)
+      if ( ierr2 > 0 ) call status%increase_error_count()
+      if ( ierr2 == 3 ) call srstop(1)
       call check  ( cdummy , iwidth , 4      , ierr2  , status)
       if ( timon ) call timstop( ithndl )
       return
@@ -701,7 +701,6 @@
  2270 format (    ' Lengths variable over the area.')
  2280 format (  /,' ERROR, option not implemented' )
  2290 format (  /,' ERROR. Option incompatible with NODISP=',I4)
- 2300 format (  /,' ERROR. Option incompatible with integration=',I4)
  2310 format (  /,' ERROR. allocating memory for input table:',I4)
  2320 format (  /,' Option selected for input    :',I7 )
  2330 format (  /,' Scale factor for dispersions :',E13.6 , & 

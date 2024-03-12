@@ -20,75 +20,74 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqh3
-      use m_waq_precision
+module m_dlwqh3
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwqh3 (noseg, nosys, notot, nobnd, isys, &
+            deriv, bound, rhs, diag, sol)
 
-      contains
+        !     Deltares Software Center
 
+        !     Created    : February 1997 by RJVos (like dlwqf4 from scheme 15)
 
-      subroutine dlwqh3 ( noseg  , nosys  , notot  , nobnd  , isys   , & 
-                         deriv  , bound  , rhs    , diag   , sol    )
+        !     Function   : put boundaries and derivatives in right hand side
 
-!     Deltares Software Center
+        !     Modified   : July 2008, Leo Postma  : WAQ performance timers
+        !                  June 2010, Leo Postma  : double precission version
 
-!     Created    : February 1997 by RJVos (like dlwqf4 from scheme 15)
+        !     File I/O   : none
 
-!     Function   : put boundaries and derivatives in right hand side
+        !     Subroutines: none
 
-!     Modified   : July 2008, Leo Postma  : WAQ performance timers
-!                  June 2010, Leo Postma  : double precission version
+        use timers                         ! WAQ performance timers
 
-!     File I/O   : none
+        implicit none
 
-!     Subroutines: none
+        !     Arguments           :
 
-      use timers                         ! WAQ performance timers
+        !     Kind        Function         Name                  Description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: noseg               ! Number of computational volumes
+        integer(kind = int_wp), intent(in) :: nosys               ! Number of transported substances
+        integer(kind = int_wp), intent(in) :: notot               ! Total number of substances
+        integer(kind = int_wp), intent(in) :: nobnd               ! Number of boundaries
+        integer(kind = int_wp), intent(in) :: isys                ! This substance
+        real(kind = real_wp), intent(in) :: deriv(notot, noseg)  ! Derivatives
+        real(kind = real_wp), intent(in) :: bound(nosys, nobnd)  ! Open boundary values
+        real(kind = dp), intent(inout) :: rhs  (noseg + nobnd)  ! Right hand side of the equation
+        real(kind = dp), intent(in) :: diag (noseg + nobnd)  ! diagonal for scaling
+        real(kind = dp), intent(out) :: sol  (noseg + nobnd)  ! initial guess for solution
 
-!     Arguments           :
+        !     Local variables
 
-!     Kind        Function         Name                  Description
+        integer(kind = int_wp) :: iseg       ! loop counter
 
-      integer(kind=int_wp), intent(in   )  ::noseg               ! Number of computational volumes
-      integer(kind=int_wp), intent(in   )  ::nosys               ! Number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot               ! Total number of substances
-      integer(kind=int_wp), intent(in   )  ::nobnd               ! Number of boundaries
-      integer(kind=int_wp), intent(in   )  ::isys                ! This substance
-      real(kind=real_wp), intent(in   )  ::deriv(notot,noseg)  ! Derivatives
-      real(kind=real_wp), intent(in   )  ::bound(nosys,nobnd)  ! Open boundary values
-      real(kind=dp), intent(inout)  ::rhs  (noseg+nobnd)  ! Right hand side of the equation
-      real(kind=dp), intent(in   )  ::diag (noseg+nobnd)  ! diagonal for scaling
-      real(kind=dp), intent(  out)  ::sol  (noseg+nobnd)  ! initial guess for solution
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwqh3", ithandl)
 
-!     Local variables
+        !        initialize the rhs and apply row scaling
 
-      integer(kind=int_wp) ::iseg       ! loop counter
+        do iseg = 1, noseg
+            rhs(iseg) = deriv(isys, iseg) / diag(iseg)
+        enddo
+        do iseg = 1, nobnd
+            rhs(iseg + noseg) = bound(isys, iseg)
+        enddo
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwqh3", ithandl )
+        !        zero initial guess, try rhs plus small value
 
-!        initialize the rhs and apply row scaling
+        sol = 0.0
+        do iseg = 1, noseg
+            sol(iseg) = rhs(iseg) + 0.01
+        enddo
 
-      do iseg = 1 , noseg
-         rhs(iseg) = deriv(isys,iseg) / diag(iseg)
-      enddo
-      do iseg = 1 , nobnd
-         rhs(iseg+noseg) = bound(isys,iseg)
-      enddo
+        if (timon) call timstop (ithandl)
+        RETURN
+    END
 
-!        zero initial guess, try rhs plus small value
-
-      sol = 0.0
-      do iseg = 1, noseg
-         sol(iseg) = rhs(iseg) + 0.01
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
-
-      end module m_dlwqh3
+end module m_dlwqh3

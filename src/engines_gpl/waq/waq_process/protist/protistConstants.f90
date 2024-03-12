@@ -32,12 +32,12 @@
 module protist_constants
 
     IMPLICIT NONE
-    real(8),  parameter                 :: PI_8  = 4 * atan (1.0_8)
-    real(8),  parameter                 :: numSecPerDay  = 24.0 * 60.0 * 60.0
-    real(8),  parameter                 :: small = 1e-12
-    real(8),  parameter                 :: C_velProt = 1e-6
-    real(8),  parameter                 :: threshCmass = 1e-9
+    real(8), parameter :: PI_8 = 4 * atan (1.0_8)
+    real(8), parameter :: numSecPerDay = 24.0 * 60.0 * 60.0
+    real(8), parameter :: small = 1e-12
+    real(8), parameter :: C_velProt = 1e-6
+    real(8), parameter :: threshCmass = 1e-9
 
-    integer                             :: nrLossFluxes = 5
+    integer :: nrLossFluxes = 5
 
 end module protist_constants

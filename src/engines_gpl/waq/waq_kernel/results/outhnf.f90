@@ -133,7 +133,7 @@
 
 !     initialize file
 
-      if ( init .eq. 1 ) then
+      if ( init == 1 ) then
          init = 0
 
          ! allocate arrays
@@ -145,7 +145,7 @@
          if (allocated(nbytsg)) deallocate(nbytsg)
 
          allocate(elmnms(nelmxx),elmpts(nelmxx),elmdms(6,nelmxx),nbytsg(nelmxx),stat=ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then
+         if ( ierr_alloc /= 0 ) then
             write(lunout,*) 'ERROR : allocating nefis output structure'
             write(*,*) 'ERROR : allocating nefis output structure'
             call srstop(1)
@@ -175,7 +175,7 @@
 
          defnam = lchout
          do i = len(defnam), 1, -1
-            if (defnam(i:i) .eq. '.') then
+            if (defnam(i:i) == '.') then
 
                ! found filename separator, remove file-id
 
@@ -251,32 +251,32 @@
          call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(1), celid1, & 
                     lwrite, ierr  , type  , fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(2), celid1, & 
                     lwrite, ierr  , moname, fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(3), celid1, & 
                     lwrite, ierr  , syname, fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(4), celid1, & 
                     lwrite, ierr  , duname, fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(5), celid1, & 
                     lwrite, ierr  , nosize, fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(6), celid1, & 
                     lwrite, ierr  , window, fd_nef)
-         if (ierr .ne. 0) go to 110
+         if (ierr /= 0) go to 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(7), celid1, & 
@@ -284,7 +284,7 @@
 
   110    continue
          ierrem = ierr
-         if ( ierrem .ne. 0 ) nefis = .false.
+         if ( ierrem /= 0 ) nefis = .false.
       endif
 
       ! produce a map record for nefis
@@ -297,7 +297,7 @@
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
                     elmdms, elmpts, nbytsg, elmnms(7), celid1, & 
                     lwrite, ierr  , itoff , fd_nef)
-         if (ierr .ne. 0) go to 310
+         if (ierr /= 0) go to 310
 
          ! write actual time to cell
 
@@ -308,13 +308,13 @@
                      elmnms(noparm), celid2          , & 
                      lwrite        , ierr            , & 
                      itime         , fd_nef)
-         if  (ierr .ne. 0) go to 310
+         if  (ierr /= 0) go to 310
 
          ! fill and write output buffer for every output variable to cell
 
          do isys = 1, notot
 
-            if ( isys .le. notot1 ) then
+            if ( isys <= notot1 ) then
 
                do iseg = 1, nodump
                   rbuffr(iseg) = conc1(isys, idump(iseg))
@@ -338,7 +338,7 @@
                         elmnms(noparm+isys), celid2          , & 
                         lwrite             , ierr            , & 
                         rbuffr             , fd_nef)
-            if  (ierr .ne. 0) go to 310
+            if  (ierr /= 0) go to 310
          enddo
 
          celid2 = celid2 + 1
@@ -348,7 +348,7 @@
 
       endif
 
-      if (ierrem .ne. 0) then
+      if (ierrem /= 0) then
 
          ! echo error to logging file
 

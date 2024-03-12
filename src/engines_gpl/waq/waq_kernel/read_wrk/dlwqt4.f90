@@ -124,7 +124,7 @@
 
       lrewin = .false.
       lre3   = .false.
-      if ( nrftot .eq. 0 ) goto 9999        ! no data to read
+      if ( nrftot == 0 ) goto 9999        ! no data to read
 
       propcoll   => dlwqd%propcoll
       usedefcoll => dlwqd%usedefcoll
@@ -132,10 +132,10 @@
 
 !         luns between 800 and 900 for binary functions and segfuns those files are already open
 
-      if ( ilun .le. 800 .or. ilun .ge. 900 ) then
+      if ( ilun <= 800 .or. ilun >= 900 ) then
          ierr = 0
-         if ( ifflag .eq. 1 .and. nrftot .gt. 0 ) call open_waq_files ( lun(ilun), luntxt(ilun) , ilun , 2+ftype(ilun), ierr )
-         if ( ierr .ne. 0 ) call messag ( lunout , 5 , isflag , lun(ilun) , luntxt(ilun) , itime , 0 )
+         if ( ifflag == 1 .and. nrftot > 0 ) call open_waq_files ( lun(ilun), luntxt(ilun) , ilun , 2+ftype(ilun), ierr )
+         if ( ierr /= 0 ) call messag ( lunout , 5 , isflag , lun(ilun) , luntxt(ilun) , itime , 0 )
          ilt  = ilun
          llun = lun(ilun)
       else
@@ -154,16 +154,16 @@
 
 !         if first time call for this physical property, fill the description arrays
 
-      IF ( IFFLAG .NE. 0 ) THEN             ! make the FileUseDefColl for this physics
+      IF ( IFFLAG /= 0 ) THEN             ! make the FileUseDefColl for this physics
          UseDefColl = FileUseDefColl ( NULL(), 0, 0, ILUN, 0, 0, 0, 0, nrftot, NULL(), NULL(), NULL() )
          read ( llun , iostat = ioerr ) strng
-         if ( ioerr .ne. 0 ) strng = 'x'
+         if ( ioerr /= 0 ) strng = 'x'
 !               A steering file is present, then fill the compound structures
-         if ( strng(1:14) .eq. 'Steering file ' ) then
+         if ( strng(1:14) == 'Steering file ' ) then
             read ( llun ) nfil, UseDefColl%intopt  ! number of files and interpolation option
             do i = 1, nfil                         ! read all descriptions
                read ( llun ) fact, it1, it2, it3, sfile, it1a, it2a, it3a
-               if ( i .eq. 1 ) then                ! to determine start and finish for the
+               if ( i == 1 ) then                ! to determine start and finish for the
                   UseDefColl%istart = IT1          ! whole collection. The collection as a
                   UseDefColl%istop  = IT2          ! whole can also be rewound later
                else
@@ -172,12 +172,12 @@
                endif                               ! make a file property
                Prop = FileProp ( SFILE, ISLUN, IT1a, IT2a, IT3a, 0, 0, 0, -1, .false., NULL(), NULL() )
                iret = FilePropCollFind( PropColl, Prop )   ! See if it already exists
-               if ( iret .eq. 0 ) then             ! this is the first time for this file
+               if ( iret == 0 ) then             ! this is the first time for this file
                   filtype = 0
                   CALL open_waq_files ( ISLUN , SFILE , 3 , 2+filtype, ierr )   ! open the file
-                  IF ( ierr .NE. 0 ) CALL MESSAG ( LUNOUT, 5, ISFLAG, ISLUN, SFILE, ITIME, 0 )
+                  IF ( ierr /= 0 ) CALL MESSAG ( LUNOUT, 5, ISFLAG, ISLUN, SFILE, ITIME, 0 )
                   iret = FilePropCollAdd( PropColl, Prop, nrftot )   ! add a copy of this all to the collection
-                  if ( iret .eq. 0 ) CALL MESSAG ( LUNOUT , 4 , ISFLAG , ISLUN , SFILE , ITIME , 0 )
+                  if ( iret == 0 ) CALL MESSAG ( LUNOUT , 4 , ISFLAG , ISLUN , SFILE , ITIME , 0 )
                   ISLUN = ISLUN + 1                 ! add one to the 700 group unitnumbers
                endif
                PropPnt = PropColl%FilePropPnts(iret)  ! take the property from the collection
@@ -187,7 +187,7 @@
             close ( llun )                       ! Close binary description file
          ELSE
 !               A steering file is NOT present, then fill the structures with one description
-            if ( ipoint(1) .GT. 0 ) UseDefColl%intopt = 1   !   linear interpolation
+            if ( ipoint(1) > 0 ) UseDefColl%intopt = 1   !   linear interpolation
 
             inquire( llun, access = access )
             stream_access = access == 'STREAM'
@@ -199,7 +199,7 @@
 
             Prop = FileProp ( LUNTXT(ilt), LLUN, 0, 0, 0, 0, 0, 0, -1, stream_access, NULL(), NULL() )
             iret = FilePropCollAdd( PropColl, Prop, nrftot )  ! UseDef endtime of zero means till end of simulation
-            if ( iret .eq. 0 ) CALL MESSAG ( LUNOUT , 4 , ISFLAG , LLUN  , LUNTXT(ilt), ITIME , 0 )
+            if ( iret == 0 ) CALL MESSAG ( LUNOUT , 4 , ISFLAG , LLUN  , LUNTXT(ilt), ITIME , 0 )
             PropPnt = PropColl%FilePropPnts(iret)       ! take the property from the collection
             UseDef = FileUseDef ( PropPnt, 1.0 , PropPnt%pnt%itime1,  0, PropPnt%pnt%itime1, .false. )
             iret = FileUseDefCollAdd ( UseDefColl , UseDef )
@@ -224,9 +224,9 @@
       do i = 1 , UseDefColl%cursize   ! vvvvvvvvvvvvv it is important to use the original here
          iDef = FileUseDefCollFind ( CollColl%FileUseDefColls(iColl), i, ITIME , UPDAT2, LREWIN )
          IF ( UPDAT2 ) UPDATE = .TRUE.
-         if ( iDef .ge. 0 ) then                         ! The arrays have been updated
+         if ( iDef >= 0 ) then                         ! The arrays have been updated
             iUp = iUp + 1
-            if ( LREWIN .and. iDef .ne. 0 )               & ! Signal the rewind
+            if ( LREWIN .and. iDef /= 0 )               & ! Signal the rewind
               CALL MESSAG ( LUNOUT, 1, ISFLAG, llun, & 
                             UseDefColl%FileUseDefs(i)%afilePnt%pnt%name, ITIME, iDef )
          else                                            ! Before the range for this description
@@ -235,17 +235,17 @@
          endif
       end do
 
-      if ( iGo .eq. UseDefColl % cursize )                & ! Before the range of all descriptions (simulation stops in MESSAG)
+      if ( iGo == UseDefColl % cursize )                & ! Before the range of all descriptions (simulation stops in MESSAG)
         CALL MESSAG ( LUNOUT , 6 , ISFLAG , UseDefColl%unitnr , & 
                             UseDefColl%FileUseDefs(1)%afilePnt%pnt%name, ITIME, -iTt )
 
-      if ( UseDefColl%intopt .eq. 2 .or. & 
-          UseDefColl%intopt .eq. 3      ) then ! logarithmic averaging
+      if ( UseDefColl%intopt == 2 .or. &
+          UseDefColl%intopt == 3      ) then ! logarithmic averaging
          array1 = exp(array1)
          array2 = exp(array2)
       endif
 
-      if ( ITIME .ne. UseDefColl%istart .and. ITIME - UseDefColl%ioffset .eq. UseDefColl%istop ) then  ! exactly at the end of this collection
+      if ( ITIME /= UseDefColl%istart .and. ITIME - UseDefColl%ioffset == UseDefColl%istop ) then  ! exactly at the end of this collection
          array3 = array1                                 ! to save the last result for closure error correction
          iTt = ITIME - UseDefColl%ioffset                ! Rewind the whole collection of file defs
          iDt = UseDefColl%istop - UseDefColl%istart      ! This is the time span to increase the offset with
@@ -314,8 +314,8 @@
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "messag", ithandl )
 
-      IF ( MESSGE .EQ. 0 ) goto 9999
-      IF ( ISFLAG .EQ. 1 ) THEN
+      IF ( MESSGE == 0 ) goto 9999
+      IF ( ISFLAG == 1 ) THEN
          WRITE(LUNOUT,2010) MSGTXT(MESSGE), LLUN, TRIM(SFILE), & 
                                ITIME /86400           , & 
                            MOD(ITIME ,86400)/3600     , & 
@@ -325,7 +325,7 @@
                            MOD(ITIME1,86400)/3600     , & 
                            MOD(ITIME1,3600)/60        , & 
                            MOD(ITIME1,60)
-      ELSEIF ( ISFLAG .EQ. 2 ) THEN
+      ELSEIF ( ISFLAG == 2 ) THEN
          WRITE(LUNOUT,2020) MSGTXT(MESSGE), LLUN, TRIM(SFILE), & 
                                ITIME /31536000        , & 
                            MOD(ITIME ,31536000)/86400 , & 
@@ -340,8 +340,8 @@
       ELSE
           WRITE(LUNOUT,2000) MSGTXT(MESSGE), LLUN, TRIM(SFILE), ITIME
       ENDIF
-      IF ( MESSGE .EQ. 1 ) goto 9999
-      IF ( MESSGE .EQ. 2 ) goto 9999
+      IF ( MESSGE == 1 ) goto 9999
+      IF ( MESSGE == 2 ) goto 9999
       CALL SRSTOP ( 1 )
  9999 if ( timon ) call timstop ( ithandl )
       return
