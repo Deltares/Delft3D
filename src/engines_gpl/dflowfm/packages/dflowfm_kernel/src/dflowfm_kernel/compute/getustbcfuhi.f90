@@ -259,9 +259,9 @@
     endif
 
     ! hk, TDR, To do, remove, double counting erroneously inserted in a merge   
-    if (jawave>0 .and. jawaveStokes>0 .and. .not. flowWithoutWaves) then       ! Ustokes correction at bed
-        adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
-    endif
+    ! if (jawave>0 .and. jawaveStokes>0 .and. .not. flowWithoutWaves) then       ! Ustokes correction at bed
+    !     adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
+    ! endif
 
     else if (ifrctyp == 10) then                                 ! Hydraulically smooth, glass etc
       nit = 0
