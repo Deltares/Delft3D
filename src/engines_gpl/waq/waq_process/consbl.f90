@@ -144,50 +144,50 @@
       DATA INIT /.TRUE./
 
 !     Segment pointers en incrementen
-      DO 10 I=1,NIN
+      DO I=1,NIN
         IP(I)  = IPOINT( I)
-   10 CONTINUE
+      end do
 !
 !     Check parameters not space dependent
 !
       if (init) then
         problem = .false.
-        if (increm(1) .gt. 0 ) problem = .true.
-        if (increm(5) .gt. 0 ) problem = .true.
+        if (increm(1) > 0 ) problem = .true.
+        if (increm(5) > 0 ) problem = .true.
         DO IFILSP = 1,NTOGRZ
-          if (increm(8+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(9+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(10+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(11+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(12+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(13+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(14+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(15+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(16+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(17+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(18+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
+          if (increm(8+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(9+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(10+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(11+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(12+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(13+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(14+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(15+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(16+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(17+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(18+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
           DO I = 1,NTONUT
-            if (increm(18+(IFILSP-1)*NINGRZ+I) .gt. 0 ) problem = .true.
+            if (increm(18+(IFILSP-1)*NINGRZ+I) > 0 ) problem = .true.
           ENDDO
-          if (increm(23+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(24+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(25+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(26+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(27+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(28+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
-          if (increm(29+(IFILSP-1)*NINGRZ) .gt. 0 ) problem = .true.
+          if (increm(23+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(24+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(25+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(26+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(27+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(28+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
+          if (increm(29+(IFILSP-1)*NINGRZ) > 0 ) problem = .true.
         ENDDO
         DO I=1,NTOALG
           DO J=1,NTONUT-1
-            if (increm(5+J*NTOALG+2*NTONUT+NTOGRZ*NINGRZ+I) .gt. 0 ) & 
+            if (increm(5+J*NTOALG+2*NTONUT+NTOGRZ*NINGRZ+I) > 0 ) &
                problem = .true.
           ENDDO
           DO IFILSP=1,NTOGRZ
             if (increm(5+(NTONUT+IFILSP-1)*NTOALG+2*NTONUT+ & 
-                                 NTOGRZ*NINGRZ+I) .gt. 0 ) & 
+                                 NTOGRZ*NINGRZ+I) > 0 ) &
                problem = .true.
             if (increm(5+(NTONUT+NTOGRZ+IFILSP-1)*NTOALG+ & 
-                                  2*NTONUT+NTOGRZ*NINGRZ+I) .gt. 0 ) & 
+                                  2*NTONUT+NTOGRZ*NINGRZ+I) > 0 ) &
                problem = .true.
           ENDDO
         ENDDO
@@ -205,9 +205,9 @@
 
       DO IFILSP = 1,NTOGRZ
         active_grazer(ifilsp) = .false.
-        if ( increm(6+(IFILSP-1)*NINGRZ) .gt. 0 .or. & 
-            (PMSA(IP(6+(IFILSP-1)*NINGRZ)).gt.1e-20 .or. & 
-             PMSA(IP(7+(IFILSP-1)*NINGRZ)).gt.1e-20)      ) & 
+        if ( increm(6+(IFILSP-1)*NINGRZ) > 0 .or. &
+            (PMSA(IP(6+(IFILSP-1)*NINGRZ))>1e-20 .or. &
+             PMSA(IP(7+(IFILSP-1)*NINGRZ))>1e-20)      ) &
         active_grazer(ifilsp) = .true.
       ENDDO
 
@@ -243,36 +243,36 @@
       ENDDO
       DO I=1,NTOALG
         ALGSTC(1,I) = 1.0
-        DO 71 J=1,NTONUT-1
+        DO J=1,NTONUT-1
           ALGSTC(J+1,I) = PMSA(IP(5+J*NTOALG+2*NTONUT+NTOGRZ*NINGRZ+I))
-   71   CONTINUE
-        DO 81 IFILSP=1,NTOGRZ
+        end do
+        DO IFILSP=1,NTOGRZ
          if (active_grazer(ifilsp)) then
           ALGPR(I,IFILSP) = PMSA(IP(5+(NTONUT+IFILSP-1)*NTOALG+2*NTONUT+ & 
                                   NTOGRZ*NINGRZ+I))
           ALGFF(I,IFILSP) = PMSA(IP(5+(NTONUT+NTOGRZ+IFILSP-1)*NTOALG+ & 
                                   2*NTONUT+NTOGRZ*NINGRZ+I))
          endif
-   81   CONTINUE
+        end do
       ENDDO
 
 !     Loop over segments
 
-      DO 9000 ISEG = 1 , NOSEG
+      DO ISEG = 1 , NOSEG
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 
 !     RESET FLUXES
-      DO 31 I=1,5*NTONUT+NTOALG
+      DO I=1,5*NTONUT+NTOALG
         FL(I+IFLUX) = 0.0
-   31 CONTINUE
+      end do
 !
 !     Input items (potentially) dependent on space
       VOLUME = PMSA(IP(2))
       WATEMP = PMSA(IP(3))
       DEPTH  = PMSA(IP(4))
-      DO 30 IFILSP = 1,NTOGRZ
+      DO IFILSP = 1,NTOGRZ
        if (active_grazer(ifilsp)) then
         GRZNEW(IFILSP) = MAX(PMSA(IP(6+(IFILSP-1)*NINGRZ)),GRZMC(IFILSP)) * & 
                         GRZML(IFILSP)
@@ -281,29 +281,29 @@
 !       Correct unit of input concentration for zoobenthos
 !       Force concentration zero for zoobenthos segments without bottom
         FRDBOT(IFILSP) = FRDBOT_SAVE(IFILSP)
-        IF ( BENTHS(IFILSP) .EQ. 1 ) THEN
+        IF ( BENTHS(IFILSP) == 1 ) THEN
 !         Species, defined in g/m2 (typically ZOOBENTHOS)
 !         Convert input unit to g/m3!!
           GRZNEW(IFILSP) = GRZNEW(IFILSP)/DEPTH
           GRZOLD(IFILSP) = GRZOLD(IFILSP)/DEPTH
 !         FRDBOT(IFILSP) = FRDBOT_SAVE(IFILSP)
           CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-          IF ((IKMRK2.EQ.1).OR.(IKMRK2.EQ.2)) THEN
+          IF ((IKMRK2==1).OR.(IKMRK2==2)) THEN
              GRZNEW(IFILSP) = 0.0
              FRDBOT(IFILSP) = 0.0
           ENDIF
         ENDIF
         IF (INIT) GRZOLD(IFILSP) = GRZNEW(IFILSP)
        endif
-   30 CONTINUE
-      DO 51 I=1,NTONUT
+      end do
+      DO I=1,NTONUT
         DETRIT(I) = PMSA(IP(5+NTOGRZ*NINGRZ+I))
         POC(I) =    PMSA(IP(5+NTOGRZ*NINGRZ+NTONUT+I))
         DETBIO(I) = DETRIT(I)*(1.0-GEM) + POC(I)*GEM
-   51 CONTINUE
-      DO 61 I=1,NTOALG
+      end do
+      DO I=1,NTOALG
         ALGBIO(I) = MAX ( PMSA(IP(5+2*NTONUT+NTOGRZ*NINGRZ+I)) ,0.0 )
-   61 CONTINUE
+      end do
 
 !*******************************************************************************
 !**** Processes connected to the GRAZING of algae
@@ -312,28 +312,28 @@
 !****
 !*  2 Loop over the grazers
 !****
-      DO 200 IFILSP = 1, NTOGRZ
+      DO IFILSP = 1, NTOGRZ
        if (active_grazer(ifilsp)) then
 !****
 !*  3 Initialize output variables
 !****
-          DO 40 I = 1, NTONUT
+          DO I = 1, NTONUT
               DISFLX(I) = 0.0E0
               DETFLX(I) = 0.0E0
               BOTFLX(I) = 0.0E0
-   40     CONTINUE
-          DO 50 I = 1, NTOALG
+           end do
+          DO I = 1, NTOALG
               ALGFLX(I) = 0.0
-   50     CONTINUE
+          end do
 !****
 !*  4 Check if grazer growth or mortality exceeds constraints
 !*    If this is the case, correct new biomass to constraint value
 !****
-          IF (GRZOLD(IFILSP) .GT. 0.0) THEN
+          IF (GRZOLD(IFILSP) > 0.0) THEN
 !             There was biomass
-              IF ((GRZNEW(IFILSP) - GRZOLD(IFILSP)) .GE. 0.0) THEN
+              IF ((GRZNEW(IFILSP) - GRZOLD(IFILSP)) >= 0.0) THEN
 !                 Net growth
-                  IF (GRZNEW(IFILSP) .GT. GRZOLD(IFILSP) * & 
+                  IF (GRZNEW(IFILSP) > GRZOLD(IFILSP) * &
                  (1.0 + GRZGM(IFILSP) * EXP(TMPGM(IFILSP) * & 
                  (WATEMP - 20.0)) * PERIOD)) THEN
                       GRZNEW(IFILSP) = GRZOLD(IFILSP) * & 
@@ -342,7 +342,7 @@
                   ENDIF
               ELSE
 !                 Net mortality
-                  IF (GRZNEW(IFILSP) .LT. GRZOLD(IFILSP) * & 
+                  IF (GRZNEW(IFILSP) < GRZOLD(IFILSP) * &
                  (1.0 - GRZMM(IFILSP) * EXP(TMPMM(IFILSP) * & 
                  (WATEMP - 20.0)) * PERIOD)) THEN
                       GRZNEW(IFILSP) = GRZOLD(IFILSP) * & 
@@ -355,23 +355,23 @@
 !*  5 Calculate total available amount of food (mg C/l)
 !****
           GRZFOO = DETBIO(1) * DETPR(IFILSP)
-          DO 60 I = 1, NTOALG
+          DO I = 1, NTOALG
               GRZFOO = GRZFOO + ALGBIO(I) * ALGPR(I,IFILSP)
-   60     CONTINUE
+          end do
 !****
 !*  6 Calculate grazing (1/d) rate
 !****
-          IF (GRZFOO .GT. 0.0) THEN
+          IF (GRZFOO > 0.0) THEN
 
               MaxFiltration = EXP(TMPFM(IFILSP) * (WATEMP - 20.0)) * & 
              GRZFM(IFILSP) * (GRZFOO / (GRZFOO + GRZMO(IFILSP)))
               MaxUptake = EXP(TMPRM(IFILSP) * (WATEMP - 20.0)) * & 
              GRZRM(IFILSP)
-              if ( MaxFiltration .lt. 1e-20 ) then
+              if ( MaxFiltration < 1e-20 ) then
 !               grazing rate limited by filtration
                 GRZGRZ = GRZOLD(IFILSP) * MaxFiltration
               else
-                IF (GRZFOO .LT. (MaxUptake/MaxFiltration) ) THEN
+                IF (GRZFOO < (MaxUptake/MaxFiltration) ) THEN
 !                 grazing rate limited by filtration
                   GRZGRZ = GRZOLD(IFILSP) * MaxFiltration
                 ELSE
@@ -386,7 +386,7 @@
 !*  7 Calculate realized feeding (mg C/mg C.d) and filtration rate (l/mg C.d)
 !*    GRZRAT and GRZFIL are output variables, not used at the moment
 !****
-          IF (GRZOLD(IFILSP) .GT. 0.0) THEN
+          IF (GRZOLD(IFILSP) > 0.0) THEN
               GRZRAT = GRZFOO * GRZGRZ / GRZOLD(IFILSP)
               GRZFIL = GRZGRZ / GRZOLD(IFILSP)
           ELSE
@@ -396,17 +396,17 @@
 !****
 !*  8 Add grazing part to fluxes for algae and detritus
 !****
-          DO 70 I = 1, NTONUT
+          DO I = 1, NTONUT
               DETFLX(I) = -(DETBIO(I) * GRZGRZ * DETPR(IFILSP))
-   70     CONTINUE
-          DO 80 I = 1, NTOALG
+          end do
+          DO I = 1, NTOALG
               ALGFLX(I) = -(ALGBIO(I) * GRZGRZ * & 
              ALGPR(I,IFILSP))
-   80     CONTINUE
+          end do
 !****
 !*  9 Add fecal fraction to fluxes (choose water/sediment detritus)
 !****
-          DO 100 J = 1, NTONUT
+          DO J = 1, NTONUT
 !             JvG Code is not consistent for FRDBOT/=0 or 1!
 !              GRZUPT(J) = -(DETFLX(J) * (1.0 - DETFF(IFILSP)))
 !              DETFLX(J) = DETFLX(J) - DETFLX(J) * DETFF(IFILSP) *
@@ -419,35 +419,35 @@
                          (1. - FRDBOT(IFILSP))
               BOTFLX(J) = BOTFLX(J) - DetrGrazing * DETFF(IFILSP) * & 
                          FRDBOT(IFILSP)
-              DO 90 I = 1, NTOALG
+              DO I = 1, NTOALG
                   GRZUPT(J) = GRZUPT(J) - ALGFLX(I) * ALGSTC(J,I) * & 
                  (1.0 - ALGFF(I,IFILSP))
                   DETFLX(J) = DETFLX(J) - ALGFLX(I) * ALGSTC(J,I) * & 
                              ALGFF(I,IFILSP) * (1. - FRDBOT(IFILSP))
                   BOTFLX(J) = BOTFLX(J) - ALGFLX(I) * ALGSTC(J,I) * & 
                              ALGFF(I,IFILSP) * FRDBOT(IFILSP)
-   90         CONTINUE
-  100     CONTINUE
+              end do
+          end do
 !****
 !* 10 Calculate limiting element for growth
 !****
           GRZPMX = 10.0E20
-          DO 110 I = 1, NTONUT
-              IF (GRZST(I,IFILSP) .GT. 0.0) THEN
+          DO I = 1, NTONUT
+              IF (GRZST(I,IFILSP) > 0.0) THEN
                   GRZPRT = GRZUPT(I) / GRZST(I,IFILSP)
-                  IF (GRZPRT .LT. GRZPMX) THEN
+                  IF (GRZPRT < GRZPMX) THEN
                       GRZPMX = GRZPRT
                   ENDIF
               ENDIF
-  110     CONTINUE
+          end do
 !****
 !* 11 Calculate routine respiration (mgC/l.d)
 !****
           GrowthResp = EXP(TMPRE(IFILSP)*(WATEMP-20.))*GRZRE(IFILSP)
-          DO 120 I = 1, NTONUT
+          DO I = 1, NTONUT
               DISFLX(I) = GRZPMX * GrowthResp * GRZST(I,IFILSP)
               GRZUPT(I) = GRZUPT(I) - DISFLX(I)
-  120     CONTINUE
+          end do
           GRZPMX = GRZPMX * (1.0 - GrowthResp)
 !****
 !* 12 Calculate the standard respiration (1/d)
@@ -457,15 +457,15 @@
 !****
 !* 13 Correct for length of period (d)
 !****
-          DO 130 I = 1, NTOALG
+          DO I = 1, NTOALG
               ALGFLX(I) = ALGFLX(I) * PERIOD
-  130     CONTINUE
-          DO 140 I = 1, NTONUT
+          end do
+          DO I = 1, NTONUT
               GRZUPT(I) = GRZUPT(I) * PERIOD
               DETFLX(I) = DETFLX(I) * PERIOD
               BOTFLX(I) = BOTFLX(I) * PERIOD
               DISFLX(I) = DISFLX(I) * PERIOD
-  140     CONTINUE
+          end do
           GRZPMX = GRZPMX * PERIOD
           GRZMET = GRZMET * PERIOD
 !****
@@ -475,20 +475,20 @@
 !****
 !* 15 Correct bruto growth if intake can not sustain respiration and growth
 !****
-          IF (GRZBRU .GT. GRZPMX) THEN
+          IF (GRZBRU > GRZPMX) THEN
               GRZBRU = GRZPMX
               GRZNEW(IFILSP) = GRZOLD(IFILSP) * (1.0 - GRZMET) + GRZPMX
           ENDIF
 !****
 !* 16 Add respiration to dissolved nutrients
 !****
-          DO 150 I = 1, NTONUT
+          DO I = 1, NTONUT
               DISFLX(I) = DISFLX(I) + GRZOLD(IFILSP) * GRZMET * & 
              GRZST(I,IFILSP)
 !****
 !* 17 If there is bruto growth, subtract nutrients from the intake
 !****
-              IF (GRZBRU .GE. 0.0) THEN
+              IF (GRZBRU >= 0.0) THEN
                   GRZUPT(I) = GRZUPT(I) - GRZBRU * GRZST(I,IFILSP)
 !****
 !* 18 If their is mortality, add the nutrients to the detritus pool
@@ -504,15 +504,15 @@
 !****
               DETFLX(I) = DETFLX(I) + GRZUPT(I) * (1. - FRDBOT(IFILSP))
               BOTFLX(I) = BOTFLX(I) + GRZUPT(I) * FRDBOT(IFILSP)
-  150     CONTINUE
+          end do
 !****
 !* 20 Check massbalans
 !****
-          DO 170 J=1,NTONUT
+          DO J=1,NTONUT
               ALTFLX(J) = 0.0E0
-              DO 160 I=1,NTOALG
+              DO I=1,NTOALG
                   ALTFLX(J) = ALTFLX(J) + ALGFLX(I) * ALGSTC(J,I)
-  160         CONTINUE
+              end do
               GRZFLX(J) = (GRZNEW(IFILSP) - GRZOLD(IFILSP)) * & 
              GRZST(J,IFILSP)
               TOTFLX(J) = DISFLX(J) + DETFLX(J) + BOTFLX(J) + & 
@@ -521,30 +521,30 @@
 !             Total nutrients in PHYT:
 !
               FL(4 + J + IFLUX) = FL(4 + J + IFLUX) - ALTFLX(J)/PERIOD
-  170     CONTINUE
+          end do
 !****
 !* 21 Update total fluxes and detritus and algal biomass
 !****
-          DO 180 I = 1, NTONUT
+          DO I = 1, NTONUT
               FL(I + IFLUX)      = FL(I + IFLUX)      + DISFLX(I)/PERIOD
 !             MvdV 981130 added division over Detr and GEM POC
               FL(I+8+IFLUX) = FL(I+8+IFLUX) + DETFLX(I)/PERIOD & 
                            * (1.0-GEM)
               FL(I+12+IFLUX) = FL(I+12+IFLUX) + DETFLX(I)/PERIOD * GEM
               FL(I+16+IFLUX) = FL(I+16+IFLUX) + BOTFLX(I)/PERIOD
-  180     CONTINUE
-          DO 190 I = 1, NTOALG
+          end do
+          DO I = 1, NTOALG
               FL(I + 20 + IFLUX) = FL(I + 20 + IFLUX) - ALGFLX(I)/PERIOD
-  190     CONTINUE
+          end do
 !****
 !* 23 Save biomass grazers for next time step
 !****
-          IF ( BENTHS(IFILSP) .EQ. 1 ) THEN
+          IF ( BENTHS(IFILSP) == 1 ) THEN
 !           Zoobenthos species
 !           Convert input unit to g/m2!!
             GRZNEW(IFILSP) = GRZNEW(IFILSP)*DEPTH
           ENDIF
-          IF (GRZML(IFILSP).GT.0.0) THEN
+          IF (GRZML(IFILSP)>0.0) THEN
             PMSA(IP(7+(IFILSP-1)*NINGRZ)) = GRZNEW(IFILSP)/GRZML(IFILSP)
           ELSE
             PMSA(IP(7+(IFILSP-1)*NINGRZ)) = 0.0
@@ -553,15 +553,15 @@
 !* 22 End loop over filter feeders
 !****
        endif
-  200 CONTINUE
+      end do
 !
       ENDIF
       IFLUX = IFLUX + NOFLUX
-      DO 20 I=1,NIN
+      DO I=1,NIN
         IP(I) = IP(I) + INCREM (  I )
-   20 CONTINUE
+      end do
 !
- 9000 CONTINUE
+      end do
 
       IF (INIT) INIT = .FALSE.
 

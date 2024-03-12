@@ -82,13 +82,13 @@
       do iseg=1,noseg
          ! compute volumes if necessary
 
-         if ( ivflag .eq. 1 ) volume(iseg) = amass(1,iseg) + idt*deriv(1,iseg)
+         if ( ivflag == 1 ) volume(iseg) = amass(1,iseg) + idt*deriv(1,iseg)
          v1 = volume(iseg)
-         if ( abs(v1).lt.1.0e-25 ) then
-            if ( ivmess .lt. 25 ) then
+         if ( abs(v1)<1.0e-25 ) then
+            if ( ivmess < 25 ) then
                ivmess = ivmess + 1
                write ( lun, 1000 ) iseg  , v1
-            elseif ( ivmess .eq. 25 ) then
+            elseif ( ivmess == 25 ) then
                ivmess = ivmess + 1
                write ( lun, 1001 )
             endif

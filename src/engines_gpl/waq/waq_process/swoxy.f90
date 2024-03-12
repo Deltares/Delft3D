@@ -20,104 +20,103 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_swoxy
-      use m_waq_precision
+module m_swoxy
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine swoxy  (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Partitioning switch in WC, S1 and S2 based on actual and critical oxygen concentration
 
-      contains
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! OXY     R*4 1 I     oxygen concentration                           [gO/m3]
+        ! CROXY   R*4 1 I     critical oxygen concentration                  [gO/m3]
+        ! SWITCH  R*4 1 O     switch for partitioning                        [-]
+        !     Logical Units : -
 
+        !     Modules called : -
 
-      subroutine swoxy  ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Partitioning switch in WC, S1 and S2 based on actual and critical oxygen concentration
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! OXY     R*4 1 I     oxygen concentration                           [gO/m3]
-! CROXY   R*4 1 I     critical oxygen concentration                  [gO/m3]
-! SWITCH  R*4 1 O     switch for partitioning                        [-]
-!     Logical Units : -
+        IMPLICIT NONE
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        INTEGER(kind = int_wp) :: ISEG, &
+                IP1, IP2, IP3, IP4, IP5, IP6, &
+                IN1, IN2, IN3, IN4, IN5, IN6
 
-      IMPLICIT NONE
+        INTEGER(kind = int_wp) :: ISWWK, ISWS1, ISWS2
+        REAL(kind = real_wp) :: OXY, CROXY, POROS
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
 
-      INTEGER(kind=int_wp) ::ISEG, & 
-              IP1, IP2, IP3, IP4, IP5, IP6, & 
-              IN1, IN2, IN3, IN4, IN5, IN6
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
+        IN6 = INCREM(6)
+        !
+        DO ISEG = 1, NOSEG
 
-      INTEGER(kind=int_wp) ::ISWWK, ISWS1, ISWS2
-      REAL(kind=real_wp) ::OXY, CROXY, POROS
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
+                OXY = PMSA(IP1)
+                CROXY = PMSA(IP2)
+                POROS = PMSA(IP3)
 
-      IP1 = IPOINT(1)
-      IP2 = IPOINT(2)
-      IP3 = IPOINT(3)
-      IP4 = IPOINT(4)
-      IP5 = IPOINT(5)
-      IP6 = IPOINT(6)
+                !*******************************************************************************
+                !**** if OXY > CROXY ISWOXY = 1  in Water Column and S1 (poriewater)
+                !****           else ISWOXY = 0  in Water Column and S1 (poriewater)
+                !****                ISWOXY = 0  always in S2
+                !***********************************************************************
 
-      IN1 = INCREM(1)
-      IN2 = INCREM(2)
-      IN3 = INCREM(3)
-      IN4 = INCREM(4)
-      IN5 = INCREM(5)
-      IN6 = INCREM(6)
-!
-      DO 9000 ISEG = 1 , NOSEG
+                IF (OXY / POROS<=CROXY) THEN
+                    ISWWK = 0
+                    ISWS1 = 0
+                    ISWS2 = 0
+                ELSE
+                    ISWWK = 1
+                    ISWS1 = 1
+                    ISWS2 = 0
+                ENDIF
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
-      OXY   = PMSA(IP1)
-      CROXY = PMSA(IP2)
-      POROS = PMSA(IP3)
+                PMSA(IP4) = ISWWK
+                PMSA(IP5) = ISWS1
+                PMSA(IP6) = ISWS2
 
-!*******************************************************************************
-!**** if OXY > CROXY ISWOXY = 1  in Water Column and S1 (poriewater)
-!****           else ISWOXY = 0  in Water Column and S1 (poriewater)
-!****                ISWOXY = 0  always in S2
-!***********************************************************************
+            ENDIF
+            !
+            IP1 = IP1 + IN1
+            IP2 = IP2 + IN2
+            IP3 = IP3 + IN3
+            IP4 = IP4 + IN4
+            IP5 = IP5 + IN5
+            IP6 = IP6 + IN6
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      IF (OXY/POROS.LE.CROXY) THEN
-        ISWWK = 0
-        ISWS1 = 0
-        ISWS2 = 0
-      ELSE
-        ISWWK = 1
-        ISWS1 = 1
-        ISWS2 = 0
-      ENDIF
-
-      PMSA(IP4) = ISWWK
-      PMSA(IP5) = ISWS1
-      PMSA(IP6) = ISWS2
-
-      ENDIF
-!
-      IP1 = IP1 + IN1
-      IP2 = IP2 + IN2
-      IP3 = IP3 + IN3
-      IP4 = IP4 + IN4
-      IP5 = IP5 + IN5
-      IP6 = IP6 + IN6
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_swoxy
+end module m_swoxy

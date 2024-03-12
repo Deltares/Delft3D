@@ -345,15 +345,15 @@
 !
 !     Fill mass in ASMASS array using DMPQ and DMPS
 !
-      if ( imflag .or. ( ihflag .and. noraai .gt. 0) ) then
-         if ( ibflag .eq. 1 ) then
+      if ( imflag .or. ( ihflag .and. noraai > 0) ) then
+         if ( ibflag == 1 ) then
             call baldmp (notot , nosys , noflux, ndmpar, ndmpq , & 
                            ndmps , ntdmpq, iqdmp , isdmp , ipdmp , & 
                            dmpq  , amass , dmps  , flxdmp, asmass, & 
                            flxint)
          endif
 
-         if ( noraai .gt. 0 ) then
+         if ( noraai > 0 ) then
             if ( lhfirs ) then
                call initialize_real_array   (trraai, noraai*nosys  )
             else
@@ -371,7 +371,7 @@
 !
 !     Loop over the output files
 !
-      do 200 iout = 1 , noutp
+      do iout = 1 , noutp
 !
 !        Map output structure to single variables part 1
 !
@@ -392,9 +392,9 @@
             isrtou = ioutps(5,iout)
             igrdou = ioutps(6,iout)
             iniout = ioutps(7,iout)
-            if ( iout .le. 4 ) then
+            if ( iout <= 4 ) then
                ifi = iout + luoff
-            elseif ( iout .le. 7 ) then
+            elseif ( iout <= 7 ) then
                ifi = iout + luoff2 - 4
             else
                ifi = iout + luoff2 - 2
@@ -404,8 +404,8 @@
 !
 !        No balance output if they are not active
 !
-            if ( ( isrtou .eq. ibal .or. isrtou .eq. iba2 .or. & 
-                  isrtou .eq. iba2) .and. ibflag .ne. 1 ) goto 100
+            if ( ( isrtou == ibal .or. isrtou == iba2 .or. &
+                  isrtou == iba2) .and. ibflag /= 1 ) goto 100
 !
 !        Set all local variables used active on base grid
 !
@@ -417,18 +417,18 @@
 !
 !        Fill output buffer
 !
-            if ( isrtou .eq. iba2 ) then
+            if ( isrtou == iba2 ) then
 !
                call flxbal (notot , noflux, ndmpar, nrvar , stochi, & 
                            flxint, asmass, riobuf)
 !
-            elseif ( isrtou .eq. iba3 ) then
+            elseif ( isrtou == iba3 ) then
 !     jos doet het zelf
-            elseif ( igrdou .eq. igsub ) then
-               if (isrtou .eq. imo3 .or. & 
-                  isrtou .eq. ihi3 .or. & 
-                  isrtou .eq. ihnc3 .or. & 
-                  isrtou .eq. ihn3     ) then
+            elseif ( igrdou == igsub ) then
+               if (isrtou == imo3 .or. &
+                  isrtou == ihi3 .or. &
+                  isrtou == ihnc3 .or. &
+                  isrtou == ihn3     ) then
                   ncout = notot
                else
                   ncout = 0
@@ -447,10 +447,10 @@
 !
 !           For the raaien
 !
-               if ((isrtou .eq. ihi3 .or. & 
-                   isrtou .eq. ihnc3 .or. & 
-                   isrtou .eq. ihn3     ) .and. & 
-                   noraai .gt. 0               ) then
+               if ((isrtou == ihi3 .or. &
+                   isrtou == ihnc3 .or. &
+                   isrtou == ihn3     ) .and. &
+                   noraai > 0               ) then
                   nrvar3 = notot + nrvar2
                   ip1 = (ncout+nrvar2)*ndmpar + 1
                   call fioraa (riobuf(ip1), nrvar3, trraai, noraai, nosys)
@@ -468,13 +468,13 @@
 !
 !        Fill character buffer with substance names and output names
 !
-            if ( isrtou .eq. imnf .or. & 
-                isrtou .eq. ihnf .or. & 
-                isrtou .eq. ihnf .or. & 
-                isrtou .eq. ihnc3 .or. & 
-                isrtou .eq. imo3 .or. & 
-                isrtou .eq. ihi3 .or. & 
-                isrtou .eq. ihn3     ) then
+            if ( isrtou == imnf .or. &
+                isrtou == ihnf .or. &
+                isrtou == ihnf .or. &
+                isrtou == ihnc3 .or. &
+                isrtou == imo3 .or. &
+                isrtou == ihi3 .or. &
+                isrtou == ihn3     ) then
 
                if ( allocated(hnc_standard) ) then
                   deallocate( hnc_standard )
@@ -486,23 +486,23 @@
                allocate( hnc_unit(notot+nrvar2) )
                allocate( hnc_description(notot+nrvar2) )
 
-               do 30 i = 1 , notot
+               do i = 1 , notot
                   nambuf(i)          = syname(i)
                   hnc_standard(i)    = sysnm(i)
                   hnc_unit(i)        = syuni(i)
                   hnc_description(i) = sydsc(i)
-   30          continue
-               do 40 i = 1 , nrvar2
+               end do
+               do i = 1 , nrvar2
                   nambuf(notot+i)          = ounam(k1+i-1)
                   hnc_standard(notot+i)    = ousnm(k1+i-1)
                   hnc_unit(notot+i)        = ouuni(k1+i-1)
                   hnc_description(notot+i) = oudsc(k1+i-1)
-   40          continue
+               end do
             endif
 !
 !        Perform output
 !
-            if ( isrtou .eq. imon ) then
+            if ( isrtou == imon ) then
 !
                call outmon ( lunout   , idump , conc  , amass2, itime , & 
                             duname   , syname, moname, nodump, notot , & 
@@ -510,7 +510,7 @@
                             ounam(k1), riobuf, itstrt, itstop, ndmpar, & 
                             danam    )
 !
-            elseif ( isrtou .eq. imo2 ) then
+            elseif ( isrtou == imo2 ) then
 !
                call outmon ( lunout   , idump , conc  , amass2, itime , & 
                             duname   , syname, moname, nodump, 0     , & 
@@ -518,41 +518,41 @@
                             ounam(k1), riobuf, itstrt, itstop, ndmpar, & 
                             danam    )
 !
-            elseif ( isrtou .eq. imo3 ) then
+            elseif ( isrtou == imo3 ) then
 !
                call outmo3 ( lunout, amass2   , itime , syname, moname, & 
                             notot , ip       , isflag, asmass, ibflag, & 
                             nrvar2, ounam(k1), riobuf, itstrt, itstop, & 
                             ndmpar, danam    )
 !
-            elseif ( isrtou .eq. imo4 ) then
+            elseif ( isrtou == imo4 ) then
 !
                call outmo3 ( lunout, amass2   , itime , syname, moname, & 
                             0     , ip       , isflag, asmass, ibflag, & 
                             nrvar2, ounam(k1), riobuf, itstrt, itstop, & 
                             ndmpar, danam    )
 !
-            elseif ( isrtou .eq. idmp ) then
+            elseif ( isrtou == idmp ) then
 !
                call outdmp (lunout, lchout, itime , moname, nx       , & 
                            ny    , lgrid , cgrid , notot , nosys    , & 
                            syname, conc  , bound , nrvar , ounam(k1), & 
                            riobuf, ip(5) , isflag, iniout)
 !
-            elseif ( isrtou .eq. idm2 ) then
+            elseif ( isrtou == idm2 ) then
 !
                call outdmp (lunout, lchout, itime , moname, nx       , & 
                            ny    , lgrid , cgrid , 0     , 0        , & 
                            syname, conc  , bound , nrvar , ounam(k1), & 
                            riobuf, ip(5) , isflag, iniout)
 !
-            elseif ( isrtou .eq. ihis ) then
+            elseif ( isrtou == ihis ) then
 !
                call outhis (lunout, lchout   , itime , moname, nodump, & 
                            idump , duname   , notot , syname, conc  , & 
                            nrvar , ounam(k1), riobuf, iniout)
 !
-            elseif ( isrtou .eq. ihnf ) then
+            elseif ( isrtou == ihnf ) then
 !
                iof = nrvar*nodump + 1
                call outhnf (lunout, lchout     , itime , moname, noseg , & 
@@ -560,7 +560,7 @@
                            iostrt, iostop     , iostep, nodump, idump , & 
                            duname, riobuf(iof), iniout)
 !
-            elseif ( isrtou .eq. ihnc ) then
+            elseif ( isrtou == ihnc ) then
 !
                hncrec = hncrec + 1
                iof = nrvar*nodump + 1
@@ -572,13 +572,13 @@
                            ounam(k1) , ousnm(k1), ouuni(k1), oudsc(k1), & 
                            hncwqid2  , lun(19))
 !
-            elseif ( isrtou .eq. ihi2 ) then
+            elseif ( isrtou == ihi2 ) then
 !
                call outhis (lunout, lchout   , itime , moname, nodump, & 
                            idump , duname   , 0     , syname, conc  , & 
                            nrvar , ounam(k1), riobuf, iniout)
 !
-            elseif ( isrtou .eq. ihn2 ) then
+            elseif ( isrtou == ihn2 ) then
 !
                iof = nrvar*nodump + 1
                call outhnf (lunout, lchout     , itime    , moname, noseg , & 
@@ -586,7 +586,7 @@
                            iostrt, iostop     , iostep   , nodump, idump , & 
                            duname, riobuf(iof), iniout   )
 !
-            elseif ( isrtou .eq. ihnc2 ) then
+            elseif ( isrtou == ihnc2 ) then
 !
                hncrec = hncrec + 1
                iof = nrvar*nodump + 1
@@ -598,7 +598,7 @@
                            ounam(k1) , ousnm(k1), ouuni(k1), oudsc(k1), & 
                            hncwqid2  , lun(19))
 !
-            elseif ( isrtou .eq. ihi3 ) then
+            elseif ( isrtou == ihi3 ) then
 !
 !           Let op RANAM achter DANAM
 !
@@ -608,7 +608,7 @@
                            idump , danam    , 0     , syname, conc  , & 
                            nrvar3, nambuf   , riobuf, iniout)
 !
-            elseif ( isrtou .eq. ihn3 ) then
+            elseif ( isrtou == ihn3 ) then
 !
 !           Let op RANAM achter DANAM
 !
@@ -620,7 +620,7 @@
                            iostrt, iostop     , iostep   , nsegou, idump , & 
                            danam , riobuf(iof), iniout   )
 !
-            elseif ( isrtou .eq. ihnc3 ) then
+            elseif ( isrtou == ihnc3 ) then
 !
 !           Let op RANAM achter DANAM
 !
@@ -637,13 +637,13 @@
                            nambuf    , hnc_standard, hnc_unit       , & 
                            hnc_description,       hncwqid2  , lun(19))
 !
-            elseif ( isrtou .eq. ihi4 ) then
+            elseif ( isrtou == ihi4 ) then
 !
                call outhis (lunout, lchout   , itime , moname, ndmpar, & 
                            idump , danam    , 0     , syname, conc  , & 
                            nrvar2, ounam(k1), riobuf, iniout)
 !
-            elseif ( isrtou .eq. ihn4 ) then
+            elseif ( isrtou == ihn4 ) then
 !
                iof = nrvar2*ndmpar + 1
                call outhnf (lunout, lchout     , itime    , moname, noseg , & 
@@ -651,7 +651,7 @@
                            iostrt, iostop     , iostep   , ndmpar, idump , & 
                            danam , riobuf(iof), iniout   )
 !
-            elseif ( isrtou .eq. ihnc4 ) then
+            elseif ( isrtou == ihnc4 ) then
 !
                hncrec = hncrec + 1
                iof = nrvar2*ndmpar + 1
@@ -663,13 +663,13 @@
                            ounam(k1) , ousnm(k1), ouuni(k1), oudsc(k1), & 
                            hncwqid2  , lun(19))
 !
-            elseif ( isrtou .eq. imap ) then
+            elseif ( isrtou == imap ) then
 !
                call outmap (lunout   , lchout, itime , moname, noseg , & 
                            notot    , conc  , syname, nrvar , riobuf, & 
                            ounam(k1), iknmrk, iniout)
 !
-            elseif ( isrtou .eq. imnf ) then
+            elseif ( isrtou == imnf ) then
 !
                iof = nrvar*noseg + 1
                call outmnf (lunout   , lchout, itime , moname, noseg      , & 
@@ -677,7 +677,7 @@
                            ounam(k1), iostrt, iostop, iostep, riobuf(iof), & 
                            iniout   )
 !
-            elseif ( isrtou .eq. imnc ) then
+            elseif ( isrtou == imnc ) then
 !
                mncrec = mncrec + 1
                call outmnc (lun(49)  , lchar(49), lchar(46), timeid, bndtimeid, mncrec , & 
@@ -686,13 +686,13 @@
                            riobuf   , ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2 , & 
                            volume   , iknmrk   , lun(19))
 !
-            elseif ( isrtou .eq. ima2 ) then
+            elseif ( isrtou == ima2 ) then
 !
                call outmap (lunout   , lchout, itime , moname, noseg , & 
                            0        , conc  , syname, nrvar , riobuf, & 
                            ounam(k1), iknmrk, iniout)
 !
-            elseif ( isrtou .eq. imn2 ) then
+            elseif ( isrtou == imn2 ) then
 !
                iof = nrvar*noseg + 1
                call outmnf (lunout   , lchout, itime , moname, noseg      , & 
@@ -700,7 +700,7 @@
                            ounam(k1), iostrt, iostop, iostep, riobuf(iof), & 
                            iniout   )
 !
-            elseif ( isrtou .eq. imnc2 ) then
+            elseif ( isrtou == imnc2 ) then
 !
                mncrec = mncrec + 1
                call outmnc (lun(49)  , lchar(49), lchar(46), timeid, bndtimeid, mncrec , & 
@@ -709,19 +709,19 @@
                            riobuf   , ounam(k1), ousnm(k1), ouuni(k1), oudsc(k1), mncwqid2 , & 
                            volume   , iknmrk   , lun(19))
 !
-            elseif ( isrtou .eq. ibal ) then
+            elseif ( isrtou == ibal ) then
 !
                call outbal (lunout, lchout, itime , moname, notot , & 
                            noflux, syname, ndmpar, danam , asmass, & 
                            flxint, nrvar2, riobuf, iniout)
 !
-            elseif ( isrtou .eq. iba2 ) then
+            elseif ( isrtou == iba2 ) then
 !
                call outhis (lunout, lchout   , itime , moname, ndmpar, & 
                            idump , danam    , 0     , syname, conc  , & 
                            nrvar , ounam(k1), riobuf, iniout)
 !
-            elseif ( isrtou .eq. iba3 ) then
+            elseif ( isrtou == iba3 ) then
 !
                allocate(surf(noseg))
                name = 'SURF'
@@ -755,7 +755,7 @@
 !
          k1 = k1 + nrvar
 !
-  200 continue
+      end do
 
       if ( timon ) call timstop ( ithandl )
       return

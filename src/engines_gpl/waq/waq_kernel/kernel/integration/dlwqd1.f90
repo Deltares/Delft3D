@@ -155,7 +155,7 @@
 
 !         get special option from command line
 
-      if ( init .eq. 1 ) then
+      if ( init == 1 ) then
          init = 0
          call retrieve_command_argument('-settling_backwards', 0 , sw_settling, idummy, rdummy, cdummy, ierr2)
          if ( sw_settling ) write( lun, * ) ' option -settling_backwards found'
@@ -173,28 +173,28 @@
 
 !         Loop over exchanges to fill the matrices
 
-      do 10 iq = 1 , noq
+      do iq = 1 , noq
 
 !         Initialisations, check for transport anyhow
 
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
-         if ( ifrom .lt. 0 .and. ito .lt. 0 ) cycle
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
+         if ( ifrom < 0 .and. ito < 0 ) cycle
          abound = .false.
-         if ( ifrom .lt. 0 .or. ito .lt. 0 ) abound = .true.
+         if ( ifrom < 0 .or. ito < 0 ) abound = .true.
 
          a  = area(iq)
          q  = flow(iq)
          e  = disp (1)
          al = aleng(1,1)
-         if ( ilflag .eq. 1 ) then
+         if ( ilflag == 1 ) then
             al = aleng(1,iq) + aleng(2,iq)
          endif
          f1 = 0.5
          f2 = 0.5
-         if ( al .gt. 1.0E-25 ) then
-            if ( ilflag .eq. 1 ) then
+         if ( al > 1.0E-25 ) then
+            if ( ilflag == 1 ) then
                f1 = aleng(2,iq) / al
                f2 = 1.0 - f1
             endif
@@ -203,17 +203,17 @@
             dl = 0.0
          endif
          e  = e*dl
-         if ( iq .gt. noqw ) e = 0.0      !  no constant water diffusion in the bottom
+         if ( iq > noqw ) e = 0.0      !  no constant water diffusion in the bottom
 
          do isys = 1, nosys
 
 !           advection
 
             v = 0.0
-            if ( ivpnt(isys) .gt. 0 ) v = velo  ( ivpnt(isys), iq ) * a
-            if (   iq .gt. noqw         .or.          & ! in the bed upwind
+            if ( ivpnt(isys) > 0 ) v = velo  ( ivpnt(isys), iq ) * a
+            if (   iq > noqw         .or.          & ! in the bed upwind
                 ( abound .and. loword )      ) then
-               if ( q + v .gt. 0.0 ) then
+               if ( q + v > 0.0 ) then
                   v1 = q + v
                   v2 = 0.0
                else
@@ -222,7 +222,7 @@
                endif
             else
                if ( sw_settling ) then         !  additional velocity upwind
-                  if ( v .gt. 0.0 ) then
+                  if ( v > 0.0 ) then
                      v1 = q*f1 + v
                      v2 = q*f2
                   else
@@ -238,8 +238,8 @@
 !           diffusion
 
             d = e
-            if ( idpnt(isys) .gt. 0 ) d = d + disper( idpnt(isys), iq ) * dl
-            if ( disp0q0 .and. abs(q+v) .lt. 10.0E-25 ) d = 0.0
+            if ( idpnt(isys) > 0 ) d = d + disper( idpnt(isys), iq ) * dl
+            if ( disp0q0 .and. abs(q+v) < 10.0E-25 ) d = 0.0
             if ( abound  .and. disp0bnd ) d = 0.0
 
 !           fill the tridiag matrix
@@ -252,12 +252,12 @@
                diag  (isys,ito  ) = diag  (isys,ito  ) - q4
                acodia(isys,iq   ) = acodia(isys,iq   ) - q3
             else
-               if ( ito   .gt. 0 ) then
+               if ( ito   > 0 ) then
                   q3 = q3 * bound(isys,-ifrom)
                   diag  (isys,ito  ) = diag  (isys,ito  ) - q4
                   rhs   (isys,ito  ) = rhs   (isys,ito  ) + q3
                endif
-               if ( ifrom .gt. 0 ) then
+               if ( ifrom > 0 ) then
                   q4 = q4 * bound(isys,-ito  )
                   diag  (isys,ifrom) = diag  (isys,ifrom) + q3
                   rhs   (isys,ifrom) = rhs   (isys,ifrom) - q4
@@ -267,14 +267,14 @@
 
 !        End of loop over exchanges
 
-   10 continue
+      end do
 
 !    Now make the solution:  loop over exchanges in the water
 
       do iq = 1 , noqw
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .le. 0 .or. ito .le. 0 ) cycle
+         if ( ifrom <= 0 .or. ito <= 0 ) cycle
          do isys = 1, nosys
             pivot = acodia(isys,iq     )/diag(isys,ifrom)
             diag(isys,ito) = diag(isys,ito) - pivot*bcodia(isys,iq     )
@@ -287,16 +287,16 @@
       do iq = noqw+1 , noq
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .le. 0 .or. ito .le. 0 ) cycle
+         if ( ifrom <= 0 .or. ito <= 0 ) cycle
          iq3 = 0                            !  find the second equivalent
          do iq2 = iq+1, noq                 !  pointer
-            if ( ipoint(1,iq2) .eq. ifrom .and. & 
-                ipoint(2,iq2) .eq. ito         ) then
+            if ( ipoint(1,iq2) == ifrom .and. &
+                ipoint(2,iq2) == ito         ) then
                iq3 = iq2
                exit
             endif
          enddo                              !  if not found, this was the
-         if ( iq3 .eq. 0 ) cycle            !  the second and must be skipped
+         if ( iq3 == 0 ) cycle            !  the second and must be skipped
          do isys = 1, nosys
             pivot = acodia(isys,iq ) + acodia(isys,iq3)
             pivot = pivot / diag(isys,ifrom)
@@ -311,22 +311,22 @@
       do iq = noq , noqw+1 , -1
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ito .le. 0 ) cycle
+         if ( ito <= 0 ) cycle
          iq3 = 0                            !  find the second equivalent
          do iq2 = iq-1, noqw+1, -1          !  pointer
-            if ( ipoint(1,iq2) .eq. ifrom .and. & 
-                ipoint(2,iq2) .eq. ito         ) then
+            if ( ipoint(1,iq2) == ifrom .and. &
+                ipoint(2,iq2) == ito         ) then
                iq3 = iq2
                exit
             endif
          enddo                              !  if not found, this was the
-         if ( iq3 .eq. 0 ) cycle            !  the second and must be skipped
+         if ( iq3 == 0 ) cycle            !  the second and must be skipped
          do isys = 1, nosys
             pivot = diag(isys,ito)
             rhs (isys,ito) = rhs(isys,ito) / pivot
             diag(isys,ito) = 1.0
          enddo
-         if ( ifrom .le. 0 ) cycle
+         if ( ifrom <= 0 ) cycle
          do isys = 1, nosys
             pivot = bcodia(isys,iq ) + bcodia(isys,iq3)
             rhs (isys,ifrom) = rhs (isys,ifrom) - pivot*rhs(isys,ito)
@@ -338,13 +338,13 @@
       do iq = noqw, 1, -1
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ito   .le. 0 ) cycle
+         if ( ito   <= 0 ) cycle
          do isys = 1, nosys
             pivot = diag(isys,ito)
             rhs (isys,ito) = rhs(isys,ito) / pivot
             diag(isys,ito) = 1.0
          enddo
-         if ( ifrom .le. 0 ) cycle
+         if ( ifrom <= 0 ) cycle
          do isys = 1, nosys
             pivot = bcodia(isys,iq)
             rhs (isys,ifrom) = rhs (isys,ifrom) - pivot*rhs(isys,ito)
@@ -362,18 +362,18 @@
 
 !     Mass balances ?
 
-      if ( iaflag .eq. 0 ) goto 9999
+      if ( iaflag == 0 ) goto 9999
 
       do iq = 1 , noq
 
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
-         if ( ifrom .lt. 0 .and. ito .lt. 0 ) cycle            ! trivial
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
+         if ( ifrom < 0 .and. ito < 0 ) cycle            ! trivial
          abound = .false.
          iqd    = iqdmp(iq)
-         if ( ifrom .ge. 0 .and. ito .ge. 0 ) then             ! internal
-            if ( iqd .le. 0 ) cycle                            ! no dump required
+         if ( ifrom >= 0 .and. ito >= 0 ) then             ! internal
+            if ( iqd <= 0 ) cycle                            ! no dump required
          else
             abound = .true.                                    ! is boundary
          endif
@@ -381,11 +381,11 @@
          q    = flow(iq)
          e    = disp (1)
          al   = aleng(1,1)
-         if ( ilflag .eq. 1 ) al = aleng(1,iq) + aleng(2,iq)
+         if ( ilflag == 1 ) al = aleng(1,iq) + aleng(2,iq)
          f1 = 0.5
          f2 = 0.5
-         if ( al .gt. 1.0E-25 ) then
-            if ( ilflag .eq. 1 ) then
+         if ( al > 1.0E-25 ) then
+            if ( ilflag == 1 ) then
                f1 = aleng(2,iq) / al
                f2 = 1.0 - f1
             endif
@@ -394,15 +394,15 @@
             dl = 0.0
          endif
          e  = e*dl
-         if ( iq .gt. noqw ) e = 0.0      !  no constant water diffusion in the bottom
+         if ( iq > noqw ) e = 0.0      !  no constant water diffusion in the bottom
 
          do isys = 1, nosys
 
             v = 0.0
-            if ( ivpnt(isys) .gt. 0 ) v = velo  ( ivpnt(isys), iq ) * a
-            if (   iq .gt. noqw         .or.          & ! in the bed upwind
+            if ( ivpnt(isys) > 0 ) v = velo  ( ivpnt(isys), iq ) * a
+            if (   iq > noqw         .or.          & ! in the bed upwind
                 ( abound .and. loword )      ) then
-               if ( q + v .gt. 0.0 ) then
+               if ( q + v > 0.0 ) then
                   v1 = q + v
                   v2 = 0.0
                else
@@ -411,7 +411,7 @@
                endif
             else
                if ( sw_settling ) then         !  additional velocity upwind
-                  if ( v .gt. 0.0 ) then
+                  if ( v > 0.0 ) then
                      v1 = q*f1 + v
                      v2 = q*f2
                   else
@@ -425,23 +425,23 @@
             endif
 
             d = e
-            if ( idpnt(isys) .gt. 0 ) d = d + disper( idpnt(isys), iq ) * dl
-            if ( disp0q0 .and. abs(q+v) .lt. 10.0E-25 ) d = 0.0
+            if ( idpnt(isys) > 0 ) d = d + disper( idpnt(isys), iq ) * dl
+            if ( disp0q0 .and. abs(q+v) < 10.0E-25 ) d = 0.0
             if ( abound  .and. disp0bnd ) d = 0.0
 
             q3 = ( v1 + d ) * idt
             q4 = ( v2 - d ) * idt
             if ( abound ) then
-               if ( ito   .gt. 0 )  then
+               if ( ito   > 0 )  then
                   dq = q3 * bound(isys,-ifrom) + q4 * rhs  (isys, ito  )
-                  if ( dq .gt. 0.0 ) then
+                  if ( dq > 0.0 ) then
                      amass2( isys, 4) = amass2( isys, 4) + dq
                   else
                      amass2( isys, 5) = amass2( isys, 5) - dq
                   endif
                else
                   dq = q3 * rhs  (isys, ifrom) + q4 * bound(isys,-ito  )
-                  if ( dq .gt. 0.0 ) then
+                  if ( dq > 0.0 ) then
                      amass2( isys, 5) = amass2( isys, 5) + dq
                   else
                      amass2( isys, 4) = amass2( isys, 4) - dq
@@ -450,8 +450,8 @@
             else
                dq = q3 * rhs  (isys, ifrom) + q4 * rhs  (isys, ito  )
             endif
-            if ( iqd .gt. 0 ) then
-               if ( dq .gt. 0 ) then
+            if ( iqd > 0 ) then
+               if ( dq > 0 ) then
                   dmpq(isys,iqd,1) = dmpq(isys,iqd,1) + dq
                else
                   dmpq(isys,iqd,2) = dmpq(isys,iqd,2) - dq

@@ -20,87 +20,86 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq14
-      use m_waq_precision
+module m_dlwq14
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwq14 (deriv, notot, noseg, itfact, amass2, &
+            idt, iaflag, dmps, intopt, isdmp)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>          Scales deriv and accumulates processes in the balances arrays
 
-      subroutine dlwq14 ( deriv  , notot  , noseg  , itfact , amass2 , & 
-                         idt    , iaflag , dmps   , intopt , isdmp  )
+        !     Created             : april 1988 by L.Postma
 
-!     Deltares Software Centre
+        !     Logical units       : none
 
-!>\File
-!>          Scales deriv and accumulates processes in the balances arrays
+        !     Subroutines called  : none
 
-!     Created             : april 1988 by L.Postma
+        use timers
 
-!     Logical units       : none
+        implicit none
 
-!     Subroutines called  : none
+        !     Parameters          :
 
-      use timers
+        !     kind           function         name                   description
 
-      implicit none
+        real(kind = real_wp), intent(inout) :: deriv (notot, noseg)  !< Derivatives to be scaled
+        integer(kind = int_wp), intent(in) :: notot                !< Total number of substances
+        integer(kind = int_wp), intent(in) :: noseg                !< Number of computational volumes
+        integer(kind = int_wp), intent(in) :: itfact               !< Factor between process and transport clock
+        real(kind = real_wp), intent(inout) :: amass2(notot, 5)      !< Mass balance array
+        integer(kind = int_wp), intent(in) :: idt                  !< Integration time step size
+        integer(kind = int_wp), intent(in) :: iaflag               !< if 1 then accumulation
+        real(kind = real_wp), intent(inout) :: dmps  (notot, *)      !< Integrated fluxes if intopt > 7
+        integer(kind = int_wp), intent(in) :: intopt               !< Integration suboptions
+        integer(kind = int_wp), intent(in) :: isdmp (noseg)        !< Pointer dumped segments
 
-!     Parameters          :
+        !     Local variables
 
-!     kind           function         name                   description
+        real(kind = real_wp) :: atfac           ! helpvariable 1.0/itfact
+        real(kind = real_wp) :: dtfac           ! helpvariable idt
+        integer(kind = int_wp) :: iseg            ! loop variable
+        integer(kind = int_wp) :: ip              ! help variable
 
-      real(kind=real_wp), intent(inout)  ::deriv (notot,noseg)  !< Derivatives to be scaled
-      integer(kind=int_wp), intent(in   )  ::notot                !< Total number of substances
-      integer(kind=int_wp), intent(in   )  ::noseg                !< Number of computational volumes
-      integer(kind=int_wp), intent(in   )  ::itfact               !< Factor between process and transport clock
-      real(kind=real_wp), intent(inout)  ::amass2(notot,5)      !< Mass balance array
-      integer(kind=int_wp), intent(in   )  ::idt                  !< Integration time step size
-      integer(kind=int_wp), intent(in   )  ::iaflag               !< if 1 then accumulation
-      real(kind=real_wp), intent(inout)  ::dmps  (notot,*)      !< Integrated fluxes if intopt > 7
-      integer(kind=int_wp), intent(in   )  ::intopt               !< Integration suboptions
-      integer(kind=int_wp), intent(in   )  ::isdmp (noseg)        !< Pointer dumped segments
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwq14", ithandl)
 
-!     Local variables
+        !         loop accross deriv
 
-      real(kind=real_wp) ::atfac           ! helpvariable 1.0/itfact
-      real(kind=real_wp) ::dtfac           ! helpvariable idt
-      integer(kind=int_wp) ::iseg            ! loop variable
-      integer(kind=int_wp) ::ip              ! help variable
+        atfac = 1.0 / itfact
+        dtfac = idt
+        if (iaflag == 1) then
+            do iseg = 1, noseg
+                deriv (:, iseg) = deriv(:, iseg) * atfac
+                amass2(:, 2) = deriv(:, iseg) * dtfac + amass2(:, 2)
+            enddo
+        else
+            do iseg = 1, noseg
+                deriv (:, iseg) = deriv(:, iseg) * atfac
+            enddo
+        endif
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwq14", ithandl )
+        !         accumulate processes for dump segments
 
-!         loop accross deriv
+        if (mod(intopt, 16) >= 8) then
+            do iseg = 1, noseg
+                ip = isdmp(iseg)
+                if (ip > 0) then
+                    dmps(:, ip) = dmps(:, ip) + deriv(:, iseg) * dtfac
+                endif
+            enddo
+        endif
 
-      atfac = 1.0/itfact
-      dtfac = idt
-      if ( iaflag .eq. 1 ) then
-         do iseg = 1 , noseg
-            deriv (:,iseg) = deriv(:,iseg) * atfac
-            amass2(:,2)    = deriv(:,iseg) * dtfac + amass2(:,2)
-         enddo
-      else
-         do iseg = 1 , noseg
-            deriv (:,iseg) = deriv(:,iseg) * atfac
-         enddo
-      endif
+        if (timon) call timstop (ithandl)
 
-!         accumulate processes for dump segments
+        return
+    end
 
-      if ( mod(intopt,16) .ge. 8  ) then
-         do iseg = 1 , noseg
-            ip = isdmp(iseg)
-            if ( ip .gt. 0 ) then
-               dmps(:,ip) = dmps(:,ip) + deriv(:,iseg) * dtfac
-            endif
-         enddo
-      endif
-
-      if ( timon ) call timstop ( ithandl )
-
-      return
-      end
-
-      end module m_dlwq14
+end module m_dlwq14

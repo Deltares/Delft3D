@@ -21,51 +21,51 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_write_messages
-   use m_waq_precision
-   use m_error_status
-   implicit none
+    use m_waq_precision
+    use m_error_status
+    implicit none
 
 contains
 
-   subroutine delwaq1_write_messages(status)
-      use m_open_waq_files
-      use m_delwaq1_data
-      use m_dattim
+    subroutine delwaq1_write_messages(status)
+        use m_open_waq_files
+        use m_delwaq1_data
+        use m_dattim
 
-      implicit none
+        implicit none
 
-      type(error_status) :: status !< current error status
+        type(error_status) :: status !< current error status
 
-      write (lunrep, '(//'' Messages presented including .lsp file:'')')
-      write (lunrep, '(  '' Number of WARNINGS            :'',I6)') status%iwar
-      write (lunrep, '( /'' Number of ERRORS during input :'',I6)') status%ierr
-      write (*, '(  ''  Number of WARNINGS            :'',I6)') status%iwar
-      write (*, '(  ''  Number of ERRORS during input :'',I6)') status%ierr
-      write (*, '(  '' '')')
+        write (lunrep, '(//'' Messages presented including .lsp file:'')')
+        write (lunrep, '(  '' Number of WARNINGS            :'',I6)') status%iwar
+        write (lunrep, '( /'' Number of ERRORS during input :'',I6)') status%ierr
+        write (*, '(  ''  Number of WARNINGS            :'',I6)') status%iwar
+        write (*, '(  ''  Number of ERRORS during input :'',I6)') status%ierr
+        write (*, '(  '' '')')
 
-      if (status%ierr .eq. 0) then
-         novec = min(novec, (nosss + nobnd - 1))
-         itota = 0
-         itoti = 0
-         itotc = 0
-         call space(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
+        if (status%ierr == 0) then
+            novec = min(novec, (nosss + nobnd - 1))
+            itota = 0
+            itoti = 0
+            itotc = 0
+            call space(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                     itota, itoti, itotc)
-         ! create the delwaq03.wrk file
-         call open_waq_files(lun(1), lchar(1), 1, 1, ioerr)
-         write (lun(1)) in
-         write (lun(1)) ii
-         write (lun(1)) itota, itoti, itotc
-         write (lun(1)) (lun(k), k=1, nolun)
-         write (lun(1)) (lchar(k), k=1, nolun)
-         write (lun(1)) (filtype(k), k=1, nolun)
-      else
-         write (lunrep, '(  '' SIMULATION PROHIBITED !!!!!!!!'')')
-         call open_waq_files(lun(1), lchar(1), 1, 3, ioerr)
-      end if
+            ! create the delwaq03.wrk file
+            call open_waq_files(lun(1), lchar(1), 1, 1, ioerr)
+            write (lun(1)) in
+            write (lun(1)) ii
+            write (lun(1)) itota, itoti, itotc
+            write (lun(1)) (lun(k), k = 1, nolun)
+            write (lun(1)) (lchar(k), k = 1, nolun)
+            write (lun(1)) (filtype(k), k = 1, nolun)
+        else
+            write (lunrep, '(  '' SIMULATION PROHIBITED !!!!!!!!'')')
+            call open_waq_files(lun(1), lchar(1), 1, 3, ioerr)
+        end if
 
-      call dattim(rundat)
-      write (lunrep, '(2A)') ' Execution stop : ', rundat
-      close (lunrep)
+        call dattim(rundat)
+        write (lunrep, '(2A)') ' Execution stop : ', rundat
+        close (lunrep)
 
-   end subroutine delwaq1_write_messages
+    end subroutine delwaq1_write_messages
 end module m_delwaq1_write_messages

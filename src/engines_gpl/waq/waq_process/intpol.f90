@@ -20,96 +20,94 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_intpol
-      use m_waq_precision
+module m_intpol
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine intpol (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Depth where wave is created or wind fetch from wind direction
 
-      contains
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !        BLOCK INTERPOLATION
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! Y       R*4 8 I     dependent value pairs
+        ! X       R*4 8 I     independent value pairs
+        ! VALUE   R*4 1 I     independent value
+        ! RESULT  R*4 1 I     resulting dependent value
+        !     Logical Units : -
 
+        !     Modules called : -
 
-      subroutine intpol ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Depth where wave is created or wind fetch from wind direction
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!        BLOCK INTERPOLATION
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! Y       R*4 8 I     dependent value pairs
-! X       R*4 8 I     independent value pairs
-! VALUE   R*4 1 I     independent value
-! RESULT  R*4 1 I     resulting dependent value
-!     Logical Units : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Modules called : -
+        INTEGER(kind = int_wp) :: MAXPAR, NUMPAR, i, iseg
+        real(kind = real_wp) :: VALUE, RESULT
+        PARAMETER (MAXPAR = 8)
+        real(kind = real_wp) :: X(MAXPAR)
+        real(kind = real_wp) :: Y(MAXPAR)
+        integer(kind = int_wp) :: IP(2 * MAXPAR + 2)
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        DO I = 1, 2 * MAXPAR + 2
+            IP(I) = IPOINT(I)
+        end do
+        !
+        DO ISEG = 1, NOSEG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-      INTEGER(kind=int_wp) ::MAXPAR, NUMPAR, i, iseg
-      real(kind=real_wp) ::VALUE, RESULT
-      PARAMETER (MAXPAR=8)
-      real(kind=real_wp) ::X(MAXPAR)
-      real(kind=real_wp) ::Y(MAXPAR)
-      integer(kind=int_wp) ::IP(2*MAXPAR+2)
+                !     fill and count the number of classes
 
-      DO 10 I=1,2*MAXPAR+2
-        IP(I) = IPOINT(I)
-   10 CONTINUE
-!
-      DO 9000 ISEG = 1 , NOSEG
+                VALUE = PMSA(IP(1))
+                NUMPAR = 1
+                DO I = 1, MAXPAR
+                    Y(I) = PMSA(IP(2 * I))
+                    X(I) = PMSA(IP(2 * I + 1))
+                    IF (X(I)< 0.0) EXIT
+                    NUMPAR = I
+                ENDDO
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
+                !*******************************************************************************
+                !**** RESULT equals the Y corresponding with the interval from the previous
+                !****        to the current X (assuming the first interval to be 0 - X(1)
+                !***********************************************************************
 
-!     fill and count the number of classes
+                I = 0
+                30 I = I + 1
+                IF ((VALUE<X(I)).OR.(I==NUMPAR)) THEN
+                    RESULT = Y(I)
+                ELSE
+                    GOTO 30
+                ENDIF
 
-      VALUE = PMSA(IP(1))
-      NUMPAR = 1
-      DO I=1,MAXPAR
-         Y(I) = PMSA(IP(2*I))
-         X(I) = PMSA(IP(2*I+1))
-         IF (X(I).LT. 0.0) EXIT
-         NUMPAR = I
-      ENDDO
+                PMSA(IP(2 * MAXPAR + 2)) = RESULT
 
-!*******************************************************************************
-!**** RESULT equals the Y corresponding with the interval from the previous
-!****        to the current X (assuming the first interval to be 0 - X(1)
-!***********************************************************************
+            ENDIF
+            !
+            DO I = 1, 2 * MAXPAR + 2
+                IP(I) = IP(I) + INCREM (I)
+            end do
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      I = 0
-   30 I = I + 1
-      IF ((VALUE.LT.X(I)).OR.(I.EQ.NUMPAR)) THEN
-         RESULT = Y(I)
-      ELSE
-         GOTO 30
-      ENDIF
-
-
-      PMSA(IP(2*MAXPAR+2)) = RESULT
-
-      ENDIF
-!
-      DO 40 I=1,2*MAXPAR+2
-        IP(I) = IP(I) + INCREM ( I  )
-   40 CONTINUE
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_intpol
+end module m_intpol

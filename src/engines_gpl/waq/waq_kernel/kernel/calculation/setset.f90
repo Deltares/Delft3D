@@ -20,110 +20,109 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_setset
-      use m_waq_precision
+module m_setset
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine setset (lurep, nocons, nopa, nofun, nosfun, &
+            nosys, notot, nodisp, novelo, nodef, &
+            noloc, ndspx, nvelx, nlocx, nflux, &
+            nopred, novar, nogrid, vgrset)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>      Initialisation of Variables structure
+        !>
+        !>      Meaning is not documented by author
 
-      subroutine setset ( lurep  , nocons , nopa   , nofun  , nosfun , & 
-                         nosys  , notot  , nodisp , novelo , nodef  , & 
-                         noloc  , ndspx  , nvelx  , nlocx  , nflux  , & 
-                         nopred , novar  , nogrid , vgrset )
+        !     Created:    unknown date by Jan van Beek
 
-!     Deltares Software Centre
+        use timers
+        implicit none
 
-!>\File
-!>      Initialisation of Variables structure
-!>
-!>      Meaning is not documented by author
+        !     Parameters          :
 
-!     Created:    unknown date by Jan van Beek
+        !     kind           function         name                    description
 
-      use timers
-      implicit none
+        integer(kind = int_wp), intent(in) :: lurep                 !< Unit number monitoring file (not used)
+        integer(kind = int_wp), intent(in) :: nocons                !< Number of constants
+        integer(kind = int_wp), intent(in) :: nopa                  !< Number of parameters
+        integer(kind = int_wp), intent(in) :: nofun                 !< Number of functions
+        integer(kind = int_wp), intent(in) :: nosfun                !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: nosys                 !< Number of transported substances
+        integer(kind = int_wp), intent(in) :: notot                 !< Total number of substances
+        integer(kind = int_wp), intent(in) :: nodisp                !< Number of user-dispersions
+        integer(kind = int_wp), intent(in) :: novelo                !< Number of user-flows
+        integer(kind = int_wp), intent(in) :: nodef                 !< Number of default values
+        integer(kind = int_wp), intent(in) :: noloc                 !< Number of local values
+        integer(kind = int_wp), intent(in) :: ndspx                 !< Number of dspx
+        integer(kind = int_wp), intent(in) :: nvelx                 !< Number of velx
+        integer(kind = int_wp), intent(in) :: nlocx                 !< Number of locx
+        integer(kind = int_wp), intent(in) :: nflux                 !< Number of flux
+        integer(kind = int_wp), intent(in) :: nopred                !< Not used
+        integer(kind = int_wp), intent(in) :: novar                 !< Number of variables on the grids
+        integer(kind = int_wp), intent(in) :: nogrid                !< Number of grids
+        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid)  !< Number of grids
 
-!     Parameters          :
+        !     Local declarations
 
-!     kind           function         name                    description
+        integer(kind = int_wp) :: i, ivar, igrid      ! help variables for loop and index counting
+        integer(kind = int_wp) :: iset                ! help variable 1 for igrid = 1, 0 for igrid > 1
 
-      integer(kind=int_wp), intent(in   )  ::lurep                 !< Unit number monitoring file (not used)
-      integer(kind=int_wp), intent(in   )  ::nocons                !< Number of constants
-      integer(kind=int_wp), intent(in   )  ::nopa                  !< Number of parameters
-      integer(kind=int_wp), intent(in   )  ::nofun                 !< Number of functions
-      integer(kind=int_wp), intent(in   )  ::nosfun                !< Number of segment functions
-      integer(kind=int_wp), intent(in   )  ::nosys                 !< Number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot                 !< Total number of substances
-      integer(kind=int_wp), intent(in   )  ::nodisp                !< Number of user-dispersions
-      integer(kind=int_wp), intent(in   )  ::novelo                !< Number of user-flows
-      integer(kind=int_wp), intent(in   )  ::nodef                 !< Number of default values
-      integer(kind=int_wp), intent(in   )  ::noloc                 !< Number of local values
-      integer(kind=int_wp), intent(in   )  ::ndspx                 !< Number of dspx
-      integer(kind=int_wp), intent(in   )  ::nvelx                 !< Number of velx
-      integer(kind=int_wp), intent(in   )  ::nlocx                 !< Number of locx
-      integer(kind=int_wp), intent(in   )  ::nflux                 !< Number of flux
-      integer(kind=int_wp), intent(in   )  ::nopred                !< Not used
-      integer(kind=int_wp), intent(in   )  ::novar                 !< Number of variables on the grids
-      integer(kind=int_wp), intent(in   )  ::nogrid                !< Number of grids
-      integer(kind=int_wp), intent(inout)  ::vgrset(novar,nogrid)  !< Number of grids
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("setset", ithandl)
 
-!     Local declarations
+        do igrid = 1, nogrid
+            iset = 0
+            if (igrid == 1) iset = 1
+            ivar = 0
+            ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! volume
+            ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! area
+            ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! flow
+            ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 1
+            ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 2
+            ivar = ivar + nocons                             ! constants
+            ivar = ivar + nopa                               ! parameters
+            do i = 1, nofun                                 ! functions
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, nosfun                                ! segment functions
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, notot                                 ! concentrations
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, notot                                 ! masses
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, notot                                 ! derivatives
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, nodisp                                ! dispersions
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, novelo                                ! velocities
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, nodef                                 ! default values
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            do i = 1, noloc                                 ! local values
+                ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
+            enddo
+            ivar = ivar + ndspx                           ! dspx
+            ivar = ivar + nvelx                           ! velx
+            ivar = ivar + nlocx                           ! locx
+            ivar = ivar + nflux                           ! flux
+        enddo
 
-      integer(kind=int_wp) ::i, ivar, igrid      ! help variables for loop and index counting
-      integer(kind=int_wp) ::iset                ! help variable 1 for igrid = 1, 0 for igrid > 1
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "setset", ithandl )
-
-      do igrid = 1 , nogrid
-         iset = 0
-         if ( igrid .eq. 1 ) iset = 1
-         ivar = 0
-         ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset    ! volume
-         ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset    ! area
-         ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset    ! flow
-         ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset    ! length 1
-         ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset    ! length 2
-         ivar = ivar + nocons                             ! constants
-         ivar = ivar + nopa                               ! parameters
-         do i = 1 , nofun                                 ! functions
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , nosfun                                ! segment functions
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , notot                                 ! concentrations
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , notot                                 ! masses
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , notot                                 ! derivatives
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , nodisp                                ! dispersions
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , novelo                                ! velocities
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , nodef                                 ! default values
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         do i = 1 , noloc                                 ! local values
-            ivar = ivar + 1  ;  vgrset(ivar,igrid) = iset
-         enddo
-         ivar = ivar + ndspx                           ! dspx
-         ivar = ivar + nvelx                           ! velx
-         ivar = ivar + nlocx                           ! locx
-         ivar = ivar + nflux                           ! flux
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_setset
+end module m_setset

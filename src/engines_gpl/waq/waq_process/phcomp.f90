@@ -20,120 +20,119 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_phcomp
-      use m_waq_precision
+module m_phcomp
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine phcomp (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Composition of phytoplankton by summing algae fractions - Dynamo - GEM
 
-      contains
+        !
+        !     Description of the module :
+        !
+        !     Logical Units : -
 
+        !     Modules called : -
 
-      subroutine phcomp ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Composition of phytoplankton by summing algae fractions - Dynamo - GEM
+        !     Name     Type   Library
 
-!
-!     Description of the module :
-!
-!     Logical Units : -
+        !     ------   -----  ------------
 
-!     Modules called : -
+        IMPLICIT REAL (A-H, J-Z)
 
-!     Name     Type   Library
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     ------   -----  ------------
+        INTEGER(kind = int_wp) :: ITEL, ISEG
+        INTEGER(kind = int_wp) :: NTYPE, ITYPE
+        REAL(kind = real_wp) :: PHYT, ALGN, ALGP, ALGSI, ALGDM, CHLFA, BIOMAS, &
+                NCRAT, PCRAT, SICRAT, DMCF, CATOCL
 
-      IMPLICIT REAL (A-H,J-Z)
+        NTYPE = PMSA(IPOINT(1))
+        !
+        DO ISEG = 1, NOSEG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-      INTEGER(kind=int_wp) ::ITEL  , ISEG
-      INTEGER(kind=int_wp) ::NTYPE , ITYPE
-      REAL(kind=real_wp) ::PHYT  , ALGN  , ALGP  , ALGSI , ALGDM , CHLFA , BIOMAS, & 
-              NCRAT , PCRAT , SICRAT, DMCF  , CATOCL
+                PHYT = 0.0
+                ALGN = 0.0
+                ALGP = 0.0
+                ALGSI = 0.0
+                ALGDM = 0.0
+                CHLFA = 0.0
 
-      NTYPE   = PMSA(IPOINT(1))
-!
-      DO 9000 ISEG = 1 , NOSEG
+                DO ITYPE = 1, NTYPE
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
+                    ITEL = 1 + ITYPE
+                    BIOMAS = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    ITEL = 1 + ITYPE + NTYPE
+                    NCRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    ITEL = 1 + ITYPE + NTYPE * 2
+                    PCRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    ITEL = 1 + ITYPE + NTYPE * 3
+                    SICRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    ITEL = 1 + ITYPE + NTYPE * 4
+                    DMCF = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    ITEL = 1 + ITYPE + NTYPE * 5
+                    CATOCL = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
 
-          PHYT = 0.0
-          ALGN = 0.0
-          ALGP = 0.0
-          ALGSI = 0.0
-          ALGDM = 0.0
-          CHLFA = 0.0
+                    !***********************************************************************
+                    !**** Calculations connected to the status of the algae
+                    !***********************************************************************
 
-          DO 100 ITYPE = 1,NTYPE
+                    !             Total Carbon in algae
 
-              ITEL   = 1 + ITYPE
-              BIOMAS = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
-              ITEL   = 1 + ITYPE + NTYPE
-              NCRAT  = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
-              ITEL   = 1 + ITYPE + NTYPE*2
-              PCRAT  = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
-              ITEL   = 1 + ITYPE + NTYPE*3
-              SICRAT = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
-              ITEL   = 1 + ITYPE + NTYPE*4
-              DMCF   = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
-              ITEL   = 1 + ITYPE + NTYPE*5
-              CATOCL = PMSA ( IPOINT(ITEL) + (ISEG-1)*INCREM(ITEL) )
+                    PHYT = PHYT + BIOMAS
 
-!***********************************************************************
-!**** Calculations connected to the status of the algae
-!***********************************************************************
+                    !             Total nitrogen
 
-!             Total Carbon in algae
+                    ALGN = ALGN + BIOMAS * NCRAT
 
-              PHYT = PHYT + BIOMAS
+                    !             Total phosphorus
 
-!             Total nitrogen
+                    ALGP = ALGP + BIOMAS * PCRAT
 
-              ALGN = ALGN + BIOMAS * NCRAT
+                    !             Total silica
 
-!             Total phosphorus
+                    ALGSI = ALGSI + BIOMAS * SICRAT
 
-              ALGP = ALGP + BIOMAS * PCRAT
+                    !             Total dry matter
 
-!             Total silica
+                    ALGDM = ALGDM + BIOMAS * DMCF
 
-              ALGSI = ALGSI + BIOMAS * SICRAT
+                    !             Chlorophyll
 
-!             Total dry matter
+                    CHLFA = CHLFA + BIOMAS * CATOCL
 
-              ALGDM = ALGDM + BIOMAS * DMCF
+                end do
 
-!             Chlorophyll
+                ITEL = 1 + 6 * NTYPE + 1
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = PHYT
+                ITEL = 1 + 6 * NTYPE + 2
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGN
+                ITEL = 1 + 6 * NTYPE + 3
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGP
+                ITEL = 1 + 6 * NTYPE + 4
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGSI
+                ITEL = 1 + 6 * NTYPE + 5
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGDM
+                ITEL = 1 + 6 * NTYPE + 6
+                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = CHLFA
 
-              CHLFA = CHLFA + BIOMAS * CATOCL
+            ENDIF
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-  100     CONTINUE
-
-          ITEL = 1 + 6*NTYPE + 1
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = PHYT
-          ITEL = 1 + 6*NTYPE + 2
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = ALGN
-          ITEL = 1 + 6*NTYPE + 3
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = ALGP
-          ITEL = 1 + 6*NTYPE + 4
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = ALGSI
-          ITEL = 1 + 6*NTYPE + 5
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = ALGDM
-          ITEL = 1 + 6*NTYPE + 6
-          PMSA (IPOINT(ITEL)+(ISEG-1)*INCREM(ITEL)) = CHLFA
-
-      ENDIF
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_phcomp
+end module m_phcomp

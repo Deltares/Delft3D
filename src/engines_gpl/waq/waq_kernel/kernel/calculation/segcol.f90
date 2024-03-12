@@ -20,71 +20,70 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_segcol
-      use m_waq_precision
+module m_segcol
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine segcol(nosss, noq1, noq2, noq3, noq4, &
+            ipoint, iknmrk, isegcol)
 
-      contains
+        ! function : sets the top of the column for every segment
 
+        use m_evaluate_waq_attribute
+        use timers
+        implicit none
 
-      subroutine segcol(nosss , noq1  , noq2   , noq3  , noq4  , & 
-                       ipoint, iknmrk, isegcol)
+        integer(kind = int_wp), intent(in) :: nosss          ! total number of segments
+        integer(kind = int_wp), intent(in) :: noq1           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: noq2           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: noq3           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: noq4           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: ipoint(4, *)    ! exchange pointers
+        integer(kind = int_wp), intent(in) :: iknmrk(*)      ! segment attributes
+        integer(kind = int_wp), intent(out) :: isegcol(*)     ! pointer from segment to top of column
 
-      ! function : sets the top of the column for every segment
+        ! local declarations
 
-      use m_evaluate_waq_attribute
-      use timers
-      implicit none
+        integer(kind = int_wp) :: iseg           ! segment index
+        integer(kind = int_wp) :: iq             ! exchange index
+        integer(kind = int_wp) :: ifrom          ! from segment in pointer
+        integer(kind = int_wp) :: ito            ! to segment in pointer
+        integer(kind = int_wp) :: ikmrkv         ! first attribute from segment
 
-      integer(kind=int_wp), intent(in   )  ::nosss          ! total number of segments
-      integer(kind=int_wp), intent(in   )  ::noq1           ! number of exchange pointers in first direction
-      integer(kind=int_wp), intent(in   )  ::noq2           ! number of exchange pointers in first direction
-      integer(kind=int_wp), intent(in   )  ::noq3           ! number of exchange pointers in first direction
-      integer(kind=int_wp), intent(in   )  ::noq4           ! number of exchange pointers in first direction
-      integer(kind=int_wp), intent(in   )  ::ipoint(4,*)    ! exchange pointers
-      integer(kind=int_wp), intent(in   )  ::iknmrk(*)      ! segment attributes
-      integer(kind=int_wp), intent(  out)  ::isegcol(*)     ! pointer from segment to top of column
+        do iseg = 1, nosss
+            isegcol(iseg) = iseg
+        enddo
 
-      ! local declarations
+        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+            if (ifrom > 0 .and. ito > 0) then
+                isegcol(ito) = isegcol(ifrom)
+            endif
+        enddo
 
-      integer(kind=int_wp) ::iseg           ! segment index
-      integer(kind=int_wp) ::iq             ! exchange index
-      integer(kind=int_wp) ::ifrom          ! from segment in pointer
-      integer(kind=int_wp) ::ito            ! to segment in pointer
-      integer(kind=int_wp) ::ikmrkv         ! first attribute from segment
+        do iq = noq1 + noq2 + noq3 + 1, noq1 + noq2 + noq3 + noq4
 
-      do iseg = 1, nosss
-         isegcol(iseg) = iseg
-      enddo
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
 
-      do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
-         ifrom = ipoint(1,iq)
-         ito   = ipoint(2,iq)
-         if ( ifrom .gt. 0 .and. ito .gt. 0 ) then
+            ! only positive segments
+
+            if (ifrom <= 0 .or. ito <= 0) cycle
+
+            ! only if from segment is not a water segment
+
+            call evaluate_waq_attribute(1, iknmrk(ifrom), ikmrkv)
+            if (ikmrkv/=3) cycle
+
             isegcol(ito) = isegcol(ifrom)
-         endif
-      enddo
 
-      do iq = noq1+noq2+noq3+1 , noq1+noq2+noq3+noq4
+        enddo
 
-         ifrom = ipoint(1,iq)
-         ito   = ipoint(2,iq)
+    end
 
-         ! only positive segments
-
-         if ( ifrom .le. 0 .or. ito .le. 0 ) cycle
-
-         ! only if from segment is not a water segment
-
-         call evaluate_waq_attribute(1,iknmrk(ifrom),ikmrkv)
-         if ( ikmrkv.ne.3 ) cycle
-
-         isegcol(ito) = isegcol(ifrom)
-
-      enddo
-
-      end
-
-      end module m_segcol
+end module m_segcol

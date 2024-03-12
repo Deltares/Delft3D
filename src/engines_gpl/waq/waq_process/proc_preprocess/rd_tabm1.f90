@@ -123,12 +123,12 @@
                       GRPNAM , ELMNMS(1), & 
                       UINDEX , 1        , & 
                       buflen , n_old_items)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( n_old_items .GT. n_old_items_max ) THEN
+      IF ( n_old_items > n_old_items_max ) THEN
          WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
          WRITE(LUNREP,*) 'Actual number of items:',n_old_items
          WRITE(LUNREP,*) 'greater than maximum:',n_old_items_max
@@ -148,7 +148,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_old_name)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -160,7 +160,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_new_name)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -172,7 +172,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_old_default)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(4)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -184,7 +184,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_configuration)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(5)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -196,7 +196,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_serial)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(6)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -208,7 +208,7 @@
                       UINDEX , 1        , & 
                       BUFLEN , & 
                       old_items_action_type)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(7)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900

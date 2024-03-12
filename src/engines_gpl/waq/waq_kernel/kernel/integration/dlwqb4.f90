@@ -20,87 +20,86 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqb4
-      use m_waq_precision
+module m_dlwqb4
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwqb4 (nosys, notot, nototp, noseg, volume, &
+            surface, amass, conc, deriv, idt)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>           makes masses from conc (coflowing subs) and sets explicit step (passive subs)
 
-      subroutine dlwqb4 ( nosys  , notot  , nototp , noseg  , volume , & 
-                         surface, amass  , conc   , deriv  , idt    )
+        !     Created             :    May     1992 by Jos van Gils
 
-!     Deltares Software Centre
+        !     Modified            : 13 Januari 2011 by Leo Postma
+        !                                           2D arrays, fortran 90 look and feel
+        !                                           conc of passive substances in mass/m2
 
-!>\File
-!>           makes masses from conc (coflowing subs) and sets explicit step (passive subs)
+        !     Logical unitnumbers : none
 
-!     Created             :    May     1992 by Jos van Gils
+        !     Subroutines called  : none
 
-!     Modified            : 13 Januari 2011 by Leo Postma
-!                                           2D arrays, fortran 90 look and feel
-!                                           conc of passive substances in mass/m2
+        use timers
+        implicit none
 
-!     Logical unitnumbers : none
+        !     Parameters          :
+        !     type     kind  function         name                      description
 
-!     Subroutines called  : none
+        integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
+        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
+        integer(kind = int_wp), intent(in) :: nototp                  !< number of particle substances
+        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume(noseg)          !< volumes of the segments
+        real(kind = real_wp), intent(in) :: surface(noseg)          !< horizontal surface area
+        real(kind = real_wp), intent(inout) :: amass (notot, noseg)    !< masses per substance per volume
+        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)    !< concentrations per substance per volume
+        real(kind = real_wp), intent(inout) :: deriv (notot, noseg)    !< derivatives per substance per volume
+        integer(kind = int_wp), intent(in) :: idt                     !< integration time step size
 
-      use timers
-      implicit none
+        !     local variables
 
-!     Parameters          :
-!     type     kind  function         name                      description
+        integer(kind = int_wp) :: isys            ! loopcounter substances
+        integer(kind = int_wp) :: iseg            ! loopcounter computational volumes
+        real(kind = real_wp) :: surf            ! the horizontal surface area of the cell
+        real(kind = real_wp) :: vol             ! helpvariable for this volume
+        integer(kind = int_wp), save :: ithandl         ! timer handle
+        data       ithandl  /0/
 
-      integer(kind=int_wp), intent(in   )  ::nosys                   !< number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot                   !< total number of substances
-      integer(kind=int_wp), intent(in   )  ::nototp                  !< number of particle substances
-      integer(kind=int_wp), intent(in   )  ::noseg                   !< number of computational volumes
-      real(kind=real_wp), intent(inout)  ::volume(noseg )          !< volumes of the segments
-      real(kind=real_wp), intent(in   )  ::surface(noseg)          !< horizontal surface area
-      real(kind=real_wp), intent(inout)  ::amass (notot ,noseg)    !< masses per substance per volume
-      real(kind=real_wp), intent(inout)  ::conc  (notot ,noseg)    !< concentrations per substance per volume
-      real(kind=real_wp), intent(inout)  ::deriv (notot ,noseg)    !< derivatives per substance per volume
-      integer(kind=int_wp), intent(in   )  ::idt                     !< integration time step size
+        if (timon) call timstrt ("dlwqb4", ithandl)
 
-!     local variables
+        !         loop accross the number of computational volumes for the concentrations
 
-      integer(kind=int_wp) ::isys            ! loopcounter substances
-      integer(kind=int_wp) ::iseg            ! loopcounter computational volumes
-      real(kind=real_wp) ::surf            ! the horizontal surface area of the cell
-      real(kind=real_wp) ::vol             ! helpvariable for this volume
-      integer(kind=int_wp), save  ::ithandl         ! timer handle
-      data       ithandl  /0/
+        do iseg = 1, noseg
 
-      if ( timon ) call timstrt ( "dlwqb4", ithandl )
+            vol = volume (iseg)
+            surf = surface(iseg)
 
-!         loop accross the number of computational volumes for the concentrations
+            !         transported substances first
 
-      do iseg = 1, noseg
+            do isys = 1, nosys
+                amass(isys, iseg) = conc (isys, iseg) * vol
+                deriv(isys, iseg) = 0.0
+            enddo
 
-         vol  = volume (iseg)
-         surf = surface(iseg)
+            !         then the passive substances
 
-!         transported substances first
+            do isys = nosys + 1, notot - nototp
+                amass(isys, iseg) = amass(isys, iseg) + idt * deriv(isys, iseg)
+                conc (isys, iseg) = amass(isys, iseg) / surf
+                deriv(isys, iseg) = 0.0
+            enddo
 
-         do isys = 1, nosys
-            amass(isys,iseg) = conc (isys,iseg) * vol
-            deriv(isys,iseg) = 0.0
-         enddo
+        enddo
 
-!         then the passive substances
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-         do isys = nosys+1, notot - nototp
-            amass(isys,iseg) = amass(isys,iseg) + idt*deriv(isys,iseg)
-            conc (isys,iseg) = amass(isys,iseg) / surf
-            deriv(isys,iseg) = 0.0
-         enddo
-
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_dlwqb4
+end module m_dlwqb4

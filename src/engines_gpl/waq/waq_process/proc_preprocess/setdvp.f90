@@ -20,129 +20,128 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_setdvp
-      use m_waq_precision
+module m_setdvp
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine setdvp (nodisp, idpnt, ndspn, idpnw, nosys, &
+            ndspx, dsto)
+        !
+        !     function            : sets new dispersion (or velocity) pointers
+        !
+        !     created:            : december 1994 by jan van beek
+        !
+        !     modified            : october  2010, jvb,  construct only unique new dispersion
 
-      contains
+        use timers       !   performance timers
 
+        implicit none
 
-      subroutine setdvp ( nodisp, idpnt , ndspn , idpnw , nosys , & 
-                         ndspx , dsto  )
-!
-!     function            : sets new dispersion (or velocity) pointers
-!
-!     created:            : december 1994 by jan van beek
-!
-!     modified            : october  2010, jvb,  construct only unique new dispersion
+        ! declaration of arguments
 
-      use timers       !   performance timers
+        integer(kind = int_wp), intent(in) :: nodisp             ! number of dispersions from input
+        integer(kind = int_wp), intent(in) :: idpnt(nosys)       ! pointers to dispersion array
+        integer(kind = int_wp), intent(inout) :: ndspn              ! number of new dispersion array
+        integer(kind = int_wp), intent(inout) :: idpnw(nosys)       ! pointers to dispersion array
+        integer(kind = int_wp), intent(in) :: nosys              ! number of active substances
+        integer(kind = int_wp), intent(in) :: ndspx              ! number of dispersions from the processes
+        real(kind = real_wp), intent(in) :: dsto(nosys, ndspx)  ! dispersion stochi factors
 
-      implicit none
+        ! local declarations
 
-      ! declaration of arguments
+        real(kind = real_wp), allocatable :: dsto_new(:, :)      ! stochi factors for the new dispersion array, to check if it is unique
+        integer(kind = int_wp) :: isys               ! index substances
+        logical :: found              ! true if a matching new dispersion is found
+        logical :: dsto_equal         ! true if the stochi factors of a new dispersion match
+        integer(kind = int_wp) :: i_dspn             ! index new dispersion
+        integer(kind = int_wp) :: idisp              ! index dispersion
+        integer(kind = int_wp) :: idspx              ! index dispersion from processes
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("setdvp", ithndl)
 
-      integer(kind=int_wp), intent(in)        ::nodisp             ! number of dispersions from input
-      integer(kind=int_wp), intent(in)        ::idpnt(nosys)       ! pointers to dispersion array
-      integer(kind=int_wp), intent(inout)     ::ndspn              ! number of new dispersion array
-      integer(kind=int_wp), intent(inout)     ::idpnw(nosys)       ! pointers to dispersion array
-      integer(kind=int_wp), intent(in)        ::nosys              ! number of active substances
-      integer(kind=int_wp), intent(in)        ::ndspx              ! number of dispersions from the processes
-      real(kind=real_wp), intent(in)        ::dsto(nosys,ndspx)  ! dispersion stochi factors
+        ! only action if there are already new dispersions, we will reset the number of new dispersions ndspn
 
-      ! local declarations
+        if (ndspn > 0) then
 
-      real(kind=real_wp), allocatable          ::dsto_new(:,:)      ! stochi factors for the new dispersion array, to check if it is unique
-      integer(kind=int_wp) ::isys               ! index substances
-      logical                   :: found              ! true if a matching new dispersion is found
-      logical                   :: dsto_equal         ! true if the stochi factors of a new dispersion match
-      integer(kind=int_wp) ::i_dspn             ! index new dispersion
-      integer(kind=int_wp) ::idisp              ! index dispersion
-      integer(kind=int_wp) ::idspx              ! index dispersion from processes
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "setdvp", ithndl )
+            ndspn = 0
+            allocate(dsto_new(nosys, nodisp + ndspx))
+            dsto_new = 0.0
 
-      ! only action if there are already new dispersions, we will reset the number of new dispersions ndspn
+            do isys = 1, nosys
 
-      if ( ndspn .gt. 0 ) then
+                ! only if a dispersion acts on this substance
 
-         ndspn     = 0
-         allocate(dsto_new(nosys,nodisp+ndspx))
-         dsto_new = 0.0
+                if (idpnt(isys) > 0 .or. idpnw(isys) > 0) then
 
-         do isys = 1, nosys
+                    ! determine if there is already a new dispersion with equal (1e-20) stochi factors
 
-            ! only if a dispersion acts on this substance
+                    found = .false.
+                    do i_dspn = 1, ndspn
+                        dsto_equal = .true.
 
-            if ( idpnt(isys) .gt. 0 .or. idpnw(isys) .gt. 0 ) then
+                        ! the dispersion arrays from the input stochi always 0.0 (not used)  or 1.0 (used)
 
-               ! determine if there is already a new dispersion with equal (1e-20) stochi factors
+                        do idisp = 1, nodisp
+                            if (idpnt(isys) == idisp) then
 
-               found = .false.
-               do i_dspn = 1, ndspn
-                  dsto_equal = .true.
+                                ! stochi on dispersion array always 1.0
 
-                  ! the dispersion arrays from the input stochi always 0.0 (not used)  or 1.0 (used)
+                                if (abs(dsto_new(i_dspn, idisp) - 1.0) > 1.e-20) then
+                                    dsto_equal = .false.
+                                endif
+                            else
+                                if (abs(dsto_new(i_dspn, idisp)) > 1.e-20) then
+                                    dsto_equal = .false.
+                                endif
+                            endif
+                        enddo
 
-                  do idisp = 1, nodisp
-                     if ( idpnt(isys) .eq. idisp ) then
+                        do idspx = 1, ndspx
+                            if (abs(dsto(isys, idspx) - dsto_new(i_dspn, nodisp + idspx)) > 1.e-20) then
+                                dsto_equal = .false.
+                            endif
+                        enddo
 
-                        ! stochi on dispersion array always 1.0
-
-                        if ( abs(dsto_new(i_dspn,idisp)-1.0) .gt. 1.e-20 ) then
-                           dsto_equal = .false.
+                        if (dsto_equal) then
+                            found = .true.
+                            idpnw(isys) = i_dspn
+                            exit
                         endif
-                     else
-                        if ( abs(dsto_new(i_dspn,idisp)) .gt. 1.e-20 ) then
-                           dsto_equal = .false.
+
+                    enddo
+
+                    ! if not found add a new dispersion
+
+                    if (.not. found) then
+
+                        ndspn = ndspn + 1
+                        idpnw(isys) = ndspn
+
+                        ! set stochi factors
+
+                        idisp = idpnt(isys)
+                        if (idisp > 0) then
+                            dsto_new(ndspn, idisp) = 1.0
                         endif
-                     endif
-                  enddo
 
-                  do idspx = 1, ndspx
-                     if ( abs(dsto(isys,idspx)-dsto_new(i_dspn,nodisp+idspx)) .gt. 1.e-20 ) then
-                        dsto_equal = .false.
-                     endif
-                  enddo
+                        do idspx = 1, ndspx
+                            dsto_new(ndspn, nodisp + idspx) = dsto(isys, idspx)
+                        enddo
 
-                  if ( dsto_equal ) then
-                     found = .true.
-                     idpnw(isys) = i_dspn
-                     exit
-                  endif
+                    endif
 
-               enddo
+                endif
 
-               ! if not found add a new dispersion
+            enddo
 
-               if ( .not. found ) then
+        endif
 
-                  ndspn       = ndspn + 1
-                  idpnw(isys) = ndspn
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-                  ! set stochi factors
-
-                  idisp = idpnt(isys)
-                  if ( idisp .gt. 0 ) then
-                     dsto_new(ndspn,idisp) = 1.0
-                  endif
-
-                  do idspx = 1, ndspx
-                     dsto_new(ndspn,nodisp+idspx) = dsto(isys,idspx)
-                  enddo
-
-               endif
-
-            endif
-
-         enddo
-
-      endif
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_setdvp
+end module m_setdvp

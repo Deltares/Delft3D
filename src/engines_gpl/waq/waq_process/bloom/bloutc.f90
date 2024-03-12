@@ -20,27 +20,26 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_bloutc
-      use m_waq_precision
+module m_bloutc
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine bloutc (dump)
 
-      contains
+        use bloom_data_phyt
 
+        implicit none
 
-      subroutine bloutc (dump)
-      
-      use bloom_data_phyt    
-      
-      implicit none
+        integer(kind = int_wp) :: dump
 
-      integer(kind=int_wp) ::dump
+        idump = dump
 
-      idump  = dump
-
-      return
-      end
+        return
+    end
 
 
-      end module m_bloutc
+end module m_bloutc

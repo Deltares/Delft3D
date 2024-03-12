@@ -105,31 +105,31 @@
 
       zerof  = btest( iopt, 0 )
       zerob  = btest( iopt, 1 )
-      length = ilflag .eq. 1
+      length = ilflag == 1
       idp    = idpnt(isys)
       ivp    = ivpnt(isys)
       idiag  = jtrack + 1
       noq12  = noq1 + noq2
 
-      do 50 iq = 1 , noq
+      do iq = 1 , noq
 
 !         initialisations , check for transport anyhow
 
          ifrom = ipoint(1,iq)
          ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or. ito .eq. 0 ) cycle
+         if ( ifrom == 0 .or. ito == 0 ) cycle
          a     = area(iq)
          q     = flow(iq)
-         if ( zerof .and. iq .le. noq12 .and. abs(q) .lt. 10.0e-25 ) goto 50
-         if ( a .lt. 1.0e-25 )  a = 1.0
-         if ( iq .le. noq1 ) then
+         if ( zerof .and. iq <= noq12 .and. abs(q) < 10.0e-25 ) goto 50
+         if ( a < 1.0e-25 )  a = 1.0
+         if ( iq <= noq1 ) then
             e  = disp(1)
             if ( length ) then
                dl = a / (aleng(1,iq) + aleng(2,iq))
             else
                dl = a / aleng(1,1)         ! first element of the array
             endif
-         else if ( iq .le. noq1+noq2 ) then
+         else if ( iq <= noq1+noq2 ) then
             e  = disp(2)
             if ( length ) then
                dl = a / (aleng(1,iq) + aleng(2,iq))
@@ -145,17 +145,17 @@
             endif
          endif
          e  = e*dl
-         if ( idp .gt. 0 ) e = e + disper(idp,iq)*dl
-         if ( ivp .gt. 0 ) q = q + velo  (ivp,iq)*a
-         if ( q .gt. 0.0 ) then
+         if ( idp > 0 ) e = e + disper(idp,iq)*dl
+         if ( ivp > 0 ) q = q + velo  (ivp,iq)*a
+         if ( q > 0.0 ) then
               q1 =   q
               q2 = 0.0
          else
               q1 = 0.0
               q2 =   q
          endif
-         if ( ifrom .lt. 0 ) goto 10
-         if ( ito   .lt. 0 ) goto 30
+         if ( ifrom < 0 ) goto 10
+         if ( ito   < 0 ) goto 30
 
 !        the regular case
 
@@ -167,7 +167,7 @@
 
 !        The 'from' volume is a boundary
 
-   10    if ( ito  .lt. 0 ) cycle
+   10    if ( ito  < 0 ) cycle
          if ( zerob ) e = 0.0
          amat(idiag          ,ito  ) = amat(idiag          ,ito  ) - q2 + e
          do i3 = 1, nsys
@@ -188,6 +188,7 @@
 !        end of the loop over exchanges
 
    50 continue
+      end do
 
       if ( timon ) call timstop ( ithandl )
       return

@@ -119,12 +119,12 @@
                       GRPNAM , ELMNMS(1), & 
                       UINDEX , 1        , & 
                       BUFLEN , NO_CONF  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_CONF .GT. NO_CONF_MAX ) THEN
+      IF ( NO_CONF > NO_CONF_MAX ) THEN
          WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
          WRITE(LUNREP,*) 'Actual number of processes:',NO_CONF
          WRITE(LUNREP,*) 'greater than maximum:',NO_CONF_MAX
@@ -143,7 +143,7 @@
                       GRPNAM , ELMNMS(2), & 
                       UINDEX , 1        , & 
                       BUFLEN , CONF_ID  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
@@ -154,7 +154,7 @@
                       GRPNAM , ELMNMS(3), & 
                       UINDEX , 1        , & 
                       BUFLEN , CONF_NAME)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(3)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900

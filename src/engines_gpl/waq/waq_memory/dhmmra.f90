@@ -139,20 +139,20 @@
          end if
       end if
 
-      if ( nothrd .gt. 0 ) call OMP_SET_NUM_THREADS( nothrd )
+      if ( nothrd > 0 ) call OMP_SET_NUM_THREADS( nothrd )
       noth = OMP_GET_MAX_THREADS()
       write ( lunrep , 2020 ) noth
       if ( l_decl ) write (    6   , 2030 ) noth
 
 !     Some logicals
 
-      fluxco = intsrt .eq.  5 .or. intsrt .eq. 12 .or. intsrt .eq. 14 .or. & 
-              intsrt .eq. 24
-      steady = intsrt .eq.  6 .or. intsrt .eq.  7 .or. intsrt .eq.  8 .or. & 
-              intsrt .eq.  9 .or. intsrt .eq. 17 .or. intsrt .eq. 18
-      delmat = intsrt .eq.  6 .or. intsrt .eq.  7
-      f_solv = intsrt .eq. 15 .or. intsrt .eq. 16 .or. intsrt .eq. 17 .or. & 
-              intsrt .eq. 18 .or. intsrt .eq. 21 .or. intsrt .eq. 22
+      fluxco = intsrt ==  5 .or. intsrt == 12 .or. intsrt == 14 .or. &
+              intsrt == 24
+      steady = intsrt ==  6 .or. intsrt ==  7 .or. intsrt ==  8 .or. &
+              intsrt ==  9 .or. intsrt == 17 .or. intsrt == 18
+      delmat = intsrt ==  6 .or. intsrt ==  7
+      f_solv = intsrt == 15 .or. intsrt == 16 .or. intsrt == 17 .or. &
+              intsrt == 18 .or. intsrt == 21 .or. intsrt == 22
       balans = btest(intopt,3)
 
 !     Set defaults, no name no length
@@ -188,7 +188,7 @@
       arrdm3(iiflow) = 1
 
       arrnam(iileng) = 'LENG  '
-      if ( ilflag .eq. 0 ) then
+      if ( ilflag == 0 ) then
          arrknd(iileng) = 1
          arrdm1(iileng) = 3
          arrdm2(iileng) = 1
@@ -495,14 +495,14 @@
       itota = 0
       do i_rar = 1 , nr_rar
          arrlen(i_rar) = arrdm1(i_rar)*arrdm2(i_rar)*arrdm3(i_rar)
-         if ( arrlen(i_rar) .lt. 0 ) then
+         if ( arrlen(i_rar) < 0 ) then
             write(lunrep,2000)
             write(lunrep,2010) arrnam(i_rar)
             call srstop(1)
          endif
          if ( .not. l_decl ) write ( 328, 2040 ) i_rar, arrnam(i_rar), arrlen(i_rar)
          itota = itota + arrlen(i_rar)
-         if ( itota .lt. 0 ) then
+         if ( itota < 0 ) then
             write(lunrep,2005)
             write(lunrep,2010) arrnam(i_rar)
             call srstop(1)
@@ -516,9 +516,9 @@
             iartyp = arrtyp(i_rar)
             iarlen = arrlen(i_rar)
             namarr = arrnam(i_rar)
-            if ( iarlen .gt. 0 ) then
+            if ( iarlen > 0 ) then
                ip = make_pointer(part, iartyp ,iarlen)
-               if ( ip .le. 0 ) then
+               if ( ip <= 0 ) then
                   write(lunrep,2010) namarr
                   call srstop(1)
                endif
@@ -536,7 +536,7 @@
 
 !     Reset new disp and velo pointers if array's are the same
 
-      if ( ndspn .eq. 0 ) then
+      if ( ndspn == 0 ) then
          idnew = idiff
          arrknd(iidnew) = arrknd(iidiff)
          arrdm1(iidnew) = arrdm1(iidiff)
@@ -545,7 +545,7 @@
          arrlen(iidnew) = arrlen(iidiff)
          arrpoi(iidnew) = arrpoi(iidiff)
       endif
-      if ( nveln .eq. 0 ) then
+      if ( nveln == 0 ) then
          ivnew = ivelo
          arrknd(iivnew) = arrknd(iivelo)
          arrdm1(iivnew) = arrdm1(iivelo)
@@ -598,62 +598,62 @@
       itota  = itota  +   noseg+nseg2
       nr_rar = nr_rar + 1
       if ( l_decl ) allocate ( surface   ( noseg+nseg2 ), stat=ierr )
-      if ( ierr .ne. 0 ) then ; write(lunrep,2010) "surface             " ; call srstop(1) ; endif
+      if ( ierr /= 0 ) then ; write(lunrep,2010) "surface             " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "surface             ", noseg+nseg2
 
       itota  = itota  +   noseg+nseg2
       nr_rar = nr_rar + 1
       if ( l_decl ) allocate ( wdrawal   ( noseg+nseg2 ), stat=ierr )
-      if ( ierr .ne. 0 ) then ; write(lunrep,2010) "wdrawal             " ; call srstop(1) ; endif
+      if ( ierr /= 0 ) then ; write(lunrep,2010) "wdrawal             " ; call srstop(1) ; endif
       if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "wdrawal             ", noseg+nseg2
 
       if ( delmat ) then
          itota  = itota  +   nosys*noseg
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( rhs   ( nosys,noseg ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "rhs                 " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "rhs                 " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "rhs                 ", nosys*noseg
       endif
 
-      if ( intsrt .eq. 11 .or. intsrt .eq. 12 .or. & 
-          intsrt .eq. 13 .or. intsrt .eq. 14 .or. & 
-          intsrt .eq. 24                          ) then
+      if ( intsrt == 11 .or. intsrt == 12 .or. &
+          intsrt == 13 .or. intsrt == 14 .or. &
+          intsrt == 24                          ) then
          itota  = itota  +  notot*(noseg+nseg2)*2                        ! arhs
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( arhs    ( notot,noseg+nseg2), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "arhs                " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "arhs                " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "arhs                ", notot*(noseg+nseg2)*2
 
          itota  = itota  +  notot*(noseg+nseg2)*2                        ! adiag
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( adiag   ( notot,noseg+nseg2), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "adiag               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "adiag               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "adiag               ", notot*(noseg+nseg2)*2
 
          itota  = itota  +  notot*max((noq3+noq4),1)*2           ! acodia
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( acodia  ( notot,max(noq3+noq4,1)), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "acodia              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "acodia              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "acodia              ", notot*max((noq3+noq4),1)*2
 
          itota  = itota  +  notot*max((noq3+noq4),1)*2           ! bcodia
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( bcodia  ( notot,max(noq3+noq4,1)), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "bcodia              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "bcodia              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "bcodia              ", notot*max((noq3+noq4),1)*2
       endif
 
-      if ( nmax*mmax .gt. 0 ) then
+      if ( nmax*mmax > 0 ) then
          itota  = itota  +  nmax*mmax
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( cell_x( nmax, mmax )                  , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "cell_x              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "cell_x              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "cell_x              ", nmax*mmax
 
          itota  = itota  +  nmax*mmax
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( cell_y( nmax, mmax )                  , stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "cell_y              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "cell_y              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "cell_y              ", nmax*mmax
       endif
 
@@ -661,67 +661,67 @@
          itota  = itota  +  noq
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( mixlen (  noq                         ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "mixlen              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "mixlen              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "mixlen              ",  noq
 
          itota  = itota  + (noseg+nobnd)          *noth*2           ! gm_rhs      real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_rhs (  noseg+nobnd           ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_rhs              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_rhs              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_rhs              ", (noseg+nobnd)          *noth*2
 
          itota  = itota  + (noseg+nobnd)          *noth*2           ! gm_sol      real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_sol (  noseg+nobnd           ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_sol              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_sol              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_sol              ", (noseg+nobnd)          *noth*2
 
          itota  = itota  + (noseg+nobnd)*(novec+5)*noth*2           ! gm_work     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_work( (noseg+nobnd)*(novec+5),noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_work             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_work             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_work             ", (noseg+nobnd)*(novec+5)*noth*2
 
          itota  = itota  + (novec+1)*(novec+2)    *noth*2           ! gm_hess     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_hess( (  novec+1  )*(novec+2),noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_hess             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_hess             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_hess             ", (novec+1)*(novec+2)    *noth*2
 
          itota  = itota  +  nomat                 *noth*2           ! gm_amat     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_amat(  nomat                 ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_amat             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_amat             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_amat             ",  nomat                 *noth*2
 
          itota  = itota  + (noseg+nobnd)          *noth*2           ! gm_diag     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_diag(  noseg+nobnd           ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_diag             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_diag             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_diag             ", (noseg+nobnd)          *noth*2
 
          itota  = itota  + (noseg+nobnd)          *noth*2           ! gm_diac     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_diac(  noseg+nobnd           ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_diac             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_diac             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_diac             ", (noseg+nobnd)          *noth*2
 
          itota  = itota  + 6*nolay                *noth*2           ! gm_trid     real(8)
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( gm_trid(  6*nolay               ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "gm_trid             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "gm_trid             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "gm_trid             ", 6*nolay                *noth*2
 
          itota  = itota  +  noq  *noth                           ! flowtot
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( flowtot ( noq  ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "flowtot             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "flowtot             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "flowtot             ", noq  *noth
 
          itota  = itota  +  noq  *noth                           ! disptot
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( disptot ( noq  ,noth ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "disptot             " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "disptot             " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "disptot             ", noq  *noth
 
 !
@@ -803,77 +803,77 @@
 !$omp end parallel
          endif ! l_decl
 
-         if ( intsrt .eq. 21 ) then
+         if ( intsrt == 21 ) then
             itota  = itota  +  noq  *noth                           ! theta
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( theta   ( noq  ,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "theta               " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "theta               " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "theta               ", noq  *noth
 
             itota  = itota  +  noseg*noth                           ! thetaseg
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( thetaseg( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "thetaseg            " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "thetaseg            " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "thetaseg            ", noseg*noth
 
             itota  = itota  +  noq  *noth                           ! flux
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( flux    ( noq  ,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "flux                " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "flux                " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "flux                ", noq  *noth
 
             itota  = itota  +  noq  *noth                           ! lim
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( lim     ( noq  ,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "lim                 " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "lim                 " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "lim                 ", noq  *noth
 
             itota  = itota  +  noseg*noth                           ! maxi
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( maxi    ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "maxi                " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "maxi                " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "maxi                ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! mini
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( mini    ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "mini                " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "mini                " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "mini                ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! l1
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( l1      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "l1                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "l1                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "l1                  ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! l2
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( l2      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "l2                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "l2                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "l2                  ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! m1
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( m1      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "m1                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "m1                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "m1                  ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! m2
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( m2      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "m2                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "m2                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "m2                  ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! n1
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( n1      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "n1                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "n1                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "n1                  ", noseg*noth
 
             itota  = itota  +  noseg*noth                           ! n2
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( n2      ( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "n2                  " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "n2                  " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "n2                  ", noseg*noth
 
             if ( l_decl ) then
@@ -966,17 +966,17 @@
             endif ! l_decl
 
          endif
-         if ( intsrt .eq. 22 ) then
+         if ( intsrt == 22 ) then
             itota  = itota  +  noq  *noth                           ! theta
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( theta   ( noq  ,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "theta               " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "theta               " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "theta               ", noq  *noth
 
             itota  = itota  +  noseg*noth                           ! thetaseg
             nr_rar = nr_rar + 1
             if ( l_decl ) allocate ( thetaseg( noseg,noth ), stat=ierr )
-            if ( ierr .ne. 0 ) then ; write(lunrep,2010) "thetaseg            " ; call srstop(1) ; endif
+            if ( ierr /= 0 ) then ; write(lunrep,2010) "thetaseg            " ; call srstop(1) ; endif
             if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "thetaseg            ", noseg*noth
 
             if ( l_decl ) then
@@ -999,23 +999,23 @@
             endif ! l_decl
          endif
       endif
-      if ( intsrt .eq. 24 ) then
+      if ( intsrt == 24 ) then
          itota  = itota  +  3*noseg*2                            ! dwork
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( dwork   ( 3, noseg   ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dwork               " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "dwork               " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dwork               ", 3*noseg*2
 
          itota  = itota  +  noseg*2                              ! volint
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( volint  ( noseg      ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "volint              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "volint              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "volint              ", noseg*2
 
          itota  = itota  +  notot*(noseg+nseg2)*2                        ! dconc2
          nr_rar = nr_rar + 1
          if ( l_decl ) allocate ( dconc2  ( notot, noseg+nseg2 ), stat=ierr )
-         if ( ierr .ne. 0 ) then ; write(lunrep,2010) "dconc2              " ; call srstop(1) ; endif
+         if ( ierr /= 0 ) then ; write(lunrep,2010) "dconc2              " ; call srstop(1) ; endif
          if ( .not. l_decl ) write ( 328, 2040 ) nr_rar, "dconc2              ", notot*(noseg+nseg2)*2
       endif
       if ( .not. l_decl ) write ( 328, '(/5x,a20,i12)' ) "Total (4 byte words)",itota

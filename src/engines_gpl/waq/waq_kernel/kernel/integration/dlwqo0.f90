@@ -118,26 +118,26 @@
 !         loop accross the number of exchanges
 
       noq12 = noq1 + noq2
-      do 60 iq = 1 , noq
+      do iq = 1 , noq
 
 !         initialisations, check if transport will take place
 
          ifrom   = ipoint(1,iq)
          ito     = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or.  ito .eq. 0 ) cycle
-         if ( ifrom .le. 0 .and. ito .le. 0 ) cycle
+         if ( ifrom == 0 .or.  ito == 0 ) cycle
+         if ( ifrom <= 0 .and. ito <= 0 ) cycle
          ifrom_1 = ipoint(3,iq)
          ito_1   = ipoint(4,iq)
 
          a = area(iq)
          q = flow(iq)
-         if ( abs(q) .lt. 10.0e-25 ) then
+         if ( abs(q) < 10.0e-25 ) then
             if ( btest(iopt,0) ) cycle                  ! thin dam option, no dispersion at zero flow
          endif
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom > 0 ) then
             if ( .not. btest(iknmrk(ifrom),0) ) cycle   ! identified dry at start and end of timestep
          endif
-         if ( ito   .gt. 0 ) then
+         if ( ito   > 0 ) then
             if ( .not. btest(iknmrk(ito  ),0) ) cycle
          endif
 
@@ -145,15 +145,15 @@
 
          ipb = 0
          if ( btest(iopt,3) ) then
-            if ( iqdmp(iq) .gt. 0 ) ipb = iqdmp(iq)
+            if ( iqdmp(iq) > 0 ) ipb = iqdmp(iq)
          endif
 
 !         initialize uniform values
 
-         if ( iq .le. noq1      ) then
+         if ( iq <= noq1      ) then
             e  = disp (1)
             al = aleng(1,1)
-         elseif ( iq .le. noq12 ) then
+         elseif ( iq <= noq12 ) then
             e  = disp (2)
             al = aleng(2,1)
          else
@@ -161,18 +161,18 @@
             al = aleng(1,2)
          endif
          su = al
-         if ( iq .gt. noq12+noq3 ) e  = 0.0     ! in the bed
+         if ( iq > noq12+noq3 ) e  = 0.0     ! in the bed
 
-         if ( ilflag .eq. 1 ) then
+         if ( ilflag == 1 ) then
             al = aleng(1,iq) + aleng(2,iq)
-            if ( q .gt. 0 ) then
+            if ( q > 0 ) then
                su = aleng(1,iq)*2.0
             else
                su = aleng(2,iq)*2.0
             endif
          endif
-         if ( al .lt. 1.0E-25 ) cycle
-         if ( ilflag .eq. 1 ) then
+         if ( al < 1.0E-25 ) cycle
+         if ( ilflag == 1 ) then
             f1 = aleng(2,iq) / al
             f2 = aleng(1,iq) / al
          else
@@ -182,28 +182,28 @@
          de = 0.5*q*q*idt/a/al                  ! 0.5 v^2 *dt
          dl = a / al
          e  = e*dl                              ! in m3/s
-         if ( ifrom .lt. 0 ) goto 20
-         if ( ito   .lt. 0 ) goto 40
+         if ( ifrom < 0 ) goto 20
+         if ( ito   < 0 ) goto 40
 
 !         The regular case
 
          do isys = 1, nosys
             d  = e + de
             v  = q
-            if ( idpnt(isys) .gt. 0 ) d = d + disper( idpnt(isys), iq ) * dl
+            if ( idpnt(isys) > 0 ) d = d + disper( idpnt(isys), iq ) * dl
             d2 = d*idt/dl/al/al                  ! diffusion Courant number without LW-additional diffusion
-            if ( ivpnt(isys) .gt. 0 ) then
+            if ( ivpnt(isys) > 0 ) then
                dv = velo  ( ivpnt(isys), iq ) * a
                v  = v + dv
                d  = d + 0.5*dv*dv*idt/a/al
             endif
             c  = v*idt/a/su                      ! velocity  Courant number ( 0.5 of upstream half cell here )
-            if ( v .gt. 0 ) then
-               if ( ifrom_1 .gt. 0 ) then
+            if ( v > 0 ) then
+               if ( ifrom_1 > 0 ) then
                   dq = ( ( 2.0+    c*c+ 6.0*c*d2)*conc (isys, ito    ) + & 
                         ( 5.0-2.0*c*c-12.0*c*d2)*conc (isys, ifrom  ) + & 
                         (-1.0+    c*c+ 6.0*c*d2)*conc (isys, ifrom_1)    ) / 6.0
-               else if ( ifrom_1 .lt. 0 ) then
+               else if ( ifrom_1 < 0 ) then
                   dq = ( ( 2.0+    c*c+ 6.0*c*d2)*conc (isys, ito    ) + & 
                         ( 5.0-2.0*c*c-12.0*c*d2)*conc (isys, ifrom  ) + & 
                         (-1.0+    c*c+ 6.0*c*d2)*bound(isys,-ifrom_1)    ) / 6.0
@@ -211,11 +211,11 @@
                   dq =   ( conc(isys,ito) + conc(isys,ifrom) ) / 2.0
                endif
             else
-               if ( ito_1   .gt. 0 ) then
+               if ( ito_1   > 0 ) then
                   dq = ( ( 2.0+    c*c+ 6.0*c*d2)*conc (isys, ifrom  ) + & 
                         ( 5.0-2.0*c*c-12.0*c*d2)*conc (isys, ito    ) + & 
                         (-1.0+    c*c+ 6.0*c*d2)*conc (isys, ito_1  )    ) / 6.0
-               else if ( ito_1   .lt. 0 ) then
+               else if ( ito_1   < 0 ) then
                   dq = ( ( 2.0+    c*c+ 6.0*c*d2)*conc (isys, ifrom  ) + & 
                         ( 5.0-2.0*c*c-12.0*c*d2)*conc (isys, ito    ) + & 
                         (-1.0+    c*c+ 6.0*c*d2)*bound(isys,-ito_1  )    ) / 6.0
@@ -229,8 +229,8 @@
 
 !              balances
 
-            if ( ipb .gt. 0 ) then
-               if ( dq .gt. 0.0 ) then
+            if ( ipb > 0 ) then
+               if ( dq > 0.0 ) then
                   dmpq(isys,ipb,1) = dmpq(isys,ipb,1) + dq*idt
                else
                   dmpq(isys,ipb,2) = dmpq(isys,ipb,2) - dq*idt
@@ -247,14 +247,14 @@
             dv = 0.0
             if ( .not. btest(iopt,1) ) then
                 d = e
-                if ( idpnt(isys) .gt. 0 ) d = d + disper( idpnt(isys), iq ) * dl
+                if ( idpnt(isys) > 0 ) d = d + disper( idpnt(isys), iq ) * dl
             endif
-            if ( ivpnt(isys) .gt. 0 ) then
+            if ( ivpnt(isys) > 0 ) then
                dv = velo  ( ivpnt(isys), iq ) * a
                v  = v + dv
             endif
             if ( btest(iopt,2) ) then
-               if ( v .gt. 0 ) then
+               if ( v > 0 ) then
                   g1 = 1.0
                   g2 = 0.0
                else
@@ -271,15 +271,15 @@
 
 !              balances
 
-            if ( iaflag .eq. 1 ) then
-               if ( dq .gt. 0.0 ) then
+            if ( iaflag == 1 ) then
+               if ( dq > 0.0 ) then
                     amass2(isys,4) = amass2(isys,4) + dq*idt
                else
                     amass2(isys,5) = amass2(isys,5) - dq*idt
                endif
             endif
-            if ( ipb .gt. 0 ) then
-               if ( dq .gt. 0.0 ) then
+            if ( ipb > 0 ) then
+               if ( dq > 0.0 ) then
                   dmpq(isys,ipb,1) = dmpq(isys,ipb,1) + dq*idt
                else
                   dmpq(isys,ipb,2) = dmpq(isys,ipb,2) - dq*idt
@@ -296,14 +296,14 @@
             dv = 0.0
             if ( .not. btest(iopt,1) ) then
                 d = e
-                if ( idpnt(isys) .gt. 0 ) d = d + disper( idpnt(isys), iq ) * dl
+                if ( idpnt(isys) > 0 ) d = d + disper( idpnt(isys), iq ) * dl
             endif
-            if ( ivpnt(isys) .gt. 0 ) then
+            if ( ivpnt(isys) > 0 ) then
                dv = velo  ( ivpnt(isys), iq ) * a
                v  = v + dv
             endif
             if ( btest(iopt,2) ) then
-               if ( v .gt. 0 ) then
+               if ( v > 0 ) then
                   g1 = 1.0
                   g2 = 0.0
                else
@@ -320,15 +320,15 @@
 
 !              balances
 
-            if ( iaflag .eq. 1 ) then
-               if ( dq .gt. 0.0 ) then
+            if ( iaflag == 1 ) then
+               if ( dq > 0.0 ) then
                     amass2(isys,5) = amass2(isys,5) + dq*idt
                else
                     amass2(isys,4) = amass2(isys,4) - dq*idt
                endif
             endif
-            if ( ipb .gt. 0 ) then
-               if ( dq .gt. 0.0 ) then
+            if ( ipb > 0 ) then
+               if ( dq > 0.0 ) then
                   dmpq(isys,ipb,1) = dmpq(isys,ipb,1) + dq*idt
                else
                   dmpq(isys,ipb,2) = dmpq(isys,ipb,2) - dq*idt
@@ -338,7 +338,7 @@
 
 !        end of the loop over exchanges
 
-   60 continue
+      end do
 
       if ( timon ) call timstop ( ithandl )
 

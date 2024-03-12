@@ -25,56 +25,56 @@
 ! Module for exchanging sediment parameters between various processes
 ! - used by DLWQG2 and by VEG3DU.
 !
-     module layered_sediment
-     implicit none
+module layered_sediment
+    implicit none
 
-     integer, allocatable :: bottomsegments(:)
-     real, allocatable :: sedconc(:,:,:)
+    integer, allocatable :: bottomsegments(:)
+    real, allocatable :: sedconc(:, :, :)
 
-     integer,parameter :: nolay = 7
-     real :: dl(nolay) = [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.037]   ! layer thickness
-     real :: bd(nolay) = [0.001, 0.003, 0.007, 0.015, 0.031, 0.063, 0.100]   ! bottomdepth (depth of lower surface of layer)
-     real :: sd(nolay) = [0.000, 0.001, 0.003, 0.007, 0.015, 0.031, 0.063]   ! depth of upper surface of layer
-     real :: tt(nolay)
-     real :: td(nolay)
+    integer, parameter :: nolay = 7
+    real :: dl(nolay) = [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.037]   ! layer thickness
+    real :: bd(nolay) = [0.001, 0.003, 0.007, 0.015, 0.031, 0.063, 0.100]   ! bottomdepth (depth of lower surface of layer)
+    real :: sd(nolay) = [0.000, 0.001, 0.003, 0.007, 0.015, 0.031, 0.063]   ! depth of upper surface of layer
+    real :: tt(nolay)
+    real :: td(nolay)
 
-     ! sediment substances definition - indices into sedconc
-     integer, parameter :: nototsed = 34
-     integer, parameter :: nototseddis = 12
-     integer, parameter :: nototsedpart = nototsed - nototseddis
-     integer, parameter :: is_CH4 = 1
-     integer, parameter :: is_DOC = 2
-     integer, parameter :: is_DON = 3
-     integer, parameter :: is_DOP = 4
-     integer, parameter :: is_DOS = 5
-     integer, parameter :: is_NH4 = 6
-     integer, parameter :: is_NO3 = 7
-     integer, parameter :: is_OXY = 8
-     integer, parameter :: is_PO4 = 9
-     integer, parameter :: is_Si = 10
-     integer, parameter :: is_SO4 = 11
-     integer, parameter :: is_SUD = 12
-     integer, parameter :: is_AAP = 13
-     integer, parameter :: is_APATP = 14
-     integer, parameter :: is_FeIIIpa = 15
-     integer, parameter :: is_Opal = 16
-     integer, parameter :: is_POC1 = 17
-     integer, parameter :: is_POC2 = 18
-     integer, parameter :: is_POC3 = 19
-     integer, parameter :: is_POC4 = 20
-     integer, parameter :: is_PON1 = 21
-     integer, parameter :: is_PON2 = 22
-     integer, parameter :: is_PON3 = 23
-     integer, parameter :: is_PON4 = 24
-     integer, parameter :: is_POP1 = 25
-     integer, parameter :: is_POP2 = 26
-     integer, parameter :: is_POP3 = 27
-     integer, parameter :: is_POP4 = 28
-     integer, parameter :: is_POS1 = 29
-     integer, parameter :: is_POS2 = 30
-     integer, parameter :: is_POS3 = 31
-     integer, parameter :: is_POS4 = 32
-     integer, parameter :: is_SUP = 33
-     integer, parameter :: is_VIVP = 34
+    ! sediment substances definition - indices into sedconc
+    integer, parameter :: nototsed = 34
+    integer, parameter :: nototseddis = 12
+    integer, parameter :: nototsedpart = nototsed - nototseddis
+    integer, parameter :: is_CH4 = 1
+    integer, parameter :: is_DOC = 2
+    integer, parameter :: is_DON = 3
+    integer, parameter :: is_DOP = 4
+    integer, parameter :: is_DOS = 5
+    integer, parameter :: is_NH4 = 6
+    integer, parameter :: is_NO3 = 7
+    integer, parameter :: is_OXY = 8
+    integer, parameter :: is_PO4 = 9
+    integer, parameter :: is_Si = 10
+    integer, parameter :: is_SO4 = 11
+    integer, parameter :: is_SUD = 12
+    integer, parameter :: is_AAP = 13
+    integer, parameter :: is_APATP = 14
+    integer, parameter :: is_FeIIIpa = 15
+    integer, parameter :: is_Opal = 16
+    integer, parameter :: is_POC1 = 17
+    integer, parameter :: is_POC2 = 18
+    integer, parameter :: is_POC3 = 19
+    integer, parameter :: is_POC4 = 20
+    integer, parameter :: is_PON1 = 21
+    integer, parameter :: is_PON2 = 22
+    integer, parameter :: is_PON3 = 23
+    integer, parameter :: is_PON4 = 24
+    integer, parameter :: is_POP1 = 25
+    integer, parameter :: is_POP2 = 26
+    integer, parameter :: is_POP3 = 27
+    integer, parameter :: is_POP4 = 28
+    integer, parameter :: is_POS1 = 29
+    integer, parameter :: is_POS2 = 30
+    integer, parameter :: is_POS3 = 31
+    integer, parameter :: is_POS4 = 32
+    integer, parameter :: is_SUP = 33
+    integer, parameter :: is_VIVP = 34
 
-     end module layered_sediment
+end module layered_sediment

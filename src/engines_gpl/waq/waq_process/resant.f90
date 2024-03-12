@@ -20,101 +20,100 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_resant
-      use m_waq_precision
+module m_resant
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine resant (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Resuspension of nutrients in organic carbon matrix
 
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! RFLS1-2 R*4 1 I  sedimention flux organic from S1 or S2        [gX/m2/d]
+        ! CNS1-2  R*4 1 I  C-N ratio substance in S1-S2                    [gC/gN]
+        ! CPS1-2  R*4 1 I  C-P ratio substance in S1-S2                    [gC/gP]
+        ! CSS1-2  R*4 1 I  C-S ratio substance in S1-S2                    [gC/gS]
+        !     Logical Units : -
 
-      subroutine resant ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Modules called : -
 
-!>\file
-!>       Resuspension of nutrients in organic carbon matrix
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! RFLS1-2 R*4 1 I  sedimention flux organic from S1 or S2        [gX/m2/d]
-! CNS1-2  R*4 1 I  C-N ratio substance in S1-S2                    [gC/gN]
-! CPS1-2  R*4 1 I  C-P ratio substance in S1-S2                    [gC/gP]
-! CSS1-2  R*4 1 I  C-S ratio substance in S1-S2                    [gC/gS]
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        integer(kind = int_wp) :: iseg
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-      
-      integer(kind=int_wp) ::iseg
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
+                    !
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+                    RFLS1 = PMSA(IP1)
+                    CNS1 = PMSA(IP2)
+                    CPS1 = PMSA(IP3)
+                    CSS1 = PMSA(IP4)
+                    DEPTH = PMSA(IP5)
+                    IF (DEPTH > 0.0) THEN
+                        RFLS1 = RFLS1 / DEPTH
+                    ELSE
+                        RFLS1 = 0.0
+                    ENDIF
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-!
+                    !*******************************************************************************
+                    !**** Processes connected to the SEDIMENTAION and RESUSENSION
+                    !***********************************************************************
 
-      RFLS1  = PMSA(IP1 )
-      CNS1   = PMSA(IP2 )
-      CPS1   = PMSA(IP3 )
-      CSS1   = PMSA(IP4 )
-      DEPTH  = PMSA(IP5 )
-      IF ( DEPTH .GT. 0.0 ) THEN
-          RFLS1 = RFLS1 / DEPTH
-      ELSE
-          RFLS1 = 0.0
-      ENDIF
+                    !     RESUSPENSION
 
-!*******************************************************************************
-!**** Processes connected to the SEDIMENTAION and RESUSENSION
-!***********************************************************************
+                    !
+                    FL(1 + IFLUX) = RFLS1 * CNS1
 
-!     RESUSPENSION
+                    FL(2 + IFLUX) = RFLS1 * CPS1
 
-!
-         FL( 1 + IFLUX ) = RFLS1 * CNS1
+                    FL(3 + IFLUX) = RFLS1 * CSS1
 
-         FL( 2 + IFLUX ) = RFLS1 * CPS1
+                ENDIF
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            IP4 = IP4 + INCREM (4)
+            IP5 = IP5 + INCREM (5)
+            !
+        end do
+        !
 
-         FL( 3 + IFLUX ) = RFLS1 * CSS1
+        RETURN
+        !
+    END
 
-      ENDIF
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-      IP4   = IP4   + INCREM (  4 )
-      IP5   = IP5   + INCREM (  5 )
-!
- 9000 CONTINUE
-!
-
-      RETURN
-!
-      END
-
-      end module m_resant
+end module m_resant

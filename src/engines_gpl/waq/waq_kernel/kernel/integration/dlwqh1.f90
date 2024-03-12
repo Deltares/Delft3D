@@ -20,68 +20,67 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqh1
-      use m_waq_precision
+module m_dlwqh1
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwqh1 (noseg, notot, nobnd, isys, diag, &
+            delvol, conc)
 
-      contains
+        !     Deltares Software Centre
 
+        !     Function: - sets the diagonal for the steady state option
+        !               - updates first order term on the diagonal
+        !               - compresses DERIV for use in SGMRES
 
-      subroutine dlwqh1 ( noseg  , notot  , nobnd  , isys   , diag   , & 
-                         delvol , conc   )
+        !     Created : 10 February 1997 by RJ Vos
+        !     Modified:  7 June     2010 by Leo Postma  Double precision version
+        !                                               NSYS fixated at 1
 
-!     Deltares Software Centre
+        !     File I/O: none
 
-!     Function: - sets the diagonal for the steady state option
-!               - updates first order term on the diagonal
-!               - compresses DERIV for use in SGMRES
+        !     Subroutines called  : none
 
-!     Created : 10 February 1997 by RJ Vos
-!     Modified:  7 June     2010 by Leo Postma  Double precision version
-!                                               NSYS fixated at 1
+        use timers                         ! WAQ performance timers
 
-!     File I/O: none
+        implicit none
 
-!     Subroutines called  : none
+        !     Arguments           :
 
-      use timers                         ! WAQ performance timers
+        !     Kind        Function         Name                   Description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: noseg                ! Number of computational volumes
+        integer(kind = int_wp), intent(in) :: notot                ! Total number of substances
+        integer(kind = int_wp), intent(in) :: nobnd                ! Number of open boundaries
+        integer(kind = int_wp), intent(in) :: isys                 ! This substance number
+        real(kind = dp), intent(out) :: diag  (noseg + nobnd)  ! Diagonal vector (1st order term)
+        real(kind = real_wp), intent(in) :: delvol(noseg)        ! Closure error correction
+        real(kind = real_wp), intent(in) :: conc  (notot, noseg)  ! First order term
 
-!     Arguments           :
+        !     local variables
 
-!     Kind        Function         Name                   Description
+        integer(kind = int_wp) :: iseg               ! loop counter for computational volumes
 
-      integer(kind=int_wp), intent(in   )  ::noseg                ! Number of computational volumes
-      integer(kind=int_wp), intent(in   )  ::notot                ! Total number of substances
-      integer(kind=int_wp), intent(in   )  ::nobnd                ! Number of open boundaries
-      integer(kind=int_wp), intent(in   )  ::isys                 ! This substance number
-      real(kind=dp), intent(  out)  ::diag  (noseg+nobnd)  ! Diagonal vector (1st order term)
-      real(kind=real_wp), intent(in   )  ::delvol(noseg)        ! Closure error correction
-      real(kind=real_wp), intent(in   )  ::conc  (notot,noseg)  ! First order term
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwqh1", ithandl)
 
-!     local variables
+        !         set the right hand side and
+        !         set the diagonal for steady state
+        !                          first order decay in conc
 
-      integer(kind=int_wp) ::iseg               ! loop counter for computational volumes
+        do iseg = 1, noseg
+            diag(iseg) = -conc(isys, iseg) + delvol(iseg)
+        enddo
+        do iseg = noseg + 1, noseg + nobnd
+            diag(iseg) = 1.0
+        enddo
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwqh1", ithandl )
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-!         set the right hand side and
-!         set the diagonal for steady state
-!                          first order decay in conc
-
-      do iseg = 1 , noseg
-         diag(iseg) = -conc(isys,iseg) + delvol(iseg)
-      enddo
-      do iseg = noseg+1 , noseg+nobnd
-         diag(iseg) = 1.0
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_dlwqh1
+end module m_dlwqh1

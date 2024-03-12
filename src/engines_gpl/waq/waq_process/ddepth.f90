@@ -20,89 +20,88 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_ddepth
-      use m_waq_precision
+module m_ddepth
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine ddepth (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_write_error_message
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Dynamic calculation of the depth as volume / surf
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !        DEPTH CALCULATION FROM HORIZONTAL SURFACE AREA OF A SEGMENT
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                             ----
+        ! DEPTH   R*4 1 O depth of the water column                            [m]
+        ! SURF    R*4 1 I surface area of segment                             [m2]
+        ! VOLUME  R*4 1 I volume of segment                                   [m3]
 
-      subroutine ddepth ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_write_error_message
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Dynamic calculation of the depth as volume / surf
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!        DEPTH CALCULATION FROM HORIZONTAL SURFACE AREA OF A SEGMENT
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                             ----
-! DEPTH   R*4 1 O depth of the water column                            [m]
-! SURF    R*4 1 I surface area of segment                             [m2]
-! VOLUME  R*4 1 I volume of segment                                   [m3]
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT REAL (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        character(55) message
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        message = 'SURF in DDEPTH zero at segment:'
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
+            CALL evaluate_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
+            IF (IKMRK3==1 .OR. IKMRK3==3) THEN
+                !
+                VOLUME = PMSA(IP1)
+                SURF = PMSA(IP2)
 
-      IMPLICIT REAL (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+                IF (SURF    < 1E-30) THEN
+                    write (message(32:55), '(i9,1x,e14.6)') iseg, surf
+                    CALL write_error_message (message)
+                ENDIF
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-      character(55) message
+                !***********************************************************************
+                !**** Calculate DEPTH - minimum: "TINY" to avoid divisions by zero if
+                !     the volume happens to be zero
+                !***********************************************************************
+                !
+                DEPTH = MAX(TINY(1.0), VOLUME / SURF)
+                !
+                PMSA (IP3) = DEPTH
+                !
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-      message = 'SURF in DDEPTH zero at segment:'
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
-      CALL evaluate_waq_attribute(3,IKNMRK(ISEG),IKMRK3)
-      IF (IKMRK3.EQ.1 .OR. IKMRK3.EQ.3) THEN
-!
-      VOLUME = PMSA(IP1 )
-      SURF   = PMSA(IP2 )
-
-      IF (SURF    .LT. 1E-30) THEN
-         write ( message(32:55) , '(i9,1x,e14.6)' ) iseg, surf
-         CALL write_error_message ( message )
-      ENDIF
-
-!***********************************************************************
-!**** Calculate DEPTH - minimum: "TINY" to avoid divisions by zero if
-!     the volume happens to be zero
-!***********************************************************************
-!
-      DEPTH = MAX( TINY(1.0), VOLUME / SURF )
-!
-      PMSA (IP3 ) = DEPTH
-!
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_ddepth
+end module m_ddepth

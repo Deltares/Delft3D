@@ -20,95 +20,92 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_set_effi
-      use m_waq_precision
+module m_set_effi
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine set_effi(temper, radiat, ext, depthw, daylen, &
+            id)
+        !>\file
+        !>       calculate and store efficiency for all species
 
-      contains
+        !     modules
 
+        use m_bloom_3dl
+        use m_natmor
+        use m_maxprd
+        use      bloom_data_3dl   ! data and routine for 3D light approach
 
-      subroutine set_effi( temper, radiat, ext   , depthw, daylen, & 
-                          id    )
-!>\file
-!>       calculate and store efficiency for all species
+        use bloom_data_dim
+        use bloom_data_size
+        use bloom_data_arran
+        use bloom_data_phyt
+        use bloom_data_putin
 
-!     modules
+        implicit none
 
-      use m_bloom_3dl
-      use m_natmor
-      use m_maxprd
-      use      bloom_data_3dl   ! data and routine for 3D light approach
-      
-      use bloom_data_dim
-      use bloom_data_size 
-      use bloom_data_arran   
-      use bloom_data_phyt    
-      use bloom_data_putin
+        !     arguments
 
-      implicit none
+        real(kind = real_wp) :: temper     ! input , temperature
+        real(kind = real_wp) :: radiat     ! input , radiation
+        real(kind = real_wp) :: ext        ! input , total extinction
+        real(kind = real_wp) :: depthw     ! input , depth of the layer
+        real(kind = real_wp) :: daylen     ! input , daylength in hours
+        integer(kind = int_wp) :: id         ! input , weeknumber
 
-!     arguments
+        !     local decalarations
 
-      real(kind=real_wp) ::temper     ! input , temperature
-      real(kind=real_wp) ::radiat     ! input , radiation
-      real(kind=real_wp) ::ext        ! input , total extinction
-      real(kind=real_wp) ::depthw     ! input , depth of the layer
-      real(kind=real_wp) ::daylen     ! input , daylength in hours
-      integer(kind=int_wp) ::id         ! input , weeknumber
+        real(kind = dp) :: alpha      ! reflection factor
+        real(kind = dp) :: temp       ! temperature
+        real(kind = dp) :: csol       ! radiation
+        real(kind = dp) :: dsol       ! radiation
+        real(kind = dp) :: dep        ! depth
+        real(kind = dp) :: exttot     ! total extinction
+        real(kind = dp) :: day        ! daylength in hours
+        real(kind = dp) :: deat       ! DEAT
+        real(kind = dp) :: tcorr      ! TCORR
+        real(kind = dp) :: surf_typ   ! scaled, converted and corrected radiation for a type
+        integer(kind = int_wp) :: igroup     ! index number of BLOOM algae group
+        integer(kind = int_wp) :: itype      ! index number of BLOOM algae type
+        real(kind = dp) :: pmax20(mt), sdmixn(mt)
 
-!     local decalarations
+        dep = depthw
+        exttot = ext
+        temp = temper
+        csol = solaco * radiat
+        day = daylen
+        deat = 0d0
+        call natmor (deat, temp)
+        do itype = 1, ntyp_3dl
+            if (sdmix(itype) < 0.0) then
+                sdmixn(itype) = 1.0d0 + sdmix(itype)
+                !           dmix(k) = dabs(sdmix(itype)) * dep
+            else
+                sdmixn(itype) = 0.0d0
+            endif
+        enddo
 
-      real(kind=dp) ::alpha      ! reflection factor
-      real(kind=dp) ::temp       ! temperature
-      real(kind=dp) ::csol       ! radiation
-      real(kind=dp) ::dsol       ! radiation
-      real(kind=dp) ::dep        ! depth
-      real(kind=dp) ::exttot     ! total extinction
-      real(kind=dp) ::day        ! daylength in hours
-      real(kind=dp) ::deat       ! DEAT
-      real(kind=dp) ::tcorr      ! TCORR
-      real(kind=dp) ::surf_typ   ! scaled, converted and corrected radiation for a type
-      integer(kind=int_wp) ::igroup     ! index number of BLOOM algae group
-      integer(kind=int_wp) ::itype      ! index number of BLOOM algae type
-      real(kind=dp) ::pmax20(mt),sdmixn(mt)
+        call maxprd (tefcur)
+        do itype = 1, ntyp_3dl
+            pmax20(itype) = pmax(itype)
+        enddo
+        call maxprd (temp)
 
+        dsol = 1428.57 * csol
+        do igroup = 1, ngro_3dl
+            do itype = it2(igroup, 1), it2(igroup, 2)
+                tcorr = pmax20(itype) / pmax(itype)
+                surf_typ = tcorr * dsol * dexp (- exttot * sdmixn(itype) * dep)
+                surf_typ = surf_typ / day
+                call effilay_3dl(surf_typ, exttot, dep, igroup, itype)
+            enddo
+        enddo
 
-      dep    = depthw
-      exttot = ext
-      temp   = temper
-      csol   = solaco * radiat
-      day    = daylen
-      deat   = 0d0
-      call natmor (deat, temp)
-      do itype = 1,ntyp_3dl
-         if (sdmix(itype) .lt. 0.0) then
-            sdmixn(itype) = 1.0d0 + sdmix(itype)
-!           dmix(k) = dabs(sdmix(itype)) * dep
-         else
-            sdmixn(itype) = 0.0d0
-         endif
-      enddo
+        return
+    end subroutine set_effi
 
-
-      call maxprd ( tefcur )
-      do itype = 1,ntyp_3dl
-         pmax20(itype) = pmax(itype)
-      enddo
-      call maxprd ( temp  )
-
-      dsol=1428.57*csol
-      do igroup = 1 , ngro_3dl
-         do itype = it2(igroup,1),it2(igroup,2)
-            tcorr      = pmax20(itype)/pmax(itype)
-            surf_typ   = tcorr * dsol * dexp (- exttot * sdmixn(itype) * dep)
-            surf_typ   = surf_typ/day
-            call effilay_3dl( surf_typ, exttot, dep   , igroup, itype )
-         enddo
-      enddo
-
-      return
-      end subroutine set_effi
-
-      end module m_set_effi
+end module m_set_effi

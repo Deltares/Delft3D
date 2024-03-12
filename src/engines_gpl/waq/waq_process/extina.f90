@@ -20,90 +20,89 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_extina
-      use m_waq_precision
+module m_extina
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine extina (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Extinction of light by algae and POC
 
-      contains
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        !
+        !     Local declarations
+        !
+        INTEGER(kind = int_wp) :: NALG, ISWFIX, NIPALG, IFLUX, ISEG, &
+                IALG, IP, IFIX
+        REAL(kind = dp) :: EXTALG, EXTCF, BIOMAS, DEPTH, SDMIX
+        !
+        NALG = NINT(PMSA(IPOINT(1)))
+        ISWFIX = NINT(PMSA(IPOINT(2)))
+        IF (ISWFIX == 1) THEN
+            NIPALG = 4
+        ELSE
+            NIPALG = 2
+        ENDIF
+        IFLUX = 0
 
+        DO ISEG = 1, NOSEG
 
-      subroutine extina ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Extinction of light by algae and POC
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-!
-!     Local declarations
-!
-      INTEGER(kind=int_wp) ::NALG  , ISWFIX, NIPALG, IFLUX , ISEG  , & 
-              IALG  , IP    , IFIX
-      REAL(kind=dp) ::EXTALG, EXTCF , BIOMAS, DEPTH, SDMIX
-!
-      NALG  = NINT(PMSA(IPOINT(1)))
-      ISWFIX= NINT(PMSA(IPOINT(2)))
-      IF ( ISWFIX .EQ. 1 ) THEN
-         NIPALG = 4
-      ELSE
-         NIPALG = 2
-      ENDIF
-      IFLUX = 0
+                EXTALG = 0.0
+                DEPTH = PMSA (IPOINT(3) + (ISEG - 1) * INCREM(3))
+                !
+                !     Loop over algae
 
-      DO 9000 ISEG = 1 , NOSEG
+                DO IALG = 1, NALG
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
+                    IP = 3 + IALG
+                    EXTCF = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
 
-      EXTALG = 0.0
-      DEPTH  = PMSA ( IPOINT(3) + (ISEG-1)*INCREM(3) )
-!
-!     Loop over algae
+                    IP = 3 + NALG + IALG
+                    BIOMAS = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
 
-      DO 100 IALG = 1,NALG
+                    IF (ISWFIX == 1) THEN
+                        IP = 3 + 2 * NALG + IALG
+                        IFIX = NINT(PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP)))
+                        IF (IFIX < 0) THEN
 
-          IP = 3 + IALG
-          EXTCF  = PMSA ( IPOINT(IP) + (ISEG-1)*INCREM(IP) )
+                            ! Rooted algae, inlclude only if sdmix positive
 
-          IP = 3 + NALG + IALG
-          BIOMAS = PMSA ( IPOINT(IP) + (ISEG-1)*INCREM(IP) )
+                            IP = 3 + 3 * NALG + IALG
+                            SDMIX = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
+                            IF (SDMIX > 1E-10) THEN
+                                BIOMAS = BIOMAS / DEPTH
+                            ELSE
+                                BIOMAS = 0.0
+                            ENDIF
+                        ENDIF
+                    ENDIF
 
-          IF ( ISWFIX .EQ. 1 ) THEN
-             IP = 3 + 2*NALG + IALG
-             IFIX   = NINT(PMSA ( IPOINT(IP) + (ISEG-1)*INCREM(IP) ))
-             IF ( IFIX .LT. 0 ) THEN
+                    IF (BIOMAS > 0.0) &
+                            EXTALG = EXTALG + BIOMAS * EXTCF
 
-                ! Rooted algae, inlclude only if sdmix positive
+                end do
 
-                IP = 3 + 3*NALG + IALG
-                SDMIX = PMSA ( IPOINT(IP) + (ISEG-1)*INCREM(IP) )
-                IF ( SDMIX .GT. 1E-10 ) THEN
-                   BIOMAS = BIOMAS/DEPTH
-                ELSE
-                   BIOMAS = 0.0
-                ENDIF
-             ENDIF
-          ENDIF
+                IP = 3 + NIPALG * NALG + 1
+                PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP)) = EXTALG
 
-          IF ( BIOMAS .GT. 0.0 ) & 
-         EXTALG = EXTALG + BIOMAS*EXTCF
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            !
+        end do
+        !
+        RETURN
 
-  100 CONTINUE
+    END
 
-      IP = 3 + NIPALG*NALG + 1
-      PMSA ( IPOINT(IP) + (ISEG-1)*INCREM(IP) ) = EXTALG
-
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-!
- 9000 CONTINUE
-!
-      RETURN
-
-      END
-
-      end module m_extina
+end module m_extina

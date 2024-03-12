@@ -35,74 +35,74 @@ module m_dlwqdata_save_restore
     implicit none
 
     !type(delwaq_data), target :: dlwqd                !< derived type for persistent storage
-    integer(kind=int_wp)    ::itime
-    integer(kind=int_wp)    ::ifflag
-    integer(kind=int_wp)    ::iaflag
-    integer(kind=int_wp)    ::ibflag
-    integer(kind=int_wp)    ::nddim
-    integer(kind=int_wp)    ::nvdim
-    integer(kind=int_wp)    ::nosss
-    integer(kind=int_wp)    ::noqtt
-    integer(kind=int_wp)    ::noqt
-    integer(kind=int_wp)    ::nopred
-    integer(kind=int_wp)    ::ithandl
-    logical   :: litrep
-    logical   :: ldummy
-    integer(kind=int_wp)    ::inwtyp
-    integer(kind=int_wp)    ::nowarn
-    integer(kind=int_wp)    ::ioptzb
-    logical   :: forester
-    logical   :: updatr
-    integer(kind=int_wp)    ::lleng
-    real(kind=dp)      :: tol
-    logical   :: lstrec
-    integer(kind=int_wp)    ::itimel
+    integer(kind = int_wp) :: itime
+    integer(kind = int_wp) :: ifflag
+    integer(kind = int_wp) :: iaflag
+    integer(kind = int_wp) :: ibflag
+    integer(kind = int_wp) :: nddim
+    integer(kind = int_wp) :: nvdim
+    integer(kind = int_wp) :: nosss
+    integer(kind = int_wp) :: noqtt
+    integer(kind = int_wp) :: noqt
+    integer(kind = int_wp) :: nopred
+    integer(kind = int_wp) :: ithandl
+    logical :: litrep
+    logical :: ldummy
+    integer(kind = int_wp) :: inwtyp
+    integer(kind = int_wp) :: nowarn
+    integer(kind = int_wp) :: ioptzb
+    logical :: forester
+    logical :: updatr
+    integer(kind = int_wp) :: lleng
+    real(kind = dp) :: tol
+    logical :: lstrec
+    integer(kind = int_wp) :: itimel
 
-    contains
+contains
 
     subroutine dlwqdata_save(dlwqd)
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
 
-        DLWQD%II        =  II
-        DLWQD%IN        =  IN
-        DLWQD%ITIME     =  ITIME
-        DLWQD%IFFLAG    =  IFFLAG
-        DLWQD%IAFLAG    =  IAFLAG
-        DLWQD%IBFLAG    =  IBFLAG
-        DLWQD%NDDIM     =  NDDIM
-        DLWQD%NVDIM     =  NVDIM
-        DLWQD%NOSSS     =  NOSSS
-        DLWQD%NOQTT     =  NOQTT
-        DLWQD%NOQT      =  NOQT
-        DLWQD%NOPRED    =  NOPRED
-        DLWQD%ITIMEL    =  ITIMEL
-        DLWQD%LSTREC    =  LSTREC
-        DLWQD%ITHANDL   =  ITHANDL
-        DLWQD%LITREP    =  LITREP
-        DLWQD%LDUMMY    =  LDUMMY
-        DLWQD%INWTYP    =  INWTYP
+        DLWQD%II = II
+        DLWQD%IN = IN
+        DLWQD%ITIME = ITIME
+        DLWQD%IFFLAG = IFFLAG
+        DLWQD%IAFLAG = IAFLAG
+        DLWQD%IBFLAG = IBFLAG
+        DLWQD%NDDIM = NDDIM
+        DLWQD%NVDIM = NVDIM
+        DLWQD%NOSSS = NOSSS
+        DLWQD%NOQTT = NOQTT
+        DLWQD%NOQT = NOQT
+        DLWQD%NOPRED = NOPRED
+        DLWQD%ITIMEL = ITIMEL
+        DLWQD%LSTREC = LSTREC
+        DLWQD%ITHANDL = ITHANDL
+        DLWQD%LITREP = LITREP
+        DLWQD%LDUMMY = LDUMMY
+        DLWQD%INWTYP = INWTYP
 
-        DLWQD%OTIME     =  OTIME
-        DLWQD%DELTIM    =  DELTIM
-        DLWQD%TSCALE    =  TSCALE
+        DLWQD%OTIME = OTIME
+        DLWQD%DELTIM = DELTIM
+        DLWQD%TSCALE = TSCALE
 
-        DLWQD%NOWARN    =  NOWARN
-        DLWQD%IOPTZB    =  IOPTZB
-        DLWQD%FORESTER  =  FORESTER
-        DLWQD%UPDATR    =  UPDATR
+        DLWQD%NOWARN = NOWARN
+        DLWQD%IOPTZB = IOPTZB
+        DLWQD%FORESTER = FORESTER
+        DLWQD%UPDATR = UPDATR
 
-        DLWQD%LLENG     =  LLENG
+        DLWQD%LLENG = LLENG
 
-        DLWQD%TOL       =  TOL
+        DLWQD%TOL = TOL
 
-        DLWQD%IWSTKIND  => IWSTKIND
-        DLWQD%IEXSEG    => IEXSEG
-        DLWQD%IKNMKV    => IKNMKV
+        DLWQD%IWSTKIND => IWSTKIND
+        DLWQD%IEXSEG => IEXSEG
+        DLWQD%IKNMKV => IKNMKV
 
         !     DLWQD%GRIDPS    - no need!
 
-        call copy_time_data( dlwqd, .true. )
+        call copy_time_data(dlwqd, .true.)
 
     end subroutine dlwqdata_save
 
@@ -111,42 +111,42 @@ module m_dlwqdata_save_restore
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
 
-        IN        =  DLWQD%IN
-        II        =  DLWQD%II
-        ITIME     =  DLWQD%ITIME
-        IFFLAG    =  DLWQD%IFFLAG
-        IAFLAG    =  DLWQD%IAFLAG
-        IBFLAG    =  DLWQD%IBFLAG
-        NDDIM     =  DLWQD%NDDIM
-        NVDIM     =  DLWQD%NVDIM
-        NOSSS     =  DLWQD%NOSSS
-        NOQTT     =  DLWQD%NOQTT
-        NOQT      =  DLWQD%NOQT
-        NOPRED    =  DLWQD%NOPRED
-        ITIMEL    =  DLWQD%ITIMEL
-        ITHANDL   =  DLWQD%ITHANDL
-        LITREP    =  DLWQD%LITREP
-        LSTREC    =  DLWQD%LSTREC
-        LDUMMY    =  DLWQD%LDUMMY
-        INWTYP    =  DLWQD%INWTYP
+        IN = DLWQD%IN
+        II = DLWQD%II
+        ITIME = DLWQD%ITIME
+        IFFLAG = DLWQD%IFFLAG
+        IAFLAG = DLWQD%IAFLAG
+        IBFLAG = DLWQD%IBFLAG
+        NDDIM = DLWQD%NDDIM
+        NVDIM = DLWQD%NVDIM
+        NOSSS = DLWQD%NOSSS
+        NOQTT = DLWQD%NOQTT
+        NOQT = DLWQD%NOQT
+        NOPRED = DLWQD%NOPRED
+        ITIMEL = DLWQD%ITIMEL
+        ITHANDL = DLWQD%ITHANDL
+        LITREP = DLWQD%LITREP
+        LSTREC = DLWQD%LSTREC
+        LDUMMY = DLWQD%LDUMMY
+        INWTYP = DLWQD%INWTYP
 
-        OTIME     =  DLWQD%OTIME
-        DELTIM    =  DLWQD%DELTIM
-        TSCALE    =  DLWQD%TSCALE
+        OTIME = DLWQD%OTIME
+        DELTIM = DLWQD%DELTIM
+        TSCALE = DLWQD%TSCALE
 
-        NOWARN    =  DLWQD%NOWARN
-        IOPTZB    =  DLWQD%IOPTZB
-        FORESTER  =  DLWQD%FORESTER
-        LLENG     =  DLWQD%LLENG
-        UPDATR    =  DLWQD%UPDATR
+        NOWARN = DLWQD%NOWARN
+        IOPTZB = DLWQD%IOPTZB
+        FORESTER = DLWQD%FORESTER
+        LLENG = DLWQD%LLENG
+        UPDATR = DLWQD%UPDATR
 
-        TOL       =  DLWQD%TOL
+        TOL = DLWQD%TOL
 
-        IWSTKIND  => DLWQD%IWSTKIND
-        IEXSEG    => DLWQD%IEXSEG
-        IKNMKV    => DLWQD%IKNMKV
+        IWSTKIND => DLWQD%IWSTKIND
+        IEXSEG => DLWQD%IEXSEG
+        IKNMKV => DLWQD%IKNMKV
 
-        call copy_time_data( dlwqd, .false. )
+        call copy_time_data(dlwqd, .false.)
 
     end subroutine dlwqdata_restore
 

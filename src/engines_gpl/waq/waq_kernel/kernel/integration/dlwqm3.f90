@@ -20,125 +20,124 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwqm3
-      use m_waq_precision
+module m_dlwqm3
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwqm3(idt, isys, nosys, notot, noseg, &
+            conc, deriv, volold, nobnd, bound, &
+            noq, ipoint, flowtot, disptot, theta, &
+            diag, iscale, rhs, sol)
 
-      contains
+        !     Deltares - Delft Software Department
 
+        !     Created   :      2007 by Pauline van Slingerland
 
-      subroutine dlwqm3(idt , isys  , nosys  , notot  , noseg, & 
-                       conc, deriv , volold , nobnd  , bound, & 
-                       noq , ipoint, flowtot, disptot, theta, & 
-                       diag, iscale, rhs    , sol           )
+        !     Function  : fills the right hand side and the initial guess
 
-!     Deltares - Delft Software Department
+        !     Modified  : July 2009 by Leo Postma : double precission version
 
-!     Created   :      2007 by Pauline van Slingerland
+        use timers                         ! WAQ performance timers
 
-!     Function  : fills the right hand side and the initial guess
+        implicit none
 
-!     Modified  : July 2009 by Leo Postma : double precission version
+        !     Arguments           :
 
-      use timers                         ! WAQ performance timers
+        !     Kind        Function         Name                    Description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: idt                   ! time step in scu's
+        integer(kind = int_wp), intent(in) :: isys                  ! current active substance
+        integer(kind = int_wp), intent(in) :: nosys                 ! number of active substances
+        integer(kind = int_wp), intent(in) :: notot                 ! total number of substances
 
-!     Arguments           :
+        integer(kind = int_wp), intent(in) :: noseg                 ! number of segments
+        real(kind = real_wp), intent(in) :: conc   (notot, noseg) ! concentrations
+        real(kind = real_wp), intent(in) :: deriv  (notot, noseg) ! processes and discharges (divided by the time step idt)
+        real(kind = real_wp), intent(in) :: volold (noseg)        ! segment volumes at the previous time
+        integer(kind = int_wp), intent(in) :: nobnd                 ! number of boundary segments
+        real(kind = real_wp), intent(in) :: bound  (nosys, nobnd) ! boundary concentrions
 
-!     Kind        Function         Name                    Description
+        integer(kind = int_wp), intent(in) :: noq                   ! number of exchanges
+        integer(kind = int_wp), intent(in) :: ipoint (4, noq)        ! exchange pointers (dim: 4 x noq)
+        real(kind = real_wp), intent(in) :: flowtot(noq)          ! flows plus additional velos. (dim: noq)
+        real(kind = real_wp), intent(in) :: disptot(noq)          ! dispersion plus additional dipers. (dim: noq)
+        real(kind = real_wp), intent(in) :: theta  (noq)          ! variable theta coefficients
 
-      integer(kind=int_wp), intent(in   )  ::idt                   ! time step in scu's
-      integer(kind=int_wp), intent(in   )  ::isys                  ! current active substance
-      integer(kind=int_wp), intent(in   )  ::nosys                 ! number of active substances
-      integer(kind=int_wp), intent(in   )  ::notot                 ! total number of substances
+        real(kind = dp), intent(in) :: diag   (noseg + nobnd)  ! diagonal of the matrix (lhs)
+        integer(kind = int_wp), intent(in) :: iscale                ! 0: no diagonal scaling
+        ! 1: diagonal scaling
+        real(kind = dp), intent(out) :: rhs(noseg + nobnd)      ! righthandside
+        real(kind = dp), intent(out) :: sol(noseg + nobnd)      ! initial guess
 
-      integer(kind=int_wp), intent(in   )  ::noseg                 ! number of segments
-      real(kind=real_wp), intent(in   )  ::conc   (notot, noseg) ! concentrations
-      real(kind=real_wp), intent(in   )  ::deriv  (notot, noseg) ! processes and discharges (divided by the time step idt)
-      real(kind=real_wp), intent(in   )  ::volold (noseg)        ! segment volumes at the previous time
-      integer(kind=int_wp), intent(in   )  ::nobnd                 ! number of boundary segments
-      real(kind=real_wp), intent(in   )  ::bound  (nosys, nobnd) ! boundary concentrions
+        integer(kind = int_wp) :: ifrom, ito             ! from- and to segments
+        real(kind = real_wp) :: ci, cj                 ! from- and to concentrations
+        real(kind = real_wp) :: fluxij                ! flux from segment i to segment j
+        integer(kind = int_wp) :: iseg                  ! current segment
+        integer(kind = int_wp) :: ibnd                  ! current boundary segment
+        integer(kind = int_wp) :: iq                    ! current edge
 
-      integer(kind=int_wp), intent(in   )  ::noq                   ! number of exchanges
-      integer(kind=int_wp), intent(in   )  ::ipoint (4,noq)        ! exchange pointers (dim: 4 x noq)
-      real(kind=real_wp), intent(in   )  ::flowtot(noq)          ! flows plus additional velos. (dim: noq)
-      real(kind=real_wp), intent(in   )  ::disptot(noq)          ! dispersion plus additional dipers. (dim: noq)
-      real(kind=real_wp), intent(in   )  ::theta  (noq)          ! variable theta coefficients
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("dlwqm3", ithandl)
 
-      real(kind=dp), intent(in   )  ::diag   (noseg+nobnd)  ! diagonal of the matrix (lhs)
-      integer(kind=int_wp), intent(in   )  ::iscale                ! 0: no diagonal scaling
-                                                         ! 1: diagonal scaling
-      real(kind=dp), intent(  out)  ::rhs(noseg+nobnd)      ! righthandside
-      real(kind=dp), intent(  out)  ::sol(noseg+nobnd)      ! initial guess
+        ! volumes, processes, and discharges
+        do iseg = 1, noseg
+            rhs(iseg) = volold(iseg) * conc(isys, iseg) / real(idt) + deriv(isys, iseg)
+        enddo
 
-      integer(kind=int_wp) ::ifrom,ito             ! from- and to segments
-      real(kind=real_wp) ::ci,cj                 ! from- and to concentrations
-      real(kind=real_wp) ::fluxij                ! flux from segment i to segment j
-      integer(kind=int_wp) ::iseg                  ! current segment
-      integer(kind=int_wp) ::ibnd                  ! current boundary segment
-      integer(kind=int_wp) ::iq                    ! current edge
+        do ibnd = 1, nobnd
+            rhs(noseg + ibnd) = bound(isys, ibnd)
+        enddo
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwqm3", ithandl )
+        ! flow and diffusion
+        do iq = 1, noq
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+            if (ifrom == 0 .or. ito == 0) cycle
 
-! volumes, processes, and discharges
-      do iseg = 1, noseg
-         rhs(iseg) = volold(iseg) * conc(isys,iseg) / real(idt) + deriv(isys,iseg)
-      enddo
+            ! compute from- and to concentrations
+            if (ifrom > 0) then
+                ci = conc (isys, ifrom)
+            else
+                ci = bound(isys, -ifrom)
+            endif
+            if (ito   > 0) then
+                cj = conc (isys, ito)
+            else
+                cj = bound(isys, -ito)
+            endif
 
-      do ibnd = 1, nobnd
-         rhs(noseg+ibnd) = bound(isys,ibnd)
-      enddo
+            ! compute flux from i to j
+            if (flowtot(iq) > 0) then         ! flow from i to j
+                fluxij = flowtot(iq) * ci - disptot(iq) * (cj - ci)
+            else                                   ! flow from j to i
+                fluxij = flowtot(iq) * cj - disptot(iq) * (cj - ci)
+            endif
 
-! flow and diffusion
-      do iq = 1 , noq
-         ifrom = ipoint(1,iq)
-         ito   = ipoint(2,iq)
-         if ( ifrom .eq. 0 .or. ito .eq. 0 ) cycle
+            ! add flux to both neighbours
+            if (ifrom > 0) rhs(ifrom) = rhs(ifrom) - (1 - theta(iq)) * fluxij
+            if (ito   > 0) rhs(ito) = rhs(ito) + (1 - theta(iq)) * fluxij
+        enddo
 
-! compute from- and to concentrations
-         if ( ifrom .gt. 0 ) then
-            ci = conc (isys, ifrom)
-         else
-            ci = bound(isys,-ifrom)
-         endif
-         if ( ito   .gt. 0 ) then
-            cj = conc (isys, ito  )
-         else
-            cj = bound(isys,-ito  )
-         endif
+        ! scale rhs (diagonal scaling to improve convergence of gmres)
+        if (iscale == 1) then
+            do iseg = 1, noseg + nobnd
+                rhs(iseg) = rhs(iseg) / diag(iseg)
+            enddo
+        endif
 
-! compute flux from i to j
-         if ( flowtot(iq) .gt. 0 ) then         ! flow from i to j
-            fluxij = flowtot(iq)*ci - disptot(iq)*(cj-ci)
-         else                                   ! flow from j to i
-            fluxij = flowtot(iq)*cj - disptot(iq)*(cj-ci)
-         endif
+        !        zero initial guess, try previous concentration for water volumes
+        !        ( alternatively take zero vector ). Zero initial guess for boundaries.
 
-! add flux to both neighbours
-         if ( ifrom .gt. 0 ) rhs(ifrom) = rhs(ifrom) - (1-theta(iq))*fluxij
-         if ( ito   .gt. 0 ) rhs(ito  ) = rhs(ito  ) + (1-theta(iq))*fluxij
-      enddo
+        sol = 0.0
+        do iseg = 1, noseg
+            sol(iseg) = conc(isys, iseg) + 0.01
+        enddo
 
-! scale rhs (diagonal scaling to improve convergence of gmres)
-      if ( iscale .eq. 1 ) then
-         do iseg = 1, noseg+nobnd
-            rhs(iseg) = rhs(iseg) / diag(iseg)
-         enddo
-      endif
+        if (timon) call timstop (ithandl)
+    endsubroutine dlwqm3
 
-!        zero initial guess, try previous concentration for water volumes
-!        ( alternatively take zero vector ). Zero initial guess for boundaries.
-
-      sol = 0.0
-      do iseg = 1, noseg
-         sol(iseg) = conc(isys,iseg) + 0.01
-      enddo
-
-      if ( timon ) call timstop ( ithandl )
-      endsubroutine dlwqm3
-
-      end module m_dlwqm3
+end module m_dlwqm3

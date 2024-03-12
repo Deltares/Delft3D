@@ -20,29 +20,28 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_zerome
-      use m_waq_precision
+module m_zerome
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE ZEROME (NAME)
+        use m_srstop
+        use m_monsys
 
-      contains
+        CHARACTER*(*) NAME
+        INTEGER(kind = int_wp) :: LUNREP
 
+        CALL GETMLU(LUNREP)
+        WRITE (LUNREP, *) ' Coefficient ', NAME, ' = 0'
+        WRITE (LUNREP, *) ' Please supply value not equal to zero'
+        WRITE (*, *) ' Coefficient ', NAME, ' = 0'
+        WRITE (*, *) ' Please supply value not equal to zero'
+        CALL SRSTOP(1)
+        RETURN
+    END
 
-      SUBROUTINE ZEROME ( NAME )
-      use m_srstop
-      use m_monsys
-
-      CHARACTER*(*) NAME
-      INTEGER(kind=int_wp) ::LUNREP
-
-      CALL GETMLU(LUNREP)
-      WRITE (LUNREP,*) ' Coefficient ',NAME,' = 0'
-      WRITE (LUNREP,*) ' Please supply value not equal to zero'
-      WRITE (*,*) ' Coefficient ',NAME,' = 0'
-      WRITE (*,*) ' Please supply value not equal to zero'
-      CALL SRSTOP(1)
-      RETURN
-      END
-
-      end module m_zerome
+end module m_zerome

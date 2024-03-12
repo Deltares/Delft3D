@@ -117,12 +117,12 @@
                       GRPNAM , ELMNMS(1), & 
                       UINDEX , 1        , & 
                       BUFLEN , NO_FORT  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_FORT .GT. NO_FORT_MAX ) THEN
+      IF ( NO_FORT > NO_FORT_MAX ) THEN
          WRITE(LUNREP,*) 'ERROR reading group',GRPNAM
          WRITE(LUNREP,*) 'Actual number of process modules:',NO_FORT
          WRITE(LUNREP,*) 'greater than maximum:',NO_FORT_MAX
@@ -141,7 +141,7 @@
                       GRPNAM , ELMNMS(2), & 
                       UINDEX , 1        , & 
                       BUFLEN , FORT_ID  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900

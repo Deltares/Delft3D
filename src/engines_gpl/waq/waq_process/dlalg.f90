@@ -20,73 +20,72 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlalg
-      use m_waq_precision
+module m_dlalg
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlalg  (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_write_error_message
 
-      contains
+        !>\file
+        !>       Daylength function for algae DYNAMO
 
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                   Unit
+        ! ----    --- -  -    -------------------                            ---
+        ! DL      R*4 1 I daylength (sunrise to sunset)                     [D]
+        ! KMDL    R*4 1 I daylength for growth saturation green-algea       [D]
 
-      subroutine dlalg  ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_write_error_message
+        !     Logical Units : -
 
-!>\file
-!>       Daylength function for algae DYNAMO
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                   Unit
-! ----    --- -  -    -------------------                            ---
-! DL      R*4 1 I daylength (sunrise to sunset)                     [D]
-! KMDL    R*4 1 I daylength for growth saturation green-algea       [D]
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                !
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+                DL = PMSA(IP1)
+                KMDL = PMSA(IP2)
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
+                IF (DL < 1E-20)  CALL write_error_message ('DL in DLALG zero')
 
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-!
+                !     Actueel licht / licht voor groei verzadiging
+                PMSA(IP3) = MIN (DL, KMDL) / KMDL
 
-      DL        = PMSA(IP1 )
-      KMDL      = PMSA(IP2 )
+            ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            !
+        end do
+        !
+        RETURN
+    END
 
-      IF (DL .LT. 1E-20 )  CALL write_error_message ('DL in DLALG zero')
-
-!     Actueel licht / licht voor groei verzadiging
-      PMSA(IP3 )   =  MIN ( DL, KMDL) / KMDL
-
-      ENDIF
-!
-      IFLUX = IFLUX + NOFLUX
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-!
- 9000 CONTINUE
-!
-      RETURN
-      END
-
-      end module m_dlalg
+end module m_dlalg

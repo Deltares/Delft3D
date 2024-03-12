@@ -20,75 +20,74 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_add_atrfrc
-      use m_waq_precision
+module m_add_atrfrc
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine add_atrfrc(lunrep, procesdef, sfracs)
 
-      contains
+        ! add attributes to processes from file
 
+        use data_processing, only : extract_value_from_group
+        use m_cli_utils, only : retrieve_command_argument
+        use m_string_manipulation, only : upper_case
+        use processet
+        use timers       !   performance timers
 
-      subroutine add_atrfrc( lunrep, procesdef, sfracs)
+        implicit none
 
-      ! add attributes to processes from file
+        ! decalaration of arguments
 
-      use data_processing, only : extract_value_from_group
-      use m_cli_utils, only : retrieve_command_argument
-      use m_string_manipulation, only : upper_case
-      use processet
-      use timers       !   performance timers
+        integer(kind = int_wp) :: lunrep          ! report file
+        type(procespropcoll) :: procesdef       ! the process definition
+        type(sfracsprop) :: sfracs          ! substance fraction properties
 
-      implicit none
+        ! local declaration
 
-      ! decalaration of arguments
+        type(procesprop), pointer :: proc              ! single process
+        integer(kind = int_wp) :: nproc             ! number of processes
+        integer(kind = int_wp) :: iproc             ! loop counter processes
+        logical :: lfound            ! command line argument found
+        integer(kind = int_wp) :: idummy            ! dummy
+        real(kind = real_wp) :: rdummy            ! dummy
+        character(len = 256) :: patrfil           ! process attributes file
+        integer(kind = int_wp) :: lun_patr          ! unit number
+        character(len = 256) :: type              ! sfrac_type from file
+        integer(kind = int_wp) :: ierr              ! ierr
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("add_atrfrc", ithndl)
 
-      integer(kind=int_wp) ::lunrep          ! report file
-      type(procespropcoll)      :: procesdef       ! the process definition
-      type(sfracsprop)          :: sfracs          ! substance fraction properties
+        call retrieve_command_argument ('-sfrac', 3, lfound, idummy, rdummy, patrfil, ierr)
+        if (lfound) then
+            open(newunit = lun_patr, file = patrfil)
 
-      ! local declaration
+            ! loop over the processes
 
-      type(procesprop), pointer :: proc              ! single process
-      integer(kind=int_wp) ::nproc             ! number of processes
-      integer(kind=int_wp) ::iproc             ! loop counter processes
-      logical                   :: lfound            ! command line argument found
-      integer(kind=int_wp) ::idummy            ! dummy
-      real(kind=real_wp) ::rdummy            ! dummy
-      character(len=256)        :: patrfil           ! process attributes file
-      integer(kind=int_wp) ::lun_patr          ! unit number
-      character(len=256)        :: type              ! sfrac_type from file
-      integer(kind=int_wp) ::ierr              ! ierr
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "add_atrfrc", ithndl )
+            nproc = procesdef%cursize
+            do iproc = 1, nproc
 
-      call retrieve_command_argument ( '-sfrac', 3    , lfound, idummy, rdummy, patrfil, ierr)
-      if ( lfound ) then
-         open(newunit=lun_patr,file=patrfil)
+                proc => procesdef%procesprops(iproc)
+                call extract_value_from_group(lun_patr, proc%name, 'sfrac_type', type)
+                call upper_case(type, type, len(type))
+                if (type == 'SPLITFLUX') then
+                    proc%sfrac_type = SFRAC_SPLITFLUX
+                elseif (type == 'DUPLICATE') then
+                    proc%sfrac_type = SFRAC_DUPLICATE
+                elseif (type == 'EXPAND') then
+                    proc%sfrac_type = SFRAC_EXPAND
+                endif
 
-         ! loop over the processes
+            enddo
 
-         nproc = procesdef%cursize
-         do iproc = 1, nproc
+            close(lun_patr)
+        endif
 
-            proc => procesdef%procesprops(iproc)
-            call extract_value_from_group(lun_patr,proc%name,'sfrac_type',type)
-            call upper_case(type,type,len(type))
-            if ( type .eq. 'SPLITFLUX' ) then
-               proc%sfrac_type = SFRAC_SPLITFLUX
-            elseif ( type .eq. 'DUPLICATE' ) then
-               proc%sfrac_type = SFRAC_DUPLICATE
-            elseif ( type .eq. 'EXPAND' ) then
-               proc%sfrac_type = SFRAC_EXPAND
-            endif
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-         enddo
-
-         close(lun_patr)
-      endif
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_add_atrfrc
+end module m_add_atrfrc

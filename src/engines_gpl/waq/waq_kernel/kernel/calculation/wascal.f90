@@ -20,112 +20,111 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_wascal
-      use m_waq_precision
+module m_wascal
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine wascal (nowst, notot, nosys, noseg, syname, &
+            conc, itime, nowtyp, wastid, wstnam, &
+            wsttyp, iwaste, iwtype, waste)
+        !
+        !     Deltares
+        !
+        !     CREATED:            : Jan van Beek
+        !
+        !     FUNCTION            : calls the user defined wasteload routines
+        !
 
-      contains
+        ! global declarations
 
+        use m_srstop
+        use m_monsys
+        use delwaq_loads, only : wasteloads
+        use delwaq_user_wasteloads
+        use timers
+        implicit none
 
-      subroutine wascal ( nowst , notot , nosys , noseg , syname, & 
-                         conc  , itime , nowtyp, wastid, wstnam, & 
-                         wsttyp, iwaste, iwtype, waste )
-!
-!     Deltares
-!
-!     CREATED:            : Jan van Beek
-!
-!     FUNCTION            : calls the user defined wasteload routines
-!
+        ! arguments declarations
 
-      ! global declarations
+        integer(kind = int_wp) :: nowst
+        integer(kind = int_wp) :: notot
+        integer(kind = int_wp) :: nosys
+        integer(kind = int_wp) :: noseg
+        character(len = 20) :: syname(notot)
+        real(kind = real_wp) :: conc(notot, noseg)
+        integer(kind = int_wp) :: itime
+        integer(kind = int_wp) :: nowtyp
+        character(len = 20) :: wastid(nowst)
+        character(len = 40) :: wstnam(nowst)
+        character(len = 20) :: wsttyp(nowtyp)
+        integer(kind = int_wp) :: iwaste(nowst)
+        integer(kind = int_wp) :: iwtype(nowst)
+        real(kind = real_wp) :: waste(0:notot, nowst)
 
-      use m_srstop
-      use m_monsys
-      use delwaq_loads, only : wasteloads
-      use delwaq_user_wasteloads
-      use timers
-      implicit none
+        ! local declarations
 
-      ! arguments declarations
+        integer(kind = int_wp), save :: ifirst = 1
+        integer(kind = int_wp) :: ierror
+        integer(kind = int_wp) :: iwst
+        integer(kind = int_wp) :: isys
+        integer(kind = int_wp) :: lunrep
+        character(len = 256) :: load_routine
 
-      integer(kind=int_wp) ::nowst
-      integer(kind=int_wp) ::notot
-      integer(kind=int_wp) ::nosys
-      integer(kind=int_wp) ::noseg
-      character(len=20)                   :: syname(notot)
-      real(kind=real_wp) ::conc(notot,noseg)
-      integer(kind=int_wp) ::itime
-      integer(kind=int_wp) ::nowtyp
-      character(len=20)                   :: wastid(nowst)
-      character(len=40)                   :: wstnam(nowst)
-      character(len=20)                   :: wsttyp(nowtyp)
-      integer(kind=int_wp) ::iwaste(nowst)
-      integer(kind=int_wp) ::iwtype(nowst)
-      real(kind=real_wp) ::waste(0:notot,nowst)
+        integer(kind = int_wp) :: ierr_alloc
+        integer(kind = int_wp), save :: ithandl = 0
 
-      ! local declarations
+        if (timon) call timstrt ("wascal", ithandl)
 
-      integer(kind=int_wp), save        ::ifirst = 1
-      integer(kind=int_wp) ::ierror
-      integer(kind=int_wp) ::iwst
-      integer(kind=int_wp) ::isys
-      integer(kind=int_wp) ::lunrep
-      character(len=256)  :: load_routine
+        ! initialise dll
 
-      integer(kind=int_wp) ::ierr_alloc
-      integer(kind=int_wp), save     ::ithandl = 0
+        call getmlu(lunrep)
 
-      if ( timon ) call timstrt ( "wascal", ithandl )
+        ! update the actual loads from the delwaq arrays to the wasteload structure
 
-      ! initialise dll
+        if (ifirst == 1) then
+            allocate(wasteloads(nowst), stat = ierr_alloc)
+            if (ierr_alloc /= 0) then
+                write(lunrep, *) 'ERROR : allocating wasteloads structure'
+                write(*, *) 'ERROR : allocating wasteloads structure'
+                call srstop(1)
+            endif
+            do iwst = 1, nowst
+                allocate(wasteloads(iwst)%loads(notot + 1))
+                wasteloads(iwst)%id%id = wastid(iwst)
+                wasteloads(iwst)%id%name = wstnam(iwst)
+                wasteloads(iwst)%id%type = wsttyp(iwtype(iwst))
+                wasteloads(iwst)%loc%segnr = iwaste(iwst)
+            enddo
+        endif
+        do iwst = 1, nowst
+            wasteloads(iwst)%flow = waste(0, iwst)
+            do isys = 1, notot
+                wasteloads(iwst)%loads(isys) = waste(isys, iwst)
+            enddo
+        enddo
 
-      call getmlu(lunrep)
+        ! call routine
 
-      ! update the actual loads from the delwaq arrays to the wasteload structure
+        call delwaq_user_wasteload (nowst, wasteloads, notot, nosys, noseg, &
+                itime, conc, syname)
 
-      if ( ifirst .eq. 1 ) then
-         allocate(wasteloads(nowst), stat = ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then
-            write(lunrep,*) 'ERROR : allocating wasteloads structure'
-            write(*,*) 'ERROR : allocating wasteloads structure'
-            call srstop(1)
-         endif
-         do iwst = 1 , nowst
-            allocate(wasteloads(iwst)%loads(notot+1))
-            wasteloads(iwst)%id%id     = wastid(iwst)
-            wasteloads(iwst)%id%name   = wstnam(iwst)
-            wasteloads(iwst)%id%type   = wsttyp(iwtype(iwst))
-            wasteloads(iwst)%loc%segnr = iwaste(iwst)
-         enddo
-      endif
-      do iwst = 1 , nowst
-         wasteloads(iwst)%flow = waste(0,iwst)
-         do isys = 1 , notot
-            wasteloads(iwst)%loads(isys) = waste(isys,iwst)
-         enddo
-      enddo
+        ! updated wasteloads to old delwaq arrays
 
-      ! call routine
+        do iwst = 1, nowst
+            waste(0, iwst) = wasteloads(iwst)%flow
+            do isys = 1, notot
+                waste(isys, iwst) = wasteloads(iwst)%loads(isys)
+            enddo
+        enddo
 
-      call delwaq_user_wasteload ( nowst , wasteloads, notot , nosys , noseg , & 
-                                  itime , conc      , syname)
+        ifirst = 0
 
-      ! updated wasteloads to old delwaq arrays
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-      do iwst = 1 , nowst
-         waste(0,iwst) = wasteloads(iwst)%flow
-         do isys = 1 , notot
-            waste(isys,iwst) = wasteloads(iwst)%loads(isys)
-         enddo
-      enddo
-
-      ifirst = 0
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_wascal
+end module m_wascal

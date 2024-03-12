@@ -28,30 +28,30 @@ program dlwq1
 
     implicit none
 
-    integer                          :: argc
-    character(len=256), allocatable  :: argv(:)
-    character(len=120)               :: idstr
-    integer(4)                       :: i
-    integer(4)                       :: lunfil
+    integer :: argc
+    character(len = 256), allocatable :: argv(:)
+    character(len = 120) :: idstr
+    integer(4) :: i
+    integer(4) :: lunfil
 
     call getfullversionstring_delwaq1(idstr)
 
     argc = iargc() + 1
 
-    allocate ( argv (argc))
+    allocate (argv (argc))
     do i = 1, argc
         call getarg(i - 1, argv(i))
     end do
 
     if (delwaq1(argv)) then
-    write (*,*) ' Normal end'
+        write (*, *) ' Normal end'
     else
-    open  ( newunit=lunfil , file = 'delwaq.rtn' )
-    write ( lunfil , * ) 'Error running delwaq 1'
-    close ( lunfil )
+        open  (newunit = lunfil, file = 'delwaq.rtn')
+        write (lunfil, *) 'Error running delwaq 1'
+        close (lunfil)
 
-    write (*,*) ' Error code:', 1
-    stop 1
+        write (*, *) ' Error code:', 1
+        stop 1
     end if
 
 end program

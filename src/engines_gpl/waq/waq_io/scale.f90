@@ -20,58 +20,57 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_scale
-      use m_waq_precision
+module m_scale
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine scale (arrin, factor, nitem, nvals)
 
-      contains
+        !       Deltares Software Centre
 
+        !>\file
+        !>                   Scales an array
 
-      subroutine scale ( arrin  , factor , nitem  , nvals  )
+        !     Created            : March 1988 By M.E. Sileon / L. Postma
+        !                          May   2011    Leo Postma : Fortran 90 look and feel
 
-!       Deltares Software Centre
+        !     Logical units      : none
 
-!>\file
-!>                   Scales an array
+        !     Subroutines called : none
 
-!     Created            : March 1988 By M.E. Sileon / L. Postma
-!                          May   2011    Leo Postma : Fortran 90 look and feel
+        use timers       !   performance timers
 
-!     Logical units      : none
+        implicit none
 
-!     Subroutines called : none
+        !     Parameters
 
-      use timers       !   performance timers
+        !     kind           function         name                        Descriptipon
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: nvals                      !< number of values
+        integer(kind = int_wp), intent(in) :: nitem                      !< number of items
+        real(kind = real_wp), intent(inout) :: arrin (nvals, nitem)        !< number of items
+        real(kind = real_wp), intent(in) :: factor(nvals)              !< scale factors
 
-!     Parameters
+        !     local decalations
 
-!     kind           function         name                        Descriptipon
+        integer(kind = int_wp) :: i1, i2        ! loop counters
+        real(kind = real_wp) :: fact          ! factor
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("scale", ithndl)
 
-      integer(kind=int_wp), intent(in   ) ::  nvals                      !< number of values
-      integer(kind=int_wp), intent(in   ) ::  nitem                      !< number of items
-      real(kind=real_wp), intent(inout) ::  arrin (nvals,nitem)        !< number of items
-      real(kind=real_wp), intent(in   ) ::  factor(nvals)              !< scale factors
+        do i1 = 1, nvals
+            fact = factor(i1)
+            do i2 = 1, nitem
+                arrin (i1, i2) = arrin (i1, i2) * fact
+            enddo
+        enddo
 
-!     local decalations
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-      integer(kind=int_wp) :: i1, i2        ! loop counters
-      real(kind=real_wp) :: fact          ! factor
-      integer(kind=int_wp) ::  ithndl = 0
-      if (timon) call timstrt( "scale", ithndl )
-
-      do i1 = 1, nvals
-         fact = factor(i1)
-         do i2 = 1, nitem
-            arrin (i1,i2) = arrin (i1,i2) * fact
-         enddo
-      enddo
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_scale
+end module m_scale

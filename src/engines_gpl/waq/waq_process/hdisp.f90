@@ -20,132 +20,131 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_hdisp
-      use m_waq_precision
+module m_hdisp
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine hdisp  (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       (1D) Horizontal dispersion as velocity dependent reprofunction
 
-      contains
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
 
+        !     Logical Units : -
 
-      subroutine hdisp  ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       (1D) Horizontal dispersion as velocity dependent reprofunction
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT NONE
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Modules called : -
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
+        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
+        REAL(kind = real_wp) :: VELOC, CHEZY, WIDTH, TOTDEP, alfaK, &
+                VELOCV, CHEZYV, WIDTHV, TOTDPV, alfaKV, &
+                VELOCN, CHEZYN, WIDTHN, TOTDPN, alfaKN, &
+                term1, term2, g, DVAR, MAXDSP, MAXDSN, MAXDSV
+        INTEGER(kind = int_wp) :: IVAN, INAAR, IQ
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
+        IP7 = IPOINT(7)
+        !
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
+        IN6 = INCREM(6)
+        IN7 = INCREM(7)
 
-      IMPLICIT NONE
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+        !.....Exchangeloop over de verticale en breedterichtingen om
+        !.....ze op 0 te zetten en over de verticale richting om deze
+        !.....te initialiseren
+        DO IQ = 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
+            PMSA(IP7) = 0.0
+            IP7 = IP7 + IN7
+        ENDDO
 
-      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7
-      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7
-      REAL(kind=real_wp) ::VELOC, CHEZY, WIDTH, TOTDEP, alfaK, & 
-              VELOCV, CHEZYV, WIDTHV, TOTDPV, alfaKV, & 
-              VELOCN, CHEZYN, WIDTHN, TOTDPN, alfaKN, & 
-              term1, term2, g, DVAR, MAXDSP, MAXDSN, MAXDSV
-      INTEGER(kind=int_wp) ::IVAN  , INAAR , IQ
+        !.....Exchangeloop over horizontale lengterichting
+        IP7 = IPOINT(7)
 
-      IP1   = IPOINT( 1)
-      IP2   = IPOINT( 2)
-      IP3   = IPOINT( 3)
-      IP4   = IPOINT( 4)
-      IP5   = IPOINT( 5)
-      IP6   = IPOINT( 6)
-      IP7   = IPOINT( 7)
-!
-      IN1   = INCREM( 1)
-      IN2   = INCREM( 2)
-      IN3   = INCREM( 3)
-      IN4   = INCREM( 4)
-      IN5   = INCREM( 5)
-      IN6   = INCREM( 6)
-      IN7   = INCREM( 7)
+        DO IQ = 1, NOQ1
 
-!.....Exchangeloop over de verticale en breedterichtingen om
-!.....ze op 0 te zetten en over de verticale richting om deze
-!.....te initialiseren
-      DO IQ=1, NOQ1+NOQ2+NOQ3+NOQ4
-         PMSA(IP7 ) = 0.0
-         IP7  = IP7  + IN7
-      ENDDO
+            IVAN = IEXPNT(1, IQ)
+            INAAR = IEXPNT(2, IQ)
 
-!.....Exchangeloop over horizontale lengterichting
-      IP7 = IPOINT( 7)
+            IF (IVAN>0.OR.INAAR>0) THEN
 
-      DO IQ = 1 , NOQ1
+                IF (IVAN <= 0) IVAN = INAAR
+                IF (INAAR <= 0) INAAR = IVAN
 
-         IVAN  = IEXPNT(1,IQ)
-         INAAR = IEXPNT(2,IQ)
+                VELOCV = PMSA(IP1 + (IVAN - 1) * IN1)
+                WIDTHV = PMSA(IP2 + (IVAN - 1) * IN2)
+                CHEZYV = PMSA(IP3 + (IVAN - 1) * IN3)
+                TOTDPV = PMSA(IP4 + (IVAN - 1) * IN4)
+                alfaKV = PMSA(IP5 + (IVAN - 1) * IN5)
+                MAXDSV = PMSA(IP6 + (IVAN - 1) * IN6)
 
-         IF (IVAN.GT.0.OR.INAAR.GT.0) THEN
+                VELOCN = PMSA(IP1 + (INAAR - 1) * IN1)
+                WIDTHN = PMSA(IP2 + (INAAR - 1) * IN2)
+                CHEZYN = PMSA(IP3 + (INAAR - 1) * IN3)
+                TOTDPN = PMSA(IP4 + (INAAR - 1) * IN4)
+                alfaKN = PMSA(IP5 + (INAAR - 1) * IN5)
+                MAXDSN = PMSA(IP6 + (INAAR - 1) * IN6)
 
-            IF (IVAN .LE. 0 ) IVAN = INAAR
-            IF (INAAR .LE. 0 ) INAAR = IVAN
+                VELOC = (VELOCV + VELOCN) / 2.
+                WIDTH = (WIDTHV + WIDTHN) / 2.
+                CHEZY = (CHEZYV + CHEZYN) / 2.
+                TOTDEP = (TOTDPV + TOTDPN) / 2.
+                alfaK = (alfaKV + alfaKN) / 2.
+                MAXDSP = (MAXDSV + MAXDSN) / 2.
 
-            VELOCV = PMSA(IP1 + (IVAN - 1) * IN1)
-            WIDTHV = PMSA(IP2 + (IVAN - 1) * IN2)
-            CHEZYV = PMSA(IP3 + (IVAN - 1) * IN3)
-            TOTDPV = PMSA(IP4 + (IVAN - 1) * IN4)
-            alfaKV = PMSA(IP5 + (IVAN - 1) * IN5)
-            MAXDSV = PMSA(IP6 + (IVAN - 1) * IN6)
+                g = 9.81
+                term1 = VELOC * WIDTH ** 2 * CHEZY
+                term2 = TOTDEP * g ** 0.5
+                DVAR = alfaK * term1 / term2
 
-            VELOCN = PMSA(IP1 + (INAAR - 1) * IN1)
-            WIDTHN = PMSA(IP2 + (INAAR - 1) * IN2)
-            CHEZYN = PMSA(IP3 + (INAAR - 1) * IN3)
-            TOTDPN = PMSA(IP4 + (INAAR - 1) * IN4)
-            alfaKN = PMSA(IP5 + (INAAR - 1) * IN5)
-            MAXDSN = PMSA(IP6 + (INAAR - 1) * IN6)
-
-            VELOC  = (VELOCV + VELOCN) / 2.
-            WIDTH  = (WIDTHV + WIDTHN) / 2.
-            CHEZY  = (CHEZYV + CHEZYN) / 2.
-            TOTDEP = (TOTDPV + TOTDPN) / 2.
-            alfaK  = (alfaKV + alfaKN) / 2.
-            MAXDSP = (MAXDSV + MAXDSN) / 2.
-
-            g     = 9.81
-            term1 = VELOC * WIDTH ** 2 * CHEZY
-            term2 = TOTDEP * g ** 0.5
-            DVAR = alfaK * term1 / term2
-
-            !
-            ! Limit the horizontal dispersion, if the value of
-            ! MAXDSP on at least one side is positive
-            !
-            IF ( MAXDSV > 0.0 .AND. MAXDSN > 0.0 ) THEN
-                PMSA(IP7) = MIN( DVAR, MAXDSP )
-            ELSE
-                MAXDSP = MAX( MAXDSV, MAXDSN )
-                IF ( MAXDSP > 0.0 ) THEN
-                    PMSA(IP7) = MIN( DVAR, MAXDSP )
+                !
+                ! Limit the horizontal dispersion, if the value of
+                ! MAXDSP on at least one side is positive
+                !
+                IF (MAXDSV > 0.0 .AND. MAXDSN > 0.0) THEN
+                    PMSA(IP7) = MIN(DVAR, MAXDSP)
                 ELSE
-                    PMSA(IP7) = DVAR
+                    MAXDSP = MAX(MAXDSV, MAXDSN)
+                    IF (MAXDSP > 0.0) THEN
+                        PMSA(IP7) = MIN(DVAR, MAXDSP)
+                    ELSE
+                        PMSA(IP7) = DVAR
+                    ENDIF
                 ENDIF
+
             ENDIF
 
-         ENDIF
+            IP7 = IP7 + IN7
 
-         IP7  = IP7  + IN7
+        ENDDO
 
-      ENDDO
+        RETURN
+    END
 
-      RETURN
-      END
-
-      end module m_hdisp
+end module m_hdisp

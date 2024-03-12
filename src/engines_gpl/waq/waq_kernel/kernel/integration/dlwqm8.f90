@@ -94,7 +94,7 @@
 
 !         loop accross the number of exchanges
 
-      do 10 iq = 1, noq
+      do iq = 1, noq
 
 !         initialisations , check for transport anyhow
 
@@ -102,20 +102,20 @@
          ito    = ipoint(2,iq)
          ifrom1 = ipoint(3,iq)
          itopl1 = ipoint(4,iq)
-         if (   ifrom  .eq. 0 .or.  ito    .eq. 0 ) cycle
-         if (   ifrom  .le. 0 .and. ito    .le. 0 ) cycle
-         if (   ifrom1 .eq. 0 .or.  itopl1 .eq. 0 ) cycle   ! no flux correction with closed edges
-         if ( ( ifrom  .lt. 0 .or.  ito    .lt. 0 ) .and. btest(iopt,2) ) cycle
-         if ( ifrom .gt. 0 ) then
+         if (   ifrom  == 0 .or.  ito    == 0 ) cycle
+         if (   ifrom  <= 0 .and. ito    <= 0 ) cycle
+         if (   ifrom1 == 0 .or.  itopl1 == 0 ) cycle   ! no flux correction with closed edges
+         if ( ( ifrom  < 0 .or.  ito    < 0 ) .and. btest(iopt,2) ) cycle
+         if ( ifrom > 0 ) then
             if ( .not. btest(iknmrk(ifrom),0) ) cycle       ! identified dry at start and end of timestep
          endif                                              ! aggregated time step can be wet in between
-         if ( ito   .gt. 0 ) then                           ! start and end, that is why a check on 1 cm3/s
+         if ( ito   > 0 ) then                           ! start and end, that is why a check on 1 cm3/s
             if ( .not. btest(iknmrk(ito  ),0) ) cycle       ! life is not easy
          endif
 
 !     Compute the difference flux towards 2nd order
 
-         if ( ifrom .gt. 0 ) then
+         if ( ifrom > 0 ) then
             cio = conc  ( isys,  ifrom )
             cin = concvt(        ifrom )
          else
@@ -123,7 +123,7 @@
             cin = bound ( isys, -ifrom )
          endif
 
-         if ( ito   .gt. 0 ) then
+         if ( ito   > 0 ) then
             cjo = conc  ( isys,  ito   )
             cjn = concvt(        ito   )
          else
@@ -133,8 +133,8 @@
 
          if ( theta(iq) < 1.0E-25 ) then ! Lax-Wendroff flux correction at `explicit' edges (theta = 0)
             length = aleng(1,iq)+aleng(2,iq)
-            if ( length .gt. 1.0e-25 ) then
-               if ( flowtot(iq) .gt. 0 ) then          ! flow from i to j
+            if ( length > 1.0e-25 ) then
+               if ( flowtot(iq) > 0 ) then          ! flow from i to j
                   aflux = (  aleng(1,iq)/length - ( flowtot(iq)*real(idt))/(2*area(iq)*length) )*flowtot(iq)*(cjo-cio)
                else                                ! flow from j to i
                   aflux = ( -aleng(2,iq)/length - ( flowtot(iq)*real(idt))/(2*area(iq)*length) )*flowtot(iq)*(cjo-cio)
@@ -143,7 +143,7 @@
                aflux = 0.0
             endif
          else                          ! central flux correction at implicit edges (theta > 0)
-            if ( flowtot(iq) .gt. 0 ) then ! flow from i to j
+            if ( flowtot(iq) > 0 ) then ! flow from i to j
                 aflux = ( 1.0 - theta(iq) )*( flowtot(iq)*(cio+cjo)/2.0 - flowtot(iq)*cio ) & 
                              + theta(iq)  *( flowtot(iq)*(cin+cjn)/2.0 - flowtot(iq)*cin )
             else ! flow from j to i
@@ -157,21 +157,21 @@
 
 !         Flux correction at the open boundaries
 
-         if ( ifrom .lt. 0 ) then
-            if ( itopl1 .le. 0 ) cycle
+         if ( ifrom < 0 ) then
+            if ( itopl1 <= 0 ) cycle
             vto    = volnew(ito  )
             s  = sign ( 1.0 , dq )
             e3 = (concvt(itopl1) - concvt( ito  ))*vto
             dq = s * max( 0.0 , min( s*dq , s*e3 ) )
             concvt(ito  ) = concvt(ito  ) + dq / vto
-            if ( dq .gt. 0 ) then
+            if ( dq > 0 ) then
                amass2(isys,4) = amass2(isys,4) + dq
             else
                amass2(isys,5) = amass2(isys,5) - dq
             endif
             if ( btest(iopt,3) ) then             ! balances active
-               if ( iqdmp(iq) .gt. 0 ) then       ! balances to be updated
-                  if ( dq .gt. 0.0 ) then
+               if ( iqdmp(iq) > 0 ) then       ! balances to be updated
+                  if ( dq > 0.0 ) then
                      dmpq(isys,iqdmp(iq),1)=dmpq(isys,iqdmp(iq),1) + dq
                   else
                      dmpq(isys,iqdmp(iq),2)=dmpq(isys,iqdmp(iq),2) - dq
@@ -180,21 +180,21 @@
             endif
             cycle
          endif
-         if ( ito   .lt. 0 ) then
-            if ( ifrom1 .le. 0 ) cycle
+         if ( ito   < 0 ) then
+            if ( ifrom1 <= 0 ) cycle
             vfrom  = volnew(ifrom)
             s  = sign ( 1.0 , dq )
             e1 = (concvt(ifrom ) - concvt(ifrom1))*vfrom
             dq = s * max( 0.0 , min( s*e1 , s*dq ) )
             concvt(ifrom) = concvt(ifrom) - dq / vfrom
-            if ( dq .gt. 0 ) then
+            if ( dq > 0 ) then
                amass2(isys,5) = amass2(isys,5) + dq
             else
                amass2(isys,4) = amass2(isys,4) - dq
             endif
             if ( btest(iopt,3) ) then             ! balances active
-               if ( iqdmp(iq) .gt. 0 ) then       ! balances to be updated
-                  if ( dq .gt. 0.0 ) then
+               if ( iqdmp(iq) > 0 ) then       ! balances to be updated
+                  if ( dq > 0.0 ) then
                      dmpq(isys,iqdmp(iq),1)=dmpq(isys,iqdmp(iq),1) + dq
                   else
                      dmpq(isys,iqdmp(iq),2)=dmpq(isys,iqdmp(iq),2) - dq
@@ -208,28 +208,28 @@
 
          vfrom  = volnew(ifrom)
          vto    = volnew(ito  )
-         if ( vfrom .gt. 1.0e-25 .and. vto .gt. 1.0e-25 ) then
+         if ( vfrom > 1.0e-25 .and. vto > 1.0e-25 ) then
             s  = sign ( 1.0 , dq )
-            if      ( ifrom1 .gt. 0 ) then
+            if      ( ifrom1 > 0 ) then
                cfrm1 = concvt( ifrom1 )
-            else if ( ifrom1 .eq. 0 ) then
-               if ( s .gt. 0 ) then
+            else if ( ifrom1 == 0 ) then
+               if ( s > 0 ) then
                   cfrm1 = 0.0
                else
                   cfrm1 = 2.0*concvt(ifrom)
                endif
-            else if ( ifrom1 .lt. 0 ) then
+            else if ( ifrom1 < 0 ) then
                cfrm1 = bound(isys,-ifrom1)
             endif
-            if      ( itopl1 .gt. 0 ) then
+            if      ( itopl1 > 0 ) then
                ctop1 = concvt( itopl1 )
-            else if ( itopl1 .eq. 0 ) then
-               if ( s .gt. 0 ) then
+            else if ( itopl1 == 0 ) then
+               if ( s > 0 ) then
                   ctop1 = 2.0*concvt(ito  )
                else
                   ctop1 = 0.0
                endif
-            else if ( itopl1 .lt. 0 ) then
+            else if ( itopl1 < 0 ) then
                ctop1 = bound(isys,-itopl1)
             endif
 
@@ -241,8 +241,8 @@
             concvt(ito  ) = concvt(ito  ) + dq/vto
 
             if ( btest(iopt,3) ) then             ! balances active
-               if ( iqdmp(iq) .gt. 0 ) then       ! balances to be updated
-                  if ( dq .gt. 0.0 ) then
+               if ( iqdmp(iq) > 0 ) then       ! balances to be updated
+                  if ( dq > 0.0 ) then
                      dmpq(isys,iqdmp(iq),1)=dmpq(isys,iqdmp(iq),1) + dq
                   else
                      dmpq(isys,iqdmp(iq),2)=dmpq(isys,iqdmp(iq),2) - dq
@@ -251,7 +251,7 @@
             endif
          endif
 
-   10 continue
+      end do
 
       do iseg = 1,noseg
          if ( btest(iknmrk(iseg),0) ) then

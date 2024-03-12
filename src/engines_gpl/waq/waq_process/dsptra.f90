@@ -20,188 +20,187 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dsptra
-      use m_waq_precision
+module m_dsptra
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dsptra (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Dispersion/diffusion in the sediment
 
-      contains
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !        BIOTURBATION/BIO-IRRIGATION BETWEEN SEDIMENT LAYERS
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
+        ! Coll Struct 1  O    Structure with collection of bottom collumn info
+        !                  Contains:
+        !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
+        !    integer                 :: maxsize ! maximum size of the current array
+        !    integer                 :: cursize ! filled up to this size
+        ! BotColm Struct 1   O  Structure with bottom collumn info
+        !                  Contains:
+        !    integer :: fstwatsed  ! first water sediment exchange number
+        !    integer :: lstwatsed  ! last  water sediment exchange number
+        !    integer :: topsedsed  ! first within collumn exchange number
+        !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
 
+        !     Logical Units : -
 
-      subroutine dsptra ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-!>\file
-!>       Dispersion/diffusion in the sediment
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!        BIOTURBATION/BIO-IRRIGATION BETWEEN SEDIMENT LAYERS
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
-! Coll Struct 1  O    Structure with collection of bottom collumn info
-!                  Contains:
-!    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
-!    integer                 :: maxsize ! maximum size of the current array
-!    integer                 :: cursize ! filled up to this size
-! BotColm Struct 1   O  Structure with bottom collumn info
-!                  Contains:
-!    integer :: fstwatsed  ! first water sediment exchange number
-!    integer :: lstwatsed  ! last  water sediment exchange number
-!    integer :: topsedsed  ! first within collumn exchange number
-!    integer :: botsedsed  ! last exchange of collumn to deeper bnd
+        !     Name     Type   Library
+        !     ------   -----  ------------
+        use m_advtra
+        USE BottomSet     !  Module with derived types and add function
 
-!     Logical Units : -
+        !     type ( BotColmnColl ) :: Coll  <= is defined in the module
 
-!     Modules called : -
+        IMPLICIT REAL (A-H, J-Z)
 
-!     Name     Type   Library
-!     ------   -----  ------------
-      use m_advtra
-      USE BottomSet     !  Module with derived types and add function
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     type ( BotColmnColl ) :: Coll  <= is defined in the module
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
+        INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
+        INTEGER(kind = int_wp) :: IVAN, INAAR, IK, IQ
+        INTEGER(kind = int_wp) :: IWA1, IWA2, ITOP, IBOT, IOFFSE
+        REAL(kind = real_wp) :: TURCOE, DIFCOE, VD_SOL, VU_SOL, &
+                DIFLEN, ACTHS1, ACTHS2, POROS1, POROS2, &
+                XFROM, XTO, VD_DIS, VU_DIS
 
-      IMPLICIT REAL (A-H,J-Z)
+        !     Include column structure
+        !     we define a double column structure, one for downward,
+        !     and one for upward transport
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+        CALL MAKKO2 (IEXPNT, IKNMRK, NOQ1, NOQ2, NOQ3, &
+                NOQ4)
 
-      INTEGER(kind=int_wp) ::IP1, IP2, IP3, IP4, IP5, IP6, IP7
-      INTEGER(kind=int_wp) ::IN1, IN2, IN3, IN4, IN5, IN6, IN7
-      INTEGER(kind=int_wp) ::IVAN, INAAR, IK, IQ
-      INTEGER(kind=int_wp) ::IWA1,IWA2,ITOP,IBOT,IOFFSE
-      REAL(kind=real_wp) ::TURCOE, DIFCOE, VD_SOL, VU_SOL, & 
-              DIFLEN, ACTHS1, ACTHS2, POROS1, POROS2, & 
-              XFROM , XTO   , VD_DIS, VU_DIS
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
+        IP7 = IPOINT(7)
+        !
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
+        IN6 = INCREM(6)
+        IN7 = INCREM(7)
 
-!     Include column structure
-!     we define a double column structure, one for downward,
-!     and one for upward transport
+        !.....Segmentloop om uitvoergrootheden op segmentniveau op 0 te zetten
+        !     DO 9000 ISEG=1,NOSEG
+        !9000 CONTINUE
+        !
+        !.....Exchangeloop over de horizontale richtingen om op 0 te zetten
+        !.....en om de pointers te zetten
+        DO IQ = 1, NOQ1 + NOQ2
+            !         Uitvoeritems op exchange level
+            PMSA(IP6) = 0.0
+            PMSA(IP7) = 0.0
+            IP6 = IP6 + IN6
+            IP7 = IP7 + IN7
+        end do
+        IP6 = IPOINT(6)
+        IP7 = IPOINT(7)
+        !
+        !.....Loop over kolommen
+        DO IK = 1, Coll%cursize
 
-      CALL MAKKO2 ( IEXPNT , IKNMRK , NOQ1   , NOQ2   , NOQ3   , & 
-                   NOQ4   )
+            !         Select first column of exchanges for DOWNWARD advection
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-      IP6  = IPOINT( 6)
-      IP7  = IPOINT( 7)
-!
-      IN1  = INCREM( 1)
-      IN2  = INCREM( 2)
-      IN3  = INCREM( 3)
-      IN4  = INCREM( 4)
-      IN5  = INCREM( 5)
-      IN6  = INCREM( 6)
-      IN7  = INCREM( 7)
+            IWA1 = Coll%set(IK)%fstwatsed
+            IWA2 = Coll%set(IK)%lstwatsed
+            ITOP = Coll%set(IK)%topsedsed
+            IBOT = Coll%set(IK)%botsedsed
 
-!.....Segmentloop om uitvoergrootheden op segmentniveau op 0 te zetten
-!     DO 9000 ISEG=1,NOSEG
-!9000 CONTINUE
-!
-!.....Exchangeloop over de horizontale richtingen om op 0 te zetten
-!.....en om de pointers te zetten
-      DO 8000 IQ=1,NOQ1+NOQ2
-!         Uitvoeritems op exchange level
-          PMSA(IP6) = 0.0
-          PMSA(IP7) = 0.0
-          IP6 = IP6 + IN6
-          IP7 = IP7 + IN7
- 8000 CONTINUE
-      IP6  = IPOINT( 6)
-      IP7  = IPOINT( 7)
-!
-!.....Loop over kolommen
-      DO 7000 IK = 1 , Coll%cursize
+            !        Offset to reach second colum for UPWARD advection
 
-!         Select first column of exchanges for DOWNWARD advection
+            IOFFSE = IBOT - (IWA1 - 1)
 
-          IWA1 = Coll%set(IK)%fstwatsed
-          IWA2 = Coll%set(IK)%lstwatsed
-          ITOP = Coll%set(IK)%topsedsed
-          IBOT = Coll%set(IK)%botsedsed
+            !        Loop over exchanges
 
-!        Offset to reach second colum for UPWARD advection
+            DO IQ = IWA1, IBOT
 
-         IOFFSE = IBOT - (IWA1-1)
+                IVAN = IEXPNT(1, IQ)
+                INAAR = IEXPNT(2, IQ)
+                TURCOE = PMSA(IP4 + (Ivan - 1) * IN4)
+                DIFCOE = PMSA(IP5 + (Inaar - 1) * IN5)
 
-!        Loop over exchanges
+                IF (IQ <= IWA2) THEN
 
-         DO IQ = IWA1,IBOT
+                    !.....WATER-SEDIMENT INTERFACE
 
-         IVAN   = IEXPNT(1,IQ)
-         INAAR  = IEXPNT(2,IQ)
-         TURCOE = PMSA(IP4+(Ivan -1)*IN4)
-         DIFCOE = PMSA(IP5+(Inaar-1)*IN5)
+                    DIFLEN = PMSA(IP2 + (IVAN - 1) * IN2)
+                    ACTHS2 = PMSA(IP1 + (INAAR - 1) * IN1)
+                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
+                    POROS2 = PMSA(IP3 + (INAAR - 1) * IN3)
+                    XFROM = DIFLEN
+                    XTO = 0.5 * ACTHS2
+                    VD_SOL = 0.0
+                    VU_SOL = 0.0
+                    VD_DIS = DIFCOE * MIN(POROS1, POROS2) / POROS1 / (XFROM + XTO)
+                    VU_DIS = -DIFCOE * MIN(POROS1, POROS2) / POROS2 / (XFROM + XTO)
 
-         IF ( IQ .LE. IWA2 ) THEN
+                ELSEIF (IQ == IBOT) THEN
 
-!.....WATER-SEDIMENT INTERFACE
+                    !.....DEEP SEDIMENT BOUNDARY
 
-             DIFLEN = PMSA(IP2+(IVAN -1)*IN2)
-             ACTHS2 = PMSA(IP1+(INAAR-1)*IN1)
-             POROS1 = PMSA(IP3+(IVAN -1)*IN3)
-             POROS2 = PMSA(IP3+(INAAR-1)*IN3)
-             XFROM  = DIFLEN
-             XTO    = 0.5*ACTHS2
-             VD_SOL = 0.0
-             VU_SOL = 0.0
-             VD_DIS =  DIFCOE*MIN(POROS1,POROS2)/POROS1/(XFROM+XTO)
-             VU_DIS = -DIFCOE*MIN(POROS1,POROS2)/POROS2/(XFROM+XTO)
+                    ACTHS1 = PMSA(IP1 + (IVAN - 1) * IN1)
+                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
+                    POROS2 = POROS1
+                    XFROM = 0.5 * ACTHS1
+                    XTO = 0.5 * ACTHS1
+                    VD_SOL = TURCOE * MIN((1. - POROS1), (1. - POROS2)) / (1. - POROS1) / &
+                            (XFROM + XTO)
+                    VU_SOL = -TURCOE * MIN((1. - POROS1), (1. - POROS2)) / (1. - POROS2) / &
+                            (XFROM + XTO)
+                    VD_DIS = 0.0
+                    VU_DIS = 0.0
 
-         ELSEIF ( IQ .EQ. IBOT ) THEN
+                ELSE
 
-!.....DEEP SEDIMENT BOUNDARY
+                    !.....SEDIMENT-SEDIMENT INTERFACE
 
-             ACTHS1 = PMSA(IP1+(IVAN -1)*IN1)
-             POROS1 = PMSA(IP3+(IVAN -1)*IN3)
-             POROS2 = POROS1
-             XFROM  = 0.5*ACTHS1
-             XTO    = 0.5*ACTHS1
-             VD_SOL =  TURCOE*MIN((1.-POROS1),(1.-POROS2))/(1.-POROS1)/ & 
-                      (XFROM+XTO)
-             VU_SOL = -TURCOE*MIN((1.-POROS1),(1.-POROS2))/(1.-POROS2)/ & 
-                      (XFROM+XTO)
-             VD_DIS = 0.0
-             VU_DIS = 0.0
+                    ACTHS1 = PMSA(IP1 + (IVAN - 1) * IN1)
+                    ACTHS2 = PMSA(IP1 + (INAAR - 1) * IN1)
+                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
+                    POROS2 = PMSA(IP3 + (INAAR - 1) * IN3)
+                    XFROM = 0.5 * ACTHS1
+                    XTO = 0.5 * ACTHS2
+                    VD_SOL = TURCOE * MIN((1. - POROS1), (1. - POROS2)) / (1. - POROS1) / &
+                            (XFROM + XTO)
+                    VU_SOL = -TURCOE * MIN((1. - POROS1), (1. - POROS2)) / (1. - POROS2) / &
+                            (XFROM + XTO)
+                    VD_DIS = DIFCOE * MIN(POROS1, POROS2) / POROS1 / (XFROM + XTO)
+                    VU_DIS = -DIFCOE * MIN(POROS1, POROS2) / POROS2 / (XFROM + XTO)
 
-         ELSE
+                ENDIF
 
-!.....SEDIMENT-SEDIMENT INTERFACE
+                PMSA(IP6 + (IQ - 1) * IN6) = VD_SOL / 86400.
+                PMSA(IP6 + (IQ - 1 + IOFFSE) * IN6) = VU_SOL / 86400.
+                PMSA(IP7 + (IQ - 1) * IN7) = VD_DIS / 86400.
+                PMSA(IP7 + (IQ - 1 + IOFFSE) * IN7) = VU_DIS / 86400.
 
-             ACTHS1 = PMSA(IP1+(IVAN -1)*IN1)
-             ACTHS2 = PMSA(IP1+(INAAR-1)*IN1)
-             POROS1 = PMSA(IP3+(IVAN -1)*IN3)
-             POROS2 = PMSA(IP3+(INAAR-1)*IN3)
-             XFROM  = 0.5*ACTHS1
-             XTO    = 0.5*ACTHS2
-             VD_SOL =  TURCOE*MIN((1.-POROS1),(1.-POROS2))/(1.-POROS1)/ & 
-                      (XFROM+XTO)
-             VU_SOL = -TURCOE*MIN((1.-POROS1),(1.-POROS2))/(1.-POROS2)/ & 
-                      (XFROM+XTO)
-             VD_DIS =  DIFCOE*MIN(POROS1,POROS2)/POROS1/(XFROM+XTO)
-             VU_DIS = -DIFCOE*MIN(POROS1,POROS2)/POROS2/(XFROM+XTO)
+            ENDDO
 
-         ENDIF
+        end do
 
-         PMSA(IP6+(IQ-1       )*IN6)  = VD_SOL/86400.
-         PMSA(IP6+(IQ-1+IOFFSE)*IN6)  = VU_SOL/86400.
-         PMSA(IP7+(IQ-1       )*IN7)  = VD_DIS/86400.
-         PMSA(IP7+(IQ-1+IOFFSE)*IN7)  = VU_DIS/86400.
+        RETURN
+    END
 
-         ENDDO
-
- 7000 CONTINUE
-
-      RETURN
-      END
-
-      end module m_dsptra
+end module m_dsptra

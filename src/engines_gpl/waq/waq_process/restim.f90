@@ -20,138 +20,137 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_restim
-      use m_waq_precision
+module m_restim
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine restim (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Residence time per volume, for advective transport only
 
+        !
+        !     Description of the module :
+        !
+        !
+        ! Name    T   L I/O   Description                                  Units
+        ! ----    --- -  -    -------------------                          -----
 
-      subroutine restim ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Residence time per volume, for advective transport only
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!
-! Name    T   L I/O   Description                                  Units
-! ----    --- -  -    -------------------                          -----
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Modules called : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        integer(kind = int_wp) :: iq, iseg
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
-      
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
-      integer(kind=int_wp) ::iq, iseg
+        IN1 = INCREM(1)
+        IN2 = INCREM(2)
+        IN3 = INCREM(3)
+        IN4 = INCREM(4)
+        IN5 = INCREM(5)
 
-      IP1 = IPOINT(1)
-      IP2 = IPOINT(2)
-      IP3 = IPOINT(3)
-      IP4 = IPOINT(4)
-      IP5 = IPOINT(5)
+        !.....Zero the workspace
+        DO ISEG = 1, NOSEG
 
-      IN1 = INCREM(1)
-      IN2 = INCREM(2)
-      IN3 = INCREM(3)
-      IN4 = INCREM(4)
-      IN5 = INCREM(5)
+            PMSA(IP2) = 0.0
 
-!.....Zero the workspace
-      DO 6000 ISEG=1,NOSEG
+            IP2 = IP2 + IN2
 
-         PMSA(IP2) = 0.0
+        end do
 
-         IP2 = IP2 + IN2
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
 
- 6000 CONTINUE
+        !.....Exchange loop
+        DO IQ = 1, NOQ1 + NOQ2 + NOQ3
 
-      IP1 = IPOINT(1)
-      IP2 = IPOINT(2)
-      IP3 = IPOINT(3)
-      IP4 = IPOINT(4)
-      IP5 = IPOINT(5)
+            !........Bepaal het van- en naar- segment
+            IFROM = IEXPNT(1, IQ)
+            ITO = IEXPNT(2, IQ)
 
-!.....Exchange loop
-      DO 7000 IQ=1,NOQ1+NOQ2+NOQ3
+            FLOW = PMSA(IP3)
 
-!........Bepaal het van- en naar- segment
-         IFROM = IEXPNT(1,IQ)
-         ITO   = IEXPNT(2,IQ)
+            !........Absolute flows per segment sommeren in de workspace
+            IF (IFROM > 0) THEN
+                PMSA (IP2 + (IFROM - 1) * IN2) = &
+                        PMSA (IP2 + (IFROM - 1) * IN2) + ABS(FLOW)
+            ENDIF
+            IF (ITO  > 0)  THEN
+                PMSA (IP2 + (ITO - 1) * IN2) = &
+                        PMSA (IP2 + (ITO - 1) * IN2) + ABS(FLOW)
+            ENDIF
 
-         FLOW = PMSA(IP3)
+            !........Ophogen van de exchange-pointers
+            IP3 = IP3 + IN3
 
-!........Absolute flows per segment sommeren in de workspace
-         IF (IFROM .GT. 0) THEN
-            PMSA ( IP2 + (IFROM-1) * IN2 ) = & 
-           PMSA ( IP2 + (IFROM-1) * IN2 ) + ABS(FLOW)
-         ENDIF
-         IF (ITO  .GT. 0)  THEN
-            PMSA ( IP2 + (ITO  -1) * IN2 ) = & 
-           PMSA ( IP2 + (ITO  -1) * IN2 ) + ABS(FLOW)
-         ENDIF
+        end do
 
-!........Ophogen van de exchange-pointers
-         IP3 = IP3 + IN3
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
 
- 7000 CONTINUE
+        !.....Segmentloop
+        DO ISEG = 1, NOSEG
 
-      IP1 = IPOINT(1)
-      IP2 = IPOINT(2)
-      IP3 = IPOINT(3)
-      IP4 = IPOINT(4)
-      IP5 = IPOINT(5)
+            !........Niet-actieve segmenten afhandelen
+            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK)
+            IF (IKMRK == 0) THEN
+                PMSA(IP4) = -999.999
+                GOTO 100
+            ENDIF
 
-!.....Segmentloop
-      DO 8000 ISEG=1,NOSEG
+            VOLUME = PMSA(IP1)
+            SOMFLW = PMSA(IP2)
 
-!........Niet-actieve segmenten afhandelen
-         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK)
-         IF ( IKMRK .EQ. 0 ) THEN
-            PMSA(IP4) = -999.999
-            GOTO 100
-         ENDIF
+            !........Oneindige verblijftijden afhandelen
+            IF (SOMFLW < 1.0E-20) THEN
+                PMSA(IP4) = 1.0E7
+                GOTO 100
+            ENDIF
 
-         VOLUME = PMSA(IP1)
-         SOMFLW = PMSA(IP2)
+            !........Bereken de verblijftijd
+            RTIME = VOLUME / (SOMFLW / 2)
 
-!........Oneindige verblijftijden afhandelen
-         IF ( SOMFLW .LT. 1.0E-20 ) THEN
-            PMSA(IP4) = 1.0E7
-            GOTO 100
-         ENDIF
+            !........Toekennen aan de PMSA
+            PMSA(IP4) = RTIME
 
-!........Bereken de verblijftijd
-         RTIME = VOLUME / (SOMFLW/2)
+            100    CONTINUE
 
-!........Toekennen aan de PMSA
-         PMSA(IP4) = RTIME
+            !........Ophogen van de segment-pointers
+            IP1 = IP1 + IN1
+            IP2 = IP2 + IN2
+            IP4 = IP4 + IN4
+            IP5 = IP5 + IN5
 
-  100    CONTINUE
+        end do
 
-!........Ophogen van de segment-pointers
-         IP1 = IP1 + IN1
-         IP2 = IP2 + IN2
-         IP4 = IP4 + IN4
-         IP5 = IP5 + IN5
+        RETURN
+    END
 
- 8000 CONTINUE
-
-      RETURN
-      END
-
-      end module m_restim
+end module m_restim

@@ -20,78 +20,77 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_wrwrko
-      use m_waq_precision
+module m_wrwrko
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine wrwrko (lunwro, noutp, nbufmx, ioutps, outputs, &
+            notot, substdname, subunit, subdescr)
 
-      contains
+        !     Deltares Software Centre
 
+        !>/File
+        !>      write output work file
 
-      subroutine wrwrko ( lunwro, noutp , nbufmx, ioutps, outputs, & 
-                         notot,  substdname, subunit, subdescr)
+        !     Created   : Nov   1994 by Jan van Beek
+        !     Modified  : Aug   2012 by Jan van Beek, use results structure, modern look and feel
 
-!     Deltares Software Centre
+        use timers         !< performance timers
+        use results, only : OutputPointers, ncopt
 
-!>/File
-!>      write output work file
+        implicit none
 
-!     Created   : Nov   1994 by Jan van Beek
-!     Modified  : Aug   2012 by Jan van Beek, use results structure, modern look and feel
+        integer(kind = int_wp), intent(in) :: lunwro                 !< output work file
+        integer(kind = int_wp), intent(in) :: noutp                  !< total number of output files
+        integer(kind = int_wp), intent(in) :: nbufmx                 !< maximum buffer length
+        integer(kind = int_wp), intent(in) :: ioutps(7, *)            !< (old) output structure
+        type(OutputPointers), intent(in) :: outputs                !< output structure
+        integer(kind = int_wp), intent(in) :: notot                  !< total number of substances
+        character*100, intent(in) :: substdname(notot)      !< substance standard name
+        character*40, intent(in) :: subunit(notot)         !< substance unit
+        character*60, intent(in) :: subdescr(notot)        !< substance description
 
-      use timers         !< performance timers
-      use results, only : OutputPointers, ncopt
+        ! local
 
-      implicit none
+        real(kind = real_wp) :: versio                 !  version number output system
+        integer(kind = int_wp) :: k                      !  loop counter
+        integer(kind = int_wp) :: nrvart                 !  total number of variables in output
+        integer(kind = int_wp) :: ithndl = 0             ! handle for performance timer
+        if (timon) call timstrt("wrwrko", ithndl)
 
-      integer(kind=int_wp), intent(in   )  ::lunwro                 !< output work file
-      integer(kind=int_wp), intent(in   )  ::noutp                  !< total number of output files
-      integer(kind=int_wp), intent(in   )  ::nbufmx                 !< maximum buffer length
-      integer(kind=int_wp), intent(in   )  ::ioutps(7,*)            !< (old) output structure
-      type(OutputPointers)    , intent(in   ) :: outputs                !< output structure
-      integer(kind=int_wp), intent(in   )  ::notot                  !< total number of substances
-      character*100       , intent(in   ) :: substdname(notot)      !< substance standard name
-      character*40        , intent(in   ) :: subunit(notot)         !< substance unit
-      character*60        , intent(in   ) :: subdescr(notot)        !< substance description
+        versio = 0.2
+        nrvart = outputs%cursize
 
-      ! local
+        ! write work file
 
-      real(kind=real_wp) ::versio                 !  version number output system
-      integer(kind=int_wp) ::k                      !  loop counter
-      integer(kind=int_wp) ::nrvart                 !  total number of variables in output
-      integer(kind=int_wp) ::ithndl = 0             ! handle for performance timer
-      if (timon) call timstrt( "wrwrko", ithndl )
+        write (lunwro) versio
+        write (lunwro) noutp, nrvart, nbufmx, ncopt
+        write (lunwro) (ioutps(1, k), k = 1, noutp)
+        write (lunwro) (ioutps(2, k), k = 1, noutp)
+        write (lunwro) (ioutps(3, k), k = 1, noutp)
+        write (lunwro) (ioutps(4, k), k = 1, noutp)
+        write (lunwro) (ioutps(5, k), k = 1, noutp)
+        write (lunwro) (ioutps(6, k), k = 1, noutp)
+        if (nrvart>0) then
+            write (lunwro) (outputs%pointers(k), k = 1, nrvart)
+            write (lunwro) (outputs%names   (k), k = 1, nrvart)
+            write (lunwro) (outputs%std_var_name(k), k = 1, nrvart)
+            write (lunwro) (outputs%units   (k), k = 1, nrvart)
+            write (lunwro) (outputs%description  (k), k = 1, nrvart)
+        end if
+        if (notot>0) then
+            write (lunwro) (substdname(k), k = 1, notot)
+            write (lunwro) (subunit   (k), k = 1, notot)
+            write (lunwro) (subdescr  (k), k = 1, notot)
+        end if
 
-      versio = 0.2
-      nrvart = outputs%cursize
+        if (timon) call timstop(ithndl)
+        return
+        return
+    end
 
-      ! write work file
-
-      write ( lunwro ) versio
-      write ( lunwro ) noutp , nrvart, nbufmx, ncopt
-      write ( lunwro ) ( ioutps(1,k) , k = 1 , noutp )
-      write ( lunwro ) ( ioutps(2,k) , k = 1 , noutp )
-      write ( lunwro ) ( ioutps(3,k) , k = 1 , noutp )
-      write ( lunwro ) ( ioutps(4,k) , k = 1 , noutp )
-      write ( lunwro ) ( ioutps(5,k) , k = 1 , noutp )
-      write ( lunwro ) ( ioutps(6,k) , k = 1 , noutp )
-      if (nrvart.gt.0) then
-         write ( lunwro ) ( outputs%pointers(k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%names   (k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%std_var_name(k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%units   (k)   , k = 1 , nrvart)
-         write ( lunwro ) ( outputs%description  (k)   , k = 1 , nrvart)
-      end if
-      if (notot.gt.0) then
-         write ( lunwro ) ( substdname(k)   , k = 1 , notot)
-         write ( lunwro ) ( subunit   (k)   , k = 1 , notot)
-         write ( lunwro ) ( subdescr  (k)   , k = 1 , notot)
-      end if
-
-      if (timon) call timstop( ithndl )
-      return
-      return
-      end
-
-      end module m_wrwrko
+end module m_wrwrko

@@ -20,104 +20,102 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_calchz
-      use m_waq_precision
+module m_calchz
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine calchz (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Calculate chezy coefficient using roughness and depth
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !        CALCULATE CHEZY COEFFICIENT USING ROUGHNESS AND DEPTH
+        !
+        !        AVERAGED MODELS
+        !
+        ! Name    T   L I/O  Description                              Units
+        ! ----    --- -  -   -------------------                      ----
+        ! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]
+        ! DEPTH   R   1  I   Water depth                                       [m]
+        ! ROUGH   R   1  I   Bottom roughness                                  [m]
 
-      subroutine calchz ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Calculate chezy coefficient using roughness and depth
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!        CALCULATE CHEZY COEFFICIENT USING ROUGHNESS AND DEPTH
-!
-!        AVERAGED MODELS
-!
-! Name    T   L I/O  Description                              Units
-! ----    --- -  -   -------------------                      ----
-! CHZ     R   1  L   Chezy coefficient                         [sqrt(m)/s]
-! DEPTH   R   1  I   Water depth                                       [m]
-! ROUGH   R   1  I   Bottom roughness                                  [m]
+        !     Name     Type   Library
+        !     ------   -----  ------------
 
-!     Logical Units : -
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     Modules called : -
+        !     Local declarations, constants in source
+        !
+        REAL(kind = real_wp) :: ROUGH, DEPTH, TOTDEP, CHZ, ONESIX, &
+                MANCOF
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IKMRK2, &
+                ICHZTP, IP4, IP5, IP6, ISEG
 
-!     Name     Type   Library
-!     ------   -----  ------------
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+        ONESIX = 1.0 / 6.0
+        ! you need this for maninng
 
-!     Local declarations, constants in source
-!
-      REAL(kind=real_wp) ::ROUGH  , DEPTH , TOTDEP,    CHZ, ONESIX, & 
-              MANCOF
-      INTEGER(kind=int_wp) ::IP1    , IP2   , IP3   , IKMRK2, & 
-              ICHZTP , IP4   , IP5   , IP6   , ISEG
+        DO ISEG = 1, NOSEG
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
+                ! 0-inactive cell  1-active cell
+                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
+                    ! place in layers   0-depth integerated (2D) 1-top 2-between 3-bottom
+                    !
 
+                    ROUGH = PMSA(IP1)
+                    MANCOF = PMSA(IP2)
+                    DEPTH = PMSA(IP3)
+                    TOTDEP = PMSA(IP4)
+                    ICHZTP = NINT(PMSA(IP5))
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-      IP6  = IPOINT( 6)
+                    IF (ICHZTP==1) THEN
+                        !       Shear stress by flow according to White/Colebrook - protect against very small depth
+                        CHZ = 18. * LOG10 (12. * (TOTDEP + ROUGH) / ROUGH)
+                    ELSE IF (ICHZTP==2) THEN
+                        !       Chezy according to Manning
+                        CHZ = (TOTDEP ** ONESIX) / MANCOF
+                    END IF
+                    CHZ = MAX(CHZ, 1.0)
 
-      ONESIX = 1.0/6.0
-! you need this for maninng
+                    PMSA (IP6) = CHZ
+                    !
+                ENDIF
+            ENDIF
+            !
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            IP4 = IP4 + INCREM (4)
+            IP5 = IP5 + INCREM (5)
+            IP6 = IP6 + INCREM (6)
+            !
+        end do
 
-      DO 9000 ISEG = 1 , NOSEG
-      IF (BTEST(IKNMRK(ISEG),0)) THEN
-! 0-inactive cell  1-active cell
-       CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-       IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-! place in layers   0-depth integerated (2D) 1-top 2-between 3-bottom
-!
+        RETURN
+    END
 
-        ROUGH   =      PMSA(IP1 )
-        MANCOF  =      PMSA(IP2 )
-        DEPTH   =      PMSA(IP3 )
-        TOTDEP  =      PMSA(IP4 )
-        ICHZTP  = NINT(PMSA(IP5 ))
-
-        IF (ICHZTP.EQ.1) THEN
-!       Shear stress by flow according to White/Colebrook - protect against very small depth
-         CHZ = 18. * LOG10 ( 12.* (TOTDEP+ROUGH) / ROUGH  )
-        ELSE IF (ICHZTP.EQ.2) THEN
-!       Chezy according to Manning
-         CHZ = ( TOTDEP ** ONESIX) / MANCOF
-        END IF
-        CHZ = MAX(CHZ,1.0)
-
-        PMSA (IP6 ) = CHZ
-!
-       ENDIF
-      ENDIF
-!
-      IP1   = IP1   + INCREM (  1 )
-      IP2   = IP2   + INCREM (  2 )
-      IP3   = IP3   + INCREM (  3 )
-      IP4   = IP4   + INCREM (  4 )
-      IP5   = IP5   + INCREM (  5 )
-      IP6   = IP6   + INCREM (  6 )
-!
- 9000 CONTINUE
-
-      RETURN
-      END
-
-      end module m_calchz
+end module m_calchz

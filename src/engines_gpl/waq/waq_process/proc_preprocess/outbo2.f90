@@ -20,163 +20,162 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_outbo2
-      use m_waq_precision
+module m_outbo2
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE OUTBO2 (NOUTP, IOUTPS, NOSEG, NODUMP, NX, &
+            NY, NRVART, NBUFMX, NDMPAR, NOTOT, &
+            NCBUFM, NORAAI)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED:           by Jan van Beek
+        !
+        !     FUNCTION            : Sets the boot variables for OUTPUT system
+        !
+        !     LOGICAL UNITNUMBERS : -
+        !
+        !     SUBROUTINES CALLED  : -
+        !
+        !     PARAMETERS          : 10
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     NOUTP   INTEGER       1     INPUT   Number of processes in def file
+        !     IOUTPS  INTEGER   7,NOUTP   INPUT   output structure
+        !     NOSEG   INTEGER       1     INPUT   Number of segments
+        !     NODUMP  INTEGER       1     INPUT   Number of monitoring points
+        !     NX      INTEGER       1     INPUT   Length of dump grid
+        !     NY      INTEGER       1     INPUT   Width of dump grid
+        !     NRVART  INTEGER       1     OUTPUT  Total number of output variables
+        !     NBUFMX  INTEGER       1     OUTPUT  Length of output buffer needed
+        !     NDMPAR  INTEGER       1     INPUT   number of dump areas
+        !     NOTOT   INTEGER       1     INPUT   Number of substances
+        !     NCBUFM  INTEGER       1     IN/OUT  Length of character buffer
+        !     NORAAI  INTEGER       1     INPUT   number of raaien
+        !
+        !     Declaration of arguments
+        !
+        use timers       !   performance timers
+        use results
 
-      contains
+        INTEGER(kind = int_wp) :: NOUTP, NOSEG, NODUMP, NX, NY, &
+                NRVART, NBUFMX, NDMPAR, NOTOT, NCBUFM, &
+                NORAAI
+        INTEGER(kind = int_wp) :: IOUTPS(7, NOUTP)
+        !
+        !     Local
+        !
+        integer(kind = int_wp), PARAMETER :: IGSEG = 1
+        integer(kind = int_wp), PARAMETER :: IGMON = 2
+        integer(kind = int_wp), PARAMETER :: IGGRD = 3
+        integer(kind = int_wp), PARAMETER :: IGSUB = 4
 
+        INTEGER(kind = int_wp) :: IGRID, NOCEL, NBUFOU, ISRTO
+        integer(kind = int_wp) :: ithndl = 0
+        integer(kind = int_wp) :: iout, nrvar, ncbufo
 
-      SUBROUTINE OUTBO2 ( NOUTP , IOUTPS, NOSEG , NODUMP, NX    , & 
-                         NY    , NRVART, NBUFMX, NDMPAR, NOTOT , & 
-                         NCBUFM, NORAAI)
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED:           by Jan van Beek
-!
-!     FUNCTION            : Sets the boot variables for OUTPUT system
-!
-!     LOGICAL UNITNUMBERS : -
-!
-!     SUBROUTINES CALLED  : -
-!
-!     PARAMETERS          : 10
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     NOUTP   INTEGER       1     INPUT   Number of processes in def file
-!     IOUTPS  INTEGER   7,NOUTP   INPUT   output structure
-!     NOSEG   INTEGER       1     INPUT   Number of segments
-!     NODUMP  INTEGER       1     INPUT   Number of monitoring points
-!     NX      INTEGER       1     INPUT   Length of dump grid
-!     NY      INTEGER       1     INPUT   Width of dump grid
-!     NRVART  INTEGER       1     OUTPUT  Total number of output variables
-!     NBUFMX  INTEGER       1     OUTPUT  Length of output buffer needed
-!     NDMPAR  INTEGER       1     INPUT   number of dump areas
-!     NOTOT   INTEGER       1     INPUT   Number of substances
-!     NCBUFM  INTEGER       1     IN/OUT  Length of character buffer
-!     NORAAI  INTEGER       1     INPUT   number of raaien
-!
-!     Declaration of arguments
-!
-      use timers       !   performance timers
-      use results
+        if (timon) call timstrt("outbo2", ithndl)
+        !
+        !     Loop over the output files
+        !
+        NRVART = 0
+        NBUFMX = 0
+        DO IOUT = 1, NOUTP
+            NRVAR = IOUTPS(4, IOUT)
+            NRVART = NRVART + NRVAR
+            !
+            !        Grid
+            !
+            IGRID = IOUTPS(6, IOUT)
+            IF (IGRID == IGSEG) THEN
+                NOCEL = NOSEG
+            ELSEIF (IGRID == IGMON) THEN
+                NOCEL = NODUMP
+            ELSEIF (IGRID == IGGRD) THEN
+                NOCEL = NX * NY
+            ELSEIF (IGRID == IGSUB) THEN
+                NOCEL = NDMPAR
+            ENDIF
+            !
+            !        Calculate outputbuffer size for this file, for some (NEFIS,SUB)
+            !        also a character buffer size
+            !
+            NCBUFO = 0
+            ISRTO = IOUTPS(5, IOUT)
+            IF (ISRTO == IHNF .OR. ISRTO == IMNF) THEN
+                !
+                !           NEFIS file, extra array with length NOCEL needed
+                !           substance names and output names in char buffer.
+                !
+                NBUFOU = NOCEL * (NRVAR + 1)
+                NCBUFO = NOTOT + NRVAR
+            ELSEIF (ISRTO == IHN2 .OR. ISRTO == IMN2) THEN
+                !
+                !           NEFIS file, extra array with length NOCEL needed
+                !
+                NBUFOU = NOCEL * (NRVAR + 1)
+            ELSEIF (ISRTO == IMO3) THEN
+                !
+                !           On subarea's substances also in buffer, only the
+                !           first half of the nrvar are real output vars.
+                !           substance names and output names in char buffer.
+                !
+                NBUFOU = NOCEL * (NOTOT + NRVAR / 2)
+                NCBUFO = NOTOT + NRVAR / 2
+            ELSEIF (ISRTO == IHI3) THEN
+                !
+                !           On subarea's substances also in buffer, only the
+                !           first half of the nrvar are real output vars.
+                !           substance names and output names in char buffer.
+                !           also output for raaien
+                !
+                NBUFOU = (NOCEL + NORAAI) * (NOTOT + NRVAR / 2)
+                NCBUFO = NOTOT + NRVAR / 2
+            ELSEIF (ISRTO == IHN3) THEN
+                !
+                !           NEFIS file, extra array with length NOCEL needed
+                !           On subarea's substances also in buffer, only the
+                !           first half of the nrvar are real output vars.
+                !           substance names and output names in char buffer.
+                !           also output for raaien
+                !
+                NBUFOU = (NOCEL + NORAAI) * (NOTOT + NRVAR / 2 + 1)
+                NCBUFO = NOTOT + NRVAR / 2
+            ELSEIF (ISRTO == IMO4 .OR. ISRTO == IHI4) THEN
+                !
+                !           On subarea's only the first half of the nrvar are
+                !           real output vars.
+                !
+                NBUFOU = NOCEL * (NRVAR / 2)
+            ELSEIF (ISRTO == IHN4) THEN
+                !
+                !           NEFIS file, extra array with length NOCEL needed
+                !           On subarea's only the first half of the nrvar are
+                !           real output vars.
+                !
+                NBUFOU = NOCEL * (NRVAR / 2 + 1)
+            ELSE
+                !
+                !           Rest, normal
+                !
+                NBUFOU = NOCEL * NRVAR
+            ENDIF
+            !
+            !        Buffer is as big as the largest needed
+            !
+            NBUFMX = MAX (NBUFMX, NBUFOU)
+            NCBUFM = MAX (NCBUFM, NCBUFO)
+            !
+        end do
+        !
+        if (timon) call timstop(ithndl)
+        RETURN
+    END
 
-      INTEGER(kind=int_wp) ::NOUTP , NOSEG , NODUMP, NX    , NY    , & 
-                 NRVART, NBUFMX, NDMPAR, NOTOT , NCBUFM, & 
-                 NORAAI
-      INTEGER(kind=int_wp) ::IOUTPS(7,NOUTP)
-!
-!     Local
-!
-      integer(kind=int_wp), PARAMETER  ::IGSEG = 1
-      integer(kind=int_wp), PARAMETER  ::IGMON = 2
-      integer(kind=int_wp), PARAMETER  ::IGGRD = 3
-      integer(kind=int_wp), PARAMETER  ::IGSUB = 4
-      
-      INTEGER(kind=int_wp) ::IGRID , NOCEL , NBUFOU, ISRTO
-      integer(kind=int_wp) ::ithndl = 0
-      integer(kind=int_wp) ::iout, nrvar, ncbufo
-      
-      if (timon) call timstrt( "outbo2", ithndl )
-!
-!     Loop over the output files
-!
-      NRVART = 0
-      NBUFMX = 0
-      DO 100 IOUT = 1 , NOUTP
-         NRVAR  = IOUTPS(4,IOUT)
-         NRVART = NRVART + NRVAR
-!
-!        Grid
-!
-         IGRID = IOUTPS(6,IOUT)
-         IF ( IGRID .EQ. IGSEG ) THEN
-            NOCEL = NOSEG
-         ELSEIF ( IGRID .EQ. IGMON ) THEN
-            NOCEL = NODUMP
-         ELSEIF ( IGRID .EQ. IGGRD ) THEN
-            NOCEL = NX*NY
-         ELSEIF ( IGRID .EQ. IGSUB ) THEN
-            NOCEL = NDMPAR
-         ENDIF
-!
-!        Calculate outputbuffer size for this file, for some (NEFIS,SUB)
-!        also a character buffer size
-!
-         NCBUFO = 0
-         ISRTO  = IOUTPS(5,IOUT)
-         IF ( ISRTO .EQ. IHNF .OR. ISRTO .EQ. IMNF     ) THEN
-!
-!           NEFIS file, extra array with length NOCEL needed
-!           substance names and output names in char buffer.
-!
-            NBUFOU = NOCEL * ( NRVAR + 1 )
-            NCBUFO = NOTOT + NRVAR
-         ELSEIF ( ISRTO .EQ. IHN2 .OR. ISRTO .EQ. IMN2 ) THEN
-!
-!           NEFIS file, extra array with length NOCEL needed
-!
-            NBUFOU = NOCEL * ( NRVAR + 1 )
-         ELSEIF ( ISRTO .EQ. IMO3 ) THEN
-!
-!           On subarea's substances also in buffer, only the
-!           first half of the nrvar are real output vars.
-!           substance names and output names in char buffer.
-!
-            NBUFOU = NOCEL * ( NOTOT + NRVAR/2 )
-            NCBUFO = NOTOT + NRVAR/2
-         ELSEIF ( ISRTO .EQ. IHI3 ) THEN
-!
-!           On subarea's substances also in buffer, only the
-!           first half of the nrvar are real output vars.
-!           substance names and output names in char buffer.
-!           also output for raaien
-!
-            NBUFOU = (NOCEL+NORAAI) * ( NOTOT + NRVAR/2 )
-            NCBUFO = NOTOT + NRVAR/2
-         ELSEIF ( ISRTO .EQ. IHN3 ) THEN
-!
-!           NEFIS file, extra array with length NOCEL needed
-!           On subarea's substances also in buffer, only the
-!           first half of the nrvar are real output vars.
-!           substance names and output names in char buffer.
-!           also output for raaien
-!
-            NBUFOU = (NOCEL+NORAAI) * ( NOTOT + NRVAR/2 + 1 )
-            NCBUFO = NOTOT + NRVAR/2
-         ELSEIF ( ISRTO .EQ. IMO4 .OR. ISRTO .EQ. IHI4 ) THEN
-!
-!           On subarea's only the first half of the nrvar are
-!           real output vars.
-!
-            NBUFOU = NOCEL * ( NRVAR/2 )
-         ELSEIF ( ISRTO .EQ. IHN4 ) THEN
-!
-!           NEFIS file, extra array with length NOCEL needed
-!           On subarea's only the first half of the nrvar are
-!           real output vars.
-!
-            NBUFOU = NOCEL * ( NRVAR/2 + 1 )
-         ELSE
-!
-!           Rest, normal
-!
-            NBUFOU = NOCEL * NRVAR
-         ENDIF
-!
-!        Buffer is as big as the largest needed
-!
-         NBUFMX = MAX ( NBUFMX, NBUFOU )
-         NCBUFM = MAX ( NCBUFM, NCBUFO )
-!
-  100 CONTINUE
-!
-      if (timon) call timstop( ithndl )
-      RETURN
-      END
-
-      end module m_outbo2
+end module m_outbo2

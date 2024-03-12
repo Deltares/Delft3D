@@ -751,7 +751,7 @@ contains
 
           ! check on non-constants (assume numbering is from 1 to linsconstant)
           do item = 1,linsconstant
-              if (increm(item).ne.0) then
+              if (increm(item)/=0) then
                   errorstring = 'Input item _____ is not supposed to be space dependent'
                   write (errorstring(12:16),'(i5)') item
                   CALL write_error_message (errorstring)
@@ -759,60 +759,60 @@ contains
           enddo
 
           ! validity checks
-          IF (kdpo4aap .LT. 0.0) CALL write_error_message ('kdpo4aap negative')
-          IF (a_dNpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
-          IF (a_dPpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
-          IF (a_dSpr .LT. 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
+          IF (kdpo4aap < 0.0) CALL write_error_message ('kdpo4aap negative')
+          IF (a_dNpr < 1E-30) CALL write_error_message ('DECDET: a_dNpr =< 0')
+          IF (a_dPpr < 1E-30) CALL write_error_message ('DECDET: a_dPpr =< 0')
+          IF (a_dSpr < 1E-30) CALL write_error_message ('DECDET: a_dSpr =< 0')
 
-          IF (al_dNf .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
-          IF (al_dPf .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
-          IF (au_dNf .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
-          IF (au_dPf .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
-          IF (al_dNm .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
-          IF (al_dPm .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
-          IF (au_dNm .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
-          IF (au_dPm .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
-          IF (al_dNs .LT. 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
-          IF (al_dPs .LT. 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
-          IF (au_dNs .LT. 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
-          IF (au_dPs .LT. 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
+          IF (al_dNf < 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPf < 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNf < 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPf < 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
+          IF (al_dNm < 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPm < 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNm < 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPm < 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
+          IF (al_dNs < 1E-30) CALL write_error_message ('DECDET: al_dN/F/M/S/ =< 0')
+          IF (al_dPs < 1E-30) CALL write_error_message ('DECDET: al_dP/F/M/S/ =< 0')
+          IF (au_dNs < 1E-30) CALL write_error_message ('DECDET: au_dN/F/M/S/ =< 0')
+          IF (au_dPs < 1E-30) CALL write_error_message ('DECDET: au_dP/F/M/S/ =< 0')
 !
 !         Errors if upper limits =< lower limits
 !
-          IF (au_dNf .LT. al_dNf)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
-          IF (au_dPf .LT. al_dPf)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
-          IF (au_dNm .LT. al_dNm)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
-          IF (au_dPm .LT. al_dPm)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
-          IF (au_dNs .LT. al_dNs)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
-          IF (au_dPs .LT. al_dPs)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
+          IF (au_dNf < al_dNf)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPf < al_dPf)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
+          IF (au_dNm < al_dNm)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPm < al_dPm)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
+          IF (au_dNs < al_dNs)  CALL write_error_message ('DECDET: au_dN/F/M/S/ < al_dN/F/M/S/ ')
+          IF (au_dPs < al_dPs)  CALL write_error_message ('DECDET: au_dP/F/M/S/ < al_dP/F/M/S/ ')
 
-          IF (ku_dFdcC20 .LT. kl_dFdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
-          IF (ku_dFdcN20 .LT. kl_dFdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
-          IF (ku_dFdcP20 .LT. kl_dFdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
-          IF (ku_dMdcC20 .LT. kl_dMdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
-          IF (ku_dMdcN20 .LT. kl_dMdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
-          IF (ku_dMdcP20 .LT. kl_dMdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
-          IF (ku_dSdcC20 .LT. kl_dSdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
-          IF (ku_dSdcN20 .LT. kl_dSdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
-          IF (ku_dSdcP20 .LT. kl_dSdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
+          IF (ku_dFdcC20 < kl_dFdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dFdcN20 < kl_dFdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dFdcP20 < kl_dFdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
+          IF (ku_dMdcC20 < kl_dMdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dMdcN20 < kl_dMdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dMdcP20 < kl_dMdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
+          IF (ku_dSdcC20 < kl_dSdcC20) CALL write_error_message ('DECDET: ku_d/F/M/S/dec20 < kl_d/F/M/S/dec20 ')
+          IF (ku_dSdcN20 < kl_dSdcN20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcN20 < kl_d/F/M/S/dcN20 ')
+          IF (ku_dSdcP20 < kl_dSdcP20) CALL write_error_message ('DECDET: ku_d/F/M/S/dcP20 < kl_d/F/M/S/dcP20 ')
 
 
           ! Switches
           ONLY_OX = .FALSE.
-          IF (SWOxCon .GT. 0.5) ONLY_OX = .TRUE.
+          IF (SWOxCon > 0.5) ONLY_OX = .TRUE.
           SW_VB = .false. ! VB part only if defined
-          if (increm(ip_fN1VBup).gt.0) SW_VB = .true.
+          if (increm(ip_fN1VBup)>0) SW_VB = .true.
 
           ! Check if sum of array dl equals input fixed layer thickness
           thick = sum(dl)
-          IF (abs(thick-Th_DelwaqG).gt.0.01*Th_DelwaqG) CALL write_error_message ('Inconsistent layer definition (check Th_DelwaqG)')
+          IF (abs(thick-Th_DelwaqG)>0.01*Th_DelwaqG) CALL write_error_message ('Inconsistent layer definition (check Th_DelwaqG)')
 
           ! Determine 2D structure, first find dimension and next fill a mapping array
           noseg2d = 0
           do iseg = 1,noseg
               CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
               CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
-              if (iatt2.eq.0.or.iatt2.eq.3) then
+              if (iatt2==0.or.iatt2==3) then
                   noseg2d = noseg2d+1
               endif
           enddo
@@ -823,7 +823,7 @@ contains
               CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
               CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
 
-              if (iatt2.eq.0.or.iatt2.eq.3) then
+              if (iatt2==0.or.iatt2==3) then
                   itel = itel+1
                   bottomsegments(itel) = iseg
               endif
@@ -843,7 +843,7 @@ contains
 
       ! output
       Itime = nint(PMSA(IPOINT(ip_Itime)))
-      if (mod(itime,outint*3600).eq.0) then
+      if (mod(itime,outint*3600)==0) then
           call write_sedconc
       endif
 
@@ -994,15 +994,15 @@ contains
     !
     !     SWADSP = 0 : Instantaneous equilibrium partitioning
     !
-          IF (NINT(SWADSP) .EQ. 0) THEN
+          IF (NINT(SWADSP) == 0) THEN
               FADS  =(((AAP + PO4) / (1.0 + kdpo4aap)) - AAP) / DELT
               EQAAP = -1.0
           ENDIF
     !
     !     SWADSP = 1 : Langmuir sorption
     !
-          IF (NINT(SWADSP) .EQ. 1) THEN
-              IF ( (maxpo4aap .ge. 1E-10) .and. (kdpo4aap .gt. 1E-10)) THEN
+          IF (NINT(SWADSP) == 1) THEN
+              IF ( (maxpo4aap >= 1E-10) .and. (kdpo4aap > 1E-10)) THEN
                  CADST = maxpo4aap * TFE
                  EQAAP = (kdpo4aap * CADST * PO4) / (kdpo4aap * PO4 + 1.0)
                  FADS  = rcadpo4aap * (EQAAP - AAP)
@@ -1012,12 +1012,12 @@ contains
     !     SWADSP = 2 : pH dependent Langmuir sorption
     !
 
-          IF (NINT(SWADSP) .EQ. 2) THEN
+          IF (NINT(SWADSP) == 2) THEN
 
     !     Calculate pH dependency (hydroxyl) and factor for redox potential
     !
                OH = 10.0**(PH-14.0)
-               IF (OXY .GE. (Cc_oxPsor*POROS) ) THEN
+               IF (OXY >= (Cc_oxPsor*POROS) ) THEN
                   FRA = 1.0
                ELSE
                   FRA = fr_feox
@@ -1037,7 +1037,7 @@ contains
     !
     !     Calculate equilibrium concentration of adsorbed P (gP/m3)
     !
-               IF ( ABS(CADS) .LT. 1.E-20 ) THEN
+               IF ( ABS(CADS) < 1.E-20 ) THEN
                   EQAAP = 0.0
                ELSE
                   EQAAP = (AAP + PO4)/(1.0 + OH**a_OH_PO4/(KADS*CADS))
@@ -1045,7 +1045,7 @@ contains
     !
     !     Maximize EQAAP on equivalent CADST
     !
-               IF ( CADS .LT. 0.0 ) THEN
+               IF ( CADS < 0.0 ) THEN
                   EQAAPM = 0.9 * CADST * (31000.0 * POROS)
                   EQAAP = EQAAPM
                ENDIF
@@ -1072,17 +1072,17 @@ contains
 !         Set the rates according to CRTEMP and CROXY
 !
           k1nit = RcNit20
-          IF ( TEMP .LT. CTNit .OR. OXY .LE. 0.0 ) k1nit = 0.0
+          IF ( TEMP < CTNit .OR. OXY <= 0.0 ) k1nit = 0.0
 !
           K0NIT = 0.0
 !
-          IF ( TEMP .LT. CTNit .AND. OXY .GT. 0.0 ) THEN
+          IF ( TEMP < CTNit .AND. OXY > 0.0 ) THEN
                   K0NIT = znit
-          ELSEIF ( TEMP .GE. CTNit .AND. OXY .LE. 0.0 ) THEN
+          ELSEIF ( TEMP >= CTNit .AND. OXY <= 0.0 ) THEN
                   K0NIT = Rc0NitOx
           ENDIF
 !
-          IF ( OXY .LE. (COXNit * POROS) ) K0NIT = 0.0
+          IF ( OXY <= (COXNit * POROS) ) K0NIT = 0.0
 !
 !         Calculate the nitrification flux
 !
@@ -1110,7 +1110,7 @@ contains
 
           rtmin = 0.0
           do icfrac = 1,ncfrac  ! loop over 5 organic carbon fractions
-                if (icfrac.eq.1) then
+                if (icfrac==1) then
                     ! POC1
                         POC     = MAX(POC1,0.0)
                         PON     = MAX(PON1,0.0)
@@ -1130,7 +1130,7 @@ contains
                         B_DTD   = b_poc1doc
                         SWOMD   = swomdec
 
-                elseif (icfrac.eq.2) then
+                elseif (icfrac==2) then
                     ! POC2
                         POC     = MAX(POC2,0.0)
                         PON     = MAX(PON2,0.0)
@@ -1150,7 +1150,7 @@ contains
                         B_DTD   = b_poc2doc
                         SWOMD   = swomdec
 
-                elseif (icfrac.eq.3) then
+                elseif (icfrac==3) then
                     ! POC3
                         POC     = MAX(POC3,0.0)
                         PON     = MAX(PON3,0.0)
@@ -1170,7 +1170,7 @@ contains
                         B_DTD   = b_poc3doc
                         SWOMD   = swomdec
 
-                elseif (icfrac.eq.4) then
+                elseif (icfrac==4) then
                     ! POC4
                         POC     = MAX(POC4,0.0)
                         PON     = MAX(PON4,0.0)
@@ -1190,7 +1190,7 @@ contains
                         B_DTD   = 0.0
                         SWOMD   = 1.0
 
-                elseif (icfrac.eq.5) then
+                elseif (icfrac==5) then
                     ! DOC
                         POC     = MAX(DOC,0.0)
                         PON     = MAX(DON,0.0)
@@ -1213,7 +1213,7 @@ contains
                 endif
 !
 !           If  detritus = 0 : set fluxes to zero and skip algorithm
-            IF (POC .LT. 1E-10)  THEN
+            IF (POC < 1E-10)  THEN
 !
               decflx = 0.0
 
@@ -1230,7 +1230,7 @@ contains
 !
 !             Calculate degrad. rate at 20oC for current stochiometry
 !
-              IF ((PON/POC) .GT. AUN .AND. (POP/POC) .GT. AUP) THEN
+              IF ((PON/POC) > AUN .AND. (POP/POC) > AUP) THEN
 !
 !                -- both stoch's above upper limit
 !
@@ -1238,7 +1238,7 @@ contains
                  RC20N = RC20UPN
                  RC20P = RC20UPP
 !
-              ELSE IF ((PON/POC) .LT. ALN .OR. (POP/POC) .LT. ALP)  THEN
+              ELSE IF ((PON/POC) < ALN .OR. (POP/POC) < ALP)  THEN
 !
 !                -- one or both stoch's below lower limit
 !
@@ -1251,7 +1251,7 @@ contains
 !                -- both stoch's between upper and lower limit
 !                   or one stoch above ul and one between ul and ll
 !
-                 IF (AUN .EQ. ALN .OR. AUP .EQ. ALP) THEN
+                 IF (AUN == ALN .OR. AUP == ALP) THEN
                     FNUT = 0.5
                  ELSE
                     FNUT = MIN( ((PON/POC)-ALN) / (AUN-ALN) , &
@@ -1273,9 +1273,9 @@ contains
 !
 !             for dominant electron acceptor
 !
-              IF (OXY .GT. 0.1) THEN
+              IF (OXY > 0.1) THEN
                  ELFACT = 1.0
-              ELSE IF (NO3 .GT. 0.1) THEN
+              ELSE IF (NO3 > 0.1) THEN
                  ELFACT = b_ni
               ELSE
                  ELFACT = b_su
@@ -1283,7 +1283,7 @@ contains
 !
 !             for nutrient stripping
 !
-              IF (NINT(SWOMD) .EQ. 0 ) THEN
+              IF (NINT(SWOMD) == 0 ) THEN
                  N_FACT = 1.0 + ((PON/POC) - a_dNpr) / a_dNpr
                  P_FACT = 1.0 + ((POP/POC) - a_dPpr) / a_dPpr
                  S_FACT = 1.0 + ((POS/POC) - a_dSpr) / a_dSpr
@@ -1324,7 +1324,7 @@ contains
 !
     !       Output of original process: RC20C*TEMPC*ELFACT RC20N*TEMPC*ELFACT RC20P*TEMPC*ELFACT N_FACT P_FACT S_FACT DECOC
 
-            if (icfrac.eq.1) then
+            if (icfrac==1) then
                 !    ! POC1
                 kp(ilay,is_poc1) = kp(ilay,is_poc1) - decflx(1)
                 kp(ilay,is_poc2) = kp(ilay,is_poc2) + decflx(1)
@@ -1356,7 +1356,7 @@ contains
                   fl(iflux+(iseg-1)*noflux) = fl(iflux+(iseg-1)*noflux) + decflx(ifl)*dl(ilay) /depth
                 enddo
 
-            elseif (icfrac.eq.2) then
+            elseif (icfrac==2) then
                 !    ! POC2
                 kp(ilay,is_poc2) = kp(ilay,is_poc2) - decflx(1)
                 kp(ilay,is_poc3) = kp(ilay,is_poc3) + decflx(1)
@@ -1388,7 +1388,7 @@ contains
                   fl(iflux+(iseg-1)*noflux) = fl(iflux+(iseg-1)*noflux) + decflx(ifl)*dl(ilay) /depth
                 enddo
 
-            elseif (icfrac.eq.3) then
+            elseif (icfrac==3) then
                 !    ! POC3
                 kp(ilay,is_poc3) = kp(ilay,is_poc3) - decflx(1)
                 kp(ilay,is_poc4) = kp(ilay,is_poc4) + decflx(1)
@@ -1420,7 +1420,7 @@ contains
                   fl(iflux+(iseg-1)*noflux) = fl(iflux+(iseg-1)*noflux) + decflx(ifl)*dl(ilay) /depth
                 enddo
 
-            elseif (icfrac.eq.4) then
+            elseif (icfrac==4) then
                 !    ! POC4
                 kp(ilay,is_poc4) = kp(ilay,is_poc4) - decflx(9)
                 kp(ilay,is_pon4) = kp(ilay,is_pon4) - decflx(10)
@@ -1436,7 +1436,7 @@ contains
                   fl(iflux+(iseg-1)*noflux) = fl(iflux+(iseg-1)*noflux) + decflx(ifl)*dl(ilay) /depth
                 enddo
                 !
-            elseif (icfrac.eq.5) then
+            elseif (icfrac==5) then
                 !    ! DOC
                 kp(ilay,is_doc) = kp(ilay,is_doc) - decflx(9)
                 kp(ilay,is_don) = kp(ilay,is_don) - decflx(10)
@@ -1462,17 +1462,17 @@ contains
 !         Calculation of the precipitation or dissolution flux
 !         dependent on dissolved oxygen
 !
-          IF ( OXY .GE. Cc_oxVivP ) THEN
+          IF ( OXY >= Cc_oxVivP ) THEN
             FPRC   = 0.0
             TMPSOL = TCdissolP**TEMP20
             FSOL   = RCdissP20 * TMPSOL * vivp * OXY / POROS
-            IF ( FSOL .LT. 0.0) FSOL = 0.0
-            IF ( FSOL*DELT .GE. vivp) FSOL = 0.5 * vivp / DELT
+            IF ( FSOL < 0.0) FSOL = 0.0
+            IF ( FSOL*DELT >= vivp) FSOL = 0.5 * vivp / DELT
           ELSE
             FSOL   = 0.0
             TMPPRC = TCprecipP**TEMP20
             FPRC   = RCprecP20 * TMPPRC * ( po4 / POROS - EqVivDisP ) * POROS
-            IF ( FPRC .LT. 0.0) FPRC = 0.0
+            IF ( FPRC < 0.0) FPRC = 0.0
           ENDIF
 !
     !     Output of original process: none
@@ -1492,11 +1492,11 @@ contains
 !
           FSOL = 0.0
 !
-          IF (POROS .GT. 0.05) THEN
+          IF (POROS > 0.05) THEN
 !
             TEMPC = TCdisSi**TEMP20
 !
-            IF (NINT(SWDISSi) .EQ. 0) THEN
+            IF (NINT(SWDISSi) == 0) THEN
                FSOL  = RCdisSi20 * TEMPC * OPAL * ( Ceq_disSi - Si / POROS )
             ELSE
                FSOL  = RCdisSi20 * TEMPC * OPAL
@@ -1527,7 +1527,7 @@ contains
 !
 !           Calculation of the temperature dependency coefficients
 !
-            IF ( TEMP .GE. CTBactAc ) THEN
+            IF ( TEMP >= CTBactAc ) THEN
                   FCT2 = 1.0
                   FCT3 = 1.0
                   FCT4 = 1.0
@@ -1572,11 +1572,11 @@ contains
 !           dissolved oxygen or nitrate concentrations to allow
 !           sulphate reduction or methanogenesis.
 !
-            IF ( oxy .GE. (CoxDenInh*POROS) )  FNI = 0.0
-            IF ( oxy .GE. (CoxIRedInh*POROS) )  FFE = 0.0
-            IF ( oxy .GE. (CoxSRedInh*POROS) )  FSU = 0.0
-            IF ( oxy .GE. (CoxMetInh*POROS) .OR.  &
-                 no3 .GE. (CniMetInh*POROS) )  FCH4 = 0.0
+            IF ( oxy >= (CoxDenInh*POROS) )  FNI = 0.0
+            IF ( oxy >= (CoxIRedInh*POROS) )  FFE = 0.0
+            IF ( oxy >= (CoxSRedInh*POROS) )  FSU = 0.0
+            IF ( oxy >= (CoxMetInh*POROS) .OR.  &
+                 no3 >= (CniMetInh*POROS) )  FCH4 = 0.0
 !
 !           Calculation of the scaled contributions
 !
@@ -1601,7 +1601,7 @@ contains
 !           acceptors nitrate, oxygen, iron and sulphate
 !
             RDEN  = FRNI  * RTMIN
-            IF ( RDEN .GT. RDMAX .AND. RDEN .GT. 0.0 ) THEN
+            IF ( RDEN > RDMAX .AND. RDEN > 0.0 ) THEN
                    FRNIC = FRNI * RDMAX / RDEN
                    FROX  = FROX + FRNI - FRNIC
             ELSE
@@ -1609,7 +1609,7 @@ contains
             ENDIF
 !
             ROXC  = FROX  * RTMIN
-            IF ( ROXC .GT. ROMAX .AND. ROXC .GT. 0.0 ) THEN
+            IF ( ROXC > ROMAX .AND. ROXC > 0.0 ) THEN
                    FROXC = FROX * ROMAX / ROXC
                    FRFE  = FRFE + FROX - FROXC
             ELSE
@@ -1617,7 +1617,7 @@ contains
             ENDIF
 !
             RIRED  = FRFE  * RTMIN
-            IF ( RIRED .GT. RIMAX .AND. RIRED .GT. 0.0 ) THEN
+            IF ( RIRED > RIMAX .AND. RIRED > 0.0 ) THEN
                    FRFEC = FRFE * RIMAX / RIRED
                    FRSU  = FRSU + FRFE - FRFEC
             ELSE
@@ -1625,7 +1625,7 @@ contains
             ENDIF
 !
             RSRED  = FRSU  * RTMIN
-            IF ( RSRED .GT. RSMAX .AND. RSRED .GT. 0.0 ) THEN
+            IF ( RSRED > RSMAX .AND. RSRED > 0.0 ) THEN
                    FRSUC = FRSU * RSMAX / RSRED
             ELSE
                    FRSUC = FRSU
@@ -1674,7 +1674,7 @@ contains
 !
 !         Calculate the ebullition flux
 !
-          IF ( DCH4 .LT. 0.0 ) THEN
+          IF ( DCH4 < 0.0 ) THEN
               ebulfl = 0.0
           ELSE
               ebulfl = ( fScEbul * DCH4 ) / DELT
@@ -1690,7 +1690,7 @@ contains
           !     Existing process specsud
           ! +++++++++++++++++++++++++++++++++++++++++++
 
-          if ( sud .gt. 1e-20 ) then
+          if ( sud > 1e-20 ) then
 
             ! speciation
 
@@ -1708,7 +1708,7 @@ contains
             frh2sdis   = csd1/csdt
             frhsdis    = csd2/csdt
             frsdis     = 1.0 - frh2sdis - frhsdis
-            if ( frsdis .lt. 0.0 ) then
+            if ( frsdis < 0.0 ) then
                frsdis = csd3/csdt
             endif
 
@@ -1733,10 +1733,10 @@ contains
 !
           k0sox = Rc0Sox
           k1sox = RcSox20
-          IF ( oxy .LE. 0.0 ) THEN
+          IF ( oxy <= 0.0 ) THEN
                 k1sox  = 0.0
           ENDIF
-          IF ( oxy .GT. (CoxSUD * POROS) ) THEN
+          IF ( oxy > (CoxSUD * POROS) ) THEN
                 k0sox = 0.0
           ENDIF
 !
@@ -1771,9 +1771,9 @@ contains
 !
 !         Correct fluxes depending on under- or supersaturation
 !
-          IF ( FLUXPR .LT. 0.0) FLUXPR = 0.0
-          IF ( FLUXDS .LT. 0.0) FLUXDS = 0.0
-          IF ( FLUXDS*DELT .GE. SUP) FLUXDS = 0.5 * SUP / DELT
+          IF ( FLUXPR < 0.0) FLUXPR = 0.0
+          IF ( FLUXDS < 0.0) FLUXDS = 0.0
+          IF ( FLUXDS*DELT >= SUP) FLUXDS = 0.5 * SUP / DELT
 !
     !     Output of original proces:  -
           kp(ilay,is_sud) = kp(ilay,is_sud) - fluxpr + fluxds
@@ -1792,25 +1792,25 @@ contains
 !
           k0metox = Rc0MetOx
           k1metox = RcMetOx20
-          IF ( TEMP .LT. CTMetOx .OR. &
-               oxy .LE. 0.0 .OR. oxy .LE. (CoxMet * POROS) ) THEN
+          IF ( TEMP < CTMetOx .OR. &
+               oxy <= 0.0 .OR. oxy <= (CoxMet * POROS) ) THEN
                k1metox  = 0.0
           ENDIF
-          IF ( oxy .LE. 0.0 .OR. oxy .GT. (CoxMet * POROS) ) THEN
+          IF ( oxy <= 0.0 .OR. oxy > (CoxMet * POROS) ) THEN
                k0metox = 0.0
           ENDIF
 !
           k0metsu = Rc0MetSu
           k1metsu = RcMetSu20
-          IF ( TEMP .LT. CTMetOx .OR. &
-                so4 .LE. 0.0 .OR. so4 .LE. (CsuMet * POROS) ) THEN
+          IF ( TEMP < CTMetOx .OR. &
+                so4 <= 0.0 .OR. so4 <= (CsuMet * POROS) ) THEN
                 k1metsu  = 0.0
           ENDIF
-          IF ( so4 .LE. 0.0 .OR. so4 .GT. (CsuMet * POROS) ) THEN
+          IF ( so4 <= 0.0 .OR. so4 > (CsuMet * POROS) ) THEN
                 k0metsu = 0.0
           ENDIF
 !
-          IF ( oxy .GT. (CoxMet * POROS) ) THEN
+          IF ( oxy > (CoxMet * POROS) ) THEN
                k1metsu  = 0.0
                k0metsu = 0.0
           ENDIF
@@ -1819,20 +1819,20 @@ contains
 !
           TEMPC  = TcMetOx ** TEMP20
 !
-          IF ( (KsMet * POROS + CH4) .GT. 0.0) THEN
+          IF ( (KsMet * POROS + CH4) > 0.0) THEN
                   CHFUNC = CH4 / ( KsMet * POROS + CH4 )
           ELSE
                   CHFUNC = 0.0
           ENDIF
 !
-          IF ( (KsOxMet * POROS + oxy) .GT. 0.0) THEN
+          IF ( (KsOxMet * POROS + oxy) > 0.0) THEN
                   OXFUNC = oxy  / ( KsOxMet * POROS  + oxy  )
           ELSE
                   OXFUNC = 0.0
           ENDIF
 !
 
-          IF ( (KsSuMet * POROS + so4) .GT. 0.0) THEN
+          IF ( (KsSuMet * POROS + so4) > 0.0) THEN
                   SUFUNC = so4  / ( KsSuMet * POROS  + so4  )
           ELSE
                   SUFUNC = 0.0
@@ -1874,9 +1874,9 @@ contains
           FPRC = RatAPandVP * RCprecP20 * TMPPRC * ( po4 / POROS - EqAPATDisP ) * POROS
           FSOL = RCdisAP20 * TMPSOL * ApatP * ( EqAPATDisP - po4 / POROS )
 !
-          IF ( FPRC .LT. 0.0) FPRC = 0.0
-          IF ( FSOL .LT. 0.0) FSOL = 0.0
-          IF ( FSOL*DELT .GE. ApatP) FSOL = 0.5 * ApatP / DELT
+          IF ( FPRC < 0.0) FPRC = 0.0
+          IF ( FSOL < 0.0) FSOL = 0.0
+          IF ( FSOL*DELT >= ApatP) FSOL = 0.5 * ApatP / DELT
 
           !     Output of original proces: -
           kp(ilay,is_po4  ) = kp(ilay,is_po4  ) - fprc + fsol
@@ -2002,7 +2002,7 @@ contains
 
 ! ENDPROC
           do isys = 1,nototsed
-              dissub = (isys.le.nototseddis)
+              dissub = (isys<=nototseddis)
 
               ! dl:    layer thicknes
               ! tt:    turcoef
@@ -2037,7 +2037,7 @@ contains
                   ! diffusion
                   if (dissub) then
                       ! dissolved upper
-                      if (ilay.eq.1) then
+                      if (ilay==1) then
                           !
                           ! For the exchange with the overlying water we need the water segment to be active
                           !
@@ -2053,20 +2053,20 @@ contains
                           av(ilay,ilay) = av(ilay,ilay) + term
                       endif
                       ! dissolved lower
-                      if (ilay.ne.nolay) then
+                      if (ilay/=nolay) then
                           term = dble(td(ilay+1)/(dl(ilay+1)/2.+dl(ilay)/2.))
                           av(ilay+1,ilay) = av(ilay+1,ilay) - term
                           av(ilay,ilay) = av(ilay,ilay) + term
                       endif
                   else
                       ! solid upper
-                      if (ilay.ne.1) then
+                      if (ilay/=1) then
                           term = dble(tt(ilay-1)/(dl(ilay-1)/2.+dl(ilay)/2.))
                           av(ilay-1,ilay) = av(ilay-1,ilay) - term
                           av(ilay,ilay) = av(ilay,ilay) + term
                       endif
                       ! solid lower
-                      if (ilay.ne.nolay) then
+                      if (ilay/=nolay) then
                           term = dble(tt(ilay)/(dl(ilay+1)/2.+dl(ilay)/2.))
                           av(ilay+1,ilay) = av(ilay+1,ilay) - term
                           av(ilay,ilay) = av(ilay,ilay) + term
@@ -2079,7 +2079,7 @@ contains
               !all printstelsel(av,bv,nolay,'IN',isys)
               call INVERM (av,bv,nolay,1,nolay,iwork,rwork,ierror)
               !all printstelsel(av,bv,nolay,'OUT',isys)
-              if (ierror.ne.0) CALL write_error_message ('Error Solving Local Equations')
+              if (ierror/=0) CALL write_error_message ('Error Solving Local Equations')
 
               do ilay = 1,nolay
                   sedconc(ilay,isys,iseg2d) = bv(ilay)

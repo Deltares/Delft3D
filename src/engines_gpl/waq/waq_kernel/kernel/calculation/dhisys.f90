@@ -20,46 +20,45 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dhisys
-      use m_waq_precision
+module m_dhisys
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE DHISYS (ISYSI, ISYSN)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED             : march 97 by Jan van Beek
+        !
+        !     FUNCTION            : Initialise constant array from common block
+        !
+        !     LOGICAL UNITNUMBERS : -
+        !
+        !     SUBROUTINES CALLED  : -
+        !
+        !     PARAMETERS          : -
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     ISYSI   INTEGER       *     OUTPUT  copy of the SYSI common block
+        !     ISYSN   INTEGER       *     OUTPUT  copy of the SYSI common block
+        !
+        !     declarations
+        use m_array_manipulation, only : copy_integer_array_elements
+        use m_sysn          ! System characteristics
+        use m_sysi          ! Timer characteristics
+        !
+        INTEGER(kind = int_wp) :: ISYSI(:), ISYSN(:)
 
-      contains
-
-
-      SUBROUTINE DHISYS ( ISYSI , ISYSN )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED             : march 97 by Jan van Beek
-!
-!     FUNCTION            : Initialise constant array from common block
-!
-!     LOGICAL UNITNUMBERS : -
-!
-!     SUBROUTINES CALLED  : -
-!
-!     PARAMETERS          : -
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     ISYSI   INTEGER       *     OUTPUT  copy of the SYSI common block
-!     ISYSN   INTEGER       *     OUTPUT  copy of the SYSI common block
-!
-!     declarations
-      use m_array_manipulation, only : copy_integer_array_elements
-      use m_sysn          ! System characteristics
-      use m_sysi          ! Timer characteristics
-!
-      INTEGER(kind=int_wp) ::ISYSI(:), ISYSN(:)
-
-!     Fill the array's
-!
-      CALL copy_integer_array_elements( II    , ISYSI , IISIZE )
-      CALL copy_integer_array_elements( IN    , ISYSN , INSIZE )
-!
-      RETURN
-      END
-      end module m_dhisys
+        !     Fill the array's
+        !
+        CALL copy_integer_array_elements(II, ISYSI, IISIZE)
+        CALL copy_integer_array_elements(IN, ISYSN, INSIZE)
+        !
+        RETURN
+    END
+end module m_dhisys

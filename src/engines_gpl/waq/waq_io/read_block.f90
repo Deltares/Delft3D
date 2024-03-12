@@ -180,40 +180,40 @@
 
       do
 
-         if ( gettoken(ctoken, ierr2) .ne. 0 ) exit
+         if ( gettoken(ctoken, ierr2) /= 0 ) exit
 
-         if ( ctoken .eq. 'ABSOLUTE' ) then
+         if ( ctoken == 'ABSOLUTE' ) then
             write ( lunut , 1900 )
-            if ( data_block%functype .eq. 0 ) data_block%functype  = FUNCTYPE_BLOCK
+            if ( data_block%functype == 0 ) data_block%functype  = FUNCTYPE_BLOCK
             cycle
          endif
-         if ( ctoken .eq. 'BLOCK' ) then
+         if ( ctoken == 'BLOCK' ) then
             write ( lunut , 2000 )
             data_block%functype = FUNCTYPE_BLOCK
             cycle
          endif
-         if ( ctoken .eq. 'LINEAR' ) then
+         if ( ctoken == 'LINEAR' ) then
             write ( lunut , 2000 )
             data_block%functype = FUNCTYPE_LINEAR
             cycle
          endif
-         if ( ctoken .eq. 'HARMONICS' ) then
+         if ( ctoken == 'HARMONICS' ) then
             write ( lunut , 2005 )
             data_block%functype = FUNCTYPE_HARMONIC
             cycle
          endif
-         if ( ctoken .eq. 'FOURIERS'  ) then
+         if ( ctoken == 'FOURIERS'  ) then
             write ( lunut , 2010 )
             data_block%functype = FUNCTYPE_FOURIER
             cycle
          endif
-         if ( ctoken .eq. 'TIME_DELAY' ) then
+         if ( ctoken == 'TIME_DELAY' ) then
             call read_time_delay ( ierr2  )
-            if ( ierr2 .ne. 0 ) goto 100
+            if ( ierr2 /= 0 ) goto 100
             cycle
          endif
-         if ( ctoken .eq. 'ODS_FILE' ) then
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC .or. data_block%functype .eq. FUNCTYPE_FOURIER ) then
+         if ( ctoken == 'ODS_FILE' ) then
+            if ( data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER ) then
                write ( lunut , 2100 )
                ierr = 1
                exit
@@ -222,8 +222,8 @@
             data_block%filetype = FILE_ODS
             cycle
          endif
-         if ( ctoken .eq. 'BINARY_FILE' ) then
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC .or. data_block%functype .eq. FUNCTYPE_FOURIER ) then
+         if ( ctoken == 'BINARY_FILE' ) then
+            if ( data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER ) then
                write ( lunut , 2110 )
                ierr = 1
                exit
@@ -232,8 +232,8 @@
             data_block%filetype = FILE_BINARY
             cycle
          endif
-         if ( ctoken .eq. 'UNFORMATTED' ) then
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC .or. data_block%functype .eq. FUNCTYPE_FOURIER ) then
+         if ( ctoken == 'UNFORMATTED' ) then
+            if ( data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER ) then
                write ( lunut , 2110 )
                ierr = 1
                exit
@@ -242,8 +242,8 @@
             data_block%filetype = FILE_UNFORMATTED
             cycle
          endif
-         if ( ctoken .eq. 'BIG_ENDIAN' ) then
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC .or. data_block%functype .eq. FUNCTYPE_FOURIER ) then
+         if ( ctoken == 'BIG_ENDIAN' ) then
+            if ( data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER ) then
                write ( lunut , 2110 )
                ierr = 1
                exit
@@ -252,18 +252,18 @@
             data_block%filetype = data_block%filetype + FILE_BIG_ENDIAN
             cycle
          endif
-         if ( ctoken .eq. 'MULTIPLEHYD_FILE' ) then
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC .or. data_block%functype .eq. FUNCTYPE_FOURIER ) then
+         if ( ctoken == 'MULTIPLEHYD_FILE' ) then
+            if ( data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER ) then
                write ( lunut , 2110 )
                ierr = 1
                exit
             endif
-            if ( .not. (data_block%subject .eq. SUBJECT_FUNCTION .or. data_block%subject .eq. SUBJECT_SEGFUNC) ) then
+            if ( .not. (data_block%subject == SUBJECT_FUNCTION .or. data_block%subject == SUBJECT_SEGFUNC) ) then
                write ( lunut , 2270 )
                ierr = 1
                exit
             endif
-            if ( data_param%no_item .ne. 1 ) then
+            if ( data_param%no_item /= 1 ) then
                write ( lunut , 2280 )
                ierr = 1
                exit
@@ -274,14 +274,14 @@
             call opt1( -4    , lun    , 17    , lchar  , filtype, & 
                       dtflg1, dtflg3 , noseg , ierr2  , status   , & 
                       .false.)
-            if ( ierr2 .ne. 0 ) exit
+            if ( ierr2 /= 0 ) exit
 
             ierr2 = puttoken(lchar(17))
             data_block%extern   = .true.
             data_block%filetype = FILE_BINARY
             cycle
          endif
-         if ( ctoken .eq. 'INITIALS' ) then
+         if ( ctoken == 'INITIALS' ) then
             callr  = 'initial'
             strng1 = 'segments'
             strng2 = 'substance'
@@ -292,13 +292,13 @@
                             waq_param  , data_param, substances, types    , noits , & 
                             ierr2      , status)
 
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write ( lunut , 2120 )
                goto 100
             endif
             cycle
          endif
-         if ( ctoken .eq. 'CONSTANTS' ) then
+         if ( ctoken == 'CONSTANTS' ) then
             callr  = 'constant'
             data_block%subject  = SUBJECT_CONSTANT
             data_block%functype = FUNCTYPE_CONSTANT
@@ -316,7 +316,7 @@
                             ierr2      , status)
 
 
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write ( lunut , 2120 )
                ierr = 1
                exit
@@ -325,10 +325,10 @@
             cycle
          endif
 
-         if ( ctoken .eq. 'FUNCTIONS' ) then
+         if ( ctoken == 'FUNCTIONS' ) then
             callr  = 'function'
             data_block%subject  = SUBJECT_FUNCTION
-            if ( data_block%functype .eq. FUNCTYPE_CONSTANT ) data_block%functype = FUNCTYPE_BLOCK
+            if ( data_block%functype == FUNCTYPE_CONSTANT ) data_block%functype = FUNCTYPE_BLOCK
             data_block%no_loc   = 1
             data_block%iorder = ORDER_PARAM_LOC
             write ( lunut , * ) ' '
@@ -344,14 +344,14 @@
                             ierr2      , status)
 
 
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write ( lunut , 2120 )
                goto 100
             endif
             cycle
          endif
 
-         if ( ctoken.eq.'PARAMETERS' ) then
+         if ( ctoken=='PARAMETERS' ) then
             strng1 = 'parameter'
             chkflg = -1
             data_block%subject  = SUBJECT_PARAMETER
@@ -363,19 +363,19 @@
                             ierr2      , status)
 
 
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write ( lunut , 2150 )
                goto 100
             endif
-            if ( data_param%no_item .ne. 0 .and. data_block%iorder .eq. ORDER_UNKNOWN ) data_block%iorder = ORDER_PARAM_LOC
+            if ( data_param%no_item /= 0 .and. data_block%iorder == ORDER_UNKNOWN ) data_block%iorder = ORDER_PARAM_LOC
             cycle
          endif
 !
-         if ( ctoken.eq.'SEG_FUNCTIONS' ) then
+         if ( ctoken=='SEG_FUNCTIONS' ) then
             strng1 = 'seg-funct.'
             chkflg = 0
             data_block%subject  = SUBJECT_SEGFUNC
-            if ( data_block%functype .eq. 0 ) data_block%functype = 1
+            if ( data_block%functype == 0 ) data_block%functype = 1
             write ( lunut , * ) ' '
 
             call read_items( lunut      , inpfil    , ioutpt    , chkflg   , strng1, & 
@@ -383,21 +383,21 @@
                             ierr2      , status)
 
 
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write ( lunut , 2150 )
                goto 100
             endif
-            if ( data_param%no_item .ne. 0 .and. data_block%iorder .eq. ORDER_UNKNOWN ) data_block%iorder = ORDER_LOC_PARAM
+            if ( data_param%no_item /= 0 .and. data_block%iorder == ORDER_UNKNOWN ) data_block%iorder = ORDER_LOC_PARAM
             cycle
          endif
 !
-         if ( ctoken  .eq. 'SEGMENTS' .or. ctoken .eq. 'ALL' .or. ctoken .eq. 'INPUTGRID' ) then
-            if ( waq_loc%no_item  .eq. -1   ) then
+         if ( ctoken  == 'SEGMENTS' .or. ctoken == 'ALL' .or. ctoken == 'INPUTGRID' ) then
+            if ( waq_loc%no_item  == -1   ) then
                write ( lunut , 2170 )
                ierr = 1
                goto 100
             endif
-            if ( ctoken .eq. 'ALL' ) then
+            if ( ctoken == 'ALL' ) then
                waq_loc%no_item = noseg
                write ( lunut , 2020 ) waq_loc%no_item
                ierr2 = dlwq_resize(waq_loc,waq_loc%no_item)
@@ -405,10 +405,10 @@
                   waq_loc%ipnt(i) = i
                   write(waq_loc%name(i), '(''segment '',i8)' ) i
                enddo
-            elseif ( ctoken .eq. 'INPUTGRID' ) then
-               if ( gettoken(ctoken,ierr2) .ne. 0 ) goto 100
+            elseif ( ctoken == 'INPUTGRID' ) then
+               if ( gettoken(ctoken,ierr2) /= 0 ) goto 100
                igrid = gridpointercollfind( gridps, ctoken )
-               if ( igrid .ge. 1 ) then
+               if ( igrid >= 1 ) then
                   data_block%igrid = igrid
                   write ( lunut , 2290 ), trim(ctoken)
                   waq_loc%no_item = gridps%pointers(igrid)%noseg
@@ -432,17 +432,17 @@
                                waq_loc  , data_loc, segments, types , noits_loc, & 
                                ierr2    , status)
 
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write ( lunut , 2180 )
                   goto 100
                endif
             endif
-            if ( data_param%no_item .eq. 0 ) then
+            if ( data_param%no_item == 0 ) then
                write ( lunut , 2030 ) strng1, strng1
                data_block%iorder = ORDER_LOC_PARAM
-               if ( data_block%subject .eq. SUBJECT_PARAMETER ) ierr2 = puttoken('PARAMETERS')
-               if ( data_block%subject .eq. SUBJECT_SEGFUNC ) ierr2 = puttoken('SEG_FUNCTIONS')
-               if ( data_block%subject .eq. SUBJECT_INITIAL ) ierr2 = puttoken('INITIALS')
+               if ( data_block%subject == SUBJECT_PARAMETER ) ierr2 = puttoken('PARAMETERS')
+               if ( data_block%subject == SUBJECT_SEGFUNC ) ierr2 = puttoken('SEG_FUNCTIONS')
+               if ( data_block%subject == SUBJECT_INITIAL ) ierr2 = puttoken('INITIALS')
             else
                write ( lunut , 2040 ) strng1, strng1
                data_block%iorder = ORDER_PARAM_LOC
@@ -450,19 +450,19 @@
             cycle
          endif
 !
-         if ( ctoken .eq. 'DEFAULTS' ) then
-            if ( data_block%subject .eq. SUBJECT_PARAMETER .or. & 
-                data_block%subject .eq. SUBJECT_INITIAL   .or. & 
-                data_block%subject .eq. SUBJECT_SEGFUNC ) then
+         if ( ctoken == 'DEFAULTS' ) then
+            if ( data_block%subject == SUBJECT_PARAMETER .or. &
+                data_block%subject == SUBJECT_INITIAL   .or. &
+                data_block%subject == SUBJECT_SEGFUNC ) then
 
                data_block%iorder       = ORDER_PARAM_LOC
                data_block%loc_defaults = .true.
-               if ( data_param%no_item .gt. 0 ) then
+               if ( data_param%no_item > 0 ) then
                   ctoken = 'DATA'
                else
-                  if ( data_block%subject .eq. SUBJECT_PARAMETER ) ctoken = 'PARAMETERS'
-                  if ( data_block%subject .eq. SUBJECT_INITIAL   ) ctoken = 'INITIALS'
-                  if ( data_block%subject .eq. SUBJECT_SEGFUNC ) ctoken = 'SEG_FUNCTIONS'
+                  if ( data_block%subject == SUBJECT_PARAMETER ) ctoken = 'PARAMETERS'
+                  if ( data_block%subject == SUBJECT_INITIAL   ) ctoken = 'INITIALS'
+                  if ( data_block%subject == SUBJECT_SEGFUNC ) ctoken = 'SEG_FUNCTIONS'
                endif
                ierr2 = puttoken(ctoken)
                ierr2 = dlwq_resize(waq_loc,1)
@@ -477,40 +477,40 @@
             endif
          endif
 !
-         if ( ctoken .eq. 'DATA' .or. data_block%extern ) then
-            if ( data_block%subject .eq. SUBJECT_CONSTANT ) then
+         if ( ctoken == 'DATA' .or. data_block%extern ) then
+            if ( data_block%subject == SUBJECT_CONSTANT ) then
                strng1 = 'constants'
                strng2 = 'values'
             endif
-            if ( data_block%subject .eq. SUBJECT_PARAMETER ) then
+            if ( data_block%subject == SUBJECT_PARAMETER ) then
                strng1 = 'parameters'
                strng2 = 'segments'
-               if ( waq_loc%no_item .eq. 0 ) then
+               if ( waq_loc%no_item == 0 ) then
                   write ( lunut , 2260 )
                   goto 100
                endif
             endif
-            if ( data_block%subject .eq. SUBJECT_FUNCTION ) then
+            if ( data_block%subject == SUBJECT_FUNCTION ) then
                strng1 = 'functions'
                strng2 = 'values'
             endif
-            if ( data_block%subject .eq. SUBJECT_SEGFUNC ) then
+            if ( data_block%subject == SUBJECT_SEGFUNC ) then
                strng1 = 'seg-functs'
                strng2 = 'segments'
-               if ( waq_loc%no_item .eq. 0 ) then
+               if ( waq_loc%no_item == 0 ) then
                   write ( lunut , 2260 )
                   goto 100
                endif
             endif
             strng3 = 'breakpoint'
-            if ( data_block%functype .eq. FUNCTYPE_HARMONIC ) strng3 = 'harmonic'
-            if ( data_block%functype .eq. FUNCTYPE_FOURIER   ) strng3 = 'fourier'
+            if ( data_block%functype == FUNCTYPE_HARMONIC ) strng3 = 'harmonic'
+            if ( data_block%functype == FUNCTYPE_FOURIER   ) strng3 = 'fourier'
 
-            if ( data_block%filetype .eq. FILE_ODS ) then
+            if ( data_block%filetype == FILE_ODS ) then
 
                ! when data_loc is not filled only
 
-               if ( data_loc%no_item .eq. 0 ) then
+               if ( data_loc%no_item == 0 ) then
                   ierr2 = dlwq_resize(data_loc,waq_loc%no_item)
                   data_loc%no_item  = waq_loc%no_item
                   data_loc%name     = waq_loc%name
@@ -524,15 +524,15 @@
 
                call read_data_ods( lunut      , ctoken , data_param, data_loc, amiss , & 
                                   data_buffer, ierr2 )
-               if ( ierr2 .ne. 0 ) goto 100
+               if ( ierr2 /= 0 ) goto 100
                call compute_matrix ( lunut , data_param , data_loc   , waq_param, waq_loc, & 
                                     amiss , data_buffer, data_block )
                data_block%extern = .false.
                deallocate(data_buffer%times,data_buffer%values)
 
-            elseif ( mod(data_block%filetype,10) .eq. FILE_BINARY .or. & 
-                    mod(data_block%filetype,10) .eq. FILE_UNFORMATTED ) then
-               if ( data_block%subject .eq. SUBJECT_SEGFUNC ) data_block%iorder = ORDER_LOC_PARAM
+            elseif ( mod(data_block%filetype,10) == FILE_BINARY .or. &
+                    mod(data_block%filetype,10) == FILE_UNFORMATTED ) then
+               if ( data_block%subject == SUBJECT_SEGFUNC ) data_block%iorder = ORDER_LOC_PARAM
                write ( lunut   ,   2220   ) ctoken
                data_block%filename = ctoken
 
@@ -557,11 +557,11 @@
                nocol = noits
                call read_header( waq_param, data_param, nocol , itfact, dtflg1, & 
                                 dtflg3   , ierr2     , status  )
-               if ( ierr2 .ne. 0 ) goto 100
+               if ( ierr2 /= 0 ) goto 100
 
                ! when data_loc is not filled only
 
-               if ( data_loc%no_item .eq. 0 ) then
+               if ( data_loc%no_item == 0 ) then
                   ierr2 = dlwq_resize(data_loc,waq_loc%no_item)
                   data_loc%no_item  = waq_loc%no_item
                   data_loc%name     = waq_loc%name
@@ -581,7 +581,7 @@
                data_buffer%functype = data_block%functype
 
                call read_data( data_buffer, itfact, dtflg1, dtflg3, ierr2 )
-               if ( ierr2 .ne. 0 ) goto 100
+               if ( ierr2 /= 0 ) goto 100
 
                call validate_time_series_strictly_increasing(lunut,data_buffer, ierr2)
 
@@ -589,11 +589,11 @@
                                     amiss , data_buffer, data_block )
                deallocate(data_buffer%times,data_buffer%values)
             endif
-            if ( ierr2 .eq. 1 .or. ierr2 .eq. 4 ) then
+            if ( ierr2 == 1 .or. ierr2 == 4 ) then
                write ( lunut , 2200 )
                goto 100
             endif
-            if ( waq_loc%no_item .eq. -1 ) write ( lunut , 1910 )
+            if ( waq_loc%no_item == -1 ) write ( lunut , 1910 )
             data_block%no_param       = waq_param%no_item
             data_block%param_named    = .true.
             data_block%param_name     =>waq_param%name
@@ -611,7 +611,7 @@
             endif
             call print_matrix( lunut , iwidth, data_block, strng1, strng2, & 
                               strng3, ioutpt)
-            if ( ierr2 .eq. 3 ) goto 50
+            if ( ierr2 == 3 ) goto 50
             exit
          endif
 
@@ -630,7 +630,7 @@
       goto 110
 !
   100 continue
-      if ( ierr2 .ne. 0 ) then
+      if ( ierr2 /= 0 ) then
          write ( lunut , 2090 )
          ierr = ierr2
       endif
@@ -647,10 +647,6 @@
       return
 !
  1140 FORMAT(/' ====> input item completed <==== '//   )
- 1340 FORMAT (  ' Output on administration only writen for output', & 
-               ' option 3 and higher !' )
- 1350 FORMAT (  ' Output of the data only writen for output', & 
-               ' option 4 and higher !' )
  1900 FORMAT(/' Absolute times (YYYY/MM/DD;HH:MM:SS) expected in next' & 
             ,' time function block.' )
  1910 FORMAT(/' Data are supplied as single default values', & 
@@ -661,10 +657,6 @@
  2020 FORMAT(/' Input will be given for all ',I10,' segments.' )
  2030 FORMAT(/' ',A,'s ordered in groups of ',A,'s per segment.')
  2040 FORMAT(/' ',A,'s ordered in groups of segments per ',A,'.')
- 2050 FORMAT(/' Total number of constants        : ',I4  )
- 2060 FORMAT(/' Total number of parameters       : ',I4  )
- 2070 FORMAT(/' Total number of functions        : ',I4  )
- 2080 FORMAT(/' Total number of segment functions: ',I4  )
  2090 FORMAT( ' ERROR encountered in processing this input item !' )
  2100 FORMAT( ' Harmonics or Fouriers not allowed with ODS-files !' )
  2110 FORMAT( ' Harmonics or Fouriers not allowed with binary files !' )
@@ -672,7 +664,6 @@
              ' names !' )
  2150 FORMAT( ' ERROR during processing of PARAMETERS or', & 
              ' SEG_FUNCTIONS names !' )
- 2160 FORMAT( ' ERROR: A recognizable keyword is expected !' )
  2170 FORMAT( ' ERROR: The DEFAULT keyword was already specified,', & 
              ' no SEGMENTS or ALL expected any more !' )
  2180 FORMAT( ' ERROR during processing of SEGMENT identifiers !')
@@ -681,7 +672,6 @@
  2200 FORMAT( ' ERROR reading the data block !' )
  2210 FORMAT( ' ERROR keyword: ',A,' not recognized !' )
  2220 FORMAT( ' Input comes from binary file: ',A      )
- 2250 FORMAT( ' Number of fast solver vectors set to :',I6  )
  2260 FORMAT( ' ERROR: Segments not defined, use ALL for all segs !' )
  2270 FORMAT( ' ERROR: MULTIPLEHYD_FILE only allowed for (segment-)functions !' )
  2280 FORMAT( ' ERROR: MULTIPLEHYD_FILE only allowed for single item entry!' )
@@ -737,11 +727,11 @@
       !
 
       read ( lun , iostat = ierr ) strng
-      if ( ierr .ne. 0 ) then
+      if ( ierr /= 0 ) then
          ierr  = 0
          strng = 'x'
       endif
-      if ( strng(1:14) .ne. 'Steering file ' ) then
+      if ( strng(1:14) /= 'Steering file ' ) then
          if ( type == FILE_BINARY ) then
             inquire( lun, size = filesize )
             close( lun )

@@ -144,7 +144,7 @@
 !
       INQNELEMS = 12
       IERROR = INQCEL (DEFFDS , GRPNAM, INQNELEMS, INQELMNMS)
-      IF (INQNELEMS.EQ.NELEMS) THEN
+      IF (INQNELEMS==NELEMS) THEN
           NETCDFSTD = .TRUE.
       ELSE
           NETCDFSTD = .FALSE.
@@ -160,12 +160,12 @@
                       GRPNAM , ELMNMS(1), & 
                       UINDEX , 1        , & 
                       buflen , NO_ITEM  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(1)
          WRITE(LUNREP,*) 'ERROR number:',IERROR
          GOTO 900
       ENDIF
-      IF ( NO_ITEM .GT. NO_ITEM_MAX ) THEN
+      IF ( NO_ITEM > NO_ITEM_MAX ) THEN
          WRITE(LUNREP,*) 'ERROR reading group ',GRPNAM
          WRITE(LUNREP,*) 'Actual number of items: ',NO_ITEM
          WRITE(LUNREP,*) 'greater than maximum: ',NO_ITEM_MAX
@@ -183,7 +183,7 @@
                       GRPNAM , ELMNMS(2), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_ID  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(2)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -193,7 +193,7 @@
                       GRPNAM , ELMNMS(3), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_NAME)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(3)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -203,7 +203,7 @@
                       GRPNAM , ELMNMS(4), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_UNIT)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(4)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -213,7 +213,7 @@
                       GRPNAM , ELMNMS(5), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_DEFAULT)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(5)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -223,7 +223,7 @@
                       GRPNAM , ELMNMS(6), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_DISAGGR)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(6)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -233,7 +233,7 @@
                       GRPNAM , ELMNMS(7), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_AGGREGA)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(7)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -243,7 +243,7 @@
                       GRPNAM , ELMNMS(8), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_GROUPID)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(8)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -253,7 +253,7 @@
                       GRPNAM , ELMNMS(9), & 
                       UINDEX , 1        , & 
                       BUFLEN , ITEM_SEGX)
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(9)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -263,7 +263,7 @@
                       GRPNAM , ELMNMS(10), & 
                       UINDEX , 1         , & 
                       BUFLEN , ITEM_WK  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(10)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -279,7 +279,7 @@
                       GRPNAM , ELMNMS(11), & 
                       UINDEX , 1         , & 
                       BUFLEN , ITEM_SN  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(11)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900
@@ -289,7 +289,7 @@
                       GRPNAM , ELMNMS(12), & 
                       UINDEX , 1         , & 
                       BUFLEN , ITEM_SU  )
-      IF ( IERROR .NE. 0 ) THEN
+      IF ( IERROR /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR reading element ',ELMNMS(12)
          WRITE(LUNREP,*) 'ERROR number: ',IERROR
          GOTO 900

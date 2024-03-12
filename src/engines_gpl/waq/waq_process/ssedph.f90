@@ -20,167 +20,166 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_ssedph
-      use m_waq_precision
+module m_ssedph
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine ssedph (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Sum of sedimentation flux of algae Dynamo - Bloom - GEM
 
+        !
+        !     Description of the module :
+        !
+        ! Name    T   L I/O   Description                                    Units
+        ! ----    --- -  -    -------------------                            -----
 
-      subroutine ssedph ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Sum of sedimentation flux of algae Dynamo - Bloom - GEM
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-! Name    T   L I/O   Description                                    Units
-! ----    --- -  -    -------------------                            -----
+        !     Name     Type   Library
 
-!     Logical Units : -
+        !     ------   -----  ------------
 
-!     Modules called : -
+        IMPLICIT REAL (A-H, J-Z)
 
-!     Name     Type   Library
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     ------   -----  ------------
+        INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK1, IKMRK2, IN, IP, IP2, &
+                IALG, IQ, IVAN, INAAR, IKMRKN, IKMRKV
+        REAL(kind = real_wp) :: DEPTH, SEDCAR, SEDDM, SEDNIT, SEDPHO, SEDSIL, SEDSPE, &
+                CTODRY, NCRAT, PCRAT, SCRAT, TOTFLX, TOTCON, CONSPE, &
+                VELSPE
+        !
+        !     Local
+        !
+        INTEGER(kind = int_wp) :: NALG
+        !
+        NALG = NINT(PMSA(IPOINT(1)))
+        IFLUX = 0
+        IP2 = IPOINT(2)
 
-      IMPLICIT REAL (A-H,J-Z)
+        DO ISEG = 1, NOSEG
+            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            IF (IKMRK1==1) THEN
+                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
+                    !
+                    DEPTH = PMSA(IP2)
+                    SEDCAR = 0.0
+                    SEDDM = 0.0
+                    SEDNIT = 0.0
+                    SEDPHO = 0.0
+                    SEDSIL = 0.0
+                    DO IALG = 1, NALG
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+                        IN = 2 + 0 * NALG + IALG
+                        SEDSPE = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        IN = 2 + 1 * NALG + IALG
+                        CTODRY = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
 
-      INTEGER(kind=int_wp) ::IFLUX , ISEG  , IKMRK1, IKMRK2, IN    , IP    , IP2   , & 
-              IALG  , IQ    , IVAN  , INAAR , IKMRKN, IKMRKV
-      REAL(kind=real_wp) ::DEPTH , SEDCAR, SEDDM , SEDNIT, SEDPHO, SEDSIL, SEDSPE, & 
-              CTODRY, NCRAT , PCRAT , SCRAT , TOTFLX, TOTCON, CONSPE, & 
-              VELSPE
-!
-!     Local
-!
-      INTEGER(kind=int_wp) ::NALG
-!
-      NALG  = NINT(PMSA(IPOINT(1)))
-      IFLUX = 0
-      IP2   = IPOINT(  2 )
+                        SEDCAR = SEDCAR + SEDSPE
+                        SEDDM = SEDDM + SEDSPE * CTODRY
 
-      DO 9000 ISEG = 1 , NOSEG
-      CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
-      IF (IKMRK1.EQ.1) THEN
-      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
-      IF ((IKMRK2.EQ.0).OR.(IKMRK2.EQ.3)) THEN
-!
-          DEPTH   = PMSA(IP2)
-          SEDCAR  = 0.0
-          SEDDM   = 0.0
-          SEDNIT  = 0.0
-          SEDPHO  = 0.0
-          SEDSIL  = 0.0
-          DO 100 IALG = 1,NALG
+                        IN = 2 + 2 * NALG + IALG
+                        NCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        IN = 2 + 3 * NALG + IALG
+                        PCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        IN = 2 + 4 * NALG + IALG
+                        SCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
 
-              IN = 2 + 0*NALG + IALG
-              SEDSPE = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
-              IN = 2 + 1*NALG + IALG
-              CTODRY = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
+                        SEDNIT = SEDNIT + SEDSPE * NCRAT
+                        SEDPHO = SEDPHO + SEDSPE * PCRAT
+                        SEDSIL = SEDSIL + SEDSPE * SCRAT
 
-              SEDCAR = SEDCAR + SEDSPE
-              SEDDM  = SEDDM  + SEDSPE*CTODRY
+                        !              ENDIF
 
-                 IN = 2 + 2*NALG + IALG
-                 NCRAT  = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
-                 IN = 2 + 3*NALG + IALG
-                 PCRAT  = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
-                 IN = 2 + 4*NALG + IALG
-                 SCRAT  = PMSA( IPOINT(IN) + (ISEG-1)*INCREM(IN) )
+                    end do
 
-                 SEDNIT = SEDNIT + SEDSPE*NCRAT
-                 SEDPHO = SEDPHO + SEDSPE*PCRAT
-                 SEDSIL = SEDSIL + SEDSPE*SCRAT
+                    IP = IPOINT(2 + 7 * NALG + 1) + (ISEG - 1) * INCREM(2 + 7 * NALG + 1)
+                    PMSA (IP) = SEDCAR
+                    IP = IPOINT(2 + 7 * NALG + 2) + (ISEG - 1) * INCREM(2 + 7 * NALG + 2)
+                    PMSA (IP) = SEDDM
 
-!              ENDIF
+                    !         NO LONGER Define fluxes only for Bloom (NALG .GT. 6)
 
-  100     CONTINUE
+                    IF (DEPTH > 0.0) THEN
+                        FL(IFLUX + 1) = SEDCAR / DEPTH
+                        FL(IFLUX + 2) = SEDNIT / DEPTH
+                        FL(IFLUX + 3) = SEDPHO / DEPTH
+                        FL(IFLUX + 4) = SEDSIL / DEPTH
+                    ELSE
+                        FL(IFLUX + 1) = 0.0
+                        FL(IFLUX + 2) = 0.0
+                        FL(IFLUX + 3) = 0.0
+                        FL(IFLUX + 4) = 0.0
+                    ENDIF
+                    !          ENDIF
 
-          IP =  IPOINT(2+7*NALG+1) + (ISEG-1)*INCREM(2+7*NALG+1)
-          PMSA (IP) = SEDCAR
-          IP =  IPOINT(2+7*NALG+2) + (ISEG-1)*INCREM(2+7*NALG+2)
-          PMSA (IP) = SEDDM
+                ENDIF
+            ENDIF
+            IFLUX = IFLUX + NOFLUX
+            IP2 = IP2 + INCREM(2)
+            !
+        end do
+        !
+        !.....Exchangeloop over de horizontale richting ter initialisatie
+        DO IQ = 1, NOQ1 + NOQ2 + NOQ3
 
-!         NO LONGER Define fluxes only for Bloom (NALG .GT. 6)
+            IP = IPOINT(2 + 7 * NALG + 3) + (IQ - 1) * INCREM(2 + 7 * NALG + 3)
+            PMSA (IP) = 0.0
 
-             IF (DEPTH .GT. 0.0) THEN
-                FL(IFLUX+1) = SEDCAR/DEPTH
-                FL(IFLUX+2) = SEDNIT/DEPTH
-                FL(IFLUX+3) = SEDPHO/DEPTH
-                FL(IFLUX+4) = SEDSIL/DEPTH
-             ELSE
-                FL(IFLUX+1) = 0.0
-                FL(IFLUX+2) = 0.0
-                FL(IFLUX+3) = 0.0
-                FL(IFLUX+4) = 0.0
-             ENDIF
-!          ENDIF
+        end do
 
-      ENDIF
-      ENDIF
-      IFLUX = IFLUX + NOFLUX
-      IP2   = IP2   + INCREM(  2 )
-!
- 9000 CONTINUE
-!
-!.....Exchangeloop over de horizontale richting ter initialisatie
-      DO 8000 IQ=1,NOQ1+NOQ2+NOQ3
+        !.....Exchangeloop over de verticale richting
+        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
 
-          IP =  IPOINT(2+7*NALG+3) + (IQ-1)*INCREM(2+7*NALG+3)
-          PMSA (IP) = 0.0
+            IVAN = IEXPNT(1, IQ)
+            INAAR = IEXPNT(2, IQ)
 
- 8000 CONTINUE
+            !        Zoek eerste kenmerk van- en naar-segmenten
 
-!.....Exchangeloop over de verticale richting
-      DO 7000 IQ = NOQ1+NOQ2+1 , NOQ1+NOQ2+NOQ3+NOQ4
+            IF (IVAN>0 .AND. INAAR>0) THEN
+                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                IF (IKMRKV==1.AND.IKMRKN==1 .OR. &
+                        IKMRKV==1.AND.IKMRKN==3) THEN
 
-         IVAN  = IEXPNT(1,IQ)
-         INAAR = IEXPNT(2,IQ)
+                    !            Water-water uitwisseling
 
-!        Zoek eerste kenmerk van- en naar-segmenten
+                    TOTFLX = 0.0
+                    TOTCON = 0.0
+                    DO IALG = 1, NALG
+                        IP = IPOINT(2 + 5 * NALG + IALG) + (IVAN - 1) * INCREM(2 + 5 * NALG + IALG)
+                        CONSPE = PMSA(IP)
+                        IP = IPOINT(2 + 6 * NALG + IALG) + (IQ - 1) * INCREM(2 + 6 * NALG + IALG)
+                        VELSPE = PMSA(IP)
+                        TOTFLX = TOTFLX + CONSPE * VELSPE
+                        TOTCON = TOTCON + CONSPE
+                    end do
+                    IP = IPOINT(2 + 7 * NALG + 3) + (IQ - 1) * INCREM(2 + 7 * NALG + 3)
+                    IF (TOTCON > 0.0) THEN
+                        PMSA(IP) = TOTFLX / TOTCON
+                    ELSE
+                        PMSA(IP) = 0.0
+                    ENDIF
+                ENDIF
+            ENDIF
 
-         IF ( IVAN.GT.0 .AND. INAAR.GT.0 ) THEN
-         CALL evaluate_waq_attribute(1,IKNMRK(IVAN ),IKMRKV)
-         CALL evaluate_waq_attribute(1,IKNMRK(INAAR),IKMRKN)
-         IF (IKMRKV.EQ.1.AND.IKMRKN.EQ.1 .OR. & 
-            IKMRKV.EQ.1.AND.IKMRKN.EQ.3) THEN
+        end do
+        RETURN
+        !
+    END
 
-!            Water-water uitwisseling
-
-           TOTFLX = 0.0
-           TOTCON = 0.0
-           DO 7100 IALG = 1,NALG
-             IP = IPOINT(2+5*NALG+IALG) + (IVAN-1)*INCREM(2+5*NALG+IALG)
-             CONSPE = PMSA( IP )
-             IP = IPOINT(2+6*NALG+IALG) + (IQ-1)*INCREM(2+6*NALG+IALG)
-             VELSPE = PMSA( IP )
-             TOTFLX = TOTFLX + CONSPE*VELSPE
-             TOTCON = TOTCON + CONSPE
- 7100      CONTINUE
-           IP = IPOINT(2+7*NALG+3) + (IQ-1)*INCREM(2+7*NALG+3)
-           IF ( TOTCON .GT. 0.0 ) THEN
-             PMSA(IP) = TOTFLX/TOTCON
-           ELSE
-             PMSA(IP) = 0.0
-           ENDIF
-         ENDIF
-         ENDIF
-
- 7000 CONTINUE
-      RETURN
-!
-      END
-
-      end module m_ssedph
+end module m_ssedph

@@ -20,177 +20,177 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_add_dspfrc
-      use m_waq_precision
-      use m_string_utils
+module m_add_dspfrc
+    use m_waq_precision
+    use m_string_utils
 
-      implicit none
+    implicit none
 
-      contains
+contains
 
 
-      subroutine add_dspfrc( lunrep, procesdef, sfracs)
+    subroutine add_dspfrc(lunrep, procesdef, sfracs)
 
-      ! add the dispersion and velocity stochi for fractions
+        ! add the dispersion and velocity stochi for fractions
 
-      use m_srstop
-      use ProcesSet
-      use timers       !   performance timers
+        use m_srstop
+        use ProcesSet
+        use timers       !   performance timers
 
-      implicit none
+        implicit none
 
-      ! decalaration of arguments
+        ! decalaration of arguments
 
-      integer(kind=int_wp) ::lunrep          ! report file
-      type(procespropcoll)      :: procesdef       ! the process definition
-      type(sfracsprop)          :: sfracs          ! substance fraction properties
+        integer(kind = int_wp) :: lunrep          ! report file
+        type(procespropcoll) :: procesdef       ! the process definition
+        type(sfracsprop) :: sfracs          ! substance fraction properties
 
-      ! local declaration
+        ! local declaration
 
-      type(stochiprop), pointer :: new_dispstochi(:) ! list with added stochies
-      type(stochiprop), pointer :: new_velostochi(:) ! list with added stochies
-      type(procesprop), pointer :: proc              ! single process
-      integer(kind=int_wp) ::nproc             ! number of processes
-      integer(kind=int_wp) ::iproc             ! loop counter processes
-      integer(kind=int_wp) ::isfrac            ! index substance fractions
-      integer(kind=int_wp) ::nfrac             ! number fractions in substance fraction
-      character(len=20)         :: basnam            ! base name substance fractions
-      integer(kind=int_wp) ::nstochi           ! number of original stochies
-      integer(kind=int_wp) ::istochi           ! index stochi
-      integer(kind=int_wp) ::n_velo_stochi     ! number of original stochies
-      integer(kind=int_wp) ::ifrac             ! fraction number
-      character(len=3)          :: suffix            ! suffix
-      integer(kind=int_wp) ::indx              ! index in list
-      integer(kind=int_wp) ::ierr_alloc        ! error indication
-      integer(kind=int_wp) ::ithndl = 0
-      if (timon) call timstrt( "add_dspfrc", ithndl )
+        type(stochiprop), pointer :: new_dispstochi(:) ! list with added stochies
+        type(stochiprop), pointer :: new_velostochi(:) ! list with added stochies
+        type(procesprop), pointer :: proc              ! single process
+        integer(kind = int_wp) :: nproc             ! number of processes
+        integer(kind = int_wp) :: iproc             ! loop counter processes
+        integer(kind = int_wp) :: isfrac            ! index substance fractions
+        integer(kind = int_wp) :: nfrac             ! number fractions in substance fraction
+        character(len = 20) :: basnam            ! base name substance fractions
+        integer(kind = int_wp) :: nstochi           ! number of original stochies
+        integer(kind = int_wp) :: istochi           ! index stochi
+        integer(kind = int_wp) :: n_velo_stochi     ! number of original stochies
+        integer(kind = int_wp) :: ifrac             ! fraction number
+        character(len = 3) :: suffix            ! suffix
+        integer(kind = int_wp) :: indx              ! index in list
+        integer(kind = int_wp) :: ierr_alloc        ! error indication
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("add_dspfrc", ithndl)
 
-      ! loop over the processes
+        ! loop over the processes
 
-      nproc = procesdef%cursize
-      do iproc = 1, nproc
+        nproc = procesdef%cursize
+        do iproc = 1, nproc
 
-         proc => procesdef%procesprops(iproc)
-         nstochi = proc%no_dispstochi
-         n_velo_stochi = proc%no_velostochi
+            proc => procesdef%procesprops(iproc)
+            nstochi = proc%no_dispstochi
+            n_velo_stochi = proc%no_velostochi
 
-         ! only for processes which are split up
+            ! only for processes which are split up
 
-         if ( procesdef%procesprops(iproc)%sfrac_type .eq. SFRAC_SPLITFLUX) then
+            if (procesdef%procesprops(iproc)%sfrac_type == SFRAC_SPLITFLUX) then
 
-            ! check for dispersion stochi with fractions
+                ! check for dispersion stochi with fractions
 
-            do isfrac = 1, sfracs%nsfrac
+                do isfrac = 1, sfracs%nsfrac
 
-               nfrac   = sfracs%nfrac(isfrac)
-               basnam  = sfracs%name(isfrac)
+                    nfrac = sfracs%nfrac(isfrac)
+                    basnam = sfracs%name(isfrac)
 
-               do istochi = 1 , nstochi
+                    do istochi = 1, nstochi
 
-                  ! skip dummy rules, factor equal zero
+                        ! skip dummy rules, factor equal zero
 
-                  if ( abs(proc%dispstochi(istochi)%scale) .gt. 1e-10 ) then
+                        if (abs(proc%dispstochi(istochi)%scale) > 1e-10) then
 
-                     if (string_equals(basnam(1:10), proc%dispstochi(istochi)%substance)) then
+                            if (string_equals(basnam(1:10), proc%dispstochi(istochi)%substance)) then
 
-                        ! dispersion found add the fractions with the same dipersion name and the same factor
+                                ! dispersion found add the fractions with the same dipersion name and the same factor
 
-                        allocate(new_dispstochi(proc%no_dispstochi+nfrac),stat=ierr_alloc)
-                        if ( ierr_alloc .ne. 0 ) then
-                           write(lunrep,*) 'error allocating work array in routine add_dspfrc:',ierr_alloc
-                           write(lunrep,*) 'array length:',proc%no_dispstochi+nfrac
-                           write(*,*) 'error allocating array:',ierr_alloc
-                           call srstop(1)
+                                allocate(new_dispstochi(proc%no_dispstochi + nfrac), stat = ierr_alloc)
+                                if (ierr_alloc /= 0) then
+                                    write(lunrep, *) 'error allocating work array in routine add_dspfrc:', ierr_alloc
+                                    write(lunrep, *) 'array length:', proc%no_dispstochi + nfrac
+                                    write(*, *) 'error allocating array:', ierr_alloc
+                                    call srstop(1)
+                                endif
+
+                                ! copy the existing stochis
+
+                                new_dispstochi(1:proc%no_dispstochi) = proc%dispstochi(1:proc%no_dispstochi)
+
+                                ! add the new ones
+
+                                do ifrac = 1, nfrac
+                                    if (ifrac < 100) then
+                                        write(suffix, '(i2.2)') ifrac
+                                    else
+                                        write(suffix, '(i3.3)') ifrac
+                                    endif
+                                    new_dispstochi(proc%no_dispstochi + ifrac)%substance = trim(basnam) // suffix
+                                    new_dispstochi(proc%no_dispstochi + ifrac)%ioitem = proc%dispstochi(istochi)%ioitem
+                                    new_dispstochi(proc%no_dispstochi + ifrac)%scale = proc%dispstochi(istochi)%scale
+                                enddo
+
+                                ! attach new array to porcess defintion
+
+                                proc%no_dispstochi = proc%no_dispstochi + nfrac
+                                deallocate(proc%dispstochi)
+                                proc%dispstochi => new_dispstochi
+                                write(lunrep, 2000) ' adding dispersion [', trim(proc%dispstochi(istochi)%ioitem), &
+                                        '] for fractions of [', trim(basnam), ']'
+
+                                ! no_sto = no_sto + nfrac ! Should something like this also happen here?
+
+                            endif
                         endif
+                    enddo
 
-                        ! copy the existing stochis
+                    ! the velocities
 
-                        new_dispstochi(1:proc%no_dispstochi) = proc%dispstochi(1:proc%no_dispstochi)
+                    do istochi = 1, n_velo_stochi
 
-                        ! add the new ones
+                        ! skip dummy rules, factor equal zero
 
-                        do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
-                              write(suffix,'(i2.2)') ifrac
-                           else
-                              write(suffix,'(i3.3)') ifrac
-                           endif
-                           new_dispstochi(proc%no_dispstochi+ifrac)%substance = trim(basnam)//suffix
-                           new_dispstochi(proc%no_dispstochi+ifrac)%ioitem    = proc%dispstochi(istochi)%ioitem
-                           new_dispstochi(proc%no_dispstochi+ifrac)%scale     = proc%dispstochi(istochi)%scale
-                        enddo
+                        if (abs(proc%velostochi(istochi)%scale) > 1e-10) then
 
-                        ! attach new array to porcess defintion
+                            if (string_equals(basnam(1:10), proc%velostochi(istochi)%substance)) then
 
-                        proc%no_dispstochi = proc%no_dispstochi + nfrac
-                        deallocate(proc%dispstochi)
-                        proc%dispstochi => new_dispstochi
-                        write(lunrep,2000) ' adding dispersion [',trim(proc%dispstochi(istochi)%ioitem), & 
-                       '] for fractions of [',trim(basnam),']'
+                                ! velocity found add the fractions with the same velocity name and the same factor
 
-                        ! no_sto = no_sto + nfrac ! Should something like this also happen here?
+                                allocate(new_velostochi(proc%no_velostochi + nfrac), stat = ierr_alloc)
+                                if (ierr_alloc /= 0) then
+                                    write(lunrep, *) 'error allocating work array in routine add_dspfrc:', ierr_alloc
+                                    write(lunrep, *) 'array length:', proc%no_velostochi + nfrac
+                                    write(*, *) 'error allocating array:', ierr_alloc
+                                    call srstop(1)
+                                endif
 
-                     endif
-                  endif
-               enddo
+                                ! copy the existing stochis
 
-               ! the velocities
+                                new_velostochi(1:proc%no_velostochi) = proc%velostochi(1:proc%no_velostochi)
 
-               do istochi = 1 , n_velo_stochi
+                                ! add the new ones
 
-                  ! skip dummy rules, factor equal zero
+                                do ifrac = 1, nfrac
+                                    if (ifrac < 100) then
+                                        write(suffix, '(i2.2)') ifrac
+                                    else
+                                        write(suffix, '(i3.3)') ifrac
+                                    endif
+                                    new_velostochi(proc%no_velostochi + ifrac)%substance = trim(basnam) // suffix
+                                    new_velostochi(proc%no_velostochi + ifrac)%ioitem = proc%velostochi(istochi)%ioitem
+                                    new_velostochi(proc%no_velostochi + ifrac)%scale = proc%velostochi(istochi)%scale
+                                enddo
 
-                  if ( abs(proc%velostochi(istochi)%scale) .gt. 1e-10 ) then
+                                ! attach new array to porcess defintion
 
-                     if (string_equals( basnam(1: 10), proc%velostochi(istochi)%substance)) then
+                                proc%no_velostochi = proc%no_velostochi + nfrac
+                                deallocate(proc%velostochi)
+                                proc%velostochi => new_velostochi
+                                write(lunrep, 2000) ' adding velocity [', trim(proc%velostochi(istochi)%ioitem), &
+                                        '] for fractions of [', trim(basnam), ']'
 
-                        ! velocity found add the fractions with the same velocity name and the same factor
+                                ! no_sto = no_sto + nfrac ! Should something like this also happen here?
 
-                        allocate(new_velostochi(proc%no_velostochi+nfrac),stat=ierr_alloc)
-                        if ( ierr_alloc .ne. 0 ) then
-                           write(lunrep,*) 'error allocating work array in routine add_dspfrc:',ierr_alloc
-                           write(lunrep,*) 'array length:',proc%no_velostochi+nfrac
-                           write(*,*) 'error allocating array:',ierr_alloc
-                           call srstop(1)
+                            endif
                         endif
+                    enddo
+                enddo
+            endif
+        enddo
 
-                        ! copy the existing stochis
+        if (timon) call timstop(ithndl)
+        return
+        2000 format (5a)
+    end
 
-                        new_velostochi(1:proc%no_velostochi) = proc%velostochi(1:proc%no_velostochi)
-
-                        ! add the new ones
-
-                        do ifrac = 1, nfrac
-                           if ( ifrac .lt. 100 ) then
-                              write(suffix,'(i2.2)') ifrac
-                           else
-                              write(suffix,'(i3.3)') ifrac
-                           endif
-                           new_velostochi(proc%no_velostochi+ifrac)%substance = trim(basnam)//suffix
-                           new_velostochi(proc%no_velostochi+ifrac)%ioitem    = proc%velostochi(istochi)%ioitem
-                           new_velostochi(proc%no_velostochi+ifrac)%scale     = proc%velostochi(istochi)%scale
-                        enddo
-
-                        ! attach new array to porcess defintion
-
-                        proc%no_velostochi = proc%no_velostochi + nfrac
-                        deallocate(proc%velostochi)
-                        proc%velostochi => new_velostochi
-                        write(lunrep,2000) ' adding velocity [',trim(proc%velostochi(istochi)%ioitem), & 
-                       '] for fractions of [',trim(basnam),']'
-
-                        ! no_sto = no_sto + nfrac ! Should something like this also happen here?
-
-                     endif
-                  endif
-               enddo
-            enddo
-         endif
-      enddo
-
-      if (timon) call timstop( ithndl )
-      return
- 2000 format ( 5a )
-      end
-
-      end module m_add_dspfrc
+end module m_add_dspfrc

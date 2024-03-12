@@ -20,115 +20,114 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dmvol
-      use m_waq_precision
+module m_dmvol
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dmvol  (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        use m_evaluate_waq_attribute
 
-      contains
+        !>\file
+        !>       Volume of dry matter in a segment
 
+        !
+        !     Description of the module :
+        !
+        !        General water quality module for DELWAQ:
+        !
+        ! Name    T   L I/O   Description                                    Uni
+        ! ----    --- -  -    -------------------                            ---
 
-      subroutine dmvol  ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
-                         noq3   , noq4   )
-      use m_evaluate_waq_attribute
+        !     Logical Units : -
 
-!>\file
-!>       Volume of dry matter in a segment
+        !     Modules called : -
 
-!
-!     Description of the module :
-!
-!        General water quality module for DELWAQ:
-!
-! Name    T   L I/O   Description                                    Uni
-! ----    --- -  -    -------------------                            ---
+        !     Name     Type   Library
 
-!     Logical Units : -
+        !     ------   -----  ------------
 
-!     Modules called : -
+        IMPLICIT REAL    (A-H, J-Z)
+        IMPLICIT INTEGER (I)
 
-!     Name     Type   Library
+        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
 
-!     ------   -----  ------------
+        PARAMETER (RHOWAT = 1000000.)
 
-      IMPLICIT REAL    (A-H,J-Z)
-      IMPLICIT INTEGER (I)
+        IP1 = IPOINT(1)
+        IP2 = IPOINT(2)
+        IP3 = IPOINT(3)
+        IP4 = IPOINT(4)
+        IP5 = IPOINT(5)
+        IP6 = IPOINT(6)
+        IP7 = IPOINT(7)
+        IP8 = IPOINT(8)
+        IP9 = IPOINT(9)
+        IP10 = IPOINT(10)
+        !
+        IFLUX = 0
+        DO ISEG = 1, NOSEG
+            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+            IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-      PARAMETER (RHOWAT = 1000000.)
+                Surf = PMSA(IP1)
+                Volume = PMSA(IP2)
+                TIM = PMSA(IP3)
+                POM = PMSA(IP4)
+                RhoIM = PMSA(IP5)
+                RhoOM = PMSA(IP6)
 
-      IP1  = IPOINT( 1)
-      IP2  = IPOINT( 2)
-      IP3  = IPOINT( 3)
-      IP4  = IPOINT( 4)
-      IP5  = IPOINT( 5)
-      IP6  = IPOINT( 6)
-      IP7  = IPOINT( 7)
-      IP8  = IPOINT( 8)
-      IP9  = IPOINT( 9)
-      IP10 = IPOINT(10)
-!
-      IFLUX = 0
-      DO 9000 ISEG = 1 , NOSEG
-         CALL evaluate_waq_attribute(1,IKNMRK(ISEG),IKMRK1)
+                VolDM = (TIM / RhoIM + POM / RhoOM)
+                VolDM = min (1.0, VolDM)
+                VolDM = max (0.0, VolDM)
+                Poros = 1.0 - VolDM
+                Poros = min(0.999, Poros)
+                Poros = max(0.02, Poros)
+                VolDM = VolDM * Volume
+                Rho = (TIM + POM + Poros * RHOWAT)
 
-         IF (BTEST(IKNMRK(ISEG),0)) THEN
+                IF (IKMRK1==3) THEN
+                    ActTh = VOLUME / SURF
+                ELSE
+                    ActTh = 0.0
+                ENDIF
 
-            Surf    = PMSA(IP1 )
-            Volume  = PMSA(IP2 )
-            TIM     = PMSA(IP3 )
-            POM     = PMSA(IP4 )
-            RhoIM   = PMSA(IP5 )
-            RhoOM   = PMSA(IP6 )
+                PMSA(IP7) = Poros
+                PMSA(IP8) = Rho
+                PMSA(IP9) = VolDM
+                PMSA(IP10) = ActTh
 
-            VolDM  = (TIM/RhoIM + POM/RhoOM)
-            VolDM  = min ( 1.0 , VolDM )
-            VolDM  = max ( 0.0 , VolDM )
-            Poros  = 1.0 - VolDM
-            Poros = min(0.999,Poros)
-            Poros = max(0.02 ,Poros)
-            VolDM  = VolDM * Volume
-            Rho    = (TIM + POM + Poros*RHOWAT)
-
-            IF (IKMRK1.EQ.3) THEN
-               ActTh  =  VOLUME/SURF
             ELSE
-               ActTh = 0.0
+                PMSA(IP7) = 1.0
+                PMSA(IP8) = RHOWAT
+                PMSA(IP9) = 0.0
+                PMSA(IP10) = 0.0
             ENDIF
+            !
+            IFLUX = IFLUX + NOFLUX
+            IP1 = IP1 + INCREM (1)
+            IP2 = IP2 + INCREM (2)
+            IP3 = IP3 + INCREM (3)
+            IP4 = IP4 + INCREM (4)
+            IP5 = IP5 + INCREM (5)
+            IP6 = IP6 + INCREM (6)
+            IP7 = IP7 + INCREM (7)
+            IP8 = IP8 + INCREM (8)
+            IP9 = IP9 + INCREM (9)
+            IP10 = IP10 + INCREM (10)
+            !
+        end do
+        !
+        RETURN
+        !
+    END
 
-            PMSA(IP7)  =  Poros
-            PMSA(IP8)  =  Rho
-            PMSA(IP9)  =  VolDM
-            PMSA(IP10) =  ActTh
-
-         ELSE
-            PMSA(IP7)  =  1.0
-            PMSA(IP8)  =  RHOWAT
-            PMSA(IP9)  =  0.0
-            PMSA(IP10) =  0.0
-         ENDIF
-!
-         IFLUX = IFLUX + NOFLUX
-         IP1   = IP1   + INCREM (  1 )
-         IP2   = IP2   + INCREM (  2 )
-         IP3   = IP3   + INCREM (  3 )
-         IP4   = IP4   + INCREM (  4 )
-         IP5   = IP5   + INCREM (  5 )
-         IP6   = IP6   + INCREM (  6 )
-         IP7   = IP7   + INCREM (  7 )
-         IP8   = IP8   + INCREM (  8 )
-         IP9   = IP9   + INCREM (  9 )
-         IP10  = IP10  + INCREM ( 10 )
-!
- 9000 CONTINUE
-!
-      RETURN
-!
-      END
-
-      end module m_dmvol
+end module m_dmvol

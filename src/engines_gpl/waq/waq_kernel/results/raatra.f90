@@ -20,113 +20,112 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_raatra
-      use m_waq_precision
+module m_raatra
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    SUBROUTINE RAATRA (NOSYS, NDMPQ, NORAAI, NTRAAQ, IORAAI, &
+            NQRAAI, IQRAAI, IQDMP, DMPQ, TRRAAI)
+        !
+        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
+        !
+        !     CREATED:            : march 1995 by Jan van Beek
+        !
+        !     FUNCTION            : Fills transport terms for raaien
+        !
+        !     SUBROUTINES CALLED  : -
+        !
+        !     FILES               : -
+        !
+        !     COMMON BLOCKS       : -
+        !
+        !     PARAMETERS          :
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     NOSYS   INTEGER       1     INPUT   Total number of active substances
+        !     NDMPQ   INTEGER       1     INPUT   Number of dump exchanges
+        !     NORAAI  INTEGER       1     INPUT   Number of raaien
+        !     NTRAAQ  INTEGER       1     INPUT   Total number of exch. in raaien
+        !     IORAAI  INTEGER       *     INPUT   Output option for raai
+        !     NQRAAI  INTEGER       *     INPUT   Number of exchanges in raai
+        !     IQRAAI  INTEGER       *     INPUT   Exchanges in raai
+        !     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
+        !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
+        !     TRRAAI  REAL NOTOT*NDMPAR*6 IN/OUT  Cummulative transport over raai
+        !
+        !     Declaration of arguments
+        !
+        use timers
 
-      contains
+        INTEGER(kind = int_wp) :: NOSYS, NDMPQ, NORAAI, NTRAAQ
+        INTEGER(kind = int_wp) :: IORAAI(*), NQRAAI(*), &
+                IQRAAI(*), IQDMP(*)
+        REAL(kind = real_wp) :: DMPQ(NOSYS, NDMPQ, *), TRRAAI(NOSYS, *)
 
+        !     local
+        integer(kind = int_wp) :: itel1, isys, iraai, nqc, iopt, iqc, iq, ipq
 
-      SUBROUTINE RAATRA (NOSYS , NDMPQ , NORAAI, NTRAAQ, IORAAI, & 
-                        NQRAAI, IQRAAI, IQDMP , DMPQ  , TRRAAI)
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED:            : march 1995 by Jan van Beek
-!
-!     FUNCTION            : Fills transport terms for raaien
-!
-!     SUBROUTINES CALLED  : -
-!
-!     FILES               : -
-!
-!     COMMON BLOCKS       : -
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     NOSYS   INTEGER       1     INPUT   Total number of active substances
-!     NDMPQ   INTEGER       1     INPUT   Number of dump exchanges
-!     NORAAI  INTEGER       1     INPUT   Number of raaien
-!     NTRAAQ  INTEGER       1     INPUT   Total number of exch. in raaien
-!     IORAAI  INTEGER       *     INPUT   Output option for raai
-!     NQRAAI  INTEGER       *     INPUT   Number of exchanges in raai
-!     IQRAAI  INTEGER       *     INPUT   Exchanges in raai
-!     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
-!     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
-!     TRRAAI  REAL NOTOT*NDMPAR*6 IN/OUT  Cummulative transport over raai
-!
-!     Declaration of arguments
-!
-      use timers
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("raatra", ithandl)
+        !
+        !     Local declarations
+        !
+        !
+        !     Loop over the raaien
+        !
+        ITEL1 = 0
+        DO IRAAI = 1, NORAAI
+            !
+            !        the exchange contributes
+            !
+            NQC = NQRAAI(IRAAI)
+            IOPT = IORAAI(IRAAI)
+            DO IQC = 1, NQC
+                ITEL1 = ITEL1 + 1
+                IQ = IQRAAI(ITEL1)
+                IF (IQ > 0) THEN
+                    IPQ = IQDMP(IQ)
+                    DO ISYS = 1, NOSYS
+                        IF (IOPT == 1) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) + &
+                                    DMPQ(ISYS, IPQ, 1) - &
+                                    DMPQ(ISYS, IPQ, 2)
+                        ELSEIF (IOPT == 2) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) + &
+                                    DMPQ(ISYS, IPQ, 1)
+                        ELSEIF (IOPT == 3) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) - &
+                                    DMPQ(ISYS, IPQ, 2)
+                        ENDIF
+                    end do
+                ELSE
+                    IPQ = IQDMP(-IQ)
+                    DO ISYS = 1, NOSYS
+                        IF (IOPT == 1) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) - &
+                                    DMPQ(ISYS, IPQ, 1) + &
+                                    DMPQ(ISYS, IPQ, 2)
+                        ELSEIF (IOPT == 2) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) + &
+                                    DMPQ(ISYS, IPQ, 2)
+                        ELSEIF (IOPT == 3) THEN
+                            TRRAAI(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI) - &
+                                    DMPQ(ISYS, IPQ, 1)
+                        ENDIF
+                    end do
+                ENDIF
+            end do
+            !
+        end do
+        !
+        if (timon) call timstop (ithandl)
+        RETURN
+        !
+    END
 
-      INTEGER(kind=int_wp) ::NOSYS , NDMPQ , NORAAI, NTRAAQ
-      INTEGER(kind=int_wp) ::IORAAI(*)             , NQRAAI(*)       , & 
-                   IQRAAI(*)             , IQDMP(*)
-      REAL(kind=real_wp) ::DMPQ(NOSYS,NDMPQ,*)   , TRRAAI(NOSYS,*)
-
-!     local
-      integer(kind=int_wp) ::itel1, isys, iraai, nqc, iopt, iqc, iq, ipq
-
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "raatra", ithandl )
-!
-!     Local declarations
-!
-!
-!     Loop over the raaien
-!
-      ITEL1 = 0
-      DO 100 IRAAI = 1 , NORAAI
-!
-!        the exchange contributes
-!
-         NQC  = NQRAAI(IRAAI)
-         IOPT = IORAAI(IRAAI)
-         DO 30 IQC = 1 , NQC
-            ITEL1 = ITEL1 + 1
-            IQ    = IQRAAI(ITEL1)
-            IF ( IQ .GT. 0 ) THEN
-               IPQ  = IQDMP(IQ)
-               DO 10 ISYS = 1 , NOSYS
-                  IF ( IOPT .EQ. 1 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
-                                         DMPQ(ISYS,IPQ,1)  - & 
-                                         DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 2 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
-                                         DMPQ(ISYS,IPQ,1)
-                  ELSEIF ( IOPT .EQ. 3 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
-                                         DMPQ(ISYS,IPQ,2)
-                  ENDIF
-   10          CONTINUE
-            ELSE
-               IPQ  = IQDMP(-IQ)
-               DO 20 ISYS = 1 , NOSYS
-                  IF ( IOPT .EQ. 1 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
-                                         DMPQ(ISYS,IPQ,1)  + & 
-                                         DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 2 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)+ & 
-                                         DMPQ(ISYS,IPQ,2)
-                  ELSEIF ( IOPT .EQ. 3 ) THEN
-                     TRRAAI(ISYS,IRAAI) = TRRAAI(ISYS,IRAAI)- & 
-                                         DMPQ(ISYS,IPQ,1)
-                  ENDIF
-   20          CONTINUE
-            ENDIF
-   30    CONTINUE
-!
-  100 CONTINUE
-!
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-!
-      END
-
-      end module m_raatra
+end module m_raatra

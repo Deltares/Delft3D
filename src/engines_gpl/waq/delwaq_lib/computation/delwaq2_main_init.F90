@@ -21,42 +21,42 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq2_main_init
-   use m_waq_precision
+    use m_waq_precision
 
-   implicit none
+    implicit none
 
 contains
 
-   subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv)
+    subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv)
 
-      use delwaq2
-      use delwaq2_data
-      use m_cli_utils, only : store_command_arguments
-      use m_sysn
-      use m_sysi
+        use delwaq2
+        use delwaq2_data
+        use m_cli_utils, only : store_command_arguments
+        use m_sysn
+        use m_sysi
 
-      implicit none
+        implicit none
 
-      ! Arguments
-      integer(kind=int_wp) :: imaxa, imaxi, imaxc
+        ! Arguments
+        integer(kind = int_wp) :: imaxa, imaxi, imaxc
 
-      integer(kind=int_wp), intent(in) ::  argc
-      character(len=*), dimension(argc), intent(in) :: argv
-      type(delwaq_data), target                     :: dlwqd
-      type(GridPointerColl), pointer                :: GridPs               ! collection of all grid definitions
+        integer(kind = int_wp), intent(in) :: argc
+        character(len = *), dimension(argc), intent(in) :: argv
+        type(delwaq_data), target :: dlwqd
+        type(GridPointerColl), pointer :: GridPs               ! collection of all grid definitions
 
-      integer(kind=int_wp), intent(inout) ::  itota
-      integer(kind=int_wp), intent(inout) ::  itoti
-      integer(kind=int_wp), intent(inout) ::  itotc
+        integer(kind = int_wp), intent(inout) :: itota
+        integer(kind = int_wp), intent(inout) :: itoti
+        integer(kind = int_wp), intent(inout) :: itotc
 
-      call store_command_arguments(argv)
+        call store_command_arguments(argv)
 
-      itota = 0
-      itoti = 0
-      itotc = 0
+        itota = 0
+        itoti = 0
+        itotc = 0
 
-      call dlwqd%buffer%intialize()
+        call dlwqd%buffer%intialize()
 
-   end subroutine delwaq2_main_init
+    end subroutine delwaq2_main_init
 
 end module m_delwaq2_main_init

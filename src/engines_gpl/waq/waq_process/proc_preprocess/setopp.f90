@@ -20,87 +20,87 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_setopp
-      use m_waq_precision
+module m_setopp
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine setopp (procesdef, outputs, ioff)
 
-      contains
+        !>/File
+        !>      sets processes for requested output
 
+        use m_monsys
+        use timers         !< performance timers
+        use processet      !< processet definitions
+        use results, only : OutputPointers         !< output definitions
+        implicit none
 
-      subroutine setopp ( procesdef, outputs, ioff  )
+        ! declaration of arguments
 
-!>/File
-!>      sets processes for requested output
+        type(procespropcoll) :: procesdef       !< all processes
+        type(OutputPointers) :: outputs         !< output structure
+        integer(kind = int_wp) :: ioff            !< offset to process output in waq data space
 
-      use m_monsys
-      use timers         !< performance timers
-      use processet      !< processet definitions
-      use results, only : OutputPointers         !< output definitions
-      implicit none
+        ! local decalarations
 
-      ! declaration of arguments
+        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: iproc           ! loop counter processes
+        type(procesprop), pointer :: proc            ! process description
+        character(len = 100) :: line            ! line buffer for output
+        integer(kind = int_wp) :: ioutput         ! index output item
+        integer(kind = int_wp) :: iou             ! loop counter output variable
+        integer(kind = int_wp) :: ithndl = 0      ! handle for performance timer
+        if (timon) call timstrt("setopp", ithndl)
 
-      type(procespropcoll)      :: procesdef       !< all processes
-      type(OutputPointers)          :: outputs         !< output structure
-      integer(kind=int_wp) ::ioff            !< offset to process output in waq data space
+        ! set process on if output is requested and input ok
 
-      ! local decalarations
+        write(line, '(a)') '# locating processes for requested output'
+        call monsys(line, 2)
+        line = ' '
+        call monsys(line, 2)
 
-      integer(kind=int_wp) ::nproc           ! number of processes
-      integer(kind=int_wp) ::iproc           ! loop counter processes
-      type(procesprop), pointer :: proc            ! process description
-      character(len=100)        :: line            ! line buffer for output
-      integer(kind=int_wp) ::ioutput         ! index output item
-      integer(kind=int_wp) ::iou             ! loop counter output variable
-      integer(kind=int_wp) ::ithndl = 0      ! handle for performance timer
-      if (timon) call timstrt( "setopp", ithndl )
+        nproc = procesdef%cursize
 
-      ! set process on if output is requested and input ok
+        do iou = 1, outputs%cursize
 
-      write( line, '(a)' ) '# locating processes for requested output'
-      call monsys( line , 2 )
-      line = ' '
-      call monsys( line , 2 )
+            ! is the output undefined ( pointer -1 ) or from a proces
 
-      nproc = procesdef%cursize
+            if (outputs%pointers(iou) == -1 .or. outputs%pointers(iou) > ioff) then
+                outputs%pointers(iou) = -1
+                do iproc = 1, nproc
+                    proc => procesdef%procesprops(iproc)
+                    if (proc%linvok) then
+                        call zoekio (outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
+                        if (ioutput > 0) then
+                            if (.not. proc%active) then
 
-      do 300 iou = 1 , outputs%cursize
+                                ! turn proces on
 
-         ! is the output undefined ( pointer -1 ) or from a proces
+                                proc%active = .true.
 
-         if ( outputs%pointers(iou) .eq. -1 .or. outputs%pointers(iou) .gt. ioff ) then
-            outputs%pointers(iou) = -1
-            do 200 iproc = 1, nproc
-               proc => procesdef%procesprops(iproc)
-               if ( proc%linvok ) then
-                  call zoekio ( outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
-                  if ( ioutput .gt. 0 ) then
-                     if ( .not. proc%active ) then
+                                write (line, '(5a)') ' switching [', proc%name(1:10), '] on for output [', outputs%names(iou)(1:20), ']'
+                                call monsys(line, 4)
+                                line = ' '
+                                call monsys(line, 4)
+                            endif
 
-                        ! turn proces on
+                            goto 300
+                        endif
 
-                        proc%active = .true.
+                    endif
 
-                        write ( line , '(5a)' ) ' switching [',proc%name(1:10),'] on for output [',outputs%names(iou)(1:20),']'
-                        call monsys( line , 4 )
-                        line = ' '
-                        call monsys( line , 4 )
-                     endif
+                end do
+            endif
 
-                     goto 300
-                  endif
+            300 continue
+        end do
 
-               endif
+        if (timon) call timstop(ithndl)
+        return
+    end
 
-  200       continue
-         endif
-
-  300 continue
-
-      if (timon) call timstop( ithndl )
-      return
-      end
-
-      end module m_setopp
+end module m_setopp

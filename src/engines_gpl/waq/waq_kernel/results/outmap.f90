@@ -20,105 +20,104 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_outmap
-      use m_waq_precision
+module m_outmap
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine outmap (iomap, namfim, itime, moname, noseg, &
+            notot1, conc1, synam1, notot2, conc2, &
+            synam2, iknmrk, init)
 
-      contains
+        !     Deltares Software Centre
 
+        !     Function            : Writes map output
 
-      subroutine outmap ( iomap  , namfim , itime  , moname , noseg  , & 
-                         notot1 , conc1  , synam1 , notot2 , conc2  , & 
-                         synam2 , iknmrk , init   )
+        !     Created             : May       1993 by Jan van Beek
+        !     Modified            : October   2010 by Leo Postma
+        !                                          addition of feature array for drying and flooding
+        !                                          FORTRAN-90 look and feel
 
-!     Deltares Software Centre
+        !     Files               : iomap = unit number of binary map output file
 
-!     Function            : Writes map output
+        !     Routines called     : none
 
-!     Created             : May       1993 by Jan van Beek
-!     Modified            : October   2010 by Leo Postma
-!                                          addition of feature array for drying and flooding
-!                                          FORTRAN-90 look and feel
+        use timers
+        implicit none
 
-!     Files               : iomap = unit number of binary map output file
+        !     Parameters          :
 
-!     Routines called     : none
+        !     kind           function         name                    description
 
-      use timers
-      implicit none
+        integer(kind = int_wp), intent(in) :: iomap                ! unit number output file
+        character*(*), intent(in) :: namfim               ! name output file
+        integer(kind = int_wp), intent(in) :: itime                ! present time in clock units
+        character(40), intent(in) :: moname(4)            ! model identification
+        integer(kind = int_wp), intent(in) :: noseg                ! number of computational volumes
+        integer(kind = int_wp), intent(in) :: notot1               ! number of variables in conc1
+        real(kind = real_wp), intent(in) :: conc1 (notot1, noseg) ! values
+        character(20), intent(in) :: synam1(notot1)       ! names of variables in conc1
+        integer(kind = int_wp), intent(in) :: notot2               ! number of variables in conc2
+        real(kind = real_wp), intent(in) :: conc2 (notot2, noseg) ! values
+        character(20), intent(in) :: synam2(notot2)       ! names of variables in conc2
+        integer(kind = int_wp), intent(in) :: iknmrk(noseg)        ! Feature array. Bit zero set means active.
+        integer(kind = int_wp), intent(inout) :: init                 ! Initialisation flag
 
-!     Parameters          :
+        integer(kind = int_wp) :: iseg                   ! loop counter for segments
+        integer(kind = int_wp) :: k                      ! loop counter for substances
+        integer(kind = int_wp) :: ierr
+        real(kind = real_wp) :: amiss = -999.0       ! missing value indicator
+        integer(kind = int_wp) :: ithandl = 0
 
-!     kind           function         name                    description
+        real(kind = real_wp), dimension(:, :), allocatable :: outconc
 
-      integer(kind=int_wp), intent(in   )  ::iomap                ! unit number output file
-      character*(*), intent(in   ) :: namfim               ! name output file
-      integer(kind=int_wp), intent(in   )  ::itime                ! present time in clock units
-      character(40), intent(in   ) :: moname(4)            ! model identification
-      integer(kind=int_wp), intent(in   )  ::noseg                ! number of computational volumes
-      integer(kind=int_wp), intent(in   )  ::notot1               ! number of variables in conc1
-      real(kind=real_wp), intent(in   )  ::conc1 (notot1,noseg) ! values
-      character(20), intent(in   ) :: synam1(notot1)       ! names of variables in conc1
-      integer(kind=int_wp), intent(in   )  ::notot2               ! number of variables in conc2
-      real(kind=real_wp), intent(in   )  ::conc2 (notot2,noseg) ! values
-      character(20), intent(in   ) :: synam2(notot2)       ! names of variables in conc2
-      integer(kind=int_wp), intent(in   )  ::iknmrk(noseg)        ! Feature array. Bit zero set means active.
-      integer(kind=int_wp), intent(inout)  ::init                 ! Initialisation flag
+        if (timon) call timstrt ("outmap", ithandl)
 
-      integer(kind=int_wp) ::iseg                   ! loop counter for segments
-      integer(kind=int_wp) ::k                      ! loop counter for substances
-      integer(kind=int_wp) ::ierr
-      real(kind=real_wp) ::amiss = -999.0       ! missing value indicator
-      integer(kind=int_wp) ::ithandl = 0
+        !     Initialize file
 
-      real(kind=real_wp), dimension(:,:), allocatable  ::outconc
+        if (init == 1) then
+            init = 0
+            write (iomap)  moname
+            write (iomap)  notot1 + notot2, noseg
+            write (iomap)  synam1, synam2
+        endif
 
-      if ( timon ) call timstrt ( "outmap", ithandl )
+        !     Perform output:
+        !     Inactive segments should get missing values. For this, make
+        !     a copy of the concentrations.
+        !
+        !     Note: this may fail, if there is not enough memory, so provide
+        !     a slower alternative.
 
-!     Initialize file
+        allocate(outconc(notot1, noseg), source = conc1, stat = ierr)
 
-      if ( init .eq. 1 ) then
-         init = 0
-         write (iomap)  moname
-         write (iomap)  notot1+notot2, noseg
-         write (iomap)  synam1, synam2
-      endif
+        if (ierr == 0) then
+            do iseg = 1, noseg
+                if (.not. btest(iknmrk(iseg), 0)) then
+                    outconc(:, iseg) = amiss
+                endif
+            enddo
 
-!     Perform output:
-!     Inactive segments should get missing values. For this, make
-!     a copy of the concentrations.
-!
-!     Note: this may fail, if there is not enough memory, so provide
-!     a slower alternative.
+            write (iomap) itime, (outconc(:, iseg), conc2(:, iseg), iseg = 1, noseg)
 
-      allocate( outconc(notot1, noseg), source = conc1, stat = ierr )
+            deallocate(outconc)
+        else
+            ! Slow alternative
+            write (iomap) itime
+            do iseg = 1, noseg
+                if (btest(iknmrk(iseg), 0)) then
+                    write (iomap) conc1(:, iseg), conc2(:, iseg)
+                else
+                    write (iomap) (amiss, k = 1, notot1), conc2(:, iseg)
+                endif
+            enddo
+        endif
 
-      if ( ierr == 0 ) then
-         do iseg = 1, noseg
-            if ( .not. btest(iknmrk(iseg),0) ) then
-               outconc(:,iseg) = amiss
-            endif
-         enddo
+        if (timon) call timstop (ithandl)
+        return
+    end
 
-         write (iomap) itime, (outconc(:,iseg), conc2(:,iseg), iseg = 1,noseg)
-
-         deallocate( outconc )
-      else
-         ! Slow alternative
-         write (iomap) itime
-         do iseg = 1, noseg
-            if ( btest(iknmrk(iseg),0) ) then
-               write (iomap) conc1(:,iseg), conc2(:,iseg)
-            else
-               write (iomap) ( amiss, k = 1, notot1), conc2(:,iseg)
-            endif
-         enddo
-      endif
-
-      if ( timon ) call timstop ( ithandl )
-      return
-      end
-
-      end module m_outmap
+end module m_outmap

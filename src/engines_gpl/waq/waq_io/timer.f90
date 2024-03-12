@@ -84,14 +84,14 @@
 !       Read timings
 
       ierr = 0
-      if ( gettoken( cdummy, it1   , itype, ierr2 ) .gt. 0 ) goto 9999
-      if ( itype .eq. 1 ) then
+      if ( gettoken( cdummy, it1   , itype, ierr2 ) > 0 ) goto 9999
+      if ( itype == 1 ) then
          call convert_string_to_time_offset ( cdummy, it1   , .false., .false., ierr )
-         if ( it1 .eq. -999. ) then
+         if ( it1 == -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
          endif
-         if ( ierr .ne. 0 ) then
+         if ( ierr /= 0 ) then
             write ( lunut , 2040 ) trim(cdummy)
             goto 9999
          endif
@@ -99,14 +99,14 @@
          call convert_relative_time ( it1   , 1      , dtflg1 , dtflg3 )
       endif
 
-      if ( gettoken( cdummy, it2   , itype, ierr  ) .gt. 0 ) goto 9999
-      if ( itype .eq. 1 ) then
+      if ( gettoken( cdummy, it2   , itype, ierr  ) > 0 ) goto 9999
+      if ( itype == 1 ) then
          call convert_string_to_time_offset ( cdummy, it2   , .false., .false., ierr )
-         if ( it2 .eq. -999. ) then
+         if ( it2 == -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
          endif
-         if ( ierr .ne. 0 ) then
+         if ( ierr /= 0 ) then
             write ( lunut , 2040 ) trim(cdummy)
             goto 9999
          endif
@@ -114,14 +114,14 @@
          call convert_relative_time ( it2   , 1      , dtflg1 , dtflg3 )
       endif
 
-      if ( gettoken( cdummy, it3   , itype, ierr  ) .gt. 0 ) goto 9999
-      if ( itype .eq. 1 ) then
+      if ( gettoken( cdummy, it3   , itype, ierr  ) > 0 ) goto 9999
+      if ( itype == 1 ) then
          call convert_string_to_time_offset ( cdummy, it3   , .false., .false., ierr )
-         if ( it3 .eq. -999. ) then
+         if ( it3 == -999. ) then
             write ( lunut , 2030 ) trim(cdummy)
             goto 9999
          endif
-         if ( ierr .ne. 0 ) then
+         if ( ierr /= 0 ) then
             write ( lunut , 2040 ) trim(cdummy)
             goto 9999
          endif

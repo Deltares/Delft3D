@@ -20,70 +20,69 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq52
-      use m_waq_precision
+module m_dlwq52
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
-      implicit none
+    subroutine dlwq52 (nosys, notot, noseg, volume, amass, &
+            conc2, conc)
 
-      contains
+        !     Deltares Software Centre
 
+        !>\File
+        !>           Makes masses and concentrations after the flux correction step
 
-      subroutine dlwq52 ( nosys  , notot  , noseg  , volume , amass  , & 
-                         conc2  , conc    )
+        !     Created:    april 1988 by L.Postma
 
-!     Deltares Software Centre
+        !     Logical unitnumbers : none
 
-!>\File
-!>           Makes masses and concentrations after the flux correction step
+        !     Subroutines called  : none
 
-!     Created:    april 1988 by L.Postma
+        use timers
 
-!     Logical unitnumbers : none
+        implicit none
 
-!     Subroutines called  : none
+        !     Parameters          :
 
-      use timers
+        !     type     kind  function         name                      description
 
-      implicit none
+        integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
+        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
+        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume(noseg)          !< volumes of the segments
+        real(kind = real_wp), intent(inout) :: amass (notot, noseg)    !< masses per substance per volume
+        real(kind = real_wp), intent(in) :: conc2 (notot, noseg)    !< concentrations per substance per volume
+        real(kind = real_wp), intent(out) :: conc  (notot, noseg)    !< concentrations per substance per volume
 
-!     Parameters          :
+        !     local variables
 
-!     type     kind  function         name                      description
+        integer(kind = int_wp) :: isys            ! loopcounter substances
+        integer(kind = int_wp) :: iseg            ! loopcounter computational volumes
+        real(kind = real_wp) :: vol             ! helpvariable for this volume
+        integer(kind = int_wp), save :: ithandl         ! timer handle
+        data       ithandl  /0/
+        if (timon) call timstrt ("dlwq52", ithandl)
 
-      integer(kind=int_wp), intent(in   )  ::nosys                   !< number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot                   !< total number of substances
-      integer(kind=int_wp), intent(in   )  ::noseg                   !< number of computational volumes
-      real(kind=real_wp), intent(inout)  ::volume(noseg )          !< volumes of the segments
-      real(kind=real_wp), intent(inout)  ::amass (notot ,noseg)    !< masses per substance per volume
-      real(kind=real_wp), intent(in   )  ::conc2 (notot ,noseg)    !< concentrations per substance per volume
-      real(kind=real_wp), intent(  out)  ::conc  (notot ,noseg)    !< concentrations per substance per volume
+        !         loop accross the number of computational elements
 
-!     local variables
-
-      integer(kind=int_wp) ::isys            ! loopcounter substances
-      integer(kind=int_wp) ::iseg            ! loopcounter computational volumes
-      real(kind=real_wp) ::vol             ! helpvariable for this volume
-      integer(kind=int_wp), save  ::ithandl         ! timer handle
-      data       ithandl  /0/
-      if ( timon ) call timstrt ( "dlwq52", ithandl )
-
-!         loop accross the number of computational elements
-
-      do iseg = 1, noseg
+        do iseg = 1, noseg
             vol = volume(iseg)
             do isys = 1, nosys
-               conc (isys,iseg) = conc2(isys,iseg)
-               amass(isys,iseg) = conc2(isys,iseg)*vol
+                conc (isys, iseg) = conc2(isys, iseg)
+                amass(isys, iseg) = conc2(isys, iseg) * vol
             enddo
-            do isys = nosys+1, notot
-               conc (isys,iseg) = conc2(isys,iseg)
+            do isys = nosys + 1, notot
+                conc (isys, iseg) = conc2(isys, iseg)
             enddo
-      enddo
+        enddo
 
-      if ( timon ) call timstop ( ithandl )
+        if (timon) call timstop (ithandl)
 
-      return
-      end
+        return
+    end
 
-      end module m_dlwq52
+end module m_dlwq52

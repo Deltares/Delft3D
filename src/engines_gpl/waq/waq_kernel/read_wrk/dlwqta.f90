@@ -102,23 +102,23 @@
       ! read the data from file
 
       ntotal = nocons+nopa+nofun+nosfun
-      if ( ntotal .gt. 0 ) then
-         if ( ifflag .eq. 1 ) then
+      if ( ntotal > 0 ) then
+         if ( ifflag == 1 ) then
             call open_waq_files ( lun , lch , 16 , 2 , ierr2 )
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write(lunrep,*) 'error in dlwqta, opening file'
                write(lunrep,*) 'file    :',lch
                write(lunrep,*) 'unit    :',lun
                call srstop(1)
             endif
             read ( lun , iostat = ierr2 ) chlp
-            if ( ierr2.ne.0 .or. chlp(1:6) .ne. ' 5.000' ) then
+            if ( ierr2/=0 .or. chlp(1:6) /= ' 5.000' ) then
                write(lunrep,*) 'error in dlwqta, file not new'
                call srstop(1)
             endif
 
             read(lun,iostat=ierr2) no_proc_pars
-            if ( ierr2 .ne. 0 ) then
+            if ( ierr2 /= 0 ) then
                write(lunrep,1000) trim(lch)
                call srstop(1)
             endif
@@ -128,14 +128,14 @@
 
             do i = 1 , no_proc_pars
                ierr2 = dlwqdataRead(lunrep,lun,dlwqd%proc_pars%dlwqdata(i))
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write(lunrep,1000) trim(lch)
                   call srstop(1)
                endif
                proc_par => dlwqd%proc_pars%dlwqdata(i)
-               if ( proc_par%extern .and. ( mod(proc_par%filetype,10) .eq. FILE_BINARY .or. & 
-                                           mod(proc_par%filetype,10) .eq. FILE_UNFORMATTED ) ) then
-                  if ( proc_par%iorder .eq. ORDER_PARAM_LOC ) then
+               if ( proc_par%extern .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
+                                           mod(proc_par%filetype,10) == FILE_UNFORMATTED ) ) then
+                  if ( proc_par%iorder == ORDER_PARAM_LOC ) then
                      ndim1 = proc_par%no_param
                      ndim2 = proc_par%no_loc
                   else
@@ -150,8 +150,8 @@
                   !
                   call create_new_file_unit_number(801,proc_par%lun)
                   ftype = 2
-                  if ( mod(proc_par%filetype,10) .eq. FILE_UNFORMATTED ) ftype = ftype + 10
-                  if ( proc_par%filetype/10 .eq. 1 ) ftype = ftype + 20       ! I am in for a better solution (lp)
+                  if ( mod(proc_par%filetype,10) == FILE_UNFORMATTED ) ftype = ftype + 10
+                  if ( proc_par%filetype/10 == 1 ) ftype = ftype + 20       ! I am in for a better solution (lp)
                   call open_waq_files ( proc_par%lun , proc_par%filename , 40 , ftype , ierr2 )
                endif
             enddo
@@ -167,9 +167,9 @@
             ! update external data to values
 
             proc_par => dlwqd%proc_pars%dlwqdata(i)
-            if ( proc_par%extern .and. ( mod(proc_par%filetype,10) .eq. FILE_BINARY .or. & 
-                                        mod(proc_par%filetype,10) .eq. FILE_UNFORMATTED ) ) then
-               if ( proc_par%iorder .eq. ORDER_PARAM_LOC ) then
+            if ( proc_par%extern .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
+                                        mod(proc_par%filetype,10) == FILE_UNFORMATTED ) ) then
+               if ( proc_par%iorder == ORDER_PARAM_LOC ) then
                   ndim1 = proc_par%no_param
                   ndim2 = proc_par%no_loc
                else
@@ -186,27 +186,27 @@
                deallocate(ipntloc)
             endif
 
-            if ( proc_par%subject .eq. SUBJECT_CONSTANT .and. ifflag .eq. 1 ) then
+            if ( proc_par%subject == SUBJECT_CONSTANT .and. ifflag == 1 ) then
                ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nocons,1,const)
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
-            elseif ( proc_par%subject .eq. SUBJECT_FUNCTION ) then
+            elseif ( proc_par%subject == SUBJECT_FUNCTION ) then
                ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nofun,1,funcs)
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
-            elseif ( proc_par%subject .eq. SUBJECT_PARAMETER .and. ifflag .eq. 1 ) then
+            elseif ( proc_par%subject == SUBJECT_PARAMETER .and. ifflag == 1 ) then
                ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nopa,noseg,param)
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
-            elseif ( proc_par%subject .eq. SUBJECT_SEGFUNC ) then
+            elseif ( proc_par%subject == SUBJECT_SEGFUNC ) then
                ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,noseg,nosfun,sfuncs)
-               if ( ierr2 .ne. 0 ) then
+               if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
