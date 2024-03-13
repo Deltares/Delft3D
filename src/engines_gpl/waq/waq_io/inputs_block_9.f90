@@ -39,7 +39,7 @@ contains
             ioutpt, ioutps, outputs, status)
 
         use output_utils, only : set_default_output
-        use m_check
+        use m_check, only : error_handler
         use m_read_working_file_4
         use m_open_waq_files
         use rd_token     !   for the reading of tokens
@@ -249,7 +249,7 @@ contains
         enddo
 
         100 if (infile) then
-            call check  (lchloc, iwidth, 9, ierr2, status)
+            call error_handler(lchloc, iwidth, 9, ierr2, status)
         else
             if (iwidth == 5) then
                 write (lunut, 2060) 9

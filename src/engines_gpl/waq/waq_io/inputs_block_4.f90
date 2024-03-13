@@ -75,7 +75,7 @@ contains
         !                        LUN(12) = unit intermediate file (velocities)
         !                        LUN(13) = unit intermediate file (lengths)
 
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use m_open_waq_files
         use dlwqgrid_mod        !   for the storage of contraction grids
@@ -636,7 +636,7 @@ contains
 
         if (ierr2 > 0) call status%increase_error_count()
         if (ierr2 == 3) call srstop(1)
-        call check  (cdummy, iwidth, 4, ierr2, status)
+        call error_handler(cdummy, iwidth, 4, ierr2, status)
         if (timon) call timstop(ithndl)
         return
 

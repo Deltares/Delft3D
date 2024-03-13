@@ -39,7 +39,7 @@ contains
         !! read block 8 of input, initial condtions keyword type of input
 
         use m_read_block
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use dlwqgrid_mod          ! for the storage of contraction grids
         use dlwq_hyd_data  ! for definition and storage of data
@@ -166,7 +166,7 @@ contains
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
         if (ierr2 == 3) call srstop(1)
-        call check(ctoken, iwidth, 8, ierr2, status)
+        call error_handler(ctoken, iwidth, 8, ierr2, status)
         if (timon) call timstop(ithndl)
         return
 

@@ -50,7 +50,7 @@ contains
         !>    - start, step and stop time of the map file
 
         use m_conver
-        use m_check
+        use m_check, only : error_handler
         use m_report_date_time
         use m_rdpart
         use m_rdlgri
@@ -534,7 +534,7 @@ contains
             call status%increase_error_count()
         end if
         if (ierr2 == 3) call srstop(1)
-        call check  (cdummy, iwidth, 2, ierr2, status)
+        call error_handler(cdummy, iwidth, 2, ierr2, status)
         call status%increase_warning_count_with(iwar2)
         if (timon) call timstop(ithndl)
         return

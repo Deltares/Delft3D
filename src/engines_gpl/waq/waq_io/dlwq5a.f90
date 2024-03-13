@@ -75,7 +75,7 @@ contains
         ! LUN(15) = unit intermediate file (wastes)
 
         use m_dlwq5b
-        use m_check
+        use m_check, only : error_handler
         use m_open_waq_files
         use rd_token
         use timers       !   performance timers
@@ -671,7 +671,7 @@ contains
         end do
         530 newrsp = newrsp + file_size_2
         newisp = newisp + file_size_1
-        call check  (chulp, iwidth, iblock, ierr2, status)
+        call error_handler(chulp, iwidth, iblock, ierr2, status)
         540 if (timon) call timstop(ithndl)
         return
         !

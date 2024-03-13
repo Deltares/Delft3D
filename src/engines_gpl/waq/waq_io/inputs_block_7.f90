@@ -38,7 +38,7 @@ contains
 
         !! Reads block 7 of input, process parameters
 
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use m_open_waq_files
         use dlwqgrid_mod   ! for the storage of contraction grids
@@ -271,7 +271,7 @@ contains
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) call status%increase_error_count()
         if (ierr2 == 3) call srstop(1)
-        call check (ctoken, iwidth, 7, ierr2, status)
+        call error_handler(ctoken, iwidth, 7, ierr2, status)
         if (timon) call timstop(ithndl)
         return
         !

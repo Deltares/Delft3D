@@ -62,7 +62,7 @@ contains
         !                     LUN( 6) = unit intermediate file (grid)
         !                     LUN( 7) = unit intermediate file (volumes)
 
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use m_open_waq_files
         use m_evaluate_waq_attribute
@@ -565,7 +565,7 @@ contains
         260 write (lunut, 2410) lun(40), lchar(40)
         call status%increase_error_count()
 
-        270 call check  (cdummy, iwidth, 3, local_status%ierr, status)
+        270 call error_handler(cdummy, iwidth, 3, local_status%ierr, status)
         call status%increase_warning_count_with(local_status%iwar)
         if (timon) call timstop(ithndl)
         return

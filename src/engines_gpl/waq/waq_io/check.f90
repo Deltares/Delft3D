@@ -28,7 +28,7 @@ module m_check
 
 contains
 
-    subroutine check(cdummy, iwidth, iblock, ierr2, status)
+    subroutine error_handler(cdummy, iwidth, iblock, ierr2, status)
 
         !< Handles delimiter lines and errors during read of the DELWAQ input file
         !< Logical units     : LUNUT = unitnumber output log-file
@@ -54,7 +54,7 @@ contains
 
         real(kind = real_wp) :: rdummy ! argument for token reading
 
-        if (timon) call timstrt("check", ithndl)
+        if (timon) call timstrt("error_handler", ithndl)
 
         ! First round of dealing with ierr2
         select case (ierr2)
@@ -122,6 +122,6 @@ contains
         2050 format (/1X, 59('*'), ' B L O C K -', I2, ' ', 5('*')/)
         2060 format (/1X, 109('*'), ' B L O C K -', I2, ' ', 5('*')/)
 
-    end subroutine check
+    end subroutine error_handler
 
 end module m_check

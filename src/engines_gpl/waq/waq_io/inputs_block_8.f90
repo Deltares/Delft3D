@@ -65,7 +65,7 @@ contains
         !!                 lun(29) = unit formatted output file
         !!                 lun(18) = unit intermediate file (initials)
 
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use m_open_waq_files
         use dlwqgrid_mod   ! for the storage of contraction grids
@@ -284,7 +284,7 @@ contains
         if (ierr2 > 0) write (lunut, 2050)
         if (ierr2 == 3) call SRSTOP(1)
         if (old_input) then
-            call check(cdummy, iwidth, 8, ierr2, status)
+            call error_handler(cdummy, iwidth, 8, ierr2, status)
         endif
         if (timon) call timstop(ithndl)
         return

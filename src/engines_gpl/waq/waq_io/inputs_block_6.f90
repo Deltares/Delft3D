@@ -58,7 +58,7 @@ contains
         !!                 lun( 4) = unit intermediate file (pointers)
         !!                 lun(15) = unit intermediate file (waste load)
 
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use rd_token
         use timers       !   performance timers
@@ -333,7 +333,7 @@ contains
 
         20 if (ierr2 > 0) call status%increase_error_count()      !   if 2, end of block reached
         if (ierr2 == 3) call SRSTOP(1)        !   end of file reached
-        call check  (cdummy, iwidth, 6, ierr2, status)
+        call error_handler(cdummy, iwidth, 6, ierr2, status)
         30 if (timon) call timstop(ithndl)
         return
 

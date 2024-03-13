@@ -54,7 +54,7 @@ contains
         !                  LUN(14) = unit intermediate file (boundaries)
 
         use m_conver
-        use m_check
+        use m_check, only : error_handler
         use m_srstop
         use m_cli_utils, only : retrieve_command_argument
         use rd_token     !   for the reading of tokens
@@ -459,7 +459,7 @@ contains
         IF (ALLOCATED(BNDTYPE)) DEALLOCATE(BNDTYPE)
         IF (IERR2 > 0) call status%increase_error_count()
         IF (IERR2 == 3) CALL SRSTOP(1)
-        175 call check  (chulp, iwidth, 5, ierr2, status)
+        175 call error_handler(chulp, iwidth, 5, ierr2, status)
         180 if (timon) call timstop(ithndl)
         RETURN
 
