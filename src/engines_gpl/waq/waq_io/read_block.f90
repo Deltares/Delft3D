@@ -37,7 +37,7 @@ module m_read_block
 contains
 
 
-    subroutine read_block (lun, lchar, filtype, inpfil, ioutpt, &
+    subroutine read_block(lun, lchar, filtype, inpfil, ioutpt, &
             iwidth, substances, constants, parameters, functions, &
             segfuncs, segments, gridps, data_block, ierr, &
             status)

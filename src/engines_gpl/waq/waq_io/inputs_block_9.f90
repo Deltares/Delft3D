@@ -41,7 +41,7 @@ contains
 
         use m_defout
         use m_check
-        use m_rdwrk4
+        use m_read_working_file_4
         use m_open_waq_files
         use rd_token     !   for the reading of tokens
         use results, only : OutputPointers, lncout
@@ -170,7 +170,7 @@ contains
 
         !        Read output definition block
 
-        call rdodef (noutp, nrvar, nrvarm, isrtou, car, &
+        call read_ascii_definition_file(noutp, nrvar, nrvarm, isrtou, car, &
                 infile, nx, ny, nodump, ibflag, &
                 lmoutp, ldoutp, lhoutp, lncout, status, &
                 igrdou, ndmpar)
@@ -192,7 +192,7 @@ contains
                 !           Read part of delwaq file
 
                 call open_waq_files(lun(2), lchar(2), 2, 2, ierr2)
-                call rdwrk4(lun(2), lunut, modid, sysid, notot, &
+                call read_working_file_4(lun(2), lunut, modid, sysid, notot, &
                         nodump, nosys, nobnd, nowst, nocons, &
                         nopa, noseg, nseg2, coname, paname, &
                         funame, nofun, sfname, nosfun, nodisp, &

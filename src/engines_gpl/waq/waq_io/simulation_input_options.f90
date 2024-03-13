@@ -618,15 +618,15 @@ contains
         !>      - a table with harmonic or Fourier values
         !>          The values at breakpoints require following input:
         !>       - iopt, should be 1 (no defaults) or 2 (defaults and overridings)
-        !>       - number of items in this block    (nvarnw, read in rdpoin)
-        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of items in this block    (nvarnw, read in read_item_num)
+        !>       - that many ID values of the items (itemId, read in read_item_num)
         !>       - number of breakpoints (nobrk2, this in the number of time steps)
         !>       - scale values to be applied for this block ( 1 or nval1 )
         !>       - table of values in (nval1,nitem) order.
         !>       The function option requires the following input
         !>       - iopt, should be 3 (harmonics) or 4 (Fouriers)
-        !>       - number of items in this block    (nvarnw, read in rdpoin)
-        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of items in this block    (nvarnw, read in read_item_num)
+        !>       - that many ID values of the items (itemId, read in read_item_num)
         !>       - number of harmonics or Fourier components (nhar  , read in rwfunc)
         !>       - nval1 values for the zero-th harmonic  (the mean , read in rwfunc)
         !>       - nhar times:
@@ -653,7 +653,7 @@ contains
         !!      lun( 4) = unit binary intermediate file for pointers
         !!      lun(is) = unit binary intermediate file for function
 
-        use m_rdpoin
+        use m_rdodef, only : read_item_num
         use m_matrix, only : dmatrix
         use m_fmread
         use m_open_waq_files
@@ -767,7 +767,7 @@ contains
             endif
 
             ! the items in this block by itemnumber
-            call rdpoin (nitem, iopt3, ioutpt, itemId(ntotal), nvarnw, &
+            call read_item_num (nitem, iopt3, ioutpt, itemId(ntotal), nvarnw, &
                     ierr)
 
             ! new style for boundaries and wastes
