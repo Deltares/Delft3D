@@ -68,7 +68,7 @@ contains
         !
         !   Read the various file names
         !   Note:
-        !   The subroutine fffind checks the times in the files and we do not know the
+        !   The subroutine validate_simulation_time_steps checks the times in the files and we do not know the
         !   number of items yet. So either we need to make that routine more complex
         !   or exploit the simple structure of the hyd-file.
         !

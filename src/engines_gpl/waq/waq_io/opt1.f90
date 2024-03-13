@@ -40,7 +40,6 @@ contains
         !! LOGICAL UNITS:
         !!      - LUN(33) = working unit for opening binary files
 
-        use m_fffind
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
@@ -227,7 +226,7 @@ contains
                 endif
                 call extract_file_extension(sfile, filext, extpos, extlen)
                 if (string_equals('hyd ', filext)) then                            !     hyd file processing
-                    call fffind (lunut, sstring, sfile, cdummy, it3, &
+                    call validate_simulation_time_steps (lunut, sstring, sfile, cdummy, it3, &
                             it1a, it2a, it3a, nitem, ierr)
                 else                                               !     other file processing
                     cdummy = sfile
@@ -318,5 +317,120 @@ contains
         2150 format (/' ERROR: Not a valid token at this position: ', A)
 
     end subroutine opt1
+
+    subroutine validate_simulation_time_steps (lunut, sget, afile, bfile, istep, &
+            it2, it3, it4, numbr, ierr)
+
+        use m_get_filepath_and_pathlen
+        use m_open_waq_files
+        use m_sysi          ! timer characteristics
+        use m_waq_precision
+        use time_module
+
+        integer(kind = int_wp) :: ilun, ierr, i, k, a, it2, it3, it4
+        integer(kind = int_wp) :: iyear1, imonth1, iday1, ihour1, imin1, isec1
+        integer(kind = int_wp) :: iyear2, imonth2, iday2, ihour2, imin2, isec2
+        integer(kind = int_wp) :: iyear3, imonth3, iday3, ihour3, imin3, isec3
+        integer(kind = int_wp) :: iyear4, imonth4, iday4, ihour4, imin4, isec4
+        integer(kind = int_wp) :: idate, itime, itim, itim2, istep, idtf, lunut
+        integer(kind = int_wp) :: numbr
+
+        character*25  sget, s1
+        character*255 afile, bfile
+
+        real(kind = dp) :: reftim, starttim, stoptim, afact
+        character*255 filpath
+        integer(kind = int_wp) :: pathlen
+
+        ! open the ascii .hyd file
+        ilun = 148
+        call open_waq_files  (ilun, afile, 33, 1, ierr)
+        if (ierr > 0) then
+            write (lunut, 1000) afile
+            return
+        endif
+        call get_filepath_and_pathlen(afile, filpath, pathlen)
+
+        ! search for the file name of this item
+        do i = 1, 10000
+            read (ilun, *, end = 20) s1, bfile
+            if (s1 == 'conversion-ref-time  ') &
+                    read (bfile, '(i4,i2,i2,i2,i2,i2)') &
+                            iyear1, imonth1, iday1, ihour1, imin1, isec1
+            if (s1 == 'conversion-start-time') &
+                    read (bfile, '(i4,i2,i2,i2,i2,i2)') &
+                            iyear2, imonth2, iday2, ihour2, imin2, isec2
+            if (s1 == 'conversion-stop-time ') &
+                    read (bfile, '(i4,i2,i2,i2,i2,i2)') &
+                            iyear3, imonth3, iday3, ihour3, imin3, isec3
+            if (s1 == 'conversion-timestep  ') &
+                    read (bfile, '(i4,i2,i2,i2,i2,i2)') &
+                            iyear4, imonth4, iday4, ihour4, imin4, isec4
+            if (s1 == sget) goto 30
+        end do
+        20 write (lunut, 1010) sget
+        ierr = 1
+        return
+        30 continue
+        if (pathlen > 0) then
+            bfile = filpath(1:pathlen) // bfile
+        endif
+        idate = iyear1 * 10000 + imonth1 * 100 + iday1
+        itime = ihour1 * 10000 + imin1 * 100 + isec1
+        reftim = julian_with_leapyears (idate, itime)
+        idate = iyear2 * 10000 + imonth2 * 100 + iday2
+        itime = ihour2 * 10000 + imin2 * 100 + isec2
+        starttim = julian_with_leapyears (idate, itime)
+        idate = iyear3 * 10000 + imonth3 * 100 + iday3
+        itime = ihour3 * 10000 + imin3 * 100 + isec3
+        stoptim = julian_with_leapyears (idate, itime)
+        it4 = iyear4 * 31536000 + imonth4 * 2592000 + iday4 * 86400 + &
+                ihour4 * 3600 + imin4 * 60 + isec4
+        afact = isfact / 864.0d+02
+        if (isfact < 0) afact = -1.0d+00 / isfact / 864.0d+02
+        it2 = (starttim - reftim) / afact + 0.5
+        it3 = (stoptim - reftim) / afact + 0.5
+        close (ilun)
+
+        ! open the binary file for this item
+        call open_waq_files  (ilun, bfile, 33, 2, ierr)
+        if (ierr > 0) then
+            write (lunut, 1020) bfile
+            return
+        endif
+
+        ! find the time step in the file where to start
+        read (ilun, end = 50) itim, (a, k = 1, abs(numbr))
+        if (itim /= it2) then
+            write (lunut, 1030) it2, itim, bfile
+            ierr = 1
+            return
+        endif
+        read (ilun, end = 50) itim2, (a, k = 1, abs(numbr))
+        idtf = itim2 - itim
+        if (idtf /= it4) then
+            write (lunut, 1040) it4, idtf, bfile
+            ierr = 1
+            return
+        endif
+        if (((istep - itim) / idtf) * idtf == istep - itim) then
+            close (ilun)
+            return
+        endif
+
+        50 write (lunut, 1050) istep, bfile
+        ierr = 1
+        return
+
+        1000 format (/' ERROR: Opening ASCII coupling file: ', A)
+        1010 format (/' ERROR: Search string not found: ', A)
+        1020 format (/' ERROR: Opening binary file: ', A)
+        1030 format (/' ERROR: Start time is not: ', I10, ' but: ', I10, &
+                ' in file: ', A)
+        1040 format (/' ERROR: Time step is not: ', I10, ' but: ', I10, &
+                ' in file: ', A)
+        1050 format (/' ERROR: Time: ', I10, ' not found in file: ', A)
+
+    end subroutine validate_simulation_time_steps
 
 end module m_opt1
