@@ -175,7 +175,9 @@ contains
         character(len = strlen(c_config_file)) :: runid_given
         integer(kind = int_wp) :: argc
         integer(kind = int_wp) :: iarg
-        integer(kind = int_wp) :: errorcode
+
+        ! local
+        logical :: init_successful
 
         write (88, *) 'Initialise ...'
         flush (88)
@@ -205,13 +207,15 @@ contains
         end do
         argc = argc + 2
 
-        if (delwaq1(argv)) then
-            initialize = 1
-        else
+        init_successful = delwaq1(argv)
+
+        if (init_successful) then
             call delwaq2_global_data_initialize(runid_given)
             call dlwqmain(ACTION_INITIALISATION, argc, argv, dlwqd)
             call delwaq2_global_data_copy(dlwqd)
             initialize = 0
+        else
+            initialize = 1
         end if
 
         write (88, *) 'Initialise: ', dlwqd%otime, dlwqd%itime, dlwqd%tscale, idt
