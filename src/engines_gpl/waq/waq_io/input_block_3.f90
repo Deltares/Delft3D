@@ -23,8 +23,7 @@
 module inputs_block_3
     use m_waq_precision
     use m_read_hydfile
-    use simulation_input_options
-    use m_opt0
+    use simulation_input_options, only : process_simulation_input_options, read_constants_time_variables
     use grid_utils, only : read_multiple_grids
 
     implicit none

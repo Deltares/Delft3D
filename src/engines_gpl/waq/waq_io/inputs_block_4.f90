@@ -25,9 +25,8 @@ module inputs_block_4
     use m_string_utils, only : string_equals
     use m_scale
     use m_pointi
-    use m_opt2
-    use simulation_input_options
-    use m_opt0
+    use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
+            read_constant_data, read_constants_time_variables
     use m_dmpare
     use m_dlwq0f
 

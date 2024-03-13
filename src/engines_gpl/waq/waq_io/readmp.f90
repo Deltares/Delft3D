@@ -63,7 +63,7 @@ contains
         !     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
         !                         LUN(29) = unitnumber formatted output file
 
-        use simulation_input_options
+        use simulation_input_options, only: process_simulation_input_options
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
 

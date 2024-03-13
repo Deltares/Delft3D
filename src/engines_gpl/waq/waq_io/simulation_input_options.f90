@@ -27,6 +27,10 @@ module simulation_input_options
 
     implicit none
 
+    private
+    public :: process_simulation_input_options, validate_simulation_time_steps, read_constant_data, &
+            read_constants_time_variables
+
 contains
 
     subroutine process_simulation_input_options(iopt1, lun, is, lchar, filtype, &
@@ -432,5 +436,706 @@ contains
         1050 format (/' ERROR: Time: ', I10, ' not found in file: ', A)
 
     end subroutine validate_simulation_time_steps
+
+    subroutine read_constant_data(iopt2, array, nitem, nvals, nscale, &
+            iwidth, lun1, ioutpt, ierr)
+
+        !! Reads a block with constant data with and without defaults
+        !!
+        !! Function depends on value of iopt2
+        !!      - if 1:
+        !>          - nscale scale values
+        !>          - nitem sets of nvals values
+        !>      - if 2:
+        !>          - nscale scale values
+        !>          - nvals dfault values
+        !>          - number of overridings
+        !>          - that many integers + sets of nvals values
+        !>      If lun1 is positive the array are written
+
+        !!     Subroutines called : scale  : to scale the matrix with the sacle factors
+        !!     Logical units      : LUNIN = unit input file
+        !!                          LUNUT = unit formatted output file
+        !!                          LUN1  = unit intermediate file ( system )
+        use timers       !   performance timers
+        use rd_token
+        use m_scale
+
+        integer(kind = int_wp), intent(in) :: iopt2       !< input option
+        real(kind = real_wp), intent(out) :: array(nvals, nitem)  !< array for the values
+        integer(kind = int_wp), intent(in) :: nitem       !< number of items to read
+        integer(kind = int_wp), intent(in) :: nvals       !< number of values per item
+        integer(kind = int_wp), intent(in) :: nscale      !< number of scale values
+        integer(kind = int_wp), intent(in) :: iwidth      !< width of the output file
+        integer(kind = int_wp), intent(in) :: lun1        !< output unit number
+        integer(kind = int_wp), intent(in) :: ioutpt      !< how extensive the output ?
+        integer(kind = int_wp), intent(inout) :: ierr        !< cumulative rror counter
+
+        real(kind = real_wp), allocatable :: factor(:)        !  array for scale factors
+        real(kind = real_wp) :: value              !  help variable values
+        integer(kind = int_wp) :: nover              !  number of overridings
+        integer(kind = int_wp) :: iscal              !  loop counter scale values
+        integer(kind = int_wp) :: item               !  loop counter items
+        integer(kind = int_wp) :: ival               !  loop counter values
+        integer(kind = int_wp) :: iw                 !  loop counter print blocks
+        integer(kind = int_wp) :: iover              !  loop counter overridings
+        integer(kind = int_wp) :: ie1, ie2           !  limits of print blocks
+        integer(kind = int_wp) :: ierr2              !  local error variable
+        integer(kind = int_wp) :: ithndl = 0
+
+        if (nitem == 0) return                   !  no items specified
+
+        allocate (factor(nvals), stat = ierr2)
+        if (ierr2 /= 0) then
+            write (lunut, 2000) nvals
+            goto 100
+        endif
+
+        do iscal = 1, nscale
+            if (gettoken(factor(iscal), ierr2) > 0) goto 100
+        enddo
+
+        select case (iopt2)
+
+        case (1)                    !   read constant items without defaults
+            write (lunut, 2010)
+            do item = 1, nitem
+                do ival = 1, nvals
+                    if (gettoken(array(ival, item), ierr2) > 0) goto 100
+                enddo
+            enddo
+            if (ioutpt < 4) write (lunut, 2020)
+            do iw = 1, nvals, iwidth
+                ie1 = min(iw + iwidth - 1, nscale)
+                ie2 = min(iw + iwidth - 1, nvals)
+                if (ioutpt >= 4) then
+                    write (lunut, 2030)          (ival, ival = iw, ie1)
+                    write (lunut, 2040)          (factor(ival), ival = iw, ie1)
+                    write (lunut, 2050)
+                    do item = 1, nitem
+                        write (lunut, 2060) item, (array (ival, item), ival = iw, ie2)
+                    enddo
+                endif
+            enddo
+
+        case (2)                    !   Read constant items with defaults
+            write (lunut, 2070)
+            do ival = 1, nvals
+                if (gettoken(array(ival, 1), ierr2) > 0) goto 100
+            enddo
+            if (ioutpt < 3) write (lunut, 2080)
+            do iw = 1, nvals, iwidth
+                ie1 = min(iw + iwidth - 1, nscale)
+                ie2 = min(iw + iwidth - 1, nvals)
+                if (ioutpt >= 3) then
+                    write (lunut, 2030) (ival, ival = iw, ie1)
+                    write (lunut, 2040) (factor(ival), ival = iw, ie1)
+                    write (lunut, 2090)
+                    write (lunut, 2040) (array (ival, 1), ival = iw, ie2)
+                endif
+            enddo
+            do ival = 1, nvals
+                value = array(ival, 1)
+                do item = 2, nitem
+                    array(ival, item) = value
+                enddo
+            enddo
+
+            !           Read overridings of the constant values
+
+            if (gettoken(nover, ierr2) > 0) goto 100
+            write (lunut, 2100) nover
+            if (nover > 0 .and. ioutpt >= 3) write (lunut, 2110)
+            do iover = 1, nover
+                if (gettoken(item, ierr2) > 0) goto 100
+                if (item < 1 .or. item > nitem) then
+                    if (ioutpt >= 3) write (lunut, 2120) item, 1, nitem
+                    ierr = ierr + 1
+                    do ival = 1, nvals
+                        if (gettoken(value, ierr2) > 0) goto 100
+                    enddo
+                else
+                    do ival = 1, nvals
+                        if (gettoken(array(ival, item), ierr2) > 0) goto 100
+                    enddo
+                    if (ioutpt >= 3) &
+                            write (lunut, 2130) item, (array(ival, item), ival = 1, nvals)
+                endif
+            enddo
+
+        end select
+
+        !     Scale the values
+
+        if (nscale == 1) then
+            do iscal = 2, nvals
+                factor(iscal) = factor(1)
+            enddo
+        endif
+        call scale (array, factor, nitem, nvals)
+
+        !     Write if unit specified
+
+        if (lun1 > 0) write (lun1) array
+        if (timon) call timstop(ithndl)
+        return
+
+        !     Errors and ends
+
+        100 ierr = ierr + 1
+        write (lunut, 2140)
+        if (timon) call timstop(ithndl)
+        return
+
+        !       Output formats
+
+        2000 format (/' ERROR allocating real array space of:', i10, ' values.')
+        2010 format (' Constant values without defaults ', /)
+        2020 format (' Values will be printed for output option 4 and higher !')
+        2030 format (' Scale factors:', /, 6X, 10I12)
+        2040 format (12X, 1P, 10E12.4)
+        2050 format (' Unscaled values:')
+        2060 format (I10, 2X, 1P, 10E12.4)
+        2070 format (' Constant values with defaults ', /)
+        2080 format (' Values will be printed for output option 3 and higher !')
+        2090 format (' Unscaled default values:')
+        2100 format (' Number of overridings :', I5)
+        2110 format (' Number         values')
+        2120 format (I6, ' ERROR, number too big or too small must be between ', I5, ' and ', I5, ' !!!')
+        2130 format (I10, 2X, 1P, 10E12.4, /(12X, 10E12.4))
+        2140 format (' ERROR reading input!')
+
+    end subroutine read_constant_data
+
+    subroutine read_time_dependent_variables(lun, lchar, is, nitem, nvals, &
+            nscal, ifact, dtflg, dtflg3, nrfunc, &
+            nrharm, iwidth, ioutpt, ierr)
+
+        !!  Read time dependent variables
+        !!
+        !! Time depending data can come in 2 ways
+        !>      - a table with values at breakpoints
+        !>      - a table with harmonic or Fourier values
+        !>          The values at breakpoints require following input:
+        !>       - iopt, should be 1 (no defaults) or 2 (defaults and overridings)
+        !>       - number of items in this block    (nvarnw, read in rdpoin)
+        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of breakpoints (nobrk2, this in the number of time steps)
+        !>       - scale values to be applied for this block ( 1 or nval1 )
+        !>       - table of values in (nval1,nitem) order.
+        !>       The function option requires the following input
+        !>       - iopt, should be 3 (harmonics) or 4 (Fouriers)
+        !>       - number of items in this block    (nvarnw, read in rdpoin)
+        !>       - that many ID values of the items (itemId, read in rdpoin)
+        !>       - number of harmonics or Fourier components (nhar  , read in rwfunc)
+        !>       - nval1 values for the zero-th harmonic  (the mean , read in rwfunc)
+        !>       - nhar times:
+        !>          - a period of the harmonic    ( NOT for the Fouriers )
+        !>          - the phase of the harmonic, or Fourier
+        !>          - nval1 amplitudes of this component
+        !>       A number of these blocks are read, untill all items got a value for all nval1
+        !>       For the new processing of Bounds, Wastes and Funcs, the file is
+        !>       - initialised with a specific header
+        !>       - written per block with:
+        !>          - heading block information
+        !>          - breakpoint + matrix at the breakpoint for each breakpoint.
+        !>          For the old processing the blocks are merged to one big matrix. The
+        !>          information on the items is written in the system file. The big matrix
+        !>          of size (nval1,nitem,nobrkt) is written to the binary file. Because
+        !>          the size of this total matrix is not clear in advance, the matrix is
+        !>          reallocated for every new block. Previous versions that used a swap file
+        !>          for the matrix have been phased out, because memory is likely not a
+        !>          problem at the moment any more.
+
+        !! Logical units:
+        !!      lunut   = unit formatted output file
+        !!      lun( 3) = unit binary intermediate file for harmonics
+        !!      lun( 4) = unit binary intermediate file for pointers
+        !!      lun(is) = unit binary intermediate file for function
+
+        use m_rdpoin
+        use m_matrix
+        use m_fmread
+        use m_open_waq_files
+        use timers       !   performance timers
+        use rd_token
+        use m_sysn          ! System characteristics
+        use m_rwfunc
+
+        integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
+        character(*), intent(in) :: lchar (*)         !< array with file names of the files
+        integer(kind = int_wp), intent(in) :: is                 !< entry in lun for this call
+        integer(kind = int_wp), intent(in) :: nitem              !< number of required items
+        integer(kind = int_wp), intent(in) :: nvals              !< number of values per item
+        integer(kind = int_wp), intent(in) :: nscal              !< number of scale values
+        integer(kind = int_wp), intent(in) :: ifact              !< factor between clocks
+        logical, intent(in) :: dtflg             !< 'date'-format for output ?
+        logical, intent(in) :: dtflg3            !< 'date'-format (F;ddmmhhss,T;yydddhh)
+        integer(kind = int_wp), intent(out) :: nrfunc             !< number of functions
+        integer(kind = int_wp), intent(out) :: nrharm             !< number of harmonic functions
+        integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
+        integer(kind = int_wp), intent(in) :: ioutpt             !< flag for more or less output
+        integer(kind = int_wp), intent(inout) :: ierr               !< error count / switch
+
+        integer(kind = int_wp), pointer :: breaks(:)         !  breakpoints
+        integer(kind = int_wp), allocatable :: break2(:)         !  breakpoints of a block
+        integer(kind = int_wp), pointer :: break3(:)         !  help pointer for resizing
+        real(kind = real_wp), pointer :: values(:, :)       !  values
+        real(kind = real_wp), allocatable :: value2(:, :)       !  values of a block
+        real(kind = real_wp), pointer :: value3(:, :)       !  help pointer for resizing
+        integer(kind = int_wp) :: itemId(nitem)      !  array for itemIds
+        real(kind = real_wp) :: factor(nvals)      !  array for scale factors
+        integer(kind = int_wp) :: nval1              !  nval1 but at least 1
+        logical(4) bound             !  boundary ?
+        logical(4) waste             !  wastes ?
+        logical(4) funcs             !  segment functions ?
+        logical(4) found             !  help variable for finding strings
+        integer(kind = int_wp) :: ierr2              !  local error variable
+        integer(kind = int_wp) :: ifilsz             !  local counter of used integer array space
+        integer(kind = int_wp) :: jfilsz             !  local counter of used real array space
+        integer(kind = int_wp) :: ntot               !  nitem*nval1, real space of one breakpoint
+        integer(kind = int_wp) :: ntotal             !  total number of items with input
+        integer(kind = int_wp) :: nobrkt             !  total number of breakpoints
+        integer(kind = int_wp) :: nobrk2             !  number of breakpoints in this block
+        integer(kind = int_wp) :: newbrk             !  number of breakpoints for the new allocation
+        integer(kind = int_wp) :: iopt3              !  option for this block
+        integer(kind = int_wp) :: nvarnw             !  number of items in a block
+        integer(kind = int_wp) :: lunuit             !  the unit of the binary file
+        integer(kind = int_wp) :: i1, i2, k          !  loop counters
+        integer(kind = int_wp) :: ibrk               !  loop counter breakpoints
+        integer(kind = int_wp) :: iscal              !  loop counter scale values
+        integer(kind = int_wp) :: nrec               !  total nr of rec's
+        integer(kind = int_wp) :: nrec2              !  local nr of rec's
+        integer(kind = int_wp) :: nvarar             !  number of items previous read
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("read_time_dependent_variables", ithndl)
+
+        breaks => null()
+        break3 => null()
+        values => null()
+        value3 => null()
+
+        bound = .false.
+        waste = .false.
+        funcs = .false.
+        if (ierr == -1) bound = .true.
+        if (ierr == -2) waste = .true.
+        if (ierr == -3) funcs = .true.
+        nval1 = nvals
+        if (funcs .and. nvals == 0) nval1 = 1
+        ierr = 0
+        ifilsz = 0
+        jfilsz = 0
+        ntot = nitem * nval1
+        ntotal = 1
+        nobrkt = 0
+        nrec = 0
+
+        ! write headers for new style time series files
+        write (lunut, 2000)
+        !        open the output work file
+        !        write nr of items and nr of substances
+        !        write default values ( IORDER = 1 , NPNT = 0 )
+        lunuit = lun(3)
+        if (.not. funcs) call open_waq_files (lun(is), lchar(is), is, 1, ierr2)
+        if (bound) then
+            write (lun(is)) ' 4.900BOUND '
+            write (lun(is)) nitem, nval1
+            write (lun(is)) 1, 0, nval1, (k, k = 1, nval1), 1, 0
+        endif
+        if (waste) then
+            write (lun(is)) ' 4.900WASTE '
+            write (lun(is)) nitem, nval1
+            write (lun(is)) 1, 0, nval1, (k, k = 0, nval1 - 1), 1, 0
+        endif
+        if (bound .or. waste) then
+            write (lun(is)) 1
+            write (lun(is)) 0, (0.0, k = 1, nval1)
+            ifilsz = ifilsz + 2 + 3 + nval1 + 3 + 1
+            jfilsz = jfilsz + nval1
+        endif
+        if (bound .or. waste .or. funcs) lunuit = lun(is)
+
+        do while (ntotal - 1 < nitem)     ! loop over blocks till completion
+
+            ! read the type of block that comes
+            if (gettoken(iopt3, ierr2) > 0) goto 100
+            write (lunut, 2010) iopt3
+            if (iopt3 < 1 .or. iopt3 > 4) then
+                write (lunut, 2020)
+                goto 100
+            endif
+
+            ! the items in this block by itemnumber
+            call rdpoin (nitem, iopt3, ioutpt, itemId(ntotal), nvarnw, &
+                    ierr)
+
+            ! new style for boundaries and wastes
+            if (bound .or. funcs) &
+                    write (lun(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                            nvals, (k, k = 1, nvals), iopt3, 1
+            if (waste) &
+                    write (lun(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                            nval1, (k, k = 0, nval1 - 1), iopt3, 1
+            if (bound .or. waste .or. funcs) &
+                    ifilsz = ifilsz + 5 + nvarnw + nvals
+
+            select case (iopt3)
+
+            case (1, 2)             !         Read time-dependent items on breakpoints
+                if (gettoken(nobrk2, ierr2) > 0) goto 100
+                write (lunut, 2030) nobrk2
+                allocate (break2(nobrk2), value2(nvarnw * nval1, nobrk2))
+                do iscal = 1, nscal
+                    if (gettoken(factor(iscal), ierr2) > 0) goto 100
+                enddo
+                call fmread (nvarnw, itemId(ntotal), nval1, nscal, factor, &
+                        nobrk2, break2, value2, dtflg, dtflg3, &
+                        ifact, iwidth, ioutpt, ierr)
+
+                if (bound .or. waste .or. funcs) then
+                    write (lun(is)) nobrk2                      ! boundaries, wastes and
+                    ifilsz = ifilsz + 1                           ! functions are written
+                    do ibrk = 1, nobrk2                           ! directly per block
+                        write (lun(is)) break2(ibrk), value2(:, ibrk)
+                    enddo
+                    ifilsz = ifilsz + nobrk2
+                    jfilsz = jfilsz + nobrk2 * nvarnw * nval1
+                else                                             ! other are merged into
+                    newbrk = nobrkt + nobrk2                      ! one big matrix that is
+                    allocate (break3(newbrk), value3(ntot, newbrk))  ! written at the end
+                    if (nobrkt > 0) then
+                        break3(1:nobrkt) = breaks(1:nobrkt)
+                        value3(:, 1:nobrkt) = values(:, 1:nobrkt)    ! expand the matrix to allow
+                        deallocate(breaks, values)               ! for the new values to enter
+                    endif
+                    breaks => break3
+                    values => value3
+                    nvarar = ntotal - 1
+                    call dmatrix (ntot, nval1, nvarar, nvarnw, nobrkt, &
+                            nobrk2, breaks, break2, values, value2, &
+                            itemId(ntotal))
+                endif
+                deallocate (break2, value2)
+
+            case (3, 4)            !         Read items as functions
+                write (lunut, 2050)
+                nrec2 = 0                                        ! these function blocks are
+                if (bound .or. funcs) then                     ! are written in the
+                    ierr2 = -1                                    ! lunuit = lun(is) file
+                endif                                            ! for bounds, wastes and funcs
+                if (waste) then                                ! and to lunuit = lun(3), the
+                    ierr2 = -2                                    ! system file, for others
+                endif
+                call rwfunc (iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
+                        nharms, ifact, dtflg, dtflg3, lunuit, &
+                        iwidth, ioutpt, ierr2)
+                ierr = ierr + ierr2
+                if (bound .or. waste .or. funcs) then
+                    ifilsz = ifilsz + nrec2
+                    jfilsz = jfilsz + nrec2 * (nvarnw * nval1 + 1)
+                else
+                    nrec = nrec + nrec2
+                endif
+
+            end select
+
+            ntotal = ntotal + nvarnw
+
+        enddo
+
+        if (ntotal - 1 > nitem) then
+            write (lunut, 2060) ntotal - 1, nitem
+            ierr = ierr + 1
+        endif
+
+        ! Check complete pointer structure
+        do i1 = 1, nitem
+            found = .false.
+            do i2 = 1, nitem
+                if (iabs(itemid(i2)) == i1) then
+                    if (found) then
+                        write (lunut, 2070) i1
+                        ierr = ierr + 1
+                    else
+                        found = .true.
+                    endif
+                endif
+            enddo
+            if (.not. found) then
+                write (lunut, 2080) i1
+                ierr = ierr + 1
+            endif
+        enddo
+
+        ! Finalize this input section
+        if (bound .or. waste .or. funcs) then
+            newrsp = newrsp + jfilsz
+            newisp = newisp + ifilsz
+        else                         !    write pointers and breakpoint matrix
+            write (lun(4)) itemid, 0, 0, 0
+            do ibrk = 1, nobrkt
+                write (lun(is)) breaks(ibrk), values(:, ibrk)
+            enddo
+            close (lun(is))
+            nlines = nlines + ntot * 2
+            npoins = npoins + nitem + 3
+            nrfunc = ntot
+            nrharm = nrec
+            niharm = niharm + nrec
+        endif
+        ierr = ierr + ierr2
+        if (associated (breaks)) deallocate (breaks, values)
+        if (timon) call timstop(ithndl)
+        return
+
+        100 ierr = ierr + 1
+        return
+
+        2000 format (' Time variable data.')
+        2010 format (/, ' Option selected : ', I2)
+        2020 format (/, ' ERROR, option not implemented')
+        2030 format (' Number of breakpoints:', I7)
+        2050 format (' Block with periodic functions.')
+        2060 format (' ERROR, too many (', I5, ') items, ', I5, ' expected!')
+        2070 format (' ERROR, duplicate item:', I5)
+        2080 format (' ERROR, non-initialised item:', I5)
+
+    end subroutine read_time_dependent_variables
+
+    subroutine read_constants_time_variables(lun, is, noql1, noql2, noql3, &
+            ndim2, ndim3, nrftot, nrharm, ifact, &
+            dtflg1, disper, volume, iwidth, lchar, &
+            filtype, dtflg3, ioutpt, ierr, &
+            status, dont_read)
+
+        !!  Reads a block with constant or time variable data
+        !>      This is a main data aquisition sub system, it is
+        !>      the only call to read:
+        !>          - volumes ( in read_block_3_grid_layout )
+        !>          - additional dispersions ( in read_block_4_flow_dims_pointers )
+        !>          - additional velocities ( in read_block_4_flow_dims_pointers )
+        !>          - areas ( in read_block_4_flow_dims_pointers )
+        !>          - flows ( in read_block_4_flow_dims_pointers )
+        !>          - mixing lengthes ( in read_block_4_flow_dims_pointers )
+        !>          - old style open boundaries ( in read_block_5_boundary_conditions )
+        !>          - old style waste loads ( in read_block_6_waste_loads_withdrawals )
+        !>          read_block_7_process_parameters is a sort of dedicated verion of this routine
+        !>          to read parameters and functions and segment functions\n
+        !>          read_block_8_initial_conditions is a sort of dedicated verion of this routine
+        !>          to read initial conditions
+
+        !!  Logical units: lun(27) = unit stripped DELWAQ input file
+        !!                  lun(28) = stripped workfile
+        !!                  lun(29) = unit formatted output file
+        !!                  lun( 2) = unit intermediate file (system)
+        !!                  lun( 3) = unit intermediate file (harmos)
+        !!                  lun( 4) = unit intermediate file (pointers)
+        !!                  lun(is) = unit intermediate file (items)
+
+        use simulation_input_options
+        use m_open_waq_files
+        use timers       !   performance timers
+        use rd_token
+        use m_sysn          ! System characteristics
+
+        integer(kind = int_wp), intent(inout) :: lun    (*)     !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: is             !< entry in lun for this call
+        integer(kind = int_wp), intent(in) :: noql1          !< number of exchanges 1st direction
+        integer(kind = int_wp), intent(in) :: noql2          !< number of exchanges 2nd direction
+        integer(kind = int_wp), intent(in) :: noql3          !< number of exchanges 3rd direction
+        integer(kind = int_wp), intent(in) :: ndim2          !< number of items per block
+        integer(kind = int_wp), intent(in) :: ndim3          !< number of scale factors
+        integer(kind = int_wp), intent(inout) :: nrftot         !< number of functions
+        integer(kind = int_wp), intent(inout) :: nrharm         !< number of harmonics
+        integer(kind = int_wp), intent(in) :: ifact          !< factor between time scales
+        logical, intent(in) :: dtflg1        !< 'date'-format 1st time scale
+        logical, intent(in) :: disper        !< .true. then dispersion
+        integer(kind = int_wp), intent(inout) :: volume         !< if 1 then volume ( out: 0 = computed volumes )
+        integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
+        character(*), intent(inout) :: lchar  (*)    !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: filtype(*)     !< type of binary file
+        logical, intent(in) :: dtflg3        !< 'date'-format (F;ddmmhhss,T;yydddhh)
+        integer(kind = int_wp), intent(in) :: ioutpt         !< how extensive is output ?
+        integer(kind = int_wp), intent(inout) :: ierr           !< cumulative error count
+        logical, intent(in) :: dont_read     !< do not actually read tokens, if true, the information is already provided
+
+        type(error_status), intent(inout) :: status !< current error status
+
+        logical        bound       !  if .true. then boundary call
+        logical        waste       !  if .true. then waste call
+        logical        skip        !  if .true. then waste call with skip
+        integer(kind = int_wp) :: iopt1        !  first  option ( type of file e.g. 0 = binary file )
+        integer(kind = int_wp) :: iopt2        !  second option ( 1,2 = constant, 3 = time varying )
+        integer(kind = int_wp) :: ndim1        !  sum of input in 3 directions
+        integer(kind = int_wp) :: ndtot        !  total size of matrix (ndim1*ndim2)
+        integer(kind = int_wp) :: ierr2        !  local error flag
+        integer(kind = int_wp) :: itype        !  to identify the data type read
+        integer(kind = int_wp) :: idummy       !  work integer ( = 0 )
+        real(kind = real_wp) :: adummy       !  work real    ( = 0.0 )
+        character(128) cdummy      !  work character
+        integer(kind = int_wp) :: k            !  loop counter
+        real(kind = real_wp) :: disp(3, 1)    !  dispersions in 3 directions
+        real(kind = real_wp), allocatable :: values(:, :)  ! read buffer for the values
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("read_constants_time_variables", ithndl)
+
+        idummy = 0
+        adummy = 0.0
+        ndim1 = noql1 + noql2 + noql3
+        ndtot = ndim1 * ndim2
+        bound = .false.
+        waste = .false.
+        skip = .false.
+
+        select case (ierr)
+        case (-1)
+            bound = .true.
+            waste = .false.
+            skip = .false.
+        case (-2)
+            bound = .false.
+            waste = .true.
+            skip = .false.
+        case (:-3)
+            bound = .false.
+            waste = .true.
+            skip = .true.
+        end select
+        ierr = 0
+        if (skip) goto 10
+
+        !        Read first option, write zero dispersion if process_simulation_input_options=0
+
+        if (dont_read) then
+            iopt1 = -2
+            if (is == 13) then
+                iopt1 = 0 ! Ugly hack, all other files are time-dependent
+            endif
+        else
+            if (gettoken(cdummy, iopt1, itype, ierr2) > 0) goto 50
+            if (itype == 1) then
+                if (volume /= 1) then
+                    write (lunut, 2070) cdummy
+                    ierr2 = 1
+                    goto 50
+                else
+                    if (cdummy == 'FRAUD') then
+                        volume = -1
+                        write (lunut, 2080)
+                        if (gettoken(iopt1, ierr2) > 0) goto 50
+                    else
+                        write (lunut, 2090) cdummy
+                        ierr2 = 1
+                        goto 50
+                    endif
+                endif
+            endif
+        endif
+
+        write (lunut, 2000) iopt1
+        call process_simulation_input_options   (iopt1, lun, is, lchar, filtype, &
+                dtflg1, dtflg3, ndtot, ierr2, status, &
+                dont_read)
+        if (ierr2 > 0) goto 50
+
+        !        Binary file, option = -2 (or sequence of binary files option = -4)
+        !                           everything is block function, except volume
+
+        if (iopt1 == -2 .or. iopt1 == -4) then
+            nlines = nlines + ndim1 * ndim2 * 2
+            npoins = npoins + ndim1 + 3
+            nrftot = ndim1 * ndim2
+            nrharm = 0
+            if (volume == 1) then
+                write(lun(4)) (k, k = 1, ndim1), (idummy, k = 1, 3)
+            else
+                write(lun(4)) (-k, k = 1, ndim1), (idummy, k = 1, 3)
+            endif
+            iopt1 = 0
+        endif
+
+        !        Dispersion in three directions if DISPER, return if NODISP=0
+
+        if (disper) then
+            if (iopt1 == 0) then                            ! binary file, then
+                write (lun(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
+            else
+                write (lun(2)) idummy
+                call read_constant_data (1, disp, 1, 3, 3, &
+                        iwidth, lun(2), ioutpt, ierr2)
+                if (ierr2 > 0) goto 50
+                if (ndim2 == 0) goto 9999
+            endif
+        endif
+
+        if (iopt1 == 0) goto 9999                          ! binary file, we are ready
+
+        !        Read second option, set volume flag if OPT2 > 3 AND VOLUME
+
+        10 if (gettoken(iopt2, ierr2) > 0) goto 50
+        write (lunut, 2010) iopt2
+        if (volume == 1 .and. iopt2 > 3) then                  ! Computed volumes !!
+            volume = 0
+            iopt2 = iopt2 - 3
+        endif
+
+        !        Get the data
+
+        select case (iopt2)
+        case (1, 2)              !   Constants with and without defaults in three directions
+            allocate (values(ndim2, max(noql1, noql2, noql3)))
+            call open_waq_files (lun(is), lchar(is), is, 1, ierr2)
+            write (lun(is)) idummy
+            if (noql1 > 0) write (lunut, 2030)
+            call read_constant_data (iopt2, values, noql1, ndim2, ndim3, &
+                    iwidth, lun(is), ioutpt, ierr2)
+            if (ierr2 > 0) goto 50
+
+            if (noql2 > 0) write (lunut, 2040)
+            call read_constant_data (iopt2, values, noql2, ndim2, ndim3, &
+                    iwidth, lun(is), ioutpt, ierr2)
+            if (ierr2 > 0) goto 50
+
+            if (noql3 > 0 .and. noql3 /= ndim1) write (lunut, 2050)
+            call read_constant_data (iopt2, values, noql3, ndim2, ndim3, &
+                    iwidth, lun(is), ioutpt, ierr2)
+            close (lun(is))
+            if (ierr2 > 0) goto 50
+
+        case (3)                 !   Time varying data
+            ierr2 = 0
+            if (bound) ierr2 = -1
+            if (waste) ierr2 = -2
+            call read_time_dependent_variables (lun, lchar, is, ndim1, ndim2, &
+                    ndim3, ifact, dtflg1, dtflg3, nrftot, &
+                    nrharm, iwidth, ioutpt, ierr2)
+            if (ierr2 > 0) goto 50
+
+        case default
+            write (lunut, 2020)
+            goto 50
+
+        end select
+        9999 if (timon) call timstop(ithndl)
+        return
+
+        50 ierr = ierr + 1
+        if (timon) call timstop(ithndl)
+        return
+
+        !       Output formats
+
+        2000 format (/, ' First  selected option   : ', I7)
+        2010 format (' Second selected option   : ', I7)
+        2020 format (/, ' ERROR. Option not implemented !!!!!!')
+        2030 format (/, ' First  direction:')
+        2040 format (/, ' Second direction:')
+        2050 format (/, ' Third  direction:')
+        2070 format (/, ' ERROR. No character string allowed: ', A)
+        2080 format (' Keyword FRAUD found for fraudulent computations.')
+        2090 format (/, ' ERROR. This keyword is not allowed here: ', A)
+
+    end subroutine read_constants_time_variables
 
 end module simulation_input_options

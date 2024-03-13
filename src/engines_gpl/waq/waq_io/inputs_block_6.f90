@@ -23,8 +23,7 @@
 module inputs_block_6
     use m_waq_precision
     use m_string_utils
-    use simulation_input_options
-    use m_opt0
+    use simulation_input_options, only : process_simulation_input_options
     use m_dlwq5a
     use m_error_status
 

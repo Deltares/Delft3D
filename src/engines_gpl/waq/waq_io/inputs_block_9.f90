@@ -24,7 +24,7 @@ module inputs_block_9
     use m_waq_precision
     use m_rdodef
     use m_outboo
-    use simulation_input_options
+    use simulation_input_options, only : process_simulation_input_options
     use m_getopo
     use m_error_status
 

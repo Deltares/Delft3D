@@ -23,8 +23,8 @@
 module inputs_block_8
     use m_waq_precision
     use m_read_initials
-    use m_opt2
-    use simulation_input_options
+    use simulation_input_options, only: process_simulation_input_options, validate_simulation_time_steps, &
+            read_constant_data
     use m_error_status
 
     implicit none
