@@ -28,7 +28,7 @@ module inputs_block_4
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
             read_constant_data, read_constants_time_variables
     use m_dmpare
-    use m_matrix
+    use matrix_utils, only : compute_matrix_size
 
     implicit none
 

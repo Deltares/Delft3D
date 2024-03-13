@@ -34,7 +34,7 @@ module waq_omi_utils
     use m_waq_precision
     use m_dmpare
     use m_dlwq0i
-    use m_matrix
+    !    use matrix_utils
     use inputs_block_9
     use m_delwaq2_main
     use m_dlwqp1
@@ -673,7 +673,7 @@ contains
 
         use delwaq2_global_data
         use m_sysn
-        use m_matrix, only : compute_matrix_size
+        use matrix_utils, only : compute_matrix_size
 
         implicit none
 

@@ -44,9 +44,8 @@ contains
         !! Reads a block of input items ( procesparameters, initial conditions )
 
         use m_read_data
-        use m_print_matrix
         use simulation_input_options, only : process_simulation_input_options
-        use m_compute_matrix
+        use matrix_utils, only : compute_matrix, print_matrix
         use m_cli_utils, only : retrieve_command_argument
         use dlwqgrid_mod          ! for the storage of contraction grids
         use dlwq_hyd_data  ! for definition and storage of data
