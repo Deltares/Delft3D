@@ -26,6 +26,9 @@ module initial_conditions
 
     implicit none
 
+    private
+    public :: read_initial_conditions
+
 contains
 
 
