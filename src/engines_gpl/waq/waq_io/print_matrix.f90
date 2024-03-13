@@ -31,17 +31,10 @@ contains
     subroutine print_matrix(lunut, iwidth, dlwqdata, strng1, strng2, &
             strng3, ioutpt)
 
-        !     Deltares Software Centre
-
-        !     function : prints blocks of data, also scale and convert
-
-        !     Global declarations
+        !! prints blocks of data, also scale and convert
 
         use timers        !   performance timers
         use dlwq_hyd_data ! for definition and storage of data
-        implicit none
-
-        !     declaration of arguments
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
@@ -50,8 +43,6 @@ contains
         character(len = *), intent(in) :: strng2       ! write string 2 (values/concs)
         character(len = *), intent(in) :: strng3       ! write string 3 (brkp/harm)
         integer(kind = int_wp), intent(in) :: ioutpt        ! output file option
-
-        !     local declarations
 
         logical :: deflts       ! defaults for the parameters
         integer(kind = int_wp) :: nopar         ! dlwqdata%no_param
@@ -79,7 +70,6 @@ contains
         endif
 
         ! initialisation
-
         nopar = dlwqdata%no_param
         noloc = dlwqdata%no_loc
         nobrk = dlwqdata%no_brk
@@ -88,11 +78,9 @@ contains
         deflts = dlwqdata%loc_defaults
 
         ! scale factors
-
         if (dlwqdata%param_scaled) then
 
             ! print scale factors
-
             if (ioutpt >= 4) then
                 write (lunut, 1010)
                 do ipar = 1, nopar, iwidth
@@ -116,7 +104,6 @@ contains
             endif
 
             ! perform the actual scaling
-
             do ibrk = 1, nobrk
                 do iloc = 1, noloc
                     do ipar = 1, nopar
@@ -135,7 +122,6 @@ contains
         endif
 
         ! convert breakpoints, no more, already been done directly after the read
-
         if (nobrk > 1) then
             if (ioutpt >= 4) write (lunut, 1040) strng3, nobrk
             if (deflts .and. ioutpt >= 4) write (lunut, 1050)
@@ -148,7 +134,6 @@ contains
         endif
 
         ! write formatted output
-
         if (ioutpt >= 4) then
             do ibrk = 1, nobrk
                 if (nobrk > 1) then
@@ -157,6 +142,7 @@ contains
                     if (ftype == 3) write (lunut, 1080) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
                     if (ftype == 4) write (lunut, 1090) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
                 endif
+
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
                     if (dlwqdata%param_pointered) then
@@ -188,12 +174,12 @@ contains
                 enddo
             enddo
         endif
-        !
+
         70 continue
 
         if (timon) call timstop(ithndl)
         return
-        !
+
         1010 format (' scale factors for this block of data: ')
         1020 format (' scale    :', i6, 9i12)
         1025 format (' substance:', 10('  ', a10))
@@ -209,7 +195,7 @@ contains
         1120 format (i10, 2x, 1p, 10e12.4)
         1130 format (' info comes at runtime from binary file: ', a)
         1135 format (' info comes at runtime from external source: ', a)
-        !
+
     end subroutine print_matrix
 
 
