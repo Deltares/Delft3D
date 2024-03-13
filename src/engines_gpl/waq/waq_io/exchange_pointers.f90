@@ -25,6 +25,7 @@ module exchange_pointers
     use m_waq_precision
     use m_array_manipulation, only : create_pointer_table
     use m_open_waq_files
+    use m_error_status
 
     private
     public :: read_exchange_pointers_regular_grid, read_exchange_pointers_irregular_grid, generate_bed_layer_pointers, &
@@ -57,7 +58,6 @@ contains
         use dlwqgrid_mod        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
-        use m_error_status
 
         integer(kind = int_wp), intent(inout) :: lun   (*)      !< array with unit numbers
         character(*), intent(inout) :: lchar (*)     !< array with file names of the files
@@ -101,8 +101,7 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_exchange_pointers_regular_grid", ithndl)
 
-        !        Read and check first line of matrix
-
+        ! Read and check first line of matrix
         if (ipopt1 == 0)  then         ! binary file
             call open_waq_files  (lun(8), lchar(8), 8, 2, ierr2)
             if (ierr2 /= 0) goto 100
@@ -127,8 +126,7 @@ contains
         noq = noq1 + noq2 + noq3
         write (lunut, 2050) noq1, noq2, noq3, noqt, noq + noqt
 
-        !        Allocate pointer space
-
+        ! Allocate pointer space
         noqt = noq + noqt
         allocate (ipnt(4, noqt), cellpnt(noseg), flowpnt(noq), stat = ierr2)
         if (ierr2 /= 0) then
@@ -136,8 +134,7 @@ contains
             goto 100
         endif
 
-        !        Allocate matrix space
-
+        ! Allocate matrix space
         ierr2 = 0
         ntot = nmax * mmax
         allocate (imat(ntot), stat = ierr2)
@@ -146,8 +143,7 @@ contains
             goto 100
         endif
 
-        !        Read the pointer itself, write it to the intermediate file
-
+        ! Read the pointer itself, write it to the intermediate file
         if (ipopt1 == 0)  then
             read  (lun(8)) imat
         else
@@ -161,8 +157,7 @@ contains
         endif
         close (lun(8))
 
-        !     Print the matrix
-
+        ! Print the matrix
         do i2 = 1, nmax, iwidth * 2
             i3 = min(nmax, i2 + iwidth * 2 - 1)
             write (lunut, 2020) (k, k = i2, i3)
@@ -172,25 +167,21 @@ contains
             enddo
         enddo
 
-        !     make the trivial IKBND array
-
+        ! make the trivial IKBND array
         nobndl = -minval(imat(1:ntot))
         nobnd = kmax * nobndl
 
-        !     make pointer table
-
+        ! make pointer table
         call create_pointer_table(nmax, mmax, kmax, noseg, nobnd, &
                 noq, noq1, noq2, imat, ipnt, &
                 cellpnt, flowpnt)
 
-        !     calculate number of boundaries and bandwith of matrix
-
+        ! calculate number of boundaries and bandwith of matrix
         call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
                 ioutpt, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
-        !     open cco-file
-
+        ! open cco-file
         filename = lchar(8)(1:index(lchar(8), '.', .true.)) // 'cco'
         call open_waq_files (lun(8), filename, 8, 2, ierr2)
         if (ierr2 /= 0) then
@@ -211,8 +202,6 @@ contains
         close (lun(8))
         if (timon) call timstop(ithndl)
         return
-
-        !       Output formats
 
         2000 format (/, ' ERROR. allocating memory for grid:', i4, i10)
         2010 format (/, ' ERROR: Matrix dimensions do not correspond:', &
@@ -249,7 +238,6 @@ contains
         use dlwqgrid_mod          ! for the storage of contraction grids
         use rd_token       ! for the reading of tokens
         use timers       !   performance timers
-        use m_error_status
 
         integer(kind = int_wp), intent(inout) :: lun   (*)      !< array with unit numbers
         character(*), intent(inout) :: lchar (*)     !< array with file names of the files
@@ -282,8 +270,7 @@ contains
 
         ierr2 = 0
 
-        !        Read exchange pointers
-
+        ! Read exchange pointers
         noq12 = noq1 + noq2
         if (ipopt1 == 0)  then
             call open_waq_files(lun(44), lchar(44), 44, 2 + ftype, ierr2)
@@ -317,8 +304,7 @@ contains
                 endif
             endif
 
-            !        Any data after the expected exchange pointers indicate a problem
-
+            ! Any data after the expected exchange pointers indicate a problem
             read (lun(44), iostat = ierr1) cdummy
             if (ierr1 == 0) then
                 write(lunut, 2110)
@@ -327,8 +313,7 @@ contains
                 goto 100
             endif
 
-            !        No problems found, so continue
-
+            ! No problems found, so continue
             close (lun(44))
             call open_waq_files  (lun(8), lchar(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
@@ -370,7 +355,7 @@ contains
             endif
         endif
 
-        !       calculate number of boundaries and bandwith of matrix
+        ! calculate number of boundaries and bandwith of matrix
 
         call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
                 ioutpt, GridPs, nobnd, jtrack, ipnt, &
@@ -449,8 +434,6 @@ contains
         !     NTRAAQ  INTEGER  1           INPUT   total number of exch. in raaien
         !     NOMAT   INTEGER  1           OUTPUT  size of the fastsolvers matrix
 
-        !     local declarations
-
         integer(kind = int_wp) :: lunut            ! output unit number (lun(29))
         integer(kind = int_wp), allocatable :: IAbnd(:, :)       ! array with boundary information in the bed
         integer(kind = int_wp) :: ilay             ! index layer number
@@ -477,8 +460,7 @@ contains
 
         lunut = lun(29)
 
-        !        is there a bottom direction ?
-
+        ! is there a bottom direction ?
         if (noq4 == 0) then
             if (nobnd > 0) then
                 write (lun(2)) (ibnd (k, 1), k = 1, nobnd)
@@ -487,8 +469,7 @@ contains
             goto 9999
         endif
 
-        !        is there a bottom grid ?
-
+        ! is there a bottom grid ?
         JBott = GridPs%bottom_grid
         if (JBott == 0) then
             write (lunut, 1050)
@@ -496,8 +477,7 @@ contains
             goto 9999
         endif
 
-        !        allocate memory
-
+        ! allocate memory
         JBase = GridPs%base_grid
         nsegl = GridPs%Pointers(JBase)%noseg_lay ! nr of segments per layer
         nlay = GridPs%Pointers(JBase)%nolay     !             in the water
@@ -530,7 +510,7 @@ contains
             enddo
         enddo
 
-        !        sorted after bottom segment number !!
+        ! sorted after bottom segment number !!
 
         if (ioutpt < 4) write (lunut, 1000)
         ioff1 = (nlay - 1) * nsegl
@@ -542,8 +522,7 @@ contains
             if (space_var_nolay) nlayb = GridPs%Pointers(JBott)%nolay_var(isegb)
             ib = botmatrix(isegb, 1)
 
-            !              header for water-bottom
-
+            ! header for water-bottom
             if (ioutpt >= 4) then
                 write (lunut, 1010) ib, noseg + ib
                 write (lunut, 1030)
@@ -555,8 +534,7 @@ contains
                 inaarplus = -nobnd - ib
             endif
 
-            !              get every pointer for this bottom cell
-
+            ! get every pointer for this bottom cell
             iq = 0
             do i = 1, nsegl          ! from water towards the bottom
                 if (GridPs%Pointers(JBott)%iarray(i) == ib) then
@@ -568,7 +546,7 @@ contains
                     if (ioutpt >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
                 endif
             end do
-            !              header within the bottom
+            ! header within the bottom
             if (ioutpt >= 4) then
                 write (lunut, 1020)
                 write (lunut, 1030)
@@ -577,12 +555,10 @@ contains
             do ilay = 1, nlayb     ! from bottom to next bottom layer
                 iq = iq + 1            ! the number of the pointer
 
-                !           from pointer
-
+                ! from pointer
                 ipoint(1, iq + iqt) = botmatrix(isegb, ilay) + noseg
 
-                !           to pointer
-
+                ! to pointer
                 if (ilay  < nlayb) then   ! 'to'  can be boundary
                     ipoint(2, iq + iqt) = botmatrix(isegb, ilay + 1) + noseg
                 else
@@ -591,16 +567,14 @@ contains
                     IAbnd(ib, 2) = ipoint(1, iq + iqt)
                 endif
 
-                !           from-1
-
+                ! from-1
                 if (ilay == 1) then
                     ipoint(3, iq + iqt) = ipoint(1, iq + iqt)
                 else
                     ipoint(3, iq + iqt) = botmatrix(isegb, ilay - 1) + noseg
                 endif
 
-                !           to+1
-
+                !to+1
                 if (ilay < nlayb - 1) then ! 'to+1'  can be boundary
                     ipoint(4, iq + iqt) = botmatrix(isegb, ilay + 2) + noseg
                 else
@@ -609,7 +583,7 @@ contains
                 if (ioutpt >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
 
             end do
-            !              copy the column
+            ! copy the column
             do i = 1, iq
                 ipoint(1, iq + iqt + i) = ipoint(1, iqt + i)
                 ipoint(2, iq + iqt + i) = ipoint(2, iqt + i)
@@ -645,8 +619,7 @@ contains
         write (lun(8)) ((ipoint(i, iq), i = 1, 4), iq = noq + 1, iqt)
         write (lunut, 1100)
 
-        !     Write boundary pointers to work file
-
+        ! Write boundary pointers to work file
         if (nobnd > 0 .or. nsegb > 0) then
             write (lun(2)) (ibnd (k, 1), k = 1, nobnd), (iabnd(k, 1), k = 1, nsegb)
             write (lun(2)) (ibnd (k, 2), k = 1, nobnd), (iabnd(k, 2), k = 1, nsegb)
@@ -656,8 +629,6 @@ contains
 
         9999 if (timon) call timstop(ithndl)
         return
-
-        !       Output formats
 
         1000 FORMAT (/ ' Exchange pointers are printed for output option 4 and higher !')
         1010 FORMAT (/, '     Additional exchanges between water and ' &
@@ -689,7 +660,6 @@ contains
 
         use dlwqgrid_mod        !   for the storage of contraction grids
         use timers       !   performance timers
-        use m_error_status
 
         integer(kind = int_wp), intent(in) :: lun   (*)          !< array with unit numbers
         integer(kind = int_wp), intent(in) :: noseg              !< number of volumes
