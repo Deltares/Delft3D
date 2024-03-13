@@ -37,13 +37,13 @@ contains
         use m_dlwqp1
         use m_delwaq1_data
         use m_error_status
-        use m_dlwq09
-        use m_dlwq08
-        use m_dlwq07
-        use m_dlwq06
-        use m_dlwq05
-        use m_dlwq04
-        use m_dlwq03
+        use inputs_block_9, only : read_block_9
+        use inputs_block_8, only : read_block_8_initial_conditions
+        use inputs_block_7, only : read_block_7_process_parameters
+        use inputs_block_6, only : read_block_6_waste_loads_withdrawals
+        use inputs_block_5, only : read_block_5_boundary_conditions
+        use inputs_block_4, only : read_block_4_flow_dims_pointers
+        use inputs_block_3, only : read_block_3_grid_layout
         use m_block_2_input_reader, only : read_block_2_from_input
         use m_block_1_input_reader, only : read_block_1_from_input
 
@@ -93,7 +93,7 @@ contains
                 ioutpt, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
-        call dlwq03(lun, lchar, filtype, nrftot, nrharm, &
+        call read_block_3_grid_layout(lun, lchar, filtype, nrftot, nrharm, &
                 ivflag, dtflg1, iwidth, dtflg3, &
                 ioutpt, gridps, syname, status, &
                 has_hydfile, nexch)
@@ -103,7 +103,7 @@ contains
         if (.not. associated(nexcraai)) allocate (nexcraai(1))
         if (.not. associated(iexcraai)) allocate (iexcraai(1))
         if (.not. associated(ioptraai)) allocate (ioptraai(1))
-        call dlwq04(lun, lchar, filtype, nrftot, nrharm, &
+        call read_block_4_flow_dims_pointers(lun, lchar, filtype, nrftot, nrharm, &
                 ilflag, dtflg1, iwidth, intsrt, dtflg3, &
                 ioutpt, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, gridps, status, &
@@ -115,7 +115,7 @@ contains
         if (associated(ioptraai)) deallocate (ioptraai)
 
         deltim = otime
-        call dlwq05(lun, lchar, filtype, car, iar, &
+        call read_block_5_boundary_conditions(lun, lchar, filtype, car, iar, &
                 rar, nrftot, nrharm, nobnd, nosys, &
                 notot, nobtyp, rmax, imax, dtflg1, &
                 iwidth, intsrt, dtflg3, syname, &
@@ -124,7 +124,7 @@ contains
         deltim = otime
 
         nosss = noseg + nseg2     ! increase with bottom segments
-        call dlwq06(lun, lchar, filtype, icmak, car(k), &
+        call read_block_6_waste_loads_withdrawals(lun, lchar, filtype, icmak, car(k), &
                 imax, iar, rmax, rar, notot, &
                 nosss, syname, nowst, nowtyp, nrftot, &
                 nrharm, dtflg1, dtflg3, iwidth, &
@@ -138,20 +138,20 @@ contains
 
         nrharm(10) = 0
         deltim = otime
-        call dlwq07(lun, lchar, filtype, inpfil, syname, &
+        call read_block_7_process_parameters(lun, lchar, filtype, inpfil, syname, &
                 iwidth, ioutpt, gridps, constants, chkpar, &
                 status)
 
-        !     Finish and close system file ( DLWQ09 can re-read it )
+        ! Finish and close system file ( read_block_9 can re-read it )
         write (lun(2)) (nrftot(i), i = 1, noitem)
         write (lun(2)) (nrharm(i), i = 1, noitem)
         close (lun(2))
 
-        call dlwq08(lun, lchar, filtype, nosss, notot, &
+        call read_block_8_initial_conditions(lun, lchar, filtype, nosss, notot, &
                 syname, iwidth, ioutpt, inpfil, &
                 gridps, status)
 
-        call dlwq09(lun, lchar, filtype, car, iar, &
+        call read_block_9(lun, lchar, filtype, car, iar, &
                 icmak, iimax, iwidth, &
                 ioutpt, ioutps, outputs, status)
 

@@ -35,7 +35,7 @@ module waq_omi_utils
     use m_dmpare
     use m_dlwq0i
     use m_dlwq0f
-    use m_dlwq09
+    use inputs_block_9
     use m_delwaq2_main
     use m_dlwqp1
     use m_open_waq_files
@@ -1633,7 +1633,7 @@ contains
 
         nolun = 45      ! nolun has been declared in sysn_ff.inc
         !
-        nothrd = 1       ! Set OpenMP threads to 1 (note: DLWQ07 code to overrule isn't called)
+        nothrd = 1       ! Set OpenMP threads to 1 (note: read_block_7_process_parameters code to overrule isn't called)
         nogrid = 1       ! No multiple grid option at the moment
         noitem = 11      ! Fixed number of items
         ilflag = 1       ! Always assume varying lengths
@@ -2006,7 +2006,7 @@ contains
             ilun(1) = 9
             lch(1) = trim(name) // '.inp'
 
-            call dlwq09(lun, lchar, filtype, car, iar, icmax, &
+            call read_block_9(lun, lchar, filtype, car, iar, icmax, &
                     iimax, iwidth, &
                     ioutpt, ioutps, outputs, status)
 

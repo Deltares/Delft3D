@@ -30,12 +30,12 @@ module inputs_block_3
     implicit none
 
     private
-    public :: read_block_3_grid_lauout
+    public :: read_block_3_grid_layout
 
 contains
 
 
-    subroutine read_block_3_grid_lauout (lun, lchar, filtype, nrftot, nrharm, &
+    subroutine read_block_3_grid_layout (lun, lchar, filtype, nrftot, nrharm, &
             ivflag, dtflg1, iwidth, dtflg3, &
             ioutpt, gridps, syname, status, &
             has_hydfile, nexch)
@@ -136,7 +136,7 @@ contains
         type(error_status) :: local_status !< local status
 
         integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("read_block_3_grid_lauout", ithndl)
+        if (timon) call timstrt("read_block_3_grid_layout", ithndl)
 
         disper = .false.
         volume = 1

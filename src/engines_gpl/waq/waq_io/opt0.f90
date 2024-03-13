@@ -44,17 +44,17 @@ contains
         !>\par  Description:
         !>                          This is a main data aquisition sub system, it is
         !>                          the only call to read:
-        !>                          - volumes ( in dlwq03 )
-        !>                          - additional dispersions ( in dlwq04 )
-        !>                          - additional velocities ( in dlwq04 )
-        !>                          - areas ( in dlwq04 )
-        !>                          - flows ( in dlwq04 )
-        !>                          - mixing lengthes ( in dlwq04 )
-        !>                          - old style open boundaries ( in dlwq05 )
-        !>                          - old style waste loads ( in dlwq06 )
-        !>                          Dlwq07 is a sort of dedicated verion of this routine
+        !>                          - volumes ( in read_block_3_grid_layout )
+        !>                          - additional dispersions ( in read_block_4_flow_dims_pointers )
+        !>                          - additional velocities ( in read_block_4_flow_dims_pointers )
+        !>                          - areas ( in read_block_4_flow_dims_pointers )
+        !>                          - flows ( in read_block_4_flow_dims_pointers )
+        !>                          - mixing lengthes ( in read_block_4_flow_dims_pointers )
+        !>                          - old style open boundaries ( in read_block_5_boundary_conditions )
+        !>                          - old style waste loads ( in read_block_6_waste_loads_withdrawals )
+        !>                          read_block_7_process_parameters is a sort of dedicated verion of this routine
         !>                          to read parameters and functions and segment functions\n
-        !>                          Dlwq08 is a sort of dedicated verion of this routine
+        !>                          read_block_8_initial_conditions is a sort of dedicated verion of this routine
         !>                          to read initial conditions
 
 
