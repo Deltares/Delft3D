@@ -654,7 +654,7 @@ contains
         !!      lun(is) = unit binary intermediate file for function
 
         use m_rdpoin
-        use m_matrix
+        use m_matrix, only : dmatrix
         use m_fmread
         use m_open_waq_files
         use timers       !   performance timers

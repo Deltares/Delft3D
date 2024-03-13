@@ -28,7 +28,7 @@ module inputs_block_4
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
             read_constant_data, read_constants_time_variables
     use m_dmpare
-    use m_dlwq0f
+    use m_matrix
 
     implicit none
 
@@ -396,7 +396,7 @@ contains
         if (intsrt == 15 .or. intsrt == 16 .or. &
                 intsrt == 17 .or. intsrt == 18 .or. &
                 intsrt == 21 .or. intsrt == 22) then
-            call dlwq0f (noq1, noq2, noq34, nosss, ipnt, &
+            call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
                     nomat)
             write (lunut, 2190) nomat
         endif
@@ -566,7 +566,7 @@ contains
         if (intsrt == 15 .or. intsrt == 16 .or. &
                 intsrt == 17 .or. intsrt == 18 .or. &
                 intsrt == 21 .or. intsrt == 22) then
-            call dlwq0f (noq1, noq2, noq34, nosss, ipnt, &
+            call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
                     nomat)
             write (lunut, 2190) nomat
         endif
