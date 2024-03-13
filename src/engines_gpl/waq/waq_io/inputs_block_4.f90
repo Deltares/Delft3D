@@ -551,7 +551,7 @@ contains
 
         !       calculate number of boundaries and bandwith of matrix
 
-        call bound  (lun, noseg, noq, noqt, intsrt, &
+        call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
                 ioutpt, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
