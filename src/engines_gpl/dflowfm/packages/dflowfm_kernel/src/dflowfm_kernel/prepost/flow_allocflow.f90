@@ -625,12 +625,12 @@
  if ( allocated(dtcell) ) then
     deallocate(dtcell)
  endif
- if (dtcell_is_2D()) then
-     allocate ( dtcell(ndx) , stat = ierr)
-     call aerr('dtcell(ndx)', ierr , ndx) ; dtcell = 0d0
- else
+ if ( kmx > 0 ) then
      allocate ( dtcell(ndkx) , stat = ierr)
-     call aerr('dtcell(ndkx)', ierr , ndkx) ; dtcell = 0d0
+     call aerr('dtcell(ndkx)', ierr , ndkx) ; dtcell(:) = 0d0
+ else
+     allocate ( dtcell(ndx) , stat = ierr)
+     call aerr('dtcell(ndx)', ierr , ndx) ; dtcell(:) = 0d0
  endif
 
  ! for 1D only

@@ -662,7 +662,7 @@ end function unc_add_uuid
 !! care of date calculations, time zones and string conversion.
 function unc_add_time_coverage(ncid, start_since_ref, end_since_ref, resolution) result(ierr)
    use time_module, only: duration_to_string, datetime_to_string, ymd2modified_jul
-   use m_flowtimes, only: refdat, tzone, dtcell_is_2D
+   use m_flowtimes, only: refdat, tzone
    use dfm_error
    implicit none
    integer,          intent(in   ) :: ncid            !< NetCDF dataset id
@@ -5267,11 +5267,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
 
       ! Calculated time step per cell based on CFL number
       if (jamapdtcell > 0) then
-          if (dtcell_is_2D()) then
-              ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, UNC_LOC_S,   'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
-          else
-              ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, UNC_LOC_S3D, 'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
-          endif
+          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, iLocS,  'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
       endif
 
       ! Water depths
@@ -6388,11 +6384,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
    endif
    if (jamapdtcell == 1) then
-       if (dtcell_is_2D()) then
-           ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, UNC_LOC_S,   dtcell, jabndnd=jabndnd_)
-       else
-           ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, UNC_LOC_S3D, dtcell, jabndnd=jabndnd_)
-       endif
+       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, iLocS, dtcell, jabndnd=jabndnd_)
    endif
 
    if (jamapucvec == 1 .or. jamapucmag == 1 .or. jamapucqvec == 1) then

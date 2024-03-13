@@ -384,12 +384,4 @@ subroutine setTUDUnitString()
 
 end subroutine setTUDUnitString
 
-!> Check if dtcell was based on 2D/depth-averaged (res = .true.) or 3D flows (res = .false.)
-pure function dtcell_is_2D() result(res)
-   use m_flow, only: kmx
-   logical :: res !< Return value
-
-   res = (ja_timestep_auto < 3) .or. (kmx < 2)
-end function dtcell_is_2D
-
 end module m_flowtimes
