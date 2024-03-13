@@ -28,50 +28,32 @@ module pointr_mod
     use m_open_waq_files
 
 contains
-    subroutine pointr (lun, lchar, noseg, nmax, mmax, &
+
+    subroutine read_exchange_pointers_regular_grid(lun, lchar, noseg, nmax, mmax, &
             kmax, noq, noq1, noq2, noq3, &
             noqt, nobnd, ipnt, intsrt, ipopt1, &
             jtrack, ioutpt, iwidth, GridPs, cellpnt, &
             flowpnt, status)
 
-        !       Deltares Software Centre
-
-        !>\file
-        !>            Reads exchange pointers on regular grid
-        !>
-        !>            Routine
-        !>            - reads and checks the dimensions of the regular matrix
-        !>            - reads the regular matrix
-        !>            - makes a backpointer from boundary entries to matrix locations
-        !>            - calls create_pointer_table.f to make a 'from-to' pointer table
-        !>            - calls bound.f to:
-        !>              - compute number of open boundaries
-        !>              - adds the bed pointers to the pointer set to make noqt
-        !>              - compute number of codiagonals for direct implicit matrices
-        !>            This leans on full matrices and does not support 'active only'
-        !>            coupling.
-
-        !     CREATED            : April 1989  by L. Postma
-
-        !     Modified           : May   2011 by Leo Postma, Fortran90 look and feel
-
-        !     SUBROUTINES CALLED : create_pointer_table
-        !                          bound
-        !                          open_waq_files
-
-        !     LOGICAL UNITS      : lunut   = unit formatted output file
-        !                          lun( 8) = unit intermediate file ('to-from')
+        !! Reads exchange pointers on regular grid
+        !!      - reads and checks the dimensions of the regular matrix
+        !!      - reads the regular matrix
+        !!      - makes a backpointer from boundary entries to matrix locations
+        !!      - calls create_pointer_table.f to make a 'from-to' pointer table
+        !!      - calls bound.f to:
+        !!          - compute number of open boundaries
+        !!          - adds the bed pointers to the pointer set to make noqt
+        !!          - compute number of codiagonals for direct implicit matrices
+        !!          This leans on full matrices and does not support 'active only' coupling.
+        !! SUBROUTINES CALLED : create_pointer_table, bound, open_waq_files
+        !! LOGICAL UNITS:
+        !!          lunut   = unit formatted output file
+        !!           lun( 8) = unit intermediate file ('to-from')
 
         use dlwqgrid_mod        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
         use m_error_status
-
-        implicit none
-
-        !     Parameters         :
-
-        !     kind           function         name            Descriptipon
 
         integer(kind = int_wp), intent(inout) :: lun   (*)      !< array with unit numbers
         character(*), intent(inout) :: lchar (*)     !< array with file names of the files
@@ -97,8 +79,6 @@ contains
 
         type(error_status) :: status !< error status
 
-        !     local declarations
-
         integer(kind = int_wp), allocatable :: imat  (:)    ! regular grid matrix
         integer(kind = int_wp) :: ntot         ! nmax * mmax
         integer(kind = int_wp) :: ierr2        ! local error count
@@ -115,7 +95,7 @@ contains
         real(kind = real_wp) :: alpha        ! help variables cco file
         integer(kind = int_wp) :: npart        ! help variables cco file
         integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("pointr", ithndl)
+        if (timon) call timstrt("read_exchange_pointers_regular_grid", ithndl)
 
         !        Read and check first line of matrix
 
@@ -244,5 +224,5 @@ contains
         2060 format (/, ' ERROR. opening cco file: ', A)
         2160 format (/, ' ERROR. allocating memory for pointers:', I4, i10)
 
-    end subroutine
+    end subroutine read_exchange_pointers_regular_grid
 end module
