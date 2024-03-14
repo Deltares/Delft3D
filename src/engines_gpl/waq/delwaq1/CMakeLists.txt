@@ -58,7 +58,9 @@ if (WIN32)
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-endif (WIN32)
+    
+    configure_visual_studio_user_file(${executable_name})
+endif(WIN32)
 
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq)

@@ -22,6 +22,9 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/calcage)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
+if(WIN32)
+    configure_visual_studio_user_file(${executable_name})
+endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 

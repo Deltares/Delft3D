@@ -65,6 +65,7 @@ if (WIN32)
 
     target_link_libraries(${executable_name}
                           "netcdf.lib")
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 

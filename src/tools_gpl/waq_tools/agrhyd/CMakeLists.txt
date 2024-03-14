@@ -32,6 +32,7 @@ target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
+   configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
