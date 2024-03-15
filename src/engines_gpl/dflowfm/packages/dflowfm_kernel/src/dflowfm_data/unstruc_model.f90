@@ -273,8 +273,6 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    character(len=255)                        :: md_nc_map_precision  !< Precision for NetCDF data in map files ('double', 'single' or 'float')
-    character(len=255)                        :: md_nc_his_precision  !< Precision for NetCDF data in his files ('double', 'single' or 'float')
     logical                                   :: md_nccompress        !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
@@ -377,8 +375,6 @@ use m_fm_icecover, only: fm_ice_null
     md_unc_conv     = UNC_CONV_UGRID  ! TODO: AvD: does this double now with IFORMAT_UGRID?
 
     md_ncformat     = 3               !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    md_nc_map_precision   = 'double'  !< Precision for NetCDF data in map files ('double', 'single' or 'float')
-    md_nc_his_precision   = 'double'  !< Precision for NetCDF data in his files ('double', 'single' or 'float')
     md_nccompress   = .false.         !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
     md_fou_step     = 0               !< default: fourier analysis is updated on a user-timestep basis
