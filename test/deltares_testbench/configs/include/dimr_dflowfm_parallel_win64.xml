@@ -369,4 +369,57 @@
             </file>     
          </checks>
     </testCase>
+    <testCase name="e02_f012_c188_from_restart_graded_inicomp_mapmerge" ref="postproc">
+        <programs>
+          <program ref="dfmoutput">
+            <arguments>
+              <argument>-d</argument>
+              <argument>mapmerge</argument>
+              <argument>--infile</argument>
+              <argument>str_0000_20151101_001000_rst.nc </argument>
+              <argument>str_0001_20151101_001000_rst.nc </argument>
+              <argument>str_0002_20151101_001000_rst.nc </argument>
+              <argument>--outfile</argument>
+              <argument>str_merged_20151101_001000_rst.nc </argument>
+            </arguments>
+          </program>
+        </programs>
+        <path>e02_dflowfm/f012_inout/c188_from_restart_graded_inicomp_mapmerge</path>
+         <checks>
+            <file name="str_merged_20151101_001000_rst.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="msed" toleranceAbsolute="0.0001" />
+                    <parameter name="thlyr" toleranceAbsolute="0.0001" />
+                    <parameter name="lyrfrac" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f012_c190_rijn_rst_mapmerge" ref="postproc">
+        <programs>
+          <program ref="dfmoutput">
+            <arguments>
+              <argument>-d</argument>
+              <argument>mapmerge</argument>
+              <argument>--infile</argument>
+              <argument>RIJN_0000_20000101_010000_rst.nc </argument>
+              <argument>RIJN_0001_20000101_010000_rst.nc </argument>
+              <argument>RIJN_0002_20000101_010000_rst.nc </argument>
+              <argument>RIJN_0003_20000101_010000_rst.nc </argument>
+              <argument>--outfile</argument>
+              <argument>RIJN_merged_20000101_010000_rst.nc </argument>
+            </arguments>
+          </program>
+        </programs>
+        <path>e02_dflowfm/f012_inout/c190_rijn_rst_mapmerge</path>
+         <checks>
+            <file name="RIJN_merged_20000101_010000_rst.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="msed" toleranceAbsolute="0.0001" />
+                    <parameter name="thlyr" toleranceAbsolute="0.0001" />
+                    <parameter name="lyrfrac" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
 </testCases>

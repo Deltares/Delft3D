@@ -59,18 +59,10 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 
-if(WIN32)
-    # post-build
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-
-    post_build_target( ${library_name}
-                       ${install_dir}
-                       ${build_dir}
-                       ${checkout_src_root}
-                       ${library_name} )
-
-endif(WIN32)
+if(UNIX)
+    SET(library_renamed libgridgeom.so)
+    # Actual rename is done in the the install step below
+endif(UNIX)
 
 if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
     # Install the shared library in the lib folder with rename

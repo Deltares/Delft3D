@@ -8,11 +8,11 @@ set(source  "${library_path}/triangle.c"
 set(library_name triangle_c)
 add_library(${library_name} ${headers}
                             ${source})
-
-# Create the folder structure in project
-source_group(${visual_studio_source_group_name} FILES ${source})
-source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers}) 
-
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	# Create the folder structure in project
+	source_group(${visual_studio_source_group_name} FILES ${source})
+	source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers}) 
+endif()
 # Set preprocessor definitions
 target_compile_definitions(${library_name} PRIVATE _LIB)
 

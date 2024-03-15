@@ -10,13 +10,6 @@ if(NOT TARGET deltares_common_c)
   add_subdirectory(${checkout_src_root}/${deltares_common_c_module} deltares_common_c)
 endif()
 
-# for unix, we need to build expat xml parser
-if(UNIX)
-  if(NOT TARGET expat)
-    add_subdirectory(${checkout_src_root}/${expat_module} expat)
-  endif()
-endif(UNIX)
-
 # D-Hydro lib
 if(NOT TARGET d_hydro_lib)
     add_subdirectory(${checkout_src_root}/${d_hydro_lib_module} d_hydro_lib)

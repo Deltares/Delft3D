@@ -57,7 +57,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>share/bin/mpiexec.exe</path>
+            <path>bin/mpiexec.exe</path>
             <arguments>
                 <argument>-n 3 -localonly</argument>
             </arguments>
@@ -69,7 +69,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>share/bin/mpiexec.exe</path>
+            <path>bin/mpiexec.exe</path>
             <arguments>
                 <argument>-n 4 -localonly</argument>
             </arguments>
@@ -81,13 +81,13 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="mpi"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
             </environments>
         </program>
         <program name="dimr4" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -97,13 +97,13 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="mpi4"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dwaq/resources</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
             </environments>
         </program>
         <program name="dfmoutput" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -113,7 +113,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dflowfm/bin/dfmoutput.exe</path>
+            <path>bin/dfmoutput.exe</path>
             <shell ref="command_prompt"/>
         </program>
     </programs>

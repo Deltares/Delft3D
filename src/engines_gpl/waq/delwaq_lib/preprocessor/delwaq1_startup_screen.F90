@@ -22,25 +22,25 @@
 !!  rights reserved.
 module m_delwaq1_startup_screen
 
-   implicit none
+    implicit none
 
 contains
 
-   !>\file
-   !>                    delwaq1_startup_screen
-   !     SUBROUTINES CALLED :
-   !                         *startup_screen, writes startup screen
+    !>\file
+    !>                    delwaq1_startup_screen
+    !     SUBROUTINES CALLED :
+    !                         *startup_screen, writes startup screen
 
-   subroutine delwaq1_startup_screen()
-      use m_startup_screen
-      use m_delwaq1_data
+    subroutine delwaq1_startup_screen()
+        use m_startup_screen
+        use m_delwaq1_data
 
-      implicit none
+        implicit none
 
-      !     Show startup screen
-      call startup_screen(lunrep)
-      write (*, *)
-      write (*, '(A9,A)') '  runid: ', trim(runid)
-      write (*, *)
-   end subroutine delwaq1_startup_screen
+        !     Show startup screen
+        call startup_screen(lunrep)
+        write (*, *)
+        write (*, '(A9,A)') '  runid: ', trim(runid)
+        write (*, *)
+    end subroutine delwaq1_startup_screen
 end module m_delwaq1_startup_screen

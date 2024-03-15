@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_sysa
-!     Pointers in real array workspace
+    !     Pointers in real array workspace
 
     integer :: IVOL     !    pointer to VOLUME, volumes
     integer :: IAREA    !    pointer to AREA  , exchange area's
@@ -105,24 +105,24 @@ module m_sysa
 
     integer, parameter :: IASIZE = 78
 
-    common / sysa / ivol   , iarea  , iflow  , ileng  , idisp  ,             &
-                iconc  , imass  , iderv  , iboun  , ibset  ,             &
-                ibsav  , iwste  , icons  , iparm  , ifunc  ,             &
-                isfun  , idnew  , idiff  , ivnew  , ivelo  ,             &
-                iharm  , ifarr  , imas2  , itimr  , ivol2  ,             &
-                itrac  , igwrk  , ighes  , igsol  , igdia  ,             &
-                igtri  , ismas  , iploc  , idefa  , iflux  ,             &
-                istoc  , iflxd  , iflxi  , iriob  , idspx  ,             &
-                ivelx  , ilocx  , idsto  , ivsto  , idmpq  ,             &
-                idmps  , itrra  , inrsp  , ivoll  , ivol3  ,             &
-                ir1    , iqxk   , iqyk   , iqzk   , idifx  ,             &
-                idify  , idifz  , ivola  , ivolb  , iguv   ,             &
-                igvu   , igzz   , iaak   , ibbk   , icck   ,             &
-                ibd3x  , ibddx  , ibdx   , ibu3x  , ibuux  ,             &
-                ibux   , iwrk1  , iwrk2  , iaakl  , ibbkl  ,             &
-                icckl  , iddkl  , iwdmp
-      
+    common / sysa / ivol, iarea, iflow, ileng, idisp, &
+            iconc, imass, iderv, iboun, ibset, &
+            ibsav, iwste, icons, iparm, ifunc, &
+            isfun, idnew, idiff, ivnew, ivelo, &
+            iharm, ifarr, imas2, itimr, ivol2, &
+            itrac, igwrk, ighes, igsol, igdia, &
+            igtri, ismas, iploc, idefa, iflux, &
+            istoc, iflxd, iflxi, iriob, idspx, &
+            ivelx, ilocx, idsto, ivsto, idmpq, &
+            idmps, itrra, inrsp, ivoll, ivol3, &
+            ir1, iqxk, iqyk, iqzk, idifx, &
+            idify, idifz, ivola, ivolb, iguv, &
+            igvu, igzz, iaak, ibbk, icck, &
+            ibd3x, ibddx, ibdx, ibu3x, ibuux, &
+            ibux, iwrk1, iwrk2, iaakl, ibbkl, &
+            icckl, iddkl, iwdmp
+
     integer         ip_rar(iasize)                    ! help array to fill the common block / SYSA /
-    equivalence   ( ivol   , ip_rar(1) )              ! first entry equivalences with first entry common block
-    
+    equivalence   (ivol, ip_rar(1))              ! first entry equivalences with first entry common block
+
 end module m_sysa

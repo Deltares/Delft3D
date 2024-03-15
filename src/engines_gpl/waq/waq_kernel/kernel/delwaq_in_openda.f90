@@ -22,150 +22,150 @@
 !!  rights reserved.
 
 module m_waq_openda_quantities
-use m_waq_precision
-! quantity-id's : in (from delwaq to openDA)
+    use m_waq_precision
+    ! quantity-id's : in (from delwaq to openDA)
 
-integer(kind=int_wp), parameter  ::accepting = 0
-
-
-!quantity-id's : out (from openDA to delwaq)
-integer(kind=int_wp), parameter  ::providing = 1
-
-!todo:  this should be variable
-integer(kind=int_wp), parameter  ::max_quantity_ids = 30   ! account for several substances
-integer(kind=int_wp), parameter  ::max_location_ids = 30
+    integer(kind = int_wp), parameter :: accepting = 0
 
 
-! possible operation for modifying the boundary values
-integer(kind=int_wp), parameter  ::oper_set      = 1
-integer(kind=int_wp), parameter  ::oper_add      = 2
-integer(kind=int_wp), parameter  ::oper_multiply = 3
+    !quantity-id's : out (from openDA to delwaq)
+    integer(kind = int_wp), parameter :: providing = 1
+
+    !todo:  this should be variable
+    integer(kind = int_wp), parameter :: max_quantity_ids = 30   ! account for several substances
+    integer(kind = int_wp), parameter :: max_location_ids = 30
+
+
+    ! possible operation for modifying the boundary values
+    integer(kind = int_wp), parameter :: oper_set = 1
+    integer(kind = int_wp), parameter :: oper_add = 2
+    integer(kind = int_wp), parameter :: oper_multiply = 3
 
 contains
 
 
-! todo: implement this!
-subroutine openda_quantities_initialize(notot,nobnd)
+    ! todo: implement this!
+    subroutine openda_quantities_initialize(notot, nobnd)
 
-  implicit none
+        implicit none
 
-  integer(kind=int_wp)  ::notot,nobnd
+        integer(kind = int_wp) :: notot, nobnd
 
-!  max_quantity_ids = notot
-!  max_location_ids = nobnd
+        !  max_quantity_ids = notot
+        !  max_location_ids = nobnd
 
-end subroutine openda_quantities_initialize
+    end subroutine openda_quantities_initialize
 
 end module m_waq_openda_quantities
 
 !-----------------------------------
 
 module m_waq_openda_exchange_items
-use m_waq_precision
-use m_waq_openda_quantities
+    use m_waq_precision
+    use m_waq_openda_quantities
 
-logical, save :: l_ei(max_location_ids,max_quantity_ids) = .false.
+    logical, save :: l_ei(max_location_ids, max_quantity_ids) = .false.
 
-logical, save :: doLogging = .false.
+    logical, save :: doLogging = .false.
 
-double precision, save :: ei_val(max_location_ids,max_quantity_ids)
-integer(kind=int_wp), save           ::ei_oper(max_location_ids,max_quantity_ids)
+    double precision, save :: ei_val(max_location_ids, max_quantity_ids)
+    integer(kind = int_wp), save :: ei_oper(max_location_ids, max_quantity_ids)
 
 contains
 
-!------------------------
+    !------------------------
 
-  subroutine set_openda_buffer(val, location_id,quantity_id, operation)
-! set the value of an exchange-item. This routine is typically called
-! by an SE_setvalues routine (from OUTSIDE delft3D!) for a certain instance and exchange item (e.g. wind)
-! In the case of forcings, the value can be a multiplier (1 + epsilon)
-! Note that the actual adjustment INSIDE delft3d is not yet performed here.
-! for the wind example, this is done in incmeteo with a call to get_openda_buffer.
-! The multiplication is performed in this routine get_openda_buffer.
+    subroutine set_openda_buffer(val, location_id, quantity_id, operation)
+        ! set the value of an exchange-item. This routine is typically called
+        ! by an SE_setvalues routine (from OUTSIDE delft3D!) for a certain instance and exchange item (e.g. wind)
+        ! In the case of forcings, the value can be a multiplier (1 + epsilon)
+        ! Note that the actual adjustment INSIDE delft3d is not yet performed here.
+        ! for the wind example, this is done in incmeteo with a call to get_openda_buffer.
+        ! The multiplication is performed in this routine get_openda_buffer.
 
-! For a specific boundary, the location_id is used (can be found by counting in the BND-file)
-! for other boundaries, the l_ei remains false so they do not change.
+        ! For a specific boundary, the location_id is used (can be found by counting in the BND-file)
+        ! for other boundaries, the l_ei remains false so they do not change.
 
-  implicit none
+        implicit none
 
-  integer(kind=int_wp), intent(in) ::location_id   !   location identifier
-  integer(kind=int_wp), intent(in) ::quantity_id   !   quantity identifier
-  double precision, intent(in) :: val           !   value to be set
-  integer(kind=int_wp), intent(in) ::operation     !   operation: oper_multiply, oper_add, oper_set
+        integer(kind = int_wp), intent(in) :: location_id   !   location identifier
+        integer(kind = int_wp), intent(in) :: quantity_id   !   quantity identifier
+        double precision, intent(in) :: val           !   value to be set
+        integer(kind = int_wp), intent(in) :: operation     !   operation: oper_multiply, oper_add, oper_set
 
-  if (doLogging) then
-     write (*,*) 'set_openda_buffer, loc-id=', location_id, ', q_id=', quantity_id, ', val=', val, ', oper:', operation
-     call flush(6)
-  endif
-  l_ei(location_id,quantity_id) = .true.
-  ei_val(location_id,quantity_id) = val
-  ei_oper(location_id,quantity_id) = operation
+        if (doLogging) then
+            write (*, *) 'set_openda_buffer, loc-id=', location_id, ', q_id=', quantity_id, ', val=', val, ', oper:', operation
+            call flush(6)
+        endif
+        l_ei(location_id, quantity_id) = .true.
+        ei_val(location_id, quantity_id) = val
+        ei_oper(location_id, quantity_id) = operation
 
-  end subroutine set_openda_buffer
-!---------------------------------------------------
+    end subroutine set_openda_buffer
+    !---------------------------------------------------
 
-  subroutine get_openda_buffer(quantity, loc_from_waq, dim1, dim2, qarray)
+    subroutine get_openda_buffer(quantity, loc_from_waq, dim1, dim2, qarray)
 
-  use m_sysn          ! System characteristics
-  
-  implicit none
+        use m_sysn          ! System characteristics
 
-  integer(kind=int_wp), intent(in) ::dim1, dim2, loc_from_waq
-  integer(kind=int_wp) , intent (in) :: quantity
-  real(kind=real_wp)    , dimension(dim1, dim2) , target, intent(out) :: qarray
+        implicit none
 
-  ! locals
-  integer(kind=int_wp)           ::location_id, quantity_id
-  double precision :: org_value
+        integer(kind = int_wp), intent(in) :: dim1, dim2, loc_from_waq
+        integer(kind = int_wp), intent (in) :: quantity
+        real(kind = real_wp), dimension(dim1, dim2), target, intent(out) :: qarray
 
-  location_id = loc_from_waq
-  quantity_id = -1
+        ! locals
+        integer(kind = int_wp) :: location_id, quantity_id
+        double precision :: org_value
 
-! first check the substance
+        location_id = loc_from_waq
+        quantity_id = -1
 
-    if (quantity .le. notot) then
-       quantity_id = quantity
-     endif
+        ! first check the substance
 
-
-! Now, assume that we only support the setting of boundary conditions!
-
-!! TODO: allow other variants of get_openda_buffer
-
-  if (location_id == -1 .or. quantity_id == -1) then
-       write (*,*) 'EI get_openda_buffer, INVALID ITEM: loc-id=', location_id, ', q_id=', quantity_id
-  else
-    if (l_ei(location_id,quantity_id)) then
-       org_value = qarray(1,1)
-       select case (ei_oper(location_id,quantity_id))
-       case(oper_set)
-           qarray = ei_val(location_id, quantity_id)
-       case(oper_add)
-           qarray = qarray + ei_val(location_id, quantity_id)
-       case(oper_multiply)
-           qarray = qarray * ei_val(location_id, quantity_id)
-       case default
-          write (*,*) 'get_openda_buffer: UNKNOWN OPERATION type: ', ei_oper(location_id,quantity_id)
-       endselect
-       if (doLogging) then
-          write (*,*) 'EI adjusted, loc-id=', location_id, ', q_id=', quantity_id, ', was: ', org_value, ', is:', qarray(1,1)
-          call flush(6)
-       endif
-    endif
-  endif
-
-  end subroutine get_openda_buffer
-
-! ------------------
+        if (quantity <= notot) then
+            quantity_id = quantity
+        endif
 
 
-   subroutine openda_buffer_initialize
+        ! Now, assume that we only support the setting of boundary conditions!
 
-   implicit none
+        !! TODO: allow other variants of get_openda_buffer
 
-   l_ei = .false.
+        if (location_id == -1 .or. quantity_id == -1) then
+            write (*, *) 'EI get_openda_buffer, INVALID ITEM: loc-id=', location_id, ', q_id=', quantity_id
+        else
+            if (l_ei(location_id, quantity_id)) then
+                org_value = qarray(1, 1)
+                select case (ei_oper(location_id, quantity_id))
+                case(oper_set)
+                    qarray = ei_val(location_id, quantity_id)
+                case(oper_add)
+                    qarray = qarray + ei_val(location_id, quantity_id)
+                case(oper_multiply)
+                    qarray = qarray * ei_val(location_id, quantity_id)
+                case default
+                    write (*, *) 'get_openda_buffer: UNKNOWN OPERATION type: ', ei_oper(location_id, quantity_id)
+                endselect
+                if (doLogging) then
+                    write (*, *) 'EI adjusted, loc-id=', location_id, ', q_id=', quantity_id, ', was: ', org_value, ', is:', qarray(1, 1)
+                    call flush(6)
+                endif
+            endif
+        endif
 
-   end subroutine openda_buffer_initialize
+    end subroutine get_openda_buffer
 
-!--------------------------
+    ! ------------------
+
+
+    subroutine openda_buffer_initialize
+
+        implicit none
+
+        l_ei = .false.
+
+    end subroutine openda_buffer_initialize
+
+    !--------------------------
 end module m_waq_openda_exchange_items

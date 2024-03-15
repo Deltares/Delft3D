@@ -48,7 +48,7 @@
             <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>dimr/scripts/run_dimr.bat</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -56,6 +56,7 @@
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
+            <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>

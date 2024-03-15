@@ -32,24 +32,17 @@ target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
+   configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/agrhyd)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
-
+install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 if (UNIX)
-    install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.sh  DESTINATION bin)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 endif(UNIX)
+if (WIN32) 
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.bat  DESTINATION bin)
+endif(WIN32)

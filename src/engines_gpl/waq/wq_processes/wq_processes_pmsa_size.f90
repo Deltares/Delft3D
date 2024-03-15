@@ -167,10 +167,10 @@ contains
         do i_rar = 1, nr_rar
             arrlen(i_rar) = arrdm1(i_rar) * arrdm2(i_rar) * arrdm3(i_rar)
             isizea = isizea + arrlen(i_rar)
-            if (arrnam(i_rar).ne.' ') then
+            if (arrnam(i_rar)/=' ') then
                 write (lunrep, 2040) i_rar, arrnam(i_rar), arrlen(i_rar)
             endif
-            if (isizea .lt. 0) then
+            if (isizea < 0) then
                 write(lunrep, 2005)
                 call srstop(1)
             endif
@@ -182,9 +182,9 @@ contains
             iartyp = arrtyp(i_rar)
             iarlen = arrlen(i_rar)
             namarr = arrnam(i_rar)
-            if (iarlen .gt. 0) then
+            if (iarlen > 0) then
                 ip = make_pointer(part, iartyp, iarlen)
-                if (ip .le. 0) then
+                if (ip <= 0) then
                     write(lunrep, 2010) namarr
                     call srstop(1)
                 endif

@@ -155,7 +155,6 @@ endif(UNIX)
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
-    set_target_properties(${executable_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/x64/Debug)
 endif(WIN32)
 
 
@@ -227,21 +226,12 @@ source_group("Resources" FILES  ${icon_file}
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000" )
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-set(build_project dflowfm-cli)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 
-post_build_target( ${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${build_project} )
-
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm.sh           DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.sh DESTINATION bin)
@@ -255,4 +245,5 @@ if (WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm.bat           DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.bat DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfmoutput.bat         DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfm_volume_tool.bat   DESTINATION bin)
 endif(WIN32)

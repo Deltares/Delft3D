@@ -1,4 +1,7 @@
 # Specify the modules to be included
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

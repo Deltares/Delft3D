@@ -113,20 +113,30 @@ set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/wave)
 set_target_properties (${executable_name} PROPERTIES OUTPUT_NAME wave_exe)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+	configure_file(
+    ${userfilename}
+    "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+    @ONLY
+	)
 endif(WIN32)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
+if (UNIX)
+    install(PROGRAMS $<TARGET_FILE:${executable_name}> RENAME wave DESTINATION bin)
+elseif (WIN32)
+    install(PROGRAMS $<TARGET_FILE:${executable_name}> RENAME wave.exe DESTINATION bin)
+endif()
 
-post_build_target (${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${executable_name})
-
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/wave/scripts/run_dwaves.sh  DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
 endif(UNIX)
+if(WIN32)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
+    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION lib
+FILES_MATCHING
+PATTERN "*.dll"
+PATTERN "*.dll.a"
+)
+    install (PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ESMF_RegridWeightGen.exe DESTINATION bin)
+endif(WIN32)

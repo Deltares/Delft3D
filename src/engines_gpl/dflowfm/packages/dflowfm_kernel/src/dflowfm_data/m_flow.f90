@@ -37,7 +37,6 @@
  use    m_physcoef
  use    m_turbulence
  use    m_grw
-! use    m_fixedweirs
  use    m_heatfluxes
  use    m_alloc
  use    m_vegetation

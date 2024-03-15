@@ -493,8 +493,8 @@ contains
                 cycle
             endif
 
-            if (present(type) ) then
-                if ( ioitemsprops(i)%type /= type) then
+            if (present(type)) then
+                if (ioitemsprops(i)%type /= type) then
                     cycle
                 endif
             endif

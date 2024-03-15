@@ -1920,7 +1920,6 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    use unstruc_channel_flow, only: network
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
-   use m_lateral, only : outgoing_lat_concentration, incoming_lat_concentration, kclat, qplat, nnlat, n1latsg
   
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -1932,7 +1931,6 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
    integer :: iconst
    integer :: itrac
-   integer :: k1
 
    ! The fortran name of the attribute name
    character(len=MAXSTRLEN) :: var_name
@@ -2275,39 +2273,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       end select
    ! LATERAL DISCHARGES
    case("laterals")   
-      call getLateralIndex(item_name, item_index)
-      if (item_index <= 0) then
-         return
-      end if
- 
-      select case(field_name)
-         case("water_discharge")
-            x = c_loc(qplat(item_index))
-            return
-         case("water_level")
-            ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-            k1 = nnlat(n1latsg(item_index))
-            if (k1 > 0) then
-               x = c_loc(s1(k1))
-            else
-               x = c_null_ptr
-            endif
-            return
-         case("outgoing/water_salinity")
-            if (ISALT > 0) then
-               x = c_loc(outgoing_lat_concentration(:, ISALT, item_index))
-            else
-               x = c_null_ptr
-            endif
-            return
-         case("incoming/water_salinity")
-            if (ISALT > 0) then
-               x = c_loc(incoming_lat_concentration(:, ISALT, item_index))
-            else
-               x = c_null_ptr
-            endif
-            return
-      end select
+      x = get_lateral_pointer(item_name, field_name)
    ! GEOMETRY
    case("geometry")   
       select case(item_name)
@@ -2353,6 +2319,67 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
    end subroutine get_compound_field
 
+   !> Returns the c_ptr for a variable on a lateral location 
+   type(c_ptr) function get_lateral_pointer(item_name, field_name)
+      use m_lateral, only : qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration
+      use m_flow, only : s1
+      use string_module, only : str_token
+
+      implicit none
+      character(len=MAXSTRLEN), intent(in   ) :: item_name
+      character(len=MAXSTRLEN), intent(in   ) :: field_name
+      
+      integer :: item_index, k1, constituent_index
+      character(len=MAXSTRLEN)   :: constituent_name, direction_string
+      call getLateralIndex(item_name, item_index)
+      if (item_index <= 0) then
+         return
+      end if
+
+      select case(field_name)
+         case("water_discharge")
+            get_lateral_pointer = c_loc(qplat(item_index))
+            return
+         case("water_level")
+            ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
+            k1 = nnlat(n1latsg(item_index))
+            if (k1 > 0) then
+               get_lateral_pointer = c_loc(s1(k1))
+            else
+               get_lateral_pointer = c_null_ptr
+            endif
+            return
+      end select
+
+      constituent_name = field_name
+      call str_token(constituent_name, direction_string, DELIMS='/')
+      constituent_name = constituent_name(2:)
+      ! Find constituent index
+      select case (constituent_name)
+         case ('water_salinity')
+            constituent_index = ISALT
+         case ('water_temperature')
+            constituent_index = ITEMP
+         case default
+            constituent_index = findname(NUMCONST, const_names, constituent_name)
+            if ( iconst==0 ) then
+      !        tracer not found
+               get_lateral_pointer = c_null_ptr
+               return
+            end if
+      end select
+
+      ! Use the correct array (outgoing or incoming)
+      select case (direction_string)
+         case('outgoing')
+            get_lateral_pointer = c_loc(outgoing_lat_concentration(:, constituent_index, item_index))
+         case('incoming')
+            get_lateral_pointer = c_loc(incoming_lat_concentration(:, constituent_index, item_index))
+         case default
+            get_lateral_pointer = c_null_ptr
+      end select
+      return
+   end function get_lateral_pointer
 
 !> Sets the value for a specific field for a specific item in a set-variable of compound values.
 !!

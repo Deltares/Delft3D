@@ -89,6 +89,52 @@ function(create_target target_name source_group_name)
 endfunction()
 
 
+# Create template for Visual Studio environment paths for debugging on Windows
+function(create_vs_user_files)
+   
+   	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
+	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<VisualStudioUserFile>
+	<Configurations>
+		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+)
+	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
+    file(
+        WRITE "${userfilename}"
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
+        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
+    </PropertyGroup>
+</Project>"
+    )
+endfunction()
+
+
+# Set environment paths for Visual Studio debugger on Windows
+function(configure_visual_studio_user_file executable_name)
+    if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user")
+        configure_file(
+            "${CMAKE_BINARY_DIR}/template.vfproj.user"
+            "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vfproj.$ENV{USERNAME}.user"
+            @ONLY
+        )
+    endif()
+endfunction()
+
+
+
+
 # oss_include_libraries
 # Adds oss dependencies to the specified library.
 #
@@ -127,7 +173,6 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
-
 # get_fortran_source_files_recursive
 # Gathers Fortran *.f or *.f90 files from a given directory recurcivly.
 #
@@ -173,52 +218,6 @@ function(add_postbuild_event target_name)
         ENDIF()
     endif()
 endfunction()
-
-
-
-# Executes the post_build steps for a given target
-#
-# Arguments
-# target_name         : The name of the target
-# install_dir         : The directory where to copy the binaries
-# build_dir           : The directory where to copy the binaries
-# checkout_src_root   : The checkout directory
-# build_project       : The name of the project
-function(post_build_target target_name install_dir build_dir checkout_src_root build_project)
-
-   if (CMAKE_GENERATOR MATCHES "Visual Studio")
-
-    # compiler_redist_dir : Compiler dlls (Windows only)
-    # mkl_redist_dir      : mkl dlls (Windows only)
-
-      if (DEFINED ENV{ONEAPI_ROOT})
-         set(oneapi_root $ENV{ONEAPI_ROOT})
-         set(compiler_redist_dir "${oneapi_root}/compiler/latest/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "${oneapi_root}/mkl/latest/redist/intel64/")
-         set(mpi_redist_dir "${oneapi_root}/mpi/latest/")
-      else()
-         set(compiler_redist_dir "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/compiler/")
-         set(mkl_redist_dir   "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/redist/intel64_win/mkl/")
-      endif()
-
-      set(build_config $<CONFIG>)
-
-      add_custom_command(TARGET ${target_name}
-                         POST_BUILD
-                         COMMAND call "${checkout_src_root}/scripts_lgpl/win64/oss-post_build.cmd"
-                         ${install_dir}
-                         ${build_dir}
-                         ${checkout_src_root}
-                         ${build_config}
-                         ${build_project}
-                         ${compiler_redist_dir}
-                         ${mkl_redist_dir}
-                         ${mpi_redist_dir})
-   endif(CMAKE_GENERATOR MATCHES "Visual Studio")
-
-endfunction()
-
-
 
 # get_module_include_path
 # Gets the include directory of a module. Will throw an exception if there is no value for the property public_include_path.

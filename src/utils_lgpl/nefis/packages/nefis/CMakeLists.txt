@@ -47,15 +47,16 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
                             ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-
-# Define the Visual Studio structure
-source_group(${visual_studio_source_group_name} FILES ${source})
-source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers})
-source_group("Version Files" FILES ${ini_version_file})
-
-# Create the folder structure in vfproj
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source})
-set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis)
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	# Define the Visual Studio structure
+	source_group(${visual_studio_source_group_name} FILES ${source})
+	source_group("${visual_studio_source_group_name}\\Header Files" FILES ${headers})
+	source_group("Version Files" FILES ${ini_version_file})
+	
+	# Create the folder structure in vfproj
+	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source})
+	set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis)
+endif ()
 
 ###############
 # nefis_dll
@@ -78,19 +79,16 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
         target_compile_definitions(${library_name} PRIVATE "NEFIS_DLL;W64;PTR8;WIN64;_WIN64;_IA64_;_WINDOWS;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS")
     endif(WIN32)
   
+  
+    source_group("Source_files" FILES ${source})
+    source_group("Header Files" FILES ${headers})
+    source_group("Version Files" FILES ${ini_version_file})
+  
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
     set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
   
-    # Set post-build step
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-  
-    post_build_target (${library_name}
-                       ${install_dir} 
-                       ${build_dir} 
-                       ${checkout_src_root} 
-                       ${library_name})
 
-    install(TARGETS ${library_name} DESTINATION lib)
+
+    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 endif()
 

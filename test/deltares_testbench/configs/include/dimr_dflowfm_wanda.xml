@@ -5,16 +5,16 @@
             <checks>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_s1" toleranceRelative="0.0001" />
+                        <parameter name="mesh2d_u1" toleranceRelative="0.0001" />
                     </parameters>
                 </file>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_his.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-                        <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-                        <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-                        <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceRelative="0.0001" />
+                        <parameter name="x_velocity" toleranceRelative="0.0001" />
+                        <parameter name="y_velocity" toleranceRelative="0.0001" />
+                        <parameter name="source_sink_prescribed_discharge" toleranceRelative="0.0001" />
                     </parameters>
                 </file>
             </checks>
@@ -25,22 +25,22 @@
             <checks>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_s1" toleranceRelative="0.0001" />
+                        <parameter name="mesh2d_u1" toleranceRelative="0.0001" />
                     </parameters>
                 </file>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                        <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_s1" toleranceRelative="0.0001" />
+                        <parameter name="mesh2d_u1" toleranceRelative="0.0001" />
                     </parameters>
                 </file>
                 <file name="dhydro/DFM_OUTPUT_TurbineTest/TurbineTest_0000_his.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-                        <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-                        <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-                        <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.001" />
+                        <parameter name="waterlevel" toleranceRelative="0.0001" />
+                        <parameter name="x_velocity" toleranceRelative="0.0001" />
+                        <parameter name="y_velocity" toleranceRelative="0.0001" />
+                        <parameter name="source_sink_prescribed_discharge" toleranceRelative="0.001" />
                     </parameters>
                 </file>
             </checks>

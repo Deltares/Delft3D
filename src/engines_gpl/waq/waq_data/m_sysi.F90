@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_sysi
-!     Timer characteristics
+    !     Timer characteristics
 
     integer :: ITSTRT  !    Simulation start time ( scu )
     integer :: ITSTOP  !    Simulation stop time ( scu )
@@ -52,15 +52,15 @@ module m_sysi
 
     integer, parameter :: IISIZE = 21
 
-    common  /  sysi  /  itstrt , itstop , idt    , itfact , isflag ,          &
-                        intsrt , intopt , idstrt , idstop , idstep ,          &
-                        ihstrt , ihstop , ihstep , imstrt , imstop ,          &
-                        imstep , ivflag , itflag , ilflag , isfact ,          &
-                        icflag
-    common  /  sysidr / otime  , deltim , tscale
+    common  /  sysi  /  itstrt, itstop, idt, itfact, isflag, &
+            intsrt, intopt, idstrt, idstop, idstep, &
+            ihstrt, ihstop, ihstep, imstrt, imstop, &
+            imstep, ivflag, itflag, ilflag, isfact, &
+            icflag
+    common  /  sysidr / otime, deltim, tscale
 
-    integer            :: ii(iisize)
-    equivalence       ( ii(1), itstrt  )
+    integer :: ii(iisize)
+    equivalence       (ii(1), itstrt)
 
 end module m_sysi
 

@@ -51,7 +51,7 @@
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
         </program>
     </programs>
 

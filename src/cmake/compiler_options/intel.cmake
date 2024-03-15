@@ -85,7 +85,7 @@ if (UNIX)
 endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
-set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${traceback_flag})
+set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
 
 
 # Define the custom flag about code coverage with a default value of OFF

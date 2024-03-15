@@ -71,14 +71,17 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/mormerge)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${executable_name})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/mormerge.tcl     DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/run_mormerge.sh  DESTINATION bin)
-endif(UNIX)
+  set(DYN_LIB_EXTENSION sh)
+elseif (WIN32)
+  set(DYN_LIB_EXTENSION bat)
+endif()
+
+
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/mormerge.tcl     DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/run_mormerge.${DYN_LIB_EXTENSION}  DESTINATION bin)
+if (WIN32)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/tcl/bin/win64/tclkitsh852.exe DESTINATION bin)
+endif(WIN32)

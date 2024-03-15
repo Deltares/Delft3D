@@ -23,17 +23,15 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/waqpb)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
+if (WIN32)
+    configure_visual_studio_user_file(${executable_name})
+endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_waqpb_export.sh  DESTINATION bin)
 endif(UNIX)
+if (WIN32)
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_waqpb_export.bat  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../../../../engines_gpl/waq/resources/scripts/export_procdef_csvfiles.bat  DESTINATION bin)
+endif(WIN32)

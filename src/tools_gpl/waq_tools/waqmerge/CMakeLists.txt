@@ -65,6 +65,7 @@ if (WIN32)
 
     target_link_libraries(${executable_name}
                           "netcdf.lib")
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 
@@ -77,13 +78,11 @@ target_compile_options(${executable_name} PRIVATE "${waq_default_flags}")
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
-
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+
 if (UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_waqmerge.sh  DESTINATION bin)
-endif(UNIX)
+    set(platform_extension sh)
+elseif (WIN32)
+    set(platform_extension bat)
+endif()
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_waqmerge.${platform_extension}  DESTINATION bin)

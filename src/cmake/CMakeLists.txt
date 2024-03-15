@@ -6,16 +6,11 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+message(STATUS "Configuring")
 if (UNIX)
-    message(STATUS "Configuring in unix")
     include(linux_scripts.cmake)
     add_definitions(-DCOMMIT_VERSION=${COMMIT_VERSION})
 endif(UNIX)
-
-if (WIN32)
-    message(STATUS "Configuring in windows")
-    include(windows_scripts.cmake)
-endif(WIN32)
 
 include(functions.cmake)
 
@@ -127,17 +122,28 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
 endif(WIN32)
 
-
-# Set the location of the update_version script
-set(update_version_script_path ${checkout_src_root}/${update_version_script})
-set(postbuild_event_path ${checkout_src_root}/${postbuild_event_script})
-
-# Set root name of the projects in the root UI of Visual Studio
-set(visual_studio_source_group_name "Source Files")
-
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
+string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
+
+# Set the location of the update_version script
+set(update_version_script_path ${checkout_src_root}/${update_version_script})
+
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(installdir "install_${configuration_type_lower}")
+  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    # Set root name of the projects in the root UI of Visual Studio
+    set(visual_studio_source_group_name "Source Files")
+    # auto-install debug
+    set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+    
+    create_vs_user_files()
+
+endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")

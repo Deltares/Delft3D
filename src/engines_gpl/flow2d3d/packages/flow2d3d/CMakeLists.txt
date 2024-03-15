@@ -186,17 +186,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${header_files}
 source_group(Resources FILES    ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${library_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${library_name})
-
-install(TARGETS ${library_name} DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.sh                   DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_dwaves.sh            DESTINATION bin)
@@ -206,10 +196,19 @@ if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_rtc.sh               DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
+endif(UNIX)
+if (WIN32)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.bat                   DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_dwaves.bat            DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_fluidmud.bat          DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel.bat          DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel_dwaves.bat   DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_rtc.bat               DESTINATION bin)
+endif(WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/dioconfig.ini    DESTINATION share/delft3d)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/files.def        DESTINATION share/delft3d)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/tabmom           DESTINATION share/delft3d)
-endif(UNIX)
+
 
 # Change project flags at the end of this file
 # target_compile_options(${library_name} PRIVATE "${qauto_threaded_flags}")

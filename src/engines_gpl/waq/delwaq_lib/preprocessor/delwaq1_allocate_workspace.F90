@@ -21,88 +21,88 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_allocate_workspace
-   use m_waq_precision
-   use m_delwaq1_write_messages
-   use m_error_status
+    use m_waq_precision
+    use m_delwaq1_write_messages
+    use m_error_status
 
-   implicit none
+    implicit none
 
 contains
 
-   !>\file
-   !>                    delwaq1_allocate_workspace
+    !>\file
+    !>                    delwaq1_allocate_workspace
 
-   subroutine delwaq1_allocate_workspace(argv, status)
-      use m_cli_utils, only : retrieve_command_argument
-      use m_delwaq1_data
+    subroutine delwaq1_allocate_workspace(argv, status)
+        use m_cli_utils, only : retrieve_command_argument
+        use m_delwaq1_data
 
-      implicit none
+        implicit none
 
-      character(len=*), dimension(:), intent(in) :: argv
+        character(len = *), dimension(:), intent(in) :: argv
 
-      type(error_status), intent(inout) :: status !< current error status
+        type(error_status), intent(inout) :: status !< current error status
 
-      !  allocate workspace
-      call retrieve_command_argument('-imax', 1, lfound, imax, rdummy, cdummy, status%ierr)
-      if (lfound) then
-         if (status%ierr .eq. 0) then
-            write (lunrep, '(A,I12)') " Command line argument -IMAX, size of integer work array:", imax
-         else
-            write (lunrep, '(A)') " ERROR: interpreting command line argument -IMAX, size of integer work array:"
+        !  allocate workspace
+        call retrieve_command_argument('-imax', 1, lfound, imax, rdummy, cdummy, status%ierr)
+        if (lfound) then
+            if (status%ierr == 0) then
+                write (lunrep, '(A,I12)') " Command line argument -IMAX, size of integer work array:", imax
+            else
+                write (lunrep, '(A)') " ERROR: interpreting command line argument -IMAX, size of integer work array:"
+                status%ierr = 1
+                call delwaq1_write_messages(status)
+                return
+            end if
+        else
+            imax = iimax
+        end if
+        call retrieve_command_argument('-rmax', 1, lfound, rmax, rdummy, cdummy, status%ierr)
+        if (lfound) then
+            if (status%ierr == 0) then
+                write (lunrep, '(A,I12)') " Command line argument -RMAX, size of real work array:", rmax
+            else
+                write (lunrep, '(A)') " ERROR: interpreting command line argument -RMAX, size of real work array:"
+                status%ierr = 1
+                call delwaq1_write_messages(status)
+                return
+            end if
+        else
+            rmax = irmax
+        end if
+        call retrieve_command_argument('-cmax', 1, lfound, cmax, rdummy, cdummy, status%ierr)
+        if (lfound) then
+            if (status%ierr == 0) then
+                write (lunrep, '(A,I12)') " Command line argument -CMAX, size of character work array:", cmax
+            else
+                write (lunrep, '(A)') " ERROR: interpreting command line argument -CMAX, size of character work array:"
+                status%ierr = 1
+                call delwaq1_write_messages(status)
+                return
+            end if
+        else
+            cmax = icmax
+        end if
+        allocate (iar(imax), stat = ierr_alloc)
+        if (ierr_alloc /= 0) then
+            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating integer work array:", ierr_alloc, " with length:", imax
             status%ierr = 1
             call delwaq1_write_messages(status)
             return
-         end if
-      else
-         imax = iimax
-      end if
-      call retrieve_command_argument('-rmax', 1, lfound, rmax, rdummy, cdummy, status%ierr)
-      if (lfound) then
-         if (status%ierr .eq. 0) then
-            write (lunrep, '(A,I12)') " Command line argument -RMAX, size of real work array:", rmax
-         else
-            write (lunrep, '(A)') " ERROR: interpreting command line argument -RMAX, size of real work array:"
+        end if
+        allocate (rar(rmax), stat = ierr_alloc)
+        if (ierr_alloc /= 0) then
+            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating real work array:", ierr_alloc, " with length:", rmax
             status%ierr = 1
             call delwaq1_write_messages(status)
             return
-         end if
-      else
-         rmax = irmax
-      end if
-      call retrieve_command_argument('-cmax', 1, lfound, cmax, rdummy, cdummy, status%ierr)
-      if (lfound) then
-         if (status%ierr .eq. 0) then
-            write (lunrep, '(A,I12)') " Command line argument -CMAX, size of character work array:", cmax
-         else
-            write (lunrep, '(A)') " ERROR: interpreting command line argument -CMAX, size of character work array:"
+        end if
+        allocate (car(cmax), stat = ierr_alloc)
+        if (ierr_alloc /= 0) then
+            write (lunrep, '(A,I6,A,I12)') " ERROR: allocating character work array:", ierr_alloc, " with length:", cmax
             status%ierr = 1
             call delwaq1_write_messages(status)
             return
-         end if
-      else
-         cmax = icmax
-      end if
-      allocate (iar(imax), stat=ierr_alloc)
-      if (ierr_alloc .ne. 0) then
-         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating integer work array:", ierr_alloc, " with length:", imax
-         status%ierr = 1
-         call delwaq1_write_messages(status)
-         return
-      end if
-      allocate (rar(rmax), stat=ierr_alloc)
-      if (ierr_alloc .ne. 0) then
-         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating real work array:", ierr_alloc, " with length:", rmax
-         status%ierr = 1
-         call delwaq1_write_messages(status)
-         return
-      end if
-      allocate (car(cmax), stat=ierr_alloc)
-      if (ierr_alloc .ne. 0) then
-         write (lunrep, '(A,I6,A,I12)') " ERROR: allocating character work array:", ierr_alloc, " with length:", cmax
-         status%ierr = 1
-         call delwaq1_write_messages(status)
-         return
-      end if
+        end if
 
-   end subroutine delwaq1_allocate_workspace
+    end subroutine delwaq1_allocate_workspace
 end module m_delwaq1_allocate_workspace

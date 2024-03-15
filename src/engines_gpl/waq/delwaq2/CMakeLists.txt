@@ -19,11 +19,11 @@ create_target(
 # Add dependencies
 set(oss_dependencies delwaq_lib)
 
-if(UNIX)
+if (UNIX)
     target_link_libraries(${executable_name}
-                            ${oss_dependencies}
-                            uuid)
-endif(UNIX)
+            ${oss_dependencies}
+            uuid)
+endif (UNIX)
 
 target_link_libraries(${executable_name} ${oss_dependencies})
 
@@ -31,62 +31,56 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
-if(UNIX)
+if (UNIX)
     target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
 
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
-endif(UNIX)
+endif (UNIX)
 
 if (WIN32)
-    target_include_directories(${executable_name} PRIVATE  ${version_include_dir} ${mpi_include_path})
+    target_include_directories(${executable_name} PRIVATE ${version_include_dir} ${mpi_include_path})
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
-                            PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+            PRIVATE
+            "${mpi_library_path}"
+            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+            "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
 
     target_link_libraries(${executable_name}
-                            "comctl32.lib"
-                            "wsock32.lib"
-                            "netapi32.lib"
-                            "kernel32.lib"
-                            "user32.lib"
-                            "Shlwapi.lib"
-                            "Gdi32.lib"
-                            "Winspool.lib"
-                            "netcdf.lib"
-                            "${mpi_fortran_library}"
-                            "pthreadVC2.lib")
+            "comctl32.lib"
+            "wsock32.lib"
+            "netapi32.lib"
+            "kernel32.lib"
+            "user32.lib"
+            "Shlwapi.lib"
+            "Gdi32.lib"
+            "Winspool.lib"
+            "netcdf.lib"
+            "${mpi_fortran_library}"
+            "pthreadVC2.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
-endif(WIN32)
+endif (WIN32)
 
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
-set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/waq)
+set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-endif(WIN32)
+    configure_visual_studio_user_file(${executable_name})
+endif (WIN32)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
-
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delwaq.sh  DESTINATION bin)
-endif(UNIX)
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delwaq.sh DESTINATION bin)
+endif (UNIX)
+if (WIN32)
+    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delwaq.bat DESTINATION bin)
+endif (WIN32)
