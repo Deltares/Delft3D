@@ -2550,9 +2550,10 @@ private
       end if
 
       ! Transported constituents
-      call add_station_tracer_configs(output_config_set, idx_tracers_stations)
-      call add_station_tracer_output_items(output_set, output_config_set, idx_tracers_stations)
-      !testcase: UNST-7713
+      if (model_has_tracers()) then
+         call add_station_tracer_configs(output_config_set, idx_tracers_stations)
+         call add_station_tracer_output_items(output_set, output_config_set, idx_tracers_stations)
+      endif!testcase: UNST-7713
 
       !
       ! Variables on observation cross sections
@@ -2592,11 +2593,11 @@ private
       endif
       if (dad_included) then  ! Output for dredging and dumping
          temp_pointer(1:size(stmpar%sedpar%rhosol,1)*dadpar%nalink) => dadpar%link_sum
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_LINK_DISCHARGE),   temp_pointer               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_DISCHARGE),        dadpar%totvoldred               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DUMP_DISCHARGE),        dadpar%totvoldump               )
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_DRED_TIME_FRAC),     null(), calculate_dredge_time_fraction)
-         call add_stat_output_items(output_set, output_config%statout(IDX_HIS_PLOUGH_TIME_FRAC),  time_ploughed)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DRED_LINK_DISCHARGE),   temp_pointer               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DRED_DISCHARGE),        dadpar%totvoldred               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DUMP_DISCHARGE),        dadpar%totvoldump               )
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DRED_TIME_FRAC),     null(), calculate_dredge_time_fraction)
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PLOUGH_TIME_FRAC),  time_ploughed)
       endif
       
       ! TODO: UNST-7239: runup gauges

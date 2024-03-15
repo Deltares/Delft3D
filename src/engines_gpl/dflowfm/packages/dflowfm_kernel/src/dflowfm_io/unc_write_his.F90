@@ -977,8 +977,10 @@ subroutine unc_write_his(tim)            ! wrihis
     endif
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
-   ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
-
+   if ((ITRA1 > 0)) then
+      ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
+   endif
+     
    do ivar = 1,out_variable_set_his%count
       config => out_variable_set_his%statout(ivar)%output_config
       id_var => out_variable_set_his%statout(ivar)%id_var
