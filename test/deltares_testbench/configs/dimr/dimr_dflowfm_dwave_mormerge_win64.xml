@@ -56,7 +56,7 @@
     </program>
 	
     <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
-	    <path>dmor/scripts/run_mormerge.bat</path>
+	    <path>bin/run_mormerge.bat</path>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
         </location>
