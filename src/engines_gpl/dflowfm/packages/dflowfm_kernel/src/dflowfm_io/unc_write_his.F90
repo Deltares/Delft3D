@@ -571,6 +571,10 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
            ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
         endif
+        
+        ! Add the waq bottom variables to the his file
+        ierr = unc_def_his_station_wqbotnames(ihisfile, id_hwqb, id_hwqb3d, nc_precision, id_statdim, id_timedim, id_laydim, &
+                                              statcoordstring)
 
         ! WAQ statistic outputs are kept outside of the statistical output framework
         if (jawaqproc <= 0) then
@@ -2391,6 +2395,84 @@ contains
       end if
 
    end function unc_put_his_station_coord_vars_z
+   
+   !> Add the waq bottom variables to the his file
+   function unc_def_his_station_wqbotnames(ihisfile, id_hwqb, id_hwqb3d, nc_precision, id_statdim, id_timedim, id_laydim, &
+                                           statcoordstring) result(nc_error)
+      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot3D_output
+      use netcdf_utils, only: ncu_sanitize_name
+      implicit none
+      
+      integer,              intent(in   ) :: ihisfile                    !< NetCDF id of already open dataset
+      integer, allocatable, intent(inout) :: id_hwqb(:)                  !< NetCDF variable ids for the station waq bottom variables
+      integer, allocatable, intent(inout) :: id_hwqb3d(:)                !< NetCDF variable ids for the station waq bottom 3D variables
+      integer,              intent(in   ) :: nc_precision                !< NetCDF precision (either nf90_double or nf90_float)
+      integer,              intent(in   ) :: id_statdim                  !< NetCDF dimension id created for the station dimension
+      integer,              intent(in   ) :: id_timedim                  !< NetCDF dimension id created for the time dimension
+      integer,              intent(in   ) :: id_laydim                   !< NetCDF dimension id created for the layer dimension
+      character(len=1024),  intent(in   ) :: statcoordstring             !< String listing the coordinate variables associated with the stations
+      integer                             :: nc_error                    !< NetCDF error code
+      
+      integer                             :: i
+      character(len=255)                  :: wqbotname_sanitized
+      character(len=1024)                 :: station_geom_container_name
+      
+      nc_error = nf90_noerr
+      
+      ! If no waq bottom variables are requested, do nothing.
+      if (numwqbots == 0) then
+         return
+      end if
+      
+      station_geom_container_name = 'station_geom'
+      
+   ! == 2D waq bottom variables
+      
+      allocate(id_hwqb(numwqbots), source = 0)
+      
+      do i = 1, numwqbots
+         
+         ! Replace forbidden chars in NetCDF names by _.
+         wqbotname_sanitized = wqbotnames(i)
+         call ncu_sanitize_name(wqbotname_sanitized)
+
+         nc_error = nf90_def_var(ihisfile, trim(wqbotname_sanitized), nc_precision, [id_statdim, id_timedim], id_hwqb(i))
+         
+         nc_error = nf90_put_att(ihisfile, id_hwqb(i), 'coordinates', statcoordstring)
+         nc_error = nf90_put_att(ihisfile, id_hwqb(i), 'units', wqbotunits(i))
+         nc_error = nf90_put_att(ihisfile, id_hwqb(i), 'long_name', wqbotnames(i))
+         nc_error = nf90_put_att(ihisfile, id_hwqb(i), 'geometry', station_geom_container_name)
+         
+         nc_error = write_real_fill_value(id_hwqb(i))
+         
+      end do
+      
+   ! == 3D waq bottom variables
+      
+      if (wqbot3D_output == 1) then
+         
+         allocate(id_hwqb3d(numwqbots), source = 0)
+         
+         do i = 1, numwqbots
+            
+            ! Replace forbidden chars in NetCDF names by _.
+            wqbotname_sanitized = wqbotnames(i)
+            call ncu_sanitize_name(wqbotname_sanitized)
+
+            ierr = nf90_def_var(ihisfile, trim(wqbotname_sanitized)//'_3D', nc_precision, (/ id_laydim, id_statdim, id_timedim /), id_hwqb3d(i))
+            
+            ierr = nf90_put_att(ihisfile, id_hwqb3d(i), 'coordinates', statcoordstring)
+            ierr = nf90_put_att(ihisfile, id_hwqb3d(i), 'units', wqbotunits(i))
+            ierr = nf90_put_att(ihisfile, id_hwqb3d(i), 'long_name', trim(wqbotnames(i))//' (3D)')
+            ierr = nf90_put_att(ihisfile, id_hwqb3d(i), 'geometry', station_geom_container_name)
+            
+            ierr = write_real_fill_value(id_hwqb3d(i))
+            
+         end do
+         
+      end if
+      
+   end function unc_def_his_station_wqbotnames
 
    !> Define variables for WAQ statistic outputs (not to be confused with the general statistical output framework).
    !! They are not part of the statistical output framework, because it is useless to allow statistics about statistics,
@@ -2526,5 +2608,18 @@ integer function get_dimid_len(id)
 
    ierr = nf90_inquire_dimension(ihisfile, id, len = get_dimid_len)
 end function get_dimid_len
+
+!> write fill value in double precision or single precision
+function write_real_fill_value(id_var) result(error)
+   integer,          intent(in)  :: id_var           !< NetCDF variable id
+   integer                       :: error            !< NetCDF error 
+
+   if ( nc_precision == nf90_double ) then
+      error = nf90_put_att(ihisfile, id_var, '_FillValue', dmiss)
+   else if ( nc_precision == nf90_float ) then
+      error = nf90_put_att(ihisfile, id_var, '_FillValue', SNGL(dmiss))
+   end if
+    
+end function write_real_fill_value
 
 end subroutine unc_write_his
