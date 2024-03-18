@@ -2129,7 +2129,7 @@ private
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_DISCHARGE_DIR      ),valpump(IVAL_PP_DISDIR ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1UP               ),valpump(IVAL_S1UP      ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_S1DN               ),valpump(IVAL_S1DN      ,1:npumpsg))
-         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
+         call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_STRUCTURE_HEAD     ),valpump(IVAL_HEAD      ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_ACTUAL_STAGE       ),valpump(IVAL_PP_STAG   ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_HEAD               ),valpump(IVAL_PP_HEAD   ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))

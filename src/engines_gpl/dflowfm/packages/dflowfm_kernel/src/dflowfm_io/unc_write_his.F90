@@ -1550,7 +1550,7 @@ subroutine unc_write_his(tim)            ! wrihis
       endif
 
       if (jahispump > 0 .and. npumpsg > 0) then
-         valobs(1:npumpsg, 1:NUMVALS_PUMP) = transpose(valpump)
+         
          !do i=1,npumpsg
          !   ierr = nf90_put_var(ihisfile, id_pump_dis,     valpump(2,i), (/ i, it_his /))
          !   ierr = nf90_put_var(ihisfile, id_pump_s1up,    valpump(3,i), (/ i, it_his /))
@@ -1564,18 +1564,18 @@ subroutine unc_write_his(tim)            ! wrihis
          !   ierr = nf90_put_var(ihisfile, id_pump_s1del,   valpump(10,i),(/ i, it_his /))
          !   ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valpump(11,i),(/ i, it_his /))
          !end do
-         ierr = nf90_put_var(ihisfile, id_pump_dis,     valobs(1:npumpsg,IVAL_DIS),      (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1up,    valobs(1:npumpsg,IVAL_S1UP),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1dn,    valobs(1:npumpsg,IVAL_S1DN),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_struhead,valobs(1:npumpsg,IVAL_HEAD),     (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_cap,     valobs(1:npumpsg,IVAL_PP_CAP),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_disdir,  valobs(1:npumpsg,IVAL_PP_DISDIR),(/ 1, it_his /))
-        ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobs(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_head,    valobs(1:npumpsg,IVAL_PP_HEAD),  (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_redufact,valobs(1:npumpsg,IVAL_PP_RED),   (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1del,   valobs(1:npumpsg,IVAL_PP_S1DEL), (/ 1, it_his /))
-         ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valobs(1:npumpsg,IVAL_PP_S1SUC), (/ 1, it_his /))
-         ! write geometry variables at the first time of history output
+        ! ierr = nf90_put_var(ihisfile, id_pump_dis,     valobs(1:npumpsg,IVAL_DIS),      (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_s1up,    valobs(1:npumpsg,IVAL_S1UP),     (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_s1dn,    valobs(1:npumpsg,IVAL_S1DN),     (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_struhead,valobs(1:npumpsg,IVAL_HEAD),     (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_cap,     valobs(1:npumpsg,IVAL_PP_CAP),   (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_disdir,  valobs(1:npumpsg,IVAL_PP_DISDIR),(/ 1, it_his /))
+        !ierr = nf90_put_var(ihisfile, id_pump_stage,int(valobs(1:npumpsg,IVAL_PP_STAG)),(/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_head,    valobs(1:npumpsg,IVAL_PP_HEAD),  (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_redufact,valobs(1:npumpsg,IVAL_PP_RED),   (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_s1del,   valobs(1:npumpsg,IVAL_PP_S1DEL), (/ 1, it_his /))
+        ! ierr = nf90_put_var(ihisfile, id_pump_s1suc,   valobs(1:npumpsg,IVAL_PP_S1SUC), (/ 1, it_his /))
+        ! ! write geometry variables at the first time of history output
          if (it_his == 1) then
             if (network%sts%numPumps > 0) then ! new pump
                ierr = nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geomXPump,     start = (/ 1 /), count = (/ nNodesPump /))
