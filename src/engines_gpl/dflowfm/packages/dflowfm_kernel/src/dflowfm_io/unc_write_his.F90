@@ -1864,21 +1864,6 @@ subroutine unc_write_his(tim)            ! wrihis
          end if
       end if
 
-      if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
-         do i = 1,ndambreaksg
-            ierr = nf90_put_var(ihisfile, id_dambreak_discharge,                    valdambreak(IVAL_DIS,i),        (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_s1up,                         valdambreak(IVAL_S1UP,i),       (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_s1dn,                         valdambreak(IVAL_S1DN,i),       (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_head,                         valdambreak(IVAL_HEAD,i),       (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_au,                           valdambreak(IVAL_AREA,i),       (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_normal_velocity,              valdambreak(IVAL_VEL,i),        (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_cresth,                       valdambreak(IVAL_DB_CRESTH,i),  (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_crestw,                       valdambreak(IVAL_DB_CRESTW,i),  (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_water_level_jump,             valdambreak(IVAL_DB_JUMP,i),    (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_breach_width_time_derivative, valdambreak(IVAL_DB_TIMEDIV,i), (/ i, it_his /))
-            ierr = nf90_put_var(ihisfile, id_dambreak_cumulative_discharge,         valdambreak(IVAL_DB_DISCUM,i),  (/ i, it_his /))
-         end do
-      end if
       if (timon) call timstop ( handle_extra(62))
       !
       if (.false.) then
