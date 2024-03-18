@@ -35,7 +35,7 @@ module m_reshape
 
    public reshape_implicit
 
-   integer, parameter :: error_value = -999
+   double precision, parameter :: error_value = -999
 
    interface reshape_implicit
       module procedure reshape_implicit_double

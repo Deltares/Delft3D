@@ -2538,6 +2538,7 @@ integer function get_dimid_len(id)
 end function get_dimid_len
 
 subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
+   use m_reshape, only: reshape_implicit
    integer, intent(in) :: i_his_file
    type(t_output_variable_item), intent(in) :: output_variable_item
 
@@ -2562,62 +2563,9 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    positions(1) = station_id_index
    positions(station_id_index) = 1
    ! Unflatten the array to its proper dimensions (counts), reorder the dimensions to place stations to the front, and flatten it back
-   select case (size(counts))
-      case (1)
-         transformed_data = reshape_implicit_1d(output_variable_item%stat_output, counts, positions)
-      case (2)
-         transformed_data = reshape_implicit_2d(output_variable_item%stat_output, counts, positions)
-      case (3)
-         transformed_data = reshape_implicit_3d(output_variable_item%stat_output, counts, positions)
-      case (4)
-         transformed_data = reshape_implicit_4d(output_variable_item%stat_output, counts, positions)
-      case (5)
-         transformed_data = reshape_implicit_5d(output_variable_item%stat_output, counts, positions)
-      case default
-         call err('Internal error, please report: cannot reshape stat_output, implicit shape has too many dimensions')
-   end select
+   transformed_data = reshape_implicit(output_variable_item%stat_output, counts, positions)
 
    ierr = nf90_put_var(ihisfile, local_id_var, transformed_data, count = counts, start = starts)
 end subroutine write_station_netcdf_variable
-
-function reshape_implicit_1d(source, implicit_shape, order) result(res)
-   double precision, intent(in) :: source(:)
-   integer, intent(in) :: implicit_shape(1)
-   integer, intent(in) :: order(:)
-   double precision :: res(size(source))
-   res = reshape(reshape(source, implicit_shape, order = order), shape(source))
-end function reshape_implicit_1d
-
-function reshape_implicit_2d(source, implicit_shape, order) result(res)
-   double precision, intent(in) :: source(:)
-   integer, intent(in) :: implicit_shape(2)
-   integer, intent(in) :: order(:)
-   double precision :: res(size(source))
-   res = reshape(reshape(source, implicit_shape, order = order), shape(source))
-end function reshape_implicit_2d
-
-function reshape_implicit_3d(source, implicit_shape, order) result(res)
-   double precision, intent(in) :: source(:)
-   integer, intent(in) :: implicit_shape(3)
-   integer, intent(in) :: order(:)
-   double precision :: res(size(source))
-   res = reshape(reshape(source, implicit_shape, order = order), shape(source))
-end function reshape_implicit_3d
-
-function reshape_implicit_4d(source, implicit_shape, order) result(res)
-   double precision, intent(in) :: source(:)
-   integer, intent(in) :: implicit_shape(4)
-   integer, intent(in) :: order(:)
-   double precision :: res(size(source))
-   res = reshape(reshape(source, implicit_shape, order = order), shape(source))
-end function reshape_implicit_4d
-
-function reshape_implicit_5d(source, implicit_shape, order) result(res)
-   double precision, intent(in) :: source(:)
-   integer, intent(in) :: implicit_shape(5)
-   integer, intent(in) :: order(:)
-   double precision :: res(size(source))
-   res = reshape(reshape(source, implicit_shape, order = order), shape(source))
-end function reshape_implicit_5d
 
 end subroutine unc_write_his

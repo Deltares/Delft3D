@@ -29,7 +29,7 @@
 
 module test_reshape
    use ftnunit
-   use m_reshape, only: reshape_implicit
+   use m_reshape, only: reshape_implicit, error_value
    implicit none
    private
 
@@ -43,6 +43,7 @@ module test_reshape
    call test(test_reshape_rank_one, 'reshape: rank one remains untouched')
    call test(test_reshape_rank_two, 'reshape: rank two dimensions are swapped')
    call test(test_reshape_rank_two_unchanged, 'reshape: rank two dimensions are preserved')
+   call test(test_reshape_wrong_rank, 'reshape: wrong dimensions cause error signaling return value')
    end subroutine tests_reshape
 
    subroutine test_reshape_rank_one()
@@ -81,4 +82,16 @@ module test_reshape
 
       call assert_comparable(original, result, epsilon, 'rank two array was not preserved')
    end subroutine test_reshape_rank_two_unchanged
+
+   subroutine test_reshape_wrong_rank()
+      integer, parameter :: dims(2) = [3, 7]
+      double precision   :: original(product(dims)), result(product(dims))
+      integer, parameter :: new_positions(2) = [1, 2]
+
+      original = [(i, integer :: i = 1, size(original))]
+
+      result = reshape_implicit(original, dims + 1, new_positions)
+
+      call assert_comparable([(error_value, integer :: i = 1, size(original))], result, epsilon, 'no error value for wrong dimensions')
+   end subroutine test_reshape_wrong_rank
 end module test_reshape
