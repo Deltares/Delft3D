@@ -252,7 +252,7 @@ end type dredge_type
 
 contains
 
-subroutine realloc_dump_prop(dump_prop, newsize)
+subroutine realloc_dump_prop(dump_prop, new_size)
 type (dumptype), dimension(:) , allocatable, intent(inout) :: dump_prop       ! (nadump) dump area properties
 integer, intent(in)  :: new_size
 
