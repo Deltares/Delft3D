@@ -108,11 +108,5 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(PROGRAMS ../scripts/swan.${platform_extension}  DESTINATION bin)
 
-if (UNIX)
-    install(PROGRAMS ../scripts/swan.sh  DESTINATION bin)
-endif(UNIX)
-
-if (WIN32)
-    install(PROGRAMS ../scripts/swan.bat DESTINATION bin)
-endif(WIN32)

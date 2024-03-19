@@ -73,15 +73,9 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-if (UNIX)
-  set(DYN_LIB_EXTENSION sh)
-elseif (WIN32)
-  set(DYN_LIB_EXTENSION bat)
-endif()
-
 
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/mormerge.tcl     DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/run_mormerge.${DYN_LIB_EXTENSION}  DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/run_mormerge.${platform_extension}  DESTINATION bin)
 if (WIN32)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/tcl/bin/win64/tclkitsh852.exe DESTINATION bin)
 endif(WIN32)

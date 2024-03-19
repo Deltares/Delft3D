@@ -87,8 +87,6 @@ if ( ${configuration_type} STREQUAL "DELFT3D4" OR
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${headers} ${source} ${ini_version_file})
     set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/nefis_dll)
   
-
-
-    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME nefis.${library_suffix} DESTINATION lib)
 endif()
 

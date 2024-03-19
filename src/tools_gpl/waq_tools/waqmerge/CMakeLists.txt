@@ -80,9 +80,4 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 
-if (UNIX)
-    set(platform_extension sh)
-elseif (WIN32)
-    set(platform_extension bat)
-endif()
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_waqmerge.${platform_extension}  DESTINATION bin)

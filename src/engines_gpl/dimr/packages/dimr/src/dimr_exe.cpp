@@ -544,7 +544,7 @@ void DimrExe::openLibrary (void) {
         sprintf(this->library, "libdimr.so\0");
 #else
         this->library = new char[16];
-        sprintf(this->library, "dimr_dll.dll\0");
+        sprintf(this->library, "dimr.dll\0");
 #endif
 
         this->log->Write (DEBUG, my_rank, "Loading dimr library \"%s\"", this->library);

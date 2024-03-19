@@ -132,7 +132,7 @@ extern "C" {
 			}
 
 			thisDimr->log->Write(INFO, thisDimr->my_rank, getfullversionstring_dimr_lib());
-			thisDimr->log->Write(DEBUG, thisDimr->my_rank, "dimr_dll:initialize(%s)", configfile);
+			thisDimr->log->Write(DEBUG, thisDimr->my_rank, "dimr:initialize(%s)", configfile);
 			//
 			//
 			// Read XML configuration file into tree structure

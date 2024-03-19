@@ -83,15 +83,15 @@ module m_open_waq_files
          !  3 = harmonic functions; 7 = volumes file
          ! 10 = areas file;        11 = flows        ; 13 = length file; 17 = segment functions file
          ! 44 = pointer file
-         case ( 3, 7, 10, 11, 13, 17, 44 )                           
+         case ( 3, 7, 10, 11, 13, 17, 44 )
             call open_unformatted(lun, finam, opmode, ierr, nropen, support_old_status=.false.)
 
-         !  8 = to-/from-pointers file; 
+         !  8 = to-/from-pointers file;
          ! 40 = Binary segment attribute file
          case ( 8, 40 )
             call open_unformatted(lun, finam, opmode, ierr, nropen, replace=.true.)
 
-         ! 19 = DELWAQ2 monitoring file (.mon); 
+         ! 19 = DELWAQ2 monitoring file (.mon);
          ! 20 = dump file
          case ( 19, 20 )
             select case ( opmode )
@@ -271,9 +271,11 @@ module m_open_waq_files
         logical, intent(in), optional :: support_old_status !< use old status if applicable
         logical, intent(in), optional :: replace !< use replace status for opmode 1
 
-        logical :: old_supported = .true.
+        logical :: old_supported
         integer :: stat
 
+        old_supported = .true.
+        stat = 0
         if (present(support_old_status)) then
             old_supported = support_old_status
         end if
@@ -281,6 +283,7 @@ module m_open_waq_files
         select case ( opmode )
             case ( 1,2 )
                 call open_unformatted_stream(lun, finam, opmode, ierr, nropen)
+                return
             case ( 11, 12 )
                 if (old_supported .and. opmode == 12) then
                     open ( lun, file = finam, iostat=stat, form='unformatted' , status = 'old' )
@@ -317,11 +320,19 @@ module m_open_waq_files
         integer      , intent(inout) :: ierr      !< Error flag
         logical, intent(in), optional :: replace !< use replace status for opmode 1
 
+        logical :: replace_
         integer :: stat
+        
+        stat = 0
+        replace_ = .false.
+        if ( present(replace) ) then
+            replace_ = replace
+        endif
 
+        ierr = 0
         select case ( opmode )
             case ( 1 )
-                if (present(replace) .and. replace) then
+                if ( replace_ ) then
                     open ( lun, file = finam, iostat=stat, form='unformatted', access='stream', status = 'replace')
                 else
                     ! using unknown status
