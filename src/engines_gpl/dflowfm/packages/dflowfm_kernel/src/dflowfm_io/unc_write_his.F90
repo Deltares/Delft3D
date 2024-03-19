@@ -2330,6 +2330,7 @@ contains
 
    !> Write (put) the lat/lon-coordinate variables for the station type.
    function unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his) result(ierr)
+      use m_observations, only: xobs, yobs
       implicit none
 
       integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
@@ -2492,6 +2493,7 @@ contains
    !> Write (put) the geometry x/y-coordinate variables for the station type.
    function unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                                    add_latlon, id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
+      use m_observations, only: xobs, yobs
       implicit none
 
       integer,             intent(in   ) :: ihisfile                 !< NetCDF id of already open dataset
