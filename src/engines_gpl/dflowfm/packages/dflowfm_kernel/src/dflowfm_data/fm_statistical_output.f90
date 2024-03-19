@@ -2128,7 +2128,7 @@ private
       use m_longculverts, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: nrug, rug
-      use m_fm_wq_processes, only: jawaqproc
+      use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
