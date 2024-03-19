@@ -93,7 +93,7 @@ endfunction()
 function(create_vs_user_files)
    
    	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
-	set (envpath "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/")
+	set (envpath "PATH=${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/;%PATH%")
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
         WRITE "${userfilename}"
