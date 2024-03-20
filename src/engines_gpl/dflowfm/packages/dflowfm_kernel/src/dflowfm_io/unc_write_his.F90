@@ -2534,6 +2534,7 @@ end function get_dimid_len
 
 subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    use m_reshape, only: reshape_implicit
+   use MessageHandling, only: err
    integer, intent(in) :: i_his_file
    type(t_output_variable_item), intent(in) :: output_variable_item
 
@@ -2546,7 +2547,7 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    local_id_var = output_variable_item%id_var
 
    if (.not. local_config%nc_dim_ids%statdim) then
-      return
+      call err('Programming error, please report: Station NetCDF variable must have the station dimension')
    end if
 
    counts = build_nc_dimension_id_count_array(local_config%nc_dim_ids)
