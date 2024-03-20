@@ -5534,6 +5534,98 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f022_c98_graded_sediment_ConcBc_restart" ref="dflowfm_restart">
+      <path>e02_dflowfm/f022_morphology_2D/c98_graded_sediment_ConcBc_restart</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/da3_20050127_120000_rst.nc" type="netCDF">
+          <parameters>
+            <parameter name="time" toleranceAbsolute="0.0000001" />
+            <parameter name="timestep" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s0" toleranceAbsolute="0.0000001" />
+            <parameter name="taus" toleranceAbsolute="0.0000001" />
+            <parameter name="czs" toleranceAbsolute="0.0000001" />
+            <parameter name="ucx" toleranceAbsolute="0.0000001" />
+            <parameter name="ucy" toleranceAbsolute="0.0000001" />
+            <parameter name="unorm" toleranceAbsolute="0.0000001" />
+            <parameter name="u0" toleranceAbsolute="0.0000001" />
+            <parameter name="q1" toleranceAbsolute="0.0000001" />
+            <parameter name="qa" toleranceAbsolute="0.0000001" />
+            <parameter name="squ" toleranceAbsolute="0.0000001" />
+            <parameter name="sqi" toleranceAbsolute="0.0000001" />
+            <parameter name="hu" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand2" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand2_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="morft" toleranceAbsolute="0.0000001" />
+            <parameter name="msed" toleranceAbsolute="0.0000001" />
+            <parameter name="lyrfrac" toleranceAbsolute="0.0000001" />
+            <parameter name="thlyr" toleranceAbsolute="0.0000001" />
+            <parameter name="preload" toleranceAbsolute="0.0000001" />
+            <parameter name="sedshort" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xzw" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_yzw" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xcc" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_ycc" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowLink_xu" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowLink_yu" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xbnd" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_ybnd" toleranceAbsolute="0.0000001" />
+            <parameter name="s0_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="s1_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="sqi_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="squ_bnd" toleranceAbsolute="0.0000001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/da3_rst_20050127_120000_rst.nc" type="netCDF">
+          <parameters>
+            <parameter name="time" toleranceAbsolute="0.0000001" />
+            <parameter name="timestep" toleranceAbsolute="0.0000001" />
+            <parameter name="s1" toleranceAbsolute="0.0000001" />
+            <parameter name="s0" toleranceAbsolute="0.0000001" />
+            <parameter name="taus" toleranceAbsolute="0.0000001" />
+            <parameter name="czs" toleranceAbsolute="0.0000001" />
+            <parameter name="ucx" toleranceAbsolute="0.0000001" />
+            <parameter name="ucy" toleranceAbsolute="0.0000001" />
+            <parameter name="unorm" toleranceAbsolute="0.0000001" />
+            <parameter name="u0" toleranceAbsolute="0.0000001" />
+            <parameter name="q1" toleranceAbsolute="0.0000001" />
+            <parameter name="qa" toleranceAbsolute="0.0000001" />
+            <parameter name="squ" toleranceAbsolute="0.0000001" />
+            <parameter name="sqi" toleranceAbsolute="0.0000001" />
+            <parameter name="hu" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand2" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="Sediment_sand2_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
+            <parameter name="morft" toleranceAbsolute="0.0000001" />
+            <parameter name="msed" toleranceAbsolute="0.0000001" />
+            <parameter name="lyrfrac" toleranceAbsolute="0.0000001" />
+            <parameter name="thlyr" toleranceAbsolute="0.0000001" />
+            <parameter name="preload" toleranceAbsolute="0.0000001" />
+            <parameter name="sedshort" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xzw" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_yzw" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xcc" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_ycc" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowLink_xu" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowLink_yu" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_xbnd" toleranceAbsolute="0.0000001" />
+            <parameter name="FlowElem_ybnd" toleranceAbsolute="0.0000001" />
+            <parameter name="s0_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="s1_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="sqi_bnd" toleranceAbsolute="0.0000001" />
+            <parameter name="squ_bnd" toleranceAbsolute="0.0000001" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>
     <testCase name="e02_f023_c35_dad_inside_dumping" ref="dflowfm_default">
       <path>e02_dflowfm/f023_dredge-dump/c35_dad_inside_dumping</path>
       <maxRunTime>15000.0000000</maxRunTime>

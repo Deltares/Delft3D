@@ -75,6 +75,31 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
+    <testCase name="dflowfm_restart">
+    <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>dimr.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+            <arguments>
+                <argument>dimr_restart.xml</argument>
+                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+            </arguments>
+        </program>
+    </programs>
+      <location ref="cases" type="input">
+        <!-- if "to" is not specified, "from" is used as target -->
+        <from>.</from>
+      </location>
+      <location ref="reference_results" type="reference">
+        <from>win64</from>
+      </location>
+      <maxRunTime>3600.0</maxRunTime>
+      <!-- seconds -->
+    </testCase>    
     <testCase name="dflowfm_config">
     <programs>
         <program ref="dimr">
