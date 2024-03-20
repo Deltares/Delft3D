@@ -186,17 +186,9 @@ subroutine unc_write_his(tim)            ! wrihis
        jawrizc = 1
        jawrizw = 1
     endif
-    
-    call str_lower(md_nc_his_precision)
-    select case (trim(md_nc_his_precision))
-    case ('double')
-        nc_precision = nf90_double
-    case ('float', 'single')
-        nc_precision = nf90_float
-    case default
-        call mess(LEVEL_ERROR, 'Did not recognise NcHisDataPrecision value. It must be double, single or float.')
-    end select
-   
+
+    nc_precision = netcdf_data_type(md_nc_his_precision)
+
     if (timon) call timstrt ( "unc_write_his", handle_extra(54))
 
     ! Another time-partitioned file needs to start, reset iteration count (and file).
