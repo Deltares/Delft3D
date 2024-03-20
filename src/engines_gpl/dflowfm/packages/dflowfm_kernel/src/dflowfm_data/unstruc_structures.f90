@@ -261,7 +261,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use m_flowexternalforcings , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksg
+      use m_flowexternalforcings , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
       !use m_structures, only: NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, &
       !                        NUMVALS_GATEGEN, NUMVALS_WEIRGEN, NUMVALS_GENSTRU
       use m_alloc
@@ -309,9 +309,9 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
          if( allocated( valweirgen) ) deallocate( valweirgen )
          allocate( valweirgen(NUMVALS_WEIRGEN,nweirgen) ) ; valweirgen = 0d0
       endif
-      if( jahisdambreak > 0 .and. ndambreaksg > 0) then
+      if( jahisdambreak > 0 .and. ndambreaksignals > 0) then
          if( allocated( valdambreak ) ) deallocate( valdambreak )
-         allocate( valdambreak(NUMVALS_DAMBREAK,ndambreaksg) ) ; valdambreak = 0d0
+         allocate( valdambreak(NUMVALS_DAMBREAK,ndambreaksignals) ) ; valdambreak = 0d0
       endif
       if((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if( allocated( valorifgen) ) deallocate( valorifgen )

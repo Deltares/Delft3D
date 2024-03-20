@@ -199,8 +199,8 @@
  double precision, allocatable     :: thtbndsd(:)       !< sediment Thatcher-Harleman outflow times
  double precision, allocatable     :: thzbndsd(:)       !< sediment Thatcher-Harleman outflow concentrations
 
- integer,          allocatable     :: nbndtr(:)           !< tracer boundary points dimension
- integer                           :: nbndtr_all          !< all tracer boundary points dimension (max(nbndtr))
+ integer,          allocatable     :: nbndtr(:)         !< tracer boundary points dimension
+ integer                           :: nbndtr_all        !< all tracer boundary points dimension (max(nbndtr))
  integer                           :: numtracers        !< number of tracers with boundary conditions
  integer,          parameter       :: NAMTRACLEN = 128
  character(len=NAMTRACLEN), allocatable :: trnames(:)   !< tracer names (boundary conditions only, used for look-up)
@@ -372,8 +372,8 @@
  integer        , parameter              :: DBW_SYMM_ASYMM = 3                    !< symmetrical dambreak widening until left/right runs out of space then continues one sided
  integer                                 :: dambreakWidening = DBW_SYMM_ASYMM     !< method for dambreak widening
  character(len=128)                      :: dambreakWideningString = 'symmetric-asymmetric'  !< method for dambreak widening (string for input processing)
- integer                                 :: ndambreak                             !< nr of dambreak links
- integer                                 :: ndambreaksg                           !< nr of dambreak signals
+ integer                                 :: ndambreaklinks                        !< nr of dambreak links
+ integer                                 :: ndambreaksignals                      !< nr of dambreak signals
  integer         , allocatable           :: L1dambreaksg(:)                       !< first dambreak link for each signal
  integer         , allocatable           :: L2dambreaksg(:)                       !< second dambreak link for each signal
  integer         , allocatable           :: activeDambreakLinks(:)                !< activeDambreakLinks, open dambreak links
@@ -500,24 +500,24 @@ subroutine default_flowexternalforcings()
     nbnduxy = 0       ! uxuy adv vel bnd
     nbndn  = 0        ! norm.velocity boundary points dimension
 
-    ngate   = 0       ! gates links dimension, to specify gate lower edge level
-    ngatesg = 0       ! nr of gate control signals
-    ncdam   = 0       ! controllable dams nodes dimension, to specify local bottom level
-    ncdamsg = 0       ! nr of controllable dam signals
-    ncgen   = 0       ! general structure nodes dimension, to apply gen struc defs
-    ncgensg = 0       ! nr of general structure signals
-    ncgen   = 0       ! general structure nodes dimension, to apply gen struc defs
-    ncgensg = 0       ! nr of general structure signals
-    nweirgen = 0      ! nr of weirs in the generalstructure set
-    ngategen = 0      ! nr of gates in the generalstructure set
-    ngenstru = 0      ! nr of real general structures in the generalstructure set
-    npump   = 0       ! npump dimension
-    npumpsg = 0       ! nr of pump signals
-    ndambreak = 0     ! nr of dambreak links
-    ndambreaksg = 0   ! nr of dambreak signals
-    nklep   = 0       ! nr of kleps
-    nvalv   = 0       ! nr of valves
-    nqbnd   = 0       ! nr of q bnd's
+    ngate   = 0            ! gates links dimension, to specify gate lower edge level
+    ngatesg = 0            ! nr of gate control signals
+    ncdam   = 0            ! controllable dams nodes dimension, to specify local bottom level
+    ncdamsg = 0            ! nr of controllable dam signals
+    ncgen   = 0            ! general structure nodes dimension, to apply gen struc defs
+    ncgensg = 0            ! nr of general structure signals
+    ncgen   = 0            ! general structure nodes dimension, to apply gen struc defs
+    ncgensg = 0            ! nr of general structure signals
+    nweirgen = 0           ! nr of weirs in the generalstructure set
+    ngategen = 0           ! nr of gates in the generalstructure set
+    ngenstru = 0           ! nr of real general structures in the generalstructure set
+    npump   = 0            ! npump dimension
+    npumpsg = 0            ! nr of pump signals
+    ndambreaklinks = 0     ! nr of dambreak links
+    ndambreaksignals = 0   ! nr of dambreak signals
+    nklep   = 0            ! nr of kleps
+    nvalv   = 0            ! nr of valves
+    nqbnd   = 0            ! nr of q bnd's
     ! JRE
     nzbnd = 0
     nubnd = 0

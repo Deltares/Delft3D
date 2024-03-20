@@ -1846,8 +1846,8 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
     call unc_set_ncformat(md_ncformat)
-    md_nc_his_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
     call prop_get_logical(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
     if (success .and. value_parsed == .false.) then
        call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
@@ -3551,7 +3551,7 @@ endif
        call prop_set(prop_ptr, 'physics', 'Equili'     , jaequili , 'Equilibrium spiral flow intensity (0: no, 1: yes)')
     endif
 
-    if (ndambreak > 0) then
+    if (ndambreaklinks > 0) then
        call prop_set_string (prop_ptr, 'physics', 'BreachGrowth', trim(dambreakWideningString), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
     endif
 
@@ -3926,8 +3926,8 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
-    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision', trim(md_nc_map_precision), 'Precision for NetCDF data in map files (double, single or float)')
+    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision', trim(md_nc_his_precision), 'Precision for NetCDF data in his files (double, single or float)')
 
     call prop_set(prop_ptr, 'output', 'NcCompression', merge(1, 0, md_nccompress), 'Whether or not (1/0) to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4')
     

@@ -58,7 +58,7 @@
          if( .not.allocated( reducebuf ) ) then
             nreducebuf = npumpsg*NUMVALS_PUMP + ngatesg*NUMVALS_GATE + ncdamsg*NUMVALS_CDAM + ncgensg*NUMVALS_CGEN &
                        + ngategen*NUMVALS_GATEGEN + nweirgen*NUMVALS_WEIRGEN + ngenstru*NUMVALS_GENSTRU + ngenstru*NUMVALS_GENSTRU &
-                       + ndambreaksg * NUMVALS_DAMBREAK + network%sts%numUniWeirs*NUMVALS_UNIWEIR + network%sts%numOrifices*NUMVALS_ORIFGEN &
+                       + ndambreaksignals * NUMVALS_DAMBREAK + network%sts%numUniWeirs*NUMVALS_UNIWEIR + network%sts%numOrifices*NUMVALS_ORIFGEN &
                        + network%sts%numCulverts*NUMVALS_CULVERT + network%sts%numBridges*NUMVALS_BRIDGE + network%cmps%count*NUMVALS_CMPSTRU &
                        + nlongculverts*NUMVALS_LONGCULVERT
             allocate ( reducebuf  ( nreducebuf ) , stat = ierr      )
@@ -446,7 +446,7 @@
       ! == dambreak
       !
       if (allocated(valdambreak)) then
-         do n = 1, ndambreaksg
+         do n = 1, ndambreaksignals
             ! valdambreak(NUMVALS_DAMBREAK,n) is the cumulative over time, we do not reset it to 0
             valdambreak(1:NUMVALS_DAMBREAK-1,n) = 0d0
             istru = dambreaks(n)
@@ -639,8 +639,8 @@
             call fill_reduce_buffer( valgenstru, ngenstru*NUMVALS_GENSTRU )
             n = 1
          endif
-         if( ndambreaksg > 0 .and. allocated(valdambreak) ) then
-            call fill_reduce_buffer( valdambreak, ndambreaksg*NUMVALS_DAMBREAK )
+         if( ndambreaksignals > 0 .and. allocated(valdambreak) ) then
+            call fill_reduce_buffer( valdambreak, ndambreaksignals*NUMVALS_DAMBREAK )
             n = 1
          endif
          if(allocated(valuniweir) .and. network%sts%numUniWeirs > 0) then
@@ -747,8 +747,8 @@
 
       ! === Dambreak
       if( jampi > 0 .and. ti_his > 0 ) then
-         if( ndambreaksg > 0 .and. allocated(valdambreak) ) then
-            call subsitute_reduce_buffer( valdambreak, ndambreaksg*NUMVALS_DAMBREAK )
+         if( ndambreaksignals > 0 .and. allocated(valdambreak) ) then
+            call subsitute_reduce_buffer( valdambreak, ndambreaksignals*NUMVALS_DAMBREAK )
          endif
       end if
 

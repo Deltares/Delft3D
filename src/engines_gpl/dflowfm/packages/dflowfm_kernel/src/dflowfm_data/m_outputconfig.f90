@@ -586,7 +586,7 @@ end subroutine dealloc_config_output
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
 subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_atts, description)
-   use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
+   use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
    type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
@@ -659,10 +659,9 @@ end subroutine addoutval
 
 !> convert id_nc_type to actual nc_type for his file variables
 function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
-   
-   use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
    use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
-   
+   use m_map_his_precision, only: md_nc_his_precision
+   use string_module, only: str_lower
    implicit none
    
    integer, intent(in   ) :: id_nc_type   !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
@@ -673,11 +672,15 @@ function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
       call mess(LEVEL_ERROR,'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
    case (id_nc_undefined)
       ! Use the netcdf precision for his files defined in the mdu
-      if ( md_nc_his_precision == SINGLE_PRECISION ) then
-         nc_type = nf90_float
-      else
-         nc_type = nf90_double
-      endif
+      call str_lower(md_nc_his_precision)
+         select case (trim(md_nc_his_precision))
+         case ('double')
+             nc_type = nf90_double
+         case ('float', 'single')
+             nc_type = nf90_float
+         case default
+             call mess(LEVEL_ERROR, 'Did not recognise NcHisDataPrecision value. It must be double, single or float.')
+      end select
    case (id_nc_byte)
       nc_type = nf90_byte
    case (id_nc_char)

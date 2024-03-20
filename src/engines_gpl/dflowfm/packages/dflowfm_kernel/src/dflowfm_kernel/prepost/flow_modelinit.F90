@@ -34,9 +34,9 @@
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult)                     ! initialise flowmodel
  use timers
- use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi
+ use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
  use waq,           only: reset_waq
- use m_flow,        only: kmx, jasecflow, iperot
+ use m_flow,        only: kmx, jasecflow, iperot, hu, taubxu
  use m_flowtimes
  use m_lateral, only: numlatsg
  use network_data,  only: NETSTAT_CELLS_DIRTY
@@ -78,6 +78,7 @@
  use m_fixedweirs, only: weirdte, nfxw
  use mass_balance_areas_routines, only : mba_init
  use m_curvature, only: get_spirucm
+ use m_fm_erosed, only: taub
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -85,7 +86,8 @@
  !
  implicit none
 
- integer              :: istat, L, ierr
+ integer              :: istat, L, ierr, k1, k2
+ logical              :: set_hu, use_u1
  integer, external    :: init_openmp
  integer, external    :: set_model_boundingbox
  
@@ -451,11 +453,27 @@
     allocate ( weirdte_save(nfxw), STAT=ierr)
     weirdte_save=weirdte
  endif 
- call flow_initimestep(1, iresult)                   ! 1 also sets zws0
+ set_hu=.true.
+ use_u1=.true.
+ if (len_trim(md_restartfile)>0) then !See UNST-7754
+    set_hu=.false.
+    use_u1=.false.
+ endif
+ call flow_initimestep(1, set_hu, use_u1, iresult)                   ! 1 also sets zws0
  if (nfxw > 0) then 
     weirdte=weirdte_save
     deallocate ( weirdte_save)
- endif 
+ endif
+    
+ !See UNST-7754
+ if (stm_included .and. jased > 0) then
+    taub = 0d0
+    do L=1,lnx
+       k1=ln(1,L); k2=ln(2,L)
+       taub(k1)   = taub(k1)+wcl(1,L)*taubxu(L)        
+       taub(k2)   = taub(k2)+wcl(2,L)*taubxu(L)        
+    end do
+ endif
  jaFlowNetChanged = 0
 
  ! Secondary flow
