@@ -15,12 +15,6 @@ set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 set(library_name gridgeom_dll)
-if(WIN32)
-   set(library_renamed gridgeom.dll)
-endif(WIN32)
-if(UNIX)
-   set(library_renamed gridgeom.so)
-endif(UNIX)
 
 # Add dynamic gridgeom library
 add_library(${library_name} SHARED ${source_files} ${rc_version_file} ${version_file})
@@ -59,12 +53,7 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
 
-if(UNIX)
-    SET(library_renamed libgridgeom.so)
-    # Actual rename is done in the the install step below
-endif(UNIX)
-
 if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
     # Install the shared library in the lib folder with rename
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME gridgeom.${library_suffix} DESTINATION lib)
 endif()

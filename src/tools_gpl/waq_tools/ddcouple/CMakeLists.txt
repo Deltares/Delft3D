@@ -33,9 +33,5 @@ endif(WIN32)
 
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-if (UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_ddcouple.sh  DESTINATION bin)
-endif(UNIX)
-if (WIN32)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_ddcouple.bat  DESTINATION bin)
-endif(WIN32)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_ddcouple.${platform_extension}  DESTINATION bin)
+

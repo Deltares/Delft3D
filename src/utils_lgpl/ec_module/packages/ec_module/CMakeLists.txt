@@ -72,14 +72,6 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/ec_module_api.f90)
     set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/ec_module)
 
-    # Set post-build step
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-if (UNIX)
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION bin)
-endif(UNIX)
-if (WIN32)
-install(TARGETS ${library_name} 
-         RUNTIME DESTINATION lib)
-endif(WIN32)
+
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ec_module.${library_suffix} DESTINATION lib)
 endif()

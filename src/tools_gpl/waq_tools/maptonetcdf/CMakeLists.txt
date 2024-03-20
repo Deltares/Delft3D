@@ -73,9 +73,5 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-if (UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_maptonetcdf.sh  DESTINATION bin)
-endif(UNIX)
-if (WIN32)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_maptonetcdf.bat  DESTINATION bin)
-endif(WIN32)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_maptonetcdf.${platform_extension}  DESTINATION bin)
+

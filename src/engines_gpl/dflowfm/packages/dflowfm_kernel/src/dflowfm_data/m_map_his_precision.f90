@@ -31,9 +31,8 @@
 !> keeps parameters for map/his writing of data in double/single precision 
 module m_map_his_precision
 
-    integer            :: md_nc_map_precision  !< NetCDF data precision in map files (0: double, 1: float)
-    integer            :: md_nc_his_precision  !< NetCDF data precision in his files (0: double, 1: float)
-    integer, parameter :: SINGLE_PRECISION = 1
+    character(len=128) :: md_nc_map_precision = 'double' !< NetCDF data precision in map files ('double', 'single' or 'float')
+    character(len=128) :: md_nc_his_precision = 'double' !< NetCDF data precision in his files ('double', 'single' or 'float')
 
 end module m_map_his_precision
     

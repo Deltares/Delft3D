@@ -113,6 +113,13 @@ if (UNIX)
     pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
 
+if (UNIX)
+    set(platform_extension sh)
+    set(library_suffix so)
+elseif (WIN32)
+    set(platform_extension bat)
+    set(library_suffix dll)
+endif()
 
 # Expat:
 #     Windows: use prebuild library in ".../expat/x64/x64"

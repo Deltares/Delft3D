@@ -48,7 +48,10 @@ private
    integer, parameter, public :: UNC_LOC_OBSCRS      = 36 !< Data location: his file observation cross section data
    integer, parameter, public :: UNC_LOC_LATERAL     = 37 !< Data location: his file lateral locations data
    integer, parameter, public :: UNC_LOC_RUG         = 38 !< Data location: his file run-up gauge data
-
+   integer, parameter, public :: UNC_LOC_DREDGE      = 39 !< Data location: his file dredge data
+   integer, parameter, public :: UNC_LOC_DUMP        = 40 !< Data location: his file dump data
+   integer, parameter, public :: UNC_LOC_DRED_LINK   = 41 !< Data location: his file data on dredge links
+   
    !> indices for output variables
    integer, public :: IDX_HIS_VOLTOT
    integer, public :: IDX_HIS_STOR
@@ -279,6 +282,7 @@ private
    integer, public :: IDX_HIS_QFRCON
    integer, public :: IDX_HIS_QTOT
 
+   integer, public :: IDX_HIS_SED_FRAC_NAME
    integer, public :: IDX_HIS_SED
    integer, public :: IDX_HIS_WS
    integer, public :: IDX_HIS_SEDDIF
@@ -325,6 +329,16 @@ private
    integer, public :: IDX_HIS_FIXFRAC
    integer, public :: IDX_HIS_HIDEXP
    integer, public :: IDX_HIS_MFLUFF
+
+   
+   integer, public :: IDX_HIS_DRED_AREA_NAME
+   integer, public :: IDX_HIS_DUMP_AREA_NAME
+   integer, public :: IDX_HIS_DRED_LINK_DISCHARGE
+   integer, public :: IDX_HIS_DRED_DISCHARGE
+   integer, public :: IDX_HIS_DUMP_DISCHARGE
+   integer, public :: IDX_HIS_DRED_TIME_FRAC
+   integer, public :: IDX_HIS_PLOUGH_TIME_FRAC
+
 
    integer, public :: IDX_MAP_S0
    integer, public :: IDX_MAP_S1
@@ -569,7 +583,7 @@ end subroutine dealloc_config_output
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
 subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_atts, description)
-   use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
+   use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
    type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
@@ -642,10 +656,9 @@ end subroutine addoutval
 
 !> convert id_nc_type to actual nc_type for his file variables
 function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
-   
-   use m_map_his_precision, only: md_nc_his_precision, SINGLE_PRECISION
    use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
-   
+   use m_map_his_precision, only: md_nc_his_precision
+   use string_module, only: str_lower
    implicit none
    
    integer, intent(in   ) :: id_nc_type   !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
@@ -656,11 +669,15 @@ function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
       call mess(LEVEL_ERROR,'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
    case (id_nc_undefined)
       ! Use the netcdf precision for his files defined in the mdu
-      if ( md_nc_his_precision == SINGLE_PRECISION ) then
-         nc_type = nf90_float
-      else
-         nc_type = nf90_double
-      endif
+      call str_lower(md_nc_his_precision)
+         select case (trim(md_nc_his_precision))
+         case ('double')
+             nc_type = nf90_double
+         case ('float', 'single')
+             nc_type = nf90_float
+         case default
+             call mess(LEVEL_ERROR, 'Did not recognise NcHisDataPrecision value. It must be double, single or float.')
+      end select
    case (id_nc_byte)
       nc_type = nf90_byte
    case (id_nc_char)

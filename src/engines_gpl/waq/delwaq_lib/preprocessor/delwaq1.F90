@@ -62,7 +62,7 @@ contains
 
         call delwaq1_close_lunfiles()
 
-        success = status%ierr /= 0
+        success = status%ierr == 0
         ! Delwaq1_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
 
     end function delwaq1
