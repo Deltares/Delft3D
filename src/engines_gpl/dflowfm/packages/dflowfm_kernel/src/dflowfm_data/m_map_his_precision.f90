@@ -54,7 +54,7 @@ module m_map_his_precision
             case ('float', 'single')
                 nc_data_type = nf90_float
             case default
-                call mess(LEVEL_ERROR, 'Did not recognise NetCDF precision string ' // trim(nc_precision_string) // '. It must be double, single or float.')
+                call mess(LEVEL_ERROR, 'Did not recognise NetCDF precision string ' // trim(nc_precision_string) // '. It must be double or single.')
         end select
     end function netcdf_data_type
 
