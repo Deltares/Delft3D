@@ -1203,16 +1203,16 @@ private
 
       ! Heat flux model
       call addoutval(out_quan_conf_his, IDX_HIS_WIND,                                                            &
-                     'Wrihis_heat_fluxes', 'wind', 'windspeed', '',                                              &
+                     'Wrihis_heat_fluxes', 'wind'  , 'windspeed', '',                                            &
                      'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write heat fluxes to his file', &
                      nc_dim_ids = nc_dims_2D)
-      call addoutval(out_quan_conf_his, IDX_HIS_TAIR,                     &
-                     'Wrihis_heat_fluxes', 'Tair', 'air temperature', '', &
-                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1),        &
+      call addoutval(out_quan_conf_his, IDX_HIS_TAIR,                       &
+                     'Wrihis_heat_fluxes', 'Tair'  , 'air temperature', '', &
+                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1),          &
                      nc_dim_ids = nc_dims_2D)
-      call addoutval(out_quan_conf_his, IDX_HIS_RHUM,                   &
-                     'Wrihis_heat_fluxes', 'relative humidity', '', '', &
-                     '', UNC_LOC_STATION, nc_atts = atts(1:1),          &
+      call addoutval(out_quan_conf_his, IDX_HIS_RHUM,                         &
+                     'Wrihis_heat_fluxes', 'rhum'  , 'relative humidity', '', &
+                     '', UNC_LOC_STATION, nc_atts = atts(1:1),                &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_CLOU,                  &
                      'Wrihis_heat_fluxes', 'clou'  , 'cloudiness', '', &
