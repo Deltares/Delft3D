@@ -82,32 +82,33 @@ contains
         integer(kind = int_wp) :: i, parsed_int, ifound, i2, name_index, icm
         integer(kind = int_wp) :: itmnr, ioff, ioffc, ioffi
         real(kind = real_wp) :: parsed_real
-        character(*), parameter :: operations(6) = ['*', '/', '+', '-', 'MIN', 'MAX']
-        character(*), parameter :: keywords(25) = ['BLOCK', &
-                'BINARY_FILE', &
+        character(3), parameter :: operations(6) = ['*  ', '/  ', '+  ', '-  ', 'MIN', 'MAX']
+        character(14), parameter :: keywords(25) = & 
+               ['BLOCK         ', &
+                'BINARY_FILE   ', &
                 'CONCENTRATIONS', &
-                'CONCENTRATION', &
-                'CONSTANTS', &
-                'DATA', &
-                'DATA_ITEM', &
-                'LINEAR', &
-                'ITEM', &
-                'IDENTICALITEM', &
-                'USEDATA_ITEM', &
-                'FORITEM', &
-                'TIME_DELAY', &
-                'ODS_FILE', &
-                'ABSOLUTE', &
-                'TIME', &
-                'HARMONICS', &
-                'FOURIERS', &
-                'SCALE', &
-                'DEFAULTS', &
-                'ALL', &
-                'SEGMENTS', &
-                'PARAMETERS', &
-                'FUNCTIONS', &
-                'SEG_FUNCTIONS'  ]
+                'CONCENTRATION ', &
+                'CONSTANTS     ', &
+                'DATA          ', &
+                'DATA_ITEM     ', &
+                'LINEAR        ', &
+                'ITEM          ', &
+                'IDENTICALITEM ', &
+                'USEDATA_ITEM  ', &
+                'FORITEM       ', &
+                'TIME_DELAY    ', &
+                'ODS_FILE      ', &
+                'ABSOLUTE      ', &
+                'TIME          ', &
+                'HARMONICS     ', &
+                'FOURIERS      ', &
+                'SCALE         ', &
+                'DEFAULTS      ', &
+                'ALL           ', &
+                'SEGMENTS      ', &
+                'PARAMETERS    ', &
+                'FUNCTIONS     ', &
+                'SEG_FUNCTIONS '  ]
 
         if (timon) call timstrt("dlwq5b", ithndl)
 

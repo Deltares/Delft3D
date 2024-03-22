@@ -410,7 +410,7 @@
                igrid = gridpointercollfind( gridps, ctoken )
                if ( igrid >= 1 ) then
                   data_block%igrid = igrid
-                  write ( lunut , 2290 ), trim(ctoken)
+                  write ( lunut , 2290 ) trim(ctoken)
                   waq_loc%no_item = gridps%pointers(igrid)%noseg
                   write ( lunut , 2300 ) waq_loc%no_item
                   ierr2 = dlwq_resize(waq_loc,waq_loc%no_item)
@@ -419,7 +419,7 @@
                      write(waq_loc%name(i), '(''segment '',i8)' ) i
                   enddo
                else
-                  write ( lunut , 2310 ), trim(ctoken)
+                  write ( lunut , 2310 ) trim(ctoken)
                   ierr = 1
                   goto 100
                endif

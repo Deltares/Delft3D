@@ -2681,7 +2681,7 @@ contains
         '          last line read : ',line(:len_line)
       write(lunlog,'(/a)') ' Please check file !!'
       call stop_exit(1)
- 1020write(lunlog,'(//a,a)')  &
+ 1020 write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',ini_file(:len_file)
       write(lunlog,'(//a)') ' Error: premature end-of-file found'
       write(lunlog,'(/a )') ' Please check file !!'
