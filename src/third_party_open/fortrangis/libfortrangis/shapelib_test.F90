@@ -34,7 +34,7 @@ CHARACTER(len=lencharattr) :: charattrr
 INTEGER :: intattrr
 REAL(kind=c_double) :: doubleattrr
 
-!CALL getarg(1,filename)
+!CALL get_command_argument(1,filename)
 !IF (filename == '') THEN
 !  PRINT'(A)','Usage: shape_test <shp_file>'
 !  STOP
@@ -220,6 +220,16 @@ DO i = 0, nshp - 1
 
 ENDDO
 
+! test whether an attribute is null
+IF (dbfisattributenull(shphandle, 0, 0)) THEN
+  PRINT*,'Error in dbfisattributenull, non null attribute returned null'
+  STOP 1
+ENDIF
+IF (.NOT.dbfisattributenull(shphandle, 3, 0)) THEN
+  PRINT*,'Error in dbfisattributenull, null attribute returned non null'
+  STOP 1
+ENDIF
+
 ! close the shapefile object
 CALL shpclose(shphandle)
 
@@ -244,9 +254,14 @@ CHARACTER(len=lencharattr) :: dbf
 
 INTEGER :: i
 
-DO i = 1, LEN(dbf)
-  dbf(i:i) = CHAR(32 + MOD(i+2*nshp,32))
-ENDDO
+IF (nshp == 3) THEN
+  dbf= ' '
+ELSE
+  DO i = 1, LEN(dbf)
+    dbf(i:i) = CHAR(32 + MOD(i+2*nshp,32))
+  ENDDO
+ENDIF
+
 
 END FUNCTION makechardbf
 

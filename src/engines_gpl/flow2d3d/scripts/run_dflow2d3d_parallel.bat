@@ -67,16 +67,16 @@ set workdir=%CD%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%scriptDir%..\..\..
+set D3D_HOME=%scriptDir%..
 
 rem Remove "\dflow2d3d\scripts\..\..\.." from D3D_HOME
 set D3DT=%D3D_HOME:~0,-27%
 rem last directory will be the architecture directory
 for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
-set dflow2d3ddir=%D3D_HOME%\%ARCH%\dflow2d3d\bin
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-
+set dflow2d3ddir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
 
 if  %debugLevel% EQU 0 (
     echo.
@@ -97,9 +97,9 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%
-echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
-                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
+set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
+echo executing: "mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
+                "mpiexec.exe" -n %numpar% -localonly "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 
 goto end
 

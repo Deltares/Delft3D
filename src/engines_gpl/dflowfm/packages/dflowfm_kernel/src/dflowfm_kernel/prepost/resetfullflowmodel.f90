@@ -70,6 +70,7 @@
  use m_subsidence
  use m_sferic, only : default_sferic
  use m_1d2d_fixedweirs, only : default_1d2d_fixedweirs
+ use m_lateral, only : default_lateral
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
@@ -92,6 +93,8 @@
     call default_grw()
 
     call default_wind()
+
+    call default_lateral()
 
     call default_waves()
 

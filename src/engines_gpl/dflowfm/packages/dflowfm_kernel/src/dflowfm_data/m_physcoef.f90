@@ -109,9 +109,13 @@
  double precision                  :: vicouv      !< constant horizontal eddy viscosity   (m2/s) mom
  double precision                  :: dicouv      !< constant horizontal eddy diffusivity (m2/s) sal, sed
 
+ double precision                  :: Schmidt_number_salinity = 0.7d0    !< Turbulent Schmidt number for salinity
+ double precision                  :: Prandtl_number_temperature = 0.7d0 !< Turbulent Prandtl number for temperature
+ double precision                  :: Schmidt_number_tracer = 1.0d0      !< Turbulent Schmidt number for tracers
+ 
  double precision                  :: Elder       !< add Elder viscosity
  double precision                  :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
- double precision                  :: viuchk  !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
+ double precision                  :: viuchk      !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
  double precision                  :: vicoww  !< 1D-6   !                 ! user specified constant vertical   eddy viscosity  (m2/s)
  double precision                  :: dicoww  !< 1D-6   !                 ! user specified constant vertical   eddy diffusivity(m2/s)
@@ -126,7 +130,7 @@
  double precision                  :: difmolsal  !< molecular diffusivity of salinity
  double precision                  :: difmoltem  !<           diffusivity of temperature
  double precision                  :: difmolsed  !<           diffusivity of sediment
- double precision                  :: difmoltr   !<           diffusivity of tracers
+ double precision                  :: difmoltracer !<         diffusivity of tracers
 
  double precision                  :: vicwminb   ! minimum eddy viscosity in production terms shear and buoyancy
  double precision                  :: xlozmidov  ! Ozmidov length scale (m)
@@ -223,7 +227,7 @@ viskinair                   = 1.5d-5        ! kinematic  viscosity air
 difmolsal                   = viskin/700d0  ! molecular diffusivity of salinity
 difmoltem                   = viskin/6.7d0  !           diffusivity of temperature
 difmolsed                   = 0d0
-difmoltr                    = 0d0
+difmoltracer                = 0d0
 
 vicwminb                    = 0d-7          ! was 0d0, minimum viscosity in production terms shear and buoyancy
 xlozmidov                   = 0d0           ! Ozmidov length scale

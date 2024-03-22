@@ -86,11 +86,6 @@
    use mpi
 #endif
 
-   !use ifcore  !nanrelease
-
-
-!   use ftnunit
-!   use unstruc_tests
    implicit none
 
    integer :: MODE,NFLD, KEY

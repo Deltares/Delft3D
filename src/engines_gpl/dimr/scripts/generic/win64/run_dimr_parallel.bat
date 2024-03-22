@@ -46,11 +46,11 @@ if [%2] EQU [-d] (
         set argfile=dimr_config.xml
         goto readyreading
     ) else (
-        set argfile=%~4
+        set argfile=%4
         goto readyreading
     )
 ) else (
-    set argfile=%~2
+    set argfile=%2
 )
 if [%3] EQU [-d] (
     set debuglevel=%4
@@ -61,7 +61,7 @@ if [%3] EQU [-d] (
 
     rem Check configfile
 echo Configfile:%argfile%
-if not exist "%argfile%" (
+if not exist %argfile% (
     echo ERROR: configfile "%argfile%" does not exist
     goto usage
 )
@@ -90,45 +90,28 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
 
-    rem Remove "\dimr\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-    rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set delwaqexedir=%D3D_HOME%\%ARCH%\dwaq\bin
-set dflowfmexedir=%D3D_HOME%\%ARCH%\dflowfm\bin
-set proc_def_dir=%D3D_HOME%\%ARCH%\dflowfm\default
-set dimrexedir=%D3D_HOME%\%ARCH%\dimr\bin
-set esmfexedir=%D3D_HOME%\%ARCH%\esmf\bin
-set esmfbatdir=%D3D_HOME%\%ARCH%\esmf\scripts
-set flow1dexedir=%D3D_HOME%\%ARCH%\dflow1d\bin
-set flow1d2dexedir=%D3D_HOME%\%ARCH%\dflow1d2d\bin
-set rrexedir=%D3D_HOME%\%ARCH%\drr\bin
-set rtctoolsexedir=%D3D_HOME%\%ARCH%\drtc\bin
-set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
-set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
-set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
-
+set D3D_HOME=%~dp0..
+echo D3D_HOME         : %D3D_HOME%
+set exedir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
 
     rem
     rem No adaptions needed below
     rem
 
     rem Run
-set PATH=%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
-if exist %sharedir%\vars.bat (
-    echo executing: "%sharedir%\vars.bat"
-        call "%sharedir%\vars.bat"
+set PATH=%sharedir%;%libdir%;%exedir%
+if exist %exedir%\vars.bat (
+    echo executing: "%exedir%\vars.bat"
+        call "%exedir%\vars.bat"
 ) else (
-    echo "WARNING: File not found: %sharedir%\vars.bat"
+    echo "WARNING: File not found: %exedir%\vars.bat"
     echo "         Problems may occur when using IntelMPI"
 )
-echo executing: "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
-                "%sharedir%\mpiexec.exe" -n %numpar% -localonly "%dimrexedir%\dimr.exe" %debugarg% "%argfile%"
+echo executing: "%exedir%\mpiexec.exe" -n %numpar% -localonly "%exedir%\dimr.exe" %debugarg% %argfile%
+                "%exedir%\mpiexec.exe" -n %numpar% -localonly "%exedir%\dimr.exe" %debugarg% %argfile%
 
 goto end
 

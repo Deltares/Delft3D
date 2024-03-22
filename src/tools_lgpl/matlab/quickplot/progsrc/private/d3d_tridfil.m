@@ -91,7 +91,7 @@ switch cmd
         varargout={readsts(FI,Props,0)};
         return
     case 'subfields'
-        varargout={{}};
+        varargout={getsubfields(FI,Props,varargin{:})};
         return
     otherwise
         [XYRead,DataRead,DataInCell]=gridcelldata(cmd);
@@ -102,7 +102,17 @@ DimFlag=Props.DimFlag;
 % initialize and read indices ...
 idx={[] [] 0 0 0};
 fidx=find(DimFlag);
-idx(fidx(1:length(varargin)))=varargin;
+
+subf = getsubfields(FI,Props);
+if isempty(subf)
+    % initialize and read indices ...
+    idx(fidx(1:length(varargin))) = varargin;
+    isubf = [];
+else
+    % initialize and read indices ...
+    idx(fidx(1:(length(varargin)-1))) = varargin(2:end);
+    isubf = varargin{1};
+end
 
 % select appropriate timestep ...
 sz=getsize(FI,Props);
@@ -147,28 +157,36 @@ if XYRead
             z=reshape(x(:,3,:),szx);
             y=reshape(x(:,2,:),szx);
             x=reshape(x(:,1,:),szx);
-            x((x == plsmisval & y == plsmisval) | (x == negmisval & y == negmisval) | (x==0 & y==0))=NaN;
+            x((x == plsmisval & y == plsmisval) | (x == negmisval & y == negmisval) | (x == -999 & y == -999) | (x==0 & y==0))=NaN;
             y(isnan(x))=NaN;
             z(isnan(x))=NaN;
     end
     %========================= GENERAL CODE =======================================
 end
 
+% read time ...
+[T,nDt] = readtim(FI,Props,idx{T_});
+
 % load data ...
-if DataRead
-    val1=[]; val2=[];
-    switch Props.Name
-        case {'drogue velocity'}
+val1=[];
+val2=[];
+if DataRead && Props.NVal>0
+    switch Props.Val2
+        case 'NTTRK'
+            [nDtRelease,Chk]=vs_let(FI,'trk-const','NTTRK',{1 elidx{1}},'quiet');
+            val1 = repmat(nDt,[1 1 size(x,2)]) - repmat(nDtRelease,[length(T) 1 1]);
+            %val1 = convert_ntimesteps_to_dt(FI, 'trk', val1);
+        case 'XYDRO'
             val1=x;
             val2=y;
             val1=gradient(val1);
             val2=gradient(val2);
+        otherwise
+            [val1,Chk]=vs_let(FI,Props.Group,{idx{T_}},Props.Val2,{isubf elidx{1}},'quiet');
     end
 else
     Props.NVal=0;
 end
-% read time ...
-T=readtim(FI,Props,idx{T_});
 
 %========================= GENERAL CODE =======================================
 
@@ -185,7 +203,7 @@ if DimFlag(ST_)
 end
 
 % reshape if a single timestep is selected ...
-if DimFlag(T_) & isequal(size(idx{T_}),[1 1])
+if DimFlag(T_) && isequal(size(idx{T_}),[1 1])
     sz=size(val1);
     sz=[sz(2:end) 1];
     switch Props.NVal
@@ -204,7 +222,7 @@ if XYRead
     Ans.XUnits='m';
     Ans.YUnits='m';
     Info=vs_disp(FI,Props.Group,Props.Val1);
-    if isfield(Info,'ElmUnits') & isequal(Info.ElmUnits,'[  DEG  ]')
+    if isfield(Info,'ElmUnits') && isequal(Info.ElmUnits,'[  DEG  ]')
         Ans.XUnits='deg';
         Ans.YUnits='deg';
     end
@@ -232,8 +250,10 @@ function Out=infile(FI,domain)
 %======================== SPECIFIC CODE =======================================
 PropNames={'Name'                   'Units'   'Geom' 'Coords' 'DimFlag' 'DataInCell' 'NVal' 'VecType' 'Loc' 'ReqLoc'  'Loc3D' 'Group'          'Val1'     'Val2'    'SubFld' 'MNK'};
 DataProps={'drogue track'              ''     'PNT'  'xy'    [1 6 0 0 0]  0         0     ''       'z'   'z'       ''      'dro-series'     'XYDRO'    ''         []       0
-    'particle track'            ''     'PNT'  'xyz'   [1 6 0 0 0]  0         0     ''       'z'   'z'       ''      'trk-series'     'XYZTRK'   ''         []       0};
-%          'drogue velocity'           ''     'PNT'  'xy'    [1 5 0 0 0]  0         2     ''       'z'   'z'       ''      'dro-series'     'XYDRO'    ''         []       0};
+    'particle track'                   ''     'PNT'  'xyz'   [1 6 0 0 0]  0         0     ''       'z'   'z'       ''      'trk-series'     'XYZTRK'   ''         []       0
+    'particle age'                     ''     'PNT'  'xyz'   [1 6 0 0 0]  0         1     ''       'z'   'z'       ''      'trk-series'     'XYZTRK'   'NTTRK'    []       0
+    'particle mass'                    ''     'PNT'  'xyz'   [1 6 0 0 0]  0         1     ''       'z'   'z'       ''      'trk-series'     'XYZTRK'   'WPART'    1        0};
+%    'drogue velocity'                  ''     'PNT'  'xy'    [1 5 0 0 0]  0         2     ''       'z'   'z'       ''      'dro-series'     'XYDRO'    'XYDRO'    []       0};
 Out=cell2struct(DataProps,PropNames,2);
 
 %======================== SPECIFIC CODE REMOVE ================================
@@ -242,6 +262,19 @@ for i=size(Out,1):-1:1
     if ~isstruct(Info)
         % remove references to non-stored data fields
         Out(i,:)=[];
+        continue
+    end
+    if ~isempty(Out(i).Val2)
+        switch Out(i).Val2
+            case 'NTTRK'
+                Info=vs_disp(FI,'trk-const',Out(i).Val2);
+            otherwise
+                Info=vs_disp(FI,Out(i).Group,Out(i).Val2);
+        end
+        if ~isstruct(Info)
+            % remove references to non-stored data fields
+            Out(i,:)=[];
+        end
     end
 end
 % -----------------------------------------------------------------------------
@@ -274,27 +307,31 @@ end
 
 
 % -----------------------------------------------------------------------------
-function T=readtim(FI,Props,t)
+function [T,nDt] = readtim(FI,Props,t)
 %======================== SPECIFIC CODE =======================================
 DRO='DRO';
 switch vs_type(FI)
     case 'Delft3D-track'
         DRO='TRK';
 end
-dro=lower(DRO);
-[Dt,Chk]=vs_get(FI,[dro '-const'],'DT','quiet');
-[Tunit,Chk]=vs_get(FI,[dro '-const'],'TUNIT','quiet');
+dro=lower(DRO); 
 [Date,Chk]=vs_get(FI,[dro '-const'],'ITDATE','quiet');
 d0=tdelft3d(Date(1),Date(2));
 switch Props.Group,
     case {'dro-series','trk-series'}
-        [T,Chk]=vs_let(FI,[dro '-info-series'],{t},['IT' DRO 'C'],'quiet');
-        T=d0+T*Dt*Tunit/(24*3600);
+        [nDt,Chk]=vs_let(FI,[dro '-info-series'],{t},['IT' DRO 'C'],'quiet');
+        T = d0 + convert_ntimesteps_to_dt(FI,dro,nDt);
     otherwise % ONE FIELD
-        T=d0;
+        nDt = 0;
+        T = d0;
 end
 % -----------------------------------------------------------------------------
 
+
+function T = convert_ntimesteps_to_dt(FI, dro, nDt)
+[Dt,Chk]=vs_get(FI,[dro '-const'],'DT','quiet');
+[Tunit,Chk]=vs_get(FI,[dro '-const'],'TUNIT','quiet');
+T = nDt * Dt * Tunit/(24*3600);
 
 % -----------------------------------------------------------------------------
 function S=readsts(FI,Props,t)
@@ -311,3 +348,19 @@ if t~=0
 end
 S=cellstr(S);
 % -----------------------------------------------------------------------------
+
+function Subf = getsubfields(FI,Props,f)
+if isempty(Props.SubFld)
+    Subf={};
+else
+    Info = vs_disp(FI,'trk-series','WPART');
+    nSubs = Info.SizeDim(1);
+    if nargin<3 || f==0
+        f = 1:nSubs;
+    end
+    n = length(f);
+    Subf = cell(n,1);
+    for i = 1:n
+        Subf{i} = sprintf('Class %i',f(i));
+    end
+end

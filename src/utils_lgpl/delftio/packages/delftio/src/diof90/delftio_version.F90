@@ -25,7 +25,7 @@
 !
 !-------------------------------------------------------------------------------
 
-#INCLUDE "version_definition.h"
+#include "version_definition.h"
 
 module delftio_version_module
     implicit none

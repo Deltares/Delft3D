@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "mormerge_version.h"
+#include "mormerge_version.h"
 
 module mormerge_static_version_info
     implicit none

@@ -1,3 +1,4 @@
+message(STATUS "Intel Redist")
 # Set the source path where the library components are located
 set(library_path "${CMAKE_CURRENT_SOURCE_DIR}/../")
 
@@ -67,3 +68,11 @@ endif()
 # Create the folder structure in vfproj
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${fortran_sources} )
 set_target_properties (${netcdf_library_name} PROPERTIES FOLDER third_party_open)
+
+if (WIN32)
+	message(STATUS "${library_path}/netCDF 4.6.1/bin/")
+	install (DIRECTORY ${library_path}netCDF\ 4.6.1/bin/ DESTINATION lib
+	FILES_MATCHING
+	PATTERN "*.dll"
+	)
+endif()

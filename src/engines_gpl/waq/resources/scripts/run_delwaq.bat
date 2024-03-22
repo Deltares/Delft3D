@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the config file
     rem
-set argfile=
+set argfile= 
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -33,12 +33,12 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
-
+set D3D_HOME=%~dp0..
+set waqdir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share\delft3d
+set libdir=%D3D_HOME%\lib
+set PATH=%sharedir%;%libdir%;%waqdir%
 rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
 rem
 rem process other arguments
@@ -74,15 +74,15 @@ shift
 goto loop
 :continue
 
-set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
 if [%userprocfile%] EQU [none] (
-    set procfile=%D3D_HOME%\%ARCH%\dwaq\resources\proc_def
+    set procfile=%sharedir%\proc_def
     ) else (
        set procfile=%userprocfile%
     )
+
 if [%eco%] EQU [true] (
     if [%userspefile%] EQU [none] (
-       set spefile=%D3D_HOME%\%ARCH%\dwaq\resources\bloom.spe
+       set spefile=%sharedir%\bloom.spe
        ) else (
           set spefile=%userspefile%
        )
@@ -90,8 +90,6 @@ if [%eco%] EQU [true] (
 if [%eco%] EQU [true] (
     set switches=%switches% -eco %spefile%
     )
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set PATH=%waqdir%;%sharedir%
 
     rem
     rem No adaptions needed below
@@ -101,7 +99,7 @@ if [%only2%] EQU [true] goto delwaq2
     rem
     rem Run delwaq 1
     rem
-echo executing: "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches%
+echo executing: "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches% 
 "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches%
 
 if %ERRORLEVEL% neq 0 (
@@ -109,22 +107,22 @@ if %ERRORLEVEL% neq 0 (
     echo Delwaq1 did not run correctly, ending calculation
     goto end
 )
-echo.
+echo. 
 echo Delwaq1 did run without errors.
 echo.
 
 :delwaq2
     rem Run delwaq 2
     rem
-echo executing: "%waqdir%\delwaq2.exe" "%argfile%" %switches%
-"%waqdir%\delwaq2.exe" "%argfile%" %switches%
+echo executing: "%waqdir%\delwaq2.exe" "%argfile%" %switches% 
+"%waqdir%\delwaq2.exe" "%argfile%" %switches% 
 
 if %ERRORLEVEL% neq 0 (
     echo.
     echo Delwaq2 did not run correctly
     goto end
 )
-echo.
+echo. 
 echo Delwaq2 did run without errors.
 
 

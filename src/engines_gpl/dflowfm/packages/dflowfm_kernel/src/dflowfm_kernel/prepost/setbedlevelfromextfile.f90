@@ -44,6 +44,7 @@ subroutine setbedlevelfromextfile()    ! setbedlevels()  ! check presence of old
  use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
  use dfm_error
  use unstruc_netcdf
+ use m_lateral, only : ILATTP_1D, ILATTP_2D, ILATTP_ALL
  
  implicit none
 

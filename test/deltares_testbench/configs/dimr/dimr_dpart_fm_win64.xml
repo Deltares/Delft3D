@@ -116,7 +116,7 @@
                                 <from>teamcity_artifacts/x64</from>
                         </location>
                         <!-- <path>dpart/bin/delpar.exe</path> -->
-                        <path>dpart/scripts/run_dpart.bat</path>
+                        <path>bin/run_dpart.bat</path>
                 </program>
         </programs>
                                 <!--

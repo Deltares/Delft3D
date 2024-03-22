@@ -187,7 +187,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/mormerge</path>
+			<path>bin/run_mormerge.sh</path>
 		</program>
 		<program name="RTC" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -289,5 +289,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_cases.xml"/>
+	<xi:include href="../include/delft3d4_hp_cases_lnx64.xml"/>
 </deltaresTestbench_v3>

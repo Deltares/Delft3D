@@ -922,7 +922,7 @@ subroutine DioStreamDelay
     call DioConfGetStProp(dio_st_Delay, delay)
 
 #if (defined(WIN32))
-    call sleepqq(delay)
+    call sleep(delay)
 #elif (defined(salford32))
     call sleep@(real(delay))
 #else
@@ -955,8 +955,8 @@ function DioStreamSleep(timeWaited) result(retVal)
     timeOut = timeOutJulian*DioDayToSec*1000
 
 #if (defined(WIN32))
-! sleepqq is millisecond sleep
-    call sleepqq(sleepTime)
+! sleep is millisecond sleep
+    call sleep(sleepTime)
     timeWaited = timeWaited + sleepTime                
 #elif (defined(salford32))
     call sleep@(real(sleepTime))

@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "wave_version.h"
+#include "wave_version.h"
 
 module dwaves_static_version_info
     implicit none

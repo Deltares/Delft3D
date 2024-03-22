@@ -383,7 +383,7 @@
       bl_ave(nm) = bl(nm)
    enddo
 
-   do nm = ndx1Db, ndx ! boundary 2d nodes
+   do nm = ndx1Db+1, ndx ! boundary 2d nodes
       bl_ave(nm) = bl(nm)
    enddo
 

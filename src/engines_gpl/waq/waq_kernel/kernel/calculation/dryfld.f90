@@ -28,8 +28,8 @@ module dryfld_mod
 end module dryfld_mod
 
 subroutine dryfld (nosegw, noseg, nolay, volume, noq12, &
-                            area, nocons, coname, cons, surface, &
-                            iknmrk, iknmkv)
+        area, nocons, coname, cons, surface, &
+        iknmrk, iknmkv)
 
 
     !>      Sets feature of dry cells to zero

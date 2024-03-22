@@ -21,76 +21,75 @@
 !!  of stichting deltares remain the property of stichting deltares. all
 !!  rights reserved.
 module m_wq_processes_integrate_fluxes
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine wq_processes_integrate_fluxes ( conc   , amass  , deriv  , volume , dts    , &
-                                                 nosys  , notot  , noseg  , surfac )
+    subroutine wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
+            nosys, notot, noseg, surfac)
 
-!     Deltares Software Centre
+        !     Deltares Software Centre
 
-!>\File
-!>           Sets an explicit time step from DERIV.
+        !>\File
+        !>           Sets an explicit time step from DERIV.
 
-      use timers
+        use timers
 
-      implicit none
+        implicit none
 
-!     Parameters          :
-!     type     kind  function         name                      description
+        !     Parameters          :
+        !     type     kind  function         name                      description
 
-      integer(kind=int_wp), intent(in   ) ::  nosys                    !< number of transported substances
-      integer(kind=int_wp), intent(in   ) ::  notot                    !< total number of substances
-      integer(kind=int_wp), intent(in   ) ::  noseg                    !< number of computational volumes
-      real(kind=real_wp), intent(inout) ::  conc  (notot ,noseg)     !< concentrations per substance per volume
-      real(kind=dp), intent(inout) ::  amass (notot ,noseg)     !< masses per substance per volume
-      real(kind=dp), intent(inout) ::  deriv (noseg, notot)     !< derivatives per substance per volume
-      real(kind=dp), intent(in   ) ::  volume(noseg )           !< volumes of the segments
-      real(kind=dp), intent(in   ) ::  dts                      !< integration time step size
-      real(kind=real_wp), intent(in   ) ::  surfac(noseg)            !< horizontal surface
+        integer(kind = int_wp), intent(in) :: nosys                    !< number of transported substances
+        integer(kind = int_wp), intent(in) :: notot                    !< total number of substances
+        integer(kind = int_wp), intent(in) :: noseg                    !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)     !< concentrations per substance per volume
+        real(kind = dp), intent(inout) :: amass (notot, noseg)     !< masses per substance per volume
+        real(kind = dp), intent(inout) :: deriv (noseg, notot)     !< derivatives per substance per volume
+        real(kind = dp), intent(in) :: volume(noseg)           !< volumes of the segments
+        real(kind = dp), intent(in) :: dts                      !< integration time step size
+        real(kind = real_wp), intent(in) :: surfac(noseg)            !< horizontal surface
 
-      ! local declarations
+        ! local declarations
 
-      integer(kind=int_wp) ::  iseg                     !  segment loop counter
-      integer(kind=int_wp) ::  i                        !  substance loop counter
-      real(kind=dp) ::  v1                       !  segment volume
-      real(kind=dp) ::  s1                       !  segment surface
-      real(kind=dp) ::  a                        !  segment mass
+        integer(kind = int_wp) :: iseg                     !  segment loop counter
+        integer(kind = int_wp) :: i                        !  substance loop counter
+        real(kind = dp) :: v1                       !  segment volume
+        real(kind = dp) :: s1                       !  segment surface
+        real(kind = dp) :: a                        !  segment mass
 
-      integer(kind=int_wp), save ::  ithndl = 0
-      if (timon) call timstrt( "wq_processes_integrate_fluxes", ithndl )
+        integer(kind = int_wp), save :: ithndl = 0
+        if (timon) call timstrt("wq_processes_integrate_fluxes", ithndl)
 
-      ! loop accross the number of computational elements
+        ! loop accross the number of computational elements
 
-      do iseg=1,noseg
-         ! active substances first
-         v1 = volume(iseg)
-         if ( v1.gt.1.0d-25 ) then
-            do i=1,nosys
-               a           = amass(i,iseg) + dts*deriv(iseg,i)*v1
-               amass(i,iseg) = a
-               conc (i,iseg) = a / v1
-               deriv(iseg,i) = 0.0
-            enddo
-         endif
-         ! then the inactive substances
-         s1 = surfac(iseg)
-         if(s1.gt.0.0d0) then
-            do i=nosys+1,notot
-               a             = amass(i,iseg) + dts*deriv(iseg,i)*v1
-               amass(i,iseg) = a
-               conc (i,iseg) = a / s1
-               deriv(iseg,i) = 0.0
-            enddo
-         endif
-      enddo
-      if (timon) call timstop( ithndl )
-      return
-      end
+        do iseg = 1, noseg
+            ! active substances first
+            v1 = volume(iseg)
+            if (v1>1.0d-25) then
+                do i = 1, nosys
+                    a = amass(i, iseg) + dts * deriv(iseg, i) * v1
+                    amass(i, iseg) = a
+                    conc (i, iseg) = a / v1
+                    deriv(iseg, i) = 0.0
+                enddo
+            endif
+            ! then the inactive substances
+            s1 = surfac(iseg)
+            if(s1>0.0d0) then
+                do i = nosys + 1, notot
+                    a = amass(i, iseg) + dts * deriv(iseg, i) * v1
+                    amass(i, iseg) = a
+                    conc (i, iseg) = a / s1
+                    deriv(iseg, i) = 0.0
+                enddo
+            endif
+        enddo
+        if (timon) call timstop(ithndl)
+        return
+    end
 
 end module m_wq_processes_integrate_fluxes

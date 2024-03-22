@@ -4,7 +4,7 @@
 <xs:schema xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xerces="http://xerces.apache.org" targetNamespace="http://schemas.deltares.nl/deltaresTestbench_v3">
     <xs:element name="file" type="T_File"/>
     <xs:element name="from" type="xs:string"/>
-    <xs:element name="path" type="xs:string"/>
+    <xs:element name="path" type="T_Path"/>
     <xs:element name="root" type="xs:string"/>
     <xs:element name="shell" type="T_Shell"/>
     <xs:element name="checks" type="T_Checks"/>
@@ -36,6 +36,13 @@
     <xs:element name="parameters" type="T_Parameters"/>
     <xs:element name="skipline" type="xs:string"/>
     <xs:element name="workingDirectory" type="xs:string"/>
+    <xs:complexType name="T_Path">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="version" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
     <xs:complexType name="T_MaxRunTime">
         <xs:simpleContent>
             <xs:extension base="xs:decimal">
@@ -123,6 +130,7 @@
                     <xs:simpleContent>
                         <xs:extension base="xs:string">
                             <xs:attribute name="local_dir" type="xs:string"/>
+                            <xs:attribute name="version" type="xs:string" use="optional"/>
                         </xs:extension>
                     </xs:simpleContent>
                 </xs:complexType>

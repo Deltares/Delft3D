@@ -8,14 +8,18 @@ title %cd%
     rem
     rem Set the directories
     rem
-set scriptdir=%~dp0
-set dflowfmexedir=%scriptdir%\..\bin
-set libdir=%scriptdir%\..\..\share\bin
-set procdefbloomspedir=%scriptdir%\..\default
-set path=%dflowfmexedir%;%libdir%;%path%
+set D3D_HOME=%~dp0..
+echo D3D_HOME         : %D3D_HOME%
+set exedir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
+
+    rem Run
+
+set path=%exedir%;%libdir%;%path%
 
     rem
     rem Run
     rem
-"%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8  --processlibrary "%procdefbloomspedir%\proc_def.dat" --bloomspecies "%procdefbloomspedir%\bloom.spe"
+"%exedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8  --processlibrary "%sharedir%\proc_def.dat" --bloomspecies "%sharedir%\bloom.spe"
 

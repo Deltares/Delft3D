@@ -42,7 +42,7 @@
       <path>thirdparty\svn\win64\svn.exe</path>
     </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-        <path>dimr/bin/dimr.exe</path>
+        <path>bin/run_dimr.bat</path>
         <shell ref="command_prompt"/>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
@@ -51,7 +51,7 @@
             <from>teamcity_artifacts/x64</from>
         </location>
         <environments>
-            <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../../dflowfm/default</environment>
+            <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
         </environments>
     </program>
   </programs>
@@ -70,7 +70,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>win64</from>
@@ -98,7 +98,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>win64</from>
@@ -120,7 +120,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>win64</from>
@@ -148,7 +148,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>win64</from>

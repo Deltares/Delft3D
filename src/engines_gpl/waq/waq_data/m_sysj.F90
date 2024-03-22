@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_sysj
-!   Pointers in integer array workspace
+    !   Pointers in integer array workspace
 
     integer :: IAPOI   !    pointer to ARRPOI, Pointer in workarray/FMM reference pointer
     integer :: IATYP   !    pointer to ARRTYP, array type see FMM
@@ -95,25 +95,25 @@ module m_sysj
     integer :: IDMPB   !    pointer to DMPBAL, if dump area is included in balance
 
     integer, parameter :: IJSIZE = 71
-    
-    common / sysj / iapoi  , iatyp  , iabyt  , ialen  , iaknd  ,	       &
-                    iadm1  , iadm2  , iadm3  , ixpnt  , idump  ,	       &
-                    ibpnt  , iwast  , idpnw  , idpnt  , ivpnw  ,	       &
-                    ivpnt  , inrha  , inrh2  , inrft  , ibulk  ,	       &
-                    ilp    , igrid  , insva  , iiflu  , iipms  ,	       &
-                    iipss  , iimod  , iiout  , iiopo  , iknmr  ,	       &
-                    iktim  , iqdmp  , isdmp  , ipdmp  , ioraa  ,	       &
-                    nqraa  , iqraa  , inisp  , intyp  , iwork  ,	       &
-                    jtrac  , imat   , iwrk   , isysn  , isysi  ,	       &
-                    ikfu   , ikfv   , ikcs   , ikfs   , ilgra  ,	       &
-                    ikbnd  , ipgrd  , ipndt  , ipvar  , iptyp  ,	       &
-                    ivarr  , ividx  , ivtda  , ivdag  , ivtag  ,	       &
-                    ivagg  , ivset  , ignos  , igref  , igseg  ,	       &
-                    ipror  , iprvpt , iprdon ,	       &
-                    idmpb
-      
+
+    common / sysj / iapoi, iatyp, iabyt, ialen, iaknd, &
+            iadm1, iadm2, iadm3, ixpnt, idump, &
+            ibpnt, iwast, idpnw, idpnt, ivpnw, &
+            ivpnt, inrha, inrh2, inrft, ibulk, &
+            ilp, igrid, insva, iiflu, iipms, &
+            iipss, iimod, iiout, iiopo, iknmr, &
+            iktim, iqdmp, isdmp, ipdmp, ioraa, &
+            nqraa, iqraa, inisp, intyp, iwork, &
+            jtrac, imat, iwrk, isysn, isysi, &
+            ikfu, ikfv, ikcs, ikfs, ilgra, &
+            ikbnd, ipgrd, ipndt, ipvar, iptyp, &
+            ivarr, ividx, ivtda, ivdag, ivtag, &
+            ivagg, ivset, ignos, igref, igseg, &
+            ipror, iprvpt, iprdon, &
+            idmpb
+
     integer, parameter :: nr_jar = ijsize             ! total number of arrays
-    integer            :: ip_jar(nr_jar)                    ! help array to fill the common block / SYSA /
-    equivalence   ( iapoi  , ip_jar(1) )              ! first entry equivalences with first entry common block
+    integer :: ip_jar(nr_jar)                    ! help array to fill the common block / SYSA /
+    equivalence   (iapoi, ip_jar(1))              ! first entry equivalences with first entry common block
 
 end module m_sysj

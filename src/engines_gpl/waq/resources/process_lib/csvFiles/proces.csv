@@ -744,3 +744,8 @@ procid,procco,procfo,procnm
 "RadioSub3 ",123,"DRADIO    ","Radio-active decay of substance Radio3            "
 "AgeCART   ",123,"AGECAR    ","Water age according to CART method                "
 "IM_Flocdyn",123,"FLOCSD    ","Dynamic flocculation model                        "
+"DEBGRP_M  ",123,"DEBGRP    ","Dynamics of DEB Mussel (def: benthic V1-morphs; PR"
+"DEBGRP_Z  ",123,"DEBGRP    ","Dynamics of DEB Zooplankton (def: Active V1morphs;"
+"DEBGRP_G3 ",123,"DEBGRP    ","Dynamics of DEB Grazer3 (def: passive isomorphs; P"
+"DEBGRP_G4 ",123,"DEBGRP    ","Dynamics of DEB Grazer4 (def: passive isomorphs; P"
+"DEBGRP_G5 ",123,"DEBGRP    ","Dynamics of DEB Grazer5 (def: passive isomorphs; P"

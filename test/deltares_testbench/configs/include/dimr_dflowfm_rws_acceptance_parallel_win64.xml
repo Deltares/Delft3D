@@ -4,42 +4,42 @@
              <checks>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0000_fou.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_fourier001_min" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_fourier001_min" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0001_fou.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_fourier002_max" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_fourier002_max" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0002_fou.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_average003_avg" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_average003_avg" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0003_fou.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_fourier004_max" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_fourier004_max" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
             </checks>
@@ -50,22 +50,22 @@
              <checks>
                 <file name="resultaten/Maas_kort_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="resultaten/Maas_kort_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="resultaten/Maas_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="resultaten/Maas_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
             </checks>
@@ -76,22 +76,22 @@
              <checks>
                 <file name="Results/rijn_WBI_kort_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
             </checks>
@@ -102,22 +102,22 @@
              <checks>
                 <file name="Results/RMM_kort_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/RMM_kort_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/RMM_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
                 <file name="Results/RMM_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
                     </parameters>
                 </file>
             </checks>

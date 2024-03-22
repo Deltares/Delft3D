@@ -249,7 +249,8 @@ end function stringtolevel
 !! its own threshold level. Note that the threshold level is only active if the
 !! output channel has been enabled. See the respective input arguments for enabling.
 !!
-subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thresholdLevel, thresholdLevel_stdout, thresholdLevel_log, thresholdLevel_file, reset_counters, thresholdLevel_callback, prefix_logging)
+subroutine SetMessageHandling(write2screen, useLog, lunMessages, callback, thresholdLevel, thresholdLevel_stdout, &
+            thresholdLevel_log, thresholdLevel_file, reset_counters, thresholdLevel_callback, prefix_logging)
    logical, optional, intent(in)       :: write2screen           !< Enable stdout: print messages to stdout.
    logical, optional, intent(in)       :: useLog                 !< Enable logging queue: store messages in buffer.
    integer, optional, intent(in)       :: lunMessages            !< Enable file output: nonzero file pointer whereto messages can be written.

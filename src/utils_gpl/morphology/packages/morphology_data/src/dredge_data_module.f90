@@ -147,7 +147,8 @@ type dredtype
     integer       , dimension(:)  , pointer :: inm             ! (npnt)   index 1 to npnt into nm array
     integer       , dimension(:)  , pointer :: nm              ! (npnt)   local nm index
     integer       , dimension(:)  , pointer :: nmglob          ! (npnt)   global nm index
-    integer                                 :: npnt            ! number of points in dredging area
+    integer                                 :: npnt            ! number of points in dredging area in the domain inside
+    integer                                 :: npnt_halo       ! number of points in dredging area in the domain halo/ghost cells
     !
     logical                                 :: active          ! T: dredge this time step
     logical       , dimension(:)  , pointer :: triggered       ! (npnt)   flag to indicate whether dredging was triggered at nm point
@@ -182,7 +183,8 @@ type dumptype
     integer       , dimension(:)  , pointer :: inm             ! (npnt)   index 1 to npnt into nm array
     integer       , dimension(:)  , pointer :: nm              ! (npnt)   local nm index
     integer       , dimension(:)  , pointer :: nmglob          ! (npnt)   global nm index
-    integer                                 :: npnt            ! number of nm points
+    integer                                 :: npnt            ! number of points in dumping area in the domain inside
+    integer                                 :: npnt_halo       ! number of points in dumping area in the domain halo/ghost cells
     integer                                 :: dumpdistr       ! 1 = dump sediment uniformly (default)
                                                                ! 2 = dump in lowest locations first
                                                                ! 3 = dump in deepest locations first

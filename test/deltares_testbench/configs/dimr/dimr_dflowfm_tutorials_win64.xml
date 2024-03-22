@@ -53,7 +53,7 @@
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <environments>
                 <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
                 <environment name="ARCH" type="raw">win64</environment>

@@ -1777,7 +1777,8 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           endif
        enddo
        !
-       dredge_prop(i)%npnt = npnt
+       dredge_prop(i)%npnt      = npnt
+       dredge_prop(i)%npnt_halo = npnt_halo
                        allocate (dredge_prop(i)%nm(npnt+npnt_halo)    , stat = istat)
        if (istat == 0) allocate (dredge_prop(i)%nmglob(npnt+npnt_halo), stat = istat)
        if (istat == 0) allocate (dredge_prop(i)%inm(npnt)             , stat = istat)
@@ -1893,7 +1894,8 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           enddo
        endif
        !
-       dump_prop(i)%npnt = npnt
+       dump_prop(i)%npnt      = npnt
+       dump_prop(i)%npnt_halo = npnt_halo
                        allocate (dump_prop(i)%nm(npnt+npnt_halo)    , stat = istat)
        if (istat == 0) allocate (dump_prop(i)%nmglob(npnt+npnt_halo), stat = istat)
        if (istat == 0) allocate (dump_prop(i)%inm(npnt)             , stat = istat)

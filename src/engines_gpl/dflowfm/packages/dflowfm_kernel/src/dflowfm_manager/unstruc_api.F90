@@ -267,7 +267,8 @@ end subroutine api_loadmodel
    use network_data
    use unstruc_files
    use waq
-   use m_wind
+   use m_lateral, only : numlatsg
+   use m_wind, only : jawind
    use dfm_error
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
@@ -407,7 +408,9 @@ use MessageHandling, only: FinalizeMessageHandling
 use m_ec_module
 use m_meteo, only: ecInstancePtr
 use m_nearfield
+use m_lateral
     call dealloc_nfarrays()
+    call dealloc_lateraldata()
 
     if (.not.ecFreeInstance(ecInstancePtr)) then
        continue     
