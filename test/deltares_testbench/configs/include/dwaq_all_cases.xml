@@ -9651,6 +9651,18 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f12_c30_mortality_salinity" ref="dwaq_default">
+        <path>e03_waq/f12_protist/c30_mortality_salinity</path>
+        <checks>
+            <file name="dwaq/mortality_protist_salinity.lsp" type="NUMBERTEXT">
+                   <skipline> Deltares, DELWAQ Version</skipline>
+                   <skipline> Execution start:</skipline>
+                   <skipline> Using process definition file</skipline>
+                   <skipline> Version number                :</skipline>
+                   <skipline> Serial                        :</skipline>
+            </file>
+        </checks>
+    </testCase>
 
     <!-- Test cases for CART -->
     <testCase name="e03_f13_c01_cart_f34" ref="dwaq_default">

@@ -5248,6 +5248,16 @@ outppr,outpit,outpnm,outpdo,outpsx
 "IM_Flocdyn","VSedIM2   ",   3,"x",1
 "IM_Flocdyn","VSedIM1   ",   4,"x",0
 "IM_Flocdyn","VSedIM2   ",   5,"x",0
+"ProtMrt_C1","MrtRT_C1  ",   1,"x",1
+"ProtMrt_C2","MrtRT_C2  ",   1,"x",1
+"ProtMrt_D1","MrtRT_D1  ",   1,"x",1
+"ProtMrt_D2","MrtRT_D2  ",   1,"x",1
+"ProtMrt_G1","MrtRT_G1  ",   1,"x",1
+"ProtMrt_G2","MrtRT_G2  ",   1,"x",1
+"ProtMrt_N1","MrtRT_N1  ",   1,"x",1
+"ProtMrt_N2","MrtRT_N2  ",   1,"x",1
+"ProtMrt_Z1","MrtRT_Z1  ",   1,"x",1
+"ProtMrt_Z2","MrtRT_Z2  ",   1,"x",1
 "DEBGRP_M  ","M_TotBiom ",   1,"x",1
 "DEBGRP_M  ","M_Biomass ",   2,"x",1
 "DEBGRP_M  ","M_TotAFDW ",   3,"x",1

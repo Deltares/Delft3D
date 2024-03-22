@@ -17916,6 +17916,56 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "IM_Flocdyn","TotalDepth",  11,"N","x",1
 "IM_Flocdyn","LocalDepth",  12,"N","x",1
 "IM_Flocdyn","Depth     ",  13,"N","x",1
+"ProtMrt_C1","Salinity  ",   1,"N","x",1
+"ProtMrt_C1","b1_C1     ",   2,"N","x",1
+"ProtMrt_C1","b2_C1     ",   3,"N","x",1
+"ProtMrt_C1","m1_C1     ",   4,"N","x",1
+"ProtMrt_C1","m2_C1     ",   5,"N","x",1
+"ProtMrt_C2","Salinity  ",   1,"N","x",1
+"ProtMrt_C2","b1_C2     ",   2,"N","x",1
+"ProtMrt_C2","b2_C2     ",   3,"N","x",1
+"ProtMrt_C2","m1_C2     ",   4,"N","x",1
+"ProtMrt_C2","m2_C2     ",   5,"N","x",1
+"ProtMrt_D1","Salinity  ",   1,"N","x",1
+"ProtMrt_D1","b1_D1     ",   2,"N","x",1
+"ProtMrt_D1","b2_D1     ",   3,"N","x",1
+"ProtMrt_D1","m1_D1     ",   4,"N","x",1
+"ProtMrt_D1","m2_D1     ",   5,"N","x",1
+"ProtMrt_D2","Salinity  ",   1,"N","x",1
+"ProtMrt_D2","b1_D2     ",   2,"N","x",1
+"ProtMrt_D2","b2_D2     ",   3,"N","x",1
+"ProtMrt_D2","m1_D2     ",   4,"N","x",1
+"ProtMrt_D2","m2_D2     ",   5,"N","x",1
+"ProtMrt_G1","Salinity  ",   1,"N","x",1
+"ProtMrt_G1","b1_G1     ",   2,"N","x",1
+"ProtMrt_G1","b2_G1     ",   3,"N","x",1
+"ProtMrt_G1","m1_G1     ",   4,"N","x",1
+"ProtMrt_G1","m2_G1     ",   5,"N","x",1
+"ProtMrt_G2","Salinity  ",   1,"N","x",1
+"ProtMrt_G2","b1_G2     ",   2,"N","x",1
+"ProtMrt_G2","b2_G2     ",   3,"N","x",1
+"ProtMrt_G2","m1_G2     ",   4,"N","x",1
+"ProtMrt_G2","m2_G2     ",   5,"N","x",1
+"ProtMrt_N1","Salinity  ",   1,"N","x",1
+"ProtMrt_N1","b1_N1     ",   2,"N","x",1
+"ProtMrt_N1","b2_N1     ",   3,"N","x",1
+"ProtMrt_N1","m1_N1     ",   4,"N","x",1
+"ProtMrt_N1","m2_N1     ",   5,"N","x",1
+"ProtMrt_N2","Salinity  ",   1,"N","x",1
+"ProtMrt_N2","b1_N2     ",   2,"N","x",1
+"ProtMrt_N2","b2_N2     ",   3,"N","x",1
+"ProtMrt_N2","m1_N2     ",   4,"N","x",1
+"ProtMrt_N2","m2_N2     ",   5,"N","x",1
+"ProtMrt_Z1","Salinity  ",   1,"N","x",1
+"ProtMrt_Z1","b1_Z1     ",   2,"N","x",1
+"ProtMrt_Z1","b2_Z1     ",   3,"N","x",1
+"ProtMrt_Z1","m1_Z1     ",   4,"N","x",1
+"ProtMrt_Z1","m2_Z1     ",   5,"N","x",1
+"ProtMrt_Z2","Salinity  ",   1,"N","x",1
+"ProtMrt_Z2","b1_Z2     ",   2,"N","x",1
+"ProtMrt_Z2","b2_Z2     ",   3,"N","x",1
+"ProtMrt_Z2","m1_Z2     ",   4,"N","x",1
+"ProtMrt_Z2","m2_Z2     ",   5,"N","x",1
 "DEBGRP_M  ","DELT      ",   1,"N","x",1
 "DEBGRP_M  ","Volume    ",   2,"N","x",1
 "DEBGRP_M  ","Temp      ",   3,"Y","x",1

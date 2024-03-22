@@ -206,6 +206,7 @@ module process_registration
     use m_nlalg
     use m_ssedph
     use m_phcarb
+    use m_protist_mortality_salinity, only : protist_mortality_salinity
 
     implicit none
 
@@ -441,7 +442,8 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info('DEBGRP', DEBGRZ_PROTIST) &
+                            process_routine_info('DEBGRP', DEBGRZ_PROTIST), &
+                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
                     ]
 
             max_processes = size(process_routine)
