@@ -21,8 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-program tests_dlwq5a
-    !! tests_dlwq5a.f90 --
+program test_read_boundary_concentrations
+    !! tests_read_boundary_concentrations.f90 --
     !!     Run unit tests for routines in Delft3D-WAQ
 
     use m_waq_precision
@@ -32,7 +32,7 @@ program tests_dlwq5a
     use ftnunit, only : runtests_init, runtests, runtests_final, assert_true, assert_equal, assert_files_comparable, &
             test, prepare_tests, show_result
     use m_string_utils, only : remove_duplicates
-    use m_dlwq5a, only : dlwq5a
+    use boundary_conditions, only : read_boundary_concentrations
     use m_error_status
 
     implicit none
@@ -45,7 +45,7 @@ program tests_dlwq5a
         character(20), dimension(:), allocatable :: bc_ids
         character(20), dimension(:), allocatable :: bc_types
         character(20), dimension(:), allocatable :: sname
-        real(kind = dp) :: drar(10) !< not used but required as argument of dlwq5a
+        real(kind = dp) :: drar(10) !< not used but required as argument of read_boundary_concentrations
         character(200) :: car(20)
         integer(kind = int_wp) :: iar(20)
         real(kind = real_wp) :: rar(20)
@@ -205,7 +205,7 @@ contains
     subroutine parse_bc(fixture)
         type(bc_fixture), intent(inout) :: fixture
 
-        call dlwq5a(fixture%lun, fixture%lchar, 14, fixture%iwidth, fixture%icmax, &
+        call read_boundary_concentrations(fixture%lun, fixture%lchar, 14, fixture%iwidth, fixture%icmax, &
                 fixture%car, fixture%iimax, fixture%iar, fixture%irmax, fixture%rar, &
                 fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%nobtyp), fixture%nobnd, fixture%nosys, &
                 fixture%nobtyp, fixture%drar, fixture%is_date_format, fixture%is_yyddhh_format, fixture%output_verbose_level, &
@@ -331,5 +331,5 @@ contains
         call teardown_case(fx)
     end subroutine test_dlwq5a_1_item_2_conc_1_tseries
 
-end program tests_dlwq5a
+end program test_read_boundary_concentrations
 
