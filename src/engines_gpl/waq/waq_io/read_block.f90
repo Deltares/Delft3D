@@ -859,7 +859,7 @@ contains
             waq_item, data_item, name_item, type_item, noits, &
             ierr, status)
 
-        ! item name retrieval, new style of DLWQ5B using t_dlwq_item structures instead of workspace
+        ! item name retrieval, new style of parse_boundary_condition_data using t_dlwq_item structures instead of workspace
 
         use dlwq_hyd_data
         use rd_token

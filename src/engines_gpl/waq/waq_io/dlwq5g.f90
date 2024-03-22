@@ -30,7 +30,7 @@ module m_dlwq5g
 contains
 
 
-    subroutine dlwq5g (lunut, i_array, count_items_assign, count_items_comp_rule, count_subs_assign, &
+    subroutine dlwq5g(lunut, i_array, count_items_assign, count_items_comp_rule, count_subs_assign, &
             count_subs_comp_rule, index_first, i_max, names_to_check, start_in_line, &
             npos, ilun, lch, lstack, cchar, &
             chulp, nocol, is_date_format, is_yyddhh_format, itfact, &

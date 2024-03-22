@@ -24,7 +24,7 @@ module inputs_block_5
     use m_waq_precision
     use m_string_utils
     use simulation_input_options, only : read_constants_time_variables
-    use m_dlwq5a
+    use boundary_conditions, only : read_boundary_concentrations
     use m_error_status
 
     implicit none
@@ -34,11 +34,11 @@ module inputs_block_5
 
 contains
 
-    subroutine read_block_5_boundary_conditions(lun, lchar, filtype, car, iar, &
-            rar, nrftot, nrharm, nobnd, nosys, &
-            notot, nobtyp, irmax, iimax, is_date_format, &
+    subroutine read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, iar, &
+            real_array, nrftot, nrharm, nobnd, nosys, &
+            notot, nobtyp, irmax, max_int_size, is_date_format, &
             iwidth, intsrt, is_yyddhh_format, sname, &
-            icmax, output_verbose_level, status)
+            max_char_size, output_verbose_level, status)
         !! Reads all inputs associated with open boundaries
         !! This routine reads:
         !!      - the boundary ID's (and names and types for modern files)
@@ -64,22 +64,22 @@ contains
         integer(kind = int_wp), intent(inout) :: lun(:)             !< array with unit numbers
         character(*), intent(inout) :: lchar(:)           !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
-        character(*), intent(inout) :: car(:)             !< character workspace
+        character(*), intent(inout) :: char_arr(:)             !< character workspace
         integer(kind = int_wp), intent(inout) :: iar(:)             !< integer workspace ( dump locations at entrance )
-        real(kind = real_wp), intent(inout) :: rar(irmax)         !< real    workspace
+        real(kind = real_wp), intent(inout) :: real_array(irmax)         !< real    workspace
         integer(kind = int_wp), intent(inout) :: nrftot(*)          !< number of function items
         integer(kind = int_wp), intent(inout) :: nrharm(*)          !< number of harmonic items
         integer(kind = int_wp), intent(inout) :: nobnd              !< number of open model boundaries
         integer(kind = int_wp), intent(in) :: notot              !< total number of substances
         integer(kind = int_wp), intent(inout) :: nosys              !< number of transported substances
         integer(kind = int_wp), intent(out) :: nobtyp             !< number of open model boundary types
-        integer(kind = int_wp), intent(in) :: iimax              !< size of the integer workspace
+        integer(kind = int_wp), intent(in) :: max_int_size              !< size of the integer workspace
         logical, intent(in) :: is_date_format             !< 'date'-format 1st timescale
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         integer(kind = int_wp), intent(in) :: intsrt             !< integration option
         logical, intent(in) :: is_yyddhh_format             !< 'date'-format (f;ddmmhhss,t;yydddhh)
         character(20), intent(inout) :: sname(:)           !< array with substance names
-        integer(kind = int_wp), intent(in) :: icmax              !< size of the character workspace
+        integer(kind = int_wp), intent(in) :: max_char_size              !< size of the character workspace
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
 
         integer(kind = int_wp) :: idef
@@ -289,8 +289,8 @@ contains
 
         ! time lags constant without defaults
         70 write (lunut, 2130)
-        if (iimax < nobnd) then
-            write (lunut, 2140) nobnd, iimax, nobnd - iimax
+        if (max_int_size < nobnd) then
+            write (lunut, 2140) nobnd, max_int_size, nobnd - max_int_size
             do k = 1, nobnd
                 itype = 2
                 call rdtok1 (lunut, ilun, lch, lstack, cchar, &
@@ -344,7 +344,7 @@ contains
             call status%increase_error_count()
         endif
         ! fill the array with the default
-        do i = 1, min(iimax, nobnd)
+        do i = 1, min(max_int_size, nobnd)
             iar(i) = idef
         end do
         ! nr of overridings
@@ -362,7 +362,7 @@ contains
         else
             write (lunut, 2220) idef, nover
         endif
-        mxover = iimax - nobnd
+        mxover = max_int_size - nobnd
         ! overridings
         do k = 1, min(nover, mxover)
             itype = 2
@@ -391,7 +391,7 @@ contains
             if (ierr2 > 0) goto 170
         end do
         if (nover > mxover) then
-            write (lunut, 2200) nobnd, nover, iimax, nobnd + nover - iimax
+            write (lunut, 2200) nobnd, nover, max_int_size, nobnd + nover - max_int_size
             call status%increase_error_count()
             goto 160
         endif
@@ -423,8 +423,8 @@ contains
         k = nobnd + 1
         l = nobnd + nobtyp + 1
         allocate(drar(irmax))             ! this array is 100 mb lp
-        call dlwq5a (lun, lchar, 14, iwidth, icmax, &
-                car, iimax, iar, irmax, rar, &
+        call read_boundary_concentrations (lun, lchar, 14, iwidth, max_char_size, &
+                char_arr, max_int_size, iar, irmax, real_array, &
                 sname, bndid, bndtype(1:nobtyp), nobnd, nosys, &
                 nobtyp, drar, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)

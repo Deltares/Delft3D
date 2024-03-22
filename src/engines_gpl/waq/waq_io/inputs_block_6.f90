@@ -24,7 +24,7 @@ module inputs_block_6
     use m_waq_precision
     use m_string_utils
     use simulation_input_options, only : process_simulation_input_options
-    use m_dlwq5a
+    use boundary_conditions, only : read_boundary_concentrations
     use m_error_status
 
     implicit none
@@ -34,8 +34,8 @@ module inputs_block_6
 
 contains
 
-    subroutine read_block_6_waste_loads_withdrawals (lun, lchar, filtype, icmax, car, &
-            iimax, iar, irmax, rar, notot, &
+    subroutine read_block_6_waste_loads_withdrawals (lun, lchar, filtype, max_char_size, char_arr, &
+            max_int_size, iar, irmax, real_array, notot, &
             noseg, sname, nowst, nowtyp, nrftot, &
             nrharm, is_date_format, is_yyddhh_format, iwidth, &
             output_verbose_level, chkpar, status)
@@ -49,7 +49,7 @@ contains
         !!                      gettoken : tokenized data input
         !!                      srstop   : stop after error with return code
         !!                      zoek     : search for presence of a string
-        !!                      dlwq5a   : modern context sensitive input data processing
+        !!                      read_boundary_concentrations: modern context sensitive input data processing
         !!                      check    : check whether end of data block is encountred correctly
         !! Logical units : lun(27) = unit DELWAQ input file
         !!                 lun(29) = unit formatted output file
@@ -66,12 +66,12 @@ contains
         integer(kind = int_wp), intent(inout) :: lun    (:)      !< array with unit numbers
         character(*), intent(inout) :: lchar  (:)     !< Filenames for the items
         integer(kind = int_wp), intent(inout) :: filtype(*)      !< type of binary files
-        integer(kind = int_wp), intent(in) :: icmax           !< size of the character workspace
-        character(20), intent(inout) :: car   (icmax)  !< local character workspace
-        integer(kind = int_wp), intent(in) :: iimax           !< size of the integer   workspace
-        integer(kind = int_wp), intent(inout) :: iar   (iimax)   !< local integer   workspace
+        integer(kind = int_wp), intent(in) :: max_char_size           !< size of the character workspace
+        character(20), intent(inout) :: char_arr   (max_char_size)  !< local character workspace
+        integer(kind = int_wp), intent(in) :: max_int_size           !< size of the integer   workspace
+        integer(kind = int_wp), intent(inout) :: iar   (max_int_size)   !< local integer   workspace
         integer(kind = int_wp), intent(in) :: irmax           !< size of the real      workspace
-        real(kind = real_wp), intent(inout) :: rar   (irmax)   !< local real      workspace
+        real(kind = real_wp), intent(inout) :: real_array   (irmax)   !< local real      workspace
         integer(kind = int_wp), intent(in) :: notot           !< total number of substances
         integer(kind = int_wp), intent(in) :: noseg           !< number of computational volumes
         character(20), intent(inout) :: sname (notot)  !< IDs of the substances
@@ -315,8 +315,8 @@ contains
 
         allocate(drar(irmax))             ! this array is 100 mb lp
         idummy = notot + 1
-        call dlwq5a (lun, lchar, 15, iwidth, icmax, &
-                car, iimax, iar, irmax, rar, &
+        call read_boundary_concentrations (lun, lchar, 15, iwidth, max_char_size, &
+                char_arr, max_int_size, iar, irmax, real_array, &
                 sname, wstid, wsttype, nowst, idummy, &
                 nowtyp, drar, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)

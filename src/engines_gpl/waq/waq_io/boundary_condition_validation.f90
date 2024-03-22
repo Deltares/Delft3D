@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_dlwq5b
+module boundary_condition_validation
 
     use timers, only : timon, timstrt, timstop
     use m_waq_precision
@@ -582,4 +582,4 @@ contains
     end subroutine finish
 
 
-end module m_dlwq5b
+end module boundary_condition_validation

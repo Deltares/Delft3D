@@ -33,6 +33,9 @@ module boundary_conditions
 
     implicit none
 
+    private
+    public :: read_boundary_concentrations
+
 contains
 
     subroutine read_boundary_concentrations(logical_unit, filenames, file_i, iwidth, max_char_size, &
@@ -71,7 +74,7 @@ contains
         ! logical_unit(14) = unit intermediate file (boundaries)
         ! logical_unit(15) = unit intermediate file (wastes)
 
-        use m_dlwq5b, only : dlwq5b
+        use boundary_condition_validation, only : parse_boundary_condition_data
         use error_handling, only : check_error
         use m_open_waq_files
         use rd_token
@@ -290,7 +293,7 @@ contains
             chkflg = 1
             icm = max_char_size - ioff
             iim = max_int_size - ioff
-            call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+            call parse_boundary_condition_data (lunut, iposr, npos, cchar, char_arr(ioff:), &
                     int_workspace(ioff:), icm, iim, bc_waste_ids, bc_waste_types, &
                     num_bc_waste, num_bc_waste_types, count_items_in_use_rule, noits, chkflg, &
                     calit, ilun, lch, lstack, &
@@ -367,14 +370,14 @@ contains
             icm = max_char_size - ioff
             iim = max_int_size - ioff
             if (ident <= 1) then ! ITEM, IDENTICALITEM
-                call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                call parse_boundary_condition_data (lunut, iposr, npos, cchar, char_arr(ioff:), &
                         int_workspace(ioff:), icm, iim, bc_waste_ids, bc_waste_types, &
                         num_bc_waste, num_bc_waste_types, count_items_in_use_rule, noits, chkflg, &
                         calit, ilun, lch, lstack, itype, &
                         real_workspace, nconst, itmnr, chulp, output_verbose_level, &
                         ierr2, status)
             else ! DATA_ITEM
-                call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+                call parse_boundary_condition_data (lunut, iposr, npos, cchar, char_arr(ioff:), &
                         int_workspace(ioff:), icm, iim, dlwq_data_items%name(1:ndata_items), &
                         dlwq_data_items%name(1:ndata_items), &
                         ndata_items, ndata_items, count_items_in_use_rule, noits, chkflg, &
@@ -388,7 +391,7 @@ contains
                 end if
                 idata_item = int_workspace(ioff)
                 if (idata_item > 0) then
-                    ! Replace result of dlwq5b with usedata_item list
+                    ! Replace result of parse_boundary_condition_data with usedata_item list
                     dlwq_data_items%used(idata_item) = .true.
                     !! for how many items is applicable this usedata_item?
                     count_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
@@ -459,7 +462,7 @@ contains
             chkflg = 1
             icm = max_char_size - ioff
             iim = max_int_size - ioff
-            call dlwq5b (lunut, iposr, npos, cchar, char_arr(ioff:), &
+            call parse_boundary_condition_data (lunut, iposr, npos, cchar, char_arr(ioff:), &
                     int_workspace(ioff:), icm, iim, substances_names, bc_waste_types, &
                     substances_count, 0, nodim, nodis, chkflg, &
                     'CONCENTR. ', ilun, lch, lstack, &
@@ -699,7 +702,7 @@ contains
         1360 format (' ERROR: no (valid) DATA record available !')
         1370 format (' WARNING: all DATA from this block is ignored !')
 
-    end subroutine dlwq5a
+    end subroutine read_boundary_concentrations
     !
     !     Additional documentation on the memory lay out
     !
