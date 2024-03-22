@@ -1965,10 +1965,10 @@ contains
             integer(kind = int_wp) :: iosfun           ! Segment functions
             integer(kind = int_wp) :: ioconc           ! Concentrations
 
-            integer(kind = int_wp), parameter :: icmax = 2000
-            integer(kind = int_wp), parameter :: iimax = 2000
-            character(len = 20), dimension(icmax) :: car
-            integer(kind = int_wp), dimension(iimax) :: iar
+            integer(kind = int_wp), parameter :: max_char_size = 2000
+            integer(kind = int_wp), parameter :: max_int_size = 2000
+            character(len = 20), dimension(max_char_size) :: char_arr
+            integer(kind = int_wp), dimension(max_int_size) :: iar
             integer(kind = int_wp) :: iwidth
             integer(kind = int_wp) :: output_verbose_level  ! Dummy
             real :: version = 4.9
@@ -2004,8 +2004,8 @@ contains
             ilun(1) = 9
             lch(1) = trim(name) // '.inp'
 
-            call read_block_9(lun, lchar, filtype, car, iar, icmax, &
-                    iimax, iwidth, &
+            call read_block_9(lun, lchar, filtype, char_arr, iar, max_char_size, &
+                    max_int_size, iwidth, &
                     output_verbose_level, ioutps, outputs, status)
 
             close (9) ! TODO: status = 'delete'
