@@ -24,7 +24,6 @@ module m_dlwq5a
     use m_waq_precision
     use m_string_utils
     use waq_timers, only : read_time_delay
-    use m_dlwqj3
     use m_dlwq5g
     use matrix_utils, only : assign_matrix
     use m_dlwq5d
@@ -34,7 +33,6 @@ module m_dlwq5a
     implicit none
 
 contains
-
 
     subroutine dlwq5a (lun, lchar, iu, iwidth, icmax, &
             car, iimax, iar, irmax, rar, &
@@ -83,8 +81,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_string_utils, only : index_in_array
-
-        implicit none
 
         integer(kind = int_wp), intent(inout) :: lun  (:)      !< array with unit numbers
         integer(kind = int_wp), intent(inout) :: iar  (iimax)  !< integer workspace
@@ -536,7 +532,7 @@ contains
                 nts = nconst + 1
                 ntc = nti
                 icm = icmax - ntc
-                call dlwqj3 (lunwr2, lunut, iwidth, nobrk, iar, & ! writes data_item to wrk and/or lst files
+                call write_data_blocks (lunwr2, lunut, iwidth, nobrk, iar, & ! writes data_item to wrk and/or lst files
                         rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
                         scale, .true., binfil, time_function_type, ipro, &
                         itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
@@ -591,7 +587,7 @@ contains
                     idmnr, iorder, rar, time_function_type, rar(ntr:), &
                     nodim, nobrk, amiss, iar(nti:), rar(nr2:))
             strng3 = 'breakpoint'
-            call dlwqj3 (lunwr2, lunut, iwidth, nobrk, iar, &
+            call write_data_blocks (lunwr2, lunut, iwidth, nobrk, iar, &
                     rar(nts:), rar(nr2:), itmnr, idmnr, iorder, &
                     scale, ods, binfil, time_function_type, ipro, &
                     itfacw, dtflg1, dtflg3, file_size_1, file_size_2, &
@@ -785,5 +781,249 @@ contains
     !
     !
     !
+
+    subroutine write_data_blocks(binary_work_file, ascii_output_file_unit, output_file_width, num_blocks, &
+            integer_array, real_array, values_arr, num_items, num_dims, iorder, &
+            has_scale_factors, convert_breakpoint, info_from_binary_file, time_function_type, memory_type, &
+            time_factor, is_date_format, is_yyddhh_format, cum_items, cum_dims, &
+            flow_ignore_string, item_string, value_conc_string, breakpoint_harm_string, output_file_option)
+
+        !! Prints and writes blocks of data
+
+        use m_dlwqj2
+        use date_time_utils, only : convert_time_format
+        use timers       !   performance timers
+
+        logical :: has_scale_factors, info_from_binary_file, defaults_on
+        logical, intent(in) :: convert_breakpoint   !! T = Breakpoints are converted
+        logical, intent(in) :: is_date_format       !! 'date'-format 1st time scale
+        logical, intent(in) :: is_yyddhh_format     !! 'date'-format (F;ddmmhhss,T;yydddhh)
+        character(len = *), intent(in) :: item_string, value_conc_string, breakpoint_harm_string, flow_ignore_string(:)
+        integer(kind = int_wp), intent(in) :: num_dims, num_items        !! number of subs, items to write
+        integer(kind = int_wp), intent(in) :: iorder                 !! 1 = groups of subs per item
+        integer(kind = int_wp), intent(in) :: ascii_output_file_unit !!Unit of ASCII output file(formatted output file)
+        integer(kind = int_wp), intent(in) :: binary_work_file          !! Unit of binary work file
+        integer(kind = int_wp), intent(inout) :: integer_array(:)
+        integer(kind = int_wp), intent(in) :: time_function_type !!1 is block, 2 is linear, 3 is harmonics, 4 is fourier
+        integer(kind = int_wp), intent(in) :: memory_type                           !! 0 is non permanent memory
+        integer(kind = int_wp), intent(inout) :: cum_items, cum_dims    !! cumulative integer/real space count
+        integer(kind = int_wp), intent(in) :: num_blocks                !! number of blocks to write
+        integer(kind = int_wp) :: output_file_option
+        integer(kind = int_wp) :: output_file_width         !! Width of the output file
+        integer(kind = int_wp) :: time_factor               !! factor between clocks
+        real(kind = real_wp), intent(inout) :: real_array(:), values_arr(:)
+
+        integer(kind = int_wp) :: itel2, i1dum, i2dum, nodi2
+        integer(kind = int_wp) :: k, ie, ie2, i1, i2
+        integer(kind = int_wp) :: itels, itel, i3
+        integer(kind = int_wp) :: ioffb, ioffi, ioffs, iskip, iskp2, notot, iss
+        integer(kind = int_wp) :: ithndl = 0
+        if (timon) call timstrt("write_data_blocks", ithndl)
+
+        ! write headers
+        defaults_on = .false.
+        if (num_dims < 0) defaults_on = .true.
+        nodi2 = num_dims
+        if (num_dims <= 0) nodi2 = 1
+        if (iorder == 1) then
+            write (ascii_output_file_unit, 1000) num_items, nodi2, value_conc_string
+            write (binary_work_file) iorder, &
+                    num_items, (integer_array(k), k = 1, num_items), &
+                    num_dims, (integer_array(k), k = num_items + 1, num_items + num_dims), &
+                    time_function_type, memory_type
+        elseif (iorder == 2) then
+            write (ascii_output_file_unit, 1000) nodi2, num_items, item_string
+            if (binary_work_file > 0) &
+                    write (binary_work_file) iorder, &
+                            num_dims, (integer_array(k), k = 1, num_dims), &
+                            num_items, (integer_array(k), k = num_dims + 1, num_dims + num_items), &
+                            time_function_type, memory_type
+        endif
+
+        cum_items = cum_items + num_items + max(0, num_dims) + 5
+
+        ! just declare array space for binary files and return
+        if (info_from_binary_file) then
+            write (ascii_output_file_unit, 1130) memory_type
+            cum_items = cum_items + 3
+            cum_dims = cum_dims + max(1, num_dims) * max(1, num_items) * 3
+            goto 70
+        endif
+
+        if (num_blocks == 0) then
+            has_scale_factors = .false.
+            goto 70
+        endif
+        ioffb = num_items + nodi2 + 1
+        ioffi = 0
+        ioffs = num_items
+        iskip = 1
+        iskp2 = nodi2
+        notot = num_items * nodi2
+        if (time_function_type == 3 .or. time_function_type == 4) notot = notot + 1
+        if (iorder == 2) then
+            ioffi = max(num_dims, 0)
+            ioffs = 0
+            iskip = num_items
+            iskp2 = 1
+        endif
+
+        ! scale factors
+        iss = 1
+        if (has_scale_factors) then
+            has_scale_factors = .false.
+            iss = 1
+            if (output_file_option >= 4) then
+                write (ascii_output_file_unit, 1010)
+                do i2 = 1, num_dims, output_file_width
+                    ie = min(i2 + output_file_width - 1, num_dims)
+                    write (ascii_output_file_unit, 1020) (integer_array(ioffs + k), k = i2, ie)
+                    write (ascii_output_file_unit, 1025) (flow_or_ignore(flow_ignore_string, integer_array(ioffs + k)), k = i2, ie)
+                    write (ascii_output_file_unit, 1030) (real_array(k), k = i2, ie)
+                end do
+            endif
+            do i1 = 1, num_blocks
+                do i2 = 0, notot - 1
+                    if (iorder == 1) itel2 = mod(i2, num_dims) + 1
+                    if (iorder == 2) itel2 = i2 / num_dims + 1
+                    values_arr(iss + i2) = values_arr(iss + i2) * real_array(itel2)
+                end do
+                iss = iss + notot
+            end do
+        endif
+
+        ! convert breakpoints
+        if (num_blocks > 1) then
+            if (output_file_option >= 4) write (ascii_output_file_unit, 1040) breakpoint_harm_string, num_blocks
+            if (.not. convert_breakpoint) &
+                    call convert_time_format(integer_array(ioffb:), num_blocks, time_factor, is_date_format, is_yyddhh_format)
+            if (defaults_on .and. output_file_option >= 4) write (ascii_output_file_unit, 1050)
+        else
+            if (defaults_on) then
+                if (output_file_option >= 4) write (ascii_output_file_unit, 1050)
+            else
+                if (output_file_option >= 4) write (ascii_output_file_unit, 1060)
+            endif
+        endif
+
+        ! write binary file
+        if (binary_work_file > 0) then
+            i1dum = 0
+            i2dum = 0
+            ! write table in binary format to wrk file.
+            call write_breakpoint_data_blocks(binary_work_file, num_blocks, notot, 1, integer_array(ioffb:), &
+                    values_arr, i1dum, i2dum)
+            cum_items = cum_items + i1dum
+            cum_dims = cum_dims + i2dum
+        endif
+
+        ! write formatted output
+        if (output_file_option >= 4) then
+            itels = 0
+            do i1 = 1, num_blocks
+                if (num_blocks > 1) then
+                    if (time_function_type == 1) &
+                            write (ascii_output_file_unit, 1070) breakpoint_harm_string, i1, integer_array(ioffb + i1 - 1)
+                    if (time_function_type == 2) &
+                            write (ascii_output_file_unit, 1070) breakpoint_harm_string, i1, integer_array(ioffb + i1 - 1)
+                    if (time_function_type == 3) then
+                        itels = itels + 1
+                        write (ascii_output_file_unit, 1080) i1, integer_array(ioffb + i1 - 1), values_arr(itels)
+                    endif
+                    if (time_function_type == 4) then
+                        itels = itels + 1
+                        write (ascii_output_file_unit, 1090) i1, integer_array(ioffb + i1 - 1), values_arr(itels)
+                    endif
+                endif
+                do i2 = 1, nodi2, output_file_width
+                    ie2 = min(i2 + output_file_width - 1, nodi2)
+                    if (num_dims > 0) then
+                        write (ascii_output_file_unit, 1100) value_conc_string, (integer_array(ioffs + k), k = i2, ie2)
+                        write (ascii_output_file_unit, 1150) item_string, &
+                                (flow_or_ignore(flow_ignore_string, integer_array(ioffs + k)), k = i2, ie2)
+                    endif
+                    itel = itels
+                    do i3 = 1, num_items
+                        write (ascii_output_file_unit, 1120)  abs(integer_array(ioffi + i3)), &
+                                (values_arr(itel + k), k = (i2 - 1) * iskip + 1, (ie2 - 1) * iskip + 1, iskip)
+                        itel = itel + iskp2
+                    end do
+                end do
+                itels = itels + nodi2 * num_items
+            end do
+        endif
+
+        70 write (ascii_output_file_unit, 1140)
+        if (timon) call timstop(ithndl)
+        return
+
+        1000 format (/' DATA grouped in', I10, ' blocks of', I10, ' ', A)
+        1010 format (' Scale factors for this block of data: ')
+        1020 format (' Scale    :', I6, 9I12)
+        1025 format (' Substance:', 10('  ', A10))
+        1030 format (' values   :', 10E12.4)
+        1040 format (/' Number of ', A, 's with full data:', I5)
+        1050 format (' Default values in this block.')
+        1060 format (' Constant values in this block.')
+        1070 format (' ', A, ' ', I7, ' :', I10)
+        1080 format (' Harmonic: ', I3, ' :', I10, ' Phase: ', 10E12.4)
+        1090 format (' Fourier : ', I3, ' :', I10, ' Phase: ', 10E12.4)
+        1100 format (' ', A, I20, 9I12)  ! ( ' ',A,I6,9I12)
+        1150 format (' ', A, ' ', 10('  ', A10))
+        1120 format (I10, 2X, 1P, 10E12.4)
+        1130 format (' Info comes at runtime from binary file at unit: ', I3)
+        1140 format(/' ====> input item completed <==== '//)
+
+    end subroutine write_data_blocks
+
+    character*20 function flow_or_ignore(string, i)
+        integer(kind = int_wp) :: i
+        character(len = *) :: string(*)
+        if (i > 0) then
+            flow_or_ignore = string(i)
+        elseif (i == 0) then
+            flow_or_ignore = 'FLOW'
+        else
+            flow_or_ignore = 'ignored'
+        endif
+    end function flow_or_ignore
+
+    subroutine write_breakpoint_data_blocks(binary_work_file, num_items, array_size, num_integers, integer_array, &
+            real_array, int_count, real_count)
+
+        !! Writes blocks of breakpoint data
+        use timers       !   performance timers
+
+        integer(kind = int_wp), intent(in) :: num_integers                  !! nr of integers per breakpoint
+        integer(kind = int_wp), intent(in) :: num_items                     !! nr of breakpoints to write
+        integer(kind = int_wp), intent(in) :: array_size
+        integer(kind = int_wp), intent(in) :: binary_work_file                 !! unit number output work file
+        integer(kind = int_wp), intent(inout) :: int_count, real_count
+        integer(kind = int_wp), intent(in) :: integer_array(:)                 !! breakpoint timers
+        real(kind = real_wp), intent(in) :: real_array(:)       !! matrix storage
+
+        integer(kind = int_wp) :: itel, jtel, k, i, ithndl = 0
+        if (timon) call timstrt("write_breakpoint_data_blocks", ithndl)
+
+        ! write nr of breakpoints first
+        write (binary_work_file) num_items
+
+        ! initialize counters for the loop
+        itel = 0
+        jtel = 0
+        do i = 1, num_items
+            write (binary_work_file) (integer_array(itel + k), k = 1, num_integers), &
+                    (real_array(jtel + k), k = 1, array_size)
+            itel = itel + num_integers
+            jtel = jtel + array_size
+        end do
+
+        ! update the space count
+        int_count = int_count + num_items * num_integers + 1
+        real_count = real_count + num_items * array_size
+
+        if (timon) call timstop(ithndl)
+
+    end subroutine write_breakpoint_data_blocks
 
 end module m_dlwq5a

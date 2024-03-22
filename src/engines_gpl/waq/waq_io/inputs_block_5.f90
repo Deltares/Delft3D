@@ -102,7 +102,7 @@ contains
         integer(kind = int_wp) :: volume
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: k, i, ierr_alloc
-        integer(kind = int_wp) :: ifact, lunwr, ierr2, iwar2, ifound, ityp2
+        integer(kind = int_wp) :: ifact, binary_work_file, ierr2, iwar2, ifound, ityp2
         integer(kind = int_wp) :: iaropt, nover, mxover, ibnd, it, nosubs
         integer(kind = int_wp) :: ierrh, ihulp, rhulp, ifound2, l, itype
         if (timon) call timstrt("read_block_5_boundary_conditions", ithndl)
@@ -112,7 +112,7 @@ contains
         volume = 0
         ifact = 1
         lunut = lun(29)
-        lunwr = lun(2)
+        binary_work_file = lun(2)
         iposr = 0
         ierr2 = 0
         iwar2 = 0
@@ -228,7 +228,7 @@ contains
             endif
 
             ! write id and name to system file
-            write (lunwr)  bndid(i), bndname(i)
+            write (binary_work_file)  bndid(i), bndname(i)
 
         end do
 
@@ -243,13 +243,13 @@ contains
             end do
             write (lunut, *)
         endif
-        write (lunwr)  (bndtype(i), i = 1, nobtyp)
-        write (lunwr)  (ibndtype(i), i = 1, nobnd)
+        write (binary_work_file)  (bndtype(i), i = 1, nobtyp)
+        write (binary_work_file)  (ibndtype(i), i = 1, nobnd)
         deallocate(bndname, bndid_long, bndtype_long, ibndtype)
 
         ! dummy time lags
         if (nosys == 0) then
-            write (lunwr) (0, i = 1, nobnd)
+            write (binary_work_file) (0, i = 1, nobnd)
             write (lunut, 2090)
             goto 170
         endif
@@ -284,7 +284,7 @@ contains
 
         ! no time lags
         60 write (lunut, 2120)
-        write (lunwr) (0, i = 1, nobnd)
+        write (binary_work_file) (0, i = 1, nobnd)
         goto 160
 
         ! time lags constant without defaults
@@ -329,7 +329,7 @@ contains
                 call status%increase_error_count()
             endif
         end do
-        write (lunwr) (iar(k), k = 1, nobnd)
+        write (binary_work_file) (iar(k), k = 1, nobnd)
         goto 160
 
         ! time lags constant with defaults
@@ -415,7 +415,7 @@ contains
                 endif
             endif
         end do
-        write (lunwr) (iar(k), k = 1, nobnd)
+        write (binary_work_file) (iar(k), k = 1, nobnd)
 
         ! read boundary concentrations
         ! this if block stands for the new input processing

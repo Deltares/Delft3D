@@ -104,7 +104,7 @@ contains
         !              3 = rain: flow >= 0 use concentration, < 0 use 0.0
         !              4 = well: flow >= 0 use concentration, < 0 use model-C
         real(kind = dp), allocatable :: drar        (:)  !  double precission workspace (very large !lp)
-        integer(kind = int_wp) :: lunwr            !  binary unit for wasteloads
+        integer(kind = int_wp) :: binary_work_file            !  binary unit for wasteloads
         integer(kind = int_wp) :: itype            !  type of token that is read
         integer(kind = int_wp) :: ierr2            !  local error indicator
         integer(kind = int_wp) :: ierr_alloc       !  local error indicator for allocation
@@ -118,7 +118,7 @@ contains
 
         !     Init
 
-        lunwr = lun(2)
+        binary_work_file = lun(2)
         iposr = 0
         chkpar = .false.
         nowtyp = 0
@@ -277,7 +277,7 @@ contains
 
             !          write ID and name to system file
 
-            write (lunwr)  iwstseg(i), iwstkind(i), wstid(i), wstname(i)
+            write (binary_work_file)  iwstseg(i), iwstkind(i), wstid(i), wstname(i)
 
         end do
 
@@ -304,8 +304,8 @@ contains
             enddo
             write (lunut, *)
         endif
-        write (lunwr)  (wsttype(i), i = 1, nowtyp)
-        write (lunwr)  (iwsttype(i), i = 1, nowst)
+        write (binary_work_file)  (wsttype(i), i = 1, nowtyp)
+        write (binary_work_file)  (iwsttype(i), i = 1, nowst)
 
         !          these arrays are not needed further
 
