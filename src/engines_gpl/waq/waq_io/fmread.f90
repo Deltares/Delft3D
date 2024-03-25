@@ -30,13 +30,13 @@ contains
 
 
     subroutine fmread (nitem, item, nvals, nfact, factor, &
-            nobrk, ibrk, arrin, dtflg, is_yyddhh_format, &
+            num_records, ibrk, arrin, dtflg, is_yyddhh_format, &
             ifact, iwidth, output_verbose_level, ierr)
 
         !! Reads blocks of matrices of input values and scales them
         !!
         !! This routine reads:
-        !!      - nobrk integer breakpoint values for time
+        !!      - num_records integer breakpoint values for time
         !!      - for each breakpoint nitem*nvals values
         !!      The values are scaled with nvals scale factors/n
         !!      If one scale factor exist, it is expanded to nvals factors
@@ -57,9 +57,9 @@ contains
         integer(kind = int_wp), intent(in) :: nvals                      !< number of values per item
         integer(kind = int_wp), intent(in) :: nfact                      !< number of scale factors
         real(kind = real_wp), intent(inout) :: factor(nvals)              !< scale factors
-        integer(kind = int_wp), intent(in) :: nobrk                      !< number of breakpoints
-        integer(kind = int_wp), intent(out) :: ibrk  (nobrk)              !< breakpoints read
-        real(kind = real_wp), intent(out) :: arrin (nvals, nitem, nobrk)  !< breakpoints read
+        integer(kind = int_wp), intent(in) :: num_records                      !< number of breakpoints
+        integer(kind = int_wp), intent(out) :: ibrk  (num_records)              !< breakpoints read
+        real(kind = real_wp), intent(out) :: arrin (nvals, nitem, num_records)  !< breakpoints read
         logical  (4), intent(in) :: dtflg                     !< 'date'-format time scale
         logical  (4), intent(in) :: is_yyddhh_format                    !< (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: ifact                      !< factor between timings
@@ -79,7 +79,7 @@ contains
 
         if (output_verbose_level < 4) write (lunut, 2000)
 
-        do i1 = 1, nobrk
+        do i1 = 1, num_records
 
             if (gettoken(ctoken, ibrk(i1), itype, ierr2) > 0) goto 10
             if (itype == 1) then                                    !  a time string
@@ -127,7 +127,7 @@ contains
                 factor(i1) = factor (11)
             enddo
         endif
-        do i1 = 1, nobrk
+        do i1 = 1, num_records
             call scale_array  (arrin(1, 1, i1), factor, nitem, nvals)
         enddo
         if (timon) call timstop(ithndl)

@@ -34,9 +34,9 @@ module inputs_block_5
 
 contains
 
-    subroutine read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, iar, &
+    subroutine read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, int_array, &
             real_array, nrftot, nrharm, nobnd, nosys, &
-            notot, nobtyp, irmax, max_int_size, is_date_format, &
+            notot, nobtyp, max_real_size, max_int_size, is_date_format, &
             iwidth, intsrt, is_yyddhh_format, sname, &
             max_char_size, output_verbose_level, status)
         !! Reads all inputs associated with open boundaries
@@ -60,13 +60,13 @@ contains
         use timers       !   performance timers
         use date_time_utils, only : convert_relative_time, convert_time_format
 
-        integer(kind = int_wp), intent(in) :: irmax              !< size of the real workspace
+        integer(kind = int_wp), intent(in) :: max_real_size              !< size of the real workspace
         integer(kind = int_wp), intent(inout) :: lun(:)             !< array with unit numbers
         character(*), intent(inout) :: lchar(:)           !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         character(*), intent(inout) :: char_arr(:)             !< character workspace
-        integer(kind = int_wp), intent(inout) :: iar(:)             !< integer workspace ( dump locations at entrance )
-        real(kind = real_wp), intent(inout) :: real_array(irmax)         !< real    workspace
+        integer(kind = int_wp), intent(inout) :: int_array(:)             !< integer workspace ( dump locations at entrance )
+        real(kind = real_wp), intent(inout) :: real_array(max_real_size)         !< real    workspace
         integer(kind = int_wp), intent(inout) :: nrftot(*)          !< number of function items
         integer(kind = int_wp), intent(inout) :: nrharm(*)          !< number of harmonic items
         integer(kind = int_wp), intent(inout) :: nobnd              !< number of open model boundaries
@@ -304,7 +304,7 @@ contains
         do k = 1, nobnd
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, iar(k), rhulp, &
+                    iposr, npos, cdummy, int_array(k), rhulp, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
@@ -314,22 +314,22 @@ contains
             write (lunut, 2150)
         endif
         if (is_date_format) then
-            call convert_time_format (iar, nobnd, ifact, is_date_format, is_yyddhh_format)
+            call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
             if (output_verbose_level >= 3) write (lunut, 2160) &
-                    (iar(k) / 31536000, mod(iar(k), 31536000) / 86400, &
-                    mod(iar(k), 86400) / 3600, mod(iar(k), 3600) / 60, &
-                    mod(iar(k), 60), k = 1, nobnd)
+                    (int_array(k) / 31536000, mod(int_array(k), 31536000) / 86400, &
+                    mod(int_array(k), 86400) / 3600, mod(int_array(k), 3600) / 60, &
+                    mod(int_array(k), 60), k = 1, nobnd)
         else
             if (output_verbose_level >= 3) write (lunut, 2170) &
-                    (iar(k), k = 1, nobnd)
+                    (int_array(k), k = 1, nobnd)
         endif
         do i = 1, nobnd
-            if (iar(i) < 0) then
-                write (lunut, 2180) iar(i)
+            if (int_array(i) < 0) then
+                write (lunut, 2180) int_array(i)
                 call status%increase_error_count()
             endif
         end do
-        write (binary_work_file) (iar(k), k = 1, nobnd)
+        write (binary_work_file) (int_array(k), k = 1, nobnd)
         goto 160
 
         ! time lags constant with defaults
@@ -345,7 +345,7 @@ contains
         endif
         ! fill the array with the default
         do i = 1, min(max_int_size, nobnd)
-            iar(i) = idef
+            int_array(i) = idef
         end do
         ! nr of overridings
         itype = 2
@@ -367,13 +367,13 @@ contains
         do k = 1, min(nover, mxover)
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, iar(k + nobnd), rhulp, &
+                    iposr, npos, cdummy, int_array(k + nobnd), rhulp, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
-            ibnd = max(1, min(iabs(iar(k + nobnd)), nobnd))
+            ibnd = max(1, min(iabs(int_array(k + nobnd)), nobnd))
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, iar(ibnd), rhulp, &
+                    iposr, npos, cdummy, int_array(ibnd), rhulp, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
@@ -396,15 +396,15 @@ contains
             goto 160
         endif
         if (is_date_format) &
-                call convert_time_format (iar, nobnd, ifact, is_date_format, is_yyddhh_format)
+                call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
         if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2230)
         do i = 1, nover
-            ibnd = iabs(iar(i + nobnd))
+            ibnd = iabs(int_array(i + nobnd))
             if (ibnd > nobnd .or. ibnd == 0) then
-                write (lunut, 2180) iar(i + nobnd)
+                write (lunut, 2180) int_array(i + nobnd)
                 call status%increase_error_count()
             elseif (output_verbose_level >= 3) then
-                it = iar (ibnd)
+                it = int_array (ibnd)
                 if (is_date_format) then
                     write (lunut, 2240) ibnd, &
                             it / 31536000, mod(it, 31536000) / 86400, &
@@ -415,16 +415,16 @@ contains
                 endif
             endif
         end do
-        write (binary_work_file) (iar(k), k = 1, nobnd)
+        write (binary_work_file) (int_array(k), k = 1, nobnd)
 
         ! read boundary concentrations
         ! this if block stands for the new input processing
         160 write (lunut, 2260)
         k = nobnd + 1
         l = nobnd + nobtyp + 1
-        allocate(drar(irmax))             ! this array is 100 mb lp
+        allocate(drar(max_real_size))             ! this array is 100 mb lp
         call read_boundary_concentrations (lun, lchar, 14, iwidth, max_char_size, &
-                char_arr, max_int_size, iar, irmax, real_array, &
+                char_arr, max_int_size, int_array, max_real_size, real_array, &
                 sname, bndid, bndtype(1:nobtyp), nobnd, nosys, &
                 nobtyp, drar, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)

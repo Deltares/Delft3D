@@ -115,7 +115,7 @@ contains
         integer(kind = int_wp) :: iorder, count_items_in_use_rule, nodim, iflag, itype, &
                 chkflg, ident, nottc, lunwr2, &
                 file_size_1, file_size_2, ipro, itfacw, time_function_type, &
-                nobrk, itel, ioerr, iblock, k, &
+                num_records, itel, ioerr, iblock, k, &
                 i, ihulp, ioff, icm, iim, &
                 noits, nconst, itmnr, idx_item_in_use_rule, nocol, &
                 idmnr, nodis, nitm, nti, nti2, &
@@ -157,7 +157,7 @@ contains
         !     IFLAG  is the ASCII input flag,
         !                    0 = not set, 1 = items , 2 = concentr.  3 = data
         !                    4 = scales
-        !     NOBRK  is the number of breakpoints
+        !     num_records  is the number of breakpoints
         !     SCALE  is the Scale values flag .TRUE. is present
         !     USEFOR is the Alias flag, .TRUE. is alias string expected
         !     ODS    is the ODS   flag, .TRUE. ODS datafile expected
@@ -171,7 +171,7 @@ contains
         iorder = 0
         iflag = 0
         time_function_type = 1
-        nobrk = 0
+        num_records = 0
         itel = 0
         scale = .false.
         ods = .false.
@@ -509,17 +509,20 @@ contains
                     nottc = nottt
                 endif
             endif
-            if (time_function_type == 3 .or. time_function_type == 4) nottt = nottt + 1  ! harmonics or fourier
-            call dlwq5d (lunut, int_workspace(nti2:), real_workspace(ntr:), iim, irm, & ! read time series table
+
+            ! harmonics or fourier
+            if (time_function_type == 3 .or. time_function_type == 4) nottt = nottt + 1
+            ! read time series table
+            call dlwq5d (lunut, int_workspace(nti2:), real_workspace(ntr:), iim, irm, &
                     iposr, npos, ilun, lch, lstack, &
-                    cchar, chulp, nottt, nottc, time_dependent, nobrk, &
+                    cchar, chulp, nottt, nottc, time_dependent, num_records, &
                     time_function_type, is_date_format, is_yyddhh_format, itfacw, itype, &
                     ihulp, rhulp, ierr2, ierr3)
 
             call status%increase_error_count_with(ierr3)
 
             if (ierr2 == 1 .or. ierr2 == 4) goto 510
-            if (nobrk == 0 .and. (.not. time_dependent)) then
+            if (num_records == 0 .and. (.not. time_dependent)) then
                 write(lunut, 1360)
                 call status%increase_error_count()
             endif
@@ -528,17 +531,17 @@ contains
                 call status%increase_warning_count()
             else
                 ! Assigns according to computational rules
-                nr2 = ntr + nottt * nobrk
+                nr2 = ntr + nottt * num_records
                 ! process parsed values in table  (process operations if any) and store results in real_workspace(nr2:)
                 call assign_matrix (lunut, int_workspace, count_items_in_use_rule, itmnr, nodim, &
                         idmnr, iorder, real_workspace, time_function_type, real_workspace(ntr:), &
-                        nocol, nobrk, amiss, int_workspace(nti:), real_workspace(nr2:))
+                        nocol, num_records, amiss, int_workspace(nti:), real_workspace(nr2:))
                 strng3 = 'breakpoint'
                 ! Writes to the binary intermediate file
                 nts = nconst + 1
                 ntc = nti
                 icm = max_char_size - ntc
-                call write_data_blocks (lunwr2, lunut, iwidth, nobrk, int_workspace, & ! writes data_item to wrk and/or lst files
+                call write_data_blocks (lunwr2, lunut, iwidth, num_records, int_workspace, & ! writes data_item to wrk and/or lst files
                         real_workspace(nts:), real_workspace(nr2:), itmnr, idmnr, iorder, &
                         scale, .true., binfil, time_function_type, ipro, &
                         itfacw, is_date_format, is_yyddhh_format, file_size_1, file_size_2, &
@@ -550,7 +553,7 @@ contains
             iflag = 0
             time_function_type = 1
             amiss = -999.0
-            nobrk = 0
+            num_records = 0
             itel = 0
             scale = .false.
             ods = .false.
@@ -584,14 +587,14 @@ contains
             call dlwq5c (chulp, lunut, char_arr, int_workspace, real_workspace(ntr:), &
                     max_char_size, max_int_size, max_real_size, dp_workspace, count_items_in_use_rule, &
                     nodim, iorder, scale, itmnr, idmnr, &
-                    amiss, nobrk, ierr2, status)
+                    amiss, num_records, ierr2, status)
             if (ierr2 /= 0) goto 510
-            nr2 = ntr + count_items_in_use_rule * nodim * nobrk
+            nr2 = ntr + count_items_in_use_rule * nodim * num_records
             call assign_matrix (lunut, int_workspace, count_items_in_use_rule, itmnr, nodim, &
                     idmnr, iorder, real_workspace, time_function_type, real_workspace(ntr:), &
-                    nodim, nobrk, amiss, int_workspace(nti:), real_workspace(nr2:))
+                    nodim, num_records, amiss, int_workspace(nti:), real_workspace(nr2:))
             strng3 = 'breakpoint'
-            call write_data_blocks (lunwr2, lunut, iwidth, nobrk, int_workspace, &
+            call write_data_blocks (lunwr2, lunut, iwidth, num_records, int_workspace, &
                     real_workspace(nts:), real_workspace(nr2:), itmnr, idmnr, iorder, &
                     scale, ods, binfil, time_function_type, ipro, &
                     itfacw, is_date_format, is_yyddhh_format, file_size_1, file_size_2, &
@@ -606,7 +609,7 @@ contains
             ioff = 0
             time_function_type = 1
             amiss = -999.0
-            nobrk = 0
+            num_records = 0
             itel = 0
             scale = .false.
             ods = .false.
@@ -1014,7 +1017,7 @@ contains
 
     subroutine validate_column_headers(ascii_output_file_unit, int_array, count_items_assign, count_items_comp_rule, &
             count_subs_assign, count_subs_comp_rule, index_first, names_to_check, start_in_line, & !max_int_size,
-            npos, ilun, lch, lstack, cchar, &
+            num_significant_char, ilun, lch, lstack, cchar, &
             chulp, nocol, is_date_format, is_yyddhh_format, itfact, &
             itype, ihulp, rhulp, error_idx, status)
 
@@ -1022,12 +1025,7 @@ contains
         !! Logical Units : LUN(27) = unit stripped DELWAQ input file
         !!                 LUN(29) = unit formatted output file
 
-        use m_waq_precision
-        use m_error_status
-        use m_string_utils
-
         use usefor, only : compact_usefor_list
-        use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
         integer(kind = int_wp), intent(in) :: ascii_output_file_unit
@@ -1042,34 +1040,33 @@ contains
         character(len = *), intent(in) :: lch(lstack)       !! file name stack, 4 deep
         character(len = *), intent(out) :: chulp            !! space for limiting token
         character, intent(in) :: cchar*1                    !! comment character
-        character :: strng*8
         logical, intent(in) :: is_date_format               !! true if time in 'date' format
         logical, intent(in) :: is_yyddhh_format             !! true if yyetc instead of ddetc
-        logical :: first, must_read_more      !!
-        integer(kind = INT64) :: ihulp8
-        integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp), intent(in) :: count_subs_comp_rule          !! number of subst in computational rule
         integer(kind = int_wp), intent(inout) :: start_in_line          !! start position on input line
         integer(kind = int_wp), intent(in) :: index_first               !! 1 = items first, 2 = substances first
-        integer(kind = int_wp) :: offset_common, offset_names !! comon offset in int_array and names_to_check, offset in
-        !! names_to_check
         integer(kind = int_wp), intent(out) :: itype                    !! type of info at end
         integer(kind = int_wp), intent(in) :: ilun(lstack)                      !! unitnumb include stack
-        integer(kind = int_wp) :: nopos
-        integer(kind = int_wp) :: i
         integer(kind = int_wp), intent(out) :: ihulp                 !! parameter read to be transferred
-        integer(kind = int_wp) :: notim
         integer(kind = int_wp), intent(out) :: error_idx         !! error index within current subroutine
         integer(kind = int_wp), intent(out) :: nocol     !! number of collums in matrix
-        integer(kind = int_wp) :: ifound
         integer(kind = int_wp), intent(in) :: itfact            !! factor between clocks
+
+        integer(kind = int_wp), intent(in) :: num_significant_char                  !! number of significant characters
+        integer(kind = int_wp), intent(in) :: lstack            !! include file stack size
+        real(kind = real_wp), intent(out) :: rhulp               !!parameter read to be transferred
+
+        !! names_to_check
+        character :: strng*8
+        logical :: first, must_read_more
+        integer(kind = INT64) :: ihulp8
+        integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: icnt, iods, k
         integer(kind = int_wp) :: count_items_assign            !! number of items for assignment
         integer(kind = int_wp) :: count_names
         integer(kind = int_wp) :: offset_i_array                !! offset  in int_array
-        integer(kind = int_wp), intent(in) :: npos                  !! number of significant characters
-        integer(kind = int_wp), intent(in) :: lstack            !! include file stack size
-        real(kind = real_wp), intent(out) :: rhulp               !!parameter read to be transferred
+        integer(kind = int_wp) :: offset_common, offset_names !! comon offset in int_array and names_to_check, offset in
+        integer(kind = int_wp) :: nopos, ifound, i
 
         if (timon) call timstrt("validate_column_headers", ithndl)
 
@@ -1092,7 +1089,7 @@ contains
         do while (must_read_more)
             itype = 0
             call rdtok1 (ascii_output_file_unit, ilun, lch, lstack, cchar, &
-                    start_in_line, npos, chulp, ihulp, rhulp, &
+                    start_in_line, num_significant_char, chulp, ihulp, rhulp, &
                     itype, error_idx)
 
             if (error_idx  /= 0) then ! error occurred when reading

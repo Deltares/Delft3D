@@ -34,7 +34,7 @@ module inputs_block_9
 
 contains
 
-    subroutine read_block_9 (lun, lchar, filtype, char_arr, iar, &
+    subroutine read_block_9 (lun, lchar, filtype, char_arr, int_array, &
             max_char_size, max_int_size, iwidth, &
             output_verbose_level, ioutps, outputs, status)
 
@@ -53,7 +53,7 @@ contains
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         integer(kind = int_wp), intent(in) :: max_char_size              !< size of the character workspace
         character(20), intent(inout) :: char_arr   (max_char_size)     !< character workspace
-        integer(kind = int_wp), intent(inout) :: iar   (*)          !< integer workspace ( dump locations at entrance )
+        integer(kind = int_wp), intent(inout) :: int_array   (*)          !< integer workspace ( dump locations at entrance )
         integer(kind = int_wp), intent(in) :: max_int_size              !< size of the integer workspace
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
@@ -195,15 +195,15 @@ contains
                         nodump, nosys, nobnd, nowst, nocons, &
                         nopa, noseg, nseg2, coname, paname, &
                         funame, nofun, sfname, nosfun, nodisp, &
-                        novelo, diname, vename, iar, iar, &
+                        novelo, diname, vename, int_array, int_array, &
                         ndmpar, ntdmpq, ntdmps, noqtt, noraai, &
-                        ntraaq, nobtyp, nowtyp, nogrid, iar, &
-                        iar, iar)
+                        ntraaq, nobtyp, nowtyp, nogrid, int_array, &
+                        int_array, int_array)
                 close (lun(2))
 
                 !           Get output pointers
 
-                call get_output_pointers(noutp, nrvar, nrvarm, char_arr, iar, &
+                call get_output_pointers(noutp, nrvar, nrvarm, char_arr, int_array, &
                         nmis, notot, sysid, nocons, coname, &
                         nopa, paname, nofun, funame, nosfun, &
                         sfname, lunut)
@@ -240,7 +240,7 @@ contains
             do iv = 1, nrvar(i)
                 ivar = ivar + 1
                 ip = (i - 1) * nrvarm + iv
-                Outputs%pointers(ivar) = iar(ip)
+                Outputs%pointers(ivar) = int_array(ip)
                 Outputs%names   (ivar) = char_arr(ip)
                 Outputs%std_var_name(ivar) = char_arr(ip)
                 Outputs%units   (ivar) = ' '

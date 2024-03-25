@@ -28,32 +28,27 @@ module m_dlwq5d
 contains
 
 
-    SUBROUTINE DLWQ5D (LUNUT, IAR, real_array, max_int_size, IRMAX, &
-            IPOSR, NPOS, ILUN, LCH, LSTACK, &
-            CCHAR, CHULP, NOTOT, NOTOTC, time_dependent, NOBRK, &
+    SUBROUTINE DLWQ5D (file_unit, int_array, real_array, max_int_size, max_real_size, &
+            IPOSR, num_significant_char, ILUN, LCH, LSTACK, &
+            CCHAR, CHULP, NOTOT, NOTOTC, time_dependent, num_records, &
             time_function_type, is_date_format, is_yyddhh_format, ITFACT, ITYPE, &
             IHULP, RHULP, IERR, ierr3)
         !! Boundary and waste data new style
-        !
-        !     SUBROUTINES CALLED : CNVTIM - converting times of breakpoints
-        !
+
         !     LOGICAL UNITS      : LUN(27) = unit stripped DELWAQ input file
         !                          LUN(29) = unit formatted output file
         !                          LUN( 2) = unit intermediate file (system)
         !                          LUN(14) = unit intermediate file (boundaries)
         !                          LUN(15) = unit intermediate file (wastes)
         !
-        !     PARAMETERS    :
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ---------------------------------------------------------
-        !     LUNUT   INTEGER    1         INPUT   unit number for ASCII output
-        !     IAR     INTEGER  max_int_size       IN/OUT  integer   workspace
-        !     real_array     REAL     IRMAX       IN/OUT  real      workspace
+
+        !     file_unit   INTEGER    1         INPUT   unit number for ASCII output
+        !     int_array     INTEGER  max_int_size       IN/OUT  integer   workspace
+        !     real_array     REAL     max_real_size       IN/OUT  real      workspace
         !     max_int_size   INTEGER    1         INPUT   max. int. workspace dimension
-        !     IRMAX   INTEGER    1         INPUT   max. real workspace dimension
+        !     max_real_size   INTEGER    1         INPUT   max. real workspace dimension
         !     IPOSR   INTEGER    1         IN/OUT  Start position on input line
-        !     NPOS    INTEGER    1         INPUT   nr of significant characters
+        !     num_significant_char    INTEGER    1         INPUT   nr of significant characters
         !     ILUN    INTEGER   LSTACK     INPUT   unitnumb include stack
         !     LCH     CHAR*(*)  LSTACK     INPUT   file name stack, 4 deep
         !     LSTACK  INTEGER    1         INPUT   include file stack size
@@ -61,7 +56,7 @@ contains
         !     CHULP   CHAR*(*)   1         OUTPUT  space for limiting token
         !     NOTOT   INTEGER    1         INPUT   size of the matrix to be read
         !     ITTIM   INTEGER    1         INPUT   0 if steady, 1 if time function
-        !     NOBRK   INTEGER    1         OUTPUT  number of records read
+        !     num_records   INTEGER    1         OUTPUT  number of records read
         !     time_function_type    INTEGER    1         INPUT   3 is harmonics, 4 is fourier
         !     is_date_format  LOGICAL    1         INPUT   True if time in 'date' format
         !     is_yyddhh_format  LOGICAL    1         INPUT   True if YYetc instead of DDetc
@@ -69,121 +64,120 @@ contains
         !     ITYPE   INTEGER    1         OUTPUT  type of info at end
         !     IERR    INTEGER    1         OUTPUT  return code
         !     IERR3   INTEGER    1         OUTPUT  actual error indicator
-        !
-        !
+
         use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
-        logical, intent(in) :: time_dependent !< True if the BC or Waste load definition is time dependent (linear, harmonic or Fourier), and false if it is constant.
+        !< true if the bc or waste load definition is time dependent (linear, harmonic or fourier), and false if it
+        !! is constant.
+        logical, intent(in) :: time_dependent
 
-        INTEGER(kind = int_wp) :: max_int_size, IRMAX, I
-        CHARACTER*(*) LCH(LSTACK), CHULP
-        CHARACTER*1   CCHAR
-        DIMENSION     IAR(*), ILUN(LSTACK)
-        LOGICAL       NEWREC, is_date_format, is_yyddhh_format, IGNORE
+        integer(kind = int_wp) :: max_int_size, max_real_size, i
+        character*(*) lch(lstack), chulp
+        character*1   cchar
+        dimension     int_array(*), ilun(lstack)
+        logical       newrec, is_date_format, is_yyddhh_format, ignore
         integer(kind = int_wp) :: ihulp
         integer(kind = int_wp) :: ithndl = 0
-        integer(kind = int_wp) :: nobrk, itel, itel2, ierr3, itype
-        integer(kind = int_wp) :: lunut, ilun, iposr, npos, ierr, itfact
-        integer(kind = int_wp) :: iar, notot, nototc, lstack, time_function_type
+        integer(kind = int_wp) :: num_records, itel, itel2, ierr3, itype
+        integer(kind = int_wp) :: file_unit, ilun, iposr, num_significant_char, ierr, itfact
+        integer(kind = int_wp) :: int_array, notot, nototc, lstack, time_function_type
         real :: real_array(:), rhulp
 
         if (timon) call timstrt("dlwq5d", ithndl)
-        !
-        !     Some initialisation
-        !
-        IGNORE = .FALSE.
-        NEWREC = .FALSE.
-        IF (time_dependent) NEWREC = .TRUE.                          ! it is a time function
-        NOBRK = 0
-        ITEL = 1
-        ITEL2 = 1
+
+        ! some initialisation
+        ignore = .false.
+        newrec = .false.
+        if (time_dependent) newrec = .true.                          ! it is a time function
+        num_records = 0
+        itel = 1
+        itel2 = 1
         ierr3 = 0
-        IF (ITYPE /= 0) GOTO 20                                  ! it was called with an argument
-        !
-        !     Read loop
-        !
-        10 IF (NEWREC) THEN
-            ITYPE = 0                                                 ! everything is valid
-        ELSE
-            ITYPE = 3                                                 ! a real value schould follow
-        ENDIF
-        CALL RDTOK1 (LUNUT, ILUN, LCH, LSTACK, CCHAR, &
-                IPOSR, NPOS, CHULP, IHULP, RHULP, &
-                ITYPE, IERR)
-        !          A read error
-        IF (IERR  /= 0) goto 9999
-        !          A token has arrived
-        IF (ITYPE == 1) THEN                                     ! that must be an absolute timer string
-            CALL convert_string_to_time_offset (CHULP, IHULP, .FALSE., .FALSE., IERR)    !  2^31 =  2147483648
-            IF (IHULP == -999) THEN                              !       YYYYDDDHHMMSS so 64 bits integer
-                IERR = 1
-                WRITE (LUNUT, 1020) TRIM(CHULP)
+        if (itype /= 0) goto 20                                  ! it was called with an argument
+
+        ! read loop
+        10 if (newrec) then
+            itype = 0                                                 ! everything is valid
+        else
+            itype = 3                                                 ! a real value schould follow
+        endif
+        call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
+                iposr, num_significant_char, chulp, ihulp, rhulp, &
+                itype, ierr)
+        ! a read error
+        if (ierr  /= 0) goto 9999
+        ! a token has arrived
+        if (itype == 1) then                                     ! that must be an absolute timer string
+            call convert_string_to_time_offset (chulp, ihulp, .false., .false., ierr)    !  2^31 =  2147483648
+            if (ihulp == -999) then                              !       yyyydddhhmmss so 64 bits integer
+                ierr = 1
+                write (file_unit, 1020) trim(chulp)
                 goto 9999
-            ENDIF
-            IF (IERR   /=    0) THEN                              ! the found entry is not a new time value
-                if (nobrk <= 1) then
-                    write (lunut, 1040) nobrk
+            endif
+            if (ierr   /=    0) then                              ! the found entry is not a new time value
+                if (num_records <= 1) then
+                    write (file_unit, 1040) num_records
                     !ierr3 = ierr3 + 1
                 endif
-                IERR = 0
+                ierr = 0
                 goto 9999
-            ENDIF
-            IHULP = ITFACT * IHULP
-        ELSEIF (ITYPE == 2) THEN
-            call convert_relative_time (IHULP, 1, is_date_format, is_yyddhh_format)
+            endif
+            ihulp = itfact * ihulp
+        elseif (itype == 2) then
+            call convert_relative_time (ihulp, 1, is_date_format, is_yyddhh_format)
         else
             ihulp = 0
-        ENDIF
-        !          Getting the data of this block (no strings any more)
-        20 IF (time_dependent .AND. NEWREC) THEN
+        endif
+        ! getting the data of this block (no strings any more)
+        20 if (time_dependent .and. newrec) then
             !          it was a non-real and characters has been caught
-            IF (IHULP == -999) THEN
-                IGNORE = .TRUE.
-            ELSE                                                      ! a new breakpoint found
-                IGNORE = .FALSE.
-                NOBRK = NOBRK + 1
-                IF (NOBRK <= max_int_size) THEN
-                    IAR(NOBRK) = IHULP
-                    if (nobrk > 1) then
-                        if (ihulp <= iar(nobrk - 1)) then ! times not strinctly ascending
-                            write (lunut, 1030) ihulp, iar(nobrk - 1)
+            if (ihulp == -999) then
+                ignore = .true.
+            else                                                      ! a new breakpoint found
+                ignore = .false.
+                num_records = num_records + 1
+                if (num_records <= max_int_size) then
+                    int_array(num_records) = ihulp
+                    if (num_records > 1) then
+                        if (ihulp <= int_array(num_records - 1)) then ! times not strinctly ascending
+                            write (file_unit, 1030) ihulp, int_array(num_records - 1)
                             ierr3 = ierr3 + 1
                         endif
                     endif
-                ELSE
-                    WRITE (LUNUT, 1000) max_int_size
-                    IERR = 100
+                else
+                    write (file_unit, 1000) max_int_size
+                    ierr = 100
                     goto 9999
-                ENDIF
-            ENDIF
-            NEWREC = .FALSE.
-            GOTO 10
-        ENDIF
+                endif
+            endif
+            newrec = .false.
+            goto 10
+        endif
         !
-        IF (.NOT. IGNORE) THEN
-            DO I = 1, NOTOT / NOTOTC
-                real_array(ITEL + (I - 1) * NOTOTC) = RHULP
-            END DO
-        ENDIF
+        if (.not. ignore) then
+            do i = 1, notot / nototc
+                real_array(itel + (i - 1) * nototc) = rhulp
+            end do
+        endif
         !        are we to expect a new record ?
-        IF (MOD(ITEL2, NOTOTC) == 0) THEN
-            NEWREC = .TRUE.
-            ITEL = ITEL + NOTOT - NOTOTC
-        END IF
+        if (mod(itel2, nototc) == 0) then
+            newrec = .true.
+            itel = itel + notot - nototc
+        end if
         !        it was a constant, so we can now return.
-        IF (NEWREC .AND. (.not. time_dependent)) THEN
-            NOBRK = 1
-            IAR(1) = 0
+        if (newrec .and. (.not. time_dependent)) then
+            num_records = 1
+            int_array(1) = 0
             goto 9999
-        ENDIF
+        endif
         !        increase the counter for the next real and go to input
-        IF (.NOT. IGNORE) ITEL = ITEL + 1
-        ITEL2 = ITEL2 + 1
-        GOTO 10
+        if (.not. ignore) itel = itel + 1
+        itel2 = itel2 + 1
+        goto 10
         9999 if (timon) call timstop(ithndl)
         return
-        !
+
         1000 FORMAT (' ERROR ! Number of breakpoints exceeds system', &
                 ' maximum of: ', I10)
         1020 FORMAT (' ERROR ! Absolute timer does not fit in timer ', &
@@ -192,7 +186,7 @@ contains
                 ' Allowed difference with T0 is usually ca. 68 years.')
         1030 FORMAT (/' ERROR ! Time value ', I10, ' not larger than previous time value ', I10)
         1040 FORMAT (/' WARNING ! There are only ', I2, ' breakpoints found for this time series')
-        !
-    END
+
+    END SUBROUTINE DLWQ5D
 
 end module m_dlwq5d

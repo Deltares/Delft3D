@@ -127,7 +127,7 @@ contains
 
     end subroutine compact_usefor
 
-    subroutine compact_usefor_list(lunut, iar, itmnr, noitm, idmnr, &
+    subroutine compact_usefor_list(lunut, int_array, itmnr, noitm, idmnr, &
             nodim, iorder, char_arr, ioffi, ioffc, &
             iods, ioffd, idx_missing, count_missing, ierr, status)
 
@@ -142,7 +142,7 @@ contains
         !     Name    Kind     Length     Funct.  Description
         !     ---------------------------------------------------------
         !     lunut   integer    1         input   unit number for ascii output
-        !     iar     integer  max_int_size       in/out  integer   workspace
+        !     int_array     integer  max_int_size       in/out  integer   workspace
         !     itmnr   integer    1         in/out  nr of items for assignment
         !     noitm   integer    1         in      nr of items in computational rule
         !     idmnr   integer    1         in/out  nr of subst for assignment
@@ -161,7 +161,7 @@ contains
         use m_error_status
 
         character*(*) char_arr(:)
-        integer(kind = int_wp), intent(inout) :: iar(:)
+        integer(kind = int_wp), intent(inout) :: int_array(:)
         character*20  chulp, message_type
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: i1, i3, i4, i5
@@ -188,7 +188,7 @@ contains
         ! look backwards
         i4 = 0
         do i1 = idx_missing, 1, -1
-            i2 = iar(ioffc + i1)
+            i2 = int_array(ioffc + i1)
             if (i2 > -100000) exit
         end do
 
@@ -196,9 +196,9 @@ contains
         if (i2 > -100000 .and. i2 <= 0) then
             ! try to find the reference
             do i3 = 1, idx_missing
-                i5 = iar(ioffc + i3)
+                i5 = int_array(ioffc + i3)
                 if (i5 > -100000 .and. i5 <= 0)  i4 = i4 + 1
-                if (i5 > 0)                      i4 = iar(ioffc + i3)
+                if (i5 > 0)                      i4 = int_array(ioffc + i3)
             end do
             chulp = char_arr(ioffd + i4)
             if (char_arr(ioffc + idx_missing) /= chulp) then ! log not resolved
@@ -231,19 +231,19 @@ contains
         ! determine the shift in locations
         ishft = 1
         do i4 = i1 + 1, nitm
-            i3 = iar(ioffc + i4)
+            i3 = int_array(ioffc + i4)
             if (i3 > -1000000) exit
             ishft = ishft + 1
         end do
 
         ! shift the third array heap
         do i4 = i1, nitm
-            iar(ioffi + i4) = iar(ioffi + i4 + ishft)
+            int_array(ioffi + i4) = int_array(ioffi + i4 + ishft)
         end do
 
         ! shift the second array heap
         do i4 = i1, nitm * 2 + iods
-            iar(ioffc + i4) = iar(ioffc + i4 + ishft)
+            int_array(ioffc + i4) = int_array(ioffc + i4 + ishft)
             char_arr(ioffc + i4) = char_arr(ioffc + i4 + ishft)
         end do
         nitm = nitm - ishft
@@ -254,14 +254,14 @@ contains
 
         ! shift the base array heap
         do i5 = ioffd + i2, ioffd + ntt + nitm * 2 + iods
-            iar(i5) = iar(i5 + 1)
+            int_array(i5) = int_array(i5 + 1)
             char_arr(i5) = char_arr(i5 + 1)
         end do
 
         ! renumber the second array heap
         do i4 = i1, nitm
-            if (iar(ioffc + i4) > i2) then
-                iar(ioffc + i4) = iar(ioffc + i4) - 1
+            if (int_array(ioffc + i4) > i2) then
+                int_array(ioffc + i4) = int_array(ioffc + i4) - 1
             end if
         end do
 

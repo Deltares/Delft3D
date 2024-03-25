@@ -48,7 +48,7 @@ contains
         integer(kind = int_wp) :: mxbrk          ! allocate dimension of third dimension
         integer(kind = int_wp) :: ndim1          ! first dimension
         integer(kind = int_wp) :: ndim2          ! second dimension
-        integer(kind = int_wp) :: nobrk          ! third dimension
+        integer(kind = int_wp) :: num_records          ! third dimension
         integer(kind = int_wp), pointer :: times2(:)      ! used to resize
         real(kind = real_wp), pointer :: phase2(:)      ! used to resize
         real(kind = real_wp), pointer :: values2(:, :, :) ! used to resize
@@ -83,15 +83,15 @@ contains
 
             ! read only one "time"
 
-            nobrk = 1
-            allocate(data_block%values(ndim1, ndim2, nobrk), stat = ierr_alloc)
+            num_records = 1
+            allocate(data_block%values(ndim1, ndim2, num_records), stat = ierr_alloc)
             data_block%values = 0.0
-            allocate(data_block%times(nobrk), stat = ierr_alloc)
+            allocate(data_block%times(num_records), stat = ierr_alloc)
             data_block%times(1) = 0
             do i2 = 1, ndim2
                 do i1 = 1, ndim1
                     if (gettoken(rtoken, ierr) /= 0) goto 9999
-                    data_block%values(i1, i2, nobrk) = rtoken
+                    data_block%values(i1, i2, num_records) = rtoken
                 enddo
             enddo
         else
@@ -103,7 +103,7 @@ contains
                 allocate(data_block%phase(mxbrk))
             endif
 
-            nobrk = 0
+            num_records = 0
             breakpoints : do
 
                 ! get next time
@@ -126,14 +126,14 @@ contains
                     call convert_relative_time (itoken, itfact, is_date_format, is_yyddhh_format)
                 endif
 
-                nobrk = nobrk + 1
-                if (nobrk > mxbrk) then ! resize
+                num_records = num_records + 1
+                if (num_records > mxbrk) then ! resize
                     mxbrk = mxbrk * 2
                     allocate(times2(mxbrk), values2(ndim1, ndim2, mxbrk))
-                    do ibrk = 1, nobrk - 1
+                    do ibrk = 1, num_records - 1
                         times2(ibrk) = data_block%times(ibrk)
                     end do
-                    do ibrk = 1, nobrk - 1
+                    do ibrk = 1, num_records - 1
                         do i2 = 1, ndim2
                             do i1 = 1, ndim1
                                 values2(i1, i2, ibrk) = data_block%values(i1, i2, ibrk)
@@ -147,7 +147,7 @@ contains
                     nullify(values2)
                     if (ftype == FUNCTYPE_HARMONIC .or. ftype == FUNCTYPE_FOURIER) then
                         allocate(phase2(mxbrk))
-                        do ibrk = 1, nobrk - 1
+                        do ibrk = 1, num_records - 1
                             phase2(ibrk) = data_block%phase(ibrk)
                         end do
                         deallocate(data_block%phase)
@@ -155,31 +155,31 @@ contains
                         nullify(phase2)
                     endif
                 endif
-                data_block%times(nobrk) = itoken
+                data_block%times(num_records) = itoken
 
                 ! for harmonics and fourier get phase
                 if (ftype == FUNCTYPE_HARMONIC .or. ftype == FUNCTYPE_FOURIER) then
                     if (gettoken(rtoken, ierr) /= 0) exit
-                    data_block%phase(nobrk) = rtoken
+                    data_block%phase(num_records) = rtoken
                 endif
 
                 ! get the data_block%values for this time
                 do i2 = 1, ndim2
                     do i1 = 1, ndim1
                         if (gettoken(rtoken, ierr) /= 0) goto 9999
-                        data_block%values(i1, i2, nobrk) = rtoken
+                        data_block%values(i1, i2, num_records) = rtoken
                     enddo
                 enddo
 
             enddo breakpoints
 
             ! input ready, resize back the arrays
-            if (nobrk /= mxbrk) then
-                allocate(times2(nobrk), values2(ndim1, ndim2, nobrk))
-                do ibrk = 1, nobrk
+            if (num_records /= mxbrk) then
+                allocate(times2(num_records), values2(ndim1, ndim2, num_records))
+                do ibrk = 1, num_records
                     times2(ibrk) = data_block%times(ibrk)
                 end do
-                do ibrk = 1, nobrk
+                do ibrk = 1, num_records
                     do i2 = 1, ndim2
                         do i1 = 1, ndim1
                             values2(i1, i2, ibrk) = data_block%values(i1, i2, ibrk)
@@ -193,7 +193,7 @@ contains
                 nullify(values2)
                 if (ftype == FUNCTYPE_HARMONIC .or. ftype == FUNCTYPE_FOURIER) then
                     allocate(phase2(mxbrk))
-                    do ibrk = 1, nobrk
+                    do ibrk = 1, num_records
                         phase2(ibrk) = data_block%phase(ibrk)
                     end do
                     deallocate(data_block%phase)
@@ -204,7 +204,7 @@ contains
 
         endif
 
-        data_block%no_brk = nobrk
+        data_block%no_brk = num_records
 
         9999 if (timon) call timstop(ithndl)
 

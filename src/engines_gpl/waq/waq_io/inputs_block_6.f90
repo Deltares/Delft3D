@@ -35,7 +35,7 @@ module inputs_block_6
 contains
 
     subroutine read_block_6_waste_loads_withdrawals (lun, lchar, filtype, max_char_size, char_arr, &
-            max_int_size, iar, irmax, real_array, notot, &
+            max_int_size, int_array, max_real_size, real_array, notot, &
             noseg, sname, nowst, nowtyp, nrftot, &
             nrharm, is_date_format, is_yyddhh_format, iwidth, &
             output_verbose_level, chkpar, status)
@@ -69,9 +69,9 @@ contains
         integer(kind = int_wp), intent(in) :: max_char_size           !< size of the character workspace
         character(20), intent(inout) :: char_arr   (max_char_size)  !< local character workspace
         integer(kind = int_wp), intent(in) :: max_int_size           !< size of the integer   workspace
-        integer(kind = int_wp), intent(inout) :: iar   (max_int_size)   !< local integer   workspace
-        integer(kind = int_wp), intent(in) :: irmax           !< size of the real      workspace
-        real(kind = real_wp), intent(inout) :: real_array   (irmax)   !< local real      workspace
+        integer(kind = int_wp), intent(inout) :: int_array   (max_int_size)   !< local integer   workspace
+        integer(kind = int_wp), intent(in) :: max_real_size           !< size of the real      workspace
+        real(kind = real_wp), intent(inout) :: real_array   (max_real_size)   !< local real      workspace
         integer(kind = int_wp), intent(in) :: notot           !< total number of substances
         integer(kind = int_wp), intent(in) :: noseg           !< number of computational volumes
         character(20), intent(inout) :: sname (notot)  !< IDs of the substances
@@ -313,10 +313,10 @@ contains
 
         !          now get the values
 
-        allocate(drar(irmax))             ! this array is 100 mb lp
+        allocate(drar(max_real_size))             ! this array is 100 mb lp
         idummy = notot + 1
         call read_boundary_concentrations (lun, lchar, 15, iwidth, max_char_size, &
-                char_arr, max_int_size, iar, irmax, real_array, &
+                char_arr, max_int_size, int_array, max_real_size, real_array, &
                 sname, wstid, wsttype, nowst, idummy, &
                 nowtyp, drar, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)

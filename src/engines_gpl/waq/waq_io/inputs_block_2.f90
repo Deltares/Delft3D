@@ -110,14 +110,14 @@ contains
         character(8) :: date2  !  help variables to read date strings
 
         integer(kind = int_wp), dimension(:), pointer :: dmpbal
-        integer(kind = int_wp), dimension(:), allocatable :: iar        !  integer workspace
+        integer(kind = int_wp), dimension(:), allocatable :: int_array        !  integer workspace
         integer(kind = int_wp) :: ierr2      !  local error and warning variables
         integer(kind = int_wp) :: iwar2      !  local error and warning variables
         integer(kind = int_wp) :: i          !  loop counters
         integer(kind = int_wp) :: k          !  loop counters
         integer(kind = int_wp) :: i2         !  loop counters
         integer(kind = int_wp) :: ibrk       !  loop counters
-        integer(kind = int_wp) :: nobrk      !  number of breakpoints
+        integer(kind = int_wp) :: num_records      !  number of breakpoints
         integer(kind = int_wp) :: ifound     !  help variable for string search
         integer(kind = int_wp) :: idummy     !  help variables to read tokens
         integer(kind = int_wp) :: itype      !  help variables to read tokens
@@ -395,16 +395,16 @@ contains
                         ' ERROR: DELWAQ time step is variable. DELPAR does not support variable step sizes.'
                 call status%increase_error_count()
             endif
-            if (gettoken(nobrk, ierr2) > 0) goto 30
-            write (lunut, '(A,i8)') ' Variable time step with number of breakpoints is ', nobrk
-            allocate (iar(nobrk * 2), stat = ierr_alloc)
+            if (gettoken(num_records, ierr2) > 0) goto 30
+            write (lunut, '(A,i8)') ' Variable time step with number of breakpoints is ', num_records
+            allocate (int_array(num_records * 2), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write (lunut, '(/, A, I4)') ' ERROR. allocating memory for variable timestep:', ierr_alloc
                 call status%increase_error_count()
                 goto 30
             endif
-            do k = 1, nobrk * 2
-                if (gettoken(iar(k), ierr2) > 0) goto 30
+            do k = 1, num_records * 2
+                if (gettoken(int_array(k), ierr2) > 0) goto 30
             enddo
             nrftot (1) = 1
             nlines = nlines + 2
@@ -412,43 +412,43 @@ contains
             write (lun(4)) -1, (0, k = 1, 3)
 
             if (is_date_format) then
-                call convert_time_format (iar, nobrk * 2, 1, is_date_format, is_yyddhh_format)
+                call convert_time_format (int_array, num_records * 2, 1, is_date_format, is_yyddhh_format)
             end if
 
             if (output_verbose_level >= 4) then
                 write (lunut, '(A,/)') ' Breakpoint          Timestep '
 
                 if (is_date_format) then
-                    do k = 1, nobrk * 2, 2
+                    do k = 1, num_records * 2, 2
                         write (lunut, '(A, 3X, A)') &
-                                get_formatted_date_time(iar(k)), &
-                                get_formatted_date_time(iar(k + 1)) // '.'
+                                get_formatted_date_time(int_array(k)), &
+                                get_formatted_date_time(int_array(k + 1)) // '.'
                     end do
                 else
-                    write (lunut, '(I10,10X,I10)') (iar(k), k = 1, nobrk * 2)
+                    write (lunut, '(I10,10X,I10)') (int_array(k), k = 1, num_records * 2)
                 end if
             else
                 write (lunut, *) ' Variable timestep. Information will be printed for ' // &
                         'output option 4 or higher !'
             endif
 
-            if (iar(1) > itstrt) then
+            if (int_array(1) > itstrt) then
                 write (lunut, '(/, A, I10, A, I10)') &
-                        ' ERROR', iar(1), ' larger than start time:', itstrt
+                        ' ERROR', int_array(1), ' larger than start time:', itstrt
                 call status%increase_error_count()
             endif
             call open_waq_files  (lun(5), lchar(5), 5, 1, ioerr)
-            do ibrk = 1, nobrk * 2, 2
-                write (lun(5)) iar(ibrk), float (iar(ibrk + 1))
-                if (iar(ibrk + 1) <= 0) then
-                    write (lunut, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', iar(ibrk + 1)
+            do ibrk = 1, num_records * 2, 2
+                write (lun(5)) int_array(ibrk), float (int_array(ibrk + 1))
+                if (int_array(ibrk + 1) <= 0) then
+                    write (lunut, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', int_array(ibrk + 1)
                     call status%increase_error_count()
                     call srstop(1)
                 endif
                 if (ibrk == 1) cycle
-                if (iar(ibrk) <= iar(ibrk - 2)) then
+                if (int_array(ibrk) <= int_array(ibrk - 2)) then
                     write (lunut, '(/, A, I10, A, I10, A)') &
-                            ' ERROR', iar(ibrk), ' smaller than ', iar(ibrk - 2), ' descending order !'
+                            ' ERROR', int_array(ibrk), ' smaller than ', int_array(ibrk - 2), ' descending order !'
                     call status%increase_error_count()
                 endif
             enddo

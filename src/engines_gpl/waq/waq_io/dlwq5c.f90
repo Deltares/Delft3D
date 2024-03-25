@@ -30,10 +30,10 @@ module m_dlwq5c
 contains
 
 
-    subroutine dlwq5c (fname, lunut, char_arr, iar, real_array, &
-            max_char_size, max_int_size, irmax, drar, noitm, &
+    subroutine dlwq5c (fname, lunut, char_arr, int_array, real_array, &
+            max_char_size, max_int_size, max_real_size, drar, noitm, &
             nodim, iorder, scale, itmnr, idmnr, &
-            amiss, nobrk, ierr, status)
+            amiss, num_records, ierr, status)
 
         ! Boundary and waste data new style Data retrieval from an ODS file
         !
@@ -47,11 +47,11 @@ contains
         !     ---------------------------------------------------------
         !     fname   char*(*)   1         input   filename of the ods file
         !     char_arr     character  *         local   character workspace
-        !     iar     integer  max_int_size       local   integer   workspace
-        !     real_array     real     irmax       local   real      workspace
+        !     int_array     integer  max_int_size       local   integer   workspace
+        !     real_array     real     max_real_size       local   real      workspace
         !     max_char_size   integer    1         input   max. char workspace dimension
         !     max_int_size   integer    1         input   max. int. workspace dimension
-        !     irmax   integer    1         input   max. real workspace dimension
+        !     max_real_size   integer    1         input   max. real workspace dimension
         !     drar    real*8     1         in/out  double precision workspace
         !     noitm   integer    1         input   number of bounds/wastes
         !     nodim   integer    1         input   number of concentrations
@@ -60,7 +60,7 @@ contains
         !     ioffc   integer    1         input   offset of the concentrations    ioffi   integer    1         input   offset in the integer array
         !     ioffi   integer    1         input   offset of the items             ioffi   integer    1         input   offset in the integer array
         !     amiss   real       1         input   missing value indicator
-        !     nobrk   integer    1         output  number of time steps found
+        !     num_records   integer    1         output  number of time steps found
         !     ierr    integer    1         output  error flag
         !     iwar    integer    1         in/out  cumulative warning count
         !
@@ -85,7 +85,7 @@ contains
         !     The map of the Integer array is:
         !     First NOITM + NODIM entries the names of ITEMS and SUBSTANCES
         !         IF IORDER = 1 then ITEMS first IF 2 then CONCENTRATIONS first
-        !     Then NOBRK time breakpoints to be read in eg in this routine
+        !     Then num_records time breakpoints to be read in eg in this routine
         !     The rest of the array is free working space
         !         Initially next NOITM + NODIM entries reserved for numbers of
         !              locations or substances as stored in the character array.
@@ -94,7 +94,7 @@ contains
         !         Initially next NOITM + NODIM entries reserved for numbers of
         !              locations or substances as stored in the ODS file for
         !                                  retrieval
-        !         Initially next NOBRK values are for retrieved time values
+        !         Initially next num_records values are for retrieved time values
         !
         !     The map of the Integer array is:
         !     IF (SCALE) First NODIM entries the scale factors
@@ -110,9 +110,9 @@ contains
         use m_sysi          ! Timer characteristics
         use time_module
 
-        integer(kind = int_wp) :: max_char_size, max_int_size, irmax
+        integer(kind = int_wp) :: max_char_size, max_int_size, max_real_size
         character*(*) char_arr(:), fname
-        integer(kind = int_wp) :: iar(:)
+        integer(kind = int_wp) :: int_array(:)
         real(kind = real_wp) :: real_array(:)
         logical       scale
         real(kind = dp) :: drar(*)
@@ -129,7 +129,7 @@ contains
         integer(kind = int_wp) :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
         integer(kind = int_wp) :: ierr, noloc, noit2, noitv, j
         integer(kind = int_wp) :: nottt, itmnr, notim, idmnr, i, ishft, ltot
-        integer(kind = int_wp) :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, nobrk, k6
+        integer(kind = int_wp) :: noitm, nshft, nopar, icnt, k5, nitm, k, k4, num_records, k6
         integer(kind = int_wp) :: iy1, im1, id1, ih1, in1, is1
         integer(kind = int_wp) :: iy2, im2, id2, ih2, in12
         integer(kind = int_wp) :: i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
@@ -162,10 +162,10 @@ contains
         cfile(3) = ' '
         k1 = nottt + 1
         call getdim (cfile, 0, cdummy, 0, 0, &
-                0, iar(k1:k1), ierror, cfile(3))
-        nsubs = iar(k1)
-        nlocs = iar(k1 + 1)
-        ntims = iar(k1 + 2)
+                0, int_array(k1:k1), ierror, cfile(3))
+        nsubs = int_array(k1)
+        nlocs = int_array(k1 + 1)
+        ntims = int_array(k1 + 2)
         !
         !     deal with locations ( j for characters, k for integers )
         j1 = nottt + 1
@@ -186,7 +186,7 @@ contains
         !    get the available locations
         char_arr(j1) = '*'
         call getloc (cfile, 0, char_arr(j1), 1, 0, &
-                0, k3, char_arr(j2), iar(k1:k1), iar(k2:k2), &
+                0, k3, char_arr(j2), int_array(k1:k1), int_array(k2:k2), &
                 noloc, ierror, cfile(3))
         !
         !    fill an array with wanted locations
@@ -198,9 +198,9 @@ contains
                 noitv = noitv + 1
                 char_arr(ioffa + noit2) = char_arr(ioffa + j)
                 char_arr(ioffc + noit2) = char_arr(ioffc + j)
-                iar(ioffa + noit2) = iar(ioffa + j)
-                iar(ioffc + noit2) = iar(ioffc + j)
-                iar(nottt + noit2) = -1
+                int_array(ioffa + noit2) = int_array(ioffa + j)
+                int_array(ioffc + noit2) = int_array(ioffc + j)
+                int_array(nottt + noit2) = -1
                 if (scale .and. iorder == 2) real_array(noit2) = real_array(j)
                 cycle
             end if
@@ -209,14 +209,14 @@ contains
                 noit2 = noit2 + 1
                 char_arr(ioffa + noit2) = char_arr(ioffa + j)
                 char_arr(ioffc + noit2) = char_arr(ioffc + j)
-                iar(ioffa + noit2) = iar(ioffa + j)
-                iar(ioffc + noit2) = iar(ioffc + j)
-                iar(nottt + noit2) = i
+                int_array(ioffa + noit2) = int_array(ioffa + j)
+                int_array(ioffc + noit2) = int_array(ioffc + j)
+                int_array(nottt + noit2) = i
                 cycle
             end if
-            write (lunut, 1070) iar(ioffa + j), char_arr(ioffa + j)
+            write (lunut, 1070) int_array(ioffa + j), char_arr(ioffa + j)
             call status%increase_warning_count()
-            if (iar(ioffa + j) < 0 .or. (iar(ioffa + j + 1) < 0 .and. j /= noitm)) then
+            if (int_array(ioffa + j) < 0 .or. (int_array(ioffa + j + 1) < 0 .and. j /= noitm)) then
                 write (lunut, 1080)
                 ierr = 2
                 if (timon) call timstop(ithndl)
@@ -233,11 +233,11 @@ contains
         end if
         do i = ioffa + noit2 + 1, ioffa + noit2 + ltot + noit2
             char_arr(i) = char_arr(i + ishft)
-            iar(i) = iar(i + ishft)
+            int_array(i) = int_array(i + ishft)
         end do
         do i = ioffc + noit2 + 1, ioffc + noit2 + ltot + noit2 * 2
             char_arr(i) = char_arr(i + ishft)
-            iar(i) = iar(i + ishft)
+            int_array(i) = int_array(i + ishft)
         end do
         nottt = nottt - ishft * 2
         itmnr = itmnr - ishft
@@ -269,7 +269,7 @@ contains
         !    get the available substances
         call getpar (cfile, 0, char_arr(j1), 1, 0, &
                 0, k3, 0, char_arr(j2), char_arr(j3), &
-                iar(k1:k1), iar(k2:k2), nopar, ierror, cfile(3))
+                int_array(k1:k1), int_array(k2:k2), nopar, ierror, cfile(3))
         !
         !     fill an array with wanted substances
         icnt = 0
@@ -277,14 +277,14 @@ contains
         nitm = nodim
         do j = 1, nitm
             k = j - icnt
-            iar(k5 + k) = 0
+            int_array(k5 + k) = 0
             if (char_arr(ioffb + j) == '&$&$SYSTEM_NAME&$&$!') cycle
             i = index_in_array(char_arr(ioffb + k)(1:20), char_arr(j1 + 1:nopar))
             if (i >= 1) then
-                iar(k5 + k) = i
+                int_array(k5 + k) = i
                 cycle
             end if
-            call compact_usefor_list(lunut, iar, itmnr, noitm, idmnr, &
+            call compact_usefor_list(lunut, int_array, itmnr, noitm, idmnr, &
                     nodim, iorder, char_arr, k5, ioffb, &
                     nshft, ioffd, k, icnt, ierr, status)
             if (timon) call timstop(ithndl)
@@ -298,7 +298,7 @@ contains
         k2 = 1
         if (scale) k2 = nscle / 2 + 2
         k5 = k2 + 3
-        k4 = (irmax - k5 * 2) / 2
+        k4 = (max_real_size - k5 * 2) / 2
         !     see if there is space enough
         k4 = min (k3, k4)
         !
@@ -315,22 +315,22 @@ contains
         !     get the available time values
         drar(k2) = 0
         call gettme (cfile, 0, drar(k2), 1, 0, &
-                0, k4, drar(k5), iar(k1:k1), nobrk, &
+                0, k4, drar(k5), int_array(k1:k1), num_records, &
                 ierror, cfile(3))
         !
         !     see if the found time values are within the range
-        if (nobrk >= 1) then
+        if (num_records >= 1) then
             write (lunut, 1020)
             a1 = deltim + itstrt * afact
             a2 = deltim + itstop * afact
             i1 = 1
             i2 = 1
-            do i = 1, nobrk
+            do i = 1, num_records
                 if (drar(k5 + i - 1) <= a1) i1 = i
                 if (drar(k5 + i - 1) < a2) i2 = i
             end do
-            if (i2 /= nobrk) i2 = i2 + 1
-            k6 = k5 + nobrk - 1
+            if (i2 /= num_records) i2 = i2 + 1
+            k6 = k5 + num_records - 1
             if (drar(k6) < a1) i2 = 1
             !        errors and warnings
             if (drar(k5) > a1) then
@@ -347,14 +347,14 @@ contains
                         iy2, im2, id2, ih2, in2, is2
                 call status%increase_warning_count()
             end if
-            nobrk = i2 - i1 + 1
+            num_records = i2 - i1 + 1
         end if
-        write (lunut, 1050) nobrk
-        if (nobrk == 1)    write (lunut, 1060)
+        write (lunut, 1050) num_records
+        if (num_records == 1)    write (lunut, 1060)
         !     times are converted to delwaq times
         do i = i1, i2
             a2 = drar(k5 + i - 1) - deltim
-            iar(k1 + i - i1) = a2 / afact + 0.5
+            int_array(k1 + i - i1) = a2 / afact + 0.5
         end do
         !      see if enough space is available
         !           nr substances  nr locations for retrieval
@@ -362,15 +362,15 @@ contains
         !           nr substances  nr locations for storage
         nt2 = nodim + noitm
         !           real retrieval space + 1
-        is = nt1 * nobrk + 1
+        is = nt1 * num_records + 1
         if (scale) is = is + nscle
         !           convert for double precission,
-        !           nobrk is max number of retrievals per invocation
-        is2 = (is + nobrk + 1) / 2 + 1
+        !           num_records is max number of retrievals per invocation
+        is2 = (is + num_records + 1) / 2 + 1
         !           then the offset increases
-        maxd = irmax - is
-        if (maxd < nobrk) then
-            write (lunut, 1010) is + nobrk, irmax
+        maxd = max_real_size - is
+        if (maxd < num_records) then
+            write (lunut, 1010) is + num_records, max_real_size
             ierr = 1
             if (timon) call timstop(ithndl)
             return
@@ -395,7 +395,7 @@ contains
         if (scale) ig = ig + nscle
         do i = 1, nodim
             ! this should correspond with the found substance numbers
-            kp = iar(nottt + noitm + i)
+            kp = int_array(nottt + noitm + i)
             if (kp < 0) cycle
             if (iorder == 1) then
                 ig = igs
@@ -404,7 +404,7 @@ contains
             end if
             do j = 1, noitm
                 ! this should correspond with the found location numbers
-                kl = iar(nottt + j)
+                kl = int_array(nottt + j)
                 if (kl > 0) then
                     loc(1) = kl
                     loc(2) = kl
@@ -419,19 +419,19 @@ contains
                 else
                     ig = ig + 1
                 end if
-                do k = 0, nobrk - 1
+                do k = 0, num_records - 1
                     real_array(ig2) = real_array(is + k)
                     !              skip a full matrix further, because this is this substance for all
                     !              breakpoints
                     ig2 = ig2 + nt1
-                end do ! k = 0 , nobrk-1
+                end do ! k = 0 , num_records-1
             end do ! do j = 1 , noitm
         end do ! do i = 1 , nodim
         do i = 1, nscle
-            iar(nottt + i) = i
+            int_array(nottt + i) = i
         end do
-        do i = 1, nobrk
-            iar(nottt + nscle + i) = iar(k1 + i - 1)
+        do i = 1, num_records
+            int_array(nottt + nscle + i) = int_array(k1 + i - 1)
         end do
         if (timon) call timstop(ithndl)
         return

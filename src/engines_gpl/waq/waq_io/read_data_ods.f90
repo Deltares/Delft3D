@@ -84,7 +84,7 @@ contains
         integer(kind = int_wp) :: noloc         ! number of locations in file
         integer(kind = int_wp) :: ndim1          ! first dimension
         integer(kind = int_wp) :: ndim2          ! second dimension
-        integer(kind = int_wp) :: nobrk         ! number of times in file
+        integer(kind = int_wp) :: num_records         ! number of times in file
         integer(kind = int_wp) :: iloc          ! location index / loop counter
         integer(kind = int_wp) :: ipar          ! parameter index / loop counter
         integer(kind = int_wp) :: ibrk          ! time index / loop counter
@@ -189,25 +189,25 @@ contains
         allocate(times(ntims), timetyp(ntims))
         timdef(1) = 0.0d0
         call gettme (cfile, 0, timdef, 1, 0, &
-                0, ntims, times, timetyp, nobrk, &
+                0, ntims, times, timetyp, num_records, &
                 ierror, cfile(3))
 
         ! see if the found time values are within the range
 
         afact = isfact / 864.0d+02
         if (isfact < 0) afact = -1.0d+00 / isfact / 864.0d+02
-        if (nobrk >= 1) then
+        if (num_records >= 1) then
             write (lunut, 1020)
             a1 = deltim + itstrt * afact
             a2 = deltim + itstop * afact
             i1 = 1
             i2 = 1
-            do ibrk = 1, nobrk
+            do ibrk = 1, num_records
                 if (times(ibrk) <= a1) i1 = ibrk
                 if (times(ibrk) < a2) i2 = ibrk
             enddo
-            if (i2 /= nobrk) i2 = i2 + 1
-            if (times(nobrk) < a1) i2 = 1
+            if (i2 /= num_records) i2 = i2 + 1
+            if (times(num_records) < a1) i2 = 1
 
             ! errors and warnings
 
@@ -217,20 +217,20 @@ contains
                 write (lunut, 1030)  iy1, im1, id1, ih1, in1, is1, &
                         iy2, im2, id2, ih2, in2, is2
             endif
-            if (times(nobrk) < a2) then
-                call gregor (times(nobrk), iy1, im1, id1, ih1, in1, is1, dummy)
+            if (times(num_records) < a2) then
+                call gregor (times(num_records), iy1, im1, id1, ih1, in1, is1, dummy)
                 call gregor (a2, iy2, im2, id2, ih2, in2, is2, dummy)
                 write (lunut, 1040)  iy1, im1, id1, ih1, in1, is1, &
                         iy2, im2, id2, ih2, in2, is2
             endif
-            nobrk = i2 - i1 + 1
+            num_records = i2 - i1 + 1
         endif
-        write (lunut, 1050) nobrk
-        if (nobrk == 1)    write (lunut, 1060)
+        write (lunut, 1050) num_records
+        if (num_records == 1)    write (lunut, 1060)
 
         ! times are converted to delwaq times
-        data_block%no_brk = nobrk
-        allocate(data_block%times(nobrk))
+        data_block%no_brk = num_records
+        allocate(data_block%times(num_records))
         do ibrk = i1, i2
             a2 = times(ibrk) - a1
             data_block%times(ibrk - i1 + 1) = a2 / afact + 0.5
@@ -248,19 +248,19 @@ contains
         data_block%no_param = data_param%no_item
         data_block%no_loc = data_loc%no_item
 
-        allocate(data_block%values(ndim1, ndim2, nobrk), buffer(nobrk))
+        allocate(data_block%values(ndim1, ndim2, num_records), buffer(num_records))
         data_block%values = amiss
 
         ! set the time margins for retrieval
         timdef(1) = times(1) - afact / 2.0
-        timdef(2) = times(nobrk) + afact / 2.0
+        timdef(2) = times(num_records) + afact / 2.0
         deallocate(times, timetyp)
 
         ! get the data themselves
         ! try the read the data in one time
-        allocate(buffer2(nsubs, nlocs, nobrk), stat = ierr_alloc)
+        allocate(buffer2(nsubs, nlocs, num_records), stat = ierr_alloc)
         if (ierr_alloc == 0) then
-            maxdim = nsubs * nlocs * nobrk
+            maxdim = nsubs * nlocs * num_records
             call getmat2(cfile, 0, ipar_ods, loc, timdef, &
                     amiss, maxdim, buffer2, ierror, &
                     cfile(3))
@@ -268,7 +268,7 @@ contains
                 if (ipar_ods(ipar) > 0) then
                     do iloc = 1, data_loc%no_item
                         if (iloc_ods(iloc) > 0) then
-                            do ibrk = 1, nobrk
+                            do ibrk = 1, num_records
                                 if (iorder == ORDER_PARAM_LOC) then
                                     data_block%values(ipar, iloc, ibrk) = buffer2(ipar_ods(ipar), iloc_ods(iloc), ibrk)
                                 else
@@ -289,9 +289,9 @@ contains
                             loc(1) = iloc_ods(iloc)
                             loc(2) = iloc_ods(iloc)
                             call getmat (cfile, 0, ipar_ods(ipar), loc, timdef, &
-                                    amiss, nobrk, buffer, ierror, &
+                                    amiss, num_records, buffer, ierror, &
                                     cfile(3))
-                            do ibrk = 1, nobrk
+                            do ibrk = 1, num_records
                                 if (iorder == ORDER_PARAM_LOC) then
                                     data_block%values(ipar, iloc, ibrk) = buffer(ibrk)
                                 else

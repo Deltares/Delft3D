@@ -56,9 +56,9 @@ contains
 
     end subroutine scale_array
 
-    subroutine assign_matrix(lunut, iar, noitm, itmnr, nodim, &
+    subroutine assign_matrix(lunut, int_array, noitm, itmnr, nodim, &
             idmnr, iorder, real_array, iopt, rmat, &
-            nocol, nobrk, amiss, iarp, rmatu)
+            nocol, num_records, amiss, iarp, rmatu)
 
         !! Assign matrix according to computational rules
         !!     LOGICAL UNITS      : LUNUT - report file
@@ -68,7 +68,7 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     IAR     INTEGER    *         INPUT   array with arithmetic rules
+        !     int_array     INTEGER    *         INPUT   array with arithmetic rules
         !     NOITM   INTEGER    1         IN      number of items for computation
         !     ITMNR   INTEGER    1         IN      number of items for output
         !     NODIM   INTEGER    1         IN/OUT  number of conc. for comput.
@@ -77,7 +77,7 @@ contains
         !     real_array     REAL       *         INPUT   real constants in formulae
         !     IOPT    LOGICAL    *         INPUT   3 & 4 is Fourier or harmonics
         !     RMAT    REAL       *         INPUT   real matrix of read values
-        !     NOBRK   INTEGER    1         OUTPUT  number of records read
+        !     num_records   INTEGER    1         OUTPUT  number of records read
         !     AMISS   REAL       1         INPUT   this is a missing value
         !     IARP    INTEGER    *         INPUT   array with item pointers in RMAT
         !     RMATU   REAL       *         OUTPUT  real matrix of evaluated values
@@ -89,8 +89,8 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: ioff1, noitm, itmnr, idmnr, nodim, iorder, ioff0
         integer(kind = int_wp) :: locbas, iloc, itel, itels, ifrst, ibrk, ioff, iopt
-        integer(kind = int_wp) :: ip, ip2, lunut, iloco, nocol, nobrk, ioff2
-        integer :: iar(:), i, iarp(:)
+        integer(kind = int_wp) :: ip, ip2, lunut, iloco, nocol, num_records, ioff2
+        integer :: int_array(:), i, iarp(:)
         real :: accum, rmatu(:), amaxv, amiss, aminv
         real :: real_array(:), rmat(:)
 
@@ -133,8 +133,8 @@ contains
             rmatu(itel) = 0
         endif
         iloc = iloc + 1
-        ip = iar(iloc + ioff0)
-        ip2 = iar(iloc + ioff1)
+        ip = int_array(iloc + ioff0)
+        ip2 = int_array(iloc + ioff1)
         ! normal processing
         if (ip > -900000) then
             ! close pending arrithmatic in the previous itel
@@ -330,7 +330,7 @@ contains
             if (iorder == 2 .and. nodim == 0) ifrst = -1
             ibrk = ibrk + 1
         endif
-        if (ibrk <= nobrk) goto 10
+        if (ibrk <= num_records) goto 10
 
         ! compact the pointers
         ioff1 = ioff1 + locbas
@@ -338,20 +338,20 @@ contains
             ioff0 = itmnr
             ioff2 = noitm + itmnr
             do i = 1, idmnr
-                iar(ioff0 + i) = iar(ioff2 + i) ! it's here where the value -1300000000 gets in
+                int_array(ioff0 + i) = int_array(ioff2 + i) ! it's here where the value -1300000000 gets in
             end do
-            do i = 1, nobrk
-                iar(ioff0 + idmnr + i) = iar(ioff1 + i)
+            do i = 1, num_records
+                int_array(ioff0 + idmnr + i) = int_array(ioff1 + i)
             end do
         endif
         if (iorder == 2) then ! concentration first
             ioff0 = idmnr
             ioff2 = nodim + idmnr
             do i = 1, itmnr
-                iar(ioff0 + i) = iar(ioff2 + i) ! it's here where the value -1300000000 gets in
+                int_array(ioff0 + i) = int_array(ioff2 + i) ! it's here where the value -1300000000 gets in
             end do
-            do i = 1, nobrk
-                iar(ioff0 + itmnr + i) = iar(ioff1 + i)
+            do i = 1, num_records
+                int_array(ioff0 + itmnr + i) = int_array(ioff1 + i)
             end do
         endif
         if (timon) call timstop(ithndl)
@@ -604,7 +604,7 @@ contains
 
         integer(kind = int_wp) :: iorder        ! order of the parameters and locations in the data array
         integer(kind = int_wp) :: functype      ! function type
-        integer(kind = int_wp) :: nobrk         ! number of breakpoints
+        integer(kind = int_wp) :: num_records         ! number of breakpoints
         integer(kind = int_wp) :: ndim1         ! first dimension of values
         integer(kind = int_wp) :: ndim2         ! second dimension of values
         integer(kind = int_wp) :: ibrk          ! loop counter breakpoints
@@ -630,13 +630,13 @@ contains
         maxiem = .false.
         ndim1 = wdata%no_param
         ndim2 = wdata%no_loc
-        nobrk = fdata%no_brk
-        allocate(wdata%times(nobrk), wdata%values(ndim1, ndim2, nobrk))
-        wdata%no_brk = nobrk
+        num_records = fdata%no_brk
+        allocate(wdata%times(num_records), wdata%values(ndim1, ndim2, num_records))
+        wdata%no_brk = num_records
         wdata%times = fdata%times
 
         ! assignment loop
-        breakpoint_loop : do ibrk = 1, nobrk
+        breakpoint_loop : do ibrk = 1, num_records
 
             ! if harmonics then deal with the phase
             if (functype == FUNCTYPE_HARMONIC .or. &
@@ -861,7 +861,7 @@ contains
         logical :: deflts       ! defaults for the parameters
         integer(kind = int_wp) :: nopar         ! dlwqdata%no_param
         integer(kind = int_wp) :: noloc         ! dlwqdata%no_loc
-        integer(kind = int_wp) :: nobrk         ! dlwqdata%no_brk
+        integer(kind = int_wp) :: num_records         ! dlwqdata%no_brk
         integer(kind = int_wp) :: ftype         ! dlwqdata%functype
         integer(kind = int_wp) :: iorder        ! dlwqdata%iorder
         integer(kind = int_wp) :: ipar          ! loop counter
@@ -886,7 +886,7 @@ contains
         ! initialisation
         nopar = dlwqdata%no_param
         noloc = dlwqdata%no_loc
-        nobrk = dlwqdata%no_brk
+        num_records = dlwqdata%no_brk
         ftype = dlwqdata%functype
         iorder = dlwqdata%iorder
         deflts = dlwqdata%loc_defaults
@@ -918,7 +918,7 @@ contains
             endif
 
             ! perform the actual scaling
-            do ibrk = 1, nobrk
+            do ibrk = 1, num_records
                 do iloc = 1, noloc
                     do ipar = 1, nopar
                         if (iorder == ORDER_PARAM_LOC) then
@@ -936,8 +936,8 @@ contains
         endif
 
         ! convert breakpoints, no more, already been done directly after the read
-        if (nobrk > 1) then
-            if (output_verbose_level >= 4) write (lunut, 1040) strng3, nobrk
+        if (num_records > 1) then
+            if (output_verbose_level >= 4) write (lunut, 1040) strng3, num_records
             if (deflts .and. output_verbose_level >= 4) write (lunut, 1050)
         else
             if (deflts) then
@@ -949,8 +949,8 @@ contains
 
         ! write formatted output
         if (output_verbose_level >= 4) then
-            do ibrk = 1, nobrk
-                if (nobrk > 1) then
+            do ibrk = 1, num_records
+                if (num_records > 1) then
                     if (ftype == 1) write (lunut, 1070) strng3, ibrk, dlwqdata%times(ibrk)
                     if (ftype == 2) write (lunut, 1070) strng3, ibrk, dlwqdata%times(ibrk)
                     if (ftype == 3) write (lunut, 1080) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
