@@ -36,15 +36,8 @@ contains
             amiss, num_records, ierr, status)
 
         ! Boundary and waste data new style Data retrieval from an ODS file
-        !
-        !     Subroutines called : convert_time_format - converting times of breakpoints
-        !
         !     Logical units      : lunut   = report file
         !
-        !     Parameters    :
-        !
-        !     Name    Kind     Length     Funct.  Description
-        !     ---------------------------------------------------------
         !     fname   char*(*)   1         input   filename of the ods file
         !     char_arr     character  *         local   character workspace
         !     int_array     integer  max_int_size       local   integer   workspace
@@ -101,11 +94,7 @@ contains
         !     Then the matrix of values to be read in eg in this routine
         !
         use m_usefor, only : compact_usefor_list
-        use m_gettme
-        use m_getpar
-        use m_getmat
-        use m_getloc
-        use m_getdim
+        use m_ods, only : gettme, getpar, getmat, getloc, getdim
         use timers       !   performance timers
         use m_sysi          ! Timer characteristics
         use time_module
@@ -120,8 +109,8 @@ contains
         real(kind = real_wp) :: amiss
 
         type(error_status), intent(inout) :: status !< current error status
-        !
-        !     local declarations
+
+        ! local declarations
         dimension     loc(3)
         real(kind = dp) :: afact, a1, a2, d_beg, d_end, dummy
         character*3   cdummy
@@ -134,11 +123,11 @@ contains
         integer(kind = int_wp) :: iy2, im2, id2, ih2, in12
         integer(kind = int_wp) :: i1, i2, in2, is2, nt1, nt2, is, maxd, loc, ig, igs, kp
         integer(kind = int_wp) :: kl, ig2
-        !
+
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("dlwq5c", ithndl)
-        !
-        !     array offsets
+
+        ! array offsets
         nottt = itmnr + noitm + idmnr + nodim
         if (iorder == 1) then
             ioffa = itmnr
@@ -153,11 +142,11 @@ contains
             ioffd = 0
             nscle = noitm
         end if
-        !
-        !     write the ods file name
+
+        ! write the ods file name
         write (lunut, 1000) fname
-        !
-        !     get the dimensions of the ods file
+
+        ! get the dimensions of the ods file
         cfile(1) = fname
         cfile(3) = ' '
         k1 = nottt + 1
@@ -166,15 +155,15 @@ contains
         nsubs = int_array(k1)
         nlocs = int_array(k1 + 1)
         ntims = int_array(k1 + 2)
-        !
-        !     deal with locations ( j for characters, k for integers )
+
+        !  deal with locations ( j for characters, k for integers )
         j1 = nottt + 1
         j2 = j1 + 1
         k1 = nottt + noitm + 1
         j3 = j2 + nlocs
         k2 = k1 + nlocs
-        !
-        !     see if storage is available
+
+        !  see if storage is available
         k3 = min ((max_int_size - k2), (max_char_size - j3))
         if (k3 < nlocs) then
             write (lunut, 1010) k3, nlocs
@@ -182,14 +171,14 @@ contains
             if (timon) call timstop(ithndl)
             return
         end if
-        !
-        !    get the available locations
+
+        ! get the available locations
         char_arr(j1) = '*'
         call getloc (cfile, 0, char_arr(j1), 1, 0, &
                 0, k3, char_arr(j2), int_array(k1:k1), int_array(k2:k2), &
                 noloc, ierror, cfile(3))
-        !
-        !    fill an array with wanted locations
+
+        ! fill an array with wanted locations
         noit2 = 0
         noitv = 0
         do j = 1, noitm
@@ -223,8 +212,8 @@ contains
                 return
             end if
         end do
-        !
-        !     compact the pointers for unresolved externals
+
+        ! compact the pointers for unresolved externals
         ishft = noitm - noit2
         if (iorder == 1) then
             ltot = idmnr + nodim

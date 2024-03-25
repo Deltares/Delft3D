@@ -36,11 +36,7 @@ contains
 
         !! read a block of data from ODS file
 
-        use m_gettme
-        use m_getpar
-        use m_getmat
-        use m_getloc
-        use m_getdim
+        use m_ods, only : gettme, getpar, getmat2, getmat, getdim, getloc
         use dlwq_hyd_data   ! for definition and storage of data
         use timers          !   performance timers
         use m_sysi          ! Timer characteristics

@@ -28,7 +28,7 @@ module m_dlwq5d
 contains
 
 
-    SUBROUTINE DLWQ5D (file_unit, int_array, real_array, max_int_size, max_real_size, &
+    SUBROUTINE DLWQ5D(file_unit, int_array, real_array, max_int_size, max_real_size, &
             IPOSR, num_significant_char, ILUN, LCH, LSTACK, &
             CCHAR, CHULP, NOTOT, NOTOTC, time_dependent, num_records, &
             time_function_type, is_date_format, is_yyddhh_format, ITFACT, ITYPE, &
@@ -86,7 +86,6 @@ contains
 
         if (timon) call timstrt("dlwq5d", ithndl)
 
-        ! some initialisation
         ignore = .false.
         newrec = .false.
         if (time_dependent) newrec = .true.                          ! it is a time function
@@ -110,12 +109,12 @@ contains
         ! a token has arrived
         if (itype == 1) then                                     ! that must be an absolute timer string
             call convert_string_to_time_offset (chulp, ihulp, .false., .false., ierr)    !  2^31 =  2147483648
-            if (ihulp == -999) then                              !       yyyydddhhmmss so 64 bits integer
+            if (ihulp == -999) then                              ! yyyydddhhmmss so 64 bits integer
                 ierr = 1
                 write (file_unit, 1020) trim(chulp)
                 goto 9999
             endif
-            if (ierr   /=    0) then                              ! the found entry is not a new time value
+            if (ierr /= 0) then                              ! the found entry is not a new time value
                 if (num_records <= 1) then
                     write (file_unit, 1040) num_records
                     !ierr3 = ierr3 + 1
