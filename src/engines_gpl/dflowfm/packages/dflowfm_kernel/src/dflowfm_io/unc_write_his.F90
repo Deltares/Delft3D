@@ -1469,33 +1469,6 @@ subroutine unc_write_his(tim)            ! wrihis
             enddo
          end if
          if (ngenstru > 0) then
-            valobs(1:ngenstru, 1:NUMVALS_GENSTRU) = transpose(valgenstru)
-            ierr = nf90_put_var(ihisfile, id_genstru_dis   , valobs(1:ngenstru,IVAL_DIS),       (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_crestl, valobs(1:ngenstru,IVAL_CRESTL),    (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_edgel , valobs(1:ngenstru,IVAL_EDGEL),     (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_openw , valobs(1:ngenstru,IVAL_OPENW),     (/ 1, it_his /)) ! changed
-            ierr = nf90_put_var(ihisfile, id_genstru_s1up  , valobs(1:ngenstru,IVAL_S1UP),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_s1dn  , valobs(1:ngenstru,IVAL_S1DN),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_head,   valobs(1:ngenstru,IVAL_HEAD),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_au,     valobs(1:ngenstru,IVAL_AREA),      (/ 1, it_his /))
-            ierr = nf90_put_var(ihisfile, id_genstru_vel,    valobs(1:ngenstru,IVAL_VEL),       (/ 1, it_his /))
-            if (network%sts%numGeneralStructures > 0) then
-               ierr = nf90_put_var(ihisfile, id_genstru_s1crest,       valobs(1:ngenstru,IVAL_S1ONCREST),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_crestw,        valobs(1:ngenstru,IVAL_CRESTW),     (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_stat,      int(valobs(1:ngenstru,IVAL_STATE)),     (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_forcedif,      valobs(1:ngenstru,IVAL_FORCEDIF),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_openh,         valobs(1:ngenstru,IVAL_OPENH),      (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_uppl,          valobs(1:ngenstru,IVAL_UPPL),       (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_open, valobs(1:ngenstru,IVAL_DIS_OPEN),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_over, valobs(1:ngenstru,IVAL_DIS_OVER),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_dis_gate_under,valobs(1:ngenstru,IVAL_DIS_UNDER),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_open,       valobs(1:ngenstru,IVAL_AREA_OPEN),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_over,       valobs(1:ngenstru,IVAL_AREA_OVER),  (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_au_under,      valobs(1:ngenstru,IVAL_AREA_UNDER), (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateopen,   valobs(1:ngenstru,IVAL_VEL_OPEN),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateover,   valobs(1:ngenstru,IVAL_VEL_OVER),   (/ 1, it_his /))
-               ierr = nf90_put_var(ihisfile, id_genstru_velgateunder,  valobs(1:ngenstru,IVAL_VEL_UNDER),  (/ 1, it_his /))
-            end if
             ! write geometry variables at the first time of history output
             if (it_his == 1) then
                if (network%sts%numGeneralStructures > 0) then ! new general structure
