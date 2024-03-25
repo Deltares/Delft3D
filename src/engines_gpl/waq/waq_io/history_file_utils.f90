@@ -22,6 +22,8 @@
 !!  rights reserved.
 module m_ods
     use m_waq_precision
+    use m_open_waq_files
+    use m_file_path_utils, only : extract_file_extension
 
     implicit none
 
@@ -30,10 +32,10 @@ module m_ods
 
 contains
 
-    subroutine getloc (file_name, itype, locdef, maxdef, iprdep, &
+    subroutine getloc(file_name, itype, locdef, maxdef, iprdep, &
             itmdep, maxlst, loclst, loctyp, locnr, &
             nrlst, ierror, option)
-        ! ODS GETLOC routine for DELWAQ HIS-files
+        ! GETLOC routine for DELWAQ HIS-files
         !
         !     file_name   CHAR*256   3        IN/LOC  Complete file name
         !     ITYPE   INTEGER    1        INPUT   File type
@@ -50,8 +52,6 @@ contains
         !     OPTION  CHAR*256   1        IN/OUT  For future use
 
         use m_string_manipulation, only : upper_case
-        use m_open_waq_files
-        use m_file_path_utils, only : extract_file_extension
 
         character*256 file_name(3), option
         character*20  locdef(maxdef), loclst(maxlst)
@@ -133,13 +133,13 @@ contains
         130 ierror = 13
 
         200 close (lun)
-        return
+
     end subroutine getloc
 
-    subroutine gettme (fname, itype, timdef, maxdef, iprdep, &
+    subroutine gettme(fname, itype, timdef, maxdef, iprdep, &
             locdep, maxlst, timlst, itmtyp, nrlst, &
             ierror, option)
-        ! ODS GETTME routine for DELWAQ HIS-files
+        ! GETTME routine for DELWAQ HIS-files
         !
         !     FNAME   CHAR*256   3        IN/LOC  Complete file name
         !     ITYPE   INTEGER    1        INPUT   File type
@@ -156,8 +156,6 @@ contains
 
         use time_module
         use m_string_manipulation, only : upper_case
-        use m_open_waq_files
-        use m_file_path_utils, only : extract_file_extension
 
         character*256    fname (3), option
         integer(kind = int_wp) :: itmtyp(*)
@@ -260,8 +258,6 @@ contains
     subroutine getpar(fname, itype, pardef, maxdef, itmdep, &
             locdep, maxlst, lang, parlst, paruni, &
             iprtyp, iprcod, nrlst, ierror, option)
-        use m_open_waq_files
-
         !! ods getpar routine for delwaq his-files
         !
         !     fname   char*256   3        in/loc  complete file name
@@ -339,7 +335,7 @@ contains
 
     end subroutine getpar
 
-    subroutine getmat (fname, itype, iprcod, loc, tim, &
+    subroutine getmat(fname, itype, iprcod, loc, tim, &
             amiss, maxdim, data, ierror, &
             option)
         !! ods getmat routine for delwaq his-files
@@ -356,8 +352,6 @@ contains
         !     option  char*256   1        in/out  for future use
         use time_module
         use m_string_manipulation, only : upper_case
-        use m_open_waq_files
-        use m_file_path_utils, only : extract_file_extension
 
         character*256 fname (3), option
         real(kind = real_wp) :: data(*)
@@ -455,8 +449,6 @@ contains
 
         use time_module
         use m_string_manipulation, only : upper_case
-        use m_file_path_utils, only : extract_file_extension
-        use m_open_waq_files
 
         !     fname   char*256   3        in/loc  complete file name
         !     itype   integer    1        input   file type
@@ -551,7 +543,7 @@ contains
 
     end subroutine getmat2
 
-    subroutine getdim (fname, itype, dim, iprdep, itmdep, &
+    subroutine getdim(fname, itype, dim, iprdep, itmdep, &
             locdep, ndim, ierror, option)
         !! ods getdim routine for delwaq his-files
         !!
@@ -572,8 +564,6 @@ contains
         !            ndim(3) = nr of time steps in the file
 
         use m_string_manipulation, only : upper_case
-        use m_open_waq_files
-        use m_file_path_utils, only : extract_file_extension
 
         character*256 fname(3), option
         character*3   dim
