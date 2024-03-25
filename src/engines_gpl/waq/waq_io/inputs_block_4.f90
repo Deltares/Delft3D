@@ -59,9 +59,6 @@ contains
         !>               - information on the time series of additional velocities
         !>               - information on the time series of from- and to lengthes
 
-
-        ! Subroutines called : BOUND, read_constants_time_variables, process_simulation_input_options, read_constant_data, SCALE, CHECK, open_waq_files, RDTOK1 tokenized data reading
-
         !   Logical units      : LUN(27) = unit stripped DELWAQ input file
         !                        LUN(29) = unit formatted output file
         !                        LUN( 2) = unit intermediate file (system)
