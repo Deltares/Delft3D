@@ -655,7 +655,6 @@ contains
 
         use input_utils, only : read_item_num
         use matrix_utils, only : dmatrix
-        use m_fmread
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
