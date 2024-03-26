@@ -105,7 +105,7 @@ program agrhyd
     ! get input file from commandline
     lunrep = 9
 
-    call getarg(1, input_file)
+    call get_command_argument(1, input_file)
     if (input_file == ' ') then
         write(*, '(a,$)') ' Enter agrhyd ini-filename: '
         read (*, '(a)') input_file
