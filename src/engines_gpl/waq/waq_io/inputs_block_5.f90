@@ -87,7 +87,7 @@ contains
         type(error_status) :: status !< current error status
 
         character*1   cdummy
-        character*255 chulp
+        character*255 charachter_output
         logical       disper
         character(len = 20), allocatable :: bndid(:)             ! boundary id's 20 character
         character(len = 40), allocatable :: bndname(:)           ! boundary names
@@ -104,7 +104,7 @@ contains
         integer(kind = int_wp) :: k, i, ierr_alloc
         integer(kind = int_wp) :: ifact, binary_work_file, ierr2, iwar2, ifound, ityp2
         integer(kind = int_wp) :: iaropt, nover, mxover, ibnd, it, nosubs
-        integer(kind = int_wp) :: ierrh, ihulp, rhulp, ifound2, l, itype
+        integer(kind = int_wp) :: ierrh, int_output, real_output, ifound2, l, itype
         if (timon) call timstrt("read_block_5_boundary_conditions", ithndl)
 
         ! init
@@ -119,7 +119,7 @@ contains
 
         if (nobnd == 0) then
             write (lunut, 2000)
-            ifound = gettoken (chulp, idummy, rdummy, itype, ierr2)
+            ifound = gettoken (charachter_output, idummy, rdummy, itype, ierr2)
             if (ierr2 == 2) then
                 goto 175
             else if (itype==2 .and. idummy==0) then
@@ -161,7 +161,7 @@ contains
             ! read id, do not truncate yet
             itype = 1
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, bndid_long(i), ihulp, rhulp, &
+                    iposr, npos, bndid_long(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
 
@@ -169,12 +169,12 @@ contains
             ! read also name and type
             itype = 1
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, bndname(i), ihulp, rhulp, &
+                    iposr, npos, bndname(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             itype = 1
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, bndtype_long(i), ihulp, rhulp, &
+                    iposr, npos, bndtype_long(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
 
@@ -260,14 +260,14 @@ contains
         ! until we find an integer
         itype = 2
         call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                iposr, npos, cdummy, iaropt, rhulp, &
+                iposr, npos, cdummy, iaropt, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) then
             write (lunut, 2101)
             itype = 1
             do
                 call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                        iposr, npos, cdummy, iaropt, rhulp, &
+                        iposr, npos, cdummy, iaropt, real_output, &
                         itype, ierr2)
                 read(cdummy, *, iostat = ierr2) iaropt
                 if (ierr2 == 0) then
@@ -294,7 +294,7 @@ contains
             do k = 1, nobnd
                 itype = 2
                 call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                        iposr, npos, cdummy, idummy, rhulp, &
+                        iposr, npos, cdummy, idummy, real_output, &
                         itype, ierr2)
                 if (ierr2 > 0) goto 170
             end do
@@ -304,7 +304,7 @@ contains
         do k = 1, nobnd
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, int_array(k), rhulp, &
+                    iposr, npos, cdummy, int_array(k), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
@@ -336,7 +336,7 @@ contains
         110 write (lunut, 2190)
         itype = 2
         call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                iposr, npos, cdummy, idef, rhulp, &
+                iposr, npos, cdummy, idef, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) goto 170
         if (idef < 0) then
@@ -350,7 +350,7 @@ contains
         ! nr of overridings
         itype = 2
         call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                iposr, npos, cdummy, nover, rhulp, &
+                iposr, npos, cdummy, nover, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) goto 170
         if (is_date_format) then
@@ -367,13 +367,13 @@ contains
         do k = 1, min(nover, mxover)
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, int_array(k + nobnd), rhulp, &
+                    iposr, npos, cdummy, int_array(k + nobnd), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             ibnd = max(1, min(iabs(int_array(k + nobnd)), nobnd))
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, int_array(ibnd), rhulp, &
+                    iposr, npos, cdummy, int_array(ibnd), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
@@ -381,12 +381,12 @@ contains
         do k = 1, nover - mxover
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, idummy, rhulp, &
+                    iposr, npos, cdummy, idummy, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, idummy, rhulp, &
+                    iposr, npos, cdummy, idummy, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
@@ -458,7 +458,7 @@ contains
         IF (ALLOCATED(BNDTYPE)) DEALLOCATE(BNDTYPE)
         IF (IERR2 > 0) call status%increase_error_count()
         IF (IERR2 == 3) CALL SRSTOP(1)
-        175 call check_error(chulp, iwidth, 5, ierr2, status)
+        175 call check_error(charachter_output, iwidth, 5, ierr2, status)
         180 if (timon) call timstop(ithndl)
         RETURN
 

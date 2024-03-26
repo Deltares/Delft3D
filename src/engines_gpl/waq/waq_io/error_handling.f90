@@ -45,10 +45,10 @@ contains
         integer(kind = int_wp), intent(in) :: iwidth !< width of the output file
         type(error_status), intent(inout) :: status !< current error status
 
-        character(1) :: chulp ! to convert block number to character
+        character(1) :: charachter_output ! to convert block number to character
 
         integer(kind = int_wp) :: idummy ! argument for token reading
-        integer(kind = int_wp) :: ihulp  ! return value gettoken
+        integer(kind = int_wp) :: int_output  ! return value gettoken
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: itype  ! argument for token reading
 
@@ -59,7 +59,7 @@ contains
         ! First round of dealing with ierr2
         select case (ierr2)
         case (0)               !   look for end of block
-            ihulp = gettoken (cdummy, idummy, rdummy, itype, ierr2)
+            int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
         case (1)               !   with error
             write (lunut, 2030) iblock
             call status%increase_error_count()
@@ -77,7 +77,7 @@ contains
             call status%increase_error_count()
             write (lunut, 2010) iblock
             do while (ierr2 == 0)
-                ihulp = gettoken (cdummy, idummy, rdummy, itype, ierr2)
+                int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
             enddo
         case (3)               !   fatal
             write (lunut, 2020) iblock
@@ -86,8 +86,8 @@ contains
         end select
 
         if (ierr2 == 2) then          !   end block found check number
-            write (chulp, '(i1)') iblock
-            if (chulp /= cdummy(2:2)) then
+            write (charachter_output, '(i1)') iblock
+            if (charachter_output /= cdummy(2:2)) then
                 write (lunut, 2020) iblock
                 call status%increase_error_count()
                 write (lunut, 2040) status%ierr

@@ -89,7 +89,7 @@ contains
 
         !     Locals
 
-        character(40)                 chulp       (3) !  Help for reading
+        character(40)                 charachter_output       (3) !  Help for reading
         character(255)                 cdummy          !  Help for reading
         character(20), allocatable :: wstid       (:) !  wasteload id's 20 character
         character(40), allocatable :: wstname     (:) !  wasteload names
@@ -167,12 +167,12 @@ contains
 
             iwsttype(i) = 0
             iwstkind(i) = 0
-            if (gettoken(chulp(1), iwstseg(i), itype, ierr2) > 0) goto 20
+            if (gettoken(charachter_output(1), iwstseg(i), itype, ierr2) > 0) goto 20
             if (itype == 1) then                  !    character, either SURFACE, BANK or BOTTOM
                 iwstseg(i) = 0
-                if (chulp(1) == "SURFACE") iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
-                if (chulp(1) == "BANK") iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
-                if (chulp(1) == "BED") iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
+                if (charachter_output(1) == "SURFACE") iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
+                if (charachter_output(1) == "BANK") iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
+                if (charachter_output(1) == "BED") iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
                 if (iwstseg(i) == 0) then
                     ierr2 = 1
                     goto 20
