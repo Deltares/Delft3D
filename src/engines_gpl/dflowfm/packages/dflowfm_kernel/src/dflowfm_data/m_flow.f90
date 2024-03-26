@@ -546,6 +546,8 @@
  integer, parameter :: IDX_EVAP_ICEPT = 39
  integer, parameter :: IDX_PRECIP_GROUND = 40
 
+ logical :: ucxyq_read_rst       !< determines if variables `ucxq` and `ucxy` have been read from restart.
+ 
 contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_flow() instead.

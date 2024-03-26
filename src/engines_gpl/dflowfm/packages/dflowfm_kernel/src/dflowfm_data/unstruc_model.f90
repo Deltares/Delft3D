@@ -278,6 +278,7 @@ implicit none
 
     integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
     integer, private                          :: idensform_input         !< input value of idensform in mdu file
+    
 contains
 
 
