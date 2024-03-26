@@ -3803,8 +3803,8 @@ end subroutine partition_make_globalnumbers
          end do
       end do
       
-      call MPI_allreduce(valobs,valobs_all,numobs*numvals,mpi_double_precision,mpi_max,DFM_COMM_DFMWORLD,ierror)
-      valobs = valobs_all
+!      call MPI_allreduce(valobs,valobs_all,numobs*numvals,mpi_double_precision,mpi_max,DFM_COMM_DFMWORLD,ierror)
+!      valobs = valobs_all
       
 !     set values of observation stations that were not found in any subdomain
       do iobs=1,numobs
@@ -3823,7 +3823,7 @@ end subroutine partition_make_globalnumbers
    !> Reduce the statistical output before writing
    subroutine reduce_statistical_output(output_set)
       use m_statistical_output, only: t_output_variable_set
-      use m_observations, only: kobs
+      use m_missing
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3837,19 +3837,27 @@ end subroutine partition_make_globalnumbers
       integer                                         :: ierror
       
 #ifdef HAVE_MPI
-      ! Set values for locations outside this partition to minus infinity for all statistical output variables
       do vari = 1,output_set%count
+         
+         ! Set values for locations outside this partition to minus infinity so mpi_max will work
          stat_output => output_set%statout(vari)%stat_output
          do loci = 1,size(stat_output)
-            if (kobs(loci) == 0) then
-               ! Location lies outside partition
+            if (stat_output(loci) == DMISS) then
                stat_output(loci) = dsmall
             end if
          end do
-      end do
       
-      ! Reduce stat_output
-      call MPI_allreduce(MPI_in_place, stat_output, size(stat_output), mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
+         ! Reduce stat_output
+         call MPI_allreduce(MPI_in_place, stat_output, size(stat_output), mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
+         
+         ! Set values for locations outside this partition back to DMISS
+         do loci = 1,size(stat_output)
+            if (stat_output(loci) == dsmall) then
+               stat_output(loci) = DMISS
+            end if
+         end do
+         
+      end do
 #endif
 
    end subroutine reduce_statistical_output
