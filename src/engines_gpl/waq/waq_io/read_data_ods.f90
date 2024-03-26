@@ -32,7 +32,7 @@ module m_read_data_ods
 contains
 
 
-    subroutine read_data_ods(lunut, fname, data_param, data_loc, amiss, data_block, ierr)
+    subroutine read_data_ods(lunut, file_name, data_param, data_loc, missing_value, data_block, ierr)
 
         !! read a block of data from ODS file
 
@@ -43,10 +43,10 @@ contains
         use time_module
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
-        character(len = *), intent(in) :: fname        ! filename ODS file
+        character(len = *), intent(in) :: file_name        ! filename ODS file
         type(t_dlwq_item), intent(inout) :: data_param   ! list of param items in the data
         type(t_dlwq_item), intent(inout) :: data_loc     ! list of loc items in the data
-        real(kind = real_wp), intent(in) :: amiss         ! missing value
+        real(kind = real_wp), intent(in) :: missing_value         ! missing value
         type(t_dlwqdata), intent(inout) :: data_block   ! data block
         integer(kind = int_wp), intent(inout) :: ierr          ! cummulative error count
 
@@ -100,11 +100,11 @@ contains
 
         ! write the ods file name
 
-        write (lunut, 1000) fname
+        write (lunut, 1000) file_name
 
         ! get the dimensions of the ods file
 
-        cfile(1) = fname
+        cfile(1) = file_name
         cfile(3) = ' '
         call get_dimension (cfile, 0, cdummy, 0, 0, &
                 0, loc, ierror, cfile(3))
@@ -245,7 +245,7 @@ contains
         data_block%no_loc = data_loc%no_item
 
         allocate(data_block%values(ndim1, ndim2, num_records), buffer(num_records))
-        data_block%values = amiss
+        data_block%values = missing_value
 
         ! set the time margins for retrieval
         timdef(1) = times(1) - afact / 2.0
@@ -258,7 +258,7 @@ contains
         if (ierr_alloc == 0) then
             maxdim = nsubs * nlocs * num_records
             call get_matrix_2(cfile, 0, ipar_ods, loc, timdef, &
-                    amiss, maxdim, buffer2, ierror, &
+                    missing_value, maxdim, buffer2, ierror, &
                     cfile(3))
             do ipar = 1, data_param%no_item
                 if (ipar_ods(ipar) > 0) then
@@ -285,7 +285,7 @@ contains
                             loc(1) = iloc_ods(iloc)
                             loc(2) = iloc_ods(iloc)
                             call get_matrix_1 (cfile, 0, ipar_ods(ipar), loc, timdef, &
-                                    amiss, num_records, buffer, ierror, &
+                                    missing_value, num_records, buffer, ierror, &
                                     cfile(3))
                             do ibrk = 1, num_records
                                 if (iorder == ORDER_PARAM_LOC) then

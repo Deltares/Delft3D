@@ -86,7 +86,7 @@ contains
         integer(kind = int_wp) :: noits_loc     ! number of scale factors locations
         integer(kind = int_wp) :: ndim1         ! first dimension matrix
         integer(kind = int_wp) :: ndim2         ! second dimension matrix
-        real(kind = real_wp) :: amiss         ! missing value
+        real(kind = real_wp) :: missing_value         ! missing value
         integer(kind = int_wp) :: t_asked       ! type of token asked
         integer(kind = int_wp) :: itype         ! type of token
         character(len = 256) :: ctoken       ! character token from input
@@ -155,7 +155,7 @@ contains
 
         ! initialise a number of variables
         ierr = 0
-        amiss = -999.0
+        missing_value = -999.0
         is_date_format = inpfil%is_date_format
         dtflg2 = inpfil%dtflg2
         is_yyddhh_format = inpfil%is_yyddhh_format
@@ -501,11 +501,11 @@ contains
                     data_block%no_param = waq_param%no_item
                     data_block%no_loc = waq_loc%no_item
 
-                    call read_data_ods(lunut, ctoken, data_param, data_loc, amiss, &
+                    call read_data_ods(lunut, ctoken, data_param, data_loc, missing_value, &
                             data_buffer, ierr2)
                     if (ierr2 /= 0) goto 100
                     call compute_matrix (lunut, data_param, data_loc, waq_param, waq_loc, &
-                            amiss, data_buffer, data_block)
+                            missing_value, data_buffer, data_block)
                     data_block%extern = .false.
                     deallocate(data_buffer%times, data_buffer%values)
 
@@ -565,7 +565,7 @@ contains
                     call validate_time_series_strictly_increasing(lunut, data_buffer, ierr2)
 
                     call compute_matrix (lunut, data_param, data_loc, waq_param, waq_loc, &
-                            amiss, data_buffer, data_block)
+                            missing_value, data_buffer, data_block)
                     deallocate(data_buffer%times, data_buffer%values)
                 endif
                 if (ierr2 == 1 .or. ierr2 == 4) then
