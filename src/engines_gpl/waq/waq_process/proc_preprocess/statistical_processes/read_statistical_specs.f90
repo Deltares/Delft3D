@@ -333,7 +333,7 @@ contains
 
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 
