@@ -2310,13 +2310,13 @@ private
             call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
 
             temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer                              )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer)
             if (idensform > 10) then
                temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_RHO:IPNT_RHO+kmx)
-               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DENSITY),temp_pointer                                )
+               call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_DENSITY),temp_pointer)
             endif
          else
-            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(:,IPNT_RHOP)                              )
+            call add_stat_output_items(output_set, output_config_set%statout(IDX_HIS_POTENTIAL_DENSITY),valobs(:,IPNT_RHOP))
          endif
       endif
 
