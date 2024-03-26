@@ -30,7 +30,7 @@ module m_rdstat
 contains
 
 
-    SUBROUTINE RDSTAT (LUNREP, IPOSR, NPOS, CCHAR, &
+    SUBROUTINE RDSTAT (LUNREP, input_file_start_position, NPOS, CCHAR, &
             ILUN, LCH, LSTACK, output_verbose_level, is_date_format, &
             is_yyddhh_format, status, NOSTAT, NKEY, NOKEY, &
             KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
@@ -46,7 +46,7 @@ contains
         !
         !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     IPOSR   INTEGER(kind=int_wp) ::1           IN/OUT  position on input record
+        !     input_file_start_position   INTEGER(kind=int_wp) ::1           IN/OUT  position on input record
         !     NPOS    INTEGER(kind=int_wp) ::1           INPUT   length of input record
         !     CCHAR   CHAR*1   1           INPUT   comment character
         !     VERSION REAL(kind=real_wp) ::1           INPUT   program version number
@@ -73,7 +73,7 @@ contains
 
         implicit none
 
-        INTEGER(kind = int_wp) :: LUNREP, IPOSR, NPOS, LSTACK, output_verbose_level, &
+        INTEGER(kind = int_wp) :: LUNREP, input_file_start_position, NPOS, LSTACK, output_verbose_level, &
                 NOSTAT, NKEY
         LOGICAL :: is_date_format, is_yyddhh_format
         INTEGER(kind = int_wp) :: ILUN(*)
@@ -138,7 +138,7 @@ contains
         100 CONTINUE
         ITYPE = 0
         CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                 ITYPE, IERR2)
 
         IF (IERR2 == 2) GOTO 500
@@ -167,7 +167,7 @@ contains
 
             ITYPE = 2
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, CDUMMY, VERSTAT, ADUMMY, &
+                    input_file_start_position, NPOS, CDUMMY, VERSTAT, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
         ELSEIF (IKEY == 2) THEN
@@ -176,7 +176,7 @@ contains
 
             ITYPE = 2
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, CDUMMY, MINSTAT, ADUMMY, &
+                    input_file_start_position, NPOS, CDUMMY, MINSTAT, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
         ELSEIF (IKEY == 3) THEN
@@ -193,7 +193,7 @@ contains
             ENDIF
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
             PERNAM(NPERIOD) = KNAM
@@ -210,7 +210,7 @@ contains
             200       CONTINUE
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 
@@ -230,7 +230,7 @@ contains
 
                 ITYPE = 0
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 IF (IERR2 /= 0) GOTO 900
                 PERSFX(NPERIOD) = KNAM
@@ -241,7 +241,7 @@ contains
 
                 ITYPE = -3
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 istart = IDUMMY
                 IF (IERR2 /= 0) GOTO 900
@@ -262,7 +262,7 @@ contains
 
                 ITYPE = -3
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 istop = IDUMMY
                 IF (IERR2 /= 0) GOTO 900
@@ -309,7 +309,7 @@ contains
 
                 ITYPE = 0
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 IF (IERR2 /= 0) GOTO 900
 
@@ -317,7 +317,7 @@ contains
 
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    IPOSR, NPOS, KVAL, IDUMMY, ADUMMY, &
+                    input_file_start_position, NPOS, KVAL, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 

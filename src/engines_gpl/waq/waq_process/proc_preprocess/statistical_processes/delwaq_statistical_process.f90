@@ -83,7 +83,7 @@ contains
         CHARACTER*50, POINTER :: STA_OUT_TXT(:)
         CHARACTER*10, POINTER :: STA_MODNAM(:)
 
-        INTEGER(kind = int_wp) :: NKEY, IPOSR, NSPROC
+        INTEGER(kind = int_wp) :: NKEY, input_file_start_position, NSPROC
         CHARACTER*20, POINTER :: KEYNAM(:)
         CHARACTER*20, POINTER :: KEYVAL(:)
         CHARACTER*20, ALLOCATABLE :: KEYNAM2(:)
@@ -112,8 +112,8 @@ contains
         if (timon) call timstrt("setup_statistical", ithndl)
 
         WRITE(LUNREP, 2000)
-        IPOSR = 0
-        CALL RDSTAT (LUNREP, IPOSR, NPOS, CCHAR, &
+        input_file_start_position = 0
+        CALL RDSTAT (LUNREP, input_file_start_position, NPOS, CCHAR, &
                 ILUN, LCH, LSTACK, output_verbose_level, is_date_format, &
                 is_yyddhh_format, status, NOSTAT, NKEY, NOKEY, &
                 KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
