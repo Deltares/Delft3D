@@ -93,7 +93,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e02_f091_c040_rws_waal" ref="dimr_trunk">
-            <path>e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
             <maxRunTime>7200.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfm/resultaten/Q10165_his.nc" type="NETCDF">

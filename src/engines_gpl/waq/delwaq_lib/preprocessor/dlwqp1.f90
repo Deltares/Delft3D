@@ -70,7 +70,7 @@ contains
         use m_actrep
         use m_startup_screen
         use m_srstop
-        use m_rdwrk4
+        use m_working_files, only : read_working_file_4
         use m_monsys
         use m_cli_utils, only : retrieve_command_argument
         use m_open_waq_files
@@ -500,7 +500,7 @@ contains
         ! read ( rest ) of relevant delwaq files
 
         call open_waq_files(lun(2), lchar(2), 2, 2, ierr2)
-        call rdwrk4(lun(2), lurep, modid, syname, notot, &
+        call read_working_file_4(lun(2), lurep, modid, syname, notot, &
                 nodump, nosys, nobnd, nowst, nocons, &
                 nopa, noseg, nseg2, coname, paname, &
                 funame, nofun, sfname, nosfun, nodisp, &

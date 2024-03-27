@@ -4,7 +4,7 @@ testCases
 <testCases>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c01_sediment_transport_Engelund_Hansen" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c01_sediment_transport_Engelund_Hansen</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c01_sediment_transport_Engelund_Hansen</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -16,7 +16,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c02_sediment_transport_Meyer-Peter-Muller" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c02_sediment_transport_Meyer-Peter-Muller</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c02_sediment_transport_Meyer-Peter-Muller</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -28,7 +28,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c21_equilibrium_slope_ds_IBedCond1_us_IBedCond4" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c21_equilibrium_slope_ds_IBedCond1_us_IBedCond4</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c21_equilibrium_slope_ds_IBedCond1_us_IBedCond4</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -39,7 +39,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c22_equilibrium_slope_ds_IBedCond1_us_IBedCond5" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c22_equilibrium_slope_ds_IBedCond1_us_IBedCond5</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c22_equilibrium_slope_ds_IBedCond1_us_IBedCond5</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -50,7 +50,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c23_equilibrium_slope_ds_IBedCond0_us_IBedCond4" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c23_equilibrium_slope_ds_IBedCond0_us_IBedCond4</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c23_equilibrium_slope_ds_IBedCond0_us_IBedCond4</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -61,7 +61,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c24_equilibrium_slope_ds_IBedCond0_us_IBedCond2" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c24_equilibrium_slope_ds_IBedCond0_us_IBedCond2</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c24_equilibrium_slope_ds_IBedCond0_us_IBedCond2</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -72,7 +72,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c26_equilibrium_slope_ds_IBedCond1_us_IBedCond4_morfac10" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c26_equilibrium_slope_ds_IBedCond1_us_IBedCond4_morfac10</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c26_equilibrium_slope_ds_IBedCond1_us_IBedCond4_morfac10</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -83,7 +83,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c31_shoal_ds_IBedCond0_us_IBedCond1" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -94,7 +94,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c32_shoal_ds_IBedCond0_us_IBedCond1_morfac10" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c32_shoal_ds_IBedCond0_us_IBedCond1_morfac10</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c32_shoal_ds_IBedCond0_us_IBedCond1_morfac10</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -105,7 +105,7 @@ testCases
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c33_shoal_ds_IBedCond0_us_IBedCond1_connection_node" ref="dflow1d_default">
-        <path>e106_dflow1d/f13_morphology/c33_shoal_ds_IBedCond0_us_IBedCond1_connection_node</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c33_shoal_ds_IBedCond0_us_IBedCond1_connection_node</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>

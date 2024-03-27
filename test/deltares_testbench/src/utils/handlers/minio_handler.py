@@ -3,8 +3,10 @@ Description: Executes MinIO commands
 -----------------------------------------------------
 Copyright (C)  Stichting Deltares, 2024
 """
+from datetime import datetime, timezone
 import os.path
 import re
+from typing import Optional
 from minio import Minio
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -36,7 +38,7 @@ class MinIOHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: str,
+        version: Optional[str],
         logger: ILogger
     ):
         """ Sets up a Minio client connection. You can specify the download
@@ -61,7 +63,12 @@ class MinIOHandler(IHandler):
         my_client = Minio(
             s3_storage,
             access_key=credentials.username,
-            secret_key=credentials.password)
+            secret_key=credentials.password
+        )
+
+        if version is None:
+            # Version is allowed to be `None`. In this case check out the latest version.
+            version = datetime.now(timezone.utc).isoformat().split("+")[0]
 
         # Prepare the rewind-settings
         rewinder = Rewinder(my_client, version)

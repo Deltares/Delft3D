@@ -111,7 +111,7 @@
     <!-- ONLINE AGGREGATION, ONE DOMAIN -->
 
     <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -166,7 +166,7 @@
     </testCase>
 
     <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -221,7 +221,7 @@
     </testCase>
 
     <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -276,7 +276,7 @@
     </testCase>
 
     <testCase name="e02_f029_c204_hyd_file_westerschelde_2d_hag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c204_westerschelde_2d_hag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c204_westerschelde_2d_hag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -331,7 +331,7 @@
     </testCase>
 
     <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -386,7 +386,7 @@
     </testCase>
 
     <testCase name="e02_f029_c206_hyd_file_westerschelde_3d_z_vag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -441,7 +441,7 @@
     </testCase>
 
     <testCase name="e02_f029_c207_hyd_file_westerschelde_3d_z_hvag" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c207_westerschelde_3d_z_hvag</path>
       <programs>
         <program ref="DFlowFM" seq="1">
           <arguments>
@@ -498,7 +498,7 @@
     <!-- ONLINE AGGREGATION, THREE DOMAINS -->
 
     <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -566,7 +566,7 @@
     </testCase>
 
     <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -633,7 +633,7 @@
     </testCase>
 
     <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -700,7 +700,7 @@
     </testCase>
 
     <testCase name="e02_f029_c304_hyd_file_westerschelde_2d_hag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -767,7 +767,7 @@
     </testCase>
 
     <testCase name="e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -834,7 +834,7 @@
     </testCase>
 
     <testCase name="e02_f029_c306_hyd_file_westerschelde_3d_z_vag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>
@@ -901,7 +901,7 @@
     </testCase>
 
     <testCase name="e02_f029_c307_hyd_file_westerschelde_3d_z_hvag_3dom" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
       <programs>
         <program ref="DFlowFM-split" seq="1">
           <arguments>

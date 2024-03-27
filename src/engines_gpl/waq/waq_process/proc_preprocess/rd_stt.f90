@@ -46,9 +46,9 @@ contains
         type(error_status), intent(inout) :: status !< current error status
 
         integer(kind = int_wp) :: iostat
-        integer(kind = int_wp) :: ioutpt
-        logical :: dtflg1
-        logical :: dtflg3
+        integer(kind = int_wp) :: output_verbose_level
+        logical :: is_date_format
+        logical :: is_yyddhh_format
 
         ilun = 0
         lch (1) = sttfil
@@ -59,14 +59,14 @@ contains
         endif
         npos = 1000
         cchar = ';'
-        ioutpt = 0
-        dtflg1 = .true.
-        dtflg3 = .false.
+        output_verbose_level = 0
+        is_date_format = .true.
+        is_yyddhh_format = .false.
 
         call status%initialize(0, 0, 0)
 
         call setup_statistical (lunrep, npos, cchar, ilun, lch, &
-                lstack, ioutpt, dtflg1, dtflg3, statprocesdef, allitems, &
+                lstack, output_verbose_level, is_date_format, is_yyddhh_format, statprocesdef, allitems, &
                 status)
 
         close(ilun(1))

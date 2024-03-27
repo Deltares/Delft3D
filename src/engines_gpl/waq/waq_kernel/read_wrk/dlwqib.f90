@@ -63,7 +63,7 @@
       integer(kind=int_wp) ::J(*)
       integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, LUN, LUNUT
 
-      integer(kind=int_wp) ::i, ia, ij, k, iopt
+      integer(kind=int_wp) ::i, ia, ij, k, time_function_type
       integer(kind=int_wp) ::noitm, nosys, npnt, ndim, ntal, nobrk
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqib", ithandl )
@@ -93,9 +93,9 @@
 !
 !       3 and 4 are harmonics
 !
-      IOPT = J(IJ-2)
+      time_function_type = J(IJ-2)
       NTAL = 0
-      IF ( IOPT == 3 .OR. IOPT == 4 ) NTAL = 1
+      IF ( time_function_type == 3 .OR. time_function_type == 4 ) NTAL = 1
 !
 !       Nr of breakpoints or harmonics
 !

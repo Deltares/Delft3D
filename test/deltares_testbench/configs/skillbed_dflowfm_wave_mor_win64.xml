@@ -84,7 +84,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e200_f01_c02_egmond" ref="skillbed_default" ignore="true">
-            <path>e200_skillbed/f01_flowfm_wave/c02_egmond</path>
+            <path version="2024-03-22T19:30:00">e200_skillbed/f01_flowfm_wave/c02_egmond</path>
             <programs>
                 <program ref="dimr" seq="1" >
                     <arguments>
@@ -106,7 +106,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e200_f02_c01_straight_coast_breakwater" ref="skillbed_default" ignore="true">
-            <path>e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c01_straight_coast_breakwater</path>
+            <path version="2024-01-11T08:20:00">e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c01_straight_coast_breakwater</path>
             <programs>
                 <program ref="dimr" seq="1" >
                     <arguments>
@@ -128,7 +128,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e200_f02_c02_zandmotor_first_year" ref="skillbed_default" ignore="true">
-            <path>e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c02_zandmotor_first_year</path>
+            <path version="2024-01-11T08:20:00">e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c02_zandmotor_first_year</path>
             <programs>
                 <program ref="dimr" seq="1" >
                     <arguments>
@@ -150,7 +150,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e200_f02_c06_avalanching" ref="skillbed_default" ignore="false">
-            <path>e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c06_avalanching</path>
+            <path version="2024-01-11T08:20:00">e200_skillbed/f02_flowfm_wave_mor_vs_d3d4/c06_avalanching</path>
             <programs>
                 <program ref="dimr" seq="1" >
                     <arguments>
