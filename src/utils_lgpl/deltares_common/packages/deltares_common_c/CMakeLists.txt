@@ -37,7 +37,8 @@ set(source  src/bmi_shared_lib_fortran_api.c
             src/shared_library_fortran_api.c
             src/stream.cpp
             src/throwexception.cpp
-            src/universally_unique_id_generator.c)
+            src/universally_unique_id_generator.c
+            src/dll_hack.cpp)
 
 set(library_name deltares_common_c)
 add_library(${library_name} ${source} ${headers})
