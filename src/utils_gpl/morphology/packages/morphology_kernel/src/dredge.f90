@@ -102,8 +102,10 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        ! Communicate dump capacity with other domains
        !
        call comm(dadpar%globaldumpcap, dadpar%nadump, error, msgstr)
-       if (msgstr /= '') call write_error(msgstr, unit=lundia)
-	   return
+       if (msgstr /= '') then
+           call write_error(msgstr, unit=lundia)
+	       return
+       endif
     end if
     !
     call calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, dps, dpsign, duneheight, &
@@ -118,8 +120,10 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        ! Communicate dredged volumes with other domains
        !
        call comm(dadpar%voldred, (dadpar%nadred+dadpar%nasupl)*(lsedtot+1), error, msgstr)
-       if (msgstr /= '') call write_error(msgstr, unit=lundia)
-	   return
+       if (msgstr /= '') then
+           call write_error(msgstr, unit=lundia)
+	       return
+       endif
     end if
     !
     call distribute_sediments_over_dump_areas(lsedtot, dadpar) 
