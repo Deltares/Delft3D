@@ -28,6 +28,20 @@ void SHPAPI_CALL SHPSetObjectFortran(void*, SHPObject*,
  double*, double*, double*, double*);
 
 
+void SHPSetObjectInt(void *ftnobject, SHPObject *psObject) {
+  SHPSetObjectFortran(ftnobject, psObject,
+		      &psObject->nSHPType, &psObject->nShapeId, &psObject->nParts,
+		      psObject->panPartStart, psObject->panPartType,
+		      &psObject->nVertices,
+		      psObject->padfX, psObject->padfY,
+		      psObject->padfZ, psObject->padfM,
+		      &psObject->dfXMin, &psObject->dfYMin,
+		      &psObject->dfZMin, &psObject->dfMMin,
+		      &psObject->dfXMax, &psObject->dfYMax,
+		      &psObject->dfZMax, &psObject->dfMMax);
+}
+
+
 int SHPAPI_CALL SHPReadObjectInt(SHPHandle hshp, int iShape, void *ftnobject) {
   SHPObject *psObject;
 
@@ -79,27 +93,6 @@ void SHPAPI_CALL SHPComputeExtentsInt(SHPObject *psObject, void *ftnobject) {
   SHPSetObjectInt(ftnobject, psObject);
 
 }
-
-
-void SHPSetObjectInt(void *ftnobject, SHPObject *psObject) {
-  SHPSetObjectFortran(ftnobject, psObject,
-		      &psObject->nSHPType, &psObject->nShapeId, &psObject->nParts,
-		      psObject->panPartStart, psObject->panPartType,
-		      &psObject->nVertices,
-		      psObject->padfX, psObject->padfY,
-		      psObject->padfZ, psObject->padfM,
-		      &psObject->dfXMin, &psObject->dfYMin,
-		      &psObject->dfZMin, &psObject->dfMMin,
-		      &psObject->dfXMax, &psObject->dfYMax,
-		      &psObject->dfZMax, &psObject->dfMMax);
-}
-
-
-/* void SHPAPI_CALL shpdestroyobject_int(SHPObject **psObject) { */
-
-/*   SHPDestroyObject(*psObject); */
-
-/* } */
 
 
 int SHPAPI_CALL SHPRewindObjectInt(SHPHandle *hSHP, SHPObject *psObject,

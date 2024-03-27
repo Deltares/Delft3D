@@ -1,6 +1,9 @@
+IF(UNIX)
 set(BUILD_LIBRARIES
    ${CMAKE_INSTALL_PREFIX}/lib/libdimr_lib.so
 )
+ENDIF(UNIX)
+
 set(THIRDPARTY_x64_LIB_FOLDERS
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_INSTALL_PREFIX}/bin
@@ -17,7 +20,7 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
     set( overridden 1 PARENT_SCOPE )
   endif()
 endfunction(gp_item_default_embedded_path_override)
-
+IF(UNIX)
 include(BundleUtilities)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
 
@@ -33,3 +36,4 @@ execute_process(COMMAND bash -c "patchelf --replace-needed libdimr_lib.so libdim
 set_rpath("${CMAKE_INSTALL_PREFIX}/bin" "$ORIGIN:$ORIGIN/../lib")
 set_rpath("${CMAKE_INSTALL_PREFIX}/lib" "$ORIGIN")
 set_rpath("${CMAKE_INSTALL_PREFIX}/share" "$ORIGIN/../lib:$ORIGIN")
+ENDIF(UNIX)

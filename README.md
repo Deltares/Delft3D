@@ -7,13 +7,13 @@ See section "Workflow" below in case you want to contribute to the source code.
 
 # About compiling https://git.deltares.nl/oss/delft3d
 
-#### Windows:   
+#### Windows:  
 - build.bat   
   Execute "build.bat --help" to show the usage   
   Currently used as default build process: "build.bat all -vs 2019 -ifort 21"   
   This will execute "Microsoft_VisualStudio\vcvarsall.bat". When using other versions, modifications will be needed.   
 
-#### Linux: 
+#### Linux:
 - build.sh   
   Execute "./build.sh --help" to show the usage   
   Currently used as default build process: "./build.sh all --compiler intel21"   
@@ -89,4 +89,4 @@ Examples:
   cd build_all
   ctest -C debug
 ```
-- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](unit-testing.md).
+- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).

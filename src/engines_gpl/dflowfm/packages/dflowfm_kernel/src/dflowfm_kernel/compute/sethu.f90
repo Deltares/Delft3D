@@ -54,7 +54,7 @@ public :: calculate_hu_au_and_advection_for_dams_weirs
 contains
 ! 
 !> Set upwind waterdepth hu and au
-subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0)                           
+subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)                           
    use m_flowgeom
    use m_flow
    use m_fixedweirs
@@ -64,6 +64,7 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0)
    implicit none
 
    integer, intent(in) :: set_zws0
+   logical, intent(in) :: set_hu !> Flag for updating `hu` (.true.) or not (.false.)
    
    integer, parameter  :: DONT_SET_ZWS0 = 0
    integer, parameter  :: EMPTY_NAME = 0
@@ -167,7 +168,9 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0)
              end select
          end if
 
-         hu(link) = water_height
+         if (set_hu) then
+            hu(link) = water_height
+         endif
 
       else
          hu(link) = 0d0

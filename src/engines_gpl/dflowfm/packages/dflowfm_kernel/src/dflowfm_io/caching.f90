@@ -127,6 +127,9 @@ end function cacheRetrieved
 
 !> Load the information from the caching file - if any.
 subroutine loadCachingFile( basename, netfile, usecaching )
+
+    use MessageHandling, only: LEVEL_INFO, mess
+    
     character(len=*), intent(in   ) :: basename      !< Basename to construct the name of the caching file (typically md_ident).
     character(len=*), intent(in   ) :: netfile       !< Full name of the network file
     integer,          intent(in   ) :: usecaching    !< Use the cache file if possible (1) or not (0)
@@ -144,11 +147,13 @@ subroutine loadCachingFile( basename, netfile, usecaching )
     cache_success = .false.
 
     if ( usecaching /= 1 ) then
+        call mess(LEVEL_INFO,'Not using cache file.')
         return
     endif
 
     filename = trim(basename) // '.cache'
 
+    call mess(LEVEL_INFO,'Reading cache file: ' // trim(filename))
     open( newunit = lun, file = trim(filename), status = "old", access = "stream", iostat = ierr )
 
     !
@@ -156,6 +161,7 @@ subroutine loadCachingFile( basename, netfile, usecaching )
     ! But for writing the caching file later, determine the checksum now
     !
     if ( ierr /= 0 ) then
+        call mess(LEVEL_INFO,'Error reading cache file')
         call md5file( netfile, md5current, success )
         return
     endif

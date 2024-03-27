@@ -414,7 +414,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        tpsmud  = 0.7_fp
        call prop_get(sed_ptr, 'SedimentOverall', 'MudTPS', tpsmud)
        do i = 1,lsed
-          if (sedtyp(i) == sedpar%max_mud_sedtyp) then
+          if (sedtyp(i) <= sedpar%max_mud_sedtyp) then
               tpsnumber(i) = tpsmud
           endif
        enddo
@@ -931,8 +931,13 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        do l = 1, lsed
           if (sedtyp(l) <= sedpar%max_mud_sedtyp) then ! TODO: can we set iform at the same time for consistency?
              iform_settle(l) = WS_FORM_FUNCTION_SALTEMCON
+             ! set the parameters that are not available in the old file
+             par_settle(4,l) = 1.0_fp
+             par_settle(5,l) = 0.1_fp
+             par_settle(6,l) = 0.0_fp
           else
              iform_settle(l) = WS_FORM_FUNCTION_DSS
+             ! set the parameters that are not available in the old file
              par_settle(2,l) = 1.0_fp ! gamflc default
           endif
        enddo
@@ -1014,7 +1019,7 @@ end subroutine rdsed
 
 
 subroutine rdsed01(lsed      ,luninp    ,lundia    ,csoil     ,iopsus    , &
-                 & facdss    ,sedtyp    ,rhosol    ,seddia    ,parsettle , &
+                 & facdss    ,sedtyp    ,rhosol    ,seddia    ,par_settle, &
                  & sdbuni    ,flsdbd    ,cdryb     ,sedblock  ,version   , &
                  & error     )
 !!--description-----------------------------------------------------------------
@@ -1041,7 +1046,7 @@ subroutine rdsed01(lsed      ,luninp    ,lundia    ,csoil     ,iopsus    , &
     real(fp)       , dimension(:)  , intent(out):: cdryb
     real(fp)       , dimension(:)  , intent(out):: facdss
     real(fp)       , dimension(:)  , intent(out):: rhosol
-    real(fp)       , dimension(:,:), intent(out):: parsettle
+    real(fp)       , dimension(:,:), intent(out):: par_settle
     real(fp)       , dimension(:)  , intent(out):: sdbuni
     real(fp)       , dimension(:)  , intent(out):: seddia
     integer        , dimension(:)  , intent(out):: sedtyp !<  sediment type: 0=total/1=noncoh/2=coh
@@ -1057,6 +1062,7 @@ subroutine rdsed01(lsed      ,luninp    ,lundia    ,csoil     ,iopsus    , &
     character(4)             :: sedtype
     character(256)           :: errmsg
     character(256)           :: line
+    real(fp)                 :: dummy          !< dummy real used to skip values while reading
     type(tree_data), pointer :: sedblock_ptr
     type(tree_data), pointer :: anode
 !
@@ -1099,9 +1105,15 @@ subroutine rdsed01(lsed      ,luninp    ,lundia    ,csoil     ,iopsus    , &
        endif
        read (luninp, *, iostat = iocond) rhosol(l)
        if (iocond == 0) read (luninp, *, iostat = iocond) seddia(l)
-       if (iocond == 0) read (luninp, *, iostat = iocond) parsettle(1,l) ! salmax
-       if (iocond == 0) read (luninp, *, iostat = iocond) parsettle(2,l) ! ws0
-       if (iocond == 0) read (luninp, *, iostat = iocond) parsettle(3,l) ! wsm
+       if (sedtyp(l) == SEDTYP_SAND) then
+          if (iocond == 0) read (luninp, *, iostat = iocond) par_settle(1,l) ! salmax
+          if (iocond == 0) read (luninp, *, iostat = iocond) dummy ! ws0
+          if (iocond == 0) read (luninp, *, iostat = iocond) dummy ! wsm
+       elseif (sedtyp(l) == SEDTYP_CLAY) then
+          if (iocond == 0) read (luninp, *, iostat = iocond) par_settle(1,l) ! salmax
+          if (iocond == 0) read (luninp, *, iostat = iocond) par_settle(2,l) ! ws0
+          if (iocond == 0) read (luninp, *, iostat = iocond) par_settle(3,l) ! wsm
+       endif
        if (iocond == 0) read (luninp, '(a)', iostat = iocond) line ! tcd
        call tree_create_node(sedblock_ptr,'TcrSed',anode)
        call tree_put_data(anode,transfer(trim(line),node_value),"STRING")
@@ -1112,10 +1124,16 @@ subroutine rdsed01(lsed      ,luninp    ,lundia    ,csoil     ,iopsus    , &
        call tree_create_node(sedblock_ptr,'EroPar',anode)
        call tree_put_data(anode,transfer(trim(line),node_value),"STRING")
        if (iocond == 0) read (luninp, *, iostat = iocond) cdryb(l)
-       if (iocond == 0) read (luninp, *, iostat = iocond) sdbuni(l)
-       if (iocond /= 0) then
-          backspace (luninp)
-          read (luninp, '(a)', iostat = iocond) flsdbd(l)
+       if (iocond == 0) then
+           read (luninp, '(a)', iostat = iocond) flsdbd(l)
+           if (iocond == 0) then
+               read (flsdbd(l), *, iostat = iocond) sdbuni(l)
+               if (iocond == 0) then
+                   flsdbd(l) = ' '
+               else
+                   iocond = 0
+               endif
+           endif
        endif
        if (version==0) then
           facdss(l) = 1.0_fp

@@ -27,8 +27,8 @@ module io_netcdf_version_module
 !-------------------------------------------------------------------------------
 !
 !
-#INCLUDE "version_definition.h"
-#INCLUDE "io_netcdf_version.h"
+#include "version_definition.h"
+#include "io_netcdf_version.h"
 
 implicit none
 

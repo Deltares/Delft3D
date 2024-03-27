@@ -162,6 +162,7 @@ subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
              pdredge%in1domain = .true.
           else
              npnt         = pdredge%npnt
+             npnt_halo    = pdredge%npnt_halo
              pdredge%npnt = npnt_global
              !
              ! Reallocate and shift
@@ -174,7 +175,6 @@ subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
                  return
              end if
              !
-             npnt_halo = size(pdredge%nmglob,1) - npnt
              allocate(tmp_nmglob(npnt+npnt_halo), tmp_nm(npnt+npnt_halo), stat=istat)
              if (istat==0) then
                 tmp_nmglob = pdredge%nmglob
@@ -270,6 +270,7 @@ subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
                 pdump%in1domain = .true.
              else
                 npnt         = pdump%npnt
+                npnt_halo    = pdump%npnt_halo
                 pdump%npnt   = npnt_global
                 !pdump%npnt = npnt_global
                 !npnt       = pdump%npnt
@@ -285,7 +286,6 @@ subroutine dredge_initialize(dadpar, idomain, ndomains, lundia, error, comm)
                     return
                 end if
                 !
-                npnt_halo = size(pdump%nmglob,1) - npnt
                 allocate(tmp_nmglob(npnt+npnt_halo), tmp_nm(npnt+npnt_halo), stat=istat)
                 if (istat==0) then
                    tmp_nmglob = pdump%nmglob

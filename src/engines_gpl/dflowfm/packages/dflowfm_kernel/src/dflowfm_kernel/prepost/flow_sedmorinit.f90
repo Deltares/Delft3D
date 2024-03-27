@@ -123,7 +123,7 @@ subroutine flow_sedmorinit()
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
         return
     endif
-
+    
     do i = 1, stmpar%lsedtot
        if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
           if (jawave .ne. 4) then

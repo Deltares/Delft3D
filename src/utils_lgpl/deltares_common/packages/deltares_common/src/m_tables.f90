@@ -737,11 +737,13 @@ contains
    
       ! check input on restraints
       if (size(table1%x) /=   size(table2%x) ) then
-         call SetMessage(LEVEL_FATAL, 'INTERNAL ERROR: Two tables of different length must be interpolated. This is not supported')
+         call SetMessage(LEVEL_FATAL, 'INTERNAL ERROR: Two tables of different length must be &
+               interpolated. This is not supported')
       else
          do i = 1, size(table1%x)
             if (abs(table1%x(i)-table2%x(i)) > 1e-3) then
-               call SetMessage(LEVEL_FATAL, 'INTERNAL ERROR: The x-values of the tables that must be interpolated are not identical')
+               call SetMessage(LEVEL_FATAL, 'INTERNAL ERROR: The x-values of the tables that must &
+               be interpolated are not identical')
             endif
          enddo
       endif

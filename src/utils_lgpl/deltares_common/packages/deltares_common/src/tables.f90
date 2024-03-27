@@ -825,7 +825,8 @@ subroutine org_readtable_keyword()
              elseif (trim(cfield(2)) == 'ddhhmmss') then
                  table%timeunit = 1.0_hp
              else
-                errorstring = 'Time unit must be ''date'', ''years'', ''decades'', ''days'', ''hours'', ''minutes'', ''seconds'', ''ddhhmmss'''
+                errorstring = 'Time unit must be ''date'', ''years'', ''decades'', ''days'', ''hours'', &
+                 ''minutes'', ''seconds'', ''ddhhmmss'''
                 error = .true.
                 goto 100
              endif

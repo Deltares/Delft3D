@@ -34,7 +34,7 @@
 !! ! Note: if it is a parallel simulation, qplat is already for all subdomains, so no need for mpi communication.
 subroutine updateValuesOnLaterals(tim1, timestep)
    use m_flowtimes, only: ti_his, time_his, ti_hiss
-   use m_wind, only: qqLat, numlatsg, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
+   use m_lateral, only: qqLat, numlatsg, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
                      qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg,  n1latsg, n2latsg, nnlat
    use precision
    use m_alloc

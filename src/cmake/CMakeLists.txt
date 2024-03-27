@@ -6,16 +6,11 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+message(STATUS "Configuring")
 if (UNIX)
-    message(STATUS "Configuring in unix")
     include(linux_scripts.cmake)
     add_definitions(-DCOMMIT_VERSION=${COMMIT_VERSION})
 endif(UNIX)
-
-if (WIN32)
-    message(STATUS "Configuring in windows")
-    include(windows_scripts.cmake)
-endif(WIN32)
 
 include(functions.cmake)
 
@@ -37,12 +32,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set compiler flags
 enable_language(Fortran C CXX)
-if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    # To be implemented later on
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
+    include(compiler_options/gnu.cmake)
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
     include(compiler_options/intel.cmake)
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-    # To be implemented later on
 else()
     echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
     include(compiler_options/intel.cmake)
@@ -66,8 +59,15 @@ if (WIN32)
 
     # Set mpi_include_path
     if ("${OSS_MPI}" STREQUAL "IntelMPI")
-        set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
-        set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
+        if("$ENV{I_MPI_ONEAPI_ROOT}" STREQUAL "")
+            message(STATUS "I_MPI_ONEAPI_ROOT is not set or empty. Using Intel 2024 folder structure.")
+            set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
+            set(mpi_library_path $ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>;$ENV{ONEAPI_ROOT}/mpi/latest/lib)    
+        else()
+            message(STATUS "I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT}. Using Intel 2023 folder structure.")
+            set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
+            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
+        endif()   
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
@@ -92,6 +92,9 @@ if (WIN32)
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
 
+    # Set the SQLITE3 path
+    set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
+    
     add_definitions(-DHAVE_MPI=1)
 endif()
 
@@ -110,9 +113,18 @@ if (UNIX)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
-
+    
+    # Proj
+    pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
 
+if (UNIX)
+    set(platform_extension sh)
+    set(library_suffix so)
+elseif (WIN32)
+    set(platform_extension bat)
+    set(library_suffix dll)
+endif()
 
 # Expat:
 #     Windows: use prebuild library in ".../expat/x64/x64"
@@ -122,17 +134,28 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
 endif(WIN32)
 
-
-# Set the location of the update_version script
-set(update_version_script_path ${checkout_src_root}/${update_version_script})
-set(postbuild_event_path ${checkout_src_root}/${postbuild_event_script})
-
-# Set root name of the projects in the root UI of Visual Studio
-set(visual_studio_source_group_name "Source Files")
-
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
+string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
+
+# Set the location of the update_version script
+set(update_version_script_path ${checkout_src_root}/${update_version_script})
+
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(installdir "install_${configuration_type_lower}")
+  SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+    # Set root name of the projects in the root UI of Visual Studio
+    set(visual_studio_source_group_name "Source Files")
+    # auto-install debug
+    set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+    
+    create_vs_user_files()
+
+endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 
 # Basic (single-component) configurations
 set(dflowfm_configuration "DFLOWFM")

@@ -86,9 +86,11 @@ if isempty(RequestDims)
     RequestDims = Info.Dimension;
 end
 if isempty(RequestedSubset)
-    RequestedSubset = cell(1,length(RequestDims));
-    for i = 1:length(RequestDims)
-        idim = strcmp(RequestDims{i},Info.Dimension);
+    RequestedSubset = repmat({':'}, 1, length(RequestDims));
+end
+for i = length(RequestDims):-1:1
+    if isequal(RequestedSubset{i},0) || isequal(RequestedSubset{i},':')
+        idim = strcmp(RequestDims{i}, Info.Dimension);
         RequestedSubset{i} = 1:Info.Size(idim);
     end
 end

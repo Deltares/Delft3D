@@ -88,7 +88,7 @@
         integer                     :: res
         integer                     :: CUTIL_MF_READ
         integer                     :: strlen, lfindex, crindex, cnullindex
-        integer                     :: lastpos
+        integer(kind=8)             :: lastpos
         character(len=maxRecLength) :: rec
 
         rec = ' '

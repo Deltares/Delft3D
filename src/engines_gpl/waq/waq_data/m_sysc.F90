@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_sysc
-!     Pointers in character array workspace
+    !     Pointers in character array workspace
 
     integer :: IANAM   !    pointer to ARRNAM, array names
     integer :: IMNAM   !    pointer to MNAME , model and run names
@@ -54,18 +54,17 @@ module m_sysc
     integer :: ISUNI   !    pointer to OSUNI , substance units
     integer :: ISDSC   !    pointer to OSDSC , substance descriptions
 
-    integer,parameter :: icsize  = 29
+    integer, parameter :: icsize = 29
 
-
-    common / sysc / ianam  , imnam  , isnam  , idnam  , ibnid  ,	      &
-                    ibnam  , ibtyp  , iwsid  , iwnam  , iwtyp  ,	      &
-                    icnam  , ipnam  , ifnam  , isfna  , iedit  ,	      &
-                    iprna  , ionam  , idina  , ivnam  , idana  ,	      &
-                    irnam  , icbuf  , ilunt  , iosnm  , iouni  ,         &
-                    iodsc  , issnm  , isuni  , isdsc
+    common / sysc / ianam, imnam, isnam, idnam, ibnid, &
+            ibnam, ibtyp, iwsid, iwnam, iwtyp, &
+            icnam, ipnam, ifnam, isfna, iedit, &
+            iprna, ionam, idina, ivnam, idana, &
+            irnam, icbuf, ilunt, iosnm, iouni, &
+            iodsc, issnm, isuni, isdsc
 
     integer, parameter :: nr_car = icsize             ! total number of arrays
-    integer            :: ip_car(nr_car)              ! help array to fill the common block / SYSA /
-    equivalence   ( ianam  , ip_car(1) )              ! first entry equivalences with first entry common block
+    integer :: ip_car(nr_car)              ! help array to fill the common block / SYSA /
+    equivalence   (ianam, ip_car(1))              ! first entry equivalences with first entry common block
 
 end module m_sysc

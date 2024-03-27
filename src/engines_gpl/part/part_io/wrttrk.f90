@@ -165,7 +165,7 @@ contains
       character (len=16)                   ::  grnam2 = 'trk-info-series'
       character (len=16)                   ::  grnam3 = 'trk-series'
       character (len=16)                   ::  grnam4 = 'trk-initial'
-      character (len=16), dimension(nelmx) ::  elt_names = (/'ITTRKC','XYZTRK','WPART','TRACK'/)
+      character (len=16), dimension(nelmx) ::  elt_names = (/'ITTRKC','XYZTRK','WPART ','TRACK '/)
       character (len=16), dimension(nelmx) ::  elt_types = (/'INTEGER','REAL   ','REAL   ','REAL   '/)
       integer   (int_wp )    , dimension(nelmx) ::  elt_bytes = (/ 4 , 4 , 4 , 4 /)
       integer   (int_wp )                       ::  celidt = 0

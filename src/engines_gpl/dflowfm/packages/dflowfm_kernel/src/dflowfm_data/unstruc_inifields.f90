@@ -391,7 +391,7 @@ end function initInitialFields
 subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filename,filetype,method,iloctype,operand,transformcoef,ja,varname,smask, maxSearchRadius)
    use timespace_parameters, only: inside_polygon, field1D
    use m_ec_interpolationsettings, only: RCEL_DEFAULT
-   use m_wind, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+   use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
    use m_grw
    character (len=*), intent(in   )           :: inifilename         !< Name of the ini file, only used in warning messages, actual data is read from node_ptr.
    type(tree_data), pointer                   :: node_ptr            !< The tree structure containing a single ini-file chapter/block.

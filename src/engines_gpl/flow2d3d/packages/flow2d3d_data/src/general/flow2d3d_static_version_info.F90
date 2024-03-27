@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "flow2d3d_version.h"
+#include "flow2d3d_version.h"
 
 module flow2d3d_static_version_info
     implicit none

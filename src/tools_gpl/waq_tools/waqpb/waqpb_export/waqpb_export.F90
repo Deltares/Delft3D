@@ -50,6 +50,7 @@
                    ierror, icnsb , imodv , i
       logical      itmswi(nitemm)
       logical      newfrm
+      logical      generate_latex_tables
       character*10 c10, num_decimals_version_char
       character*20 c20
       character*50 adduni
@@ -62,6 +63,7 @@
       version = 6.00
       serial = 20230101
       newfrm = .true.
+      generate_latex_tables = .false.
 
       do i=1,command_argument_count()
             call get_command_argument(i,argument)
@@ -73,6 +75,7 @@
             endif
             if (trim(argument) == '-newfrm') newfrm = .true.
             if (trim(argument) == '-oldfrm') newfrm = .false.
+            if (trim(argument) == '-latex') generate_latex_tables = .true.
       enddo
 
 
@@ -131,8 +134,10 @@
 
 !      write (*,'('' Writing TRM tables......'')')
 !      call writrm
-      write (*,'('' Writing TRM tables for LaTeX......'')')
-      call writex
+      if (generate_latex_tables) then
+          write (*,'('' Writing TRM tables for LaTeX......'')')
+          call writex
+      end if
 
 !----------------------------------------------------------------------c
 !     SET VERSION, SERIAL AND WRITE NEFIS FILE
@@ -140,7 +145,7 @@
 
       write (lu_mes,'(''Writing NEFIS process definition file'')')
       call makind()
-      call pdfnef(lu_mes    , serial, version, ierror)
+      call pdfnef(lu_mes    , serial, version, ierror, generate_latex_tables)
       if ( ierror .ne. 0 ) then
          write (lu_mes,'(''ERROR writing NEFIS file'')')
          write (*,'(''ERROR writing NEFIS file, see report file'')')

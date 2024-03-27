@@ -21,131 +21,130 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_sulfid
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine SULFID     ( pmsa   , fl     , ipoint , increm, noseg , &
-                              noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                              noq3   , noq4   )
-!>\file
-!>       Speciation of dissolved sulphide (S= and HS-) in pore water
+    subroutine SULFID     (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
+        !>\file
+        !>       Speciation of dissolved sulphide (S= and HS-) in pore water
 
-!
-      implicit none
-!
-!     Type    Name         I/O Description
-!
-      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp)  ::ipoint( 14) ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp)  ::increm( 14) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
-      integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-      integer(kind=int_wp)  ::ipnt( 14)   !    Local work array for the pointering
-      integer(kind=int_wp)  ::iseg        !    Local loop counter for computational element loop
-!
-!*******************************************************************************
-!
-!     Type    Name         I/O Description                                        Unit
-!
-      real(kind=dp)  ::sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
-      real(kind=dp)  ::lksth2s     ! I  log acidity constant for H2S (l.mole-1)            (-)
-      real(kind=dp)  ::tcksth2s    ! I  temperature coefficient for KstH2S                 (-)
-      real(kind=dp)  ::lksths      ! I  log acidity constant for HS- (l.mole-1)            (-)
-      real(kind=dp)  ::tcksths     ! I  temperature coefficient for KstHS                  (-)
-      real(kind=dp)  ::ph          ! I  pH                                                 (-)
-      real(kind=dp)  ::temp        ! I  ambient water temperature                          (oC)
-      real(kind=dp)  ::poros       ! I  volumetric porosity                                (-)
-      real(kind=dp)  ::dish2swk    ! O  hydrogen sulphide concentration H2S                (mole/l)
-      real(kind=dp)  ::dishswk     ! O  (HS-) in water column                              (mole/l)
-      real(kind=dp)  ::disswk      ! O  (S--) in water column                              (mole/l)
-      real(kind=dp)  ::frh2sdis    ! O  fraction of dissolved hydrogen sulphide            (-)
-      real(kind=dp)  ::frhsdis     ! O  fraction (HS-) in water column                     (-)
-      real(kind=dp)  ::frsdis      ! O  fraction (S--) in water column                     (-)
+        !
+        implicit none
+        !
+        !     Type    Name         I/O Description
+        !
+        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+        integer(kind = int_wp) :: ipoint(14) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: increm(14) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+        integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+        integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: ipnt(14)   !    Local work array for the pointering
+        integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
+        !
+        !*******************************************************************************
+        !
+        !     Type    Name         I/O Description                                        Unit
+        !
+        real(kind = dp) :: sud         ! I  total dissolved sulphide (SUD)                     (gS/m3)
+        real(kind = dp) :: lksth2s     ! I  log acidity constant for H2S (l.mole-1)            (-)
+        real(kind = dp) :: tcksth2s    ! I  temperature coefficient for KstH2S                 (-)
+        real(kind = dp) :: lksths      ! I  log acidity constant for HS- (l.mole-1)            (-)
+        real(kind = dp) :: tcksths     ! I  temperature coefficient for KstHS                  (-)
+        real(kind = dp) :: ph          ! I  pH                                                 (-)
+        real(kind = dp) :: temp        ! I  ambient water temperature                          (oC)
+        real(kind = dp) :: poros       ! I  volumetric porosity                                (-)
+        real(kind = dp) :: dish2swk    ! O  hydrogen sulphide concentration H2S                (mole/l)
+        real(kind = dp) :: dishswk     ! O  (HS-) in water column                              (mole/l)
+        real(kind = dp) :: disswk      ! O  (S--) in water column                              (mole/l)
+        real(kind = dp) :: frh2sdis    ! O  fraction of dissolved hydrogen sulphide            (-)
+        real(kind = dp) :: frhsdis     ! O  fraction (HS-) in water column                     (-)
+        real(kind = dp) :: frsdis      ! O  fraction (S--) in water column                     (-)
 
-      ! local declaration
+        ! local declaration
 
-      real(kind=dp)  ::h_ion       ! L  proton concentration                               (mole/l)
-      real(kind=dp)  ::ks1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
-      real(kind=dp)  ::ks2         ! L  hydrolyses equilibrium constant for CO2            (-)
-      real(kind=dp)  ::csdt        ! L  total dissolved                                    (mole/l)
-      real(kind=dp)  ::csd1        ! L  dissolved H2S                                      (mole/l)
-      real(kind=dp)  ::csd2        ! L  dissolved HS                                       (mole/l)
-      real(kind=dp)  ::csd3        ! L  dissolved S                                        (mole/l)
+        real(kind = dp) :: h_ion       ! L  proton concentration                               (mole/l)
+        real(kind = dp) :: ks1         ! L  acidity hydrolyses equilibrium constant for H2CO3  (-)
+        real(kind = dp) :: ks2         ! L  hydrolyses equilibrium constant for CO2            (-)
+        real(kind = dp) :: csdt        ! L  total dissolved                                    (mole/l)
+        real(kind = dp) :: csd1        ! L  dissolved H2S                                      (mole/l)
+        real(kind = dp) :: csd2        ! L  dissolved HS                                       (mole/l)
+        real(kind = dp) :: csd3        ! L  dissolved S                                        (mole/l)
 
-      ! initialise pointering in pmsa
+        ! initialise pointering in pmsa
 
-      ipnt        = ipoint
+        ipnt = ipoint
 
-      do 9000 iseg = 1 , noseg
+        do iseg = 1, noseg
 
-         sud        = pmsa( ipnt(  1) )
-         lksth2s    = pmsa( ipnt(  2) )
-         tcksth2s   = pmsa( ipnt(  3) )
-         lksths     = pmsa( ipnt(  4) )
-         tcksths    = pmsa( ipnt(  5) )
-         ph         = pmsa( ipnt(  6) )
-         temp       = pmsa( ipnt(  7) )
-         poros      = pmsa( ipnt(  8) )
+            sud = pmsa(ipnt(1))
+            lksth2s = pmsa(ipnt(2))
+            tcksth2s = pmsa(ipnt(3))
+            lksths = pmsa(ipnt(4))
+            tcksths = pmsa(ipnt(5))
+            ph = pmsa(ipnt(6))
+            temp = pmsa(ipnt(7))
+            poros = pmsa(ipnt(8))
 
-         if ( sud .gt. 1e-20 ) then
+            if (sud > 1e-20) then
 
-            ! speciation
+                ! speciation
 
-            h_ion      = 10.**(-ph)
-            ks1        = 10.**lksth2s * tcksth2s**(temp-20.)
-            ks2        = 10.**lksths  * tcksths**(temp-20.)
-            csdt       = sud/(32000.*poros)
-            csd1       = csdt/(1.+ks1/h_ion+(ks1*ks2)/(h_ion*h_ion))
-            csd2       = ks1*csd1/h_ion
-            csd3       = csdt - csd1 - csd2
+                h_ion = 10.**(-ph)
+                ks1 = 10.**lksth2s * tcksth2s**(temp - 20.)
+                ks2 = 10.**lksths * tcksths**(temp - 20.)
+                csdt = sud / (32000. * poros)
+                csd1 = csdt / (1. + ks1 / h_ion + (ks1 * ks2) / (h_ion * h_ion))
+                csd2 = ks1 * csd1 / h_ion
+                csd3 = csdt - csd1 - csd2
 
-            dish2swk   = csd1
-            dishswk    = csd2
-            disswk     = csd3
-            frh2sdis   = csd1/csdt
-            frhsdis    = csd2/csdt
-            frsdis     = 1.0 - frh2sdis - frhsdis
-            if ( frsdis .lt. 0.0 ) then
-               frsdis = csd3/csdt
+                dish2swk = csd1
+                dishswk = csd2
+                disswk = csd3
+                frh2sdis = csd1 / csdt
+                frhsdis = csd2 / csdt
+                frsdis = 1.0 - frh2sdis - frhsdis
+                if (frsdis < 0.0) then
+                    frsdis = csd3 / csdt
+                endif
+
+            else
+
+                dish2swk = 0.0
+                dishswk = 0.0
+                disswk = 0.0
+                frh2sdis = 0.0
+                frhsdis = 0.0
+                frsdis = 0.0
+
             endif
 
-         else
+            ! store in pmsa array
 
-            dish2swk   = 0.0
-            dishswk    = 0.0
-            disswk     = 0.0
-            frh2sdis   = 0.0
-            frhsdis    = 0.0
-            frsdis     = 0.0
+            pmsa(ipnt(9)) = dish2swk
+            pmsa(ipnt(10)) = dishswk
+            pmsa(ipnt(11)) = disswk
+            pmsa(ipnt(12)) = frh2sdis
+            pmsa(ipnt(13)) = frhsdis
+            pmsa(ipnt(14)) = frsdis
 
-         endif
+            ipnt = ipnt + increm
 
-         ! store in pmsa array
+        end do
 
-         pmsa( ipnt(  9)   ) = dish2swk
-         pmsa( ipnt( 10)   ) = dishswk
-         pmsa( ipnt( 11)   ) = disswk
-         pmsa( ipnt( 12)   ) = frh2sdis
-         pmsa( ipnt( 13)   ) = frhsdis
-         pmsa( ipnt( 14)   ) = frsdis
-
-         ipnt        = ipnt        + increm
-
- 9000 continue
-
-      return
-      end
+        return
+    end
 
 end module m_sulfid

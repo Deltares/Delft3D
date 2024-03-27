@@ -587,7 +587,9 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jashp_genstruc            !< Write a shape file for general structures
  integer                           :: jashp_dambreak            !< Write a shape file for dam breaks
 
+ integer                           :: jambawritetxt             !< Option to write areas mass balance terms to a txt-file
  integer                           :: jambawritecsv             !< Option to write areas mass balance terms to a csv-file
+ integer                           :: jambawritenetcdf          !< Option to write areas mass balance terms to a netCDF-file
 
  integer                           :: jambalumpmba              !< Lump MBA from/to other areas mass balance terms
  integer                           :: jambalumpbnd              !< Lump MBA boundary mass balance terms
@@ -1046,7 +1048,9 @@ subroutine default_flowparameters()
     jashp_dry = 0
     jashp_genstruc = 0
     jashp_dambreak = 0
+    jambawritetxt = 1
     jambawritecsv = 0
+    jambawritenetcdf = 0
 
     jambalumpmba = 0
     jambalumpbnd = 0

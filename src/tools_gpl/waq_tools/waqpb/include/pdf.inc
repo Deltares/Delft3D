@@ -1,6 +1,6 @@
-c     Memory to store a PDF file (V3.98)
+!     Memory to store a PDF file (V3.98)
 
-c     Input items at the segment level
+!     Input items at the segment level
 
       integer      insmax , ins
       parameter   (insmax=1100)
@@ -11,7 +11,7 @@ c     Input items at the segment level
       real         ins_va(insmax)
       common /comins/ ins   , ins_id, ins_nm, ins_va, ins_do, ins_un
 
-c     Input items at the exchange level
+!     Input items at the exchange level
 
       integer      inemax , ine
       parameter   (inemax=1000)
@@ -22,7 +22,7 @@ c     Input items at the exchange level
       real         ine_va(inemax)
       common /comine/ ine   , ine_id, ine_nm, ine_va, ine_do, ine_un
 
-c     Output items at the segment level
+!     Output items at the segment level
 
       integer      ousmax , ous
       parameter   (ousmax=2000)
@@ -32,7 +32,7 @@ c     Output items at the segment level
       character*20 ous_un(ousmax)
       common /comous/ ous   , ous_id, ous_nm, ous_do, ous_un
 
-c     Output items at the exchange level
+!     Output items at the exchange level
 
       integer      ouemax , oue
       parameter   (ouemax=500)
@@ -42,7 +42,7 @@ c     Output items at the exchange level
       character*20 oue_un(ouemax)
       common /comoue/ oue   , oue_id, oue_nm, oue_do, oue_un
 
-c     Fluxes
+!     Fluxes
 
       integer      flumax , flu
       parameter   (flumax=900)
@@ -52,7 +52,7 @@ c     Fluxes
       character*20 flu_un(flumax)
       common /comflu/ flu   , flu_id, flu_nm, flu_do, flu_un
 
-c     Stochi lines
+!     Stochi lines
 
       integer      stomax , sto
       parameter   (stomax=900)
@@ -60,7 +60,7 @@ c     Stochi lines
       real         sto_sc(stomax)
       common /comsto/ sto   , sto_fl, sto_su, sto_sc
 
-c     Disp lines
+!     Disp lines
 
       integer      dismax , dis
       parameter   (dismax=200)
@@ -68,7 +68,7 @@ c     Disp lines
       real         dis_sc(dismax)
       common /comdis/ dis   , dis_it, dis_su, dis_sc
 
-c     Disp lines
+!     Disp lines
 
       integer      velmax , vel
       parameter   (velmax=200)

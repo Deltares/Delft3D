@@ -21,40 +21,37 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      program dlwq1
+program dlwq1
 
-      use m_delwaq1
-      use delwaq1_version_module
+    use m_delwaq1
+    use delwaq1_version_module
 
-      implicit none
+    implicit none
 
-      integer                          :: argc
-      character(len=256), allocatable  :: argv(:)
-      character(len=120)               :: idstr
-      integer(4)                       :: errorcode
-      integer(4)                       :: i
-      integer(4)                       :: lunfil
+    integer :: argc
+    character(len = 256), allocatable :: argv(:)
+    character(len = 120) :: idstr
+    integer(4) :: i
+    integer(4) :: lunfil
 
-      call getfullversionstring_delwaq1(idstr)
+    call getfullversionstring_delwaq1(idstr)
 
-      argc = iargc() + 1
+    argc = iargc() + 1
 
-      allocate ( argv (argc))
-      do i = 1, argc
-          call getarg(i - 1, argv(i))
-      end do
+    allocate (argv (argc))
+    do i = 1, argc
+        call getarg(i - 1, argv(i))
+    end do
 
-      call delwaq1(argc, argv, errorcode)
+    if (delwaq1(argv)) then
+        write (*, *) ' Normal end'
+    else
+        open  (newunit = lunfil, file = 'delwaq.rtn')
+        write (lunfil, *) 'Error running delwaq 1'
+        close (lunfil)
 
-      open  ( newunit=lunfil , file = 'delwaq.rtn' )
-      write ( lunfil , * ) errorcode
-      close ( lunfil )
-
-      if (errorcode == 0) then
-        write (*,*) ' Normal end'
-      else
-        write (*,*) ' Error code:', errorcode
+        write (*, *) ' Error code:', 1
         stop 1
-      end if
+    end if
 
-      end program
+end program

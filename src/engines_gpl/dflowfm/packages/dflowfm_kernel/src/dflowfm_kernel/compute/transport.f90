@@ -48,6 +48,7 @@ subroutine transport()                           ! transport for now, advect sal
  use unstruc_display, only: jaGUI
  use unstruc_messages
  use m_transport, only: NUMCONST, constituents, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itraN, itrac2const
+ use m_lateral, only : average_concentrations_for_laterals
 
  implicit none
 
@@ -445,6 +446,11 @@ subroutine transport()                           ! transport for now, advect sal
        enddo
     endif
  enddo
+
+ if (numconst > 0) then
+    call average_concentrations_for_laterals(numconst, kmx, vol1, constituents)
+ endif
+ 
 
  call timstop(handle_extra(52)) ! transport
 

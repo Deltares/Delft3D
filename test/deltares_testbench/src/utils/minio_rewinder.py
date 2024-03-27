@@ -1,21 +1,32 @@
+import hashlib
+import io
 import os
 import re
 from collections import defaultdict
-from minio import Minio
-from pytz import timezone
 from datetime import datetime, timezone
-from typing import List, Dict
+from typing import DefaultDict, Iterator, List
+
+from minio import Minio
+from minio.datatypes import Object as MinioObject
+
+# Large objects should be uploaded to MinIO with a *multipart upload*. This affects not only the
+# performance of uploads, but also the computation of the `ETag` used to check data integrity.
+# At this time of writing, it seems the MinIO recommendation for the size of the multipart upload
+# parts is 100 MiB. This is the same size as AWS S3 recommends:
+# https://min.io/docs/minio/linux/reference/minio-mc/mc-mv.html#mc.mv.-disable-multipart
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html
+DEFAULT_MULTIPART_UPLOAD_PART_SIZE = 100 * 1024 * 1024  # Bytes
 
 
 class Rewinder:
     """Implements the rewind feature of the Minio server."""
 
-    def __init__(self, client: Minio, timestamp: str):
+    def __init__(self, client: Minio, timestamp: str, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE):
         self.client = client
         self.rewind = self.__parse_timestamp(timestamp)
-        
+        self._multipart_upload_part_size = part_size
 
-    def download(self, bucket: str, source_path: str, destination_directory: str):
+    def download(self, bucket: str, source_path: str, destination_directory: str) -> None:
         """Downloads a directory from MinIO.
 
         Args:
@@ -32,21 +43,21 @@ class Rewinder:
         )
 
         object_list_before_rewind = filter(
-            lambda o: o._last_modified < self.rewind.replace(tzinfo=timezone.utc), object_list
+            lambda o: o.last_modified < self.rewind.replace(tzinfo=timezone.utc), object_list
         )
         obj_list = list(object_list_before_rewind)
         downloads = self.__get_latest_non_deleted_versions(obj_list)
 
         # Check if downloads is empty
         if not downloads:
-            print(f"No dowloads found in bucket {bucket} at {source_path}")
+            print(f"No downloads found in bucket {bucket} at {source_path}")
             return
 
         self.__ensure_destination_directory(destination_directory)
         self.__download_objects(bucket, downloads, source_path, destination_directory)
 
-    def __parse_timestamp(self, timestamp: str):
-        isofmt_timestamp = re.sub(r'[./]', '-', timestamp)
+    def __parse_timestamp(self, timestamp: str) -> datetime:
+        isofmt_timestamp = re.sub(r"[./]", "-", timestamp)
         # Check if the timestamp includes seconds or not
         if len(isofmt_timestamp) == 16:
             format_str = "%Y-%m-%dT%H:%M"
@@ -62,20 +73,20 @@ class Rewinder:
 
         return dt
 
-    def __get_latest_non_deleted_versions(self, object_list):
-        object_versions = defaultdict(list)
+    def __get_latest_non_deleted_versions(self, object_list: List[MinioObject]) -> List[MinioObject]:
+        object_versions: DefaultDict[str, List[MinioObject]] = defaultdict(list)
 
         for object in object_list:
-            object_versions[object._object_name].append(object)
+            if object.object_name is not None:
+                object_versions[object.object_name].append(object)
 
-        downloads = []
+        downloads: List[MinioObject] = []
+        min_dt = datetime.min.replace(tzinfo=timezone.utc)
 
-        for object_name, versions in object_versions.items():
-            versions.sort(key=lambda version: version._last_modified, reverse=True)
-            if not versions[0]._is_delete_marker:
-                downloads.append(
-                    {"object_name": object_name, "version_id": versions[0]._version_id}
-                )
+        for _, versions in object_versions.items():
+            versions.sort(key=lambda version: version.last_modified or min_dt, reverse=True)
+            if not versions[0].is_delete_marker:
+                downloads.append(versions[0])
 
         return downloads
 
@@ -88,33 +99,18 @@ class Rewinder:
             # Directory doesn't exist, so create it
             os.makedirs(destination_directory, exist_ok=True)
 
-    def __object_exists(self, bucket: str, object_name: str):
-        try:
-            self.client.stat_object(bucket, object_name)
-            return True
-        except Exception as e:
-            print(f"Object {object_name} not in {bucket}: {e}.")
-            return False
-
     def __download_objects(
         self,
         bucket: str,
-        downloads: List[Dict[str, str]],
+        downloads: List[MinioObject],
         source_path: str,
         destination_directory: str,
-    ):
+    ) -> None:
         for download in downloads:
-            object_path = download["object_name"]
-            if not self.__object_exists(bucket, object_path):
-                continue
+            object_path = download.object_name or ""
+            filename_and_sub__dir_with_extension = object_path.replace(f"{source_path.rstrip('/')}/", "")
 
-            filename_and_sub__dir_with_extension = object_path.replace(
-                source_path + "/", ""
-            )
-
-            destination_file_path = os.path.join(
-                destination_directory, filename_and_sub__dir_with_extension
-            )
+            destination_file_path = os.path.join(destination_directory, filename_and_sub__dir_with_extension)
 
             self.__download_object(
                 bucket,
@@ -124,9 +120,9 @@ class Rewinder:
             )
 
     def __download_object(
-        self, bucket: str, download: dict, destination_file_path: str, object_path: str
-    ):
-        if os.path.exists(destination_file_path):
+        self, bucket: str, object_info: MinioObject, destination_file_path: str, object_path: str
+    ) -> None:
+        if os.path.exists(destination_file_path) and object_info.etag == self.__etag(destination_file_path):
             print(f"Skipping download: {destination_file_path}, it already exists.")
             return
 
@@ -136,7 +132,38 @@ class Rewinder:
                 bucket,
                 object_path,
                 destination_file_path,
-                version_id=download["version_id"],
+                version_id=object_info.version_id,
             )
         except Exception as exception:
             print(f"Exception: {exception}.")
+
+    def __etag(self, path: str) -> str:
+        """Compute the `ETag` of the contents of a file.
+
+        Notes
+        -----
+        For "small" files, the ETag is the same as an MD5 `hexdigest`. Unfortunately, when files are large
+        enough to be uploaded in multiple parts, the ETag computation changes:
+        1. Compute the MD5 `digest` for each separate part
+        2. Concatenate all of the MD5 digests for each uploaded part.
+        3. Compute the hexdigest of the result, and add `-{n}`, where `n` is the number of parts.
+        The value of the ETag depends on the size of the parts used during the multipart upload.
+        See: https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html#large-object-checksums
+        """
+
+        def chunker(f: io.BufferedReader, size: int) -> Iterator[bytes]:
+            chunk = f.read(size)
+            while chunk:
+                yield chunk
+                chunk = f.read(size)
+
+        with open(path, "rb") as f:
+            hashes = [hashlib.md5(chunk) for chunk in chunker(f, self._multipart_upload_part_size)]
+
+        if not hashes:
+            return hashlib.md5(b"").hexdigest()  # Emtpy file
+        elif len(hashes) == 1:
+            return hashes[0].hexdigest()  # Regular file
+        else:
+            digests = b"".join(h.digest() for h in hashes)  # Files split in multiple parts
+            return hashlib.md5(digests).hexdigest() + f"-{len(hashes)}"

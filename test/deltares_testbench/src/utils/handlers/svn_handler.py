@@ -9,6 +9,7 @@ from src.config.program_config import ProgramConfig
 from src.suite.program import Program
 from src.utils.handlers.i_handler import IHandler
 from src.utils.logging.i_logger import ILogger
+from src.utils.common import stripPassword
 
 
 # SVN wrapper, has handler interface
@@ -104,7 +105,8 @@ class SvnHandler(IHandler):
         prg.overwriteConfiguration(pcnf)
         prg.run(logger)
         if prg.getError():
-            raise RuntimeError("Errors during svn download: " + str(prg.getError()))
+            error_string = stripPassword(str(prg.getError()))
+            raise RuntimeError("Errors during svn download: " + error_string)
 
     # default svn arguments
     # input: initial command, credentials

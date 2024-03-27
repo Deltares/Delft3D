@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "dflowfm_version.h"
+#include "dflowfm_version.h"
 
 module static_version_info
     implicit none

@@ -1468,8 +1468,13 @@ contains
 !       percentage of particles used
 
          if ( gettoken( wparm(i), ierr2 ) .ne. 0 ) goto 4043
-         ndprt(i) = int(wparm(i)*nopart/100.0 + 0.5)
-
+         if ( wparm(i) >= 0.0 ) then
+            ndprt(i) = int(wparm(i)*nopart/100.0 + 0.5)
+         else
+            write ( lun2, 3323 )
+            ierr = ierr + 1
+         endif
+         
          if ( nolayp .eq. 1 ) then
             write ( lun2, 2280 ) xwaste(i), ywaste(i), zwaste(i)
          else
@@ -1570,8 +1575,12 @@ contains
          endif
 
          if ( gettoken( wparm (i+nodye), ierr2 ) .ne. 0 ) goto 4043
-         ndprt(i+nodye) = int(wparm(i+nodye)*nopart/100.0 + 0.5)
-
+         if ( wparm(i+nodye) >= 0.0 ) then
+            ndprt(i+nodye) = int(wparm(i+nodye)*nopart/100.0 + 0.5)
+         else
+            write ( lun2, 3323 )
+            ierr = ierr + 1
+         endif
          if ( nolayp .eq. 1 ) then
             write ( lun2, 2280 ) xwaste(i+nodye), ywaste(i+nodye), zwaste(i+nodye)
          else
@@ -1708,7 +1717,13 @@ contains
 
          if ( gettoken( wparm(i+nodac), ierr2 ) .ne. 0 ) goto 4054
          if ( gettoken( uscal(i), ierr2 ) .ne. 0 ) goto 4054
-         ndprt(i+nodac) = int(wparm(i+nodac)*nopart/100.0 + 0.5)
+         if ( wparm(i+nodac) >= 0.0 ) then
+            ndprt(i+nodac) = int(wparm(i+nodac)*nopart/100.0 + 0.5)
+         else
+            write ( lun2, 3323 )
+            ierr = ierr + 1
+         endif
+         
          write ( lun2, 2316) i, ndprt(i+nodac), wparm(i+nodac), uscal(i)
 
 !       read time for delpar release, and substance number
@@ -1885,7 +1900,9 @@ contains
 
 !     close input file
 
-      close ( ilun(1) )
+      if ( alone ) then     
+          close ( ilun(1) )
+      endif 
 
 !     check on the total number of particles:
 
@@ -2242,9 +2259,11 @@ contains
                   ' simulation range! '      )
  3321 format('  Error 2002. Dispersant application time not a plural of',&
                   ' model time step! '      )
- 3322 format('  Error 2003. Dispersant application time not in ascending',&
+ 3322              format('  Error 2003. Dispersant application time not in ascending',&
                   ' order or at the same time as previous!'       )
+ 3323 format('  Error 2003. Particle percentaage should be positive')
 
+                  
  3500 format('  Found plastics_parameters keyword '       )
  3501 format(/'  Plastics name                      : ',A)
  3502 format( '  Plastics density            [g/m3] : ',F14.2)
@@ -2255,7 +2274,8 @@ contains
  3507 format(/'  ', A, ' is active in the current model'/)
  3508 format(/'  ', A, ' is NOT active in the current model, settings not used!'/)
  3509 format(/'  No parameters found for plastic named : ',A)
- 3510 format(/'  Parameters were found for all plastics'/)
+ 3510  format(/'  Parameters were found for all plastics'/)
+      
 
 11    write(*,*) ' Error when reading the model type '
       write(*,*) ' Is this version 3.50?'
@@ -2415,6 +2435,7 @@ contains
 4067  write(*,*) ' Error: layer number of continuous release higher', &
        ' than number of layers'
       call stop_exit(1)
+
 5001  write(*,*) 'Error: 1th record of particles coordinates file', &
        ' can not be read correctly'
       call stop_exit(1)
@@ -2660,7 +2681,7 @@ contains
         '          last line read : ',line(:len_line)
       write(lunlog,'(/a)') ' Please check file !!'
       call stop_exit(1)
- 1020write(lunlog,'(//a,a)')  &
+ 1020 write(lunlog,'(//a,a)')  &
         ' Error: problem while reading ini-file ',ini_file(:len_file)
       write(lunlog,'(//a)') ' Error: premature end-of-file found'
       write(lunlog,'(/a )') ' Please check file !!'

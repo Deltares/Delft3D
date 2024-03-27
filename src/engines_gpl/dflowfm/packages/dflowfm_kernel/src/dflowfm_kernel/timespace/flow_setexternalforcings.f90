@@ -64,6 +64,7 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use m_airdensity,           only : get_airdensity
    use dfm_error
    use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
+   use m_lateral, only : numlatsg
 
    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
    logical,          intent(in   ) :: initialization   !< initialization phase
