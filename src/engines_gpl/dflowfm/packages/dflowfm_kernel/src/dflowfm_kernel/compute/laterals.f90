@@ -71,7 +71,7 @@ implicit none
    private
    double precision, allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration   !< Average concentration per lateral discharge location.
    double precision, allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration   !< Concentration of the inflowing water at the lateral discharge location.
-   integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Apply transport for laterals. (0 means only water and no substances are transported)
+   integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Flag to apply transport for laterals (0 means only water and no substances are transported).
 
    contains
 

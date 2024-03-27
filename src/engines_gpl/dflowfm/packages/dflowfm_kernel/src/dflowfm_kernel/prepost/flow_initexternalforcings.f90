@@ -1753,7 +1753,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                nlatnd = nlatnd + nlat
 
-               jaqin = 1 ; success = .true.  ! geen gezeik, iedereen reik
+               jaqin = 1
+               success = .true.
 
             else if (jaoldstr > 0 .and. qid == 'gateloweredgelevel' ) then
 

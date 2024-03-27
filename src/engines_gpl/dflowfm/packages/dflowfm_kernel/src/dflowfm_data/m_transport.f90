@@ -35,7 +35,7 @@
 !!   -salt and temperature are filled from and copied to the sa1 and tem1 arrays, respectively
 !!   -salt and temperature boundary and initial conditions are applied to sa1 and tem1, not to the constituents directly
 !! tracers:
-!!   -tracers intial and boundary conditions are directly applied to the constituents
+!!   -tracers initial and boundary conditions are directly applied to the constituents
 !!   -the tracers always appear at the end of the whole constituents array
 !!   -the constituents numbers of the tracers are from "ITRA1" to "ITRAN", where ITRAN=0 (no tracers) or ITRAN=NUMCONST (tracers come last)
 !!   -tracers with boundary conditions (not necessarily all tracers) have their own numbering

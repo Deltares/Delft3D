@@ -37,11 +37,11 @@ program dlwq2
 
     call getfullversionstring_delwaq2(idstr)
 
-    argc = iargc() + 1
+    argc = command_argument_count() + 1
 
     allocate (argv (argc))
     do i = 1, argc
-        call getarg(i - 1, argv(i))
+        call get_command_argument(i - 1, argv(i))
     end do
 
     call delwaq2(argc, argv, errorcode)

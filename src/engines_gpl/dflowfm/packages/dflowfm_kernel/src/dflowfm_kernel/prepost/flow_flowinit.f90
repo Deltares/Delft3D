@@ -198,7 +198,7 @@ contains
    call remember_initial_water_levels_at_water_level_boundaries()
    call make_volume_tables()
    call load_restart_file(jawelrestart, error)
-   if( is_error_at_any_processor(error) ) then
+   if (is_error_at_any_processor(error) ) then
        call qnerror('Error occurs when reading the restart file.',' ', ' ')
        return
    end if
@@ -770,14 +770,14 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs, s1
+   use m_flow,             only : u1, u0, s0, hs, s1, ucxyq_read_rst
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
    use iso_varying_string, only : len_trim, index
    use m_setucxcuy_leastsquare, only: reconst2nd
    use dfm_error
-
+   
    implicit none
 
    logical, intent(out)          :: file_exist
@@ -788,7 +788,7 @@ subroutine load_restart_file(file_exist, error)
    integer                       :: mrst
    integer                       :: jw
    double precision, allocatable :: u1_tmp(:)
-
+   
    file_exist = .false.
 
    if (len_trim(md_restartfile) > 0 ) then
@@ -816,7 +816,13 @@ subroutine load_restart_file(file_exist, error)
             call reconst2nd ()
          end if
          call fill_onlyWetLinks()
-         call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         
+         !If we have not read `ucxq` and `ucyq` from restart, we initialize it here. If 
+         !we have read it, we do not want to overwrite it. 
+         if (.not. ucxyq_read_rst) then
+            call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         endif
+         
          call flow_obsinit() 
          call fill_valobs() 
        end if
