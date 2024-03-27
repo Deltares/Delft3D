@@ -27,7 +27,7 @@
       contains
 
 
-      SUBROUTINE convert_seconds_to_date ( ITIME , ITIME2, DTFLG , DTFLG3 )
+      SUBROUTINE convert_seconds_to_date ( ITIME , ITIME2, DTFLG , is_yyddhh_format )
 !
 !
 !     Deltares
@@ -46,16 +46,16 @@
 !     ITIME   INTEGER  1           INPUT   TIME in seconds
 !     ITIME2  INTEGER  1           OUTPUT  TIME in format
 !     DTFLG   LOGICAL  1           INPUT   if .TRUE. then 'date'-format
-!     DTFLG3  LOGICAL  1           INPUT   (F;ddmmhhss,T;yydddhh)
+!     is_yyddhh_format  LOGICAL  1           INPUT   (F;ddmmhhss,T;yydddhh)
 !
 !     Declaration of arguments
 !
       INTEGER   ITIME , ITIME2
-      LOGICAL   DTFLG , DTFLG3
+      LOGICAL   DTFLG , is_yyddhh_format
       REAL      IYEAR, IHLP, IDAY, IHOUR, IMIN, ISEC
 !
       IF ( DTFLG ) THEN
-         IF ( DTFLG3 ) THEN
+         IF ( is_yyddhh_format ) THEN
             IYEAR   = ITIME/31536000
             IHLP    = ITIME - IYEAR*31536000
             IDAY    = IHLP/86400

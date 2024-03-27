@@ -54,7 +54,7 @@ contains
                 return
             end if
         else
-            imax = iimax
+            imax = max_int_size
         end if
         call retrieve_command_argument('-rmax', 1, lfound, rmax, rdummy, cdummy, status%ierr)
         if (lfound) then
@@ -80,7 +80,7 @@ contains
                 return
             end if
         else
-            cmax = icmax
+            cmax = max_char_size
         end if
         allocate (iar(imax), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
@@ -89,14 +89,14 @@ contains
             call delwaq1_write_messages(status)
             return
         end if
-        allocate (rar(rmax), stat = ierr_alloc)
+        allocate (real_array(rmax), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (lunrep, '(A,I6,A,I12)') " ERROR: allocating real work array:", ierr_alloc, " with length:", rmax
             status%ierr = 1
             call delwaq1_write_messages(status)
             return
         end if
-        allocate (car(cmax), stat = ierr_alloc)
+        allocate (char_arr(cmax), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (lunrep, '(A,I6,A,I12)') " ERROR: allocating character work array:", ierr_alloc, " with length:", cmax
             status%ierr = 1
