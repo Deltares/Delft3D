@@ -29,7 +29,7 @@ contains
 
 
     SUBROUTINE DLWQTB (LUNUT, IOFF, A, J, IIPNT, &
-            IRPNT, max_int_size, ITIME, KTYPE, AVAL, &
+            IRPNT, IIMAX, ITIME, KTYPE, AVAL, &
             IVAL, IERR)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -54,7 +54,7 @@ contains
         !     J       INTEGER    ?        INPUT   Integer boundary workspace
         !     IIPNT   INTEGER    1        IN/OUT  Offset in integer array space
         !     IRPNT   INTEGER    1        IN/OUT  Offset in real array space
-        !     max_int_size   INTEGER    1        INPUT   Maximum integer array size
+        !     IIMAX   INTEGER    1        INPUT   Maximum integer array size
         !     ITIME   INTEGER    1        INPUT   Time in units of the system clock
         !     KTYPE   INTEGER   NOITM     INPUT   Type of items
         !     AVAL    REAL    NOTOT,NOITM OUTPUT  Values of the bounds/wastes
@@ -68,10 +68,10 @@ contains
         real(kind = real_wp), PARAMETER :: TWOPI = 6.28319
         integer(kind = int_wp) :: J(*), KTYPE(*), IVAL(*)
         real(kind = real_wp) :: A(*), AVAL(*)
-        integer(kind = int_wp) :: IERR, LUNUT, IRPNT, max_int_size, ITIME, IOFF, IIPNT
+        integer(kind = int_wp) :: IERR, LUNUT, IRPNT, IIMAX, ITIME, IOFF, IIPNT
 
         !     local
-        real(kind = real_wp) :: missing_value, aa, ab, aphase, func
+        real(kind = real_wp) :: amiss, aa, ab, aphase, func
         integer(kind = int_wp) :: noitm, notot, nobrk
         integer(kind = int_wp) :: i, i1, i2, i3, ia, ib, ic, ij, ii
         integer(kind = int_wp) :: iopt, ipro, iord, itim1, itim2
@@ -83,7 +83,7 @@ contains
         !
         !         initialise the system
         !
-        missing_value = -999.
+        AMISS = -999.
         !       Number of items
         NOITM = J(1)
         NOTOT = J(2)
@@ -209,8 +209,8 @@ contains
                             IT2C = ITIM2
                             IDTC = IDT
                             !     Dealing with missing values
-                            IF (AA == missing_value .OR. AB == missing_value) &
-                                    CALL DLWMIS(A, I, missing_value, NTT, IREC, &
+                            IF (AA == AMISS .OR. AB == AMISS) &
+                                    CALL DLWMIS(A, I, AMISS, NTT, IREC, &
                                             J, IJ, NOBRK, ITIMF, IOPT, &
                                             IT1C, IT2C, IDTC, AA, AB)
                             !           If no value is found, then skip the assignment, except flow set missing
@@ -230,12 +230,12 @@ contains
                             ELSEIF (IC - IOFF == 0) THEN
                                 !                       for flow accept missing (detected flow)
                                 IF (II > 0) THEN
-                                    AVAL(IB + IC) = missing_value
+                                    AVAL(IB + IC) = AMISS
                                 ELSE
                                     !                          Set a whole type
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) THEN
-                                            AVAL ((I3 - 1) * NOTOT + IC) = missing_value
+                                            AVAL ((I3 - 1) * NOTOT + IC) = AMISS
                                         ENDIF
                                     ENDDO
                                 ENDIF
@@ -266,8 +266,8 @@ contains
                             IT2C = ITIM2
                             IDTC = IDT
                             !     Dealing with missing values
-                            IF (AA == missing_value .OR. AB == missing_value) &
-                                    CALL DLWMIS(A, I, missing_value, NTT, IREC, &
+                            IF (AA == AMISS .OR. AB == AMISS) &
+                                    CALL DLWMIS(A, I, AMISS, NTT, IREC, &
                                             J, IJ, NOBRK, ITIMF, IOPT, &
                                             IT1C, IT2C, IDTC, AA, AB)
                             !           If no value is found, then skip the assignment
@@ -288,11 +288,11 @@ contains
                                 !                       for flow accept missing (detected flow)
                                 IF (II > 0) THEN
                                     IB = (J(NPST + I2) - 1) * NOTOT
-                                    AVAL(IB + IC) = missing_value
+                                    AVAL(IB + IC) = AMISS
                                 ELSE
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) &
-                                                AVAL ((I3 - 1) * NOTOT + IC) = missing_value
+                                                AVAL ((I3 - 1) * NOTOT + IC) = AMISS
                                     ENDDO
                                 ENDIF
                             ENDIF
@@ -363,8 +363,8 @@ contains
         !
         !       Return until finished
         !
-        150 IF (IJ < max_int_size) GOTO 10
-        IF (IJ == max_int_size) THEN
+        150 IF (IJ < IIMAX) GOTO 10
+        IF (IJ == IIMAX) THEN
             IIPNT = IIPNT + IJ
             IRPNT = IRPNT + IA
             goto 9999    !   RETURN
@@ -378,7 +378,7 @@ contains
         !
     END
     !
-    SUBROUTINE DLWMIS (A, I, missing_value, NTT, IREC, &
+    SUBROUTINE DLWMIS (A, I, AMISS, NTT, IREC, &
             J, IJ, NOBRK, ITIMF, IOPT, &
             IT1C, IT2C, IDTC, AA, AB)
         use timers
@@ -386,7 +386,7 @@ contains
         real(kind = real_wp) :: A(*)
         integer(kind = int_wp) :: J(*)
         integer(kind = int_wp) :: I, IJ, NTT, IREC, NOBRK, ITIMF, IOPT, IT1C, IT2C, IDTC
-        real(kind = real_wp) :: missing_value, AA, AB
+        real(kind = real_wp) :: AMISS, AA, AB
 
         !  	local
         integer(kind = int_wp) :: ll, jj, kk
@@ -397,14 +397,14 @@ contains
         !           Search backward for the first valid point
         LL = I
         DO JJ = IREC, 1, -1
-            IF (A(LL) /= missing_value) GOTO 20
+            IF (A(LL) /= AMISS) GOTO 20
             LL = LL - NTT
         end do
         JJ = 0
         !           Search forward for the first valid point
         20 LL = I + NTT
         DO KK = IREC + 1, NOBRK
-            IF (A(LL) /= missing_value) GOTO 40
+            IF (A(LL) /= AMISS) GOTO 40
             LL = LL + NTT
         end do
         KK = 0

@@ -30,9 +30,9 @@ module m_rdstat
 contains
 
 
-    SUBROUTINE RDSTAT (LUNREP, input_file_start_position, NPOS, CCHAR, &
-            ILUN, LCH, LSTACK, output_verbose_level, is_date_format, &
-            is_yyddhh_format, status, NOSTAT, NKEY, NOKEY, &
+    SUBROUTINE RDSTAT (LUNREP, IPOSR, NPOS, CCHAR, &
+            ILUN, LCH, LSTACK, IOUTPT, DTFLG1, &
+            DTFLG3, status, NOSTAT, NKEY, NOKEY, &
             KEYNAM, KEYVAL, NPERIOD, PERNAM, PERSFX, &
             PSTART, PSTOP)
         ! Reads statistical output spec. block 10
@@ -46,16 +46,16 @@ contains
         !
         !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     input_file_start_position   INTEGER(kind=int_wp) ::1           IN/OUT  position on input record
+        !     IPOSR   INTEGER(kind=int_wp) ::1           IN/OUT  position on input record
         !     NPOS    INTEGER(kind=int_wp) ::1           INPUT   length of input record
         !     CCHAR   CHAR*1   1           INPUT   comment character
         !     VERSION REAL(kind=real_wp) ::1           INPUT   program version number
         !     ILUN    INTEGER(kind=int_wp) ::LSTACK      IN/OUT  unit number stack
         !     LCH     CHAR*(*) LSTACK      IN/OUT  Filename stack
         !     LSTACK  INTEGER(kind=int_wp) ::1           INPUT   size of the stack
-        !     output_verbose_level  INTEGER(kind=int_wp) ::1           INPUT   output file option
-        !     is_date_format  LOGICAL  1           INPUT   'date'-format 1st timescale
-        !     is_yyddhh_format  LOGICAL  1           INPUT   'date'-format (F;ddmmhhss,T;yydddhh)
+        !     IOUTPT  INTEGER(kind=int_wp) ::1           INPUT   output file option
+        !     DTFLG1  LOGICAL  1           INPUT   'date'-format 1st timescale
+        !     DTFLG3  LOGICAL  1           INPUT   'date'-format (F;ddmmhhss,T;yydddhh)
         !     NOSTAT  INTEGER(kind=int_wp) ::1           OUTPUT  number of statistical processes
         !     NKEY    INTEGER(kind=int_wp) ::1           OUTPUT  total number of keywords
         !     NOKEY   INTEGER(kind=int_wp) ::NOSTAT      OUTPUT  number of keywords per stat. proc.
@@ -73,9 +73,9 @@ contains
 
         implicit none
 
-        INTEGER(kind = int_wp) :: LUNREP, input_file_start_position, NPOS, LSTACK, output_verbose_level, &
+        INTEGER(kind = int_wp) :: LUNREP, IPOSR, NPOS, LSTACK, IOUTPT, &
                 NOSTAT, NKEY
-        LOGICAL :: is_date_format, is_yyddhh_format
+        LOGICAL :: DTFLG1, DTFLG3
         INTEGER(kind = int_wp) :: ILUN(*)
         CHARACTER*(*) :: LCH  (*)
         CHARACTER*1 :: CCHAR
@@ -138,7 +138,7 @@ contains
         100 CONTINUE
         ITYPE = 0
         CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                 ITYPE, IERR2)
 
         IF (IERR2 == 2) GOTO 500
@@ -167,7 +167,7 @@ contains
 
             ITYPE = 2
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, CDUMMY, VERSTAT, ADUMMY, &
+                    IPOSR, NPOS, CDUMMY, VERSTAT, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
         ELSEIF (IKEY == 2) THEN
@@ -176,7 +176,7 @@ contains
 
             ITYPE = 2
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, CDUMMY, MINSTAT, ADUMMY, &
+                    IPOSR, NPOS, CDUMMY, MINSTAT, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
         ELSEIF (IKEY == 3) THEN
@@ -193,7 +193,7 @@ contains
             ENDIF
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
             PERNAM(NPERIOD) = KNAM
@@ -210,7 +210,7 @@ contains
             200       CONTINUE
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 
@@ -230,7 +230,7 @@ contains
 
                 ITYPE = 0
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 IF (IERR2 /= 0) GOTO 900
                 PERSFX(NPERIOD) = KNAM
@@ -241,7 +241,7 @@ contains
 
                 ITYPE = -3
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 istart = IDUMMY
                 IF (IERR2 /= 0) GOTO 900
@@ -252,7 +252,7 @@ contains
                         call status%increase_error_count()
                     ENDIF
                 ELSE
-                    call convert_relative_time (istart, 1, is_date_format, is_yyddhh_format)
+                    call convert_relative_time (istart, 1, DTFLG1, DTFLG3)
                 ENDIF
                 PSTART(NPERIOD) = max(itstrt, istart)
 
@@ -262,7 +262,7 @@ contains
 
                 ITYPE = -3
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 istop = IDUMMY
                 IF (IERR2 /= 0) GOTO 900
@@ -273,7 +273,7 @@ contains
                         call status%increase_error_count()
                     ENDIF
                 ELSE
-                    call convert_relative_time (istop, 1, is_date_format, is_yyddhh_format)
+                    call convert_relative_time (istop, 1, DTFLG1, DTFLG3)
                 ENDIF
                 PSTOP(NPERIOD) = min(itstop, istop)
 
@@ -309,7 +309,7 @@ contains
 
                 ITYPE = 0
                 CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                        input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                        IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                         ITYPE, IERR2)
                 IF (IERR2 /= 0) GOTO 900
 
@@ -317,7 +317,7 @@ contains
 
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, KVAL, IDUMMY, ADUMMY, &
+                    IPOSR, NPOS, KVAL, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 
@@ -333,7 +333,7 @@ contains
 
             ITYPE = 0
             CALL RDTOK1 (LUNREP, ILUN, LCH, LSTACK, CCHAR, &
-                    input_file_start_position, NPOS, KNAM, IDUMMY, ADUMMY, &
+                    IPOSR, NPOS, KNAM, IDUMMY, ADUMMY, &
                     ITYPE, IERR2)
             IF (IERR2 /= 0) GOTO 900
 

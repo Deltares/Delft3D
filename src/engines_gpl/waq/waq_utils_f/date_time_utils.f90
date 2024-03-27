@@ -23,9 +23,7 @@
 module date_time_utils
 
     use m_waq_precision
-
     implicit none
-
     private
     integer :: simulation_start_time_scu    ! Simulation start time in system clock units
     integer :: simulation_stop_time_scu     ! Simulation stop time in system clock units
@@ -39,7 +37,7 @@ module date_time_utils
 
     public :: simulation_start_time_scu, simulation_stop_time_scu, system_time_factor_seconds, base_julian_time, &
             convert_string_to_time_offset, convert_period_to_timer, convert_relative_time, report_time, &
-            compute_reference_day, convert_time_format
+            compute_reference_day
 
 contains
 
@@ -328,60 +326,5 @@ contains
         if (mod(iyear, 400) == 0) is_leap_year = .TRUE.
 
     end subroutine checkLeapYear
-
-    subroutine convert_time_format(time_array, arr_size, time_scale_factor, is_date_format, is_yyddhh_format)
-
-        !> Conversion of a relative integer DDHHMMSS or YYDDDHH time to seconds
-        !>
-        !>      DDDDHHMMSS allows up to 2146 days or some 5.8 years\n
-        !>      YYDDDHH allows more than needed (NB: a year is 365 days !)\n
-        !>      If date is false, result is multiplied by time_scale_factor.\n
-        !>      Absolute offset time should be chosen such that all relative
-        !>      times fit into 68 years from the absolute offset !
-
-        use timers
-
-        integer(kind = int_wp), intent(in) :: arr_size   !< number of breakpoints
-        integer(kind = int_wp), intent(in) :: time_scale_factor   !< factor between time scales
-        logical, intent(in) :: is_date_format         !< if true then 'date'-format
-        logical, intent(in) :: is_yyddhh_format       !< if true then YYDDDHH
-        integer(kind = int_wp), intent(inout) :: time_array (arr_size)    !< breakpoint to convert
-
-        integer(kind = int_wp) :: isec     ! seconds
-        integer(kind = int_wp) :: imin     ! minutes
-        integer(kind = int_wp) :: ihour    ! hours
-        integer(kind = int_wp) :: iday     ! days
-        integer(kind = int_wp) :: iyear    ! years
-        integer(kind = int_wp) :: i        ! loop counter
-        integer(kind = int_wp) :: ithndl = 0
-        if (timon) call timstrt("convert_time_format", ithndl)
-
-        if (is_date_format) then
-            if (is_yyddhh_format) then
-                do i = 1, arr_size
-                    ihour = mod (time_array(i), 100)
-                    iday = mod (int(time_array(i) / 100), 1000)
-                    iyear = int(time_array(i) / 100000)
-                    time_array(i) = 3600 * ihour + 86400 * iday + 31536000 * iyear
-                enddo
-            else
-                do i = 1, arr_size
-                    isec = mod (time_array(i), 100)
-                    imin = mod (int(time_array(i) / 100), 100)
-                    ihour = mod (int(time_array(i) / 10000), 100)
-                    iday = int (int(time_array(i) / 1000000))
-                    time_array(i) = isec + 60 * imin + 3600 * ihour + 86400 * iday
-                enddo
-            endif
-        else
-            if (time_scale_factor /= 1) then
-                do i = 1, arr_size
-                    time_array(i) = time_scale_factor * time_array(i)
-                enddo
-            endif
-        endif
-
-        if (timon) call timstop(ithndl)
-    end subroutine convert_time_format
 
 end module date_time_utils

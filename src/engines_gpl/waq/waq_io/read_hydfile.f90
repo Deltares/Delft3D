@@ -32,7 +32,17 @@ contains
     subroutine read_hydfile(lunout, hydfile, lchar, noseg, nexch, status)
         use m_get_filepath_and_pathlen
 
-        !> Reads the hyd-file and extracts relevant information
+
+        !   Deltares Software Centre
+
+        !>\File
+        !>               Reads the hyd-file and extracts relevant information
+
+        !   Global declarations
+
+        implicit none
+
+        !   declaration of arguments
 
         integer(kind = int_wp), intent(in) :: lunout       !< unit number for reporting
         character(len = *), intent(in) :: hydfile      !< name of the hyd-file to read
@@ -41,6 +51,8 @@ contains
         integer(kind = int_wp), dimension(*), intent(out) :: nexch        !< number of exchanges
 
         type(error_status), intent(inout) :: status !< current error status
+
+        !   local variables
 
         character(len = 400) :: line
         character(len = 400) :: path
@@ -53,14 +65,17 @@ contains
         character(len = 4) :: identifier
         character(len = len(lchar)) :: grid_file
 
-        ! Read the various file names
-        ! Note:
-        ! The subroutine validate_simulation_time_steps checks the times in the files and we do not know the
-        ! number of items yet. So either we need to make that routine more complex
-        ! or exploit the simple structure of the hyd-file.
+        !
+        !   Read the various file names
+        !   Note:
+        !   The subroutine fffind checks the times in the files and we do not know the
+        !   number of items yet. So either we need to make that routine more complex
+        !   or exploit the simple structure of the hyd-file.
+        !
         keyword(1:8) = ['volumes-file        ', 'areas-file          ', 'flows-file          ', 'pointers-file       ', &
                 'lengths-file        ', 'attributes-file     ', 'grid-indices-file   ', 'waqgeom-file        ']
-        fileno(1:8) = [7, 10, 11, 44, 13, 40, 6, 46]
+        fileno(1:8) = [7, 10, 11, 44, &
+                13, 40, 6, 46                    ]
 
         idxlga = -1
         idxgeom = -1
@@ -126,11 +141,14 @@ contains
         enddo
 
         noseg = nosegl * nolay
+
         close(lunin)
 
+        !
         ! Read the number of grid cells:
         ! - LGRID file
         ! - WAQGEOM file
+        !
         if (idxgeom > 0) then
             !
             ! Retrieved via keywords
@@ -145,11 +163,14 @@ contains
                 return
             endif
 
+            !
             ! Check that it is not a NetCDF 3/4 file -- UNTRIM
+            !
             read(lunin, iostat = ierr2) identifier
             if (identifier(1:3) == 'CDF' .or. identifier(2:4) == 'HDF') then
-
+                !
                 ! We have a hyd-file from UNTRIM, so use the other file name
+                !
                 idxgeom = fileno(8)
                 lchar(idxgeom) = grid_file
             else

@@ -33,7 +33,7 @@
 
       SUBROUTINE SETDAY ( LUNREP     , NOKEY      , & 
                          KEYNAM     , KEYVAL     , & 
-                         is_date_format     , is_yyddhh_format     , &
+                         DTFLG1     , DTFLG3     , & 
                          IPROC      , aProcesProp, & 
                          AllItems   , status )
 !
@@ -70,7 +70,7 @@
 !     Declaration of arguments
 !
       INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , item_ind
-      LOGICAL       is_date_format , is_yyddhh_format
+      LOGICAL       DTFLG1 , DTFLG3
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)    :: AllItems            ! all items of the proces system
@@ -165,7 +165,7 @@
                call status%increase_error_count()
             ENDIF
          ELSE
-            call convert_relative_time(istart, 1     , is_date_format , is_yyddhh_format )
+            call convert_relative_time(istart, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
 
@@ -188,7 +188,7 @@
                call status%increase_error_count()
             ENDIF
          ELSE
-            call convert_relative_time ( iperiod, 1     , is_date_format , is_yyddhh_format )
+            call convert_relative_time ( iperiod, 1     , DTFLG1 , DTFLG3 )
          ENDIF
       ENDIF
 

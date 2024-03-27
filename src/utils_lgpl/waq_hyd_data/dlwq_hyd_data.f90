@@ -165,9 +165,9 @@
       ! the remnant of the old implementation
 
       type inputfilestack
-         logical             :: is_date_format          ! is_date_format
+         logical             :: dtflg1          ! dtflg1
          logical             :: dtflg2          ! dtflg2
-         logical             :: is_yyddhh_format          ! is_yyddhh_format
+         logical             :: dtflg3          ! dtflg3
          integer             :: itfact          ! itfact
          integer             :: iblock          ! input block
          integer             :: ierr            ! error on inputfile

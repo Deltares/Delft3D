@@ -134,7 +134,7 @@ contains
 
             ! for existing active files add the parameters which are not defined on a period for
             ! all but balance file. check whether there is a weight variable.
-            ! check the buffer size with routine set_output_boot_variables moved from elsewhere
+            ! check the buffer size with routine outboo moved from elsewhere
 
             iout1 = 0
             iout3 = 0

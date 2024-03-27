@@ -69,7 +69,7 @@ contains
         integer(kind = int_wp) :: iseg                   ! loop counter for segments
         integer(kind = int_wp) :: k                      ! loop counter for substances
         integer(kind = int_wp) :: ierr
-        real(kind = real_wp) :: missing_value = -999.0       ! missing value indicator
+        real(kind = real_wp) :: amiss = -999.0       ! missing value indicator
         integer(kind = int_wp) :: ithandl = 0
 
         real(kind = real_wp), dimension(:, :), allocatable :: outconc
@@ -97,7 +97,7 @@ contains
         if (ierr == 0) then
             do iseg = 1, noseg
                 if (.not. btest(iknmrk(iseg), 0)) then
-                    outconc(:, iseg) = missing_value
+                    outconc(:, iseg) = amiss
                 endif
             enddo
 
@@ -111,7 +111,7 @@ contains
                 if (btest(iknmrk(iseg), 0)) then
                     write (iomap) conc1(:, iseg), conc2(:, iseg)
                 else
-                    write (iomap) (missing_value, k = 1, notot1), conc2(:, iseg)
+                    write (iomap) (amiss, k = 1, notot1), conc2(:, iseg)
                 endif
             enddo
         endif

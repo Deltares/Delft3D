@@ -30,7 +30,7 @@ contains
 
 
     subroutine read_version_number (lunin, lfile, lunut, npos, input_version_number, &
-            output_verbose_level)
+            ioutpt)
 
         !! Searches and reads the input file for the version string
         !! The version string looks like DELWAQ_VERSION_n.nnn\n
@@ -43,10 +43,10 @@ contains
         integer(kind = int_wp), intent(in) :: lunut             !< unit number report file
         integer(kind = int_wp), intent(in) :: npos              !< number of significant positions in one line
         real(kind = real_wp), intent(out) :: input_version_number            !< Version number
-        integer(kind = int_wp), intent(out) :: output_verbose_level            !< Output option
+        integer(kind = int_wp), intent(out) :: ioutpt            !< Output option
 
         ! Local
-        character*(npos) char_arr                              !  read buffer
+        character*(npos) car                              !  read buffer
         character*1      ctrlz, ch_cr                    !  special characters
         integer(kind = int_wp) :: i, i2                            !  loop counter
         integer(kind = int_wp) :: status                           !  iostatus
@@ -55,34 +55,34 @@ contains
         ctrlz = char(26)
 
         input_version_number = 0.0
-        output_verbose_level = -1
+        ioutpt = -1
         status = 0
         do while (status == 0)
-            read (lunin, '(a)', iostat = status) char_arr
+            read (lunin, '(a)', iostat = status) car
 
             ! search the tokens, read the numbers
 
             do i = 1, npos - 19
-                if (char_arr(i:i + 14) == 'DELWAQ_VERSION_') then
+                if (car(i:i + 14) == 'DELWAQ_VERSION_') then
                     do i2 = i + 15, i + 19
-                        if (char_arr(i2:i2) == ctrlz .or. &
-                                char_arr(i2:i2) == ch_cr) char_arr(i2:i2) = ' '
+                        if (car(i2:i2) == ctrlz .or. &
+                                car(i2:i2) == ch_cr) car(i2:i2) = ' '
                     enddo
-                    read  (char_arr(i + 15:i + 19), '(f5.0)') input_version_number
+                    read  (car(i + 15:i + 19), '(f5.0)') input_version_number
                     write (lunut, '(a,a,f6.3)') '       ---------->', &
                             ' Version number of the input file is: ', input_version_number
                 endif
-                if (char_arr(i:i + 19) == 'PRINT_OUTPUT_OPTION_') then
-                    read (char_arr(i + 20:i + 20), '(i1)') output_verbose_level
+                if (car(i:i + 19) == 'PRINT_OUTPUT_OPTION_') then
+                    read (car(i + 20:i + 20), '(i1)') ioutpt
                     write (lunut, '(a,a,i1)') '       ---------->', &
-                            ' Output level of the listfile is: ', output_verbose_level
+                            ' Output level of the listfile is: ', ioutpt
                 endif
             enddo
         enddo
 
         if (status < 0) then    !        end of file encountered
             rewind lunin
-            read (lunin, '(a)') char_arr
+            read (lunin, '(a)') car
             return
         else                         !        errors during read
             write (lunut, 2000) lunin, lfile
