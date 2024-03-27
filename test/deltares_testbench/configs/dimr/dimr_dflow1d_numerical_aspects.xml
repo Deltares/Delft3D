@@ -167,7 +167,7 @@
         </testCase> -->
 		<!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c03_112_flooding-and-drying-threshold" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c03_112_flooding-and-drying-threshold</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c03_112_flooding-and-drying-threshold</path>
             <checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -186,7 +186,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c07_junction-advection01_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c07_junction-advection01_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c07_junction-advection01_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -227,7 +227,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c08_junction-advection02_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c08_junction-advection02_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c08_junction-advection02_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -268,7 +268,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c09_junction-advection03_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c09_junction-advection03_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c09_junction-advection03_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -309,7 +309,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c10_junction-advection04_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c10_junction-advection04_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c10_junction-advection04_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -350,7 +350,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c11_junction-advection05_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c11_junction-advection05_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c11_junction-advection05_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -395,7 +395,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c12_junction_advection06_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c12_junction_advection06_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c12_junction_advection06_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -448,7 +448,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c13_junction_advection07_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c13_junction_advection07_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c13_junction_advection07_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -501,7 +501,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c14_junction_advection08_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c14_junction_advection08_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c14_junction_advection08_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -554,7 +554,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c15_junction_advection09_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c15_junction_advection09_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c15_junction_advection09_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -607,7 +607,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c16_junction_advection10_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c16_junction_advection10_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c16_junction_advection10_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -638,7 +638,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c17_junction_advection11_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c17_junction_advection11_iadvec1d_1</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c17_junction_advection11_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -670,7 +670,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c18_junction_advection12_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c18_junction_advection12_iadvec1d_1</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c18_junction_advection12_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -723,7 +723,7 @@
         </testCase>	
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c19_junction-advection03_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c19_junction-advection03_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c19_junction-advection03_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -764,7 +764,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c20_junction-advection04_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c20_junction-advection04_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c20_junction-advection04_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -805,7 +805,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c21_junction-advection06_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c21_junction-advection06_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c21_junction-advection06_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -858,7 +858,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c22_junction_advection07_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c22_junction-advection07_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c22_junction-advection07_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -911,7 +911,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c23_junction_advection08_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c23_junction-advection08_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c23_junction-advection08_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -964,7 +964,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c24_junction_advection09_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c24_junction-advection09_iadvec1d_2</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c24_junction-advection09_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1017,7 +1017,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c25_junction_advection11_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c25_junction-advection11_iadvec1d_2</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c25_junction-advection11_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1049,7 +1049,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c26_junction-advection03_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c26_junction-advection03_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c26_junction-advection03_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1090,7 +1090,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c27_junction-advection04_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c27_junction-advection04_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c27_junction-advection04_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1131,7 +1131,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c28_junction_advection06_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c28_junction-advection06_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c28_junction-advection06_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1184,7 +1184,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c29_junction_advection07_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c29_junction-advection07_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c29_junction-advection07_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1237,7 +1237,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c30_junction_advection08_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c30_junction-advection08_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c30_junction-advection08_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1290,7 +1290,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c31_junction_advection09_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c31_junction-advection09_iadvec1d_5</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f04_numerical-aspects/c31_junction-advection09_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -1343,7 +1343,7 @@
         </testCase>
         <!-- ======================================================================== -->    
         <testCase name="e106(dflow1d)_f04(numerical-aspects)_c32_junction_advection11_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f04_numerical-aspects/c32_junction-advection11_iadvec1d_5</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f04_numerical-aspects/c32_junction-advection11_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">

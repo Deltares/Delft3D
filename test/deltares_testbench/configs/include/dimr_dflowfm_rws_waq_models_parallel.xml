@@ -1,6 +1,6 @@
     <testCases>
         <testCase name="e02_f300_c01_dflowfm3d_dwaq-grevelingen-j19_6-w4" ref="dimr_trunk_4">
-            <path>e02_dflowfm/f300_rws_waq_models/c01_dflowfm3d_dwaq-grevelingen-j19_6-w4</path>
+            <path version="2024-01-11T12:00:00">e02_dflowfm/f300_rws_waq_models/c01_dflowfm3d_dwaq-grevelingen-j19_6-w4</path>
              <checks>
                 <file name="DFM_OUTPUT_Grevelingen-FM_3D/Grevelingen-FM_3D_0000_map.nc" type="NETCDF">
                     <parameters>
@@ -118,7 +118,7 @@
             <processCount>4</processCount>
         </testCase>
         <testCase name="e02_f300_c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1" ref="dimr_trunk_4">
-            <path>e02_dflowfm/f300_rws_waq_models/c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1</path>
+            <path version="2024-01-11T12:00:00">e02_dflowfm/f300_rws_waq_models/c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1</path>
              <checks>
                 <file name="DFM_OUTPUT_DWSM-FM-Slib_200m/DWSM-FM-Slib_200m_0000_map.nc" type="NETCDF">
                     <parameters>

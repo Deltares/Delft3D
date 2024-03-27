@@ -114,7 +114,7 @@
   </defaultTestCases>
   <testCases>
     <testCase name="e08_f01_c010_cavitation" ref="wanda_default">
-      <path>e08_wanda/f01_core/c010_cavitation</path>
+      <path version="2024-01-11T10:20:00">e08_wanda/f01_core/c010_cavitation</path>
       <programs>
         <program ref="Wanda">
           <arguments>

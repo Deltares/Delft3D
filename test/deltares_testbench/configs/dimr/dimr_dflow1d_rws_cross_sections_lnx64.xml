@@ -96,7 +96,7 @@
     <testCases>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c01_250a_Chezy-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c01_250a_Chezy-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c01_250a_Chezy-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -157,7 +157,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c02_250b_Chezy-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c02_250b_Chezy-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c02_250b_Chezy-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -218,7 +218,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c03_251a_Manning-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c03_251a_Manning-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c03_251a_Manning-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -279,7 +279,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c04_251b_Manning-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c04_251b_Manning-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c04_251b_Manning-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -340,7 +340,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c05_252a_Strickler-kn-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c05_252a_Strickler-kn-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c05_252a_Strickler-kn-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -401,7 +401,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c06_252b_Strickler-kn-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c06_252b_Strickler-kn-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c06_252b_Strickler-kn-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -462,7 +462,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c07_253a_Strickler-ks-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c07_253a_Strickler-ks-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c07_253a_Strickler-ks-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -523,7 +523,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c08_253b_Strickler-ks-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c08_253b_Strickler-ks-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c08_253b_Strickler-ks-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -584,7 +584,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c09_254a_White-Colebrook-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c09_254a_White-Colebrook-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c09_254a_White-Colebrook-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -645,7 +645,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c10_254b_White-Colebrook-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c10_254b_White-Colebrook-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c10_254b_White-Colebrook-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -706,7 +706,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c11_255a_Bos-Bijkerk-blocked-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c11_255a_Bos-Bijkerk-blocked-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c11_255a_Bos-Bijkerk-blocked-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -767,7 +767,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c12_255b_Bos-Bijkerk-linear-interpolation" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c12_255b_Bos-Bijkerk-linear-interpolation</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c12_255b_Bos-Bijkerk-linear-interpolation</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -828,7 +828,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c13_116a_Summer-dike-flow-area" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c13_116a_Summer-dike-flow-area</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c13_116a_Summer-dike-flow-area</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -889,7 +889,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c14_116b_Summer-dike-flow-area" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c14_116b_Summer-dike-flow-area</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c14_116b_Summer-dike-flow-area</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -950,7 +950,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c15_116c_Summer-dike-flow-area" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c15_116c_Summer-dike-flow-area</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c15_116c_Summer-dike-flow-area</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -1011,7 +1011,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c16_Waterbalance-NoSummerdike" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c16_Waterbalance-NoSummerdike</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c16_Waterbalance-NoSummerdike</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -1042,7 +1042,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c17_Waterbalance-WithSummerdike" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c17_Waterbalance-WithSummerdike</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c17_Waterbalance-WithSummerdike</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -1073,7 +1073,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c18_Interpolate-FlowProfile" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c18_Interpolate-FlowProfile</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c18_Interpolate-FlowProfile</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -1134,7 +1134,7 @@
         </testCase>
 	<!-- ======================================================================== -->
 		<testCase name="e106(dflow1d)_f05(rws-cross-sections)_c407_116_summerdike_flow-area_and_total-area" ref="dflow1d_default">
-			<path>e106_dflow1d/f05_rws-cross-sections/c407_116_summerdike_flow-area_and_total-area</path>
+			<path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c407_116_summerdike_flow-area_and_total-area</path>
 			<maxRunTime>120.0</maxRunTime>
 			<checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -1185,7 +1185,7 @@
         </testCase>
 	<!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c410_249_waterbalance_rws-cross-section_including_summerdike" ref="dflow1d_default">
-            <path>e106_dflow1d/f05_rws-cross-sections/c410_249_waterbalance_rws-cross-section_including_summerdike</path>
+            <path version="2024-01-11T13:30:00">e106_dflow1d/f05_rws-cross-sections/c410_249_waterbalance_rws-cross-section_including_summerdike</path>
             <checks>
                 <file name="dflow1d/output/waterbalance.nc" type="NETCDF">
                     <parameters>

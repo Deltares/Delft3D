@@ -91,7 +91,7 @@
     <testCases>
 	    <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c01_constant-point-lateral-inflow_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c01_constant-point-lateral-inflow_iadvec1d_1</path>
+            <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c01_constant-point-lateral-inflow_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -146,7 +146,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c02_constant-point-lateral-inflow_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c02_constant-point-lateral-inflow_iadvec1d_2</path>
+            <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c02_constant-point-lateral-inflow_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -201,7 +201,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c03_constant-point-lateral-inflow_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c03_constant-point-lateral-inflow_iadvec1d_5</path>
+            <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c03_constant-point-lateral-inflow_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -256,7 +256,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c04_constant-point-lateral-outflow_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c04_constant-point-lateral-outflow_iadvec1d_1</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c04_constant-point-lateral-outflow_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -311,7 +311,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c05_constant-point-lateral-outflow_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c05_constant-point-lateral-outflow_iadvec1d_2</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c05_constant-point-lateral-outflow_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -366,7 +366,7 @@
         </testCase>
         <!-- ======================================================================== -->	
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c06_constant-point-lateral-outflow_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c06_constant-point-lateral-outflow_iadvec1d_5</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c06_constant-point-lateral-outflow_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -421,7 +421,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c07_no-lateral-inflow_storage-area_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c07_no-lateral-inflow_storage-area_iadvec1d_1</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c07_no-lateral-inflow_storage-area_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -444,7 +444,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c08_no-lateral-inflow_storage-area_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c08_no-lateral-inflow_storage-area_iadvec1d_2</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c08_no-lateral-inflow_storage-area_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -467,7 +467,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c09_no-lateral-inflow_storage-area_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c09_no-lateral-inflow_storage-area_iadvec1d_5</path>
+            <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c09_no-lateral-inflow_storage-area_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -490,7 +490,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c10_time-dependent-point-lateral-discharge_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c10_time-dependent-point-lateral-discharge_iadvec1d_1</path>
+            <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c10_time-dependent-point-lateral-discharge_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -513,7 +513,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c11_time-dependent-point-lateral-discharge_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c11_time-dependent-point-lateral-discharge_iadvec1d_2</path>
+            <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c11_time-dependent-point-lateral-discharge_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -536,7 +536,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f16(lateral-momentum-exchange)_c12_time-dependent-point-lateral-discharge_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f16_lateral-momentum-exchange/c12_time-dependent-point-lateral-discharge_iadvec1d_5</path>
+            <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c12_time-dependent-point-lateral-discharge_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>

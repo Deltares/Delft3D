@@ -88,7 +88,7 @@
     -->
     <testCases>
         <testCase name="e106_doc" ref="dflow1d_default" ignore="true">
-            <path>e106_dflow1d/doc/report</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/doc/report</path>
             <programs>
                 <program ref="PYTHON" seq="1">
                     <arguments>

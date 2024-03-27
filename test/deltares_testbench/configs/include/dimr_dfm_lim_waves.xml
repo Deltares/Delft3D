@@ -1,6 +1,6 @@
 <testCases>
 	<testCase name="e02_f043_c01_WAQ_2D" ref="dflowfm_fetch_limited_waves">
-      <path>e02_dflowfm/f043_fetch_limited_waves/c01_WAQ_2D/</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c01_WAQ_2D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
@@ -14,7 +14,7 @@
       </checks>
     </testCase>
 	<testCase name="e02_f043_c02_WAQ_3D" ref="dflowfm_fetch_limited_waves">
-      <path>e02_dflowfm/f043_fetch_limited_waves/c02_WAQ_3D/</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c02_WAQ_3D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
@@ -28,7 +28,7 @@
       </checks>
     </testCase>
 	<testCase name="e02_f043_c03_WAQ_3D" ref="dflowfm_fetch_limited_waves">
-      <path>e02_dflowfm/f043_fetch_limited_waves/c03_WAQ_3D/</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c03_WAQ_3D/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
@@ -42,7 +42,7 @@
       </checks>
     </testCase>
 	<testCase name="e02_f043_c04" ref="dflowfm_fetch_limited_waves">
-      <path>e02_dflowfm/f043_fetch_limited_waves/c04/</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c04/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">
@@ -55,7 +55,7 @@
       </checks>
     </testCase>
 	<testCase name="e02_f043_c05" ref="dflowfm_fetch_limited_waves">
-      <path>e02_dflowfm/f043_fetch_limited_waves/c05/</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c05/</path>
       <maxRunTime>7.5000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_fetchwave1/fetchwave1_map.nc" type="netCDF">

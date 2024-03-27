@@ -113,7 +113,7 @@
   </defaultTestCases>
       <testCases>
 	    <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
-		  <path>e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
+		  <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
 		  <programs>
 			<program ref="DFlowFM">
 			  <arguments>
@@ -136,7 +136,7 @@
 		  </checks>
 		</testCase>
 		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
-		  <path>e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
+		  <path version="2024-01-11T16:40:00">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
 			  <arguments>
@@ -158,7 +158,7 @@
 		  </checks>
 		</testCase>
 		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
-		  <path>e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
+		  <path version="2024-01-11T16:40:00">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
 			  <arguments>

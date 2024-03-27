@@ -89,7 +89,7 @@
     -->
     <testCases>
         <testCase name="e107_f01_c355" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c355</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c355</path>
             <checks>
                 <file name="dimr_screen.log" type="NUMBERTEXT">
                     <skipline>Dimr</skipline>
@@ -99,7 +99,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c408" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c408</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c408</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -111,7 +111,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c409b" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c409b</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c409b</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -123,7 +123,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c410b" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c410b</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c410b</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -135,7 +135,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c411" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c411</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c411</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -147,7 +147,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c412" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c412</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c412</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -159,7 +159,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c413" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c413</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c413</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -171,7 +171,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c414" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c414</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c414</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -183,7 +183,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e107_f01_c415" ref="sobek_default">
-            <path>e107_dflow1d-drr/f01_general/c415</path>
+            <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c415</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
