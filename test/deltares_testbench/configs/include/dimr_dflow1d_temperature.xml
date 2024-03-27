@@ -3,7 +3,7 @@
     <!-- Temperature -->
     <!-- ======================================================================== -->
     <testCase name="e106_f12_c01_excess_model" ref="dflow1d_default">
-        <path>e106_dflow1d/f12_temperature/c01_excess_model</path>
+        <path version="2024-01-12T06:10:00">e106_dflow1d/f12_temperature/c01_excess_model</path>
 
         <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         <checks>
@@ -23,7 +23,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f12_c02_composite_model_constant_values" ref="dflow1d_default">
-        <path>e106_dflow1d/f12_temperature/c02_composite_model_constant_values</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f12_temperature/c02_composite_model_constant_values</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -42,7 +42,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106_f12_c03_composite_model_1year" ref="dflow1d_default">
-        <path>e106_dflow1d/f12_temperature/c03_composite_model_1year</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f12_temperature/c03_composite_model_1year</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -61,7 +61,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106_f12_c04_composite_model_1year_multiple_channels" ref="dflow1d_default">
-        <path>e106_dflow1d/f12_temperature/c04_composite_model_1year_multiple_channels</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f12_temperature/c04_composite_model_1year_multiple_channels</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -80,7 +80,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106_f12_c05_space_varying_meteo" ref="dflow1d_default">
-        <path>e106_dflow1d/f12_temperature/c05_space_varying_meteo</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f12_temperature/c05_space_varying_meteo</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>

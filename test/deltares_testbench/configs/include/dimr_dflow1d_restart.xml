@@ -1,7 +1,7 @@
 <testCases>
     <!-- ======================================================================== -->
     <testCase name="e106(dflow1d)_f18(restart)_c01_no_salinity_no_summerdikes" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c01_no_salinity_no_summerdikes</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c01_no_salinity_no_summerdikes</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -18,7 +18,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106(dflow1d)_f18(restart)_c02_no_salinity_with_summerdikes" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c02_no_salinity_with_summerdikes</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c02_no_salinity_with_summerdikes</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -35,7 +35,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106(dflow1d)_f18(restart)_c03_with_salinity_no_summerdikes" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c03_with_salinity_no_summerdikes</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c03_with_salinity_no_summerdikes</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -53,7 +53,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106(dflow1d)_f18(restart)_c04_with_salinity_with_summerdikes" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c04_with_salinity_with_summerdikes</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c04_with_salinity_with_summerdikes</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -71,7 +71,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f18_c05_excess_model" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c05_excess_model</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c05_excess_model</path>
         <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -90,7 +90,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e106_f18_c06_composite_model_constant_values" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c06_composite_model_constant_values</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c06_composite_model_constant_values</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -109,7 +109,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106_f18_c07_composite_model_1year" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c07_composite_model_1year</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c07_composite_model_1year</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -128,7 +128,7 @@
     </testCase>
     <!-- ======================================================================== -->        
     <testCase name="e106_f18_c08_composite_model_1year_multiple_channels" ref="dflow1d_default">
-        <path>e106_dflow1d/f18_restart/c08_composite_model_1year_multiple_channels</path>
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f18_restart/c08_composite_model_1year_multiple_channels</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>

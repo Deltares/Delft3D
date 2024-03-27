@@ -1,7 +1,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e105_f01_c010_weir_timeseries" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c010_weir_timeseries</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c010_weir_timeseries</path>
             <checks>
                 <file name="dflowfm/output/weirtimeseries_map.nc" type="NETCDF">
                     <parameters>
@@ -11,7 +11,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c013_generalstructure_lookuptable" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c013_generalstructure_lookuptable</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c013_generalstructure_lookuptable</path>
             <checks>
                 <file name="dflowfm/output/generalstructure_realtime_his.nc" type="NETCDF">
                     <parameters>
@@ -27,7 +27,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c071_generalstructure_door_closing_at_sill" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c071_generalstructure_door_closing_at_sill</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c071_generalstructure_door_closing_at_sill</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -43,7 +43,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c072_generalstructure_lowering_open_door" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c072_generalstructure_lowering_open_door</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c072_generalstructure_lowering_open_door</path>
             <checks>
                 <file name="dflowfm/output/t3_his.nc" type="NETCDF">
                     <parameters>
@@ -59,7 +59,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c073_generalstructure_lowering_closed_door" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c073_generalstructure_lowering_closed_door</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c073_generalstructure_lowering_closed_door</path>
             <checks>
                 <file name="dflowfm/output/t4_his.nc" type="NETCDF">
                     <parameters>
@@ -75,7 +75,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c075_gate_door_closing_at_sill" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c075_gate_door_closing_at_sill</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c075_gate_door_closing_at_sill</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -91,7 +91,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c076_gate_lowering_open_door" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c076_gate_lowering_open_door</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c076_gate_lowering_open_door</path>
             <checks>
                 <file name="dflowfm/output/t3_his.nc" type="NETCDF">
                     <parameters>
@@ -107,7 +107,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c077_gate_lowering_closed_door" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c077_gate_lowering_closed_door</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c077_gate_lowering_closed_door</path>
             <checks>
                 <file name="dflowfm/output/t4_his.nc" type="NETCDF">
                     <parameters>
@@ -123,7 +123,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c081_generalstructure_door_closing_at_sill_v2" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c081_generalstructure_door_closing_at_sill_v2</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c081_generalstructure_door_closing_at_sill_v2</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -139,7 +139,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c082_generalstructure_lowering_open_door_v2" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c082_generalstructure_lowering_open_door_v2</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c082_generalstructure_lowering_open_door_v2</path>
             <checks>
                 <file name="dflowfm/output/t3_his.nc" type="NETCDF">
                     <parameters>
@@ -155,7 +155,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c083_generalstructure_lowering_closed_door_v2" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f01_general/c083_generalstructure_lowering_closed_door_v2</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c083_generalstructure_lowering_closed_door_v2</path>
             <checks>
                 <file name="dflowfm/output/t4_his.nc" type="NETCDF">
                     <parameters>
@@ -171,7 +171,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f04_c103_orifice_crestLevel_TimeController" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
             <maxRunTime>20.0</maxRunTime>
             <checks>
               <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">

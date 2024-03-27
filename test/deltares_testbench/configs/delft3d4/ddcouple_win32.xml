@@ -82,7 +82,7 @@
     -->
     <testCases>
         <testCase name="e54_f01_c01" ref="ddcouple_default">
-            <path>e54_ddcouple/f01_general/c01_test</path>
+            <path version="2024-01-11T11:10:00">e54_ddcouple/f01_general/c01_test</path>
             <programs>
                 <program ref="ddcouple">
                     <arguments>

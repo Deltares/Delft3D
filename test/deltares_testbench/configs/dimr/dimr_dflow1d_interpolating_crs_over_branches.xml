@@ -86,7 +86,7 @@
     <testCases>
 	    <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c01_264_flow-diversion_RWS_crs_profile" ref="dflow1d_default">
-            <path>e106_dflow1d/f14_interpolating-crs-over-branches/c01_264_flow-diversion_RWS_crs_profile</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c01_264_flow-diversion_RWS_crs_profile</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -114,7 +114,7 @@
         </testCase>        
 	    <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c04_267_flow-diversion_YZ-table" ref="dflow1d_default">
-            <path>e106_dflow1d/f14_interpolating-crs-over-branches/c04_267_flow-diversion_YZ-table</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c04_267_flow-diversion_YZ-table</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -142,7 +142,7 @@
         </testCase>
 	    <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c05_268_flow-diversion_YZ-table" ref="dflow1d_default">
-            <path>e106_dflow1d/f14_interpolating-crs-over-branches/c05_268_flow-diversion_YZ-table</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c05_268_flow-diversion_YZ-table</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">

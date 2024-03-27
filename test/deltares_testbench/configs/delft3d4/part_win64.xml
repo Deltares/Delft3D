@@ -175,7 +175,7 @@
     
     -->
         <testCase name="e05_f01_c100_tst-tracer-1.00" ref="part_default">
-            <path>e05_part/f01_tracer/c100_tst-tracer-1.00</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c100_tst-tracer-1.00</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -222,7 +222,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c101_tst-tracer-1.01" ref="part_default">
-            <path>e05_part/f01_tracer/c101_tst-tracer-1.01</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c101_tst-tracer-1.01</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -269,7 +269,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c102_tst-tracer-1.02" ref="part_default">
-            <path>e05_part/f01_tracer/c102_tst-tracer-1.02</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c102_tst-tracer-1.02</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -308,7 +308,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c201_tst-tracer-2.01" ref="part_default">
-            <path>e05_part/f01_tracer/c201_tst-tracer-2.01</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c201_tst-tracer-2.01</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -355,7 +355,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c202_tst-tracer-2.02" ref="part_default">
-            <path>e05_part/f01_tracer/c202_tst-tracer-2.02</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c202_tst-tracer-2.02</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -402,7 +402,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c301_tst-tracer-3.01" ref="part_default">
-            <path>e05_part/f01_tracer/c301_tst-tracer-3.01</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c301_tst-tracer-3.01</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -454,7 +454,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f01_c302_tst-tracer-3.02" ref="part_default">
-            <path>e05_part/f01_tracer/c302_tst-tracer-3.02</path>
+            <path version="2024-01-11T14:00:00">e05_part/f01_tracer/c302_tst-tracer-3.02</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -509,7 +509,7 @@
     -->
     
         <testCase name="e05_f02_c01_tracer" ref="part_default">
-            <path>e05_part/f02_tutorial/c01_tracer</path>
+            <path version="2024-01-11T14:00:00">e05_part/f02_tutorial/c01_tracer</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -556,7 +556,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f02_c02_oil" ref="part_default">
-            <path>e05_part/f02_tutorial/c02_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f02_tutorial/c02_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -667,7 +667,7 @@
 
     -->
         <testCase name="e05_f04_c101_oil" ref="part_default">
-            <path>e05_part/f04_oil/c101_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c101_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -758,7 +758,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c102_oil" ref="part_default">
-            <path>e05_part/f04_oil/c102_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c102_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -804,7 +804,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c103_oil" ref="part_default">
-            <path>e05_part/f04_oil/c103_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c103_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -866,7 +866,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c104_oil" ref="part_default">
-            <path>e05_part/f04_oil/c104_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c104_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -912,7 +912,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c201_oil" ref="part_default">
-            <path>e05_part/f04_oil/c201_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c201_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -950,7 +950,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c202_oil" ref="part_default">
-            <path>e05_part/f04_oil/c202_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c202_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -988,7 +988,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c203_oil" ref="part_default">
-            <path>e05_part/f04_oil/c203_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c203_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1026,7 +1026,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c204_oil" ref="part_default">
-            <path>e05_part/f04_oil/c204_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c204_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1064,7 +1064,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c205_oil" ref="part_default">
-            <path>e05_part/f04_oil/c205_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c205_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1102,7 +1102,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c206_oil" ref="part_default">
-            <path>e05_part/f04_oil/c206_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c206_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1140,7 +1140,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c207_oil" ref="part_default">
-            <path>e05_part/f04_oil/c207_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c207_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1178,7 +1178,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c208_oil" ref="part_default">
-            <path>e05_part/f04_oil/c208_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c208_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1216,7 +1216,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c209_oil" ref="part_default">
-            <path>e05_part/f04_oil/c209_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c209_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1254,7 +1254,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c210_oil" ref="part_default">
-            <path>e05_part/f04_oil/c210_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c210_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1292,7 +1292,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c211_oil" ref="part_default">
-            <path>e05_part/f04_oil/c211_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c211_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1330,7 +1330,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c212_oil" ref="part_default">
-            <path>e05_part/f04_oil/c212_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c212_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1368,7 +1368,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c213_oil" ref="part_default">
-            <path>e05_part/f04_oil/c213_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c213_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1406,7 +1406,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c214_oil" ref="part_default">
-            <path>e05_part/f04_oil/c214_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c214_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1444,7 +1444,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c301_oil" ref="part_default">
-            <path>e05_part/f04_oil/c301_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c301_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1526,7 +1526,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c302_oil" ref="part_default">
-            <path>e05_part/f04_oil/c302_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c302_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1608,7 +1608,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c303_oil" ref="part_default">
-            <path>e05_part/f04_oil/c303_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c303_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1690,7 +1690,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f04_c401_oil" ref="part_default">
-            <path>e05_part/f04_oil/c401_oil</path>
+            <path version="2024-01-11T14:00:00">e05_part/f04_oil/c401_oil</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1738,7 +1738,7 @@
     
     -->        
         <testCase name="e05_f05_c01_cont-release00" ref="part_default">
-            <path>e05_part/f05_exercises/c01_cont-release00</path>
+            <path version="2024-01-11T14:00:00">e05_part/f05_exercises/c01_cont-release00</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1782,7 +1782,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f05_c02_cont-release01" ref="part_default">
-            <path>e05_part/f05_exercises/c02_cont-release01</path>
+            <path version="2024-01-11T14:00:00">e05_part/f05_exercises/c02_cont-release01</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1826,7 +1826,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f05_c03_cont-release02" ref="part_default">
-            <path>e05_part/f05_exercises/c03_cont-release02</path>
+            <path version="2024-01-11T14:00:00">e05_part/f05_exercises/c03_cont-release02</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1870,7 +1870,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f05_c04_inst-release00" ref="part_default">
-            <path>e05_part/f05_exercises/c04_inst-release00</path>
+            <path version="2024-01-11T14:00:00">e05_part/f05_exercises/c04_inst-release00</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>
@@ -1914,7 +1914,7 @@
             </checks>
         </testCase>
         <testCase name="e05_f05_c05_inst-release01" ref="part_default">
-            <path>e05_part/f05_exercises/c05_inst-release01</path>
+            <path version="2024-01-11T14:00:00">e05_part/f05_exercises/c05_inst-release01</path>
             <programs>
                 <program ref="PART" seq="1">
                     <arguments>

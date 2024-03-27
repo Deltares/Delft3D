@@ -84,7 +84,7 @@
     -->
     <testCases>
         <testCase name="e113_f01_c01_subtraction" ref="drtc_default">
-            <path>e113_drtc/f01_mathematical_operations/c01_subtraction</path>
+            <path version="2024-01-12T07:40:00">e113_drtc/f01_mathematical_operations/c01_subtraction</path>
             <checks>
                 <file name="timeseries_0000.csv" type="NUMBERTEXT"/>
             </checks>
@@ -92,7 +92,7 @@
             <!-- seconds -->
         </testCase>        
         <testCase name="e113_f01_c02_subtractionABC" ref="drtc_default">
-            <path>e113_drtc/f01_mathematical_operations/c02_subtractionABC</path>
+            <path version="2024-01-12T07:40:00">e113_drtc/f01_mathematical_operations/c02_subtractionABC</path>
             <checks>
                 <file name="timeseries_0000.csv" type="NUMBERTEXT"/>
             </checks>
@@ -100,7 +100,7 @@
             <!-- seconds -->
         </testCase>        
         <testCase name="e113_f01_c03_mutiplication_and_addition_of_constants" ref="drtc_default">
-            <path>e113_drtc/f01_mathematical_operations/c03_mutiplication_and_addition_of_constants</path>
+            <path version="2024-01-12T07:40:00">e113_drtc/f01_mathematical_operations/c03_mutiplication_and_addition_of_constants</path>
             <checks>
                 <file name="timeseries_0000.csv" type="NUMBERTEXT"/>
             </checks>
@@ -108,7 +108,7 @@
             <!-- seconds -->
         </testCase>        
         <testCase name="e113_f01_c04_powerAB" ref="drtc_default">
-            <path>e113_drtc/f01_mathematical_operations/c04_powerAB</path>
+            <path version="2024-01-12T07:40:00">e113_drtc/f01_mathematical_operations/c04_powerAB</path>
             <checks>
                 <file name="timeseries_0000.csv" type="NUMBERTEXT"/>
             </checks>

@@ -4,6 +4,7 @@ Description: Executes SVN commands
 Copyright (C)  Stichting Deltares, 2013
 """
 
+from typing import Optional
 from src.config.credentials import Credentials
 from src.config.program_config import ProgramConfig
 from src.suite.program import Program
@@ -78,7 +79,7 @@ class SvnHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: str,
+        version: Optional[str],
         logger: ILogger,
     ):
         logger.debug(f"downloading from svn: {from_path}")

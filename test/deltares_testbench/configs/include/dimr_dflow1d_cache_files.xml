@@ -1,6 +1,6 @@
     <testCases>
         <testCase name="e106_f17_c01_cache_files" ref="dimr_trunk">
-            <path>e106_dflow1d/f17_cache_files/c01</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f17_cache_files/c01</path>
             <maxRunTime>60.0</maxRunTime>
             <programs>
                 <program ref="dimr" seq="1" >
@@ -28,7 +28,7 @@
             </checks>
         </testCase>
         <testCase name="e106_f17_c02_cache_files" ref="dimr_trunk">
-            <path>e106_dflow1d/f17_cache_files/c02_salinity</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f17_cache_files/c02_salinity</path>
             <maxRunTime>60.0</maxRunTime>
             <programs>
                 <program ref="dimr" seq="1" >

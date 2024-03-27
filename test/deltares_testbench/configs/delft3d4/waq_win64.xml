@@ -231,7 +231,7 @@
                 -->
     <testCases>
         <testCase name="e03_f01_c01_test001" ref="waq_default">
-            <path>e03_waq/f01_general/c01_test001</path>
+            <path version="2024-01-11T13:20:00">e03_waq/f01_general/c01_test001</path>
             <programs>
                 <program ref="WAQ" seq="1">
                     <arguments>
@@ -278,7 +278,7 @@
             </checks>
         </testCase>
         <testCase name="e03_f01_c31_test031" ref="waq_default">
-            <path>e03_waq/f01_general/c31_test031</path>
+            <path version="2024-01-11T13:20:00">e03_waq/f01_general/c31_test031</path>
             <programs>
                 <program ref="WAQ" seq="1">
                     <arguments>
@@ -456,7 +456,7 @@
             </checks>
         </testCase>
         <testCase name='e03_f04_c12_ijss764' ref='waq_default'>
-        <path>e03_waq/f04_bloom_fresh_water/c12_ijss764</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c12_ijss764</path>
         <programs>
                 <program ref="WAQ" seq="1">
                     <arguments>
@@ -543,7 +543,7 @@
             </checks>
         </testCase>
         <testCase name='e03_f04_c17_kaag80' ref='waq_default'>
-        <path>e03_waq/f04_bloom_fresh_water/c17_kaag80</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c17_kaag80</path>
         <programs>
                 <program ref="WAQ" seq="1">
                     <arguments>

@@ -89,7 +89,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="c01_harlingen" ref="dimr_trunk">
-            <path>e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c01_harlingen</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfmoutput/001_map.nc" type="NETCDF">
@@ -105,7 +105,7 @@
             </checks>              
         </testCase>
         <testCase name="c08_exer_12_2d_bend_course_model" ref="dimr_trunk">
-            <path>e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfmoutput/cb_2d_map.nc" type="NETCDF">
@@ -121,7 +121,7 @@
             </checks>              
         </testCase>
         <testCase name="c09_exer_12_3d_bend_course_model" ref="dimr_trunk">
-            <path>e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c09_exer_12_3d_bend_course_model</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfmoutput/cb_3d_map.nc" type="NETCDF">
@@ -137,7 +137,7 @@
             </checks>              
         </testCase>
         <testCase name="c10_exer_13_r01_vlissingen_course_model" ref="dimr_trunk">
-            <path>e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfmoutput/r01_map.nc" type="NETCDF">
@@ -153,7 +153,7 @@
             </checks>              
         </testCase>
         <testCase name="c11_exer_13_r02_vlissingen_course_model" ref="dimr_trunk">
-            <path>e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
+            <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfmoutput/r02_map.nc" type="NETCDF">

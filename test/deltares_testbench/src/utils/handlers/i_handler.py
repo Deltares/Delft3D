@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from src.config.credentials import Credentials
 from src.utils.logging.i_logger import ILogger
@@ -43,7 +44,7 @@ class IHandler(ABC):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: str,
+        version: Optional[str],
         logger: ILogger,
     ):
         """Download a file from the specified location
