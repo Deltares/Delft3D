@@ -2370,7 +2370,6 @@ subroutine waq_prepare_lat()
    waqpar%numlatsectwaq = 0
    call realloc(waqpar%numlatinsectwaq, numlatsg, fill=0, keepExisting=.false.)
 
-   if (numlatsg==0) return ! skip is no resources
    ! First determine the number of laterals actually used and the allocations needed
    do ilat = 1, numlatsg
       if (nodeCountLat(ilat) > 0) then
@@ -2391,6 +2390,7 @@ subroutine waq_prepare_lat()
          end do
       endif
    end do
+   ! Do not skip when numlatsg is zero - we need to have the arrays allocated, even to zero length
    call realloc (waqpar%ifrmtolat, (/ 2,waqpar%numlatwaq /), keepexisting=.true., fill=0 )
    call realloc (qlatwaq, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )
    call realloc (qlatwaq0, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )
