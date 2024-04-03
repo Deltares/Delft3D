@@ -20,885 +20,848 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
+module m_espgss
+    use m_waq_precision
+
+    implicit none
+
+contains
 
 
+    subroutine ESPGSS     ( pmsa   , fl     , ipoint , increm, noseg , &
+                          noflux , iexpnt , iknmrk , noq1  , noq2  , &
+                          noq3   , noq4   )
+    !     D-EM Generic Model
+    !
+    !
+    !     Type    Name         I/O Description
+    !
+    real(kind=real_wp)   :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+    real(kind=real_wp)   :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+    integer(kind=int_wp) :: ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+    integer(kind=int_wp) :: increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+    integer(kind=int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+    integer(kind=int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+    integer(kind=int_wp) :: iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+    integer(kind=int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+    integer(kind=int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+    integer(kind=int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+    integer(kind=int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+    integer(kind=int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+    !
+    !     NOTE every receptor is a substance!
+    !     NOTE all time is in seconds
+    !#####################################################################################################
+    !###############************************** SO FLUXES IN G/S ******************########################
+    !#####################################################################################################
+    !
+    !     Type    Name         I/O Description                                        Unit
+    !
+    !     support variables
+    integer(kind=int_wp)            :: iseg, iflux, ip, ipp, isrc, irec, isegadmin, noriv, ipr, ipd
+    real(kind=real_wp)               :: emisvar, losses, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
+                        in_mmperday, fwashoff, ferosion, froun, finf, fdisp, over_mmperday
+    real(kind=real_wp)               :: fluxloss, mass, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxleak, &
+                        fluxexp,  fluxrem, fluxeff, fluxsld, fluxbur, fluxeroa, fluxerop, &
+                        fluximmo, fluxunc, fluxexfa, fluxexfp, fluxssfa, fluxssfp, fluxmax, fdownstream, fldown
+    real(kind=real_wp)               :: fluxin, limit, maxflux, pool, solids, qtopact, qtoppas, concact
+    real(kind=real_wp)               :: FrUnManaged, FrTreated, courant, fr_unc, fr_eff, fr_sld, fr2sew, fr2sfw, fr2soi
 
-      subroutine ESPGSS     ( pmsa   , fl     , ipoint , increm, noseg , &
-                              noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                              noq3   , noq4   )
-!
-      IMPLICIT NONE
-!
-!     Type    Name         I/O Description
-!
-      real(4) pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(4) fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
-      integer increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer noseg       ! I  Number of computational elements in the whole model schematisation
-      integer noflux      ! I  Number of fluxes, increment in the fl array
-      integer iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
-!
-!*******************************************************************************
-!     D-EM Generic Model 
-!                                 
-!
-!     Version 1.01 Dec 2023 JvG   Include domestic wastewater as a true compartment 
-!                                 Remove calculation of fr_unc, fr_eff and fr_sld outside the time loop for transparency
-!     Version 1.00 Mar 2023 JvG   Modifications for what we think is the final setup:
-!                                 - soil is never the endpoint
-!                                 - horizontal transport by overland and subsurface flows 
-!                                 - aggregation of emissions to river cells
-!     Version 0.96 Feb 2023 JvG   Integrate GENWWM, isolate flux for collected but not treated  
-!     Version 0.95 Feb 2023 JvG   Extra output                         
-!     Version 0.94 Jan 2023 JvG   Final updates of soils               
-!     Version 0.93 Jan 2023 JvG   Struggling with the erosion ...
-!                                 Testing the concept of using QTopSoil separate from Unp (no Init process)
-!                                 Erosion is independent of the pool, controlled by QTopSoil
-!                                 Similar for GW flow and CTopSoil (P) 
-!                                 Bug fixed in caculation of infiltration mm/d
-!     Version 0.92 Oct 2022 JvG   Kdunpaved now defined as fraction unbound (so that a small value can be 
-!                                 resolved in a single number. The 1-kd is locally double precision
-!                                 Kdsoi added
-!     Version 0.91 Sep 2022 JvG   Modified representation of soils, to model erosion in agreement 
-!                                 with WFLOW sediment model
-!                                 added option to use sediment model output
-!                                 made all parameters externally accessible
-!     Version 0.9. Jun 2022 JvG   Optionally connect soil to sfw, protect against negative sources to unp/soil
-!                                 The connection was made via a soilstore with a prescribed time constant to dampen
-!                                 The relocation had to be removed, needs to be organized differently
-!                                 Burial was operationalized, it immobilizes the solid part from unp to soi
-!     Version 0.8. Sep 2021 JvG   Add ww as an extra receptor (index 0) for all sources
-!                                 read the generic allocation of ww to the true receptors
-!     Version 0.7. Feb 2021 JvG   Some optimizations:
-!                                 expand to 10 type A and 10 type B sources
-!                                 detect how many of these are operational
-!                                 make the emission factors a space function
-!     Version 0.6. Nov 2020 JvG   Generic Single Substance Version                                                 
-!     Version 0.5. Mar 2020 JvG   Relocate substances due to transport in sewer systems and sludge disposal
-!     Version 0.4. Dec 2019 JvG   Update to have more options for spatially variable input
-!     Version 0.3. Aug 2019 JvG   Output for (catchment) water quality model added
-!     Version 0.2, May 2019 JvG   First version with generic set of compartments and pathways
-!     Version 0.1, May 2019 JvG   Starting point: PUB version, Stw layer removed, Sobek related output removed
+    ! fixed quantities
+    integer(kind=int_wp),parameter   :: scu = 1
+    integer(kind=int_wp),parameter   :: nrec = 7 !count of compartments (able to receive releases, so "receptors"
+    integer(kind=int_wp),parameter   :: rec_dww = 1
+    integer(kind=int_wp),parameter   :: rec_sew = 2
+    integer(kind=int_wp),parameter   :: rec_pav = 3
+    integer(kind=int_wp),parameter   :: rec_unp = 4
+    integer(kind=int_wp),parameter   :: rec_stw = 5
+    integer(kind=int_wp),parameter   :: rec_sfw = 6
+    integer(kind=int_wp),parameter   :: rec_soi = 7
+    integer(kind=int_wp),parameter   :: nopar_srca = 3 ! count of parameters for type A sources
+    integer(kind=int_wp),parameter   :: ipar_srca_ev = 1
+    integer(kind=int_wp),parameter   :: ipar_srca_loc = 2
+    integer(kind=int_wp),parameter   :: ipar_srca_ef = 3
+    integer(kind=int_wp),parameter   :: nopar_srcb = 2 !  count of parameters for type B sources
+    integer(kind=int_wp),parameter   :: ipar_srcb_ev = 1
+    integer(kind=int_wp),parameter   :: ipar_srcb_ef = 2
 
-!     NOTE every receptor is a substance! 
-!     NOTE all time is in seconds
-!#####################################################################################################
-!###############************************** SO FLUXES IN G/S ******************########################
-!#####################################################################################################
-!
-!     Type    Name         I/O Description                                        Unit
-!
-!     support variables
-      integer            :: iseg, iflux, ip, ipp, isrc, irec, isegadmin, noriv, ipr, ipd
-      real               :: emisvar, losses, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
-                            in_mmperday, fwashoff, ferosion, froun, finf, fdisp, over_mmperday
-      real               :: fluxloss, mass, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxleak, &
-                            fluxexp,  fluxrem, fluxeff, fluxsld, fluxbur, fluxeroa, fluxerop, &
-                            fluximmo, fluxunc, fluxexfa, fluxexfp, fluxssfa, fluxssfp, fluxmax, fdownstream, fldown
-      real               :: fluxin, limit, maxflux, pool, solids, qtopact, qtoppas, concact
-      real               :: FrUnManaged, FrTreated, courant, fr_unc, fr_eff, fr_sld, fr2sew, fr2sfw, fr2soi
+    ! PMSA admin
+    integer(kind=int_wp)             :: offset_srca
+    integer(kind=int_wp)             :: offset_srcb
+    integer(kind=int_wp)             :: offset_conc
+    integer(kind=int_wp)             :: lins
+    integer(kind=int_wp),parameter   :: line = 0
+    integer(kind=int_wp),parameter   :: loute = 0
 
-      ! fixed quantities
-      integer,parameter   :: scu = 1
-      integer,parameter   :: nrec = 7 !count of compartments (able to receive releases, so "receptors"
-      integer,parameter   :: rec_dww = 1
-      integer,parameter   :: rec_sew = 2
-      integer,parameter   :: rec_pav = 3
-      integer,parameter   :: rec_unp = 4
-      integer,parameter   :: rec_stw = 5
-      integer,parameter   :: rec_sfw = 6
-      integer,parameter   :: rec_soi = 7
-      integer,parameter   :: nopar_srca = 3 ! count of parameters for type A sources
-      integer,parameter   :: ipar_srca_ev = 1
-      integer,parameter   :: ipar_srca_loc = 2
-      integer,parameter   :: ipar_srca_ef = 3
-      integer,parameter   :: nopar_srcb = 2 !  count of parameters for type B sources
-      integer,parameter   :: ipar_srcb_ev = 1
-      integer,parameter   :: ipar_srcb_ef = 2
+    ! Flux admin
+    integer(kind=int_wp)             :: fl0_atm ! offset atmospheric deposition
+    integer(kind=int_wp)             :: fl0_srca ! offset releases from sources type A
+    integer(kind=int_wp)             :: fl0_srcb ! offset releases from sources type B
+    integer(kind=int_wp)             :: fl0_rest ! offset fluxes along pathways
+    integer(kind=int_wp),parameter   :: pav2sew = 1 ! definition of fluxes along pathways
+    integer(kind=int_wp),parameter   :: pav2stw = 2
+    integer(kind=int_wp),parameter   :: pav2sfw = 3
+    integer(kind=int_wp),parameter   :: pav2soi = 4
+    integer(kind=int_wp),parameter   :: pav2dec = 5
+    integer(kind=int_wp),parameter   :: unp2sfw_er = 6
+    integer(kind=int_wp),parameter   :: unp2sfw_ro = 7
+    integer(kind=int_wp),parameter   :: unp2soi_in = 8
+    integer(kind=int_wp),parameter   :: unp2soi_bu = 9
+    integer(kind=int_wp),parameter   :: unp2dec = 10
+    integer(kind=int_wp),parameter   :: sew2sfw_cso = 11
+    integer(kind=int_wp),parameter   :: sew2stp = 12
+    integer(kind=int_wp),parameter   :: sew2sfw_eff = 13
+    integer(kind=int_wp),parameter   :: sew2soi = 14
+    integer(kind=int_wp),parameter   :: sew2sfw_unc = 15
+    integer(kind=int_wp),parameter   :: stw2stp = 16
+    integer(kind=int_wp),parameter   :: stw2sfw = 17
+    integer(kind=int_wp),parameter   :: stw2soi = 18
+    integer(kind=int_wp),parameter   :: soi2sfw_ex = 19
+    integer(kind=int_wp),parameter   :: sop2sfw_ex = 20
+    integer(kind=int_wp),parameter   :: soi2dec = 21
+    integer(kind=int_wp),parameter   :: soi2sfw_er = 22
+    integer(kind=int_wp),parameter   :: sop2sfw_er = 23
+    integer(kind=int_wp),parameter   :: soi2sop_imm = 24
+    integer(kind=int_wp),parameter   :: sfw2exp = 25
+    integer(kind=int_wp),parameter   :: horsfw = 26
+    integer(kind=int_wp),parameter   :: horsoi = 27
+    integer(kind=int_wp),parameter   :: horsop = 28
+    integer(kind=int_wp),parameter   :: dww2sew = 29
+    integer(kind=int_wp),parameter   :: dww2sfw = 30
+    integer(kind=int_wp),parameter   :: dww2soi = 31
+    integer(kind=int_wp),parameter   :: nofluxrest = 31
 
-    ! PMSA admin 
-      integer             :: offset_srca
-      integer             :: offset_srcb
-      integer             :: offset_conc
-      integer             :: lins
-      integer,parameter   :: line = 0
-      integer,parameter   :: loute = 0
+    ! pointers to input items
+    integer(kind=int_wp),parameter   :: ip_nsrca = 1
+    integer(kind=int_wp),parameter   :: ip_nsrcb = 2
+    integer(kind=int_wp),parameter   :: ip_nrecin = 3
+    integer(kind=int_wp),parameter   :: ip_delt = 4
+    integer(kind=int_wp),parameter   :: ip_itime = 5
+    integer(kind=int_wp),parameter   :: ip_totsurf = 6
+    integer(kind=int_wp),parameter   :: ip_fpaved = 7
+    integer(kind=int_wp),parameter   :: ip_funpaved = 8
+    integer(kind=int_wp),parameter   :: ip_fwater = 9
+    integer(kind=int_wp),parameter   :: ip_rainfall = 10
+    integer(kind=int_wp),parameter   :: ip_ropaved = 11
+    integer(kind=int_wp),parameter   :: ip_rounpaved = 12
+    integer(kind=int_wp),parameter   :: ip_infilt = 13
+    integer(kind=int_wp),parameter   :: ip_facerod = 14
+    integer(kind=int_wp),parameter   :: ip_ero1 = 15
+    integer(kind=int_wp),parameter   :: ip_ero2 = 16
+    integer(kind=int_wp),parameter   :: ip_ero3 = 17
+    integer(kind=int_wp),parameter   :: ip_fcomsew = 18
+    integer(kind=int_wp),parameter   :: ip_leakage = 19
+    integer(kind=int_wp),parameter   :: ip_soilthick = 20
+    integer(kind=int_wp),parameter   :: ip_soilpor = 21
+    integer(kind=int_wp),parameter   :: ip_kbur = 22
+    integer(kind=int_wp),parameter   :: ip_kpaved = 23
+    integer(kind=int_wp),parameter   :: ip_kunpaved = 24
+    integer(kind=int_wp),parameter   :: ip_kdunpaved = 25
+    integer(kind=int_wp),parameter   :: ip_ksoil = 26
+    integer(kind=int_wp),parameter   :: ip_kimmo = 27
+    integer(kind=int_wp),parameter   :: ip_kdsoil = 28
+    integer(kind=int_wp),parameter  :: ip_ro_lothr = 29
+    integer(kind=int_wp),parameter   :: ip_ro_hithr = 30
+    integer(kind=int_wp),parameter   :: ip_ra_lothr = 31
+    integer(kind=int_wp),parameter   :: ip_ra_hithr = 32
+    integer(kind=int_wp),parameter   :: ip_disp_hithr = 33
+    integer(kind=int_wp),parameter   :: ip_drydep = 34
+    integer(kind=int_wp),parameter   :: ip_rainconc = 35
+    integer(kind=int_wp),parameter   :: ip_eff_rs = 36
+    integer(kind=int_wp),parameter   :: ip_sld_rs = 37
+    integer(kind=int_wp),parameter   :: ip_frainsew = 38
+    integer(kind=int_wp),parameter   :: ip_rhodm = 39
+    integer(kind=int_wp),parameter   :: ip_masspas = 40
+    integer(kind=int_wp),parameter   :: ip_pop = 41
+    integer(kind=int_wp),parameter   :: ip_pcww = 42
+    integer(kind=int_wp),parameter   :: ip_fwwsew = 43
+    integer(kind=int_wp),parameter   :: ip_fSldgRem = 44
+    integer(kind=int_wp),parameter   :: ip_FrSeptic = 45
+    integer(kind=int_wp),parameter   :: ip_FrTreat1 = 46
+    integer(kind=int_wp),parameter   :: ip_FrTreat2 = 47
+    integer(kind=int_wp),parameter   :: ip_FrTreat3 = 48
+    integer(kind=int_wp),parameter   :: ip_Eff_Septic = 49
+    integer(kind=int_wp),parameter   :: ip_Eff_Treat1 = 50
+    integer(kind=int_wp),parameter   :: ip_Eff_Treat2 = 51
+    integer(kind=int_wp),parameter   :: ip_Eff_Treat3 = 52
+    integer(kind=int_wp),parameter   :: ip_Sld_Septic = 53
+    integer(kind=int_wp),parameter   :: ip_Sld_Treat1 = 54
+    integer(kind=int_wp),parameter   :: ip_Sld_Treat2 = 55
+    integer(kind=int_wp),parameter   :: ip_Sld_Treat3 = 56
+    integer(kind=int_wp),parameter   :: ip_Exfilt = 57
+    integer(kind=int_wp),parameter   :: ip_river = 58
+    integer(kind=int_wp),parameter   :: ip_downstream = 59
+    integer(kind=int_wp),parameter   :: ip_over_hithr = 60
+    integer(kind=int_wp),parameter   :: ip_ssurf = 61
+    integer(kind=int_wp),parameter   :: ip_overland = 62
+    integer(kind=int_wp),parameter   :: ip_concpas = 63
+    integer(kind=int_wp),parameter   :: lastsingle = 63
 
-      ! Flux admin
-      integer             :: fl0_atm ! offset atmospheric deposition
-      integer             :: fl0_srca ! offset releases from sources type A
-      integer             :: fl0_srcb ! offset releases from sources type B
-      integer             :: fl0_rest ! offset fluxes along pathways
-      integer,parameter   :: pav2sew = 1 ! definition of fluxes along pathways
-      integer,parameter   :: pav2stw = 2
-      integer,parameter   :: pav2sfw = 3
-      integer,parameter   :: pav2soi = 4
-      integer,parameter   :: pav2dec = 5
-      integer,parameter   :: unp2sfw_er = 6
-      integer,parameter   :: unp2sfw_ro = 7
-      integer,parameter   :: unp2soi_in = 8
-      integer,parameter   :: unp2soi_bu = 9
-      integer,parameter   :: unp2dec = 10
-      integer,parameter   :: sew2sfw_cso = 11
-      integer,parameter   :: sew2stp = 12
-      integer,parameter   :: sew2sfw_eff = 13
-      integer,parameter   :: sew2soi = 14
-      integer,parameter   :: sew2sfw_unc = 15
-      integer,parameter   :: stw2stp = 16
-      integer,parameter   :: stw2sfw = 17
-      integer,parameter   :: stw2soi = 18
-      integer,parameter   :: soi2sfw_ex = 19
-      integer,parameter   :: sop2sfw_ex = 20
-      integer,parameter   :: soi2dec = 21
-      integer,parameter   :: soi2sfw_er = 22
-      integer,parameter   :: sop2sfw_er = 23
-      integer,parameter   :: soi2sop_imm = 24
-      integer,parameter   :: sfw2exp = 25
-      integer,parameter   :: horsfw = 26
-      integer,parameter   :: horsoi = 27
-      integer,parameter   :: horsop = 28
-      integer,parameter   :: dww2sew = 29
-      integer,parameter   :: dww2sfw = 30
-      integer,parameter   :: dww2soi = 31
-      integer,parameter   :: nofluxrest = 31
-      
-      ! pointers to input items
-      integer,parameter   :: ip_nsrca = 1
-      integer,parameter   :: ip_nsrcb = 2
-      integer,parameter   :: ip_nrecin = 3
-      integer,parameter   :: ip_delt = 4
-      integer,parameter   :: ip_itime = 5
-      integer,parameter   :: ip_totsurf = 6
-      integer,parameter   :: ip_fpaved = 7
-      integer,parameter   :: ip_funpaved = 8
-      integer,parameter   :: ip_fwater = 9
-      integer,parameter   :: ip_rainfall = 10
-      integer,parameter   :: ip_ropaved = 11
-      integer,parameter   :: ip_rounpaved = 12
-      integer,parameter   :: ip_infilt = 13
-      integer,parameter   :: ip_facerod = 14
-      integer,parameter   :: ip_ero1 = 15
-      integer,parameter   :: ip_ero2 = 16
-      integer,parameter   :: ip_ero3 = 17
-      integer,parameter   :: ip_fcomsew = 18
-      integer,parameter   :: ip_leakage = 19
-      integer,parameter   :: ip_soilthick = 20
-      integer,parameter   :: ip_soilpor = 21
-      integer,parameter   :: ip_kbur = 22
-      integer,parameter   :: ip_kpaved = 23
-      integer,parameter   :: ip_kunpaved = 24
-      integer,parameter   :: ip_kdunpaved = 25
-      integer,parameter   :: ip_ksoil = 26
-      integer,parameter   :: ip_kimmo = 27
-      integer,parameter   :: ip_kdsoil = 28
-       integer,parameter  :: ip_ro_lothr = 29
-      integer,parameter   :: ip_ro_hithr = 30
-      integer,parameter   :: ip_ra_lothr = 31
-      integer,parameter   :: ip_ra_hithr = 32
-      integer,parameter   :: ip_disp_hithr = 33
-      integer,parameter   :: ip_drydep = 34
-      integer,parameter   :: ip_rainconc = 35
-      integer,parameter   :: ip_eff_rs = 36
-      integer,parameter   :: ip_sld_rs = 37
-      integer,parameter   :: ip_frainsew = 38
-      integer,parameter   :: ip_rhodm = 39
-      integer,parameter   :: ip_masspas = 40
-      integer,parameter   :: ip_pop = 41
-      integer,parameter   :: ip_pcww = 42
-      integer,parameter   :: ip_fwwsew = 43
-      integer,parameter   :: ip_fSldgRem = 44
-      integer,parameter   :: ip_FrSeptic = 45
-      integer,parameter   :: ip_FrTreat1 = 46
-      integer,parameter   :: ip_FrTreat2 = 47
-      integer,parameter   :: ip_FrTreat3 = 48
-      integer,parameter   :: ip_Eff_Septic = 49
-      integer,parameter   :: ip_Eff_Treat1 = 50
-      integer,parameter   :: ip_Eff_Treat2 = 51
-      integer,parameter   :: ip_Eff_Treat3 = 52
-      integer,parameter   :: ip_Sld_Septic = 53
-      integer,parameter   :: ip_Sld_Treat1 = 54
-      integer,parameter   :: ip_Sld_Treat2 = 55
-      integer,parameter   :: ip_Sld_Treat3 = 56
-      integer,parameter   :: ip_Exfilt = 57
-      integer,parameter   :: ip_river = 58
-      integer,parameter   :: ip_downstream = 59
-      integer,parameter   :: ip_over_hithr = 60
-      integer,parameter   :: ip_ssurf = 61
-      integer,parameter   :: ip_overland = 62
-      integer,parameter   :: ip_concpas = 63
-      integer,parameter   :: lastsingle = 63
-      
-      ! output items
-      integer,parameter   :: louts = 7
-      integer,parameter   :: ip_ew = 1
-      integer,parameter   :: ip_ro2sew = 2
-      integer,parameter   :: ip_ww2sew = 3
-      integer,parameter   :: ip_concwash = 4
-      integer,parameter   :: ip_concroun = 5
-      integer,parameter   :: ip_concsew = 6
-      integer,parameter   :: ip_concdrain = 7
+    ! output items
+    integer(kind=int_wp),parameter   :: louts = 7
+    integer(kind=int_wp),parameter   :: ip_ew = 1
+    integer(kind=int_wp),parameter   :: ip_ro2sew = 2
+    integer(kind=int_wp),parameter   :: ip_ww2sew = 3
+    integer(kind=int_wp),parameter   :: ip_concwash = 4
+    integer(kind=int_wp),parameter   :: ip_concroun = 5
+    integer(kind=int_wp),parameter   :: ip_concsew = 6
+    integer(kind=int_wp),parameter   :: ip_concdrain = 7
 
-      ! input items
-      integer             :: nsrca, nsrcb, nrecin  
-      real                :: delt
-      integer             :: itime 
-      real                :: totsurf, fpaved, funpaved, fwater     
-      real                :: rainfall, ropaved, rounpaved, infilt, exfilt, ssurf, overland     
-      real                :: ero1, ero2, ero3, facerod
-      real                :: fcomsew, leakage
-      real                :: rhodm, soilthick, soilpor
-      real                :: kbur, kpaved, kunpaved, kdunpaved, ksoil, kimmo, kdsoil
-      real                :: drydep, rainconc
-      real                :: eff_rs, sld_rs, frainsew
-      real                :: ro_lothr, ro_hithr, ra_lothr, ra_hithr, disp_hithr, over_hiThr
-      real                :: masspas
-      real                :: pop, pcww, fwwsew, fSldgRem, FrSeptic
-      real                :: FrTreat1, FrTreat2, FrTreat3
-      real                :: Eff_Septic,  Eff_Treat1, Eff_Treat2, Eff_Treat3
-      real                :: Sld_Septic, Sld_Treat1, Sld_Treat2, Sld_Treat3
-      integer             :: river
-      real                :: concpas
-      
-      ! output
-      real                :: ro2sew
-      real                :: ww2sew
-      real                :: concwash
-      real                :: concroun
-      real                :: concsew
-      real                :: concdrain
+    ! input items
+    integer(kind=int_wp)             :: nsrca, nsrcb, nrecin
+    real(kind=real_wp)                :: delt
+    integer(kind=int_wp)             :: itime
+    real(kind=real_wp)                :: totsurf, fpaved, funpaved, fwater
+    real(kind=real_wp)                :: rainfall, ropaved, rounpaved, infilt, exfilt, ssurf, overland
+    real(kind=real_wp)                :: ero1, ero2, ero3, facerod
+    real(kind=real_wp)                :: fcomsew, leakage
+    real(kind=real_wp)                :: rhodm, soilthick, soilpor
+    real(kind=real_wp)                :: kbur, kpaved, kunpaved, kdunpaved, ksoil, kimmo, kdsoil
+    real(kind=real_wp)                :: drydep, rainconc
+    real(kind=real_wp)                :: eff_rs, sld_rs, frainsew
+    real(kind=real_wp)                :: ro_lothr, ro_hithr, ra_lothr, ra_hithr, disp_hithr, over_hiThr
+    real(kind=real_wp)                :: masspas
+    real(kind=real_wp)                :: pop, pcww, fwwsew, fSldgRem, FrSeptic
+    real(kind=real_wp)                :: FrTreat1, FrTreat2, FrTreat3
+    real(kind=real_wp)                :: Eff_Septic,  Eff_Treat1, Eff_Treat2, Eff_Treat3
+    real(kind=real_wp)                :: Sld_Septic, Sld_Treat1, Sld_Treat2, Sld_Treat3
+    integer(kind=int_wp)             :: river
+    real(kind=real_wp)                :: concpas
 
-      ! specific other variables
+    ! output
+    real(kind=real_wp)                :: ro2sew
+    real(kind=real_wp)                :: ww2sew
+    real(kind=real_wp)                :: concwash
+    real(kind=real_wp)                :: concroun
+    real(kind=real_wp)                :: concsew
+    real(kind=real_wp)                :: concdrain
 
-      ! work arrays
-      real,allocatable    :: frac2rec(:) ! allocation of atmospheric deposition
-      real,allocatable    :: frac2recA(:,:,:) ! allocation of releases type A
-      real,allocatable    :: frac2recB(:,:,:) ! allocation of releases type B
-      real,allocatable    :: sumlocator(:) ! sum of the spatial "locator" variable to define type A releases
-      real,allocatable    :: locator(:,:) ! spatial "locator" variable to define type A releases
-      real,allocatable    :: totflxin(:) ! inflow to receptor by releases and from upstream receptors
-      real,allocatable    :: currentmass(:) ! current mass for all receptors
-      real,allocatable    :: emis(:) ! calculated emissions
-      real,allocatable    :: flhorsoi(:), flhorsop(:), flhorsfw(:) ! "buckets" for horizontal transport
-      integer, allocatable :: seg2riv(:), downstream(:), simorder(:) ! WQ model river cell number (0 - land cell); downstream cell, simulation order
+    ! specific other variables
 
-      
-      ! constants for substances
-      real,allocatable   :: emisfacA(:,:)
-      real :: emisfacB
+    ! work arrays
+    real(kind=real_wp),allocatable    :: frac2rec(:) ! allocation of atmospheric deposition
+    real(kind=real_wp),allocatable    :: frac2recA(:,:,:) ! allocation of releases type A
+    real(kind=real_wp),allocatable    :: frac2recB(:,:,:) ! allocation of releases type B
+    real(kind=real_wp),allocatable    :: sumlocator(:) ! sum of the spatial "locator" variable to define type A releases
+    real(kind=real_wp),allocatable    :: locator(:,:) ! spatial "locator" variable to define type A releases
+    real(kind=real_wp),allocatable    :: totflxin(:) ! inflow to receptor by releases and from upstream receptors
+    real(kind=real_wp),allocatable    :: currentmass(:) ! current mass for all receptors
+    real(kind=real_wp),allocatable    :: emis(:) ! calculated emissions
+    real(kind=real_wp),allocatable    :: flhorsoi(:), flhorsop(:), flhorsfw(:) ! "buckets" for horizontal transport
+    integer(kind=int_wp), allocatable :: seg2riv(:), downstream(:), simorder(:) ! WQ model river cell number (0 - land cell); downstream cell, simulation order
 
-      ! files
-      integer,parameter :: lu_bin = 1961
-      integer,parameter :: lu_txt = 1962
-      character*80,parameter :: filbin = 'outdata_em.bin'
-      character*80,parameter :: filtxt = 'outdata_em.txt'
 
-!     other
-      logical first
-      data first /.true./
-      
-      save
-!
-!******************************************************************************* INITIAL PROCESSING
-      if (first) then
+    ! constants for substances
+    real(kind=real_wp),allocatable   :: emisfacA(:,:)
+    real(kind=real_wp) :: emisfacB
 
-            ! pick up actual dimensions
-            nsrca = nint(pmsa(ipoint(ip_nsrca)))
-            nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
-            nrecin = nint(pmsa(ipoint(ip_nrecin)))
-            if (nrecin.ne.nrec) call errsys ('Receptors inconsistent',1)
+    ! files
+    integer(kind=int_wp),parameter :: lu_bin = 1961
+    integer(kind=int_wp),parameter :: lu_txt = 1962
+    character(len=80),parameter :: filbin = 'outdata_em.bin'
+    character(len=80),parameter :: filtxt = 'outdata_em.txt'
 
-            ! pick up constants
-            delt = pmsa(ipoint(ip_delt))
-            kbur = pmsa(ipoint(ip_kbur))
-            rhodm = pmsa(ipoint(ip_rhodm))
-            ro_lothr = pmsa(ipoint(ip_ro_lothr))
-            ro_hithr = pmsa(ipoint(ip_ro_hithr))
-            ra_lothr = pmsa(ipoint(ip_ra_lothr))
-            ra_hithr = pmsa(ipoint(ip_ra_hithr))
-            disp_hithr = pmsa(ipoint(ip_disp_hithr))
-            facerod = pmsa(ipoint(ip_facerod))
-            over_hithr = pmsa(ipoint(ip_over_hithr))
+    !     other
+    logical first
+    data first /.true./
 
-            ! PMSA admin
-            offset_srca = lastsingle                             ! data for sources type A
-            offset_srcb = offset_srca + nsrca*(nopar_srca+nrec)  ! data for sources type B
-            offset_conc = offset_srcb + nsrcb*(nopar_srcb+nrec)  ! Concentration
-            lins  = offset_conc + nrec                   ! SUM
-            if (noflux.lt.(nrec*(1+nsrca+nsrcb)+nofluxrest)) then  ! if other processes have fluxes too, we can not demand equality
-                write (*,*) 'nrec  = ',nrec
-                write (*,*) 'nsrca = ',nsrca
-                write (*,*) 'nsrcb = ',nsrcb
-                write (*,*) 'noseg = ',noseg
-                write (*,*) 'nofluxrest = ',nofluxrest
-                write (*,*) 'noflux = ',noflux
-                call errsys ('NOFLUX has unexpected value',1)
-            endif
-            
-            ! Fluxes Admin
-            fl0_atm  = 0
-            fl0_srca = fl0_atm + nrec
-            fl0_srcb = fl0_srca + nsrca*nrec
-            fl0_rest = fl0_srcb + nsrcb*nrec
+    save
+    !
+    !******************************************************************************* INITIAL PROCESSING
+    if (first) then
 
-            ! set non-time variable properties
-            ! Emission factors
-            allocate(emisfacA(nsrca,noseg))
-!            allocate(emisfacB(nsrcb,noseg))
-            do isrc = 1,nsrca
-                ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_ef
-                ipp = ipoint(ip)
-                do iseg = 1,noseg
-                    emisfacA(isrc,iseg) = pmsa(ipp)
-                    ipp = ipp + increm(ip)
-                enddo
+        ! pick up actual dimensions
+        nsrca = nint(pmsa(ipoint(ip_nsrca)))
+        nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
+        nrecin = nint(pmsa(ipoint(ip_nrecin)))
+        if (nrecin.ne.nrec) call errsys ('Receptors inconsistent',1)
+
+        ! pick up constants
+        delt = pmsa(ipoint(ip_delt))
+        kbur = pmsa(ipoint(ip_kbur))
+        rhodm = pmsa(ipoint(ip_rhodm))
+        ro_lothr = pmsa(ipoint(ip_ro_lothr))
+        ro_hithr = pmsa(ipoint(ip_ro_hithr))
+        ra_lothr = pmsa(ipoint(ip_ra_lothr))
+        ra_hithr = pmsa(ipoint(ip_ra_hithr))
+        disp_hithr = pmsa(ipoint(ip_disp_hithr))
+        facerod = pmsa(ipoint(ip_facerod))
+        over_hithr = pmsa(ipoint(ip_over_hithr))
+
+        ! PMSA admin
+        offset_srca = lastsingle                             ! data for sources type A
+        offset_srcb = offset_srca + nsrca*(nopar_srca+nrec)  ! data for sources type B
+        offset_conc = offset_srcb + nsrcb*(nopar_srcb+nrec)  ! Concentration
+        lins  = offset_conc + nrec                   ! SUM
+        if (noflux.lt.(nrec*(1+nsrca+nsrcb)+nofluxrest)) then  ! if other processes have fluxes too, we can not demand equality
+            write (*,*) 'nrec  = ',nrec
+            write (*,*) 'nsrca = ',nsrca
+            write (*,*) 'nsrcb = ',nsrcb
+            write (*,*) 'noseg = ',noseg
+            write (*,*) 'nofluxrest = ',nofluxrest
+            write (*,*) 'noflux = ',noflux
+            call errsys ('NOFLUX has unexpected value',1)
+        endif
+
+        ! Fluxes Admin
+        fl0_atm  = 0
+        fl0_srca = fl0_atm + nrec
+        fl0_srcb = fl0_srca + nsrca*nrec
+        fl0_rest = fl0_srcb + nsrcb*nrec
+
+        ! set non-time variable properties
+        ! Emission factors
+        allocate(emisfacA(nsrca,noseg))
+    !            allocate(emisfacB(nsrcb,noseg))
+        do isrc = 1,nsrca
+            ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_ef
+            ipp = ipoint(ip)
+            do iseg = 1,noseg
+                emisfacA(isrc,iseg) = pmsa(ipp)
+                ipp = ipp + increm(ip)
             enddo
+        enddo
 
-  
-            ! distribution over receptors 
-            allocate(currentmass(nrec))
-            allocate(frac2rec(nrec))
-            allocate(frac2recA(nrec,nsrca,noseg))
-            allocate(frac2recB(nrec,nsrcb,noseg))
-            do isrc = 1,nsrca
-              ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + nopar_srca 
-              do irec = 1,nrec
-                ip = ip + 1
-                ipp = ipoint(ip)
-                do iseg = 1 , noseg
-                  frac2recA(irec,isrc,iseg) = pmsa(ipp)
-                  ipp = ipp + increm(ip)
-                enddo
-              enddo
-            enddo
-            do isrc = 1,nsrcb
-              ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + nopar_srcb 
-              do irec = 1,nrec
-                ip = ip + 1
-                ipp = ipoint(ip)
-                do iseg = 1 , noseg
-                  frac2recB(irec,isrc,iseg) = pmsa(ipp)
-                  ipp = ipp + increm(ip)
-                enddo
-              enddo
-            enddo
-            
-            ! prepare distribution according to locators of type A sources (CONSTANT IN TIME)
-            allocate(totflxin(nrec)) 
 
-            ! loop over sources types A to store values of and calculate the sum of locators
-            allocate (locator(nsrca,noseg))
-            allocate (sumlocator(nsrca))
-            sumlocator = 0.0
-            do isrc = 1,nsrca
-                ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_loc
-                ipp = ipoint(ip)
-                do iseg = 1,noseg
-                    locator(isrc,iseg) = pmsa(ipp)
-                    sumlocator(isrc) = sumlocator(isrc) + locator(isrc,iseg)
-                    ipp = ipp + increm(ip)
-                enddo
-            enddo
-            
-            ! prepare schematization aspects
-            allocate (seg2riv(noseg))
-            allocate (simorder(noseg))
-            allocate (downstream(noseg))
-            noriv = 0
-            seg2riv = 0
-            ipr = ipoint(ip_river)
-            ipd = ipoint(ip_downstream)
+        ! distribution over receptors
+        allocate(currentmass(nrec))
+        allocate(frac2rec(nrec))
+        allocate(frac2recA(nrec,nsrca,noseg))
+        allocate(frac2recB(nrec,nsrcb,noseg))
+        do isrc = 1,nsrca
+          ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + nopar_srca
+          do irec = 1,nrec
+            ip = ip + 1
+            ipp = ipoint(ip)
             do iseg = 1 , noseg
-                river            = nint(pmsa(ipr))
-                downstream(iseg) = nint(pmsa(ipd))
-                if (river.gt.0) then
-                    noriv = noriv + 1
-                    seg2riv(iseg) = noriv
-                endif
-                ipr = ipr + increm(ip_river)
-                ipd = ipd + increm(ip_downstream)
+              frac2recA(irec,isrc,iseg) = pmsa(ipp)
+              ipp = ipp + increm(ip)
             enddo
-            call calcorder(noseg,downstream,simorder)   
-            allocate(emis(noriv))
-            allocate(flhorsoi(noseg))
-            allocate(flhorsop(noseg))
-            allocate(flhorsfw(noseg))
-            
-            ! prepare for output
-            open (lu_bin,file=filbin,form='binary')
-            open (lu_txt,file=filtxt)
-            write (lu_txt,'(''Emission metadata'')')
-            write (lu_txt,'(''Emissions in g/s'')')
-            write (lu_txt,'(''Nr of segments:     '',i10)') noriv
-            write (lu_txt,'(''Nr of layers  :              1'')')
-            write (lu_txt,'(''Water layer   :              1'')')
-            write (lu_txt,'(''Nr of subst   :              1'')')
-            write (lu_txt,'(''Unknown       :              1'')')
-      endif
-
-!******************************************************************************* PROCESSING in TIME LOOP
-
-      emis = 0.0
-      flhorsoi = 0.0
-      flhorsop = 0.0
-      flhorsfw = 0.0
-
-      !****** horizontal routing requires going through the cells in another order than the administrative order
-      !       this order has been determined above 
-      
-      do isegadmin = 1 , noseg
-          iseg = simorder(isegadmin)
-          
-          ! collect all relevant input from PMSA 
-          totsurf    = max(1.0,pmsa(ipoint(ip_totsurf)+(iseg-1)*increm(ip_totsurf)))
-          fpaved     = max(0.001,pmsa(ipoint(ip_fpaved)+(iseg-1)*increm(ip_fpaved)))
-          funpaved   = max(0.001,pmsa(ipoint(ip_funpaved)+(iseg-1)*increm(ip_funpaved)))
-          fwater     = pmsa(ipoint(ip_fwater)+(iseg-1)*increm(ip_fwater))
-          rainfall   = pmsa(ipoint(ip_rainfall)+(iseg-1)*increm(ip_rainfall)) *86400.    ! m3/s to m3/d
-          drydep     = pmsa(ipoint(ip_drydep)+(iseg-1)*increm(ip_drydep))
-          rainconc   = pmsa(ipoint(ip_rainconc)+(iseg-1)*increm(ip_rainconc))
-          kpaved     = pmsa(ipoint(ip_kpaved)+(iseg-1)*increm(ip_kpaved))
-          kunpaved   = pmsa(ipoint(ip_kunpaved)+(iseg-1)*increm(ip_kunpaved))
-          kdunpaved  = pmsa(ipoint(ip_kdunpaved)+(iseg-1)*increm(ip_kdunpaved))
-          ksoil      = pmsa(ipoint(ip_ksoil)+(iseg-1)*increm(ip_ksoil))
-          kdsoil     = pmsa(ipoint(ip_kdsoil)+(iseg-1)*increm(ip_kdsoil))
-          kimmo      = pmsa(ipoint(ip_kimmo)+(iseg-1)*increm(ip_kimmo))
-          ropaved    = pmsa(ipoint(ip_ropaved)+(iseg-1)*increm(ip_ropaved))
-          fcomsew    = pmsa(ipoint(ip_fcomsew)+(iseg-1)*increm(ip_fcomsew))
-          frainsew   = pmsa(ipoint(ip_frainsew)+(iseg-1)*increm(ip_frainsew))
-          rounpaved  = pmsa(ipoint(ip_rounpaved)+(iseg-1)*increm(ip_rounpaved))
-          infilt     = pmsa(ipoint(ip_infilt)+(iseg-1)*increm(ip_infilt))
-          leakage    = pmsa(ipoint(ip_leakage)+(iseg-1)*increm(ip_leakage))
-          pop        = pmsa(ipoint(ip_pop)+(iseg-1)*increm(ip_pop))
-          pcww       = pmsa(ipoint(ip_pcww)+(iseg-1)*increm(ip_pcww))
-          fwwsew     = pmsa(ipoint(ip_fwwsew)+(iseg-1)*increm(ip_fwwsew))
-          eff_rs     = pmsa(ipoint(ip_eff_rs)+(iseg-1)*increm(ip_eff_rs))
-          sld_rs     = pmsa(ipoint(ip_sld_rs)+(iseg-1)*increm(ip_sld_rs))
-          soilthick  = pmsa(ipoint(ip_soilthick)+(iseg-1)*increm(ip_soilthick)) / 1000. ! Convert from mm to m
-          soilpor    = pmsa(ipoint(ip_soilpor)+(iseg-1)*increm(ip_soilpor))
-          exfilt     = max(pmsa(ipoint(ip_exfilt)+(iseg-1)*increm(ip_exfilt)),0.0)
-          ssurf      = max(pmsa(ipoint(ip_ssurf)+(iseg-1)*increm(ip_ssurf)),0.0)
-          ero1       = pmsa(ipoint(ip_ero1)+(iseg-1)*increm(ip_ero1)) ! g/d
-          ero2       = pmsa(ipoint(ip_ero2)+(iseg-1)*increm(ip_ero2))
-          ero3       = pmsa(ipoint(ip_ero3)+(iseg-1)*increm(ip_ero3))
-          masspas    = pmsa(ipoint(ip_masspas)+(iseg-1)*increm(ip_masspas)) ! mass in passive pool
-          concpas    = pmsa(ipoint(ip_concpas)+(iseg-1)*increm(ip_concpas))
-          overland   = pmsa(ipoint(ip_overland)+(iseg-1)*increm(ip_overland))
-          FrSeptic   = pmsa(ipoint(ip_FrSeptic)+(iseg-1)*increm(ip_FrSeptic))
-          Eff_Septic = pmsa(ipoint(ip_Eff_Septic)+(iseg-1)*increm(ip_Eff_Septic)) ! Interpret as losses to Sfw, before reaching WWTPs
-          Sld_Septic = pmsa(ipoint(ip_Sld_Septic)+(iseg-1)*increm(ip_Sld_Septic)) ! Interpret as losses to Soi, before reaching WWTPs
-          fSldgRem   = pmsa(ipoint(ip_fSldgRem)+(iseg-1)*increm(ip_fSldgRem))
-          FrTreat1   = pmsa(ipoint(ip_FrTreat1)+(iseg-1)*increm(ip_FrTreat1))
-          FrTreat2   = pmsa(ipoint(ip_FrTreat2)+(iseg-1)*increm(ip_FrTreat2))
-          FrTreat3   = pmsa(ipoint(ip_FrTreat3)+(iseg-1)*increm(ip_FrTreat3))
-          Eff_Treat1 = pmsa(ipoint(ip_Eff_Treat1)+(iseg-1)*increm(ip_Eff_Treat1))
-          Eff_Treat2 = pmsa(ipoint(ip_Eff_Treat2)+(iseg-1)*increm(ip_Eff_Treat2))
-          Eff_Treat3 = pmsa(ipoint(ip_Eff_Treat3)+(iseg-1)*increm(ip_Eff_Treat3))
-          Sld_Treat1 = pmsa(ipoint(ip_Sld_Treat1)+(iseg-1)*increm(ip_Sld_Treat1))
-          Sld_Treat2 = pmsa(ipoint(ip_Sld_Treat2)+(iseg-1)*increm(ip_Sld_Treat2))
-          Sld_Treat3 = pmsa(ipoint(ip_Sld_Treat3)+(iseg-1)*increm(ip_Sld_Treat3))
-              
-          do irec = 1, nrec
-              ip = offset_conc + irec
-              currentmass(irec) = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
           enddo
-
-          totflxin = 0.0
-
-!*******************************************************************************
-! Now follows the RELEASE PART
-!*******************************************************************************
-
-          ! Type A sources -------------------------------------------------------------
-          iflux = fl0_srca
-          do isrc = 1,nsrca
-
-              ! pick up (total domain) EV and calculate domain losses per substance
-              ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_ev
-              emisvar = pmsa(ipoint(ip))
-              losses = emisvar*emisfacA(isrc,iseg)*1000.   ! kg/d to g/d
-
-              ! losses per sc
-              if (sumlocator(isrc).gt.0.0) then
-                do irec = 1,nrec
-                    flux = losses*frac2recA(irec,isrc,iseg)*locator(isrc,iseg)/sumlocator(isrc) / 86400.
-                    if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
-                        mass = currentmass(irec)
-                        limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
-                        flux = max(flux,-limit)
-                    endif
-                    iflux = iflux + 1
-                    fl(iflux+(iseg-1)*noflux) = flux
-                    totflxin(irec) = totflxin(irec) + flux
-                enddo
-              endif
+        enddo
+        do isrc = 1,nsrcb
+          ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + nopar_srcb
+          do irec = 1,nrec
+            ip = ip + 1
+            ipp = ipoint(ip)
+            do iseg = 1 , noseg
+              frac2recB(irec,isrc,iseg) = pmsa(ipp)
+              ipp = ipp + increm(ip)
+            enddo
           enddo
-          
-          ! Type B sources ------------------------------------------------------------
-          iflux = fl0_srcb
-          do isrc = 1,nsrcb
+        enddo
 
-              ! losses
-              ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + ipar_srcb_ev
-              emisvar = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
-              ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + ipar_srcb_ef
-              emisfacB = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
-              losses = emisvar*emisfacB*1000. ! kg/d to g/d
+        ! prepare distribution according to locators of type A sources (CONSTANT IN TIME)
+        allocate(totflxin(nrec))
 
-              ! fluxes
-              do irec = 1,nrec
-                  iflux = iflux + 1
-                  flux = losses*frac2recB(irec,isrc,iseg) / 86400.
-                  if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
-                        mass = currentmass(irec)
-                        limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
-                        flux = max(flux,-limit)
-                  endif
-                  fl(iflux+(iseg-1)*noflux) = flux
-                  totflxin(irec) = totflxin(irec) + flux
-              enddo
-          enddo
+        ! loop over sources types A to store values of and calculate the sum of locators
+        allocate (locator(nsrca,noseg))
+        allocate (sumlocator(nsrca))
+        sumlocator = 0.0
+        do isrc = 1,nsrca
+            ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_loc
+            ipp = ipoint(ip)
+            do iseg = 1,noseg
+                locator(isrc,iseg) = pmsa(ipp)
+                sumlocator(isrc) = sumlocator(isrc) + locator(isrc,iseg)
+                ipp = ipp + increm(ip)
+            enddo
+        enddo
 
-          ! Atmospheric deposition ------------------------------------------------------------------
-          frac2rec = 0.0  ! default
-          frac2rec(rec_pav) = fpaved
-          frac2rec(rec_unp) = funpaved
-          frac2rec(rec_sfw) = fwater
- 
-          ! total dep
-          losses = drydep*totsurf + rainfall*rainconc ! g/d
+        ! prepare schematization aspects
+        allocate (seg2riv(noseg))
+        allocate (simorder(noseg))
+        allocate (downstream(noseg))
+        noriv = 0
+        seg2riv = 0
+        ipr = ipoint(ip_river)
+        ipd = ipoint(ip_downstream)
+        do iseg = 1 , noseg
+            river            = nint(pmsa(ipr))
+            downstream(iseg) = nint(pmsa(ipd))
+            if (river.gt.0) then
+                noriv = noriv + 1
+                seg2riv(iseg) = noriv
+            endif
+            ipr = ipr + increm(ip_river)
+            ipd = ipd + increm(ip_downstream)
+        enddo
+        call calcorder(noseg,downstream,simorder)
+        allocate(emis(noriv))
+        allocate(flhorsoi(noseg))
+        allocate(flhorsop(noseg))
+        allocate(flhorsfw(noseg))
+
+        ! prepare for output
+        open (lu_bin,file=filbin,form='binary')
+        open (lu_txt,file=filtxt)
+        write (lu_txt,'(''Emission metadata'')')
+        write (lu_txt,'(''Emissions in g/s'')')
+        write (lu_txt,'(''Nr of segments:     '',i10)') noriv
+        write (lu_txt,'(''Nr of layers  :              1'')')
+        write (lu_txt,'(''Water layer   :              1'')')
+        write (lu_txt,'(''Nr of subst   :              1'')')
+        write (lu_txt,'(''Unknown       :              1'')')
+    endif
+
+    !******************************************************************************* PROCESSING in TIME LOOP
+
+    emis = 0.0
+    flhorsoi = 0.0
+    flhorsop = 0.0
+    flhorsfw = 0.0
+
+    !****** horizontal routing requires going through the cells in another order than the administrative order
+    !       this order has been determined above
+
+    do isegadmin = 1 , noseg
+      iseg = simorder(isegadmin)
+
+      ! collect all relevant input from PMSA
+      totsurf    = max(1.0,pmsa(ipoint(ip_totsurf)+(iseg-1)*increm(ip_totsurf)))
+      fpaved     = max(0.001,pmsa(ipoint(ip_fpaved)+(iseg-1)*increm(ip_fpaved)))
+      funpaved   = max(0.001,pmsa(ipoint(ip_funpaved)+(iseg-1)*increm(ip_funpaved)))
+      fwater     = pmsa(ipoint(ip_fwater)+(iseg-1)*increm(ip_fwater))
+      rainfall   = pmsa(ipoint(ip_rainfall)+(iseg-1)*increm(ip_rainfall)) *86400.    ! m3/s to m3/d
+      drydep     = pmsa(ipoint(ip_drydep)+(iseg-1)*increm(ip_drydep))
+      rainconc   = pmsa(ipoint(ip_rainconc)+(iseg-1)*increm(ip_rainconc))
+      kpaved     = pmsa(ipoint(ip_kpaved)+(iseg-1)*increm(ip_kpaved))
+      kunpaved   = pmsa(ipoint(ip_kunpaved)+(iseg-1)*increm(ip_kunpaved))
+      kdunpaved  = pmsa(ipoint(ip_kdunpaved)+(iseg-1)*increm(ip_kdunpaved))
+      ksoil      = pmsa(ipoint(ip_ksoil)+(iseg-1)*increm(ip_ksoil))
+      kdsoil     = pmsa(ipoint(ip_kdsoil)+(iseg-1)*increm(ip_kdsoil))
+      kimmo      = pmsa(ipoint(ip_kimmo)+(iseg-1)*increm(ip_kimmo))
+      ropaved    = pmsa(ipoint(ip_ropaved)+(iseg-1)*increm(ip_ropaved))
+      fcomsew    = pmsa(ipoint(ip_fcomsew)+(iseg-1)*increm(ip_fcomsew))
+      frainsew   = pmsa(ipoint(ip_frainsew)+(iseg-1)*increm(ip_frainsew))
+      rounpaved  = pmsa(ipoint(ip_rounpaved)+(iseg-1)*increm(ip_rounpaved))
+      infilt     = pmsa(ipoint(ip_infilt)+(iseg-1)*increm(ip_infilt))
+      leakage    = pmsa(ipoint(ip_leakage)+(iseg-1)*increm(ip_leakage))
+      pop        = pmsa(ipoint(ip_pop)+(iseg-1)*increm(ip_pop))
+      pcww       = pmsa(ipoint(ip_pcww)+(iseg-1)*increm(ip_pcww))
+      fwwsew     = pmsa(ipoint(ip_fwwsew)+(iseg-1)*increm(ip_fwwsew))
+      eff_rs     = pmsa(ipoint(ip_eff_rs)+(iseg-1)*increm(ip_eff_rs))
+      sld_rs     = pmsa(ipoint(ip_sld_rs)+(iseg-1)*increm(ip_sld_rs))
+      soilthick  = pmsa(ipoint(ip_soilthick)+(iseg-1)*increm(ip_soilthick)) / 1000. ! Convert from mm to m
+      soilpor    = pmsa(ipoint(ip_soilpor)+(iseg-1)*increm(ip_soilpor))
+      exfilt     = max(pmsa(ipoint(ip_exfilt)+(iseg-1)*increm(ip_exfilt)),0.0)
+      ssurf      = max(pmsa(ipoint(ip_ssurf)+(iseg-1)*increm(ip_ssurf)),0.0)
+      ero1       = pmsa(ipoint(ip_ero1)+(iseg-1)*increm(ip_ero1)) ! g/d
+      ero2       = pmsa(ipoint(ip_ero2)+(iseg-1)*increm(ip_ero2))
+      ero3       = pmsa(ipoint(ip_ero3)+(iseg-1)*increm(ip_ero3))
+      masspas    = pmsa(ipoint(ip_masspas)+(iseg-1)*increm(ip_masspas)) ! mass in passive pool
+      concpas    = pmsa(ipoint(ip_concpas)+(iseg-1)*increm(ip_concpas))
+      overland   = pmsa(ipoint(ip_overland)+(iseg-1)*increm(ip_overland))
+      FrSeptic   = pmsa(ipoint(ip_FrSeptic)+(iseg-1)*increm(ip_FrSeptic))
+      Eff_Septic = pmsa(ipoint(ip_Eff_Septic)+(iseg-1)*increm(ip_Eff_Septic)) ! Interpret as losses to Sfw, before reaching WWTPs
+      Sld_Septic = pmsa(ipoint(ip_Sld_Septic)+(iseg-1)*increm(ip_Sld_Septic)) ! Interpret as losses to Soi, before reaching WWTPs
+      fSldgRem   = pmsa(ipoint(ip_fSldgRem)+(iseg-1)*increm(ip_fSldgRem))
+      FrTreat1   = pmsa(ipoint(ip_FrTreat1)+(iseg-1)*increm(ip_FrTreat1))
+      FrTreat2   = pmsa(ipoint(ip_FrTreat2)+(iseg-1)*increm(ip_FrTreat2))
+      FrTreat3   = pmsa(ipoint(ip_FrTreat3)+(iseg-1)*increm(ip_FrTreat3))
+      Eff_Treat1 = pmsa(ipoint(ip_Eff_Treat1)+(iseg-1)*increm(ip_Eff_Treat1))
+      Eff_Treat2 = pmsa(ipoint(ip_Eff_Treat2)+(iseg-1)*increm(ip_Eff_Treat2))
+      Eff_Treat3 = pmsa(ipoint(ip_Eff_Treat3)+(iseg-1)*increm(ip_Eff_Treat3))
+      Sld_Treat1 = pmsa(ipoint(ip_Sld_Treat1)+(iseg-1)*increm(ip_Sld_Treat1))
+      Sld_Treat2 = pmsa(ipoint(ip_Sld_Treat2)+(iseg-1)*increm(ip_Sld_Treat2))
+      Sld_Treat3 = pmsa(ipoint(ip_Sld_Treat3)+(iseg-1)*increm(ip_Sld_Treat3))
+
+      do irec = 1, nrec
+          ip = offset_conc + irec
+          currentmass(irec) = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+      enddo
+
+      totflxin = 0.0
+
+    !*******************************************************************************
+    ! Now follows the RELEASE PART
+    !*******************************************************************************
+
+      ! Type A sources -------------------------------------------------------------
+      iflux = fl0_srca
+      do isrc = 1,nsrca
+
+          ! pick up (total domain) EV and calculate domain losses per substance
+          ip = offset_srca + (isrc-1)*(nopar_srca+nrec) + ipar_srca_ev
+          emisvar = pmsa(ipoint(ip))
+          losses = emisvar*emisfacA(isrc,iseg)*1000.   ! kg/d to g/d
+
+          ! losses per sc
+          if (sumlocator(isrc).gt.0.0) then
+            do irec = 1,nrec
+                flux = losses*frac2recA(irec,isrc,iseg)*locator(isrc,iseg)/sumlocator(isrc) / 86400.
+                if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
+                    mass = currentmass(irec)
+                    limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
+                    flux = max(flux,-limit)
+                endif
+                iflux = iflux + 1
+                fl(iflux+(iseg-1)*noflux) = flux
+                totflxin(irec) = totflxin(irec) + flux
+            enddo
+          endif
+      enddo
+
+      ! Type B sources ------------------------------------------------------------
+      iflux = fl0_srcb
+      do isrc = 1,nsrcb
+
+          ! losses
+          ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + ipar_srcb_ev
+          emisvar = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+          ip = offset_srcb + (isrc-1)*(nopar_srcb+nrec) + ipar_srcb_ef
+          emisfacB = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+          losses = emisvar*emisfacB*1000. ! kg/d to g/d
 
           ! fluxes
-          iflux = fl0_atm
           do irec = 1,nrec
-              iflux = iflux + 1 
-              flux = losses*frac2rec(irec) / 86400. ! /d to /s
+              iflux = iflux + 1
+              flux = losses*frac2recB(irec,isrc,iseg) / 86400.
+              if (flux.lt.0.0) then ! extraction is prescribed, limit to store plus earlier sources
+                    mass = currentmass(irec)
+                    limit = mass / delt + totflxin(irec)  ! pool plus earlier sources
+                    flux = max(flux,-limit)
+              endif
               fl(iflux+(iseg-1)*noflux) = flux
               totflxin(irec) = totflxin(irec) + flux
           enddo
-
-!*******************************************************************************
-! Now follows the ROUTING PART (WITHIN COLUMN, OR HORIZONTAL TO DS CELL)
-!*******************************************************************************
-
-          ! DOMESTIC WASTEWATER
-          ! unmanaged
-          FrUnManaged = max((1.0 - fWWsew - FrSeptic),0.0)
-          ! allocate wastewater      
-          fluxin = totflxin(rec_dww) ! no storage, so mass is zero
-          fr2sew = fWWsew + FrSeptic*(1-Eff_Septic-Sld_Septic)
-          fr2sfw = FrUnManaged*     fWater  + FrSeptic*Eff_Septic
-          fr2soi = FrUnManaged*(1.0-fWater) + FrSeptic*Sld_Septic
-          
-          !  set routing fluxes
-          iflux = fl0_rest+dww2sew + (iseg-1)*noflux
-          fl(iflux) = fluxin*fr2sew
-          iflux = fl0_rest+dww2sfw + (iseg-1)*noflux
-          fl(iflux) = fluxin*fr2sfw
-          iflux = fl0_rest+dww2soi + (iseg-1)*noflux
-          fl(iflux) = fluxin*fr2soi
-          ! update admin for next compartments
-          totflxin(rec_sew) = totflxin(rec_sew) + fluxin*fr2sew
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxin*fr2sfw
-          totflxin(rec_soi) = totflxin(rec_soi) + fluxin*fr2soi
-
-          ! PAVED SYSTEM --------
-          ! discharge to sew OR stw depending on fraction of combined sewers
-          !               m3/s  m2
-          ro_mmperday = ropaved / (totsurf*fpaved) * 1000. * 86400.
-          fwashoff = (ro_mmperday-ro_lothr)/(ro_hithr-ro_lothr)
-          fwashoff = max(min(fwashoff,1.0),0.0)
-
-          ! input
-          mass = max ( currentmass(rec_pav), 0.0 )
-          ! fluxes
-          fluxloss = kpaved * mass / 86400.
-          fluxwash = (mass / delt + totflxin(rec_pav) - fluxloss)*fwashoff
-          
-          ! some extra output
-          if (ropaved.gt.0.0) then
-              concwash  = fluxwash / ropaved ! g/m3 = g/s * m3/s
-          else
-              concwash = 0.0
-          endif
-          ro2sew = ropaved*frainsew*fcomsew ! m3/s with scale factors
-          
-          !  to mixed sewers
-          iflux = fl0_rest+pav2sew + (iseg-1)*noflux
-          fl(iflux) = fluxwash*frainsew*fcomsew
-          ! and next to separated sewers
-          iflux = fl0_rest+pav2stw + (iseg-1)*noflux
-          fl(iflux) = fluxwash*frainsew*(1.-fcomsew)
-          ! to surface waters
-          iflux = fl0_rest+pav2sfw + (iseg-1)*noflux
-          fl(iflux) = fluxwash*(1.-frainsew)*fwater
-          ! to soils
-          iflux = fl0_rest+pav2soi + (iseg-1)*noflux
-          fl(iflux) = fluxwash*(1.-frainsew)*(1.-fwater)
-          ! now set the decay flux
-          iflux = fl0_rest+pav2dec + (iseg-1)*noflux
-          fl(iflux) = fluxloss
-          ! update admin for next compartments
-          totflxin(rec_sew) = totflxin(rec_sew) + fluxwash*frainsew*fcomsew
-          totflxin(rec_stw) = totflxin(rec_stw) + fluxwash*frainsew*(1.-fcomsew)
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxwash*(1.-frainsew)*fwater
-          totflxin(rec_soi) = totflxin(rec_soi) + fluxwash*(1.-frainsew)*(1.-fwater)
-
-         ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
-
-          roun_mmperday = rounpaved / (totsurf*funpaved) * 1000. * 86400.
-          in_mmperday = infilt / (totsurf*funpaved) * 1000. * 86400.   ! BUGFIX 3 jan 2023 correction funpaved added
-          ra_mmperday = rainfall / totsurf * 1000.           ! already in m3/d
-          ferosion = (ra_mmperday-ra_lothr)/(ra_hithr-ra_lothr)
-          ferosion = max(min(ferosion,1.0),0.0)
-          fdisp = (roun_mmperday + in_mmperday)/disp_hithr
-          fdisp = max(min(fdisp,1.0),0.0)
-          froun = roun_mmperday / (roun_mmperday + in_mmperday)
-          froun = max(min(froun,1.0),0.0)
-          finf = in_mmperday / (roun_mmperday + in_mmperday)
-          finf = max(min(finf,1.0),0.0)
-          mass = max (0.0, currentmass(rec_unp) )
-          
-          ! fluxes
-          pool = mass + totflxin(rec_unp) * delt
-          fluxloss = kunpaved * pool / 86400.
-          fluxbur  = kbur     * pool / 86400.
-          maxflux  = mass / delt + totflxin(rec_unp) - fluxloss - fluxbur
-          ! kd is now defined as the unbound share NOT the bound share
-          ! the trick with the double precision is to make the subtraction valid
-          fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux  ! Bound substance  flux
-          fluxunbound =               kdunpaved   * maxflux  ! Unbound substance  flux
-          fluxero = fluxbound * ferosion
-          fluxinf = fluxunbound * fdisp * finf
-          fluxroun = fluxunbound * fdisp * froun
-
-          ! some extra output
-          if (rounpaved.gt.0.0) then
-              concroun  = fluxroun / rounpaved ! g/m3 = g/s * m3/s
-          else
-              concroun = 0.0
-          endif
-          
-          iflux = fl0_rest + unp2sfw_er + (iseg-1)*noflux
-          fl(iflux) =  fluxero 
-          iflux = fl0_rest + unp2sfw_ro + (iseg-1)*noflux
-          fl(iflux) =  fluxroun
-          iflux = fl0_rest + unp2soi_in + (iseg-1)*noflux
-          fl(iflux) = fluxinf
-          iflux = fl0_rest + unp2soi_bu + (iseg-1)*noflux
-          fl(iflux) = fluxbur
-          iflux = fl0_rest + unp2dec + (iseg-1)*noflux
-          fl(iflux) = fluxloss
-          ! to next compartments
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxero + fluxroun
-          totflxin(rec_soi) = totflxin(rec_soi) + fluxinf + fluxbur
-          
-          ! COMBINED SEWERS ---------------------------------------------------------------------------------
-          ! (local leakage) (or CSO): postive is a %, negative a rainfall threshold
-          if (leakage.lt.-0.1) then
-              if (ra_mmperday.gt.(-leakage)) then   ! threshold on the mm per day value
-                  leakage = 1.0
-              else
-                  leakage  = 0.0
-              endif
-          endif
-          
-          ! (un)treated
-          FrTreated = FrTreat1 + FrTreat2 + FrTreat3
-          fr_unc = max(1.0 - FrTreated ,0.0)
-                  
-          ! fraction to effluent/sludge for WW collected and treated 
-          if (FrTreated.gt.0.0001) then
-              fr_Eff =  FrTreat1/FrTreated*Eff_Treat1 + FrTreat2/FrTreated*Eff_Treat2 + FrTreat3/FrTreated*Eff_Treat3
-              fr_Sld = (FrTreat1/FrTreated*Sld_Treat1 + FrTreat2/FrTreated*Sld_Treat2 + FrTreat3/FrTreated*Sld_Treat3)*(1.0-fSldgRem)
-          else
-              fr_Eff =  1.0
-              fr_Sld =  0.0
-          endif
-          
-          ! fluxes
-          fluxleak =      leakage  * totflxin(rec_sew)
-          fluxin   =  (1.-leakage) * totflxin(rec_sew)
-          fluxunc  = fluxin * fr_unc
-          fluxin   = fluxin - fluxunc
-          fluxrem  = fluxin * (1.-fr_eff-fr_sld)
-          fluxeff  = fluxin *     fr_eff        
-          fluxsld  = fluxin *            fr_sld
-          
-          ! water balance to be able to calculate a concentration
-          ww2sew = pop * pcww * fwwsew / 1000. / 86400. ! convert from l/cap/d to m3/s
-          if (ww2sew+ro2sew.gt.0.0) then
-              concsew = totflxin(rec_sew) / (ww2sew+ro2sew)
-          else
-              concsew = 0.0
-          endif
-                    
-          ! output
-          iflux = fl0_rest + sew2sfw_cso + (iseg-1)*noflux
-          fl(iflux) = fluxleak
-          iflux = fl0_rest + sew2stp + (iseg-1)*noflux
-          fl(iflux) = fluxrem
-          iflux = fl0_rest + sew2sfw_eff + (iseg-1)*noflux
-          fl(iflux) = fluxeff 
-          iflux = fl0_rest + sew2soi + (iseg-1)*noflux
-          fl(iflux) = fluxsld
-          iflux = fl0_rest + sew2sfw_unc + (iseg-1)*noflux
-          fl(iflux) = fluxunc
-          
-          ! to next compartments
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxleak + fluxeff + fluxunc
-          totflxin(rec_soi) = totflxin(rec_soi) + fluxsld
-
-          ! SEPARATED SEWERS --------------------------------------------------------------------------------
-
-          ! fluxes
-          fluxin =  totflxin(rec_stw)
-          fluxrem  = fluxin * (1.-eff_rs-sld_rs)
-          fluxeff  = fluxin *     eff_rs        
-          fluxsld  = fluxin *            sld_rs
-          
-          ! output
-          iflux = fl0_rest + stw2stp + (iseg-1)*noflux
-          fl(iflux) = fluxrem
-          iflux = fl0_rest + stw2sfw + (iseg-1)*noflux
-          fl(iflux) = fluxeff
-          iflux = fl0_rest + stw2soi + (iseg-1)*noflux
-          fl(iflux) = fluxsld
-          
-          ! to next compartments
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxeff
-          totflxin(rec_soi) = totflxin(rec_soi) + fluxsld
-          
-          ! SOILS (including a passive pool) -------------------------------------------
-          
-          mass = currentmass(rec_soi)
-          ! concentration in exfiltration and subsurface flow
-          concact = mass * kdsoil / (totsurf*funpaved) / (soilthick*soilpor) ! g/m3
-          concdrain = concact + concpas
-            
-          !erosion 
-          ! kg         m                      kg/m3     m2            
-          solids = (soilthick*(1.-soilpor)) * rhodm * (totsurf*funpaved)
-          ! g/g      g              kg      g/kg
-          qtopact = mass / ( solids *1000.)
-          qtoppas = masspas / ( solids *1000.)
-          
-          ! fluxes
-          fluxloss = ksoil * mass / 86400.
-          fluxexfa = exfilt*concact
-          fluxexfp = exfilt*concpas
-          fluxssfa = ssurf*concact
-          fluxssfp = ssurf*concpas
-          fluximmo = kimmo * mass / 86400.
-          fluxeroa = facerod * (ero1+ero2+ero3) / 86400.  * qtopact
-          fluxerop = facerod * (ero1+ero2+ero3) / 86400.  * qtoppas
-          
-          ! a limiter is needed
-          ! for Soi
-          maxflux  = mass / delt + totflxin(rec_soi) 
-          courant = (fluxloss+fluxexfa+fluxssfa+fluximmo+fluxeroa)/maxflux
-          if (courant.gt.0.99) then
-              fluxloss = fluxloss/courant
-              fluxexfa = fluxexfa/courant
-              fluxssfa = fluxssfa/courant
-              fluximmo = fluximmo/courant
-              fluxeroa = fluxeroa/courant
-          endif
-          ! for Soilpass
-          maxflux  = masspas / delt + fluximmo
-          courant = (fluxexfp+fluxssfp+fluxerop)/maxflux
-          if (courant.gt.0.99) then
-              fluxexfp = fluxexfp/courant
-              fluxssfp = fluxssfp/courant
-              fluxerop = fluxerop/courant
-          endif
-          
-          ! output
-          iflux = fl0_rest + soi2dec + (iseg-1)*noflux
-          fl(iflux) =  fluxloss
-          iflux = fl0_rest + soi2sop_imm + (iseg-1)*noflux
-          fl(iflux) =  fluximmo
-          iflux = fl0_rest + soi2sfw_ex + (iseg-1)*noflux
-          fl(iflux) = fluxexfa
-          iflux = fl0_rest + sop2sfw_ex + (iseg-1)*noflux
-          fl(iflux) = fluxexfp 
-          iflux = fl0_rest + soi2sfw_er + (iseg-1)*noflux
-          fl(iflux) =  fluxeroa  
-          iflux = fl0_rest + sop2sfw_er + (iseg-1)*noflux
-          fl(iflux) =  fluxerop
-
-          ! horizontal fluxes (net effect of IN and OUT)
-          iflux = fl0_rest + horsoi + (iseg-1)*noflux
-          fl(iflux) =  flhorsoi(iseg) - fluxssfa
-          iflux = fl0_rest + horsop + (iseg-1)*noflux
-          fl(iflux) =  flhorsop(iseg) - fluxssfp
-            
-          ! to next compartments in this column and same compartment in next cell
-          totflxin(rec_sfw) = totflxin(rec_sfw) + fluxeroa + fluxerop + fluxexfa + fluxexfp
-          if (downstream(iseg).gt.0) then
-          flhorsoi(downstream(iseg)) = flhorsoi(downstream(iseg)) + fluxssfa
-          flhorsop(downstream(iseg)) = flhorsop(downstream(iseg)) + fluxssfp
-          endif
-          
-          ! ENDPOINT SURFACE WATER --------------------------------------
-          
-          if (seg2riv(iseg).gt.0.or.downstream(iseg).le.0) then
-              
-              ! river cell, emissions output, no storage
-              fluxexp = totflxin(rec_sfw) + flhorsfw(iseg)
-              emis(seg2riv(iseg)) = fluxexp
-              fldown = 0.0
-          else
-              
-              ! non-river cell -> part storage part downstream
-              mass = max(currentmass(rec_sfw),0.0)
-              fluxmax = mass/delt + totflxin(rec_sfw) + flhorsfw(iseg)
-              over_mmperday = overland / totsurf * 1000. * 86400.
-              fdownstream =  max(min(over_mmperday/over_hithr,1.0),0.0) 
-              fldown = fdownstream*fluxmax
-              
-              ! to next cell
-              flhorsfw(downstream(iseg)) = flhorsfw(downstream(iseg)) + fldown
-              fluxexp = 0.0
-          endif
-          ! horizontal fluxes (net effect of IN and OUT)
-          iflux = fl0_rest + horsfw + (iseg-1)*noflux
-          fl(iflux) =  flhorsfw(iseg) - fldown
-          ! emission flux
-          iflux = fl0_rest + sfw2exp + (iseg-1)*noflux
-          fl(iflux) = fluxexp
-          
-          ! Save segment output to PMSA --------------------------------------
-          ip = lins+line+ip_ro2sew
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = ro2sew
-          ip = lins+line+ip_concwash
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concwash
-          ip = lins+line+ip_concroun
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concroun
-          ip = lins+line+ip_ww2sew
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = ww2sew
-          ip = lins+line+ip_concsew
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concsew
-          ip = lins+line+ip_concdrain
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concdrain
-          ip = lins+line+ip_ew
-          pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = fluxexp
-          
-          
-      ! end segment loop
       enddo
-      
-      ! write output
-      itime =  nint(pmsa(ipoint(ip_itime)))
-      write (lu_txt,'(''Output written for relative time: '',i20)') itime
-      write (lu_bin) itime,emis
 
-      first = .false.
+      ! Atmospheric deposition ------------------------------------------------------------------
+      frac2rec = 0.0  ! default
+      frac2rec(rec_pav) = fpaved
+      frac2rec(rec_unp) = funpaved
+      frac2rec(rec_sfw) = fwater
 
-      return
-      end
+      ! total dep
+      losses = drydep*totsurf + rainfall*rainconc ! g/d
+
+      ! fluxes
+      iflux = fl0_atm
+      do irec = 1,nrec
+          iflux = iflux + 1
+          flux = losses*frac2rec(irec) / 86400. ! /d to /s
+          fl(iflux+(iseg-1)*noflux) = flux
+          totflxin(irec) = totflxin(irec) + flux
+      enddo
+
+    !*******************************************************************************
+    ! Now follows the ROUTING PART (WITHIN COLUMN, OR HORIZONTAL TO DS CELL)
+    !*******************************************************************************
+
+      ! DOMESTIC WASTEWATER
+      ! unmanaged
+      FrUnManaged = max((1.0 - fWWsew - FrSeptic),0.0)
+      ! allocate wastewater
+      fluxin = totflxin(rec_dww) ! no storage, so mass is zero
+      fr2sew = fWWsew + FrSeptic*(1-Eff_Septic-Sld_Septic)
+      fr2sfw = FrUnManaged*     fWater  + FrSeptic*Eff_Septic
+      fr2soi = FrUnManaged*(1.0-fWater) + FrSeptic*Sld_Septic
+
+      !  set routing fluxes
+      iflux = fl0_rest+dww2sew + (iseg-1)*noflux
+      fl(iflux) = fluxin*fr2sew
+      iflux = fl0_rest+dww2sfw + (iseg-1)*noflux
+      fl(iflux) = fluxin*fr2sfw
+      iflux = fl0_rest+dww2soi + (iseg-1)*noflux
+      fl(iflux) = fluxin*fr2soi
+      ! update admin for next compartments
+      totflxin(rec_sew) = totflxin(rec_sew) + fluxin*fr2sew
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxin*fr2sfw
+      totflxin(rec_soi) = totflxin(rec_soi) + fluxin*fr2soi
+
+      ! PAVED SYSTEM --------
+      ! discharge to sew OR stw depending on fraction of combined sewers
+      !               m3/s  m2
+      ro_mmperday = ropaved / (totsurf*fpaved) * 1000. * 86400.
+      fwashoff = (ro_mmperday-ro_lothr)/(ro_hithr-ro_lothr)
+      fwashoff = max(min(fwashoff,1.0),0.0)
+
+      ! input
+      mass = max ( currentmass(rec_pav), 0.0 )
+      ! fluxes
+      fluxloss = kpaved * mass / 86400.
+      fluxwash = (mass / delt + totflxin(rec_pav) - fluxloss)*fwashoff
+
+      ! some extra output
+      if (ropaved.gt.0.0) then
+          concwash  = fluxwash / ropaved ! g/m3 = g/s * m3/s
+      else
+          concwash = 0.0
+      endif
+      ro2sew = ropaved*frainsew*fcomsew ! m3/s with scale factors
+
+      !  to mixed sewers
+      iflux = fl0_rest+pav2sew + (iseg-1)*noflux
+      fl(iflux) = fluxwash*frainsew*fcomsew
+      ! and next to separated sewers
+      iflux = fl0_rest+pav2stw + (iseg-1)*noflux
+      fl(iflux) = fluxwash*frainsew*(1.-fcomsew)
+      ! to surface waters
+      iflux = fl0_rest+pav2sfw + (iseg-1)*noflux
+      fl(iflux) = fluxwash*(1.-frainsew)*fwater
+      ! to soils
+      iflux = fl0_rest+pav2soi + (iseg-1)*noflux
+      fl(iflux) = fluxwash*(1.-frainsew)*(1.-fwater)
+      ! now set the decay flux
+      iflux = fl0_rest+pav2dec + (iseg-1)*noflux
+      fl(iflux) = fluxloss
+      ! update admin for next compartments
+      totflxin(rec_sew) = totflxin(rec_sew) + fluxwash*frainsew*fcomsew
+      totflxin(rec_stw) = totflxin(rec_stw) + fluxwash*frainsew*(1.-fcomsew)
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxwash*(1.-frainsew)*fwater
+      totflxin(rec_soi) = totflxin(rec_soi) + fluxwash*(1.-frainsew)*(1.-fwater)
+
+     ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
+
+      roun_mmperday = rounpaved / (totsurf*funpaved) * 1000. * 86400.
+      in_mmperday = infilt / (totsurf*funpaved) * 1000. * 86400.   ! BUGFIX 3 jan 2023 correction funpaved added
+      ra_mmperday = rainfall / totsurf * 1000.           ! already in m3/d
+      ferosion = (ra_mmperday-ra_lothr)/(ra_hithr-ra_lothr)
+      ferosion = max(min(ferosion,1.0),0.0)
+      fdisp = (roun_mmperday + in_mmperday)/disp_hithr
+      fdisp = max(min(fdisp,1.0),0.0)
+      froun = roun_mmperday / (roun_mmperday + in_mmperday)
+      froun = max(min(froun,1.0),0.0)
+      finf = in_mmperday / (roun_mmperday + in_mmperday)
+      finf = max(min(finf,1.0),0.0)
+      mass = max (0.0, currentmass(rec_unp) )
+
+      ! fluxes
+      pool = mass + totflxin(rec_unp) * delt
+      fluxloss = kunpaved * pool / 86400.
+      fluxbur  = kbur     * pool / 86400.
+      maxflux  = mass / delt + totflxin(rec_unp) - fluxloss - fluxbur
+      ! kd is now defined as the unbound share NOT the bound share
+      ! the trick with the double precision is to make the subtraction valid
+      fluxbound = sngl(1d0 - dble(kdunpaved)) * maxflux  ! Bound substance  flux
+      fluxunbound =               kdunpaved   * maxflux  ! Unbound substance  flux
+      fluxero = fluxbound * ferosion
+      fluxinf = fluxunbound * fdisp * finf
+      fluxroun = fluxunbound * fdisp * froun
+
+      ! some extra output
+      if (rounpaved.gt.0.0) then
+          concroun  = fluxroun / rounpaved ! g/m3 = g/s * m3/s
+      else
+          concroun = 0.0
+      endif
+
+      iflux = fl0_rest + unp2sfw_er + (iseg-1)*noflux
+      fl(iflux) =  fluxero
+      iflux = fl0_rest + unp2sfw_ro + (iseg-1)*noflux
+      fl(iflux) =  fluxroun
+      iflux = fl0_rest + unp2soi_in + (iseg-1)*noflux
+      fl(iflux) = fluxinf
+      iflux = fl0_rest + unp2soi_bu + (iseg-1)*noflux
+      fl(iflux) = fluxbur
+      iflux = fl0_rest + unp2dec + (iseg-1)*noflux
+      fl(iflux) = fluxloss
+      ! to next compartments
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxero + fluxroun
+      totflxin(rec_soi) = totflxin(rec_soi) + fluxinf + fluxbur
+
+      ! COMBINED SEWERS ---------------------------------------------------------------------------------
+      ! (local leakage) (or CSO): postive is a %, negative a rainfall threshold
+      if (leakage.lt.-0.1) then
+          if (ra_mmperday.gt.(-leakage)) then   ! threshold on the mm per day value
+              leakage = 1.0
+          else
+              leakage  = 0.0
+          endif
+      endif
+
+      ! (un)treated
+      FrTreated = FrTreat1 + FrTreat2 + FrTreat3
+      fr_unc = max(1.0 - FrTreated ,0.0)
+
+      ! fraction to effluent/sludge for WW collected and treated
+      if (FrTreated.gt.0.0001) then
+          fr_Eff =  FrTreat1/FrTreated*Eff_Treat1 + FrTreat2/FrTreated*Eff_Treat2 + FrTreat3/FrTreated*Eff_Treat3
+          fr_Sld = (FrTreat1/FrTreated*Sld_Treat1 + FrTreat2/FrTreated*Sld_Treat2 + FrTreat3/FrTreated*Sld_Treat3)*(1.0-fSldgRem)
+      else
+          fr_Eff =  1.0
+          fr_Sld =  0.0
+      endif
+
+      ! fluxes
+      fluxleak =      leakage  * totflxin(rec_sew)
+      fluxin   =  (1.-leakage) * totflxin(rec_sew)
+      fluxunc  = fluxin * fr_unc
+      fluxin   = fluxin - fluxunc
+      fluxrem  = fluxin * (1.-fr_eff-fr_sld)
+      fluxeff  = fluxin *     fr_eff
+      fluxsld  = fluxin *            fr_sld
+
+      ! water balance to be able to calculate a concentration
+      ww2sew = pop * pcww * fwwsew / 1000. / 86400. ! convert from l/cap/d to m3/s
+      if (ww2sew+ro2sew.gt.0.0) then
+          concsew = totflxin(rec_sew) / (ww2sew+ro2sew)
+      else
+          concsew = 0.0
+      endif
+
+      ! output
+      iflux = fl0_rest + sew2sfw_cso + (iseg-1)*noflux
+      fl(iflux) = fluxleak
+      iflux = fl0_rest + sew2stp + (iseg-1)*noflux
+      fl(iflux) = fluxrem
+      iflux = fl0_rest + sew2sfw_eff + (iseg-1)*noflux
+      fl(iflux) = fluxeff
+      iflux = fl0_rest + sew2soi + (iseg-1)*noflux
+      fl(iflux) = fluxsld
+      iflux = fl0_rest + sew2sfw_unc + (iseg-1)*noflux
+      fl(iflux) = fluxunc
+
+      ! to next compartments
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxleak + fluxeff + fluxunc
+      totflxin(rec_soi) = totflxin(rec_soi) + fluxsld
+
+      ! SEPARATED SEWERS --------------------------------------------------------------------------------
+
+      ! fluxes
+      fluxin =  totflxin(rec_stw)
+      fluxrem  = fluxin * (1.-eff_rs-sld_rs)
+      fluxeff  = fluxin *     eff_rs
+      fluxsld  = fluxin *            sld_rs
+
+      ! output
+      iflux = fl0_rest + stw2stp + (iseg-1)*noflux
+      fl(iflux) = fluxrem
+      iflux = fl0_rest + stw2sfw + (iseg-1)*noflux
+      fl(iflux) = fluxeff
+      iflux = fl0_rest + stw2soi + (iseg-1)*noflux
+      fl(iflux) = fluxsld
+
+      ! to next compartments
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxeff
+      totflxin(rec_soi) = totflxin(rec_soi) + fluxsld
+
+      ! SOILS (including a passive pool) -------------------------------------------
+
+      mass = currentmass(rec_soi)
+      ! concentration in exfiltration and subsurface flow
+      concact = mass * kdsoil / (totsurf*funpaved) / (soilthick*soilpor) ! g/m3
+      concdrain = concact + concpas
+
+      !erosion
+      ! kg         m                      kg/m3     m2
+      solids = (soilthick*(1.-soilpor)) * rhodm * (totsurf*funpaved)
+      ! g/g      g              kg      g/kg
+      qtopact = mass / ( solids *1000.)
+      qtoppas = masspas / ( solids *1000.)
+
+      ! fluxes
+      fluxloss = ksoil * mass / 86400.
+      fluxexfa = exfilt*concact
+      fluxexfp = exfilt*concpas
+      fluxssfa = ssurf*concact
+      fluxssfp = ssurf*concpas
+      fluximmo = kimmo * mass / 86400.
+      fluxeroa = facerod * (ero1+ero2+ero3) / 86400.  * qtopact
+      fluxerop = facerod * (ero1+ero2+ero3) / 86400.  * qtoppas
+
+      ! a limiter is needed
+      ! for Soi
+      maxflux  = mass / delt + totflxin(rec_soi)
+      courant = (fluxloss+fluxexfa+fluxssfa+fluximmo+fluxeroa)/maxflux
+      if (courant.gt.0.99) then
+          fluxloss = fluxloss/courant
+          fluxexfa = fluxexfa/courant
+          fluxssfa = fluxssfa/courant
+          fluximmo = fluximmo/courant
+          fluxeroa = fluxeroa/courant
+      endif
+      ! for Soilpass
+      maxflux  = masspas / delt + fluximmo
+      courant = (fluxexfp+fluxssfp+fluxerop)/maxflux
+      if (courant.gt.0.99) then
+          fluxexfp = fluxexfp/courant
+          fluxssfp = fluxssfp/courant
+          fluxerop = fluxerop/courant
+      endif
+
+      ! output
+      iflux = fl0_rest + soi2dec + (iseg-1)*noflux
+      fl(iflux) =  fluxloss
+      iflux = fl0_rest + soi2sop_imm + (iseg-1)*noflux
+      fl(iflux) =  fluximmo
+      iflux = fl0_rest + soi2sfw_ex + (iseg-1)*noflux
+      fl(iflux) = fluxexfa
+      iflux = fl0_rest + sop2sfw_ex + (iseg-1)*noflux
+      fl(iflux) = fluxexfp
+      iflux = fl0_rest + soi2sfw_er + (iseg-1)*noflux
+      fl(iflux) =  fluxeroa
+      iflux = fl0_rest + sop2sfw_er + (iseg-1)*noflux
+      fl(iflux) =  fluxerop
+
+      ! horizontal fluxes (net effect of IN and OUT)
+      iflux = fl0_rest + horsoi + (iseg-1)*noflux
+      fl(iflux) =  flhorsoi(iseg) - fluxssfa
+      iflux = fl0_rest + horsop + (iseg-1)*noflux
+      fl(iflux) =  flhorsop(iseg) - fluxssfp
+
+      ! to next compartments in this column and same compartment in next cell
+      totflxin(rec_sfw) = totflxin(rec_sfw) + fluxeroa + fluxerop + fluxexfa + fluxexfp
+      if (downstream(iseg).gt.0) then
+      flhorsoi(downstream(iseg)) = flhorsoi(downstream(iseg)) + fluxssfa
+      flhorsop(downstream(iseg)) = flhorsop(downstream(iseg)) + fluxssfp
+      endif
+
+      ! ENDPOINT SURFACE WATER --------------------------------------
+
+      if (seg2riv(iseg).gt.0.or.downstream(iseg).le.0) then
+
+          ! river cell, emissions output, no storage
+          fluxexp = totflxin(rec_sfw) + flhorsfw(iseg)
+          emis(seg2riv(iseg)) = fluxexp
+          fldown = 0.0
+      else
+
+          ! non-river cell -> part storage part downstream
+          mass = max(currentmass(rec_sfw),0.0)
+          fluxmax = mass/delt + totflxin(rec_sfw) + flhorsfw(iseg)
+          over_mmperday = overland / totsurf * 1000. * 86400.
+          fdownstream =  max(min(over_mmperday/over_hithr,1.0),0.0)
+          fldown = fdownstream*fluxmax
+
+          ! to next cell
+          flhorsfw(downstream(iseg)) = flhorsfw(downstream(iseg)) + fldown
+          fluxexp = 0.0
+      endif
+      ! horizontal fluxes (net effect of IN and OUT)
+      iflux = fl0_rest + horsfw + (iseg-1)*noflux
+      fl(iflux) =  flhorsfw(iseg) - fldown
+      ! emission flux
+      iflux = fl0_rest + sfw2exp + (iseg-1)*noflux
+      fl(iflux) = fluxexp
+
+      ! Save segment output to PMSA --------------------------------------
+      ip = lins+line+ip_ro2sew
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = ro2sew
+      ip = lins+line+ip_concwash
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concwash
+      ip = lins+line+ip_concroun
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concroun
+      ip = lins+line+ip_ww2sew
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = ww2sew
+      ip = lins+line+ip_concsew
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concsew
+      ip = lins+line+ip_concdrain
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = concdrain
+      ip = lins+line+ip_ew
+      pmsa(ipoint(ip)+(iseg-1)*increm(ip)) = fluxexp
+
+
+    ! end segment loop
+    enddo
+
+    ! write output
+    itime =  nint(pmsa(ipoint(ip_itime)))
+    write (lu_txt,'(''Output written for relative time: '',i20)') itime
+    write (lu_bin) itime,emis
+
+    first = .false.
+
+    end subroutine espgss
+end module m_espgss
