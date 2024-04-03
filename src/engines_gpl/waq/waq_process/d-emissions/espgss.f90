@@ -160,7 +160,7 @@ contains
     integer(kind=int_wp),parameter   :: ip_ksoil = 26
     integer(kind=int_wp),parameter   :: ip_kimmo = 27
     integer(kind=int_wp),parameter   :: ip_kdsoil = 28
-    integer(kind=int_wp),parameter  :: ip_ro_lothr = 29
+    integer(kind=int_wp),parameter   :: ip_ro_lothr = 29
     integer(kind=int_wp),parameter   :: ip_ro_hithr = 30
     integer(kind=int_wp),parameter   :: ip_ra_lothr = 31
     integer(kind=int_wp),parameter   :: ip_ra_hithr = 32
@@ -274,7 +274,7 @@ contains
         nsrca = nint(pmsa(ipoint(ip_nsrca)))
         nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
         nrecin = nint(pmsa(ipoint(ip_nrecin)))
-        if (nrecin!=nrec) call errsys ('Receptors inconsistent',1)
+        if (nrecin/=nrec) call errsys ('Receptors inconsistent',1)
 
         ! pick up constants
         delt = pmsa(ipoint(ip_delt))
