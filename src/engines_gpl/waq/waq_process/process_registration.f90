@@ -63,7 +63,6 @@ module process_registration
     use m_clcrad
     use m_dayl
     use m_debgrz
-    use m_debgrz_protist
     use m_cascad
     use m_denwat
     use m_depave
@@ -442,7 +441,6 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info('DEBGRP', DEBGRZ_PROTIST), &
                             process_routine_info( 'PRTMRT', protist_mortality_salinity) &
                     ]
 
