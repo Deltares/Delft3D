@@ -91,10 +91,10 @@ endfunction()
 
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
-   
-   	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
-	set (envpath "PATH=${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/;%PATH%")
-	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    set(envpath "PATH=${path_prefix};%PATH%")
+    set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -131,9 +131,6 @@ function(configure_visual_studio_user_file executable_name)
         )
     endif()
 endfunction()
-
-
-
 
 # oss_include_libraries
 # Adds oss dependencies to the specified library.

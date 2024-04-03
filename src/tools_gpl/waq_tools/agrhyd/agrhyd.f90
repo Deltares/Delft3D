@@ -28,7 +28,7 @@ program agrhyd
     use data_processing, only : extract_value_from_group, extract_logical, extract_integer, extract_real
     use time_module
     use io_ugrid
-    use system_utils
+    use system_utils, only: makedir
     use waq_static_version_info, only : major_minor_buildnr
     use delwaq_version_module, only : delwaq_version_full
     use m_dattim
@@ -149,11 +149,7 @@ program agrhyd
     ipos = index(name, '/', BACK = .true.)
     ipos = max(ipos, index(name, char(92), BACK = .true.)) ! char(92)==backslash
     if (ipos>0) then
-        ierr = makedir(name(1:ipos - 1))
-        if (ierr/=0) then
-            write(lunrep, *) 'error: unable to create output directory'
-            write(*, *)      'error: unable to create output directory'
-        endif
+        call makedir(name(1:ipos - 1))
     endif
 
     open(lunrep, file = trim(name) // '-agrhyd.rep', recl = 132)
