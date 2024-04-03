@@ -142,7 +142,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     use unstruc_model
     use m_flowtimes
     use time_module,   only : seconds_to_datetimestring
-    use string_module, only : get_dirsep
+    use system_utils,  only : makedir, FILESEP
     implicit none
     
     character(len=*), intent(in)  :: filecat             !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
@@ -374,7 +374,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
         if (prefix_dir) then        
             shapeOutputDir = trim(getoutputdir())//'snapped'
             call makedir(shapeOutputDir)
-            defaultFilename = trim(shapeOutputDir)//get_dirsep()//trim(defaultFilename)
+            defaultFilename = trim(shapeOutputDir) // FILESEP // trim(defaultFilename)
         end if
     end select
     
@@ -471,7 +471,7 @@ end function getfilename
 !! Optionally, a file category may be specified, such that e.g., '_net.nc'
 !! is stripped off (instead of .nc only)
 subroutine basename(filename, filebase, filecat)
-    use string_module, only: get_dirsep
+    use system_utils, only: FILESEP
     implicit none
     character(len=*),           intent(in)  :: filename
     character(len=*),           intent(out) :: filebase
@@ -494,7 +494,7 @@ subroutine basename(filename, filebase, filecat)
     end if
 
     ! Also strip off any preceding dir names.
-    L1 = index(filename, get_DIRSEP(), .true.)+1
+    L1 = index(filename, FILESEP, .true.) + 1
 
     filebase = ' '
     filebase = filename(L1:L2)

@@ -4321,7 +4321,7 @@ end subroutine writeMDUFilepointer
 subroutine setmd_ident(filename)
 use m_partitioninfo
 USE MessageHandling
-use string_module, only: get_dirsep
+use system_utils, only: FILESEP
 use unstruc_netcdf, only: unc_meta_md_ident
 
 character(*),     intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
@@ -4331,7 +4331,7 @@ integer                      :: L1, L2
 
 
 ! Set model identifier based on .mdu basename
-L1 = index(filename, get_DIRSEP(),.true.) + 1
+L1 = index(filename, FILESEP, .true.) + 1
 L2 = index(filename, '.', .true.)
 if (L2 == 0) then
     md_ident = ' '
@@ -4360,6 +4360,7 @@ end subroutine setmd_ident
 !! An .mdu must have been loaded, such that the possible model-configured
 !! OutputDir has been read already.
 subroutine switch_dia_file()
+use system_utils, only: makedir
 implicit none
 integer                      :: mdia2, mdia, ierr
 character(len=256)           :: rec
@@ -4401,7 +4402,7 @@ end subroutine switch_dia_file
 !> get output directory
 function getoutputdir(dircat)
    use m_flowtimes
-   use string_module, only: get_dirsep
+   use system_utils, only: FILESEP
    implicit none
 
    character(len=*), optional, intent(in) :: dircat !< (optional) The type of the directory: currently supported only 'waq'.
@@ -4422,7 +4423,7 @@ function getoutputdir(dircat)
       if (len_trim(md_waqoutputdir) == 0) then
          getoutputdir = 'DFM_DELWAQ_'//trim(md_ident_sequential)//trim(rundat2)
       else
-         getoutputdir = trim(md_waqoutputdir)//get_dirsep()
+         getoutputdir = trim(md_waqoutputdir)//FILESEP
       end if
 
    case default
@@ -4434,7 +4435,7 @@ function getoutputdir(dircat)
             getoutputdir = 'DFM_OUTPUT_'//trim(rundat2)
          end if
       else
-         getoutputdir = trim(md_outputdir)//get_dirsep()
+         getoutputdir = trim(md_outputdir)//FILESEP
       end if
    end select
 

@@ -30,7 +30,7 @@
       ! global declarations
 
       use hydmod
-      use system_utils
+      use system_utils, only: makedir
       implicit none
 
       ! declaration of the arguments
@@ -48,12 +48,11 @@
       integer                   :: i_domain1              ! index in collection
       type(t_domain)            :: domain                 ! one domain description
       logical                   :: result                 ! result
-      integer                   :: istat                  ! status from makedir
 
       ! set the names
       name              = hyd%file_hyd%name
       name_path         = trim(waq_output_dir)//'/'//trim(name)
-      istat =  makedir(trim(waq_output_dir))
+      call makedir(trim(waq_output_dir))
       
       hyd%file_com%name = name
       hyd%file_hyd%name = name_path//'.hyd'

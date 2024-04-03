@@ -3064,7 +3064,6 @@
    use m_alloc
    use network_data
    use m_cell_geometry
-   use string_module, only: get_dirsep
 
    implicit none
 
