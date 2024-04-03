@@ -5295,31 +5295,42 @@ end function  get_list_size
 !> Check if a set of flowlinks is contained entirely within a single partition
 function is_flowlink_set_in_single_partition(flowlinks) result(res)
    use m_flowgeom, only: ln
+   use mpi
+   use MessageHandling, only: mess, LEVEL_ERROR
 
    integer, dimension(:), intent(in) :: flowlinks !< List of indices of flowlinks
    logical                           :: res       !< Whether or not these flowlinks are contained entirely within a single partition
 
-   integer :: i, flowlink, link_domain_nr, is_ghost_link, ierr
-   logical :: has_ghost_links_local
-
-   if (jampi == 1) then
+   logical :: has_flowlinks_in_current_partition
+   integer :: n_partitions_with_flowlinks
+   integer :: ierr
+   
+   res = .false.
+   
+   if (jampi == 0) then
       res = .true.
       return
    end if
 
-   has_ghost_links_local = .false.
-   do i = 1, size(flowlinks)
-      flowlink = flowlinks(i)
-      call link_ghostdata(my_rank, idomain(ln(1,flowlink)), idomain(ln(2,flowlink)), is_ghost_link, link_domain_nr)
-      if (is_ghost_link == 1) then
-         has_ghost_links_local = .true. ! TODO: all links in ghost on other partition
-         exit
-      end if
-   end do
-   call mpi_allreduce(has_ghost_links_local, res, 1, mpi_logical, mpi_lor, DFM_COMM_DFMWORLD, ierr)
-   if (ierr /= MPI_SUCCESS) then
-      ! TODO: handle errors
+   has_flowlinks_in_current_partition = size( flowlinks) > 0
+   
+   n_partitions_with_flowlinks = 0
+   if (has_flowlinks_in_current_partition) then
+      n_partitions_with_flowlinks = 1
    end if
+   call mpi_allreduce(mpi_in_place, n_partitions_with_flowlinks, 1, mpi_integer, mpi_sum, DFM_COMM_DFMWORLD, ierr)
+   if (ierr /= MPI_SUCCESS) then
+      call mess(LEVEL_ERROR,'Programming error, please report: mpi_allreduce failed in is_flowlink_set_in_single_partition')
+   end if
+   
+   if (n_partitions_with_flowlinks == 0) then
+      call mess(LEVEL_ERROR,'Programming error, please report: is_flowlink_set_in_single_partition found no partitions with flowlinks!')
+   elseif (n_partitions_with_flowlinks == 1) then
+      res = .true.
+   elseif (n_partitions_with_flowlinks > 1) then
+      res = .false.
+   end if
+   
 end function is_flowlink_set_in_single_partition
 
 end module m_partitioninfo
