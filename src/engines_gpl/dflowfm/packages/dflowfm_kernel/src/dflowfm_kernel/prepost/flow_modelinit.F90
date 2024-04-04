@@ -80,6 +80,10 @@
  use m_fm_erosed, only: taub
  use precision
  use system_utils, only: makedir
+ use m_fm_erosed, only: taub
+ use m_transport, only: numconst, constituents
+ use m_lateral, only: average_concentrations_for_laterals
+ use m_cell_geometry, only : ba
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -498,6 +502,10 @@
  endif
  call timstop(handle_extra(33)) ! end Fourier init
 
+ if (numconst > 0) then
+    call average_concentrations_for_laterals(numconst, kmx, ba, constituents)
+ endif
+ 
  ! Initialise sedtrails statistics
   if (jasedtrails>0) then
     call default_sedtrails_stats()

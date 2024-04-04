@@ -448,7 +448,7 @@ subroutine transport()                           ! transport for now, advect sal
  enddo
 
  if (numconst > 0) then
-    call average_concentrations_for_laterals(numconst, kmx, vol1, constituents)
+    call average_concentrations_for_laterals(numconst, kmx, ba, constituents)
  endif
  
 
