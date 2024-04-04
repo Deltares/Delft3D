@@ -3815,7 +3815,7 @@ end subroutine partition_make_globalnumbers
       return
    end subroutine reduce_valobs
    
-   !> Reduce the statistical output before writing
+   !> Reduce the statistical output values to MPI root process #0.
    subroutine reduce_statistical_output(output_set)
       use m_statistical_output, only: t_output_variable_set
       use m_missing
@@ -3823,13 +3823,14 @@ end subroutine partition_make_globalnumbers
       use mpi
 #endif
 
-      type(t_output_variable_set),    intent(inout)   :: output_set           !> output set that we wish to update
-      double precision, parameter                     :: dsmall = -huge(1d0)
-      integer                                         :: i_stat,i_loc
-      double precision, pointer, dimension(:)         :: stat_output          !< Array that is to be written to the Netcdf file. In case the current values are
-                                                                              !< required this variable points to the basic variable (e.g. s1).
-                                                                              !< Otherwise during the simulation the intermediate results are stored.
-      integer                                         :: ierror
+      type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
+
+      double precision, parameter :: dsmall = -huge(1d0)
+      integer                     :: i_stat, i_loc
+      double precision, pointer   :: stat_output(:)          !< Array that is to be written to the Netcdf file. In case the current values are
+                                                             !< required this variable points to the basic variable (e.g. s1).
+                                                             !< Otherwise during the simulation the intermediate results are stored.
+      integer                     :: ierror
       
 #ifdef HAVE_MPI
       do i_stat = 1,output_set%count
