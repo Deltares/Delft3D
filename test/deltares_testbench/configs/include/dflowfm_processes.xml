@@ -592,12 +592,12 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2024-04-04T10:54:29">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_IM1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0"/> <!-- relative error useless - very small range -->
+        <parameter name="mesh2d_IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_NH4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_NO3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_PO4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
@@ -640,7 +640,7 @@
     <file name="dflowfmoutput/f34_BLOOM_restart_his.nc" type="netCDF">
       <parameters>
         <parameter name="IM1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
-        <parameter name="IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e"/>  <!-- relative error useless - very small range -->
+        <parameter name="IM2" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="NH4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="NO3" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
         <parameter name="PO4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
