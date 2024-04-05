@@ -672,7 +672,7 @@ contains
 ! add defaults when special features are not used first
       vertical_bounce = .true.
       apply_wind_drag = .false.
-      max_wind_drag_depth = 0.0
+      max_wind_drag_depth = 0.5 ! default, when using leeway without the apply_wind_drag keyword
       write_restart_file = .false.
       max_restart_age = -1
       pldebug = .false.
@@ -873,12 +873,14 @@ contains
                   write ( lun2, '(/a,f10.3)' ) '  Found stage for reversed release : ', selstage
                case ('leeway')
                   if (modtyp /= 1) goto 9408
-                  write ( lun2, '(/a)' ) '  Found keyword "leeway".'
+                  write ( lun2, '(/a)' ) '  Found keyword -test- "leeway".'
                   if ( gettoken( leeway_multiplier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
                   if ( gettoken( leeway_modifier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
                   if ( gettoken( leeway_angle     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
                   write ( lun2, 3601 )leeway_multiplier, leeway_modifier, leeway_angle
-
+                  leeway = .true.
+                  apply_wind_drag = .true.
+                  write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
               case default
                   write ( lun2, '(/a,a)' ) '  Unrecognised keyword: ', trim(cbuffer)
                   goto 9000
@@ -1435,7 +1437,7 @@ contains
 
 !       location of the instantaneous release
 
-         if ( .not. oil ) then
+         if ( .not. oil .and. .not. leeway) then
             if ( nolayp .eq. 1 ) then
                if ( gettoken( xwaste(i), ierr2 ) .ne. 0 ) goto 4042
                if ( gettoken( ywaste(i), ierr2 ) .ne. 0 ) goto 4042
@@ -1555,7 +1557,7 @@ contains
 
          if ( gettoken( xwaste(i+nodye), ierr2 ) .ne. 0 ) goto 4047
          if ( gettoken( ywaste(i+nodye), ierr2 ) .ne. 0 ) goto 4047
-         if ( .not. oil ) then
+         if ( .not. oil  .and. .not. leeway) then
             if ( nolayp .eq. 1 ) then
                if ( gettoken( zwaste(i+nodye), ierr2 ) .ne. 0 ) goto 4047
                kwaste(i+nodye) = 1
@@ -2287,9 +2289,9 @@ contains
  3508 format(/'  ', A, ' is NOT active in the current model, settings not used!'/)
  3509 format(/'  No parameters found for plastic named : ',A)
  3510 format(/'  Parameters were found for all plastics'/)
- 3601 format(12x,'leeway multiplier          =   ',f13.2, ' m.',/,     &
-             12x,'leeway modifier            =   ',f12.6, ' %' ,/,     &
-             12x,'leeway divergence          =   ',f12.1, ' %')
+ 3601 format(12x,'leeway multiplier          =   ',f7.3, /,     &
+             12x,'leeway modifier            =   ',f7.3, /,     &
+             12x,'leeway divergence          =   ',f7.1, ' %')
 
 
 11    write(*,*) ' Error when reading the model type '

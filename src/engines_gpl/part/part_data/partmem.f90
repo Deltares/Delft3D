@@ -387,7 +387,7 @@ module spec_feat_par
       real     ( sp)           :: selstage          ! nr of ABM model stage for chronology reversed model
       
 ! leeway implementation  
-      logical                  :: leeway         ! using the leeway for SAR functionality
+      logical                  :: leeway            ! using the leeway for SAR functionality
       real     ( sp)           :: leeway_multiplier ! leeway multiplier (factor)
       real     ( sp)           :: leeway_modifier   ! leeway modifier (correction)
       real     ( sp)           :: leeway_angle      ! leeway divergence angle

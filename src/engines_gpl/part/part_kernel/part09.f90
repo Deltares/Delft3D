@@ -244,9 +244,9 @@ contains
                kpart(i) = nulay
             endif
 
-!    for one layer models (2dh), the release will be in the user-defined location
+!    for one layer models (2dh), including the oil and leeway parts, the release will be in the user-defined location
 
-            if ( modtyp .eq. model_oil .and. kpart(i) .eq. 1 ) then
+            if ( (modtyp .eq. model_oil .or. leeway) .and. kpart(i) .eq. 1 ) then
                zpart(i) = zwasth
             elseif ( nolay .eq. 1 ) then
                zpart(i) = zwasth/100.0
