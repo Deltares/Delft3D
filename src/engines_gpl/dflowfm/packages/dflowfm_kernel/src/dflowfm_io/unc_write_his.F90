@@ -708,9 +708,7 @@ subroutine unc_write_his(tim)            ! wrihis
         ! Observation cross sections
         if (ncrs > 0) then
             do i=1,ncrs
-                !ierr = nf90_put_var(ihisfile, id_crsx,     crs(i)%path%xp(1:crs(i)%path%np), (/ 1, i /))
-                !ierr = nf90_put_var(ihisfile, id_crsy,     crs(i)%path%yp(1:crs(i)%path%np), (/ 1, i /))
-                ierr = nf90_put_var(ihisfile, id_crsname,  trimexact(crs(i)%name, strlen_netcdf),      (/ 1, i /))
+               ierr = nf90_put_var(ihisfile, id_crsname,  trimexact(crs(i)%name, strlen_netcdf),      (/ 1, i /))
             end do
             if (it_his == 0) then
                ierr = nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs,     start = (/ 1 /), count = (/ nNodesCrs /))
@@ -782,7 +780,6 @@ subroutine unc_write_his(tim)            ! wrihis
                      igen = genstru2cgen(i)
                   end if
                end if
-
                ierr = nf90_put_var(ihisfile, id_genstru_id,  trimexact(cgen_ids(igen), strlen_netcdf), (/ 1, i /))
             end do
         end if
@@ -874,9 +871,6 @@ subroutine unc_write_his(tim)            ! wrihis
                      pumplensum = pumplensum + wu(Lf)
                   end if
                end do
-
-               !ierr = nf90_put_var(ihisfile, id_pump_xmid,  pumpxmid,      (/ i /))
-               !ierr = nf90_put_var(ihisfile, id_pump_ymid,  pumpymid,      (/ i /))
             end do
         end if
         if (jahisgate > 0 .and. ngatesg > 0) then
