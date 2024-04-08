@@ -217,7 +217,7 @@ contains
         type(bc_fixture) :: fx       !< fixture containing all local variables
 
         ! Arrange
-        call setup_case(fx, ['OXY', 'CBOD5', 'Salinity'], ['River', 'Sea', 'River'], 'bc_1_item_1_conc_1_const')
+        call setup_case(fx, ['OXY     ', 'CBOD5   ', 'Salinity'], ['River', 'Sea  ', 'River'], 'bc_1_item_1_conc_1_const')
 
         ! Act
         call parse_bc(fx)
@@ -240,7 +240,7 @@ contains
         type(bc_fixture) :: fx       !< fixture containing all local variables
 
         ! Arrange
-        call setup_case(fx, ['OXY', 'CBOD5', 'Salinity'], ['River', 'Sea', 'River'], 'bc_1_item_2_conc_2_const')
+        call setup_case(fx, ['OXY     ', 'CBOD5   ', 'Salinity'], ['River', 'Sea  ', 'River'], 'bc_1_item_2_conc_2_const')
 
         ! Act
         call parse_bc(fx)
@@ -268,7 +268,7 @@ contains
         type(bc_fixture) :: fx       !< fixture containing all local variables
 
         ! Arrange
-        call setup_case(fx, ['Salinity', 'CBOD5', 'OXY'], ['Sea', 'River', 'River'], 'bc_1_item_1_conc_1_tseries')
+        call setup_case(fx, ['Salinity', 'CBOD5   ', 'OXY     '], ['Sea  ', 'River', 'River'], 'bc_1_item_1_conc_1_tseries')
 
         ! Act
         call parse_bc(fx)
@@ -297,7 +297,7 @@ contains
         type(bc_fixture) :: fx       !< fixture containing all local variables
 
         ! Arrange
-        call setup_case(fx, ['Salinity', 'OXY', 'CBOD5'], ['Sea', 'River', 'River'], 'bc_1_item_2_conc_1_tseries')
+        call setup_case(fx, ['Salinity', 'OXY     ', 'CBOD5   '], ['Sea  ', 'River', 'River'], 'bc_1_item_2_conc_1_tseries')
 
         ! Act
         call parse_bc(fx)
