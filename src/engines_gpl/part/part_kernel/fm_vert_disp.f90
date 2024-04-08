@@ -137,7 +137,7 @@ subroutine fm_vert_disp (lunpr, itime)
     integer(int_wp)              :: nlay
     integer(int_wp)              :: itdelt                  ! delta-t of the particle for smooth loading
     integer(int_wp)              :: isub
-    integer(int_wp)              :: partcel, partlay
+    integer(int_wp)              :: partcel, partlay, pc
     integer(int_wp), save        :: nopart_sed, nopart_sed_old         ! number of particles in the sediment layer
     double precision, dimension(noslay) :: totdepthlay       ! total depth (below water surface) of bottom of layers
     logical                      :: rise, sink, neutral   ! has the particle a rising or setting speed?
@@ -191,8 +191,8 @@ subroutine fm_vert_disp (lunpr, itime)
 
 
         totdepthlay(1) = h0(partcel)
-        ubstar_b = sqrt(c2g*(u0x(partcel + (partlay-1) * hyd%nosegl)*u0x(partcel + (partlay-1) * hyd%nosegl) + &
-                       u0y(partcel + (partlay-1) * hyd%nosegl)*u0y(partcel + (partlay-1) * hyd%nosegl)))
+        pc             = partcel + (partlay-1) * hyd%nosegl
+        ubstar_b = sqrt( c2g * (u0x(pc)**2 + u0y(pc)) )
         do ilay = 2, noslay
            if (ilay <= kmx) then
               totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
@@ -207,9 +207,9 @@ subroutine fm_vert_disp (lunpr, itime)
         thicknessl = h0(laypart(ipart))
         ! depth of the particle from water surface
         if ( laypart(ipart) == 1 ) then
-            depthp = thicknessl * (hpart(ipart))
+            depthp = thicknessl * hpart(ipart)
         else
-            depthp = totdepthlay(laypart(ipart)-1) + thicknessl * (hpart(ipart))
+            depthp = totdepthlay(laypart(ipart)-1) + thicknessl * hpart(ipart)
         endif
 
         tp = real(iptime(ipart), kind=kind(tp))
