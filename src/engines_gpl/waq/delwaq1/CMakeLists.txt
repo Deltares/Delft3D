@@ -2,7 +2,6 @@ set(executable_name delwaq1)
 
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(waq_version_path ${waq_root_path}/resources/version)
-set(waq_data_path ${waq_root_path}/include)
 set(rc_version_file ${waq_version_path}/version_number_delwaq1.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
@@ -24,14 +23,14 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if (UNIX)
-    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
+    target_include_directories(${executable_name} PRIVATE ${version_include_dir})
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif (UNIX)
 
 if (WIN32)
-    target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir} ${mpi_include_path})
+    target_include_directories(${executable_name} PRIVATE ${version_include_dir} ${mpi_include_path})
 
     # Set linker properties
     target_link_directories(${executable_name}

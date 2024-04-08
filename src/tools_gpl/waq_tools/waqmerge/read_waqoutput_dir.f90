@@ -52,13 +52,13 @@
       if (istat /= 0) then
          select case (istat)
             case(1)
-               write(*     ,'(a,a)'), '*** ERROR File: '//trim(hyd%file_hyd%name)//'.mdu'//' not found'
+               write(*     ,'(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//'.mdu'//' not found'
             case(3)
-               write(*     ,'(a,a)'), '*** ERROR Premature EOF in file: '//trim(hyd%file_hyd%name)//'.mdu'
+               write(*     ,'(a,a)') '*** ERROR Premature EOF in file: '//trim(hyd%file_hyd%name)//'.mdu'
             case default
-               write(*     ,'(a,a)'), '*** ERROR Read error from file: '//trim(hyd%file_hyd%name)//'.mdu'
+               write(*     ,'(a,a)') '*** ERROR Read error from file: '//trim(hyd%file_hyd%name)//'.mdu'
          endselect
-         write(*,'(a,a)'), '*** Error message: ', trim(error_message)
+         write(*,'(a,a)') '*** Error message: ', trim(error_message)
 
       endif
       call prop_get_string(mdu_ptr, 'output', 'WAQOutputDir', waq_output_dir,waq_output_dir_found)
@@ -69,7 +69,7 @@
          waq_output_dir = 'DFM_DELWAQ_'//trim(hyd%file_hyd%name)
       end if
 
-      write(*,'(a,a)'), '*** Directory containing the flow files: ', trim(waq_output_dir)
+      write(*,'(a,a)') '*** Directory containing the flow files: ', trim(waq_output_dir)
 
       return
     end subroutine

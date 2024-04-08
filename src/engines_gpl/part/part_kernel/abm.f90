@@ -954,9 +954,9 @@ contains
 
             !reverse the movement direction for the particles
             if(chronrev) then
-                wsettl(ipart) = wsettl(ipart) * -1.0
-                v_swim(ipart) = v_swim(ipart) * -1.0
-                vzact         = vzact * -1.0
+                wsettl(ipart) = - wsettl(ipart)
+                v_swim(ipart) = - v_swim(ipart)
+                vzact         = - vzact
                 !d_swim stays same velocity of swim is reversed
             endif
 
