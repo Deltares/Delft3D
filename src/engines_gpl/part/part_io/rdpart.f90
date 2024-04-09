@@ -118,7 +118,7 @@ contains
       real     ( sp)                 rdplmusize      ! read plastic meansize
       real     ( sp)                 rdplsigmasize   ! read plastic stdevsize
       real     ( sp)                 rdplfragrate    ! read plastic fragmentation rate
-      integer  ( int_wp )                 plmissing
+      integer  ( int_wp )            plmissing
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
@@ -886,17 +886,17 @@ contains
                   write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
                case ('leeway_csvfile')
                   if (modtyp /= 1) goto 9408
-                  write ( lun2, '(/a)' ) '  Found keyword "leeway_csvfile".'
-                  if ( gettoken( leeway_csvfile     , ierr2 ) .ne. 0 ) goto 9410 ! Give stage for release
-
+                  call get_command_argument(0, cbuffer)
+                  ! get path and add the name of the leeway file
+                  cindex = index( cbuffer, '\', back= .true. )
+                  leeway_csvfile = cbuffer( 1 : cindex )//'leewayfactors.csv'
+                  write ( lun2, '(/a)' ) '  Found leeway csvfile.'
                   leeway = .true.
                   apply_wind_drag = .true.
                   write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
-                !  leeway_csvfile = leeway_csvfile(1:len_trim(leeway_csvfile))
                   open( newunit = lunfil, file = leeway_csvfile )
                   read( lunfil, '(256a)') line
                   read(line,*)leeway_id
-!                    if ( gettoken( leeway_id  , ierr2 ) .ne. 0 ) goto 9410 ! Give stage for release
                   do while ( substi(1) .ne. leeway_id ) 
                     read( lunfil, '(256a)' ) line
                     read(line,*)leeway_id

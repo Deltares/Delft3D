@@ -373,7 +373,7 @@ module spec_feat_par
       real     ( sp)           :: permealeft       ! leftside permeability of screeens
       real     ( sp)           :: permearight      ! rightside permeability of screeens
       character( 256)          :: fiscreens        ! names of screens polygon files
-      integer  ( int_wp )           :: nrowsscreens     ! length of screen polygon
+      integer  ( int_wp )      :: nrowsscreens     ! length of screen polygon
       real     ( sp), pointer  :: xpolscreens(:)   ! x-coordinates of screen polygon
       real     ( sp), pointer  :: ypolscreens(:)   ! y-coordinates of screen polygon
 
@@ -386,7 +386,7 @@ module spec_feat_par
       integer  ( sp)           :: abmsd             ! nr of ABM model stage developement used
       real     ( sp)           :: selstage          ! nr of ABM model stage for chronology reversed model
       
-! leeway implementation  
+!     leeway implementation  
       logical                  :: leeway            ! using the leeway for SAR functionality
       character( 256)          :: leeway_csvfile    ! filename containing predefined leeway factors
       character( 20)           :: leeway_id         ! identifier of the leeway object
