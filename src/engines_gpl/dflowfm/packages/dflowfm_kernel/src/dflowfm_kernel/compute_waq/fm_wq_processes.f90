@@ -141,7 +141,7 @@ subroutine fm_wq_processes_ini_sub()
      noq4 = 0
 
     ! allocate vertical exchanges array
-     call realloc(iexpnt, [4, noq3], keepExisting=.false., fill=0)
+     call realloc(iexpnt, 4 * noq3, keepExisting=.false., fill=0)
 
 
     ! set vertical exchanges
@@ -150,8 +150,8 @@ subroutine fm_wq_processes_ini_sub()
         call getkbotktopmax(kk,kb,kt,ktmax)
         do k=ktmax,kb+1,-1
            iex = iex+1
-           iexpnt(1,iex) = k - kbx+1
-           iexpnt(2,iex) = k-1 - kbx+1
+           iexpnt(1+4*(iex-1)) = k - kbx+1
+           iexpnt(2+4*(iex-1)) = k-1 - kbx+1
         end do
      end do
     else
@@ -164,7 +164,7 @@ subroutine fm_wq_processes_ini_sub()
      noq4 = 0
 
     ! allocate vertical exchanges array (dummy)
-     call realloc(iexpnt, [4, noq3], keepExisting=.false., fill=0)
+     call realloc(iexpnt, 4 * noq3, keepExisting=.false., fill=0)
     end if
 
     ! allocate array that indicates if processes are active based on volume and depth criteria

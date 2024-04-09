@@ -173,6 +173,9 @@ contains
         integer(kind = int_wp), save :: iter
         integer(kind = int_wp), save :: iscale
 
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
+        
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             !     SPECIAL REMARKS    : MASS-ARRAY IS USED FOR RHS VECTOR!!
@@ -339,7 +342,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &

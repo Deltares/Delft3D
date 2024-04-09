@@ -34,4 +34,3 @@ endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_ddcouple.${platform_extension}  DESTINATION bin)
-

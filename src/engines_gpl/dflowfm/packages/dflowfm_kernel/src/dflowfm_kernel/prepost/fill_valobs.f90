@@ -414,7 +414,7 @@ subroutine fill_valobs()
                valobs(i,IPNT_ZWS+klay-1) = zws(kk)
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                   if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
-                     if (idensform > 10 ) then           
+                     if ( density_is_pressure_dependent() ) then
                         prsappr = ag*rhomean*( zws(kt) - zws(kk) )  
                         drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)
                      else 

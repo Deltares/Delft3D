@@ -51,7 +51,7 @@ MODULE variable_declaration
     integer(kind = int_wp), allocatable :: fmat    (:)      ! pointer from(iq) in matrix
     integer(kind = int_wp), allocatable :: tmat    (:)      ! pointer to  (iq) in matrix
     integer(kind = int_wp), pointer :: iexseg  (:, :)    ! zero if volume is explicit
-    integer(kind = int_wp), pointer :: iknmkv  (:, :)    ! time variable feature array (for drying/flooding)
+    integer(kind = int_wp), pointer, contiguous :: iknmkv  (:, :)    ! time variable feature array (for drying/flooding)
     integer(kind = int_wp), allocatable :: isegcol (:)      ! pointer from segment to top of column
 
     ! solver  6, 7 and 10 only

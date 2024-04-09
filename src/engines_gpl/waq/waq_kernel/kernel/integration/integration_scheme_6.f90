@@ -142,6 +142,9 @@ contains
         INTEGER(kind = int_wp) :: sindex
 
         integer(kind = int_wp) :: ithandl
+        
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
             !

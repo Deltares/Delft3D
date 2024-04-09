@@ -71,14 +71,15 @@ elif [ "$1" == "gnu" ]; then
      echo "Loading GNU compiled modules"
   
      module load gcc/12.2.0_gcc12.2.0
-     module load cmake/3.28.1_intel2023.1.0_standalone
-     module load netcdf/4.9.2_4.6.1_intel2023.1.0_standalone
-     module load gdal/3.6.3_intel2023.1.0_standalone
-     module load proj/9.2.0_intel2024.0.0
-     module load tiff/4.5.0rc3_intel2024.0.0
-     module load patchelf/0.17.2_intel2023.1.0_standalone
+     module load openmpi/4.1.5_gcc12.2.0
+     module load cmake/3.28.1_gcc12.2.0
+     module load netcdf/4.9.2_4.6.1_gcc12.2.0
+     module load gdal/3.6.3_gcc12.2.0
+     module load proj/9.2.0_gcc12.2.0
+     module load tiff/4.5.0rc3_gcc12.2.0
+     module load patchelf/0.17.2_gcc12.2.0
      module load ninja/1.11.1_gcc12.2.0_standalone
-     module load petsc/3.19.0_intel2023.1.0_standalone
+     module load petsc/3.19.0_gcc12.2.0
 else 
      echo "Loading Intel23 compiled modules"
   
