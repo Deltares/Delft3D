@@ -200,6 +200,7 @@ contains
 
       real   (sp), pointer       :: v_swim( : )         ! horizontal swimming velocity m/s
       real   (sp), pointer       :: d_swim( : )         ! horizontal swimming direction (degree)
+      real   (dp)                :: vw_net           ! net wind velocity (corrected for wind) 
 
 !**   local parameters
 
@@ -1270,11 +1271,12 @@ contains
 !                     write(*,*) 'particle nr: ',ipart, ' sign: ',  leeway_ang_sign ! to distribute negative positive and 0 angle over the particles
                      vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
                      vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
+                     vw_net = sqrt(vxw-vxr + vyw-vyr)  ! net wind for drag (to accommodate scaling the modifier)
 !                    drag on the difference vector: cd * (wind - flow)
-                     xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier)/dxp) * itdelt    !
-                     ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier)/dyp) * itdelt    !
-
-
+                     if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                         xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net)/dxp)) * itdelt    ! THis modifier may need to be adjusted de to the angle
+                         ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier * cos ((vxw-vxr)/vw_net)/dyp)) * itdelt    !
+                     endif
                   end if
                end if
             end if
