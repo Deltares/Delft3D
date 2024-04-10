@@ -213,7 +213,7 @@ contains
             THRESH = 1.0
         ELSE
             ISUSED(IKEY) = 1
-            READ(KEYVAL(IKEY), '(E20.0)', IOSTAT = IERR2) THRESH
+            READ(KEYVAL(IKEY), *, IOSTAT = IERR2) THRESH
             IF (IERR2 /= 0) THEN
                 WRITE(LUNREP, *)'ERROR interpreting threshold:', KEYVAL(IKEY)
                 call status%increase_error_count()

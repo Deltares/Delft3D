@@ -239,7 +239,7 @@ contains
         integer(kind = int_wp), intent(in) :: array_dims_1, array_dims_2    !! dimensions of the array (idim1, idim2)
         integer(kind = int_wp), intent(inout) :: total_elements            !! total number of elements in the array
         integer(kind = int_wp), intent(inout) :: sys_index                  !! system index
-        integer(kind = int_wp), intent(out) :: array_pointer
+        integer(kind = int_wp), intent(in) :: array_pointer
         integer(kind = int_wp), intent(out) :: pointer_var
         integer(kind = int_wp) :: array_index
         integer(kind = int_wp) :: value_index

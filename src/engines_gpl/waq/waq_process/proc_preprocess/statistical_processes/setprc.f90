@@ -207,7 +207,7 @@ contains
             CCRIT = -999.
         ELSE
             ISUSED(IKEY) = 1
-            READ(KEYVAL(IKEY), '(E20.0)', IOSTAT = IERR2) CCRIT
+            READ(KEYVAL(IKEY), *, IOSTAT = IERR2) CCRIT
             IF (IERR2 /= 0) THEN
                 WRITE(LUNREP, *)'ERROR interpreting critical level:', KEYVAL(IKEY)
                 call status%increase_error_count()

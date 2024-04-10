@@ -95,7 +95,7 @@
          call uxputi(lun,irlen)
       elseif ( filtyp .eq. FT_ASC ) then
          write (lun,'(4i8)') nmax,mmax,nosegl,nosegl,nosegl,idummy
-         write (lun,'(e12.6)') (surf(i),i=1,nosegl)
+         write (lun,'(e12.5)') (surf(i),i=1,nosegl)
       endif
 
       close(file_srf%unit)

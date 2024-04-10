@@ -434,7 +434,7 @@ contains
 
             nconst             = nconst + 5                      ! count constants used
 
-            write(*,'(a,e10.5)') "Species stage dev. par. A       : ", par_a
+            write(*,'(a,f10.5)') "Species stage dev. par. A       : ", par_a
             write(*,'(a,f10.5)') "Species stage dev. par. B       : ", par_b
             write(*,'(a,f10.5)') "Species stage dev. par. C       : ", par_c
             write(*,'(a,f10.5)') "Species stage dev. par. CTUmean : ", par_ctum
