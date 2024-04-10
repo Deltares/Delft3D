@@ -303,6 +303,10 @@ subroutine v_part_bounce(ipart, depthp, totdepthlay, vz, dvz, itdelt, tp)
     double precision                   :: rseed = 0.5
     double precision, dimension(kmx)   :: totdepthlay
     integer(int_wp)                    :: itdelt                  ! delta-t of the particle for smooth loading
+
+    RETURN ! Test a hunch
+
+
  ! TODO implment the critical shear stresses and velocities at the bed
     ! calcaulate ubstart_b used for sedimentatino and erosion
     random_step = rnd(rseed)-0.5d0
