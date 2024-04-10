@@ -29,7 +29,6 @@ endif(UNIX)
 
 if(WIN32)
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
         PRIVATE
         "${checkout_src_root}/third_party_open/pthreads/bin/x64")
@@ -38,7 +37,6 @@ if(WIN32)
         "pthreadVC2.lib")
 
     # Set linker options
-    message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
@@ -53,4 +51,3 @@ endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_dpart.${platform_extension} DESTINATION bin)
-

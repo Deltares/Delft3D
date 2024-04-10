@@ -41,4 +41,3 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/agrhyd)
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/default/agrhyd.ini  DESTINATION share/delft3d)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_agrhyd.${platform_extension}  DESTINATION bin)
-

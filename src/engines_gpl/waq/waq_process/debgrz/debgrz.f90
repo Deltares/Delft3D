@@ -129,7 +129,7 @@ module m_debgrz
             res = .true.
             return
         end if
-        res = (current_process_uses_protist == previous_process_uses_protist)
+        res = (current_process_uses_protist .eqv. previous_process_uses_protist)
     end function process_may_be_run
 
     logical function must_calculate_cell(segment_attribute, pmsa, iparray) result(must_calculate)

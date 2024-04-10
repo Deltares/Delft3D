@@ -439,7 +439,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
                zz(i) = zz(i) + h1(kl)
             enddo
 
-            kl    = k + (lay-1) * noslay
+            kl    = k + (lay-1) * hyd%nosegl
             zz(i) = zz(i) + (1.0 - hpart(i)) * h1(kl)
          endif
       enddo

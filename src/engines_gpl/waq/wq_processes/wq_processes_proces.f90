@@ -76,11 +76,11 @@ contains
         integer(kind = int_wp), intent(in) :: ndmpar                       !< Number of dump areas
         integer(kind = int_wp), intent(in) :: nproc                        !< Number of processes
         integer(kind = int_wp), intent(in) :: noflux                       !< Number of fluxes
-        integer(kind = int_wp), intent(in) :: ipmsa (*)                    !< Direct pointer in DELWAQ arrays
+        integer(kind = int_wp), intent(in) :: ipmsa (:)                    !< Direct pointer in DELWAQ arrays
         integer(kind = int_wp), intent(in) :: prvnio(nproc)                !< Nr. of state variables per proces
         integer(kind = int_wp), intent(in) :: promnr(nproc)                !< Proces module number per proces
         integer(kind = int_wp), intent(in) :: iflux (nproc)                !< Offset in flux array per process
-        integer(kind = int_wp), intent(in) :: increm(*)                    !< Direct increment in DELWAQ arrays
+        integer(kind = int_wp), intent(in) :: increm(:)                    !< Direct increment in DELWAQ arrays
         real(kind = real_wp) :: flux  (noflux, noseg)         !< Proces fluxes
         real(kind = dp), intent(inout) :: flxdmp(2, noflux, ndmps)         !< Fluxes at dump segments
         real(kind = real_wp), intent(in) :: stochi(notot, noflux)        !< Proces stochiometry
@@ -91,7 +91,7 @@ contains
         integer(kind = int_wp), intent(in) :: nosys                        !< number of active substances
         integer(kind = int_wp), intent(in) :: isfact                       !< system clock in seconds
         integer(kind = int_wp), intent(in) :: itfact                       !< time scale factor processes
-        integer(kind = int_wp), intent(in) :: iexpnt(4, *)                  !< Exchange pointer
+        integer(kind = int_wp), intent(in) :: iexpnt(:)                  !< Exchange pointer
         integer(kind = int_wp), intent(in) :: iknmrk(noseg)                !< Integration suboptions
         integer(kind = int_wp), intent(in) :: noq1                         !< Number of exchanges first direction
         integer(kind = int_wp), intent(in) :: noq2                         !< Number of exchanges second direction
@@ -121,7 +121,7 @@ contains
         integer(kind = int_wp), intent(in) :: arrknd(78)                   !<
         integer(kind = int_wp), intent(in) :: arrdm1(78)                   !<
         integer(kind = int_wp), intent(in) :: arrdm2(78)                   !<
-        real(kind = real_wp), intent(in) :: a     (*)                    !<
+        real(kind = real_wp), intent(in) :: a     (:)                    !<
         integer(kind = int_wp), intent(in) :: ndmps                        !<
         character(10) :: pronam(nproc)               !< Name of called module
         integer(kind = int_wp), intent(in) :: prvpnt(nproc)                !< entry in process io pointers (cummulative of prvnio)
@@ -338,6 +338,7 @@ contains
 
         use timers
         use process_registration
+        use processes_pointers, only : nogrid
 
         integer(kind = int_wp) :: iproc, k, noseg, noflux, noq1, noq2, noq3, noq4
         integer             prvnio(*), prvtyp(*), &
@@ -345,10 +346,10 @@ contains
                 varidx(*), arrknd(*), &
                 arrpoi(*), arrdm1(*), &
                 arrdm2(*), &
-                ipmsa (*), increm(*), &
-                iflux (*), promnr(*), &
-                iexpnt(*), iknmrk(*)
-        real                a(*), flux(*)
+                ipmsa (:), increm(:), &
+                iflux (:), promnr(:), &
+                iexpnt(:), iknmrk(:)
+        real                a(:), flux(*)
         character*10        pronam(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
         !
@@ -397,10 +398,10 @@ contains
 
         !     compute fluxes
         ipflux = iflux(iproc)
-        call procal (a, promnr(iproc), flux(ipflux), ipmsa(k), increm(k), &
-                noseg, noflux, iexpnt, iknmrk(1), noq1, &
-                noq2, noq3, noq4, pronam(iproc), prvnio(iproc), &
-                prvtyp(k), iproc, dll_opb)
+        call procal (a, promnr(iproc), flux(ipflux:(noflux*noseg*nogrid)), ipmsa(k:), increm(k:), &
+                noseg, noflux, iexpnt, iknmrk(1:), noq1, &
+                noq2, noq3, noq4, pronam(iproc), &
+                iproc, dll_opb)
 
         if (timon) call timstop(ithndl)
         return

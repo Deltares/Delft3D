@@ -253,4 +253,12 @@ locsaltmax                  = 10d0          !< maximum salinity for case of lock
 NFEntrainmentMomentum       = 0
 
 end subroutine default_physcoef
+
+!> Check if density is pressure dependent
+pure function density_is_pressure_dependent() result(res)
+    logical :: res !< Return value
+    
+    res = (idensform > 10)
+end function density_is_pressure_dependent
+
 end module m_physcoef

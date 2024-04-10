@@ -175,14 +175,6 @@ implicit none
     character(len=255) :: md_partitionfile = ' ' !< File with domain partitioning polygons (e.g. *_part.pol)
     character(len=255) :: md_outputdir     = ' ' !< Output directory for map-, his-, rst-, dat- and timings-files
 
-!   particles
-    character(len=255) :: md_partfile      = ' ' !< intitial particles file (*.xyz)
-    character(len=255) :: md_partrelfile   = ' ' !< particles release file (*.txyz)
-    integer            :: md_partjatracer      = 0
-    double precision   :: md_partstarttime     = 0d0
-    double precision   :: md_parttimestep      = 0d0
-    integer            :: md_part3Dtype        = 0 !< 0: depth averaged, 1: free surface
-
 !   processes (WAQ)
     character(len=255) :: md_subfile = ' '      !< substance file
     character(len=255) :: md_ehofile = ' '      !< extra history output file
@@ -362,8 +354,6 @@ use m_fm_icecover, only: fm_ice_null
     md_waqoutputdir  = ' '
     md_partitionfile = ' '
     md_outputdir     = ' '
-    md_partfile      = ' '
-    md_partrelfile   = ' '
     md_trtrfile     = ' '
     md_trtdfile     = ' '
     md_trtlfile     = ' '
@@ -381,13 +371,6 @@ use m_fm_icecover, only: fm_ice_null
     md_fou_step     = 0               !< default: fourier analysis is updated on a user-timestep basis
 
     md_jaAutoStart     = MD_NOAUTOSTART !< Autostart simulation after loading or not.
-
-    md_partfile = ' '
-    md_partrelfile = ' '
-    md_partjatracer = 0
-    md_partstarttime = 0d0
-    md_parttimestep = 0d0
-    md_part3Dtype = 0
 
     md_cfgfile = ' '
 
@@ -2341,14 +2324,6 @@ subroutine readMDUFile(filename, istat)
       end if
    end if
 
-!  particles
-   call prop_get_string (md_ptr, 'particles', 'ParticlesFile', md_partfile, success)
-   call prop_get_string (md_ptr, 'particles', 'ParticlesReleaseFile', md_partrelfile, success)
-   call prop_get_integer(md_ptr, 'particles', 'AddTracer', md_partjatracer, success)
-   call prop_get_double (md_ptr, 'particles', 'StartTime', md_partstarttime, success)
-   call prop_get_double (md_ptr, 'particles', 'TimeStep', md_parttimestep, success)
-   call prop_get_integer(md_ptr, 'particles', '3Dtype', md_part3Dtype, success)
-
 !  processes (WAQ)
    call prop_get_string (md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
    call prop_get_string (md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
@@ -2359,7 +2334,9 @@ subroutine readMDUFile(filename, istat)
    call prop_get_double (md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
    call prop_get_double (md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
    call prop_get_integer(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling )
-
+   if  (JaSubstancedensitycoupling == 1) then
+      call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
+   end if 
 
    call prop_get_double (md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
    ti_waqproc = md_dt_waqproc
@@ -3088,9 +3065,9 @@ endif
   
     call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport' , jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
 
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal,   'Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)')
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem,   'Vertical advection type for temperature (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)')
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau, 'Vertical advection type for u1: 0: No, 3: Upwind implicit, 4: Central implicit, 5: QUICKEST implicit., 6: centerbased upwind expl, 7=6 HO' )
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal,   'Vertical advection type for salinity (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem,   'Vertical advection type for temperature (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau,     'Vertical advection type in momentum equation; 3: Upwind implicit, 6: centerbased upwind explicit.' )
     if (writeall .or. javau3onbnd .ne. 0) then
       call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd, 'vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd' )
     endif
@@ -3277,7 +3254,7 @@ endif
     endif
 
     if( writeall .or. (jacreep == 1 .and. kmx > 0) ) then
-        call prop_set(prop_ptr, 'numerics', 'AntiCreep', jacreep, 'Include anti-creep calculation (0: no, 1: yes)')
+        call prop_set(prop_ptr, 'numerics', 'AntiCreep', jacreep, 'Include anti-creep to suppress artifical vertical diffusion (0: no, 1: yes).')
     endif
 
     if( jaorgbarockeywords == 1) then
@@ -3392,10 +3369,10 @@ endif
     endif
 
     if (writeall .or. epsmaxlev .ne. 1d-8) then
-       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non-linear iteration')
     endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
-       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non-linear iteration')
     endif
 
     if (Oceaneddyamp > 0d0) then 
@@ -4305,7 +4282,7 @@ endif
    call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
    call prop_set_double (prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
    call prop_set_double (prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
-   call prop_set        (prop_ptr, 'processes', 'SubstanceDensityCoupling',  jaSubstancedensitycoupling, 'substance rho coupling (0=no, 1=yes),  ')
+   call prop_set        (prop_ptr, 'processes', 'SubstanceDensityCoupling',  jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
 
     call datum(rundat)
     write(mout, '(a,a)') '# Generated on ', trim(rundat)

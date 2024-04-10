@@ -27,4 +27,3 @@ if(WIN32)
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-

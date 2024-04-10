@@ -132,12 +132,15 @@ contains
 
         INTEGER(kind = int_wp) :: IDTOLD
         INTEGER(kind = int_wp) :: sindex
+        
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             if (ACTION == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt ("integration_scheme_1", ithandl)
+                if (timon) call timstrt ("integration_scheme_25", ithandl)
                 goto 20
             endif
 
@@ -257,7 +260,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &

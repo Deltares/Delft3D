@@ -1,49 +1,36 @@
-#
-# D-WAQ kernel
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_kernel.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_dflowfm_online_coupling.cmake)
+set(waq_include_dir ${CMAKE_CURRENT_LIST_DIR}/include/dwaq)
+include(${waq_include_dir}/dwaq_functions.cmake)
 
-#
-# D-Waq tools
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_tools.cmake)
+list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-#
-# D-Part kernel
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dpart.cmake)
+set(include_paths_kernel ${waq_include_dir}/dwaq_base.cmake
+                         ${waq_include_dir}/dwaq_kernel.cmake
+                         ${waq_include_dir}/dwaq_dflowfm_online_coupling.cmake)
 
-#
-# Third party libraries for D-Waq
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_third_party.cmake)
+include_component("D-WAQ kernel" "${include_paths_kernel}")
+include_component("D-WAQ tools" ${waq_include_dir}/dwaq_tools.cmake)
+include_component("D-PART kernel" ${waq_include_dir}/dpart.cmake)
+include_component("D-WAQ third party libraries" ${waq_include_dir}/dwaq_third_party.cmake)
+include_component("D-WAQ utils" ${waq_include_dir}/dwaq_utils.cmake)
+include_component("D-WAQ unit tests" ${waq_include_dir}/dwaq_tests.cmake)
 
-
-#
-# Utils for D-Waq
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_utils.cmake)
-
-#
 # Installation
-#=============
-add_subdirectory(${checkout_src_root}/${install_waq_module} install_waq)
-
-#
-# Unit tests for D-Waq
-#=============
-include(${CMAKE_CURRENT_LIST_DIR}/include/dwaq/dwaq_tests.cmake)
+add_target_with_subdirectory(install_waq ${install_waq_module})
 
 #intel MPI & MKL
-#=============
 if(WIN32)
    if(${configuration_type} STREQUAL ${dwaq_configuration})
-      add_subdirectory(${checkout_src_root}/${intelredist_module} intelredist)
-      add_subdirectory(${checkout_src_root}/${pthreads_module} pthreads)
+        message(STATUS "Intel MPI & MKL")
+        list(APPEND CMAKE_MESSAGE_INDENT "   ")
+
+        add_target_with_subdirectory(intelredist ${intelredist_module})
+        add_target_with_subdirectory(pthreads ${pthreads_module})
+
+        list(POP_BACK CMAKE_MESSAGE_INDENT)
    endif()
 endif(WIN32)
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(dwaq)
+
+list(POP_BACK CMAKE_MESSAGE_INDENT)

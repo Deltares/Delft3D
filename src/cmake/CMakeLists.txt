@@ -16,9 +16,12 @@ include(functions.cmake)
 
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
+
 # main repository directory
-get_filename_component(PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
-get_filename_component(dir ${PARENT_DIR} DIRECTORY)
+cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
+cmake_path(GET PARENT_DIR PARENT_PATH dir)
+
+
 # Set unit test root directory
 set(unit_tests_dir ${dir}/test/unit_test) # This points to the location of OSS/test
 
@@ -41,8 +44,6 @@ else()
     include(compiler_options/intel.cmake)
 endif()
 
-
-
 # Set available build configurations for the .sln file
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
@@ -52,33 +53,61 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 
-
 if (WIN32)
+    message(CHECK_START "Setting paths for windows")
+    list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
     # Set pthreads library
     set(pthreads_path ${checkout_src_root}/third_party_open/pthreads/include/x64)
+    message(STATUS "pthreads set to ${pthreads_path}")
 
     # Set mpi_include_path
     if ("${OSS_MPI}" STREQUAL "IntelMPI")
+        message(STATUS "Intel MPI")
+        list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
         if("$ENV{I_MPI_ONEAPI_ROOT}" STREQUAL "")
-            message(STATUS "I_MPI_ONEAPI_ROOT is not set or empty. Using Intel 2024 folder structure.")
+            message(STATUS "Using Intel 2024 folder structure (I_MPI_ONEAPI_ROOT is not set or empty)")
+
+            # check if ONEAPI_ROOT environment variable is set
+            if ("$ENV{ONEAPI_ROOT}" STREQUAL "")
+                message(FATAL_ERROR "Can not find ONEAPI_ROOT environment variable.")
+            endif()
+
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
-            set(mpi_library_path $ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>;$ENV{ONEAPI_ROOT}/mpi/latest/lib)    
+            set(mpi_library_path $ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>;$ENV{ONEAPI_ROOT}/mpi/latest/lib)
         else()
-            message(STATUS "I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT}. Using Intel 2023 folder structure.")
+            message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
             set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
             set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
-        endif()   
+        endif()
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
+        message(DEPRECATION "mpich2 MPI")
+        list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
         set(mpi_include_path ${checkout_src_root}/third_party_open/mpich2/x64/include)
         set(mpi_library_path ${checkout_src_root}/third_party_open/mpich2/x64/lib)
         set(mpi_fortran_library "fmpich2.lib mpi.lib")
         set(mpi_c_library "mpi.lib")
     endif()
 
+    message(STATUS "mpi include path \"${mpi_include_path}\"")
+    message(STATUS "mpi library path \"${mpi_library_path}\"")
+    message(STATUS "mpi fortran library \"${mpi_fortran_library}\"")
+    message(STATUS "mpi c library \"${mpi_c_library}\"")
+
+    # check if include path exists
+    if (EXISTS "${mpi_include_path}")
+        message(STATUS "found at \"${mpi_include_path}\"")
+    endif()
+
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
+
     # Set the Tecplot path
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
+    message(STATUS "Tecplot set to ${tecplot_path}")
 
     if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
         # Set the petsc path
@@ -86,16 +115,26 @@ if (WIN32)
     else()
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
     endif()
+
     #also set PETSC library directory
     set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
+    message(STATUS "PETSC")
+    list(APPEND CMAKE_MESSAGE_INDENT "  ")
+    message(STATUS "path ${petsc_path}")
+    message(STATUS "library directory ${petsc_libdir}")
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
 
     # Set the GDAL path
     set(gisinternals_path ${checkout_src_root}/third_party_open/GISInternals/release-1911-x64/lib)
+    message(STATUS "gisinternals set to ${gisinternals_path}")
 
     # Set the SQLITE3 path
     set(sqlite3_path ${checkout_src_root}/third_party_open/sqlite3/sqlite-3.44.0)
-    
+    message(STATUS "sqlite3 set to ${sqlite3_path}")
+
     add_definitions(-DHAVE_MPI=1)
+
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif()
 
 if (UNIX)
@@ -113,7 +152,7 @@ if (UNIX)
 
     # Petsc
     pkg_check_modules(PETSC REQUIRED PETSc)
-    
+
     # Proj
     pkg_check_modules(proj REQUIRED proj)
 endif(UNIX)
@@ -139,9 +178,6 @@ endif(WIN32)
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
 string(TOLOWER ${CONFIGURATION_TYPE} configuration_type_lower)
 
-# Set the location of the update_version script
-set(update_version_script_path ${checkout_src_root}/${update_version_script})
-
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(installdir "install_${configuration_type_lower}")
   SET(CMAKE_INSTALL_PREFIX ${checkout_src_root}/../${installdir} CACHE PATH "default" FORCE)
@@ -152,7 +188,7 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
     set(visual_studio_source_group_name "Source Files")
     # auto-install debug
     set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
-    
+
     create_vs_user_files()
 
 endif(CMAKE_GENERATOR MATCHES "Visual Studio")
@@ -223,6 +259,7 @@ endif()
 if(${configuration_type} STREQUAL ${dwaq_configuration})
     message(STATUS "Generating solution for D-Waq ...")
     include(configurations/dwaq_configuration.cmake)
+    message(STATUS "Finished generating solution for D-Waq")
 endif()
 
 # D-RR configuration
