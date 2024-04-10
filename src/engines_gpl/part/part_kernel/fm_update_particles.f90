@@ -387,7 +387,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
       laypart(ipart) = min( max( laypart(ipart), 1 ), hyd%nolay )
 
       ! update the time that is left within this time step
-      dtremaining(ipart) = dtremaining(ipart) - dt
+      dtremaining(ipart) = max(dtremaining(ipart) - dt, 0.0_wp)
 
       if ( dt == 0.0_wp ) then
          numzero(ipart) = numzero(ipart) + 1

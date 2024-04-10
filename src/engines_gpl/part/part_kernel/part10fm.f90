@@ -376,7 +376,7 @@ subroutine part10fm()
     if ( oil ) then
         npadd = 0
         ioptev (ifract) = const((ifract-1)*nfcons+npadd+ 1)       ! evaporation option (-2 (Fingas incl. effect of waterfraction on evaporation, or -1 = fingas, >0 = first order)
-        if ( ioptev (1) >= -1 ) then
+        if ( ioptev (1) <= -1 ) then
             npadd = npadd + 2
         endif
         fstick(ifract) = const((ifract - 1)*nfcons+npadd+ 4)      ! stickiness probability [0,1], this part is taken from the delf3d oildsp code
