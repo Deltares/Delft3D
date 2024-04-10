@@ -81,7 +81,7 @@ contains
 
         integer(kind = int_wp) :: iseg                   ! loop counter for segments
         integer(kind = int_wp) :: k                      ! loop counter for substances
-        real(kind = real_wp) :: amiss = -999.0       ! missing value indicator
+        real(kind = real_wp) :: missing_value = -999.0       ! missing value indicator
 
         integer(kind = int_wp) :: ncid
         integer(kind = int_wp) :: varid, varidout, meshid, meshidout, ntimeid, wqid, noseglmesh, nolaymesh

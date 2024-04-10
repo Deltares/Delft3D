@@ -58,7 +58,6 @@ target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")

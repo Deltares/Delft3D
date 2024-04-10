@@ -128,7 +128,7 @@
   </defaultTestCases>
   <testCases>
     <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -245,7 +245,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c002_frisianinlet_BLOOM" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -394,7 +394,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -521,7 +521,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
       <programs>
         <program ref="DFlowFMwq" seq="1">
           <arguments>
@@ -644,7 +644,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
       <programs>
         <program ref="DFlowFMwq" seq="1">
           <arguments>
@@ -799,7 +799,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
+      <path version="2024-03-22T19:40:00">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
       <programs>
         <program ref="DFlowFMwq" seq="1">
           <arguments>
@@ -932,7 +932,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c100_spatial_parameters_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c100_spatial_parameters_2D</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c100_spatial_parameters_2D</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -953,7 +953,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c101_spatial_parameters_3D" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -974,7 +974,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c102_temporal_parameters" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c102_temporal_parameters</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c102_temporal_parameters</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -1000,7 +1000,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c103_initial_conditions_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c103_initial_conditions_2D</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c103_initial_conditions_2D</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -1022,7 +1022,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c104_initial_conditions_3D" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c104_initial_conditions_3D</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c104_initial_conditions_3D</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -1044,7 +1044,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c105_mass_balance_areas_complete" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>
@@ -1063,7 +1063,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f030_c106_mass_balance_areas_incomplete" ref="dflowfm_default">
-      <path>e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
       <programs>
         <program ref="DFlowFMwq">
           <arguments>

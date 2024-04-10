@@ -131,7 +131,7 @@
 
 <testCases>
 	<testCase name="e124_f01_c01_trench_VanRijn1993_mormerge_wave_e23_f03_c01" ref="dflowfm_default">
-		<path>e124_dflowfm-dwaves-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_wave_e23_f03_c01</path>
+		<path version="2024-03-22T19:30:00">e124_dflowfm-dwaves-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_wave_e23_f03_c01</path>
 		<maxRunTime>600.0000000</maxRunTime>
 		<programs>
 			<program ref="mormerge">
@@ -178,7 +178,7 @@
 	</testCase>
 
 	<testCase name="e124_f02_c01_groin_mormerge_wave_sedmor" ref="dflowfm_default">
-		<path>e124_dflowfm-dwaves-mormerge/f02_mergedtuser/c01_groin_mormerge_wave_sedmor</path>
+		<path version="2024-03-22T19:30:00">e124_dflowfm-dwaves-mormerge/f02_mergedtuser/c01_groin_mormerge_wave_sedmor</path>
 		<maxRunTime>1800.0000000</maxRunTime>
 		<programs>
 			<program ref="mormerge">

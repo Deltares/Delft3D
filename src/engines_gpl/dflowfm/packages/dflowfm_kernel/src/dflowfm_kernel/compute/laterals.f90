@@ -71,7 +71,7 @@ implicit none
    private
    double precision, allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration   !< Average concentration per lateral discharge location.
    double precision, allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration   !< Concentration of the inflowing water at the lateral discharge location.
-   integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Apply transport for laterals. (0 means only water and no substances are transported)
+   integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Flag to apply transport for laterals (0 means only water and no substances are transported).
 
    contains
 
@@ -109,21 +109,18 @@ implicit none
    end subroutine dealloc_lateraldata
 
    !> calculate the average concentration at laterals
-   subroutine average_concentrations_for_laterals(numconst, kmx, vol1, constituents)
+   subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents)
 
       integer                         , intent(in)    :: numconst       !< Number or constituents.
       integer                         , intent(in)    :: kmx            !< Number of layers (0 means 2d computation).
-      double precision, dimension(:)  , intent(in)    :: vol1           !< Cell volume.
+      double precision, dimension(:)  , intent(in)    :: bottom_area             !< Cell area.
       double precision, dimension(:,:), intent(in)    :: constituents   !< concentrations.
 
       integer :: ilat
       integer :: n, iconst, k, k1, kt, kb
 
-      double precision :: total_volume, salt 
-
       outgoing_lat_concentration = 0d0
       do ilat = 1, numlatsg
-         total_volume = 0d0
          do iconst = 1, numconst
             do k1 = n1latsg(ilat), n2latsg(ilat)
                n = nnlat(k1)
@@ -135,13 +132,11 @@ implicit none
                      call getkbotktop(n, kb, kt)
                      k = kt
                   endif
-                  total_volume = total_volume + vol1(k)
-                  salt = constituents(iconst, k)
-                  outgoing_lat_concentration(1, iconst, ilat) = vol1(k) * constituents(iconst, k)
+                  outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + bottom_area(k) * constituents(iconst, k)
                endif
             enddo
          enddo
-         outgoing_lat_concentration(:,:, ilat) = outgoing_lat_concentration(:,:, ilat) / total_volume
+         outgoing_lat_concentration(:,:, ilat) = outgoing_lat_concentration(:,:, ilat) / balat(ilat)
       enddo
 
    end subroutine average_concentrations_for_laterals

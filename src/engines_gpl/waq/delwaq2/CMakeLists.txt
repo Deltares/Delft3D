@@ -44,7 +44,6 @@ if (WIN32)
     target_include_directories(${executable_name} PRIVATE ${version_include_dir} ${mpi_include_path})
 
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
             PRIVATE
             "${mpi_library_path}"
@@ -66,7 +65,6 @@ if (WIN32)
             "pthreadVC2.lib")
 
     # Set linker options
-    message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif (WIN32)
 
@@ -79,4 +77,3 @@ endif (WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delwaq.${platform_extension}  DESTINATION bin)
-

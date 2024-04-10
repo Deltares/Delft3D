@@ -157,13 +157,13 @@ contains
 
     subroutine delwaq2_global_data_finalize()
 
-        use memory_mangement
+        use variable_declaration
 
         implicit none
 
         integer(kind = int_wp) :: i
 
-        ! first, all arrays from memory_mangement
+        ! first, all arrays from variable_declaration
         call deallocate_memory()
 
         if (allocated(argv)) deallocate (argv)

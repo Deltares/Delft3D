@@ -32,7 +32,7 @@
 
       SUBROUTINE DATUM2(DATE)
       use unstruc_display, only : jadatetime
-      use string_module, only: get_dirsep
+      use system_utils, only: FILESEP
       implicit none
       integer :: iyear, month, iday, ihour, minute, isecnd
       CHARACTER DATE*20
@@ -40,9 +40,9 @@
 !              1  4  7   11 14 17
 
       if (jadatetime == 0) then
-         DATE = get_dirsep()
+         DATE = FILESEP
       else
-         DATE = '_yymmddhhmmss'//get_dirsep()
+         DATE = '_yymmddhhmmss'//FILESEP
 
          call dateandtimenow(iyear, month, iday, ihour, minute, isecnd)
 

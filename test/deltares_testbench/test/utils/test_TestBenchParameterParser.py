@@ -32,7 +32,7 @@ class TestTestBenchParameterParser():
             TestBenchParameterParser.parse_arguments_to_settings()
 
             # Assert
-            xmlConfigParser_instance.load.assert_called_once_with(ANY, ANY, ANY, "https://repos.deltares.nl/repos/DSCTestbench/trunk")
+            xmlConfigParser_instance.load.assert_called_once_with(ANY, ANY, ANY, "https://s3.deltares.nl/dsc-testbench")
 
     @staticmethod
     def test_parse_arguments_override_server_base_url(override_command_line_args_with_server_base_url):

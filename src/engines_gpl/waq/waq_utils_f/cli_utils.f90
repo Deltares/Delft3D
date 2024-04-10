@@ -133,10 +133,10 @@ contains
             argument_line = get_argument(arg_index)
         else
             ! Determine the number of arguments provided by the system
-            system_arg_count = iargc() + 1
+            system_arg_count = command_argument_count() + 1
 
             ! Get argument from command line
-            call getarg(arg_index, buffer)
+            call get_command_argument(arg_index, buffer)
             argument_line = buffer
             ! TODO: check why copying buffer to argument_line? also the argument_line is not used and is reassigned
             !   later
@@ -180,7 +180,7 @@ contains
 
         if (total_arg_count == 0) then
             ! Count arguments provided by the system command line
-            system_arg_count = iargc() + 1  ! Includes the program name as the zeroth argument
+            system_arg_count = command_argument_count() + 1  ! Includes the program name as the zeroth argument
 
             ! Ensure at least one argument (the program name)
             if (system_arg_count == 0) then

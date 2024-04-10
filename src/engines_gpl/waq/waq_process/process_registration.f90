@@ -63,7 +63,6 @@ module process_registration
     use m_clcrad
     use m_dayl
     use m_debgrz
-    use m_debgrz_protist
     use m_cascad
     use m_denwat
     use m_depave
@@ -206,6 +205,7 @@ module process_registration
     use m_nlalg
     use m_ssedph
     use m_phcarb
+    use m_protist_mortality_salinity, only : protist_mortality_salinity
 
     implicit none
 
@@ -441,7 +441,7 @@ contains
                             process_routine_info('PHPROT', PHPROT), &
                             process_routine_info('FLOCSD', FLOCSD), &
                             process_routine_info('AGECAR', AGECART), &
-                            process_routine_info('DEBGRP', DEBGRZ_PROTIST) &
+                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
                     ]
 
             max_processes = size(process_routine)
@@ -458,8 +458,8 @@ contains
 
     subroutine procal (pmsa, imodul, flux, ipoint, increm, &
             noseg, noflux, iexpnt, iknmrk, noq1, &
-            noq2, noq3, noq4, pronam, pronvr, &
-            prvtyp, iproc, dll_opb)
+            noq2, noq3, noq4, pronam, &
+            iproc, dll_opb)
         !>\file
         !>       Calls the process modules
 
@@ -471,22 +471,20 @@ contains
 
         !     kind           function                 name          description
 
-        real(kind = real_wp), intent(inout) :: pmsa  (*) ! Process module status array
+        real(kind = real_wp), intent(inout) :: pmsa  (:) ! Process module status array
         integer(kind = int_wp), intent(in) :: imodul      ! Process module number
-        real(kind = real_wp), intent(out) :: flux  (*) ! Process fluxes
-        integer(kind = int_wp), intent(in) :: ipoint(*) ! Pointer to process data
-        integer(kind = int_wp), intent(in) :: increm(*) ! Increment in pointer process data
+        real(kind = real_wp), intent(out) :: flux  (:) ! Process fluxes
+        integer(kind = int_wp), intent(in) :: ipoint(:) ! Pointer to process data
+        integer(kind = int_wp), intent(in) :: increm(:) ! Increment in pointer process data
         integer(kind = int_wp), intent(in) :: noseg       ! Number of computational volumes
         integer(kind = int_wp), intent(in) :: noflux      ! Number of process fluxes
-        integer(kind = int_wp), intent(in) :: iexpnt(4, *) ! Exchange pointers
-        integer(kind = int_wp), intent(in) :: iknmrk(*) ! Tag array
+        integer(kind = int_wp), intent(in) :: iexpnt(:) ! Exchange pointers
+        integer(kind = int_wp), intent(in) :: iknmrk(:) ! Tag array
         integer(kind = int_wp), intent(in) :: noq1        ! Number of exchanges in first direction
         integer(kind = int_wp), intent(in) :: noq2        ! Number of exchanges in second direction
         integer(kind = int_wp), intent(in) :: noq3        ! Number of exchanges in third direction
         integer(kind = int_wp), intent(in) :: noq4        ! Number of exchanges in the water bed
         character(10), intent(in) :: pronam      ! Name of this process
-        integer(kind = int_wp), intent(in) :: pronvr      ! Not used
-        integer(kind = int_wp), intent(in) :: prvtyp(*) ! Not used
         integer(kind = int_wp), intent(in) :: iproc       ! Process number
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
 

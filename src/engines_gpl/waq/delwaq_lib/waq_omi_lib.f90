@@ -32,10 +32,9 @@
 !> Utilities for the routines here (effectively a private module)
 module waq_omi_utils
     use m_waq_precision
-    use m_dmpare
-    use m_dlwq0i
-    use m_dlwq0f
-    use m_dlwq09
+    use monitoring_areas, only : create_write_monitoring_area_array
+    use integration_options, only: check_integration_option
+    use inputs_block_9
     use m_delwaq2_main
     use m_dlwqp1
     use m_open_waq_files
@@ -86,9 +85,9 @@ contains
 
         lunut = 10
         if (option) then
-            call dlwq0i(keyword_true, intopt, lunut, ierr2)
+            call check_integration_option(keyword_true, intopt, lunut, ierr2)
         else
-            call dlwq0i(keyword_false, intopt, lunut, ierr2)
+            call check_integration_option(keyword_false, intopt, lunut, ierr2)
         end if
     end subroutine set_intopt
 
@@ -667,14 +666,13 @@ contains
 
     ! DefineWQSchematisation --
     !     Define the number of segments and the pointer table
-    !
     logical function DefineWQSchematisation(number_segments, pointer_table, number_exchanges)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineWQSchematisation
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQSCHEMATISATION' :: DefineWQSchematisation
 
         use delwaq2_global_data
         use m_sysn
-        use m_dlwq0f
+        use matrix_utils, only : compute_matrix_size
 
         implicit none
 
@@ -721,7 +719,7 @@ contains
         ! the numerical solver may not have been set and at a later time we don't
         ! have access to the pointer_table anymore)
         !
-        call dlwq0f(noq1, noq2, noq3, noseg, pointer_table, nomat)
+        call compute_matrix_size(noq1, noq2, noq3, noseg, pointer_table, nomat)
 
         if (allocated(ipoint)) deallocate (ipoint)
         if (allocated(iknmrk)) deallocate (iknmrk)
@@ -1633,7 +1631,7 @@ contains
 
         nolun = 45      ! nolun has been declared in sysn_ff.inc
         !
-        nothrd = 1       ! Set OpenMP threads to 1 (note: DLWQ07 code to overrule isn't called)
+        nothrd = 1       ! Set OpenMP threads to 1 (note: read_block_7_process_parameters code to overrule isn't called)
         nogrid = 1       ! No multiple grid option at the moment
         noitem = 11      ! Fixed number of items
         ilflag = 1       ! Always assume varying lengths
@@ -1706,9 +1704,8 @@ contains
     contains
         ! write_delwaq03 --
         !     Write the first DELWAQ system intermediate file
-        !
         subroutine write_delwaq03(name)
-            use workspace
+            use workspace, only : set_array_indexes
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
 
@@ -1726,7 +1723,7 @@ contains
             imaxi = 0
             imaxc = 0
 
-            call space(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, imaxa, imaxi, imaxc)
+            call set_array_indexes(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, imaxa, imaxi, imaxc)
 
             open (newunit = lunwrk, file = trim(name) // '-delwaq03.wrk', form = 'unformatted', access = 'stream')
             write (lunwrk) in
@@ -1891,7 +1888,7 @@ contains
             ntraaq = 0      ! For now
             lun(2) = 10
 
-            call dmpare(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
+            call create_write_monitoring_area_array(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
                     noraai, ntraaq, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
                     status)
 
@@ -1967,12 +1964,12 @@ contains
             integer(kind = int_wp) :: iosfun           ! Segment functions
             integer(kind = int_wp) :: ioconc           ! Concentrations
 
-            integer(kind = int_wp), parameter :: icmax = 2000
-            integer(kind = int_wp), parameter :: iimax = 2000
-            character(len = 20), dimension(icmax) :: car
-            integer(kind = int_wp), dimension(iimax) :: iar
+            integer(kind = int_wp), parameter :: max_char_size = 2000
+            integer(kind = int_wp), parameter :: max_int_size = 2000
+            character(len = 20), dimension(max_char_size) :: char_arr
+            integer(kind = int_wp), dimension(max_int_size) :: iar
             integer(kind = int_wp) :: iwidth
-            integer(kind = int_wp) :: ioutpt  ! Dummy
+            integer(kind = int_wp) :: output_verbose_level  ! Dummy
             real :: version = 4.9
             integer(kind = int_wp) :: refday
             type(error_status) :: status
@@ -2000,15 +1997,15 @@ contains
             npos = 100
             cchar = ';'
             iwidth = 100
-            ioutpt = 0
+            output_verbose_level = 0
             call status%initialize(0, 0, 0)
 
             ilun(1) = 9
             lch(1) = trim(name) // '.inp'
 
-            call dlwq09(lun, lchar, filtype, car, iar, icmax, &
-                    iimax, iwidth, &
-                    ioutpt, ioutps, outputs, status)
+            call read_block_9(lun, lchar, filtype, char_arr, iar, max_char_size, &
+                    max_int_size, iwidth, &
+                    output_verbose_level, ioutps, outputs, status)
 
             close (9) ! TODO: status = 'delete'
             close (11)

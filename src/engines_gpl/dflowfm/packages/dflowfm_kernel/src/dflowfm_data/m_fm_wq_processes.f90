@@ -79,7 +79,7 @@ module m_fm_wq_processes
    integer                                   :: noq2                        !< Number of exchanges second direction
    integer                                   :: noq3                        !< Number of exchanges vertical
    integer                                   :: noq4                        !< Number of exchanges in the bed
-   integer,  allocatable, dimension(:,:)     :: iexpnt                      !< Exchange pointer
+   integer,  allocatable, dimension(:)       :: iexpnt                      !< Exchange pointer
 
    real(hp), allocatable, dimension(:,:)     :: amass                       !< mass array to be updated
    logical , allocatable, dimension(:)       :: wqactive                    !< indicates if processes are active based on volume ('VolumeDryThreshold') and depth ('DepthDryThreshold') criteria

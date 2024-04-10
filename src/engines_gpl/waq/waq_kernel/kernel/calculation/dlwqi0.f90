@@ -28,7 +28,7 @@ module dlwqi0_mod
     use m_segcol
     use m_dlwqtd
     use m_dlwqt0
-    use m_dlwqiv
+    use WORKSPACE
     use m_dlwqip
     use m_dlwqio
     use m_dlwqi2
@@ -52,7 +52,7 @@ contains
         !>                             - calls SPACE to allocate space for all arrays
         !>                             - calls DLWQI2 to initialize all fixed conditions
         !>                             - calls DLWQIP to initialize all processes subsystem
-        !>                             - calls DLWQIV for unclear reasons
+        !>                             - calls initialize_variables for unclear reasons
         !>                             - calls DLWQIO to initialize the output system
         !>                             - imports all grid informations and exchange tables
         !>                             - calls DLWQT0 to initialize all time dependent variables
@@ -74,10 +74,10 @@ contains
         !
         use m_dhisys
         use dlwqgrid_mod
-        use memory_mangement
+        use variable_declaration
         use delwaq2_data
         use timers
-        use workspace
+        use workspace, only : set_array_indexes
         use string_module  ! string manipulation tools
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
@@ -120,7 +120,7 @@ contains
         !         initialise the system
 
         ftype = filtype
-        CALL SPACE  (LUN(19), .TRUE., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
+        call set_array_indexes  (LUN(19), .TRUE., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                 IMAXA, IMAXI, IMAXC)
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
@@ -193,7 +193,7 @@ contains
             !
             !     Set variable "structure"
             !
-            CALL DLWQIV (LUN(19), NOCONS, NOPA, NOFUN, NOSFUN, &
+            CALL initialize_variables (LUN(19), NOCONS, NOPA, NOFUN, NOSFUN, &
                     NOSYS, NOTOT, NODISP, NOVELO, NODEF, &
                     NOLOC, NDSPX, NVELX, NLOCX, NFLUX, &
                     NOPRED, NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), &

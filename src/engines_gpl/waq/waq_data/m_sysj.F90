@@ -47,12 +47,14 @@ module m_sysj
     integer :: ILP     !    pointer to IP    , paging structure monitor file
     integer :: IGRID   !    pointer to LGRID , grid layout
     integer :: INSVA   !    pointer to NSVAR , nr of state vars per proces
+
     integer :: IIFLU   !    pointer to IFLUX , pointers in FLUX array
     integer :: IIPMS   !    pointer to IPMSA , pointers from SSA to PMSA
     integer :: IIPSS   !    pointer to IPSSA , pointers from PMSA to SSA
     integer :: IIMOD   !    pointer to IMODU , module number per proces
     integer :: IIOUT   !    pointer to IOUTPS, output structure
     integer :: IIOPO   !    pointer to IOPOIN, pointer to delwaq array's
+
     integer :: IKNMR   !    pointer to IKNMRK, kenmerk array
     integer :: IKTIM   !    pointer to IKTIM , timers of time var kenmerk
     integer :: IQDMP   !    pointer to IQDMP , pointer from exchange to DMPQ

@@ -31,7 +31,7 @@
 ! 
 
 subroutine setrhokk(kk)    ! fill rho of one column  
-use m_flow, only : rho, idensform, kmxn
+use m_flow, only : rho, density_is_pressure_dependent, kmxn
 implicit none
 integer :: kk 
 integer :: kb,kt,k
@@ -42,11 +42,11 @@ double precision           :: p0
 call getkbotktop(kk,kb,kt)
 if (kt<kb) return
 
-if (idensform < 10) then  ! no pressure dependency 
+if ( .not. density_is_pressure_dependent() ) then
    do k = kb,kt
       rho(k)  = setrho(k,p0)
    enddo
-else                      ! with pressure dependency
+else
    p0 = 0d0               ! surface value is 0 bar in unesco, not 1 bar
    do k = kt,kb,-1
       rho(k)  = setrho(k,p0)
@@ -67,6 +67,7 @@ use m_sediment
 use sediment_basics_module, only: has_advdiff
 use m_transport
 use m_turbulence, only: rhowat
+use unstruc_messages, only: mess, LEVEL_ERROR
 
 implicit none
 
@@ -79,11 +80,11 @@ integer                         :: i, lsed
 double precision, external      :: densfm
 double precision                :: rhom, sal, temp, p1, dzz
 
-double precision, parameter     :: SAND_DENSITY = 2600d0 
+double precision, parameter     :: SEDIMENT_DENSITY = 2600d0   !< default/typical sediment density [kg/m3]
 
 call getsaltemk(cell,sal, temp)
 
-if (idensform < 10) then 
+if ( .not. density_is_pressure_dependent() ) then
    setrho = densfm(sal,temp,p0)
 else 
    dzz  = zws(cell) - zws(cell-1)
@@ -111,15 +112,18 @@ if (jased > 0 .and. stm_included) then
          end if
       end do
    end if
-else if (jasubstancedensitycoupling > 0) then ! for now, DELWAQ concentrations in g/m3
+else if (jasubstancedensitycoupling > 0) then ! for now, only works for DELWAQ sediment fractions (concentrations in g/m3 and density of SEDIMENT_DENSITY)
+   if (itra1 == 0) then
+       call mess(LEVEL_ERROR, 'SubstanceDensityCoupling was set to 1, but there are no substances.')
+   end if
    rhom = setrho
    do i = itra1, itran 
-      setrho = setrho + (1d-3)*constituents(i,cell)*(SAND_DENSITY - rhom)/SAND_DENSITY ! Herman's suggestion 
-    enddo
+      setrho = setrho + (1d-3)*constituents(i,cell)*(SEDIMENT_DENSITY - rhom)/SEDIMENT_DENSITY
+   enddo
 else if (jaseddenscoupling > 0) then  ! jased < 4
    rhom = setrho
    do i = 1,mxgr
-      setrho = setrho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i) ! good to see this is also adopted officially above %
+      setrho = setrho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i)
    enddo
 
 end if

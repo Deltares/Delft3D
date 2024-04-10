@@ -76,13 +76,18 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         character(len = 24) :: spcl_const_print ! special constants not used printed in brackets for lsp file
 
-        character(len = 18), dimension(21), parameter :: special_constants = & ! names of special constants
-                (/ 'SURF', 'SWSCALE', 'CLOSE_ERR', 'MIN_VOLUME', &
-                        'THETA', 'MIN_AREA', 'TIMMULTBL', 'ZTHRESHOLD', &
-                        'NOVEC', 'Z_THRESH', 'TOLERANCE', 'ONLY_ACTIVE', &
-                        'ACTIVE', 'NOTHREADS', 'ITERATION', 'NUMBER_OF_BUCKETS', &
-                        'LENGTH', 'DRY_TRESH', 'SWPRECOND', 'ITERATION REPORT', &
-                        'MAXITER'/)
+        character(len = 17), dimension(21), parameter :: special_constants = & ! names of special constants
+                     (/ 'SURF             ', 'SWSCALE          ', &
+                        'CLOSE_ERR        ', 'MIN_VOLUME       ', &
+                        'THETA            ', 'MIN_AREA         ', &
+                        'TIMMULTBL        ', 'ZTHRESHOLD       ', &
+                        'NOVEC            ', 'Z_THRESH         ', &
+                        'TOLERANCE        ', 'ONLY_ACTIVE      ', &
+                        'ACTIVE           ', 'NOTHREADS        ', &
+                        'ITERATION        ', 'NUMBER_OF_BUCKETS', &
+                        'LENGTH           ', 'DRY_TRESH        ', &
+                        'SWPRECOND        ', 'ITERATION REPORT ', &
+                        'MAXITER          '/)
 
         if (timon) call timstrt("repuse", ithndl)
 

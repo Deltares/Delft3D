@@ -48,7 +48,7 @@ contains
             itota = 0
             itoti = 0
             itotc = 0
-            call space(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
+            call set_array_indexes(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                     itota, itoti, itotc)
             ! create the delwaq03.wrk file
             call open_waq_files(lun(1), lchar(1), 1, 1, ioerr)

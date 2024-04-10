@@ -524,7 +524,7 @@
 
     <testCases>
         <testCase name="test_00" ref="test_00_default">
-            <path>c00</path>
+            <path version="2024-01-11T11:10:00">c00</path>
             <programs>
                 <program ref="test_00">
                     <arguments>
@@ -609,7 +609,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="test_05" ref="test_05_default">
-            <path>c05</path>
+            <path version="2024-01-11T11:10:00">c05</path>
             <programs>
                 <program ref="test_05">
                     <arguments>
@@ -626,7 +626,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="test_06" ref="test_06_default">
-            <path>c06</path>
+            <path version="2024-01-11T11:10:00">c06</path>
             <programs>
                 <program ref="test_06">
                     <arguments>
@@ -711,7 +711,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="test_11" ref="test_11_default">
-            <path>c11</path>
+            <path version="2024-01-11T11:10:00">c11</path>
             <programs>
                 <program ref="test_11">
                     <arguments>
@@ -796,7 +796,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="test_17" ref="test_17_default">
-            <path>c17</path>
+            <path version="2024-01-11T11:10:00">c17</path>
             <programs>
                 <program ref="test_17">
                     <arguments>

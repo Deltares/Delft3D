@@ -91,10 +91,10 @@ endfunction()
 
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
-   
-   	set (debugcommand "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe")
-	set (envpath "PATH=${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/;%PATH%")
-	set (userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    set(envpath "PATH=${path_prefix};%PATH%")
+    set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -131,9 +131,6 @@ function(configure_visual_studio_user_file executable_name)
         )
     endif()
 endfunction()
-
-
-
 
 # oss_include_libraries
 # Adds oss dependencies to the specified library.
@@ -188,35 +185,6 @@ function(get_fortran_source_files_recursive source_directory source_files)
                         ${source_directory} *.f
                         ${source_directory} *.F)
     set(${source_files} ${source} PARENT_SCOPE)
-endfunction()
-
-# add_postbuild_event
-# Adds a postbuild event to the target.
-#
-# Argument
-# target_name : The name of the target to add this postbuild event to.
-function(add_postbuild_event target_name)
-    # Perform a precheck to determine if the post build event script is defined.
-    IF(NOT DEFINED postbuild_event_path)
-        message(FATAL_ERROR "Variable 'postbuild_event_path' is undefined.")
-    ENDIF()
-
-    message(STATUS "Adding postbuild event step for ${target_name}")
-    if (UNIX)
-       execute_process(COMMAND /bin/bash ${postbuild_event_path})
-    endif(UNIX)
-
-    if (WIN32)
-       IF(DEFINED ARGV5 AND ARGV5)
-          add_custom_command( TARGET ${target_name}
-                              POST_BUILD
-                              COMMAND  call ${postbuild_event_path})
-        ELSE()
-           add_custom_command( TARGET ${target_name}
-                               POST_BUILD
-                               COMMAND  call ${postbuild_event_path})
-        ENDIF()
-    endif()
 endfunction()
 
 # get_module_include_path
@@ -289,12 +257,12 @@ endfunction(set_rpath)
 # test_files: [separate multiple values/ list]
 #    argument defines the source files that will be compiled to create the test.
 # include_dir: [separate multiple values/ list]
-#    argument defines the directory that contains the files that are needed for the test. 
-#    The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument. 
+#    argument defines the directory that contains the files that are needed for the test.
+#    The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument.
 # test_list: [separate multiple values/ list]
-#   if you have one fortran file that contains multiple tests, and you want to execute each test separetly, you have to 
-#    implement 
-# 
+#   if you have one fortran file that contains multiple tests, and you want to execute each test separetly, you have to
+#    implement
+#
 #   >>>   if (iargc > 0) then
 #   >>>     call get_command_argument(1, cmd_arg)
 #   >>>
@@ -321,10 +289,10 @@ endfunction(set_rpath)
 #    >>> labels "test_1:fast" "test_2:medium" "test_3:e2e"
 # Examples:
 # create_test(
-#   test_name 
-#   dependencies ftnunit 
-#   visual_studio_folder "tests" 
-#   test_files test_file_1.f90 test_file_2.f90 
+#   test_name
+#   dependencies ftnunit
+#   visual_studio_folder "tests"
+#   test_files test_file_1.f90 test_file_2.f90
 #   include_dir ${CMAKE_CURRENT_SOURCE_DIR}/test_data
 #   test_list test_1 test_2 test_3
 #   labels "test_1:fast" "test_2:medium" "test_3:e2e"
@@ -370,14 +338,14 @@ function(create_test test_name)
             add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
         endforeach()
     else()
-        add_test(NAME ${test_name} COMMAND ${test_name})    
+        add_test(NAME ${test_name} COMMAND ${test_name})
     endif()
-    
+
 
     if (DEFINED op_include_dir)
         # Copy an entire directory
         file(COPY ${op_include_dir} DESTINATION ${CMAKE_BINARY_DIR}/test_data/${test_name})
-        
+
         if (DEFINED op_test_list)
             foreach(test_i IN LISTS op_test_list)
                 set_tests_properties(${test_i} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
@@ -400,7 +368,7 @@ function(create_test test_name)
             list(GET pair_list 1 label)
             set_tests_properties(${test_i} PROPERTIES LABELS ${label})
         endforeach()
-        
+
     endif()
 
 endfunction()
@@ -426,7 +394,7 @@ endfunction()
 
 # Function to get a value for a given key
 # Function to set a key-value pair
-# Use the `get_dict_value` cmake function to retrieve a value coresponding to a certain key from a dictionary created by the `dict` 
+# Use the `get_dict_value` cmake function to retrieve a value coresponding to a certain key from a dictionary created by the `dict`
 # function
 # dict_name: [string/input]
 #           The dictionary name, do not use the ${} in the dictionary na,e

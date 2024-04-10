@@ -1,6 +1,6 @@
   <testCases>
     <testCase name="e09_f01_c010_basic" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c010_basic</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c010_basic</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -12,7 +12,7 @@
     </testCase>
 
     <testCase name="e09_f01_c020_cascading_channels" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c020_cascading_channels</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c020_cascading_channels</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -52,7 +52,7 @@
     </testCase>
 
     <testCase name="e09_f01_c030_channel_pulse" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c030_channel_pulse</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c030_channel_pulse</path>
       <checks>
         <file name="output/timeseries_export_inertial_wave.csv" type="timeseries_csv">
           <parameters>
@@ -89,7 +89,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c040_channel_wave_damping" ref="RTC-Tools2_default">
-      <path>e09_RTC-Tools2/f01_examples/c040_channel_wave_damping</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c040_channel_wave_damping</path>
       <programs>
         <program ref="RunRTC" seq="1">
           <arguments>
@@ -124,7 +124,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c050_ensemble" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c050_ensemble</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c050_ensemble</path>
       <checks>
         <file name="output/forecast1/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -151,7 +151,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c060_goal_programming" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c060_goal_programming</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c060_goal_programming</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -165,7 +165,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c070_lookup_table" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c070_lookup_table</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c070_lookup_table</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -179,7 +179,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c080_mixed_integer" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c080_mixed_integer</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c080_mixed_integer</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>
@@ -193,7 +193,7 @@
       </checks>
     </testCase>
     <testCase name="e09_f01_c090_simulation" ref="RTC-Tools2_example">
-      <path>e09_RTC-Tools2/f01_examples/c090_simulation</path>
+      <path version="2024-01-12T07:40:00">e09_RTC-Tools2/f01_examples/c090_simulation</path>
       <checks>
         <file name="output/timeseries_export.csv" type="timeseries_csv">
           <parameters>

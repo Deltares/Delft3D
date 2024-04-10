@@ -46,7 +46,7 @@
         </testCase>
         -->
         <testCase name="e112_f01_c01_laterals_BMI_coupling" ref="dimr_trunk">
-            <path>e112_dflowfm-drr/f01_1d_rr/c01_laterals_BMI_coupling</path>
+            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c01_laterals_BMI_coupling</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
                     <parameters>
@@ -67,7 +67,7 @@
             </checks>
         </testCase>
         <testCase name="e112_f01_c02_laterals_BMI_coupling_refdate" ref="dimr_trunk">
-            <path>e112_dflowfm-drr/f01_1d_rr/c02_laterals_BMI_coupling_refdate</path>
+            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c02_laterals_BMI_coupling_refdate</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="NETCDF">
                     <parameters>
@@ -88,7 +88,7 @@
             </checks>
         </testCase>
         <testCase name="e112_f01_c04_multiple_catchments" ref="dimr_trunk">
-            <path>e112_dflowfm-drr/f01_1d_rr/c04_multiple_catchments</path>
+            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c04_multiple_catchments</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_model4/model4_his.nc" type="NETCDF">
                     <parameters>
@@ -103,7 +103,7 @@
             </checks>
         </testCase>
         <testCase name="e112_f01_c05_pipes_and_manholes" ref="dimr_trunk">
-            <path>e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
+            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FM_model/FM_model_his.nc" type="NETCDF">
                     <parameters>
@@ -142,7 +142,7 @@
         </testCase>
         -->
         <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk">
-            <path>e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
+            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
                     <parameters>

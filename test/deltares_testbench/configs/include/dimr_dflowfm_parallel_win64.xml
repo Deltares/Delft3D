@@ -1,6 +1,6 @@
 <testCases>
     <testCase name="e02_f012_c0322" ref="dimr">
-        <path>e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
          <checks>
             <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
                 <parameters>
@@ -34,7 +34,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
          <checks>
             <file name="western_scheldt_3domains_map.nc" type="NETCDF">
                 <parameters>
@@ -56,7 +56,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c0324_alloutrealistic_f12_e02_max25</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0324_alloutrealistic_f12_e02_max25</path>
          <checks>
             <file name="western_scheldt_3domains_max25.txt" type="NUMBERTEXT">
             </file>
@@ -77,7 +77,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c0327_alloutrealistic_f12_e02_runningmean</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0327_alloutrealistic_f12_e02_runningmean</path>
          <checks>
             <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
             </file>
@@ -100,7 +100,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c0328_alloutrealistic_f12_e02_runningmean_cross</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0328_alloutrealistic_f12_e02_runningmean_cross</path>
          <checks>
             <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
                 <parameters>
@@ -110,7 +110,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f012_c0325" ref="dimr">
-        <path>e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0325_alloutrealistic_f12_e02_3dom_classmap</path>
          <checks>
             <file name="dflowfmoutput/classmap_0000.nc" type="NETCDF">
                 <parameters>
@@ -144,7 +144,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c0326_classmap_mapmerge</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0326_classmap_mapmerge</path>
          <checks>
             <file name="western_scheldt_3domains_classmap.nc" type="NETCDF">
                 <parameters>
@@ -167,7 +167,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c327_specialgrid_mapmerge</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c327_specialgrid_mapmerge</path>
          <checks>
             <file name="flow_merged_map.nc" type="NETCDF">
                 <parameters>
@@ -177,7 +177,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c001_trench_EH_par_crs" ref="dimr">
-      <path>e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -203,7 +203,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="dimr">
-      <path>e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -229,7 +229,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c100" ref="dimr">
-        <path>e02_dflowfm/f014_parallel/c100_guayas_model</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c100_guayas_model</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -261,7 +261,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c101_icg7" ref="dimr">
-        <path>e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c101_guayas_model_icgsolver7</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -293,7 +293,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c120" ref="dimr">
-        <path>e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -334,7 +334,7 @@
          </checks>
     </testCase>
     <testCase name="e02_f014_c150" ref="dimr">
-        <path>e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c150_longculvert_parallel</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -351,7 +351,7 @@
         </checks>
     </testCase>
 	<testCase name="e02_f014_c201" ref="dimr">
-        <path>e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
+        <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c201_genstruc_partition</path>
         <programs>
           <program ref="dimr">
              <arguments>
@@ -384,7 +384,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c188_from_restart_graded_inicomp_mapmerge</path>
+        <path version="2024-03-22T19:40:00">e02_dflowfm/f012_inout/c188_from_restart_graded_inicomp_mapmerge</path>
          <checks>
             <file name="str_merged_20151101_001000_rst.nc" type="NETCDF">
                 <parameters>
@@ -411,7 +411,7 @@
             </arguments>
           </program>
         </programs>
-        <path>e02_dflowfm/f012_inout/c190_rijn_rst_mapmerge</path>
+        <path version="2024-03-22T19:40:00">e02_dflowfm/f012_inout/c190_rijn_rst_mapmerge</path>
          <checks>
             <file name="RIJN_merged_20000101_010000_rst.nc" type="NETCDF">
                 <parameters>

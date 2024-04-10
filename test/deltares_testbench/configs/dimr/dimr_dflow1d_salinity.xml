@@ -91,7 +91,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c01_301_upwind_tide_D1" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c01_301_upwind_tide_D1</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c01_301_upwind_tide_D1</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -124,7 +124,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c02_302_upwind_nobnd_D3333_lateral_salt_outflows" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c02_302_upwind_nobnd_D3333_lateral_salt_outflows</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c02_302_upwind_nobnd_D3333_lateral_salt_outflows</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -159,7 +159,7 @@
         </testCase>
         <!-- ======================================================================== -->        
         <testCase name="e106(dflow1d)_f11(salinity)_c03_303_upwind_tide_D3333" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c03_303_upwind_tide_D3333</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c03_303_upwind_tide_D3333</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -192,7 +192,7 @@
         </testCase>
         <!-- ======================================================================== -->        
         <testCase name="e106(dflow1d)_f11(salinity)_c04_304_upwind_tide_TatcherHarleman_timelag180min_D3333" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c04_304_upwind_tide_TatcherHarleman_timelag180min_D3333</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c04_304_upwind_tide_TatcherHarleman_timelag180min_D3333</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -245,7 +245,7 @@
         </testCase>
         <!-- ======================================================================== -->      
         <testCase name="e106(dflow1d)_f11(salinity)_c05_305_upwind_tide_D3333_lateral_salt_inflows_outflows" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c05_305_upwind_tide_D3333_lateral_salt_inflows_outflows</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c05_305_upwind_tide_D3333_lateral_salt_inflows_outflows</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>            
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -290,7 +290,7 @@
         </testCase>
         <!-- ======================================================================== -->        
         <testCase name="e106(dflow1d)_f11(salinity)_c06_306_upwind_tide_D3333_openGeneralStructure" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c06_306_upwind_tide_D3333_openGeneralStructure</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c06_306_upwind_tide_D3333_openGeneralStructure</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>           
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -336,7 +336,7 @@
         </testCase>
         <!-- ======================================================================== -->        
         <testCase name="e106(dflow1d)_f11(salinity)_c07_307_upwind_tide_TatcherHarleman_timelag180min_closedGeneralStructure" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c07_307_upwind_tide_TatcherHarleman_timelag180min_closedGeneralStructure</path>
+            <path version="2024-01-12T06:20:00">e106_dflow1d/f11_salinity/c07_307_upwind_tide_TatcherHarleman_timelag180min_closedGeneralStructure</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -382,7 +382,7 @@
         </testCase>
         <!-- ======================================================================== -->        
         <testCase name="e106(dflow1d)_f11(salinity)_c09_309_upwind_nobnd_D0_salt_lock_exchange" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c09_309_upwind_nobnd_D0_salt_lock_exchange</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c09_309_upwind_nobnd_D0_salt_lock_exchange</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -405,7 +405,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c11_311_vanLeer2_tide_D1" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c11_311_vanLeer2_tide_D1</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c11_311_vanLeer2_tide_D1</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -438,7 +438,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c12_312_vanLeer2_tide_D3333" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c12_312_vanLeer2_tide_D3333</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c12_312_vanLeer2_tide_D3333</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -472,7 +472,7 @@
 
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c13_313_upwind_tide_D3333_timestep_consistency" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c13_313_upwind_tide_D3333_timestep_consistency</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c13_313_upwind_tide_D3333_timestep_consistency</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -505,7 +505,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c14_314_vanLeer2_tide_D3333_timestep_consistency" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c14_314_vanLeer2_tide_D3333_timestep_consistency</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c14_314_vanLeer2_tide_D3333_timestep_consistency</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -538,7 +538,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c15_315" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c15_315_vanLeer2_nobnd_D0_salt_lock_exchange</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c15_315_vanLeer2_nobnd_D0_salt_lock_exchange</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -596,7 +596,7 @@
 -->
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c21_estuary_with_junction" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c21_estuary_with_junction</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f11_salinity/c21_estuary_with_junction</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -616,7 +616,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c22_estuary_with_junction_and_connection" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c22_estuary_with_junction_and_connection</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c22_estuary_with_junction_and_connection</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -636,7 +636,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c23_unbranched_estuary_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c23_unbranched_estuary_1</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c23_unbranched_estuary_1</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -656,7 +656,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f11(salinity)_c24_unbranched_estuary_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f11_salinity/c24_unbranched_estuary_2</path>
+            <path version="2024-01-12T06:10:00">e106_dflow1d/f11_salinity/c24_unbranched_estuary_2</path>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">

@@ -31,10 +31,10 @@
       contains
 
 
-      SUBROUTINE SETDAY ( LUNREP     , NOKEY      , & 
-                         KEYNAM     , KEYVAL     , & 
-                         DTFLG1     , DTFLG3     , & 
-                         IPROC      , aProcesProp, & 
+      SUBROUTINE SETDAY ( LUNREP     , NOKEY      , &
+                         KEYNAM     , KEYVAL     , &
+                         is_date_format     , is_yyddhh_format     , &
+                         IPROC      , aProcesProp, &
                          AllItems   , status )
 !
 !     Deltares
@@ -70,7 +70,7 @@
 !     Declaration of arguments
 !
       INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , item_ind
-      LOGICAL       DTFLG1 , DTFLG3
+      LOGICAL       is_date_format , is_yyddhh_format
       CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)    :: AllItems            ! all items of the proces system
@@ -119,8 +119,8 @@
       aProcesProp%no_FluxStochi = 0
       aProcesProp%no_DispStochi = 0
       aProcesProp%no_VeloStochi = 0
-      ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), & 
-              aProcesProp%output_item(aProcesProp%no_output), & 
+      ALLOCATE(aProcesProp%input_item(aProcesProp%no_input), &
+              aProcesProp%output_item(aProcesProp%no_output), &
               STAT=IERR_ALLOC)
       IF ( IERR_ALLOC /= 0 ) THEN
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
@@ -160,19 +160,19 @@
          IF ( IERR2 /= 0 ) THEN
             CALL convert_string_to_time_offset( KEYVAL(IKEY), istart, .FALSE., .FALSE., IERR2)
             IF ( IERR2 /= 0 ) THEN
-               WRITE(LUNREP,*)'ERROR interpreting start time:', & 
+               WRITE(LUNREP,*)'ERROR interpreting start time:', &
                               KEYVAL(IKEY)
                call status%increase_error_count()
             ENDIF
          ELSE
-            call convert_relative_time(istart, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time(istart, 1     , is_date_format , is_yyddhh_format )
          ENDIF
       ENDIF
 
       item_desc = 'start time for statistics'
       item_ind = 2
-      item_name = 'TINIT'(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, & 
+      item_name = 'TINIT'//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(istart), item_desc, item_ind, item_name, &
       IOTYPE_SEGMENT_INPUT)
 !
       IKEY = index_in_array('PERIOD',KEYNAM)
@@ -188,14 +188,14 @@
                call status%increase_error_count()
             ENDIF
          ELSE
-            call convert_relative_time ( iperiod, 1     , DTFLG1 , DTFLG3 )
+            call convert_relative_time ( iperiod, 1     , is_date_format , is_yyddhh_format )
          ENDIF
       ENDIF
 
       item_desc = 'period of time averaged output'
       item_ind = 3
-      item_name = 'PERIOD'(1:10)//aProcesProp%name(1:10)
-      call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name, & 
+      item_name = 'PERIOD'//aProcesProp%name(1:10)
+      call update_process_properties(AllItems, aProcesProp, aItemProp, real(iperiod), item_desc, item_ind,item_name, &
       IOTYPE_SEGMENT_INPUT)
 !
       aItemProp%name    = 'ITIME'
@@ -261,7 +261,7 @@
       aProcesProp%output_item(1)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(1)%indx= 1
       aProcesProp%output_item(1)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                         '] created with periodic average from [',aProcesProp%input_item(1)%name,']'
 !
       !     work array in input and in output
@@ -279,7 +279,7 @@
       aProcesProp%output_item(2)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(2)%indx= 2
       aProcesProp%output_item(2)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                        '] created with periodic minimum from [',aProcesProp%input_item(1)%name,']'
 !
       IF (SUFFIX(1:ISLEN) /= ' ' ) THEN
@@ -296,7 +296,7 @@
       aProcesProp%output_item(3)%item=>AllItems%ItemPropPnts(iret)%pnt
       aProcesProp%output_item(3)%indx= 3
       aProcesProp%output_item(3)%ip_val= 0
-      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, & 
+      WRITE(LUNREP,2000) 'Statistical output named [',aItemProp%name, &
                        '] created with periodic maximum from [',aProcesProp%input_item(1)%name,']'
 !
 !     work array in input and in output
@@ -400,7 +400,7 @@
  2000 FORMAT(5A)
       END
 
-      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, & 
+      SUBROUTINE update_process_properties(all_items, process_prop, item_prop, default_value, item_desc, item_ind, item_name, &
       item_type)
 !
 !     FUNCTION            : Update process properties

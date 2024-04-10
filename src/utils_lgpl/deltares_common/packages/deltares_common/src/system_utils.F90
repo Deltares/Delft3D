@@ -1,56 +1,67 @@
-module system_utils
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 !-------------------------------------------------------------------------------
 !
 !   Support for low level system routines
 !
 !-------------------------------------------------------------------------------
 !
+module system_utils
+    implicit none
+    private
 
 #if (defined(__linux__))
-    character(5), parameter :: ARCH = 'linux'
-    character(3), parameter :: SCRIPT_EXTENSION = '.sh'
-    character(3), parameter :: SHARED_LIB_PREFIX = 'lib'
-    character(3), parameter :: SHARED_LIB_EXTENSION = '.so'
-    character(1), parameter :: FILESEP = '/'
+    character(5), parameter, public :: ARCH = 'linux'
+    character(3), parameter, public :: SCRIPT_EXTENSION = '.sh'
+    character(3), parameter, public :: SHARED_LIB_PREFIX = 'lib'
+    character(3), parameter, public :: SHARED_LIB_EXTENSION = '.so'
+    character(1), parameter, public :: FILESEP = '/'
 
-    character(1), parameter :: FILESEP_OTHER_ARCH = '\'
-#else    
-    character(7), parameter :: ARCH = 'windows'
-    character(4), parameter :: SCRIPT_EXTENSION = '.bat'
-    character(0), parameter :: SHARED_LIB_PREFIX = ''
-    character(4), parameter :: SHARED_LIB_EXTENSION = '.dll'
-    character(1), parameter :: FILESEP = '\'
+    character(1), parameter, public :: FILESEP_OTHER_ARCH = '\'
+#else
+    character(7), parameter, public :: ARCH = 'windows'
+    character(4), parameter, public :: SCRIPT_EXTENSION = '.bat'
+    character(0), parameter, public :: SHARED_LIB_PREFIX = ''
+    character(4), parameter, public :: SHARED_LIB_EXTENSION = '.dll'
+    character(1), parameter, public :: FILESEP = '\'
 
-    character(1), parameter :: FILESEP_OTHER_ARCH = '/'
-#endif    
+    character(1), parameter, public :: FILESEP_OTHER_ARCH = '/'
+#endif
+
+    public :: cat_filename
+    public :: split_filename
+    public :: remove_path
+    public :: exifil
+    public :: directory_exists
+    public :: makedir
+    public :: is_abs
+    public :: find_last_slash
 
 contains
 
@@ -62,8 +73,6 @@ function cat_filename(path, file, ext) result(name)
 !              file specification.
 !
 !!--declarations----------------------------------------------------------------
-    !
-    implicit none
     !
     ! Arguments
     !
@@ -111,8 +120,6 @@ subroutine split_filename(name, path, file, ext)
 !              and file name extension.
 !
 !!--declarations----------------------------------------------------------------
-    !
-    implicit none
     !
     ! Arguments
     !
@@ -164,8 +171,6 @@ subroutine remove_path(name, file)
 !
 !!--declarations----------------------------------------------------------------
     !
-    implicit none
-    !
     ! Arguments
     !
     character(*)          , intent(in)  :: name   ! Full name of file (path,file,ext)
@@ -199,18 +204,16 @@ function exifil(name, unit)
     use string_module
     use message_module
     !
-    implicit none
-    !
     ! Arguments
     !
-    integer  , optional  :: unit   ! File unit number for 
+    integer  , optional  :: unit   ! File unit number for
     logical              :: exifil
     character(*)         :: name   ! Name of file
     !
     ! Local variables
     !
-    integer    :: ipos   ! Help var. 
-    logical    :: ex     ! Help flag = TRUE when file is found 
+    integer    :: ipos   ! Help var.
+    logical    :: ex     ! Help flag = TRUE when file is found
 !
 !! executable statements -------------------------------------------------------
 !
@@ -228,64 +231,70 @@ function exifil(name, unit)
     endif
 end function exifil
 
-function makedir(dirname) result(istat)
+!> Test if directory exists
+function directory_exists(name)
+    character(len=*), intent(in) :: name !< Name of the directory
+    logical                      :: directory_exists
+
+#ifdef __INTEL_COMPILER
+    inquire(directory = trim(name), exist = directory_exists)
+#else
+    ! GNU
+    inquire(file = trim(name) // FILESEP // ".", exist = directory_exists)
+#endif
+end function directory_exists
+
+!> Replace slashes by the OS-specific path separators
+function sanitize_path(path) result(sanitized_path)
+    use string_module, only: replace_char
+    character(len=*), intent(in) :: path !< The path to be sanitized
+    character(len=len(path))     :: sanitized_path
+
+    sanitized_path = path
+    call replace_char(sanitized_path, ichar(FILESEP_OTHER_ARCH), ichar(FILESEP))
+end function sanitize_path
+
+subroutine makedir(dir_name)
 !!--description-----------------------------------------------------------------
 !
 !    Function: An integer function that creates a directory (also for linux)
 !              when it does not yet exist.
-!              Returns the error status from the 'system' command.
 !
 !!--declarations----------------------------------------------------------------
 
+    use MessageHandling, only: err
 #ifdef __INTEL_COMPILER
     use ifport
 #endif
-    implicit none
-    character(len=*), intent(in) :: dirname
+    character(len=*), intent(in) :: dir_name
 
-    character(len=256)           :: command
+    character(len=256)           :: command, sanitized_dir_name
     integer                      :: istat
-    logical                      :: l_exist
-    integer                      :: lslash
-    character(len=999)           :: pathstr
-    character(len=1)             :: slash
 !
 !! executable statements -------------------------------------------------------
-!
-    istat = 0
 
-    call get_environment_variable('PATH',pathstr)
-   
-    slash = char(47)
-    lslash = index (pathstr,slash)
-    if (lslash == 0) then
-       slash = char(92)
-    endif
+    sanitized_dir_name = sanitize_path(dir_name)
 
-#ifdef __INTEL_COMPILER
-    inquire(directory = trim(dirname), exist = l_exist)
-#else
-    ! GNU
-    inquire(file = trim(dirname)//slash//".", exist = l_exist)
-#endif
-    if (l_exist) then
+    if (directory_exists(sanitized_dir_name)) then
        return
     end if
 
-    if ( slash == char(47)) then
-!      linux
-       command = "mkdir -p "//trim(dirname)
+    if (ARCH == 'linux') then
+       command = 'mkdir -p ' // trim(sanitized_dir_name)
+    else if (ARCH == 'windows') then
+       command = 'mkdir ' // trim(sanitized_dir_name)
     else
-!      windows
-       command = "mkdir "//trim(dirname)
+       call err('makedir could not determine the system architecture "' // trim(ARCH) // '".')
     end if
 
-    istat = system(command)
-    ! Fortran2008, not available before Intel 15:
-    ! call execute_command_line(command)
-      
-    return
-   end function
+    call execute_command_line(command, exitstat = istat)
+    if (istat /= 0) then
+        ! Multiple processes could have attempted to create the directory
+        if (.not. directory_exists(sanitized_dir_name)) then
+            call err('Cannot create output directory "' // trim(sanitized_dir_name) // '".')
+        end if
+    end if
+   end subroutine makedir
 
 !> Return .true. if path is an absolute pathname.
 !! On Unix, that means it begins with a slash, on Windows that it begins

@@ -495,7 +495,7 @@
                   end if
                else if (ip1 .ge. min_seg .and. ip1 .le. max_seg .and. ip2 .lt. 0) then !ip1 between min +1 and max
                   ! ip2 is a boundary and ip1 is in this layer
-                  if (d_hyd%idomain(ip1) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip1)))) then
+                  if (d_hyd%idomain(ip1) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip2)))) then
                      ! only add boundary links from current domain that are not point sources
                      noq1 = noq1 + 1
                      d_hyd%iglobal_link(iq) = noq1

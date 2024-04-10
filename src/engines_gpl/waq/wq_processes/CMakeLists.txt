@@ -23,7 +23,7 @@ oss_include_libraries(${library_name} oss_dependencies)
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE ${waq_default_flags})
-target_include_directories(${library_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../include ${version_include_dir})
+target_include_directories(${library_name} PRIVATE ${version_include_dir})
 
 # Define how the files should be structured in Visual studio
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)

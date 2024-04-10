@@ -5,7 +5,6 @@ set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(rc_version_file ${waq_root_path}/resources/version/version_number.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
-# file(GLOB preprocessor_files ${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/waq_bmi.F90)
 create_target(
         ${library_name} ${CMAKE_CURRENT_SOURCE_DIR}
         src_dir .
@@ -23,13 +22,11 @@ set(oss_dependencies waq_hyd_data
         waq_process
         waq_utils_f)
 
-
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies})
     target_include_directories(${library_name} PRIVATE ${mpi_include_path})
 
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
             PRIVATE
             "${mpi_library_path}"
@@ -54,7 +51,6 @@ if (WIN32)
             "pthreadVC2.lib")
 
     # Set linker options
-    message(STATUS "Setting target_link_options in windows")
     target_link_options(${library_name} PRIVATE ${nologo_flag})
 endif (WIN32)
 
@@ -79,4 +75,3 @@ install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)
-

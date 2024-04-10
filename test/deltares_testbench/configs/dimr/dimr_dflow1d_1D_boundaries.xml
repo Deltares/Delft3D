@@ -93,7 +93,7 @@
     <testCases>
 	    <!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f01(1D-boundaries)_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
-            <path>e106_dflow1d/f01_1D-boundaries/c01_030_h-boundary1d_one-connected-branch-only</path>
+            <path version="2024-01-12T06:30:00">e106_dflow1d/f01_1D-boundaries/c01_030_h-boundary1d_one-connected-branch-only</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dflow1d/output/waterbalance.nc" type="NETCDF">

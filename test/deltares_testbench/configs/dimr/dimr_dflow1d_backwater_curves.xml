@@ -91,7 +91,7 @@
     <testCases>
 	<!-- ======================================================================== -->
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c01_M1_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c01_M1_iadvec1d_1</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c01_M1_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -118,7 +118,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c02_M1_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c02_M1_iadvec1d_2</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c02_M1_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -145,7 +145,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c03_M1_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c03_M1_iadvec1d_5</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c03_M1_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -172,7 +172,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c04_M2_iadvec1d_1" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c04_M2_iadvec1d_1</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c04_M2_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -199,7 +199,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c05_M2_iadvec1d_2" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c05_M2_iadvec1d_2</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c05_M2_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>
@@ -226,7 +226,7 @@
         </testCase>
         <!-- ======================================================================== -->				
         <testCase name="e106(dflow1d)_f15(backwater-curves)_c06_M2_iadvec1d_5" ref="dflow1d_default">
-            <path>e106_dflow1d/f15_backwater-curves/c06_M2_iadvec1d_5</path>
+            <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c06_M2_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                     <parameters>

@@ -97,7 +97,7 @@ contains
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
-        use memory_mangement          ! module with the more recently added arrays
+        use variable_declaration          ! module with the more recently added arrays
         use m_actions
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
@@ -132,6 +132,9 @@ contains
 
         INTEGER(kind = int_wp) :: IDTOLD
         INTEGER(kind = int_wp) :: sindex
+        
+        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
@@ -257,7 +260,7 @@ contains
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
                     ioffbl, a(imass:), nosys, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), iknmkv, noq1, noq2, noq3, &
+                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
                     noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
                     j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
                     nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &

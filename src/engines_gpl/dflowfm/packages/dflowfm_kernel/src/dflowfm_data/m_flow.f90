@@ -166,7 +166,7 @@
  double precision, allocatable, target :: vol1(:)     !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target :: vol0(:)     !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target :: vol1_f(:)     !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
- double precision, allocatable         :: sq(:)       !< total  influx (m3/s) at s point
+ double precision, allocatable         :: sq(:)       !< total  influx (m3/s) at water level point
  double precision, allocatable         :: sqa(:)      !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
  double precision, allocatable, target :: hs(:)       !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
  double precision, allocatable         :: cfs(:)      !< dimensionless friction coefficient sag/C in cell centre
@@ -546,6 +546,8 @@
  integer, parameter :: IDX_EVAP_ICEPT = 39
  integer, parameter :: IDX_PRECIP_GROUND = 40
 
+ logical :: ucxyq_read_rst       !< determines if variables `ucxq` and `ucxy` have been read from restart.
+ 
 contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_flow() instead.

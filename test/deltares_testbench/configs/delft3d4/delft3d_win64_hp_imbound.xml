@@ -279,7 +279,7 @@
 				-->
 	<testCases>
 		<testCase name="e01_f30_c01-2D_annular_curv_cold" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c01-2D_annular_curv_cold</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c01-2D_annular_curv_cold</path>
 			<maxRunTime>26.5610001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_curv.dat" type="NEFIS">
@@ -299,7 +299,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c02-2D_annular_curv_hot" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c02-2D_annular_curv_hot</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c02-2D_annular_curv_hot</path>
 			<maxRunTime>27.5610001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_curv.dat" type="NEFIS">
@@ -319,7 +319,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c03-2D_annular_ibm_cold" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c03-2D_annular_ibm_cold</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c03-2D_annular_ibm_cold</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
@@ -339,7 +339,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c04-2D_annular_ibm_hot" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c04-2D_annular_ibm_hot</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c04-2D_annular_ibm_hot</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
@@ -359,7 +359,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c05-2D_skewed_43d80_hot" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c05-2D_skewed_43d80_hot</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c05-2D_skewed_43d80_hot</path>
 			<maxRunTime>10.0010001087</maxRunTime>
 			<checks>
 				<file name="trih-uniform.dat" type="NEFIS">
@@ -379,7 +379,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c06-2D_annular_meyer_peter_only_bed" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c06-2D_annular_meyer_peter_only_bed</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c06-2D_annular_meyer_peter_only_bed</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">
@@ -408,7 +408,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f30_c07-2D_annular_meyer_peter_banks" ref="flow2d3d_default">
-			<path>e01_d3dflow/f30_immersed_boundaries/c07-2D_annular_meyer_peter_banks</path>
+			<path version="2024-01-08T09:40:00">e01_d3dflow/f30_immersed_boundaries/c07-2D_annular_meyer_peter_banks</path>
 			<maxRunTime>179.6910001087</maxRunTime>
 			<checks>
 				<file name="trih-annular_cart.dat" type="NEFIS">

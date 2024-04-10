@@ -1,5 +1,5 @@
 # D-Waq D-FlowFM online coupling targets
 
-if(NOT TARGET wq_processes)
-    add_subdirectory(${checkout_src_root}/${wq_processes_module} wq_processes)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq_functions.cmake)
+
+add_target_with_subdirectory(wq_processes ${wq_processes_module})
