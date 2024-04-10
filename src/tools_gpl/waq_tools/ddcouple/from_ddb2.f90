@@ -27,13 +27,13 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)               :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)          :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)               :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)    :: domain_hyd_coll        ! description of all domain hydrodynamics
       logical                   :: parallel               ! parallel option, extra m lines are removed
       logical                   :: n_mode                 ! stack domains in the n direction
 
@@ -41,7 +41,7 @@
 
       integer                   :: n_domain               ! number of domains
       integer                   :: i_domain               ! index in collection
-      type(t_hyd), pointer      :: domain_hyd             ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer      :: domain_hyd             ! description of one domain hydrodynamics
       integer                   :: ilay                   ! index in layers
       integer                   :: iwaste                 ! wasteload index
       integer                   :: i_wasteload            ! index in collection
@@ -68,12 +68,12 @@
       hyd%tem_present    = .true.
       hyd%tau_present    = .true.
       hyd%vdf_present    = .true.
-      hyd%wasteload_coll%cursize = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
 
       ! get properties from the domains
 
-      n_domain = hyd%domain_coll%cursize
+      n_domain = hyd%domain_coll%current_size
       moffset  = 0
       noffset  = 0
       do i_domain = 1 , n_domain
@@ -116,11 +116,11 @@
 
          ! waste loads
 
-         do iwaste = 1, domain_hyd%wasteload_coll%cursize
+         do iwaste = 1, domain_hyd%wasteload_coll%current_size
             wasteload   = domain_hyd%wasteload_coll%wasteload_pnts(iwaste)
             wasteload%m = wasteload%m + moffset
             wasteload%n = wasteload%n + noffset
-            i_wasteload = wasteload_coll_add(hyd%wasteload_coll, wasteload)
+            i_wasteload = hyd%wasteload_coll%add(wasteload)
          enddo
 
 

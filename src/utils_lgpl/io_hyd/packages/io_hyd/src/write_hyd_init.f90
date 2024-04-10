@@ -34,14 +34,14 @@
       ! global declarations
 
       use m_monsys
-      use hydmod
+      use m_hydmod
       use m_write_waqgeom
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd     ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd     ! description of the hydrodynamics
 
       ! local declarations
 

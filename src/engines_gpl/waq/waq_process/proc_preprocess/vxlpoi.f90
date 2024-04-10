@@ -43,7 +43,7 @@ contains
         !
         !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
 
         !     PARAMETERS          : 13
         !
@@ -67,7 +67,7 @@ contains
         CHARACTER*(*) VALNAM, LINE
         CHARACTER*(*)            FUNAME(*), &
                 DINAME(*), VENAME(*)
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         !
         !     Local
         !
@@ -136,7 +136,7 @@ contains
         !
         !     as constant ?
         !
-        ico = dlwq_find(constants, valnam)
+        ico = constants%find(valnam)
         if (ico > 0) then
             write(line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
             ivalip = nopref + nodisp + novelo + nofun + ico

@@ -66,7 +66,7 @@ contains
         use m_open_waq_files
         use timers
         use delwaq2_data
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use m_sysn          ! System characteristics
         use m_syst          ! Time function flags
 

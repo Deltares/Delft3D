@@ -102,7 +102,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer

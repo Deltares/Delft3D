@@ -52,7 +52,7 @@ contains
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
         !    integer                 :: maxsize ! maximum size of the current array
-        !    integer                 :: cursize ! filled up to this size
+        !    integer                 :: current_size ! filled up to this size
         ! BotColm Struct 1   O  Structure with bottom collumn info
         !                  Contains:
         !    integer :: fstwatsed  ! first water sediment exchange number
@@ -220,7 +220,7 @@ contains
         IPDVOL = IPOINT(32)
 
         !.....Loop over kolommen
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             !         Select first column of exchanges for DOWNWARD advection
 
@@ -794,7 +794,7 @@ contains
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
         !    integer                 :: maxsize ! maximum size of the current array
-        !    integer                 :: cursize ! filled up to this size
+        !    integer                 :: current_size ! filled up to this size
         ! BotColm Struct 1   O  Structure with bottom collumn info
         !                  Contains:
         !    integer :: fstwatsed  ! first water sediment exchange number
@@ -830,7 +830,7 @@ contains
         !     Check for first call
         if (.NOT. FIRST) return
         FIRST = .false.
-        Coll%cursize = 0
+        Coll%current_size = 0
         Coll%maxsize = 0
 
         !.....Exchangeloop over de verticale richting
@@ -902,7 +902,7 @@ contains
             enddo
             Coll%set((ik + 1) / 2) = set
         enddo
-        Coll%cursize = nkolom / 2
+        Coll%current_size = nkolom / 2
         RETURN
         !
         9000 if (errorcode==0) errorcode = 9000

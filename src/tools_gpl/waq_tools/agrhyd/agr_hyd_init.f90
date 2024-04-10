@@ -30,7 +30,7 @@
       ! global declarations
 
       use m_srstop
-      use hydmod
+      use m_hydmod
       use m_aggregate_waqgeom
       use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
 
@@ -38,14 +38,14 @@
 
       ! declaration of the arguments
 
-      type(t_hyd)          :: input_hyd                            ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                            ! description of the input hydrodynamics
       integer              :: ipnt(input_hyd%noseg)                ! aggregation pointer segments
       integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax)! aggregation pointer in the horizontal
       integer              :: ipnt_q(input_hyd%noq)                ! aggregation pointer exchanges
       integer              :: ipnt_vdf(*)                          ! aggregation pointer used for minimum vertical diffusion
       integer              :: ipnt_b(*)                            ! aggregation pointer for boundaries
       integer              :: ipnt_v(input_hyd%nolay)              ! vertical aggregation pointer
-      type(t_hyd)          :: output_hyd                           ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                           ! description of the output hydrodynamics
       logical              :: l_regular                            ! regular aggregartion option
       logical              :: l_expand                             ! expand to full matrix
       logical              :: l_lenlen                             ! take length from length
@@ -128,12 +128,12 @@
           output_hyd%nosegl= maxval(ipnt_h)
           output_hyd%noseg = output_hyd%nolay*output_hyd%nosegl
           output_hyd%crs = input_hyd%crs
-          output_hyd%openbndsect_coll%cursize = 0
+          output_hyd%openbndsect_coll%current_size = 0
           output_hyd%openbndsect_coll%maxsize = 0
           output_hyd%openbndsect_coll%openbndsect_pnts => null()
-          no_sect = input_hyd%openbndsect_coll%cursize
+          no_sect = input_hyd%openbndsect_coll%current_size
           do i_sect = 1, no_sect
-             iret = coll_add(output_hyd%openbndsect_coll, input_hyd%openbndsect_coll%openbndsect_pnts(i_sect))
+             iret = output_hyd%openbndsect_coll%add(input_hyd%openbndsect_coll%openbndsect_pnts(i_sect))
              if ( iret .ne. i_sect ) then ; write(*,*) ' error copying boundary section data' ; call srstop(1) ; endif
           end do
       endif
@@ -281,11 +281,11 @@
 
       ! wasteloads
 
-      output_hyd%wasteload_coll%cursize = 0
+      output_hyd%wasteload_coll%current_size = 0
       output_hyd%wasteload_coll%maxsize = 0
       output_hyd%wasteload_coll%l_seconds = input_hyd%wasteload_coll%L_seconds
 
-      do iwast = 1 , input_hyd%wasteload_coll%cursize
+      do iwast = 1 , input_hyd%wasteload_coll%current_size
 
          if ( l_regular ) then
             n           = input_hyd%wasteload_coll%wasteload_pnts(iwast)%n
@@ -311,11 +311,11 @@
 
          ! add to wasteload collection
 
-         i_wasteload = wasteload_coll_add(output_hyd%wasteload_coll, wasteload)
+         i_wasteload = output_hyd%wasteload_coll%add(wasteload)
 
       enddo
-      if ( output_hyd%wasteload_coll%cursize .gt. 0 ) then
-         ierror = dlwqdatacopy(input_hyd%wasteload_data,output_hyd%wasteload_data)
+      if ( output_hyd%wasteload_coll%current_size .gt. 0 ) then
+         ierror = input_hyd%wasteload_data%copy(output_hyd%wasteload_data)
          if ( ierror .ne. 0 ) then ; write(*,*) ' error copying wasteload data' ; call srstop(1) ; endif
       endif
 

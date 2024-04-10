@@ -96,7 +96,7 @@ CONTAINS
         !     INIT    LOGICAL  1       if T boot the system if F no initialisation
         !     ACTION  INTEGER  1       indication of the action to be performed
         !
-        use dlwqgrid_mod
+        use m_grid_utils_external
         USE DLWQI0_MOD
         USE Timers
         use delwaq2_data

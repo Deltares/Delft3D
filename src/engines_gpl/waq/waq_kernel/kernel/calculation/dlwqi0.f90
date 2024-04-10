@@ -73,7 +73,7 @@ contains
         !                           ZERO  , zeros an real arrays
         !
         use m_dhisys
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use variable_declaration
         use delwaq2_data
         use timers

@@ -54,8 +54,8 @@
       use m_file_unit_number
       use timers
       use delwaq2_data
-      use dlwqgrid_mod
-      use dlwq_hyd_data
+      use m_grid_utils_external
+      use m_waq_data_structure
       implicit none
 
 !     declaration of the arguments
@@ -84,7 +84,7 @@
 !     Local declarations
 
       integer(kind=int_wp) ::no_proc_pars         ! number of process parameters data blocks
-      type(t_dlwqdata), pointer            :: proc_par             ! a pointer to one data block
+      type(t_data_block), pointer            :: proc_par             ! a pointer to one data block
       integer(kind=int_wp) ::ntotal               ! number of process parameters
       character(len=12)                    :: chlp
       integer(kind=int_wp) ::ftype                ! the equivalent of the ftype array elsewhere
@@ -122,28 +122,28 @@
                write(lunrep,1000) trim(lch)
                call srstop(1)
             endif
-            allocate(dlwqd%proc_pars%dlwqdata(no_proc_pars))
+            allocate(dlwqd%proc_pars%data_block(no_proc_pars))
             dlwqd%proc_pars%maxsize = no_proc_pars
-            dlwqd%proc_pars%cursize = no_proc_pars
+            dlwqd%proc_pars%current_size = no_proc_pars
 
             do i = 1 , no_proc_pars
-               ierr2 = dlwqdataRead(lunrep,lun,dlwqd%proc_pars%dlwqdata(i))
+               ierr2 = dlwqd%proc_pars%data_block(i)%read(lunrep,lun)
                if ( ierr2 /= 0 ) then
                   write(lunrep,1000) trim(lch)
                   call srstop(1)
                endif
-               proc_par => dlwqd%proc_pars%dlwqdata(i)
-               if ( proc_par%extern .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
+               proc_par => dlwqd%proc_pars%data_block(i)
+               if ( proc_par%is_external .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
                                            mod(proc_par%filetype,10) == FILE_UNFORMATTED ) ) then
                   if ( proc_par%iorder == ORDER_PARAM_LOC ) then
-                     ndim1 = proc_par%no_param
-                     ndim2 = proc_par%no_loc
+                     ndim1 = proc_par%num_parameters
+                     ndim2 = proc_par%num_locations
                   else
-                     ndim1 = proc_par%no_loc
-                     ndim2 = proc_par%no_param
+                     ndim1 = proc_par%num_locations
+                     ndim2 = proc_par%num_parameters
                   endif
                   nobrk = 1
-                  proc_par%no_brk=nobrk
+                  proc_par%num_breakpoints=nobrk
                   allocate(proc_par%values(ndim1,ndim2,nobrk))
                   !
                   ! Some obscure magic going on with LU-numbers - keep it for the moment
@@ -162,19 +162,19 @@
 
          ! evaluate data
 
-         do i = 1 , dlwqd%proc_pars%cursize
+         do i = 1 , dlwqd%proc_pars%current_size
 
             ! update external data to values
 
-            proc_par => dlwqd%proc_pars%dlwqdata(i)
-            if ( proc_par%extern .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
+            proc_par => dlwqd%proc_pars%data_block(i)
+            if ( proc_par%is_external .and. ( mod(proc_par%filetype,10) == FILE_BINARY .or. &
                                         mod(proc_par%filetype,10) == FILE_UNFORMATTED ) ) then
                if ( proc_par%iorder == ORDER_PARAM_LOC ) then
-                  ndim1 = proc_par%no_param
-                  ndim2 = proc_par%no_loc
+                  ndim1 = proc_par%num_parameters
+                  ndim2 = proc_par%num_locations
                else
-                  ndim1 = proc_par%no_loc
-                  ndim2 = proc_par%no_param
+                  ndim1 = proc_par%num_locations
+                  ndim2 = proc_par%num_parameters
                endif
                ntt = ndim1*ndim2
                allocate(ipntloc(ntt))
@@ -187,25 +187,25 @@
             endif
 
             if ( proc_par%subject == SUBJECT_CONSTANT .and. ifflag == 1 ) then
-               ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nocons,1,const)
+               ierr2 = proc_par%evaluate(GridPs, itime, nocons, 1, const)
                if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
             elseif ( proc_par%subject == SUBJECT_FUNCTION ) then
-               ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nofun,1,funcs)
+               ierr2 = proc_par%evaluate(GridPs,itime,nofun,1,funcs)
                if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
             elseif ( proc_par%subject == SUBJECT_PARAMETER .and. ifflag == 1 ) then
-               ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,nopa,noseg,param)
+               ierr2 = proc_par%evaluate(GridPs,itime,nopa,noseg,param)
                if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)
                endif
             elseif ( proc_par%subject == SUBJECT_SEGFUNC ) then
-               ierr2 = dlwqdataEvaluate(proc_par,GridPs,itime,noseg,nosfun,sfuncs)
+               ierr2 = proc_par%evaluate(GridPs, itime, noseg, nosfun, sfuncs)
                if ( ierr2 /= 0 ) then
                   write(lunrep,1010)
                   call srstop(1)

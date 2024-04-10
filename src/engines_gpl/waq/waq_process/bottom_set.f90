@@ -58,7 +58,7 @@ module BottomSet
     type BotColmnColl
         type(BotColmn), pointer :: set(:)     ! array with info for all bottom collumns
         integer :: maxsize    ! maximum size of the current array
-        integer :: cursize    ! filled up to this size
+        integer :: current_size    ! filled up to this size
     end type BotColmnColl
 
     !**WARNING here is the mentioned variable Coll
@@ -75,7 +75,7 @@ contains
         type(BotColmn), pointer :: tset(:)
         type(BotColmn) :: aBotColmn
         !                          check if there is space left
-        if (aBotColmnColl%cursize == aBotColmnColl%maxsize) then
+        if (aBotColmnColl%current_size == aBotColmnColl%maxsize) then
             allocate (tset(aBotColmnColl%maxsize + MAX_NUM)) ! allocate new space
             do i = 1, aBotColmnColl%maxsize
                 tset(i) = aBotColmnColl%set(i)                    ! copy the old array
@@ -84,13 +84,13 @@ contains
             aBotColmnColl%set => tset     ! put new array in place
             aBotColmnColl%maxsize = aBotColmnColl%maxsize + MAX_NUM  ! increase maximum
         endif
-        aBotColmnColl%cursize = aBotColmnColl%cursize + 1       ! increase current size
+        aBotColmnColl%current_size = aBotColmnColl%current_size + 1       ! increase current size
         aBotColmn%fstwatsed = ifirst                          ! make a new bottom
         aBotColmn%lstwatsed = ilast                           ! collumn
         aBotColmn%topsedsed = itop                            ! from the parameters
         aBotColmn%botsedsed = ibot                            ! of the call
-        aBotColmnColl%set(aBotColmnColl%cursize) = aBotColmn    ! copy the content into the array
-        size = aBotColmnColl%cursize                            ! set the return value
+        aBotColmnColl%set(aBotColmnColl%current_size) = aBotColmn    ! copy the content into the array
+        size = aBotColmnColl%current_size                            ! set the return value
         !
         return
         !

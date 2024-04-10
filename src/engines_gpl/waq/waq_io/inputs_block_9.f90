@@ -220,7 +220,7 @@ contains
 
         allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart), &
                 Outputs%units(nrvart), Outputs%description(nrvart))
-        Outputs%cursize = nrvart
+        Outputs%current_size = nrvart
 
         ivar = 0
         do i = 1, noutp

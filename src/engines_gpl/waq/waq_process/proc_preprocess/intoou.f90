@@ -115,7 +115,7 @@ contains
 
         nproc = 0
         nflux = 0
-        nproctot = procesdef%cursize
+        nproctot = procesdef%current_size
         do iproc = 1, nproctot
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
@@ -155,7 +155,7 @@ contains
 
         ! loop over processes
 
-        nproctot = procesdef%cursize
+        nproctot = procesdef%current_size
         iproc_act = 0
         do iproc = 1, nproctot
             proc => procesdef%procesprops(iproc)

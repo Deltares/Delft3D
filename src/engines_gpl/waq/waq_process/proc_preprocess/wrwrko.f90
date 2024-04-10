@@ -63,7 +63,7 @@ contains
         if (timon) call timstrt("wrwrko", ithndl)
 
         versio = 0.2
-        nrvart = outputs%cursize
+        nrvart = outputs%current_size
 
         ! write work file
 

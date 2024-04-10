@@ -152,7 +152,7 @@ contains
         nflux = 0
 
         nbpr = 0
-        do iproc = 1, procesdef%cursize
+        do iproc = 1, procesdef%current_size
             if (procesdef%procesprops(iproc)%active) then
                 nbpr = nbpr + 1
             endif

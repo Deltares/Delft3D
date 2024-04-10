@@ -81,7 +81,7 @@ contains
         !
         !
         use m_srstop
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
 
         INTEGER(kind = int_wp) :: LUN(*), IGREF(NOGRID), IGSEG(NOSEG, NOGRID), &

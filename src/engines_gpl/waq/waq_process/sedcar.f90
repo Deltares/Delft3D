@@ -283,7 +283,7 @@ contains
         IP11 = IPOINT(11)
         IP12 = IPOINT(12)
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             IWA1 = Coll%set(IK)%fstwatsed
             IWA2 = Coll%set(IK)%lstwatsed

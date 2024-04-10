@@ -76,7 +76,7 @@ contains
         use error_handling, only : check_error
         use m_open_waq_files
         use rd_token
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_string_utils, only : index_in_array
@@ -126,8 +126,8 @@ contains
         logical :: time_dependent !< Is the BC / Waste load definition time dependent (true)? Or constant (false)?
         integer(kind = int_wp) :: ithndl = 0
 
-        type(t_dlwq_data_items) :: dlwq_data_items
-        type(t_dlwq_item) :: dlwq_foritem
+        type(t_waq_data_items) :: dlwq_data_items
+        type(t_waq_item) :: dlwq_foritem
         character(20) :: data_item_name
         integer(kind = int_wp) :: idata_item
         integer(kind = int_wp) :: ndata_items
@@ -146,8 +146,8 @@ contains
         itfacw = 1
         deltim = otime
         missing_value = -999.0
-        ierr2 = dlwq_init_data_items(dlwq_data_items)
-        ierr2 = dlwq_init_item(dlwq_foritem)
+        ierr2 = dlwq_data_items%initialize()
+        ierr2 = dlwq_foritem%initialize()
         !
         !          Initialise new data block
         !
@@ -299,13 +299,13 @@ contains
                     output_verbose_level, ierr2, status)
             ! Check if data_item already exists
 
-            if (dlwq_data_items%cursize > 0) then
-                idata_item = index_in_array(data_item_name, dlwq_data_items%name(1:dlwq_data_items%cursize))
+            if (dlwq_data_items%current_size > 0) then
+                idata_item = index_in_array(data_item_name, dlwq_data_items%name(1:dlwq_data_items%current_size))
             else
                 idata_item = 0
             end if
             if (idata_item<=0) then ! first data_item (0) or not found (<0)
-                ndata_items = dlwq_data_itemsAdd(dlwq_data_items, data_item_name, dlwq_foritem)
+                ndata_items = dlwq_data_items%add(data_item_name, dlwq_foritem)
                 idata_item = ndata_items
             endif
             if(dlwq_data_items%used(idata_item)) then
@@ -314,10 +314,10 @@ contains
             end if
             do idx_item_in_use_rule = 1, count_items_in_use_rule !count_items_in_use_rule
                 !          Already on the list?
-                count_unique_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
+                count_unique_items_in_use_rule = dlwq_data_items%for_item(idata_item)%no_item
                 if (count_unique_items_in_use_rule>0) then
                     iitem = index_in_array(char_arr(ioff + idx_item_in_use_rule - 1), &
-                            dlwq_data_items%dlwq_foritem(idata_item)%name(1:count_unique_items_in_use_rule))
+                            dlwq_data_items%for_item(idata_item)%name(1:count_unique_items_in_use_rule))
                 else
                     iitem = -1
                 end if
@@ -325,14 +325,14 @@ contains
                 !! if the item has not been added to dlwq_data_items and it shouldn't be ignored
                 if (iitem<=0 .and. int_workspace(ioff + idx_item_in_use_rule - 1)/=-1300000000) then
                     count_unique_items_in_use_rule = count_unique_items_in_use_rule + 1
-                    ierr2 = dlwq_resize_item(dlwq_data_items%dlwq_foritem(idata_item), count_unique_items_in_use_rule)
-                    dlwq_data_items%dlwq_foritem(idata_item)%name(count_unique_items_in_use_rule) = &
+                    ierr2 = dlwq_data_items%for_item(idata_item)%resize(count_unique_items_in_use_rule)
+                    dlwq_data_items%for_item(idata_item)%name(count_unique_items_in_use_rule) = &
                             char_arr(ioff + idx_item_in_use_rule - 1)
-                    dlwq_data_items%dlwq_foritem(idata_item)%ipnt(count_unique_items_in_use_rule) = &
+                    dlwq_data_items%for_item(idata_item)%ipnt(count_unique_items_in_use_rule) = &
                             int_workspace(ioff + idx_item_in_use_rule - 1)
-                    dlwq_data_items%dlwq_foritem(idata_item)%sequence(count_unique_items_in_use_rule) = &
+                    dlwq_data_items%for_item(idata_item)%sequence(count_unique_items_in_use_rule) = &
                             count_unique_items_in_use_rule
-                    dlwq_data_items%dlwq_foritem(idata_item)%no_item = count_unique_items_in_use_rule
+                    dlwq_data_items%for_item(idata_item)%no_item = count_unique_items_in_use_rule
                 end if
             end do
             if (ierr2 /= 0) goto 510
@@ -392,30 +392,30 @@ contains
                     ! Replace result of parse_boundary_condition_data with usedata_item list
                     dlwq_data_items%used(idata_item) = .true.
                     !! for how many items is applicable this usedata_item?
-                    count_items_in_use_rule = dlwq_data_items%dlwq_foritem(idata_item)%no_item
+                    count_items_in_use_rule = dlwq_data_items%for_item(idata_item)%no_item
                     if (count_items_in_use_rule /= 0) then
                         itmnr = count_items_in_use_rule
                         noits = count_items_in_use_rule
                         do idx_item_in_use_rule = 1, count_items_in_use_rule
                             char_arr(ioff + idx_item_in_use_rule - 1) = &
-                                    dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                                    dlwq_data_items%for_item(idata_item)%name(idx_item_in_use_rule)
                             char_arr(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
-                                    dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                                    dlwq_data_items%for_item(idata_item)%name(idx_item_in_use_rule)
                             int_workspace(ioff + idx_item_in_use_rule - 1) = &
-                                    dlwq_data_items%dlwq_foritem(idata_item)%ipnt(idx_item_in_use_rule)
+                                    dlwq_data_items%for_item(idata_item)%ipnt(idx_item_in_use_rule)
                             int_workspace(ioff + idx_item_in_use_rule - 1 + count_items_in_use_rule) = &
-                                    dlwq_data_items%dlwq_foritem(idata_item)%sequence(idx_item_in_use_rule)
+                                    dlwq_data_items%for_item(idata_item)%sequence(idx_item_in_use_rule)
 
                             ! I think the log statements below are wrong, not the type but the DATA_ITEM should be
                             ! printed as 1st argument
                             if (int_workspace(ioff + idx_item_in_use_rule - 1) > 0) then
                                 write (lunut, 1023) char_arr(ioff), idata_item, calit, &
                                         int_workspace(ioff + idx_item_in_use_rule - 1), &
-                                        dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                                        dlwq_data_items%for_item(idata_item)%name(idx_item_in_use_rule)
                             else
                                 write (lunut, 1024) char_arr(ioff), idata_item, calit, &
                                         int_workspace(ioff + idx_item_in_use_rule - 1), &
-                                        dlwq_data_items%dlwq_foritem(idata_item)%name(idx_item_in_use_rule)
+                                        dlwq_data_items%for_item(idata_item)%name(idx_item_in_use_rule)
                             end if
                         end do
                     else

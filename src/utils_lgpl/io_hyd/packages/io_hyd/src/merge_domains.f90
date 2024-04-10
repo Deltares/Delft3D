@@ -32,23 +32,23 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       use m_alloc
       use precision_basics, only : comparereal
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
 
       ! local declarations
 
       integer                                :: n_domain               ! number of domains
       integer                                :: i_domain               ! index in collection
       integer                                :: idmn                   ! flow like domain index (0:n_domain-1)
-      type(t_hyd), pointer                   :: d_hyd                  ! description of one domain hydrodynamics
-      type(t_hyd), pointer                   :: l_hyd                  ! description of a linked domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: d_hyd                  ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: l_hyd                  ! description of a linked domain hydrodynamics
       integer                                :: nosegl                 ! total number of segments per layer
       integer                                :: nobnd                  ! total number of boundaries
       integer                                :: nobndl                 ! total number of boundaries per layer
@@ -68,9 +68,9 @@
       integer                                :: isect                  ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect), pointer           :: openbndsect            ! single section
-      type(t_openbndlin),pointer             :: openbndlin             ! single open boundary lin
-      type(t_openbndsect)                    :: new_sect               ! single section new
+      type(t_openbnd_section), pointer           :: openbndsect            ! single section
+      type(t_open_boundary_line),pointer             :: openbndlin             ! single open boundary lin
+      type(t_openbnd_section)                    :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
       integer                                :: ik                     ! node counter
@@ -103,7 +103,7 @@
       integer, parameter                     :: edge_type_orde(4) = [1, 2, 0, 3]
 
       ! allocate local arrays
-      n_domain = domain_hyd_coll%cursize
+      n_domain = domain_hyd_coll%current_size
       d_hyd => domain_hyd_coll%hyd_pnts(1)
 
       ! copy projection attributes
@@ -136,10 +136,10 @@
       hyd%cnv_step_sec= d_hyd%cnv_step_sec
 
       hyd%openbndsect_coll%maxsize = 0
-      hyd%openbndsect_coll%cursize = 0
-      hyd%wasteload_coll%cursize = 0
+      hyd%openbndsect_coll%current_size = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! initialise
@@ -430,10 +430,10 @@
       do i_domain = 1, n_domain
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
          call reallocP(d_hyd%ispoint_bnd, d_hyd%nobnd, fill = .false.)
-         no_sect = d_hyd%openbndsect_coll%cursize
+         no_sect = d_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => d_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             do i_bnd = 1 , no_bnd
                openbndlin => openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)
                if (comparereal(openbndlin%x1, openbndlin%x2) == 0 .and. comparereal(openbndlin%x1, openbndlin%x2) == 0) then
@@ -628,10 +628,10 @@
       ! boundaries, add the active sections and boundaries to the collections
       do i_domain = 1, n_domain
          d_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         no_sect = d_hyd%openbndsect_coll%cursize
+         no_sect = d_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => d_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             bnd_active = .false.
             do i_bnd = 1 , no_bnd
                if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
@@ -639,17 +639,17 @@
                end if
             end do
             if ( bnd_active ) then
-               isect = openbndsect_coll_find( hyd%openbndsect_coll, openbndsect%name )
+               isect = hyd%openbndsect_coll%find(openbndsect%name )
                if ( isect .le. 0 ) then
                   new_sect%name = openbndsect%name
-                  new_sect%openbndlin_coll%cursize = 0
+                  new_sect%openbndlin_coll%current_size = 0
                   new_sect%openbndlin_coll%maxsize = 0
                   new_sect%openbndlin_coll%openbndlin_pnts => null()
-                  isect = coll_add(hyd%openbndsect_coll, new_sect)
+                  isect = hyd%openbndsect_coll%add(new_sect)
                end if
                do i_bnd = 1 , no_bnd
                   if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
-                     iret = coll_add(hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll,openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
+                     iret = hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%add(openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
                      hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%openbndlin_pnts(iret)%ibnd = openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new
                   end if
                end do
@@ -703,22 +703,22 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       use MessageHandling
       use m_alloc
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                    ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
 
       ! local declarations
 
       integer                                :: n_domain               ! number of domains
       integer                                :: i_domain               ! index in collection
       integer                                :: idmn                   ! flow like domain index (0:n_domain-1)
-      type(t_hyd), pointer                   :: domain_hyd             ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd             ! description of one domain hydrodynamics
       integer                                :: nosegl                 ! total number of segments per layer
       integer                                :: nobnd                  ! total number of boundaries
       integer                                :: nobndl                 ! total number of boundaries per layer
@@ -741,8 +741,8 @@
       integer                                :: isect                  ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect), pointer           :: openbndsect            ! single section
-      type(t_openbndsect)                    :: new_sect               ! single section new
+      type(t_openbnd_section), pointer           :: openbndsect            ! single section
+      type(t_openbnd_section)                    :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
 
@@ -758,7 +758,7 @@
       integer                                :: inew                   ! new number
 
       ! allocate local arrays
-      n_domain = domain_hyd_coll%cursize
+      n_domain = domain_hyd_coll%current_size
 
       ! copy projection attributes
       hyd%crs  = domain_hyd_coll%hyd_pnts(1)%crs
@@ -785,10 +785,10 @@
       hyd%cnv_step_sec= domain_hyd_coll%hyd_pnts(1)%cnv_step_sec
 
       hyd%openbndsect_coll%maxsize = 0
-      hyd%openbndsect_coll%cursize = 0
-      hyd%wasteload_coll%cursize = 0
+      hyd%openbndsect_coll%current_size = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! iglobal is only partially filled first look for highest number
@@ -1095,10 +1095,10 @@
       ! boundaries, add the active sections and boundaries to the collections
       do i_domain = 1, n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         no_sect = domain_hyd%openbndsect_coll%cursize
+         no_sect = domain_hyd%openbndsect_coll%current_size
          do i_sect = 1 , no_sect
             openbndsect => domain_hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-            no_bnd = openbndsect%openbndlin_coll%cursize
+            no_bnd = openbndsect%openbndlin_coll%current_size
             bnd_active = .false.
             do i_bnd = 1 , no_bnd
                if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
@@ -1106,17 +1106,17 @@
                end if
             end do
             if ( bnd_active ) then
-               isect = openbndsect_coll_find( hyd%openbndsect_coll, openbndsect%name )
+               isect = hyd%openbndsect_coll%find(openbndsect%name)
                if ( isect .le. 0 ) then
                   new_sect%name = openbndsect%name
-                  new_sect%openbndlin_coll%cursize = 0
+                  new_sect%openbndlin_coll%current_size = 0
                   new_sect%openbndlin_coll%maxsize = 0
                   new_sect%openbndlin_coll%openbndlin_pnts => null()
-                  isect = coll_add(hyd%openbndsect_coll, new_sect)
+                  isect = hyd%openbndsect_coll%add(new_sect)
                end if
                do i_bnd = 1 , no_bnd
                   if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new .ne. 0 ) then
-                     iret = coll_add(hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll,openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
+                     iret = hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%add(openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd))
                      hyd%openbndsect_coll%openbndsect_pnts(isect)%openbndlin_coll%openbndlin_pnts(iret)%ibnd = openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd_new
                   end if
                end do

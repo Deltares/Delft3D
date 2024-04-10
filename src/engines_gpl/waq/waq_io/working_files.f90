@@ -173,7 +173,7 @@ contains
         !!                           LUREP   - monitoring output file
         !!     SUBROUTINES CALLED  : SRSTOP, stops execution
 
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers       !   performance timers
         use m_srstop
 
@@ -225,7 +225,7 @@ contains
         integer(kind = int_wp) :: iseg           !  loop variable
         integer(kind = int_wp) :: isys           !  loop variable
         integer(kind = int_wp) :: ierror         !  error return variable
-        type(GridPointer) :: aGrid  !  a single grid
+        type(t_grid) :: aGrid  !  a single grid
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_working_file_4", ithndl)
 
@@ -251,7 +251,7 @@ contains
 
         ! dummy, the grid structures immediately deallocate the pointers
         do igrid = 1, nogrid
-            ierror = GridRead(iin, aGrid, nosss)
+            ierror = aGrid%read(iin, nosss)
             if (ierror /= 0) goto 20
             deallocate(aGrid%finalpointer)
             if (aGrid%space_var_nolay) deallocate(aGrid%nolay_var)

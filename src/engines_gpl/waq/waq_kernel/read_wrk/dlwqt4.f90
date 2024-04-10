@@ -221,7 +221,7 @@
       iUp = 0
       iGo = 0
       iTt = 0
-      do i = 1 , UseDefColl%cursize   ! vvvvvvvvvvvvv it is important to use the original here
+      do i = 1 , UseDefColl%current_size   ! it is important to use the original here
          iDef = FileUseDefCollFind ( CollColl%FileUseDefColls(iColl), i, ITIME , UPDAT2, LREWIN )
          IF ( UPDAT2 ) UPDATE = .TRUE.
          if ( iDef >= 0 ) then                         ! The arrays have been updated
@@ -235,7 +235,7 @@
          endif
       end do
 
-      if ( iGo == UseDefColl % cursize )                & ! Before the range of all descriptions (simulation stops in MESSAG)
+      if ( iGo == UseDefColl % current_size )                & ! Before the range of all descriptions (simulation stops in MESSAG)
         CALL MESSAG ( LUNOUT , 6 , ISFLAG , UseDefColl%unitnr , & 
                             UseDefColl%FileUseDefs(1)%afilePnt%pnt%name, ITIME, -iTt )
 
@@ -251,7 +251,7 @@
          iDt = UseDefColl%istop - UseDefColl%istart      ! This is the time span to increase the offset with
          UseDefColl%ioffset = UseDefColl%ioffset + iDt                  ! Update the offset of the copy used here
          CollColl%FileUseDefColls(iColl)%ioffset = UseDefColl%ioffset   ! Update the original as well !!
-         do i = 1 , UseDefColl%cursize        ! but now all file-offsets should be zero again
+         do i = 1 , UseDefColl%current_size        ! but now all file-offsets should be zero again
             CollColl%FileUseDefColls(iColl)%FileUseDefs(i)%afilePnt%pnt%ioffset = 0  ! reset the file offset of all associated files
          end do
          CALL MESSAG ( LUNOUT , 1 , ISFLAG , UseDefColl%unitnr , 'Compound file descriptor', ITIME , iTt )

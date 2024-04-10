@@ -28,7 +28,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     ! global declarations
 
     use m_srstop
-    use hydmod
+    use m_hydmod
     use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_ACCUMULATE_SIGNED, &
             AGGREGATION_TYPE_WEIGHTED_AVERAGE, AGGREGATION_TYPE_MINIMUM
 
@@ -36,12 +36,12 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     ! declaration of the arguments
 
-    type(t_hyd) :: input_hyd     ! the input hydrodynamics
+    type(t_hydrodynamics) :: input_hyd     ! the input hydrodynamics
     integer :: ipnt(*)       ! aggregation pointer segments
     integer :: ipnt_q(*)     ! aggregation pointer exchanges
     integer :: ipnt_vdf(*)   ! aggregation pointer vertical diffusion
     integer :: ipnt_tau(*)   ! aggregation pointer tau
-    type(t_hyd) :: output_hyd    ! the output hydrodynamics
+    type(t_hydrodynamics) :: output_hyd    ! the output hydrodynamics
 
     ! local declarations
 
