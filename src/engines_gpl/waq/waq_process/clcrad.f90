@@ -303,7 +303,7 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             IWA1 = Coll%set(IK)%fstwatsed
             IWA2 = Coll%set(IK)%lstwatsed

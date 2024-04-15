@@ -119,7 +119,7 @@ contains
         ! what to do with specials like clcrad that use the pointer
         ! table without using exchange io?
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
         do iproc = 1, nproc
             proc => procesdef%procesprops(iproc)
             if (proc%active) then

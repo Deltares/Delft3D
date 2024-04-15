@@ -30,61 +30,61 @@ module m_debgrz_input
     public :: debgrz_input
 
     type :: debgrz_input
-        integer(kind=int_wp)  :: use_with_protist   !< Switch whether to use DEB with Protist:
-                                                    !< 0 => with Dynamo/Bloom, 1 => with Protist      [-]
-        real(kind=real_wp) :: delt                  !< timestep for processes                         [d]
-        real(kind=real_wp) :: volume                !< volume of computational cell                  [m3]
-        real(kind=real_wp) :: temp                  !< ambient water temperature                     [oC]
-        real(kind=real_wp) :: depth                 !< depth of segment                               [m]
-        real(kind=real_wp) :: totaldepth            !< total depth water column                       [m]
-        real(kind=real_wp) :: tim                   !< total inorganic matter                    [gDM/m3]
-        real(kind=real_wp) :: gem                   !< option for POX (value must not be changed)     [-]
-        integer(kind=int_wp) :: switchv1            !< use ISO-morphs (0) or V1-morphs (1)            [-]
+        integer(kind=int_wp)  :: use_with_protist   !< Switch whether to use DEB with Dynamo/Bloom (0)
+                                                    !< or with Protist (1)                            [-]
+        real(kind=real_wp) :: delt                  !< Timestep for processes                         [d]
+        real(kind=real_wp) :: volume                !< Volume of computational cell                  [m3]
+        real(kind=real_wp) :: temp                  !< Ambient water temperature                     [oC]
+        real(kind=real_wp) :: depth                 !< Depth of segment                               [m]
+        real(kind=real_wp) :: totaldepth            !< Total depth water column                       [m]
+        real(kind=real_wp) :: tim                   !< Total inorganic matter                    [gDM/m3]
+        real(kind=real_wp) :: gem                   !< Option for POX (value must not be changed)     [-]
+        integer(kind=int_wp) :: switchv1            !< Use ISO-morphs (0) or V1-morphs (1)            [-]
         integer(kind=int_wp) :: benths              !< Switch to use benthic or pelagic for DEB species
                                                     !< 0 = do not use benthic = use pelagic;
                                                     !< 1 = use benthic                                [-]
-        real(kind=real_wp) :: vtot                  !< structural biomass grazer pop.    [gC/m3 or gC/m2]
-        real(kind=real_wp) :: etot                  !< energy storage grazer pop.        [gC/m3 or gC/m2]
-        real(kind=real_wp) :: rtot                  !< reproductional storage grazer pop.[gC/m3 or gC/m2]
-        real(kind=real_wp) :: dens_ini              !< initial number of grazer individuals ??
-        real(kind=real_wp) :: length_ini            !< Initial Individual Length   ??            [gWW/m2]
-        real(kind=real_wp) :: dummy                 !< dummy variable                                 [-]
-        real(kind=real_wp) :: vp                    !< volume at start of reproductive stage        [cm3]
-        real(kind=real_wp) :: shape                 !< shape coefficient                              [-]
-        real(kind=real_wp) :: em_l3                 !< maximum storage density of DEB species     [J/cm3]
-        real(kind=real_wp) :: eg_l3                 !< volume-spec costs for growth of DEB species[J/cm3]
-        real(kind=real_wp) :: pm_l3                 !< respiration rate constant of DEB species     [J/d]
-        real(kind=real_wp) :: jxm_l2                !< max ingestion rate of DEB species        [J/cm2/d]
+        real(kind=real_wp) :: vtot                  !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
+        real(kind=real_wp) :: etot                  !< Energy storage grazer pop.        [gC/m3 or gC/m2]
+        real(kind=real_wp) :: rtot                  !< Reproductional storage grazer pop.[gC/m3 or gC/m2]
+        real(kind=real_wp) :: dens_ini              !< Initial number of grazer individuals           [-]
+        real(kind=real_wp) :: length_ini            !< Initial Individual Length                 [gWW/m2]
+        real(kind=real_wp) :: dummy                 !< Dummy variable                                 [-]
+        real(kind=real_wp) :: vp                    !< Volume at start of reproductive stage        [cm3]
+        real(kind=real_wp) :: shape                 !< Shape coefficient                              [-]
+        real(kind=real_wp) :: em_l3                 !< Maximum storage density of DEB species     [J/cm3]
+        real(kind=real_wp) :: eg_l3                 !< Volume-spec costs for growth of DEB species[J/cm3]
+        real(kind=real_wp) :: pm_l3                 !< Respiration rate constant of DEB species     [J/d]
+        real(kind=real_wp) :: jxm_l2                !< Max ingestion rate of DEB species        [J/cm2/d]
         real(kind=real_wp) :: kappai                !< Ingestion efficiency (pseudofaeces production) [-]
         real(kind=real_wp) :: kappaa                !< Assimilation efficiency                        [-]
-        real(kind=real_wp) :: kappa                 !< fraction of util.energy spent on maint&growth  [-]
-        real(kind=real_wp) :: kappar                !< fraction of repro.energy spent on              [-]
+        real(kind=real_wp) :: kappa                 !< Fraction of util.energy spent on maint&growth  [-]
+        real(kind=real_wp) :: kappar                !< Fraction of repro.energy spent on              [-]
         real(kind=real_wp) :: ta                    !< Arrhenius temperature                          [K]
         real(kind=real_wp) :: tah                   !< Arr temp for rate of decrease at upper boundary[K]
         real(kind=real_wp) :: tal                   !< Arr temp for rate of decrease at lower boundary[K]
         real(kind=real_wp) :: th                    !< Upper boundary of tolerance range              [K]
         real(kind=real_wp) :: tl                    !< Lower boundary of tolerance range              [K]
         real(kind=real_wp) :: gsi_upper             !< Minimum GSI for spawning                       [-]
-        real(kind=real_wp) :: gsi_lower             !< minimum GSI while spawning                     [-]
-        real(kind=real_wp) :: dospawn               !< indication of spawning                         [-]
+        real(kind=real_wp) :: gsi_lower             !< Minimum GSI while spawning                     [-]
+        real(kind=real_wp) :: dospawn               !< Indication of spawning                         [-]
         real(kind=real_wp) :: rspawn                !< Spawning rate                                  [-]
         real(kind=real_wp) :: minsptemp             !< Minimum temperature for spawning              [oC]
         real(kind=real_wp) :: xk                    !< Halfrate const food uptake Sup fdr         [gC/m3]
         real(kind=real_wp) :: yk                    !< Halfrate const TIM                         [gC/m3]
-        real(kind=real_wp) :: rmor_ref              !< reference mortality rate grazers              [/d]
-        real(kind=real_wp) :: cmor                  !< length-dep coefficient mortality rate         [/d]
-        real(kind=real_wp) :: rhrv_ref              !< reference  harvesting rate grazers            [/d]
-        real(kind=real_wp) :: chrv                  !< length-dep coefficient harvesting rate        [/d]
-        real(kind=real_wp) :: conv_j_gc             !< conversion factor from energy into mass     [gC/J]
-        real(kind=real_wp) :: conv_cm3_gc           !< conversion factor from cm3 into gC        [gC/cm3]
-        real(kind=real_wp) :: conv_gafdw_gc         !< conversion factor from gAFDW into gC    [gC/gAFDW]
-        real(kind=real_wp) :: conv_gww_gc           !< conversion factor from gWW into gC        [gC/gWW]
+        real(kind=real_wp) :: rmor_ref              !< Reference mortality rate grazers              [/d]
+        real(kind=real_wp) :: cmor                  !< Length-dep coefficient mortality rate         [/d]
+        real(kind=real_wp) :: rhrv_ref              !< Reference  harvesting rate grazers            [/d]
+        real(kind=real_wp) :: chrv                  !< Length-dep coefficient harvesting rate        [/d]
+        real(kind=real_wp) :: conv_j_gc             !< Conversion factor from energy into mass     [gC/J]
+        real(kind=real_wp) :: conv_cm3_gc           !< Conversion factor from cm3 into gC        [gC/cm3]
+        real(kind=real_wp) :: conv_gafdw_gc         !< Conversion factor from gAFDW into gC    [gC/gAFDW]
+        real(kind=real_wp) :: conv_gww_gc           !< Conversion factor from gWW into gC        [gC/gWW]
         real(kind=real_wp) :: tc                    !< C:C ratio grazers                          [gC/gC]
         real(kind=real_wp) :: tn                    !< N:C ratio grazers                          [gN/gC]
         real(kind=real_wp) :: tp                    !< P:C ratio grazers                          [gP/gC]
         real(kind=real_wp) :: tsi                   !< Si:C ratio grazers                        [gSi/gC]
-        real(kind=real_wp) :: frdetbot              !< fraction of detritus into sediment or water    [-]
-        real(kind=real_wp) :: suspension            !< DEB species preference for  suspension over
+        real(kind=real_wp) :: frdetbot              !< Fraction of detritus into sediment or water    [-]
+        real(kind=real_wp) :: suspension            !< DEB species preference for suspension over
                                                     !< deposit feeding                                [-]
         real(kind=real_wp), allocatable :: pref(:)  !< DEB species preference for detritus            [-]
         real(kind=real_wp), allocatable :: fffood(:)!< Faecal fraction of detritus for DEB species    [-]
@@ -93,13 +93,13 @@ module m_debgrz_input
         real(kind=real_wp) :: smitot                !< Shell matrix inorganic tissue    [gC/m3 or gDM/m2]
         real(kind=real_wp) :: egsmo                 !< Vol-spec growth costs for org shell matrix [J/cm3]
         real(kind=real_wp) :: egsmi                 !< Vol-spec growth costs for inorg shell matr [J/cm3]
-        real(kind=real_wp) :: frgsmo                !< fraction of growth flux to shell matrix        [-]
-        real(kind=real_wp) :: frrespsmo             !< fraction of resp flux to shell matrix          [-]
-        real(kind=real_wp) :: frsmosmi              !< fraction of shell matrix flux to calcification [-]
-        real(kind=real_wp) :: cso_cm3_gc            !< conversion factor org shell cm3 into gC   [gC/cm3]
-        real(kind=real_wp) :: csi_cm3_gc            !< conversion factor inorg shell cm3 into gC [gC/cm3]
+        real(kind=real_wp) :: frgsmo                !< Fraction of growth flux to shell matrix        [-]
+        real(kind=real_wp) :: frrespsmo             !< Fraction of resp flux to shell matrix          [-]
+        real(kind=real_wp) :: frsmosmi              !< Fraction of shell matrix flux to calcification [-]
+        real(kind=real_wp) :: cso_cm3_gc            !< Conversion factor org shell cm3 into gC   [gC/cm3]
+        real(kind=real_wp) :: csi_cm3_gc            !< Conversion factor inorg shell cm3 into gC [gC/cm3]
         real(kind=real_wp), dimension(4) :: detrit  !< Detritus
-        real(kind=real_wp), dimension(4) :: pom     !< particulate organic matter
+        real(kind=real_wp), dimension(4) :: pom     !< Particulate organic matter
         real(kind=real_wp), dimension(4) :: dets1   !< Detritus in layer S1
         real(kind=real_wp), dimension(4) :: detbio  !< Pelagic detritus
 
@@ -114,12 +114,12 @@ module m_debgrz_input
 
     subroutine initialize_debgrz_input(this, iparray, pmsa)
         !< Transfer values from generic array to process-specific input parameters.
-        class(debgrz_input) :: this !< the input_variables instance
+        class(debgrz_input) :: this !< The input_variables instance
         real(kind=real_wp), intent(in)     :: pmsa(*)
         integer(kind=int_wp), intent(in)  :: iparray(*)
 
         integer(kind=int_wp) :: i
-        integer(kind=int_wp), parameter ::ntotnut = 4   !< number of nutrients: carbon, nitrogen, phosphorus and silica
+        integer(kind=int_wp), parameter ::ntotnut = 4   !< Number of nutrients: carbon, nitrogen, phosphorus and silica
 
         this%use_with_protist = pmsa( iparray( 1))
         this%delt        =      pmsa( iparray( 2))
@@ -199,7 +199,7 @@ module m_debgrz_input
     subroutine allocate_food_arrays(this, food_count)
         !< Allocates the input food arrays
 
-        class(debgrz_input) :: this !< the input_variables instance
+        class(debgrz_input) :: this !< The input_variables instance
         integer(kind=int_wp), intent(in)  :: food_count
 
         allocate(this%pref(food_count))
@@ -207,9 +207,9 @@ module m_debgrz_input
     end subroutine allocate_food_arrays
 
     real(kind=real_wp)function get_area(this) result(area)
-        !< computes the area based on volume and depth
+        !< Computes the area based on volume and depth
 
-        class(debgrz_input) :: this !< the input_variables instance
+        class(debgrz_input) :: this !< The input_variables instance
 
         if (this%depth == 0) then
             area = 0

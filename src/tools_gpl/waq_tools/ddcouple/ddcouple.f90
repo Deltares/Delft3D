@@ -23,7 +23,10 @@
 
 program ddcouple
 
-      use hydmod
+      use m_srstop
+      use m_monsys
+
+      use m_hydmod
       use m_cli_utils, only : retrieve_command_argument
       use m_string_manipulation, only : upper_case
       use merge_step_mod
@@ -34,11 +37,11 @@ program ddcouple
 
       implicit none
 
-      type(t_hyd)              :: hyd             ! description of the overall hydrodynamics
-      type(t_hyd), pointer     :: domain_hyd      ! description of one domain hydrodynamics
-      type(t_hyd), pointer     :: domain_hyd1     ! description of one domain hydrodynamics
-      type(t_hyd), pointer     :: domain_hyd2     ! description of one domain hydrodynamics
-      type(t_hyd_coll)         :: domain_hyd_coll ! description of all domain hydrodynamics
+      type(t_hydrodynamics)              :: hyd             ! description of the overall hydrodynamics
+      type(t_hydrodynamics), pointer     :: domain_hyd      ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer     :: domain_hyd1     ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer     :: domain_hyd2     ! description of one domain hydrodynamics
+      type(t_hydrodynamics_collection)   :: domain_hyd_coll ! description of all domain hydrodynamics
 
       integer                  :: n_domain      ! number of domains
       integer                  :: i_domain      ! domain index
@@ -145,7 +148,7 @@ program ddcouple
       integer                  :: ierr          ! ierr
 
 
-      type(t_dlwqfile)         :: file_rep      ! report file
+      type(t_file)         :: file_rep      ! report file
       integer                  :: lunrep        ! unit number report file
       character(len=256)       :: filext        ! file extension
       integer                  :: extpos        ! start position of file extension
@@ -185,8 +188,8 @@ program ddcouple
          file_rep%name   = 'ddcouple.out'
          file_rep%type   = FT_ASC
          file_rep%status = 0
-         call dlwqfile_open(file_rep)
-         lunrep = file_rep%unit_nr
+         call file_rep%open()
+         lunrep = file_rep%unit
          call ddc_version(lunrep)
          write(lunrep,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
          write(*,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
@@ -199,8 +202,8 @@ program ddcouple
       file_rep%name   = hyd%file_hyd%name(1:extpos-1)//'-ddcouple.out'
       file_rep%type   = FT_ASC
       file_rep%status = 0
-      call dlwqfile_open(file_rep)
-      lunrep = file_rep%unit_nr
+      call file_rep%open()
+      lunrep = file_rep%unit
       call ddc_version(lunrep)
       call setmlu(lunrep)
 
@@ -304,7 +307,7 @@ program ddcouple
 
       ! read the domain hydrodynamic description file and administrations
 
-      n_domain = hyd%domain_coll%cursize
+      n_domain = hyd%domain_coll%current_size
       if ( n_domain .le. 0 ) then
          write(*,*) 'ERROR no domains specified in hydrodynamic description'
          write(lunrep,*) 'ERROR no domains specified in hydrodynamic description'
@@ -399,21 +402,21 @@ program ddcouple
 
       ! check dd_boundaries
 
-      n_dd_bound = hyd%dd_bound_coll%cursize
+      n_dd_bound = hyd%dd_bound_coll%current_size
       do i_dd_bound = 1 , n_dd_bound
 
          dd_bound => hyd%dd_bound_coll%dd_bound_pnts(i_dd_bound)
 
          ! look up the domain names
 
-         i_domain1 = domain_coll_find(hyd%domain_coll,dd_bound%name1)
+         i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain1 .le. 0 ) then
             write(*,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
             call srstop(1)
          endif
          dd_bound%i_domain1 = i_domain1
-         i_domain2 = domain_coll_find(hyd%domain_coll,dd_bound%name2)
+         i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain2 .le. 0 ) then
             write(*,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
@@ -1144,12 +1147,12 @@ program ddcouple
 
       write(*,'(/a/)') ' Merging sources files'
       write(lunrep,'(/a/)') ' Merging sources files'
-      hyd%wasteload_data%no_loc   = 0
-      hyd%wasteload_data%no_param = 0
-      hyd%wasteload_data%no_brk   = 0
+      hyd%wasteload_data%num_locations   = 0
+      hyd%wasteload_data%num_parameters = 0
+      hyd%wasteload_data%num_breakpoints   = 0
       do i_domain = 1 , n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         nowast = domain_hyd%wasteload_coll%cursize
+         nowast = domain_hyd%wasteload_coll%current_size
          if ( nowast .gt. 0 ) then
             write(*,*)'Reading sources file: ', trim(domain_hyd%file_src%name)
             write(lunrep,*)'Reading sources file: ', trim(domain_hyd%file_src%name)

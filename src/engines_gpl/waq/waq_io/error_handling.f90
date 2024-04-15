@@ -38,7 +38,7 @@ contains
         use rd_token
         use timers       !   performance timers
 
-        character*(*), intent(inout) :: cdummy !< character that may contain block end
+        character(len=*), intent(inout) :: cdummy !< character that may contain block end
 
         integer(kind = int_wp), intent(in) :: iblock !< number of the input block
         integer(kind = int_wp), intent(inout) :: ierr2  !< accumulative nr of errors

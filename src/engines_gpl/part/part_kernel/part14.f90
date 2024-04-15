@@ -214,9 +214,9 @@ module part14_mod
          enddo
          if ( ide .lt. ids ) ide = ids
 
-         fac1s  = float(itime      -ictime(ic,ids)) / float(ictime(ic,ids+1)-ictime(ic,ids))
+         fac1s  = real(itime      -ictime(ic,ids)) / real(ictime(ic,ids+1)-ictime(ic,ids))
          fac2s  = 1.0 - fac1s
-         fac1e  = float(itime+idelt-ictime(ic,ide)) / float(ictime(ic,ide+1)-ictime(ic,ide))
+         fac1e  = real(itime+idelt-ictime(ic,ide)) / real(ictime(ic,ide+1)-ictime(ic,ide))
          fac2e  = 1.0 - fac1e
 
          aconu  =  tmassu(ic) / ndprt(ie)

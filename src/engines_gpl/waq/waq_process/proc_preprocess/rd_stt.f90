@@ -32,7 +32,7 @@ contains
 
     subroutine rd_stt(lunrep, sttfil, statprocesdef, allitems, status)
 
-        use dlwq_hyd_data      ! for definition and storage of data
+        use m_waq_data_structure      ! for definition and storage of data
         use processet      ! processet definitions
         use rd_token       ! tokenized reading
         use m_error_status

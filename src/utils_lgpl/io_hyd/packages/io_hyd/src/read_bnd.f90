@@ -34,15 +34,15 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_waq_file                   ! module contains everything for the files
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token                 ! tokenized reading
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_bnd               ! aggregation-file
+      type(t_file)                       :: file_bnd               ! aggregation-file
       type(t_openbndsect_coll)               :: openbndsect_coll       ! collection of openbndsects
 
 
@@ -58,19 +58,19 @@
       integer                                :: i_sect                 ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect)                    :: openbndsect            ! single section read
-      type(t_openbndlin)                     :: openbndlin             ! single open boundary lin
+      type(t_openbnd_section)                    :: openbndsect            ! single section read
+      type(t_open_boundary_line)                     :: openbndlin             ! single open boundary lin
       integer                                :: iret                   ! return value
 
       call getmlu(lunrep)
 
       ! open file
 
-      call dlwqfile_open(file_bnd)
+      call file_bnd%open()
 
       ! initialise tokenised reading
       ilun    = 0
-      ilun(1) = file_bnd%unit_nr
+      ilun(1) = file_bnd%unit
       lch (1) = file_bnd%name
       npos   = 1000
       cchar  = ';'
@@ -84,7 +84,7 @@
          goto 200
       endif
 
-      openbndsect%openbndlin_coll%cursize = 0
+      openbndsect%openbndlin_coll%current_size = 0
       openbndsect%openbndlin_coll%maxsize = 0
       openbndsect%openbndlin_coll%openbndlin_pnts => null()
       do i_sect = 1 , no_sect
@@ -126,13 +126,13 @@
                write(lunrep,*) ' expected real with second y coordinate'
                goto 200
             end if
-            iret = coll_add(openbndsect%openbndlin_coll, openbndlin)
+            iret = openbndsect%openbndlin_coll%add(openbndlin)
          enddo
 
          ! add section to collection
 
-         iret = coll_add(openbndsect_coll, openbndsect)
-         openbndsect%openbndlin_coll%cursize = 0
+         iret = openbndsect_coll%add(openbndsect)
+         openbndsect%openbndlin_coll%current_size = 0
          openbndsect%openbndlin_coll%maxsize = 0
          openbndsect%openbndlin_coll%openbndlin_pnts => null()
 
@@ -142,7 +142,7 @@
          call srstop(1)
       endif
 
-      close(file_bnd%unit_nr)
+      close(file_bnd%unit)
       file_bnd%status = FILE_STAT_UNOPENED
 
       return

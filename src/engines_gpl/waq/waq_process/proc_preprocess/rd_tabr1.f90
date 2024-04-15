@@ -88,9 +88,9 @@
                    NO_PROC_R1
       INTEGER(kind=int_wp) ::ELMDMS(3,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

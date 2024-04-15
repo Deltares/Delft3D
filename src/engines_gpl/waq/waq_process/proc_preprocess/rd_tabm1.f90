@@ -62,10 +62,10 @@
       integer(kind=int_wp) ::deffds                                       ! nefis file descriptor
       integer(kind=int_wp) ::n_old_items_max                              ! maximum number of old items
       integer(kind=int_wp) ::n_old_items                                  ! number of old items
-      character*10       :: old_items_old_name(n_old_items_max)          ! old name (if equal to new name then use old_default if target serial is less then
-      character*10       :: old_items_new_name(n_old_items_max)          ! new name
+      character(len=10)       :: old_items_old_name(n_old_items_max)          ! old name (if equal to new name then use old_default if target serial is less then
+      character(len=10)       :: old_items_new_name(n_old_items_max)          ! new name
       real(kind=real_wp) ::old_items_old_default(n_old_items_max)       ! old default value
-      character*10       :: old_items_configuration(n_old_items_max)     ! (only use this new name if a specific configuration is used?)
+      character(len=10)       :: old_items_configuration(n_old_items_max)     ! (only use this new name if a specific configuration is used?)
       integer(kind=int_wp) ::old_items_serial(n_old_items_max)            ! the proces definition serial number up to where this old name, old default was used
       integer(kind=int_wp) ::old_items_action_type(n_old_items_max)       ! process rename, process parameter rename, default value change
       integer(kind=int_wp) ::lunrep                                       ! report file
@@ -87,9 +87,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

@@ -82,8 +82,8 @@ contains
         real(kind = dp) :: zmax
         real(kind = dp) :: death
 
-        character*8 cdate
-        character*1 errind
+        character(len=8) cdate
+        character(len=1) errind
         logical lsolu
         real(kind = dp), parameter :: solmin = 100.0
 

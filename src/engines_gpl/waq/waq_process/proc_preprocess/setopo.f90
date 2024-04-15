@@ -76,9 +76,9 @@ contains
         line = ' '
         call monsys(line, 2)
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
 
-        do iou = 1, outputs%cursize
+        do iou = 1, outputs%current_size
 
             ! check of deze al eerder aan de beurt is geweest
 

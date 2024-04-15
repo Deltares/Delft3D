@@ -32,7 +32,7 @@ contains
         use m_srstop
         use m_monsys
 
-        CHARACTER*(*) NAME
+        character(len=*) NAME
         INTEGER(kind = int_wp) :: LUNREP
 
         CALL GETMLU(LUNREP)

@@ -41,12 +41,12 @@
 !
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
 !     declaration of arguments
 !
-      type(t_dlwqfile)                       :: file_poi               ! pointer file
+      type(t_file)                       :: file_poi               ! pointer file
       integer       noq   , noq1  , noq2  , noq3
       integer       ipoint(*)
 !
@@ -59,12 +59,12 @@
       integer       filtyp
       integer       filsta
 
-      plform = dlwq_platform()
+      plform = which_operating_system()
 !
 !     initialise file
 !
-      call dlwqfile_open(file_poi)
-      lun    = file_poi%unit_nr
+      call file_poi%open()
+      lun    = file_poi%unit
       filtyp = file_poi%type
       filnam = file_poi%name
 !
@@ -107,7 +107,7 @@
          if ( noq3 .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=4*noq12+1,4*noq123)
       endif
 
-      close(file_poi%unit_nr)
+      close(file_poi%unit)
       file_poi%status = FILE_STAT_UNOPENED
 
       return

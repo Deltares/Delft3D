@@ -86,8 +86,8 @@ contains
 
         type(error_status) :: status !< current error status
 
-        character*1   cdummy
-        character*255 charachter_output
+        character(len=1)   cdummy
+        character(len=255) charachter_output
         logical       disper
         character(len = 20), allocatable :: bndid(:)             ! boundary id's 20 character
         character(len = 40), allocatable :: bndname(:)           ! boundary names
@@ -370,7 +370,7 @@ contains
                     iposr, npos, cdummy, int_array(k + nobnd), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
-            ibnd = max(1, min(iabs(int_array(k + nobnd)), nobnd))
+            ibnd = max(1, min(abs(int_array(k + nobnd)), nobnd))
             itype = 2
             call rdtok1 (lunut, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(ibnd), real_output, &
@@ -399,7 +399,7 @@ contains
                 call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
         if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2230)
         do i = 1, nover
-            ibnd = iabs(int_array(i + nobnd))
+            ibnd = abs(int_array(i + nobnd))
             if (ibnd > nobnd .or. ibnd == 0) then
                 write (lunut, 2180) int_array(i + nobnd)
                 call status%increase_error_count()

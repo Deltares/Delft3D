@@ -69,7 +69,7 @@ contains
       use alloc_mod
       use dd_prepare_mod
       use openfl_mod
-      use hydmod
+      use m_hydmod
 
       implicit none               ! force explicit typing
 

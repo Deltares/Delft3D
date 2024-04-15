@@ -53,11 +53,11 @@ contains
         !     IERROR  INTEGER    1        OUTPUT  Error code
         !     OPTION  CHAR*256   1        IN/OUT  For future use
 
-        character*256 file_name(3), option
-        character*20  locdef(maxdef), loclst(maxlst)
+        character(len=256) file_name(3), option
+        character(len=20)  locdef(maxdef), loclst(maxlst)
         dimension     loctyp(maxlst), locnr (maxlst)
         logical       setall
-        character*256 :: ext     ! file extension
+        character(len=256) :: ext     ! file extension
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
@@ -156,13 +156,13 @@ contains
 
         use time_module
 
-        character*256    file_name (3), option
+        character(len=256)    file_name (3), option
         integer(kind = int_wp) :: itmtyp(*)
         real(kind = dp) :: timlst(*), timdef(2, *), atime, otime, second
         logical          setall
 
         real(kind = real_wp), allocatable :: rdata(:)
-        character*256 :: ext     ! file extension
+        character(len=256) :: ext     ! file extension
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
@@ -274,8 +274,8 @@ contains
         !     nrlst   integer    1        output  nr of parameters found
         !     ierror  integer    1        output  error code
         !     option  char*256   1        in/out  for future use
-        character*256 :: file_name(3), option
-        character*20 :: pardef(maxdef), parlst(maxlst), paruni(maxlst)
+        character(len=256) :: file_name(3), option
+        character(len=20) :: pardef(maxdef), parlst(maxlst), paruni(maxlst)
         dimension :: iprtyp(maxlst), iprcod(maxlst)
         logical :: setall
         integer(kind = int_wp) :: lun
@@ -351,12 +351,12 @@ contains
         !     option  char*256   1        in/out  for future use
         use time_module
 
-        character*256 file_name (3), option
+        character(len=256) file_name (3), option
         real(kind = real_wp) :: data(*)
         integer(kind = int_wp) :: loc(*)
         real(kind = dp) :: tim(2), otime, atime, second
         real(kind = real_wp) :: missing_value
-        character*256 :: ext     ! file extension
+        character(len=256) :: ext     ! file extension
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
@@ -458,12 +458,12 @@ contains
         !     ierror  integer    1        in/out  error code
         !     option  char*256   1        in/out  for future use
 
-        character*256 file_name (3), option
+        character(len=256) file_name (3), option
         real(kind = real_wp) :: data(*)
         integer(kind = int_wp) :: loc(*)
         real(kind = dp) :: tim(2), otime, atime, second
         real(kind = real_wp) :: missing_value
-        character*256 :: ext     ! file extension
+        character(len=256) :: ext     ! file extension
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
@@ -560,10 +560,10 @@ contains
         !            ndim(2) = nr of locations  in the file
         !            ndim(3) = nr of time steps in the file
 
-        character*256 file_name(3), option
-        character*3   dim
+        character(len=256) file_name(3), option
+        character(len=3)   dim
         dimension     ndim(3)
-        character*256 :: ext     ! file extension
+        character(len=256) :: ext     ! file extension
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
@@ -628,7 +628,7 @@ contains
     subroutine read_data_ods(lunut, file_name, data_param, data_loc, missing_value, data_block, ierr)
         !! read a block of data from ODS file
 
-        use dlwq_hyd_data   ! for definition and storage of data
+        use m_waq_data_structure   ! for definition and storage of data
         use timers          !   performance timers
         use m_sysi          ! Timer characteristics
         use time_module
@@ -636,10 +636,10 @@ contains
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
         character(len = *), intent(in) :: file_name        ! filename ODS file
-        type(t_dlwq_item), intent(inout) :: data_param   ! list of param items in the data
-        type(t_dlwq_item), intent(inout) :: data_loc     ! list of loc items in the data
+        type(t_waq_item), intent(inout) :: data_param   ! list of param items in the data
+        type(t_waq_item), intent(inout) :: data_loc     ! list of loc items in the data
         real(kind = real_wp), intent(in) :: missing_value         ! missing value
-        type(t_dlwqdata), intent(inout) :: data_block   ! data block
+        type(t_data_block), intent(inout) :: data_block   ! data block
         integer(kind = int_wp), intent(inout) :: ierr          ! cummulative error count
 
         integer(kind = int_wp) :: iorder        ! order of the parameters and locations in the data array
@@ -817,7 +817,7 @@ contains
         if (num_records == 1)    write (lunut, 1060)
 
         ! times are converted to delwaq times
-        data_block%no_brk = num_records
+        data_block%num_breakpoints = num_records
         allocate(data_block%times(num_records))
         do ibrk = i1, i2
             a2 = times(ibrk) - a1
@@ -833,8 +833,8 @@ contains
             ndim1 = data_loc%no_item
             ndim2 = data_param%no_item
         endif
-        data_block%no_param = data_param%no_item
-        data_block%no_loc = data_loc%no_item
+        data_block%num_parameters = data_param%no_item
+        data_block%num_locations = data_loc%no_item
 
         allocate(data_block%values(ndim1, ndim2, num_records), buffer(num_records))
         data_block%values = missing_value
@@ -929,12 +929,12 @@ contains
     subroutine read_time_dependant_data_matrix(data_block, itfact, is_date_format, is_yyddhh_format, ierr)
 
         !! read a (time dependent) data matrix from input
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use rd_token
         use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
-        type(t_dlwqdata), intent(inout) :: data_block   ! data block
+        type(t_data_block), intent(inout) :: data_block   ! data block
         integer(kind = int_wp), intent(in) :: itfact        ! factor between clocks
         logical, intent(in) :: is_date_format       ! true if time in 'date' format
         logical, intent(in) :: is_yyddhh_format       ! true if yyetc instead of ddetc
@@ -966,16 +966,16 @@ contains
         ! dimension according to order
 
         if (data_block%iorder == ORDER_PARAM_LOC) then
-            ndim1 = data_block%no_param
-            ndim2 = data_block%no_loc
+            ndim1 = data_block%num_parameters
+            ndim2 = data_block%num_locations
         else
-            ndim1 = data_block%no_loc
-            ndim2 = data_block%no_param
+            ndim1 = data_block%num_locations
+            ndim2 = data_block%num_parameters
         endif
 
         ! read dependent on type of function
 
-        ftype = data_block%functype
+        ftype = data_block%function_type
         if (ftype == FUNCTYPE_CONSTANT) then
 
             ! read only one "time"
@@ -1101,7 +1101,7 @@ contains
 
         endif
 
-        data_block%no_brk = num_records
+        data_block%num_breakpoints = num_records
 
         9999 if (timon) call timstop(ithndl)
 

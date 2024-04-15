@@ -78,12 +78,12 @@ contains
         INTEGER(kind = int_wp) :: IP(4)
         REAL(kind = real_wp) :: AMASS2(NOTOT, 5), ASMASS(NOTOT, NDMPAR, *), &
                 CONC2(*)
-        CHARACTER*20 SNAME(*), SYNAM2(*), DANAM(*)
-        CHARACTER*40 MNAME(*)
+        character(len=20) SNAME(*), SYNAM2(*), DANAM(*)
+        character(len=40) MNAME(*)
         !
         !     Local declaration
         !
-        CHARACTER*40 VNAME
+        character(len=40) VNAME
         integer(kind = int_wp) :: idmp, k, id, id2, nend, nend2
         real(kind = real_wp) :: percit
 

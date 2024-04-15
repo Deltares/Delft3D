@@ -26,8 +26,8 @@ module m_delwaq1_data
     !! m_delwaq1_data  - contains data needed for initialisation of delwaq1
 
     use m_delwaq1_const
-    use dlwqgrid_mod        !   for the storage of contraction grids
-    use dlwq_hyd_data    !   for definition and storage of data
+    use m_grid_utils_external        !   for the storage of contraction grids
+    use m_waq_data_structure    !   for definition and storage of data
     use results, only : OutputPointers       !!   for the output names and pointers
     use timers       !   performance timers
 
@@ -63,11 +63,11 @@ module m_delwaq1_data
     integer :: filtype(nlun)
     character(len = lchmax) :: runid                  !< runid
     logical :: is_date_format                 !< first flag concerning time formats
-    logical :: dtflg2                 !< second flag concerning time formats
+    logical :: is_ddhhmmss_format                 !< second flag concerning time formats
     logical :: is_yyddhh_format                 !< third flag concerning time formats
     logical :: has_hydfile            !< does the input file refer to a hyd file?
     integer, dimension(3) :: nexch                  !< number of exchanges in each direction from hyd file
-    type(inputfilestack) :: inpfil                 !< input file strucure with include stack and flags
+    type(t_input_file) :: inpfil                 !< input file structure with include stack and flags
 
     ! various input-output structures
     integer :: nrftot(noitm)          !< number of function per item
@@ -84,7 +84,7 @@ module m_delwaq1_data
     integer, pointer :: ioptraai(:)            !< option number for transects
     type(ProcesPropColl) :: StatProcesDef          !< the statistical proces definition
     type(ItemPropColl) :: AllItems               !< all items of the proces system
-    type(t_dlwq_item) :: constants              !< delwaq constants list
+    type(t_waq_item) :: constants              !< delwaq constants list
 
     ! help variables
     logical :: nolic                  !< No valid license?

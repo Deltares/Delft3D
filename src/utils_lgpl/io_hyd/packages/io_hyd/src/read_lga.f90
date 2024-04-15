@@ -36,12 +36,12 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_lga               ! aggregation-file
+      type(t_file)                       :: file_lga               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: nolay                  ! nolay
@@ -62,8 +62,8 @@
 
       call getmlu(lunrep)
 
-      call dlwqfile_open(file_lga)
-      read(file_lga%unit_nr,iostat=ioerr) nmaxd, mmaxd, nosegl, nolay, noq1, noq2, noq3
+      call file_lga%open()
+      read(file_lga%unit,iostat=ioerr) nmaxd, mmaxd, nosegl, nolay, noq1, noq2, noq3
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading lga file'
          call srstop(1)
@@ -78,7 +78,7 @@
          call srstop(1)
       endif
 
-      read(file_lga%unit_nr,iostat=ioerr) ((lgrid(n,m),n=1,nmax),m=1,mmax)
+      read(file_lga%unit,iostat=ioerr) ((lgrid(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading lga file'
          call srstop(1)

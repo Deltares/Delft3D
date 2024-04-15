@@ -41,15 +41,15 @@ contains
         use m_read_block
         use error_handling, only : check_error
         use m_srstop
-        use dlwqgrid_mod          ! for the storage of contraction grids
-        use dlwq_hyd_data  ! for definition and storage of data
+        use m_grid_utils_external          ! for the storage of contraction grids
+        use m_waq_data_structure  ! for definition and storage of data
         use rd_token
         use timers       !   performance timers
 
         integer(kind = int_wp), intent(inout) :: lun(*)        ! unit numbers used
         character(len = *), intent(inout) :: lchar(*)     ! filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
-        type(inputfilestack), intent(inout) :: inpfil       ! input file strucure with include stack and flags
+        type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack and flags
         integer(kind = int_wp), intent(in) :: notot         ! nr of substances
         character(len = *), intent(in) :: syname(*)    ! substance names
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
@@ -63,14 +63,14 @@ contains
 
         !     local declarations
 
-        type(t_dlwqdatacoll) :: initials             ! all the initial data from file
-        type(t_dlwqdata) :: dlwqdata             ! one data block
-        type(t_dlwq_item) :: substances           ! delwaq substances list
-        type(t_dlwq_item) :: constants            ! delwaq constants list
-        type(t_dlwq_item) :: parameters           ! delwaq parameters list
-        type(t_dlwq_item) :: functions            ! delwaq functions list
-        type(t_dlwq_item) :: segfuncs             ! delwaq segment-functions list
-        type(t_dlwq_item) :: segments             ! delwaq segment name list
+        type(t_data_column) :: initials             ! all the initial data from file
+        type(t_data_block) :: dlwqdata             ! one data block
+        type(t_waq_item) :: substances           ! delwaq substances list
+        type(t_waq_item) :: constants            ! delwaq constants list
+        type(t_waq_item) :: parameters           ! delwaq parameters list
+        type(t_waq_item) :: functions            ! delwaq functions list
+        type(t_waq_item) :: segfuncs             ! delwaq segment-functions list
+        type(t_waq_item) :: segments             ! delwaq segment name list
         real(kind = real_wp), allocatable :: fscale(:)             ! scale factors
         character(len = 255) :: ctoken               ! token from input
         integer(kind = int_wp) :: idata                 ! index in collection
@@ -88,17 +88,17 @@ contains
         ! read initial conditions
 
         initials%maxsize = 0
-        initials%cursize = 0
-        ierr2 = dlwq_init(substances)
-        ierr2 = dlwq_resize(substances, notot)
+        initials%current_size = 0
+        ierr2 = substances%initialize()
+        ierr2 = substances%resize(notot)
         substances%no_item = notot
         substances%name(1:notot) = syname(1:notot)
-        ierr2 = dlwq_init(constants)
-        ierr2 = dlwq_init(parameters)
-        ierr2 = dlwq_init(functions)
-        ierr2 = dlwq_init(segfuncs)
-        ierr2 = dlwq_init(segments)
-        ierr2 = dlwq_resize(segments, noseg)
+        ierr2 = constants%initialize()
+        ierr2 = parameters%initialize()
+        ierr2 = functions%initialize()
+        ierr2 = segfuncs%initialize()
+        ierr2 = segments%initialize()
+        ierr2 = segments%resize(noseg)
         segments%no_item = noseg
         do i = 1, noseg
             write (segments%name(i), '(''segment '',i8)') i
@@ -113,19 +113,19 @@ contains
 
             if (ctoken == 'INITIALS') then
 
-                ! new file strucure
+                ! new file structure
                 push = .true.
-                call read_block (lun, lchar, filtype, inpfil, output_verbose_level, &
+                call read_block(lun, lchar, filtype, inpfil, output_verbose_level, &
                         iwidth, substances, constants, parameters, functions, &
                         segfuncs, segments, gridps, dlwqdata, ierr2, &
                         status)
                 if (ierr2 > 0) goto 30
-                if (dlwqdata%extern) then
-                    ierr = dlwqdataReadExtern(lunut, dlwqdata)
+                if (dlwqdata%is_external) then
+                    ierr = dlwqdata%read_external(lunut)
                     if (ierr /= 0) goto 30
-                    dlwqdata%extern = .false.
+                    dlwqdata%is_external = .false.
                 endif
-                idata = dlwqdatacolladd(initials, dlwqdata)
+                idata = initials%add(dlwqdata)
 
             else
                 ! unrecognised keyword
@@ -147,8 +147,8 @@ contains
         conc = 0.0
         itime = 0
 
-        do idata = 1, initials%cursize
-            ierr3 = dlwqdataevaluate(initials%dlwqdata(idata), gridps, itime, notot, noseg, conc)
+        do idata = 1, initials%current_size
+            ierr3 = initials%data_block(idata)%evaluate(gridps, itime, notot, noseg, conc)
             if (ierr3 /= 0) then
                 write(lunut, 2060)
                 call srstop(1)
@@ -157,11 +157,11 @@ contains
 
         !     initials opruimen ? or keep for e.g. reboot, or keep for delwaq1-delwaq2 merge
 
-        ierr3 = dlwq_cleanup(substances)
-        ierr3 = dlwq_cleanup(parameters)
-        ierr3 = dlwq_cleanup(functions)
-        ierr3 = dlwq_cleanup(segfuncs)
-        ierr3 = dlwq_cleanup(segments)
+        ierr3 = substances%cleanup()
+        ierr3 = parameters%cleanup()
+        ierr3 = functions%cleanup()
+        ierr3 = segfuncs%cleanup()
+        ierr3 = segments%cleanup()
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1

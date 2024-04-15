@@ -80,10 +80,10 @@ contains
             nrharm(i) = 0
         end do
         StatProcesDef%maxsize = 0
-        StatProcesDef%cursize = 0
+        StatProcesDef%current_size = 0
         AllItems%maxsize = 0
-        AllItems%cursize = 0
-        GridPs%cursize = 0
+        AllItems%current_size = 0
+        GridPs%current_size = 0
         GridPs%maxsize = 0
 
         call create_work_file_one(lun, lchar, nolun, runid)

@@ -74,7 +74,7 @@ contains
         integer(kind = int_wp), intent(in) :: noseg               !< Nr of computational volumes
         real(kind = real_wp), intent(out) :: volume(noseg)       !< Array of volumes per gridcell
         integer(kind = int_wp), intent(in) :: ipoint(*)           !< Set of pointers to destination
-        character*(*), intent(in) :: luntxt(*)           !< Text with the unit numbers
+        character(len=*), intent(in) :: luntxt(*)           !< Text with the unit numbers
         integer(kind = int_wp), intent(in) :: ftype (*)           !< Type of file to read
         integer(kind = int_wp), intent(in) :: isflag              !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(in) :: ivflag              !< = 1 then computed volumes

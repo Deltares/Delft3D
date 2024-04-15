@@ -44,10 +44,10 @@ contains
 !
       integer(kind=4) ::   lun
 
-      character*120 idstr
+      character(len=120) idstr
       integer (4)   i
 
-      character*75  startup_screen_text(7)
+      character(len=75)  startup_screen_text(7)
       
       data   startup_screen_text  / &
         '+-----------------------------------------------------------------------+', &

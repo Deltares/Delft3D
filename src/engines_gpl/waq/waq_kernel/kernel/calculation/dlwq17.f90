@@ -115,7 +115,7 @@ contains
                     bound(:, ibnd) = bset(:, ibnd)
                     cycle
                 endif
-                aflow = isign(1, iflow) * flow(iabs(iflow))
+                aflow = sign(1, iflow) * flow(abs(iflow))
                 if (aflow >= 0.0) then                   !  outflow
                     ibpnt(4, ibnd) = 0
                     iseg = ibpnt(3, ibnd)
@@ -127,7 +127,7 @@ contains
                     if (ibtime  >= itlag) then
                         bound(:, ibnd) = bset(:, ibnd)
                     else
-                        at = 0.5 * cos(float(ibtime) / itlag * pi)
+                        at = 0.5 * cos(real(ibtime) / itlag * pi)
                         bound(:, ibnd) = (0.5 - at) * bset(:, ibnd) + (0.5 + at) * bsave(:, ibnd)
                     endif
                 endif

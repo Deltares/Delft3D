@@ -78,7 +78,7 @@ contains
         deat = 0d0
         temp8 = dble(temp)
         call natmor(deat, temp8)
-        deat4 = sngl(deat)
+        deat4 = real(deat)
 
         !  Mortality module.
         !
@@ -96,7 +96,7 @@ contains
 
             !  Compute total mortality for this species and store the flux
             !  avoid undershoots leading to negative biomass
-            cmort = min(cphyt * sngl(rmort(j)), cphyt / tstepi)
+            cmort = min(cphyt * real(rmort(j)), cphyt / tstepi)
             flmora(j) = cmort
 
             ! Partition the mortality flux over detritus(D)/OOx(O)/autolysis(A)
@@ -113,9 +113,9 @@ contains
             do k = 1, nunuco
                 i = nutcon(k)
                 if (i<=3) then
-                    fldetn(i + 1) = fldetn(i + 1) + cmortd * sngl(ctodry(j) * aa(k, j))
-                    flautn(i + 1) = flautn(i + 1) + cmorta * sngl(ctodry(j) * aa(k, j))
-                    flooxn(i + 1) = flooxn(i + 1) + cmorto * sngl(ctodry(j) * aa(k, j))
+                    fldetn(i + 1) = fldetn(i + 1) + cmortd * real(ctodry(j) * aa(k, j))
+                    flautn(i + 1) = flautn(i + 1) + cmorta * real(ctodry(j) * aa(k, j))
+                    flooxn(i + 1) = flooxn(i + 1) + cmorto * real(ctodry(j) * aa(k, j))
                 endif
             enddo
         enddo

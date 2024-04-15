@@ -46,7 +46,7 @@ contains
 
         use m_srstop
         use timers         !< performance timers
-        use dlwq_hyd_data      !< data definitions
+        use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
         implicit none
 
@@ -66,7 +66,7 @@ contains
         character(20), intent(inout) :: sfname(nosfun)    !< Segment function names
         character(20), intent(inout) :: diname(nodisp)    !< Dispersion array names
         character(20), intent(inout) :: vename(novelo)    !< Velocity array names
-        type(t_dlwq_item), intent(inout) :: constants  !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants  !< delwaq constants list
 
         ! local declaration
 
@@ -84,14 +84,14 @@ contains
 
         ! add processes based on old name
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_ADDPROC) then
                 name20 = 'active_' // old_items%old_items(i)%old_name
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     nocons = constants%no_item + 1
-                    ierr2 = dlwq_resize(constants, nocons)
+                    ierr2 = constants%resize(nocons)
                     if (ierr2 > 0) then
                         write(lurep, '(a,i10)') ' ERROR: set_old_items resize error constants size:', nocons
                         call srstop(1)
@@ -107,11 +107,11 @@ contains
 
         ! change default based on old process name, we do this later but we change the old_items record to ITEM_ACTION_DEFAULT
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_PROCDEF) then
                 name20 = 'active_' // old_items%old_items(i)%old_name
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     write(lurep, '(5a)') ' Replaced default [', old_items%old_items(i)%new_name, &
                             '] based on activated process [', old_items%old_items(i)%old_name, ']'
@@ -124,11 +124,11 @@ contains
 
         ! replace process names
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_PROCNAM) then
                 name20 = 'active_' // old_items%old_items(i)%old_name
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     constants%name(ifound) = 'active_' // old_items%old_items(i)%new_name
                     write(lurep, '(5a)') ' Process [', old_items%old_items(i)%new_name, &
@@ -139,7 +139,7 @@ contains
 
         ! replace process parameter names ( including substance names ) with range check for constant value
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_RANGECHECK) then
 
@@ -154,7 +154,7 @@ contains
                     write(lurep, '(a,g13.6)') ' WARNING no rangecheck possible for substance, range >', range
                 endif
 
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     if (constants%constant(ifound) >= range) then
                         constants%name(ifound) = old_items%old_items(i)%new_name
@@ -211,7 +211,7 @@ contains
 
         ! replace process parameter names ( including substance names )
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_PROCPAR) then
 
@@ -224,7 +224,7 @@ contains
                             '] replace by new name [', old_items%old_items(i)%new_name, ']'
                 endif
 
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     constants%name(ifound) = old_items%old_items(i)%new_name
                     write(lurep, '(5a)') ' Constant name [', old_items%old_items(i)%old_name, &
@@ -271,14 +271,14 @@ contains
 
         ! point new name to the old name if new name not in input and old name is
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_PPEQUAL) then
 
                 name20 = old_items%old_items(i)%new_name
 
                 ifound = index_in_array(name20, syname)
-                if (ifound <= 0) ifound = dlwq_find(constants, name20)
+                if (ifound <= 0) ifound = constants%find(name20)
                 if (ifound <= 0) ifound = index_in_array(name20, paname)
                 if (ifound <= 0) ifound = index_in_array(name20, funame)
                 if (ifound <= 0) ifound = index_in_array(name20, sfname)
@@ -292,7 +292,7 @@ contains
                     name20 = old_items%old_items(i)%old_name
 
                     ifound = index_in_array(name20, syname)
-                    if (ifound <= 0) ifound = dlwq_find(constants, name20)
+                    if (ifound <= 0) ifound = constants%find(name20)
                     if (ifound <= 0) ifound = index_in_array(name20, paname)
                     if (ifound <= 0) ifound = index_in_array(name20, funame)
                     if (ifound <= 0) ifound = index_in_array(name20, sfname)
@@ -312,12 +312,12 @@ contains
 
         ! remarks, obsolete processes
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_REMARKPROC) then
 
                 name20 = 'active_' // old_items%old_items(i)%old_name
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     write(lurep, '(3a,i10)') ' Activated process [', old_items%old_items(i)%old_name, &
                             '] obsolete, see documentation remark no:', nint(old_items%old_items(i)%old_default)
@@ -328,7 +328,7 @@ contains
 
         ! remarks, obsolete process parameters
 
-        n_old_items = old_items%cursize
+        n_old_items = old_items%current_size
         do i = 1, n_old_items
             if (old_items%old_items(i)%action_type == ITEM_ACTION_REMARKPAR) then
 
@@ -340,7 +340,7 @@ contains
                             '] obsolete, see documentation remark no:', nint(old_items%old_items(i)%old_default)
                 endif
 
-                ifound = dlwq_find(constants, name20)
+                ifound = constants%find(name20)
                 if (ifound > 0) then
                     write(lurep, '(5a)') ' Constant name [', old_items%old_items(i)%old_name, &
                             '] obsolete, see documentation remark no:', nint(old_items%old_items(i)%old_default)

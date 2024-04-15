@@ -529,8 +529,7 @@ contains
         use m_sysj, only : ipror, iprvpt, iprdon, ip_jar, idpnw, idpnt, ivpnt, ivpnw, NR_JAR
         ! Pointers in character array workspace
         use m_sysc
-
-        include "omp_lib.h"
+        use omp_lib
 
         integer(kind = int_wp), intent(in) :: logical_unit    ! logical unitnumber output file
         logical, intent(in) :: declare_memory    ! Declare memory y/n
@@ -1181,8 +1180,7 @@ contains
         ! Pointers in real array workspace
         use m_sysa
         use m_cli_utils, only : retrieve_command_argument
-
-        include "omp_lib.h"
+        use omp_lib
 
         integer(kind = int_wp), intent(in) :: logical_unit    ! logical unitnumber output file
         logical, intent(in) :: declare_memory    ! Declare memory y/n

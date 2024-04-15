@@ -83,7 +83,7 @@ contains
         INTEGER(kind = int_wp) :: iret
         REAL(kind = real_wp) :: ACTDEF
         LOGICAL        SWITUI, SWIT2D
-        CHARACTER*80   LINE
+        character(len=80)   LINE
         integer(kind = int_wp), allocatable :: itemidx(:)          ! index in the aleady existing item collection from the statistics
         integer(kind = int_wp) :: ierr_alloc
         integer(kind = int_wp) :: indx
@@ -172,7 +172,7 @@ contains
 
         ! set old defaults
 
-        do i = 1, old_items%cursize
+        do i = 1, old_items%current_size
             if (old_items%old_items(i)%action_type == ITEM_ACTION_DEFAULT) then
                 if (old_items%old_items(i)%serial > old_items%target_serial) then
                     aItemProp%name = old_items%old_items(i)%old_name
@@ -229,12 +229,12 @@ contains
                 DispStochi%maxsize = 0
                 VeloStochi%maxsize = 0
                 FluxStochi%maxsize = 0
-                input_item%cursize = 0
-                output_item%cursize = 0
-                FluxOutput%cursize = 0
-                DispStochi%cursize = 0
-                VeloStochi%cursize = 0
-                FluxStochi%cursize = 0
+                input_item%current_size = 0
+                output_item%current_size = 0
+                FluxOutput%current_size = 0
+                DispStochi%current_size = 0
+                VeloStochi%current_size = 0
+                FluxStochi%current_size = 0
 
                 ! input items on segment level/exchange level
 
@@ -252,7 +252,7 @@ contains
 
                         ! check this name in the old items table
 
-                        do i = 1, old_items%cursize
+                        do i = 1, old_items%current_size
                             if (old_items%old_items(i)%action_type == ITEM_ACTION_PPEQUAL2) then
                                 if (string_equals(old_items%old_items(i)%new_name(1:10), inpuit(iinpu))) then
                                     inpuit(iinpu) = old_items%old_items(i)%old_name
@@ -404,17 +404,17 @@ contains
 
                 ! process complete, add to the collection
 
-                aProcesProp%no_input = input_item%cursize
+                aProcesProp%no_input = input_item%current_size
                 aProcesProp%input_item => input_item%IOitemProps
-                aProcesProp%no_output = output_item%cursize
+                aProcesProp%no_output = output_item%current_size
                 aProcesProp%output_item => output_item%IOitemProps
-                aProcesProp%no_FluxOutput = FluxOutput%cursize
+                aProcesProp%no_FluxOutput = FluxOutput%current_size
                 aProcesProp%FluxOutput => FluxOutput%IOitemProps
-                aProcesProp%no_FluxStochi = FluxStochi%cursize
+                aProcesProp%no_FluxStochi = FluxStochi%current_size
                 aProcesProp%FluxStochi => FluxStochi%StochiProps
-                aProcesProp%no_DispStochi = DispStochi%cursize
+                aProcesProp%no_DispStochi = DispStochi%current_size
                 aProcesProp%DispStochi => DispStochi%StochiProps
-                aProcesProp%no_VeloStochi = VeloStochi%cursize
+                aProcesProp%no_VeloStochi = VeloStochi%current_size
                 aProcesProp%VeloStochi => VeloStochi%StochiProps
                 iret = ProcesPropCollAdd(ProcesDef, aProcesProp)
 

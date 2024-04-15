@@ -65,19 +65,19 @@ contains
         INTEGER(kind = int_wp) :: VARARR(NOVAR), VARIDX(NOVAR), &
                 VARTDA(NOVAR), VARDAG(NOVAR), &
                 VARTAG(NOVAR), VARAGG(NOVAR)
-        CHARACTER*20        VARNAM(NOVAR)
+        character(len=20)        VARNAM(NOVAR)
         !
         !     Locals
         !
         integer(kind = int_wp), PARAMETER :: MAXLOC = 2000
         INTEGER(kind = int_wp) :: VATTAG(MAXLOC), VATTDA(MAXLOC)
-        CHARACTER*20 VATNAM(MAXLOC), VATNAG(MAXLOC), &
+        character(len=20) VATNAM(MAXLOC), VATNAG(MAXLOC), &
                 VATNDA(MAXLOC)
-        CHARACTER*20 CONAME(*), PANAME(*), &
+        character(len=20) CONAME(*), PANAME(*), &
                 FUNAME(*), SFNAME(*), &
                 SYNAME(*), LOCNAM(*), &
                 DENAME(*)
-        CHARACTER*79 LINE, NAME
+        character(len=79) LINE, NAME
         LOGICAL      LEXI
         INTEGER(kind = int_wp) :: LUN, IIVOL, IIAREA, IIFLOW, IILENG, IIDISP, IICONC, &
                 IIMASS, IIDERV, IIBOUN, IIBSET, IIBSAV, IIWSTE, IICONS, &

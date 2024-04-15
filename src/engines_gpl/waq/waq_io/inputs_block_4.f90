@@ -22,7 +22,7 @@
 !!  rights reserved.
 module inputs_block_4
     use m_waq_precision
-    use m_string_utils, only : string_equals
+    use m_string_utils, only : string_equals, index_in_array
     use matrix_utils, only : scale_array, compute_matrix_size
     use exchange_pointers, only : read_exchange_pointers_irregular_grid, create_boundary_pointers
     use simulation_input_options, only : process_simulation_input_options, validate_simulation_time_steps, &
@@ -74,7 +74,7 @@ contains
         use error_handling, only : check_error
         use m_srstop
         use m_open_waq_files
-        use dlwqgrid_mod        !   for the storage of contraction grids
+        use m_grid_utils_external        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use exchange_pointers, only : read_exchange_pointers_regular_grid
         use partmem

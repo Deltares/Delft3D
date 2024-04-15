@@ -230,22 +230,22 @@
                    dmpq(*)       , dmps(*)       , & 
                    flxdmp(*)     , trraai(nosys,*), & 
                    stochi(notot,noflux), a(*)
-      character*20  syname(*)     , duname(*)     , & 
+      character(len=20)  syname(*)     , duname(*)     , & 
                    ounam(*)      , cgrid(*)      , & 
                    danam(*)      , nambuf(*)     , & 
                    ranam(*)      , bndtyp(*)     , & 
                    coname(*)     , paname(*)     , & 
                    funame(*)     , sfname(*)
-      character*100 ousnm(*)      , sysnm(*)
-      character*40  ouuni(*)      , syuni(*)
-      character*60  oudsc(*)      , sydsc(*)
+      character(len=100) ousnm(*)      , sysnm(*)
+      character(len=40)  ouuni(*)      , syuni(*)
+      character(len=60)  oudsc(*)      , sydsc(*)
 
-      character*100, allocatable :: hnc_standard(:)
-      character*40, allocatable  :: hnc_unit(:)
-      character*60, allocatable  :: hnc_description(:)
+      character(len=100), allocatable :: hnc_standard(:)
+      character(len=40), allocatable  :: hnc_unit(:)
+      character(len=60), allocatable  :: hnc_description(:)
 
-      character*40  moname(4)
-      character*(*) lchar (*)
+      character(len=40)  moname(4)
+      character(len=*) lchar (*)
       logical       imflag, idflag, ihflag
       integer(kind=int_wp) ::dmpbal(ndmpar)        ! indicates if dump area is included in the balance
       integer(kind=int_wp) ::nowst                 ! number of wasteloads
@@ -270,8 +270,8 @@
                    ifi   , ncout , nrvar2, nrvar3, ip1   , & 
                    iof   , nsegou, intopt
 
-      character*255 lchout
-      character*20  name
+      character(len=255) lchout
+      character(len=20)  name
       logical       loflag, lmfirs, ldfirs, lhfirs, ldummy, lnonans
       logical       lget  , lread
       real(kind=real_wp), allocatable   ::surf(:)

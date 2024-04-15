@@ -42,7 +42,7 @@ contains
 
         implicit none
 
-        character*60 aline
+        character(len=60) aline
 
         integer(kind = int_wp) :: i, ioff, j
 

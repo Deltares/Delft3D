@@ -27,15 +27,15 @@
 
       ! global declarations
 
-      use dlwq_hyd_data                   ! module contains everything for the hydrodynamics
-      use hydmod
+      use m_waq_data_structure                   ! module contains everything for the hydrodynamics
+      use m_hydmod
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll       ! description of the domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                 :: domain_hyd_coll       ! description of the domain hydrodynamics
       integer                                :: maxbnd                ! maximum boundary id
       integer                                :: maxseg                ! maximum segment id
       integer                                :: n_domain              ! number of domains
@@ -43,7 +43,7 @@
 
       ! local declarations
 
-      type(t_hyd), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: i_domain              ! domain index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
