@@ -1922,6 +1922,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p100_general_his.nc" type="netCDF">
@@ -1979,6 +1980,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p101_general_his.nc" type="netCDF">
@@ -2036,6 +2038,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p102_general_his.nc" type="netCDF">
@@ -2093,6 +2096,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p103_asian_carp_his.nc" type="netCDF">
@@ -2150,6 +2154,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p105_jelly_fish_his.nc" type="netCDF">
@@ -2207,6 +2212,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p106_horseshoe_his.nc" type="netCDF">
@@ -2264,6 +2270,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p107_mangrove_his.nc" type="netCDF">
@@ -2321,6 +2328,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p108_glass_eel_his.nc" type="netCDF">
@@ -2378,6 +2386,7 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                    <skipline>.inp</skipline>
                    <skipline>.out</skipline>
                    <skipline>Actual date/time</skipline>
+                   <skipline>update_particles_in_cells</skipline>
                         </file>
 <!--
                         <file name="p109_salmon_his.nc" type="netCDF">
