@@ -30,12 +30,12 @@
       ! global declarations
 
       use m_file_unit_number
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
       character(len=*)                       :: file_names            ! file with new discharge names and type
 
       ! local declarations
@@ -61,7 +61,7 @@
 
       ! some init
 
-      nowast = hyd%wasteload_coll%cursize
+      nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
       nolay  = hyd%nolay
 

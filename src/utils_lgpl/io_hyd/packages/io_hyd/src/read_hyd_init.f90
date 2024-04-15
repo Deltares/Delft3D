@@ -35,7 +35,7 @@
 
       use m_srstop
       use m_monsys
-      use hydmod
+      use m_hydmod
       use io_netcdf
       use m_read_waqgeom
       use hyd_waqgeom_old
@@ -43,7 +43,7 @@
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd     ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd     ! description of the hydrodynamics
 
       ! local declarations
 
@@ -112,7 +112,7 @@
          endif
 
          hyd%openbndsect_coll%maxsize = 0
-         hyd%openbndsect_coll%cursize = 0
+         hyd%openbndsect_coll%current_size = 0
          call read_bnd(hyd%file_bnd, hyd%openbndsect_coll)
 
       endif
@@ -160,8 +160,8 @@
 
       ! read dispersion length, assume time independent
 
-      call dlwqfile_open(hyd%file_len)
-      read(hyd%file_len%unit_nr,iostat=ierr) itime,((hyd%displen(i,j),i=1,2),j=1,hyd%noq)
+      call hyd%file_len%open()
+      read(hyd%file_len%unit,iostat=ierr) itime,((hyd%displen(i,j),i=1,2),j=1,hyd%noq)
       if ( ierr .ne. 0 ) then
          write(*,*) 'ERROR: reading dispersion length file'
          write(lunrep,*) 'ERROR: reading dispersion length file'

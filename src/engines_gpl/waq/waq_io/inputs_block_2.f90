@@ -31,7 +31,7 @@ module m_block_2_input_reader
 contains
 
     subroutine read_block_2_from_input (lun, lchar, filtype, nrftot, nlines, &
-            npoins, is_date_format, dtflg2, nodump, iopt, &
+            npoins, is_date_format, is_ddhhmmss_format, nodump, iopt, &
             noint, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
             noraai, ntraaq, nosys, notot, nototp, &
             output_verbose_level, nsegdmp, isegdmp, nexcraai, &
@@ -96,7 +96,7 @@ contains
         integer(kind = int_wp), intent(in) :: output_verbose_level   !< flag for more or less output
 
         logical, intent(out) :: is_date_format !< 'date'-format 1st timescale
-        logical, intent(out) :: dtflg2 !< 'date'-format 2nd timescale
+        logical, intent(out) :: is_ddhhmmss_format !< 'date'-format 2nd timescale
         logical, intent(out) :: is_yyddhh_format !< 'date'-format (F;ddmmhhss,T;yydddhh)
 
         type(error_status) :: status !< current error status
@@ -133,7 +133,7 @@ contains
         !       Initialisation of timers
 
         is_date_format = .false.
-        dtflg2 = .false.
+        is_ddhhmmss_format = .false.
         is_yyddhh_format = .false.
         isflag = 0
         iposr = 0
@@ -163,7 +163,7 @@ contains
             isflag = 1
             write (lunut, *)' System clock in date-format  DDHHMMSS '
             if (date2 == 'DDHHMMSS' .or. date2 == 'ddhhmmss') then    ! allowed
-                dtflg2 = .true.
+                is_ddhhmmss_format = .true.
                 write (lunut, *) ' Auxiliary timer in date-format DDHHMMSS '
                 if (itfact /= 1) write (lunut, 2040)
             elseif (date2 == 'YYDDDHH'.or. date2 =='yydddhh') then    ! not allowed
@@ -185,7 +185,7 @@ contains
             isflag = 1
             write (lunut, *) ' System clock in date-format  YYDDDHH '
             if (date2 == 'YYDDDHH' .or. date2 == 'yydddhh') then      ! allowed
-                dtflg2 = .true.
+                is_ddhhmmss_format = .true.
                 write (lunut, *) ' Auxiliary timer in date-format YYDDDHH '
                 if (itfact /= 1) write (lunut, 2040)
             elseif (date2 =='DDHHMMSS' .or. date2 =='ddhhmmss') then  ! not allowed

@@ -38,19 +38,19 @@ module m_debgrz_output
                                             !< concentration       [gAFDW/m3]
         real(kind=real_wp) :: totww         !< Total wet weight         [gWW]
         real(kind=real_wp) :: ww            !< Total wet weight conc.[gWW/m3]
-        real(kind=real_wp) :: ww_ind        !< wet weight of individual
-                                            !< [gWW/ind]
+        real(kind=real_wp) :: ww_ind        !< Wet weight of individual
+                                            !<                      [gWW/ind]
         real(kind=real_wp) :: v             !< Individual volume    [cm3/ind]
         real(kind=real_wp) :: e             !< Individual energy      [J/ind]
         real(kind=real_wp) :: r             !< Individual gonads      [J/ind]
         real(kind=real_wp) :: length        !< Individual Length         [cm]
         real(kind=real_wp) :: gsi           !< Gonadosomatic Index        [-]
-        real(kind=real_wp) :: e_scaled      !< scaled energy density      [-]
-        real(kind=real_wp) :: harvest       !< total harvested biomass[gWW/d]
-        real(kind=real_wp) :: spawn         !< total spawned biomass  [gWW/d]
-        real(kind=real_wp) :: grossgr       !< gross growth         [gC/m2/d]
-        real(kind=real_wp) :: nettgr        !< net growth           [gC/m2/d]
-        real(kind=real_wp) :: dens_out      !< nr of individuals     [#/m2/d]
+        real(kind=real_wp) :: e_scaled      !< Scaled energy density      [-]
+        real(kind=real_wp) :: harvest       !< Total harvested biomass[gWW/d]
+        real(kind=real_wp) :: spawn         !< Total spawned biomass  [gWW/d]
+        real(kind=real_wp) :: grossgr       !< Gross growth         [gC/m2/d]
+        real(kind=real_wp) :: nettgr        !< Net growth           [gC/m2/d]
+        real(kind=real_wp) :: dens_out      !< Nr of individuals     [#/m2/d]
         real(kind=real_wp) :: c_balance     !< Balance of carbon      [gC/m3]
         real(kind=real_wp) :: n_balance     !< Balance of nitorgen    [gN/m3]
         real(kind=real_wp) :: p_balance     !< Balance of phosphorus  [gP/m3]
@@ -62,8 +62,8 @@ module m_debgrz_output
     contains
 
     subroutine update_pmsa(this, pmsa, iparray, input_count)
-        !< assign output variables to pmsa array
-        class(debgrz_output) :: this !< this instance of output_variables
+        !< Assign output variables to pmsa array
+        class(debgrz_output) :: this !< This instance of output_variables
 
         real(kind=real_wp),   intent(inout)   :: pmsa(*)
 

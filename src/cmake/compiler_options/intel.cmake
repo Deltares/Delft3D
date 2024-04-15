@@ -6,6 +6,7 @@ if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads  /MP")
+    set(fortran_standard_flag "/stand")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
@@ -59,6 +60,7 @@ if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0 -fPIC")
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2 -fPIC")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC")
+    set(fortran_standard_flag                    "-std")
 
     set(cpp_compiler_flags                       "-std=c++17")
     set(cxx_compiler_flags......................."-lstdc++")

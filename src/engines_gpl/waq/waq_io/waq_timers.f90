@@ -57,8 +57,8 @@ contains
         integer(kind = int_wp), intent(out) :: ierr            !< not zero if error
 
         integer(kind = int_wp) :: itype           !  help variable for tokenized reading
-        character*255 cdummy         !  help variable for tokenized reading
-        character*12  txt(3)
+        character(len=255) cdummy         !  help variable for tokenized reading
+        character(len=12)  txt(3)
         integer(kind = int_wp) :: ierr2           !  local error variable
         data          txt / ' Monitoring ', ' Output     ', ' History    ' /
         integer(kind = int_wp) :: ithndl = 0

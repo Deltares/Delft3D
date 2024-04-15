@@ -36,7 +36,7 @@
       use m_monsys
       use time_module
       use m_get_filepath_and_pathlen
-      use hydmod
+      use m_hydmod
       use m_write_error_message
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
@@ -45,7 +45,7 @@
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd                    ! description of the hydrodynamics
 
       ! local declarations
 
@@ -177,11 +177,11 @@
       call getmlu(lunrep)
 
       hyd%file_hyd%type = ft_asc
-      call dlwqfile_open(hyd%file_hyd)
+      call hyd%file_hyd%open()
 
       ! initialise tokenised reading
       ilun    = 0
-      ilun(1) = hyd%file_hyd%unit_nr
+      ilun(1) = hyd%file_hyd%unit
       lch (1) = hyd%file_hyd%name
       npos   = 1000
       cchar  = '#'
@@ -190,36 +190,36 @@
       hyd%description = ' '
       call get_filepath_and_pathlen ( hyd%file_hyd%name, filpath, pathlen)
 
-      hyd%wasteload_coll%cursize = 0
+      hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
-      hyd%domain_coll%cursize = 0
+      hyd%domain_coll%current_size = 0
       hyd%domain_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
-      hyd%file_com=t_dlwqfile(' ',' ',0,FT_NEF,FILE_STAT_UNOPENED)
-      hyd%file_dwq=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_vag=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_lga=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_cco=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_bnd=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_geo=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_vol=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_are=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_flo=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_poi=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_len=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_sal=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_tem=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_vdf=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_srf=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_hsrf=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_lgt=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_src=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_chz=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_tau=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%file_wlk=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_atr=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      hyd%file_dps=t_dlwqfile(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_com=t_file(' ',' ',0,FT_NEF,FILE_STAT_UNOPENED)
+      hyd%file_dwq=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_vag=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_lga=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_cco=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_bnd=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_geo=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_vol=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_are=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_flo=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_poi=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_len=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_sal=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_tem=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_vdf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_srf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_hsrf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_lgt=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_src=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_chz=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_tau=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_wlk=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_atr=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      hyd%file_dps=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%mmax = 0
       hyd%nmax = 0
       hyd%kmax = 1
@@ -574,7 +574,7 @@
                wasteload%waqtype = ' '
 
                ! add to wasteload collection
-               i_wasteload = wasteload_coll_add(hyd%wasteload_coll, wasteload)
+               i_wasteload = hyd%wasteload_coll%add(wasteload)
 
             enddo
 
@@ -593,7 +593,7 @@
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
                ! add to domains collection
-               i_domain = domain_coll_add(hyd%domain_coll, domain)
+               i_domain = hyd%domain_coll%add(domain)
             enddo
 
          elseif ( ikey .eq. 56) then
@@ -643,7 +643,7 @@
 
                ! add to dd_bound collection
 
-               i_dd_bound = dd_bound_coll_add(hyd%dd_bound_coll, dd_bound)
+               i_dd_bound = hyd%dd_bound_coll%add(dd_bound)
 
             enddo
 
@@ -673,7 +673,7 @@
 !               if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 !
 !               ! add to domains collection
-!               i_domain = domain_coll_add(hyd%domain_coll, domain)
+!               i_domain = hyd%domain_coll%add(domain)
             enddo
 
          else

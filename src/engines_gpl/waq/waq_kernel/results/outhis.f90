@@ -68,8 +68,8 @@ contains
         INTEGER(kind = int_wp) :: IOHIS, ITIME, NODUMP, NOTOT1, NOTOT2, &
                 INIT
         INTEGER(kind = int_wp) :: IDUMP(*)
-        CHARACTER*(*) MONAME(4), NAMFIH
-        CHARACTER*(*) DUNAME(*), SYNAM1(*), SYNAM2(*)
+        character(len=*) MONAME(4), NAMFIH
+        character(len=*) DUNAME(*), SYNAM1(*), SYNAM2(*)
         REAL(kind = real_wp) :: CONC1(*), CONC2(*)
 
         !     local

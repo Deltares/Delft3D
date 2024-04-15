@@ -57,8 +57,8 @@ contains
         integer(kind = int_wp) :: isys
         integer(kind = int_wp) :: ivar
         integer(kind = int_wp) :: ioffv
-        character*255 :: filpst
-        character*255 :: filstu
+        character(len=255) :: filpst
+        character(len=255) :: filstu
         integer(kind = int_wp) :: lunwrk
         integer(kind = int_wp) :: nrvar
         integer(kind = int_wp) :: indx

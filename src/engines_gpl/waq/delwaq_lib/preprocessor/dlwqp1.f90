@@ -75,7 +75,7 @@ contains
         use m_cli_utils, only : retrieve_command_argument
         use m_open_waq_files
         use timers
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use processet
         use results, only : OutputPointers
         use partable
@@ -95,7 +95,7 @@ contains
         type(OutputPointers), intent(inout) :: outputs         !< output structure
         integer(kind = int_wp), intent(in) :: nomult           !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult) !< multiple substance administration
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         integer(kind = int_wp), intent(in) :: refday           !< reference day, varying from 1 till 365
 
         type(error_status) :: status !< current error status
@@ -165,22 +165,22 @@ contains
         integer(kind = int_wp), allocatable :: sysgrd(:)        ! substance grid
         integer(kind = int_wp), allocatable :: sysndt(:)        ! substance timestep multiplier
 
-        character*40 :: modid(4)       ! model id
-        character*20, allocatable :: syname(:)       ! substance names
-        character*20, allocatable :: coname(:)       ! constant names
-        character*20, allocatable :: paname(:)       ! parameter names
-        character*20, allocatable :: funame(:)       ! function names
-        character*20, allocatable :: sfname(:)       ! segm.func. names
-        character*20, allocatable :: diname(:)       ! dispersion names
-        character*20, allocatable :: vename(:)       ! velocity names
-        character*20, allocatable :: dename(:)       ! default array names
-        character*20, allocatable :: locnam(:)       ! local array names
-        character*20, allocatable :: ainame(:)       ! all item names names in the proc_def
-        character*20 :: subname         ! substance name
-        character*100, allocatable :: substdname(:)   ! substance standard name
-        character*40, allocatable :: subunit(:)      ! substance unit
-        character*60, allocatable :: subdescr(:)     ! substance description
-        character*20 :: outname         ! output name
+        character(len=40) :: modid(4)       ! model id
+        character(len=20), allocatable :: syname(:)       ! substance names
+        character(len=20), allocatable :: coname(:)       ! constant names
+        character(len=20), allocatable :: paname(:)       ! parameter names
+        character(len=20), allocatable :: funame(:)       ! function names
+        character(len=20), allocatable :: sfname(:)       ! segm.func. names
+        character(len=20), allocatable :: diname(:)       ! dispersion names
+        character(len=20), allocatable :: vename(:)       ! velocity names
+        character(len=20), allocatable :: dename(:)       ! default array names
+        character(len=20), allocatable :: locnam(:)       ! local array names
+        character(len=20), allocatable :: ainame(:)       ! all item names names in the proc_def
+        character(len=20) :: subname         ! substance name
+        character(len=100), allocatable :: substdname(:)   ! substance standard name
+        character(len=40), allocatable :: subunit(:)      ! substance unit
+        character(len=60), allocatable :: subdescr(:)     ! substance description
+        character(len=20) :: outname         ! output name
 
         ! proces definition structure
 
@@ -190,7 +190,7 @@ contains
         integer(kind = int_wp) :: serial           ! serial number process definition
         integer(kind = int_wp) :: target_serial    ! target serial number process definition
         real(kind = real_wp) :: versio           ! version process defintion
-        character*20, allocatable :: actlst(:)
+        character(len=20), allocatable :: actlst(:)
 
         ! proces "output" structure
 
@@ -202,45 +202,45 @@ contains
 
         ! settings
 
-        character*80 :: swinam
-        character*80 :: blmnam
-        character*80 :: line
-        character*256 :: pdffil
-        character*10 :: config
+        character(len=80) :: swinam
+        character(len=80) :: blmnam
+        character(len=80) :: line
+        character(len=256) :: pdffil
+        character(len=10) :: config
         logical :: lfound, laswi, swi_nopro
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
         ! information
 
-        character*20 :: rundat
+        character(len=20) :: rundat
         logical :: ex
 
         ! bloom-species database
 
-        character*256 :: blmfil
+        character(len=256) :: blmfil
         logical :: l_eco
         integer(kind = int_wp) :: maxtyp, maxcof
         parameter(maxtyp = 500, maxcof = 50)
         integer(kind = int_wp) :: notyp, nocof, nogrp
-        character*10 :: alggrp(maxtyp), algtyp(maxtyp)
-        character*5 :: abrgrp(maxtyp), abrtyp(maxtyp)
-        character*80 :: algdsc(maxtyp)
-        character*10 :: cofnam(maxcof)
+        character(len=10) :: alggrp(maxtyp), algtyp(maxtyp)
+        character(len=5) :: abrgrp(maxtyp), abrtyp(maxtyp)
+        character(len=80) :: algdsc(maxtyp)
+        character(len=10) :: cofnam(maxcof)
         real(kind = real_wp) :: algcof(maxcof, maxtyp)
         integer(kind = int_wp) :: algact(maxtyp)
         integer(kind = int_wp) :: noutgrp, nouttyp
-        character*10 :: outgrp(maxtyp), outtyp(maxtyp)
+        character(len=10) :: outgrp(maxtyp), outtyp(maxtyp)
         integer(kind = int_wp) :: noprot, nopralg
-        character*10 :: namprot(maxtyp), nampact(maxtyp), nampralg(maxtyp)
+        character(len=10) :: namprot(maxtyp), nampact(maxtyp), nampralg(maxtyp)
 
         ! actual algae
 
         integer(kind = int_wp) :: noalg
-        character*10 :: name10
-        character*10 :: grpnam(maxtyp)
-        character*5 :: grpabr(maxtyp)
-        character*10 :: typnam(maxtyp)
-        character*5 :: typabr(maxtyp)
+        character(len=10) :: name10
+        character(len=10) :: grpnam(maxtyp)
+        character(len=5) :: grpabr(maxtyp)
+        character(len=10) :: typnam(maxtyp)
+        character(len=5) :: typabr(maxtyp)
 
         ! output things
 
@@ -277,9 +277,9 @@ contains
         nveln = 0
         noqtt = noq + noq4
         nosss = noseg + nseg2
-        procesdef%cursize = 0
+        procesdef%current_size = 0
         procesdef%maxsize = 0
-        old_items%cursize = 0
+        old_items%current_size = 0
         old_items%maxsize = 0
 
         ! open report file
@@ -437,7 +437,7 @@ contains
             end if
         else
             blmnam = 'ACTIVE_BLOOM_P'
-            blm_act = dlwq_find(constants, blmnam)
+            blm_act = constants%find(blmnam)
             if (blm_act > 0 .and. .not. swi_nopro) then
                 l_eco = .true.
                 line = ' '
@@ -566,7 +566,7 @@ contains
         ! active only switch set trough a constant
 
         swinam = 'only_active'
-        ix_act = dlwq_find(constants, swinam)
+        ix_act = constants%find(swinam)
         if (ix_act > 0) then
             write (line, '(a)') ' found only_active constant'
             call monsys(line, 1)
@@ -611,21 +611,21 @@ contains
             call prprop(lurep, laswi, config, no_act, actlst, allitems, procesdef, &
                     old_items, status)
 
-            nbpr = procesdef%cursize
+            nbpr = procesdef%current_size
         else
             nbpr = 0
         end if
 
         ! add the statistical processes in the structure
 
-        if (statprocesdef%cursize > 0) then
-            do istat = 1, statprocesdef%cursize
+        if (statprocesdef%current_size > 0) then
+            do istat = 1, statprocesdef%current_size
                 statprocesdef%procesprops(istat)%sfrac_type = 0
                 iret = procespropcolladd(procesdef, statprocesdef%procesprops(istat))
                 actlst(no_act + istat) = statprocesdef%procesprops(istat)%name
             end do
-            nbpr = nbpr + statprocesdef%cursize
-            no_act = no_act + statprocesdef%cursize
+            nbpr = nbpr + statprocesdef%current_size
+            no_act = no_act + statprocesdef%current_size
         end if
 
         ! set processes and fluxes for the substance fractions, this adds and alters processes in procesdef!
@@ -716,8 +716,8 @@ contains
         allocate (defaul(maxdef))
         allocate (dename(maxdef))
         defaul = 0.0
-        defaul(5) = float(itstrt)
-        defaul(6) = float(itstop)
+        defaul(5) = real(itstrt)
+        defaul(6) = real(itstop)
         allocate (locnam(novarm))
 
         ! put theta in local array if wanted for output, the value will be filled by the integration routine
@@ -794,13 +794,13 @@ contains
 
         ! nrvart is in the boot sysn common
 
-        nrvart = outputs%cursize
+        nrvart = outputs%current_size
 
         ! Prepare descrtion and unit information for output from the proces library to be written in the NetCDF-file
 
         ! Extract names list from allitems
-        allocate (ainame(allitems%cursize))
-        do iitem = 1, allitems%cursize
+        allocate (ainame(allitems%current_size))
+        do iitem = 1, allitems%current_size
             ainame(iitem) = allitems%itemproppnts(iitem)%pnt%name
         end do
 
@@ -848,7 +848,7 @@ contains
         end do
 
         ! Lookup output names in names list
-        do ioutp = 1, outputs%cursize
+        do ioutp = 1, outputs%current_size
             outname = outputs%names(ioutp)
             call str_lower(outname)
             iindx = index_in_array(outname, ainame)

@@ -88,7 +88,7 @@ contains
         if (timon) call timstrt("algrep", ithndl)
 
         ! some init
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
 
         ! input types
 
@@ -193,7 +193,7 @@ contains
         integer(kind = int_wp) :: iproc
         type(procesprop), pointer :: proc
 
-        do iproc = 1, process_definition%cursize
+        do iproc = 1, process_definition%current_size
             proc => process_definition%procesprops(iproc)
             call replace_item_names(proc, original_name, new_name)
         enddo

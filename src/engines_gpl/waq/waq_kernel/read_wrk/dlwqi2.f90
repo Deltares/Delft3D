@@ -57,7 +57,7 @@ contains
 
         use m_srstop
         use timers
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use delwaq2_data
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
@@ -143,17 +143,17 @@ contains
                 IWASTE(*), NRFTOT(*), NRHARM(*), LUN   (*), &
                 IKNMRK(*), INWTYP(*)
         INTEGER(kind = int_wp) :: GRDSEG(NOSEG + NSEG2, NOGRID)
-        CHARACTER*40 MODID (4), BNDNAM(*), WSTNAM(*)
-        CHARACTER*20 SYSID (*), DUMPID(*), BNDID (*), BNDTYP(*), &
+        character(len=40) MODID (4), BNDNAM(*), WSTNAM(*)
+        character(len=20) SYSID (*), DUMPID(*), BNDID (*), BNDTYP(*), &
                 WASTID(*), WSTTYP(*), CONAME(*), PANAME(*), &
                 FUNAME(*), SFNAME(*), DINAME(*), VENAME(*), &
                 DANAM (*), RANAM (*)
         real(kind = real_wp) :: DISP  (*), ALENG (*), CONST (*), PARAM (*)
-        CHARACTER*40  FILLER
+        character(len=40)  FILLER
         type(GridPointerColl), intent(inout) :: GridPs     !< definitions of the grids
         type(delwaq_data), intent(inout) :: dlwqd      !< derived type for persistent storage
         integer(kind = int_wp) :: dmpbal(*)  !< indicates if dump area is included in the balance
-        type(GridPointer) :: aGrid      ! a single grid
+        type(t_grid) :: aGrid      ! a single grid
 
         integer(kind = int_wp) :: it, noqtt, nosss, k, igrid, iin, iseg, ierror, i_grid
         integer(kind = int_wp) :: isys, ix, i, idummy
@@ -189,9 +189,9 @@ contains
         ENDDO
         !     the grid structures
         DO IGRID = 1, NOGRID
-            ierror = GridRead(iin, aGrid, nosss)
+            ierror = aGrid%read(iin, nosss)
             if (ierror /= 0) goto 40
-            i_grid = GridPointerCollAdd(GridPs, aGrid)
+            i_grid = GridPs%add(aGrid)
         ENDDO
         READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, NOTOT)
         READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, NOTOT)

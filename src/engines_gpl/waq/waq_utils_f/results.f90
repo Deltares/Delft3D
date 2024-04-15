@@ -78,7 +78,7 @@ module results
         character(LEN = UNIT_SIZE), pointer :: units(:)           ! units of variables
         character(LEN = DESC_SIZE), pointer :: description(:)          ! descriptions of variables
         integer, pointer :: pointers(:)        ! ponters in waq arrays
-        integer :: cursize            ! filled up to this size
+        integer :: current_size            ! filled up to this size
     end type OutputPointers
 
 end module results

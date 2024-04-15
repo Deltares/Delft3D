@@ -31,9 +31,9 @@ contains
     SUBROUTINE extract_file_extension(file_name, file_extension, extension_dot_position, extension_length)
         !! get file extension and extension dot position an extension length without dot if no extension position is
         !! last blank
-        character*(*), intent(in) :: file_name
+        character(len=*), intent(in) :: file_name
         integer(kind = int_wp), intent(out) :: extension_length !! extension length without dot
-        character*(*), intent(out) :: file_extension
+        character(len=*), intent(out) :: file_extension
         integer(kind = int_wp), intent(out) :: extension_dot_position !! the position of the extension dot in the
         !! filename. If there's no extension, it is set to the position of the last blank space.
 

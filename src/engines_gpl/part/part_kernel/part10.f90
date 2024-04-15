@@ -546,7 +546,7 @@ contains
          xp =       xpart (ipart)
          yp =       ypart (ipart)
          zp =       zpart (ipart)
-         tp = float(iptime(ipart))
+         tp = real(iptime(ipart))
          itdelt = idelt
          ddfac  = 2.0
          dran1  = drand(1)
@@ -554,12 +554,12 @@ contains
          if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
             tp     = 0.0
             itdelt = idelt + iptime(ipart)
-            ddfac  = float(itdelt)/float(idelt)
+            ddfac  = real(itdelt)/real(idelt)
             dran1  = dran1 * sqrt(ddfac)
             abuac  = abuac * sqrt(ddfac)
          endif
 
-         deltt = float(itdelt)
+         deltt = real(itdelt)
          dred  = 1.0                       !   depth reduction factor for 2-layer models
          if ( twolay ) then
             if ( kp .eq. 1 ) then
@@ -1012,7 +1012,7 @@ contains
 
 !**      time of flight particle in x direction
 
-         rtimx = float(itdelt)
+         rtimx = real(itdelt)
          idx   = 0
          if ( abs(c2*vvx) .gt. accur ) then
             if ( vx .gt. 0.0 ) then
@@ -1041,7 +1041,7 @@ contains
 
 !**      time of flight particle in y direction
 
-         rtimy = float(itdelt)
+         rtimy = real(itdelt)
          idy   = 0
          if ( abs(c2*vvy) .gt. accur ) then
             if ( vy .gt. 0.0 ) then
@@ -1073,7 +1073,7 @@ contains
 ! 3d..                    is assumed to go downwards
 ! 3d..                    from small kp to large kp
 
-         rtimz = float(itdelt)
+         rtimz = real(itdelt)
          idz   = 0
          if ( abs(c3*vvz) .gt. accur ) then
             if ( vz .eq. 0.0 ) then
@@ -1142,15 +1142,15 @@ contains
 
                if     ( eql(rtim,rtimx) ) then
                   mp = mp + idx
-                  xp = xp - float(idx)
+                  xp = xp - real(idx)
                   ddshift = 1
                elseif ( eql(rtim,rtimy) ) then
                   np = np + idy
-                  yp = yp - float(idy)
+                  yp = yp - real(idy)
                   ddshift = 2
                elseif ( eql(rtim,rtimz) ) then
                   kp = kp + idz
-                  zp = zp - float(idz)
+                  zp = zp - real(idz)
                   ddshift = 0
                   if (   kp .lt. ktopp .or.   &
                        ( kp .gt. kbotp .and. .not. twolay ) ) then

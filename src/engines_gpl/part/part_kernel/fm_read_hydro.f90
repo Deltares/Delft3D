@@ -37,12 +37,12 @@ subroutine part_readhydstep(hyd,itime,istat)
    use m_part_flow
    use m_part_geom, only: ba, ndx, lnx, lne2ln
    use m_part_times, only: time1
-   use hydmod
+   use m_hydmod
    use timers
 
    implicit none
 
-   type(t_hyd)        ,intent(inout) :: hyd           !< description of the hydrodynamics
+   type(t_hydrodynamics)        ,intent(inout) :: hyd           !< description of the hydrodynamics
    integer            ,intent(inout) :: itime
    integer            ,intent(inout) :: istat
 
@@ -110,12 +110,12 @@ end subroutine part_readhydstep
 ! Wrapper for rdhydr from the "classic" reading routine
 !
 subroutine read_hyd_step_fm(hyd,itime,istat)
-   use partmem, only: t_hyd, itstrtp, idelt, caltau, vol1, vol2, flow1, flow2m, vdiff1, tau1, salin1, temper1, flow2, rhowatc
+   use partmem, only: t_hydrodynamics, itstrtp, idelt, caltau, vol1, vol2, flow1, flow2m, vdiff1, tau1, salin1, temper1, flow2, rhowatc
    use m_part_geom, only: lnx
    use fileinfo
    use rdhydr_mod, only: rdhydr
 
-   type(t_hyd), intent(inout) :: hyd
+   type(t_hydrodynamics), intent(inout) :: hyd
    integer, intent(in)        :: itime
    integer, intent(out)       :: istat
 

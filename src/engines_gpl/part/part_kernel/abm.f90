@@ -119,7 +119,7 @@ contains
       integer, save              :: nstage              ! number of stages
       integer, save              :: iday = 0            ! for csv output
       integer, save              :: ncum = 0            ! for csv output
-      character*256              :: filcsv
+      character(len=256)              :: filcsv
       integer, save              :: luncsv
       real(sp), pointer,save     :: astage(:)           ! a coefficient in stage development (-)
       real(sp), pointer,save     :: bstage(:)           ! b coefficient in stage development (-)
@@ -434,7 +434,7 @@ contains
 
             nconst             = nconst + 5                      ! count constants used
 
-            write(*,'(a,e10.5)') "Species stage dev. par. A       : ", par_a
+            write(*,'(a,f10.5)') "Species stage dev. par. A       : ", par_a
             write(*,'(a,f10.5)') "Species stage dev. par. B       : ", par_b
             write(*,'(a,f10.5)') "Species stage dev. par. C       : ", par_c
             write(*,'(a,f10.5)') "Species stage dev. par. CTUmean : ", par_ctum

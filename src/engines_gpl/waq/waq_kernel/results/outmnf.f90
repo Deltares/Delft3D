@@ -114,7 +114,7 @@
       integer(kind=int_wp), save                         ::fd_nef = -1            ! handle to NEFIS file
       integer(kind=int_wp) , external                    :: FLSDAT, FLSDEF
 
-      character*20                  , save :: duname(1) = ' '
+      character(len=20)                  , save :: duname(1) = ' '
       character(len=20), allocatable, save :: syname(:)              ! complete list of names
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmnf", ithandl )

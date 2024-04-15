@@ -34,12 +34,12 @@ contains
     subroutine compact_usefor(lunut, waq_param, data_param, i, icnt)
         !!compacts usefor lists if unresolved externals
 
-        use dlwq_hyd_data !   for definition and storage of data
+        use m_waq_data_structure !   for definition and storage of data
         use timers        !   performance timers
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
-        type(t_dlwq_item), intent(inout) :: waq_param  !! list of param items to be set in this block ( substances etc )
-        type(t_dlwq_item), intent(inout) :: data_param   ! list of param items in the data
+        type(t_waq_item), intent(inout) :: waq_param  !! list of param items to be set in this block ( substances etc )
+        type(t_waq_item), intent(inout) :: data_param   ! list of param items in the data
         integer(kind = int_wp), intent(in) :: i             ! item index
         integer(kind = int_wp), intent(inout) :: icnt          ! shift in item index
 
@@ -160,9 +160,9 @@ contains
         use m_waq_precision
         use m_error_status
 
-        character*(*) char_arr(:)
+        character(len=*) char_arr(:)
         integer(kind = int_wp), intent(inout) :: int_array(:)
-        character*20  charachter_output, message_type
+        character(len=20)  charachter_output, message_type
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: i1, i3, i4, i5
         integer(kind = int_wp) :: lunut, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim

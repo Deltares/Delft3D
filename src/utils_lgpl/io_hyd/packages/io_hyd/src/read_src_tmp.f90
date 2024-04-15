@@ -35,19 +35,19 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_waq_file                   ! module contains everything for the files
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_src_tmp           ! tmp sources file
+      type(t_file)                       :: file_src_tmp           ! tmp sources file
       integer                                :: nolay                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
-      type(t_dlwqdata)      , intent(inout)  :: wasteload_data         ! wasteload_data
-      type(t_dlwqdata)                       :: wasteload_data_tmp     ! wasteload_data backup to append
+      type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
+      type(t_data_block)                       :: wasteload_data_tmp     ! wasteload_data backup to append
 
       ! local declarations
 
@@ -75,10 +75,10 @@
 
       call getmlu(lunrep)
 
-      no_waste = wasteload_coll%cursize
+      no_waste = wasteload_coll%current_size
       if(no_waste.eq.0) return
       
-      if(wasteload_data%no_brk .gt. 0) then
+      if(wasteload_data%num_breakpoints .gt. 0) then
          first_itime_current = wasteload_data%times(1)
       else
          first_itime_current = 2000000000
@@ -93,9 +93,9 @@
          endif
       enddo
 
-      call dlwqfile_open(file_src_tmp)
+      call file_src_tmp%open()
       ilun    = 0
-      ilun(1) = file_src_tmp%unit_nr
+      ilun(1) = file_src_tmp%unit
       lch (1) = file_src_tmp%name
       npos   = 1000
       cchar  = ';'
@@ -127,14 +127,14 @@
          nobrk_waste_tmp = nobrk_waste_tmp + 1
       enddo
       ierr = 0
-      rewind(file_src_tmp%unit_nr)
+      rewind(file_src_tmp%unit)
 
       ! then allocate number of break points + current number of breakpoints in wasteload_data_tmp
-      nobrk_waste = nobrk_waste_tmp + wasteload_data%no_brk 
-      wasteload_data_tmp%no_brk = nobrk_waste
+      nobrk_waste = nobrk_waste_tmp + wasteload_data%num_breakpoints
+      wasteload_data_tmp%num_breakpoints = nobrk_waste
       no_param = 1
-      wasteload_data_tmp%no_loc   = no_waste
-      wasteload_data_tmp%no_param = no_param
+      wasteload_data_tmp%num_locations   = no_waste
+      wasteload_data_tmp%num_parameters = no_param
 
       ! allocate arrays
       allocate(wasteload_data_tmp%times(nobrk_waste), &
@@ -152,15 +152,15 @@
 
       ! set options
       wasteload_data_tmp%subject         = SUBJECT_WASTE
-      wasteload_data_tmp%functype        = FUNCTYPE_BLOCK
-      wasteload_data_tmp%extern          = .FALSE.
+      wasteload_data_tmp%function_type        = FUNCTYPE_BLOCK
+      wasteload_data_tmp%is_external          = .FALSE.
       wasteload_data_tmp%iorder          = ORDER_PARAM_LOC
-      wasteload_data_tmp%param_pointered = .FALSE.
-      wasteload_data_tmp%loc_defaults    = .FALSE.
-      wasteload_data_tmp%loc_pointered   = .FALSE.
-      wasteload_data_tmp%scaled          = .FALSE.
-      wasteload_data_tmp%param_scaled    = .FALSE.
-      wasteload_data_tmp%loc_scaled      = .FALSE.
+      wasteload_data_tmp%is_parameter_pointered = .FALSE.
+      wasteload_data_tmp%are_locations_default    = .FALSE.
+      wasteload_data_tmp%are_locations_pointered   = .FALSE.
+      wasteload_data_tmp%is_scaled          = .FALSE.
+      wasteload_data_tmp%need_parameters_scaling    = .FALSE.
+      wasteload_data_tmp%need_location_scaling      = .FALSE.
 
       ! read the data from the tmp-file into wasteload_data_tmp
       do ibrk = 1 , nobrk_waste_tmp
@@ -204,14 +204,14 @@
       enddo
       
       ! add the data that was already there into wasteload_data_tmp, and return it as wasteload_data
-      do ibrk = 1 , wasteload_data%no_brk
+      do ibrk = 1 , wasteload_data%num_breakpoints
          wasteload_data_tmp%times(ibrk+nobrk_waste_tmp) = wasteload_data%times(ibrk)
          do i_waste = 1 , no_waste
             wasteload_data_tmp%values(1,i_waste,ibrk+nobrk_waste_tmp) = wasteload_data%values(1,i_waste,ibrk)
          end do
       enddo
       
-      ierr = dlwqdatacopy(wasteload_data_tmp,wasteload_data)
+      ierr = wasteload_data_tmp%copy(wasteload_data)
       if ( ierr .ne. 0 ) then
          write(*,*) ' error copying wasteload data'
          call srstop(1)
@@ -224,7 +224,7 @@
          call srstop(1)
       endif
 
-      close(file_src_tmp%unit_nr)
+      close(file_src_tmp%unit)
       file_src_tmp%status = FILE_STAT_UNOPENED
 
       return

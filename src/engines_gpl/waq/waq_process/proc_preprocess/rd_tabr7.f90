@@ -70,8 +70,8 @@
       INTEGER(kind=int_wp) ::NO_VSTO_MAX , NO_VSTO     , & 
                    LUNREP      , IERROR
       INTEGER(kind=int_wp) ::DEFFDS
-      CHARACTER*10  R7_VID      (NO_VSTO_MAX)
-      CHARACTER*10  R7_SID      (NO_VSTO_MAX)
+      character(len=10)  R7_VID      (NO_VSTO_MAX)
+      character(len=10)  R7_SID      (NO_VSTO_MAX)
       REAL(kind=real_wp) ::R7_SCAL(NO_VSTO_MAX)
 !
 !     Local variables
@@ -90,9 +90,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

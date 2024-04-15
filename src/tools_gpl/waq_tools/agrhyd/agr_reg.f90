@@ -25,11 +25,11 @@
 
       use m_srstop
       use m_monsys
-      use hydmod
+      use m_hydmod
       implicit none
 
-      type(t_hyd)          :: input_hyd                           ! description of the input hydrodynamics
-      type(t_hyd)          :: output_hyd                          ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                           ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                          ! description of the output hydrodynamics
       integer              :: m_fact        ! aggregation factor m direction
       integer              :: n_fact        ! aggregation factor n direction
       integer              :: m_offset      ! offset aggregation m direction

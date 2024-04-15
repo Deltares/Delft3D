@@ -47,9 +47,9 @@
                gfun(51),gder(51),zvec(51),daymul(24,30),dl(24)
       common/solrad/tsol,tden,freq,nval
       common/solval/delsol,solmax,day
-      character*5 table
-      character*265 inputfile
-      character*265 outputfile
+      character(len=5) table
+      character(len=265) inputfile
+      character(len=265) outputfile
       integer(kind=int_wp) ::lunblm, lunrep
       integer(kind=int_wp) ::irc, npoint, i, j, k, nsp, nval, nz
       real(kind=dp) ::power, effic, solvec, time, solar, cdf, dens, freq, tsol, tden, domf

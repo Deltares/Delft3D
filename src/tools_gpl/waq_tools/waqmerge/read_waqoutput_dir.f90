@@ -27,12 +27,12 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       use properties
       implicit none
 
       ! declaration of the arguments
-      type(t_hyd), intent(in)               :: hyd                  ! description of the overall hydrodynamics
+      type(t_hydrodynamics), intent(in)               :: hyd                  ! description of the overall hydrodynamics
       type(tree_data) , pointer             :: mdu_ptr              ! tree for mdu file
 
       ! local declarations

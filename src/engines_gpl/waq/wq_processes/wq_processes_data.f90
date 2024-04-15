@@ -114,13 +114,13 @@ module processes_pointers
 
     integer(kind = int_wp), allocatable :: progrd(:)       !< Process grid
     integer(kind = int_wp), allocatable :: prondt(:)       !< Process fractional step
-    character*10, allocatable :: pronam(:)       !< Process name
+    character(len=10), allocatable :: pronam(:)       !< Process name
     integer(kind = int_wp), allocatable :: promnr(:)       !< Process number
 
     integer(kind = int_wp), allocatable :: prvvar(:)       !< Index of variable
     integer(kind = int_wp), allocatable :: prvtyp(:)       !< Type of variable
 
-    character*20, allocatable :: varnam(:)       !< Variable name
+    character(len=20), allocatable :: varnam(:)       !< Variable name
     integer(kind = int_wp), allocatable :: vararr(:)       !< Variable array
     integer(kind = int_wp), allocatable :: varidx(:)       !< Variable index in array
 

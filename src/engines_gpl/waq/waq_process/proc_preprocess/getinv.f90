@@ -44,7 +44,7 @@ contains
         use m_monsys
         use m_array_manipulation, only : is_missing
         use timers       !   performance timers
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use processet
         use results, only : OutputPointers
         implicit none
@@ -55,7 +55,7 @@ contains
         integer(kind = int_wp) :: notot           ! number of substances
         character(len = *) :: syname(*)       ! substance name
         integer(kind = int_wp) :: nocons          ! number of constants
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         integer(kind = int_wp) :: nopa            ! number of parameters
         character(len = *) :: paname(*)       ! parameter names
         integer(kind = int_wp) :: nofun           ! number of functions
@@ -121,7 +121,7 @@ contains
 
         ! loop over all possible processes
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
         do iproc = nproc, 1, -1
             proc1 => procesdef%procesprops(iproc)
             if (proc1%active) then
@@ -385,7 +385,7 @@ contains
                         valnam = proc1%output_item(ioutput)%name
                         ioux = 0
                         350             continue
-                        nrout = outputs%cursize - ioux
+                        nrout = outputs%current_size - ioux
                         iou = index_in_array(valnam, outputs%names(ioux + 1:nrout))
                         if (iou > 0) then
                             iou = iou + ioux
@@ -407,7 +407,7 @@ contains
                                 endif
                             endif
                             ioux = iou
-                            if (ioux < outputs%cursize) goto 350
+                            if (ioux < outputs%current_size) goto 350
                         endif
                     endif
                 enddo
