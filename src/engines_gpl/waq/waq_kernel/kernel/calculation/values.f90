@@ -36,7 +36,7 @@ contains
         use timers
 
         !
-        CHARACTER*20 NAME, CONAME(*), PANAME(*), FUNAME(*), SFNAME(*)
+        character(len=20) NAME, CONAME(*), PANAME(*), FUNAME(*), SFNAME(*)
         REAL(kind = real_wp) :: VALUE(NOSSS), CONST(NOCONS), PARAM (NOPA, NOSSS), &
                 FUNCS(NOFUN), SFUNCS(NOSSS, NOSFUN)
         LOGICAL      LGET

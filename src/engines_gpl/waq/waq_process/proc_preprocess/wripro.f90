@@ -94,7 +94,7 @@ contains
         REAL(kind = real_wp) :: VERSIO
         REAL(kind = real_wp) :: DEFAUL(*), STOCHI(*), &
                 DSTO(*), VSTO(*)
-        CHARACTER*10 PRONAM(*)
+        character(len=10) PRONAM(*)
 
         integer(kind = int_wp) :: k
         integer(kind = int_wp) :: ithndl = 0

@@ -32,7 +32,7 @@
 
 module m_time_validation
     use m_waq_precision
-    use dlwq_hyd_data
+    use m_waq_data_structure
     use m_error_status
 
     implicit none
@@ -52,7 +52,7 @@ contains
 
         integer(kind = int_wp), intent(in) :: lun        ! logical unit number for logging error message, if required
 
-        type(t_dlwqdata), intent(in) :: data_block  ! data block containing time series to validate
+        type(t_data_block), intent(in) :: data_block  ! data block containing time series to validate
         integer(kind = int_wp), intent(inout) :: ierror     ! local error count
         character(:), allocatable :: errformat   ! format for error message
         integer(kind = int_wp) :: i

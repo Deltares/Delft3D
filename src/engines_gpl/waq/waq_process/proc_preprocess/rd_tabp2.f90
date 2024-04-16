@@ -80,17 +80,17 @@
       INTEGER(kind=int_wp) ::NO_ITEM_MAX , NO_ITEM     , & 
                    LUNREP      , IERROR
       INTEGER(kind=int_wp) ::DEFFDS
-      CHARACTER*10  ITEM_ID     (NO_ITEM_MAX)
-      CHARACTER*50  ITEM_NAME   (NO_ITEM_MAX)
-      CHARACTER*20  ITEM_UNIT   (NO_ITEM_MAX)
+      character(len=10)  ITEM_ID     (NO_ITEM_MAX)
+      character(len=50)  ITEM_NAME   (NO_ITEM_MAX)
+      character(len=20)  ITEM_UNIT   (NO_ITEM_MAX)
       REAL(kind=real_wp) ::ITEM_DEFAULT(NO_ITEM_MAX)
-      CHARACTER*10  ITEM_AGGREGA(NO_ITEM_MAX)
-      CHARACTER*10  ITEM_DISAGGR(NO_ITEM_MAX)
-      CHARACTER*30  ITEM_GROUPID(NO_ITEM_MAX)
-      CHARACTER*1   ITEM_SEGX   (NO_ITEM_MAX)
-      CHARACTER*1   ITEM_WK     (NO_ITEM_MAX)
-      CHARACTER*100 ITEM_SN     (NO_ITEM_MAX)
-      CHARACTER*40  ITEM_SU     (NO_ITEM_MAX)
+      character(len=10)  ITEM_AGGREGA(NO_ITEM_MAX)
+      character(len=10)  ITEM_DISAGGR(NO_ITEM_MAX)
+      character(len=30)  ITEM_GROUPID(NO_ITEM_MAX)
+      character(len=1)   ITEM_SEGX   (NO_ITEM_MAX)
+      character(len=1)   ITEM_WK     (NO_ITEM_MAX)
+      character(len=100) ITEM_SN     (NO_ITEM_MAX)
+      character(len=40)  ITEM_SU     (NO_ITEM_MAX)
 !
 !     Local variables
 !
@@ -108,9 +108,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , INQELMNMS(NELEMS),  ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , INQELMNMS(NELEMS),  ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
       LOGICAL       NETCDFSTD
 !
 !     External NEFIS Functions

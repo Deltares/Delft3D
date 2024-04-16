@@ -45,16 +45,16 @@ contains
         real(kind = real_wp) :: verspe                     ! version number of bloom.spe-file
         integer(kind = int_wp) :: maxtyp, maxcof
         integer(kind = int_wp) :: notyp, nocof, nogrp, noutgrp, nouttyp
-        character*10  alggrp(maxtyp), algtyp(maxtyp)
-        character*5   abrgrp(maxtyp), abrtyp(maxtyp)
-        character*80  algdsc(maxtyp)
-        character*10  cofnam(maxcof)
+        character(len=10)  alggrp(maxtyp), algtyp(maxtyp)
+        character(len=5)   abrgrp(maxtyp), abrtyp(maxtyp)
+        character(len=80)  algdsc(maxtyp)
+        character(len=10)  cofnam(maxcof)
         real(kind = real_wp) :: algcof(maxcof, maxtyp)
-        character*10  outgrp(maxtyp), outtyp(maxtyp)
+        character(len=10)  outgrp(maxtyp), outtyp(maxtyp)
         integer(kind = int_wp) :: noprot, nopralg
-        character*10  namprot(maxtyp), nampact(maxtyp), &
+        character(len=10)  namprot(maxtyp), nampact(maxtyp), &
                 nampralg(maxtyp)
-        character*80  cdummy(5)
+        character(len=80)  cdummy(5)
         integer(kind = int_wp) :: i, iatyp
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("reaalg", ithndl)

@@ -87,7 +87,7 @@ contains
         nullify (iexcraai)
         nullify (ioptraai)
         call read_block_2_from_input(lun, lchar, filtype, nrftot, nlines, &
-                npoins, is_date_format, dtflg2, nodump, iopt, &
+                npoins, is_date_format, is_ddhhmmss_format, nodump, iopt, &
                 noint, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
                 noraai, ntraaq, nosys, notot, nototp, &
                 output_verbose_level, nsegdmp, isegdmp, nexcraai, &
@@ -132,7 +132,7 @@ contains
 
         novec = 50
         inpfil%is_date_format = is_date_format
-        inpfil%dtflg2 = dtflg2
+        inpfil%is_ddhhmmss_format = is_ddhhmmss_format
         inpfil%is_yyddhh_format = is_yyddhh_format
         inpfil%itfact = itfact
 

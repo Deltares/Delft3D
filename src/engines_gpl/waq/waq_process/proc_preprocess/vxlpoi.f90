@@ -43,7 +43,7 @@ contains
         !
         !     SUBROUTINES CALLED  : ZOEK  , searches a string in an array
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
 
         !     PARAMETERS          : 13
         !
@@ -64,15 +64,15 @@ contains
         use timers       !   performance timers
 
         INTEGER(kind = int_wp) :: NOCONS, NOFUN, NODISP, NOVELO, IVALIP
-        CHARACTER*(*) VALNAM, LINE
-        CHARACTER*(*)            FUNAME(*), &
+        character(len=*) VALNAM, LINE
+        character(len=*)            FUNAME(*), &
                 DINAME(*), VENAME(*)
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         !
         !     Local
         !
         integer(kind = int_wp), PARAMETER :: NOPREF = 4
-        CHARACTER*10 PREDEF(NOPREF)
+        character(len=10) PREDEF(NOPREF)
 
         INTEGER(kind = int_wp) :: ICO, IDSP, IVEL, IFUN
 
@@ -136,7 +136,7 @@ contains
         !
         !     as constant ?
         !
-        ico = dlwq_find(constants, valnam)
+        ico = constants%find(valnam)
         if (ico > 0) then
             write(line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
             ivalip = nopref + nodisp + novelo + nofun + ico

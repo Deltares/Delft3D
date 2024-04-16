@@ -113,7 +113,7 @@ contains
 
         !     Loop over kolommen
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             !        Select first column of exchanges for DOWNWARD advection, sediment water exchanges only
 

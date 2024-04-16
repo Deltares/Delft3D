@@ -71,9 +71,9 @@
       INTEGER(kind=int_wp) ::NO_PROC_MAX , NO_PROC     , & 
                    LUNREP      , IERROR
       INTEGER(kind=int_wp) ::DEFFDS
-      CHARACTER*10  PROC_ID     (NO_PROC_MAX)
-      CHARACTER*50  PROC_NAME   (NO_PROC_MAX)
-      CHARACTER*10  PROC_FORT   (NO_PROC_MAX)
+      character(len=10)  PROC_ID     (NO_PROC_MAX)
+      character(len=50)  PROC_NAME   (NO_PROC_MAX)
+      character(len=10)  PROC_FORT   (NO_PROC_MAX)
       INTEGER(kind=int_wp) ::PROC_TRCO   (NO_PROC_MAX)
 !
 !     Local variables
@@ -92,9 +92,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

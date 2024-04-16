@@ -35,7 +35,7 @@ contains
         use timers       !   performance timers
 
         INTEGER(kind = int_wp) :: LUNREP
-        CHARACTER*(*) TEKST, FILNAM
+        character(len=*) TEKST, FILNAM
 
         integer(kind = int_wp) :: i, ilen, iend
         integer(kind = int_wp) :: ithndl = 0

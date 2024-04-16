@@ -62,13 +62,13 @@ contains
         INTEGER(kind = int_wp) :: LUNIN, LUNOUT, ITIME, NTOTAL, ISFLAG, &
                 IFFLAG
         INTEGER(kind = int_wp) :: IARRAY(NTOTAL)
-        CHARACTER*(*) LUNTXT
+        character(len=*) LUNTXT
         !
         !     Local
         !
         logical        stream_access                     ! help variable to detect the type of file access
         character(20)  access                            ! help variable to detect the type of file access
-        CHARACTER*10  MSGTXT(3)
+        character(len=10)  MSGTXT(3)
         DATA          MSGTXT /' REWIND   ', ' CONSTANT ', ' ERROR    '/
 
         integer(kind = int_wp) :: messge, itime1, ierr

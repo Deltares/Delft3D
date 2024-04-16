@@ -32,15 +32,15 @@
       use m_srstop
       use m_monsys
       use m_cli_utils, only : retrieve_command_argument
-      use hydmod
+      use m_hydmod
       use MessageHandling
       
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)          :: input_hyd                            ! description of the input hydrodynamics
-      type(t_hyd)          :: output_hyd                           ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                            ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                           ! description of the output hydrodynamics
       integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax)! aggregation pointer in the horizontal
       integer              :: ipnt_q(input_hyd%noq)                ! aggregation pointer in the horizontal
       logical              :: l_expand                             ! expand to full matrix
@@ -69,8 +69,8 @@
       integer             :: lunrep          ! report file
       integer             :: ierr_alloc      ! allocation error indicator
       integer             :: ierr2           ! io errors
-      type(t_dlwqfile)    :: file_guu        ! guu quickin file
-      type(t_dlwqfile)    :: file_gvv        ! gvv quickin file
+      type(t_file)    :: file_guu        ! guu quickin file
+      type(t_file)    :: file_gvv        ! gvv quickin file
       logical             :: lfound
       integer             :: idummy          ! dummy
       real                :: rdummy          ! dummy
@@ -132,8 +132,8 @@
 
       ! read or calculate length
 
-      file_gvv=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      file_guu=t_dlwqfile(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      file_gvv=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
+      file_guu=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
       call retrieve_command_argument ( '-guu'  , 3    , lfound, idummy, rdummy, file_guu%name, ierr2)
       if ( lfound ) then
          if ( ierr2.ne. 0 ) then
@@ -161,14 +161,14 @@
          ! read length per grid cell (ignore shift in staggered grid at the moment)
          ! the file is a qin file
 
-         call dlwqfile_open(file_guu)
-         read(file_guu%unit_nr,*) ((len1(n,m),m=1,mmax),n=1,nmax)
-         close(file_guu%unit_nr)
+         call file_guu%open()
+         read(file_guu%unit,*) ((len1(n,m),m=1,mmax),n=1,nmax)
+         close(file_guu%unit)
          file_guu%status = FILE_STAT_UNOPENED
 
-         call dlwqfile_open(file_gvv)
-         read(file_gvv%unit_nr,*) ((len2(n,m),m=1,mmax),n=1,nmax)
-         close(file_gvv%unit_nr)
+         call file_gvv%open()
+         read(file_gvv%unit,*) ((len2(n,m),m=1,mmax),n=1,nmax)
+         close(file_gvv%unit)
          file_gvv%status = FILE_STAT_UNOPENED
 
       else

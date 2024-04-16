@@ -73,7 +73,7 @@ contains
         !                           ZERO  , zeros an real arrays
         !
         use m_dhisys
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use variable_declaration
         use delwaq2_data
         use timers
@@ -106,9 +106,9 @@ contains
         !
         REAL(kind = real_wp) :: RDUMMY(1)
         LOGICAL       LDUMMY, UPDATR
-        CHARACTER*200 FINAM
+        character(len=200) FINAM
         INTEGER(kind = int_wp) :: SENDBUF(3)
-        CHARACTER*4   cext                          ! inital conditions file extention
+        character(len=4)   cext                          ! inital conditions file extention
 
         INTEGER(kind = int_wp) :: IERRIO, new_lun
 

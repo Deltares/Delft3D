@@ -31,7 +31,7 @@
                               noq3  , noval , nosca , flagsf, valnam, &
                               ardata, funtyp)
 
-      use filmod
+      use m_waq_file
       use m_convert_seconds_to_date
 
       implicit none
@@ -65,7 +65,7 @@
 !
 !     declaration of arguments
 !
-      type(t_dlwqfile) :: afile
+      type(t_file) :: afile
       integer               itime , notim , noq1  , noq2  , &
                     noq3  , noval , nosca , flagsf, funtyp
       real          ardata(*)
@@ -78,13 +78,13 @@
                     irlen
       character*256 filnam
 
-      plform = dlwq_platform()
+      plform = which_operating_system()
 !
 !     initialise file
 !
       noloc  = noq1 + noq2 + noq3
-      call dlwqfile_open(afile)
-      lun    = afile%unit_nr
+      call afile%open()
+      lun    = afile%unit
       filtyp = afile%type
       filnam = afile%name
 

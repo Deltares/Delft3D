@@ -35,13 +35,13 @@
 
       use m_srstop
       use m_monsys
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       use time_module, only: mjd2date
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
 
       ! local declarations
 
@@ -81,15 +81,15 @@
 
       call getmlu(lunrep)
 
-      nowast = hyd%wasteload_coll%cursize
+      nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
       nolay  = hyd%nolay
-      nobrk  = hyd%wasteload_data%no_brk
+      nobrk  = hyd%wasteload_data%num_breakpoints
 
-      if ( nowast .ne. hyd%wasteload_data%no_loc ) then
+      if ( nowast .ne. hyd%wasteload_data%num_locations ) then
          write(lunrep,*) 'error, number of wasteloads in hyd file does not equal the data files'
          write(lunrep,*) 'number from hyd file:',nowast
-         write(lunrep,*) 'number from data    :',hyd%wasteload_data%no_loc
+         write(lunrep,*) 'number from data    :',hyd%wasteload_data%num_locations
          call srstop(1)
       endif
 
@@ -118,8 +118,8 @@
          waq_layers_frac = 1.0
       endif
 
-      call dlwqfile_open(hyd%file_rfl)
-      lunrfl = hyd%file_rfl%unit_nr
+      call hyd%file_rfl%open()
+      lunrfl = hyd%file_rfl%unit
 
       ! loop over the wasteloads
 
@@ -183,7 +183,7 @@
       enddo
       deallocate(waq_layers_frac)
 
-      close(hyd%file_rfl%unit_nr)
+      close(hyd%file_rfl%unit)
       hyd%file_rfl%status = FILE_STAT_UNOPENED
 
       return

@@ -521,7 +521,7 @@ contains
         if (timon) call timstrt("interpolate_2d_array", ithndl)
 
         ! interpolate
-        factor1 = float(tset - tlow) / float(thigh - tlow)
+        factor1 = real(tset - tlow) / real(thigh - tlow)
         factor2 = 1.0 - factor1
 
         do ivar = 1, nvar
@@ -576,16 +576,16 @@ contains
             missing_value, fdata, wdata)
         !! assign matrix according to computational rules
 
-        use dlwq_hyd_data  ! for definition and storage of data
+        use m_waq_data_structure  ! for definition and storage of data
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
-        type(t_dlwq_item), intent(in) :: data_param   ! list of param items in the data
-        type(t_dlwq_item), intent(in) :: data_loc     ! list of loc items in the data
-        type(t_dlwq_item), intent(in) :: waq_param    ! list of waq param items to be set
-        type(t_dlwq_item), intent(in) :: waq_loc      ! list of waq loc items to be set
+        type(t_waq_item), intent(in) :: data_param   ! list of param items in the data
+        type(t_waq_item), intent(in) :: data_loc     ! list of loc items in the data
+        type(t_waq_item), intent(in) :: waq_param    ! list of waq param items to be set
+        type(t_waq_item), intent(in) :: waq_loc      ! list of waq loc items to be set
         real(kind = real_wp), intent(in) :: missing_value         ! missing value
-        type(t_dlwqdata), intent(in) :: fdata        ! data block input
-        type(t_dlwqdata), intent(out) :: wdata        ! data block output
+        type(t_data_block), intent(in) :: fdata        ! data block input
+        type(t_data_block), intent(out) :: wdata        ! data block output
 
         integer(kind = int_wp) :: iorder        ! order of the parameters and locations in the data array
         integer(kind = int_wp) :: functype      ! function type
@@ -610,14 +610,14 @@ contains
 
         ! some initialisation
         iorder = wdata%iorder
-        functype = wdata%functype
+        functype = wdata%function_type
         miniem = .false.
         maxiem = .false.
-        ndim1 = wdata%no_param
-        ndim2 = wdata%no_loc
-        num_records = fdata%no_brk
+        ndim1 = wdata%num_parameters
+        ndim2 = wdata%num_locations
+        num_records = fdata%num_breakpoints
         allocate(wdata%times(num_records), wdata%values(ndim1, ndim2, num_records))
-        wdata%no_brk = num_records
+        wdata%num_breakpoints = num_records
         wdata%times = fdata%times
 
         ! assignment loop
@@ -831,21 +831,21 @@ contains
             strng3, output_verbose_level)
 
         !! prints blocks of data, also scale and convert
-        use dlwq_hyd_data ! for definition and storage of data
+        use m_waq_data_structure ! for definition and storage of data
 
         integer(kind = int_wp), intent(in) :: lunut         ! report file
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
-        type(t_dlwqdata), intent(inout) :: dlwqdata     ! data block to be filled
+        type(t_data_block), intent(inout) :: dlwqdata     ! data block to be filled
         character(len = *), intent(in) :: strng1       ! write string 1 (items)
         character(len = *), intent(in) :: strng2       ! write string 2 (values/concs)
         character(len = *), intent(in) :: strng3       ! write string 3 (brkp/harm)
         integer(kind = int_wp), intent(in) :: output_verbose_level        ! output file option
 
         logical :: deflts       ! defaults for the parameters
-        integer(kind = int_wp) :: nopar         ! dlwqdata%no_param
-        integer(kind = int_wp) :: noloc         ! dlwqdata%no_loc
-        integer(kind = int_wp) :: num_records         ! dlwqdata%no_brk
-        integer(kind = int_wp) :: ftype         ! dlwqdata%functype
+        integer(kind = int_wp) :: nopar         ! dlwqdata%num_parameters
+        integer(kind = int_wp) :: noloc         ! dlwqdata%num_locations
+        integer(kind = int_wp) :: num_records         ! dlwqdata%num_breakpoints
+        integer(kind = int_wp) :: ftype         ! dlwqdata%function_type
         integer(kind = int_wp) :: iorder        ! dlwqdata%iorder
         integer(kind = int_wp) :: ipar          ! loop counter
         integer(kind = int_wp) :: iloc          ! loop counter
@@ -857,7 +857,7 @@ contains
 
         ! just print a message if data comes from an external source
 
-        if (dlwqdata%extern) then
+        if (dlwqdata%is_external) then
             if (dlwqdata%filetype == FILE_BINARY) then
                 write (lunut, 1130) trim(dlwqdata%filename)
             else
@@ -867,36 +867,36 @@ contains
         endif
 
         ! initialisation
-        nopar = dlwqdata%no_param
-        noloc = dlwqdata%no_loc
-        num_records = dlwqdata%no_brk
-        ftype = dlwqdata%functype
+        nopar = dlwqdata%num_parameters
+        noloc = dlwqdata%num_locations
+        num_records = dlwqdata%num_breakpoints
+        ftype = dlwqdata%function_type
         iorder = dlwqdata%iorder
-        deflts = dlwqdata%loc_defaults
+        deflts = dlwqdata%are_locations_default
 
         ! scale factors
-        if (dlwqdata%param_scaled) then
+        if (dlwqdata%need_parameters_scaling) then
 
             ! print scale factors
             if (output_verbose_level >= 4) then
                 write (lunut, 1010)
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
-                    if (dlwqdata%param_pointered) then
+                    if (dlwqdata%is_parameter_pointered) then
                         write (lunut, 1020) (dlwqdata%param_pointers(k), k = ipar, ie)
                     else
                         write (lunut, 1020) (k, k = ipar, ie)
                     endif
-                    if (dlwqdata%param_named) then
+                    if (dlwqdata%is_parameter_named) then
                         write (lunut, 1025) (dlwqdata%param_name(k), k = ipar, ie)
                     else
-                        if (dlwqdata%param_pointered) then
+                        if (dlwqdata%is_parameter_pointered) then
                             write (lunut, 1025) (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
                         else
                             write (lunut, 1025) (car_used(k), k = ipar, ie)
                         endif
                     endif
-                    write (lunut, 1030) (dlwqdata%factor_param(k), k = ipar, ie)
+                    write (lunut, 1030) (dlwqdata%parameter_scale_factor(k), k = ipar, ie)
                 enddo
             endif
 
@@ -905,16 +905,16 @@ contains
                 do iloc = 1, noloc
                     do ipar = 1, nopar
                         if (iorder == ORDER_PARAM_LOC) then
-                            dlwqdata%values(ipar, iloc, ibrk) = dlwqdata%values(ipar, iloc, ibrk) * dlwqdata%factor_param(ipar)
+                            dlwqdata%values(ipar, iloc, ibrk) = dlwqdata%values(ipar, iloc, ibrk) * dlwqdata%parameter_scale_factor(ipar)
                         else
-                            dlwqdata%values(iloc, ipar, ibrk) = dlwqdata%values(iloc, ipar, ibrk) * dlwqdata%factor_param(ipar)
+                            dlwqdata%values(iloc, ipar, ibrk) = dlwqdata%values(iloc, ipar, ibrk) * dlwqdata%parameter_scale_factor(ipar)
                         endif
                     enddo
                 enddo
             enddo
 
-            dlwqdata%param_scaled = .false.
-            deallocate(dlwqdata%factor_param)
+            dlwqdata%need_parameters_scaling = .false.
+            deallocate(dlwqdata%parameter_scale_factor)
 
         endif
 
@@ -942,23 +942,23 @@ contains
 
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
-                    if (dlwqdata%param_pointered) then
+                    if (dlwqdata%is_parameter_pointered) then
                         write (lunut, 1100) strng2, (dlwqdata%param_pointers(k), k = ipar, ie)
                     else
                         write (lunut, 1100) strng2, (k, k = ipar, ie)
                     endif
-                    if (dlwqdata%param_named) then
+                    if (dlwqdata%is_parameter_named) then
                         write (lunut, 1150) strng1, (dlwqdata%param_name(k), k = ipar, ie)
                     else
-                        if (dlwqdata%param_pointered) then
+                        if (dlwqdata%is_parameter_pointered) then
                             write (lunut, 1150) strng1, (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
                         else
                             write (lunut, 1150) strng1, (car_used(k), k = ipar, ie)
                         endif
                     endif
                     do iloc = 1, noloc
-                        if (dlwqdata%loc_pointered) then
-                            iploc = abs(dlwqdata%loc_pointers(iloc))
+                        if (dlwqdata%are_locations_pointered) then
+                            iploc = abs(dlwqdata%location_pointers(iloc))
                         else
                             iploc = iloc
                         endif
@@ -995,7 +995,7 @@ contains
 
     end subroutine print_matrix
 
-    character*20 function car_used(i)
+    character(len=20) function car_used(i)
         integer(kind = int_wp) :: i
         if (i > 0) then
             car_used = 'used'

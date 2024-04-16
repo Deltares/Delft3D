@@ -37,7 +37,7 @@ contains
         !          .. Scalar Arguments ..
         REAL(kind = dp) :: ALPHA, BETA
         INTEGER(kind = int_wp) :: INCX, INCY, LDA, M, N
-        CHARACTER*1        TRANS
+        character(len=1)        TRANS
         !          .. Array Arguments ..
         REAL(kind = dp) :: A(LDA, *), X(*), Y(*)
         !          ..
@@ -55,7 +55,7 @@ contains
         !       Parameters
         !       ==========
         !
-        !       TRANS  - CHARACTER*1.
+        !       TRANS  - character(len=1).
         !                On entry, TRANS specifies the operation to be performed as
         !                follows:
         !

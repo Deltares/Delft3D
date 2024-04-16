@@ -72,8 +72,8 @@ contains
         !     Declaration of arguments
         !
         INTEGER(kind = int_wp) :: LUNREP, NOKEY, PSTART, PSTOP, IPROC
-        CHARACTER*20  PERNAM, PERSFX
-        CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
+        character(len=20)  PERNAM, PERSFX
+        character(len=20)  KEYNAM(NOKEY), KEYVAL(NOKEY)
         type(ProcesProp) :: aProcesProp         ! output statistical proces definition
         type(ItemPropColl) :: AllItems            ! all items of the proces system
         type(error_status), intent(inout) :: status !< current error status
@@ -83,8 +83,8 @@ contains
         INTEGER(kind = int_wp) :: IERR_ALLOC, IKEY, ISTART, ISTOP, ISLEN, &
                 IERR2, IRET
         INTEGER(kind = int_wp), ALLOCATABLE :: ISUSED(:)
-        CHARACTER*20  SUFFIX
-        CHARACTER*10  STANAM
+        character(len=20)  SUFFIX
+        character(len=10)  STANAM
         REAL(kind = real_wp) :: CLOBND, CUPBND, CQLEV
         INTEGER(kind = int_wp) :: NOBUCK, IBUCK
         type(ItemProp) :: aItemProp            ! one item

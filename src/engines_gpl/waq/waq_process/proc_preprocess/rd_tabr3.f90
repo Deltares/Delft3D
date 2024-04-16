@@ -73,11 +73,11 @@
       INTEGER(kind=int_wp) ::NO_INPU_MAX , NO_INPU     , & 
                    LUNREP      , IERROR
       INTEGER(kind=int_wp) ::DEFFDS
-      CHARACTER*10  R3_PID      (NO_INPU_MAX)
-      CHARACTER*10  R3_IID      (NO_INPU_MAX)
+      character(len=10)  R3_PID      (NO_INPU_MAX)
+      character(len=10)  R3_IID      (NO_INPU_MAX)
       INTEGER(kind=int_wp) ::R3_NUMB(NO_INPU_MAX)
-      CHARACTER*1   R3_DEFY(NO_INPU_MAX)
-      CHARACTER*1   R3_DOC (NO_INPU_MAX)
+      character(len=1)   R3_DEFY(NO_INPU_MAX)
+      character(len=1)   R3_DOC (NO_INPU_MAX)
       INTEGER(kind=int_wp) ::R3_SEX (NO_INPU_MAX)
 !
 !     Local variables
@@ -96,9 +96,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

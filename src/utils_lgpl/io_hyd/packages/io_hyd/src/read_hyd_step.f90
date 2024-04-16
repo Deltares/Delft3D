@@ -24,92 +24,84 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
 
-      subroutine read_hyd_step(hyd, itime, iend)
+subroutine read_hyd_step(hyd, itime, iend)
 
-      ! global declarations
+    ! global declarations
 
-      use m_srstop
-      use hydmod
-      implicit none
+    use m_srstop
+    use m_hydmod
+    implicit none
 
-      ! decalration of arguments
+    ! decalration of arguments
 
-      type(t_hyd)          :: hyd           ! description of the hydrodynamics
-      integer              :: itime         ! relative time in file
-      integer              :: iend          ! end of file indicator
+    type(t_hydrodynamics) :: hyd           ! description of the hydrodynamics
+    integer :: itime         ! relative time in file
+    integer :: iend          ! end of file indicator
 
-      ! local decalrations
+    ! local decalrations
 
-      integer              :: i             ! loop counter
-      integer              :: ierr          ! error indicator
+    integer :: i             ! loop counter
+    integer :: ierr          ! error indicator
 
-      ! for volume check on end of file
+    ! for volume check on end of file
 
-      call dlwqfile_open(hyd%file_vol)
-!     write(*,*) 'unit:',hyd%file_vol%unit_nr
-!     write(*,*) 'name:',trim(hyd%file_vol%name)
-!     write(*,*) 'status:',hyd%file_vol%status
-!     write(*,*) 'type:',hyd%file_vol%type
-!     write(*,*) 'size:',size(hyd%volume)
-!     write(*,*) 'noseg:',hyd%noseg
-      read(hyd%file_vol%unit_nr,iostat=iend) itime,(hyd%volume(i),i=1,hyd%noseg)
-!     write(*,*) 'iend:',iend
-      if ( iend .ne. 0 ) return
+    call hyd%file_vol%open()
+    read(hyd%file_vol%unit, iostat = iend) itime, (hyd%volume(i), i = 1, hyd%noseg)
+    !     write(*,*) 'iend:',iend
+    if (iend /= 0) return
 
-      ! for the rest read
+    ! for the rest read
 
-      call dlwqfile_open(hyd%file_are)
-      read(hyd%file_are%unit_nr,iostat=ierr) itime,(hyd%area(i),i=1,hyd%noq)
-      if ( ierr .ne. 0 ) then
-         write(*,*) 'ERROR: reading are file: ', hyd%file_are%unit_nr, trim(hyd%file_are%name)
-         call srstop(1)
-      endif
+    call hyd%file_are%open()
+    read(hyd%file_are%unit, iostat = ierr) itime, (hyd%area(i), i = 1, hyd%noq)
+    if (ierr /= 0) then
+        write(*, *) 'ERROR: reading are file: ', hyd%file_are%unit, trim(hyd%file_are%name)
+        call srstop(1)
+    endif
 
-      call dlwqfile_open(hyd%file_flo)
-      read(hyd%file_flo%unit_nr,iostat=ierr) itime,(hyd%flow(i),i=1,hyd%noq)
-      if ( ierr .ne. 0 ) then
-         write(*,*) 'ERROR: reading flo file: ', hyd%file_flo%unit_nr, trim(hyd%file_flo%name)
-         call srstop(1)
-      endif
+    call hyd%file_flo%open()
+    read(hyd%file_flo%unit, iostat = ierr) itime, (hyd%flow(i), i = 1, hyd%noq)
+    if (ierr /= 0) then
+        write(*, *) 'ERROR: reading flo file: ', hyd%file_flo%unit, trim(hyd%file_flo%name)
+        call srstop(1)
+    endif
 
-      if ( hyd%sal_present ) then
-      call dlwqfile_open(hyd%file_sal)
-         read(hyd%file_sal%unit_nr,iostat=ierr) itime,(hyd%sal(i),i=1,hyd%noseg)
-         if ( ierr .ne. 0 ) then
-            write(*,*) 'ERROR: reading sal file: ', hyd%file_sal%unit_nr, trim(hyd%file_sal%name)
+    if (hyd%sal_present) then
+        call hyd%file_sal%open()
+        read(hyd%file_sal%unit, iostat = ierr) itime, (hyd%sal(i), i = 1, hyd%noseg)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading sal file: ', hyd%file_sal%unit, trim(hyd%file_sal%name)
             call srstop(1)
-         endif
-      endif
+        endif
+    endif
 
-      if ( hyd%tem_present ) then
-      call dlwqfile_open(hyd%file_tem)
-         read(hyd%file_tem%unit_nr,iostat=ierr) itime,(hyd%tem(i),i=1,hyd%noseg)
-         if ( ierr .ne. 0 ) then
-            write(*,*) 'ERROR: reading tem file: ', hyd%file_tem%unit_nr, trim(hyd%file_tem%name)
+    if (hyd%tem_present) then
+        call hyd%file_tem%open()
+        read(hyd%file_tem%unit, iostat = ierr) itime, (hyd%tem(i), i = 1, hyd%noseg)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading tem file: ', hyd%file_tem%unit, trim(hyd%file_tem%name)
             call srstop(1)
-         endif
-      endif
+        endif
+    endif
 
-      if ( hyd%tau_present ) then
-      call dlwqfile_open(hyd%file_tau)
-         read(hyd%file_tau%unit_nr,iostat=ierr) itime,(hyd%tau(i),i=1,hyd%noseg)
-         if ( ierr .ne. 0 ) then
-            write(*,*) 'ERROR: reading tau file: ', hyd%file_tau%unit_nr, trim(hyd%file_tau%name)
+    if (hyd%tau_present) then
+        call hyd%file_tau%open()
+        read(hyd%file_tau%unit, iostat = ierr) itime, (hyd%tau(i), i = 1, hyd%noseg)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading tau file: ', hyd%file_tau%unit, trim(hyd%file_tau%name)
             call srstop(1)
-         endif
-      endif
+        endif
+    endif
 
-      if ( hyd%vdf_present ) then
-      call dlwqfile_open(hyd%file_vdf)
-         read(hyd%file_vdf%unit_nr,iostat=ierr) itime,(hyd%vdf(i),i=1,hyd%noseg)
-         if ( ierr .ne. 0 ) then
-            write(*,*) 'ERROR: reading vdf file: ', hyd%file_vdf%unit_nr, trim(hyd%file_vdf%name)
+    if (hyd%vdf_present) then
+        call hyd%file_vdf%open()
+        read(hyd%file_vdf%unit, iostat = ierr) itime, (hyd%vdf(i), i = 1, hyd%noseg)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading vdf file: ', hyd%file_vdf%unit, trim(hyd%file_vdf%name)
             call srstop(1)
-         endif
-      endif
+        endif
+    endif
 
-      return
-      end
+    return
+end subroutine read_hyd_step

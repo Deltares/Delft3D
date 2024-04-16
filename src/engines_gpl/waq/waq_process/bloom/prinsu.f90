@@ -48,7 +48,7 @@ contains
         real(kind = dp) :: bio2, xbio, total, tot2
 
         real(kind = dp) :: x(*), xeco(*)
-        character*8 words(14)
+        character(len=8) words(14)
         logical lcon
 
         !  Calculate totals for species, the total chlorophyll concentration

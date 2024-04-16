@@ -52,12 +52,12 @@
 !
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
 !     declaration of arguments
 
-      type(t_dlwqfile)                       :: file_lga               ! aggregation-file
+      type(t_file)                       :: file_lga               ! aggregation-file
       integer       mmax  , nmax  , nolay , nosegl, noq1  , noq2  , noq3
       integer       lgrid(nmax,mmax)
 !
@@ -77,8 +77,8 @@
 !
 !     initialise file
 !
-      call dlwqfile_open(file_lga)
-      lun    = file_lga%unit_nr
+      call file_lga%open()
+      lun    = file_lga%unit
       filtyp = file_lga%type
 !
 !     write table

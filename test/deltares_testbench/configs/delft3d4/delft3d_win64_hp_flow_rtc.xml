@@ -283,5 +283,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_hp_cases_win64.xml"/>
+	<xi:include href="../include/delft3d4_hp_cases_flow_rtc.xml"/>
 </deltaresTestbench_v3>

@@ -28,7 +28,7 @@
       ! global declarations
 
       use m_monsys
-      use hydmod
+      use m_hydmod
       use m_write_error_message
       use m_file_path_utils, only : extract_file_extension
       use rd_token       ! tokenized reading
@@ -37,7 +37,7 @@
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd                    ! description of the hydrodynamics
 
       ! local declarations
 
@@ -58,14 +58,14 @@
       character(len=20)   :: string         !< String token
       integer             :: ierr           !< error indicator
       logical             :: token_used     !< token_used
-      type(t_dlwqfile)    :: file_src       !< hydrodynamics-file
+      type(t_file)    :: file_src       !< hydrodynamics-file
 
       file_src = hyd%file_com
 
-      call dlwqfile_open(file_src)
+      call file_src%open()
 
       ilun    = 0
-      ilun(1) = file_src%unit_nr
+      ilun(1) = file_src%unit
       lch (1) = file_src%name
       npos   = 1000
       cchar  = ';'
@@ -76,9 +76,9 @@
          write(lunrep,*) ' file: ',trim(hyd%file_com%name)
       endif
 
-      hyd%domain_coll%cursize = 0
+      hyd%domain_coll%current_size = 0
       hyd%domain_coll%maxsize = 0
-      hyd%dd_bound_coll%cursize = 0
+      hyd%dd_bound_coll%current_size = 0
       hyd%dd_bound_coll%maxsize = 0
 
       ! loop over all the tokens in the file
@@ -138,7 +138,7 @@
 
          ! add to dd_bound collection
 
-         i_dd_bound = dd_bound_coll_add(hyd%dd_bound_coll, dd_bound)
+         i_dd_bound = hyd%dd_bound_coll%add(dd_bound)
 
       enddo
 

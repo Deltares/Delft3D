@@ -157,7 +157,7 @@ contains
         ip3 = ipoint(3)
         in3 = increm(3)
 
-        do ik = 1, coll%cursize
+        do ik = 1, coll%current_size
 
             iwa1 = coll%set(ik)%fstwatsed
             iwa2 = coll%set(ik)%lstwatsed

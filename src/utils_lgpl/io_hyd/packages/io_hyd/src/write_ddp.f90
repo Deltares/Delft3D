@@ -35,12 +35,12 @@
 
       use m_srstop
       use m_monsys
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
 
       ! local declarations
 
@@ -75,7 +75,7 @@
       ! some init
 
       call getmlu(lunrep)
-      n_domain = hyd%domain_coll%cursize
+      n_domain = hyd%domain_coll%current_size
       nddb = 0
       nddb_max = 500
       allocate(iadmddb(22,nddb_max))
@@ -94,20 +94,20 @@
 
       ! check dd_boundaries
 
-      n_dd_bound = hyd%dd_bound_coll%cursize
+      n_dd_bound = hyd%dd_bound_coll%current_size
       do i_dd_bound = 1 , n_dd_bound
 
          dd_bound => hyd%dd_bound_coll%dd_bound_pnts(i_dd_bound)
 
          ! look up the domain names
 
-         i_domain1 = domain_coll_find(hyd%domain_coll,dd_bound%name1)
+         i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
             call srstop(1)
          endif
          dd_bound%i_domain1 = i_domain1
-         i_domain2 = domain_coll_find(hyd%domain_coll,dd_bound%name2)
+         i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
             call srstop(1)
@@ -344,8 +344,8 @@
 
       ! write
 
-      call dlwqfile_open(hyd%file_ddp)
-      lunddp = hyd%file_ddp%unit_nr
+      call hyd%file_ddp%open()
+      lunddp = hyd%file_ddp%unit
 
       write(lunddp,*) nddb
       write(lunddp,*) '# ddcouple output PART ddbound administration'

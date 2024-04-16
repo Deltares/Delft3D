@@ -61,15 +61,15 @@ contains
 
         !     Logical units     : LUNUT  = report file
 
-        character*(*), intent(in) :: keynam            !< string to test
+        character(len=*), intent(in) :: keynam            !< string to test
         integer(kind = int_wp), intent(inout) :: intopt             !< integration option
         integer(kind = int_wp), intent(in) :: lunut              !< unit number report file
         integer(kind = int_wp), intent(out) :: ierr2              !< 0 if keyword found
 
         integer(kind = int_wp), parameter :: nokey = 19
-        character*(40)  lockey
-        character*(40), save :: keywords(nokey)
-        character*(40), save :: defkeys(nokey)
+        character(len=40)  lockey
+        character(len=40), save :: keywords(nokey)
+        character(len=40), save :: defkeys(nokey)
         data keywords / 'NODISP-AT-NOFLOW          ', 'NODISP-AT-BOUND           ', &
                 'LOWER-ORDER-AT-BOUND      ', 'BALANCES-OLD-STYLE        ', &
                 'BALANCES-GPP-STYLE        ', 'BALANCES-SOBEK-STYLE      ', &

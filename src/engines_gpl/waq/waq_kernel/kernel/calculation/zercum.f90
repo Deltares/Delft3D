@@ -29,7 +29,7 @@ contains
 
 
     subroutine zercum (notot, nosys, noflux, ndmpar, ndmpq, &
-            ndmps, asmass, flxint, amass2, flxdmp, &
+            ndmps, asmass, flxint, amass2, &
             dmpq, dmps, noraai, imflag, ihflag, &
             trraai, ibflag, nowst, wstdmp)
 
@@ -59,7 +59,6 @@ contains
         real(kind = real_wp), intent(out) :: asmass(notot, ndmpar, 6) !< Mass balance terms
         real(kind = real_wp), intent(out) :: flxint(noflux, ndmpar)   !< Integrated fluxes
         real(kind = real_wp), intent(out) :: amass2(notot, 5)   !< Mass balance whole system
-        real(kind = real_wp), intent(out) :: flxdmp(noflux, ndmps)   !< Integrated fluxes
         real(kind = real_wp), intent(out) :: dmpq  (nosys, ndmpq, 2) !< Integrated fluxes
         real(kind = real_wp), intent(out) :: dmps  (notot, ndmps, 3) !< Integrated fluxes
         integer(kind = int_wp), intent(in) :: noraai                  !< Number of transects
@@ -83,7 +82,6 @@ contains
             amass2 = 0.0
             wstdmp = 0.0
         endif
-        !     flxdmp = 0.0
 
         !     Zero all monitor .or. history realted
 

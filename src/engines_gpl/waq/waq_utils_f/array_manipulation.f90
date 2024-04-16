@@ -49,7 +49,7 @@ module m_array_manipulation
     !        end subroutine
     !
     !        subroutine resize_character_array(array_pointer, new_length, old_length)
-    !            character*20, pointer :: array_pointer(:)
+    !            character(len=20), pointer :: array_pointer(:)
     !            integer, intent(in) :: old_length, new_length
     !        end subroutine
     !
@@ -239,7 +239,7 @@ contains
         integer(kind = int_wp), intent(in) :: array_dims_1, array_dims_2    !! dimensions of the array (idim1, idim2)
         integer(kind = int_wp), intent(inout) :: total_elements            !! total number of elements in the array
         integer(kind = int_wp), intent(inout) :: sys_index                  !! system index
-        integer(kind = int_wp), intent(out) :: array_pointer
+        integer(kind = int_wp), intent(in) :: array_pointer
         integer(kind = int_wp), intent(out) :: pointer_var
         integer(kind = int_wp) :: array_index
         integer(kind = int_wp) :: value_index
@@ -349,7 +349,8 @@ contains
                 non_contracted_count = non_contracted_count + 1
                 if (active_grid(n, m) > 0) then
                     do layer = 1, num_layers_adjusted
-                        volume_pointers(active_grid(n, m) + (layer - 1) * volumes_per_layer) = non_contracted_count + (layer - 1) * grid_area
+                        volume_pointers(active_grid(n, m) + (layer - 1) * volumes_per_layer) = non_contracted_count + &
+                        (layer - 1) * grid_area
                     enddo
                 endif
             enddo
@@ -409,7 +410,8 @@ contains
         enddo
         layer_exchange_count = non_contracted_count
         if (is_contracted) layer_exchange_count = contracted_count
-        if (layer_exchange_count /= exchanges_x_per_layer) write (338, *) ' ERROR1 in create_pointer_table: ', layer_exchange_count, exchanges_x_per_layer
+        if (layer_exchange_count /= exchanges_x_per_layer) write (338, *) ' ERROR1 in create_pointer_table: ',&
+            layer_exchange_count, exchanges_x_per_layer
 
         ! Horizontal 2nd direction
         non_contracted_count = total_grid_volume
@@ -458,7 +460,8 @@ contains
         non_contracted_count = non_contracted_count + grid_dim_x
         layer_exchange_count = non_contracted_count
         if (is_contracted) layer_exchange_count = contracted_count
-        if (layer_exchange_count /= exchanges_x + exchanges_y_per_layer) write (338, *) ' ERROR2 in create_pointer_table: ', layer_exchange_count, exchanges_x + exchanges_y_per_layer
+        if (layer_exchange_count /= exchanges_x + exchanges_y_per_layer) write (338, *) ' ERROR2 in create_pointer_table: ',&
+           layer_exchange_count, exchanges_x + exchanges_y_per_layer
 
         !     Vertical 3d direction
         non_contracted_count = total_grid_volume * 2
@@ -488,7 +491,8 @@ contains
         enddo
         layer_exchange_count = non_contracted_count
         if (is_contracted) layer_exchange_count = contracted_count
-        if (layer_exchange_count /= total_exchanges) write (338, *) ' ERROR3 in create_pointer_table: ', layer_exchange_count, total_exchanges
+        if (layer_exchange_count /= total_exchanges) write (338, *) ' ERROR3 in create_pointer_table: ',&
+            layer_exchange_count, total_exchanges
         do n = 1, exchanges_x
             if (flow_pointers(n) <= 0) flow_pointers(n) = n       ! happens if 1-1 coupling
         enddo

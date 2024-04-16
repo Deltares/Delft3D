@@ -31,7 +31,7 @@ contains
       use timers
       implicit none           !   force explicit typing
       integer :: i, j, newlen
-      character*(*) string
+      character(len=*) string
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "lower_case", ithndl )

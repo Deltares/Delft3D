@@ -358,7 +358,7 @@ contains
         !     PART 1 : make the administration for the variable time step approach
         !          1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
 
-        dt(1) = dfloat(idt)
+        dt(1) = real(idt, kind=dp)
         do ibox = 2, nob
             dt(ibox) = dt(ibox - 1) / 2.0d0
         enddo
@@ -639,7 +639,7 @@ contains
         acc_changed = 0.0
         volint = volold                                 ! Initialize volint. Becomes the volume 'in between'.
         do istep = 1, nstep                         ! Big loop over the substeps
-            fact = dfloat(istep) / dfloat(nstep)         ! Interpolation factor of this step
+            fact = real(istep) / real(nstep, kind=dp)         ! Interpolation factor of this step
             ! istep:  boxes to integrate:           modulo logic
             !         last boxe to integrate for this sub step           !   1     fbox
             !   2     fbox, fbox-1                  mod(2    ) = 0
@@ -716,7 +716,7 @@ contains
                     endif
                     if (ifrom < 0) then
                         if (q > 0.0d0) then
-                            ito = ivert(nvert(1, iabs(nvert(2, ito))))   ! cell-nr at offset of head of collumn in ivert
+                            ito = ivert(nvert(1, abs(nvert(2, ito))))   ! cell-nr at offset of head of collumn in ivert
                             volint(ito) = volint(ito) + q
                             do isys = 1, nosys
                                 dq = q * bound(isys, -ifrom)
@@ -732,7 +732,7 @@ contains
                     endif
                     if (ito   < 0) then
                         if (q < 0.0d0) then
-                            ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))
+                            ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                             volint(ifrom) = volint(ifrom) - q
                             do isys = 1, nosys
                                 dq = q * bound(isys, -ito)
@@ -749,8 +749,8 @@ contains
                     if (q > 0) then                                   ! Internal volumes
                         if (ibas(ito) == nob + 1) then                  !    'to' should be wetting if q > 0
                             if (ibas(ifrom) == nob + 1) then               !       'from' is also wetting in this time step
-                                ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))
-                                ito = ivert(nvert(1, iabs(nvert(2, ito))))
+                                ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
+                                ito = ivert(nvert(1, abs(nvert(2, ito))))
                                 if (volint(ifrom) >=  q) then             !          it should then have enough volume
                                     volint(ifrom) = volint(ifrom) - q
                                     volint(ito) = volint(ito) + q
@@ -768,7 +768,7 @@ contains
                                     remained = remained + 1                   !          flux not resolved yet by lack of volume
                                 endif
                             else                                             !       'from' is not 'wetting' so it has enough volume
-                                ito = ivert(nvert(1, iabs(nvert(2, ito))))
+                                ito = ivert(nvert(1, abs(nvert(2, ito))))
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
                                 do isys = 1, nosys
@@ -786,8 +786,8 @@ contains
                     else                                                   ! same procedure but now mirrorred for q < 0
                         if (ibas(ifrom) == nob + 1) then
                             if (ibas(ito) == nob + 1) then
-                                ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))
-                                ito = ivert(nvert(1, iabs(nvert(2, ito))))
+                                ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
+                                ito = ivert(nvert(1, abs(nvert(2, ito))))
                                 if (volint(ito) > -q) then
                                     volint(ifrom) = volint(ifrom) - q
                                     volint(ito) = volint(ito) + q
@@ -805,7 +805,7 @@ contains
                                     remained = remained + 1
                                 endif
                             else
-                                ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))
+                                ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
                                 do isys = 1, nosys
@@ -849,7 +849,7 @@ contains
                 endif
                 if (ifrom < 0) then                                  ! The 'from' element was a boundary.
                     if (q < 0.0d0) then
-                        ito = ivert(nvert(1, iabs(nvert(2, ito))))
+                        ito = ivert(nvert(1, abs(nvert(2, ito))))
                         volint(ito) = volint(ito) + q
                         do isys = 1, nosys
                             dq = q * conc(isys, ito)
@@ -863,7 +863,7 @@ contains
                 endif
                 if (ito   < 0) then                                  ! The 'to'   element was a boundary.
                     if (q > 0.0d0) then
-                        ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))
+                        ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                         volint(ifrom) = volint(ifrom) - q
                         do isys = 1, nosys
                             dq = q * conc(isys, ifrom)
@@ -876,7 +876,7 @@ contains
                     cycle
                 endif
                 if (q > 0) then                                      ! The normal case
-                    ifrom = ivert(nvert(1, iabs(nvert(2, ifrom))))         !    'from' should be wetting if q > 0
+                    ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if q > 0
                     volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
                     do isys = 1, nosys
@@ -888,7 +888,7 @@ contains
                         if (ipb > 0) dmpq(isys, ipb, 1) = dmpq(isys, ipb, 1) + dq
                     enddo
                 else                                                      ! The mirrorred case
-                    ito = ivert(nvert(1, iabs(nvert(2, ito))))         !    'to' should be wetting if q < 0
+                    ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if q < 0
                     volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
                     do isys = 1, nosys
@@ -911,7 +911,7 @@ contains
                 iseg2 = iords(i)                                          ! cell number
                 if (wdrawal(iseg2) == 0.0) cycle
                 q = wdrawal(iseg2) * dt(fbox)
-                iseg = ivert(nvert(1, iabs(nvert(2, iseg2))))             ! cell number of head of column
+                iseg = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column
                 if (q <= volint(iseg)) then
                     volint(iseg) = volint(iseg) - q
                 else

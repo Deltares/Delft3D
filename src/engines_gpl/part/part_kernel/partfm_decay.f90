@@ -62,7 +62,7 @@ contains
 
       do ipart = 1, Nopart
           if(mpart(ipart).gt.0) then
-             tp = float(iptime(ipart))  ! TODO: his known?
+             tp = real(iptime(ipart))  ! TODO: his known?
              itdelt = dts
              ddfac  = 2.0
              if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading

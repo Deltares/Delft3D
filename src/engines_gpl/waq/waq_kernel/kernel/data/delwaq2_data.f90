@@ -28,10 +28,10 @@ module delwaq2_data
 
     use m_waq_precision
     use hydroset
-    use dlwq_hyd_data
+    use m_waq_data_structure
     use m_waq_data_buffer
     use m_operation_data
-    use dlwqgrid_mod
+    use m_grid_utils_external
 
     integer(kind = int_wp), parameter, private :: iisize = 21  ! from sysi.inc
     integer(kind = int_wp), parameter, private :: insize = 72  ! from sysn.inc
@@ -99,7 +99,7 @@ module delwaq2_data
         !
         ! All the process parameters data from file
         !
-        type(t_dlwqdatacoll) :: proc_pars
+        type(t_data_column) :: proc_pars
 
         !
         ! Collection of all grid definitions

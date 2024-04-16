@@ -193,7 +193,7 @@ contains
         IP4 = IPOINT(4)
         IP5 = IPOINT(5)
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             IWA1 = Coll%set(IK)%fstwatsed
             IWA2 = Coll%set(IK)%lstwatsed

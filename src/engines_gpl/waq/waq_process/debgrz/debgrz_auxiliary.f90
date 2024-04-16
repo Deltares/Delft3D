@@ -30,14 +30,16 @@ module m_debgrz_auxiliary
     public :: debgrz_auxiliary
 
     type :: debgrz_auxiliary
-        integer(kind=int_wp), dimension(:), allocatable :: benfood
-        real(kind=real_wp),   dimension(:), allocatable :: ccfood
-        real(kind=real_wp),   dimension(:), allocatable :: cfood
-        real(kind=real_wp),   dimension(:), allocatable :: chlcfood
-        real(kind=real_wp),   dimension(:), allocatable :: ncfood
-        real(kind=real_wp),   dimension(:), allocatable :: pcfood
-        real(kind=real_wp),   dimension(:), allocatable :: sicfood
-        real(kind=real_wp),   dimension(:), allocatable :: dfil
+        integer(kind=int_wp), dimension(:), allocatable :: benfood  !< Benthic foods (true/false)
+
+        real(kind=real_wp), dimension(:), allocatable :: ccfood   !< Stoichiometry ratio of carbon to food unit
+                                                                  !< (often the food unit is expressed in carbon).
+        real(kind=real_wp), dimension(:), allocatable :: cfood    !< Carbon foods
+        real(kind=real_wp), dimension(:), allocatable :: chlcfood !< Chlorophyll foods
+        real(kind=real_wp), dimension(:), allocatable :: ncfood   !< Nitrogen foods
+        real(kind=real_wp), dimension(:), allocatable :: pcfood   !< Phosphorus foods
+        real(kind=real_wp), dimension(:), allocatable :: sicfood  !< Silicon foods
+        real(kind=real_wp), dimension(:), allocatable :: dfil     !< Daily filtration rate for each food type [gC/ind/d]
         contains
             procedure allocate_food_arrays
 
@@ -46,7 +48,7 @@ module m_debgrz_auxiliary
     contains
 
     subroutine allocate_food_arrays(this, food_count)
-        class(debgrz_auxiliary) :: this !< the auxiliary_variables instance
+        class(debgrz_auxiliary) :: this !< The auxiliary_variables instance
         integer(kind=int_wp), intent(in) :: food_count
 
         allocate(this%benfood(food_count))

@@ -73,9 +73,9 @@
                    NDMPAR, NOTOT2, NOPOUT
       REAL(kind=real_wp) ::ASMASS(NOTOT,NDMPAR,6), FLXINT(NOFLUX,NDMPAR), & 
                    CONC2(NOTOT2,NDMPAR)
-      CHARACTER*20  SYNAME(*)             , DANAME(*)
-      CHARACTER*40  MONAME(4)
-      CHARACTER*(*) FILBAL
+      character(len=20)  SYNAME(*)             , DANAME(*)
+      character(len=40)  MONAME(4)
+      character(len=*) FILBAL
 !
 !     Local declarations
 !

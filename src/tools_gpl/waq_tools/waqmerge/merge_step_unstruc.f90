@@ -29,17 +29,17 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll       ! description of the domain hydrodynamics
+      type(t_hydrodynamics)                          :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)               :: domain_hyd_coll       ! description of the domain hydrodynamics
 
       ! local declarations
 
-      type(t_hyd), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: n_domain              ! number of domains
       integer                                :: i_domain              ! domain index
       integer                                :: idmn                  ! flow like domain index (0:n_domain-1)
@@ -58,7 +58,7 @@
 
       ! copy to locals for convenience
 
-      n_domain  = hyd%domain_coll%cursize
+      n_domain  = hyd%domain_coll%current_size
       nolay     = hyd%nolay
 
       do i_domain = 1 , n_domain

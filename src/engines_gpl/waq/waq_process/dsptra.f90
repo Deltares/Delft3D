@@ -46,7 +46,7 @@ contains
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
         !    integer                 :: maxsize ! maximum size of the current array
-        !    integer                 :: cursize ! filled up to this size
+        !    integer                 :: current_size ! filled up to this size
         ! BotColm Struct 1   O  Structure with bottom collumn info
         !                  Contains:
         !    integer :: fstwatsed  ! first water sediment exchange number
@@ -119,7 +119,7 @@ contains
         IP7 = IPOINT(7)
         !
         !.....Loop over kolommen
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             !         Select first column of exchanges for DOWNWARD advection
 

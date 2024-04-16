@@ -29,13 +29,13 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                   ! description of the hydrodynamics
-      type(t_hyd_coll)                       :: domain_hyd_coll       ! description of the domain hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                   ! description of the hydrodynamics
+      type(t_hydrodynamics_collection)                 :: domain_hyd_coll       ! description of the domain hydrodynamics
       integer                                :: maxbnd                ! maximum boundary id
       integer                                :: maxseg                ! maximum segment id
       integer                                :: maxnoq                ! maximum exchange id
@@ -45,7 +45,7 @@
 
       ! local declarations
 
-      type(t_hyd), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: i_domain              ! domain index
       integer                                :: nolay                 ! number of layers
       integer                                :: ilay                  ! layer index

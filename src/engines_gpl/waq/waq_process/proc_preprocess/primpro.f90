@@ -90,7 +90,7 @@ contains
 
         ! some init
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
 
         ! loop over the substances
 

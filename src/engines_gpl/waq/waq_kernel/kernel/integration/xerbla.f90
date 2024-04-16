@@ -34,7 +34,7 @@ contains
 
         !          ..    Scalar Arguments ..
         INTEGER(kind = int_wp) :: INFO
-        CHARACTER*6        SRNAME
+        character(len=6)        SRNAME
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("xerbla", ithandl)
         !          ..
@@ -53,7 +53,7 @@ contains
         !       Parameters
         !       ==========
         !
-        !       SRNAME - CHARACTER*6.
+        !       SRNAME - character(len=6).
         !                On entry, SRNAME specifies the name of the routine which
         !                called XERBLA.
         !
