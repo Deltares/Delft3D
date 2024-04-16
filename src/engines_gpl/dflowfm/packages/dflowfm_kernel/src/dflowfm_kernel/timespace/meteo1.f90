@@ -6150,7 +6150,7 @@ contains
    use geometry_module, only: dbpinpol
    use gridoperations
    use unstruc_model, only: getoutputdir
-   use string_module, only: get_dirsep
+   use system_utils, only: FILESEP
    use m_arcinfo
    
    implicit none
@@ -6400,7 +6400,7 @@ contains
    call doclose(minp0)
 
    if (jawriteDFMinterpretedvalues > 0) then
-      n1  = index (trim(filename) , get_dirsep() , .true.)
+      n1  = index (trim(filename), FILESEP, .true.)
 
       !  fix for Linux-prepared input on Windows
       if ( n1 == 0 ) then

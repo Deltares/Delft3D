@@ -141,7 +141,7 @@ subroutine fm_wq_processes_ini_sub()
      noq4 = 0
 
     ! allocate vertical exchanges array
-     call realloc(iexpnt, [4, noq3], keepExisting=.false., fill=0)
+     call realloc(iexpnt, 4 * noq3, keepExisting=.false., fill=0)
 
 
     ! set vertical exchanges
@@ -150,8 +150,8 @@ subroutine fm_wq_processes_ini_sub()
         call getkbotktopmax(kk,kb,kt,ktmax)
         do k=ktmax,kb+1,-1
            iex = iex+1
-           iexpnt(1,iex) = k - kbx+1
-           iexpnt(2,iex) = k-1 - kbx+1
+           iexpnt(1+4*(iex-1)) = k - kbx+1
+           iexpnt(2+4*(iex-1)) = k-1 - kbx+1
         end do
      end do
     else
@@ -164,7 +164,7 @@ subroutine fm_wq_processes_ini_sub()
      noq4 = 0
 
     ! allocate vertical exchanges array (dummy)
-     call realloc(iexpnt, [4, noq3], keepExisting=.false., fill=0)
+     call realloc(iexpnt, 4 * noq3, keepExisting=.false., fill=0)
     end if
 
     ! allocate array that indicates if processes are active based on volume and depth criteria
@@ -393,7 +393,7 @@ subroutine fm_wq_processes_ini_proc()
     type(procespropcoll)     :: statprocesdef   !< the statistical proces definition
     integer  ( 4), parameter :: nomult = 0      !< number of multiple substances
     integer  ( 4)            :: imultp(2,nomult)!< multiple substance administration
-    type(t_dlwq_item)        :: constants       !< delwaq constants list
+    type(t_waq_item)        :: constants       !< delwaq constants list
     integer                  :: nocons_used     !< number of constants actually used
     integer                  :: noinfo          !< count of informative message
     integer                  :: nowarn          !< count of warnings
@@ -699,8 +699,8 @@ subroutine fm_wq_processes_ini_proc()
 
     noconm = nocons + 1000
     call realloc(coname, noconm)
-    ierr2 = dlwq_init_item(constants)
-    ierr2 = dlwq_resize(constants,noconm)
+    ierr2 = constants%initialize()
+    ierr2 = constants%resize(noconm)
 
     !     Skip constants from the sub-file that will be added by DFM as parameter/function/segment function
     nocons_used = 0
@@ -739,7 +739,7 @@ subroutine fm_wq_processes_ini_proc()
     allocate(outputs%units(noout_user))
     allocate(outputs%description(noout_user))
 
-    outputs%cursize  = noout_user
+    outputs%current_size  = noout_user
     do i = 1, noout_sub
       outputs%names(i) = ouname_sub(i)
       outputs%std_var_name(i) = ' '
@@ -1760,7 +1760,7 @@ subroutine copy_data_from_wq_processes_to_fm(dt, tim)
     ! copy additional output
      if ( timon ) call timstrt ( "copy_output", ithand2 )
      waqoutputs=dmiss
-     noout = outputs%cursize
+     noout = outputs%current_size
      do j = 1, noout
         ivar   = outvar(j)  ! which variable is it
         if (ivar > 0) then

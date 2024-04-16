@@ -115,7 +115,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>share\bin\mpiexec.exe</path>
+			<path>bin\mpiexec.exe</path>
 			<arguments>
 				<argument>-n 2 -localonly</argument>
 			</arguments>
@@ -135,7 +135,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>dflow2d3d\scripts\run_dflow2d3d_parallel.bat</path>
+			<path>bin\run_dflow2d3d_parallel.bat</path>
 			<arguments>
 				<argument>2</argument>
 			</arguments>
@@ -153,7 +153,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>dflow2d3d\scripts\run_dflow2d3d_parallel_dwaves.bat</path>
+			<path>bin\run_dflow2d3d_parallel_dwaves.bat</path>
 		</program>
 		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -162,7 +162,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>dmor\bin\mormerge.exe</path>
+			<path>bin\mormerge.exe</path>
 		</program>
 		<program name="RTC" logOutputToFile="true" addSearchPaths="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -171,7 +171,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>rtc\bin\rtc.exe</path>
+			<path>bin\rtc.exe</path>
 			<arguments>
 				<argument>rtc.fnm rtc.rtn</argument>
 			</arguments>
@@ -195,7 +195,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>dwaves\bin\wave.exe</path>
+			<path>bin\wave.exe</path>
 		<!--
 			<environments>
 				<environment name="D3D_HOME" type="path">[programpath(WAVE)]\..\..\..</environment>

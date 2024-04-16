@@ -42,7 +42,7 @@
       <path>thirdparty\svn\win64\svn.exe</path>
     </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-        <path>dimr/bin/dimr.exe</path>
+        <path>bin/run_dimr.bat</path>
         <shell ref="command_prompt"/>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
@@ -56,7 +56,7 @@
     </program>
 	
     <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
-	    <path>dmor/scripts/run_mormerge.bat</path>
+	    <path>bin/run_mormerge.bat</path>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
         </location>
@@ -131,7 +131,7 @@
 
 <testCases>
     <testCase name="e123_f01_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
-        <path>e123_dflowfm-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
+        <path version="2024-03-22T19:30:00">e123_dflowfm-mormerge/f01_general/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
         <maxRunTime>600.0000000</maxRunTime>
         <programs>
             <program ref="mormerge">
@@ -172,7 +172,7 @@
     </testCase>
 
     <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
-        <path>e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
+        <path version="2024-03-22T19:30:00">e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
         <maxRunTime>600.0000000</maxRunTime>
         <programs>
             <program ref="mormerge">

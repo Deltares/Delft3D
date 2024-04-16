@@ -38,7 +38,7 @@
 
       do t = 1, nTimes
 #if (defined(WIN32))
-        call sleepqq(999)
+        call sleep(999)
 #else
         call DIOSYNCcSLEEP(999)
 #endif

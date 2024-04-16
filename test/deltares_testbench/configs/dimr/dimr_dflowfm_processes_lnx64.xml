@@ -142,7 +142,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>lnx64</from>
@@ -170,7 +170,7 @@
         <from>.</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
       <location ref="reference_results" type="reference">
         <from>lnx64</from>

@@ -88,7 +88,7 @@ subroutine update_constituents(jarhoonly)
 
    implicit none
 
-   integer :: jarhoonly
+   integer, intent(in) :: jarhoonly
 
    integer :: ierror
 

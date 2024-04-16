@@ -37,7 +37,7 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
-   use hydmod
+   use m_hydmod
    use network_data, only: kn, xk, yk, zk, xzw, yzw, numk, numL, nump, netcell, lnn, lne
    use m_part_geom, only: Ndxi, Ndx, Lnx, ba, bl, lne2ln
    use m_part_flow
@@ -51,7 +51,7 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
 
    implicit none
 
-   type(t_hyd)        ,intent(in) :: hyd           !< description of the hydrodynamics
+   type(t_hydrodynamics)        ,intent(in) :: hyd           !< description of the hydrodynamics
    type(t_ug_meshgeom),intent(in) :: waqgeom
    type(t_openbndsect_coll),intent(in) :: openbndsect_coll       ! collection of openbndsects
 
@@ -340,7 +340,7 @@ subroutine part_setmesh()
       k1 = edge2cell(1,L)
       if ( k1.eq.0 ) cycle
 
-      k1 = iabs(cell2nod(k1))
+      k1 = abs(cell2nod(k1))
 
       jaswap = 0
 
@@ -529,7 +529,7 @@ end subroutine dealloc_partmesh
 
 !  initialise grid and hydro data
 subroutine ini_part_grid(hyd)
-   use hydmod
+   use m_hydmod
    use partmem, only: ihdel, layt, nolayp, tcktot, nmaxp, mmaxp, mnmax2, mnmaxk
    use m_part_flow
    use m_part_transport, only: constituents, numconst
@@ -540,7 +540,7 @@ subroutine ini_part_grid(hyd)
 
    implicit none
 
-   type(t_hyd)                    :: hyd           !< description of the hydrodynamics
+   type(t_hydrodynamics)                    :: hyd           !< description of the hydrodynamics
 
    integer             :: minp, ilay, lun
    logical             :: lexist

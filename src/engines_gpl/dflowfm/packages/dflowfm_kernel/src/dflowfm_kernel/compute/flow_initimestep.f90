@@ -29,8 +29,8 @@
 
 ! 
 ! 
-
- subroutine flow_initimestep(jazws0, iresult)                     ! intialise flow timestep, also called once after flowinit
+!< Intialise flow timestep, also called once after flowinit.
+ subroutine flow_initimestep(jazws0, set_hu, use_u1, iresult)                     
  use timers
  use m_flowtimes
  use m_flow
@@ -49,10 +49,12 @@
  use m_fm_icecover, only: update_icecover
  implicit none
 
- integer              :: jazws0
+ integer, intent(in)  :: jazws0
+ logical, intent(in)  :: set_hu !< Flag for updating `hu` (.true.) or not (.false.) in subroutine `calculate_hu_au_and_advection_for_dams_weirs` (`sethu`).
+ logical, intent(in)  :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave` 
  integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if succesful.
  integer              :: ierror
- double precision, parameter :: mmphr_to_mps = 1d-3/3600d0
+ double precision, parameter :: MMPHR_TO_MPS = 1d-3/3600d0
 
  iresult = DFM_GENERICERROR
 
@@ -112,7 +114,7 @@
  adve = 0d0
 
  call timstrt('Sethuau     ', handle_extra(39)) ! Start huau
- call calculate_hu_au_and_advection_for_dams_weirs(jazws0)
+ call calculate_hu_au_and_advection_for_dams_weirs(jazws0,set_hu)
 
  call setau()                                        ! set au and cfuhi for conveyance after limited h upwind at u points
  call timstop(handle_extra(39)) ! End huau
@@ -139,7 +141,7 @@
 
  ! Calculate max bed shear stress amplitude and z0rou without waves
  if (jawave==0) then
-    call settaubxu_nowave()
+    call settaubxu_nowave(use_u1)
  endif
 
  ! Set wave parameters, adapted for present water depth/velocity fields

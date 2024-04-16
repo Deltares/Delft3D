@@ -22,72 +22,71 @@
 !!  rights reserved.
 module m_delwaq1_init
 
-   use m_working_files, only: create_work_file_one
-   use m_waq_precision
+    use m_working_files, only : create_work_file_one
+    use m_waq_precision
 
-   implicit none
+    implicit none
 
 contains
 
-   subroutine delwaq1_init(argv)
-      !< initializes timer and values
+    subroutine delwaq1_init(argv)
+        !< initializes timer and values
 
-      use m_delwaq1_data
-      use m_cli_utils, only : get_argument_from_list, store_command_arguments, get_number_of_arguments
+        use m_delwaq1_data
+        use m_cli_utils, only : get_argument_from_list, store_command_arguments, get_number_of_arguments
 
-      character(len=*), dimension(:), intent(in) :: argv
+        character(len = *), dimension(:), intent(in) :: argv
 
-      !     Special system init
+        integer(kind = int_wp) :: arg_index
 
-      call timini()                          ! initializes timer
+        !     Special system init
 
-      call store_command_arguments(argv)
+        call timini()                          ! initializes timer
 
-      narg = get_number_of_arguments()            ! but timer is switched 'off' by default
-      if (narg == 0) narg = iargc() + 1
-      do ierr = 1, narg
-         call get_argument_from_list(ierr, arg)
-         if (arg == "timer" .or. arg == "TIMER") then
-            timon = .true.                     ! optionally switch it 'on'
-            exit
-         end if
-      end do
-      if (timon) call timstrt("delwaq1", ithndl)
+        call store_command_arguments(argv)
 
-      !        initialise values
+        narg = get_number_of_arguments()            ! but timer is switched 'off' by default
+        if (narg == 0) narg = command_argument_count() + 1
+        do arg_index = 1, narg
+            call get_argument_from_list(arg_index, arg)
+            if (arg == "timer" .or. arg == "TIMER") then
+                timon = .true.                     ! optionally switch it 'on'
+                exit
+            end if
+        end do
+        if (timon) call timstrt("delwaq1", ithndl)
 
-      ierr = 0
-      iwar = 0
-      lunrep = lun(29)
-      nolun = nlun
-      filtype = 0
-      noitem = noitm
-      noutp = nooutp
-      noinfo = 0
-      nharms = 0
-      niharm = 0
-      nlines = 0
-      npoins = 0
-      newrsp = 0
-      newisp = 0
-      ivflag = 0
-      itflag = 0
-      ncbufm = 0
-      novar = 0
-      noarr = iasize + ijsize + icsize
-      nufil = 0
-      do i = 1, noitem
-         nrftot(i) = 0
-         nrharm(i) = 0
-      end do
-      StatProcesDef%maxsize = 0
-      StatProcesDef%cursize = 0
-      AllItems%maxsize = 0
-      AllItems%cursize = 0
-      GridPs%cursize = 0
-      GridPs%maxsize = 0
+        !        initialise values
 
-      call create_work_file_one(lun, lchar, nolun, runid)
+        lunrep = lun(29)
+        nolun = nlun
+        filtype = 0
+        noitem = noitm
+        noutp = nooutp
+        nharms = 0
+        niharm = 0
+        nlines = 0
+        npoins = 0
+        newrsp = 0
+        newisp = 0
+        ivflag = 0
+        itflag = 0
+        ncbufm = 0
+        novar = 0
+        noarr = iasize + ijsize + icsize
+        nufil = 0
+        do i = 1, noitem
+            nrftot(i) = 0
+            nrharm(i) = 0
+        end do
+        StatProcesDef%maxsize = 0
+        StatProcesDef%current_size = 0
+        AllItems%maxsize = 0
+        AllItems%current_size = 0
+        GridPs%current_size = 0
+        GridPs%maxsize = 0
 
-   end subroutine delwaq1_init
+        call create_work_file_one(lun, lchar, nolun, runid)
+
+    end subroutine delwaq1_init
 end module m_delwaq1_init

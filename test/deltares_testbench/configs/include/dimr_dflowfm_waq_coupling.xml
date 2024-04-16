@@ -2,7 +2,7 @@
     <!-- TEST CASES FOR VOLUME BALANCE -->
 
     <testCase name="e02_f029_c001_hyd_file_frisianinlet_schematized_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -81,7 +81,7 @@
     </testCase>
 
     <testCase name="e02_f029_c002_hyd_file_frisianinlet_schematized_3D_s" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -160,7 +160,7 @@
     </testCase>
 
     <testCase name="e02_f029_c003_hyd_file_frisianinlet_schematized_3D_z" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -241,7 +241,7 @@
     <!-- CHECK WAQGEOM FILE -->
 
     <testCase name="e02_f029_c004_hyd_file_frisianinlet_waqgeom_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c004_frisianinlet_waqgeom_2D</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c004_frisianinlet_waqgeom_2D</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -257,7 +257,7 @@
     </testCase>
 
     <testCase name="e02_f029_c005_hyd_file_frisianinlet_waqgeom_3D_s" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c005_frisianinlet_waqgeom_3D_s</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c005_frisianinlet_waqgeom_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -273,7 +273,7 @@
     </testCase>
 
     <testCase name="e02_f029_c006_hyd_file_frisianinlet_waqgeom_3D_z" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c006_frisianinlet_waqgeom_3D_z</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c006_frisianinlet_waqgeom_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -291,7 +291,7 @@
     <!-- MULTIDOMAIN WORKFLOW -->
 
     <testCase name="e02_f029_c101_westerschelde_2d_three_domains" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c101_westerschelde_2d_3dom</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c101_westerschelde_2d_3dom</path>
       <programs>
         <program ref="dimr-mpi" seq="1">
         </program>
@@ -377,7 +377,7 @@
     </testCase>
 
     <testCase name="e02_f029_c102_westerschelde_3d_s_three_domains" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c102_westerschelde_3d_s_3dom</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f029_hyd_file/c102_westerschelde_3d_s_3dom</path>
       <programs>
         <program ref="dimr-mpi" seq="1">
         </program>
@@ -462,7 +462,7 @@
     </testCase>
 
     <testCase name="e02_f029_c103_westerschelde_3d_z_three_domains" ref="dflowfm_default">
-      <path>e02_dflowfm/f029_hyd_file/c103_westerschelde_3d_z_3dom</path>
+      <path version="2024-01-11T16:30:00">e02_dflowfm/f029_hyd_file/c103_westerschelde_3d_z_3dom</path>
       <programs>
         <program ref="dimr-mpi" seq="1">
         </program>

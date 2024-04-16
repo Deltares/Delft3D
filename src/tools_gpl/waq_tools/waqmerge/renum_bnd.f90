@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       implicit none
 
       ! declaration of the arguments
@@ -44,16 +44,16 @@
       integer                                :: i_sect                 ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbndsect), pointer           :: openbndsect            ! single section
+      type(t_openbnd_section), pointer           :: openbndsect            ! single section
 
       ! look for boundary number in the sections set new number
 
-      no_sect = openbndsect_coll%cursize
+      no_sect = openbndsect_coll%current_size
 
       do i_sect = 1 , no_sect
 
          openbndsect => openbndsect_coll%openbndsect_pnts(i_sect)
-         no_bnd = openbndsect%openbndlin_coll%cursize
+         no_bnd = openbndsect%openbndlin_coll%current_size
 
          do i_bnd = 1 , no_bnd
             if ( openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)%ibnd .eq. ibnd ) then

@@ -126,7 +126,7 @@ module m_1d2d_fixedweirs
    !> Find the 1d2d fixed weirs and add them to the lateral_1d2d_links list
    subroutine find_1d2d_fixedweirs(ilink, ilinkCount)
       use m_alloc,         only : realloc
-      use m_flowgeom,      only : kcu, ln
+      use m_flowgeom,      only : kcu
       !use m_flow,          only : 
 
 
@@ -152,10 +152,11 @@ module m_1d2d_fixedweirs
    
    subroutine initialise_1d2d_fixedweirs()
       use m_flowgeom, only: ndx2d, ln, nd, iadv, lnx1d, iadv, teta
-      use m_flow, only: frcu, ifrcutp
 
-      integer i, L, j, L1d
+      integer i, L, j
       
+      call remove_duplicate_entries_in_fixedweirslist()
+
       do i = 1, n_1d2d_fixedweirs
          L = index_1d2d_fixedweirs(i)
          ! Set advection and teta
@@ -184,6 +185,30 @@ module m_1d2d_fixedweirs
       enddo
    end subroutine initialise_1d2d_fixedweirs
 
+   subroutine remove_duplicate_entries_in_fixedweirslist()      
+      integer i, j, current_fxw
+      logical duplicate
+      
+      current_fxw = 1
+      
+      do i = 2, n_1d2d_fixedweirs
+         duplicate = .false.
+         do j = 1, current_fxw
+            ! look for duplicate entries
+            if (index_1d2d_fixedweirs(j) == index_1d2d_fixedweirs(i)) then
+               duplicate = .true.
+               exit
+            endif
+         enddo            
+         if (.not. duplicate) then
+            current_fxw = current_fxw + 1
+            index_1d2d_fixedweirs(current_fxw) = index_1d2d_fixedweirs(i)
+         endif
+      enddo
+      n_1d2d_fixedweirs = current_fxw
+   end subroutine remove_duplicate_entries_in_fixedweirslist
+
+
    !> Compute the coefficients for the fixed weirs and put these in the matrix
    subroutine compute_1d2d_fixedweirs()
       implicit none
@@ -199,7 +224,7 @@ module m_1d2d_fixedweirs
       use m_physcoef,         only : ag
       use m_flow,             only : fu, ru, hu, s0, s1, u0, au
       use m_flowtimes,        only : dts
-      use m_flowgeom,         only : bob, bob0, dx, ln, teta, wu
+      use m_flowgeom,         only : bob, dx, teta, wu
       use m_flowparameters,   only : epshu   
       implicit none
 
@@ -364,9 +389,9 @@ module m_1d2d_fixedweirs
    
    !> Adjust the matrix for the 1d2d lateral links
    subroutine set_matrix_coefficients()
-      use m_flow,             only : fu, ru, hu, u0, au, bb, dd, s0, s1
+      use m_flow,             only : fu, ru, hu, u0, au
       use m_flowgeom,         only : ln, teta
-      use m_reduce,           only : lv2, ccr, ccrsav, bbr, ddr
+      use m_reduce,           only : lv2, ccr, bbr, ddr
       implicit none
 
       integer :: L, i, k1, k2, k1d, k2d
@@ -417,9 +442,9 @@ module m_1d2d_fixedweirs
    !> should be mass conserving.
    subroutine set_discharge_on_1d2d_fixedweirs()
       use precision,          only : comparereal
-      use m_flow,             only : fu, ru, hu, u0, au, bb, dd, s1, s0
+      use m_flow,             only : fu, ru, hu, u0, au, s1
       use m_flowgeom,         only : ln, teta
-      use m_reduce,           only : lv2, ccr, ccrsav, bbr, ddr
+      use m_reduce,           only : lv2, ccr, bbr, ddr
       implicit none
 
       integer :: L, i, k1, k2, k1d, k2d
@@ -482,14 +507,11 @@ module m_1d2d_fixedweirs
 
       use precision, only: comparereal
       use m_flow, only : fu, ru, u0, cfuhi, huvli, s0, au, s1, hu
-      use m_flowgeom, only : dxi, teta, ln, wu, bob, bob0, bl
+      use m_flowgeom, only : dxi, teta
       use m_physcoef, only : ag
       use m_flowtimes, only : dti
-      use m_flowparameters,   only : epshu
-
+      
       integer :: L, i, k1d, k2d
-      double precision :: s0_1
-      double precision :: s0_2
       
       double precision :: agp, gdxi, cu, du, ds, u1L, u1l0, frl, bui, slopec
       integer :: itu1
@@ -552,7 +574,7 @@ module m_1d2d_fixedweirs
    !> For convergence the discharge calculated at the 1d node (from 1d to 2d) must be 
    !> equal to - discharge calculated at the 2d node from the 2d node to the 1d node.
    logical function check_convergence_1d2d_fixedweirs()
-      use m_flow, only : au, s1, fu, ru, hu
+      use m_flow, only : au, s1, hu
       use precision_basics, only : comparereal
       use m_flowtimes
       use messagehandling

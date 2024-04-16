@@ -17,6 +17,7 @@ class TestComparisonRunner:
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error():
         # Arrange
         settings = TestBenchSettings()
+        settings.configs = []
         logger = ConsoleLogger(LogLevel.INFO)
         runner = ComparisonRunner(settings, logger)
 

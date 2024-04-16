@@ -85,7 +85,7 @@ contains
 
 !     determine interpolation factors
 
-      fract = float(itime - idtime(id-1)) / float(idtime(id) - idtime(id-1))
+      fract = real(itime - idtime(id-1)) / real(idtime(id) - idtime(id-1))
 
 !     interpolate
 

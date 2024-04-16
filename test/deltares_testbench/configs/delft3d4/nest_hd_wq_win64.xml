@@ -160,7 +160,7 @@
     -->
     <testCases>
         <testCase name="e60_f01_c01_tutorial" ref="nesthd1_default">
-            <path>e60_nesthd1/f01_general/c01_tutorial</path>
+            <path version="2024-01-12T07:30:00">e60_nesthd1/f01_general/c01_tutorial</path>
             <programs>
                 <program ref="nesthd1">
                     <arguments>
@@ -178,7 +178,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e60_f01_c02_test" ref="nesthd1_default">
-            <path>e60_nesthd1/f01_general/c02_test</path>
+            <path version="2024-01-12T07:30:00">e60_nesthd1/f01_general/c02_test</path>
             <programs>
                 <program ref="nesthd1">
                     <arguments>
@@ -196,7 +196,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e61_f01_c01_tutorial" ref="nesthd2_default">
-            <path>e61_nesthd2/f01_general/c01_tutorial</path>
+            <path version="2024-01-12T07:30:00">e61_nesthd2/f01_general/c01_tutorial</path>
             <programs>
                 <program ref="nesthd2">
                     <arguments>
@@ -214,7 +214,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e61_f01_c02_test" ref="nesthd2_default">
-            <path>e61_nesthd2/f01_general/c02_test</path>
+            <path version="2024-01-12T07:30:00">e61_nesthd2/f01_general/c02_test</path>
             <programs>
                 <program ref="nesthd2">
                     <arguments>
@@ -232,7 +232,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e62_f01_c01_test" ref="nestwq1_default">
-            <path>e62_nestwq1/f01_general/c01_test</path>
+            <path version="2024-01-12T07:30:00">e62_nestwq1/f01_general/c01_test</path>
             <programs>
                 <program ref="nestwq1">
                     <arguments>
@@ -251,7 +251,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e63_f01_c02_test" ref="nestwq2_default">
-            <path>e63_nestwq2/f01_general/c01_test</path>
+            <path version="2024-01-12T07:30:00">e63_nestwq2/f01_general/c01_test</path>
             <programs>
                 <program ref="nestwq2">
                     <arguments>

@@ -535,7 +535,7 @@ class TestSetRunner(ABC):
                 raise TestBenchError(error_message)
 
             # Build the path to download from: Root+From+testcasePath:
-            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.path)
+            remote_path = Paths().mergeFullPath(location.root, location.from_path, config.path.prefix)
 
             if Paths().isPath(remote_path):
                 remote_path = os.path.abspath(remote_path)
@@ -574,7 +574,7 @@ class TestSetRunner(ABC):
                         handler_type = ResolveHandler.detect(remote_path, logger, location.credentials)
 
                         if handler_type == HandlerType.MINIO:
-                            self.__SetupVersionForDownload(config, location)
+                            self.__SetupVersionForDownload(location, config.path.version)
 
                         self.__download_file(location, remote_path, localPath, input_description, logger)
 
@@ -596,9 +596,9 @@ class TestSetRunner(ABC):
                         logger.error(error_message)
                         raise TestBenchError("Unable to download testcase " + str(e))
 
-    def __SetupVersionForDownload(self, config, location):
-        if location.version is None and config.version is not None:
-            location.version = config.version
+    def __SetupVersionForDownload(self, location: Location, version: Optional[str]) -> None:
+        if location.version is None and version is not None:
+            location.version = version
 
     def __download_file(
         self,
@@ -647,6 +647,10 @@ class TestSetRunner(ABC):
 
         if os.path.exists(localPath):
             return
+
+        handler_type = ResolveHandler.detect(location.root, logger, location.credentials)
+        if handler_type == HandlerType.MINIO:
+            self.__SetupVersionForDownload(location, config.dependency.version)
 
         remote_path = Paths().mergeFullPath(
             location.root, location.from_path, config.dependency.cases_path

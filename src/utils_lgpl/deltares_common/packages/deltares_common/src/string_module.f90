@@ -67,7 +67,6 @@ module string_module
    public :: strip_quotes
    public :: real2string, real2stringLeft
    public :: GetLine
-   public :: get_dirsep
    public :: int2str
 
    interface strip_quotes
@@ -990,25 +989,6 @@ module string_module
         endif
       enddo
       end subroutine GetLine
-      
-      !>
-      !> Find out if system is PC (directory seperator character \ (92)
-      !>   or UNIX (directory seperator character / (47))
-      function get_dirsep()
-         character(len=1)     :: get_dirsep
-         
-         integer :: lslash
-         character  hlpstr*999,slash*1
-         
-         CALL GET_ENVIRONMENT_VARIABLE('PATH',hlpstr)
-         
-         slash  = CHAR  (47)
-         lslash = INDEX (hlpstr,slash)
-         if (lslash == 0) then
-            slash  = CHAR  (92)
-         endif
-         get_dirsep = slash
-      end function get_dirsep
 
       !> convert an integer into a string
       function int2str(i) result(string)

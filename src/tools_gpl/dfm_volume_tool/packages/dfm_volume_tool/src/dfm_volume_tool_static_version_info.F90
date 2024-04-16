@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "dfm_volume_tool_version.h"
+#include "dfm_volume_tool_version.h"
 
 module dfm_volume_tool_static_version_info
     implicit none

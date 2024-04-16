@@ -91,7 +91,7 @@
     -->
     <testCases>
         <testCase name="e68_f01_c01_katrina_t1" ref="wes_default">
-            <path>e68_wes/f01_general/c01_katrina_t1</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c01_katrina_t1</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -108,7 +108,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c02_katrina_t2" ref="wes_default">
-            <path>e68_wes/f01_general/c02_katrina_t2</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c02_katrina_t2</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -125,7 +125,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c03_katrina_t3" ref="wes_default">
-            <path>e68_wes/f01_general/c03_katrina_t3</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c03_katrina_t3</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -142,7 +142,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c04_katrina_t4" ref="wes_default">
-            <path>e68_wes/f01_general/c04_katrina_t4</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c04_katrina_t4</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -159,7 +159,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c05_katrina_t5" ref="wes_default">
-            <path>e68_wes/f01_general/c05_katrina_t5</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c05_katrina_t5</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -176,7 +176,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c06_katrina_t6" ref="wes_default">
-            <path>e68_wes/f01_general/c06_katrina_t6</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c06_katrina_t6</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -193,7 +193,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c07_katrina_t7" ref="wes_default">
-            <path>e68_wes/f01_general/c07_katrina_t7</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c07_katrina_t7</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -210,7 +210,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c08_hemisphere" ref="wes_default">
-            <path>e68_wes/f01_general/c08_hemisphere</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c08_hemisphere</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -227,7 +227,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c09_wes" ref="wes_default">
-            <path>e68_wes/f01_general/c09_wes</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c09_wes</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -244,7 +244,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c10_wes" ref="wes_default">
-            <path>e68_wes/f01_general/c10_wes</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c10_wes</path>
             <programs>
                 <program ref="wes">
                     <arguments>
@@ -261,7 +261,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e68_f01_c11_wes" ref="wes_default">
-            <path>e68_wes/f01_general/c11_wes</path>
+            <path version="2024-01-11T11:10:00">e68_wes/f01_general/c11_wes</path>
             <programs>
                 <program ref="wes">
                     <arguments>

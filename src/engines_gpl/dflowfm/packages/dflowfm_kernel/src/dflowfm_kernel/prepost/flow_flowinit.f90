@@ -85,7 +85,7 @@ contains
    integer, external :: flow_initexternalforcings
 
    double precision, allocatable :: weirdte_save(:)
-   
+      
    error = DFM_NOERR
 
    if (ndx == 0) then
@@ -198,7 +198,7 @@ contains
    call remember_initial_water_levels_at_water_level_boundaries()
    call make_volume_tables()
    call load_restart_file(jawelrestart, error)
-   if( is_error_at_any_processor(error) ) then
+   if (is_error_at_any_processor(error) ) then
        call qnerror('Error occurs when reading the restart file.',' ', ' ')
        return
    end if
@@ -290,7 +290,7 @@ contains
       allocate ( weirdte_save(nfxw), STAT=ierror)
       weirdte_save=weirdte
    endif
-   call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)
+   call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0,.not.jawelrestart)
    if (nfxw > 0) then 
        weirdte=weirdte_save
       deallocate ( weirdte_save)
@@ -311,7 +311,7 @@ contains
 
  ! hk: and, make sure this is done prior to fill constituents
    if (jarestart > OFF) then
-      call initialize_salinity_temperature_sediment_on_boundary()
+      call initialize_salinity_temperature_on_boundary()
       call restore_au_q1_3D_for_1st_history_record()
    end if
 
@@ -770,14 +770,14 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs, s1
+   use m_flow,             only : u1, u0, s0, hs, s1, ucxyq_read_rst
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
    use iso_varying_string, only : len_trim, index
    use m_setucxcuy_leastsquare, only: reconst2nd
    use dfm_error
-
+   
    implicit none
 
    logical, intent(out)          :: file_exist
@@ -788,7 +788,7 @@ subroutine load_restart_file(file_exist, error)
    integer                       :: mrst
    integer                       :: jw
    double precision, allocatable :: u1_tmp(:)
-
+   
    file_exist = .false.
 
    if (len_trim(md_restartfile) > 0 ) then
@@ -816,7 +816,13 @@ subroutine load_restart_file(file_exist, error)
             call reconst2nd ()
          end if
          call fill_onlyWetLinks()
-         call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         
+         !If we have not read `ucxq` and `ucyq` from restart, we initialize it here. If 
+         !we have read it, we do not want to overwrite it. 
+         if (.not. ucxyq_read_rst) then
+            call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         endif
+         
          call flow_obsinit() 
          call fill_valobs() 
        end if
@@ -1443,7 +1449,7 @@ subroutine initialize_sediment_3D()
 end subroutine initialize_sediment_3D
 
 !> initialize salinity, temperature, sediment on boundary
-subroutine initialize_salinity_temperature_sediment_on_boundary()
+subroutine initialize_salinity_temperature_on_boundary()
    use m_flowparameters,       only : jasal, jased, jatem
    use m_flowgeom,             only : ln, lnx, lnxi
    use m_flow,                 only : sa1, q1, tem1
@@ -1475,16 +1481,11 @@ subroutine initialize_salinity_temperature_sediment_on_boundary()
                if (jatem > OFF) then
                    tem1(boundary_cell)  = tem1(internal_cell)
                end if
-               if (jased > OFF) then
-                   do grain = 1, mxgr
-                      sed(grain,boundary_cell) = sed(grain,internal_cell)
-                   end do
-               end if
            end if
        end do
    end do
 
-end subroutine initialize_salinity_temperature_sediment_on_boundary
+end subroutine initialize_salinity_temperature_on_boundary
 
 
 !> initialize salinity and temperature with nudge variables
@@ -1581,6 +1582,8 @@ subroutine apply_hardcoded_specific_input()
 
  implicit none
 
+ logical, parameter :: SET_HU      =  .true.
+ 
  integer          :: itest = 1, kk, La, j, Lb, Lt
  integer          :: k, L, k1, k2, n, jw, msam
  integer          :: kb, kt, LL
@@ -1945,7 +1948,7 @@ subroutine apply_hardcoded_specific_input()
 
     do j = 1,300
        fout = 0d0
-       call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)             ! was just call sethu()
+       call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0, SET_HU)             ! was just call sethu()
        do k = 1,ndx
           sq(k) = 0d0
           do kk = 1,nd(k)%lnx

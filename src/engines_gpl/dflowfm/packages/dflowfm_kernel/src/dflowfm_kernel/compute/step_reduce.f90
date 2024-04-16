@@ -49,7 +49,8 @@
  use m_fm_erosed, only: ti_sedtrans
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
  use mass_balance_areas_routines, only: comp_bedload_fluxmba
-
+ use m_curvature, only: get_curvature
+ 
  implicit none
 
  integer :: ndraw

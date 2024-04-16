@@ -6,6 +6,11 @@ if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads  /MP")
+    set(fortran_standard_flag "/stand")
+
+    # Set global C/C++ compiler flags that apply for each C/C++ project
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
     # Set optional flags:
     message(STATUS "Setting optional Intel Fortran compiler flags in Windows")
@@ -55,8 +60,9 @@ if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0 -fPIC")
     set(CMAKE_Fortran_FLAGS_RELEASE              "-O2 -fPIC")
     set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC")
+    set(fortran_standard_flag                    "-std")
 
-    set(cpp_compiler_flags                       "-std=c++11")
+    set(cpp_compiler_flags                       "-std=c++17")
     set(cxx_compiler_flags......................."-lstdc++")
     set(automatic_local_variable_storage_flag    -auto)
     set(extend_source132_flag                    -extend-source 132)
@@ -81,7 +87,7 @@ if (UNIX)
 endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
-set(waq_default_flags ${file_preprocessor_flag} ${extend_source132_flag} ${traceback_flag})
+set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
 
 
 # Define the custom flag about code coverage with a default value of OFF

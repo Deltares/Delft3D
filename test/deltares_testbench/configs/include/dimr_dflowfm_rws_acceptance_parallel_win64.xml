@@ -1,6 +1,6 @@
     <testCases>
         <testCase name="e110_f03_c010" ref="dimr_trunk_4">
-            <path>e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
+            <path version="2024-01-12T07:30:00">e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
              <checks>
                 <file name="DFM_OUTPUT_DCSM_kort/DCSM_kort_0000_map.nc" type="NETCDF">
                     <parameters>
@@ -46,7 +46,7 @@
             <processCount>4</processCount>
         </testCase>
         <testCase name="e110_f03_c020" ref="dimr_trunk_4">
-            <path>e110_delft3dfm_suite/f03_caching/c020_maas</path>
+            <path version="2024-03-22T20:00:00">e110_delft3dfm_suite/f03_caching/c020_maas</path>
              <checks>
                 <file name="resultaten/Maas_kort_0000_map.nc" type="NETCDF">
                     <parameters>
@@ -72,7 +72,7 @@
             <processCount>4</processCount>
         </testCase>
         <testCase name="e110_f03_c030" ref="dimr_trunk_4">
-            <path>e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
+            <path version="2024-03-22T20:00:00">e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
              <checks>
                 <file name="Results/rijn_WBI_kort_0000_map.nc" type="NETCDF">
                     <parameters>
@@ -98,7 +98,7 @@
             <processCount>4</processCount>
         </testCase>
         <testCase name="e110_f03_c040" ref="dimr_trunk_4">
-            <path>e110_delft3dfm_suite/f03_caching/c040_rmm</path>
+            <path version="2024-01-12T07:30:00">e110_delft3dfm_suite/f03_caching/c040_rmm</path>
              <checks>
                 <file name="Results/RMM_kort_0000_map.nc" type="NETCDF">
                     <parameters>

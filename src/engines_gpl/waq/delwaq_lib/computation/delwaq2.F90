@@ -21,32 +21,32 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq2
-   use m_waq_precision
+    use m_waq_precision
 
-   implicit none
+    implicit none
 
 contains
 
-   subroutine delwaq2(argc, argv, errorcode)
-      !DEC$ ATTRIBUTES DLLEXPORT::delwaq2
+    subroutine delwaq2(argc, argv, errorcode)
+        !DEC$ ATTRIBUTES DLLEXPORT::delwaq2
 
-      use m_delwaq2_main
-      use delwaq2_data
-      use m_actions
+        use m_delwaq2_main
+        use delwaq2_data
+        use m_actions
 
-      integer(kind=int_wp), intent(in) ::  argc
-      character(len=*), dimension(argc), intent(in) :: argv
-      integer(kind=int_wp), intent(out) ::  errorcode
+        integer(kind = int_wp), intent(in) :: argc
+        character(len = *), dimension(argc), intent(in) :: argv
+        integer(kind = int_wp), intent(out) :: errorcode
 
-      type(delwaq_data)                             :: dlwqd
+        type(delwaq_data) :: dlwqd
 
-      dlwqd%set_timer = .true.
+        dlwqd%set_timer = .true.
 
-      call dlwqmain(ACTION_FULLCOMPUTATION, argc, argv, dlwqd)
+        call dlwqmain(ACTION_FULLCOMPUTATION, argc, argv, dlwqd)
 
-      ! Delwaq2_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
-      ! Currently a return from the delwaq2_lib assumes a normal end.
-      errorcode = 0
+        ! Delwaq2_lib should never use a stop, but must be modified to return an error code instead (0 = normal end)
+        ! Currently a return from the delwaq2_lib assumes a normal end.
+        errorcode = 0
 
-   end subroutine delwaq2
+    end subroutine delwaq2
 end module m_delwaq2

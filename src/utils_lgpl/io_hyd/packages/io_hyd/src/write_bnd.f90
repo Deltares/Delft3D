@@ -33,12 +33,12 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamics
+      use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)                            :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
 
       ! local declarations
 
@@ -52,19 +52,19 @@
       real*8                                 :: y1                     ! y1
       real*8                                 :: x2                     ! x2
       real*8                                 :: y2                     ! y2
-      type(t_openbndsect), pointer           :: openbndsect            ! single section read
-      type(t_openbndlin), pointer            :: openbndlin             ! single open boundary lin
+      type(t_openbnd_section), pointer        :: openbndsect            ! single section read
+      type(t_open_boundary_line), pointer     :: openbndlin             ! single open boundary lin
 
-      call dlwqfile_open(hyd%file_bnd)
-      lunbnd = hyd%file_bnd%unit_nr
+      call hyd%file_bnd%open()
+      lunbnd = hyd%file_bnd%unit
 
-      no_sect = hyd%openbndsect_coll%cursize
+      no_sect = hyd%openbndsect_coll%current_size
       write(lunbnd, '(i8)') no_sect                   ! Nr of open boundary sections.
 
       do i_sect = 1, no_sect
 
           openbndsect => hyd%openbndsect_coll%openbndsect_pnts(i_sect)
-          no_bnd = openbndsect%openbndlin_coll%cursize
+          no_bnd = openbndsect%openbndlin_coll%current_size
 
           write(lunbnd, '(a)')  trim(openbndsect%name)              ! Section name
           write(lunbnd, '(i8)') no_bnd                              ! Nr of lins in section

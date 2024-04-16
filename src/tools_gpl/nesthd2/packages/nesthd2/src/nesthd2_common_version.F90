@@ -27,7 +27,7 @@ module nesthd2_version_module
 !-------------------------------------------------------------------------------
 !  
 !  
-#INCLUDE "version_definition.h"
+#include "version_definition.h"
 
 implicit none
 

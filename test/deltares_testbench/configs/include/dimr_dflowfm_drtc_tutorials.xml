@@ -3,7 +3,7 @@
     -->
     <testCases>
         <testCase name="e105_f02_c01_simple_control_flow" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f02_tutorials/c01_simple_control_flow</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f02_tutorials/c01_simple_control_flow</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -17,7 +17,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f02_c02_multiple_controlled_parameters" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f02_tutorials/c02_multiple_controlled_parameters</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f02_tutorials/c02_multiple_controlled_parameters</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -31,7 +31,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f02_c03_multiple_controlled_structures" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f02_tutorials/c03_multiple_controlled_structures</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f02_tutorials/c03_multiple_controlled_structures</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="NETCDF">
                     <parameters>

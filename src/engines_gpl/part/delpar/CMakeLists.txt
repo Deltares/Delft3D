@@ -1,6 +1,5 @@
 set(executable_name delpar)
 
-
 set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq)
 set(waq_version_path ${waq_root_path}/resources/version)
 set(rc_version_file ${waq_version_path}/version_number_delpar.rc)
@@ -30,7 +29,6 @@ endif(UNIX)
 
 if(WIN32)
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
         PRIVATE
         "${checkout_src_root}/third_party_open/pthreads/bin/x64")
@@ -39,7 +37,6 @@ if(WIN32)
         "pthreadVC2.lib")
 
     # Set linker options
-    message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
@@ -49,20 +46,8 @@ set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/part)
 
 if(WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target(${executable_name}
-    ${install_dir}
-    ${build_dir}
-    ${checkout_src_root}
-    ${executable_name})
-
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
-
-if(UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_dpart.sh DESTINATION bin)
-endif(UNIX)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_dpart.${platform_extension} DESTINATION bin)

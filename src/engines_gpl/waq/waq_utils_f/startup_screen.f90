@@ -42,12 +42,12 @@ contains
         ! local declarations
         save
 
-        character*20  run_date_time
-        character*120 version_string
+        character(len=20)  run_date_time
+        character(len=120) version_string
         logical       first
         integer(kind = int_wp) :: i, j
         save          first
-        character*75  startup_screen_text(8)
+        character(len=75)  startup_screen_text(8)
 
         data     first /.true./
         data     startup_screen_text  / &

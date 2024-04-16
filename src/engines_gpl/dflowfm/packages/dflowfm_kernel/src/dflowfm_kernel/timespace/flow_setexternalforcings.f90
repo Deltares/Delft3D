@@ -63,7 +63,6 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
    use m_nearfield,            only : nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity,           only : get_airdensity
    use dfm_error
-   use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
    use m_lateral, only : numlatsg
 
    double precision, intent(in   ) :: time_in_seconds  !< Time in seconds
@@ -91,17 +90,14 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    success = .true.
 
-   if (ja_icecover == ICECOVER_EXT) then
-       ice_af = 0.d0
-       ice_h  = 0.d0
-   endif
-
    if (allocated(patm)) then
       ! To prevent any pressure jumps at the boundary, set (initial) patm in interior to PavBnd.
       ! May of course be overridden later by spatially varying patm values.
       patm = PavBnd
    end if
 
+   call retrieve_icecover()
+   
    if (ja_airdensity > 0) then
       call get_timespace_value_by_item_array_consider_success_value(item_airdensity, airdensity)
    end if
@@ -132,7 +128,6 @@ subroutine set_external_forcings(time_in_seconds, initialization, iresult)
 
    call set_wave_parameters()
 
-   call retrieve_icecover()
    call retrieve_rainfall()
 
    if (ncdamsg > 0) then
@@ -557,8 +552,11 @@ end function convert_wave_direction_from_nautical_to_cartesian
 
 !> retrieve icecover
 subroutine retrieve_icecover()
+   use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
 
    if (ja_icecover == ICECOVER_EXT) then
+      ice_af = 0.d0
+      ice_h  = 0.d0
       if (item_sea_ice_area_fraction /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction)
       endif

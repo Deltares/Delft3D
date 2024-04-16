@@ -27,7 +27,7 @@ module deltares_common_version_module
 !-------------------------------------------------------------------------------
 !  
 !  
-#INCLUDE "version_definition.h"
+#include "version_definition.h"
 
 
 implicit none

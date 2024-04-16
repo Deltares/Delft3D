@@ -29,10 +29,10 @@
 
       subroutine write_hyd_step(hyd, itime)
 
-      use hydmod
+      use m_hydmod
       implicit none
 
-      type(t_hyd)         :: hyd           ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd           ! description of the hydrodynamics
       integer             :: itime         ! relative time in file
 
       ! local

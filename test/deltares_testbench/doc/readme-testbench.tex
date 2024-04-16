@@ -117,14 +117,14 @@
 \newcommand\B{\rule[-1.2ex]{0pt}{0pt}} % Bottom strut
 
 \begin{document}
-\memoVersion{0.1}
+\memoVersion{0.2}
 \memoTo{Deltares Testbench users}
 \memoConfidentialUntil{}
 \memoFrom{Dev-Ops}
 \memoSubject{User documentation DSCTestbench}
 \memoDate {\today}
-\memoTelephone{\phantom{m} +31\,(0)88\,335\,8568 }
-\memoEmail{\phantom{m} black-ops@deltares.nl}
+\memoTelephone{}
+\memoEmail{black-ops@deltares.nl}
 \memoCopy{---}
 
 \deltarestitle
@@ -207,7 +207,7 @@ The next step is to setup a python virtual environment. Using a virtual environm
 
 Once this is successfully completed we go to visual studio code and open the commands (ctrl + shift + p). Now select the python venv executable in the list that appears after you execute the command: \command{> Python: Select Interpreter} If it doesn't appear in the list you can manually set the path to the python.exe within the virtual enviroment you created: \dir{c:/users/<username>/virtualenvs/testbenchenv/Scripts/python.exe}.
 
-\Note a common issue is "Activate.ps1 is not digitally signed. You cannot run this script on the current system." Look here on how to troubleshoot: \autoref{sec:troubleshooting}
+\Note A common issue is: "Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system." For troubleshooting steps, refer to \autoref{sec:troubleshooting}
 
 Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r requirements.txt} from within the deltares\_testbench folder.
 
@@ -394,34 +394,52 @@ A comparison run does 2 things:
 \end{itemize}
 
 \newpage
-\section{developers}
+\section{Developers}
 This section focuses on updating and maintaining the testbench. These things are:
 \begin{itemize}
-\item{MinIO} and specifically the maintaining of the object repository by updating/adding references and cases.
-\item{XML configurations} the layout description, tags, attributes and also maintaining the correct link between the cases and references.
-\item{Teamcity} how to setup build configurations for running the testbench and getting the appropriate output and results.
+\item{MinIO.} Specifically maintenance of the object repository by updating/adding references and cases.
+\item{XML configurations,} the layout description, tags, attributes and also maintaining the correct link between the cases and references.
+\item{Teamcity:} how to setup build configurations for running the testbench and getting the appropriate output and results.
 \end{itemize}
 \subsection{Testcase storage}
 The testbench runs a case by using input data stored by MinIO. MinIO can be accessed with an interface by going to \url{https://s3-console.deltares.nl/}. The bucket for testcases and references is located under \dir{dsc-testbench}. The layout is described here: \autoref{fig:miniorepo}.
+
+\subsubsection{Creating a MinIO access key}
+To download from MinIO using the testbench, you need to create an access key. The MinIO API only accepts access keys for login, your normal (AD) credentials won’t work.
+In the console, there is a tab for access keys \autoref{fig:minioaccess}, or you can directly open the page using this link: link:\url{https://s3-console.deltares.nl/access-keys}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{pictures/minio_access_key.png}
+\caption{The MinIO access tab. \label{fig:minioaccess}}
+\end{figure}
+From this page, we can create a new key. Press the \command{Create access key +}. This will open a new window; name, command, and description are optional.
+When you press "Create," a popup will appear showing your access key and secret key (see \autoref{fig:minioaccesscreate}). Store these somewhere safe. e.g. in a password database like Keepass.
+\newline\textcolor{red}{This is the last time your secret key will be shown. If you lose it, you will need to create a new key.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{pictures/MinIO_access_key_create.png}
+\caption{The MinIO popup for creation of the key. \label{fig:minioaccesscreate}}
+\end{figure}
+Use the access key as your username and the secret key as your password to download cases from the MinIO api.
 
 \subsubsection{Updating or adding a case/reference}
 \label{sssec:uploadtominio}
 By going to the MinIO interface you can upload a new testcase or references.
 \begin{itemize}
-\item{open the website} and relevent folder to update or place new files under.
-\item{upload} press the upload button: and choose either file or folder depending on what you want to update. \autoref{fig:minioupload}
+\item{Open the MinIO website} and relevant folder to update or place new files under.
+\item{} press the upload button: and choose either file or folder depending on what you want to update. \autoref{fig:minioupload}
 \item{update} the configuration version by using the rewind time on your updated/new files.
 \end{itemize}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{pictures/minio_upload.png}
-\caption{Upload files to minio. \label{fig:minioupload}}
+\caption{Upload files to MinIO. \label{fig:minioupload}}
 \end{figure}
 
 \subsubsection{Adding a rewind to a test configuration}
 \label{sssec:minioversion}
-The MinIO rewind feature works by grabbing the most recent change before the specified rewind date. What we need to check is last modified and use that timestamp with a few seconds to get our correct object(s) \autoref{fig:miniolast}. This date can then be updated in the xml configuration of which the step is described here: \autoref{ssec:minioxmlversion}
+The MinIO rewind feature works by grabbing the most recent change before the specified rewind date. The relevant timestamp for an object can be found in the MinIO console \autoref{fig:miniolast}. This date can then be updated in the xml configuration. This step is described here: \autoref{ssec:minioxmlversion}
 
 \begin{figure}[H]
 \centering
@@ -706,7 +724,7 @@ After updating a reference or testcase in MinIO the xml configuration for this t
 \begin{itemize}
 \item{update} reference and case data by following these steps: \autoref{sssec:uploadtominio}.
 \item{timestamp:} get the last modified timestamp from MinIO, described here: \autoref{sssec:minioversion}.
-\item{format} the timestamp to be used within the xml configuration. In the example picture \autoref{fig:miniolast} the last modified dat is Wed, Jan 10 2024 12:45 (GMT+1). This needs to be formatted to fit YYYY.MM.DDTHH:MM using this definition we get: 2024.01.10T12:45. MinIO rewind grabs the most recent modified from before the timestamp we provide it.
+\item{format} the timestamp to be used within the xml configuration. In the example picture \autoref{fig:miniolast} the last modified date is Wed, Jan 10 2024 12:45 (GMT+1). This needs to be formatted to fit YYYY.MM.DDTHH:MM. Using this definition we get: 2024.01.10T12:45. MinIO rewind grabs the most recent modified from before the timestamp we've provided.
 \item{apply} this timestamp to the xml configuration for the specific testcase example:
 \end{itemize}
 \begin{lstlisting}[language=XML]
@@ -816,13 +834,13 @@ The testbench accepts various parameters, most of which can be viewed in the exa
 \end{longtable}
 \subsection{teamcity}
 Running the testbench on teamcity is quite easy. To run it python needs to be installed on the agent and then you execute it with a command and the appropriate arguments.
-To get correct teamcity logging in a way that teamcity understand which test we run and what the results, use the argument \command{-{}-teamcity}. Credentials need to be passed to access the object repository within teamcity, that is then passed with \command{-{}-username <username>} and \command{-{}-password <password>}.
+TeamCity uses a specific format to recongize and parse logging output. Activating this formatting for the testbench can be done by using an argument, with running the testbench: \command{-{}-teamcity}. Credentials need to be passed to access the object repository within teamcity, that is then passed with \command{-{}-username <username>} and \command{-{}-password <password>}.
 \section{troubleshooting}
 \label{sec:troubleshooting}
 Common problems and their solutions:
 \begin{description}
-\item[Credentials missing] To download testcase and reference data from MinIO credentials need to be passed on the command line. The error can mean two things either you didn't provide the credentials or they are incorrect. Make sure your credentials are correct and you have access to view the dsc-testbench bucket.
-\item[Activate.ps1 is not digitally signed] If the activate command for the python virtual enviroment generates the message "Activate.ps1 is not digitally signed. You cannot run this script on the current system.", then you need to temporarily change the PowerShell execution policy to allow scripts to run: \command{Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process}
+\item[Credentials missing] To download testcase and reference data from MinIO, credentials need to be passed on the command line. The error can mean two things: either you didn't provide the credentials, or they are incorrect. Make sure that your credentials are correct and that you have access to view the dsc-testbench bucket.
+\item["Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system."] If the activate command for the Python virtual environment generates an error indicating that you are not allowed to execute a script, you need to change the PowerShell execution policy to allow scripts to run. To do this, open PowerShell as an administrator and execute the following command: \command{Set-ExecutionPolicy -ExecutionPolicy RemoteSigned}
 \item[Issues running configuration] You can validate your xml with the validation schema within \dir{configs/xsd/deltaresTestbench.xsd}.
 \item[File missing log message] If a result file is missing the most common cause is that your engine didn't execute the testcase. Troubleshooting starts with logs in the testcase folder.
 \end{description}

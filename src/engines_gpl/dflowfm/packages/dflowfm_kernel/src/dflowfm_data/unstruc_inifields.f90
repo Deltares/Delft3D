@@ -798,8 +798,8 @@ function init1dField(filename, inifieldfilename, quant, specified_indices, globa
             numLocations = 0
          end if
 
+         call realloc(chainage, numLocations, keepExisting = .false.)
          if (numLocations > 0) then
-            call realloc(chainage, numLocations, keepExisting = .false.)
             call prop_get_doubles(node_ptr, '', 'chainage', chainage, numLocations, retVal)
             if (.not. retVal) then
                numerr = numerr + 1
@@ -960,7 +960,7 @@ subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
 end subroutine averagingTypeStringToInteger
 
 
-!> Initialize the values based on the given sample values
+!> Interpolate 1D spatial initial fields, from input samples to flow state arrays.
 !! The method is:
 !! 1) When one sample value is given:
 !!    if it is from a [Global] block, then this value will be set on all branches.
@@ -979,7 +979,7 @@ subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res, modified_
    use m_network
    use m_inquire_flowgeom
    use unstruc_channel_flow
-   use m_flowgeom, only: ndxi
+   use m_flowgeom, only: ndxi, ndx2d
    use m_flowparameters, only: eps10
    use precision_basics
    use m_hash_search
@@ -990,7 +990,7 @@ subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res, modified_
    double precision,     intent(in   ) :: sChainages(:)          !< Sample chainages
    double precision,     intent(in   ) :: sValues(:)             !< Sample values
    integer,              intent(in   ) :: ipos                   !< position: 1= u point location, 2= 1d flownode(netnode) location
-   double precision,     intent(inout) :: res(:)                 !< result
+   double precision,     intent(inout) :: res(:)                 !< Flow state array into which the interpolated values will be stored. Should be only the 1D slice (especially in the case of ipos==2, flow nodes).
    logical(kind=c_bool), intent(inout) :: modified_elements(:)   !< true for every index for which res was set
 
    integer                       :: nbrstart, nbrend, ibr, k, j, i, ierr, ipre, ns, ncount
@@ -1015,7 +1015,7 @@ subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res, modified_
             if (ipos == 1) then
                k = pbr%lin(i)
             else if (ipos == 2) then
-               k = pbr%grd(i)
+               k = pbr%grd(i) - ndx2d
             end if
 
             res(k) = sValues(1)
@@ -1045,7 +1045,7 @@ subroutine spaceInit1dField(sBranchId, sChainages, sValues, ipos, res, modified_
             k = pbr%lin(j)
          else if (ipos == 2) then
             chai = pbr%gridPointsChainages(j)
-            k = pbr%grd(j)
+            k = pbr%grd(j)-ndx2d
          end if
          ! Constant value before the first data segment and after the last data segment.
          if (comparereal(chai, minsChai, eps10) <= 0) then

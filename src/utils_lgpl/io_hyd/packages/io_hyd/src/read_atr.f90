@@ -36,15 +36,15 @@
       use m_srstop
       use m_monsys
       use m_evaluate_waq_attribute
-      use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_waq_file                   ! module contains everything for the files
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_atr               ! aggregation-file
+      type(t_file)                       :: file_atr               ! aggregation-file
       integer                                :: atr_type               ! type of attribute information
       integer                                :: not_atr                ! total number of attributes
       integer                                :: noseg                  ! number of segments
@@ -83,12 +83,12 @@
 
       ! open file
 
-      call dlwqfile_open(file_atr)
+      call file_atr%open()
 
       ! check for the keyword DELWAQ_COMPLETE_ATTRIBUTES (on the first line!)
 
       atr_type = ATR_OLD
-      read(file_atr%unit_nr,'(a)') line
+      read(file_atr%unit,'(a)') line
       do i  = 1 , 256-25
          if ( line(i:i+25) .eq. 'DELWAQ_COMPLETE_ATTRIBUTES' ) then
             atr_type = ATR_COMPLETE
@@ -98,9 +98,9 @@
 
       ! rewind, and initialise tokenised reading
 
-      rewind(file_atr%unit_nr)
+      rewind(file_atr%unit)
       ilun    = 0
-      ilun(1) = file_atr%unit_nr
+      ilun(1) = file_atr%unit
       lch (1) = file_atr%name
       npos   = 1000
       cchar  = ';'
@@ -208,7 +208,7 @@
          call srstop(1)
       endif
 
-      close(file_atr%unit_nr)
+      close(file_atr%unit)
       file_atr%status = FILE_STAT_UNOPENED
 
       return

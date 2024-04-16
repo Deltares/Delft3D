@@ -1,37 +1,13 @@
 # Utils targets needed for D-Waq
 
-# Deltares_common
-if(NOT TARGET deltares_common)
-    add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
-endif()
-if(NOT TARGET deltares_common_c)
-    add_subdirectory(${checkout_src_root}/${deltares_common_c_module} deltares_common_c)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq_functions.cmake)
 
-if(NOT TARGET netcdff)
-    add_subdirectory(${checkout_src_root}/${netcdf_module} netcdff)
-endif()
-
-if(NOT TARGET io_netcdf)
-    add_subdirectory(${checkout_src_root}/${io_netcdf_module} io_netcdf)
-endif()
-
-if(NOT TARGET io_netcdf_data)
-    add_subdirectory(${checkout_src_root}/${io_netcdf_data_module} io_netcdf_data)
-endif()
-
-if(NOT TARGET gridgeom)
-    add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
-endif()
-
-if(NOT TARGET nefis)
-    add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
-endif()
-
-if(NOT TARGET io_hyd)
-    add_subdirectory(${checkout_src_root}/${io_hyd_module} io_hyd)
-endif()
-
-if(NOT TARGET waq_hyd_data)
-    add_subdirectory(${checkout_src_root}/${waq_hyd_data_module} waq_hyd_data)
-endif()
+add_target_with_subdirectory(deltares_common ${deltares_common_module})
+add_target_with_subdirectory(deltares_common_c ${deltares_common_c_module})
+add_target_with_subdirectory(netcdff ${netcdf_module})
+add_target_with_subdirectory(io_netcdf ${io_netcdf_module})
+add_target_with_subdirectory(io_netcdf_data ${io_netcdf_data_module})
+add_target_with_subdirectory(gridgeom ${gridgeom_module})
+add_target_with_subdirectory(nefis ${nefis_module})
+add_target_with_subdirectory(io_hyd ${io_hyd_module})
+add_target_with_subdirectory(waq_hyd_data ${waq_hyd_data_module})

@@ -142,15 +142,15 @@ switch cmd
                         if ibal>=0
                             if InOut(i)==1
                                 ibal=ibal+1;
-                                FluxLabels{i} = BalAreas{ibal};
-                            else
-                                FluxLabels{i} = BalAreas{ibal};
                             end
+                            FluxLabels{i} = BalAreas{ibal};
                         end
                         % Can't expand boundary names
                 end
             end
             %
+            % clean up the names of the names of the transport fluxes (also
+            % take care of the net transport option)
             if isequal(qp_option(FI,'nettransport'),1)
                 transin            = InOut ==  1;
                 transout           = InOut == -1;
@@ -170,6 +170,7 @@ switch cmd
                 end
             end
             %
+            % To keep the graph simpler remove all terms that don't really contribute
             NoContribution=all(Data==0,3);
             Data(NoContribution,:,:)=[];
             Labels(NoContribution)=[];
@@ -177,6 +178,10 @@ switch cmd
             hNew=balanceplot(Time,squeeze(Data)','parent',Parent,'color',Ops.colour);
             for i=1:length(Labels)
                 Labels{i}=strrep(Labels{i},'_','\_');
+            end
+            if isempty(Labels)
+                % all contributions are zero ... list Storage
+                Labels = {'Storage'};
             end
             legend(Parent,hNew(end-(0:length(Labels)-1)),Labels,'Location','SouthWest');
             %
@@ -1397,7 +1402,7 @@ icnst=strmatch('--constituents',{Out.Name});
 ii=0;
 FI = qp_option(FI,'balancefile','ifnew',0);
 FI = qp_option(FI,'showfractions','ifnew','subfield');
-minlen=20;
+var_name_length = 20;
 if ~isempty(icnst)
     [Out.BedLayer]=deal(0);
     [Out.ShortName]=deal('');
@@ -1413,32 +1418,69 @@ if ~isempty(icnst)
             names=strvcat(names{:});
         end
         if size(names,2)>7 && sum(names(:,7)=='_')>size(names,1)/2
-            minlen = 6;
-            nn1 = names(:,1:6);
-            nn2 = cellstr(names(:,8:end));
+            var_name_length = 6;
+            var_names = names(:,1:6);
+            prc_names = cellstr(names(:,8:end));
         elseif size(names,2)>11
-            minlen = 10;
-            nn1 = names(:,1:10);
-            nn2 = cellstr(names(:,11:end));
+            var_name_length = 10;
+            var_names = names(:,1:10);
+            prc_names = cellstr(names(:,11:end));
         else
-            nn1 = names;
-            nn2 = names(:,[]);
+            var_names = names;
+            prc_names = repmat({''},length(names),1);
         end
-        [names,dummy,index]=unique(nn1,'rows');
+        [names,dummy,index]=unique(var_names,'rows');
         names=cellstr(names);
         Ins=Out(icnst*ones(length(names),1));
-        for j=1:length(names)
-            sub = find(index==j);
-            Ins(j).Name=names{j};
-            Ins(j).Val1=sub(1);
+        jname = 0;
+        jIns = 0;
+        while jname < length(names)
+            jname = jname+1;
+            jIns = jIns+1;
+            sub = find(index==jname);
+            Ins(jIns).Name=names{jname};
+            Ins(jIns).Val1=sub(1);
             if length(sub)==1
                 % normal history
             else
-                % actual balance
-                %Ins(j).SubFld={sub nn2(sub)};
-                Ins(j).BalSubFld={sub nn2(sub)};
-                Ins(j).NVal=-1;
-                Ins(j).DimFlag(1)=0;
+                % set of balance terms
+                prc_names_sub = prc_names(sub);
+                is_storage = strcmp('Storage',prc_names_sub);
+                switch sum(is_storage)
+                    case 0
+                        % hmm ... no storage ... is this really a set of
+                        % balance terms? ... Let's do as if it is.
+                        Ins(jIns).BalSubFld={sub prc_names_sub};
+                        Ins(jIns).NVal=-1;
+                        Ins(jIns).DimFlag(1)=0;
+                    case 1
+                        % one storage, so the variable name matches only
+                        % one quantity in the simulation
+                        Ins(jIns).BalSubFld={sub prc_names_sub};
+                        Ins(jIns).NVal=-1;
+                        Ins(jIns).DimFlag(1)=0;
+                    otherwise
+                        % multiple storage matches ... probably the
+                        % abbrevated variable name matches multiple
+                        % quantities in the simulation, so let's break the
+                        % list into blocks each starting with storage.
+                        istorage = find(is_storage);
+                        for i = 1:length(istorage)
+                            if i<length(istorage)
+                                iprc = istorage(i):istorage(i+1)-1;
+                                Ins(jIns).BalSubFld={sub(iprc) prc_names_sub(iprc)};
+                                Ins(jIns).NVal=-1;
+                                Ins(jIns).DimFlag(1)=0;
+                                Ins = [Ins(1:jIns);Ins(jIns);Ins(jIns+1:end)];
+                                jIns = jIns+1;
+                            else
+                                iprc = istorage(i):length(sub);
+                                Ins(jIns).BalSubFld={sub(iprc) prc_names_sub(iprc)};
+                                Ins(jIns).NVal=-1;
+                                Ins(jIns).DimFlag(1)=0;
+                            end
+                        end
+                end
             end
         end
     else
@@ -1687,8 +1729,8 @@ if ~isempty(icnst)
     [sorted_names,reorder] = sort({Ins.Name}');
     Ins = Ins(reorder);
     %
-    names = cellstr(substdb);
-    onenames = names(wildstrmatch('*01',names));
+    names = substdb;
+    onenames = names(~cellfun(@isempty,regexp(names,'01$')));
     j=1;
     while j<=length(Ins)
         nm = Ins(j).Name;
@@ -1770,25 +1812,25 @@ if ~isempty(icnst)
             frac = sprintf(' fraction %s', Ins(j).ShortName(length(Ins(j).Name)+1:end));
         end
         if strncmp(Ins(j).Name,'DPTAVG_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['depth average of ' LN1];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         elseif strncmp(Ins(j).Name,'DPTMAX_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['maximum of ' LN1 ' over water depth'];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         elseif strncmp(Ins(j).Name,'DPTMIN_',7)
-            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,'minmatchlen',minlen-7);
+            [LN1,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name(8:end),mass_per,var_name_length-7);
             LN = ['minimum of ' LN1 ' over water depth'];
             if reducedptstatto2d
                 Ins(j).DimFlag(K_) = 0;
             end
         else
-            [LN,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,'minmatchlen',minlen);
+            [LN,Ins(j).Units,Ins(j).SubsGrp]=substdb(Ins(j).Name,mass_per,var_name_length);
         end
         switch shownames
             case 'expanded'
@@ -2118,10 +2160,13 @@ end
 % -----------------------------------------------------------------------------
 
 
-function [Full,Unit,GroupID]=substdb(Abb,cmd,varargin)
+function [Full,Unit,GroupID]=substdb(Abb,cmd,var_name_length)
 % substance database
 persistent x
-if nargin>=2
+if nargin<2
+    cmd = 'n/a'; % mass_per not specified as 2nd argument
+    var_name_length = inf;
+elseif nargin==2
     switch cmd
         case 'filename'
             if isempty(x)
@@ -2138,11 +2183,8 @@ if nargin>=2
             substdb;
             return
     end
-else
-    cmd = 'n/a'; % mass_per not specified as 2nd argument
+    var_name_length = inf;
 end
-%
-% nargin == 0 or 1
 %
 if isempty(x)
     ErrMsg='';
@@ -2198,7 +2240,7 @@ if isempty(x)
         isTransp=WK=='x';
         if Chk
             x=[];
-            x.ID=lower(ID);
+            x.ID=cellstr(ID);
             x.NM=NM;
             x.GRPID=GRPID;
             x.UNIT=UNIT;
@@ -2217,15 +2259,23 @@ if nargin==0
     if isstruct(x)
         Full=x.ID;
     else
-        Full='';
+        Full={};
     end
 else
     if isstruct(x)
-        db=ustrcmpi(lower(Abb),cellstr(x.ID),'casematch',4,varargin{:});
-        % much faster:
-        %db=strmatch(lower(Abb),x.ID,'exact');
-        %if isempty(db), db=-1; end
-        if db>0
+        if length(Abb) < var_name_length
+            % this must be a full variable name, search for an exact match
+            db = strcmpi(Abb,x.ID);
+        else % length equal to var_name_length
+            % not sure if this is the full name ... search for any match
+            db = strncmpi(Abb,x.ID,var_name_length);
+            if sum(db) > 1
+                % only one match allowed
+                db = 0;
+            end
+        end
+        if any(db)
+            db = find(db);
             Full=deblank(x.NM(db,:));
             if isequal(lower(Full),'undefined')
                 Full=Abb;
@@ -2262,6 +2312,9 @@ else
     else
         Full=Abb;
     end
+end
+if length(Full) == 1
+    Full = Full{1};
 end
 
 % -----------------------------------------------------------------------------

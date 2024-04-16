@@ -32,12 +32,12 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd     ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd     ! description of the hydrodynamics
       character(len=*)    :: name    ! base name hyd files
 
       ! local declarations
@@ -53,7 +53,7 @@
 
       ! determine the filetype for the binary data files
 
-      platform = dlwq_platform()
+      platform = which_operating_system()
       if ( platform .eq. fs_dos ) then
          ft_dat = ft_bin
       elseif ( platform .eq. fs_unx ) then

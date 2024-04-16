@@ -3,7 +3,7 @@
     -->
     <testCases>
         <testCase name="e102_f01_c01_model1" ref="dimr_trunk">
-            <path>e102_dflow1d-dflowfm-drtc/f01_general/c01_model1</path>
+            <path version="2024-01-12T07:40:00">e102_dflow1d-dflowfm-drtc/f01_general/c01_model1</path>
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                     <parameters>
@@ -19,7 +19,7 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e102_f01_c02_model2" ref="dimr_trunk">
-            <path>e102_dflow1d-dflowfm-drtc/f01_general/c02_model2</path>
+            <path version="2024-01-12T07:40:00">e102_dflow1d-dflowfm-drtc/f01_general/c02_model2</path>
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                     <parameters>

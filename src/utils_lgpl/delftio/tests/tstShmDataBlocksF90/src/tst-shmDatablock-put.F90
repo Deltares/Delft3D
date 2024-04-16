@@ -37,7 +37,7 @@ program test_put_shmds_f90
 
     do t = 1, nTimes
 #if (defined(WIN32))
-        call sleepqq(sleepSec)
+        call sleep(sleepSec)
 #else
         write(*,*) 'sleeping'
         call DIOSYNCcSLEEP(sleepSec)

@@ -80,7 +80,7 @@ contains
    use m_flowtimes, only : tstart_user
    use m_flowparameters, only : jambawritecsv, jambawritetxt, jambawritenetcdf
    use m_flowgeom, only : Lnxi, ln, lne2ln
-   use unstruc_model, only : md_ident, md_ident_sequential, getoutputdir
+   use unstruc_model, only : md_ident, md_ident_sequential
    use m_flowexternalforcings
    use m_sediment, only : jased
    use m_fm_erosed, only : lsedtot, lsed, stmpar

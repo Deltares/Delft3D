@@ -264,7 +264,8 @@ type t_unc_mapids
    integer :: id_viu(MAX_ID_VAR)      = -1 !< Variable ID for horizontal eddy viscosity
    integer :: id_diu(MAX_ID_VAR)      = -1 !< Variable ID for horizontal eddy diffusivity
    integer :: id_ww1(MAX_ID_VAR)      = -1 !< Variable ID for
-   integer :: id_rho(MAX_ID_VAR)      = -1 !< Variable ID for
+   integer :: id_rho(MAX_ID_VAR)      = -1 !< Variable ID for density of water
+   integer :: id_rhop(MAX_ID_VAR)     = -1 !< Variable ID for potential density of water
    integer :: id_sa1(MAX_ID_VAR)      = -1 !< Variable ID for
    integer :: id_tem1(MAX_ID_VAR)     = -1 !< Variable ID for
    integer :: id_nrfld(MAX_ID_VAR)    = -1 !< Variable ID for
@@ -390,9 +391,9 @@ type t_unc_mapids
    integer :: id_nudge_Dsal(MAX_ID_VAR)  = -1 ! difference of nudging salinity with salinity
    integer :: id_nudge_Dtem(MAX_ID_VAR)  = -1 ! difference of nudging temperature with temperature
 !vegetation
-	integer :: id_rnveg(MAX_ID_VAR)       = -1 !< Variable ID for vegetation stem density
-	integer :: id_diaveg(MAX_ID_VAR)      = -1 !< Variable ID for vegetation stem diameter
-	integer :: id_veg_stemheight(MAX_ID_VAR) = -1 !< Variable ID for vegetation stem height
+   integer :: id_rnveg(MAX_ID_VAR)       = -1 !< Variable ID for vegetation stem density
+   integer :: id_diaveg(MAX_ID_VAR)      = -1 !< Variable ID for vegetation stem diameter
+   integer :: id_veg_stemheight(MAX_ID_VAR) = -1 !< Variable ID for vegetation stem height
 ! particles
    integer :: id_depth_averaged_particle_concentration(MAX_ID_VAR) = -1  ! depth-averaged particle concentration
 ! for parallel
@@ -620,23 +621,11 @@ end subroutine unc_set_ncformat
 
 !> Sets the default NetCDF compression setting (only applied when ncformat = NetCDF 4)
 subroutine unc_set_nccompress(md_nccompress)
-   use dfm_error
-   character(len=*), intent(in) :: md_nccompress      !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
-   
-   if (md_nccompress == 'on' ) then
-      ! Compression applied
-      unc_nccompress = .true.
-      ! Safety - netcdf format must be set to NetCDF4 for this to work
-      if (unc_cmode /= nf90_netcdf4) then
-         call mess(LEVEL_ERROR, 'NetCDF compression (deflation) is a NetCDF4 feature; make sure NcFormat is set to 4!')
-      end if
-   elseif (md_nccompress == 'off') then
-      ! No compression applied
-      unc_nccompress = .false.
-   else
-      call mess(LEVEL_ERROR, 'Did not recognise NcCompression value "' // trim( md_nccompress) // '"; must be "on" or "off"!')
-   end if
-   
+   logical, intent(in) :: md_nccompress !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
+   if (md_nccompress .and. unc_cmode /= nf90_netcdf4) then
+      call mess(LEVEL_ERROR, 'NetCDF compression (deflation) is a NetCDF4 feature; make sure NcFormat is set to 4.')
+   endif
+   unc_nccompress = md_nccompress
 end subroutine unc_set_nccompress
 
 
@@ -3028,10 +3017,15 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_orifgen_crestl, id_orifgen_edgel, id_orifgen_openw, id_orifgen_fu, id_orifgen_ru, id_orifgen_au, id_orifgen_crestw, &
         id_orifgen_area, id_orifgen_linkw, id_orifgen_state, id_orifgen_sOnCrest, &
         id_pump_cap, id_pump_ssTrigger, id_pump_dsTrigger, &
-        id_hysteresis, id_flowelemxcc, id_flowelemycc
+        id_hysteresis, id_flowelemxcc, id_flowelemycc, &
+        id_spirint, id_hu, &
+        id_ucxq, id_ucyq, &
+        id_ucxqbnd, id_ucyqbnd, &
+        id_fvcoro
 
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
+    integer, allocatable, save :: id_sf1_bnd(:)
 
     integer :: i, itim, k, kb, kt, kk, LL, Lb, iconst, L, j, nv, nv1, nm, ndxbnd, nlayb, nrlay, LTX, nlaybL, nrlaylx, maxNumLinks, numLinks, L0, nlen, istru, maxNumStages, numStages, nfuru
     double precision :: svthick
@@ -3044,6 +3038,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     integer, allocatable, dimension(:)   :: kn1write, kn2write
     double precision, allocatable, dimension(:)   :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
     double precision, allocatable, dimension(:)   :: tmp_squ, tmp_sqi
+    double precision, allocatable, dimension(:)   :: tmp_ucxq, tmp_ucyq
 
     character(len=8) :: numformat
     character(len=2) :: numtrastr, numsedfracstr
@@ -3090,6 +3085,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
              call realloc(tmp_bl, ndxbnd, stat=ierr, keepExisting=.false.)
              call realloc(tmp_squ, ndxbnd, stat=ierr, keepExisting=.false.)
              call realloc(tmp_sqi, ndxbnd, stat=ierr, keepExisting=.false.)
+             call realloc(tmp_ucxq, ndxbnd, stat=ierr, keepExisting=.false.)
+             call realloc(tmp_ucyq, ndxbnd, stat=ierr, keepExisting=.false.)
              if (kmx == 0) then
                 call realloc(tmp_sa1, ndxbnd, stat=ierr, keepExisting=.false.)
                 call realloc(tmp_tem1, ndxbnd, stat=ierr, keepExisting=.false.)
@@ -3228,6 +3225,18 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_u0   ,'units'        , 'm s-1')
        ierr = nf90_put_att(irstfile, id_u0   ,'coordinates'  , 'FlowLink_xu FlowLink_yu')
 
+       ! Definition and attributes of flow data on edges: cell center velocity, q based  global x-dir (m/s)
+       ierr = nf90_def_var(irstfile, 'ucxq'  , nf90_double, (/ id_laydim, id_flowelemdim, id_timedim /) , id_ucxq)
+       ierr = nf90_put_att(irstfile, id_ucxq ,'long_name',     'q-based cell center velocity, x-dir')
+       ierr = nf90_put_att(irstfile, id_ucxq ,'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucxq ,'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+       
+       ! Definition and attributes of flow data on edges: cell center velocity, q based  global y-dir (m/s)
+       ierr = nf90_def_var(irstfile, 'ucyq'  , nf90_double, (/ id_laydim, id_flowelemdim, id_timedim /) , id_ucyq)
+       ierr = nf90_put_att(irstfile, id_ucyq ,'long_name',     'q-based cell center velocity, y-dir')
+       ierr = nf90_put_att(irstfile, id_ucyq ,'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucyq ,'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+
        ! Definition and attributes of flow data on edges: discharge
        ierr = nf90_def_var(irstfile, 'q1'    , nf90_double, (/ id_laydim, id_flowlinkdim, id_timedim /) , id_q1)
        ierr = nf90_put_att(irstfile, id_q1   ,'standard_name', 'discharge')
@@ -3304,6 +3313,20 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_squ,  'long_name'    , 'cell center outcoming flux')
        ierr = nf90_put_att(irstfile, id_squ,  'units'        , 'm3 s-1')
 
+       ! Flow depth at links
+       ierr = nf90_def_var(irstfile, 'hu', nf90_double,   (/ id_wdim, id_flowlinkdim, id_timedim /)  , id_hu)
+       ierr = nf90_put_att(irstfile, id_hu,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
+       ierr = nf90_put_att(irstfile, id_hu,  'long_name'    , 'flow depth at link')
+       ierr = nf90_put_att(irstfile, id_hu,  'units'        , 'm')
+
+       ! Coriolis
+       if (Corioadamsbashfordfac > 0d0) then
+       ierr = nf90_def_var(irstfile, 'fvcoro', nf90_double,   (/ id_wdim, id_flowlinkdim, id_timedim /)  , id_fvcoro)
+       ierr = nf90_put_att(irstfile, id_fvcoro,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
+       ierr = nf90_put_att(irstfile, id_fvcoro,  'long_name'    , 'Coriolis term Adams-Bashford')
+       ierr = nf90_put_att(irstfile, id_fvcoro,  'units'        , 'm s-2')
+       endif
+
        if ( iturbulencemodel >= 3 ) then
           ! Definition and attributes of vertical eddy viscosity vicwwu
           ierr = nf90_def_var(irstfile, 'vicwwu' , nf90_double, (/ id_wdim, id_flowlinkdim, id_timedim /) , id_vicwwu)
@@ -3371,6 +3394,18 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_u0   ,'units'        , 'm s-1')
        ierr = nf90_put_att(irstfile, id_u0   ,'coordinates'  , 'FlowLink_xu FlowLink_yu')
 
+       ! Definition and attributes of flow data on edges: cell center velocity, q based  global x-dir (m/s)
+       ierr = nf90_def_var(irstfile, 'ucxq'  , nf90_double, (/ id_flowelemdim, id_timedim /) , id_ucxq)
+       ierr = nf90_put_att(irstfile, id_ucxq ,'long_name',     'q-based cell center velocity, x-dir')
+       ierr = nf90_put_att(irstfile, id_ucxq ,'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucxq ,'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+       
+       ! Definition and attributes of flow data on edges: cell center velocity, q based  global y-dir (m/s)
+       ierr = nf90_def_var(irstfile, 'ucyq'  , nf90_double, (/ id_flowelemdim, id_timedim /) , id_ucyq)
+       ierr = nf90_put_att(irstfile, id_ucyq ,'long_name',     'q-based cell center velocity, y-dir')
+       ierr = nf90_put_att(irstfile, id_ucyq ,'units'        , 'm s-1')
+       ierr = nf90_put_att(irstfile, id_ucyq ,'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+       
        ! Definition and attributes of flow data on edges: velocity magnitude at previous timestep
        ierr = nf90_def_var(irstfile, 'q1'    , nf90_double, (/ id_flowlinkdim, id_timedim /) , id_q1)
        ierr = nf90_put_att(irstfile, id_q1   ,'standard_name', 'discharge')
@@ -3395,6 +3430,20 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_sqi,  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
        ierr = nf90_put_att(irstfile, id_sqi,  'long_name'    , 'cell center incoming flux')
        ierr = nf90_put_att(irstfile, id_sqi,  'units'        , 'm3 s-1')
+
+       ! Flow depth at links
+       ierr = nf90_def_var(irstfile, 'hu', nf90_double,   (/ id_flowlinkdim, id_timedim /)  , id_hu)
+       ierr = nf90_put_att(irstfile, id_hu,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
+       ierr = nf90_put_att(irstfile, id_hu,  'long_name'    , 'flow depth at link')
+       ierr = nf90_put_att(irstfile, id_hu,  'units'        , 'm')
+
+       if (Corioadamsbashfordfac > 0d0) then
+           ierr = nf90_def_var(irstfile, 'fvcoro',nf90_double,(/ id_flowlinkdim, id_timedim /)  , id_fvcoro)
+           ierr = nf90_put_att(irstfile, id_fvcoro,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
+           ierr = nf90_put_att(irstfile, id_fvcoro,  'long_name'    , 'Coriolis term Adams-Bashford')
+           ierr = nf90_put_att(irstfile, id_fvcoro,  'units'        , 'm s-2')
+       endif
+
     endif
 
     !fixed weirs data
@@ -3509,25 +3558,12 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_def_dim(irstfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim)
        !
        if (stmpar%lsedsus .gt. 0) then
-          if (.not.allocated(id_sf1)) then
-             allocate(id_sf1(stmpar%lsedsus))
-          endif
-          do i=ISED1,ISEDN
-             j = i-ISED1+1
-             tmpstr = const_names(i)
-             ! Forbidden chars in NetCDF names: space, /, and more.
-             call replace_char(tmpstr,32,95)
-             call replace_char(tmpstr,47,95)
-             if (kmx > 0) then
-                ierr = nf90_def_var(irstfile, trim(tmpstr), nf90_double, (/ id_laydim, id_flowelemdim , id_timedim /), id_sf1(j))
-             else
-                ierr = nf90_def_var(irstfile, trim(tmpstr), nf90_double, (/ id_flowelemdim , id_timedim /), id_sf1(j))
-             endif
-             ierr = nf90_put_att(irstfile, id_sf1(j),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
-             ierr = nf90_put_att(irstfile, id_sf1(j),  'standard_name', trim(tmpstr)//' mass concentration')
-             ierr = nf90_put_att(irstfile, id_sf1(j),  'long_name'    , trim(tmpstr)//' mass concentration')
-             ierr = nf90_put_att(irstfile, id_sf1(j),  'units'        , 'kg m-3')
-          enddo
+          ! Fill internal cells
+          call add_att_sediment(id_sf1,stmpar%lsedsus,id_laydim,id_flowelemdim,id_timedim,irstfile,'','FlowElem_xcc FlowElem_ycc')
+          ! Fill boundary cells
+          if (jarstbnd > 0 .and. ndxbnd > 0) then
+             call add_att_sediment(id_sf1_bnd,stmpar%lsedsus,id_laydim,id_bnddim,id_timedim,irstfile,'_bnd','FlowElem_xbnd FlowElem_ybnd')
+          endif 
       endif
       !
       ierr = nf90_def_var(irstfile, 'mor_bl',  nf90_double, (/ id_flowelemdim , id_timedim /) , id_morbl)
@@ -3753,6 +3789,13 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_flowlinkyu, 'long_name'    , 'y-coordinate of flow link center (velocity point)')
     endif
 
+    ! Secondary flow
+    if (jasecflow > 0) then
+        ierr = nf90_def_var(irstfile, 'spirint',  nf90_double, (/ id_flowelemdim, id_timedim /) , id_spirint)
+        ierr = nf90_put_att(irstfile, id_spirint,   'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+        ierr = nf90_put_att(irstfile, id_spirint,   'long_name'    , 'Spiral flow intensity')
+        ierr = nf90_put_att(irstfile, id_spirint,   'units'        , 'm/s')
+    endif
 
     ! The following variables will be used to merge the rst files, therefore, they are written only in parallel run
     if ( jampi.eq.1 ) then
@@ -3821,6 +3864,16 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_att(irstfile, id_squbnd,  'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
        ierr = nf90_put_att(irstfile, id_squbnd,  'long_name'    , 'cell center outcoming flux at boundaries')
        ierr = nf90_put_att(irstfile, id_squbnd,  'units'        , 'm3 s-1')
+
+       ierr = nf90_def_var(irstfile, 'ucxq_bnd', nf90_double, (/ id_bnddim, id_timedim/) , id_ucxqbnd)
+       ierr = nf90_put_att(irstfile, id_ucxqbnd,  'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
+       ierr = nf90_put_att(irstfile, id_ucxqbnd,  'long_name'    , 'q-based cell center velocity, x-dir at boundaries')
+       ierr = nf90_put_att(irstfile, id_ucxqbnd,  'units'        , 'm s-1')
+
+       ierr = nf90_def_var(irstfile, 'ucyq_bnd', nf90_double, (/ id_bnddim, id_timedim/) , id_ucyqbnd)
+       ierr = nf90_put_att(irstfile, id_ucyqbnd,  'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
+       ierr = nf90_put_att(irstfile, id_ucyqbnd,  'long_name'    , 'q-based cell center velocity, y-dir at boundaries')
+       ierr = nf90_put_att(irstfile, id_ucyqbnd,  'units'        , 'm s-1')
     endif
 
     ! Write structure info.
@@ -4167,8 +4220,12 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     if (jamaptaucurrent > 0) then
         ierr = nf90_put_var(irstfile, id_taus, taus,  (/ 1, itim /), (/ ndxi, 1 /))
     endif
-    if ( jamap_chezy_elements > 0 ) then
+    if (jamap_chezy_elements > 0 ) then
         ierr = nf90_put_var(irstfile, id_czs, czs,  (/ 1, itim /), (/ ndxi, 1 /))
+    endif
+
+    if (jasecflow > 0) then
+        ierr = nf90_put_var(irstfile, id_spirint, spirint, (/ 1, itim /), (/ ndxi, 1 /))
     endif
 
     ! Write the data: velocities (components and magnitudes)
@@ -4220,6 +4277,26 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        enddo
        ierr = nf90_put_var(irstfile, id_ucz, work1(1:kmx,1:ndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxi, 1 /))
 
+       work1 = dmiss
+       do kk=1,ndxi
+          call getkbotktop(kk,kb,kt)
+          call getlayerindices(kk, nlayb, nrlay)
+          do k = kb,kt
+             work1(k-kb+nlayb,kk) = ucxq(k)
+          enddo
+       enddo
+       ierr = nf90_put_var(irstfile, id_ucxq, work1(1:kmx,1:ndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxi, 1 /))
+
+       work1 = dmiss
+       do kk=1,ndxi
+          call getkbotktop(kk,kb,kt)
+          call getlayerindices(kk, nlayb, nrlay)
+          do k = kb,kt
+             work1(k-kb+nlayb,kk) = ucyq(k)
+          enddo
+       enddo
+       ierr = nf90_put_var(irstfile, id_ucyq, work1(1:kmx,1:ndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxi, 1 /))
+
        work0 = dmiss
        do kk=1,ndxi
          call getkbotktop(kk,kb,kt)
@@ -4259,6 +4336,28 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
           enddo
        enddo
        ierr = nf90_put_var(irstfile, id_q1   , work1(1:kmx,1:lnx), start=(/ 1, 1, itim /), count=(/ kmx, lnx, 1 /))
+
+       work1 = dmiss
+       do LL=1,lnx
+          call getLbotLtopmax(LL,Lb,Ltx)
+          call getlayerindicesLmax(LL, nlaybL, nrlayLx)
+          do L = Lb,Ltx
+             work1(L-Lb+nlaybL,LL) = hu(L)
+          enddo
+       enddo
+       ierr = nf90_put_var(irstfile, id_hu   , work1(1:kmx,1:lnx), start=(/ 1, 1, itim /), count=(/ kmx, lnx, 1 /))
+
+       if (Corioadamsbashfordfac > 0d0) then
+       work1 = dmiss
+       do LL=1,lnx
+          call getLbotLtopmax(LL,Lb,Ltx)
+          call getlayerindicesLmax(LL, nlaybL, nrlayLx)
+          do L = Lb,Ltx
+             work1(L-Lb+nlaybL,LL) = fvcoro(L)
+          enddo
+       enddo
+       ierr = nf90_put_var(irstfile, id_fvcoro   , work1(1:kmx,1:lnx), start=(/ 1, 1, itim /), count=(/ kmx, lnx, 1 /))
+       endif
 
        ! write averaged u1
        ierr = nf90_put_var(irstfile, id_unorma, u1(1:lnx), start=(/ 1, itim /), count=(/ lnx, 1 /))
@@ -4344,14 +4443,20 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         ierr = nf90_put_var(irstfile, id_squ, work0(0:kmx,1:ndxi), start=(/ 1, 1, itim /), count=(/ kmx+1, ndxi, 1 /))
 
     else
-       ierr = nf90_put_var(irstfile, id_ucx  , ucx,  (/ 1, itim /), (/ ndxi, 1 /))
-       ierr = nf90_put_var(irstfile, id_ucy  , ucy,  (/ 1, itim /), (/ ndxi, 1 /))
-       ierr = nf90_put_var(irstfile, id_unorm, u1 ,  (/ 1, itim /), (/ lnx , 1 /))
-       ierr = nf90_put_var(irstfile, id_u0   , u0 ,  (/ 1, itim /), (/ lnx , 1 /))
-       ierr = nf90_put_var(irstfile, id_q1   , q1 ,  (/ 1, itim /), (/ lnx , 1 /))
-       ierr = nf90_put_var(irstfile, id_qa   , qa ,  (/ 1, itim /), (/ lnx , 1 /))
-       ierr = nf90_put_var(irstfile, id_squ  , squ,  (/ 1, itim /), (/ ndxi, 1 /))
-       ierr = nf90_put_var(irstfile, id_sqi  , sqi,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucx  , ucx ,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucy  , ucy ,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucxq , ucxq,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucyq , ucyq,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_unorm, u1  ,  (/ 1, itim /), (/ lnx , 1 /))
+       ierr = nf90_put_var(irstfile, id_u0   , u0  ,  (/ 1, itim /), (/ lnx , 1 /))
+       ierr = nf90_put_var(irstfile, id_q1   , q1  ,  (/ 1, itim /), (/ lnx , 1 /))
+       ierr = nf90_put_var(irstfile, id_qa   , qa  ,  (/ 1, itim /), (/ lnx , 1 /))
+       ierr = nf90_put_var(irstfile, id_squ  , squ ,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_sqi  , sqi ,  (/ 1, itim /), (/ ndxi, 1 /))
+       ierr = nf90_put_var(irstfile, id_hu   , hu  ,  (/ 1, itim /), (/ lnx , 1 /))
+       if (Corioadamsbashfordfac > 0d0) then
+           ierr = nf90_put_var(irstfile, id_fvcoro,fvcoro,(/ 1, itim /), (/ lnx , 1 /))
+       endif
     endif
 
     if (ncdamsg > 0 .or. ifixedweirscheme > 0) then
@@ -4465,6 +4570,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     if (jased > 0 .and. stm_included) then
        ! concentrations
        if (stmpar%lsedsus .gt. 0) then
+          !Internal cells
           allocate(dum(ndxi))
           do j=ISED1,ISEDN
              if (kmx > 0) then
@@ -4484,6 +4590,28 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
              endif
           enddo
           if (allocated(dum)) deallocate(dum)
+          !Boundary cells
+          if (jarstbnd > 0 .and. ndxbnd > 0) then
+              allocate(dum(ndxbnd))
+              do j=ISED1,ISEDN
+                 if (kmx > 0) then
+                    i=0
+                    do kk=ndxi+1,ndx
+                       i=i+1 
+                       call getkbotktop(kk,kb,kt)
+                       call getlayerindices(kk, nlayb, nrlay)
+                       do k = kb,kt
+                          work1(k-kb+nlayb,i) = sed(j-ISED1+1,k) 
+                       enddo
+                    enddo
+                    ierr = nf90_put_var(irstfile, id_sf1_bnd(j-ISED1+1), work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+                 else
+                    dum= sed(j-ISED1+1,ndxi+1:ndx)
+                    ierr = nf90_put_var(irstfile, id_sf1_bnd(j-ISED1+1), dum, (/ 1, itim /), (/ ndxbnd, 1 /) )
+                 endif
+              enddo
+              if (allocated(dum)) deallocate(dum)
+          endif
        endif
        ! morbl
        ierr = nf90_put_var(irstfile, id_morbl, bl, (/1 , itim/),(/ndxi, 1/))
@@ -4956,6 +5084,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
               tmp_bl(i) = bl(j)
               tmp_squ(i) = squ(j)
               tmp_sqi(i) = sqi(j)
+              tmp_ucxq(i) = ucxq(j)
+              tmp_ucyq(i) = ucyq(j)
            enddo
        else
           do i = 1, ndxbnd
@@ -4968,6 +5098,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
              tmp_bl(i) = bl(j)
              tmp_squ(i) = squ(j)
              tmp_sqi(i) = sqi(j)
+             tmp_ucxq(i) = ucxq(j)
+             tmp_ucyq(i) = ucyq(j)
           enddo
           ierr = nf90_put_var(irstfile, id_flowelemxbnd, tmp_x)
           ierr = nf90_put_var(irstfile, id_flowelemybnd, tmp_y)
@@ -4977,6 +5109,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
        ierr = nf90_put_var(irstfile, id_blbnd, tmp_bl, (/ 1, itim /), (/ ndxbnd, 1 /))
        ierr = nf90_put_var(irstfile, id_squbnd, tmp_squ, (/ 1, itim /), (/ ndxbnd, 1 /))
        ierr = nf90_put_var(irstfile, id_sqibnd, tmp_sqi, (/ 1, itim /), (/ ndxbnd, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucxqbnd, tmp_ucxq, (/ 1, itim /), (/ ndxbnd, 1 /))
+       ierr = nf90_put_var(irstfile, id_ucyqbnd, tmp_ucyq, (/ 1, itim /), (/ ndxbnd, 1 /))
     endif
 
     if (network%loaded) then
@@ -5122,10 +5256,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    integer, parameter :: FIRST_ARRAY = 1
    integer, parameter :: SECOND_ARRAY = 2
 
-   nc_precision = nf90_double
-   if ( md_nc_map_precision == SINGLE_PRECISION ) then
-       nc_precision = nf90_float
-   endif
+   nc_precision = netcdf_data_type(md_nc_map_precision)
 
    if (ndxi <= 0) then
       call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
@@ -5266,8 +5397,8 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       endif
 
       ! Calculated time step per cell based on CFL number
-      if (jamapdtcell > 0 ) then
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, iLocS, 'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
+      if (jamapdtcell > 0) then
+          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, nc_precision, iLocS,  'dtcell', '', 'Time step per cell based on CFL', 's', jabndnd=jabndnd_)
       endif
 
       ! Water depths
@@ -5351,7 +5482,11 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, nc_precision, UNC_LOC_W, 'ww1', 'upward_sea_water_velocity', 'Upward velocity on vertical interface, n-component', 'm s-1', jabndnd=jabndnd_)
          endif
          if (jamaprho > 0) then
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, nc_precision, UNC_LOC_S3D, 'rho', 'sea_water_density', 'Flow element center mass density', 'kg m-3', jabndnd=jabndnd_)
+             if ( density_is_pressure_dependent() ) then
+                 ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho,  nc_precision, UNC_LOC_S3D, 'density', 'sea_water_density',           'Flow element center mass density',      'kg m-3', jabndnd=jabndnd_)
+             else
+                 ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, nc_precision, UNC_LOC_S3D, 'rho',     'sea_water_potential_density', 'Flow element center potential density', 'kg m-3', jabndnd=jabndnd_)
+             endif
          endif
       endif
 
@@ -6384,7 +6519,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, iLocU, u0, 0d0, jabndnd=jabndnd_)
    endif
    if (jamapdtcell == 1) then
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, UNC_LOC_S, dtcell, jabndnd=jabndnd_)
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dtcell, iLocS, dtcell, jabndnd=jabndnd_)
    endif
 
    if (jamapucvec == 1 .or. jamapucmag == 1 .or. jamapucqvec == 1) then
@@ -6444,7 +6579,11 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, UNC_LOC_W, ww1, jabndnd=jabndnd_)
       endif
       if (jamaprho > 0) then
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          if ( density_is_pressure_dependent() ) then
+              ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rho,  UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          else
+              ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_rhop, UNC_LOC_S3D, rho, jabndnd=jabndnd_)
+          endif
       endif
    endif
 
@@ -7858,7 +7997,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
     id_sourse, id_sinkse, id_ws, &
     id_sxtot, id_sytot, id_rsedeq, id_umod, id_zumod, id_ustar, id_dzdn, id_dzdt, id_morbl, id_aks, id_rca, &
     id_bodsed, id_dpsed, id_msed, id_lyrfrac, id_thlyr, id_poros, id_nlyrdim, &
-    id_sedtotdim, id_sedsusdim, id_rho, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
+    id_sedtotdim, id_sedsusdim, id_rho, id_rhop, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
     id_q1main, &
     id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
     id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
@@ -8089,7 +8228,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                     ierr = nf90_def_var(imapfile, 'ww1'  , nf90_double, (/ id_wdim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_ww1(iid))
                 endif
                 if (jamaprho > 0) then
-                    ierr = nf90_def_var(imapfile, 'rho'  , nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rho(iid))
+                    if ( density_is_pressure_dependent() ) then
+                        ierr = nf90_def_var(imapfile, 'density', nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rho(iid))
+                    else
+                        ierr = nf90_def_var(imapfile, 'rho',     nf90_double, (/ id_laydim(iid), id_flowelemdim(iid), id_timedim (iid)/) , id_rhop(iid))
+                    endif
                 endif
               !
                 if (jamapucvec > 0) then
@@ -8127,11 +8270,19 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                   !?elevation
                 endif
                 if (jamaprho > 0) then
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'standard_name', 'sea_water_density')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'long_name'    , 'flow mass density')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  'units'        , 'kg m-3')
-                  ierr = nf90_put_att(imapfile, id_rho(iid),  '_FillValue'   , dmiss)
+                  if ( density_is_pressure_dependent() ) then
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'standard_name', 'sea_water_density')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'long_name'    , 'flow mass density')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  'units'        , 'kg m-3')
+                    ierr = nf90_put_att(imapfile, id_rho(iid),  '_FillValue'   , dmiss)
+                  else
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'standard_name', 'sea_water_potential_density')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'long_name'    , 'flow mass potential density')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  'units'        , 'kg m-3')
+                    ierr = nf90_put_att(imapfile, id_rhop(iid),  '_FillValue'   , dmiss)
+                  endif
                 endif
             endif  ! kmx>0
 
@@ -8961,7 +9112,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
               ierr = unc_add_gridmapping_att(imapfile, idum, jsferic)
            endif
            if (kmx > 0) then
-              ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rho(iid) /), jsferic)
+              if ( density_is_pressure_dependent() ) then
+                  ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rho(iid) /), jsferic)
+              else
+                  ierr = unc_add_gridmapping_att(imapfile, (/ id_ucz(iid), id_ucxa(iid), id_ucya(iid), id_ww1(iid), id_rhop(iid) /), jsferic)
+              endif
            endif
 
            if (jamaptrachy > 0 .and. jatrt == 1) then
@@ -9282,7 +9437,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
           ierr = nf90_inq_varid(imapfile, 'ucxa', id_ucxa(iid))
           ierr = nf90_inq_varid(imapfile, 'ucya', id_ucya(iid))
           ierr = nf90_inq_varid(imapfile, 'ww1', id_ww1(iid))
-          ierr = nf90_inq_varid(imapfile, 'rho', id_rho(iid))
+          if ( density_is_pressure_dependent() ) then
+            ierr = nf90_inq_varid(imapfile, 'density', id_rho(iid))
+          else
+            ierr = nf90_inq_varid(imapfile, 'rho', id_rhop(iid))
+          endif
           if ( iturbulencemodel >= 3 ) then
              ierr = nf90_inq_varid(imapfile, 'turkin1', id_turkin1(iid))
              ierr = nf90_inq_varid(imapfile, 'tureps1', id_tureps1(iid))
@@ -9291,7 +9450,6 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
         else
           ierr = nf90_inq_varid(imapfile, 'ucx', id_ucx(iid))
           ierr = nf90_inq_varid(imapfile, 'ucy', id_ucy(iid))
-          !ierr = nf90_inq_varid(imapfile, 'rho', id_rho(iid))
           ierr = nf90_inq_varid(imapfile, 'spircrv', id_spircrv(iid))
           ierr = nf90_inq_varid(imapfile, 'spirint', id_spirint(iid))
         endif
@@ -9788,7 +9946,11 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                    work1(k-kb+nlayb, kk) = rho(k)
                 enddo
              enddo
-             ierr = nf90_put_var(imapfile, id_rho(iid), work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             if ( density_is_pressure_dependent() ) then
+                 ierr = nf90_put_var(imapfile, id_rho(iid),  work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             else
+                 ierr = nf90_put_var(imapfile, id_rhop(iid), work1(1:kmx,1:ndxndxi), start=(/ 1, 1, itim /), count=(/ kmx, ndxndxi, 1 /))
+             endif
           endif
 
           if (jamaptur > 0 .and. iturbulencemodel >= 3) then
@@ -12807,7 +12969,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
                id_squbnd, id_sqibnd, &
                id_czs, &
                id_morft,                         &
-               id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn
+               id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
+               id_ucxqbnd, id_ucyqbnd, &
+               id_fvcoro
 
     integer :: id_tmp
     integer :: layerfrac, layerthk
@@ -12827,6 +12991,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     double precision, allocatable        :: tmpvar2(:,:,:)
     double precision, allocatable        :: tmp_s1(:), tmp_bl(:), tmp_s0(:)
     double precision, allocatable        :: tmp_sqi(:), tmp_squ(:)
+    double precision, allocatable        :: tmp_ucxq(:), tmp_ucyq(:)
     double precision, allocatable        :: rst_bodsed(:,:), rst_mfluff(:,:), rst_thlyr(:,:)
     double precision, allocatable        :: rst_msed(:,:,:)
     integer,          allocatable        :: itmpvar(:)
@@ -13074,6 +13239,13 @@ subroutine unc_read_map_or_rst(filename, ierr)
     dti = 1d0/dts
 
     ! Read following variables no matter if it is the same or different partitions
+
+    if (kmx > 0) then
+       tmp_loc = UNC_LOC_S3D
+    else
+       tmp_loc = UNC_LOC_S
+    endif
+
     ! Read waterlevels (flow elem)
     ierr = get_var_and_shift(imapfile, 's1', s1, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
                              um%inode_merge)
@@ -13123,9 +13295,37 @@ subroutine unc_read_map_or_rst(filename, ierr)
     call check_error(ierr, 'discharges')
     call readyy('Reading map data',0.50d0)
 
+    ! Read upwinded flow depth (flow link)
+    ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+                             um%ilink_own, um%ilink_merge)
+    
     ! Read qa (flow link), optional: only from rst file, so no error check
     ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                              um%ilink_own, um%ilink_merge)
+    ucxyq_read_rst=.true.
+
+    ! Read ucxq (flow elem), optional: only from rst file, so no error check
+    ierr = get_var_and_shift(imapfile, 'ucxq', ucxq, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                             um%inode_own, um%inode_merge)
+
+    if (ierr /= nf90_noerr) then
+        ucxyq_read_rst=.false.
+    endif
+
+    ! Read ucxq (flow elem), optional: only from rst file, so no error check
+    ierr = get_var_and_shift(imapfile, 'ucyq', ucyq, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                             um%inode_own, um%inode_merge)
+
+    if (ierr /= nf90_noerr) then
+        ucxyq_read_rst=.false.
+    endif
+
+    !Read Coriolis Adams-Bashford (flow link)
+    if (Corioadamsbashfordfac > 0d0) then
+        !We check on it because if the factor is 0, `fvcoro` is not allocated.
+        ierr = get_var_and_shift(imapfile, 'fvcoro', fvcoro, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+                                 um%ilink_own, um%ilink_merge)
+    endif
 
     if (um%jamergedmap_same == 1) then
        ! Read info. on waterlevel boundaries
@@ -13135,6 +13335,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call realloc(tmp_bl, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_squ, um%nbnd_read, stat=ierr, keepExisting=.false.)
           call realloc(tmp_sqi, um%nbnd_read, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucxq, um%nbnd_read, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucyq, um%nbnd_read, stat=ierr, keepExisting=.false.)
 
           ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
           if (ierr==0) then
@@ -13168,6 +13370,18 @@ subroutine unc_read_map_or_rst(filename, ierr)
               call check_error(ierr, 'squ_bnd')
           endif
 
+          ierr = nf90_inq_varid(imapfile, 'ucxq_bnd', id_ucxqbnd)
+          if (ierr==0) then
+              ierr = nf90_get_var(imapfile, id_ucxqbnd, tmp_ucxq, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 'ucxq_bnd')
+          endif
+
+          ierr = nf90_inq_varid(imapfile, 'ucyq_bnd', id_ucyqbnd)
+          if (ierr==0) then
+              ierr = nf90_get_var(imapfile, id_ucyqbnd, tmp_ucyq, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              call check_error(ierr, 'ucyq_bnd')
+          endif
+
           if (nerr_/=0) goto 999
 
           if (jampi==0) then
@@ -13180,6 +13394,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 endif
                 squ(kk) = tmp_squ(i)
                 sqi(kk) = tmp_sqi(i)
+                ucxq(kk) = tmp_ucxq(i)
+                ucyq(kk) = tmp_ucyq(i)
              enddo
           else
              do i = 1, um%nbnd_read ! u and z bnd
@@ -13192,6 +13408,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 endif
                 squ(kk) = tmp_squ(i)
                 sqi(kk) = tmp_sqi(i)
+                ucxq(kk) = tmp_ucxq(i)
+                ucyq(kk) = tmp_ucyq(i)
              enddo
           endif
        endif
@@ -13224,7 +13442,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ierr = get_var_and_shift(imapfile, 'sqi_bnd', tmp_sqi, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 'sqi_bnd')
-
+          ierr = get_var_and_shift(imapfile, 'ucxq_bnd', tmp_ucxq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+                                   um%jamergedmap, ibnd_own, um%ibnd_merge)
+          call check_error(ierr, 'ucxq_bnd')
+          ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+                                   um%jamergedmap, ibnd_own, um%ibnd_merge)
+          call check_error(ierr, 'ucyq_bnd')
           do i=1,ndxbnd_own
              j=ibnd_own(i)
              Lf=lnxi+j
@@ -13236,6 +13459,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
              endif
              squ(kk) = tmp_squ(j)
              sqi(kk) = tmp_sqi(j)
+             ucxq(kk) = tmp_ucxq(j)
+             ucyq(kk) = tmp_ucyq(j)
           enddo
        endif
     endif
@@ -13330,6 +13555,13 @@ subroutine unc_read_map_or_rst(filename, ierr)
         endif
     enddo
     
+    ! Read secondary flow
+    if (jasecflow > 0) then
+        ierr = get_var_and_shift(imapfile, 'spirint', spirint, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                um%inode_merge)
+        call check_error(ierr, 'spirint')
+    endif
+    
     ! Read the salinity (flow elem)
     if (jasal > 0) then
        if (kmx > 0) then
@@ -13374,21 +13606,21 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ! Forbidden chars in NetCDF names: space, /, and more.
           call replace_char(tmpstr,32,95)
           call replace_char(tmpstr,47,95)
-!            tracer exists in restart file
-             if (kmx > 0) then
+!         tracer exists in restart file
+          if (kmx > 0) then
              tmp_loc = UNC_LOC_S3D
-                   else
+          else
              tmp_loc = UNC_LOC_S
-                   endif
+          endif
           ierr = get_var_and_shift(imapfile, trim(tmpstr), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
-                              um%inode_own, um%inode_merge)
+                           um%inode_own, um%inode_merge)
           if (ierr /= nf90_noerr) then
              call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
-             else
+          else
              call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
-                   endif
-                enddo
-             endif
+          endif !ierr
+       enddo !iconst
+    endif !ITRA1
 
 !   Read the water quality bottom variables
     if (numwqbots > 0) then
@@ -13466,39 +13698,30 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ierr = DFM_WRONGINPUT
           goto 999
        endif
+       
        !
        ! Read morphology data:
-       ! fraction concentrations
+       !
+       
+       ! fraction concentrations 
        if (stmpar%lsedsus .gt. 0 .and. sedsus_read == stmpar%lsedsus) then
-          if (.not.allocated(id_sf1)) then
-             allocate(id_sf1(ISEDN-ISED1+1))
-          endif
-          if (allocated(tmpvar)) deallocate(tmpvar)
-          allocate(tmpvar(max(1,kmx), ndxi))
-          call realloc(tmpvar1D, ndkx, keepExisting = .false.,fill = 0.0d0)
-          do iconst = ISED1,ISEDN
-             i = iconst - ISED1 + 1
-             tmpstr = const_names(iconst)
-             ! Forbidden chars in NetCDF names: space, /, and more.
-             call replace_char(tmpstr,32,95)
-             call replace_char(tmpstr,47,95)
-!            concentrations exists in restart file
-             if (kmx > 0) then
-                tmp_loc = UNC_LOC_S3D
-             else
-                tmp_loc = UNC_LOC_S
-             endif
-             ierr = get_var_and_shift(imapfile, trim(tmpstr), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, &
-                                 um%inode_own, um%inode_merge)
-             if (ierr /= nf90_noerr) then
-                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
-             else
-                call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
-                sed(i,:)=constituents(iconst,:)
-             endif
-             call check_error(ierr, const_names(iconst))
-          enddo
-       endif
+
+          !internal cells
+          call read_sediment(constituents,'',imapfile,kstart,um%ndxi_own,it_read,um)  
+          !boundary cells
+          if (um%nbnd_read > 0) then
+             if (allocated(tmpvar)) deallocate(tmpvar)
+             allocate(tmpvar(ISEDN-ISED1+1,um%nbnd_read))
+             call read_sediment(tmpvar,'_bnd',imapfile,kstart,um%nbnd_read,it_read,um)
+             constituents(:,ndxi+1:ndx)=tmpvar
+          endif !um%nbnd_read > 0
+          sed=constituents(ISED1:ISEDN,:)
+          !!copy from constituents to sed
+          !do i = ISED1,ISEDN
+          !   j = i - ISED1 + 1
+          !   sed(j,:)=constituents(i,:)
+          !end
+       endif !lsedsus
 
        ! morbl
        if (jarstignorebl .eq. 0) then
@@ -17755,5 +17978,96 @@ function write_array_with_dmiss_for_dry_faces_into_netcdf_file(ncid, id_tsp, id_
    deallocate(temp_array)
 
 end function write_array_with_dmiss_for_dry_faces_into_netcdf_file
+
+!> Put attribute for sediment. It can be used for both internal and 
+!! boundary cells.
+subroutine add_att_sediment(id_sf1,nf,id_laydim,id_flowelemdim,id_timedim,irstfile,stradd,strcord)
+
+use m_flow, only: kmx
+use m_transport, only: ISED1, ISEDN, const_names
+
+!input
+integer, allocatable, dimension(:), intent(inout) :: id_sf1
+integer, intent(in) :: nf, irstfile, id_laydim, id_flowelemdim, id_timedim
+character(len=*), intent(in) :: stradd, strcord
+
+!local
+integer, allocatable, dimension(:)   :: id1
+character(len=255) :: tmpstr
+
+integer :: j, i
+integer :: ierr
+
+if (kmx > 0) then
+   id1 = (/ id_laydim, id_flowelemdim , id_timedim /)
+else
+   id1 = (/ id_flowelemdim , id_timedim /)
+endif
+
+if (.not.allocated(id_sf1)) then
+   allocate(id_sf1(nf))
+endif
+do i=ISED1,ISEDN
+   j = i-ISED1+1
+   tmpstr = const_names(i)
+   ! Forbidden chars in NetCDF names: space, /, and more.
+   call replace_char(tmpstr,32,95)
+   call replace_char(tmpstr,47,95)
+   ierr = nf90_def_var(irstfile, trim(tmpstr)//trim(stradd), nf90_double, id1, id_sf1(j))
+   ierr = nf90_put_att(irstfile, id_sf1(j),  'coordinates'  , trim(strcord))
+   ierr = nf90_put_att(irstfile, id_sf1(j),  'standard_name', trim(tmpstr)//trim(stradd)//' mass concentration')
+   ierr = nf90_put_att(irstfile, id_sf1(j),  'long_name'    , trim(tmpstr)//trim(stradd)//' mass concentration')
+   ierr = nf90_put_att(irstfile, id_sf1(j),  'units'        , 'kg m-3')
+enddo
+
+end subroutine add_att_sediment
+
+!> Read sediment data to `constituents` (the indexing prevents passing 
+!  another variable). 
+subroutine read_sediment(var,stradd,imapfile,kstart,ndx_own,it_read,um)
+
+use m_flow, only: kmx, ndkx
+use m_transport, only: ISED1, ISEDN, const_names
+use unstruc_messages, only: mess, LEVEL_WARN
+use m_alloc, only: realloc
+use m_partitioninfo, only: um
+
+!input/output
+integer, intent(in) :: imapfile, kstart, ndx_own, it_read
+double precision, allocatable, dimension(:,:), intent(inout) :: var
+type(t_unc_merged), intent(in)                  :: um        !< struct holding all data for ugrid merged map/rst files
+
+!local
+integer :: j, i
+integer :: ierr, tmp_loc
+double precision, allocatable :: tmpvar1(:), tmpvar1D(:)
+character(len=255) :: tmpstr
+character(len=*), intent(in) :: stradd
+
+if (kmx > 0) then
+   tmp_loc = UNC_LOC_S3D
+else
+   tmp_loc = UNC_LOC_S
+endif
+
+call realloc(tmpvar1  , 0)
+allocate(tmpvar1D(1:ndkx))
+tmpvar1D=0.0d0
+do i = ISED1,ISEDN
+   tmpstr = const_names(i)
+   ! Forbidden chars in NetCDF names: space, /, and more.
+   call replace_char(tmpstr,32,95)
+   call replace_char(tmpstr,47,95)
+   ! concentrations exists in restart file
+   ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, ndx_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge)
+   if (ierr /= nf90_noerr) then
+      call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
+      call check_error(ierr, const_names(i),LEVEL_WARN)
+   else
+      call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, ndx_own, um%jamergedmap, um%inode_own, 0, 0)
+   endif
+enddo 
+
+end subroutine read_sediment
 
 end module unstruc_netcdf

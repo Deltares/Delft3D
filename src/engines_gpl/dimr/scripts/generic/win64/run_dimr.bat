@@ -80,39 +80,21 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%scriptdir%..\..\..
-
-    rem Remove "\dimr\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-    rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set cosumobmidir=%D3D_HOME%\%ARCH%\cosumo_bmi\bin
-set delwaqexedir=%D3D_HOME%\%ARCH%\dwaq\bin
-set dflowfmexedir=%D3D_HOME%\%ARCH%\dflowfm\bin
-set proc_def_dir=%D3D_HOME%\%ARCH%\dflowfm\default
-set dimrexedir=%D3D_HOME%\%ARCH%\dimr\bin
-set esmfexedir=%D3D_HOME%\%ARCH%\esmf\bin
-set esmfbatdir=%D3D_HOME%\%ARCH%\esmf\scripts
-set flow1dexedir=%D3D_HOME%\%ARCH%\dflow1d\bin
-set flow1d2dexedir=%D3D_HOME%\%ARCH%\dflow1d2d\bin
-set rrexedir=%D3D_HOME%\%ARCH%\drr\bin
-set rtctoolsexedir=%D3D_HOME%\%ARCH%\drtc\bin
-set swanexedir=%D3D_HOME%\%ARCH%\swan\bin
-set swanbatdir=%D3D_HOME%\%ARCH%\swan\scripts
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set waveexedir=%D3D_HOME%\%ARCH%\dwaves\bin
-set wandaexedir=%D3D_HOME%\%ARCH%\wanda\bin
-
+set D3D_HOME=%scriptDir%..
+echo D3D_HOME         : %D3D_HOME%
+set exedir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
+set proc_def_dir=%sharedir%\delft3d
 
     rem
     rem No adaptions needed below
     rem
 
     rem Run
-set PATH=%cosumobmidir%;%dimrexedir%;%delwaqexedir%;%dflowfmexedir%;%flow1dexedir%;%flow1d2dexedir%;%rtctoolsexedir%;%rrexedir%;%waveexedir%;%swanbatdir%;%swanexedir%;%esmfbatdir%;%esmfexedir%;%wandaexedir%;%sharedir%
-echo executing: "%dimrexedir%\dimr.exe" %debugarg% "%dimrConfigFile%"
-"%dimrexedir%\dimr.exe" %debugarg% "%dimrConfigFile%"
+set PATH=%sharedir%;%libdir%;%exedir%
+echo executing: "%exedir%\dimr.exe" %debugarg% %dimrConfigFile%
+"%exedir%\dimr.exe" %debugarg% %dimrConfigFile%
 
 goto END
 

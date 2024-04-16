@@ -175,14 +175,6 @@ implicit none
     character(len=255) :: md_partitionfile = ' ' !< File with domain partitioning polygons (e.g. *_part.pol)
     character(len=255) :: md_outputdir     = ' ' !< Output directory for map-, his-, rst-, dat- and timings-files
 
-!   particles
-    character(len=255) :: md_partfile      = ' ' !< intitial particles file (*.xyz)
-    character(len=255) :: md_partrelfile   = ' ' !< particles release file (*.txyz)
-    integer            :: md_partjatracer      = 0
-    double precision   :: md_partstarttime     = 0d0
-    double precision   :: md_parttimestep      = 0d0
-    integer            :: md_part3Dtype        = 0 !< 0: depth averaged, 1: free surface
-
 !   processes (WAQ)
     character(len=255) :: md_subfile = ' '      !< substance file
     character(len=255) :: md_ehofile = ' '      !< extra history output file
@@ -273,11 +265,12 @@ implicit none
     integer                                   :: md_mapformat         !< map file output format (one of IFORMAT_*)
     integer                                   :: md_unc_conv          !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
     integer                                   :: md_ncformat          !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    character(len=255)                        :: md_nccompress        !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
+    logical                                   :: md_nccompress        !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
     integer                                   :: md_fou_step          !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
     integer, private                          :: ifixedweirscheme_input  !< input value of ifixedweirscheme in mdu file
     integer, private                          :: idensform_input         !< input value of idensform in mdu file
+    
 contains
 
 
@@ -361,8 +354,6 @@ use m_fm_icecover, only: fm_ice_null
     md_waqoutputdir  = ' '
     md_partitionfile = ' '
     md_outputdir     = ' '
-    md_partfile      = ' '
-    md_partrelfile   = ' '
     md_trtrfile     = ' '
     md_trtdfile     = ' '
     md_trtlfile     = ' '
@@ -375,18 +366,11 @@ use m_fm_icecover, only: fm_ice_null
     md_unc_conv     = UNC_CONV_UGRID  ! TODO: AvD: does this double now with IFORMAT_UGRID?
 
     md_ncformat     = 3               !< NetCDF format (3: classic, 4: NetCDF4+HDF5)
-    md_nccompress   = 'off'           !< Whether ('on') or not ('off') to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
+    md_nccompress   = .false.         !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
     md_fou_step     = 0               !< default: fourier analysis is updated on a user-timestep basis
 
     md_jaAutoStart     = MD_NOAUTOSTART !< Autostart simulation after loading or not.
-
-    md_partfile = ' '
-    md_partrelfile = ' '
-    md_partjatracer = 0
-    md_partstarttime = 0d0
-    md_parttimestep = 0d0
-    md_part3Dtype = 0
 
     md_cfgfile = ' '
 
@@ -441,7 +425,6 @@ subroutine loadModel(filename)
     use m_flow1d_reader
     use m_flowexternalforcings, only: pillar
     use m_sferic
-    ! use string_module, only: get_dirsep
     use unstruc_caching
     use m_longculverts
     use unstruc_channel_flow
@@ -748,7 +731,7 @@ subroutine readMDUFile(filename, istat)
     integer,      intent(out) :: istat    !< Return status (0=success)
 
     character(len=32):: program
-    logical :: success, ex
+    logical :: success, ex, value_parsed
     character(len=1),dimension(1) :: dummychar
     logical :: dummylog
     character(len=1000) :: charbuf = ' '
@@ -1839,11 +1822,12 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
     call unc_set_ncformat(md_ncformat)
-    md_nc_map_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
-    md_nc_his_precision = 0
-    call prop_get_integer(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
-    call prop_get_string(md_ptr, 'output', 'NcCompression', md_nccompress, success)
+    call prop_get_string(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+    call prop_get_string(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+    call prop_get_logical(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
+    if (success .and. value_parsed == .false.) then
+       call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
+    endif
     call unc_set_nccompress(md_nccompress)
 
     call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success)   ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
@@ -2340,14 +2324,6 @@ subroutine readMDUFile(filename, istat)
       end if
    end if
 
-!  particles
-   call prop_get_string (md_ptr, 'particles', 'ParticlesFile', md_partfile, success)
-   call prop_get_string (md_ptr, 'particles', 'ParticlesReleaseFile', md_partrelfile, success)
-   call prop_get_integer(md_ptr, 'particles', 'AddTracer', md_partjatracer, success)
-   call prop_get_double (md_ptr, 'particles', 'StartTime', md_partstarttime, success)
-   call prop_get_double (md_ptr, 'particles', 'TimeStep', md_parttimestep, success)
-   call prop_get_integer(md_ptr, 'particles', '3Dtype', md_part3Dtype, success)
-
 !  processes (WAQ)
    call prop_get_string (md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
    call prop_get_string (md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
@@ -2358,7 +2334,9 @@ subroutine readMDUFile(filename, istat)
    call prop_get_double (md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
    call prop_get_double (md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
    call prop_get_integer(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling )
-
+   if  (JaSubstancedensitycoupling == 1) then
+      call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
+   end if 
 
    call prop_get_double (md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
    ti_waqproc = md_dt_waqproc
@@ -2743,7 +2721,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     character(len=20)              :: rundat
     character(len=128)             :: helptxt
     character(len=256)             :: tmpstr
-    integer                        :: i, ibuf, help
+    integer                        :: i, ibuf
     real(kind=hp)                  :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
 
     istat = 0 ! Success
@@ -3087,9 +3065,9 @@ endif
   
     call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport' , jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
 
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal,   'Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)')
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem,   'Vertical advection type for temperature (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)')
-    call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau, 'Vertical advection type for u1: 0: No, 3: Upwind implicit, 4: Central implicit, 5: QUICKEST implicit., 6: centerbased upwind expl, 7=6 HO' )
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal,   'Vertical advection type for salinity (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem,   'Vertical advection type for temperature (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+    call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau,     'Vertical advection type in momentum equation; 3: Upwind implicit, 6: centerbased upwind explicit.' )
     if (writeall .or. javau3onbnd .ne. 0) then
       call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd, 'vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd' )
     endif
@@ -3191,12 +3169,7 @@ endif
 
     call prop_set(prop_ptr, 'numerics', 'Slopedrop2D', Slopedrop2D, 'Apply drop losses only if local bed slope > Slopedrop2D, (<=0: no drop losses)')
 
-    if (Drop1D) then
-       help = 1
-    else
-       help = 0
-    endif
-    call prop_set(prop_ptr, 'numerics', 'Drop1D', help, 'Apply drop losses in 1D (0: no, 1:yes)')
+    call prop_set(prop_ptr, 'numerics', 'Drop1D', merge(1, 0, Drop1D), 'Apply drop losses in 1D (0: no, 1:yes)')
 
     if (writeall .or. Drop3D .ne. 1d0) then
        call prop_set(prop_ptr, 'numerics', 'Drop3D'   , Drop3D, 'Apply droplosses in 3D if z upwind below bob + 2/3 hu*drop3D')
@@ -3281,7 +3254,7 @@ endif
     endif
 
     if( writeall .or. (jacreep == 1 .and. kmx > 0) ) then
-        call prop_set(prop_ptr, 'numerics', 'AntiCreep', jacreep, 'Include anti-creep calculation (0: no, 1: yes)')
+        call prop_set(prop_ptr, 'numerics', 'AntiCreep', jacreep, 'Include anti-creep to suppress artifical vertical diffusion (0: no, 1: yes).')
     endif
 
     if( jaorgbarockeywords == 1) then
@@ -3396,10 +3369,10 @@ endif
     endif
 
     if (writeall .or. epsmaxlev .ne. 1d-8) then
-       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlev',    epsmaxlev,  'Stop criterium for non-linear iteration')
     endif
     if (writeall .or. epsmaxlevm .ne. 1d-8) then
-       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non linear iteration')
+       call prop_set(prop_ptr, 'numerics', 'EpsMaxlevm',   epsmaxlevm, 'Stop criterium for Nested Newton loop in non-linear iteration')
     endif
 
     if (Oceaneddyamp > 0d0) then 
@@ -3615,7 +3588,7 @@ endif
        endif
     endif
 
-    call prop_set(prop_ptr,    'wind', 'ICdtyp',               ICdtyp,   'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: 4+viscous), 9=Garratt 1977.' )
+    call prop_set(prop_ptr,    'wind', 'ICdtyp',               ICdtyp,   'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).' )
     if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
        call prop_set(prop_ptr, 'wind', 'Cdbreakpoints',        Cdb(1:1), 'Wind drag coefficient (may be overridden by space-varying input)')
     else if (ICdtyp == 2) then
@@ -3920,10 +3893,10 @@ endif
 
     call prop_set(prop_ptr, 'output', 'NcFormat',  md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 
-    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision',  md_nc_map_precision, 'Precision for NetCDF data in map files (0: double, 1: single)')
-    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision',  md_nc_his_precision, 'Precision for NetCDF data in his files (0: double, 1: single)')
+    call prop_set(prop_ptr, 'output', 'NcMapDataPrecision', trim(md_nc_map_precision), 'Precision for NetCDF data in map files (double or single)')
+    call prop_set(prop_ptr, 'output', 'NcHisDataPrecision', trim(md_nc_his_precision), 'Precision for NetCDF data in his files (double or single)')
 
-    call prop_set(prop_ptr, 'output', 'NcCompression',  md_nccompress      , 'Whether ("on") or not ("off") to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4')
+    call prop_set(prop_ptr, 'output', 'NcCompression', merge(1, 0, md_nccompress), 'Whether or not (1/0) to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4')
     
     if (writeall .or. unc_nounlimited /= 0) then
        call prop_set(prop_ptr, 'output', 'NcNoUnlimited',  unc_nounlimited, 'Write full-length time-dimension instead of unlimited dimension (1: yes, 0: no). (Might require NcFormat=4.)')
@@ -4309,7 +4282,7 @@ endif
    call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
    call prop_set_double (prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
    call prop_set_double (prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
-   call prop_set        (prop_ptr, 'processes', 'SubstanceDensityCoupling',  jaSubstancedensitycoupling, 'substance rho coupling (0=no, 1=yes),  ')
+   call prop_set        (prop_ptr, 'processes', 'SubstanceDensityCoupling',  jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
 
     call datum(rundat)
     write(mout, '(a,a)') '# Generated on ', trim(rundat)
@@ -4325,7 +4298,7 @@ end subroutine writeMDUFilepointer
 subroutine setmd_ident(filename)
 use m_partitioninfo
 USE MessageHandling
-use string_module, only: get_dirsep
+use system_utils, only: FILESEP
 use unstruc_netcdf, only: unc_meta_md_ident
 
 character(*),     intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
@@ -4335,7 +4308,7 @@ integer                      :: L1, L2
 
 
 ! Set model identifier based on .mdu basename
-L1 = index(filename, get_DIRSEP(),.true.) + 1
+L1 = index(filename, FILESEP, .true.) + 1
 L2 = index(filename, '.', .true.)
 if (L2 == 0) then
     md_ident = ' '
@@ -4364,6 +4337,7 @@ end subroutine setmd_ident
 !! An .mdu must have been loaded, such that the possible model-configured
 !! OutputDir has been read already.
 subroutine switch_dia_file()
+use system_utils, only: makedir
 implicit none
 integer                      :: mdia2, mdia, ierr
 character(len=256)           :: rec
@@ -4405,7 +4379,7 @@ end subroutine switch_dia_file
 !> get output directory
 function getoutputdir(dircat)
    use m_flowtimes
-   use string_module, only: get_dirsep
+   use system_utils, only: FILESEP
    implicit none
 
    character(len=*), optional, intent(in) :: dircat !< (optional) The type of the directory: currently supported only 'waq'.
@@ -4426,7 +4400,7 @@ function getoutputdir(dircat)
       if (len_trim(md_waqoutputdir) == 0) then
          getoutputdir = 'DFM_DELWAQ_'//trim(md_ident_sequential)//trim(rundat2)
       else
-         getoutputdir = trim(md_waqoutputdir)//get_dirsep()
+         getoutputdir = trim(md_waqoutputdir)//FILESEP
       end if
 
    case default
@@ -4438,7 +4412,7 @@ function getoutputdir(dircat)
             getoutputdir = 'DFM_OUTPUT_'//trim(rundat2)
          end if
       else
-         getoutputdir = trim(md_outputdir)//get_dirsep()
+         getoutputdir = trim(md_outputdir)//FILESEP
       end if
    end select
 

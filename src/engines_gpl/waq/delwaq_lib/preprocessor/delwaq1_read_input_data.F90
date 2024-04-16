@@ -21,178 +21,162 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq1_read_input_data
-   use m_dlwq09
-   use m_dlwq08
-   use m_dlwq07
-   use m_dlwq06
-   use m_dlwq05
-   use m_dlwq04
-   use m_dlwq03
-   use m_dlwq02
-   use m_block_1_input_reader
 
-   implicit none
+    implicit none
+
+    private
+    public :: delwaq1_read_input_data
 
 contains
 
-   !>\file
-   !>                    delwaq1_read_user_data
-   !     SUBROUTINES CALLED :
-   !                          read_block_1_from_input, reads block 1 of user data
-   !                          DLWQ02, reads block 2 of user data
-   !                          DLWQ03, reads block 3 of user data
-   !                          DLWQ04, reads block 4 of user data
-   !                          DLWQ05, reads block 5 of user data
-   !                          DLWQ06, reads block 6 of user data
-   !                          DLWQ07, reads block 7 of user data
-   !                          DLWQ08, reads block 8 of user data
-   !                          DLWQ09, reads block 9 of user data
-   !                          DLWQS1, reads block 10 , statistical definition
-   !                          DLWQP1, proces pre-processor
-   !                          SPACE , computes space needed
+    subroutine delwaq1_read_input_data(status)
+        !< reads delwaq input file, fills data structure,
+        !< validates the data and writes it to wrk files
 
-   subroutine delwaq1_read_input_data()
+        use m_delwaq_statistical_process, only : setup_statistical
+        use m_dlwqp1
+        use m_delwaq1_data
+        use m_error_status
+        use inputs_block_9, only : read_block_9
+        use inputs_block_8, only : read_block_8_initial_conditions
+        use inputs_block_7, only : read_block_7_process_parameters
+        use inputs_block_6, only : read_block_6_waste_loads_withdrawals
+        use inputs_block_5, only : read_block_5_boundary_conditions
+        use inputs_block_4, only : read_block_4_flow_dims_pointers
+        use inputs_block_3, only : read_block_3_grid_layout
+        use m_block_2_input_reader, only : read_block_2_from_input
+        use m_block_1_input_reader, only : read_block_1_from_input
 
-      use m_delwaq_statistical_process, only: setup_statistical
-      use m_dlwqp1
-      use m_delwaq1_data
+        ! local
+        type(error_status), intent(inout) :: status !< current error status
 
-      implicit none
+        cchar = ' '
+        ilun = 0
+        ilun(1) = lun(26)
+        lch(1) = lchar(26)
+        lunut = lun(29)
 
-      cchar = ' '
-      ilun = 0
-      ilun(1) = lun(26)
-      lch(1) = lchar(26)
-      lunut = lun(29)
+        call read_block_1_from_input(lun, psynam, nosys, notot, nomult, &
+                multp, iwidth, otime, isfact, refday, &
+                output_verbose_level, status)
 
-      call read_block_1_from_input(lun, psynam, nosys, notot, nomult, &
-                  multp, iwidth, otime, isfact, refday, &
-                  ioutpt, ierr, iwar)
+        if (status%ierr /= 0) then
+            write (lunrep, '(A)') " ERROR: reading system names"
+            call status%increase_error_count()
+            return
+        end if
+        allocate (syname(notot + nomult), stat = ierr_alloc)
+        allocate (imultp(2, nomult), stat = ierr_alloc)
+        if (ierr_alloc /= 0) then
+            write (lunrep, '(A,I6)') " ERROR: allocating memory for system names:", ierr_alloc
+            call status%increase_error_count()
+            return
+        end if
+        syname = psynam
+        imultp = multp
+        if (associated(psynam)) deallocate (psynam)
+        if (associated(multp)) deallocate (multp)
+        deltim = otime
+        char_arr(1) = ' '
+        k = 2
+        icmak = cmax - 1
 
-      if (ierr /= 0) then
-         write (lunrep, '(A)') " ERROR: reading system names"
-         ierr = ierr + 1
-         return
-      end if
-      allocate (syname(notot + nomult), stat=ierr_alloc)
-      allocate (imultp(2, nomult), stat=ierr_alloc)
-      if (ierr_alloc .ne. 0) then
-         write (lunrep, '(A,I6)') " ERROR: allocating memory for system names:", ierr_alloc
-         ierr = ierr + 1
-         return
-      end if
-      syname = psynam
-      imultp = multp
-      if (associated(psynam)) deallocate (psynam)
-      if (associated(multp)) deallocate (multp)
-      deltim = otime
-      car(1) = ' '
-      k = 2
-      icmak = cmax - 1
+        nullify (nsegdmp)
+        nullify (isegdmp)
+        nullify (nexcraai)
+        nullify (iexcraai)
+        nullify (ioptraai)
+        call read_block_2_from_input(lun, lchar, filtype, nrftot, nlines, &
+                npoins, is_date_format, is_ddhhmmss_format, nodump, iopt, &
+                noint, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
+                noraai, ntraaq, nosys, notot, nototp, &
+                output_verbose_level, nsegdmp, isegdmp, nexcraai, &
+                iexcraai, ioptraai, status)
 
-      nullify (nsegdmp)
-      nullify (isegdmp)
-      nullify (nexcraai)
-      nullify (iexcraai)
-      nullify (ioptraai)
-      call dlwq02(lun, lchar, filtype, nrftot, nlines, &
-                  npoins, dtflg1, dtflg2, nodump, iopt, &
-                  noint, iwidth, dtflg3, ndmpar, ntdmps, &
-                  noraai, ntraaq, nosys, notot, nototp, &
-                  ioutpt, nsegdmp, isegdmp, nexcraai, &
-                  iexcraai, ioptraai, ierr, iwar)
+        call read_block_3_grid_layout(lun, lchar, filtype, nrftot, nrharm, &
+                ivflag, is_date_format, iwidth, is_yyddhh_format, &
+                output_verbose_level, gridps, syname, status, &
+                has_hydfile, nexch)
 
-      if (mod(intopt, 16) .gt. 7) then
-         ibflag = 1
-      else
-         ibflag = 0
-      end if
+        if (.not. associated(nsegdmp)) allocate (nsegdmp(1))
+        if (.not. associated(isegdmp)) allocate (isegdmp(1))
+        if (.not. associated(nexcraai)) allocate (nexcraai(1))
+        if (.not. associated(iexcraai)) allocate (iexcraai(1))
+        if (.not. associated(ioptraai)) allocate (ioptraai(1))
+        call read_block_4_flow_dims_pointers(lun, lchar, filtype, nrftot, nrharm, &
+                ilflag, is_date_format, iwidth, intsrt, is_yyddhh_format, &
+                output_verbose_level, nsegdmp, isegdmp, nexcraai, &
+                iexcraai, ioptraai, gridps, status, &
+                has_hydfile, nexch)
+        if (associated(nsegdmp)) deallocate (nsegdmp)
+        if (associated(isegdmp)) deallocate (isegdmp)
+        if (associated(nexcraai)) deallocate (nexcraai)
+        if (associated(iexcraai)) deallocate (iexcraai)
+        if (associated(ioptraai)) deallocate (ioptraai)
 
-      call dlwq03(lun, lchar, filtype, nrftot, nrharm, &
-                  ivflag, dtflg1, iwidth, dtflg3, &
-                  ioutpt, gridps, syname, ierr, iwar, &
-                  has_hydfile, nexch)
+        deltim = otime
+        call read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, iar, &
+                real_array, nrftot, nrharm, nobnd, nosys, &
+                notot, nobtyp, rmax, imax, is_date_format, &
+                iwidth, intsrt, is_yyddhh_format, syname, &
+                icmak, output_verbose_level, status)
 
-      if (.not. associated(nsegdmp)) allocate (nsegdmp(1))
-      if (.not. associated(isegdmp)) allocate (isegdmp(1))
-      if (.not. associated(nexcraai)) allocate (nexcraai(1))
-      if (.not. associated(iexcraai)) allocate (iexcraai(1))
-      if (.not. associated(ioptraai)) allocate (ioptraai(1))
-      call dlwq04(lun, lchar, filtype, nrftot, nrharm, &
-                  ilflag, dtflg1, iwidth, intsrt, dtflg3, &
-                  ioutpt, nsegdmp, isegdmp, nexcraai, &
-                  iexcraai, ioptraai, gridps, ierr, iwar, &
-                  has_hydfile, nexch)
-      if (associated(nsegdmp)) deallocate (nsegdmp)
-      if (associated(isegdmp)) deallocate (isegdmp)
-      if (associated(nexcraai)) deallocate (nexcraai)
-      if (associated(iexcraai)) deallocate (iexcraai)
-      if (associated(ioptraai)) deallocate (ioptraai)
+        deltim = otime
 
-      deltim = otime
-      call dlwq05(lun, lchar, filtype, car, iar, &
-                  rar, nrftot, nrharm, nobnd, nosys, &
-                  notot, nobtyp, rmax, imax, dtflg1, &
-                  iwidth, intsrt, ierr, dtflg3, syname, &
-                  icmak, ioutpt, iwar)
+        nosss = noseg + nseg2     ! increase with bottom segments
+        call read_block_6_waste_loads_withdrawals(lun, lchar, filtype, icmak, char_arr(k), &
+                imax, iar, rmax, real_array, notot, &
+                nosss, syname, nowst, nowtyp, nrftot, &
+                nrharm, is_date_format, is_yyddhh_format, iwidth, &
+                output_verbose_level, chkpar, status)
 
-      deltim = otime
+        novec = 50
+        inpfil%is_date_format = is_date_format
+        inpfil%is_ddhhmmss_format = is_ddhhmmss_format
+        inpfil%is_yyddhh_format = is_yyddhh_format
+        inpfil%itfact = itfact
 
-      nosss = noseg + nseg2     ! increase with bottom segments
-      call dlwq06(lun, lchar, filtype, icmak, car(k), &
-                  imax, iar, rmax, rar, notot, &
-                  nosss, syname, nowst, nowtyp, nrftot, &
-                  nrharm, dtflg1, dtflg3, iwidth, &
-                  ioutpt, chkpar, ierr, iwar)
+        nrharm(10) = 0
+        deltim = otime
+        call read_block_7_process_parameters(lun, lchar, filtype, inpfil, syname, &
+                iwidth, output_verbose_level, gridps, constants, chkpar, &
+                status)
 
-      novec = 50
-      inpfil%dtflg1 = dtflg1
-      inpfil%dtflg2 = dtflg2
-      inpfil%dtflg3 = dtflg3
-      inpfil%itfact = itfact
+        ! Finish and close system file ( read_block_9 can re-read it )
+        write (lun(2)) (nrftot(i), i = 1, noitem)
+        write (lun(2)) (nrharm(i), i = 1, noitem)
+        close (lun(2))
 
-      nrharm(10) = 0
-      deltim = otime
-      call dlwq07(lun, lchar, filtype, inpfil, syname, &
-                  iwidth, ioutpt, gridps, constants, chkpar, &
-                  ierr, iwar)
+        call read_block_8_initial_conditions(lun, lchar, filtype, nosss, notot, &
+                syname, iwidth, output_verbose_level, inpfil, &
+                gridps, status)
 
-      !     Finish and close system file ( DLWQ09 can re-read it )
-      write (lun(2)) (nrftot(i), i=1, noitem)
-      write (lun(2)) (nrharm(i), i=1, noitem)
-      close (lun(2))
+        call read_block_9(lun, lchar, filtype, char_arr, iar, &
+                icmak, max_int_size, iwidth, &
+                output_verbose_level, ioutps, outputs, status)
 
-      call dlwq08(lun, lchar, filtype, nosss, notot, &
-                  syname, iwidth, ioutpt, inpfil, &
-                  gridps, ierr, iwar)
+        call setup_statistical(lunrep, npos, cchar, &
+                ilun, lch, &
+                lstack, output_verbose_level, &
+                is_date_format, is_yyddhh_format, &
+                statprocesdef, allitems, &
+                status)
+        write (lunrep, '(//'' Messages presented in this .lst file:'')')
+        write (lunrep, '( /'' Number of WARNINGS            :'',I6)') status%iwar
+        write (lunrep, '(  '' Number of ERRORS during input :'',I6)') status%ierr
+        write (lunrep, '(  '' '')')
 
-      call dlwq09(lun, lchar, filtype, car, iar, &
-                  icmak, iimax, iwidth, ibflag, &
-                  ioutpt, ioutps, outputs, ierr, iwar)
+        call dlwqp1(lun, lchar, &
+                statprocesdef, allitems, &
+                ioutps, outputs, &
+                nomult, imultp, &
+                constants, &
+                refday, &
+                status)
 
-      call setup_statistical(lunrep, npos, cchar, &
-                             ilun, lch, &
-                             lstack, ioutpt, &
-                             dtflg1, dtflg3, &
-                             statprocesdef, allitems, &
-                             noinfo, iwar, &
-                             ierr)
-      write (lunrep, '(//'' Messages presented in this .lst file:'')')
-      write (lunrep, '( /'' Number of WARNINGS            :'',I6)') iwar
-      write (lunrep, '(  '' Number of ERRORS during input :'',I6)') ierr
-      write (lunrep, '(  '' '')')
+        deallocate (syname)
+        deallocate (imultp)
 
-      call dlwqp1(lun, lchar, &
-                  statprocesdef, allitems, &
-                  ioutps, outputs, &
-                  nomult, imultp, &
-                  constants, noinfo, &
-                  refday, &
-                  iwar, ierr)
-
-      deallocate (syname)
-      deallocate (imultp)
-
-   end subroutine delwaq1_read_input_data
+    end subroutine delwaq1_read_input_data
 
 end module m_delwaq1_read_input_data

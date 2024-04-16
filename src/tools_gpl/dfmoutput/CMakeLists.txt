@@ -109,6 +109,7 @@ if (WIN32)
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 # Create the folder structure in vfproj
@@ -120,9 +121,3 @@ install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 # Set post-build step
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})

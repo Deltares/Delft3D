@@ -10,12 +10,13 @@ if(WIN32)
 endif(WIN32)
 
 # Disable BUILD_SHARED_LIBS and BUILD_TESTING before proj configuration. Restore them after.
+set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OFF)
 set(SAVED_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 set(SAVED_BUILD_TESTING ${BUILD_TESTING})
 set(BUILD_TESTING OFF)
 
-set(CMAKE_FOLDER "proj") # Adds proj related projects under the 'proj' directory in VS sln file.
+set(CMAKE_FOLDER "third_party_open/proj") # Adds proj related projects under the 'proj' directory in VS sln file.
 add_subdirectory(${proj_module} EXCLUDE_FROM_ALL proj)
 unset(CMAKE_FOLDER)
 

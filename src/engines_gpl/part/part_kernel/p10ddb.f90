@@ -85,7 +85,7 @@ contains
                   np = np + int( yp*conn(n0)%f1 )
                   yp = mod( yp*conn(n0)%f1, 1.0 )
                else                                   ! coarsening
-                  yp = ( yp + float(conn(n0)%i1) - 1.0 ) / float( conn(n0)%f1 )
+                  yp = ( yp + real(conn(n0)%i1) - 1.0 ) / real( conn(n0)%f1 )
                endif
             endif
          case ( 2 )
@@ -96,7 +96,7 @@ contains
                   mp = mp + int( xp*conn(n0)%f2 )
                   xp = mod( xp*conn(n0)%f2, 1.0 )
                else
-                  xp = ( xp + float(conn(n0)%i2) - 1.0 ) / float( conn(n0)%f2 )
+                  xp = ( xp + real(conn(n0)%i2) - 1.0 ) / real( conn(n0)%f2 )
                endif
             endif
       end select

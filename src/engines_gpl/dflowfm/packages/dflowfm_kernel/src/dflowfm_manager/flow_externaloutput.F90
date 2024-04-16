@@ -52,6 +52,7 @@
  use m_structures, only: structure_parameters_rst
  use m_monitoring_runupgauges
  use Timers
+ use system_utils, only: makedir
 #ifdef _OPENMP
  use omp_lib
 #endif

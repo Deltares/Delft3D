@@ -2,7 +2,7 @@
 <!-- D-Emissions is implemented as an Open Processes Library - hence a DLL, no .so yet -->
 <testCases>
     <testCase name="e03_f15_c01_d_emissions" ref="dwaq_default">
-        <path>e03_waq/f15_openpl/c01_d_emissions</path>
+        <path version="2024-02-22T14:50:00">e03_waq/f15_openpl/c01_d_emissions</path>
         <checks>
             <file name="EM_pop_his.nc" type="netCDF">
                 <parameters>

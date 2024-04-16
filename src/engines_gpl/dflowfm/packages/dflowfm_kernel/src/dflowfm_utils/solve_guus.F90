@@ -40,7 +40,7 @@
  use m_partitioninfo
  use m_flowparameters, only: icgsolver, ipre
  use m_alloc 
- use string_module, only: get_dirsep
+ use system_utils, only: ARCH
  
  ! subroutine to intialise the following variables:
  ! noactive
@@ -102,7 +102,7 @@ if ( jampi.eq.0 ) then
    end if
 else
    if ( icgsolver == 4) then        ! as a service to the user too  
-      if (get_dirsep() == '/') then ! on linux
+      if (ARCH == 'linux') then ! on linux
          icgsolver = 6
       else                          ! on windows
          icgsolver = 7

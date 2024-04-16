@@ -104,7 +104,7 @@
     <!-- PERFORMANCE TESTS - ONE DOMAIN -->
 
     <testCase name="e02_f091_c040_rws_waal" ref="dflowfm_default">
-      <path>e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
       <programs>
         <program ref="dflowfm" seq="1">
 		  <workingDirectory>dflowfm</workingDirectory>
@@ -145,7 +145,7 @@
     </testCase>	
 
     <testCase name="e110_f03_c010_dcsm_0_5nm" ref="dflowfm_default">
-      <path>e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
+      <path version="2024-01-11T14:00:00">e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -185,7 +185,7 @@
     </testCase>
 
     <testCase name="e110_f03_c020_maas" ref="dflowfm_default">
-      <path>e110_delft3dfm_suite/f03_caching/c020_maas</path>
+      <path version="2024-03-11T17:30:00">e110_delft3dfm_suite/f03_caching/c020_maas</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -225,7 +225,7 @@
     </testCase>
 	
     <testCase name="e110_f03_c030_rijntakken" ref="dflowfm_default">
-      <path>e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
+      <path version="2024-03-22T19:30:00">e110_delft3dfm_suite/f03_caching/c030_rijntakken</path>
       <programs>
         <program ref="dflowfm" seq="1">
 		  <workingDirectory>computations/HW_j16-w5</workingDirectory>
@@ -266,7 +266,7 @@
     </testCase>
 
     <testCase name="e110_f03_c040_rmm" ref="dflowfm_default">
-      <path>e110_delft3dfm_suite/f03_caching/c040_rmm</path>
+      <path version="2024-01-11T14:00:00">e110_delft3dfm_suite/f03_caching/c040_rmm</path>
       <programs>
         <program ref="dflowfm" seq="1">
 		  <workingDirectory>computations</workingDirectory>
@@ -307,7 +307,7 @@
     </testCase>
 
     <testCase name="e02_f091_c02_waal_10165_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f091_rws_acceptance/c02_waal_10165_2D</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c02_waal_10165_2D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -347,7 +347,7 @@
     </testCase>
 
     <testCase name="e02_f091_c03_waal_10165_3D" ref="dflowfm_default">
-      <path>e02_dflowfm/f091_rws_acceptance/c03_waal_10165_3D</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c03_waal_10165_3D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -387,7 +387,7 @@
     </testCase>
 
     <testCase name="e02_f091_c04_maas_D4118" ref="dflowfm_default">
-      <path>e02_dflowfm/f091_rws_acceptance/c04_maas_D4118</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c04_maas_D4118</path>
       <programs>
         <program ref="dflowfm" seq="1">
 		  <workingDirectory>computations/test/JAMM/D4118-restart-6jan2023</workingDirectory>
@@ -429,7 +429,7 @@
     </testCase>
 
     <testCase name="e02_f091_c05_san_francisco_bay_2D" ref="dflowfm_default">
-      <path>e02_dflowfm/f091_rws_acceptance/c05_san_francisco_bay_2D</path>
+      <path version="2024-01-11T13:10:00">e02_dflowfm/f091_rws_acceptance/c05_san_francisco_bay_2D</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>

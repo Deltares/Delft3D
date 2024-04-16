@@ -4936,6 +4936,7 @@ switch cmd
         %
         % ------ colour tracks ...
         %
+        set(findobj(UOH,'tag','colourtracks'),'value',0,'style','checkbox')
         set(findobj(UOH,'tag','trackcolour=?'),'value',1,'string',{' '})
         %
         % ------ colour vectors ...

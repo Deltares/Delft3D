@@ -51,6 +51,7 @@ integer, parameter, public :: ICE_WINDDRAG_CUBIC   = 1 !< Based on ADCIRC (Chapm
 integer, parameter, public :: ICE_WINDDRAG_LB05    = 2 !< Lupkes and Birnbaum (2005)
 integer, parameter, public :: ICE_WINDDRAG_AN10    = 3 !< Andreas et al (2010)
 integer, parameter, public :: ICE_WINDDRAG_LINEAR  = 4 !< no wind drag below ice
+integer, parameter, public :: ICE_WINDDRAG_RAYS    = 5 !< Based on ADCIRC (Chapman et al., 2005)
 
 !
 ! public routines
@@ -200,9 +201,9 @@ function select_icecover_model(icecover, modeltype) result(istat)
     icecover%ice_thickness_forcing_available  = 0
     
     if (modeltype == ICECOVER_NONE) then
-       icecover%apply_pressure            = .false.
+       icecover%apply_pressure         = .false.
     else
-       icecover%apply_pressure            = .true.
+       icecover%apply_pressure         = .true.
     endif
     icecover%apply_friction            = .false.
     icecover%reduce_surface_exchange   = .false.
@@ -407,26 +408,37 @@ pure function ice_drag_effect(icecover, ice_af, cdw) result (cdeff)
         
     case (ICE_WINDDRAG_CUBIC) ! Chapman & Massey (ADCIRC)
         
-        ! drag formula:
+        ! ADCIRC default "IceCube" formula:
         ! cdrag = c0 + c1*A + c2*A^2 + c3*A^3 with A = ice_af
         !
         ! where drag coefficients c0, c1, c2, c3 follow from the following conditions:
-        ! cdrag(A = 0) = 0.000075
+        ! cdrag(A = 0) = 0.00075
         ! cdrag(A = 0.5) = 0.0025
         ! d cdrag/d A (A = 0.5) = 0
         ! cdrag(A = 1) = 0.00125
         !
-        c0 = 0.000075_fp
-        c1 = 0.010875_fp
-        c2 = -0.0144_fp
-        c3 = 0.0047_fp
+        c0 =  0.00075_fp
+        c1 =  0.00750_fp
+        c2 = -0.00900_fp
+        c3 =  0.00200_fp
         cdi = c0 + (c1 + (c2 + c3 * ice_af) * ice_af ) * ice_af
         cdeff = max(cdi, cdw)
         
+    case (ICE_WINDDRAG_RAYS) ! Chapman et al (ADCIRC)
+
+        ! ADCIRC "RaysIce" formula:
+        ! cdrag = c0 + c1*A*(1-A) with A = ice_af
+
         ! Jensen & Ebersole (2012) ERDC/CHL TR-12-26
         ! Modeling of Lake Michigan Storm Waves and Water Levels
-        ! state: Chapman et al(2005, 2009)
-        ! cdeff = 0.001_fp * (0.125_fp + 0.5_fp * ice_af * (1.0_fp – ice_af))
+        ! refer to Chapman et al. (2005, 2009) for
+        ! cdeff = 0.001_fp * (0.125_fp + 0.5_fp * ice_af * (1.0_fp  ice_af))
+
+        c0 =  0.00125_fp
+        c1 =  0.00500_fp
+        cdi = c0 + c1 * ice_af * wat_af
+        cdeff = max(cdi, cdw)
+
     case (ICE_WINDDRAG_LB05) ! Lupkes and Birnbaum (2005)
         
         cdi = 1.5e-3_fp
@@ -434,17 +446,17 @@ pure function ice_drag_effect(icecover, ice_af, cdw) result (cdeff)
         den = 31.0_fp + 90.0_fp * ice_af * wat_af
         cdf = 0.34e-3_fp * ice_af * ice_af * num / den
         
-        cdefF = wat_af * cdw + ice_af * cdi + cdf
+        cdeff = wat_af * cdw + ice_af * cdi + cdf
         
-    case (ICE_WINDDRAG_AN10) ! Andreas et al (2010)
+    case (ICE_WINDDRAG_AN10) ! Andreas et al. (2010)
         
         c0 = 1.5e-3_fp
         c1 = 2.233e-3_fp
-        cdefF = c0 + c1 * ice_af * wat_af
+        cdeff = c0 + c1 * ice_af * wat_af
 
     case (ICE_WINDDRAG_LINEAR)
         
-        cdefF = wat_af * cdw
+        cdeff = wat_af * cdw
         
     end select
 end function ice_drag_effect

@@ -3,7 +3,7 @@
     -->
     <testCases>
         <testCase name="e105_f05_c01_multiple_controlled_parameters" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c01_multiple_controlled_parameters</path>
+            <path version="2024-03-22T19:50:00">e105_dflowfm-drtc/f05_restart/c01_multiple_controlled_parameters</path>
             <checks>
                 <file name="dflowfm/output/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -17,7 +17,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c02_restart_of_c01_at_2nd_day" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c02_restart_of_c01_at_2nd_day</path>
+            <path version="2024-03-22T19:40:00">e105_dflowfm-drtc/f05_restart/c02_restart_of_c01_at_2nd_day</path>
             <checks>
                 <file name="dflowfm/output/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -31,7 +31,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c03_multiple_controlled_structures" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c03_multiple_controlled_structures</path>
+            <path version="2024-03-22T19:50:00">e105_dflowfm-drtc/f05_restart/c03_multiple_controlled_structures</path>
             <checks>
                 <file name="dflowfm/output/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -45,7 +45,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c04_restart_of_c03_at_2nd_day" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c04_restart_of_c03_at_2nd_day</path>
+            <path version="2024-03-22T19:40:00">e105_dflowfm-drtc/f05_restart/c04_restart_of_c03_at_2nd_day</path>
             <checks>
                 <file name="dflowfm/output/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -59,7 +59,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c05_multiple_controlled_parameters_refdate_2006_12_31" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c05_multiple_controlled_parameters_refdate_2006_12_31</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f05_restart/c05_multiple_controlled_parameters_refdate_2006_12_31</path>
             <checks>
                 <file name="dflowfm/output/FlowFM_his.nc" type="NETCDF">
                     <parameters>
@@ -73,7 +73,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c06_f03_c20_171_PIDCntrl-1" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c06_f03_c20_171_PIDCntrl-1</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f05_restart/c06_f03_c20_171_PIDCntrl-1</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
                     <parameters>
@@ -87,7 +87,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c07_f03_c20_171_PIDCntrl-1_restart" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c07_f03_c20_171_PIDCntrl-1_restart</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f05_restart/c07_f03_c20_171_PIDCntrl-1_restart</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_Flow1D/Flow1D_his.nc" type="NETCDF">
                     <parameters>
@@ -101,7 +101,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c08_f01_c071_closing_at_sill" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c08_f01_c071_closing_at_sill</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f05_restart/c08_f01_c071_closing_at_sill</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -113,7 +113,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c09_f01_c071_closing_at_sill_refdate_2006_12_31" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c09_f01_c071_closing_at_sill_refdate_2006_12_31</path>
+            <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f05_restart/c09_f01_c071_closing_at_sill_refdate_2006_12_31</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -125,7 +125,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c10_f01_c071_closing_at_sill_restart_2007_01_03" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c10_f01_c071_closing_at_sill_restart_2007_01_03</path>
+            <path version="2024-03-22T19:50:00">e105_dflowfm-drtc/f05_restart/c10_f01_c071_closing_at_sill_restart_2007_01_03</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -137,7 +137,7 @@
             <!-- seconds -->
         </testCase>
         <testCase name="e105_f05_c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31" ref="dimr_trunk">
-            <path>e105_dflowfm-drtc/f05_restart/c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31</path>
+            <path version="2024-03-22T19:50:00">e105_dflowfm-drtc/f05_restart/c11_f01_c071_closing_at_sill_restart_2007_01_03_refdate_2006_12_31</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>

@@ -106,7 +106,7 @@
     -->
   <testCases>
     <testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default">
-      <path>e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
+      <path version="2024-02-22T14:40:00">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/f34_map.nc" type="netCDF">
           <parameters>
@@ -117,7 +117,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f041_c02_California" ref="dflowfm_swantau_to_waq_default">
-      <path>e02_dflowfm/f041_SWAN-tau_to_WAQ/c02_California</path>
+      <path version="2024-03-12T10:30:00">e02_dflowfm/f041_SWAN-tau_to_WAQ/c02_California</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/cca_map.nc" type="netCDF">
           <parameters>

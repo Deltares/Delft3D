@@ -21,38 +21,38 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_delwaq2_main_finalise
-   use m_waq_precision
+    use m_waq_precision
 
-   implicit none
+    implicit none
 
 contains
-   subroutine delwaq2_main_finalise(action, lunrep, rundat)
+    subroutine delwaq2_main_finalise(action, lunrep, rundat)
 
-      use m_monsys
-      use m_actions
-      use m_dattim
+        use m_monsys
+        use m_actions
+        use m_dattim
 
-      implicit none
-      integer(kind=int_wp), intent(in) ::  action
-      character(len=20), intent(in)                 :: rundat
-      integer(kind=int_wp), intent(in) ::  lunrep
+        implicit none
+        integer(kind = int_wp), intent(in) :: action
+        character(len = 20), intent(in) :: rundat
+        integer(kind = int_wp), intent(in) :: lunrep
 
-      !     Finalise - only if the full computation was done
-      if ((action == action_fullcomputation) .or. (action == action_finalisation)) then
+        !     Finalise - only if the full computation was done
+        if ((action == action_fullcomputation) .or. (action == action_finalisation)) then
 
-         call getmlu(lunrep)
-         write (*, *)
-         write (*, *) ' SIMULATION ENDED '
-         write (*, *)
-         write (lunrep, *)
-         write (lunrep, '(A)') ' Simulation ended normal'
-         call dattim(rundat)
-         write (lunrep, '(2A)') ' Execution stop : ', rundat
+            call getmlu(lunrep)
+            write (*, *)
+            write (*, *) ' SIMULATION ENDED '
+            write (*, *)
+            write (lunrep, *)
+            write (lunrep, '(A)') ' Simulation ended normal'
+            call dattim(rundat)
+            write (lunrep, '(2A)') ' Execution stop : ', rundat
 
-         close (lunrep)
+            close (lunrep)
 
-      end if
+        end if
 
-   END subroutine delwaq2_main_finalise
+    END subroutine delwaq2_main_finalise
 
 end module m_delwaq2_main_finalise

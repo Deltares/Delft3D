@@ -195,7 +195,8 @@ subroutine aerr(name, iostat, isize, errmsg)
 !$OMP END CRITICAL
    else
       if (present(errmsg)) then
-         write (msgbuf,*) ' Allocation Error: ', trim(name), ', Allocate status = ', iostat, ', Integer parameter = ', isize, '=>', trim(errmsg)
+         write (msgbuf,*) ' Allocation Error: ', trim(name), ', Allocate status = ', iostat, &
+         ', Integer parameter = ', isize, '=>', trim(errmsg)
       else
          write (msgbuf,*) ' Allocation Error: ', trim(name), ', Allocate status = ', iostat, ', Integer parameter = ', isize
       end if

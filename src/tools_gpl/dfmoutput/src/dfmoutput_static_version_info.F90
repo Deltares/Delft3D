@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "dfmoutput_version.h"
+#include "dfmoutput_version.h"
 
 module dfmoutput_static_version_info
     implicit none

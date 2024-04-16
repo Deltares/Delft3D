@@ -624,9 +624,10 @@ module m_oned_functions
       use m_flowtimes
       use m_flowgeom 
       use m_flow
-      
+      use messageHandling
+
       type(t_structure), intent(inout) :: struct !< The parent structure of the pump (which also contains the flow link information).
-                
+
       double precision     :: s1k1
       double precision     :: s1k2
       double precision     :: qp
@@ -707,8 +708,11 @@ module m_oned_functions
          ! Limit the pump discharge in case the volume in the cells at the suction side is limited.
           if (abs(qp) > 0.9d0*vp/dts) then
             qp = sign(0.9d0*vp/dts, qp)
+            call setmessage(LEVEL_WARN, 'Discharge through pump ' &
+                & //trim(struct%id)//' is limited below capacity '//&
+                & 'by water volume on suction side.')
          endif
-         
+
          do L0  = 1, struct%numlinks
             L = struct%linknumbers(L0)
             dir = int(sign(1d0, L*qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.

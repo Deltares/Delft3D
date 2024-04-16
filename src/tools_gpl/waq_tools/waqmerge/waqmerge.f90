@@ -22,9 +22,12 @@
 !!  rights reserved.
 
 program waqmerge
+
+      use m_srstop
+      use m_monsys
       use io_netcdf
       use m_write_waqgeom
-      use hydmod
+      use m_hydmod
       use hyd_waqgeom_old
       use m_alloc
       use delwaq_version_module
@@ -33,9 +36,9 @@ program waqmerge
 
       implicit none
 
-      type(t_hyd)               :: hyd             ! description of the overall hydrodynamics
-      type(t_hyd), pointer      :: domain_hyd      ! description of one domain hydrodynamics
-      type(t_hyd_coll)          :: domain_hyd_coll ! description of all domain hydrodynamics
+      type(t_hydrodynamics)               :: hyd             ! description of the overall hydrodynamics
+      type(t_hydrodynamics), pointer      :: domain_hyd      ! description of one domain hydrodynamics
+      type(t_hydrodynamics_collection)          :: domain_hyd_coll ! description of all domain hydrodynamics
 
       character(len=10)         :: c_domain        ! number of domains
       integer                   :: n_domain        ! number of domains
@@ -43,7 +46,7 @@ program waqmerge
       character(len=80)         :: version_temp    ! temp version string
       character(len=80)         :: version         ! version string
       character(len=20)         :: rundat          ! date and time string
-      type(t_dlwqfile)          :: file_rep        ! report file
+      type(t_file)          :: file_rep        ! report file
       integer                   :: lunrep          ! unit number report file
       character(len=256)        :: filext          ! file extension
       character(len=256)        :: waq_output_dir  ! WAQ directory
@@ -83,7 +86,7 @@ program waqmerge
          mdu_exist = .false.
          inquire(file = trim(hyd%file_hyd%name),exist = mdu_exist)
          if (.not. mdu_exist) then
-            write(*     ,'(a,a)'), '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
+            write(*     ,'(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
             call srstop(1)
          endif
 
@@ -93,15 +96,15 @@ program waqmerge
          file_rep%name   = trim(hyd%file_hyd%name)//'-waqmerge.log'
          file_rep%type   = FT_ASC
          file_rep%status = 0
-         call dlwqfile_open(file_rep)
-         lunrep = file_rep%unit_nr
+         call file_rep%open()
+         lunrep = file_rep%unit
          write (lunrep,'(a)') ' ', trim(version)
       else
          file_rep%name   = 'waqmerge.log'
          file_rep%type   = FT_ASC
          file_rep%status = 0
-         call dlwqfile_open(file_rep)
-         lunrep = file_rep%unit_nr
+         call file_rep%open()
+         lunrep = file_rep%unit
          write (lunrep,'(a,a)') ' ', trim(version)
          write (lunrep,'(/a)') ' ERROR: no mdu name was given!'
          write (*     ,'(/a)') ' ERROR: no mdu name was given!'
@@ -165,7 +168,7 @@ program waqmerge
 
       allocate(domain_hyd_coll%hyd_pnts(n_domain))
       domain_hyd_coll%maxsize = n_domain
-      domain_hyd_coll%cursize = n_domain
+      domain_hyd_coll%current_size = n_domain
       do i_domain = 1 , n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
          domain_hyd%file_hyd%name = hyd%domain_coll%domain_pnts(i_domain)%name
