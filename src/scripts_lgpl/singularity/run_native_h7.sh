@@ -18,6 +18,10 @@ PARTITION="test"
 TIME_LIMIT="00:15:00"
 DIMR_FOLDER="/p/d-hydro/dimrset/latest"
 DIMR_FILE="${PWD}/dimr_config.xml"
+
+# This setting might help to prevent errors due to temporary locking of NetCDF files. 
+export HDF5_USE_FILE_LOCKING=FALSE
+
   
 # Compute the total number of tasks (across all nodes).
 NTASKS=$(( $NODES * $TASKS_PER_NODE ))
