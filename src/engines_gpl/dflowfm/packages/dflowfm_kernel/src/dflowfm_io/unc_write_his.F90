@@ -1560,6 +1560,7 @@ end function get_dimid_len
 subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    use m_reshape, only: reshape_implicit
    use MessageHandling, only: err
+   use m_statistical_output_types, only: t_output_variable_item
    integer, intent(in) :: i_his_file
    type(t_output_variable_item), intent(in) :: output_variable_item
 

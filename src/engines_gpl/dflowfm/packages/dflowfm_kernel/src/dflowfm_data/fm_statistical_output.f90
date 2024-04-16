@@ -3,6 +3,8 @@ module fm_statistical_output
    use m_output_config
    use m_statistical_output
    use messagehandling
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
+   
    implicit none
 
 private

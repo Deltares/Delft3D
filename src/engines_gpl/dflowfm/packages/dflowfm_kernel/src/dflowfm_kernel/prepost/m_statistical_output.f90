@@ -21,25 +21,13 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
    
-module m_statistical_callback
-   abstract interface
-      !> function pointer to be called by update_source_data when advanced operations are required and the data to be
-      !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
-      !!
-      !! NOTE: these callback functions are also called once during init_statistical_output();
-      !!       if %source_input must point to newly allocated memory, that is the time to do it once,
-      !!       and should never be reallocated after that.
-      subroutine process_data_double_interface(datapointer)
-         double precision, pointer, dimension(:), intent(inout) :: datapointer !< pointer to function in-output data
-      end subroutine process_data_double_interface
-   end interface
-end module m_statistical_callback
-   
 !> This module implements the statistical output in D-Flow FM.
 module m_statistical_output
+
    use MessageHandling
    use m_output_config
    use m_statistical_callback
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
    
    implicit none
    
@@ -70,39 +58,6 @@ private
    integer, parameter, public :: SO_NOERR          =  0 !< Function successful
    integer, parameter, public :: SO_INVALID_CONFIG = -1 !< Wrong value string provided in the MDU output configuration
    integer, parameter, public :: SO_EOR            = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
-   
-   !> Derived type for the statistical output items. 
-   type, public :: t_output_variable_item
-      type(t_output_quantity_config), pointer   :: output_config        !< Pointer to output configuration item.
-      integer                                   :: operation_type       !< Specifies the kind of operation to perform on the output variable.
-      integer                                   :: current_step         !< Latest entry in the work array. MOD(current_step+1,moving_average_window) is the next 
-      integer                                   :: moving_average_window    !< Number of steps inside the moving average
-      !< item to remove.   
-      integer                                   :: id_var               !< NetCDF variable ID, to be set and used by actual writing functions.
-      double precision, pointer, dimension(:)   :: stat_output          !< Array that is to be written to the Netcdf file. In case the current values are
-                                                                        !< required this variable points to the basic variable (e.g. s1).
-                                                                        !< Otherwise during the simulation the intermediate results are stored.
-      double precision, pointer, dimension(:)   :: stat_input           !< In case a statistical operation is requested. This pointer points to the
-                                                                        !< source_input.
-      double precision, pointer    , dimension(:)   :: source_input         !< pointer to the basic variable
-      double precision, allocatable, dimension(:,:) :: samples              !< In case a moving average is requested. This pointer points to the
-                                                                        !< work array, where the different samples are stored.
-      double precision, allocatable, dimension(:)   :: moving_average_sum !< In case a moving average is requested. This pointer points to the
-                                                                        !< actual average values.
-      double precision                          :: timestep_sum         !< sum of timesteps (for moving average/ average calculation)
-      
-      double precision, allocatable, dimension(:)   :: timesteps            !< array of timesteps belonging to samples in samples array
-      procedure(process_data_double_interface), nopass, pointer      :: source_input_function_pointer => null()          !< function pointer for operation that needs to be performed to produce source_input 
-      
-   end type t_output_variable_item
-   
-   !> Derived type to store the cross-section set
-   type, public :: t_output_variable_set
-      integer                                                :: size = 0      !< size of output variable set
-      integer                                                :: growsby = 200 !< increment of output variable set
-      integer                                                :: count= 0      !< count of items in output variable set
-      type(t_output_variable_item), pointer, dimension(:)    :: statout       !< pointer to array of output variable items
-   end type t_output_variable_set
 
 contains
 
@@ -268,16 +223,20 @@ contains
    
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-   use m_statistical_callback
+      use m_statistical_callback
+      use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
+      use m_monitoring_crosssections, only: crs
+      use MessageHandling, only: mess, LEVEL_WARN
    
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
       type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
       double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
       procedure(process_data_double_interface), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
-      type(t_output_variable_item) :: item ! new item to be added
+      type(t_output_variable_item)                       :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring
-      integer :: ierr
+      integer                                            :: ierr
+      
       valuestring = output_config%input_value
 
       do while (len_trim(valuestring) > 0) 
@@ -287,6 +246,16 @@ contains
          else if (item%operation_type == SO_NONE) then
             cycle
          else
+      
+            ! Disable statistical output items on cross-sections if any cross-sections lie across multiple partitions
+            if (output_config%location_specifier == UNC_LOC_OBSCRS .and. &
+                any_crosssections_lie_across_multiple_partitions(crs) .and. &
+                (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX .or. item%operation_type == SO_AVERAGE)) then
+               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type2string(item%operation_type)) // ')"' // &
+                                    ' as at least one observation cross-section lies across multiple partitions, which could produce invalid output')
+               cycle
+            end if
+            
             output_set%count = output_set%count + 1
             if (output_set%count > output_set%size) then
                call realloc_stat_output(output_set)
@@ -436,5 +405,24 @@ contains
       enddo
 
    end subroutine initialize_statistical_output
+   
+   !> Obtain a character string describing the statistics operation (for writing to screen)
+   function operation_type2string(operation_type) result(operation_string)
+      integer, intent(in) :: operation_type        !< Integer representing the operation type
+      character(len=256)  :: operation_string      !> Character string describing the operation type
+            
+      select case (operation_type)
+      case default
+         operation_string = 'UNKNOWN'
+      case (SO_CURRENT)
+         operation_string = 'current'
+      case (SO_MIN)
+         operation_string = 'min'
+      case (SO_MAX)
+         operation_string = 'max'
+      case (SO_AVERAGE)
+         operation_string = 'average'
+      end select
+   end function operation_type2string
 
 end module
