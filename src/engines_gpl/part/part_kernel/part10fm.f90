@@ -156,18 +156,6 @@ subroutine part10fm()
             enddo
         endif
 
-        if (.not.skip_pt) then
-           tp = real(iptime(ipart), kind=kind(tp))
-           abuac  = abuoy(ipart)
-           dran1  = drand(1)
-           if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
-              tp     = 0.0
-              itdelt = dts + iptime(ipart)
-              ddfac  = real(itdelt)/dts
-              dran1  = dran1 * sqrt(ddfac)
-              abuac  = abuac * sqrt(ddfac)
-           endif
-
         !
         ! Allow dispersion for the particle or not
         !
