@@ -37,7 +37,9 @@
       name = 'testje'
 
       do t = 1, nTimes
-#if (defined(WIN32))
+#ifdef __INTEL_COMPILER
+        call sleepqq(999)
+#elif (defined(WIN32))
         call sleep(999)
 #else
         call DIOSYNCcSLEEP(999)

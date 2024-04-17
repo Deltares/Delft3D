@@ -917,11 +917,13 @@ subroutine DioStreamDelay
     use DFLIB
 #endif
 
-    integer     ::  delay
+    integer     ::  delay !< sleep period in milliseconds
 
     call DioConfGetStProp(dio_st_Delay, delay)
 
-#if (defined(WIN32))
+#ifdef __INTEL_COMPILER
+    call sleepqq(delay)
+#elif (defined(WIN32))
     call sleep(delay)
 #elif (defined(salford32))
     call sleep@(real(delay))

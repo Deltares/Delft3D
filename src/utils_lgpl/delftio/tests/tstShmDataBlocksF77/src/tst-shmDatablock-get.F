@@ -46,7 +46,9 @@
 
       do t = 1, nGetTimes
 
-#if (defined(WIN32))
+#ifdef __INTEL_COMPILER
+        call sleepqq(50)
+#elif (defined(WIN32))
         call sleep(50)
 #else
         call DIOSYNCcSLEEP(50)

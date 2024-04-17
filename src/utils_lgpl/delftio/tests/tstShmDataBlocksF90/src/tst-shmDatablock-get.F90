@@ -42,7 +42,9 @@ program test_get_shmds_f90
 
     do t = 1, nTimes
 
-#if (defined(WIN32))
+#ifdef __INTEL_COMPILER
+        call sleepqq(100)
+#elif (defined(WIN32))
         call sleep(100)
 #else
         call DIOSYNCcSLEEP(100)
