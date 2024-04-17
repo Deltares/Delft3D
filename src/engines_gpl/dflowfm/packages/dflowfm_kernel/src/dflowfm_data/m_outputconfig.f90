@@ -524,7 +524,7 @@ private
       integer                                                :: size = 0                  !< Actual size of cross-section set
       integer                                                :: growsby = 200             !< Increment for cross-section set
       integer                                                :: count= 0                  !< Actual number of cross-section sets
-      type(t_output_quantity_config), pointer, dimension(:)  :: statout                   !< Current cross-section
+      type(t_output_quantity_config), pointer, dimension(:)  :: configs                   !< Current cross-section
    end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
@@ -558,17 +558,17 @@ subroutine realloc_config_output(confoutput)
    ! Program code
 
    if (confoutput%size > 0) then
-      oldstats=>confoutput%statout
+      oldstats=>confoutput%configs
    endif
 
    if (confoutput%growsBy <=0) then
       confoutput%growsBy = 200
    endif
-   allocate(confoutput%statout(confoutput%size+confoutput%growsBy),stat=ierr)
-   call aerr('statoutput%statout(statoutput%size+statoutput%growsBy)',ierr,confoutput%size+confoutput%growsBy)
+   allocate(confoutput%configs(confoutput%size+confoutput%growsBy),stat=ierr)
+   call aerr('statoutput%configs(statoutput%size+statoutput%growsBy)',ierr,confoutput%size+confoutput%growsBy)
 
    if (confoutput%size > 0) then
-      confoutput%statout(1:confoutput%size) = oldstats(1:confoutput%size)
+      confoutput%configs(1:confoutput%size) = oldstats(1:confoutput%size)
       deallocate(oldstats)
    endif
    confoutput%size = confoutput%size+confoutput%growsBy
@@ -581,7 +581,7 @@ subroutine dealloc_config_output(confoutput)
    type(t_output_quantity_config_set), intent(inout)   :: confoutput !< Output configuration set.
 
    if (confoutput%size> 0) then
-      deallocate(confoutput%statout)
+      deallocate(confoutput%configs)
    endif
 end subroutine dealloc_config_output
 
@@ -629,30 +629,30 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    endif
    numentries = config_set%count
    idx = numentries
-   config_set%statout(numentries)%key                = key
-   config_set%statout(numentries)%name               = name
-   config_set%statout(numentries)%id_nc_type         = id_nc_type_
-   config_set%statout(numentries)%long_name          = long_name
-   config_set%statout(numentries)%standard_name      = standard_name
-   config_set%statout(numentries)%unit               = unit
-   config_set%statout(numentries)%location_specifier = location_specifier
-   config_set%statout(numentries)%input_value = ''
+   config_set%configs(numentries)%key                = key
+   config_set%configs(numentries)%name               = name
+   config_set%configs(numentries)%id_nc_type         = id_nc_type_
+   config_set%configs(numentries)%long_name          = long_name
+   config_set%configs(numentries)%standard_name      = standard_name
+   config_set%configs(numentries)%unit               = unit
+   config_set%configs(numentries)%location_specifier = location_specifier
+   config_set%configs(numentries)%input_value = ''
 
    if (present(nc_dim_ids)) then
-      config_set%statout(numentries)%nc_dim_ids = nc_dim_ids
+      config_set%configs(numentries)%nc_dim_ids = nc_dim_ids
    end if
 
    if (present(nc_atts)) then
       numatt = size(nc_atts)
-      call realloc(config_set%statout(numentries)%additional_attributes, numatt, keepExisting=.false.)
-      config_set%statout(numentries)%additional_attributes%count = numatt
-      config_set%statout(numentries)%additional_attributes%atts = nc_atts
+      call realloc(config_set%configs(numentries)%additional_attributes, numatt, keepExisting=.false.)
+      config_set%configs(numentries)%additional_attributes%count = numatt
+      config_set%configs(numentries)%additional_attributes%atts = nc_atts
    end if
 
    if (present(description)) then
-      config_set%statout(numentries)%description = description
+      config_set%configs(numentries)%description = description
    else
-      config_set%statout(numentries)%description = ''
+      config_set%configs(numentries)%description = ''
    endif
 
 end subroutine addoutval
@@ -699,12 +699,12 @@ subroutine scan_input_tree(tree, paragraph, quantity_config_set)
    type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
-   type(t_output_quantity_config), pointer, dimension(:) :: quantity_config
+   type(t_output_quantity_config), pointer, dimension(:) :: quantity_configs
 
-   quantity_config => quantity_config_set%statout
+   quantity_configs => quantity_config_set%configs
 
    do i = 1, quantity_config_set%count
-      call prop_get_string(tree, paragraph, quantity_config(i)%key, quantity_config(i)%input_value)
+      call prop_get_string(tree, paragraph, quantity_configs(i)%key, quantity_configs(i)%input_value)
    enddo
 
 end subroutine scan_input_tree
@@ -720,7 +720,7 @@ subroutine set_properties(tree, paragraph, quantity_config_set)
    integer i
    type(t_output_quantity_config), pointer, dimension(:) :: statout
 
-   statout => quantity_config_set%statout
+   statout => quantity_config_set%configs
 
    do i = 1, quantity_config_set%count
       if (len_trim(statout(i)%description)>0) then

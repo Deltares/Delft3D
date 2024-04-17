@@ -542,7 +542,7 @@ subroutine unc_write_his(tim)            ! wrihis
               transpunit = 'm3 s-1 m-1'
            end select
            do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY 
-              out_quan_conf_his%statout(ivar)%unit = transpunit
+              out_quan_conf_his%configs(ivar)%unit = transpunit
            enddo
            
            ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)

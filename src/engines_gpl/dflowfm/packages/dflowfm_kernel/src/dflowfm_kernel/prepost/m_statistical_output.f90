@@ -86,14 +86,14 @@ contains
       
       if (present(size) .and. size >= statoutput%count) then
          allocate(statoutput%statout(size),stat=ierr)
-         call aerr('statoutput%statout(size)',ierr,size)
+         call aerr('statoutput%configs(size)',ierr,size)
          
          statoutput%statout(1:size) = oldstats(1:size)
          deallocate(oldstats)
          statoutput%size = size
       else
          allocate(statoutput%statout(statoutput%size+statoutput%growsBy),stat=ierr)
-         call aerr('statoutput%statout(statoutput%size+statoutput%growsBy)',ierr,statoutput%size+statoutput%growsBy)
+         call aerr('statoutput%configs(statoutput%size+statoutput%growsBy)',ierr,statoutput%size+statoutput%growsBy)
    
          if (statoutput%size > 0) then
             statoutput%statout(1:statoutput%size) = oldstats(1:statoutput%size)

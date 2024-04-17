@@ -331,8 +331,8 @@ end subroutine api_loadmodel
    if (out_variable_set_his%count > 0) then
       call update_statistical_output(out_variable_set_his%statout,dts)
    endif
-   !call update_statistical_output(out_variable_set_map%statout,dts)
-   !call update_statistical_output(out_variable_set_clm%statout,dts)
+   !call update_statistical_output(out_variable_set_map%configs,dts)
+   !call update_statistical_output(out_variable_set_clm%configs,dts)
     
     call mess(LEVEL_INFO,'Writing initial output to file(s)...')
     inner_timerhandle = 0
