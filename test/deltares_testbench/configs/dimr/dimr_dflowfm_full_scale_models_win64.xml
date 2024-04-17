@@ -81,7 +81,7 @@
 
     <testCases>
         <testCase name="e02_f150_c11_korte-woerden-1d" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c11_korte-woerden-1d/dimr_model</path>
+            <path version="2024-04-12T14:58:13">e02_dflowfm/f150_1d2d_acceptance_urban/c11_korte-woerden-1d/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>

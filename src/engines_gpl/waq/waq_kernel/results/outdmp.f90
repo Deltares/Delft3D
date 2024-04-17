@@ -80,17 +80,17 @@ contains
         INTEGER(kind = int_wp) :: LGRID(*), IP(*)
         REAL(kind = real_wp) :: CONC(NOTOT, *), BOUND(NOSYS, *), &
                 CONC2 (*)
-        CHARACTER*6   CGRID (20, *)
-        CHARACTER*20  SNAME (*), SYNAM2(*)
-        CHARACTER*40  MNAME (*)
-        CHARACTER*(*) LCHOUT
+        character(len=6)   CGRID (20, *)
+        character(len=20)  SNAME (*), SYNAM2(*)
+        character(len=40)  MNAME (*)
+        character(len=*) LCHOUT
         !
         !     Local declaration
         !
         integer(kind = int_wp) :: itot, i, i1, i2, i3, k, j, iscale, factor, nend
         real(kind = real_wp) :: cmax, c
         real(kind = real_wp), PARAMETER :: RMISS = -999.
-        CHARACTER*6   POINT, PADDER
+        character(len=6)   POINT, PADDER
         DATA          POINT / '  .   ' /
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("outdmp", ithandl)

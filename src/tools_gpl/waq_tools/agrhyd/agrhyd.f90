@@ -23,7 +23,9 @@
 
 program agrhyd
 
-    use hydmod
+    use m_srstop
+    use m_monsys
+    use m_hydmod
     use m_cli_utils, only : retrieve_command_argument
     use data_processing, only : extract_value_from_group, extract_logical, extract_integer, extract_real
     use time_module
@@ -35,9 +37,9 @@ program agrhyd
 
     implicit none
 
-    type(t_hyd) :: input_hyd     ! description of the input hydrodynamics
-    type(t_hyd) :: input_patch_hyd(0:9) ! description of the input hydrodynamics patches
-    type(t_hyd) :: output_hyd    ! description of the output hydrodynamics
+    type(t_hydrodynamics) :: input_hyd     ! description of the input hydrodynamics
+    type(t_hydrodynamics) :: input_patch_hyd(0:9) ! description of the input hydrodynamics patches
+    type(t_hydrodynamics) :: output_hyd    ! description of the output hydrodynamics
     integer, allocatable :: ipnt_h(:, :)   ! horizontal aggregation pointer
     integer, allocatable :: ipnt_v(:)     ! vertical aggregation pointer
     integer, allocatable :: ipnt(:)       ! aggregation pointer segments
@@ -89,9 +91,9 @@ program agrhyd
     integer :: ilay          ! layer index
     character(len = 20) :: rundat        ! date and time string
     integer :: ierr_alloc    !
-    type(t_dlwqfile) :: new_lga               ! aggregation-file
-    type(t_dlwqfile) :: new_cco               ! aggregation-file
-    type(t_dlwqfile) :: new_grd               ! new grd file
+    type(t_file) :: new_lga               ! aggregation-file
+    type(t_file) :: new_cco               ! aggregation-file
+    type(t_file) :: new_grd               ! new grd file
     logical :: singapore_rename_discharges ! special option rename discharges for singapore
     character(len = 256) :: singapore_discharge_names   ! special option filename for singapore
 
@@ -324,7 +326,7 @@ program agrhyd
 
     ! read sources
 
-    if (input_hyd%wasteload_coll%cursize > 0) then
+    if (input_hyd%wasteload_coll%current_size > 0) then
         if(.not.any(l_patch)) then
             inquire(file = input_hyd%file_src%name, exist = exist_src)
             if (exist_src) then
@@ -345,7 +347,7 @@ program agrhyd
                 else
                     write(lunrep, *) 'warning: could not find TMP_src-file: ' // trim(input_hyd%file_src%name)
                     write(*, *) 'warning: could not find TMP_src-file: ' // trim(input_hyd%file_src%name)
-                    input_hyd%wasteload_coll%cursize = 0
+                    input_hyd%wasteload_coll%current_size = 0
                 endif
             endif
         else
@@ -367,10 +369,10 @@ program agrhyd
             else
                 write(lunrep, *) 'warning: could not find src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
                 write(*, *) 'warning: could not find src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
-                input_hyd%wasteload_coll%cursize = 0
+                input_hyd%wasteload_coll%current_size = 0
             endif
             do ipatch = cpatch - 1, 0, -1
-                if(input_hyd%wasteload_coll%cursize > 0 .and. l_patch(ipatch)) then
+                if(input_hyd%wasteload_coll%current_size > 0 .and. l_patch(ipatch)) then
                     input_patch_hyd(ipatch)%file_src%name = 'TMP_' // trim(input_patch_hyd(ipatch)%file_src%name)
                     inquire(file = input_patch_hyd(ipatch)%file_src%name, exist = exist_src)
                     if (exist_src) then
@@ -381,11 +383,11 @@ program agrhyd
                     else
                         write(lunrep, *) 'warning: could not find TMP_src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
                         write(*, *) 'warning: could not find TMP_src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
-                        input_hyd%wasteload_coll%cursize = 0
+                        input_hyd%wasteload_coll%current_size = 0
                     endif
                 endif
             enddo
-            if(input_hyd%wasteload_coll%cursize > 0) then
+            if(input_hyd%wasteload_coll%current_size > 0) then
                 input_hyd%file_src%name = 'TMP_' // trim(input_hyd%file_src%name)
                 inquire(file = input_hyd%file_src%name, exist = exist_src)
                 if (exist_src) then
@@ -394,13 +396,13 @@ program agrhyd
                 else
                     write(lunrep, *) 'warning: could not find TMP_src-file: ' // trim(input_hyd%file_src%name)
                     write(*, *) 'warning: could not find TMP_src-file: ' // trim(input_hyd%file_src%name)
-                    input_hyd%wasteload_coll%cursize = 0
+                    input_hyd%wasteload_coll%current_size = 0
                 endif
             endif
-            if (input_hyd%wasteload_coll%cursize == 0) then
+            if (input_hyd%wasteload_coll%current_size == 0) then
                 write(lunrep, *) 'warning: agrhyd could not merge the (TMP) src-files. Data ignored.'
                 write(*, *) 'warning: agrhyd could not merge the (TMP) src-files. Data ignored.'
-                input_hyd%wasteload_data%no_brk = 0
+                input_hyd%wasteload_data%num_breakpoints = 0
             endif
         endif
     endif

@@ -37,7 +37,7 @@ module m_fm_wq_processes
    use m_waq_precision, only : sp
    use processes_input
    use processes_pointers
-   use dlwq_hyd_data
+   use m_waq_data_structure
    use processet
    use results, only : OutputPointers
 

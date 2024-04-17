@@ -90,7 +90,7 @@ contains
         integer(kind = int_wp) :: ITIME, NRHARM, NOSUB, NOSPAC, NPOINT, &
                 LUNIN, LUNOUT, ISFLAG, IFFLAG
 
-        CHARACTER*(*) LUNTXT
+        character(len=*) LUNTXT
         LOGICAL       UPDATE
 
         integer(kind = int_wp) :: k, notot
@@ -158,7 +158,7 @@ contains
                 IF (IH == 1) THEN
                     FUNC = 1.0
                 ELSE
-                    FUNC = SIN((FLOAT(ITIME) / IPERIO(IREC) - APHASE(IREC)) * TWOPI)
+                    FUNC = SIN((real(ITIME) / IPERIO(IREC) - APHASE(IREC)) * TWOPI)
                 ENDIF
                 !
                 !         loop over the pointers and the values

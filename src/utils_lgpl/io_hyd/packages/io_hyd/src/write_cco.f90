@@ -34,12 +34,12 @@
       ! global declarations
 
       use m_srstop
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_cco               ! aggregation-file
+      type(t_file)                       :: file_cco               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       real                                   :: xdepth(nmax,mmax)      ! x coordinate depth points
@@ -68,54 +68,54 @@
       npart = 0
       rdum  = 0.0
 
-      call dlwqfile_open(file_cco)
-      lun    = file_cco%unit_nr
+      call file_cco%open()
+      lun    = file_cco%unit
       filtyp = file_cco%type
 
       if ( filtyp .ne. FT_ASC ) then
-         write(file_cco%unit_nr,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
+         write(file_cco%unit,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
             call srstop(1)
          endif
 
          do i=1 , 2*npart+9
-            write(file_cco%unit_nr,iostat=ioerr) rdum
+            write(file_cco%unit,iostat=ioerr) rdum
             if ( ioerr .ne. 0 ) then
                write(*,*) ' error writing cco file dummy records'
                call srstop(1)
             endif
          enddo
 
-         write(file_cco%unit_nr,iostat=ioerr) xdepth
+         write(file_cco%unit,iostat=ioerr) xdepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file xdepth'
             call srstop(1)
          endif
-         write(file_cco%unit_nr,iostat=ioerr) ydepth
+         write(file_cco%unit,iostat=ioerr) ydepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file ydepth'
             call srstop(1)
          endif
       else
-         write(file_cco%unit_nr,*,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
+         write(file_cco%unit,*,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
             call srstop(1)
          endif
-         write(file_cco%unit_nr,*,iostat=ioerr) xdepth
+         write(file_cco%unit,*,iostat=ioerr) xdepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file xdepth'
             call srstop(1)
          endif
-         write(file_cco%unit_nr,*,iostat=ioerr) ydepth
+         write(file_cco%unit,*,iostat=ioerr) ydepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file ydepth'
             call srstop(1)
          endif
       endif
 
-      close(file_cco%unit_nr)
+      close(file_cco%unit)
       file_cco%status = FILE_STAT_UNOPENED
 
       return

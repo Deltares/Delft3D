@@ -87,10 +87,9 @@ contains
         use m_array_manipulation, only : set_array_parameters
         use timers
         use process_registration
+        use omp_lib
 
         implicit none
-
-        !$    include "omp_lib.h"
 
         !     Arguments           :
 
@@ -315,7 +314,7 @@ contains
 
         !     Fill some specific variables absolute in the real array
 
-        defaul(2) = float(itime)
+        defaul(2) = real(itime)
         noq = noq1 + noq2 + noq3 + noq4
 
         !     BLOOM fractional step (derivs assumed zero at entry)
@@ -369,8 +368,8 @@ contains
                 idtpro = prondt(ipbloo) * idt
                 ipp_idt = nodef - 2 * nproc + ipbloo
                 ipp_delt = nodef - nproc + ipbloo
-                defaul(ipp_idt) = float(idt)
-                defaul(ipp_delt) = float(idt) / float(itfact)
+                defaul(ipp_idt) = real(idt)
+                defaul(ipp_delt) = real(idt) / real(itfact)
                 if (timon) call timstrt ("onepro", ithand2)
                 call onepro (ipbloo, ioffbl, idt, itfact, progrd, &
                         grdnos, prvnio, prvtyp, prvvar, vararr, &
@@ -542,8 +541,8 @@ contains
                     ipp_idt = nodef - 2 * nproc + iproc
                     ipp_delt = nodef - nproc + iproc
                     IDTPRO = PRONDT(IPROC) * IDT
-                    DEFAUL(ipp_idt) = FLOAT(IDTPRO)
-                    DEFAUL(ipp_delt) = FLOAT(IDTPRO) / FLOAT(ITFACT)
+                    DEFAUL(ipp_idt) = real(IDTPRO)
+                    DEFAUL(ipp_delt) = real(IDTPRO) / real(ITFACT)
 
                     call onepro (iproc, prvpnt(iproc), idt, itfact, progrd, &
                             grdnos, prvnio, prvtyp, prvvar, vararr, &
@@ -690,7 +689,7 @@ contains
         REAL(kind = real_wp) :: A(:), FLUX(*), &
                 DERIV(*), STOCHI(*), &
                 VOLUME(*), FLXDMP(*)
-        CHARACTER*10        PRONAM(*)
+        character(len=10)        PRONAM(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
         !
         !     Local

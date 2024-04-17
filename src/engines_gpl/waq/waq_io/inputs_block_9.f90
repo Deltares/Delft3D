@@ -89,7 +89,7 @@ contains
         logical :: ibflag !< mass balance option flag
         LOGICAL       INFILE, LMOUTP, LDOUTP, LHOUTP
         LOGICAL       LDUMMY
-        character*255 lchloc            ! Local character variable for file name
+        character(len=255) lchloc            ! Local character variable for file name
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_block_9", ithndl)
 
@@ -220,7 +220,7 @@ contains
 
         allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart), &
                 Outputs%units(nrvart), Outputs%description(nrvart))
-        Outputs%cursize = nrvart
+        Outputs%current_size = nrvart
 
         ivar = 0
         do i = 1, noutp

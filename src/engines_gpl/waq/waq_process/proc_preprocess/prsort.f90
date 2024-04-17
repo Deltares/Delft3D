@@ -37,7 +37,7 @@ contains
 
         ! sort processes according to input - output relation, simpel linear sort at the moment
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use ProcesSet
         use timers       !   performance timers
 
@@ -53,7 +53,7 @@ contains
         character(len = *) :: syname(*)       ! substance name
         integer(kind = int_wp) :: nocons          ! number of constants
         integer(kind = int_wp) :: nofun           ! number of functions
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         character(len = *) :: paname(*)       ! parameter names
         character(len = *) :: funame(*)       ! function names
         character(len = *) :: sfname(*)       ! segment function names
@@ -81,7 +81,7 @@ contains
 
         ! loop over the processes
 
-        nproc = ProcesDef%cursize
+        nproc = ProcesDef%current_size
         i_lowest_rank = 1
         nloop = 0
 
@@ -92,7 +92,7 @@ contains
             iproc1 = i_lowest_rank
             i_lowest_rank = nproc
             nloop = nloop + 1
-            do iproc = iproc1, ProcesDef%cursize
+            do iproc = iproc1, ProcesDef%current_size
 
                 ! check if output is used by previous processes
 

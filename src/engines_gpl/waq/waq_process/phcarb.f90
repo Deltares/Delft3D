@@ -360,13 +360,13 @@ contains
                 ! Set temperature and salinity
                 CALL SETUP_API4PHTOT(DBLE(TEMPK), DBLE(SAL), 1.0D0)
                 ! First try the fast poly solver
-                AHPLUS = SNGL(SOLVE_ACBW_POLYFAST(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                AHPLUS = real(SOLVE_ACBW_POLYFAST(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                 IF (AHPLUS < 0.0d0) THEN
                     ! If not succesfull try the normal poly solver
-                    AHPLUS = SNGL(SOLVE_ACBW_POLY(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                    AHPLUS = real(SOLVE_ACBW_POLY(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                     IF (AHPLUS < 0.0d0) THEN
                         ! If still not succesfull use the robust solver
-                        AHPLUS = SNGL(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
+                        AHPLUS = real(SOLVE_ACBW_GENERAL(DBLE(ALK), DBLE(TICM), DBLE(BT)))
                     ENDIF
                 ENDIF
                 PH = -LOG10(AHPLUS)

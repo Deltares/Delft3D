@@ -128,8 +128,8 @@ contains
         ! files
         integer(kind = int_wp), save :: lu_bin
         integer(kind = int_wp), save :: lu_txt
-        character*80, parameter :: filbin = 'plastc_em.bin'
-        character*80, parameter :: filtxt = 'plastc_em.txt'
+        character(len=80), parameter :: filbin = 'plastc_em.bin'
+        character(len=80), parameter :: filtxt = 'plastc_em.txt'
 
         !     other
         logical first
@@ -269,15 +269,15 @@ contains
                 fluxwash = (plastic / delt + totflxin(nsubs, rec_pav) - fluxloss - fluxbur) * dble(fwashoff)
                 ! output velocities to move the substances
                 ioq = (pav2sfw - 1) * nosegl + isegl
-                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = sngl(fluxwash)
+                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
                 ! increase the inflow balance of the downstream compartments
                 totflxin(nsubs, rec_sfw) = totflxin(nsubs, rec_sfw) + fluxwash
 
                 ! now set the fluxes
                 iflux = ifldec + (iseg - 1) * noflux
-                fl(iflux) = sngl(fluxloss)
+                fl(iflux) = real(fluxloss)
                 iflux = iflbur + (iseg - 1) * noflux
-                fl(iflux) = sngl(fluxbur)
+                fl(iflux) = real(fluxbur)
             endif
 
             ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
@@ -308,14 +308,14 @@ contains
                 fluxwash = (plastic / delt + totflxin(nsubs, rec_unp) - fluxloss - fluxbur) * dble(fwashoff)
                 ! output velocities to move the substances
                 ioq = (unp2sfw - 1) * nosegl + isegl
-                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = sngl(fluxwash)
+                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
                 ! increase the inflow balance of the downstream compartments
                 totflxin(nsubs, rec_sfw) = totflxin(nsubs, rec_sfw) + fluxwash
                 ! now set the fluxes
                 iflux = ifldec + (iseg - 1) * noflux
-                fl(iflux) = sngl(fluxloss)
+                fl(iflux) = real(fluxloss)
                 iflux = iflbur + (iseg - 1) * noflux
-                fl(iflux) = sngl(fluxbur)
+                fl(iflux) = real(fluxbur)
 
             endif
 
@@ -326,7 +326,7 @@ contains
             if (iatt1>0) then
 
                 ! fluxes
-                fluxexp = sngl(totflxin(nsubs, rec_sfw))
+                fluxexp = real(totflxin(nsubs, rec_sfw))
                 ! routing
                 ioq = (sfw2exp - 1) * nosegl + isegl
                 pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = fluxexp

@@ -464,9 +464,9 @@ subroutine unc_addglobalatts(ncid)
 
    integer, intent(in) :: ncid
 
-   character*8  :: cdate
-   character*10 :: ctime
-   character*5  :: czone
+   character(len=8)  :: cdate
+   character(len=10) :: ctime
+   character(len=5)  :: czone
    integer :: ierr, jaInDefine
    ierr = nf90_noerr
    jaInDefine = 0

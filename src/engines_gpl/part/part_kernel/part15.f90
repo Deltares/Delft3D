@@ -136,7 +136,7 @@ contains
 
 !           determine interpolation factor
 
-            fract = float(itime - iwndtm(id-1)) / float(iwndtm(id) - iwndtm(id-1))
+            fract = real(itime - iwndtm(id-1)) / real(iwndtm(id) - iwndtm(id-1))
 
 !           interpolate
 

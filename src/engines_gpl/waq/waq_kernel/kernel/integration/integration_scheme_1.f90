@@ -93,7 +93,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
@@ -114,7 +114,7 @@ contains
 
         type(waq_data_buffer), target :: buffer           !< System total array space
         integer(kind = int_wp), intent(inout) :: lun  (*)          !< array with unit numbers
-        character*(*), intent(in) :: lchar(*)          !< array with file names
+        character(len=*), intent(in) :: lchar(*)          !< array with file names
         integer(kind = int_wp), intent(in) :: action            !< type of action to perform
         type(delwaq_data), target :: dlwqd             !< delwaq data structure
         type(GridPointerColl) :: gridps            !< collection of all grid definitions
@@ -321,7 +321,7 @@ contains
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
                 call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), &
+                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif

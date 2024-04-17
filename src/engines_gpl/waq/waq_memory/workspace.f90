@@ -173,7 +173,7 @@ CONTAINS
         2020 FORMAT (' ERROR. Integer   array space exceeded !!! ', /, &
                 ' total integer array space: ', I10, ', allowed = ', I10)
         2030 FORMAT (' ERROR. Character array space exceeded !!! ', /, &
-                ' total Character*20  space: ', I10, ', allowed = ', I10)
+                ' total character(len=20)  space: ', I10, ', allowed = ', I10)
         2040 FORMAT (' EXECUTION HALTED, CONSULT YOUR SYSTEM MANAGER !!!')
 
     end subroutine set_array_indexes

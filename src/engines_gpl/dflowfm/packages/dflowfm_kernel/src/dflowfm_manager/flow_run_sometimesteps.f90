@@ -37,12 +37,17 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
    use m_partitioninfo
    use unstruc_display, only: jaGUI
    use dfm_error
+   use m_lateral, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used
    implicit none
    double precision, intent(in)  :: dtrange
    integer,          intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
    integer                       :: key
 
    double precision :: timetarget
+
+   if (apply_transport_is_used) then
+      call reset_outgoing_lat_concentration()
+   end if
 
    iresult = DFM_GENERICERROR
    if (dtrange < 0) then
@@ -81,6 +86,10 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
     end if
 
  enddo
+ 
+   if (apply_transport_is_used) then
+      call finish_outgoing_lat_concentration(dtrange)
+   end if
 
    iresult = DFM_NOERR
    return ! Return with success.

@@ -72,7 +72,7 @@ contains
         INTEGER(kind = int_wp) :: LUN(*), IKNMRK(NOSEG, *), &
                 IKTIM(*)
 
-        CHARACTER*(*) LUNTXT(*)
+        character(len=*) LUNTXT(*)
 
         integer(kind = int_wp) :: ierr, iseg, lunout, ikmrk4
         integer(kind = int_wp) :: ithandl = 0

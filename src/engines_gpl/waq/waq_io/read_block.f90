@@ -45,35 +45,35 @@ contains
         use simulation_input_options, only : process_simulation_input_options
         use matrix_utils, only : compute_matrix, print_matrix
         use m_cli_utils, only : retrieve_command_argument
-        use dlwqgrid_mod          ! for the storage of contraction grids
-        use dlwq_hyd_data  ! for definition and storage of data
+        use m_grid_utils_external          ! for the storage of contraction grids
+        use m_waq_data_structure  ! for definition and storage of data
         use rd_token
         use timers       !   performance timers
 
         integer(kind = int_wp), intent(inout) :: lun(*)        !< unit numbers used
         character(len = *), intent(inout) :: lchar(*)     !< filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
-        type(inputfilestack), intent(inout) :: inpfil       !< input file strucure with include stack and flags
+        type(t_input_file), intent(inout) :: inpfil       !< input file structure with include stack and flags
         integer(kind = int_wp), intent(in) :: output_verbose_level        !< level of reporting to ascii output file
         integer(kind = int_wp), intent(in) :: iwidth        !< width of output
-        type(t_dlwq_item), intent(inout) :: substances   !< delwaq substances list
-        type(t_dlwq_item), intent(inout) :: constants    !< delwaq constants list
-        type(t_dlwq_item), intent(inout) :: parameters   !< delwaq parameters list
-        type(t_dlwq_item), intent(inout) :: functions    !< delwaq functions list
-        type(t_dlwq_item), intent(inout) :: segfuncs     !< delwaq segment-functions list
-        type(t_dlwq_item), intent(inout) :: segments     !< delwaq segments name list
+        type(t_waq_item), intent(inout) :: substances   !< delwaq substances list
+        type(t_waq_item), intent(inout) :: constants    !< delwaq constants list
+        type(t_waq_item), intent(inout) :: parameters   !< delwaq parameters list
+        type(t_waq_item), intent(inout) :: functions    !< delwaq functions list
+        type(t_waq_item), intent(inout) :: segfuncs     !< delwaq segment-functions list
+        type(t_waq_item), intent(inout) :: segments     !< delwaq segments name list
         type(GridPointerColl), intent(in) :: GridPs       !< collection off all grid definitions
-        type(t_dlwqdata), intent(out) :: data_block   !< data block to be filled
+        type(t_data_block), intent(out) :: data_block   !< data block to be filled
         integer(kind = int_wp), intent(out) :: ierr          !< output error count
 
         type(error_status), intent(inout) :: status !< current error status
 
-        type(t_dlwqdata) :: data_buffer  ! data block to be read
-        type(t_dlwq_item) :: waq_param    ! list of param items to be set in this block ( substances etc )
-        type(t_dlwq_item) :: data_param   ! list of param items in the data
-        type(t_dlwq_item) :: waq_loc      ! list of loc items to be set in this block (segments, boundaries, loads)
-        type(t_dlwq_item) :: data_loc     ! list of loc items in the data
-        type(t_dlwq_item) :: types        ! delwaq (item-) type list, not relevant here for boundaries, loads
+        type(t_data_block) :: data_buffer  ! data block to be read
+        type(t_waq_item) :: waq_param    ! list of param items to be set in this block ( substances etc )
+        type(t_waq_item) :: data_param   ! list of param items in the data
+        type(t_waq_item) :: waq_loc      ! list of loc items to be set in this block (segments, boundaries, loads)
+        type(t_waq_item) :: data_loc     ! list of loc items in the data
+        type(t_waq_item) :: types        ! delwaq (item-) type list, not relevant here for boundaries, loads
         type(t_fdata) :: odsdata      ! funtion data block to be read
         type(t_fdata) :: fdata        ! funtion data block to be read
         integer(kind = int_wp) :: ierr2         ! local error indicator (ierr2 = 2, end of block)
@@ -105,7 +105,7 @@ contains
         logical :: lsegfuncheck ! Do check if segmentfunctions are correct
         integer(kind = INT64) :: filesize      ! Reported size of the file
 
-        logical       is_date_format, dtflg2, is_yyddhh_format
+        logical       is_date_format, is_ddhhmmss_format, is_yyddhh_format
         integer(kind = int_wp) :: chkflg, itfact
         integer(kind = int_wp) :: nocol         ! number of columns in input
         integer(kind = int_wp) :: ithndl = 0
@@ -116,38 +116,38 @@ contains
 
         ! defaults and initialisation
         data_block%subject = SUBJECT_UNKNOWN
-        data_block%no_param = 0
-        data_block%no_loc = 0
-        data_block%no_brk = 0
-        data_block%functype = FUNCTYPE_CONSTANT
+        data_block%num_parameters = 0
+        data_block%num_locations = 0
+        data_block%num_breakpoints = 0
+        data_block%function_type = FUNCTYPE_CONSTANT
         data_block%igrid = 1
-        data_block%extern = .false.
+        data_block%is_external = .false.
         data_block%filetype = FILE_NONE
         data_block%filename = ' '
         data_block%iorder = ORDER_UNKNOWN
-        data_block%param_named = .false.
+        data_block%is_parameter_named = .false.
         data_block%param_name => null()
-        data_block%loc_named = .false.
+        data_block%are_location_named = .false.
         data_block%loc_name => null()
-        data_block%param_pointered = .false.
+        data_block%is_parameter_pointered = .false.
         data_block%param_pointers => null()
-        data_block%loc_pointered = .false.
-        data_block%loc_pointers => null()
-        data_block%scaled = .false.
+        data_block%are_locations_pointered = .false.
+        data_block%location_pointers => null()
+        data_block%is_scaled = .false.
         data_block%scale_factor = 1.0
-        data_block%param_scaled = .false.
-        data_block%factor_param => null()
-        data_block%loc_defaults = .false.
-        data_block%loc_scaled = .false.
-        data_block%factor_loc => null()
+        data_block%need_parameters_scaling = .false.
+        data_block%parameter_scale_factor => null()
+        data_block%are_locations_default = .false.
+        data_block%need_location_scaling = .false.
+        data_block%location_scale_factor => null()
         data_block%times => null()
         data_block%values => null()
 
-        ierr2 = dlwq_init(waq_param)
-        ierr2 = dlwq_init(data_param)
-        ierr2 = dlwq_init(waq_loc)
-        ierr2 = dlwq_init(data_loc)
-        ierr2 = dlwq_init(types)
+        ierr2 = waq_param%initialize()
+        ierr2 = data_param%initialize()
+        ierr2 = waq_loc%initialize()
+        ierr2 = data_loc%initialize()
+        ierr2 = types%initialize()
 
         i_base_grid = GridPs%base_grid
         noseg = GridPs%Pointers(i_base_grid)%noseg
@@ -157,7 +157,7 @@ contains
         ierr = 0
         missing_value = -999.0
         is_date_format = inpfil%is_date_format
-        dtflg2 = inpfil%dtflg2
+        is_ddhhmmss_format = inpfil%is_ddhhmmss_format
         is_yyddhh_format = inpfil%is_yyddhh_format
         itfact = inpfil%itfact
 
@@ -168,27 +168,27 @@ contains
 
             if (ctoken == 'ABSOLUTE') then
                 write (lunut, 1900)
-                if (data_block%functype == 0) data_block%functype = FUNCTYPE_BLOCK
+                if (data_block%function_type == 0) data_block%function_type = FUNCTYPE_BLOCK
                 cycle
             endif
             if (ctoken == 'BLOCK') then
                 write (lunut, 2000)
-                data_block%functype = FUNCTYPE_BLOCK
+                data_block%function_type = FUNCTYPE_BLOCK
                 cycle
             endif
             if (ctoken == 'LINEAR') then
                 write (lunut, 2000)
-                data_block%functype = FUNCTYPE_LINEAR
+                data_block%function_type = FUNCTYPE_LINEAR
                 cycle
             endif
             if (ctoken == 'HARMONICS') then
                 write (lunut, 2005)
-                data_block%functype = FUNCTYPE_HARMONIC
+                data_block%function_type = FUNCTYPE_HARMONIC
                 cycle
             endif
             if (ctoken == 'FOURIERS') then
                 write (lunut, 2010)
-                data_block%functype = FUNCTYPE_FOURIER
+                data_block%function_type = FUNCTYPE_FOURIER
                 cycle
             endif
             if (ctoken == 'TIME_DELAY') then
@@ -197,47 +197,47 @@ contains
                 cycle
             endif
             if (ctoken == 'ODS_FILE') then
-                if (data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER) then
+                if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
                     write (lunut, 2100)
                     ierr = 1
                     exit
                 endif
-                data_block%extern = .true.
+                data_block%is_external = .true.
                 data_block%filetype = FILE_ODS
                 cycle
             endif
             if (ctoken == 'BINARY_FILE') then
-                if (data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER) then
+                if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
                     write (lunut, 2110)
                     ierr = 1
                     exit
                 endif
-                data_block%extern = .true.
+                data_block%is_external = .true.
                 data_block%filetype = FILE_BINARY
                 cycle
             endif
             if (ctoken == 'UNFORMATTED') then
-                if (data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER) then
+                if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
                     write (lunut, 2110)
                     ierr = 1
                     exit
                 endif
-                data_block%extern = .true.
+                data_block%is_external = .true.
                 data_block%filetype = FILE_UNFORMATTED
                 cycle
             endif
             if (ctoken == 'BIG_ENDIAN') then
-                if (data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER) then
+                if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
                     write (lunut, 2110)
                     ierr = 1
                     exit
                 endif
-                data_block%extern = .true.
+                data_block%is_external = .true.
                 data_block%filetype = data_block%filetype + FILE_BIG_ENDIAN
                 cycle
             endif
             if (ctoken == 'MULTIPLEHYD_FILE') then
-                if (data_block%functype == FUNCTYPE_HARMONIC .or. data_block%functype == FUNCTYPE_FOURIER) then
+                if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
                     write (lunut, 2110)
                     ierr = 1
                     exit
@@ -260,7 +260,7 @@ contains
                 if (ierr2 /= 0) exit
 
                 ierr2 = puttoken(lchar(17))
-                data_block%extern = .true.
+                data_block%is_external = .true.
                 data_block%filetype = FILE_BINARY
                 cycle
             endif
@@ -269,7 +269,7 @@ contains
                 strng1 = 'segments'
                 strng2 = 'substance'
                 data_block%subject = SUBJECT_INITIAL
-                data_block%functype = FUNCTYPE_CONSTANT
+                data_block%function_type = FUNCTYPE_CONSTANT
                 chkflg = 1
                 call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, substances, types, noits, &
@@ -284,10 +284,10 @@ contains
             if (ctoken == 'CONSTANTS') then
                 callr = 'constant'
                 data_block%subject = SUBJECT_CONSTANT
-                data_block%functype = FUNCTYPE_CONSTANT
-                data_block%no_loc = 1
+                data_block%function_type = FUNCTYPE_CONSTANT
+                data_block%num_locations = 1
                 data_block%iorder = ORDER_PARAM_LOC
-                ierr2 = dlwq_resize(waq_loc, 1)
+                ierr2 = waq_loc%resize(1)
                 waq_loc%no_item = 1
                 waq_loc%name(1) = 'constant'
                 waq_loc%ipnt(1) = 1
@@ -310,11 +310,11 @@ contains
             if (ctoken == 'FUNCTIONS') then
                 callr = 'function'
                 data_block%subject = SUBJECT_FUNCTION
-                if (data_block%functype == FUNCTYPE_CONSTANT) data_block%functype = FUNCTYPE_BLOCK
-                data_block%no_loc = 1
+                if (data_block%function_type == FUNCTYPE_CONSTANT) data_block%function_type = FUNCTYPE_BLOCK
+                data_block%num_locations = 1
                 data_block%iorder = ORDER_PARAM_LOC
                 write (lunut, *) ' '
-                ierr2 = dlwq_resize(waq_loc, 1)
+                ierr2 = waq_loc%resize(1)
                 waq_loc%no_item = 1
                 waq_loc%name(1) = 'constant'
                 waq_loc%ipnt(1) = 1
@@ -336,7 +336,7 @@ contains
                 strng1 = 'parameter'
                 chkflg = -1
                 data_block%subject = SUBJECT_PARAMETER
-                data_block%functype = 0
+                data_block%function_type = 0
                 write (lunut, *) ' '
 
                 call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
@@ -355,7 +355,7 @@ contains
                 strng1 = 'seg-funct.'
                 chkflg = 0
                 data_block%subject = SUBJECT_SEGFUNC
-                if (data_block%functype == 0) data_block%functype = 1
+                if (data_block%function_type == 0) data_block%function_type = 1
                 write (lunut, *) ' '
 
                 call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
@@ -379,20 +379,20 @@ contains
                 if (ctoken == 'ALL') then
                     waq_loc%no_item = noseg
                     write (lunut, 2020) waq_loc%no_item
-                    ierr2 = dlwq_resize(waq_loc, waq_loc%no_item)
+                    ierr2 = waq_loc%resize(waq_loc%no_item)
                     do i = 1, waq_loc%no_item
                         waq_loc%ipnt(i) = i
                         write(waq_loc%name(i), '(''segment '',i8)') i
                     enddo
                 elseif (ctoken == 'INPUTGRID') then
                     if (gettoken(ctoken, ierr2) /= 0) goto 100
-                    igrid = gridpointercollfind(gridps, ctoken)
+                    igrid = gridps%find_column(ctoken)
                     if (igrid >= 1) then
                         data_block%igrid = igrid
                         write (lunut, 2290), trim(ctoken)
                         waq_loc%no_item = gridps%pointers(igrid)%noseg
                         write (lunut, 2300) waq_loc%no_item
-                        ierr2 = dlwq_resize(waq_loc, waq_loc%no_item)
+                        ierr2 = waq_loc%resize(waq_loc%no_item)
                         do i = 1, waq_loc%no_item
                             waq_loc%ipnt(i) = i
                             write(waq_loc%name(i), '(''segment '',i8)') i
@@ -405,7 +405,7 @@ contains
                 else
                     callr = 'segment'
                     chkflg = 1
-                    data_block%loc_pointered = .true.
+                    data_block%are_locations_pointered = .true.
 
                     call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
                             waq_loc, data_loc, segments, types, noits_loc, &
@@ -435,7 +435,7 @@ contains
                         data_block%subject == SUBJECT_SEGFUNC) then
 
                     data_block%iorder = ORDER_PARAM_LOC
-                    data_block%loc_defaults = .true.
+                    data_block%are_locations_default = .true.
                     if (data_param%no_item > 0) then
                         ctoken = 'DATA'
                     else
@@ -444,7 +444,7 @@ contains
                         if (data_block%subject == SUBJECT_SEGFUNC) ctoken = 'SEG_FUNCTIONS'
                     endif
                     ierr2 = puttoken(ctoken)
-                    ierr2 = dlwq_resize(waq_loc, 1)
+                    ierr2 = waq_loc%resize(1)
                     waq_loc%no_item = 1
                     waq_loc%name(1) = 'defaults'
                     waq_loc%ipnt(1) = 0
@@ -456,7 +456,7 @@ contains
                 endif
             endif
 
-            if (ctoken == 'DATA' .or. data_block%extern) then
+            if (ctoken == 'DATA' .or. data_block%is_external) then
                 if (data_block%subject == SUBJECT_CONSTANT) then
                     strng1 = 'constants'
                     strng2 = 'values'
@@ -482,15 +482,15 @@ contains
                     endif
                 endif
                 strng3 = 'breakpoint'
-                if (data_block%functype == FUNCTYPE_HARMONIC) strng3 = 'harmonic'
-                if (data_block%functype == FUNCTYPE_FOURIER) strng3 = 'fourier'
+                if (data_block%function_type == FUNCTYPE_HARMONIC) strng3 = 'harmonic'
+                if (data_block%function_type == FUNCTYPE_FOURIER) strng3 = 'fourier'
 
                 if (data_block%filetype == FILE_ODS) then
 
                     ! when data_loc is not filled only
 
                     if (data_loc%no_item == 0) then
-                        ierr2 = dlwq_resize(data_loc, waq_loc%no_item)
+                        ierr2 = data_loc%resize(waq_loc%no_item)
                         data_loc%no_item = waq_loc%no_item
                         data_loc%name = waq_loc%name
                         data_loc%ipnt = waq_loc%ipnt
@@ -498,15 +498,15 @@ contains
                         data_loc%constant = waq_loc%constant
                     endif
 
-                    data_block%no_param = waq_param%no_item
-                    data_block%no_loc = waq_loc%no_item
+                    data_block%num_parameters = waq_param%no_item
+                    data_block%num_locations = waq_loc%no_item
 
                     call read_data_ods(lunut, ctoken, data_param, data_loc, missing_value, &
                             data_buffer, ierr2)
                     if (ierr2 /= 0) goto 100
                     call compute_matrix (lunut, data_param, data_loc, waq_param, waq_loc, &
                             missing_value, data_buffer, data_block)
-                    data_block%extern = .false.
+                    data_block%is_external = .false.
                     deallocate(data_buffer%times, data_buffer%values)
 
                 elseif (mod(data_block%filetype, 10) == FILE_BINARY .or. &
@@ -541,7 +541,7 @@ contains
                     ! when data_loc is not filled only
 
                     if (data_loc%no_item == 0) then
-                        ierr2 = dlwq_resize(data_loc, waq_loc%no_item)
+                        ierr2 = data_loc%resize(waq_loc%no_item)
                         data_loc%no_item = waq_loc%no_item
                         data_loc%name = waq_loc%name
                         data_loc%ipnt = waq_loc%ipnt
@@ -551,13 +551,13 @@ contains
 
                     ! read the data
 
-                    data_block%no_param = waq_param%no_item
-                    data_block%no_loc = waq_loc%no_item
+                    data_block%num_parameters = waq_param%no_item
+                    data_block%num_locations = waq_loc%no_item
 
-                    data_buffer%no_param = nocol
-                    data_buffer%no_loc = data_loc%no_item
+                    data_buffer%num_parameters = nocol
+                    data_buffer%num_locations = data_loc%no_item
                     data_buffer%iorder = data_block%iorder
-                    data_buffer%functype = data_block%functype
+                    data_buffer%function_type = data_block%function_type
 
                     call read_time_dependant_data_matrix(data_buffer, itfact, is_date_format, is_yyddhh_format, ierr2)
                     if (ierr2 /= 0) goto 100
@@ -573,19 +573,19 @@ contains
                     goto 100
                 endif
                 if (waq_loc%no_item == -1) write (lunut, 1910)
-                data_block%no_param = waq_param%no_item
-                data_block%param_named = .true.
+                data_block%num_parameters = waq_param%no_item
+                data_block%is_parameter_named = .true.
                 data_block%param_name => waq_param%name
-                data_block%param_pointered = .true.
+                data_block%is_parameter_pointered = .true.
                 data_block%param_pointers => waq_param%ipnt
-                data_block%no_loc = waq_loc%no_item
-                data_block%loc_named = .true.
+                data_block%num_locations = waq_loc%no_item
+                data_block%are_location_named = .true.
                 data_block%loc_name => waq_loc%name
                 waq_param%name => null()
                 waq_param%ipnt => null()
                 waq_loc%name => null()
-                if (data_block%loc_pointered) then
-                    data_block%loc_pointers => waq_loc%ipnt
+                if (data_block%are_locations_pointered) then
+                    data_block%location_pointers => waq_loc%ipnt
                     waq_loc%ipnt => null()
                 endif
                 call print_matrix(lunut, iwidth, data_block, strng1, strng2, &
@@ -614,11 +614,11 @@ contains
 
         110 continue
 
-        ierr2 = dlwq_cleanup(waq_param)
-        ierr2 = dlwq_cleanup(data_param)
-        ierr2 = dlwq_cleanup(waq_loc)
-        ierr2 = dlwq_cleanup(data_loc)
-        ierr2 = dlwq_cleanup(types)
+        ierr2 = waq_param%cleanup()
+        ierr2 = data_param%cleanup()
+        ierr2 = waq_loc%cleanup()
+        ierr2 = data_loc%cleanup()
+        ierr2 = types%cleanup()
 
         if (timon) call timstop(ithndl)
         return
@@ -762,14 +762,14 @@ contains
 
         ! Checks if column header exists
         use m_usefor, only : compact_usefor
-        use dlwq_hyd_data ! for definition and storage of data
+        use m_waq_data_structure ! for definition and storage of data
         use rd_token
         use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset
         use m_string_utils
 
-        type(t_dlwq_item), intent(inout) :: waq_param    ! list of param items to be set in this block ( substances etc )
-        type(t_dlwq_item), intent(inout) :: data_param   ! list of param items in the data
+        type(t_waq_item), intent(inout) :: waq_param    ! list of param items to be set in this block ( substances etc )
+        type(t_waq_item), intent(inout) :: data_param   ! list of param items in the data
         integer(kind = int_wp), intent(inout) :: nocol         ! number of columns in input
         integer(kind = int_wp), intent(in) :: itfact        ! factor between clocks
         logical, intent(in) :: is_date_format       ! true if time in 'date' format
@@ -859,22 +859,22 @@ contains
             waq_item, data_item, name_item, type_item, noits, &
             ierr, status)
 
-        ! item name retrieval, new style of parse_boundary_condition_data using t_dlwq_item structures instead of workspace
+        ! item name retrieval, new style of parse_boundary_condition_data using t_waq_item structures instead of workspace
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use rd_token
         use timers       !   performance timers
         use m_string_utils
 
         integer(kind = int_wp), intent(in) :: lunrep        ! report file
-        type(inputfilestack), intent(inout) :: inpfil       ! input file strucure with include stack
+        type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack
         integer(kind = int_wp), intent(in) :: output_verbose_level        ! level of reporting to ascii output file
         integer(kind = int_wp), intent(in) :: chkflg        ! check on input or add items
         character(len = 10), intent(in) :: callr        ! calling subject
-        type(t_dlwq_item), intent(out) :: waq_item     ! list of items to be set in this block ( boundaries, loads, substances etc )
-        type(t_dlwq_item), intent(out) :: data_item    ! list of items in the data
-        type(t_dlwq_item), intent(inout) :: name_item    ! delwaq item list
-        type(t_dlwq_item), intent(in) :: type_item    ! delwaq (item-) type list
+        type(t_waq_item), intent(out) :: waq_item     ! list of items to be set in this block ( boundaries, loads, substances etc )
+        type(t_waq_item), intent(out) :: data_item    ! list of items in the data
+        type(t_waq_item), intent(inout) :: name_item    ! delwaq item list
+        type(t_waq_item), intent(in) :: type_item    ! delwaq (item-) type list
         integer(kind = int_wp), intent(out) :: noits         ! number of scale factors to be read
         integer(kind = int_wp), intent(inout) :: ierr          ! cummulative error count
 
@@ -925,7 +925,7 @@ contains
         endif
 
         ! a keyword was met
-        if (iabs(itype) == 1 .and. &
+        if (abs(itype) == 1 .and. &
                 (ctoken(1:5) == 'BLOCK'        .or. &
                         ctoken(1:6) == 'LINEAR'       .or. &
                         ctoken(1:4) == 'ITEM'         .or. &
@@ -961,7 +961,7 @@ contains
         endif
 
         ! computations
-        if (iabs(itype) == 1 .and. &
+        if (abs(itype) == 1 .and. &
                 (ctoken ==  '*'  .or. ctoken ==  '/'  .or. &
                         ctoken ==  '+'  .or. ctoken ==  '-'  .or. &
                         ctoken == 'MIN' .or. ctoken == 'MAX')) then
@@ -975,7 +975,7 @@ contains
             endif
             noitm = noitm + 1
             noits = noits + 1
-            ierr2 = dlwq_resize(data_item, noitm)
+            ierr2 = data_item%resize(noitm)
             data_item%no_item = noitm
             data_item%sequence(noitm) = 0
             if (ctoken ==  '*') data_item%ipnt(noitm) = -1000000
@@ -989,7 +989,7 @@ contains
         endif
 
         ! an item used in computations
-        if (iabs(itype) == 1 .and. signon) then
+        if (abs(itype) == 1 .and. signon) then
 
             do i = 1, itmnr - 1
                 if (waq_item%ipnt(i) == -1300000000) cycle
@@ -1023,7 +1023,7 @@ contains
         endif
 
         ! a number is used in computations
-        if (iabs(itype) == 2 .or. iabs(itype) == 3) then
+        if (abs(itype) == 2 .or. abs(itype) == 3) then
             if (setnam .or. signon) then
                 nconst = nconst + 1
                 noits = noits - 1
@@ -1066,7 +1066,7 @@ contains
         endif
 
         ! A local redirection of the name of an item or substance
-        if (iabs(itype) == 1 .and. ctoken == 'USEFOR') then
+        if (abs(itype) == 1 .and. ctoken == 'USEFOR') then
             if (usefor) then
                 write (lunut, 1035) ctoken
                 goto 40
@@ -1118,11 +1118,11 @@ contains
             if (string_equals(ctoken(1:20), 'FLOW                ') &
                     .and. callr == 'CONCENTR. ') then
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1
@@ -1139,14 +1139,14 @@ contains
             endif
 
             ! ctoken equals an item-NAME
-            i2 = dlwq_find(name_item, ctoken)
+            i2 = name_item%find(ctoken)
             if (i2 >= 1) then
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1
@@ -1163,14 +1163,14 @@ contains
             endif
 
             ! ctoken equals an item-TYPE. the index reference is set negative
-            i2 = dlwq_find(type_item, ctoken)
+            i2 = type_item%find(ctoken)
             if (i2 >= 1) then
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1
@@ -1192,11 +1192,11 @@ contains
 
                 ! ignore the data
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1
@@ -1215,17 +1215,17 @@ contains
 
                 ! now a new name is added to the list of names
                 ntitm = ntitm + 1
-                ierr2 = dlwq_resize(name_item, ntitm)
+                ierr2 = name_item%resize(ntitm)
                 name_item%no_item = ntitm
                 name_item%name(ntitm) = ctoken
 
                 ! plus normal procedure
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1
@@ -1249,11 +1249,11 @@ contains
             if (itoken <=  ntitm .and. itoken >= -nttype) then
 
                 itmnr = itmnr + 1
-                ierr2 = dlwq_resize(waq_item, itmnr)
+                ierr2 = waq_item%resize(itmnr)
                 waq_item%no_item = itmnr
 
                 noitm = noitm + 1
-                ierr2 = dlwq_resize(data_item, noitm)
+                ierr2 = data_item%resize(noitm)
                 data_item%no_item = noitm
 
                 noits = noits + 1

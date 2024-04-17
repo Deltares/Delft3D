@@ -63,12 +63,12 @@ contains
         INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
         INTEGER(kind = int_wp) :: IDUMP(*)
         REAL(kind = real_wp) :: ARRA(NOTOT, *)
-        CHARACTER*40 VNAME
-        CHARACTER*20 DNAME(*)
+        character(len=40) VNAME
+        character(len=20) DNAME(*)
         !
         !     Local declaration
         !
-        CHARACTER*1  SPACE
+        character(len=1)  SPACE
         DATA         SPACE / ' ' /
         integer(kind = int_wp) :: i, k, iseg
         integer(kind = int_wp) :: ithandl = 0

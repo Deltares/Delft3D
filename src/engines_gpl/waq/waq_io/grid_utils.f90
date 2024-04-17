@@ -57,7 +57,7 @@ contains
         !!     Logical units  : LUN(29) = unit formatted output file
         !!                      LUN( 2) = unit intermediate file (system)
 
-        use dlwqgrid_mod        !   for the storage of contraction grids
+        use m_grid_utils_external        !   for the storage of contraction grids
 
         integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
         integer(kind = int_wp), intent(in) :: noseg              !< number of computational volumes
@@ -67,15 +67,15 @@ contains
         type(GridPointerColl) :: GridPs            !< collection of grids
         integer(kind = int_wp), intent(out) :: nseg2              !< number of additional bottom volumes
         integer(kind = int_wp), intent(out) :: nogrid             !< number of grids
-        character(20), intent(in) :: syname(notot)     !< names of the substances
+        character(len=20), intent(in) :: syname(notot)     !< names of the substances
 
         type(error_status), intent(inout) :: status !< current error status
 
         logical :: read_input    ! is input expected?
         logical :: newinput      ! is it the newer type of grid input ?
         logical :: multigrid     ! is the multiple grid feature used ?
-        type(GridPointer) :: aGrid         ! a single grid
-        character*255 :: ctoken        ! the character token that is read
+        type(t_grid) :: aGrid         ! a single grid
+        character(len=255) :: ctoken        ! the character token that is read
         integer(kind = int_wp) :: itoken         ! the integer token that is read
         integer(kind = int_wp) :: isysg(notot)   ! grid number to be used per substance
         integer(kind = int_wp) :: isyst(notot)   ! time step multiplier per substance
@@ -123,7 +123,7 @@ contains
         do iseg = 1, noseg
             agrid%iarray(iseg) = iseg
         enddo
-        i_base_grid = GridPointerCollAdd(GridPs, aGrid)
+        i_base_grid = GridPs%add(aGrid)
         i_bottom_grid = 0
         GridPs%base_grid = i_base_grid
         GridPs%bottom_grid = i_bottom_grid
@@ -147,7 +147,7 @@ contains
                             write (lunut, 2010) nogrid   ! after the multigrid keyword
                             if (nogrid == 1) exit       ! no additional grids
                         else
-                            if (nogrid == gridps%cursize) then
+                            if (nogrid == gridps%current_size) then
                                 do isys = 1, notot - nototp
                                     if (gettoken(isysg(isys), ierr2) > 0) goto 1000
                                     if (gettoken(isyst(isys), ierr2) > 0) goto 1000
@@ -193,7 +193,7 @@ contains
 
             case ('NOLAY')
                 ! nolay must precede grid definitions
-                if (GridPs%cursize > 1) then
+                if (GridPs%current_size > 1) then
                     write(lunut, 2050)
                     goto 1000
                 endif
@@ -216,7 +216,7 @@ contains
             case ('BOTTOMGRID', 'BEDGRID')
                 aGrid%itype = Bottomgrid
                 call read_grid(lun, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPointerCollAdd(GridPs, aGrid)
+                igrid = GridPs%add(aGrid)
                 if (GridPs%bottom_grid /= 0) then
                     write (lunut, 2070)
                     call status%increase_warning_count()
@@ -227,12 +227,12 @@ contains
             case ('PROCESSGRID')
                 aGrid%itype = ProcessGrid
                 call read_grid (lun, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPointerCollAdd(GridPs, aGrid)
+                igrid = GridPs%add(aGrid)
 
             case ('SUBGRID')
                 aGrid%itype = ProcessGrid
                 call read_grid (lun, aGrid, GridPs, .false., nosegl_bottom, status)
-                igrid = GridPointerCollAdd(GridPs, aGrid)
+                igrid = GridPs%add(aGrid)
 
             case ('NOBOTTOMLAY')
                 call read_nobottomlay (GridPs, status)
@@ -253,7 +253,7 @@ contains
                     aGrid%itype = ProcessGrid
                     push = .true.
                     call read_grid (lun, aGrid, GridPs, .true., nosegl_bottom, status)
-                    igrid = GridPointerCollAdd(GridPs, aGrid)
+                    igrid = GridPs%add(aGrid)
                     exit
                 else
                     write (lunut, 2030) trim(ctoken)
@@ -264,7 +264,7 @@ contains
 
         enddo
 
-        nogrid = GridPs%cursize
+        nogrid = GridPs%current_size
 
         ! Expand with layers in the base grid
         do igrid = 1, nogrid
@@ -347,7 +347,7 @@ contains
             endif
         enddo
         do igrid = 1, nogrid
-            ierr2 = gridwrite(lun(2), gridps%pointers(igrid))
+            ierr2 = gridps%pointers(igrid)%write(lun(2))
         enddo
 
         ! Read per substance grid and time
@@ -417,7 +417,7 @@ contains
         !!          then a grid name is required, to specify the grid where the substances work on.
 
         use m_string_utils
-        use dlwqgrid_mod
+        use m_grid_utils_external
 
         integer(kind = int_wp), intent(in) :: notot          !< nr of substances
         character(20), intent(in) :: syname(notot) !< substance names
@@ -458,7 +458,7 @@ contains
                     sysused(isys) = 1
                     write (lunut, 2040) syname(isys)
                 else
-                    i_grid = gridpointercollfind(GridPs, ctoken)
+                    i_grid = GridPs%find_column(ctoken)
                     if (i_grid > 0) then                       ! use this grid, input is ready
                         write (lunut, 2050) trim(ctoken)
                         exit
@@ -517,10 +517,10 @@ contains
         !!          of the reference grid.
 
         use m_open_waq_files
-        use dlwqgrid_mod     !   for the storage of contraction grids
+        use m_grid_utils_external     !   for the storage of contraction grids
 
         integer(kind = int_wp), intent(inout) :: lun(*)         !< unit numbers used
-        type(GridPointer), intent(inout) :: aGrid         !< collection off all grid definitions
+        type(t_grid), intent(inout) :: aGrid         !< collection off all grid definitions
         type(GridPointerColl), intent(in) :: GridPs        !< collection off all grid definitions
         logical, intent(in) :: oldproc       !< true if old processing
         integer(kind = int_wp), intent(in) :: nosegl_bottom  !< number of segments expected for bottom
@@ -611,7 +611,7 @@ contains
                     if (gettoken(ctoken, ierr2) > 0) goto 1000
                     aGrid%name_ref = ctoken
                     write (lunut, 2040) aGrid%name_ref
-                    i_grid = gridpointercollfind(GridPs, aGrid%name_ref)
+                    i_grid = GridPs%find_column(aGrid%name_ref)
                     if (i_grid > 0) then
                         aGrid%iref = i_grid
                     else
@@ -945,12 +945,12 @@ contains
         !!         Using the INPUTGRID feature specifies the number of layers for anonther
         !!         grid than the BOTTOMGRID. This grid then is expanded to the BOTTOMGRID.
 
-        use dlwqgrid_mod
+        use m_grid_utils_external
 
         type(GridPointerColl), intent(inout) :: GridPs     !< collection off all grid definitions
         type(error_status), intent(inout) :: status !< current error status
 
-        type(GridPointer) :: aGrid                ! a single grid
+        type(t_grid) :: aGrid                ! a single grid
         integer(kind = int_wp) :: itoken                ! integer token from input
         integer(kind = int_wp) :: idummy                ! dummy which content is not used
         real(kind = real_wp) :: adummy                ! dummy which content is not used
@@ -995,9 +995,8 @@ contains
             do iseg = 1, GridPs%Pointers(i_base_grid)%noseg_lay
                 aGrid%iarray(iseg) = iseg
             enddo
-            i_bottom_grid = GridPointerCollAdd(GridPs, aGrid)
+            i_bottom_grid = GridPs%add(aGrid)
             GridPs%bottom_grid = i_bottom_grid
-
         endif
 
         ! read input
@@ -1016,7 +1015,7 @@ contains
             case ('INPUTGRID')
                 if (gettoken(ctoken, ierr2) > 0) goto 1000
                 write (lunut, 2010) trim(ctoken)
-                input_grid = GridPointerCollFind(GridPs, ctoken)
+                input_grid = GridPs%find_column(ctoken)
                 if (input_grid == 0) then
                     write (lunut, 2020)                       ! ERROR, input grid not defined
                     goto 1000

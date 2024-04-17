@@ -98,7 +98,7 @@ contains
         line = ' '
         call monsys(line, 4)
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
 
         ! loop over the constants
 

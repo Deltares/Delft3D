@@ -294,7 +294,7 @@ contains
         IP16 = IPOINT(16)
         IP17 = IPOINT(17)
 
-        DO IK = 1, Coll%cursize
+        DO IK = 1, Coll%current_size
 
             IWA1 = Coll%set(IK)%fstwatsed
             IWA2 = Coll%set(IK)%lstwatsed

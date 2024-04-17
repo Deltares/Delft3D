@@ -106,8 +106,8 @@ contains
                 proref(*), prvpnt(*)
         REAL(kind = real_wp) :: DEFAUL(*), STOCHI(*), DSTO(*), &
                 VSTO(*)
-        CHARACTER*(*) LCH
-        CHARACTER*10  PRONAM(*)
+        character(len=*) LCH
+        character(len=10)  PRONAM(*)
         !
         !     Local declarations
         INTEGER(kind = int_wp) :: NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD, &

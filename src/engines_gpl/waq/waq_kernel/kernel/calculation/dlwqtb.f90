@@ -324,7 +324,7 @@ contains
                 IF (I == 1) THEN
                     FUNC = 1.0
                 ELSE
-                    FUNC = SIN((FLOAT(ITIME) / IPERIO - APHASE) * TWOPI)
+                    FUNC = SIN((real(ITIME) / IPERIO - APHASE) * TWOPI)
                 ENDIF
                 !
                 !            multiply with amplitudes and set values

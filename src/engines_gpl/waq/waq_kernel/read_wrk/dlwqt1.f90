@@ -113,8 +113,8 @@ contains
 
         integer(kind = int_wp) :: IHARM (*), IPOINT(*), LUN   (*), IWORK (*)
         real(kind = real_wp) :: HARMAT(*), FARRAY(*), RESULT(*), RECLST(*)
-        CHARACTER*(*) LUNTXT(*)
-        CHARACTER*12  CHLP
+        character(len=*) LUNTXT(*)
+        character(len=12)  CHLP
         LOGICAL       UPDATE, NEWSET, LSTREC, LREWIN
         integer(kind = int_wp) :: IPA, IPH, IPF, ITIME, ITIMEL, NOSUB, NRHARM, &
                 NTOT, NRFTOT, IS, ISFLAG, IFFLAG, IOFF, IPI

@@ -61,8 +61,8 @@ contains
 
         INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
         REAL(kind = real_wp) :: ARRA(NOTOT, *)
-        CHARACTER*20 DNAME(*)
-        CHARACTER*40 VNAME
+        character(len=20) DNAME(*)
+        character(len=40) VNAME
 
         !     local
         integer(kind = int_wp) :: idmp, k

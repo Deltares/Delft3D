@@ -33,12 +33,12 @@
 
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_grd               ! aggregation-file
+      type(t_file)                       :: file_grd               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       real                                   :: xdepth(nmax,mmax)      ! x coordinate depth points
@@ -49,22 +49,22 @@
       integer                                :: n, m                   ! loop counter
       integer                                :: lun
 
-      call dlwqfile_open(file_grd)
-      lun    = file_grd%unit_nr
+      call file_grd%open()
+      lun    = file_grd%unit
 
-      write(file_grd%unit_nr,'(a)')   'Coordinate System = Cartesian'
-      write(file_grd%unit_nr,'(2i8)') mmax-1,nmax-1
-      write(file_grd%unit_nr,'(a)')   ' 0 0 0'
+      write(file_grd%unit,'(a)')   'Coordinate System = Cartesian'
+      write(file_grd%unit,'(2i8)') mmax-1,nmax-1
+      write(file_grd%unit,'(a)')   ' 0 0 0'
 
       do n = 1 , nmax - 1
-         write(file_grd%unit_nr,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(xdepth(n,m),m=1,mmax-1)
+         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(xdepth(n,m),m=1,mmax-1)
       enddo
 
       do n = 1 , nmax - 1
-         write(file_grd%unit_nr,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(ydepth(n,m),m=1,mmax-1)
+         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(ydepth(n,m),m=1,mmax-1)
       enddo
 
-      close(file_grd%unit_nr)
+      close(file_grd%unit)
       file_grd%status = FILE_STAT_UNOPENED
 
       return

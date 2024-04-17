@@ -118,11 +118,11 @@ contains
                 ASMASS(NOTOT, NDMPAR, *), FLXINT(NOFLUX, *), &
                 STOCHI(NOTOT, NOFLUX), CONS(NOCONS), &
                 VOLUME(*), SURF(*)
-        CHARACTER*20  SYNAME(*), DANAM(*), &
+        character(len=20)  SYNAME(*), DANAM(*), &
                 BNDTYP(NOBTYP), CONAME(NOCONS), &
                 FLXNAM(NOFLUX)
-        CHARACTER*40  MONAME(4)
-        CHARACTER*255 LCHOUT
+        character(len=40)  MONAME(4)
+        character(len=255) LCHOUT
         integer(kind = int_wp) :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
         integer(kind = int_wp) :: nowst                 ! number of wasteloads
         integer(kind = int_wp) :: nowtyp                ! number of wasteload types
@@ -176,7 +176,7 @@ contains
                 IPROCS(:), &
                 NPROCS(:), &
                 SEGDMP(:)
-        character*20, allocatable :: OUNAME(:), &
+        character(len=20), allocatable :: OUNAME(:), &
                 DANAMP(:), &
                 SYNAMP(:)
         logical, allocatable :: IWDMP(:, :)
@@ -185,11 +185,11 @@ contains
                 INCLUD, BOUNDA, LUMPTR, B_AREA, B_VOLU
         REAL(kind = real_wp) :: RDUM(1)
         REAL(kind = real_wp) :: ST, TFACTO(NOSUM)
-        CHARACTER*20  C20, SYNAMS(NOSUM)
-        CHARACTER*40  CDUM
-        CHARACTER*255 FILNAM
-        character*2   c2
-        character*255 inifil
+        character(len=20)  C20, SYNAMS(NOSUM)
+        character(len=40)  CDUM
+        character(len=255) FILNAM
+        character(len=2)   c2
+        character(len=255) inifil
         logical       lfound
         integer(kind = int_wp) :: idummy, ierr2
         integer(kind = int_wp) :: lunini
@@ -974,8 +974,8 @@ contains
         INTEGER(kind = int_wp) :: IOBALI, IBSTRT, IBSTOP, NOOUT, NOTOT, NDMPAR, &
                 IMASSA(*), IEMISS(*), NEMISS, ITRANS(*), NTRANS, &
                 IPROCS(*), NPROCS(*), NOSUM, IUNIT, INIT
-        CHARACTER*40 MONAME(4)
-        CHARACTER*20 DANAMP(NDMPAR), OUNAME(*), SYNAME(*)
+        character(len=40) MONAME(4)
+        character(len=20) DANAMP(NDMPAR), OUNAME(*), SYNAME(*)
         REAL(kind = real_wp) :: BALTOT(NOOUT, NDMPAR), SFACTO(NOSUM, *)
         LOGICAL      ONLYSM
 
@@ -1141,7 +1141,7 @@ contains
         implicit none
 
         integer(kind = int_wp) :: nosum, notot, nocons
-        character*20       syname(notot), coname(nocons)
+        character(len=20)       syname(notot), coname(nocons)
         real(kind = real_wp) :: tfacto(nosum), sfacto(nosum, notot), cons(nocons)
 
         !      INCLUDE 'cblbal.inc'
@@ -1149,8 +1149,8 @@ contains
         integer(kind = int_wp) :: isum, isys, icons, ires, nres1, nres2, ityp, lunrep
         real(kind = real_wp) :: factor
         parameter           (nres1 = 23, nres2 = 2)
-        character*20         resna1(nres1), resna2(nres2)
-        character*10         ratna2(2, nres2)
+        character(len=20)         resna1(nres1), resna2(nres2)
+        character(len=10)         ratna2(2, nres2)
         real(kind = real_wp) :: facres(2, nres1), ratdef(2, nres2)
 
         data resna1   / 'DetP                ', &

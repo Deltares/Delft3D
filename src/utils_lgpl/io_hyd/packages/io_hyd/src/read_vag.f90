@@ -34,12 +34,12 @@
       ! global declarations
 
       use m_srstop
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_vag               ! aggregation-file
+      type(t_file)                       :: file_vag               ! aggregation-file
       integer                                :: nolay                  ! number of layers
       integer                                :: ipnt(nolay)            ! aggregation pointer
       integer                                :: lunrep                 ! unit number report file
@@ -58,8 +58,8 @@
          call srstop(1)
       endif            
       
-      call dlwqfile_open(file_vag)
-      read(file_vag%unit_nr,*,iostat=ioerr) nolayd
+      call file_vag%open()
+      read(file_vag%unit,*,iostat=ioerr) nolayd
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading vag file'
          write(*,*) ' error reading vag file'
@@ -81,7 +81,7 @@
             call srstop(1)
          endif
 
-         read(file_vag%unit_nr,*,iostat=ioerr) (ipnt(i),i=1,nolay)
+         read(file_vag%unit,*,iostat=ioerr) (ipnt(i),i=1,nolay)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading vag file'
             write(*,*) ' error reading vag file'

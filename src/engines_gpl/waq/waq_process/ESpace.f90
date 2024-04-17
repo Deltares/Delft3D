@@ -59,8 +59,8 @@ contains
                             in_mmperday, fwashoff, ferosion, froun, finf, fdisp, fdeepinf, fgwbflow
       real(kind=real_wp)                ::fluxloss, conc, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxgwf, fluxdeepinf,&
                             fluxleak, fluxstp, kpaved, kunpaved, ksoil, kdunpaved, fluxexp
-      character*20       :: itemname
-      character*12       :: ddhhmmss1
+      character(len=20)       :: itemname
+      character(len=12)       :: ddhhmmss1
 
       ! fixed quantities
       integer(kind=int_wp),parameter    ::scu = 1
@@ -180,7 +180,7 @@ contains
       real(kind=real_wp),parameter  ::disp_hithr = 7.
 
       ! file names
-      character*255      :: file_out_nodes, file_in_names, file_usefor, file_subs
+      character(len=255)      :: file_out_nodes, file_in_names, file_usefor, file_subs
 
 !     other
       logical first
@@ -607,7 +607,7 @@ contains
       end
       subroutine ddhhmmss(timeinscu,scu,ddhhmmss1)
       integer(kind=int_wp)  ::timeinscu,scu
-      character*12 ddhhmmss1
+      character(len=12) ddhhmmss1
       integer(kind=int_wp)  ::dd,hh,mm,ss,timeinseconds
       timeinseconds = timeinscu*scu
       dd = timeinseconds/86400

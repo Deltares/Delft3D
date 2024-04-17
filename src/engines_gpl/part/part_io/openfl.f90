@@ -63,7 +63,7 @@ contains
 !
 !     name    kind       length      funct.  description
 !     ---------------------------------------------------------
-!     finam   character*80 1         input   file name
+!     finam   character(len=80) 1         input   file name
 !     ierror  integer      1         local   error in delete_file
 !     iopt    integer      1         input   if 1 delete existing file
 !                                            with same name

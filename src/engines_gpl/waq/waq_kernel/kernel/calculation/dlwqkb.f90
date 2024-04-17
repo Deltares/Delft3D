@@ -70,13 +70,13 @@
       INTEGER(kind=int_wp) ::LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 , & 
                    ITIME2 , NFTOT  , ISFLAG , IFFLAG
       INTEGER(kind=int_wp) ::IARRA1(*), IARRA2(*)
-      CHARACTER*(*) LUNTXT
+      character(len=*) LUNTXT
 !
 !     Local
 !
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
-      CHARACTER*16  MSGTXT(3)
+      character(len=16)  MSGTXT(3)
       DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' , & 
                             ' REWIND ERROR   ' /
       integer(kind=int_wp) ::messge, k, ierr

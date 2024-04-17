@@ -575,7 +575,7 @@ use m_stop_exit
 
          ic   = mpart(i)
          ilay = laypart(i)
-         if (ic > 0) ic = iabs(cell2nod(ic))
+         if (ic > 0) ic = abs(cell2nod(ic))
 ! references to the gridcell (is in this case can be replaced by kpart (segment number)         ic = lgrid3(npart(i), mpart(i))
          if ( ic .gt. 0 ) then !che
 

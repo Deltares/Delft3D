@@ -224,13 +224,13 @@ contains
                 if (x(j) < toplev) then
                     !  Set small biomasses to zero, putting mass into the detritus pools,
                     !  by increasing the mortality and detritus production fluxes
-                    cmort = sngl(x(j)) / tstepi
-                    flmora(j) = flmora(j) + cmort / sngl(ctodry(j))
-                    fldetn(1) = fldetn(1) + cmort / sngl(ctodry(j))
+                    cmort = real(x(j)) / tstepi
+                    flmora(j) = flmora(j) + cmort / real(ctodry(j))
+                    fldetn(1) = fldetn(1) + cmort / real(ctodry(j))
                     do k = 1, nunuco
                         i = nutcon(k)
                         if (i<=3)                          & ! only N,P,Si
-                                fldetn(i + 1) = fldetn(i + 1) + cmort * sngl(aa(k, j))
+                                fldetn(i + 1) = fldetn(i + 1) + cmort * real(aa(k, j))
                     enddo
                     !  Biomass set to zero, for BLOOM to make proper mortality constraint
                     !  and for correct calculation of production fluxes afterwards
@@ -279,9 +279,9 @@ contains
         call dynrun(extot8, exbac8, temp8, rad8, depth8, dayl8, id, iseg, nset, extlim, deat, totchl, totdry, totcar, swblsa)
 
         ! Store total carbon and chlorophyll concentration
-        totnut(1) = sngl(totcar)
-        chltot = sngl(totchl)
-        algdm = sngl(totdry)
+        totnut(1) = real(totcar)
+        chltot = real(totchl)
+        algdm = real(totdry)
 
         do i = 2, 4
             totnut(i) = 0.0
@@ -297,14 +297,14 @@ contains
         ! Added: Calculate uptake fluxes (JvG, June 2006)
 
         do j = 1, nuspec
-            flprpa(j) = sngl((xdef(j + nurows) - x(j)) / ctodry(j)) / tstepi
+            flprpa(j) = real((xdef(j + nurows) - x(j)) / ctodry(j)) / tstepi
             if (.not.lcarb) fluptn(1) = fluptn(1) + flprpa(j)
-            fbod5 = fbod5 + sngl(xdef(j + nurows) / ctodry(j)) * (1. - exp(-5.0 * rmort(j)))
+            fbod5 = fbod5 + real(xdef(j + nurows) / ctodry(j)) * (1. - exp(-5.0 * rmort(j)))
             do k = 1, nunuco
                 i = nutcon(k)
                 i2 = flxcon(k)
                 if (i<=3) then
-                    totnut(i + 1) = totnut(i + 1) + sngl(xdef(j + nurows) * aa(k, j))
+                    totnut(i + 1) = totnut(i + 1) + real(xdef(j + nurows) * aa(k, j))
                 endif
                 fluptn(i2) = fluptn(i2) + flprpa(j) * aa(k, j) * ctodry(j)
             enddo
@@ -380,13 +380,13 @@ contains
             ratmor(j) = 0.0
             cgroup(j) = 0.0
             do i = it2(j, 1), it2(j, 2)
-                ratgro(j) = ratgro(j) + sngl(xdef(i + nurows) - x(i))
-                ratmor(j) = ratmor(j) + sngl(ctodry(i)) * biomas(i) - sngl(x(i))
-                biomas(i) = sngl(xdef(i + nurows) / ctodry(i))
+                ratgro(j) = ratgro(j) + real(xdef(i + nurows) - x(i))
+                ratmor(j) = ratmor(j) + real(ctodry(i)) * biomas(i) - real(x(i))
+                biomas(i) = real(xdef(i + nurows) / ctodry(i))
                 cgroup(j) = cgroup(j) + biomas(i)
             enddo
-            ratgro(j) = ratgro(j) / sngl(xinit(j)) / tstepi
-            ratmor(j) = ratmor(j) / sngl(xinit(j)) / tstepi
+            ratgro(j) = ratgro(j) / real(xinit(j)) / tstepi
+            ratmor(j) = ratmor(j) / real(xinit(j)) / tstepi
         enddo
 
         return

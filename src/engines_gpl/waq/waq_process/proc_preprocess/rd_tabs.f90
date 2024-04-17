@@ -75,10 +75,10 @@
 !     declaration of file identification group
 !
       real(kind=real_wp) ::vfform
-      character*20  rundat
-      character*40  fform      , conten      , & 
+      character(len=20)  rundat
+      character(len=40)  fform      , conten      , & 
                    source
-      character*40  remark(4)
+      character(len=40)  remark(4)
 !
 !     local variables
 !
@@ -86,10 +86,10 @@
                    iend            , i               , & 
                    ierror
       integer(kind=int_wp) ::deffds
-      character*1   coding, access
+      character(len=1)   coding, access
       logical       lexi
-      character*256 fildef, fildat
-      character*256 filext
+      character(len=256) fildef, fildat
+      character(len=256) filext
       integer(kind=int_wp) ::extpos, extlen
 !
 !     external nefis functions

@@ -56,7 +56,7 @@ contains
         use m_string_utils, only : string_equals
         use time_module, only : julian_with_leapyears
 
-        character*(*), intent(in) :: time_string       ! String containing the time data
+        character(len=*), intent(in) :: time_string       ! String containing the time data
         integer   (4), intent(out) :: time_offset      ! Calculated time offset
         logical, intent(in) :: format_ddhhmmss         ! True if format should be DDHHMMSS
         logical, intent(in) :: format_yyydddhh         ! True if format should be YYYDDDHH
@@ -136,7 +136,7 @@ contains
     subroutine convert_period_to_timer(input_string, timer_value, use_date_format, use_hour_format, is_error)
         !! Converts a time period string to a system timer value with formatting options.
 
-        character*(*), intent(in) :: input_string               !! String containing the time data
+        character(len=*), intent(in) :: input_string               !! String containing the time data
         integer(kind = int_wp), intent(out) :: timer_value      !! system timer
         logical, intent(in) :: use_date_format, use_hour_format !! Formatting options TRUE if date format or hour format
         integer(kind = int_wp), intent(out) :: is_error

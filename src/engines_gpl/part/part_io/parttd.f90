@@ -139,7 +139,7 @@ contains
          enddo
       else
          it2  = itime - idtime
-         div  = float(itime2-itime1)
+         div  = real(itime2-itime1)
          fac1 = (itime2-it2   )/div
          fac2 = (it2   -itime1)/div
          ! Stack overflow on large grid

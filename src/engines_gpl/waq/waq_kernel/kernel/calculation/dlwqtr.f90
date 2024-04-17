@@ -111,7 +111,7 @@
                   CONS(*)           , PARAM (NOPA,NOSEG), & 
                   FUNC(*)           , SEGFUN(NOSEG,*)   , & 
                   VELO(*)           , DISPER(*)
-      CHARACTER*20 SYNAME (NOTOT)    , CONAME (*)        , & 
+      character(len=20) SYNAME (NOTOT)    , CONAME (*)        , & 
                   PANAME (*)        , FUNAME (*)        , & 
                   SFNAME (*)
       LOGICAL      UPDATR

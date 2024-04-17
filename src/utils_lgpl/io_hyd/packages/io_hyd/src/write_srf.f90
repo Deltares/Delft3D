@@ -34,16 +34,16 @@
 !     function            : writes horizontal surface file.
 !
 !     subroutines called  : -
-!                         : dlwq_platform, return platform type
+!                         : which_operating_system, return platform type
 !
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of arguments
 
-      type(t_dlwqfile)                       :: file_srf               ! surfaces-file
+      type(t_file)                       :: file_srf               ! surfaces-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: nosegl                 ! number of segments per layer
@@ -59,13 +59,13 @@
       integer       filtyp
       integer       filsta
 
-      plform = dlwq_platform()
+      plform = which_operating_system()
       idummy = 0
 
       ! initialise file
 
-      call dlwqfile_open(file_srf)
-      lun    = file_srf%unit_nr
+      call file_srf%open()
+      lun    = file_srf%unit
       filtyp = file_srf%type
 
       ! write surfaces file
@@ -78,7 +78,7 @@
          write (lun,'(e13.6)') (surf(i),i=1,nosegl)
       endif
 
-      close(file_srf%unit_nr)
+      close(file_srf%unit)
       file_srf%status = FILE_STAT_UNOPENED
 
       return
@@ -92,12 +92,12 @@
 !
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of arguments
 
-      type(t_dlwqfile)                       :: file_hsrf              ! surfaces-file
+      type(t_file)                       :: file_hsrf              ! surfaces-file
       integer                                :: noseg                  ! number of segments
       real                                   :: surf(noseg)            ! horizontal surfaces
 
@@ -111,13 +111,13 @@
       integer       filtyp
       integer       filsta
 
-      plform = dlwq_platform()
+      plform = which_operating_system()
       idummy = 0
 
       ! initialise file
 
-      call dlwqfile_open(file_hsrf)
-      lun    = file_hsrf%unit_nr
+      call file_hsrf%open()
+      lun    = file_hsrf%unit
       filtyp = file_hsrf%type
 
       ! write horizontal surfaces file
@@ -128,7 +128,7 @@
          write (lun,'(e13.6)') (surf(i),i=1,noseg)
       endif
 
-      close(file_hsrf%unit_nr)
+      close(file_hsrf%unit)
       file_hsrf%status = FILE_STAT_UNOPENED
 
       return

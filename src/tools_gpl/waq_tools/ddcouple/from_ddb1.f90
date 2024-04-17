@@ -27,14 +27,14 @@
 
       ! global declarations
 
-      use hydmod                   
+      use m_hydmod
       use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd                    ! description of the hydrodynamics
 
       ! local declarations
 
@@ -57,28 +57,28 @@
 
       ! get the domains from the dd boundaries
 
-      n_dd_bound = hyd%dd_bound_coll%cursize
+      n_dd_bound = hyd%dd_bound_coll%current_size
       do i_dd_bound = 1 , n_dd_bound
 
          dd_bound => hyd%dd_bound_coll%dd_bound_pnts(i_dd_bound)
 
          ! look up the domain names
 
-         i_domain1 = domain_coll_find(hyd%domain_coll,dd_bound%name1)
+         i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain1 .le. 0 ) then
             domain%name = dd_bound%name1
             domain%mmax = -999
             domain%nmax = -999
             domain%aggr = ' '
-            i_domain1 = domain_coll_add(hyd%domain_coll, domain)
+            i_domain1 = hyd%domain_coll%add(domain)
          endif
-         i_domain2 = domain_coll_find(hyd%domain_coll,dd_bound%name2)
+         i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain2 .le. 0 ) then
             domain%name = dd_bound%name2
             domain%mmax = -999
             domain%nmax = -999
             domain%aggr = ' '
-            i_domain2 = domain_coll_add(hyd%domain_coll, domain)
+            i_domain2 = hyd%domain_coll%add(domain)
          endif
       enddo
 

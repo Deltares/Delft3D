@@ -43,7 +43,7 @@ contains
         use m_monsys
         use waq_attribute_utils, only : evaluate_dimension_match
         use m_array_manipulation, only : is_missing
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use processet
         use timers       !   performance timers
 
@@ -72,7 +72,7 @@ contains
         logical :: laswi ! active only switch
 
         type(procespropcoll) :: procesdef              !< all processes
-        type(t_dlwq_item), intent(inout) :: constants !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants !< delwaq constants list
         type(error_status), intent(inout) :: status    !< current error status
 
         ! local decalarations
@@ -111,7 +111,7 @@ contains
         call monsys(line, 2)
         call getmmo(imolev)
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
         do iproc = 1, nproc
 
             proc1 => procesdef%procesprops(iproc)

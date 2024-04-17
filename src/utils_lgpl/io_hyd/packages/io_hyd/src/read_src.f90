@@ -35,18 +35,18 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_waq_file                   ! module contains everything for the files
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
 
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_src               ! aggregation-file
+      type(t_file)                       :: file_src               ! aggregation-file
       integer                                :: nolay                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
-      type(t_dlwqdata)      , intent(inout)  :: wasteload_data         ! wasteload_data
+      type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
 
       ! local declarations
 
@@ -84,7 +84,7 @@
       ! count how many wasteload flows we expect in the file (uniform loads have nolay flows)
 
       no_flow  = 0
-      no_waste = wasteload_coll%cursize
+      no_waste = wasteload_coll%current_size
       do i = 1 , no_waste
          if ( wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
             no_flow = no_flow + nolay
@@ -93,9 +93,9 @@
          endif
       enddo
 
-      call dlwqfile_open(file_src)
+      call file_src%open()
       ilun    = 0
-      ilun(1) = file_src%unit_nr
+      ilun(1) = file_src%unit
       lch (1) = file_src%name
       npos   = 1000
       cchar  = ';'
@@ -140,7 +140,7 @@
 
       ! option block function
 
-      if ( gettoken( wasteload_data%functype, ierr) .ne. 0 ) then
+      if ( gettoken( wasteload_data%function_type, ierr) .ne. 0 ) then
          write(lunrep,*) ' error reading sources file'
          write(lunrep,*) ' expected integer with option block function'
          goto 200
@@ -178,13 +178,13 @@
          write(lunrep,*) ' expected integer with number of breakpoints'
          goto 200
       endif
-      wasteload_data%no_brk = nobrk_waste
+      wasteload_data%num_breakpoints = nobrk_waste
 
       ! allocate arrays
 
       no_param = 1
-      wasteload_data%no_loc   = no_waste
-      wasteload_data%no_param = no_param
+      wasteload_data%num_locations   = no_waste
+      wasteload_data%num_parameters = no_param
       allocate(wasteload_data%times(nobrk_waste), &
                wasteload_data%values(no_param,no_waste,nobrk_waste), &
                flow_data(no_param,no_flow,nobrk_waste), &
@@ -201,16 +201,16 @@
       ! set options
 
       wasteload_data%subject         = SUBJECT_WASTE
-      wasteload_data%functype        = FUNCTYPE_BLOCK
+      wasteload_data%function_type        = FUNCTYPE_BLOCK
       wasteload_data%igrid          =  1
-      wasteload_data%extern          = .FALSE.
+      wasteload_data%is_external          = .FALSE.
       wasteload_data%iorder          = ORDER_PARAM_LOC
-      wasteload_data%param_pointered = .FALSE.
-      wasteload_data%loc_defaults    = .FALSE.
-      wasteload_data%loc_pointered   = .FALSE.
-      wasteload_data%scaled          = .FALSE.
-      wasteload_data%param_scaled    = .FALSE.
-      wasteload_data%loc_scaled      = .FALSE.
+      wasteload_data%is_parameter_pointered = .FALSE.
+      wasteload_data%are_locations_default    = .FALSE.
+      wasteload_data%are_locations_pointered   = .FALSE.
+      wasteload_data%is_scaled          = .FALSE.
+      wasteload_data%need_parameters_scaling    = .FALSE.
+      wasteload_data%need_location_scaling      = .FALSE.
 
 
       ! two scale factors
@@ -298,7 +298,7 @@
 
       time_in_seconds = .true.
 
-      close(file_src%unit_nr)
+      close(file_src%unit)
       file_src%status = FILE_STAT_UNOPENED
 
       return
