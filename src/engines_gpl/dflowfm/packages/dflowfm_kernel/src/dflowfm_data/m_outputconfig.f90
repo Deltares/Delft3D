@@ -690,40 +690,39 @@ function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
 end function id_nc_type2nc_type_his
 
 
-!> scan the input tree, using the keys in the statout_set
-subroutine scan_input_tree(tree, paragraph, statout_set)
+!> scan the input tree, using the keys in the quantity_config_set
+subroutine scan_input_tree(tree, paragraph, quantity_config_set)
    use properties
 
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: statout_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
-   type(t_output_quantity_config), pointer, dimension(:) :: statout
+   type(t_output_quantity_config), pointer, dimension(:) :: quantity_config
 
-   statout => statout_set%statout
+   quantity_config => quantity_config_set%quantity_config
 
-   do i = 1, statout_set%count
-!      statout(i)%input_value = ''
-      call prop_get_string(tree, paragraph, statout(i)%key, statout(i)%input_value)
+   do i = 1, quantity_config_set%count
+      call prop_get_string(tree, paragraph, quantity_config(i)%key, quantity_config(i)%input_value)
    enddo
 
 end subroutine scan_input_tree
 
 !> Set the properties for the diagnostics file
-subroutine set_properties(tree, paragraph, statout_set)
+subroutine set_properties(tree, paragraph, quantity_config_set)
    use properties
 
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: statout_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
    type(t_output_quantity_config), pointer, dimension(:) :: statout
 
-   statout => statout_set%statout
+   statout => quantity_config_set%statout
 
-   do i = 1, statout_set%count
+   do i = 1, quantity_config_set%count
       if (len_trim(statout(i)%description)>0) then
          call prop_set(tree, trim(paragraph), trim(statout(i)%key), trim(statout(i)%input_value), trim(statout(i)%description))
       endif
