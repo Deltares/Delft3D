@@ -1880,6 +1880,7 @@ subroutine readMDUFile(filename, istat)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow', jahisobscrs, success)
     if (.not. success) then
       call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)
     endif

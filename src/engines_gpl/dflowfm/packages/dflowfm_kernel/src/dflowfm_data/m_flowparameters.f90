@@ -497,6 +497,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
  integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
  integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
+ integer                           :: jahisobscrs             !< Write obscrs parameters to his file, 0: no, 1:yes
  
  ! written to map file yes or no
  integer                           :: jamaps0                   !< previous step water levels to map file, 0: no, 1: yes
@@ -982,7 +983,7 @@ subroutine default_flowparameters()
     jahistaucurrent = 1
     jahisvelocity = 1
     jahisdischarge = 1
-
+    jahisobscrs = 1
     jamaps0 = 1
     jamaps1 = 1
     jamapevap = 0
