@@ -91,6 +91,9 @@ integer, intent(out) :: iresult
             call updateValuesOnRunupGauges_mpi()
             !call reduce_particles()
          endif
+         if (jahisbal > 0) then ! Update WaterBalances etc.
+            call updateBalance()
+         endif
          if ( jacheckmonitor == 1 ) then
            !compute "checkerboard" monitor
             call comp_checkmonitor()

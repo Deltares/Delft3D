@@ -3820,7 +3820,6 @@ end subroutine partition_make_globalnumbers
       use m_statistical_output_types, only: t_output_variable_set
       use m_missing
       use m_alloc, only: realloc
-      use m_output_config, only: UNC_LOC_GLOBAL
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3835,12 +3834,6 @@ end subroutine partition_make_globalnumbers
       
 #ifdef HAVE_MPI
       do i_stat = 1,output_set%count
-         
-         ! 'Global' variables (e.g. water balance, which are integrated values over all the partitions)
-         ! don't need to be reduced, as this is already done separately
-         if (output_set%statout(i_stat)%output_config%location_specifier == UNC_LOC_GLOBAL) then
-            cycle
-         end if
          
          stat_output => output_set%statout(i_stat)%stat_output
          

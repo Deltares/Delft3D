@@ -103,9 +103,6 @@ subroutine flow_finalize_usertimestep(iresult)
                call updateValuesOnCrossSections_mpi(time1)
                call updateValuesOnRunupGauges_mpi()
             endif
-            if (jahisbal > 0) then ! Update WaterBalances etc.
-               call updateBalance()
-            endif
             if ( jacheckmonitor == 1 ) then
 !              compute "checkerboard" monitor
                call comp_checkmonitor()
