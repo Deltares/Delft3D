@@ -484,6 +484,13 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahistaucurrent           !< Write bed shear stress to his file, 0: no, 1: yes
  integer                           :: jahisvelocity             !< Write velocity magnitude to his file, 0: no, 1: yes
  integer                           :: jahisdischarge            !< Write discharge magnitude to his file, 0: no, 1: yes
+ integer                           :: jahisrunupgauge           !< Write jahisrunupgauge       to his file, 0: no, 1: yes
+ integer                           :: jahiswqbot                !< Write jahiswqbot            to his file, 0: no, 1: yes
+ integer                           :: jahistracers              !< Write jahistracers          to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_flow             !< Write jahiscrs_flow         to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_constituents     !< Write jahiscrs_constituents to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_sediment         !< Write jahiscrs_sediment     to his file, 0: no, 1: yes
+ integer                           :: jahisdred                 !< Write jahisdred             to his file, 0: no, 1: yes
  ! His output structure keywords
  integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
  integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
@@ -497,7 +504,6 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
  integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
  integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
- integer                           :: jahisobscrs             !< Write obscrs parameters to his file, 0: no, 1:yes
  
  ! written to map file yes or no
  integer                           :: jamaps0                   !< previous step water levels to map file, 0: no, 1: yes
@@ -983,7 +989,13 @@ subroutine default_flowparameters()
     jahistaucurrent = 1
     jahisvelocity = 1
     jahisdischarge = 1
-    jahisobscrs = 1
+    jahisrunupgauge        = 1
+    jahiswqbot             = 1
+    jahistracers           = 1 
+    jahiscrs_flow          = 1
+    jahiscrs_constituents  = 1
+    jahiscrs_sediment      = 1
+    jahisdred              = 1
     jamaps0 = 1
     jamaps1 = 1
     jamapevap = 0

@@ -1241,7 +1241,7 @@ private
                      's-1', UNC_LOC_STATION, nc_atts = atts(1:1),            &
                      nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_RICH,               &
-                     'Richardsononoutput', 'rich', 'Richardson Nr', &
+                     'Wrihis_Richardsononoutput', 'rich', 'Richardson Nr', &
                      '', '-', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_3D_interface_center)
 

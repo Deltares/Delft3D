@@ -1880,7 +1880,16 @@ subroutine readMDUFile(filename, istat)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
     call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow', jahisobscrs, success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_runupgauge'        , jahisrunupgauge      , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wqbot'             , jahiswqbot           , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_tracers'           , jahistracers         , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow'          , jahiscrs_flow        , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_constituents'  , jahiscrs_constituents, success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_sediment'      , jahiscrs_sediment    , success)
+    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_dred'              , jahisdred            , success)
+    
+    
+    
     if (.not. success) then
       call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)
     endif
@@ -2045,7 +2054,7 @@ subroutine readMDUFile(filename, istat)
         ice_mapout = .true.
     endif     
 
-    call prop_get_integer(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
+    call prop_get_integer(md_ptr, 'output', 'Wrihis_Richardsononoutput', jaRichardsononoutput, success)
 
     call prop_get_integer(md_ptr, 'output', 'Wrishp_crs', jashp_crs, success)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_obs', jashp_obs, success)
