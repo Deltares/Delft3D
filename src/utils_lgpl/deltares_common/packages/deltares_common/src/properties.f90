@@ -1892,6 +1892,35 @@ subroutine prop_get_integer(tree, chapter, key, value, success, valuesfirst)
     value = valuearray(1)
 end subroutine prop_get_integer
 
+!> Get the integer value for a property
+!!    Use prop_get_string to get the string value.
+!!    Convert it to integer.
+!!    If property does not match default it will be set to the default.
+subroutine prop_get_set_integer(tree, chapter, key, value, success, valuesfirst)
+    implicit none
+    type(tree_data)  , pointer       :: tree        !< The property tree
+    integer          , intent(inout) :: value       !< Value of the key (not set if the key is not found, so you can set a default value)
+    character(*)     , intent(in)    :: chapter     !< Name of the chapter (case-insensitive) or "*" to get any key
+    character(*)     , intent(in)    :: key         !< Name of the key (case-insensitive)
+    logical, optional, intent(out)   :: success     !< Whether successful or not (optional)
+    logical, optional, intent(in)    :: valuesfirst !< Whether value should be specified before any comments (optional)
+    
+    !character(len=255) :: stringvalue
+    !
+    ! Local variables
+    !
+    integer, dimension(1) :: valuearray
+    !
+    !! executable statements -------------------------------------------------------
+    !
+    valuearray(1) = value
+    call prop_get_integers(tree   ,chapter   ,key       ,valuearray,1, success, valuesfirst)
+    value = valuearray(1)
+    if(.not. success .and. value > 0) then
+       call prop_set(tree, chapter, key,  value, '')
+    endif
+end subroutine prop_get_set_integer
+
 !> Get the array of integer values for a property
 !!    Use prop_get_string to get the string value.
 !!    Convert it to integers.

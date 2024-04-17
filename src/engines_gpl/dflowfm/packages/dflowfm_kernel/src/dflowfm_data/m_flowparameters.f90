@@ -484,7 +484,20 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahistaucurrent           !< Write bed shear stress to his file, 0: no, 1: yes
  integer                           :: jahisvelocity             !< Write velocity magnitude to his file, 0: no, 1: yes
  integer                           :: jahisdischarge            !< Write discharge magnitude to his file, 0: no, 1: yes
-
+ ! His output structure keywords
+ integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
+ integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisgate               !< Write gate      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahiscdam               !< Write dam       parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisweir               !< Write weir      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisdambreak           !< Write dambreak  parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisorif               !< Write orifice   parameters to his file, 0: no, 1: yes
+ integer                           :: jahisbridge             !< Write bridge    parameters to his file, 0: no, 1: yes
+ integer                           :: jahisculv               !< Write culvert   parameters to his file, 0: no, 1: yes
+ integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
+ integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
+ integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
+ 
  ! written to map file yes or no
  integer                           :: jamaps0                   !< previous step water levels to map file, 0: no, 1: yes
  integer                           :: jamaps1                   !< water levels to map file, 0: no, 1: yes

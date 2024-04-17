@@ -524,7 +524,7 @@ private
       integer                                                :: size = 0                  !< Actual size of cross-section set
       integer                                                :: growsby = 200             !< Increment for cross-section set
       integer                                                :: count= 0                  !< Actual number of cross-section sets
-      type(t_output_quantity_config), pointer, dimension(:)    :: statout                   !< Current cross-section
+      type(t_output_quantity_config), pointer, dimension(:)  :: statout                   !< Current cross-section
    end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
@@ -701,7 +701,7 @@ subroutine scan_input_tree(tree, paragraph, quantity_config_set)
    integer i
    type(t_output_quantity_config), pointer, dimension(:) :: quantity_config
 
-   quantity_config => quantity_config_set%quantity_config
+   quantity_config => quantity_config_set%statout
 
    do i = 1, quantity_config_set%count
       call prop_get_string(tree, paragraph, quantity_config(i)%key, quantity_config(i)%input_value)

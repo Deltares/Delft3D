@@ -34,6 +34,7 @@ module m_structures
 use properties
 use unstruc_channel_flow, only: network
 use MessageHandling
+use m_flowparameters
 implicit none
 
 type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -179,20 +180,6 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
                                                               !<                      (3,:) downstream average water level
                                                               !<                      (4,0) width of dam
  double precision, dimension(:,:), allocatable :: valcgen     !< Array for general structure (old ext), (1,:) discharge
-
- ! His output keywords
- integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
- integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
- integer                           :: jahisgate               !< Write gate      parameters to his file, 0: n0, 1: yes
- integer                           :: jahiscdam               !< Write dam       parameters to his file, 0: n0, 1: yes
- integer                           :: jahisweir               !< Write weir      parameters to his file, 0: n0, 1: yes
- integer                           :: jahisdambreak           !< Write dambreak  parameters to his file, 0: n0, 1: yes
- integer                           :: jahisorif               !< Write orifice   parameters to his file, 0: no, 1: yes
- integer                           :: jahisbridge             !< Write bridge    parameters to his file, 0: no, 1: yes
- integer                           :: jahisculv               !< Write culvert   parameters to his file, 0: no, 1: yes
- integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
- integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
- integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
  
  !! Geometry variables
  ! weir
