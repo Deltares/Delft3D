@@ -111,7 +111,7 @@ module swan_input
        real                                    :: veg_diamtr       ! vegetation diameter
        real                                    :: veg_drag         ! vegetation drag coefficient
        integer                                 :: veg_nstems       ! the number of plant stands per square meter
-       integer                                 :: curvibot
+       integer                                 :: curvibot   
        integer                                 :: dirspace         ! 1: circle, 2: sector
        integer                                 :: ndir             ! number of directional bins
        integer                                 :: nfreq            ! number of frequency bins
