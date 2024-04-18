@@ -697,7 +697,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE,                   &
                      'Wrihis_sourcesink', 'source_sink_prescribed_discharge', '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write sources-sinks statistics to his file')
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write source-sink statistics to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT,          &
                      'Wrihis_sourcesink', 'source_sink_prescribed_salinity_increment', '', '',                     &
                      '1e-3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
@@ -708,10 +708,10 @@ private
                      'Wrihis_sourcesink', 'source_sink_current_discharge', '', '',                     &
                      'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME,                      &
-                     'Wrihis_sourcesink', 'source_sink_cumulative_volume', '', '',                     &
+                     'Wrihis_sourcesink', 'source_sink_cumulative_volume', 'Cumulative volume from the start time until current time at each source/sink', '',                     &
                      'm3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE ,                     &
-                     'Wrihis_sourcesink', 'source_sink_discharge_average' , '', '',                     &
+                     'Wrihis_sourcesink', 'source_sink_discharge_average' , 'Average discharge in the past his-file output-interval at each source/sink', '',                     &
                      'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
 
       !
@@ -1521,10 +1521,10 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE,                                       &
                      'Wrihis_crs_flow', 'cross_section_discharge', 'Discharge through observation cross section',    &
-                     'ocean_volume_transport_across_line', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
+                     '', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUMUL,                                       &
                      'Wrihis_crs_flow', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
-                     'integral_wrt_time_of_ocean_volume_transport_across_line', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+                     '', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_AREA,                                       &
                      'Wrihis_crs_flow', 'cross_section_area', 'Wet area of observation cross section',    &
                      '', 'm2', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
