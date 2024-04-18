@@ -1535,7 +1535,6 @@ private
       ! summation of area (denominator) at each computational time step in a cheap way, i.e. without communication between
       ! partitions. @see subroutines: sumvalueOnCrossSections, updateValuesOnCrossSections
 
-
       ! The following output value is an abstract entry representing all constituents.
       ! The constituents that are actually available depend on the model initialization
       ! and will only be added later, during init_fm_statistical_output_his().
