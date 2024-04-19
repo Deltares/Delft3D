@@ -47,7 +47,6 @@
  double precision                  :: sigrho
  double precision                  :: sigsal
  double precision                  :: sigtem
- double precision                  :: sigsed
  double precision                  :: sigtracer
 
  !                                    c1e    = c2e-vonkar**2/(sigeps*sqrt(cmukep))
@@ -130,6 +129,7 @@
 
  double precision, allocatable     :: rhou     (:)      ! density at flow links   (kg/m3)
 
+ double precision, allocatable     :: sigsed   (:)      ! prandtl schmidt per sediment fraction
  double precision, allocatable     :: sigdifi  (:)      ! inverse prandtl schmidt nrs
  double precision, allocatable     :: wsf      (:)      ! fall velocities of all numconst constituents
 
@@ -156,7 +156,6 @@ use m_physcoef
     sigrho    = 0.7d0  ! bouyancy
     sigsal    = Schmidt_number_salinity
     sigtem    = Prandtl_number_temperature
-    sigsed    = 1.0d0
     sigtracer = Schmidt_number_tracer
 
     cmukep    = 0.09d0

@@ -132,7 +132,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          if (dicouv .ge. 0d0) difsedu(iconst) = 0d0
          if (dicoww .ge. 0d0) then
             difsedw(iconst) = dicoww
-            sigdifi(iconst) = 1d0/sigsed
+            sigdifi(iconst) = 1d0/sigsed(iconst)
          endif
          if (jased < 4) wsf(iconst) = ws(i)
       end do

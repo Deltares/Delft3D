@@ -39,7 +39,6 @@ containerFolder=/p/d-hydro/delft3dfm_containers/delft3dfm_2023.03
 # Specify the ROOT folder of your model, i.e. the folder that contains ALL of the input files and sub-folders, e.g:
 modelFolder=/p/myFolder/singularity/delft3dfm/test
 
-
 # Specify the folder containing your model's MDU file.
 mdufileFolder=$modelFolder/dflowfm
  
@@ -49,6 +48,10 @@ dimrconfigFolder=$modelFolder
 # The name of the DIMR configuration file. The default name is dimr_config.xml. This file must already exist!
 dimrFile=dimr_config.xml
  
+# This setting might help to prevent errors due to temporary locking of NetCDF files. 
+export HDF5_USE_FILE_LOCKING=FALSE
+
+
 # Stop the computation after an error occurs.
 set -e
  

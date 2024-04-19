@@ -168,7 +168,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                    :: rmissval
     real(fp)                    :: seddxx              !< Temporary storage for sediment diameter
     real(fp)                    :: sedsg               !< Temporary storage for geometric standard deviation
-    real(fp)                    :: tpsmud
+    real(fp)                    :: tpsmud, tpssand
     logical                     :: ex
     logical                     :: success
     character(11)               :: fmttmp !< Format file ('formatted  ') 
@@ -412,10 +412,15 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        call prop_get(sed_ptr, 'SedimentOverall', 'Cref', csoil)
        !
        tpsmud  = 0.7_fp
-       call prop_get(sed_ptr, 'SedimentOverall', 'MudTPS', tpsmud)
+       tpssand = 1.0_fp
+       call prop_get(sed_ptr, 'SedimentOverall', 'MudTPS', tpsmud) ! for back compatibility
+       call prop_get(sed_ptr, 'SedimentOverall', 'SchmidtNumberMud' , tpsmud ) ! value for mud, for consistency with UNST-7622
+       call prop_get(sed_ptr, 'SedimentOverall', 'SchmidtNumberSand', tpssand) ! value for sand
        do i = 1,lsed
           if (sedtyp(i) <= sedpar%max_mud_sedtyp) then
               tpsnumber(i) = tpsmud
+          else
+              tpsnumber(i) = tpssand
           endif
        enddo
        !
@@ -632,6 +637,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           !
           rhosol(l) = rmissval
           call prop_get(sedblock_ptr, '*', 'RhoSol', rhosol(l))
+          !
+          ! tpsnumber is pre-filled with values based on sediment type (0.7 for mud and 1.0 for sand)
+          call prop_get(sedblock_ptr, '*', 'SchmidtNumber', tpsnumber(l))
           !
           ! Check if bed composition for this fraction needs to be updated (only if the master CmpUpd flag in the mor-file is true)
           !

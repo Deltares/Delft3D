@@ -14,6 +14,7 @@ from pytest import CaptureFixture
 from pytest_mock import MockerFixture
 
 from src.utils.minio_rewinder import Rewinder
+from src.utils.logging.i_logger import ILogger
 
 
 def make_object(
@@ -54,8 +55,8 @@ class TestMinioRewinder:
     ):
         # Mock Minio and Rewinder
         minio_instance = mocker.Mock(spec=minio.Minio)
-
-        rewinder_instance = Rewinder(minio_instance, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder_instance = Rewinder(minio_instance, logger, version)
         assert rewinder_instance.rewind.year == 2023
         assert rewinder_instance.rewind.month == 10
         assert rewinder_instance.rewind.day == 20
@@ -74,7 +75,9 @@ class TestMinioRewinder:
     def test_rewind_incorrect_version_throws_value_error(self, version: str, mocker: MockerFixture):
         # Mock Minio
         with pytest.raises(ValueError):
-            Rewinder(mocker.Mock(spec=minio.Minio), version)
+            minio_instance = mocker.Mock(spec=minio.Minio)
+            logger = mocker.Mock(spec=ILogger)
+            Rewinder(minio_instance, logger, version)
 
     def test_rewind_download_delete_marker(self, mocker: MockerFixture):
         # Arrange
@@ -96,9 +99,10 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Act
-        rewinder_instance = Rewinder(mock_minio_client, "2023.10.20T12:00")
+        rewinder_instance = Rewinder(mock_minio_client, logger, "2023.10.20T12:00")
         rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
         # Assert
@@ -126,8 +130,9 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
-        rewinder_instance = Rewinder(mock_minio_client, "2022.10.20T12:00")
+        rewinder_instance = Rewinder(mock_minio_client, logger, "2022.10.20T12:00")
         rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
         mock_minio_client.fget_object.assert_not_called()
@@ -151,9 +156,10 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Act
-        rewinder_instance = Rewinder(mock_minio_client, "2024.10.20T12:00")
+        rewinder_instance = Rewinder(mock_minio_client, logger, "2024.10.20T12:00")
         rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
         # Assert
@@ -185,9 +191,10 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Mock Minio and Rewinder
-        rewinder_instance = Rewinder(mock_minio_client, "2023.10.20T10:00")
+        rewinder_instance = Rewinder(mock_minio_client, logger, "2023.10.20T10:00")
         rewinder_instance.download("my_bucket", "https://minio/browser", ".")
 
         mock_minio_client.fget_object.assert_not_called()
@@ -199,7 +206,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = (
             make_object(f"source/path/{key}", bucket_name="my-bucket", version_id=f"v{i}")
             for i, key in enumerate(("foo", "bar", "baz"))
@@ -225,7 +233,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
@@ -249,7 +258,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
@@ -257,11 +267,10 @@ class TestMinioRewinder:
 
         # Act
         rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
 
         # Assert
         assert fs.exists("destination/path")  # Destination dir still exists.
-        assert "is not empty" not in captured.out
+        logger.error.assert_not_called()
         minio_client.fget_object.assert_called_once_with(
             "my-bucket", "source/path/foo", "destination/path/foo", version_id="v1"
         )
@@ -273,7 +282,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
@@ -281,11 +291,10 @@ class TestMinioRewinder:
 
         # Act
         rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
 
         # Assert
         assert fs.exists("destination/path")  # Destination dir still exists.
-        assert "is not empty" in captured.out  # Warn that destination dir is not empty.
+        logger.warning.assert_called()  # Warn that destination dir is not empty.
         minio_client.fget_object.assert_called_once_with(
             "my-bucket", "source/path/foo", "destination/path/foo", version_id="v1"
         )
@@ -297,7 +306,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         now = datetime.now(timezone.utc)
         minio_client.list_objects.return_value = (
             make_object(
@@ -332,7 +342,8 @@ class TestMinioRewinder:
         # Arrange
         past = datetime.now(timezone.utc) - timedelta(days=30)
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(past))
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, make_version(past))
         minio_client.list_objects.return_value = (
             make_object(
                 "source/path/foo",
@@ -362,7 +373,8 @@ class TestMinioRewinder:
         # Arrange
         past = datetime.now(timezone.utc) - timedelta(days=30)
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(past))
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, make_version(past))
         minio_client.list_objects.return_value = (
             make_object(
                 "source/path/foo",
@@ -376,10 +388,9 @@ class TestMinioRewinder:
 
         # Act
         rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
 
         # Assert
-        assert "No downloads found" in captured.out
+        logger.error.assert_called()
         assert not fs.exists("destination/path")
         minio_client.fget_object.assert_not_called()
 
@@ -388,7 +399,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = (
             make_object(
                 f"source/path/{key}",
@@ -423,7 +435,8 @@ class TestMinioRewinder:
         # Arrange
         version = make_version()
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, version)
         minio_client.list_objects.return_value = itertools.chain(
             (make_object("source/path/empty-file", "my-bucket", "v42", etag=hashlib.md5(b"").hexdigest()),),
             (
@@ -443,13 +456,12 @@ class TestMinioRewinder:
 
         # Act
         rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert "Skipping download: destination/path/empty-file" in captured.out
-        assert "Skipping download: destination/path/bar" in captured.out
-        assert "Skipping download: destination/path/qux" in captured.out
+        assert mocker.call('Skipping download: destination/path/empty-file, it already exists.') in logger.warning.call_args_list
+        assert mocker.call('Skipping download: destination/path/bar, it already exists.') in logger.warning.call_args_list
+        assert mocker.call('Skipping download: destination/path/qux, it already exists.') in logger.warning.call_args_list
         assert minio_client.fget_object.call_args_list == [
             mocker.call(
                 "my-bucket",
@@ -466,7 +478,8 @@ class TestMinioRewinder:
         """It should downloading objects that already exist in the destination directory but have chagned."""
         # Arrange
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version())
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, make_version())
         minio_client.list_objects.return_value = iter(
             [
                 make_object(
@@ -512,7 +525,8 @@ class TestMinioRewinder:
         etag = hashlib.md5(b"".join(digests)).hexdigest() + f"-{parts}"
 
         minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(), part_size=part_size)
+        logger = mocker.Mock(spec=ILogger)
+        rewinder = Rewinder(minio_client, logger, make_version(), part_size=part_size)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1", etag=etag)]
         )
@@ -524,5 +538,5 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert "Skipping download: destination/path/foo" in captured.out
+        assert mocker.call('Skipping download: destination/path/foo, it already exists.') in logger.warning.call_args_list
         minio_client.fget_object.assert_not_called()

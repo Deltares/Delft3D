@@ -39,7 +39,7 @@ implicit none
 
    !> Reset the counters for lateral data.
    module subroutine reset_lateral()
-      numlatsg = 0           !< [] nr of lateral discharge providers
+         numlatsg = 0           !< [] nr of lateral discharge providers
       nlatnd   = 0           !< lateral nodes dimension, counter of nnlat(:)
    end subroutine reset_lateral
 
@@ -53,13 +53,15 @@ implicit none
       integer :: i
 
       apply_transport_is_used = .false.
-      do i = 1, numlatsg
-         if (apply_transport(i)==1) then
-            apply_transport_is_used = .true.
-            ! No need to look further
-            exit
-         end if
-      end do
+      if (allocated(apply_transport)) then
+         do i = 1, numlatsg
+            if (apply_transport(i)==1) then
+               apply_transport_is_used = .true.
+               ! No need to look further
+               exit
+            end if
+         end do
+      end if
       call realloc(incoming_lat_concentration, (/1, numconst, numlatsg/))
       call realloc(outgoing_lat_concentration, (/1, numconst, numlatsg/))
 

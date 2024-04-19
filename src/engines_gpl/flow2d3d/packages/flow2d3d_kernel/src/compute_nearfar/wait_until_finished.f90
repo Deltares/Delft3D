@@ -1,4 +1,4 @@
-subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, error, gdp)
+subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, ifatal, gdp)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2024.
@@ -54,7 +54,7 @@ subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, erro
     integer                        , intent(out) :: idis
     character(*)                   , intent(out) :: filename
     logical                        , intent(in)  :: waitlog
-    logical                        , intent(out) :: error
+    integer                        , intent(out) :: ifatal
 !
 ! Local variables
 !
@@ -77,7 +77,7 @@ subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, erro
 !! executable statements -------------------------------------------------------
 !
     nf_timeout => gdp%gdnfl%nf_timeout
-    error = .false.
+    ifatal = 0
     ! Check for how many files we are waiting to appear
     idis = 0
     do i=1, no_dis
@@ -125,7 +125,8 @@ subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, erro
           if (twait/60.0 > nf_timeout) then
              write(*,*) "ERROR: Timeout: waited ", twait, " minutes for nearfield files to appear. Aborting."
              call prterr(gdp%gdinout%lundia, 'P004', "Timeout. nearfield files did not appear in specified NfTimeout period. Aborting.")
-             call d3stop(1, gdp)
+             ifatal = 1
+             return
           endif
        enddo
        call timer_stop(timer_wait, gdp)

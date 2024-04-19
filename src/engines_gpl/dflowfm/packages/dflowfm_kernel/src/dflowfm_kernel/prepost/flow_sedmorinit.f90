@@ -62,6 +62,7 @@ subroutine flow_sedmorinit()
     use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
     use m_xbeach_data, only: gammaxxb
     use m_waves, only: gammax
+    use m_turbulence, only: sigsed
 
     implicit none
 
@@ -123,7 +124,12 @@ subroutine flow_sedmorinit()
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
         return
     endif
-    
+    ! initialize sigsed based on values of tpsnumber read from .sed file
+    allocate (sigsed (stmpar%lsedtot))
+    do i = 1, stmpar%lsedtot
+        sigsed(i) = stmpar%sedpar%tpsnumber(i)
+    enddo
+        
     do i = 1, stmpar%lsedtot
        if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
           if (jawave .ne. 4) then

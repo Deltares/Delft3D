@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xmlns:xi="http://www.w3.org/2001/XInclude"
+		xmlns:xi="http://www.w3.org/2001/XInclude"
 		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
 				<!--
 				Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
@@ -135,35 +135,16 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<!-- parallel: <shell ref="mpi"/> -->
-			<path>bin\run_dflow2d3d.bat</path>
+			<path>bin\run_dflow2d3d_parallel.bat</path>
+			<arguments>
+				<argument>2</argument>
+			</arguments>
 		<!--
 			<environments>
 				<environment name="D3D_HOME" type="path">..\.</environment>
 				<environment name="ARCH" type="raw">win64</environment>
 			</environments>
 		-->
-		</program>
-		<program name="FLOW2D3D_FLOW2D3D" logOutputToFile="true">
-			<location ref="dsctestbench-references_bin" type="reference">
-				<from>delft3d_open_source/win64</from>
-			</location>
-			<location ref="local" type="check">
-				<from>teamcity_artifacts/x64</from>
-			</location>
-			<path>bin\run_dflow2d3d_fluidmud.bat</path>
-		</program>
-		<program name="FLOW2D3D_RTC" logOutputToFile="true">
-			<location ref="dsctestbench-references_bin" type="reference">
-				<from>delft3d_open_source/win64</from>
-			</location>
-			<location ref="local" type="check">
-				<from>teamcity_artifacts/x64</from>
-			</location>
-			<path>bin\run_dflow2d3d_rtc.bat</path>
-			<arguments>
-				<argument>--skipWait</argument>
-			</arguments>
 		</program>
 		<program name="FLOW2D3D_WAVE" logOutputToFile="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -172,7 +153,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/x64</from>
 			</location>
-			<path>bin\run_dflow2d3d_dwaves.bat</path>
+			<path>bin\run_dflow2d3d_parallel_dwaves.bat</path>
 		</program>
 		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -243,30 +224,6 @@
 				<program ref="FLOW2D3D"/>
 			</programs>
 		</testCase>
-		<testCase name="flow2d3d_fluidmud_default">
-			<location ref="dsctestbench-cases" type="input">
-				<from>.</from>
-			</location>
-			<location ref="dsctestbench-references_data" type="reference">
-				<from>win64</from>
-			</location>
-			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
-			<programs>
-				<program ref="FLOW2D3D_FLOW2D3D"/>
-			</programs>
-		</testCase>
-		<testCase name="flow2d3d_rtc_default">
-			<location ref="dsctestbench-cases" type="input">
-				<from>.</from>
-			</location>
-			<location ref="dsctestbench-references_data" type="reference">
-				<from>win64</from>
-			</location>
-			<maxRunTime>2500.0</maxRunTime>
-			<programs>
-				<program ref="FLOW2D3D_RTC"/>
-			</programs>
-		</testCase>
 		<testCase name="flow2d3d_wave_default">
 			<location ref="dsctestbench-cases" type="input">
 				<from>.</from>
@@ -283,5 +240,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_nearfield_cases.xml"/>
+	<xi:include href="../include/delft3d4_hp_cases_flow_parallel.xml"/>
 </deltaresTestbench_v3>

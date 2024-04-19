@@ -22,7 +22,6 @@
 !!  rights reserved.
 module data_processing
     use m_waq_precision
-    use timers, only : timstrt, timstop
     use m_string_utils, only : string_equals, index_in_array
 
     implicit none
@@ -55,8 +54,8 @@ contains
 
     subroutine delete_file (file_name, error_flag)
         !! Deletes a file by its name and returns an error flag if the deletion fails
-        character(len = *), intent(in) :: file_name       !! Name of the file to be deleted
-        integer(kind = int_wp), intent(out) :: error_flag !! Error indicator (0 = no error, 1 = error)
+        character(len = *), intent(in)      :: file_name       !! Name of the file to be deleted
+        integer(kind = int_wp), intent(out) :: error_flag      !! Error indicator (0 = no error, 1 = error)
 
         integer(kind = int_wp) :: io_logical_unit, free_logical_unit
         logical :: is_file_open, file_exists
@@ -114,7 +113,6 @@ contains
         integer(kind = int_wp) :: str_len, error_code, str_comp, index
         integer(kind = int_wp) :: timer_handle = 0
 
-        call timstrt("extract_value_from_group", timer_handle)
         rewind (file_unit)
 
         group_open = .false.
@@ -168,7 +166,7 @@ contains
             endif
 
         end do
-        90 call timstop(timer_handle)
+        90 continue
 
     end subroutine extract_value_from_group
 
@@ -189,8 +187,6 @@ contains
         integer(kind = int_wp) :: timer_handle = 0
         logical :: found_lead = .false.                ! flag for finding leading separator
         logical :: found_trail = .false.               ! flag for finding trailing separator
-
-        call timstrt("extract_string_by_separator", timer_handle)
 
         sub_string = ' '
         error_code = 0
@@ -255,7 +251,7 @@ contains
         call create_format_string (format_string, sub_string_length)
         write (sub_string(1:sub_string_length), format_string) string(index_start:index_end)
 
-        9999 call timstop(timer_handle)
+        9999 continue
 
     end subroutine extract_string_by_separator
 
