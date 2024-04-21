@@ -34,8 +34,8 @@ integer :: numContPts, numNodes
 contains
 
 subroutine write_waqgeom(hyd, version_full)
-      use hydmod
-      type(t_hyd)               :: hyd                    !< description of the hydrodynamics
+      use m_hydmod
+      type(t_hydrodynamics)               :: hyd                    !< description of the hydrodynamics
 
        character(len=256)            :: filename          !  Name of NetCDF file
        character(len=*), intent(in)  :: version_full
@@ -171,8 +171,8 @@ subroutine write_waqgeom(hyd, version_full)
 end subroutine write_waqgeom
 
 subroutine read_waqgeom(hyd)
-      use hydmod
-      type(t_hyd)               :: hyd                    !< description of the hydrodynamics
+      use m_hydmod
+      type(t_hydrodynamics)               :: hyd                    !< description of the hydrodynamics
 
        character(len=256)            :: filename          !  Name of NetCDF file
        integer                       :: igeomfile         !  NetCDF file handle
@@ -674,10 +674,10 @@ end subroutine check_error
 
 !> Write a new waqgeom file, in UGRID-format this time
 subroutine write_waqgeom_ugrid( filename, hyd, version_full)
-    use hydmod
+    use m_hydmod
     use wq_ugrid
     character(len=*)  :: filename
-    type(t_hyd)       :: hyd
+    type(t_hydrodynamics)       :: hyd
     character(len=*)  :: version_full
 
     call wrwaqgeom( filename, version_full, sferic = .false., epsg = hyd%crs%epsg_code, nr_nodes = hyd%numk, &

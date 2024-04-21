@@ -1,0 +1,847 @@
+\documentclass{deltares_memo}
+\svnid{$Id: readme-testbench-v3.tex 31917 2023-10-23 13:24:19Z wierenga $}
+\svnid{$URL: https://repos.deltares.nl/repos/DSCTestbench/trunk/scripts/doc/readme-testbench-v3.tex $}
+	
+\usepackage{dirtree}
+\usepackage {color}
+\definecolor {gray}     {rgb} { 0.4, 0.4, 0.4 }
+\definecolor {darkblue} {rgb} { 0.0, 0.0, 0.6 }
+\definecolor {cyan}     {rgb} { 0.0, 0.6, 0.6 }
+\definecolor {orange}   {rgb} { 1.0, 0.5, 0.0 }
+\definecolor {brown}    {rgb} { 0.6, 0.3, 0}
+\definecolor {darkgreen}{rgb}{0, 0.5, 0}
+\def\nochangecolor{\def\color##1{}}
+
+\usepackage {listings}
+
+\lstdefinelanguage {XML} {
+    escapechar=\%,
+    identifierstyle=\color{blue},
+    stringstyle=\color{brown},
+    morestring=[b]",
+    %morecomment=[s]{<?}{?>},
+    morecomment=[s]{!--}{--},
+    commentstyle=\color{darkgreen},
+    moredelim=[s][\color{black}]{>}{<},
+    moredelim=[is][\color{cyan}\nochangecolor]{@startxi}{@endxi},
+    keywordstyle=\color{cyan},
+    morekeywords={
+        name,
+        ref,
+        type,
+        logOutputToFile,
+        programStringRemoveQuotes,
+        local\_dir,
+        version,
+        toleranceAbsolute,
+        toleranceRelative,
+        ignore,
+        xmlns,
+        xsi,
+        encoding,
+        href,
+        schemaLocation,
+        } % list your attributes here
+    }
+
+\colorlet{punct}{red!60!black}
+\colorlet{delim}{violet}
+
+\newcommand\JSONnumbervaluestyle{\color{cyan}}
+\newcommand\JSONstringvaluestyle{\color{brown}}
+\newcommand\JSONattributestyle{\color{blue}}
+
+% switch used as state variable
+\newif\ifcolonfoundonthisline
+
+\makeatletter
+
+\lstdefinestyle{json}
+{
+   showstringspaces = false,
+   keywords = {false,true},
+   alsoletter = 0123456789.,
+   morestring = [s]{"}{"},
+   stringstyle = \ifcolonfoundonthisline\JSONstringvaluestyle\else\JSONattributestyle\fi,
+   MoreSelectCharTable =%
+    \lst@DefSaveDef{`:}\colon@json{\processColon@json},
+   basicstyle = \ttfamily,
+   keywordstyle = \ttfamily\bfseries,
+   literate=
+      *{:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
+% flip the switch if a colon is found in Pmode
+\newcommand\processColon@json{%
+  \colon@json%
+  \ifnum\lst@mode=\lst@Pmode%
+    \global\colonfoundonthislinetrue%
+  \fi
+}
+
+\lst@AddToHook{Output}{%
+  \ifcolonfoundonthisline%
+    \ifnum\lst@mode=\lst@Pmode%
+      \def\lst@thestyle{\JSONnumbervaluestyle}%
+    \fi
+  \fi
+  %override by keyword style if a keyword is detected!
+  \lsthk@DetectKeywords% 
+}
+
+% reset the switch at the end of line
+\lst@AddToHook{EOL}%
+  {\global\colonfoundonthislinefalse}
+
+\makeatother
+
+\lstset {
+    language=XML,
+    basicstyle=\ttfamily\scriptsize,
+    columns=fullflexible,
+    showstringspaces=false,
+    commentstyle=\color{gray}\upshape
+    }
+
+\usepackage{xspace}    
+\newcommand{\dflowfm}{\textrm{D-Flow~FM}\xspace}    
+\newcommand{\dwaves}{\textrm{D-Waves}\xspace}    
+\newcommand{\drtc}{\textrm{D-RTC}\xspace}    
+
+\newcommand\T{\rule{0pt}{2.6ex}}       % Top strut
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}} % Bottom strut
+
+\begin{document}
+\memoVersion{0.2}
+\memoTo{Deltares Testbench users}
+\memoConfidentialUntil{}
+\memoFrom{Dev-Ops}
+\memoSubject{User documentation DSCTestbench}
+\memoDate {\today}
+\memoTelephone{}
+\memoEmail{black-ops@deltares.nl}
+\memoCopy{---}
+
+\deltarestitle
+
+{{\footnotesize
+		{\textbf{Version control information}}
+		
+		\begin{tabular}{@{}p{12,5mm}@{}p{0mm}p{\textwidth-27mm-24pt}}
+			\textbf{Location} & \textbf{:} & \url{\svnkw{HeadURL}} \\
+			\textbf{Revision} & \textbf{:} & \svnrev 
+		\end{tabular}
+}}
+
+\tableofcontents
+
+\newpage
+\section{Introduction}
+\subsection{Introduction to Testbench}
+
+This document is intended to give an overview of the functionalities that are offered by the Testbench software. The Testbench is aimed at supporting quality assurance of Deltares software products, by giving an accessible means of structured, repeatable testing. Specifically, the Testbench software is designed to test the {\em output} of the software products, rather than testing the software functionally. Testing the output of the products is what we will refer to as {\em validation}. By offering TeamCity compatible logging, the software can be used for testing nightly builds of the systems under test (SUT). 
+
+In this manual we will have 2 different sections depending on the use case. As an user of the testbench software you need to go to the user chapter. Here we will explain how to setup the deltares testbench for you local enviroment. You can then run a testcase from you computer before running test from teamcity. As a developer you can read under the developer chapter what the testbench does, but also: using testcases, setting up configs for testcases and how to setup a teamcity build configuration. 
+
+\subsection{python}
+\label{ssec:python}
+The testbench for D-Hydro is written for python. The new testbench can be run with python and the necessary requirements installed within the requirements.txt.
+The first thing to do is install python 3 which can be found here: \url{https://www.python.org/downloads/} or within the windows app store by searching python 3.
+Installing the required python packages will be discussed under the Installation section \autoref{ssec:userinstall}
+
+\subsection{General concepts}
+
+The nature of the Testbench software can be best described by the following characteristics: 
+
+\begin{description}
+\item[The Testbench tests content] Rather than testing whether a certain GUI functionality is working as expected, the focus of the Testbench is on the output of the software. Therefore, it is not suitable for functional testing. 
+\item[The Testbench tests against a machine-made reference] The values to test against are not prepared by hand, but are generated by an earlier version of the SUT. After manual inspection of the results, the outcome is either rejected or accepted. In case the result is accepted by a developer, it will be the {\em reference} against which future versions will be compared. 
+\item[The Testbench can tolerate small deviations] The fact that many SUTs are in fact solving differential equations numerically, has a negative impact on the result's reproducebility. Floating point operations are not always guaranteed to give identical results on different machines, and therefore, small deviations can occur, which are not considered harmful. Therefore, there is the possibility to set absolute and relative tolerance values.
+\end{description}
+
+\begin{figure}[H]
+\includegraphics[width=16cm]{pictures/ConceptualModel}
+\caption{Conceptual model of the Testbench.}
+\label{fig:ConceptualModel}
+\end{figure}
+
+The conceptual model of the Testbench can be seen in  \autoref{fig:ConceptualModel}. It consists of the following components: 
+
+\begin{description}
+\item[The Testbench software] This is the software, written in Python, that runs the executables and test cases, generates reference data and performs the comparison between the reference data and the comparison data. 
+\item[The executables] are the SUTs that are necessary to run the test cases (such as Delta Shell, unstruc, tide, SOBEK, etc.). In addition, the executables also contain tooling that is necessary for pre-processing and post-processing, such as Subversion and data conversion tools (e.g.\ ncdump, ViewerSelector). 
+\item[The test cases] are the models that are executed by the SUT. In the conceptual model of this version of the Testbench, a test case does {\em not} include the reference data. 
+\item[The reference executables] are the executables that created the reference data. These are always a {\em specific version} of the executables, which is being made explicit by Subversion commit numbers or build numbers. 
+\item[The reference data] is the data that resulted from running a reference run. The reference data can contain both `real' output (such as NetCDF files) and diagnostic/log files. More precisely, the reference data comprises all files that have been modified or added during the execution of the test case by the reference executable. 
+\item[The comparison executables] The version of the executables that generated the comparison data.  
+\item[The comparison data] Identical to the reference data, except that the data was generated by running the comparison executable.
+\end{description}
+
+\subsection{Comparison vs Reference run}
+There are two ways to run the testbench.
+\begin{description}
+\item[Comparison] A comparison run as the name implies compares results to the reference, this is usefull to see if changes made to the code don't result in changes in results for models. We run these comparisons before merging code to prevent unforseen consequences of changing the code. This prevents possible faulty code to be merged into the main branch. More info here: \autoref{ssec:runcomp}
+\item[Reference] A reference run is used to create new references to compare against. If a comparison run fails it could be decided that the references are wrong or outdated due to for example new ways of compiling code or changing numeric models. Running in this way allows us to update the references easily from within the testbench and then to be rolled out as new standard to compare against.
+\end{description}
+
+\newpage
+\section{Users}
+\subsection{Installation}
+\label{ssec:userinstall}
+The testbench requires python 3 to be installed. More information can be found here: \autoref{ssec:python}
+
+The first step to using the testbench is to checkout the delft3d repo. The testbench folder is located under:
+\dirtree{%
+	.1 root.
+	.2 test.
+	.3 deltares\_testbench.
+}
+Open this folder with visual studio code and go to extensions (ctrl + shift + x) and install the python extension.
+
+The next step is to setup a python virtual environment. Using a virtual environment allows us to install the necessary requirements without doing it for all apps that use python. The venv can be installed anywhere. This guide will install it under the user folder: \dir{c:/users/<username>/virtualenvs/} open a command prompt and locate the folder you want to install the venv under. This is our example: \command{cd c:/users/<username>/virtualenvs/}. Run the command: \command{python -m venv .testbenchenv} within the specified folder. 
+
+Once this is successfully completed we go to visual studio code and open the commands (ctrl + shift + p). Now select the python venv executable in the list that appears after you execute the command: \command{> Python: Select Interpreter} If it doesn't appear in the list you can manually set the path to the python.exe within the virtual enviroment you created: \dir{c:/users/<username>/virtualenvs/testbenchenv/Scripts/python.exe}.
+
+\Note A common issue is: "Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system." For troubleshooting steps, refer to \autoref{sec:troubleshooting}
+
+Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r requirements.txt} from within the deltares\_testbench folder.
+
+\subsection{Run testcase}
+Once the installation steps are done you can now use the testbench. To run tests we need engines. They can be build locally or you can get them from TeamCity for windows here: \url{https://dpcbuild.deltares.nl/buildConfiguration/Dimr\_DimrCollectors\_1aDimrCollectorDailyWin64}.
+
+Open the build tab artifacts and download the recent main branch dimrset zip file. Extract the contents of the zip file into \dir{data/engines/teamcity\_artifacts/} \autoref{fig:artifact}.
+\begin{figure}[H]
+\begin{minipage}[t]{0.45\textwidth}
+\dirtree{%
+    .1 deltares\_testbench. 
+    .2 configs.
+    .3 $\dots$.
+    .2 data.
+    .3 engines.
+    .4 teamcity\_artifacts.
+    .5 x64.
+    .6 dflow1d.
+    .6 dflow1d2d.
+    .6 dflowfm.
+    .6 $\dots$.
+    .2 logs.
+    .3 $\dots$.
+    .2 src.
+    .3  $\dots$.
+    .2 $\dots$.
+}
+\end{minipage}
+\caption{Layout of the folder tree for teamcity artifacts.\label{fig:artifact}}
+\end{figure}
+
+Running the testbench requires parameters to be supplied on the command-line. There are a few options of running the testbench.
+\begin{itemize}
+\item Use visual studio code and a launch.json that is located within a .vscode folder. More info here: \autoref{sssec:vscodelaunch}.
+\item Run using the provided bat script in the doc folder using standard parameters. More info here: \autoref{sssec:batrun}
+\item Run from a terminal using the python command and providing parameters to testbench.py. More info here: \autoref{sssec:commandrun}
+\end{itemize}
+All available command-line parameters and their explanation are located here: \autoref{ssec:cmdparam}
+
+\subsubsection{Visual studio code}
+\label{sssec:vscodelaunch}
+Create a .vscode folder in the deltares\_testbench folder and inside it a launch.json with the code in \autoref{fig:launchjson}.
+When you press the F5 key now vscode will run testbench.py with the parameters under args. Make sure to replace <your username> with your deltares username credentials to be able to download testcases.
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[style=json]
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch testbench",
+            "type": "python",
+            "request": "launch",
+            "program": "Testbench.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--username",
+                "<your username>",
+                "--compare",
+                "--interactive",
+                "--config",
+                "configs\\dimr\\dimr_dflowfm_win64.xml",
+                "--log-level",
+                "DEBUG",
+                "--parallel"
+            ],
+            "justMyCode": true
+        }
+    ]
+}
+\end{lstlisting}
+\caption{VSCode launch json file for testbench parameters.}
+\label{fig:launchjson}
+\end{figure}
+
+\subsubsection{Bat script}
+\label{sssec:batrun}
+The bat file to run the testbench is located here: \dir{doc/example\_scripts/run\_testbank.bat}. Make sure you run the testbench within the virtual environment. If necessary run activate.ps1.
+
+\subsubsection{Command line}
+\label{sssec:commandrun}
+It is possible to run the testbench directly from the command-line. Once again make sure you run in the virtual environment setup from the installation section.
+You can run the testbench script by going into the \dir{delft3d/test/deltares\_testbench} folder with the command prompt. After that run the command \command{python testbench.py -{}-interactive -{}-compare -{}-config <config file> -{}-log-level DEBUG}. Replace <config file> with the config file you wish to run. For example \dir{configs/dimr/dimr\_dflowfm\_win64.xml}. There are more parameters available. They can be viewed here: \autoref{ssec:cmdparam}.
+
+\subsection{Testbench parameters}
+\label{ssec:cmdparam}
+The testbench has a couple of parameters that can be supplied for a run resulting in different behaviour for the testbench script.
+This section will provide the available parameters and their function.
+\begin{guilist}
+\item[\texttt{-{}-username}] Your username to download testcases.
+
+\item[\texttt{-{}-password}] Your password to download testcases. It is recommended to use \command{-{}-interactive} to supply your password for running the testbench.
+
+\item[\texttt{-{}-interactive, -i}] Allows user to supply credentials to testbench by prompt.
+\newline
+
+\item[\texttt{-{}-reference, -r}] Perform a reference run. Mutually exclusive with compare.
+
+\item[\texttt{-{}-compare, -c}] Perform a comparison run. Mutually exclusive with reference.
+
+\item[\texttt{-{}-config}] Indicates which Testbench configuration file should be used. Default: \texttt{config.xml}.
+
+\item[\texttt{-{}-filter}] Offers the possibility to filter test cases from the indicated configuration file.\newline
+%
+\textbf{Example:}
+%
+\begin{Verbatim}
+--filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+    program    (program name   = at least one substring)
+    testcase   (test case name = at least one substring)
+    maxruntime (test run time  = float, larger, smaller, equals)
+    startat    (test case name = substring is the first testcase)
+\end{Verbatim}
+\item[\texttt{-{}-log-level}] Changes the log level of the software. Default: INFO. It is recommended to use INFO. DEBUG is used for debugging with the testbench. There is also ERROR and WARNING as options for the log level.
+
+\item[\texttt{-{}-parallel}] The testbench will execute one case on each available cpu core.
+
+\item[\texttt{-{}-teamcity}] Offers Teamcity-compatible logging.
+\end{guilist}
+
+\subsection{Testcase repository}
+The main use of the testbench is to compare results of branches to the latest references of a stable version. This comparison will either succeed or fail and helps to determine whether a change impacted the test models in an unforeseen way. A course of action for the result can then be determined.
+
+These testcases and references are stored in MinIO and the testbench will connect to the object repository to download the cases that are defined within the config that is specified and used by the run. The bucket for testcases and references is \url{https://s3-console.deltares.nl/browser/}.
+In the MinIO object repository the folder structure is setup as follows:\autoref{fig:miniorepo}.
+\begin{figure}[H]
+\begin{minipage}[t]{0.45\textwidth}
+\dirtree{%
+  .1 dsc-testbench.
+  .2 cases.
+  .3 doc.
+  .3 e01\_d3dflow.
+  .4 f01\_general.
+  .5 c12-breukelermeer.
+  .5 c13-markermeer.
+  .3 e02\_flowfm.
+  .3 $\dots$.
+  .2 references.
+  .3 lnx64.
+  .3 win64.
+  .4 e01\_d3dflow.
+  .5 f01\_general.
+  .6 c12-breukelermeer.
+  .6 c13-markermeer.
+  .6 $\dots$.
+  .4 e02\_flowfm.
+  .4 $\dots$. 
+}
+\end{minipage}
+\caption{Layout of the cases and reference repository in MinIO.}
+\label{fig:miniorepo}
+\end{figure}
+The configuration will, for example, point to a path to c12-breukelermeer and then the MinIO handler will download the references and cases to the testbench environment. A testcase will have the same sub path in the folder references as cases, so in a config only one path to the testcase is supplied.
+
+The path used locally where the cases and references are downloaded is a bit different. We place everything under the supplied config case name. The folder structure will locally look like this after downloading a few testcases under e01\_d3dflow for example: \autoref{fig:localcase}
+\begin{figure}[H]
+\begin{minipage}[t]{0.45\textwidth}
+\dirtree{%
+  .1 root.
+  .2 data.
+  .3 cases.
+  .4 e01\_f01\_c12-breukelermeer.
+  .4 e01\_f01\_c12-markermeer.
+  .4 $\dots$.
+  .3 engines.
+  .3 reference\_results.
+  .4 e01\_f01\_c12-breukelermeer.
+  .4 e01\_f01\_c12-markermeer.
+  .4 $\dots$.
+}
+\end{minipage}
+\caption{Layout after some cases have been downloaded by the testbench.}
+\label{fig:localcase}
+\end{figure}
+\subsection{A comparison run}
+\label{ssec:runcomp}
+A comparison run will test the engines within the engines folder against the stable reference results that are selected by the version tag. This version tag is located in the configuration. If the results are different, it should be determined whether code is faulty or a new reference has to be applied. 
+
+A comparison run does 2 things:
+\begin{itemize}
+\item All files in the reference data should also be present in the comparison data (regardless of whether the contents of the files are equal or not). 
+\item In the Testbench configuration file (to be discussed later in this memo), the developer can indicate per test case which parameters should be compared. For instance, the developer might be particularly interested in the waterlevel on specfic locations. 
+\item The version of the file to be downloaded from MinIO by using the rewind feature is specified in the configuration.
+\end{itemize}
+
+\newpage
+\section{Developers}
+This section focuses on updating and maintaining the testbench. These things are:
+\begin{itemize}
+\item{MinIO.} Specifically maintenance of the object repository by updating/adding references and cases.
+\item{XML configurations,} the layout description, tags, attributes and also maintaining the correct link between the cases and references.
+\item{Teamcity:} how to setup build configurations for running the testbench and getting the appropriate output and results.
+\end{itemize}
+\subsection{Testcase storage}
+The testbench runs a case by using input data stored by MinIO. MinIO can be accessed with an interface by going to \url{https://s3-console.deltares.nl/}. The bucket for testcases and references is located under \dir{dsc-testbench}. The layout is described here: \autoref{fig:miniorepo}.
+
+\subsubsection{Creating a MinIO access key}
+To download from MinIO using the testbench, you need to create an access key. The MinIO API only accepts access keys for login, your normal (AD) credentials won’t work.
+In the console, there is a tab for access keys \autoref{fig:minioaccess}, or you can directly open the page using this link: link:\url{https://s3-console.deltares.nl/access-keys}.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{pictures/minio_access_key.png}
+\caption{The MinIO access tab. \label{fig:minioaccess}}
+\end{figure}
+From this page, we can create a new key. Press the \command{Create access key +}. This will open a new window; name, command, and description are optional.
+When you press "Create," a popup will appear showing your access key and secret key (see \autoref{fig:minioaccesscreate}). Store these somewhere safe. e.g. in a password database like Keepass.
+\newline\textcolor{red}{This is the last time your secret key will be shown. If you lose it, you will need to create a new key.}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{pictures/MinIO_access_key_create.png}
+\caption{The MinIO popup for creation of the key. \label{fig:minioaccesscreate}}
+\end{figure}
+Use the access key as your username and the secret key as your password to download cases from the MinIO api.
+
+\subsubsection{Updating or adding a case/reference}
+\label{sssec:uploadtominio}
+By going to the MinIO interface you can upload a new testcase or references.
+\begin{itemize}
+\item{Open the MinIO website} and relevant folder to update or place new files under.
+\item{} press the upload button: and choose either file or folder depending on what you want to update. \autoref{fig:minioupload}
+\item{update} the configuration version by using the rewind time on your updated/new files.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{pictures/minio_upload.png}
+\caption{Upload files to MinIO. \label{fig:minioupload}}
+\end{figure}
+
+\subsubsection{Adding a rewind to a test configuration}
+\label{sssec:minioversion}
+The MinIO rewind feature works by grabbing the most recent change before the specified rewind date. The relevant timestamp for an object can be found in the MinIO console \autoref{fig:miniolast}. This date can then be updated in the xml configuration. This step is described here: \autoref{ssec:minioxmlversion}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{pictures/minio_last.png}
+\caption{Last modified for some files stored in MinIO. \label{fig:miniolast}}
+\end{figure}
+
+\newpage
+\subsection{Xml configuration definition}
+\label{ssec:xmlconfdef}
+The testbench runs testcases and compares the data based on input from xml configurations that are stored under the configuration folder.
+There are 4 main sections within the xml configuration that are defined. \autoref{fig:xmltopview}
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=XML]
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:@startxixi@endxi="http://www.w3.org/2001/XInclude"
+         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+  <config>
+    <!-- config basic configuration defenitions for input and output. --> 
+  </config>
+  <programs>
+    <!-- programs and parameters to run testcases -->
+  </programs>
+  <defaultTestCases>
+      <!-- defaultTestCases to link programs to testcases --> 
+  </defaultTestCases>
+  <testCases>
+      <!-- testCases to be run. -->
+  </testCases>  
+</deltaresTestbench_v3>
+\end{lstlisting}
+\caption{Layout of the top layer of a xml configuration.}
+\label{fig:xmltopview}
+\end{figure}
+
+\begin{description}
+\item[config] which contains directory locations and repository urls and credentials. \autoref{sssec:xmlconfigsec}
+\item[programs] which describes programs and the parameters to run them using the command line. Also contains the location for the executable and some enviroment variables. \autoref{sssec:xmlprograms}
+\item[defaulttestcases] is a default template for other testcases to use as a base, contains a link to the program to run as well as case and reference locations. \autoref{sssec:defaulttest}
+\item[testcases] describes which testcase to download, path and name the defaulttestcase that it uses for executing and which parameters to check with which file system. \autoref{sssec:xmltestcase}
+\end{description}
+Including xml files is supported, this is described in detail in \url{https://www.w3.org/TR/xinclude/\#include\_element} The top level of the included file should consist of a single element and the file should not have its own XML header. An XML file should be included by its path with the syntax:
+\begin{lstlisting}[language=XML]
+<xi:include href="dflowfm\_all\_cases.xml"/>
+\end{lstlisting}
+
+\newpage
+\subsubsection{config}
+\label{sssec:xmlconfigsec}
+Some basic configuration parameters are located under the config section. A basic layout can look like this: \autoref{fig:xmlconfig}.
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=XML]
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3>
+  <config>
+    <config>
+    <localPaths>
+      <testCasesDir>.\data\cases</testCasesDir>
+      <enginesDir>.\data\reference_engines</enginesDir>
+      <referenceDir>.\data\references_results</referenceDir>
+    </localPaths>
+    <locations>
+       <location name="reference_results">
+         <credential ref="command-line"/>
+         <root>{server_base_url}/references</root>
+        </location>
+      <location name="cases">
+        <credential ref="command-line"/>
+         <root>{server_base_url}/references</root>
+        </location>
+      <location name="local">
+          <root>./data/engines</root>
+      </location>
+    </locations>
+  </config>
+  </config>
+  <programs>
+     <!-- programs and parameters to run testcases -->
+  </programs>
+  <defaultTestCases>
+      <!-- defaultTestCases to link programs to testcases --> 
+  </defaultTestCases>
+  <testCases>
+      <!-- testCases to be run. -->
+  </testCases>  
+</deltaresTestbench_v3>
+\end{lstlisting}
+\caption{Example layout of config section of a xml configuration.}
+\label{fig:xmlconfig}
+\end{figure}
+\begin{description}
+\item[LocalPaths] describe the location that cases and references are downloaded into, and also where the engines are located locally. These are used by the testbench.py directly.
+\item[locations] describe what credentials will be used and where to download testcase and reference data from. The \command{\{server\_base\_url\}} is injected with the default url defined by testbench.py. The locations are referenced by the defaulttestcases to download from allowing for multiple sources of data. \autoref{sssec:defaulttest}
+\end{description}
+
+\newpage
+\subsubsection{programs}
+\label{sssec:xmlprograms}
+This section contains links to the programs to execute a testcase. These are usually located under \dir{data/engines/teamcity\_artifacts}. The programs are referenced by defaulttestcases to setup a link for the runner to determine the program to be run and it's parameters. An example layout for this section \autoref{fig:xmlprogram}
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=XML]
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3>
+  <config>
+    <!-- config basic configuration defenitions for input and output. --> 
+  </config>
+  <programs>
+    <!--
+    The order is important. Start with the following programs:
+    command_prompt
+    svn
+    mpi
+    -->
+    <program name="command_prompt">
+      <path>cmd</path>
+      <arguments>
+        <argument>/C</argument>
+      </arguments>
+    </program>
+    <program name="svn">
+      <path>thirdparty\svn\win64\svn.exe</path>
+    </program>
+    <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
+      <location ref="reference_engines" type="reference">
+        <from>lnx64</from>
+      </location>
+      <location ref="local" type="check">
+        <from>teamcity_artifacts/lnx64</from>
+      </location>
+        <path>bin/run_dimr.sh</path>
+      <environments>
+        <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+      </environments>
+    </program>
+  </programs>
+  <defaultTestCases>
+    <!-- defaultTestCases to link programs to testcases --> 
+  </defaultTestCases>
+  <testCases>
+    <!-- testCases to be run. -->
+  </testCases>
+</deltaresTestbench_v3>
+\end{lstlisting}
+\caption{Example layout of a programs section of a xml configuration.}
+\label{fig:xmlprogram}
+\end{figure}
+\begin{description}
+\item[order] is important for the programs. The order should be command\_prompt first then svn then mpi and other executables.
+\item[program] in the list will contain a path towards the specific program the arguments with which to run it and a location from which to locate the program(s).
+In the case of program dimr the location for the engines is \dir{teamcity\_artifacts/lnx64} specified by the location tag using ref=local. This local already has a root location ./data/engines in the example \autoref{fig:xmlconfig} and those two paths are joined resulting in \dir{./data/engines/teamcity\_artifacts/lnx64}. The specific program to run is pointed to by the attribute path \dir{bin/run\_dimr.sh}. A program is referenced by defaulttestcases to be used by a testcase to execute with this program.
+\item[arguments] contains a list of arguments to pass with the command to run the program with. For example running \dir{bin/mpiexec.exe} with multithreads you can add the argument \newline\command{-n 3}.
+\item[enviroments] You can pass enviroment variables with the configuration for execution like \command{OMP\_NUM\_THREADS}.
+\end{description}
+\subsubsection{defaultTestCases}
+\label{sssec:defaulttest}
+DefaultTestCases are used as a way to set common settings for testcases. This template can be used by testcases that use these settings.
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=XML]
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3>
+  <config>
+    <!-- config basic configuration defenitions for input and output. --> 
+  </config>
+  <programs>
+    <!-- programs and parameters to run testcases -->
+  </programs>
+  <defaultTestCases>
+    <testCase name="dflowfm_default">
+      <programs>
+        <program ref="dimr">
+          <arguments>
+            <argument>-m dimr.xml</argument>
+          </arguments>
+        </program>
+      </programs>
+      <location ref="reference_results" type="reference">
+        <from>win64</from>
+      </location>
+      <location ref="cases" type="input">
+        <from>.</from>
+      </location>
+      <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <testCase name="dflowfm_config">
+      <programs>
+        <program ref="dimr">
+          <arguments>
+            <argument>-m dimr_config.xml</argument>
+          </arguments>
+        </program>
+      </programs>
+      <location ref="reference_results" type="reference">
+        <from>win64</from>
+      </location>
+      <location ref="cases" type="input">
+        <from>.</from>
+      </location>
+      <maxRunTime>60.0</maxRunTime>
+    </testCase>
+  </defaultTestCases>
+  <testCases>
+    <!-- testCases to be run. -->
+  </testCases>
+</deltaresTestbench_v3>
+\end{lstlisting}
+\caption{Example layout of a defaultTestCases section of a xml configuration.}
+\label{fig:xmldefaulttest}
+\end{figure}
+\begin{description}
+\item[programs] a link to programs to determine which program to run when referenced to this defaultTestCase. An argument can be passed for the command-line from here too. In this example script we use the same program, but add a differenet argument for the defaultTestCase to run. A program that needs to run a testcase needs to be reachable with a defaultTestCase, this means that 3 programs need 3 defaultTestCases.
+\item[arguments] additional arguments for running the program, that can be differentiated by using a different defaultTestCase instead of needing a different program too.
+\item[location] a reference to the location to save results of a run and a reference to locate the testcase to be run. The type determines what it is used for by the testbench.py.
+\item[maxRunTime] the total time in seconds that cases linked to this defaultTestCase can run for. When this time is exceeded it will be shutdown by the testbench. This can be overwritten by the testcase itself.
+\end{description}
+\subsubsection{testCases}
+\label{sssec:xmltestcase}
+This tag contains all the testcases to be run by the xml configuration. It describes the testcase folder to be downloaded and from where to execute it locally. You can pass additional arguments and reference to programs from within the testcase, resulting in multiple engines being run on the testcase. An example of a testcase section: \autoref{fig:xmltestcase}
+\begin{figure}[H]
+\centering
+\begin{lstlisting}[language=XML]
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3>
+  <config>
+    <!-- config basic configuration defenitions for input and output. --> 
+  </config>
+  <programs>
+    <!-- programs and parameters to run testcases -->
+  </programs>
+  <defaultTestCases>
+      <!-- defaultTestCases to link programs to testcases --> 
+  </defaultTestCases>
+  <testCases>
+    <testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default">
+    <dependency local_dir="e05_f03_zlayers_hydro" version="2024.01.18T10:00">e05_part/f03_zlayers/hydro</dependency>
+      <path version="2024.01.15T09:00">e02_dflowfm/f001_general/c220_drypoints_pol</path>
+      <programs>
+        <program ref="DFlowFM">
+          <arguments>
+            <argument>norway.mdu</argument>
+            <argument>--autostartstop</argument>
+            <argument>--nodisplay</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/norway_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
+      </checks>
+      <processCount>1</processCount>
+    </testCase>
+  </testCases>
+</deltaresTestbench_v3>
+\end{lstlisting}
+\caption{Example layout of a testcases section of a xml configuration.}
+\label{fig:xmltestcase}
+\end{figure}
+\begin{description}
+\item[testcase] the testcase name that is ran, as well as a reference to defaultTestCases, using the ref attribute linking to the defaultTestCase by name. It can also contain additional programs and include specific arguments for it. This also includes the version to download the appropriate reference and testcase data from MinIO \autoref{ssec:minioxmlversion}
+\item[dependency] testcase data that is used for processing or running the testcase. This is for tests that use the same input across different tests. These dependencies are downloaded sequantial at the start of the testbench, preventing conflicts from multiple downloads at the same time.
+\item[programs] additional programs to execute with arguments to run them with.
+\item[maxRunTime] this overwrites the maxRunTime specified in defaultTestCases for larger testcases that might need more time to finish.
+\item[checks] the output file is specified here as well as in what format the output is then this gets compared to the reference result to check if the results are different.
+\item[parameters] determines which values will be compared. A tolerance is provided either absolute or relative and a location to determine where to check these values.
+\item[processCount] determines the amount of processes used by the program that runs the testcase. When the testbench executes testcases in parallel this prevents a run: that uses 4 cores to be run with 3 other testcases that use 1 or more cores at the same time on those same cores.
+\end{description}
+\subsection{Updating version attribute}
+\label{ssec:minioxmlversion}
+After updating a reference or testcase in MinIO the xml configuration for this testcase needs to be updated too. This is relatively easy
+\begin{itemize}
+\item{update} reference and case data by following these steps: \autoref{sssec:uploadtominio}.
+\item{timestamp:} get the last modified timestamp from MinIO, described here: \autoref{sssec:minioversion}.
+\item{format} the timestamp to be used within the xml configuration. In the example picture \autoref{fig:miniolast} the last modified date is Wed, Jan 10 2024 12:45 (GMT+1). This needs to be formatted to fit YYYY.MM.DDTHH:MM. Using this definition we get: 2024.01.10T12:45. MinIO rewind grabs the most recent modified from before the timestamp we've provided.
+\item{apply} this timestamp to the xml configuration for the specific testcase example:
+\end{itemize}
+\begin{lstlisting}[language=XML]
+<testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default" version="2024.01.15T09:00">
+\end{lstlisting}
+\subsection{XML tags and attributes definition}
+The testbench accepts various parameters, most of which can be viewed in the examples under this chapter \autoref{ssec:xmlconfdef}. This is a full list of tags and attributes that the testbench recongnizes and uses. Take note this list is in order and multiple tags can be used under other tags serving different functions, for example: defining and referencing.
+\begin{longtable}{p{30mm}p{45mm}p{\textwidth - 75mm - 36pt}}
+\caption{Description of the XML-file} \\
+\hline
+\T
+\textbf{Tags} &  \textbf{Attribute} & \textbf{Desription} \B \\
+\hline
+\endhead
+\hline
+\endfoot
+<\emph{config}> & & wrapper for configuration tags \\
+ <localPaths> & & Wrapper for location for local directories \\
+  <testCaseDir> & &  defines local path to testcases \\
+  <enginesDir> & & defines local path to engines \\
+  <referenceDir> & & defines local path to references \\
+ </localPaths> & & \\
+ <locations> & & wrapper for locations of source data \\
+  <location> & name & to be referenced by a program for downloading data \\
+   <credential> & ref & references which credentials to be used, command-line is used for user input with testbench.py \\
+   <root> & & The url for checkout or local location of source files \\
+  </location> & & \\
+ </locations> & & \\
+</\emph{config}> & & \\
+\newpage
+<\emph{programs}> & & wrapper for program definitions \\
+ <program> & name & name of the program to be referenced by testcases \\
+     & logOutputToFile & log output to file: true or false \\
+     & programStringRemoveQuotes & program remove quotes statement: true or false \\
+     & ignoreStandardError & ignore standard error: true or false\\
+     & ignoreReturnValue & ignore return value: true or false \\
+     & addSearchPaths & add search path to the program for running with the command-line: true or false \\
+     & shellStringRemoveQuotes & shell remove quotes statement: true or false \\
+     & seq & sequence group identifier to pass to program \\
+     & delay & delay before starting the program in seconds \\
+<path> & & path to the program to run \\
+<workingDirectory> & & the working directory \\
+<arguments> & & wrapper for all arguments to be used \\
+<argument> & & an argument to pass with executing the program \\
+</arguments> & & \\
+<shell> & & reference to a shell program that is declared earlier \\
+<location> & name & the name of the location used for referencing to it \\
+     & ref & reference to another location as base \\
+     & type & the type of location: input, reference or check \\
+<from> & & the location to directory if it has a ref root is joined with from to root/from \\
+</location> & & \\
+<modules> & & the modules for the environment \\
+<module> & & a single module for the environment \\
+</modules> & & \\
+<environments> & & wrapper for environment variables for the program \\
+<environment> & name & name of the operating environment \\
+     & type & the type of environment variable \\
+ </program> & & \\
+</\emph{programs}> & & \\
+\hline
+<\emph{defaultTestCases}> & & wrapper for default values for testcases\\
+<testcase> & name & referenced by testcases to run with these parameters \\
+<programs> & & wrapper for references to programs \\
+<program> & ref & reference to program \\
+<arguments> & & wrapper for arguments \\
+<argument> & & additional argument for the program to run with \\
+</arguments> & & \\
+</program> & & \\
+</programs> & & \\
+<location> & ref & reference to a location\\
+     & type & type of location: input or reference\\
+<from> & & the location todirectory if it has a ref root is joined with from to root/from \\
+</location> & & \\
+<maxRunTime> & & the maximum runtime the testcase can run for \\
+</testcase> & & \\
+</\emph{defaultTestCases}> & & \\
+\newpage
+<\emph{testCases}> & & wrapper for testcases to be executed \\
+<testCase> & name & name of the testcase that is executed \\
+     & ref & reference to a default testcase \\
+<dependency> & local\_dir & Location of testcase data that is a dependency for this testcase \\
+    & version & the version tag used by MinIO to determine the correct version for the dependency. \\
+<path> & & path to the testcase in the object repository to download \\
+    & version & the version tag used by MinIO to determine the version of the object to download. \\
+<programs> & & wrapper for additional programs to execute with the testcase \\
+<program> & ref & reference for additional program \\
+<arguments> & & arguments to execute with the program \\
+<argument> & & argument for the program that is executed \\
+</arguments> & & \\
+</program> & & \\
+</programs> & & \\
+<checks> & & wrapper for comparing files and variables from the output of a run \\
+<file> & name & path to the file to use for comparison \\
+     & type & the type of output file to be compared with: ascii, nefis, his, netcdf, numbertext, dseriesregression, dseriesverification, timeseries\_pi timerseries\_csv \\
+<parameters> & & wrapper for paramaters to check with this file \\
+<parameter> & name & name of the parameter to compare with \\
+     & location & Location where the parameter needs to be examined (Case sensitive) \\
+     & toleranceAbsolute & sets the absolute tolerance\\
+     & toleranceRelative & sets the relative tolerance \\
+</parameters> & & \\
+</file> & & \\
+</checks> & & \\
+<maxRunTime> & & the maximum runtime the testcase can run for overwrite defaultestcase maxRunTime \\
+<processCount> & & the amount of cpu cores that are used by the testcase for parallel calculations, this is important when running the testbench in parallel \\
+</testCase> & & \\
+</\emph{testCases}>
+\end{longtable}
+\subsection{teamcity}
+Running the testbench on teamcity is quite easy. To run it python needs to be installed on the agent and then you execute it with a command and the appropriate arguments.
+TeamCity uses a specific format to recongize and parse logging output. Activating this formatting for the testbench can be done by using an argument, with running the testbench: \command{-{}-teamcity}. Credentials need to be passed to access the object repository within teamcity, that is then passed with \command{-{}-username <username>} and \command{-{}-password <password>}.
+\section{troubleshooting}
+\label{sec:troubleshooting}
+Common problems and their solutions:
+\begin{description}
+\item[Credentials missing] To download testcase and reference data from MinIO, credentials need to be passed on the command line. The error can mean two things: either you didn't provide the credentials, or they are incorrect. Make sure that your credentials are correct and that you have access to view the dsc-testbench bucket.
+\item["Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system."] If the activate command for the Python virtual environment generates an error indicating that you are not allowed to execute a script, you need to change the PowerShell execution policy to allow scripts to run. To do this, open PowerShell as an administrator and execute the following command: \command{Set-ExecutionPolicy -ExecutionPolicy RemoteSigned}
+\item[Issues running configuration] You can validate your xml with the validation schema within \dir{configs/xsd/deltaresTestbench.xsd}.
+\item[File missing log message] If a result file is missing the most common cause is that your engine didn't execute the testcase. Troubleshooting starts with logs in the testcase folder.
+\end{description}
+\end{document}

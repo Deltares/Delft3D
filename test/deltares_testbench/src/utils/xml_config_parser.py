@@ -19,10 +19,10 @@ from src.config.parameter import Parameter
 from src.config.program_config import ProgramConfig
 from src.config.skip_line import SkipLine
 from src.config.test_case_config import TestCaseConfig
+from src.config.test_case_path import TestCasePath
 from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
-
 
 def loop(dictionary: Dict[str, Any], key: str) -> List:
     if key in dictionary:
@@ -425,11 +425,6 @@ class XmlConfigParser(object):
                 test_case.program_configs = []
 
         test_case.name = str(element["name"][0])
-        if "version" in element:
-            test_case.version = str(element["version"][0])
-        else:
-            test_case.version = ""
-
         if "ignore" in element:
             if str(element["ignore"][0]).lower() == "true":
                 test_case.ignore = True
@@ -448,16 +443,22 @@ class XmlConfigParser(object):
             # overwrite path if specified
             newpath = self.__getOverwritePaths__(self.__rstr, test_case.name, "path")
             if newpath:
-                test_case.path = newpath
+                test_case.path = TestCasePath(newpath, None)
             else:
-                test_case.path = str(element["path"][0]["txt"])
+                tag = element["path"][0]
+                version_list = tag.get("version", [])
+                version = str(version_list[0]) if version_list else None
+                path = tag["txt"]
+                test_case.path = TestCasePath(path, version)
 
         if "dependency" in element:
             tag = element["dependency"][0]
             local_dir = str(tag["local_dir"][0])
             cases_path = str(tag["txt"])
+            version_list = tag.get("version", [])
+            version = str(version_list[0]) if version_list else None
 
-            test_case.dependency = Dependency(local_dir, cases_path)
+            test_case.dependency = Dependency(local_dir, cases_path, version)
 
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])

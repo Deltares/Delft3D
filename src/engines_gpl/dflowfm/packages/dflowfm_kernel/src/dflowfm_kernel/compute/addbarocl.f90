@@ -235,7 +235,7 @@ double precision  , external :: densfm
        saw0 = 2d0*constituents(isalt,k) - saw1
        tmw0 = 2d0*constituents(itemp,k) - tmw1
 
-       if (idensform < 10) then
+       if ( .not. density_is_pressure_dependent() ) then
           rhow0 = densfm(saw0,tmw0,0d0) - rhomean
        else
           pdb  = ( zws(ktz) - zws(kz-1) )*rhomean

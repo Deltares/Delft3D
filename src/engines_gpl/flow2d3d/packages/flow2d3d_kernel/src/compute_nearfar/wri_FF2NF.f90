@@ -4,7 +4,8 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
                    & sig     ,zk       ,kfu      ,kfv       , &
                    & alfas   ,s0       ,s1       ,u0        ,v0     , &
                    & r0      ,rho      ,dps      ,xz        ,yz     , &
-                   & kfsmn0  ,kfsmx0   ,dzs0     ,filename  ,namcon , gdp    )
+                   & kfsmn0  ,kfsmx0   ,dzs0     ,filename  ,namcon , &
+                   & ifatal  ,gdp    )
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2024.
@@ -78,6 +79,7 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
 !
 ! Global variables
 !
+    integer                                               , intent(out) :: ifatal
     integer                                               , intent(in)  :: nlb
     integer                                               , intent(in)  :: nub
     integer                                               , intent(in)  :: mlb
@@ -223,6 +225,7 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
     !cosumofile_ptr => gdp%gdnfl%cosumofile_ptr
     
     !
+    ifatal = 0
     write(c_inode(1:3),'(i3.3)') inode
     !
     pi      = acos(-1.0_fp)
@@ -695,7 +698,8 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
     if (istat /= 0) then
        write(lundia,'(3a)') "ERROR: file '", trim(filename(1)), "' already exists."
        write(lundia,'(a,i0)') "       istat: ", istat
-       call d3stop(1,gdp)
+       ifatal = 1
+       return
     endif
     call prop_write_xmlfile(luntmp, outfile_ptr, 0, istat)
     close (luntmp)

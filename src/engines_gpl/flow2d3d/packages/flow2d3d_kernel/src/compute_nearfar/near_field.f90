@@ -60,6 +60,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     use precision
     !
     use globaldata
+    use system_utils, only: FILESEP, directory_exists, makedir
     use dfparall
     use dffunctionals, only: dfgather
     !
@@ -155,6 +156,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
 !
 ! Local variables
 !
+    integer                                             :: ifatal
     integer                                             :: i
     integer                                             :: iamb
     integer                                             :: idis
@@ -226,7 +228,6 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     logical                                             :: error_reading
     logical                                             :: inside
     logical                                             :: waitlog       ! Write the names of the files to wait for to screen, only the first time that subroutine wait_until_finished is visited
-    character(1)                                        :: slash
     character(3)                                        :: c_inode
     character(3)                                        :: c_idis
     character(14)                                       :: cctime
@@ -285,11 +286,6 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     nf_src_mom     => gdp%gdnfl%nf_src_mom
     skipuniqueid   => gdp%gdnfl%skipuniqueid
 
-    if (gdp%arch=='win32' .or. gdp%arch=='win64') then
-       slash = '\'
-    else
-       slash = '/'
-    endif
     filename = ' '
     !    
     write(c_inode,'(i3.3)') inode
@@ -388,6 +384,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     ! Only the master partition communicates with Cosumo/Cormix and calculates glb_disnf and glb_sournf
     !
     if (inode == master) then
+       ifatal = 0
        !
        ! Convert flow results (velocities and densities) at (mdiff,ndiff) to nearfield input
        ! and write cormix/nrfield input file
@@ -525,8 +522,14 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                       enddo
                    endif
                    !
+                   call makedir(trim(gdp%gdnfl%base_path(idis)))
+                   if (.not.directory_exists(trim(gdp%gdnfl%base_path(idis)))) then
+                      ifatal = 1
+                      exit
+                   endif
+                   !
                    filename(1) = trim(gdp%gdnfl%base_path(idis))//'FF2NF_'//trim(gdp%uniqueid)//'_'//trim(gdp%runid)//'_'//c_inode//'_SubMod'//c_idis//'_'//trim(adjustl(cctime))//'.xml'
-                   filename(2) = trim(basecase(idis,1))//'COSUMO'//slash//'NF2FF'//slash//'NF2FF_'//trim(gdp%uniqueid)//'_'//trim(gdp%runid)//'_'//c_inode//'_SubMod'//c_idis//'_'//trim(adjustl(cctime))//'.xml'
+                   filename(2) = trim(basecase(idis,1))//'COSUMO'//FILESEP//'NF2FF'//FILESEP//'NF2FF_'//trim(gdp%uniqueid)//'_'//trim(gdp%runid)//'_'//c_inode//'_SubMod'//c_idis//'_'//trim(adjustl(cctime))//'.xml'
                    filename(3) = trim(basecase(idis,1))
                    waitfiles(idis) = filename(2)
                    !
@@ -538,13 +541,17 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                                 & sig       ,zk        ,kfu_ptr  ,kfv_ptr  , &
                                 & alfas_ptr ,s0_ptr    ,s1_ptr   ,u0_ptr   ,v0_ptr , &
                                 & r0_ptr    ,rho_ptr   ,dps_ptr  ,xz_ptr   ,yz_ptr , &
-                                & kfsmn0_ptr,kfsmx0_ptr,dzs0_ptr ,filename ,namcon , gdp    )
+                                & kfsmn0_ptr,kfsmx0_ptr,dzs0_ptr ,filename ,namcon , &
+                                & ifatal, gdp    )
+                   if (ifatal /= 0) then
+                      exit
+                   endif
                 enddo
              endif
              !
              ! Read near field input files and process them
              !
-             if (nflrwmode /= NFLWRITE) then
+             if (nflrwmode /= NFLWRITE .and. ifatal == 0) then
                 waitlog = .true.
                 do
                    if (nflrwmode == NFLWRITEREADNEW) then
@@ -552,18 +559,18 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                       ! Wait until the new near field files are written
                       ! This is the default case
                       !
-                      call wait_until_finished(no_dis, waitfiles, idis, filename(2), waitlog, error, gdp)
+                      call wait_until_finished(no_dis, waitfiles, idis, filename(2), waitlog, ifatal, gdp)
                    else
                       !
                       ! Use the old near field files, written some time ago
                       !
-                      call wait_until_finished(no_dis, waitfilesold, idis, filename(2), waitlog, error, gdp)
+                      call wait_until_finished(no_dis, waitfilesold, idis, filename(2), waitlog, ifatal, gdp)
                    endif
+                   if (ifatal /= 0) then
+                      exit
+                   endif
+                   !
                    waitlog = .false.
-                   !
-                   ! Error: just try again
-                   !
-                   if (error) cycle
                    !
                    ! idis=0 when all files are processed
                    !
@@ -603,13 +610,15 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                    endif
                 enddo
              endif
-             if (nflrwmode==NFLWRITE .or. nflrwmode==NFLWRITEREADOLD) then
-                !
-                ! Store the new waitfiles, to be used later on
-                waitfilesold(:) = waitfiles(:)
-             endif
-             if (nflrwmode /= NFLREADOLD) then
-                deallocate(waitfiles, stat=ierror)
+             if (ifatal == 0) then
+                if (nflrwmode==NFLWRITE .or. nflrwmode==NFLWRITEREADOLD) then
+                   !
+                   ! Store the new waitfiles, to be used later on
+                   waitfilesold(:) = waitfiles(:)
+                endif
+                if (nflrwmode /= NFLREADOLD) then
+                   deallocate(waitfiles, stat=ierror)
+                endif
              endif
           case ('jet3d')
              !!
@@ -642,6 +651,12 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
              ! Nothing (yet)
              !
        end select
+    endif
+    if (parll) then
+       call dfbroadc(ifatal, 1, dfint, error, errmsg)
+    endif
+    if (ifatal /= 0) then
+       call d3stop(1,gdp)
     endif
     !
     ! Copy the global disnf/sournf/nf_src_momu/nf_src_momv to the local ones, even if not parallel,

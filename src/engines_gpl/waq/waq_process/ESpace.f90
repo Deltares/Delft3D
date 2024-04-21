@@ -59,8 +59,8 @@ contains
                             in_mmperday, fwashoff, ferosion, froun, finf, fdisp, fdeepinf, fgwbflow
       real(kind=real_wp)                ::fluxloss, conc, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxgwf, fluxdeepinf,&
                             fluxleak, fluxstp, kpaved, kunpaved, ksoil, kdunpaved, fluxexp
-      character*20       :: itemname
-      character*12       :: ddhhmmss1
+      character(len=20)       :: itemname
+      character(len=12)       :: ddhhmmss1
 
       ! fixed quantities
       integer(kind=int_wp),parameter    ::scu = 1
@@ -180,7 +180,7 @@ contains
       real(kind=real_wp),parameter  ::disp_hithr = 7.
 
       ! file names
-      character*255      :: file_out_nodes, file_in_names, file_usefor, file_subs
+      character(len=255)      :: file_out_nodes, file_in_names, file_usefor, file_subs
 
 !     other
       logical first
@@ -201,9 +201,9 @@ contains
             nsrca = nint(pmsa(ipoint(ip_nsrca)))
             nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
             nsubsin  = nint(pmsa(ipoint(ip_nsubs)))
-            if (nsubsin.ne.nsubs) call write_error_message ('Substances inconsistent')
+            if (nsubsin/=nsubs) call write_error_message ('Substances inconsistent')
             nrecin = nint(pmsa(ipoint(ip_nrecin)))
-            if (nrecin.ne.nrec) call write_error_message ('Receptors inconsistent')
+            if (nrecin/=nrec) call write_error_message ('Receptors inconsistent')
             nosegl = nint(pmsa(ipoint(ip_nosegl)))
 
             ! pick up constants
@@ -274,7 +274,7 @@ contains
                 enddo
 
                 ! losses per sc
-                if (sumlocator.gt.0.0) then
+                if (sumlocator>0.0) then
                 do isegl = 1,nosegl
                 do isubs = 1,nsubs
                 do irec = 1,nrec
@@ -311,8 +311,8 @@ contains
             write (lu_nod,1002) trim(file_subs)
 
             read (lu_loc,*) nswb
-            if (nsc+nswb.ne.nosegl) call write_error_message('NSC+NSWB=/NOSEGL')
-            if (nswb.gt.0) call write_error_message('NSWB>0 not implemented')
+            if (nsc+nswb/=nosegl) call write_error_message('NSC+NSWB=/NOSEGL')
+            if (nswb>0) call write_error_message('NSWB>0 not implemented')
 
       endif
 
@@ -422,7 +422,7 @@ contains
 
           iseg = isegl + (rec_sew-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           leakage = pmsa(ipnt(ip_leakage))
           do isubs = 1,nsubs
@@ -446,7 +446,7 @@ contains
 
           iseg = isegl + (rec_pav-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           ropaved = pmsa(ipnt(ip_ropaved))
           !               m3/s  m2
@@ -477,7 +477,7 @@ contains
 
           iseg = isegl + (rec_unp-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           rounpaved = pmsa(ipnt(ip_rounpaved))
           roun_mmperday = rounpaved / (totsurf*funpaved) * 1000. * 86400.
@@ -525,7 +525,7 @@ contains
 
           iseg = isegl + (rec_soi-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           gwbaseflow = pmsa(ipnt(ip_gwbflow))
           deepinfilt = pmsa(ipnt(ip_deepinf))
@@ -558,7 +558,7 @@ contains
 
           iseg = isegl + (rec_stw-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           boun = 0.0
           do isubs = 1,nsubs
@@ -579,7 +579,7 @@ contains
 
           iseg = isegl + (rec_sfw-1)*nosegl
           call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
-          if (iatt1.gt.0) then
+          if (iatt1>0) then
 
           do isubs = 1,nsubs
               ! fluxes
@@ -607,7 +607,7 @@ contains
       end
       subroutine ddhhmmss(timeinscu,scu,ddhhmmss1)
       integer(kind=int_wp)  ::timeinscu,scu
-      character*12 ddhhmmss1
+      character(len=12) ddhhmmss1
       integer(kind=int_wp)  ::dd,hh,mm,ss,timeinseconds
       timeinseconds = timeinscu*scu
       dd = timeinseconds/86400

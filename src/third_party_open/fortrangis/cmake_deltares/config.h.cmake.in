@@ -1,2 +1,0 @@
-/* Required definitions for building deltares common
-   */

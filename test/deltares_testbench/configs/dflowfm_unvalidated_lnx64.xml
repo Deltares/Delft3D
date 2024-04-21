@@ -188,7 +188,7 @@
 				-->
      <testCases>
 		<testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
-		  <path>e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
+		  <path version="2024-01-11T13:10:00">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
 			  <arguments>
@@ -210,7 +210,7 @@
 		  </checks>		  
 		 </testCase>
 		<testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
-		  <path>e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
+		  <path version="2024-01-11T13:10:00">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
 		  <programs>
 			<program ref="DFlowFM">
 			  <arguments>

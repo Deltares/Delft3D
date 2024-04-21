@@ -178,73 +178,7 @@ switch NVal
                     Thresholds = Ops.Thresholds;
                     
                 otherwise
-                    if ~FirstFrame
-                        delete(hNew)
-                    end
-                    o = 0;
-                    for c=1:size(data.Val,2)
-                        vNaN=isnan(data.Val(:,c));
-                        if any(vNaN)
-                            bs=findseries(~vNaN);
-                        else
-                            bs=[1 length(vNaN)];
-                        end
-                        fill = ~strcmp(Ops.facecolour,'none');
-                        for i=1:size(bs,1)
-                            from=bs(i,1);
-                            to=bs(i,2);
-                            ecol='interp';
-                            fcol='none';
-                            if fill && X(from,c)==X(to,c) && ...
-                                    Y(from,c)==Y(to,c)
-                                ecol='none';
-                                fcol='flat';
-                                vl=from;
-                            elseif from>1
-                                from=from-1;
-                                X(from,c)=NaN;
-                                if ~isempty(Y)
-                                    Y(from,c)=NaN;
-                                end
-                                if ~isempty(Z)
-                                    Z(from,c)=NaN;
-                                end
-                                data.Val(from,c)=NaN;
-                                vl=from:to;
-                            else
-                                to=to+1;
-                                X(to,c)=NaN;
-                                if ~isempty(Y)
-                                    Y(to,c)=NaN;
-                                end
-                                if ~isempty(Z)
-                                    Z(to,c)=NaN;
-                                end
-                                data.Val(to,c)=NaN;
-                                vl=from:to;
-                            end
-                            switch Ops.basicaxestype
-                                case 'X-Z'
-                                    xy = {X(from:to,c), Z(from:to,c)};
-                                case 'X-Y-Z'
-                                    xy = {X(from:to,c), Y(from:to,c), Z(from:to,c)};
-                                otherwise
-                                    xy = {X(from:to,c), Y(from:to,c)};
-                            end
-                            hNew(o+i)=patch(xy{:}, ...
-                                data.Val(vl,c), ...
-                                'edgecolor',ecol, ...
-                                'facecolor',fcol, ...
-                                'linestyle',Ops.linestyle, ...
-                                'linewidth',Ops.linewidth, ...
-                                'marker',Ops.marker, ...
-                                'markersize',Ops.markersize, ...
-                                'markeredgecolor',Ops.markercolour, ...
-                                'markerfacecolor',Ops.markerfillcolour, ...
-                                'parent',Parent);
-                        end
-                        o = o+size(bs,1);
-                    end
+                    hNew = qp_plot_line(hNew, Parent, X, Y, Z, data.Val, Ops);
             end
             set(Parent,'layer','top')
             if strcmp(Ops.colourbar,'none')

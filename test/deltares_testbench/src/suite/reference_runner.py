@@ -31,7 +31,7 @@ class ReferenceRunner(TestSetRunner):
 
         # Make sure the reference folders are in sync.
         netloc = Paths().mergeFullPath(
-            refNetworkPath.root, refNetworkPath.from_path, test_case_config.path
+            refNetworkPath.root, refNetworkPath.from_path, test_case_config.path.prefix
         )
         if refNetworkPath:
             HandlerFactory.prepare_upload(

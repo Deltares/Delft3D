@@ -159,7 +159,12 @@ else if (jatem == 5) then
        presn = 1d-2*patm(n)
    endif
                              ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
-   if (jasol == 1) then      ! Measured solar radiation qradin specified in .tem file
+   if (jasol == 1) then      ! Solar radiation provided by user (in .tem or .nc file)
+      if (ja_solar_radiation_factor > 0) then
+         if (comparereal(solar_radiation_factor(n), dmiss) /= 0) then
+            qrad(n) = qrad(n) * solar_radiation_factor(n) ! qrad is adjusted (and not qsun) as it is used in fm_wq_processes 
+         endif
+      endif
       qsun = qrad(n) * (1d0-albedo)
    else                      ! Calculate solar radiation from cloud coverage specified in file
       if (jsferic == 1) then
@@ -171,12 +176,6 @@ else if (jatem == 5) then
          qsun = 0d0
       endif
    endif
-
-   if (ja_solar_radiation_factor > 0) then
-      if (solar_radiation_factor(n) /= dmiss) then
-         qsun = qsun * solar_radiation_factor(n)
-      end if
-   end if
 
    rcpiba = rcpi*ba(n)
    qsn    = qsun*rcpiba

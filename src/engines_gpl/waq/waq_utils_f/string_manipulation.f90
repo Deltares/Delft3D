@@ -33,7 +33,8 @@ contains
         character(len = *), intent(in) :: input_string
         character(len = *), intent(out) :: output_string
 
-        integer :: ic, ascii_code, is_lower_case
+        integer :: ic, ascii_code
+        logical :: is_lower_case
         character(len = 1) :: current_char
 
         ! copy the input string

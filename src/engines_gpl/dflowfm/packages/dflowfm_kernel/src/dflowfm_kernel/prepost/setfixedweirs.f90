@@ -45,7 +45,8 @@ subroutine setfixedweirs()
  use m_polygon
  use m_partitioninfo,    only : jampi, sdmn
  use messagehandling
- use string_module,      only: strsplit, get_dirsep
+ use string_module,      only: strsplit
+ use system_utils,       only: FILESEP
  use geometry_module,    only: dbdistance, CROSSinbox, dcosphi, duitpl, normalout
  use unstruc_caching
  use m_1d2d_fixedweirs, only : find_1d2d_fixedweirs
@@ -120,7 +121,7 @@ subroutine setfixedweirs()
     do ifil = 1, size(fnames)
        start_npl_for_files(ifil) = npl + 1
        call oldfil(minp, fnames(ifil))
-       N1  = index (fnames(ifil), get_dirsep(), .true.)
+       N1  = index (fnames(ifil), FILESEP, .true.)
        !  fix for Linux-prepared input on Windows
        if ( N1.eq.0 ) then
             N1 = index(fnames(ifil), char(47), .true.)

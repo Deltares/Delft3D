@@ -4,11 +4,13 @@ Description: Executes SVN commands
 Copyright (C)  Stichting Deltares, 2013
 """
 
+from typing import Optional
 from src.config.credentials import Credentials
 from src.config.program_config import ProgramConfig
 from src.suite.program import Program
 from src.utils.handlers.i_handler import IHandler
 from src.utils.logging.i_logger import ILogger
+from src.utils.common import stripPassword
 
 
 # SVN wrapper, has handler interface
@@ -77,7 +79,7 @@ class SvnHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: str,
+        version: Optional[str],
         logger: ILogger,
     ):
         logger.debug(f"downloading from svn: {from_path}")
@@ -104,7 +106,8 @@ class SvnHandler(IHandler):
         prg.overwriteConfiguration(pcnf)
         prg.run(logger)
         if prg.getError():
-            raise RuntimeError("Errors during svn download: " + str(prg.getError()))
+            error_string = stripPassword(str(prg.getError()))
+            raise RuntimeError("Errors during svn download: " + error_string)
 
     # default svn arguments
     # input: initial command, credentials

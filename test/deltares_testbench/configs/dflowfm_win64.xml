@@ -88,9 +88,9 @@
         <from>bin/dflowfm/win64</from>
       </location>
       <location ref="local" type="check">
-        <from>teamcity_artifacts/x64/dflowfm/bin</from>
+        <from>teamcity_artifacts/x64/bin</from>
       </location>
-      <path>dflowfm-cli.exe</path>
+      <path>run_dflowfm.bat</path>
       <arguments>
         <argument>--autostartstop</argument>
       </arguments>

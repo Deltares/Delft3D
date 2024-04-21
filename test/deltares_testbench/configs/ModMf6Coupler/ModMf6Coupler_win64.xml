@@ -66,12 +66,12 @@
 
   <testCases>
     <testCase name="e150_f00_c00_common" ref="mswmod_default">
-      <path>e150_metaswap/f00_common/c00_common</path>
+      <path version="2024-01-11T08:50:00">e150_metaswap/f00_common/c00_common</path>
       <maxRunTime>2000.0</maxRunTime>
     </testCase>
 
     <testCase name="e150_f01_c21_Hooghoudt_bare_soil" ref="mswmod_default">
-      <path>e150_metaswap/f01_basic_tests/c21_Hooghoudt_bare_soil</path>
+      <path version="2024-01-12T07:40:00">e150_metaswap/f01_basic_tests/c21_Hooghoudt_bare_soil</path>
       <programs>
         <program ref="Coupler">
           <arguments>
@@ -90,7 +90,7 @@
     </testCase>
  
     <testCase name="e150_f01_c24_Hooghoudt_potato" ref="mswmod_default">
-      <path>e150_metaswap/f01_basic_tests/c24_Hooghoudt_potato</path>
+      <path version="2024-01-12T07:40:00">e150_metaswap/f01_basic_tests/c24_Hooghoudt_potato</path>
       <programs>
         <program ref="Coupler">
           <arguments>
@@ -109,7 +109,7 @@
     </testCase>
     
     <testCase name="e150_f01_c25_Hooghoudt_sprinkling" ref="mswmod_default">
-      <path>e150_metaswap/f01_basic_tests/c25_Hooghoudt_sprinkling</path>
+      <path version="2024-01-12T07:40:00">e150_metaswap/f01_basic_tests/c25_Hooghoudt_sprinkling</path>
       <programs>
         <program ref="Coupler">
           <arguments>
@@ -129,7 +129,7 @@
     </testCase>
     
     <testCase name="e150_f01_c28_Hooghoudt_multi_svats" ref="mswmod_default">
-      <path>e150_metaswap/f01_basic_tests/c28_Hooghoudt_multi_svats</path>
+      <path version="2024-01-12T07:40:00">e150_metaswap/f01_basic_tests/c28_Hooghoudt_multi_svats</path>
       <programs>
         <program ref="Coupler">
           <arguments>

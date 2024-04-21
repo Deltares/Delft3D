@@ -82,7 +82,7 @@
     -->
     <testCases>
         <testCase name="e67_f01_c01_tutorial" ref="triana_default">
-            <path>e67_triana/f01_general/c01_tutorial</path>
+            <path version="2024-01-12T07:30:00">e67_triana/f01_general/c01_tutorial</path>
             <programs>
                 <program ref="triana">
                     <arguments>
@@ -104,7 +104,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e67_f01_c02_test" ref="triana_default">
-            <path>e67_triana/f01_general/c02_test</path>
+            <path version="2024-01-12T07:30:00">e67_triana/f01_general/c02_test</path>
             <programs>
                 <program ref="triana">
                     <arguments>
@@ -126,7 +126,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e67_f01_c03_timing" ref="triana_default">
-            <path>e67_triana/f01_general/c03_timing</path>
+            <path version="2024-01-12T07:30:00">e67_triana/f01_general/c03_timing</path>
             <programs>
                 <program ref="triana">
                     <arguments>

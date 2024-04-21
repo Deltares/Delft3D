@@ -102,7 +102,7 @@
 				-->
 	<testCases>
 		<testCase name="e40_f01_c01_test" ref="sedmor_default">
-			<path>e40_dmor1d/f01_general/c01_test</path>
+			<path version="2024-01-11T11:10:00">e40_dmor1d/f01_general/c01_test</path>
                         <checks>
 				<file name="WORK\CALCPNT.HIS" type="HIS"/>
 				<file name="WORK\reachseg.his" type="HIS"/>

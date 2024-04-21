@@ -139,7 +139,7 @@ contains
 
 !     determine interpolation factors
 
-      fac1 = float(itime - ivtime(id-1)) / float(ivtime(id) - ivtime(id-1))
+      fac1 = real(itime - ivtime(id-1)) / real(ivtime(id) - ivtime(id-1))
       fac2 = 1.0 - fac1
 
 !     calculate ; by linear interpolation between breakpoints; fourier comp.
@@ -176,7 +176,7 @@ contains
                else
                   ic    = mpart(ipart)
                   if (ic > 0) then
-                     ic = iabs(cell2nod(ic))
+                     ic = abs(cell2nod(ic))
                   endif
                endif
 

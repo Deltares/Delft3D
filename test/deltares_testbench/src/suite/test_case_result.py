@@ -14,6 +14,7 @@ from src.utils.comparers.comparison_result import ComparisonResult
 
 
 class TestCaseResult:
+    __test__ = False
     """Contains the result for a TestCaseConfig"""
 
     def __init__(self, config: TestCaseConfig, run_data: RunData) -> None:

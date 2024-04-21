@@ -8,6 +8,9 @@ install_*/**
 .idea/*
 .vs/**
 
+# python virtual environment
+.venv
+
 # files extensions to exclude
 *.i90
 *.i
@@ -32,3 +35,6 @@ src/engines_gpl/waq/resources/csvFiles/*
 # ignore FortranCInterface header files created on linux
 src/**/config.h
 src/**/FortranCInterface.h
+
+# ignore copied files from failed_test.py teamcity script
+/test/deltares_testbench/failed/**

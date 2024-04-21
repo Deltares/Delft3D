@@ -51,6 +51,9 @@ mdufileFolder=${PWD}
 # The name of the dimr config file. The default is dimr_config.xml:
 dimrFile=dimr_config.xml
 
+# This setting might help to prevent errors due to temporary locking of NetCDF files. 
+export HDF5_USE_FILE_LOCKING=FALSE
+
 
 #---You do not need to modify anything below this line---
 

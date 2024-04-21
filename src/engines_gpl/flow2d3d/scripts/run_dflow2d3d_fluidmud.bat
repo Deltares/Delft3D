@@ -60,16 +60,16 @@ set workdir=%CD%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%scriptDir%..\..\..
+set D3D_HOME=%scriptDir%..
 
 rem Remove "\dflow2d3d\scripts\..\..\.." from D3D_HOME
 set D3DT=%D3D_HOME:~0,-27%
 rem last directory will be the architecture directory
 for %%f in ("%D3DT%") do set ARCH=%%~nxf
 
-set dflow2d3ddir=%D3D_HOME%\%ARCH%\dflow2d3d\bin
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-
+set dflow2d3ddir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
 
 if  %debugLevel% EQU 0 (
     echo.
@@ -90,13 +90,13 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW for water phase in a separate console
-set PATH=%dflow2d3ddir%;%sharedir%
+set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
 echo executing in separate window: "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 start "Delft3D-FLOW water" "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 
     rem Start FLOW for mud phase
 title Delft3D-FLOW mud simulation
-set PATH=%dflow2d3ddir%;%sharedir%
+set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
 echo executing in this window: "%dflow2d3ddir%\d_hydro.exe" %mudConfigFile%
 "%dflow2d3ddir%\d_hydro.exe" %mudConfigFile%
 title %CD%

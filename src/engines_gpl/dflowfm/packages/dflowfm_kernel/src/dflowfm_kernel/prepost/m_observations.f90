@@ -244,16 +244,10 @@ implicit none
     integer                           :: IPNT_QMAG
     integer                           :: IPNT_TEM1
     integer                           :: IPNT_TRA1
-    integer                           :: IPNT_TRAN
     integer                           :: IPNT_HWQ1
-    integer                           :: IPNT_HWQN
     integer                           :: IPNT_WQB1
-    integer                           :: IPNT_WQBN
     integer                           :: IPNT_WQB3D1
-    integer                           :: IPNT_WQB3DN
-!    integer                           :: IPNT_SPIR1
     integer                           :: IPNT_SF1
-    integer                           :: IPNT_SFN
     integer                           :: IPNT_SED
     integer                           :: IPNT_ZCS
     integer                           :: IPNT_ZWS
@@ -263,9 +257,7 @@ implicit none
     integer                           :: IPNT_TEPS
     integer                           :: IPNT_VICWW
     integer                           :: IPNT_WS1
-    integer                           :: IPNT_WSN
     integer                           :: IPNT_SEDDIF1
-    integer                           :: IPNT_SEDDIFN
     integer                           :: IPNT_RICH
     integer                           :: IPNT_TAIR
     integer                           :: IPNT_WIND
@@ -283,45 +275,28 @@ implicit none
     integer                           :: IPNT_RHOP
     integer                           :: IPNT_RHO
     integer                           :: IPNT_SBCX1           ! should be done per fraction
-    integer                           :: IPNT_SBCXN
     integer                           :: IPNT_SBCY1
-    integer                           :: IPNT_SBCYN
     integer                           :: IPNT_SBWX1
-    integer                           :: IPNT_SBWXN
     integer                           :: IPNT_SBWY1
-    integer                           :: IPNT_SBWYN
     integer                           :: IPNT_SSCX1
-    integer                           :: IPNT_SSCXN
     integer                           :: IPNT_SSCY1
-    integer                           :: IPNT_SSCYN
     integer                           :: IPNT_SSWX1
-    integer                           :: IPNT_SSWXN
     integer                           :: IPNT_SSWY1
-    integer                           :: IPNT_SSWYN
     integer                           :: IPNT_SOUR1
-    integer                           :: IPNT_SOURN
     integer                           :: IPNT_SINK1
-    integer                           :: IPNT_SINKN
     integer                           :: IPNT_BODSED1
-    integer                           :: IPNT_BODSEDN
     integer                           :: IPNT_TAUB
     integer                           :: IPNT_DPSED
     integer                           :: IPNT_MSED1
-    integer                           :: IPNT_MSEDN
     integer                           :: IPNT_THLYR
     integer                           :: IPNT_POROS
     integer                           :: IPNT_LYRFRAC1
-    integer                           :: IPNT_LYRFRACN
     integer                           :: IPNT_FRAC1
-    integer                           :: IPNT_FRACN
     integer                           :: IPNT_MUDFRAC
     integer                           :: IPNT_SANDFRAC
     integer                           :: IPNT_FIXFAC1
-    integer                           :: IPNT_FIXFACN
     integer                           :: IPNT_HIDEXP1
-    integer                           :: IPNT_HIDEXPN
     integer                           :: IPNT_MFLUFF1
-    integer                           :: IPNT_MFLUFFN
 contains
 
 !> (re)initialize valobs and set pointers for observation stations
@@ -367,7 +342,7 @@ end subroutine alloc_valobs
 !! which is being reduced in parallel runs
 subroutine init_valobs_pointers()
    use m_flowparameters
-   use m_flow, only: iturbulencemodel, idensform, kmx
+   use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
    use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
    use m_fm_wq_processes, only: noout, numwqbots, wqbot3D_output
    use m_sediment, only: stm_included, stmpar
@@ -644,7 +619,7 @@ subroutine init_valobs_pointers()
    end if
    if( jasal > 0 .or. jatem > 0 .or. jased > 0 ) then
       i=i+1;            IVAL_RHOP       = i
-      if (idensform > 10) then 
+      if ( density_is_pressure_dependent() ) then
          i=i+1;         IVAL_RHO        = i
       endif
    endif
@@ -709,14 +684,9 @@ subroutine init_valobs_pointers()
    IPNT_UMAG  = ivalpoint(IVAL_UMAG,  kmx, nlyrs)
    IPNT_QMAG  = ivalpoint(IVAL_QMAG,  kmx, nlyrs)
    IPNT_TRA1  = ivalpoint(IVAL_TRA1,  kmx, nlyrs)
-   IPNT_TRAN  = ivalpoint(IVAL_TRAN,  kmx, nlyrs)
    IPNT_HWQ1  = ivalpoint(IVAL_HWQ1,  kmx, nlyrs)
-   IPNT_HWQN  = ivalpoint(IVAL_HWQN,  kmx, nlyrs)
    IPNT_WQB3D1= ivalpoint(IVAL_WQB3D1,kmx, nlyrs)
-   IPNT_WQB3DN= ivalpoint(IVAL_WQB3DN,kmx, nlyrs)
    IPNT_SF1   = ivalpoint(IVAL_SF1,   kmx, nlyrs)
-   IPNT_SFN   = ivalpoint(IVAL_SFN,   kmx, nlyrs)
-!   IPNT_SPIR1 = ivalpoint(IVAL_SPIR1, kmx)
    IPNT_SED   = ivalpoint(IVAL_SED,   kmx, nlyrs)
    IPNT_WX    = ivalpoint(IVAL_WX ,   kmx, nlyrs)
    IPNT_WY    = ivalpoint(IVAL_WY ,   kmx, nlyrs)
@@ -740,29 +710,17 @@ subroutine init_valobs_pointers()
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
    IPNT_WS1   = ivalpoint(IVAL_WS1,   kmx, nlyrs)
-   IPNT_WSN   = ivalpoint(IVAL_WSN,   kmx, nlyrs)
    IPNT_SEDDIF1 = ivalpoint(IVAL_SEDDIF1,   kmx, nlyrs)
-   IPNT_SEDDIFN = ivalpoint(IVAL_SEDDIFN,   kmx, nlyrs)
    IPNT_SBCX1 = ivalpoint(IVAL_SBCX1,   kmx, nlyrs)
-   IPNT_SBCXN = ivalpoint(IVAL_SBCXN,   kmx, nlyrs)
    IPNT_SBCY1 = ivalpoint(IVAL_SBCY1,   kmx, nlyrs)
-   IPNT_SBCYN = ivalpoint(IVAL_SBCYN,   kmx, nlyrs)
    IPNT_SSCX1 = ivalpoint(IVAL_SSCX1,   kmx, nlyrs)
-   IPNT_SSCXN = ivalpoint(IVAL_SSCXN,   kmx, nlyrs)
    IPNT_SSCY1 = ivalpoint(IVAL_SSCY1,   kmx, nlyrs)
-   IPNT_SSCYN = ivalpoint(IVAL_SSCYN,   kmx, nlyrs)
    IPNT_SOUR1 = ivalpoint(IVAL_SOUR1,   kmx, nlyrs)
-   IPNT_SOURN = ivalpoint(IVAL_SOURN,   kmx, nlyrs)
    IPNT_SINK1 = ivalpoint(IVAL_SINK1,   kmx, nlyrs)
-   IPNT_SINKN = ivalpoint(IVAL_SINKN,   kmx, nlyrs)
    IPNT_SBWX1 = ivalpoint(IVAL_SBWX1,   kmx, nlyrs)
-   IPNT_SBWXN = ivalpoint(IVAL_SBWXN,   kmx, nlyrs)
    IPNT_SBWY1 = ivalpoint(IVAL_SBWY1,   kmx, nlyrs)
-   IPNT_SBWYN = ivalpoint(IVAL_SBWYN,   kmx, nlyrs)
    IPNT_SSWX1 = ivalpoint(IVAL_SSWX1,   kmx, nlyrs)
-   IPNT_SSWXN = ivalpoint(IVAL_SSWXN,   kmx, nlyrs)
    IPNT_SSWY1 = ivalpoint(IVAL_SSWY1,   kmx, nlyrs)
-   IPNT_SSWYN = ivalpoint(IVAL_SSWYN,   kmx, nlyrs)
    IPNT_UCXST = ivalpoint(IVAL_UCXST,   kmx, nlyrs)
    IPNT_UCYST = ivalpoint(IVAL_UCYST,   kmx, nlyrs)
    IPNT_TAIR  = ivalpoint(IVAL_TAIR,  kmx, nlyrs)
@@ -781,29 +739,20 @@ subroutine init_valobs_pointers()
    IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP,  kmx, nlyrs)
    IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT,  kmx, nlyrs)
    IPNT_WQB1  = ivalpoint(IVAL_WQB1,  kmx, nlyrs)
-   IPNT_WQBN  = ivalpoint(IVAL_WQBN,  kmx, nlyrs)
    IPNT_SINK1    = ivalpoint(IVAL_SINK1   ,kmx, nlyrs)
-   IPNT_SINKN    = ivalpoint(IVAL_SINKN   ,kmx, nlyrs)
    IPNT_BODSED1  = ivalpoint(IVAL_BODSED1 ,kmx, nlyrs)
-   IPNT_BODSEDN  = ivalpoint(IVAL_BODSEDN ,kmx, nlyrs)
    IPNT_TAUB     = ivalpoint(IVAL_TAUB    ,kmx, nlyrs)
    IPNT_DPSED    = ivalpoint(IVAL_DPSED   ,kmx, nlyrs)
    IPNT_MSED1    = ivalpoint(IVAL_MSED1   ,kmx, nlyrs)
-   IPNT_MSEDN    = ivalpoint(IVAL_MSEDN   ,kmx, nlyrs)
    IPNT_THLYR    = ivalpoint(IVAL_THLYR   ,kmx, nlyrs)
    IPNT_POROS    = ivalpoint(IVAL_POROS   ,kmx, nlyrs)
    IPNT_LYRFRAC1 = ivalpoint(IVAL_LYRFRAC1,kmx, nlyrs)
-   IPNT_LYRFRACN = ivalpoint(IVAL_LYRFRACN,kmx, nlyrs)
    IPNT_FRAC1    = ivalpoint(IVAL_FRAC1   ,kmx, nlyrs)
-   IPNT_FRACN    = ivalpoint(IVAL_FRACN   ,kmx, nlyrs)
    IPNT_MUDFRAC  = ivalpoint(IVAL_MUDFRAC ,kmx, nlyrs)
    IPNT_SANDFRAC = ivalpoint(IVAL_SANDFRAC,kmx, nlyrs)
    IPNT_FIXFAC1  = ivalpoint(IVAL_FIXFAC1 ,kmx, nlyrs)
-   IPNT_FIXFACN  = ivalpoint(IVAL_FIXFACN ,kmx, nlyrs)
    IPNT_HIDEXP1  = ivalpoint(IVAL_HIDEXP1 ,kmx, nlyrs)
-   IPNT_HIDEXPN  = ivalpoint(IVAL_HIDEXPN ,kmx, nlyrs)
    IPNT_MFLUFF1  = ivalpoint(IVAL_MFLUFF1 ,kmx, nlyrs)
-   IPNT_MFLUFFN  = ivalpoint(IVAL_MFLUFFN ,kmx, nlyrs)
 
    IPNT_NUM      = ivalpoint(0,          kmx, nlyrs)-1
 

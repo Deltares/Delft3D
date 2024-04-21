@@ -32,25 +32,28 @@
 
 !> fill constituent array
 subroutine fill_constituents(jas) ! if jas == 1 do sources
-   use m_transport
-   use m_flowgeom
-   use m_flow
-   use m_sediment
-   use m_mass_balance_areas
-   use m_partitioninfo
-   use m_sferic, only: jsferic, fcorio
-   use m_flowtimes , only : dnt, dts, time1, tstart_user, tfac
-   use unstruc_messages
-   use m_flowparameters, only: janudge
-   use m_missing
-   use timers
+   use m_transport,            only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, difsedw
+   use m_flowgeom,             only: ndx, ndxi, ba
+   use m_flow,                 only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
+   use m_wind,                 only: heatsrc
+   use m_physcoef,             only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, Jaallowcoolingbelowzero, ag, vonkar
+   use m_nudge,                only: nudge_rate, nudge_tem, nudge_sal
+   use m_turbulence,           only: sigsal, sigtem, sigtracer, sigdifi, sigsed, wsf
+   use m_flowexternalforcings, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+   use m_sediment,             only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
+   use m_mass_balance_areas,   only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
+   use m_partitioninfo,        only: jampi, idomain, my_rank
+   use m_sferic,               only: jsferic, fcorio
+   use m_flowtimes ,           only : dts, time1, tstart_user, tfac
+   use m_flowparameters,       only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
+   use m_missing,              only: dmiss
+   use timers,                 only: timon, timstrt, timstop
 
    implicit none
 
-   character(len=128)          :: message
+   integer, intent(in)         :: jas
 
    double precision            :: dvoli
-   integer, intent(in)         :: jas
    integer                     :: i, iconst, j, kk, kkk, k, kb, kt, n, kk2, L, imba, jamba_src
    double precision, parameter :: dtol=1d-8
    double precision            :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
@@ -129,7 +132,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          if (dicouv .ge. 0d0) difsedu(iconst) = 0d0
          if (dicoww .ge. 0d0) then
             difsedw(iconst) = dicoww
-            sigdifi(iconst) = 1d0/sigsed
+            sigdifi(iconst) = 1d0/sigsed(iconst)
          endif
          if (jased < 4) wsf(iconst) = ws(i)
       end do
@@ -137,10 +140,10 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 
    if ( ITRA1.gt.0 ) then
       do i=ITRA1,ITRAN
-         difsedu(i)   =            difmoltr
+         difsedu(i)   =            difmoltracer
          if (dicoww .ge. 0d0) then
-             difsedw(i) = dicoww + difmoltr
-             sigdifi(i) = 1d0
+             difsedw(i) = dicoww + difmoltracer
+             sigdifi(i) = 1d0/sigtracer
          endif
          wsf(i) = wstracers(i - itra1 + 1)
       end do
@@ -232,12 +235,6 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                      const_sink(iconst,kkk) = const_sink(iconst,kkk) + stmpar%morpar%flufflyr%sinkf(i,kk)
                   end if
 
-                  ! BEGIN DEBUG
-                  !if ( constituents(iconst,kkk)+dts*const_sour(iconst,kkk).lt.0d0 ) then
-                  !   write(message, "('const. source < -const/dt, iconst=', I0, ', kk=', I0)") iconst, kk
-                  !   call mess(LEVEL_WARN, trim(message))
-                  !end if
-                 ! END DEBUG
                end if
             end do
          end if

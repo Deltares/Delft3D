@@ -841,6 +841,8 @@ subroutine get_var_rank(c_var_name, rank) bind(C, name="get_var_rank")
    !DEC$ ATTRIBUTES DLLEXPORT :: get_var_rank
 
    use iso_c_binding, only: c_int, c_char
+   use m_lateral, only : kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve
+
    character(kind=c_char), intent(in) :: c_var_name(*)
    integer(c_int), intent(out) :: rank
 
@@ -887,9 +889,10 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
    use network_data
    use m_observations, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
    use m_monitoring_crosssections, only: ncrs, maxnval
-   use m_wind
+   use m_lateral, only : numlatsg
    use unstruc_channel_flow, only: network
    use m_transport, only: NAMLEN, NUMCONST
+   use m_lateral, only : numlatsg, nlatnd
 	
    character(kind=c_char), intent(in) :: c_var_name(*)
    integer(c_int), intent(inout) :: shape(MAXDIMS)
@@ -1073,6 +1076,9 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
    use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
    use unstruc_model
    use unstruc_channel_flow, only: network
+   use m_lateral, only : numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
+   use m_lateral, only : qplatCumPre
+   use morphology_data_module, only : get_one_transport_parameter
 
    character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
    type(c_ptr), intent(inout) :: x
@@ -1237,12 +1243,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       endif
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
-            if (n > 0) then ! if spatially varying
-               TcrEro(:,i) = stmpar%trapar%parfld(:,n)
-            else ! if not spatially varying
-               TcrEro(:,i) = stmpar%trapar%par(13,i)
-            endif
+            call get_one_transport_parameter(TcrEro(:,i), stmpar%trapar, i, 13)
          else ! Other transport formula than Parteniades-Krone
             TcrEro(:,i) = -999
          endif
@@ -1256,12 +1257,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       endif
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
-            if (n > 0) then ! if spatially varying
-               TcrSed(:,i) = stmpar%trapar%parfld(:,n)
-            else ! if not spatially varying
-               TcrSed(:,i) = stmpar%trapar%par(12,i)
-            endif
+            call get_one_transport_parameter(TcrSed(:,i), stmpar%trapar, i, 12)
          else ! Other transport formula than Parteniades-Krone
             TcrSed(:,i) = -999
          endif
@@ -1287,7 +1283,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       call str_token(tmp_var_name, item_name, DELIMS='/')
       if (len_trim(item_name) > 0) then
          ! A valid item name, now parse the field name...
-         call str_token(tmp_var_name, field_name, DELIMS='/')
+         field_name = tmp_var_name(2:)
 
          ! field_name is allowed to be empty, call the compound getter and return directly.
          call get_compound_field(string_to_char_array(varset_name), &
@@ -1336,6 +1332,9 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
    use m_partitioninfo, only: jampi
    use MessageHandling
    use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
+   use m_lateral, only : numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+   use m_lateral, only : qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+   use morphology_data_module, only : PARSOURCE_FIELD
 
    character(kind=c_char), intent(in) :: c_var_name(*)
    type(c_ptr), value, intent(in) :: xptr
@@ -1450,9 +1449,13 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       TcrEro(:,:) = x_2d_double_ptr
       do i = 1,size(TcrEro,2)
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
+            n = stmpar%trapar%iparfile(13,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(:,n) = TcrEro(:,i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(:) = TcrEro(:,i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying
                if (minval(TcrEro(:,i)) == maxval(TcrEro(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(13,i) = TcrEro(1,i)
@@ -1474,9 +1477,13 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       TcrSed(:,:) = x_2d_double_ptr
       do i = 1,size(TcrSed,2)
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
+            n = stmpar%trapar%iparfile(12,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(:,n) = TcrSed(:,i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(:) = TcrSed(:,i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying
                if (minval(TcrSed(:,i)) == maxval(TcrSed(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(12,i) = TcrSed(1,i)
@@ -1611,6 +1618,9 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
    !DEC$ ATTRIBUTES DLLEXPORT :: set_var_slice
    ! Return a pointer to the variable
    use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
+   use m_lateral, only : qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+   use m_lateral, only : qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+   use morphology_data_module, only : PARSOURCE_FIELD
 
    integer(c_int), intent(in)         :: c_start(*)
    integer(c_int), intent(in)         :: c_count(*)
@@ -1701,9 +1711,13 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(13,i)
+            n = stmpar%trapar%iparfile(13,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(c_start(1)+1:(c_start(1)+c_count(1)),n) = TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrEro isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
             endif
@@ -1722,9 +1736,13 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
-            n = stmpar%trapar%iparfld(12,i)
+            n = stmpar%trapar%iparfile(12,i)
             if (n > 0) then                     ! if spatially varying
-               stmpar%trapar%parfld(c_start(1)+1:(c_start(1)+c_count(1)),n) = TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               if (stmpar%trapar%parfile(n)%source == PARSOURCE_FIELD) then
+                  stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),i)
+               else
+                  call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
+               endif
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrSed isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
             endif
@@ -1913,7 +1931,6 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
    integer :: iconst
    integer :: itrac
-   integer :: k1
 
    ! The fortran name of the attribute name
    character(len=MAXSTRLEN) :: var_name
@@ -2256,25 +2273,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       end select
    ! LATERAL DISCHARGES
    case("laterals")   
-      call getLateralIndex(item_name, item_index)
-      if (item_index <= 0) then
-         return
-      end if
- 
-      select case(field_name)
-         case("water_discharge")
-            x = c_loc(qplat(item_index))
-            return
-         case("water_level")
-            ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-            k1 = nnlat(n1latsg(item_index))
-            if (k1 > 0) then
-               x = c_loc(s1(k1))
-            else
-               x = c_null_ptr
-            endif
-            return
-      end select
+      x = get_lateral_pointer(item_name, field_name)
    ! GEOMETRY
    case("geometry")   
       select case(item_name)
@@ -2320,6 +2319,67 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
    end subroutine get_compound_field
 
+   !> Returns the c_ptr for a variable on a lateral location 
+   type(c_ptr) function get_lateral_pointer(item_name, field_name)
+      use m_lateral, only : qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration
+      use m_flow, only : s1
+      use string_module, only : str_token
+
+      implicit none
+      character(len=MAXSTRLEN), intent(in   ) :: item_name
+      character(len=MAXSTRLEN), intent(in   ) :: field_name
+      
+      integer :: item_index, k1, constituent_index
+      character(len=MAXSTRLEN)   :: constituent_name, direction_string
+      call getLateralIndex(item_name, item_index)
+      if (item_index <= 0) then
+         return
+      end if
+
+      select case(field_name)
+         case("water_discharge")
+            get_lateral_pointer = c_loc(qplat(item_index))
+            return
+         case("water_level")
+            ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
+            k1 = nnlat(n1latsg(item_index))
+            if (k1 > 0) then
+               get_lateral_pointer = c_loc(s1(k1))
+            else
+               get_lateral_pointer = c_null_ptr
+            endif
+            return
+      end select
+
+      constituent_name = field_name
+      call str_token(constituent_name, direction_string, DELIMS='/')
+      constituent_name = constituent_name(2:)
+      ! Find constituent index
+      select case (constituent_name)
+         case ('water_salinity')
+            constituent_index = ISALT
+         case ('water_temperature')
+            constituent_index = ITEMP
+         case default
+            constituent_index = findname(NUMCONST, const_names, constituent_name)
+            if ( iconst==0 ) then
+      !        tracer not found
+               get_lateral_pointer = c_null_ptr
+               return
+            end if
+      end select
+
+      ! Use the correct array (outgoing or incoming)
+      select case (direction_string)
+         case('outgoing')
+            get_lateral_pointer = c_loc(outgoing_lat_concentration(:, constituent_index, item_index))
+         case('incoming')
+            get_lateral_pointer = c_loc(incoming_lat_concentration(:, constituent_index, item_index))
+         case default
+            get_lateral_pointer = c_null_ptr
+      end select
+      return
+   end function get_lateral_pointer
 
 !> Sets the value for a specific field for a specific item in a set-variable of compound values.
 !!
@@ -2339,6 +2399,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
    use unstruc_channel_flow, only: network
    use m_General_Structure, only: update_widths
    use m_transport, only: NUMCONST, ISALT, ITEMP
+   use m_lateral, only : qplat
 
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'

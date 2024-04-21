@@ -25,8 +25,8 @@ module gridgeom_version_module
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-#INCLUDE "version_definition.h"
-#INCLUDE "gridgeom_version.h"
+#include "version_definition.h"
+#include "gridgeom_version.h"
 
 implicit none
 

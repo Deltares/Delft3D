@@ -29,14 +29,14 @@
 
       ! global declarations
 
-      use hydmod
-      use system_utils
+      use m_hydmod
+      use system_utils, only: makedir
       implicit none
 
       ! declaration of the arguments
 
       character(len=256)        :: waq_output_dir         ! directory of output for WAQ
-      type(t_hyd)               :: hyd                    ! description of the hydrodynamics
+      type(t_hydrodynamics)               :: hyd                    ! description of the hydrodynamics
       integer                   :: n_domain               ! number of domains
 
       ! local declarations
@@ -48,12 +48,11 @@
       integer                   :: i_domain1              ! index in collection
       type(t_domain)            :: domain                 ! one domain description
       logical                   :: result                 ! result
-      integer                   :: istat                  ! status from makedir
 
       ! set the names
       name              = hyd%file_hyd%name
       name_path         = trim(waq_output_dir)//'/'//trim(name)
-      istat =  makedir(trim(waq_output_dir))
+      call makedir(trim(waq_output_dir))
       
       hyd%file_com%name = name
       hyd%file_hyd%name = name_path//'.hyd'
@@ -62,7 +61,7 @@
       ! get the domains
 
 
-      hyd%domain_coll%cursize = 0
+      hyd%domain_coll%current_size = 0
       hyd%domain_coll%maxsize = 0
       do i_domain = 0, n_domain-1
 
@@ -71,7 +70,7 @@
          domain%mmax = -999
          domain%nmax = -999
          domain%aggr = ' '
-         i_domain1 = domain_coll_add(hyd%domain_coll, domain)
+         i_domain1 = hyd%domain_coll%add(domain)
       enddo
 
       ! some prelim initialisation of hyd

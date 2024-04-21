@@ -86,17 +86,16 @@ END subroutine initProgram
 subroutine initSysEnv()
     use unstruc_files
     use dflowfm_version_module, only : product_name, base_name
-    use string_module, only: get_dirsep
+    use system_utils, only: FILESEP
     implicit none
 
     integer :: larch
     integer :: lendum
     integer :: lenp
     integer :: lertxt
-    integer :: lslash
     integer :: nval
     CHARACTER  FILNAM*76
-    character  errtxt*8,arch*10,hlpstr*999,slash*1
+    character  errtxt*8,arch*10,hlpstr*999
     LOGICAL JAWEL ,d3dhom
 !-----------------------------------------------------------------------
 !-----Environment variable defined as D3D_HOME-ARCH-PROGNM-
@@ -145,26 +144,21 @@ subroutine initSysEnv()
 !        endif
       else
 !-----------------------------------------------------------------------
-!--------Find out if system is PC (directory seperator character \ (92)
-!        or UNIX (directory seperator character / (47))
-!-----------------------------------------------------------------------
-         slash = get_dirsep()
-!-----------------------------------------------------------------------
 !--------Define directory when environment variable is D3D_HOME etc.
 !-----------------------------------------------------------------------
          LENDUM = len_trim(HLPSTR)
          LARCH  = len_trim(ARCH)
          if (d3dhom) then
             if (larch .eq. 0) then
-               pathdi = hlpstr(:lendum)//slash//base_name//slash
+               pathdi = hlpstr(:lendum)//FILESEP//base_name//FILESEP
             else
-               pathdi = hlpstr(:lendum)//slash//arch  (:larch)//slash//base_name//slash
+               pathdi = hlpstr(:lendum)//FILESEP//arch  (:larch)//FILESEP//base_name//FILESEP
             endif
          else
 !-----------------------------------------------------------------------
 !-----------Define directory when environment variable is QN/RGF_PATH
 !-----------------------------------------------------------------------
-            pathdi = hlpstr(:lendum)//slash
+            pathdi = hlpstr(:lendum)//FILESEP
          endif
       endif
 end subroutine

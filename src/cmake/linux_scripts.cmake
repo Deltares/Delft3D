@@ -1,7 +1,4 @@
 # Sets the location of unix based script files
-set(update_version_script scripts_lgpl/linux/update_version.sh)
-set(postbuild_event_script scripts_lgpl/linux/cmake_postbuild.sh)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install)
 set(CMAKE_INSTALL_RPATH "$ORIGIN:$ORIGIN/../lib")
 
 # use, i.e. don't skip the full RPATH for the build tree

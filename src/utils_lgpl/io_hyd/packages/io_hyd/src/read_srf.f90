@@ -35,12 +35,12 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_srf               ! aggregation-file
+      type(t_file)                       :: file_srf               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: nosegl                 ! nosegl
@@ -64,8 +64,8 @@
          call srstop(1)
       endif
 
-      call dlwqfile_open(file_srf)
-      read(file_srf%unit_nr,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
+      call file_srf%open()
+      read(file_srf%unit,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
          call srstop(1)
@@ -76,13 +76,13 @@
          call srstop(1)
       endif
 
-      read(file_srf%unit_nr,iostat=ioerr) (surf(i),i=1,nosegl)
+      read(file_srf%unit,iostat=ioerr) (surf(i),i=1,nosegl)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
          call srstop(1)
       endif
 
-      close(file_srf%unit_nr)
+      close(file_srf%unit)
       file_srf%status = FILE_STAT_UNOPENED
 
       return
@@ -96,12 +96,12 @@
 
       use m_srstop
       use m_monsys
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_hsrf              ! aggregation-file
+      type(t_file)                       :: file_hsrf              ! aggregation-file
       integer                                :: noseg                  ! number of segments
       real                                   :: surf(noseg)            ! horizontal surfaces
 
@@ -121,14 +121,14 @@
          call srstop(1)
       endif
 
-      call dlwqfile_open(file_hsrf)
-      read(file_hsrf%unit_nr,iostat=ioerr) idum, (surf(i),i=1,noseg)
+      call file_hsrf%open()
+      read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,noseg)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading horizontal srf file'
          call srstop(1)
       endif
 
-      close(file_hsrf%unit_nr)
+      close(file_hsrf%unit)
       file_hsrf%status = FILE_STAT_UNOPENED
 
       return

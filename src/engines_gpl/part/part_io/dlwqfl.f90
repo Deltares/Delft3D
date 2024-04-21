@@ -193,10 +193,10 @@ contains
       if ( timon ) call timstop ( ithndl )
       return
 
- 2000 format (   a16          ,' unit: ',i,', reading: ',a,/            &
+ 2000 format (   a16          ,' unit: ',i4,', reading: ',a,/            &
                ' at simulation time:',i12,' !',/,                        &
                ' time in file:      ',i12,' !')
- 2010 format (   a16          ,' unit: ',i,', reading: ',a,/            &
+ 2010 format (   a16          ,' unit: ',i4,', reading: ',a,/            &
                ' at simulation time:',i5,'d ',i2,'h ',i2,'m ',i2,'s !',/ &
                ' time in file:      ',i5,'d ',i2,'h ',i2,'m ',i2,'s !')
 

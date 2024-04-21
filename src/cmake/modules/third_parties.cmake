@@ -29,7 +29,7 @@ set(FLAP_module ${third_party_open_path}/FLAP/${cmake_directory})
 # fortrangis
 set(fortrangis_module ${third_party_open_path}/fortrangis/${cmake_directory})
 set(shp_module ${third_party_open_path}/shapelib/${cmake_directory})
-set(proj_module ${third_party_open_path}/proj4/${cmake_directory})
+set(proj_module ${checkout_src_root}/third_party_open/proj)
 
 # netcdf
 set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
@@ -53,4 +53,17 @@ set(swan_mpi_module ${third_party_open_path}/swan/swan_mpi)
 set(swan_omp_module ${third_party_open_path}/swan/swan_omp)
 
 # solvesaphe
-set(solvesaphe_module ${third_party_open_path}/solveSAPHE/cmake_deltares)
+set(solvesaphe_module ${third_party_open_path}/solveSAPHE/${cmake_directory})
+
+if(WIN32)
+	#intel redist
+	set(intelredist_module ${third_party_open_path}/intelredist)
+	
+	set(Tecplot_module ${third_party_open_path}/Tecplot)
+	
+	set(GISInternals_module ${third_party_open_path}/GISInternals)
+	
+	set(pthreads_module ${third_party_open_path}/pthreads)
+		
+	set(expat_module ${third_party_open_path}/expat)
+endif(WIN32)

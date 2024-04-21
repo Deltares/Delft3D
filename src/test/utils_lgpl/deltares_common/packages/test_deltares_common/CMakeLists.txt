@@ -28,11 +28,12 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 set(build_project ${executable_name})
 
-post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${build_project} )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+if(WIN32)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+endif()
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION share)
+
+
 

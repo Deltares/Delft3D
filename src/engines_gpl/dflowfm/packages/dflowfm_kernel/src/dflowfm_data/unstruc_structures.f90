@@ -596,9 +596,11 @@ subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
       valstruct(IVAL_HEAD) = dmiss
    end if
    ! 1b. other generic variables
-   if (valstruct(IVAL_WIDTH) == 0d0) then
-      valstruct(IVAL_CRESTL)    = dmiss ! crest level
-      valstruct(IVAL_CRESTW)    = dmiss ! crest width
+   if (any(istrtypein == (/ ST_GENERAL_ST, ST_WEIR, ST_ORIFICE /))) then ! TODO: ST_GATE
+      if (valstruct(IVAL_WIDTH) == 0d0) then
+         valstruct(IVAL_CRESTL)    = dmiss ! crest level
+         valstruct(IVAL_CRESTW)    = dmiss ! crest width
+      end if
    end if
 
    if (valstruct(IVAL_WIDTHWET) == 0d0 ) then ! zero width

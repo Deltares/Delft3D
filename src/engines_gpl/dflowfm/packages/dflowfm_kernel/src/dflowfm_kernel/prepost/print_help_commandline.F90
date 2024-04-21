@@ -32,7 +32,7 @@
 
 subroutine print_help_commandline()
 use unstruc_display, only: jaGUI
-use string_module, only: get_dirsep
+use system_utils, only: FILESEP
 implicit none
    character(len=255) :: progarg
    integer            :: is, ie, n, istat
@@ -43,7 +43,7 @@ implicit none
       progarg = 'dflowfm'
    end if
 
-   is = index(progarg(1:n), get_dirsep(), .true.)
+   is = index(progarg(1:n), FILESEP, .true.)
    is = is+1
    ie = index(progarg(1:n), '.exe', .true.)
    if (ie==0) then

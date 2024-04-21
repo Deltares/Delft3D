@@ -1,6 +1,6 @@
 <testCases>
     <testCase name="e02_f029_c001_frisianinlet_schematized_2D" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -30,7 +30,7 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c002_frisianinlet_schematized_3D_s" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c002_frisianinlet_schematized_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -60,7 +60,7 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c003_frisianinlet_schematized_3D_z" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c003_frisianinlet_schematized_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -91,7 +91,7 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c010_sourcesink_2D" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c010_sourcesink_2D</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -121,7 +121,7 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c011_sourcesink_3D_s" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c011_sourcesink_3D_s</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -151,7 +151,7 @@
     </testCase>
     <!-- =================================================================== -->
     <testCase name="e02_f029_c012_sourcesink_3D_z" ref="dimr_default">
-      <path>e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
+      <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c012_sourcesink_3D_z</path>
       <programs>
         <program ref="dimr" seq="1">
             <arguments>

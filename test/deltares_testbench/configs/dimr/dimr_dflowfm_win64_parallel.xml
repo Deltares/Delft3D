@@ -57,7 +57,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>dimr/scripts/run_dimr_parallel.bat</path>
+            <path>bin/run_dimr_parallel.bat</path>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
             </environments>
@@ -69,7 +69,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dflowfm/bin/dfmoutput.exe</path>
+            <path>bin/dfmoutput.exe</path>
             <shell ref="command_prompt"/>
         </program>
         <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -79,7 +79,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>dflowfm/bin/dflowfm-cli.exe</path>
+            <path>bin/run_dflowfm.bat</path>
             <shell ref="command_prompt"/>
         </program>
     </programs>

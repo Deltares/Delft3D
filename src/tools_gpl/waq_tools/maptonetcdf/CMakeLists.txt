@@ -54,13 +54,14 @@ endif(WIN32)
 target_link_libraries(${executable_name} netcdf)
 if (WIN32)
     # Set linker properties
-    message(STATUS "Setting linker properties in windows")
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
     target_link_libraries(${executable_name}
                           "netcdf.lib")
+
+    configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
@@ -70,13 +71,5 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/maptonetcd
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-post_build_target (${executable_name}
-                   ${install_dir}
-                   ${build_dir}
-                   ${checkout_src_root}
-                   ${executable_name})
-
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
-if (UNIX)
-    install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_maptonetcdf.sh  DESTINATION bin)
-endif(UNIX)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/resources/scripts/run_maptonetcdf.${platform_extension}  DESTINATION bin)

@@ -91,6 +91,7 @@ function execute_singularity_edited {
     echo "    Executable options                        : $executable_opts"
     echo "    env PATH                 inside container : $container_PATH"
     echo "    env LD_LIBRARY_PATH      inside container : $container_LD_LIBRARY_PATH"
+    echo "    env HDF5_USE_FILE_LOCKING inside container : $HDF5_USE_FILE_LOCKING"
 
     #
     #
@@ -117,6 +118,7 @@ function execute_singularity_edited {
            singularity exec \
                --bind $modelFolder:$containerMountFolder,/usr:/host,/usr/lib64:/host/lib64 \
                --pwd $containerWorkingFolder \
+               --env HDF5_USE_FILE_LOCKING=$HDF5_USE_FILE_LOCKING \
                --env PATH=$container_PATH \
                --env LD_LIBRARY_PATH=$container_LD_LIBRARY_PATH \
                --env I_MPI_PMI_LIBRARY=/host/lib64/libpmi2.so \

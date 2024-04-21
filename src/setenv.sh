@@ -67,6 +67,19 @@ elif [[ "$1" == intel24* ]]; then
      module load patchelf/0.17.2_intel2023.1.0_standalone
      module load ninja/1.11.1_gcc12.2.0_standalone
      module load petsc/3.19.0_intel2023.1.0_standalone
+elif [ "$1" == "gnu" ]; then
+     echo "Loading GNU compiled modules"
+  
+     module load gcc/12.2.0_gcc12.2.0
+     module load openmpi/4.1.5_gcc12.2.0
+     module load cmake/3.28.1_gcc12.2.0
+     module load netcdf/4.9.2_4.6.1_gcc12.2.0
+     module load gdal/3.6.3_gcc12.2.0
+     module load proj/9.2.0_gcc12.2.0
+     module load tiff/4.5.0rc3_gcc12.2.0
+     module load patchelf/0.17.2_gcc12.2.0
+     module load ninja/1.11.1_gcc12.2.0_standalone
+     module load petsc/3.19.0_gcc12.2.0
 else 
      echo "Loading Intel23 compiled modules"
   
@@ -82,19 +95,27 @@ else
 fi
 
 echo "Export environment variables"
-if [ "$1" == "intel21" ]; then
-     export CXX=mpiicpc
-     export CC=mpiicc
+if [ "$1" == "gnu" ]; then
+     export FC=mpifort
+     export CXX=mpicxx
+     export CC=mpicc
 else
-     export CXX=mpiicpx
-     export CC=mpiicx
+     if [ "$1" == "intel21" ]; then
+          export CXX=mpiicpc
+          export CC=mpiicc
+     else 
+          export CXX=mpiicpx
+          export CC=mpiicx
+     fi
+
+     if [[ "$1" == *LLVM ]]; then
+          export FC=mpiifx
+     else
+          export FC=mpiifort
+     fi
 fi
 
-if [[ "$1" == *LLVM ]]; then
-     export FC=mpiifx
-else
-     export FC=mpiifort
-fi
 echo "FC=$FC"
 echo "CXX=$CXX"
 echo "CC=$CC"
+

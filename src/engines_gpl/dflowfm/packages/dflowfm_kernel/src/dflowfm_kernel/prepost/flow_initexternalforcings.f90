@@ -71,6 +71,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    use Timers
    use m_subsidence
  use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
+   use mass_balance_areas_routines, only : get_mbainputname
+   use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids
+   use m_lateral, only : initialize_lateraldata, apply_transport
 
    implicit none
    character(len=256)            :: filename, sourcemask
@@ -1750,7 +1753,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                nlatnd = nlatnd + nlat
 
-               jaqin = 1 ; success = .true.  ! geen gezeik, iedereen reik
+               jaqin = 1
+               success = .true.
 
             else if (jaoldstr > 0 .and. qid == 'gateloweredgelevel' ) then
 
@@ -2805,6 +2809,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    ! Copy NUMCONST to NUMCONST_MDU, before the user (optionally) adds tracers interactively
    NUMCONST_MDU = NUMCONST
+   
+   call initialize_lateraldata(numconst)
 
 end function flow_initexternalforcings
 

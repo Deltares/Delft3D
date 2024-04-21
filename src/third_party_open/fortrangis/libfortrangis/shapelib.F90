@@ -686,15 +686,8 @@ TYPE(shpfileobject),INTENT(inout) :: hshp !< shapefile object (not used)
 TYPE(shpobject),INTENT(inout),TARGET :: psobject !< shape object to be rewound
 LOGICAL :: shprewindobject
 
-INTEGER :: ier
-
-ier = shprewindobject_int(hshp%shpfile_orig, psobject%shpobject_orig, &
- C_LOC(psobject))
-IF (ier == 0) THEN
-  shprewindobject = .FALSE.
-ELSE
-  shprewindobject = .TRUE.
-ENDIF
+shprewindobject = shprewindobject_int(hshp%shpfile_orig, psobject%shpobject_orig, &
+ C_LOC(psobject)) /= 0
 
 END FUNCTION shprewindobject
 
@@ -827,7 +820,7 @@ INTEGER,INTENT(in) :: ifield !< number of field to query
 LOGICAL :: dbfisattributenull
 
 IF (.NOT.dbffileisnull(hshp)) THEN
-  dbfisattributenull = dbfisattributenull_orig(hshp%dbffile_orig, ishape, ifield) == 0
+  dbfisattributenull = dbfisattributenull_orig(hshp%dbffile_orig, ishape, ifield) /= 0
 ELSE ! force to null
   dbfisattributenull = .FALSE.
 ENDIF

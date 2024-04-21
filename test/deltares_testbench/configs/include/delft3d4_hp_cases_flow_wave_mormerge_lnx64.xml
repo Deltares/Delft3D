@@ -1,0 +1,242 @@
+				<!--
+				testCases
+				
+				Optional attributes:
+					maxRunTime: OverruleRefMaxRunTime="true" default: false
+									if false: maxRunTime in this config.xml file is     overruled by the maxRunTime of the reference run
+									if true : maxRunTime in this config.xml file is NOT overruled by the maxRunTime of the reference run
+				
+				Special replacements:
+				[output(progname)]		: Will be replaced by the output of (the last run of) program "progname"
+										  Used by esm_create (Linux)
+				[programpath(progname)] : Will be replaced by the path to the program named "progname"
+										  Used by WAQ1 to refer to the proc_def file
+				
+				Checks:
+					<file name="dat-file" type="NEFIS">
+						<parameters name="groupname">
+							<parameter name="quantity" toleranceAbsolute="real_value">
+					<file name="nc-file" type="netCDF">
+						<parameters>                                        (name not needed)
+							<parameter name="quantity" toleranceAbsolute="real_value">
+					<file name="filnam" type="ASCII"/>      (parameters/parameter not needed)
+					Optional attribute:
+						ignore="true" Don't bother when this file is in the reference dir but absent in the check dir
+				
+				-->
+
+	<testCases>
+		<testCase name="e25_f01_c03-groin4_wave" ref="flow2d3d_default">
+			<path version="2024-02-22T14:50:00">e25_d3dflow-wave-mormerge/f01_general/c03-groin4_wave</path>
+			<programs>
+				<program ref="mormerge">
+					<workingDirectory>merge</workingDirectory>
+					<arguments>
+						<argument>groin4_lnx64_hp.mm</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>185.469000101</maxRunTime>
+			<checks>
+				<file name="w00/trih-nsw.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w00/trim-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w00/wavm-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<file name="w01/trih-nsw.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w01/trim-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w01/wavm-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<file name="w02/trih-nsw.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w02/trim-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w02/wavm-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<file name="w03/trih-nsw.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w03/trim-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="w03/wavm-nsw.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<!---
+				<file name="merge/sync/w00flownsw" type="ASCII"/>
+				<file name="merge/sync/w01flownsw" type="ASCII"/>
+				<file name="merge/sync/w02flownsw" type="ASCII"/>
+				<file name="merge/sync/w03flownsw" type="ASCII"/>
+				<file name="merge/sync/mergensw" type="ASCII"/>
+				-->
+			</checks>
+		</testCase>
+		<testCase name="e25_f02_c02-bas_dd_wave" ref="flow2d3d_default">
+			<path version="2024-02-22T14:50:00">e25_d3dflow-wave-mormerge/f02_dd/c02-bas_dd_wave</path>
+			<programs>
+				<program ref="mormerge">
+					<workingDirectory>merge</workingDirectory>
+					<arguments>
+						<argument>basin_lnx64_hp.mm</argument>
+					</arguments>
+				</program>
+			</programs>
+			<maxRunTime>188.497999907</maxRunTime>
+			<checks>
+				<file name="0deg/trih-det.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="0deg/trim-det.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="0deg/trih-ove.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="0deg/trim-ove.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="0deg/wavm-bas.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<file name="45deg/trih-det.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="45deg/trim-det.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="45deg/trih-ove.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="45deg/trim-ove.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+						<parameter name="R1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="45deg/wavm-bas.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="DIR" toleranceAbsolute="400.0"/>
+						<parameter name="HSIGN" toleranceAbsolute="0.01"/>
+						<parameter name="PERIOD" toleranceAbsolute="0.1"/>
+					</parameters>
+				</file>
+				<!--- Sometimes, output appears in another sync file (!)
+				<file name="merge/sync/0degflowdet" type="ASCII"/>
+				<file name="merge/sync/0degflowove" type="ASCII"/>
+				<file name="merge/sync/45degflowdet" type="ASCII"/>
+				<file name="merge/sync/45degflowove" type="ASCII"/>
+				<file name="merge/sync/mergedet" type="ASCII"/>
+				<file name="merge/sync/mergeove" type="ASCII"/>
+				-->
+			</checks>
+		</testCase>
+	</testCases>

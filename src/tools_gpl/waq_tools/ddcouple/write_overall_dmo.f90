@@ -27,13 +27,13 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamic description
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
       use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
-      type(t_hyd)          :: hyd              ! description of the overall hydrodynamics
-      type(t_hyd_coll)     :: domain_hyd_coll  ! description of the overall hydrodynamics
+      type(t_hydrodynamics)          :: hyd              ! description of the overall hydrodynamics
+      type(t_hydrodynamics_collection)     :: domain_hyd_coll  ! description of the overall hydrodynamics
       integer              :: lunrep           ! LU-number report file
       logical              :: success
 
@@ -77,7 +77,7 @@
       success = .false.
       opened  = .false.
 
-      do i = 1,hyd%domain_coll%cursize
+      do i = 1,hyd%domain_coll%current_size
           dmoname = trim(hyd%domain_coll%domain_pnts(i)%name) // ".dmo"
 
           if ( i > 1 ) then

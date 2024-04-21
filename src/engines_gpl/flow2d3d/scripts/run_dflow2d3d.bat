@@ -13,7 +13,7 @@ title run_flow2d3d
 setlocal enabledelayedexpansion
 
 set flowConfigFile=config_d_hydro.xml
-set debugLevel=-1
+set debugLevel=0
 set forceExit=0
 set goToUsage=0
 set minDFound=0
@@ -44,20 +44,14 @@ if not exist %flowConfigFile% (
     goto USAGE
 )
 
-
-set workdir=%CD%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%scriptDir%..\..\..
-
-rem Remove "\dflow2d3d\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-27%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set dflow2d3ddir=%D3D_HOME%\%ARCH%\dflow2d3d\bin
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
+set D3D_HOME=%scriptDir%..
+set workdir=%CD%
+set dflow2d3ddir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
 
 
 if  %debugLevel% EQU 0 (
@@ -78,7 +72,7 @@ if  %debugLevel% EQU 0 (
     rem
 
     rem Start FLOW
-set PATH=%dflow2d3ddir%;%sharedir%
+set PATH=%dflow2d3ddir%;%sharedir%;%libdir%
 echo executing: "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 "%dflow2d3ddir%\d_hydro.exe" %flowConfigFile%
 

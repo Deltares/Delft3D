@@ -42,7 +42,8 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
     use precision
     use icecover_module, only: icecover_type, alloc_icecover, select_icecover_model, &
         & ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER, FRICT_AS_DRAG_COEFF, &
-        & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, ICE_WINDDRAG_LINEAR
+        & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, &
+        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS
     use MessageHandling, only: mess, LEVEL_ERROR
     use properties
     !
@@ -98,15 +99,17 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
     call str_lower(tmp,len(tmp))
     select case (tmp)
     case ('none',' ')
-       model =  ICE_WINDDRAG_NONE
+       model = ICE_WINDDRAG_NONE
     case ('linear')
-       model =  ICE_WINDDRAG_LINEAR
-    case ('cubic')
-       model =  ICE_WINDDRAG_CUBIC
+       model = ICE_WINDDRAG_LINEAR
+    case ('cubic','icecube')
+       model = ICE_WINDDRAG_CUBIC
     case ('lupkes_birnbaum')
-       model =  ICE_WINDDRAG_LB05
+       model = ICE_WINDDRAG_LB05
     case ('andreas')
-       model =  ICE_WINDDRAG_AN10
+       model = ICE_WINDDRAG_AN10
+    case ('raysice')
+       model = ICE_WINDDRAG_RAYS
     case default
        call mess(LEVEL_ERROR, 'invalid wind drag option "'//trim(tmp)//'"')
        error = .true.
@@ -154,7 +157,8 @@ function echo_icecover(icecover, lundia) result (error)
     use precision
     use icecover_module, only: icecover_type, alloc_icecover, &
         & ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER, FRICT_AS_DRAG_COEFF, &
-        & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, ICE_WINDDRAG_LINEAR
+        & ICE_WINDDRAG_NONE, ICE_WINDDRAG_CUBIC, ICE_WINDDRAG_LB05, ICE_WINDDRAG_AN10, &
+        & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS
     use MessageHandling, only: mess, LEVEL_ERROR
     !
     implicit none
@@ -230,10 +234,12 @@ function echo_icecover(icecover, lundia) result (error)
         txtput2 = 'No'
     case (ICE_WINDDRAG_CUBIC)
         txtput2 = 'Cubic (Chapman & Massey)'
+    case (ICE_WINDDRAG_RAYS)
+        txtput2 = 'RaysIce (Chapman et al.)'
     case (ICE_WINDDRAG_LB05)
         txtput2 = 'Lupes & Birnbaum (2005)'
     case (ICE_WINDDRAG_AN10)
-        txtput2 = 'Andreas et al (2010)'
+        txtput2 = 'Andreas et al. (2010)'
     case (ICE_WINDDRAG_LINEAR)
         txtput2 = 'No drag below ice'
     end select
