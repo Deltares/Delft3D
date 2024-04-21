@@ -56,6 +56,7 @@ integer, parameter, public :: ICE_WINDDRAG_RAYS    = 5 !< Based on ADCIRC (Chapm
 !
 ! public routines
 !
+public freezing_temperature
 public null_icecover
 public select_icecover_model
 public late_activation_ext_force_icecover
@@ -110,6 +111,21 @@ type icecover_type
 end type icecover_type
 
 contains
+
+!> Compute the freezing temperature based on NEMO (2022), Fofonoff and Millard (1983)
+pure function freezing_temperature(salinity) result (t_freeze)
+    real(fp), intent(in) :: salinity            !< salinity (ppt)
+    real(fp)             :: t_freeze            !< freezing temperature of water (degC)
+
+    real(fp), parameter  :: a = -0.0575_fp      !< coefficient a of freezing point formula
+    real(fp), parameter  :: b =  1.710523e-3_fp !< coefficient b of freezing point formula
+    real(fp), parameter  :: c = -2.154996e-4_fp !< coefficient c of freezing point formula
+
+    ! d = -7.53d-3
+    ! P = 0
+    ! fp = (a + b*sqrt(S) + c*S)*S + d*P
+    t_freeze = ( a + b*sqrt(salinity) + c*salinity )*salinity
+end function freezing_temperature
 
 !> Nullify/initialize an icecover data structure.
 function null_icecover(icecover) result(istat)
