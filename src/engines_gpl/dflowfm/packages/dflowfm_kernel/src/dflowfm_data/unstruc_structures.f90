@@ -203,73 +203,53 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  double precision, allocatable, target :: geomYWeir(:)         !< [m] y coordinates of weirs.
  double precision, allocatable, target :: geomXWeirInput(:)    !< [m] x coordinates of weirs.
  double precision, allocatable, target :: geomYWeirInput(:)    !< [m] y coordinates of weirs.
- !> Whether or not the model has any weirs that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_weirs_across_partitions = .false. 
  ! general structure
  integer                               :: nNodesGenstru        !< [-] Total number of nodes for all general structures
  integer,          allocatable, target :: nodeCountGenstru(:)  !< [-] Count of nodes per general structure.
  double precision, allocatable, target :: geomXGenstru(:)      !< [m] x coordinates of general structures.
  double precision, allocatable, target :: geomYGenstru(:)      !< [m] y coordinates of general structures.
- !> Whether or not the model has any general structures that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_general_structures_across_partitions = .false. 
  ! orifice
  integer                               :: nNodesOrif           !< [-] Total number of nodes for all orifices
  integer,          allocatable, target :: nodeCountOrif(:)     !< [-] Count of nodes per orifice.
  double precision, allocatable, target :: geomXOrif(:)         !< [m] x coordinates of orifices.
  double precision, allocatable, target :: geomYOrif(:)         !< [m] y coordinates of orifices.
- !> Whether or not the model has any orifices that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_orifices_across_partitions = .false. 
  ! universal weir
  integer                               :: nNodesUniweir        !< [-] Total number of nodes for all universal weirs
  integer,          allocatable, target :: nodeCountUniweir(:)  !< [-] Count of nodes per universal weir.
  double precision, allocatable, target :: geomXUniweir(:)      !< [m] x coordinates of universal weirs.
  double precision, allocatable, target :: geomYUniweir(:)      !< [m] y coordinates of universal weirs.
- !> Whether or not the model has any universal weirs that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_universal_weirs_across_partitions = .false. 
  ! culvert
  integer                               :: nNodesCulv           !< [-] Total number of nodes for all culverts
  integer,          allocatable, target :: nodeCountCulv(:)     !< [-] Count of nodes per culvert.
  double precision, allocatable, target :: geomXCulv(:)         !< [m] x coordinates of culverts.
  double precision, allocatable, target :: geomYCulv(:)         !< [m] y coordinates of culverts.
- !> Whether or not the model has any culverts that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_culverts_across_partitions = .false. 
  ! pump
  integer                               :: nNodesPump           !< [-] Total number of nodes for all pumps
  integer,          allocatable, target :: nodeCountPump(:)     !< [-] Count of nodes per pump.
  double precision, allocatable, target :: geomXPump(:)         !< [m] x coordinates of pumps.
  double precision, allocatable, target :: geomYPump(:)         !< [m] y coordinates of pumps.
- !> Whether or not the model has any pumps that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_pumps_across_partitions = .false. 
  ! bridge
  integer                               :: nNodesBridge         !< [-] Total number of nodes for all bridges
  integer,          allocatable, target :: nodeCountBridge(:)   !< [-] Count of nodes per bridge.
  double precision, allocatable, target :: geomXBridge(:)       !< [m] x coordinates of bridges.
  double precision, allocatable, target :: geomYBridge(:)       !< [m] y coordinates of bridges.
- !> Whether or not the model has any bridges that lie across multiple partitions
- !! (needed to disable possibly invalid statistical output items)
- !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_bridges_across_partitions = .false. 
  ! long culvert
  integer                               :: nNodesLongCulv       !< [-] Total number of nodes for all long culverts
  integer,          allocatable, target :: nodeCountLongCulv(:) !< [-] Count of nodes per long culverts.
  double precision, allocatable, target :: geomXLongCulv(:)     !< [m] x coordinates of long culverts.
  double precision, allocatable, target :: geomYLongCulv(:)     !< [m] y coordinates of long culverts.
- !> Whether or not the model has any long culverts that lie across multiple partitions
+ 
+ !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
- logical, protected                    :: model_has_long_culverts_across_partitions = .false. 
+ logical, protected :: model_has_weirs_across_partitions              = .false.
+ logical, protected :: model_has_general_structures_across_partitions = .false.
+ logical, protected :: model_has_orifices_across_partitions           = .false.
+ logical, protected :: model_has_universal_weirs_across_partitions    = .false.
+ logical, protected :: model_has_culverts_across_partitions           = .false.
+ logical, protected :: model_has_pumps_across_partitions              = .false.
+ logical, protected :: model_has_bridges_across_partitions            = .false. 
+ logical, protected :: model_has_long_culverts_across_partitions      = .false.
  
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
