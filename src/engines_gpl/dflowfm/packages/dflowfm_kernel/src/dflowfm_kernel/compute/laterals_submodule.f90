@@ -39,21 +39,33 @@ implicit none
 
    !> Reset the counters for lateral data.
    module subroutine reset_lateral()
-      numlatsg = 0           !< [] nr of lateral discharge providers
+         numlatsg = 0           !< [] nr of lateral discharge providers
       nlatnd   = 0           !< lateral nodes dimension, counter of nnlat(:)
    end subroutine reset_lateral
 
    !> allocate the arrays for laterals on 3d/BMI
-   module subroutine alloc_lateraldata(numconst)
+   module subroutine initialize_lateraldata(numconst)
    
       use m_alloc
    
       integer, intent(in) :: numconst        !< number of constitiuents
       
+      integer :: i
+
+      apply_transport_is_used = .false.
+      if (allocated(apply_transport)) then
+         do i = 1, numlatsg
+            if (apply_transport(i)==1) then
+               apply_transport_is_used = .true.
+               ! No need to look further
+               exit
+            end if
+         end do
+      end if
       call realloc(incoming_lat_concentration, (/1, numconst, numlatsg/))
       call realloc(outgoing_lat_concentration, (/1, numconst, numlatsg/))
 
-   end subroutine alloc_lateraldata
+   end subroutine initialize_lateraldata
 
    !> deallocate the arrays for laterals on 3d/BMI
    module subroutine dealloc_lateraldata()
@@ -92,7 +104,7 @@ implicit none
                      k = kt
                   endif
                   outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
-                                                                 dt * bottom_area(k) * constituents(iconst, k)/balat(ilat)
+                                                                 dt * bottom_area(n) * constituents(iconst, k)/balat(ilat)
                endif
             enddo
          enddo

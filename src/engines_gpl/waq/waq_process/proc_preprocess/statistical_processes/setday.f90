@@ -71,7 +71,7 @@
 !
       INTEGER(kind=int_wp) ::LUNREP, NOKEY , IPROC , item_ind
       LOGICAL       is_date_format , is_yyddhh_format
-      CHARACTER*20  KEYNAM(NOKEY), KEYVAL(NOKEY)
+      character(len=20)  KEYNAM(NOKEY), KEYVAL(NOKEY)
       type(ProcesProp)      :: aProcesProp         ! output statistical proces definition
       type(ItemPropColl)    :: AllItems            ! all items of the proces system
 
@@ -82,8 +82,8 @@
       INTEGER(kind=int_wp) ::IERR_ALLOC, IKEY  , ISLEN     , IERR2 , IRET
       integer(kind=int_wp) ::istart , iperiod
       INTEGER(kind=int_wp),      ALLOCATABLE  ::ISUSED(:)
-      CHARACTER*20  SUFFIX  , NAME, item_name
-      CHARACTER*50  item_desc
+      character(len=20)  SUFFIX  , NAME, item_name
+      character(len=50)  item_desc
       REAL(kind=real_wp) ::PERIOD, default_value
       type(ItemProp)        :: aItemProp            ! one item
       integer(kind=int_wp) ::ithndl = 0

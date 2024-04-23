@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xmlns:xi="http://www.w3.org/2001/XInclude"
-		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+		xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
 				<!--
 				Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
 				Basic Windows configuration file: tb3_cfg_win64_hp.xml
@@ -187,7 +187,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/mormerge</path>
+			<path>bin/run_mormerge.sh</path>
 		</program>
 		<program name="RTC" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -204,7 +204,7 @@
 			<environments>
 				<environment name="D3D_HOME" type="path">..\.</environment>
 			</environments>
-			-->
+		-->
 		</program>
 		<program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<shell ref="command_prompt"/>
@@ -289,5 +289,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_nearfield_cases.xml"/>
+	<xi:include href="../include/delft3d4_hp_cases_flow_coup.xml"/>
 </deltaresTestbench_v3>

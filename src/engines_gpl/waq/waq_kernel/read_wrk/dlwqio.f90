@@ -85,11 +85,11 @@ contains
         INTEGER(kind = int_wp) :: LUNWRO, LUREP, NOUTP, NRVART, NBUFMX, NOSYS, &
                 IERR, NOTOT
         INTEGER(kind = int_wp) :: IOUTPS(7, *), IOPOIN(*), LUN(*)
-        CHARACTER*(*) LCH, LCHAR(*)
-        CHARACTER*20  OUNAM(*)
-        CHARACTER*100 OUSNM(*), SYSNM(*)
-        CHARACTER*40  OUUNI(*), SYUNI(*)
-        CHARACTER*60  OUDSC(*), SYDSC(*)
+        character(len=*) LCH, LCHAR(*)
+        character(len=20)  OUNAM(*)
+        character(len=100) OUSNM(*), SYSNM(*)
+        character(len=40)  OUUNI(*), SYUNI(*)
+        character(len=60)  OUDSC(*), SYDSC(*)
         !
         !     Local declarations
         !

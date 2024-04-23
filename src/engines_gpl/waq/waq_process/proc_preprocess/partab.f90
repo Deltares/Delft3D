@@ -49,11 +49,11 @@ contains
         !                 Procesdef is sorted to contain all processes in optimal
         !                 calling order, the inactive processes at the end.
         !                 Proref(nrref,nproc) contains the reference information
-        !                 for the active processes only, so nproc < procesdef%cursize
+        !                 for the active processes only, so nproc < procesdef%current_size
 
         !     Modified  :
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use ProcesSet
         use timers       !   performance timers
         use m_error_status
@@ -68,7 +68,7 @@ contains
         integer(kind = int_wp), intent(in) :: notot           ! number of substances
         character(20), intent(in) :: syname(notot)   ! substance names
         integer(kind = int_wp), intent(in) :: nocons          ! number of constants
-        type(t_dlwq_item), intent(inout) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         integer(kind = int_wp), intent(in) :: nopa            ! number of parameters
         character(20), intent(in) :: paname(nopa)    ! parameter names
         integer(kind = int_wp), intent(in) :: nofun           ! number of functions
@@ -86,7 +86,7 @@ contains
 
         !     Local declarations
 
-        integer(kind = int_wp) :: noproc          ! nr of processes ( = ProcesDef%cursize )
+        integer(kind = int_wp) :: noproc          ! nr of processes ( = ProcesDef%current_size )
         integer(kind = int_wp) :: iproc1, iproc2  ! process loop counters
         type(ProcesProp), pointer :: proc1           ! the process with sequence nr iproc1
         type(ProcesProp), pointer :: proc2           ! the process with sequence nr iproc2
@@ -111,7 +111,7 @@ contains
 
         !         initial allocations
 
-        noproc = ProcesDef%cursize
+        noproc = ProcesDef%current_size
         allocate (prorder(noproc), profreq(noproc))
         allocate (work   (noproc), needed (noproc))
         allocate (cProces(noproc))
@@ -367,7 +367,7 @@ contains
             &                          paname, nofun, funame, nosfun, sfname, &
             &                          valnam, input)
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
 
         character(20), intent(in) :: valnam
         character(20), intent(in) :: input
@@ -375,7 +375,7 @@ contains
         integer(kind = int_wp), intent(in) :: notot           ! number of substances
         character(20), intent(in) :: syname(notot)   ! substance names
         integer(kind = int_wp), intent(in) :: nocons          ! number of constants
-        type(t_dlwq_item), intent(inout) :: constants       ! delwaq constants list
+        type(t_waq_item), intent(inout) :: constants       ! delwaq constants list
         integer(kind = int_wp), intent(in) :: nopa            ! number of parameters
         character(20), intent(in) :: paname(nopa)    ! parameter names
         integer(kind = int_wp), intent(in) :: nofun           ! number of functions

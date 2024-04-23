@@ -53,7 +53,7 @@ contains
         integer(kind = int_wp), intent(in) :: iopt1           !< Input option
         integer(kind = int_wp), intent(inout) :: lun  (*)        !< DELWAQ Unit number array
         integer(kind = int_wp), intent(in) :: is              !< entry in LUN for item
-        character*(*), intent(inout) :: lchar(*)       !< IN/OUT  Filenames
+        character(len=*), intent(inout) :: lchar(*)       !< IN/OUT  Filenames
         logical, intent(in) :: is_date_format         !< 'date'-format 1st time scale
         logical, intent(in) :: is_yyddhh_format         !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: nitem           !< nr of input items expected
@@ -339,11 +339,11 @@ contains
         integer(kind = int_wp) :: idate, itime, itim, itim2, istep, idtf, lunut
         integer(kind = int_wp) :: numbr
 
-        character*25  sget, s1
-        character*255 afile, bfile
+        character(len=25)  sget, s1
+        character(len=255) afile, bfile
 
         real(kind = dp) :: reftim, starttim, stoptim, afact
-        character*255 filpath
+        character(len=255) filpath
         integer(kind = int_wp) :: pathlen
 
         ! open the ascii .hyd file
@@ -767,10 +767,10 @@ contains
 
             ! new style for boundaries and wastes
             if (bound .or. funcs) &
-                    write (lun(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                    write (lun(is)) 1, nvarnw, (abs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
                             nvals, (k, k = 1, nvals), iopt3, 1
             if (waste) &
-                    write (lun(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                    write (lun(is)) 1, nvarnw, (abs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
                             nval1, (k, k = 0, nval1 - 1), iopt3, 1
             if (bound .or. waste .or. funcs) &
                     ifilsz = ifilsz + 5 + nvarnw + nvals
@@ -848,7 +848,7 @@ contains
         do i1 = 1, nitem
             found = .false.
             do i2 = 1, nitem
-                if (iabs(itemid(i2)) == i1) then
+                if (abs(itemid(i2)) == i1) then
                     if (found) then
                         write (lunut, 2070) i1
                         ierr = ierr + 1
@@ -1214,7 +1214,7 @@ contains
                 enddo
             enddo
             call convert_time_format (iperio(2), nhar, ifact, dtflg, is_yyddhh_format)
-            value(1, 1) = float(nhar)
+            value(1, 1) = real(nhar)
 
         case (4)        !      read values if IOPT = 4 ( fourier function )
 
@@ -1228,7 +1228,7 @@ contains
                 enddo
             enddo
             call convert_relative_time (ibase, ifact, dtflg, is_yyddhh_format)
-            value(1, 1) = float(nhar)
+            value(1, 1) = real(nhar)
             do i = 2, nhar + 1
                 iperio(i) = ibase / (i - 1)
             enddo
@@ -1446,7 +1446,7 @@ contains
         ! read the item numbers
         do i = 1, npnt
             if (gettoken(ipnt(i), ierr2) > 0) goto 10
-            ipnt(i) = iabs (ipnt(i))
+            ipnt(i) = abs(ipnt(i))
             if (ipnt(i) > nmax) then
                 write (lunut, 2000) ipnt(i), nmax
                 ierr = ierr + 1

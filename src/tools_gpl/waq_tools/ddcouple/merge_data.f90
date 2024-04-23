@@ -29,14 +29,14 @@
 
       use m_srstop
       use m_monsys
-      use dlwq_hyd_data             ! module contains everything for the data
+      use m_waq_data_structure             ! module contains everything for the data
       
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqdata)      , intent(inout)  :: data_1                 ! first block of data
-      type(t_dlwqdata)      , intent(inout)  :: data_2                 ! second block of data
+      type(t_data_block)      , intent(inout)  :: data_1                 ! first block of data
+      type(t_data_block)      , intent(inout)  :: data_2                 ! second block of data
 
       ! local declarations
 
@@ -47,33 +47,33 @@
       integer                                :: nobrkt                 ! number of breakpoints in merged data
       integer                                :: iloc                   ! index location
       integer                                :: lunrep                 ! unit number report file
-      type(t_dlwqdata)                       :: data_tmp               ! temporary block of data with merged data
+      type(t_data_block)                       :: data_tmp               ! temporary block of data with merged data
       integer                                :: ierr_alloc             ! error indication
 
       call getmlu(lunrep)
 
       ! nothing to add then return
 
-      if ( data_2%no_loc .eq. 0 ) then
+      if ( data_2%num_locations .eq. 0 ) then
          return
       endif
 
       ! if nothing in original then just copy
 
-      if ( data_1%no_loc .eq. 0 ) then
+      if ( data_1%num_locations .eq. 0 ) then
 
-         data_1%no_loc   = data_2%no_loc
-         data_1%no_param = data_2%no_param
-         data_1%no_brk   = data_2%no_brk
-         data_1%functype = data_2%functype
-         allocate(data_1%times(data_1%no_brk), &
-                  data_1%values(data_1%no_param,data_1%no_loc,data_1%no_brk), &
+         data_1%num_locations   = data_2%num_locations
+         data_1%num_parameters = data_2%num_parameters
+         data_1%num_breakpoints   = data_2%num_breakpoints
+         data_1%function_type = data_2%function_type
+         allocate(data_1%times(data_1%num_breakpoints), &
+                  data_1%values(data_1%num_parameters,data_1%num_locations,data_1%num_breakpoints), &
                   stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) then
             write(lunrep,*) ' error allocating data arrays'
-            write(lunrep,*) ' number of parameters :',data_1%no_param
-            write(lunrep,*) ' number of brakpoints :',data_1%no_brk
-            write(lunrep,*) ' number of locations  :',data_1%no_loc
+            write(lunrep,*) ' number of parameters :',data_1%num_parameters
+            write(lunrep,*) ' number of brakpoints :',data_1%num_breakpoints
+            write(lunrep,*) ' number of locations  :',data_1%num_locations
             call srstop(1)
          endif
          data_1%times  = data_2%times
@@ -83,12 +83,12 @@
 
          ! for the moment assume parameters equal and 1
 
-         if ( data_1%no_param .gt. 1 .or. data_2%no_param .gt. 1 ) then
+         if ( data_1%num_parameters .gt. 1 .or. data_2%num_parameters .gt. 1 ) then
             write(*,*) 'merge for paramters not yet implemented'
          endif
 
-         data_tmp%no_loc   = data_1%no_loc + data_2%no_loc
-         data_tmp%no_param = data_1%no_param
+         data_tmp%num_locations   = data_1%num_locations + data_2%num_locations
+         data_tmp%num_parameters = data_1%num_parameters
 
          ! count number of breakpoints,  loop till we have passed all breakpoints
 
@@ -96,12 +96,12 @@
          ibrk2  = 0
          nobrkt = 0
          do
-            if ( ibrk1 .eq. data_1%no_brk ) then
-               nobrkt = nobrkt + data_2%no_brk - ibrk2
+            if ( ibrk1 .eq. data_1%num_breakpoints ) then
+               nobrkt = nobrkt + data_2%num_breakpoints - ibrk2
                exit
             endif
-            if ( ibrk2 .eq. data_2%no_brk ) then
-               nobrkt = nobrkt + data_1%no_brk - ibrk1
+            if ( ibrk2 .eq. data_2%num_breakpoints ) then
+               nobrkt = nobrkt + data_1%num_breakpoints - ibrk1
                exit
             endif
             nobrkt = nobrkt + 1
@@ -114,15 +114,15 @@
                ibrk2 = ibrk2 + 1
             endif
          enddo
-         data_tmp%no_brk   = nobrkt
-         allocate(data_tmp%times(data_tmp%no_brk), &
-                  data_tmp%values(data_tmp%no_param,data_tmp%no_loc,data_tmp%no_brk), &
+         data_tmp%num_breakpoints   = nobrkt
+         allocate(data_tmp%times(data_tmp%num_breakpoints), &
+                  data_tmp%values(data_tmp%num_parameters,data_tmp%num_locations,data_tmp%num_breakpoints), &
                   stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) then
             write(lunrep,*) ' error allocating data arrays'
-            write(lunrep,*) ' number of parameters :',data_tmp%no_param
-            write(lunrep,*) ' number of brakpoints :',data_tmp%no_brk
-            write(lunrep,*) ' number of locations  :',data_tmp%no_loc
+            write(lunrep,*) ' number of parameters :',data_tmp%num_parameters
+            write(lunrep,*) ' number of brakpoints :',data_tmp%num_breakpoints
+            write(lunrep,*) ' number of locations  :',data_tmp%num_locations
             call srstop(1)
          endif
 
@@ -132,31 +132,31 @@
          ibrk2  = 0
          ibrkt  = 0
          do
-            if ( ibrk1 .eq. data_1%no_brk ) then
-               if ( ibrk2 .lt. data_2%no_brk ) then
-                  do i = ibrk2 + 1 , data_2%no_brk
+            if ( ibrk1 .eq. data_1%num_breakpoints ) then
+               if ( ibrk2 .lt. data_2%num_breakpoints ) then
+                  do i = ibrk2 + 1 , data_2%num_breakpoints
                      ibrkt = ibrkt + 1
                      data_tmp%times(ibrkt) = data_2%times(i)
-                     do iloc = 1 , data_1%no_loc
+                     do iloc = 1 , data_1%num_locations
                         data_tmp%values(1,iloc,ibrkt) = data_1%values(1,iloc,ibrk1)
                      enddo
-                     do iloc = 1 , data_2%no_loc
-                        data_tmp%values(1,data_1%no_loc+iloc,ibrkt) = data_2%values(1,iloc,i)
+                     do iloc = 1 , data_2%num_locations
+                        data_tmp%values(1,data_1%num_locations+iloc,ibrkt) = data_2%values(1,iloc,i)
                      enddo
                   enddo
                endif
                exit
             endif
-            if ( ibrk2 .eq. data_2%no_brk ) then
-               if ( ibrk1 .lt. data_1%no_brk ) then
-                  do i = ibrk1 + 1 , data_1%no_brk
+            if ( ibrk2 .eq. data_2%num_breakpoints ) then
+               if ( ibrk1 .lt. data_1%num_breakpoints ) then
+                  do i = ibrk1 + 1 , data_1%num_breakpoints
                      ibrkt = ibrkt + 1
                      data_tmp%times(ibrkt) = data_1%times(i)
-                     do iloc = 1 , data_1%no_loc
+                     do iloc = 1 , data_1%num_locations
                         data_tmp%values(1,iloc,ibrkt) = data_1%values(1,iloc,i)
                      enddo
-                     do iloc = 1 , data_2%no_loc
-                        data_tmp%values(1,data_1%no_loc+iloc,ibrkt) = data_2%values(1,iloc,ibrk2)
+                     do iloc = 1 , data_2%num_locations
+                        data_tmp%values(1,data_1%num_locations+iloc,ibrkt) = data_2%values(1,iloc,ibrk2)
                      enddo
                   enddo
                endif
@@ -173,18 +173,18 @@
                ibrk2 = ibrk2 + 1
                data_tmp%times(ibrkt) = data_2%times(ibrk2)
             endif
-            do iloc = 1 , data_1%no_loc
+            do iloc = 1 , data_1%num_locations
                data_tmp%values(1,iloc,ibrkt) = data_1%values(1,iloc,max(1,ibrk1))
             enddo
-            do iloc = 1 , data_2%no_loc
-               data_tmp%values(1,data_1%no_loc+iloc,ibrkt) = data_2%values(1,iloc,max(1,ibrk2))
+            do iloc = 1 , data_2%num_locations
+               data_tmp%values(1,data_1%num_locations+iloc,ibrkt) = data_2%values(1,iloc,max(1,ibrk2))
             enddo
          enddo
 
          ! move the temporary stuff to data_1
-         data_1%no_loc   = data_tmp%no_loc
-         data_1%no_param = data_tmp%no_param
-         data_1%no_brk   = data_tmp%no_brk
+         data_1%num_locations   = data_tmp%num_locations
+         data_1%num_parameters = data_tmp%num_parameters
+         data_1%num_breakpoints   = data_tmp%num_breakpoints
          deallocate(data_1%times,data_1%values)
          data_1%times    => data_tmp%times
          data_1%values   => data_tmp%values

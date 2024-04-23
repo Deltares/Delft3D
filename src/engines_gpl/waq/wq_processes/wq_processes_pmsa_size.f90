@@ -51,7 +51,7 @@ contains
         type(memory_partition) :: part      ! Private variables for make_pointer
         integer(kind = int_wp) :: i_rar                              ! loop counter
         integer(kind = int_wp) :: nr_rar                             ! number of real arrays
-        character*20    namarr                            ! help variable for array name
+        character(len=20)    namarr                            ! help variable for array name
         integer(kind = int_wp) :: iartyp                             ! help variable for array type
         integer(kind = int_wp) :: iarlen                             ! help variable for array length
         integer(kind = int_wp) :: ip                                 ! help variable for array pointer

@@ -8,6 +8,7 @@ from typing import DefaultDict, Iterator, List
 
 from minio import Minio
 from minio.datatypes import Object as MinioObject
+from src.utils.logging.i_logger import ILogger
 
 # Large objects should be uploaded to MinIO with a *multipart upload*. This affects not only the
 # performance of uploads, but also the computation of the `ETag` used to check data integrity.
@@ -21,8 +22,13 @@ DEFAULT_MULTIPART_UPLOAD_PART_SIZE = 100 * 1024 * 1024  # Bytes
 class Rewinder:
     """Implements the rewind feature of the Minio server."""
 
-    def __init__(self, client: Minio, timestamp: str, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE):
+    def __init__(self,
+                 client: Minio,
+                 logger: ILogger,
+                 timestamp: str,
+                 part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE):
         self.client = client
+        self.logger = logger
         self.rewind = self.__parse_timestamp(timestamp)
         self._multipart_upload_part_size = part_size
 
@@ -50,7 +56,7 @@ class Rewinder:
 
         # Check if downloads is empty
         if not downloads:
-            print(f"No downloads found in bucket {bucket} at {source_path}")
+            self.logger.error(f"No downloads found in bucket {bucket} at {source_path}")
             return
 
         self.__ensure_destination_directory(destination_directory)
@@ -94,7 +100,7 @@ class Rewinder:
         # Check if the destination directory exists and is not empty
         if os.path.exists(destination_directory):
             if len(os.listdir(destination_directory)) > 0:
-                print(f"Destination directory '{destination_directory}' is not empty.")
+                self.logger.warning(f"Destination directory '{destination_directory}' is not empty.")
         else:
             # Directory doesn't exist, so create it
             os.makedirs(destination_directory, exist_ok=True)
@@ -123,11 +129,11 @@ class Rewinder:
         self, bucket: str, object_info: MinioObject, destination_file_path: str, object_path: str
     ) -> None:
         if os.path.exists(destination_file_path) and object_info.etag == self.__etag(destination_file_path):
-            print(f"Skipping download: {destination_file_path}, it already exists.")
+            self.logger.warning(f"Skipping download: {destination_file_path}, it already exists.")
             return
 
         try:
-            print(f"Downloading: {destination_file_path}")
+            self.logger.debug(f"Downloading: {destination_file_path}")
             self.client.fget_object(
                 bucket,
                 object_path,
@@ -135,7 +141,7 @@ class Rewinder:
                 version_id=object_info.version_id,
             )
         except Exception as exception:
-            print(f"Exception: {exception}.")
+            self.logger.error(f"Exception: {exception}.", exc_info=True)
 
     def __etag(self, path: str) -> str:
         """Compute the `ETag` of the contents of a file.

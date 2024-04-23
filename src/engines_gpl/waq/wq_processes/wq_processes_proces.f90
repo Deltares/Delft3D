@@ -191,7 +191,7 @@ contains
                 ipp_dts = nodef - 2 * nproc + ipbloo
                 ipp_delt = nodef - nproc + ipbloo
                 defaul(ipp_dts) = dts
-                defaul(ipp_delt) = dts / float(itfact)
+                defaul(ipp_delt) = dts / real(itfact)
 
                 call onepro_wqp (ipbloo, ioffbl, prvnio, prvtyp, prvvar, vararr, &
                         varidx, arrknd, arrpoi, arrdm1, arrdm2, &
@@ -265,7 +265,7 @@ contains
                     ipp_delt = nodef - nproc + iproc
                     dtspro = prondt(iproc) * dts
                     defaul(ipp_dts) = dtspro
-                    defaul(ipp_delt) = dtspro / float(itfact)
+                    defaul(ipp_delt) = dtspro / real(itfact)
 
                     call onepro_wqp (iproc, prvpnt(iproc), prvnio, prvtyp, prvvar, vararr, &
                             varidx, arrknd, arrpoi, arrdm1, arrdm2, &
@@ -350,7 +350,7 @@ contains
                 iflux (:), promnr(:), &
                 iexpnt(:), iknmrk(:)
         real                a(:), flux(*)
-        character*10        pronam(*)
+        character(len=10)        pronam(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
         !
         !     Local

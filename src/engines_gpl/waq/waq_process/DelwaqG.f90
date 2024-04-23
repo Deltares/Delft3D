@@ -553,7 +553,7 @@ contains
       integer(kind=int_wp),parameter  ::is_SUP = 33
       integer(kind=int_wp),parameter  ::is_VIVP = 34
 
-      character*255 errorstring
+      character(len=255) errorstring
       integer(kind=int_wp)  ::item, iflux, iseg, itel, noseg2d, iatt1, iatt2, ilay, isys, iseg2d, ip, ifl
       real(kind=real_wp)                  ::mass3d, sedwatflx, cwater, totmas
       integer(kind=int_wp), allocatable ::bottomsegments(:)
@@ -2088,7 +2088,7 @@ contains
               ! export solute fluxes
               if (dissub .and. iatt1 == 1 ) then
                   !             g/m3                   / m                   * m2/d  / m  = g/m3/d, positive TOWARDS water column
-                  sedwatflx = -(cwater*poros-sngl(bv(1)))/(diflen/2.+dl(1)/2.) * td(1) / depth
+                  sedwatflx = -(cwater*poros-real(bv(1)))/(diflen/2.+dl(1)/2.) * td(1) / depth
                   iflux = isys
                   fl(iflux+(iseg-1)*noflux) = sedwatflx
               endif

@@ -116,7 +116,7 @@ contains
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use variable_declaration                         ! Global memory with allocatable GMRES arrays
         use delwaq2_data
@@ -128,6 +128,7 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
+        use omp_lib
 
         implicit none
 
@@ -140,8 +141,6 @@ contains
         integer(kind = int_wp) :: action     !< handle to stepwise call
         type(delwaq_data), target :: dlwqd      !< data structure stepwize call
         type(GridPointerColl) :: GridPs     !< collection of all grid definitions
-
-        !$    include "omp_lib.h"
 
         ! local declarations
 
@@ -400,7 +399,7 @@ contains
             ! zero cumulative arrays
             if (imflag .or. (ihflag .and. noraai > 0)) then
                 call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), a(iflxd:), &
+                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif

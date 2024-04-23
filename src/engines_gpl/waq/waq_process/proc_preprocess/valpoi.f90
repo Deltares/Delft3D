@@ -34,7 +34,7 @@ contains
             VALNAM, IVALIP, LINE)
         !     FUNCTION            : sets pointers for process parametrs
 
-        use dlwq_hyd_data
+        use m_waq_data_structure
         use timers       !   performance timers
 
         INTEGER(kind = int_wp), intent(in) :: NOTOT   !< Total number of substances
@@ -52,7 +52,7 @@ contains
         CHARACTER(len = *), intent(in) :: FUNAME(NOFUN)  !< Function names
         CHARACTER(len = *), intent(in) :: SFNAME(NOSFUN) !< Segment function names
 
-        type(t_dlwq_item), intent(in) :: constants       !< delwaq constants list
+        type(t_waq_item), intent(in) :: constants       !< delwaq constants list
         !
         !     Local
         !
@@ -140,7 +140,7 @@ contains
         !
         !     as constant ?
         !
-        ico = dlwq_find(constants, valnam)
+        ico = constants%find(valnam)
         if (ico > 0) then
             write(line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
             ivalip = nopred + ico

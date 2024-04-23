@@ -44,7 +44,7 @@ contains
         integer(kind = int_wp), intent(in) :: nrvar (noutp)         !< No of output vars per file
         integer(kind = int_wp), intent(in) :: nrvarm                 !< Maximum of output variables p.p.
         integer(kind = int_wp), intent(out) :: nmis                   !< Number of missing input vars
-        character*(*), intent(in) :: dlwnam(nrvarm, noutp)  !< Name of input variables
+        character(len=*), intent(in) :: dlwnam(nrvarm, noutp)  !< Name of input variables
         integer(kind = int_wp), intent(out) :: iopoin(nrvarm, noutp)   !< Number of missing input vars
         integer(kind = int_wp), intent(in) :: notot                  !< Total number of substances
         integer(kind = int_wp), intent(in) :: nopa                   !< Number of parameters

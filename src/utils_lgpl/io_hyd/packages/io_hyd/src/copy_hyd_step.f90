@@ -33,13 +33,13 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)         :: input_hyd     ! the input hydrodynamics
-      type(t_hyd)         :: output_hyd    ! the output hydrodynamics
+      type(t_hydrodynamics)         :: input_hyd     ! the input hydrodynamics
+      type(t_hydrodynamics)         :: output_hyd    ! the output hydrodynamics
 
       ! local declarations
 

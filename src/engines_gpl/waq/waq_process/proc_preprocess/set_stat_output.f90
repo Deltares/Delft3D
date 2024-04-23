@@ -81,13 +81,13 @@ contains
 
         ! merge the statistical output with the normal output
 
-        normal_output%cursize = 0
+        normal_output%current_size = 0
         normal_output%maxsize = 0
-        stat_output%cursize = 0
+        stat_output%current_size = 0
         stat_output%maxsize = 0
 
-        if (statprocesdef%cursize > 0) then
-            do istat = 1, statprocesdef%cursize
+        if (statprocesdef%current_size > 0) then
+            do istat = 1, statprocesdef%current_size
                 do iioitem = 1, statprocesdef%procesprops(istat)%no_output
                     if (statprocesdef%procesprops(istat)%output_item(iioitem)%type == iotype_segment_output) then
                         aarrayprop%name = statprocesdef%procesprops(istat)%output_item(iioitem)%name
@@ -106,9 +106,9 @@ contains
                 if (ioutps(5, ioutp) == imo3 .or. ioutps(5, ioutp) == imo4 .or. &
                         ioutps(5, ioutp) == ihi3 .or. ioutps(5, ioutp) == ihi4 .or. &
                         ioutps(5, ioutp) == ihn3 .or. ioutps(5, ioutp) == ihn4) then
-                    nrvarx = normal_output%cursize * 2
+                    nrvarx = normal_output%current_size * 2
                 else
-                    nrvarx = normal_output%cursize
+                    nrvarx = normal_output%current_size
                 endif
 
                 ! add statistical vars to normal output
@@ -125,7 +125,7 @@ contains
                     nrvart = nrvart + nrvarx
                 endif
             enddo
-            nrvart = nrvart + stat_output%cursize * 3
+            nrvart = nrvart + stat_output%current_size * 3
 
             allocate(iopoi3(nrvart))
             allocate(ounam3(nrvart))
@@ -172,8 +172,8 @@ contains
                         ioutps(5, ioutp) == ihn3 .or. ioutps(5, ioutp) == ihn4 .or. &
                         ioutps(5, ioutp) == imap .or. ioutps(5, ioutp) == ima2 .or. &
                         ioutps(5, ioutp) == imnf .or. ioutps(5, ioutp) == imn2) then
-                    ioutps(4, ioutp) = ioutps(4, ioutp) + normal_output%cursize
-                    do iout = 1, normal_output%cursize
+                    ioutps(4, ioutp) = ioutps(4, ioutp) + normal_output%current_size
+                    do iout = 1, normal_output%current_size
                         iout3 = iout3 + 1
                         ounam3(iout3) = normal_output%arrayprops(iout)%name
                         iopoi3(iout3) = -1
@@ -194,8 +194,8 @@ contains
                 if (ioutps(5, ioutp) == imo3 .or. ioutps(5, ioutp) == imo4 .or. &
                         ioutps(5, ioutp) == ihi3 .or. ioutps(5, ioutp) == ihi4 .or. &
                         ioutps(5, ioutp) == ihn3 .or. ioutps(5, ioutp) == ihn4) then
-                    ioutps(4, ioutp) = ioutps(4, ioutp) + normal_output%cursize
-                    do iout = 1, normal_output%cursize
+                    ioutps(4, ioutp) = ioutps(4, ioutp) + normal_output%current_size
+                    do iout = 1, normal_output%current_size
                         iout3 = iout3 + 1
                         ounam3(iout3) = 'volume'
                         iopoi3(iout3) = -1
@@ -205,19 +205,19 @@ contains
 
             ! the output files for statistical output defined on periods (8 = a map file, 9 = a mon file)
 
-            ioutps(4, 8) = stat_output%cursize
-            do iout = 1, stat_output%cursize
+            ioutps(4, 8) = stat_output%current_size
+            do iout = 1, stat_output%current_size
                 iout3 = iout3 + 1
                 ounam3(iout3) = stat_output%arrayprops(iout)%name
                 iopoi3(iout3) = -1
             enddo
-            ioutps(4, 9) = stat_output%cursize * 2
-            do iout = 1, stat_output%cursize
+            ioutps(4, 9) = stat_output%current_size * 2
+            do iout = 1, stat_output%current_size
                 iout3 = iout3 + 1
                 ounam3(iout3) = stat_output%arrayprops(iout)%name
                 iopoi3(iout3) = -1
             enddo
-            do iout = 1, stat_output%cursize
+            do iout = 1, stat_output%current_size
                 iout3 = iout3 + 1
                 ounam3(iout3) = 'volume'
                 iopoi3(iout3) = -1
@@ -228,7 +228,7 @@ contains
             deallocate(Outputs%names, Outputs%pointers, Outputs%std_var_name, Outputs%units, Outputs%description, STAT = ierr)
             allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart), &
                     Outputs%units(nrvart), Outputs%description(nrvart), STAT = ierr)
-            outputs%cursize = nrvart
+            outputs%current_size = nrvart
             outputs%pointers(1:nrvart) = iopoi3(1:nrvart)
             outputs%names(1:nrvart) = ounam3(1:nrvart)
 

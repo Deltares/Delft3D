@@ -84,7 +84,7 @@ contains
 
         ! loop over the processes
 
-        nproc = procesdef%cursize
+        nproc = procesdef%current_size
         proc_loop : do iproc = 1, nproc
 
             proc => procesdef%procesprops(iproc)

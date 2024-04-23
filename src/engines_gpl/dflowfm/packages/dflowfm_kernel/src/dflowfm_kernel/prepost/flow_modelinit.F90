@@ -82,7 +82,7 @@
  use system_utils, only: makedir
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
- use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals
+ use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used
  use m_cell_geometry, only : ba
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -502,7 +502,7 @@
  endif
  call timstop(handle_extra(33)) ! end Fourier init
 
- if (numconst > 0) then
+ if (numconst > 0.and. apply_transport_is_used) then
     call reset_outgoing_lat_concentration()
     call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
  endif

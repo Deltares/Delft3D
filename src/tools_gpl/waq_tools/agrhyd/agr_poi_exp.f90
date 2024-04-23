@@ -29,15 +29,15 @@
 
       ! global declarations
 
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
       integer              :: ipnt(*)                              ! aggregation pointer
       integer              :: ipnt_b(*)                            ! aggregation pointer boundaries
-      type(t_hyd)          :: input_hyd                            ! description of the input hydrodynamics
-      type(t_hyd)          :: output_hyd                           ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd                            ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd                           ! description of the output hydrodynamics
       integer              :: ipnt_q(*)                            ! new exchange pointer
 
       ! local declarations

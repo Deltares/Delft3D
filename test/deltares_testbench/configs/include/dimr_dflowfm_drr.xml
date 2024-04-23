@@ -103,7 +103,7 @@
             </checks>
         </testCase>
         <testCase name="e112_f01_c05_pipes_and_manholes" ref="dimr_trunk">
-            <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
+            <path version="2024-04-10T13:09:00">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FM_model/FM_model_his.nc" type="NETCDF">
                     <parameters>

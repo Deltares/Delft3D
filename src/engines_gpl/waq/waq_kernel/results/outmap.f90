@@ -53,7 +53,7 @@ contains
         !     kind           function         name                    description
 
         integer(kind = int_wp), intent(in) :: iomap                ! unit number output file
-        character*(*), intent(in) :: namfim               ! name output file
+        character(len=*), intent(in) :: namfim               ! name output file
         integer(kind = int_wp), intent(in) :: itime                ! present time in clock units
         character(40), intent(in) :: moname(4)            ! model identification
         integer(kind = int_wp), intent(in) :: noseg                ! number of computational volumes

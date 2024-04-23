@@ -13425,6 +13425,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
           endif
           call realloc(tmp_squ, ndx-ndxi, stat=ierr, keepExisting=.false.)
           call realloc(tmp_sqi, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucxq, ndx-ndxi, stat=ierr, keepExisting=.false.)
+          call realloc(tmp_ucyq, ndx-ndxi, stat=ierr, keepExisting=.false.)
           ierr = get_var_and_shift(imapfile, 's0_bnd', tmp_s0, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 's0_bnd')

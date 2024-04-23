@@ -37,7 +37,7 @@ contains
         use m_lsame
         !          .. Scalar Arguments ..
         INTEGER(kind = int_wp) :: INCX, LDA, N
-        CHARACTER*1        DIAG, TRANS, UPLO
+        character(len=1)        DIAG, TRANS, UPLO
         !          .. Array Arguments ..
         REAL(kind = dp) :: A(LDA, *), X(*)
         !          ..
@@ -58,7 +58,7 @@ contains
         !       Parameters
         !       ==========
         !
-        !       UPLO   - CHARACTER*1.
+        !       UPLO   - character(len=1).
         !                On entry, UPLO specifies whether the matrix is an upper or
         !                lower triangular matrix as follows:
         !
@@ -68,7 +68,7 @@ contains
         !
         !                Unchanged on exit.
         !
-        !       TRANS  - CHARACTER*1.
+        !       TRANS  - character(len=1).
         !                On entry, TRANS specifies the equations to be solved as
         !                follows:
         !
@@ -80,7 +80,7 @@ contains
         !
         !                Unchanged on exit.
         !
-        !       DIAG   - CHARACTER*1.
+        !       DIAG   - character(len=1).
         !                On entry, DIAG specifies whether or not A is unit
         !                triangular as follows:
         !

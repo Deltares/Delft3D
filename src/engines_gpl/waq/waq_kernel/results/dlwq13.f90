@@ -60,10 +60,10 @@ contains
         use timers
 
         real(kind = real_wp) :: CONC  (NOTOT, NOSEG)
-        CHARACTER*20  SNAME (*)
-        CHARACTER*40  MNAME (*)
-        CHARACTER*(*) LCHAR (*)
-        CHARACTER*255 LCHARMAP
+        character(len=20)  SNAME (*)
+        character(len=40)  MNAME (*)
+        character(len=*) LCHAR (*)
+        character(len=255) LCHARMAP
         integer(kind = int_wp) :: lun(*)
 
         integer(kind = int_wp) :: i, j, k, itime

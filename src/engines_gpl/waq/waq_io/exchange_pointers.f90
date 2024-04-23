@@ -55,7 +55,7 @@ contains
         !!          lunut   = unit formatted output file
         !!           lun( 8) = unit intermediate file ('to-from')
 
-        use dlwqgrid_mod        !   for the storage of contraction grids
+        use m_grid_utils_external        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
 
@@ -235,7 +235,7 @@ contains
         !           lun( 8) = unit intermediate file ('to-from')
 
         use m_open_waq_files
-        use dlwqgrid_mod          ! for the storage of contraction grids
+        use m_grid_utils_external          ! for the storage of contraction grids
         use rd_token       ! for the reading of tokens
         use timers       !   performance timers
 
@@ -397,7 +397,7 @@ contains
         !!          LUN( 2) = unit intermediate file (system)
 
         use timers       !   performance timers
-        use dlwqgrid_mod ! for the storage of contraction grids
+        use m_grid_utils_external ! for the storage of contraction grids
         use m_sysn          ! System characteristics
 
         integer(kind = int_wp), intent(in) :: lun   (*)         !< array with unit numbers
@@ -658,7 +658,7 @@ contains
         !!     Logical units      : lun(29) = unit formatted output file
         !!                          lun( 2) = unit unformatted system file
 
-        use dlwqgrid_mod        !   for the storage of contraction grids
+        use m_grid_utils_external        !   for the storage of contraction grids
         use timers       !   performance timers
 
         integer(kind = int_wp), intent(in) :: lun   (*)          !< array with unit numbers
@@ -709,7 +709,7 @@ contains
         do iq = 1, noqt
             ip1 = ipoint(1, iq)
             ip2 = ipoint(2, iq)
-            if (ip1 > 0 .and. ip2 > 0) jtrack = max(jtrack, iabs(ip1 - ip2))
+            if (ip1 > 0 .and. ip2 > 0) jtrack = max(jtrack, abs(ip1 - ip2))
         enddo
         if (intsrt == 6 .or. intsrt == 7 .or. intsrt == 10) then
             write (lunut, 2020) jtrack

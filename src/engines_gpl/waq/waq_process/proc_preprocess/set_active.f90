@@ -47,13 +47,13 @@ contains
         use m_srstop
         use m_monsys
         use timers         !< performance timers
-        use dlwq_hyd_data      !< data definitions
+        use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
         implicit none
 
         ! arguments
 
-        type(t_dlwq_item), intent(inout) :: constants              !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants              !< delwaq constants list
         integer(kind = int_wp), intent(in) :: no_act_max             !< number of activated processes max
         integer(kind = int_wp), intent(inout) :: no_act                 !< number of activated processes
         character(len = *), intent(inout) :: actlst(*)              !< list of activated processes

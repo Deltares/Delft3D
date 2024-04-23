@@ -177,7 +177,7 @@
             <maxRunTime>90.0</maxRunTime> <!-- seconds -->
         </testCase>
 		<testCase name="e02_f150_c20_groesbeek_NN_T1" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T1</path>
+            <path version="2024-04-19T13:00:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T1</path>
             <checks>
                 <file name="DFM_OUTPUT_33_FlowFM_nonlin1/33_FlowFM_nonlin1_map.nc" type="netCDF">
                     <parameters>
@@ -194,7 +194,7 @@
             </checks>
         </testCase>
 		<testCase name="e02_f150_c20_groesbeek_NN_T2" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T2</path>
+            <path version="2024-04-19T13:00:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T2</path>
             <checks>
                 <file name="DFM_OUTPUT_33_FlowFM_nonlin2/33_FlowFM_nonlin2_map.nc" type="netCDF">
                     <parameters>
@@ -211,7 +211,7 @@
             </checks>
         </testCase>
 		<testCase name="e02_f150_c20_groesbeek_NN_T3" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T3</path>
+            <path version="2024-04-19T13:00:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T3</path>
             <checks>
                 <file name="DFM_OUTPUT_33_FlowFM_nonlin3/33_FlowFM_nonlin3_map.nc" type="netCDF">
                     <parameters>

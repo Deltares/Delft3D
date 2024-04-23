@@ -46,7 +46,7 @@ use m_stop_exit
 
       use m_waq_precision       ! flexible size definition
       use typos           ! the derived types
-      use hydmod
+      use m_hydmod
       use timers          ! performance timers
 
       implicit none
@@ -58,7 +58,7 @@ use m_stop_exit
       integer  ( int_wp ), intent(in   ) :: nfiles            !< nr. of files
       integer  ( int_wp ), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
-      type(t_hyd)   , intent(in   ) :: hyd               !< description of the hydrodynamics
+      type(t_hydrodynamics)   , intent(in   ) :: hyd               !< description of the hydrodynamics
       integer  ( int_wp ), intent(  out) :: nolay             !< number of hydrodynamic layers
       logical       , intent(in   ) :: zmodel            !< layer type
       integer  ( int_wp ), intent(  out) :: ihdel             !< hydrodynamic time step (s)

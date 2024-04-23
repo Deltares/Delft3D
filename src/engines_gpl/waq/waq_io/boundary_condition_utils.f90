@@ -656,7 +656,7 @@ contains
         ! local declarations
         dimension     loc(3)
         real(kind = dp) :: afact, a1, a2, d_beg, d_end, dummy
-        character*3   cdummy
+        character(len=3)   cdummy
         integer(kind = int_wp) :: num_dims              !! number of concentrations
         integer(kind = int_wp) :: input_order, ioffa, ioffb, ioffc, ioffd, nscle, file_unit
         integer(kind = int_wp) :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3

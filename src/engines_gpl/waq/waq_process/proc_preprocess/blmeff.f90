@@ -39,8 +39,8 @@ contains
         integer(kind = int_wp) :: lunrep, lunblm
         real(kind = real_wp) :: verspe
         integer(kind = int_wp) :: lunfrm, nuecog, noalg
-        character*10  grname(nuecog)
-        character*10  typnam(noalg)
+        character(len=10)  grname(nuecog)
+        character(len=10)  typnam(noalg)
 
         !
         integer(kind = int_wp), parameter :: maxlin = 1000
@@ -49,10 +49,10 @@ contains
         integer(kind = int_wp), parameter :: maxnz = 51
         integer(kind = int_wp) :: ifnd (maxspe)
         real(kind = dp) :: power(51), effic(51, maxspe), fun(51, maxspe), der(51, maxspe), zvec(51), daymul(24, maxspe), dl(24)
-        character*8 spnam2 (maxspe)
+        character(len=8) spnam2 (maxspe)
         integer(kind = int_wp) :: numtyp, i, j, nfnd, npoint, nz
         real(kind = real_wp) :: tefcur
-        character*1000 line
+        character(len=1000) line
         integer(kind = int_wp) :: ithndl = 0
 
         if (timon) call timstrt("blmeff", ithndl)

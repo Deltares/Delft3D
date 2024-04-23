@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xmlns:xi="http://www.w3.org/2001/XInclude"
-		xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
 				<!--
 				Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
 				Basic Windows configuration file: tb3_cfg_win64_hp.xml
@@ -144,32 +144,14 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<!-- parallel: <shell ref="mpi"/> -->
-			<path>bin/run_dflow2d3d.sh</path>
-		<!--
-			<environments>
-				<environment name="D3D_HOME" type="path">..\.</environment>
-				<environment name="ARCH" type="raw">lnx64</environment>
-			</environments>
-		-->
-		</program>
-		<program name="FLOW2D3D_FLOW2D3D" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
-			<location ref="dsctestbench-references_bin" type="reference">
-				<from>delft3d_open_source/lnx64</from>
-			</location>
-			<location ref="local" type="check">
-				<from>teamcity_artifacts/lnx64</from>
-			</location>
-			<path>bin/run_dflow2d3d_fluidmud.sh</path>
-		</program>
-		<program name="FLOW2D3D_RTC" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
-			<location ref="dsctestbench-references_bin" type="reference">
-				<from>delft3d_open_source/lnx64</from>
-			</location>
-			<location ref="local" type="check">
-				<from>teamcity_artifacts/lnx64</from>
-			</location>
-			<path>bin/run_dflow2d3d_rtc.sh</path>
+			<path>bin/run_dflow2d3d_parallel.sh</path>
+			<arguments>
+				<argument>2</argument>
+			</arguments>
+			<modules>
+				<module>intel/21.2.0</module>
+				<module>intelmpi/21.2.0</module>
+			</modules>
 		</program>
 		<program name="FLOW2D3D_WAVE" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -178,7 +160,14 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/run_dflow2d3d_dwaves.sh</path>
+			<path>bin/run_dflow2d3d_parallel_dwaves.sh</path>
+			<arguments>
+				<argument>2</argument>
+			</arguments>
+			<modules>
+				<module>intel/21.2.0</module>
+				<module>intelmpi/21.2.0</module>
+			</modules>
 		</program>
 		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -187,7 +176,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/lnx64</from>
 			</location>
-			<path>bin/run_mormerge.sh</path>
+			<path>bin/mormerge</path>
 		</program>
 		<program name="RTC" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
 			<location ref="dsctestbench-references_bin" type="reference">
@@ -289,5 +278,5 @@
 	<!--
 	testCases
 	-->
-	<xi:include href="../include/delft3d4_hp_cases_lnx64.xml"/>
+	<xi:include href="../include/delft3d4_hp_cases_flow_parallel_wave.xml"/>
 </deltaresTestbench_v3>

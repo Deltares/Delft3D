@@ -59,7 +59,7 @@ contains
 
         implicit none
 
-        character*8 :: cdate
+        character(len=8) :: cdate
         integer(kind = int_wp) :: nonun(mt)
         integer(kind = int_wp) :: i, id, iseg, k, nset, numun
         integer(kind = int_wp) :: swblsa, infeas

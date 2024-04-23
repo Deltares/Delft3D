@@ -137,6 +137,7 @@ echo "Executable                                : $executable"
 echo "Executable options                        : $executable_opts"
 echo "env PATH                 inside container : $container_PATH"
 echo "env LD_LIBRARY_PATH      inside container : $container_LD_LIBRARY_PATH"
+echo "env HDF5_USE_FILE_LOCKING inside container: $HDF5_USE_FILE_LOCKING"
 echo
 echo "Executing singularity exec $container_bindir/$executable $executable_opts"
 
@@ -154,6 +155,7 @@ singularity exec \
                  --bind $model_folder:$mountdir,$MPI_DIR:$MPI_DIR,/usr/:/host,/usr/lib64/:/host/lib64 \
                  --pwd $container_working_dir \
                  --no-home \
+                 --env HDF5_USE_FILE_LOCKING=$HDF5_USE_FILE_LOCKING \
                  --env PATH=$container_PATH \
                  --env LD_LIBRARY_PATH=$container_LD_LIBRARY_PATH \
                  $container_file_path $container_bindir/$executable $executable_opts

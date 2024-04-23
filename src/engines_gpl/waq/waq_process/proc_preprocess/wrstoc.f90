@@ -87,7 +87,7 @@ contains
         ! calculate noflx
 
         noflx = 0
-        nproctot = procesdef%cursize
+        nproctot = procesdef%current_size
         do iproc = 1, nproctot
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
@@ -148,8 +148,8 @@ contains
 
         ! set variables for output balance file new style
 
-        nrvarm = outputs%cursize * 2
-        outputl%cursize = nrvarm
+        nrvarm = outputs%current_size * 2
+        outputl%current_size = nrvarm
         allocate(outputl%names(nrvarm))
         allocate(outputl%std_var_name(nrvarm))
         allocate(outputl%pointers(nrvarm))
@@ -163,10 +163,10 @@ contains
                 nobalt = 0
                 do isys = 1, notot
                     if (nrvarn + nobalt + 4 > nrvarm) then
-                        outputl%cursize = (nrvarn + nobalt + 4) * 2
-                        call resize_integer_array(outputl%pointers, outputl%cursize, nrvarm)
-                        call resize_character_array(outputl%names, outputl%cursize, nrvarm)
-                        nrvarm = outputl%cursize
+                        outputl%current_size = (nrvarn + nobalt + 4) * 2
+                        call resize_integer_array(outputl%pointers, outputl%current_size, nrvarm)
+                        call resize_character_array(outputl%names, outputl%current_size, nrvarm)
+                        nrvarm = outputl%current_size
                     endif
                     outputl%names(nrvarn + nobalt + 1)(1:10) = syname(isys)
                     outputl%names(nrvarn + nobalt + 1)(11:20) = 'Loads in'
@@ -191,10 +191,10 @@ contains
                                 if (abs(scale) > 1.e-10) then
                                     nobalt = nobalt + 1
                                     if (nrvarn + nobalt > nrvarm) then
-                                        outputl%cursize = (nrvarn + nobalt) * 2
-                                        call resize_integer_array(outputl%pointers, outputl%cursize, nrvarm)
-                                        call resize_character_array(outputl%names, outputl%cursize, nrvarm)
-                                        nrvarm = outputl%cursize
+                                        outputl%current_size = (nrvarn + nobalt) * 2
+                                        call resize_integer_array(outputl%pointers, outputl%current_size, nrvarm)
+                                        call resize_character_array(outputl%names, outputl%current_size, nrvarm)
+                                        nrvarm = outputl%current_size
                                     endif
                                     outputl%names(nrvarn + nobalt)(1:10) = syname(isys)
                                     outputl%names(nrvarn + nobalt)(11:20) = proc%fluxoutput(iflx)%name
@@ -217,10 +217,10 @@ contains
             elseif (isrtou == iba3) then
 
                 if (nrvarn + noflx > nrvarm) then
-                    outputl%cursize = (nrvarn + noflx) * 2
-                    call resize_integer_array(outputl%pointers, outputl%cursize, nrvarm)
-                    call resize_character_array(outputl%names, outputl%cursize, nrvarm)
-                    nrvarm = outputl%cursize
+                    outputl%current_size = (nrvarn + noflx) * 2
+                    call resize_integer_array(outputl%pointers, outputl%current_size, nrvarm)
+                    call resize_character_array(outputl%names, outputl%current_size, nrvarm)
+                    nrvarm = outputl%current_size
                 endif
 
                 iflux = 0
@@ -244,10 +244,10 @@ contains
             else
                 nrvar = ioutps(4, ioutp)
                 if (nrvarn + nrvar > nrvarm) then
-                    outputl%cursize = (nrvarn + nrvar) * 2
-                    call resize_integer_array(outputl%pointers, outputl%cursize, nrvarm)
-                    call resize_character_array(outputl%names, outputl%cursize, nrvarm)
-                    nrvarm = outputl%cursize
+                    outputl%current_size = (nrvarn + nrvar) * 2
+                    call resize_integer_array(outputl%pointers, outputl%current_size, nrvarm)
+                    call resize_character_array(outputl%names, outputl%current_size, nrvarm)
+                    nrvarm = outputl%current_size
                 endif
                 do ivar = 1, nrvar
                     outputl%names(nrvarn + ivar) = outputs%names(nrvaro + ivar)
@@ -270,7 +270,7 @@ contains
         allocate(outputs%pointers(nrvarn))
         allocate(outputs%units(nrvarn))
         allocate(outputs%description(nrvarn))
-        outputs%cursize = nrvarn
+        outputs%current_size = nrvarn
         outputs%names(1:nrvarn) = outputl%names(1:nrvarn)
         outputs%std_var_name(1:nrvarn) = ' ' ! outputl%std_var_name(1:nrvarn)
         outputs%units(1:nrvarn) = ' ' ! outputl%units(1:nrvarn)

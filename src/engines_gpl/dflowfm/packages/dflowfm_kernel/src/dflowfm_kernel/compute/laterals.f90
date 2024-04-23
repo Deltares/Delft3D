@@ -32,7 +32,7 @@ module m_lateral
    
       public reset_lateral
       public default_lateral
-      public alloc_lateraldata
+      public initialize_lateraldata
       public dealloc_lateraldata
       public average_concentrations_for_laterals
       public reset_outgoing_lat_concentration 
@@ -74,7 +74,7 @@ module m_lateral
       double precision, allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration   !< Average concentration per lateral discharge location.
       double precision, allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration   !< Concentration of the inflowing water at the lateral discharge location.
       integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Flag to apply transport for laterals (0 means only water and no substances are transported).
-   
+      logical, public :: apply_transport_is_used
       !> Reset the defaults for laterals
       interface default_lateral
          module subroutine default_lateral()
@@ -88,11 +88,11 @@ module m_lateral
       end interface reset_lateral
    
       !> allocate the arrays for laterals on 3d/BMI
-      interface alloc_lateraldata
-         module subroutine alloc_lateraldata(numconst)
+      interface initialize_lateraldata
+         module subroutine initialize_lateraldata(numconst)
             integer, intent(in) :: numconst        !< number of constitiuents
-         end subroutine alloc_lateraldata
-      end interface alloc_lateraldata
+         end subroutine initialize_lateraldata
+      end interface initialize_lateraldata
    
       !> deallocate the arrays for laterals on 3d/BMI
       interface dealloc_lateraldata

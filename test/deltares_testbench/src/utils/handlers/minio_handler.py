@@ -71,7 +71,7 @@ class MinIOHandler(IHandler):
             version = datetime.now(timezone.utc).isoformat().split("+")[0]
 
         # Prepare the rewind-settings
-        rewinder = Rewinder(my_client, version)
+        rewinder = Rewinder(my_client, logger, version)
 
         # Download the objects
         minio_path = s3_path.replace('/./', '/')

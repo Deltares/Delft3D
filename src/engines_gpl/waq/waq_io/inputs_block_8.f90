@@ -68,8 +68,8 @@ contains
         use error_handling, only : check_error
         use m_srstop
         use m_open_waq_files
-        use dlwqgrid_mod   ! for the storage of contraction grids
-        use dlwq_hyd_data  ! for definition and storage of data
+        use m_grid_utils_external   ! for the storage of contraction grids
+        use m_waq_data_structure  ! for definition and storage of data
         use rd_token
         use timers         ! performance timers
         use string_module  ! string manipulation tools
@@ -82,7 +82,7 @@ contains
         character       (20), intent(in) :: syname(notot)  !< names of the substances
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
         integer(kind = int_wp), intent(in) :: output_verbose_level         !< option for extent of output
-        type(inputfilestack), intent(inout) :: inpfil         !< input file strucure with include stack and flags
+        type(t_input_file), intent(inout) :: inpfil         !< input file structure with include stack and flags
         type(gridpointercoll), intent(in) :: gridps         !< collection off all grid definitions
 
         type(error_status), intent(inout) :: status !< current error status

@@ -41,7 +41,7 @@ contains
         use m_string_manipulation, only : upper_case
         use m_string_manipulation, only : get_trimmed_length
         use timers         !< performance timers
-        use dlwq_hyd_data      !< data definitions
+        use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
         implicit none
 
@@ -53,13 +53,13 @@ contains
         character(len = *), intent(in) :: namprot(noprot)   !< name proto processes
         character(len = *), intent(in) :: nampact(noprot)   !< name actual processes
         character(len = *), intent(in) :: nampralg(noprot)  !< name proto processes per algae type
-        type(t_dlwq_item), intent(inout) :: constants         !< delwaq constants list
+        type(t_waq_item), intent(inout) :: constants         !< delwaq constants list
 
         ! local decalaration
 
-        character*10 :: name1
-        character*20 :: name20
-        character*80 :: line
+        character(len=10) :: name1
+        character(len=20) :: name20
+        character(len=80) :: line
         integer(kind = int_wp) :: nocons
         integer(kind = int_wp) :: nocon2
         integer(kind = int_wp) :: ico
@@ -99,7 +99,7 @@ contains
                                 constants%name(ico)(8:) = name1
                             else
                                 nocon2 = nocon2 + 1
-                                ierr2 = dlwq_resize(constants, nocon2)
+                                ierr2 = constants%resize(nocon2)
                                 if (ierr2 > 0) then
                                     write(line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
                                     call monsys(line, 1)

@@ -92,7 +92,7 @@ contains
         use m_delmat
         use m_array_manipulation, only : initialize_real_array
         use data_processing, only : close_files
-        use dlwqgrid_mod
+        use m_grid_utils_external
         use timers
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
@@ -111,7 +111,7 @@ contains
         !
         type(waq_data_buffer), target :: buffer      !< System total array space
         INTEGER(kind = int_wp), DIMENSION(*) :: LUN
-        CHARACTER*(*), DIMENSION(*) :: LCHAR
+        character(len=*), DIMENSION(*) :: LCHAR
         INTEGER(kind = int_wp) :: ACTION
         TYPE(DELWAQ_DATA) :: DLWQD
         type(GridPointerColl) :: GridPs               ! collection off all grid definitions

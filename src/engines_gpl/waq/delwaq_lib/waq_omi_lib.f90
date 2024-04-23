@@ -1598,7 +1598,7 @@ contains
 
         implicit none
 
-        type(t_dlwq_item) :: constants    !< delwaq constants list
+        type(t_waq_item) :: constants    !< delwaq constants list
         integer(kind = int_wp) :: lunrep, lunwrk
         integer(kind = int_wp) :: ierr
 
@@ -1642,8 +1642,8 @@ contains
         npoins = noseg + 3 + ((noq1 + noq2 + noq3) + 3) * 2 ! memory related to volumes, areas, flows?
 
         ! fill the constants structure for use in dlwqp1
-        ierr = dlwq_init(constants)
-        ierr = dlwq_resize(constants, nocons)
+        ierr = constants%initialize()
+        ierr = constants%resize(nocons)
         constants%no_item = nocons
         constants%name(1:nocons) = procparam_const(1:nocons)
         constants%constant(1:nocons) = procparam_const_value(1:nocons)
@@ -1741,7 +1741,7 @@ contains
         !     Write the second DELWAQ system intermediate file
         !
         subroutine write_delwaq04(name)
-            use dlwqgrid_mod
+            use m_grid_utils_external
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
 
@@ -1757,7 +1757,7 @@ contains
             integer(kind = int_wp) :: error
             integer(kind = int_wp) :: lunwrk
 
-            type(GridPointer) :: aGrid
+            type(t_grid) :: aGrid
 
             title(1) = 'Wrapper for DELWAQ-DLL'
             title(2) = '                      '
@@ -1798,7 +1798,7 @@ contains
                 agrid%finalpointer(iseg) = iseg
             end do
 
-            error = GridWrite(10, aGrid)
+            error = aGrid%write(10)
 
             !
             ! Now the rest ...
@@ -1975,9 +1975,9 @@ contains
             type(error_status) :: status
 
             StatProcesDef%maxsize = 0
-            StatProcesDef%cursize = 0
+            StatProcesDef%current_size = 0
             AllItems%maxsize = 0
-            AllItems%cursize = 0
+            AllItems%current_size = 0
 
             org_noutp = noutp
 
@@ -2058,7 +2058,7 @@ contains
             if (nopa > 0) then
                 i = i + 1
             end if
-            write (lun) i ! proc_pars%cursize
+            write (lun) i ! proc_pars%current_size
             if (nocons > 0) then
                 write (lun) 10       ! subject SUBJECT_CONSTANT
                 write (lun) nocons   ! no_param

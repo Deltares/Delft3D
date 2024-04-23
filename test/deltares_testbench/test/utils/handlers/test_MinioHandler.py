@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 from src.utils.handlers.handler_factory import HandlerFactory
 from src.utils.minio_rewinder import Rewinder
+from src.utils.logging.i_logger import ILogger
 
 
 class TestMinioHandler:
@@ -33,6 +34,7 @@ class TestMinioHandler:
         )
 
         minio_instance.list_objects.return_value = [{"key": "path_to_object"}]
+        logger = mocker.Mock(spec=ILogger)
         version = "2023.10.20T09:00"
 
         # Act
@@ -40,7 +42,7 @@ class TestMinioHandler:
             from_path,
             "test/data",
             programs=[],
-            logger=mocker.Mock(),
+            logger=logger,
             credentials=mocker.Mock(username="user", password="pass"),
             version=version,
         )
@@ -48,7 +50,7 @@ class TestMinioHandler:
         # Assert
         expected_dest_path = os.path.join("test", "data")
         minio_patch.assert_called_once_with(expected_host_name, access_key="user", secret_key="pass")
-        rewinder_patch.assert_called_once_with(minio_instance, version)
+        rewinder_patch.assert_called_once_with(minio_instance, logger, version)
         rewinder_instance.download.assert_called_once_with(
             expected_bucket_name,
             expected_src_path,
@@ -102,6 +104,7 @@ class TestMinioHandler:
         )
 
         minio_instance.list_objects.return_value = [{"key": "path_to_object"}]
+        logger = mocker.Mock(spec=ILogger)
 
         # Act
         HandlerFactory.download(
@@ -110,14 +113,14 @@ class TestMinioHandler:
             version=None,  # Version is not set.
             programs=[],
             credentials=mocker.Mock(username="user", password="pass"),
-            logger=mocker.Mock(),
+            logger=logger,
         )
 
         # Assert
         expected_dest_path = os.path.join("test", "data")
         minio_patch.assert_called_once_with("s3.deltares.nl", access_key="user", secret_key="pass")
-        rewinder_patch.assert_called_once_with(minio_instance, mocker.ANY)
-        version = rewinder_patch.call_args.args[1]
+        rewinder_patch.assert_called_once_with(minio_instance, logger, mocker.ANY)
+        version = rewinder_patch.call_args.args[2]
         timestamp = datetime.fromisoformat(version).replace(tzinfo=timezone.utc)
         assert datetime.now(timezone.utc) - timestamp < timedelta(seconds=1)
         rewinder_instance.download.assert_called_once_with("bucket_name", "prefix", expected_dest_path)

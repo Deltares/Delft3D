@@ -30,14 +30,14 @@
       ! global declarations
 
       use m_monsys
-      use hydmod
+      use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
-      type(t_hyd)          :: input_hyd             ! description of the input hydrodynamics
+      type(t_hydrodynamics)          :: input_hyd             ! description of the input hydrodynamics
       integer              :: ipnt(input_hyd%noseg) ! aggregation pointer segments
-      type(t_hyd)          :: output_hyd            ! description of the output hydrodynamics
+      type(t_hydrodynamics)          :: output_hyd            ! description of the output hydrodynamics
 
       ! local declarations
 

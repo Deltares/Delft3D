@@ -72,10 +72,10 @@
                    IERROR
       INTEGER(kind=int_wp) ::DEFFDS
       REAL(kind=real_wp) ::VFFORM      , VERSIO
-      CHARACTER*20  RUNDAT
-      CHARACTER*40  FFORM       , CONTEN     , & 
+      character(len=20)  RUNDAT
+      character(len=40)  FFORM       , CONTEN     , & 
                    SOURCE
-      CHARACTER*40  REMARK(4)
+      character(len=40)  REMARK(4)
 !
 !     Local variables
 !
@@ -93,9 +93,9 @@
                    BUFLEN
       INTEGER(kind=int_wp) ::ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      character(len=16)  GRPNAM
+      character(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      character(len=64)  ELMDES(NELEMS)
 !
 !     External NEFIS Functions
 !

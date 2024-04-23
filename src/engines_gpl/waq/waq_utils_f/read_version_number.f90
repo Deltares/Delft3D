@@ -39,15 +39,15 @@ contains
         !! input file
 
         integer(kind = int_wp), intent(in) :: lunin             !< unit number input file
-        character*(*), intent(in) :: lfile             !< file name
+        character(len=*), intent(in) :: lfile             !< file name
         integer(kind = int_wp), intent(in) :: lunut             !< unit number report file
         integer(kind = int_wp), intent(in) :: npos              !< number of significant positions in one line
         real(kind = real_wp), intent(out) :: input_version_number            !< Version number
         integer(kind = int_wp), intent(out) :: output_verbose_level            !< Output option
 
         ! Local
-        character*(npos) char_arr                              !  read buffer
-        character*1      ctrlz, ch_cr                    !  special characters
+        character(len=npos) char_arr                              !  read buffer
+        character(len=1)      ctrlz, ch_cr                    !  special characters
         integer(kind = int_wp) :: i, i2                            !  loop counter
         integer(kind = int_wp) :: status                           !  iostatus
 
