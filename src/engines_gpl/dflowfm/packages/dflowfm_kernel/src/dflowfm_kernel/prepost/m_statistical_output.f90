@@ -246,13 +246,11 @@ contains
          else
       
             ! Disable statistics in time on structures of this type if any of them lie across multiple partitions
-            if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX .or. item%operation_type == SO_AVERAGE) then
-               if (model_has_structures_across_partitions(output_config%location_specifier)) then
-                  call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type2string(item%operation_type)) // ')"' // &
-                                       ' as at least one ' // trim(location_specifier2string(output_config%location_specifier)) // &
-                                       ' lies across multiple partitions, which could produce invalid output')
-                  cycle
-               end if
+            if (model_has_structures_across_partitions(output_config%location_specifier) .and. item%operation_type /= SO_CURRENT) then
+               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type_to_string(item%operation_type)) // ')"' // &
+                                    ' as at least one ' // trim(location_specifier_to_string(output_config%location_specifier)) // &
+                                    ' lies across multiple partitions, which could produce invalid output')
+               cycle
             end if
             
             output_set%count = output_set%count + 1
@@ -448,7 +446,7 @@ contains
    end subroutine initialize_statistical_output
    
    !> Obtain a character string describing the statistics operation (for writing to screen)
-   function operation_type2string(operation_type) result(operation_string)
+   function operation_type_to_string(operation_type) result(operation_string)
       integer, intent(in) :: operation_type        !< Integer representing the operation type
       character(len=256)  :: operation_string      !> Character string describing the operation type
             
@@ -464,6 +462,6 @@ contains
       case (SO_AVERAGE)
          operation_string = 'average'
       end select
-   end function operation_type2string
+   end function operation_type_to_string
 
 end module

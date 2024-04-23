@@ -14,7 +14,7 @@ private
    public realloc
    public dealloc
    public id_nc_type2nc_type_his
-   public location_specifier2string
+   public location_specifier_to_string
 
    interface realloc
       module procedure realloc_config_output
@@ -732,72 +732,73 @@ subroutine set_properties(tree, paragraph, quantity_config_set)
 end subroutine set_properties
 
 !> Convert a location specifier to a human-readable string
-pure function location_specifier2string(location_specifier) result(str)
+pure function location_specifier_to_string(location_specifier) result(string)
    integer, intent(in) :: location_specifier !< The location specifier (UNC_LOC_XXX)
-   character(:), allocatable :: str
+   
+   character(:), allocatable :: string
    
    select case (location_specifier)
    case default
-      str = ''
+      string = ''
    case (UNC_LOC_CN          ) 
-      str = 'corner point'
+      string = 'corner point'
    case (UNC_LOC_S           ) 
-      str = 'pressure point'
+      string = 'pressure point'
    case (UNC_LOC_U           ) 
-      str = 'horizontal velocity point'
+      string = 'horizontal velocity point'
    case (UNC_LOC_L           ) 
-      str = 'horizontal net link'
+      string = 'horizontal net link'
    case (UNC_LOC_S3D         ) 
-      str = 'pressure point in all layers'
+      string = 'pressure point in all layers'
    case (UNC_LOC_U3D         ) 
-      str = 'horizontal velocity point in all layers'
+      string = 'horizontal velocity point in all layers'
    case (UNC_LOC_W           ) 
-      str = 'vertical velocity point on all layer interfaces'
+      string = 'vertical velocity point on all layer interfaces'
    case (UNC_LOC_WU          ) 
-      str = 'vertical viscosity point on all layer interface'
+      string = 'vertical viscosity point on all layer interface'
    case (UNC_LOC_GLOBAL      ) 
-      str = 'global variable'
+      string = 'global variable'
    case (UNC_LOC_SOSI        ) 
-      str = 'source and sink'
+      string = 'source/sink'
    case (UNC_LOC_GENSTRU     ) 
-      str = 'general structure'
+      string = 'general structure'
    case (UNC_LOC_DAM         ) 
-      str = 'controllable dam'
+      string = 'controllable dam'
    case (UNC_LOC_PUMP        ) 
-      str = 'pump'
+      string = 'pump'
    case (UNC_LOC_GATE        ) 
-      str = 'gate'
+      string = 'gate'
    case (UNC_LOC_WEIRGEN     ) 
-      str = 'weir'
+      string = 'weir'
    case (UNC_LOC_ORIFICE     ) 
-      str = 'orifice'
+      string = 'orifice'
    case (UNC_LOC_BRIDGE      ) 
-      str = 'bridge'
+      string = 'bridge'
    case (UNC_LOC_CULVERT     ) 
-      str = 'culvert'
+      string = 'culvert'
    case (UNC_LOC_DAMBREAK    ) 
-      str = 'dambreak'
+      string = 'dambreak'
    case (UNC_LOC_UNIWEIR     ) 
-      str = 'universal weir'
+      string = 'universal weir'
    case (UNC_LOC_CMPSTRU     ) 
-      str = 'compound structure'
+      string = 'compound structure'
    case (UNC_LOC_LONGCULVERT ) 
-      str = 'long culvert'
+      string = 'long culvert'
    case (UNC_LOC_STATION     ) 
-      str = 'observation station'
+      string = 'observation station'
    case (UNC_LOC_OBSCRS      ) 
-      str = 'observation cross section'
+      string = 'observation cross section'
    case (UNC_LOC_LATERAL     ) 
-      str = 'lateral location'
+      string = 'lateral location'
    case (UNC_LOC_RUG         ) 
-      str = 'run-up gauge'
+      string = 'run-up gauge'
    case (UNC_LOC_DREDGE      ) 
-      str = 'dredge'
+      string = 'dredge'
    case (UNC_LOC_DUMP        ) 
-      str = 'dump'
+      string = 'dump'
    case (UNC_LOC_DRED_LINK   ) 
-      str = 'dredge link'
+      string = 'dredge link'
    end select
-end function location_specifier2string
+end function location_specifier_to_string
 
 end module m_output_config

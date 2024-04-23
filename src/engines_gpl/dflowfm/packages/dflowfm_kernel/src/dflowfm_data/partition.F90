@@ -5343,16 +5343,14 @@ function any_structures_lie_across_multiple_partitions(nodeCountStru) result(res
    integer,    intent(in) :: nodeCountStru(:)   !< Total number of nodes for each instance of a type of structure
    logical                :: res                !< True if any instance of this type of structure lies across multiple partitions, false otherwise
    
-   integer :: number_of_structures, i_struc
-   logical :: has_nodes_in_current_partition
-   integer :: n_partitions_with_nodes, ierr
-   logical :: structure_lies_across_partitions, any_structures_lie_across_partitions
+   integer :: number_of_structures, i_struc, n_partitions_with_nodes, ierr
+   logical :: has_nodes_in_current_partition, structure_lies_across_partitions, any_structures_lie_across_partitions
    
    res  = .false.
    
    number_of_structures = size(nodeCountStru)
    
-   do i_struc = 1, number_of_structures
+   loop_over_structures: do i_struc = 1, number_of_structures
    
       ! The number of nodes for each structure that is provided as input, is different for each process. If none of the structure's
       ! geometry nodes lie in the partition of the current process, then nodeCountStru(i_struc) will be zero on this process.
@@ -5378,9 +5376,10 @@ function any_structures_lie_across_multiple_partitions(nodeCountStru) result(res
       
       if (structure_lies_across_partitions) then
          res = .true.
+         exit loop_over_structures
       end if
    
-   end do
+   end do loop_over_structures
   
 end function any_structures_lie_across_multiple_partitions
 
