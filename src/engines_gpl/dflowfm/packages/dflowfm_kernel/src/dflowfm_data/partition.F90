@@ -5336,25 +5336,25 @@ end function  get_list_size
 !! This is currently used for statistical output, to disable output items that
 !! would in this case produce incorrect results (as integrated values on structures
 !! are only reduced every user time step, so min/max in time would not be valid)
-function any_structures_lie_across_multiple_partitions(nodeCountStru) result(res)
+function any_structures_lie_across_multiple_partitions(node_count_per_structure) result(res)
    use mpi
    use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
   
-   integer,    intent(in) :: nodeCountStru(:)   !< Total number of nodes for each instance of a type of structure
-   logical                :: res                !< True if any instance of this type of structure lies across multiple partitions, false otherwise
+   integer,    intent(in) :: node_count_per_structure(:)    !< Total number of nodes for each instance of a type of structure
+   logical                :: res                            !< True if any instance of this type of structure lies across multiple partitions, false otherwise
    
    integer :: number_of_structures, i_struc, n_partitions_with_nodes, ierr
    logical :: has_nodes_in_current_partition, structure_lies_across_partitions, any_structures_lie_across_partitions
    
    res  = .false.
    
-   number_of_structures = size(nodeCountStru)
+   number_of_structures = size(node_count_per_structure)
    
    loop_over_structures: do i_struc = 1, number_of_structures
    
       ! The number of nodes for each structure that is provided as input, is different for each process. If none of the structure's
       ! geometry nodes lie in the partition of the current process, then nodeCountStru(i_struc) will be zero on this process.
-      has_nodes_in_current_partition = nodeCountStru(i_struc) > 0
+      has_nodes_in_current_partition = node_count_per_structure(i_struc) > 0
    
       n_partitions_with_nodes = 0
       if (has_nodes_in_current_partition) then
