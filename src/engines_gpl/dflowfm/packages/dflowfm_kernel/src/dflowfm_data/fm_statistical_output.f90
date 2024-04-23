@@ -1303,13 +1303,13 @@ private
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSX,                                                           &
                      'Wrihis_taucurrent', 'tausx',                                                               &
-                     'Mean_bottom_shear_stress vector, x-component',                                             &
-                     'Mean_bottom_shear_stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
+                     'Mean bottom shear stress vector, x-component',                                             &
+                     'mean_bottom_shear_stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      description='Write mean bed shear stress to his-file', nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSY,                                                           &
                      'Wrihis_taucurrent', 'tausy',                                                               &
-                     'Mean_bottom_shear_stress vector, y-component',                                             &
-                     'Mean_bottom_shear_stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
+                     'Mean bottom shear stress vector, y-component',                                             &
+                     'mean_bottom_shear_stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_2D)
 
       ! Meteo
