@@ -184,7 +184,7 @@ module m_sediment
  double precision :: Taucre
  if (allocated (D50) ) then
     deallocate (D50, rhosed, erosionpar, Ustcre2, Ws, sedini, Uniformerodablethickness,  &
-                D50ca, D50cb, D50wa, D50wb, D50wc, Bwcr, sigsed  )
+                D50ca, D50cb, D50wa, D50wb, D50wc, Bwcr  )
  endif
  if (allocated (sigsed) ) then
     deallocate (sigsed)
