@@ -962,7 +962,7 @@ subroutine ncu_sanitize_name(name_string)
    call replace_char(name_string, 47, 95) ! '/' -> '_'
 end subroutine ncu_sanitize_name
 
-!> Check the error code returned by the NetCDF API and print the error message if any.
+!> Check the error code returned by the NetCDF API and print the error message in case of an error.
 subroutine netcdf_handle_error( nerr, ierr)
    use MessageHandling, only: mess, LEVEL_WARN
    
