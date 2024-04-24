@@ -189,8 +189,8 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer,          allocatable, target :: nodeCountWeirInput(:)!< [-] Input Count of nodes per weir.
  double precision, allocatable, target :: geomXWeir(:)         !< [m] x coordinates of weirs.
  double precision, allocatable, target :: geomYWeir(:)         !< [m] y coordinates of weirs.
- double precision, allocatable, target :: geomXWeirInput(:)         !< [m] x coordinates of weirs.
- double precision, allocatable, target :: geomYWeirInput(:)         !< [m] y coordinates of weirs.
+ double precision, allocatable, target :: geomXWeirInput(:)    !< [m] x coordinates of weirs.
+ double precision, allocatable, target :: geomYWeirInput(:)    !< [m] y coordinates of weirs.
  ! general structure
  integer                               :: nNodesGenstru        !< [-] Total number of nodes for all general structures
  integer,          allocatable, target :: nodeCountGenstru(:)  !< [-] Count of nodes per general structure.
@@ -226,6 +226,18 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer,          allocatable, target :: nodeCountLongCulv(:) !< [-] Count of nodes per long culverts.
  double precision, allocatable, target :: geomXLongCulv(:)     !< [m] x coordinates of long culverts.
  double precision, allocatable, target :: geomYLongCulv(:)     !< [m] y coordinates of long culverts.
+ 
+ !> Whether or not the model has any structures that lie across multiple partitions
+ !! (needed to disable possibly invalid statistical output items)
+ !! (set in fill_geometry_arrays_structure)
+ logical, protected :: model_has_weirs_across_partitions              = .false.
+ logical, protected :: model_has_general_structures_across_partitions = .false.
+ logical, protected :: model_has_orifices_across_partitions           = .false.
+ logical, protected :: model_has_universal_weirs_across_partitions    = .false.
+ logical, protected :: model_has_culverts_across_partitions           = .false.
+ logical, protected :: model_has_pumps_across_partitions              = .false.
+ logical, protected :: model_has_bridges_across_partitions            = .false. 
+ logical, protected :: model_has_long_culverts_across_partitions      = .false.
  
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
@@ -1178,14 +1190,14 @@ subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
 end subroutine get_geom_coordinates_of_generalstructure_oldext
 
 !> Fills in the geometry arrays of a structure type for history output
-subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
+subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
    use m_alloc
    use m_partitioninfo
    use m_GlobalParameters
    use m_flowparameters, only: eps6
    use precision_basics
    implicit none
-   integer,                       intent(in   ) :: istrtypein       !< The type of the structure. May differ from the struct%type
+   integer,                       intent(in   ) :: struc_type_id    !< The id of the type of the structure (e.g. ST_CULVERT). May differ from the struct%type
    integer,                       intent(in   ) :: nstru            !< Number of this structure type
    integer,                       intent(  out) :: nNodesStru       !< Total number of nodes of this structure type
    integer,          allocatable, intent(  out) :: nodeCountStru(:) !< Node count of this structure type
@@ -1206,13 +1218,13 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
    ! Allocate and construct geometry variable arrays (on one subdomain)
    call realloc(nodeCountStru,   nstru, keepExisting = .false., fill = 0  )
    do i = 1, nstru
-      nNodes = get_number_of_geom_nodes(istrtypein, i)
+      nNodes = get_number_of_geom_nodes(struc_type_id, i)
       nodeCountStru(i) = nNodes
    end do
    nNodesStru = sum(nodeCountStru)
    call realloc(geomXStru,       nNodesStru,   keepExisting = .false., fill = 0d0)
    call realloc(geomYStru,       nNodesStru,   keepExisting = .false., fill = 0d0)
-   if (jampi > 0 .and. istrtypein == ST_LONGCULVERT) then
+   if (jampi > 0 .and. struc_type_id == ST_LONGCULVERT) then
       ! In parallel runs, one structure might lie on multiple subdomains. To handle this situation,
       ! we will need to know which nodes are local start/end nodes of a structure on each subdomain, and the local start/end nodes will be handled separately.
       ! This will avoid having duplicated (local start/end) nodes in the arrays of coordinates of a structure among all subdomains.
@@ -1223,16 +1235,43 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
    do i = 1, nstru
       nNodes = nodeCountStru(i)
       if (nNodes > 0) then
-         call get_geom_coordinates_of_structure(istrtypein, i, nNodes, geomX, geomY, maskLocalStartEnd)
+         call get_geom_coordinates_of_structure(struc_type_id, i, nNodes, geomX, geomY, maskLocalStartEnd)
          is = ie + 1
          ie = is + nNodes - 1
          geomXStru(is:ie) = geomX(1:nNodes)
          geomYStru(is:ie) = geomY(1:nNodes)
-         if (jampi > 0 .and. istrtypein == ST_LONGCULVERT) then
+         if (jampi > 0 .and. struc_type_id == ST_LONGCULVERT) then
             maskLocalStartEndAll(is:ie) = maskLocalStartEnd(1:nNodes)
          end if
       end if
    end do
+   
+   ! Check if any structures of this type lie across multiple partitions
+   ! (needed to disable possibly invalid statistical output items)
+   if (any_structures_lie_across_multiple_partitions(nodeCountStru)) then
+      select case (struc_type_id)
+      case default
+         call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in m_structures/fill_geometry_arrays_structure')
+      case (ST_UNSET)
+         call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in m_structures/fill_geometry_arrays_structure')
+      case (ST_WEIR)
+         model_has_weirs_across_partitions = .true.
+      case (ST_GENERAL_ST)
+         model_has_general_structures_across_partitions = .true.
+      case (ST_ORIFICE)
+         model_has_orifices_across_partitions = .true.
+      case (ST_UNI_WEIR)
+         model_has_universal_weirs_across_partitions = .true.
+      case (ST_CULVERT)
+         model_has_culverts_across_partitions = .true.
+      case (ST_PUMP)
+         model_has_pumps_across_partitions = .true.
+      case (ST_BRIDGE)
+         model_has_bridges_across_partitions = .true.
+      case (ST_LONGCULVERT)
+         model_has_long_culverts_across_partitions = .true.
+      end select
+   end if
 
    !! The codes below are similar to subroutine "fill_geometry_arrays_lateral".
    !! They work for 1D structures, but are supposed to work when more links are contained in a structure.
@@ -1254,7 +1293,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
          call realloc(yGat,             nNodesStruMPI,  keepExisting = .false., fill = 0d0)
          call realloc(displs,           ndomains,       keepExisting = .false., fill = 0  )
          call realloc(nNodesStruGat,    ndomains,       keepExisting = .false., fill = 0  )
-         if (istrtypein == ST_LONGCULVERT) then
+         if (struc_type_id == ST_LONGCULVERT) then
             call realloc(maskLocalStartEndGat, nNodesStruMPI,  keepExisting = .false., fill = 0  )
          end if
       else
@@ -1281,7 +1320,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
       ! Gather double precision data, here, different number of data can be gatherd from different subdomains to process 0000
       call gatherv_double_data_mpi_dif(nNodesStru, geomXStru, nNodesStruMPI, xGat, ndomains, nNodesStruGat, displs, 0, ierror)
       call gatherv_double_data_mpi_dif(nNodesStru, geomYStru, nNodesStruMPI, yGat, ndomains, nNodesStruGat, displs, 0, ierror)
-      if (istrtypein == ST_LONGCULVERT) then
+      if (struc_type_id == ST_LONGCULVERT) then
          call gatherv_int_data_mpi_dif(nNodesStru, maskLocalStartEndAll, nNodesStruMPI, maskLocalStartEndGat, ndomains, nNodesStruGat, displs, 0, ierror)
       end if
 
@@ -1298,7 +1337,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
          ! Below seperate long culverts with other structures, because the we support a long culvert lying
          ! on multiple subdomains, but do not support other structures lying on multiple subdomains yet.
          ! TODO: enable this for other structures as well.
-         if (istrtypein == ST_LONGCULVERT) then
+         if (struc_type_id == ST_LONGCULVERT) then
             j = 0
             do i = 1, nstru                    ! for each structure
                nPar = 0                        ! Number of subdomains that contain this structure

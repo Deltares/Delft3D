@@ -5332,6 +5332,64 @@ endif
  
 end function  get_list_size
 
+!> Check if any structures lie across multiple partitions
+!! This is currently used for statistical output, to disable output items that
+!! would in this case produce incorrect results (as integrated values on structures
+!! are only reduced every user time step, so min/max in time would not be valid)
+function any_structures_lie_across_multiple_partitions(node_count_per_structure) result(res)
+#ifdef HAVE_MPI
+   use mpi
+#endif
+   use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
+  
+   integer,    intent(in) :: node_count_per_structure(:)    !< Total number of nodes for each instance of a type of structure
+   logical                :: res                            !< True if any instance of this type of structure lies across multiple partitions, false otherwise
+   
+   integer :: number_of_structures, i_struc, n_partitions_with_nodes, ierr
+   logical :: has_nodes_in_current_partition, structure_lies_across_partitions, any_structures_lie_across_partitions
+   
+   res = .false. !Default return value
+   
+   if (jampi == 0) then
+      return
+   end if
+   
+#ifdef HAVE_MPI
+   number_of_structures = size(node_count_per_structure)
+   
+   loop_over_structures: do i_struc = 1, number_of_structures
+   
+      ! The number of nodes for each structure that is provided as input, is different for each process. If none of the structure's
+      ! geometry nodes lie in the partition of the current process, then nodeCountStru(i_struc) will be zero on this process.
+      has_nodes_in_current_partition = node_count_per_structure(i_struc) > 0
+   
+      n_partitions_with_nodes = 0
+      if (has_nodes_in_current_partition) then
+         n_partitions_with_nodes = 1
+      end if
+      call mpi_allreduce(mpi_in_place, n_partitions_with_nodes, 1, mpi_integer, mpi_sum, DFM_COMM_DFMWORLD, ierr)
+      if (ierr /= MPI_SUCCESS) then
+         call mess(LEVEL_ERROR,'Programming error, please report: mpi_allreduce failed in any_structures_lie_across_multiple_partitions')
+      end if
+      
+      ! If more than one process lists >0 geometry nodes for a structure, then that structure lies across multiple partitions.
+      structure_lies_across_partitions = .false.
+      if (n_partitions_with_nodes == 0) then
+         call mess(LEVEL_WARN,'Programming error, please report: any_structures_lie_across_multiple_partitions found no partitions with nodes!')
+      elseif (n_partitions_with_nodes > 1) then
+         structure_lies_across_partitions = .true.
+      end if
+      
+      if (structure_lies_across_partitions) then
+         res = .true.
+         exit loop_over_structures
+      end if
+   
+   end do loop_over_structures
+#endif
+  
+end function any_structures_lie_across_multiple_partitions
+
 !> Check if any cross-sections lie across multiple partitions
 !! This is currently used for statistical output, to disable output items that
 !! would in this case produce incorrect results (as integrated values on cross-sections
