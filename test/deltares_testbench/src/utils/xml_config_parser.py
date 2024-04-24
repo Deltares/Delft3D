@@ -145,7 +145,7 @@ class XmlConfigParser(object):
                     self.__default_cases.append(self.__fillCase__(case))
                     result.append(self.__fillCase__(case))
                 except Exception as e:
-                    test_name = str(cases["testCase"][caseNr]["path"][0]["txt"])
+                    test_name = str(cases["testCase"][caseNr]["name"][0]) 
                     testcase_logger = logger.create_test_case_logger(test_name)
                     testcase_logger.test_started()
                     testcase_logger.test_Result(TestResultType.Exception, str(e))
