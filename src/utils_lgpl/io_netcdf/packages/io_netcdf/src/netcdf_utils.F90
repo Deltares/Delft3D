@@ -964,13 +964,13 @@ end subroutine ncu_sanitize_name
 
 !> Check the error code returned by the NetCDF API and print the error message if any.
 subroutine netcdf_handle_error( nerr, ierr)
-   use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
+   use MessageHandling, only: mess, LEVEL_WARN
    
    integer, intent(in   )           :: nerr !< NetCDF error code
    integer, intent(inout), optional :: ierr !< D-Flow FM error code
    
    if (nerr /= nf90_noerr) then
-      call mess(LEVEL_ERROR, trim(nf90_strerror(nerr)))
+      call mess(LEVEL_WARN, trim(nf90_strerror(nerr)))
       if (present(ierr)) then
          ierr = nerr ! Only do this in case of error, to prevent overwriting earlier error codes with NF90_NOERR
       end if
