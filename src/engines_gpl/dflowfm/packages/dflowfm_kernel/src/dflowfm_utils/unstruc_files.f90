@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -142,7 +142,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     use unstruc_model
     use m_flowtimes
     use time_module,   only : seconds_to_datetimestring
-    use string_module, only : get_dirsep
+    use system_utils,  only : makedir, FILESEP
     implicit none
     
     character(len=*), intent(in)  :: filecat             !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
@@ -301,6 +301,9 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     case ('mbacsvmb')
         activeFile = ''
         suffix = '_mass_balances.csv'
+    case ('mbanetcdf')
+        activeFile = ''
+        suffix = '_mass_balances.nc'
         
     !---------------------------------------------------------!
     ! DELWAQ files
@@ -363,7 +366,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
     ! Output files are generally stored in a subfolder, so prefix them here with that.
     select case (trim(filecat))
     case ('his', 'map', 'clm', 'rstold', 'rst', 'bal', 'histek', 'inc_s1', 'tec', 'map.plt', 'net.plt', 'avgwavquant', &
-          'com','avgsedquant', 'mba', 'mbacsvm', 'mbacsvmb', 'wq_lsp', 'bloom', 'timers', 'timers_init','sedtrails')
+          'com','avgsedquant', 'mba', 'mbacsvm', 'mbacsvmb', 'mbanetcdf', 'wq_lsp', 'bloom', 'timers', 'timers_init','sedtrails')
         if (prefix_dir) then
             defaultFilename = trim(getoutputdir())//trim(defaultFilename)
         end if
@@ -371,7 +374,7 @@ function defaultFilename(filecat, timestamp, prefixWithDirectory, allowWildcard)
         if (prefix_dir) then        
             shapeOutputDir = trim(getoutputdir())//'snapped'
             call makedir(shapeOutputDir)
-            defaultFilename = trim(shapeOutputDir)//get_dirsep()//trim(defaultFilename)
+            defaultFilename = trim(shapeOutputDir) // FILESEP // trim(defaultFilename)
         end if
     end select
     
@@ -468,7 +471,7 @@ end function getfilename
 !! Optionally, a file category may be specified, such that e.g., '_net.nc'
 !! is stripped off (instead of .nc only)
 subroutine basename(filename, filebase, filecat)
-    use string_module, only: get_dirsep
+    use system_utils, only: FILESEP
     implicit none
     character(len=*),           intent(in)  :: filename
     character(len=*),           intent(out) :: filebase
@@ -491,7 +494,7 @@ subroutine basename(filename, filebase, filecat)
     end if
 
     ! Also strip off any preceding dir names.
-    L1 = index(filename, get_DIRSEP(), .true.)+1
+    L1 = index(filename, FILESEP, .true.) + 1
 
     filebase = ' '
     filebase = filename(L1:L2)

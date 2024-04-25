@@ -92,7 +92,7 @@ function varargout=waquaio(sds,exper,field,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2023 Stichting Deltares.
+%   Copyright (C) 2011-2024 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public

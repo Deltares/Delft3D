@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,6 +73,7 @@ contains
    use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
+   use m_fixedweirs, only: weirdte, nfxw
    
    implicit none
 
@@ -83,6 +84,8 @@ contains
    
    integer, external :: flow_initexternalforcings
 
+   double precision, allocatable :: weirdte_save(:)
+      
    error = DFM_NOERR
 
    if (ndx == 0) then
@@ -195,7 +198,7 @@ contains
    call remember_initial_water_levels_at_water_level_boundaries()
    call make_volume_tables()
    call load_restart_file(jawelrestart, error)
-   if( is_error_at_any_processor(error) ) then
+   if (is_error_at_any_processor(error) ) then
        call qnerror('Error occurs when reading the restart file.',' ', ' ')
        return
    end if
@@ -239,8 +242,10 @@ contains
    if (jaoldrstfile == ON) then ! If the restart file is of old version (which does not have waterlevel etc info on boundaries), then need to set.
       call sets01zbnd(0, 0)
    end if
-   call sets01zbnd(1, 1)
-
+   if (.not. jawelrestart) then
+      call sets01zbnd(1, 1)
+   endif 
+   
    call initialize_values_at_normal_velocity_boundaries()
    call initialize_values_at_discharge_boundaries()
    call copy_boundary_friction_and_skewness_into_flow_links()
@@ -269,8 +274,10 @@ contains
 
    call setkbotktop(1)
 
-   call update_s0_and_hs(jawelrestart)
-
+   if (.not. jawelrestart) then
+    call update_s0_and_hs()
+   endif
+   
    if ( jaselfal > OFF ) then
   !  with hs available: recompute SAL potential
      call flow_settidepotential(tstart_user/60d0)
@@ -279,7 +286,15 @@ contains
    call include_ground_water()
    call include_infiltration_model()
 
-   call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)
+   if (nfxw > 0) then 
+      allocate ( weirdte_save(nfxw), STAT=ierror)
+      weirdte_save=weirdte
+   endif
+   call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0,.not.jawelrestart)
+   if (nfxw > 0) then 
+       weirdte=weirdte_save
+      deallocate ( weirdte_save)
+   endif
    call temporary_fix_for_sepr_3D()
 
    call volsur()
@@ -296,7 +311,7 @@ contains
 
  ! hk: and, make sure this is done prior to fill constituents
    if (jarestart > OFF) then
-      call initialize_salinity_temperature_sediment_on_boundary()
+      call initialize_salinity_temperature_on_boundary()
       call restore_au_q1_3D_for_1st_history_record()
    end if
 
@@ -755,14 +770,14 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs
+   use m_flow,             only : u1, u0, s0, hs, s1, ucxyq_read_rst
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
    use iso_varying_string, only : len_trim, index
    use m_setucxcuy_leastsquare, only: reconst2nd
    use dfm_error
-
+   
    implicit none
 
    logical, intent(out)          :: file_exist
@@ -773,7 +788,7 @@ subroutine load_restart_file(file_exist, error)
    integer                       :: mrst
    integer                       :: jw
    double precision, allocatable :: u1_tmp(:)
-
+   
    file_exist = .false.
 
    if (len_trim(md_restartfile) > 0 ) then
@@ -796,15 +811,20 @@ subroutine load_restart_file(file_exist, error)
             file_exist = .true.
          end if
          
-         u1_tmp  = u1
-         u1(:)   = u0(:)
-         hs(:)   = s0(:) - bl(:)
+         hs(:)   = s1(:) - bl(:)
          if (iperot == NOT_DEFINED ) then
             call reconst2nd ()
          end if
          call fill_onlyWetLinks()
-         call setucxucyucxuucyunew() !reconstruct cell-center velocities
-         u1(:) = u1_tmp(:)
+         
+         !If we have not read `ucxq` and `ucyq` from restart, we initialize it here. If 
+         !we have read it, we do not want to overwrite it. 
+         if (.not. ucxyq_read_rst) then
+            call setucxucyucxuucyunew() !reconstruct cell-center velocities
+         endif
+         
+         call flow_obsinit() 
+         call fill_valobs() 
        end if
    end if
 
@@ -1064,20 +1084,13 @@ subroutine set_data_for_ship_modelling()
 end subroutine set_data_for_ship_modelling
 
 !> update_s0_and_hs
-subroutine update_s0_and_hs(jawelrestart)
+subroutine update_s0_and_hs()
    use m_flow,           only : s1, s0, hs
    use m_flowgeom,       only : bl
 
    implicit none
 
-   logical, intent(in) :: jawelrestart
-
-   if (.not. jawelrestart) then
-      s0(:) = s1(:)
-   else ! If one restarts a simulation, then use s0 to compute hs
-      s0(:) = max(s0(:),bl(:))
-   end if
-
+   s0(:) = s1(:)
    hs(:) = s0(:) - bl(:)
  
 end subroutine update_s0_and_hs
@@ -1436,7 +1449,7 @@ subroutine initialize_sediment_3D()
 end subroutine initialize_sediment_3D
 
 !> initialize salinity, temperature, sediment on boundary
-subroutine initialize_salinity_temperature_sediment_on_boundary()
+subroutine initialize_salinity_temperature_on_boundary()
    use m_flowparameters,       only : jasal, jased, jatem
    use m_flowgeom,             only : ln, lnx, lnxi
    use m_flow,                 only : sa1, q1, tem1
@@ -1468,16 +1481,11 @@ subroutine initialize_salinity_temperature_sediment_on_boundary()
                if (jatem > OFF) then
                    tem1(boundary_cell)  = tem1(internal_cell)
                end if
-               if (jased > OFF) then
-                   do grain = 1, mxgr
-                      sed(grain,boundary_cell) = sed(grain,internal_cell)
-                   end do
-               end if
            end if
        end do
    end do
 
-end subroutine initialize_salinity_temperature_sediment_on_boundary
+end subroutine initialize_salinity_temperature_on_boundary
 
 
 !> initialize salinity and temperature with nudge variables
@@ -1574,6 +1582,8 @@ subroutine apply_hardcoded_specific_input()
 
  implicit none
 
+ logical, parameter :: SET_HU      =  .true.
+ 
  integer          :: itest = 1, kk, La, j, Lb, Lt
  integer          :: k, L, k1, k2, n, jw, msam
  integer          :: kb, kt, LL
@@ -1938,7 +1948,7 @@ subroutine apply_hardcoded_specific_input()
 
     do j = 1,300
        fout = 0d0
-       call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0)             ! was just call sethu()
+       call calculate_hu_au_and_advection_for_dams_weirs(SET_ZWS0, SET_HU)             ! was just call sethu()
        do k = 1,ndx
           sq(k) = 0d0
           do kk = 1,nd(k)%lnx
@@ -2278,7 +2288,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav
+   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
    use m_flowgeom,             only : lnx
 
    implicit none
@@ -2287,13 +2297,17 @@ subroutine restore_au_q1_3D_for_1st_history_record()
    double precision, allocatable :: fu_temp(:,:), ru_temp(:,:), au_temp(:,:)
 
    if ( kmx > 0 ) then
-      fu_temp = fusav
-      ru_temp = rusav
-      au_temp = ausav
+      if (ncgen > 0) then
+         fu_temp = fusav
+         ru_temp = rusav
+         au_temp = ausav
+      endif   
       call furusobekstructures() ! to have correct au values but it provides incorrect q1 values for structures
-      fusav = fu_temp
-      rusav = ru_temp
-      ausav = au_temp
+      if (ncgen > 0) then
+         fusav = fu_temp
+         rusav = ru_temp
+         ausav = au_temp
+      endif   
 !  restore correct discharge values
       do i_q1_0 = 1, lnx
          q1(i_q1_0) = 0d0 

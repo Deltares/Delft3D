@@ -49,25 +49,12 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
+set D3D_HOME=%~dp0..
 
-rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
-
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set PATH=%waqdir%;%sharedir%
-
-    rem
-    rem No adaptions needed below
-    rem
-
-    rem Run
-set PATH=%waqdir%;%sharedir%;%~dp0
+set waqdir=%~dp0
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
+set PATH=%waqdir%;%sharedir%;%libdir%
 
     rem go to directory, run maptonetcdf, and return
 For %%A in ("%mapfile%") do (

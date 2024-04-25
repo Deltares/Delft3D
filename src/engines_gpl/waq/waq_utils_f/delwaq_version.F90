@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -34,10 +34,10 @@ module delwaq_version_module
     implicit none
 
     ! The component name must be public because it is used by the BMI module
-    character(*),  public, parameter :: component_name      = 'DELWAQ'
+    character(*), public, parameter :: component_name = 'DELWAQ'
 
-    character(*),  public, parameter :: delwaq_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*),  public, parameter :: delwaq_version_id   = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+    character(*), public, parameter :: delwaq_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*), public, parameter :: delwaq_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 

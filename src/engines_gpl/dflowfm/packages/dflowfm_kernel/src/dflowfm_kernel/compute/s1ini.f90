@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -40,6 +40,7 @@
  use m_hydrology_data, only : jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
  use m_mass_balance_areas
  use m_partitioninfo
+ use m_lateral, only : numlatsg, qqlat, n1latsg, n2latsg, nnlat, balat, qplat
  implicit none
 
  integer          :: L, k1, k2, k, n, LL, kt, idim, imba

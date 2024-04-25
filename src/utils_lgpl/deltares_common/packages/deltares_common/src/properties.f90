@@ -1,7 +1,7 @@
 module properties
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -694,11 +694,11 @@ subroutine prop_xmlfile_pointer(lu, tree, error)
           exit
        endif
        if ( xml_error(xmlinfo) ) then
-          error = .true.
+          error = 1
           exit
        endif
        if (xmlinfo%level >= ubound(xmllevel, DIM=1)) then
-          error = .true.
+          error = 1
           exit
        endif
        !
@@ -1475,7 +1475,8 @@ recursive subroutine prop_write_xmlfile(mout, tree, level, error)
                    if (associated(data_ptr)) then
                       call tree_get_data_string( tree%child_nodes(i)%node_ptr, string, success )
                    endif
-                   write(buffer,'(6a)') trim(buffer), " ", trim(tree_get_name(tree%child_nodes(i)%node_ptr)), "=""", trim(string), """"
+                   write(buffer,'(6a)') trim(buffer), " ", trim(tree_get_name(tree%child_nodes(i)%node_ptr)), &
+                     "=""", trim(string), """"
                 endif
              enddo
              string = ' '
@@ -1891,6 +1892,26 @@ subroutine prop_get_integer(tree, chapter, key, value, success, valuesfirst)
     value = valuearray(1)
 end subroutine prop_get_integer
 
+!> Get the integer value for a property and if not found set it to the supplied default value
+subroutine prop_get_set_integer(tree, chapter, key, value, success, values_first)
+    implicit none
+    type(tree_data)  , pointer       :: tree        !< The property tree
+    integer          , intent(inout) :: value       !< If key is found value will be read from tree. If not found value will be written to tree.
+    character(*)     , intent(in)    :: chapter     !< Name of the chapter (case-insensitive) or "*" to get any key
+    character(*)     , intent(in)    :: key         !< Name of the key (case-insensitive)
+    logical, optional, intent(out)   :: success     !< Whether successful or not (optional)
+    logical, optional, intent(in)    :: values_first !< Whether value should be specified before any comments (optional)
+    
+    integer, dimension(1) :: valuearray
+
+    valuearray(1) = value
+    call prop_get_integers(tree, chapter, key, valuearray, 1, success, values_first)
+    value = valuearray(1)
+    if(.not. success .and. value > 0) then
+       call prop_set(tree, chapter, key, value, '')
+    endif
+end subroutine prop_get_set_integer
+
 !> Get the array of integer values for a property
 !!    Use prop_get_string to get the string value.
 !!    Convert it to integers.
@@ -2284,19 +2305,21 @@ end subroutine prop_get_doubles
 !> Get the logical value for a property
 !!    Use prop_get_string to get the string value.
 !!    Convert it to logical.
-!!    Allowed strings to detect the value true:
-!!    Y|YES|yes|Yes|T|TRUE|true|True|J|JA|Ja|ja|W|WAAR|Waar|waar
-!!    Allowed strings to detect the value false:
-!!    N|NO|no|No|F|FALSE|false|False|N|NEE|Nee|nee|O|ONWAAR|Onwaar|onwaar
+!!    Allowed strings to detect the value true (case-insensitive):
+!!    |1|Y|YES|T|TRUE|J|JA|W|WAAR|ON|
+!!    Allowed strings to detect the value false (case-insensitive):
+!!    |0|N|NO|F|FALSE|N|NEE|O|ONWAAR|OFF|
 !!
 !!  Comments on this line:
 !!    Not allowed
-subroutine prop_get_logical(tree  ,chapter   ,key       ,value     ,success)
-    type(tree_data)  , pointer       :: tree    !< The property tree
-    character(*)     , intent(in)    :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
-    character(*)     , intent(in)    :: key     !< Name of the key (case-insensitive)
-    logical          , intent(inout) :: value   !< Value of the key (not set if the key is not found, so you can set a default value)
-    logical, optional, intent(out)   :: success !< Whether successful or not (optional)
+subroutine prop_get_logical(tree, chapter, key, value, success, value_parsed)
+    use string_module, only: str_toupper
+    type(tree_data)  , pointer       :: tree         !< The property tree
+    character(*)     , intent(in)    :: chapter      !< Name of the chapter (case-insensitive) or "*" to get any key
+    character(*)     , intent(in)    :: key          !< Name of the key (case-insensitive)
+    logical          , intent(inout) :: value        !< Value of the key (not set if the key is not found, so you can set a default value)
+    logical, optional, intent(out)   :: success      !< Whether key was present and value not empty
+    logical, optional, intent(out)   :: value_parsed !< Whether value was successfully parsed
     !
     ! Local variables
     !
@@ -2309,16 +2332,17 @@ subroutine prop_get_logical(tree  ,chapter   ,key       ,value     ,success)
     character(100) :: truth
     character(len=:), allocatable :: prop_value
     !
-    data truth/    &
-     & '|1|Y|y|YES|yes|Yes|T|t|TRUE|true|True|J|j|JA|Ja|ja|W|w|WAAR|Waar|waar|'/
-    data falsity/  &
-     & '|0|N|n|NO|no|No|F|f|FALSE|false|False|N|n|NEE|Nee|nee|O|o|ONWAAR|Onwaar|onwaar|'/
+    if (present(value_parsed)) then
+        value_parsed = .false.
+    endif
+    
+    truth   = '|1|Y|YES|T|TRUE|.TRUE.|J|JA|W|WAAR|ON|'
+    falsity = '|0|N|NO|F|FALSE|.FALSE.|N|NEE|O|ONWAAR|OFF|'
     !
     !! executable statements -------------------------------------------------------
     !
     call prop_get_alloc_string(tree, chapter, key, prop_value, success)
     if (.not. allocated(prop_value)) prop_value = ' '
-    if (prop_value(1:1) == '.') prop_value = prop_value(2:)
     vallength = len_trim(prop_value)
     !
     ! Leave immediately in case prop_value is empty
@@ -2326,24 +2350,28 @@ subroutine prop_get_logical(tree  ,chapter   ,key       ,value     ,success)
     if (vallength == 0) return
     spacepos = index(prop_value,' ')
     if (spacepos > 0) vallength = min(spacepos - 1, vallength)
-    pointpos = index(prop_value,'.')
-    if (pointpos > 0) vallength = min(pointpos - 1, vallength)
     !
     ! Extract the logical part
     !
-    k1 = index(truth  , prop_value(1:vallength))
-    k2 = index(falsity, prop_value(1:vallength))
+    k1 = index(truth  , str_toupper(prop_value(1:vallength)))
+    k2 = index(falsity, str_toupper(prop_value(1:vallength)))
     !
     ! The value must match a complete word in string truth or falsity, bordered by two '|'s
     !
     if (k1 > 0) then
        if (truth(k1-1:k1-1)=='|' .and. truth(k1+vallength:k1+vallength)=='|') then
           value = .true.
+          if (present(value_parsed)) then
+             value_parsed = .true.
+          endif 
        endif
     endif
-    if (k2>0) then
+    if (k2 > 0) then
        if (falsity(k2-1:k2-1)=='|' .and. falsity(k2+vallength:k2+vallength)=='|') then
           value = .false.
+          if (present(value_parsed)) then
+             value_parsed = .true.
+          endif
        endif
     endif
 end subroutine prop_get_logical

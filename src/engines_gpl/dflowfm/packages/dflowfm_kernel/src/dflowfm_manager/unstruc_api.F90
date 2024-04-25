@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -267,7 +267,8 @@ end subroutine api_loadmodel
    use network_data
    use unstruc_files
    use waq
-   use m_wind
+   use m_lateral, only : numlatsg
+   use m_wind, only : jawind
    use dfm_error
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
@@ -330,8 +331,8 @@ end subroutine api_loadmodel
    if (out_variable_set_his%count > 0) then
       call update_statistical_output(out_variable_set_his%statout,dts)
    endif
-   !call update_statistical_output(out_variable_set_map%statout,dts)
-   !call update_statistical_output(out_variable_set_clm%statout,dts)
+   !call update_statistical_output(out_variable_set_map%configs,dts)
+   !call update_statistical_output(out_variable_set_clm%configs,dts)
     
     call mess(LEVEL_INFO,'Writing initial output to file(s)...')
     inner_timerhandle = 0
@@ -418,7 +419,9 @@ use MessageHandling, only: FinalizeMessageHandling
 use m_ec_module
 use m_meteo, only: ecInstancePtr
 use m_nearfield
+use m_lateral
     call dealloc_nfarrays()
+    call dealloc_lateraldata()
 
     if (.not.ecFreeInstance(ecInstancePtr)) then
        continue     

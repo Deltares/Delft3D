@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,16 +34,16 @@ module protist_phagotrophy_functions
     use protist_math_functions
     use protist_cell_functions
     IMPLICIT NONE
-    contains
+contains
 
     real function lightInhibition(PFD, relFeeding) result(lightInh)
         real, intent(in) :: PFD
         real, intent(in) :: relFeeding  ! rel feeding in night : day
-        real, parameter  :: k = 10.0          ! growth rate to form curve
-        real, parameter  :: b = 1.0           ! displacement along the x-axis
+        real, parameter :: k = 10.0          ! growth rate to form curve
+        real, parameter :: b = 1.0           ! displacement along the x-axis
 
         lightInh = sigmoidLogistic(relFeeding, k, b, PFD) + (1.0 - relFeeding)
     end function lightInhibition
 
-  end module protist_phagotrophy_functions
+end module protist_phagotrophy_functions
 

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -43,8 +43,7 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     use dredge_data_module
     use morphology_data_module
     use message_module
-    !use morstatistics, only: morstats
-    !
+
     implicit none
 
     type (dredge_type)                                   , target        :: dadpar     !< data structure for dredging and dumping settings
@@ -117,7 +116,7 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        !
        ! Communicate dredged volumes with other domains
        !
-       call comm(dadpar%voldred, (dadpar%nadred+dadpar%nasupl)*(lsedtot+1), error, msgstr)
+       call comm(dadpar%voldred, (dadpar%dredge_dimension_length)*(lsedtot+1), error, msgstr)
        if (msgstr /= '') call write_error(msgstr, unit=lundia)
 	   return
     end if
@@ -213,51 +212,47 @@ subroutine determine_max_dump_capacity(dadpar, nmlb, nmub, s1, kfsed, dpsign, dp
     real(fp)                                , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
     real(prec), dimension(nmlb:nmub)        , intent(in)    :: dps        !< bed level or depth at cell faces
     
-    integer                         :: i, ib, nm
+    integer                         :: i
+    integer                         :: ib
+    integer                         :: nm
     real(fp), dimension(:), pointer :: area
     real(fp), dimension(:), pointer :: reflevel
     real(fp)                        :: voltim     ! local volume variable, various meanings
-    type(dredtype),       pointer   :: pdredge
     type(dumptype),         pointer :: pdump
-
-    pdredge => dadpar%dredge_prop(dadpar%nadred + dadpar%nasupl)
 
     do ib = 1, dadpar%nadump
        pdump => dadpar%dump_prop(ib)
-       area => pdump%area
-       reflevel => pdump%reflevel
-       reflevel = 0.0_fp
-       !
-       ! Set the reference level and compute dump capacity and area.
-       !
-       voltim = 0.0_fp
-       do i = 1, pdump%npnt
-          nm = pdump%nm(i)
-          if (nm <= 0) cycle ! get data only for internal points
-          !if (nm==0) then
-          !   reflevel(i) = 0.0_fp
-          !   cycle
-          !end if
-          !
-          select case (pdump%depthdef)
-          case (DEPTHDEF_REFPLANE)
-             reflevel(i) = dadpar%refplane(nm)
-          case (DEPTHDEF_WATERLVL)
-             reflevel(i) = s1(nm)
-          case (DEPTHDEF_MAXREFWL)
-             reflevel(i) = max(s1(nm),dadpar%refplane(nm))
-          case (DEPTHDEF_MINREFWL)
-             reflevel(i) = min(s1(nm),dadpar%refplane(nm))
-          end select
-          if (kfsed(nm)==1 .or. pdredge%dredgewhendry) then
-             voltim = voltim + max( (reflevel(i) - pdump%mindumpdepth) - dpsign * real(dps(nm),fp), 0.0_fp)*area(i)
-          end if
-       end do
        !
        ! If capacity limited use dump capacity to distribute sediment over the
        ! domains, otherwise use the area.
        !
        if (pdump%dumpcapaflag) then
+          area => pdump%area
+          reflevel => pdump%reflevel
+          reflevel = 0.0_fp
+          !
+          ! Set the reference level and compute dump capacity and area.
+          !
+          voltim = 0.0_fp
+          do i = 1, pdump%npnt
+             nm = pdump%nm(i)
+             if (nm <= 0) cycle ! get data only for internal points
+             !
+             select case (pdump%depthdef)
+             case (DEPTHDEF_REFPLANE)
+                reflevel(i) = dadpar%refplane(nm)
+             case (DEPTHDEF_WATERLVL)
+                reflevel(i) = s1(nm)
+             case (DEPTHDEF_MAXREFWL)
+                reflevel(i) = max(s1(nm),dadpar%refplane(nm))
+             case (DEPTHDEF_MINREFWL)
+                reflevel(i) = min(s1(nm),dadpar%refplane(nm))
+             end select
+             if (kfsed(nm)==1 .or. pdump%dumpwhendry) then
+                voltim = voltim + max( (reflevel(i) - pdump%mindumpdepth) - dpsign * real(dps(nm),fp), 0.0_fp)*area(i)
+             end if
+          end do
+          !
           dadpar%globaldumpcap(ib) = voltim
        else
           dadpar%globaldumpcap(ib) = 0.0_fp

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -96,7 +96,7 @@ use m_evaluate_waq_attribute
     
     do iseg = 1 , noseg
         call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
-        if (ikmrk1.eq.1) then
+        if (ikmrk1==1) then
             call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
                 
             ! input independentt of fractions
@@ -138,7 +138,7 @@ use m_evaluate_waq_attribute
 !
 !       Sedimentation velocity from segment to exchange-area
 !
-        IF ( ifrom .GT. 0 ) THEN
+        IF ( ifrom > 0 ) THEN
             do ifrac = 1,nfrac
                 ipp = ip_lastsingle+nfrac*4+ifrac
                 settle_vel = PMSA( ipoint(ipp) + (ifrom-1) * increm(ipp) )

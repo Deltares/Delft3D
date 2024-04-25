@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -43,7 +43,7 @@ use m_partitioninfo, only: is_ghost_node
 use m_flow
 use m_flowgeom
 use m_flowtimes
-use m_wind, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, qqlat
 implicit none
 
 integer :: k, k1, ilat

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 /*
  *  m3hbuf.h  -  ODS function prototypes for TRISULA NEFIS files
  *
- *  Copyright (C)  Stichting Deltares, 2011-2023.
+ *  Copyright (C)  Stichting Deltares, 2011-2024.
  *
  *   Pleun Koole
  */

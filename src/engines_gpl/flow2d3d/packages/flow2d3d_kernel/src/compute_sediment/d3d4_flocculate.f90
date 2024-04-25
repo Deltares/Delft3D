@@ -1,7 +1,7 @@
 subroutine d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, r0, kfs, kfsmn0, kfsmx0, dts, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         

@@ -48,7 +48,7 @@ if(UNIX)
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies}) 
+    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS}) 
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
     
     set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -94,19 +94,16 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${dimr_lib_sources
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
     set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.$ENV{USERNAME}.user")
+		configure_file(
+		"${CMAKE_BINARY_DIR}/template.vcxproj.user"
+		"${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.user"
+		@ONLY
+		)
+	endif()
 endif(WIN32)
 
-# post-build
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
  message(STATUS "build_config ${build_config}")
-
-post_build_target( ${executable_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${executable_name}  )
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 if (UNIX)

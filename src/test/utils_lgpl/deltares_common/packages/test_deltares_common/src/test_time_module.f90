@@ -1,7 +1,7 @@
 module test_time_module
    !----- LGPL --------------------------------------------------------------------
    !                                                                               
-   !  Copyright (C)  Stichting Deltares, 2011-2023.                                
+   !  Copyright (C)  Stichting Deltares, 2011-2024.                                
    !                                                                               
    !  This library is free software; you can redistribute it and/or                
    !  modify it under the terms of the GNU Lesser General Public                   
@@ -364,7 +364,7 @@ module test_time_module
         
         dateandtime = '00000000_000000'
         call seconds_to_datetimestring(dateandtime,'20120101',60.0_hp)              ! easy for now, delta = 1 minute
-        call assert_equal_string( trim(dateandtime), '20120101_000100', 'error for datetimestring = 20120101000001' )
+        call assert_equal( trim(dateandtime), '20120101_000100', 'error for datetimestring = 20120101000001' )
       
       end subroutine test_seconds_to_datetimestring
       

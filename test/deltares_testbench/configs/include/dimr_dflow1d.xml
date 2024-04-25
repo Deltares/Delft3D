@@ -1,6 +1,6 @@
 <testCases>
     <testCase name="e106_f01_c036" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c036</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c036</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -11,7 +11,7 @@
         </checks>
     </testCase>
     <testCase name="e106_f01_c056" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c056</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c056</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -22,7 +22,7 @@
         </checks>
     </testCase>
     <testCase name="e106_f01_c107" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c107</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c107</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -40,7 +40,7 @@
         </checks>
     </testCase>
     <testCase name="e106_f01_c200" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c200</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c200</path>
         <checks>
             <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
                 <parameters>
@@ -54,7 +54,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c202" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c202</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c202</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -71,7 +71,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c203" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c203</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c203</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -90,7 +90,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c204" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c204</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c204</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -112,7 +112,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c221" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c221</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c221</path>
         <checks>
             <file name="dflow1d/output/structures.nc" type="NETCDF">
                 <parameters>
@@ -132,7 +132,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c228" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c228</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c228</path>
         <checks>
             <file name="dflow1d/output/structures.nc" type="NETCDF">
                 <parameters>
@@ -145,7 +145,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c286b" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c286b</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c286b</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -193,7 +193,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c298" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c298</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c298</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -236,7 +236,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c446" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c446</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c446</path>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
                 <parameters>
@@ -252,7 +252,7 @@
         <maxRunTime>60.0</maxRunTime>
     </testCase>
     <testCase name="e106_f01_c259c" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c259c</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c259c</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -263,7 +263,7 @@
         </checks>
     </testCase>
     <testCase name="e106_f01_c280" ref="dflow1d_default">
-        <path>e106_dflow1d/f01_general/c280</path>
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c280</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">

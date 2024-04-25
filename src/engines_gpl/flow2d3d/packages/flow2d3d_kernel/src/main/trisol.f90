@@ -8,7 +8,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                 & error     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -150,6 +150,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: itfinish
     integer                              , pointer :: itcomi
     integer                              , pointer :: itimtt
+    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itnflf
     integer                              , pointer :: itnfli
     integer                              , pointer :: itnfll
@@ -712,6 +713,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
     densin              => gdp%gdmorpar%densin
     eulerisoglm         => gdp%gdmorpar%eulerisoglm
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     hdt                 => gdp%gdnumeco%hdt
     rhow                => gdp%gdphysco%rhow
     ag                  => gdp%gdphysco%ag
@@ -1925,7 +1927,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -2174,7 +2176,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! mass flux and temporary set in WRKB5 (U0EUL) and WRKB6 (V0EUL)
        ! these are used in BOTT3D
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           !
           ! don't compute suspended transport vector in middle of timestep
@@ -2998,7 +3000,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -3246,7 +3248,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! these are used in BOTT3D
        !
        call timer_start(timer_3dmor, gdp)
-       if (lsedtot>0) then
+       
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           !
           ! compute suspended sediment transport vector at the end of each
           ! dt. Would be better to just calculate it when required for

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -44,10 +44,10 @@
  double precision                  :: sigdif
  double precision                  :: sigtke, sigtkei
  double precision                  :: sigeps, sigepsi
- double precision                  :: sigsal, sigsali
- double precision                  :: sigtem, sigtemi
- double precision                  :: sigsed, sigsedi
  double precision                  :: sigrho
+ double precision                  :: sigsal
+ double precision                  :: sigtem
+ double precision                  :: sigtracer
 
  !                                    c1e    = c2e-vonkar**2/(sigeps*sqrt(cmukep))
 
@@ -129,6 +129,7 @@
 
  double precision, allocatable     :: rhou     (:)      ! density at flow links   (kg/m3)
 
+ double precision, allocatable     :: sigsed   (:)      ! prandtl schmidt per sediment fraction
  double precision, allocatable     :: sigdifi  (:)      ! inverse prandtl schmidt nrs
  double precision, allocatable     :: wsf      (:)      ! fall velocities of all numconst constituents
 
@@ -153,9 +154,9 @@ use m_physcoef
     sigtke    = 1.0d0  ; sigtkei = 1d0/sigtke
     sigeps    = 1.3d0  ; sigepsi = 1d0/sigeps
     sigrho    = 0.7d0  ! bouyancy
-    sigsal    = 0.7d0  ; sigsali = 1d0/sigsal
-    sigtem    = 0.7d0  ; sigtemi = 1d0/sigtem
-    sigsed    = 1.0d0  ; sigsedi = 1d0/sigsed
+    sigsal    = Schmidt_number_salinity
+    sigtem    = Prandtl_number_temperature
+    sigtracer = Schmidt_number_tracer
 
     cmukep    = 0.09d0
     sqcmukep  = sqrt(cmukep)

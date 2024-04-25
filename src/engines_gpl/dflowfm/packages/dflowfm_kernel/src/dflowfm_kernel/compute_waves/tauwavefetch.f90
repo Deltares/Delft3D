@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2022.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -173,6 +173,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
  use m_waves,         only: nwf, fetch, fetdp
  use m_partitioninfo
  use unstruc_display, only: jagui
+ use m_wearelt
  use m_missing,       only: dmiss
  use m_sferic
  use m_fetch_local_data
@@ -183,7 +184,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
  
  integer          :: cell, index_wind_direction, error
  integer          :: nr_cells_done, nr_cells_done_red
- double precision :: wind_direction, u_wind, v_wind
+ double precision :: wind_direction, u_wind, v_wind, xp, yp, vfw
 
  call timstrt('Ext.forcings fetch', handle_fetch)
  allocate ( fetch_temp(2, ndx) , stat = error)
@@ -198,17 +199,23 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
  allocate ( data_at_upwind_cells(2,1) , stat = error)
 
  do index_wind_direction  = 1, nwf
-    if (jagui > 0) then
-        call cls1()
-        call setcol(221)
-        ! numdots = 0
-    endif
-	fetch_temp    = dmiss
+    fetch_temp    = dmiss
     calculate_for = .true.
     
     wind_direction = twopi * (index_wind_direction - 1) / dble(nwf - 1)
     u_wind    = cos(wind_direction)
     v_wind    = sin(wind_direction)
+
+    if (jagui > 0) then
+        call cls1()
+        call setcol(221)
+
+        xp  = 0.90*x1 + 0.10*x2
+        yp  = 0.15*y1 + 0.85*y2
+        vfw = 0.1d0*(x2-x1)/10d0   ! 10 m/s is 0.1*screen
+        call arrowsxy( xp, yp, u_wind, v_wind, vfw)
+    endif
+
     
     call search_starting_cells(u_wind, v_wind, nr_cells_done)
 
@@ -308,7 +315,11 @@ do cell = 1, ndxi
                         return
                     endif
                     list_of_upwind_cells(number_of_upwind_cells(cell-1)+index) = cell2
-                    sn   = sqrt( 1d0 - cs*cs)
+                    if (cs*cs < 1d0) then 
+                       sn = sqrt( 1d0 - cs*cs)
+                    else
+                       sn = 0d0 
+                    endif
                     prin = dx(link)*cs
                     www  = (cs   + 0.05d0*sn)*wu(link)/dx(link) ! some diffusion
                     data_at_upwind_cells(1,number_of_upwind_cells(cell-1)+index)  = www
@@ -449,11 +460,14 @@ integer, intent(in)    :: total_nr_cells
 
 integer          :: cell, index_upwind_cell, upwind_cell, nr_cells_done_red, nr_cells_done_prev_cycle, error
 double precision :: prin, fetch_length, fetch_depthw, sumw, www
+integer          :: numcycles
 
+numcycles = 0
 do while ( nr_cells_done < total_nr_cells )
         
-    nr_cells_done_prev_cycle     = nr_cells_done
-    nr_cells_done                = 0
+    nr_cells_done_prev_cycle = nr_cells_done
+    nr_cells_done            = 0
+    numcycles                = numcycles + 1 
 
 cell_loop: do cell = 1, ndxi
         if ( calculate_for(cell) ) then

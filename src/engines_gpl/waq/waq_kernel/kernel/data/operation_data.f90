@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -26,11 +26,11 @@ module m_operation_data
     implicit none
 
     type operation_data
-        integer, dimension(6)                   :: index
-        integer                                 :: number_values
-        integer                                 :: operation
-        real, dimension(:), pointer             :: new_value => null()
-        real                                    :: new_scalar
+        integer, dimension(6) :: index
+        integer :: number_values
+        integer :: operation
+        real, dimension(:), pointer :: new_value => null()
+        real :: new_scalar
     end type operation_data
 
 end module m_operation_data

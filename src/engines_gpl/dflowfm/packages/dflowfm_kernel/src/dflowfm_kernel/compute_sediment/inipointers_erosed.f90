@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -144,6 +144,7 @@
    alfpa               => stmpar%morpar%alfpa
    thcrpa              => stmpar%morpar%thcrpa
    islope              => stmpar%morpar%islope
+   ti_sedtrans         => stmpar%morpar%ti_sedtrans
    tmor                => stmpar%morpar%tmor
    tcmp                => stmpar%morpar%tcmp
    itmor               => stmpar%morpar%itmor

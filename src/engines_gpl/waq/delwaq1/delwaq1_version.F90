@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -30,10 +30,10 @@ module delwaq1_version_module
 
     implicit none
 
-    character(*),  private, parameter :: component_name      = 'DELWAQ1'
+    character(*), private, parameter :: component_name = 'DELWAQ1'
 
-    character(*),  public, parameter :: delwaq1_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*),  public, parameter :: delwaq1_version_id   = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+    character(*), public, parameter :: delwaq1_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*), public, parameter :: delwaq1_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 

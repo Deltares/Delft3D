@@ -1473,7 +1473,6 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
          puts $scriptfile "cd /D $rootmergedir"
       }
       puts $scriptfile "\nrem Start mormerge\n"
-      puts $scriptfile "set PATH=$exedir;$sharedir;%PATH%"
       puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename] -w $rundir -r $runid >$screenfile 2>&1"
       if { $localrun } {
          puts $scriptfile "\nrem Copy rundir data back to modeldir\n"

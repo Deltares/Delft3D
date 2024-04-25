@@ -6,7 +6,7 @@ contains
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -353,7 +353,7 @@ end subroutine dealloc_particles
 !> initialize particles
 subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDtype_loc)
    use m_fm_aux_routines
-   use hydmod
+   use m_hydmod
    use partmem, only: xwaste, ywaste, zwaste, &
         radius, wparm, iwtime, ictime, amassd, amassc, nodye, nocont, ndprt, nopart, npmax, nosubs
 

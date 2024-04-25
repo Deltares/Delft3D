@@ -21,25 +21,13 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
    
-module m_statistical_callback
-   abstract interface
-      !> function pointer to be called by update_source_data when advanced operations are required and the data to be
-      !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
-      !!
-      !! NOTE: these callback functions are also called once during init_statistical_output();
-      !!       if %source_input must point to newly allocated memory, that is the time to do it once,
-      !!       and should never be reallocated after that.
-      subroutine process_data_double_interface(datapointer)
-         double precision, pointer, dimension(:), intent(inout) :: datapointer !< pointer to function in-output data
-      end subroutine process_data_double_interface
-   end interface
-end module m_statistical_callback
-   
 !> This module implements the statistical output in D-Flow FM.
 module m_statistical_output
+
    use MessageHandling
    use m_output_config
    use m_statistical_callback
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
    
    implicit none
    
@@ -70,39 +58,6 @@ private
    integer, parameter, public :: SO_NOERR          =  0 !< Function successful
    integer, parameter, public :: SO_INVALID_CONFIG = -1 !< Wrong value string provided in the MDU output configuration
    integer, parameter, public :: SO_EOR            = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
-   
-   !> Derived type for the statistical output items. 
-   type, public :: t_output_variable_item
-      type(t_output_quantity_config), pointer   :: output_config        !< Pointer to output configuration item.
-      integer                                   :: operation_type       !< Specifies the kind of operation to perform on the output variable.
-      integer                                   :: current_step         !< Latest entry in the work array. MOD(current_step+1,moving_average_window) is the next 
-      integer                                   :: moving_average_window    !< Number of steps inside the moving average
-      !< item to remove.   
-      integer                                   :: id_var               !< NetCDF variable ID, to be set and used by actual writing functions.
-      double precision, pointer, dimension(:)   :: stat_output          !< Array that is to be written to the Netcdf file. In case the current values are
-                                                                        !< required this variable points to the basic variable (e.g. s1).
-                                                                        !< Otherwise during the simulation the intermediate results are stored.
-      double precision, pointer, dimension(:)   :: stat_input           !< In case a statistical operation is requested. This pointer points to the
-                                                                        !< basic variable.
-      double precision, pointer, dimension(:)   :: source_input         !< pointer to the basic variable
-      double precision, pointer, dimension(:,:) :: samples              !< In case a moving average is requested. This pointer points to the
-                                                                        !< work array, where the different samples are stored.
-      double precision, pointer, dimension(:)   :: moving_average_sum !< In case a moving average is requested. This pointer points to the
-                                                                        !< actual average values.
-      double precision                          :: timestep_sum         !< sum of timesteps (for moving average/ average calculation)
-      
-      double precision, pointer, dimension(:)   :: timesteps            !< array of timesteps belonging to samples in samples array
-      procedure(process_data_double_interface), nopass, pointer      :: source_input_function_pointer => null()          !< function pointer for operation that needs to be performed to produce source_input 
-      
-   end type t_output_variable_item
-   
-   !> Derived type to store the cross-section set
-   type, public :: t_output_variable_set
-      integer                                                :: size = 0      !< size of output variable set
-      integer                                                :: growsby = 200 !< increment of output variable set
-      integer                                                :: count= 0      !< count of items in output variable set
-      type(t_output_variable_item), pointer, dimension(:)    :: statout       !< pointer to array of output variable items
-   end type t_output_variable_set
 
 contains
 
@@ -131,14 +86,14 @@ contains
       
       if (present(size) .and. size >= statoutput%count) then
          allocate(statoutput%statout(size),stat=ierr)
-         call aerr('statoutput%statout(size)',ierr,size)
+         call aerr('statoutput%configs(size)',ierr,size)
          
          statoutput%statout(1:size) = oldstats(1:size)
          deallocate(oldstats)
          statoutput%size = size
       else
          allocate(statoutput%statout(statoutput%size+statoutput%growsBy),stat=ierr)
-         call aerr('statoutput%statout(statoutput%size+statoutput%growsBy)',ierr,statoutput%size+statoutput%growsBy)
+         call aerr('statoutput%configs(statoutput%size+statoutput%growsBy)',ierr,statoutput%size+statoutput%growsBy)
    
          if (statoutput%size > 0) then
             statoutput%statout(1:statoutput%size) = oldstats(1:statoutput%size)
@@ -268,16 +223,18 @@ contains
    
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-   use m_statistical_callback
+      use m_statistical_callback
+      use MessageHandling, only: mess, LEVEL_WARN
    
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
       type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
       double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
       procedure(process_data_double_interface), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
       
-      type(t_output_variable_item) :: item ! new item to be added
+      type(t_output_variable_item)                       :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring
-      integer :: ierr
+      integer                                            :: ierr
+      
       valuestring = output_config%input_value
 
       do while (len_trim(valuestring) > 0) 
@@ -287,6 +244,15 @@ contains
          else if (item%operation_type == SO_NONE) then
             cycle
          else
+      
+            ! Disable statistics in time on structures of this type if any of them lie across multiple partitions
+            if (model_has_structures_across_partitions(output_config%location_specifier) .and. item%operation_type /= SO_CURRENT) then
+               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type_to_string(item%operation_type)) // ')"' // &
+                                    ' as at least one ' // trim(location_specifier_to_string(output_config%location_specifier)) // &
+                                    ' lies across multiple partitions, which could produce invalid output')
+               cycle
+            end if
+            
             output_set%count = output_set%count + 1
             if (output_set%count > output_set%size) then
                call realloc_stat_output(output_set)
@@ -295,8 +261,12 @@ contains
             item%output_config => output_config
             item%source_input => data_pointer
             if (present(source_input_function_pointer)) then
-               item%source_input_function_pointer => source_input_function_pointer
-            endif
+               if (associated(source_input_function_pointer)) then
+                  item%source_input_function_pointer => source_input_function_pointer
+                  ! First "init" call to callback functions, such that %source_input is allocated
+                  call item%source_input_function_pointer(item%source_input)
+               end if
+            end if
 
             output_set%statout(output_set%count) = item
          end if
@@ -310,6 +280,48 @@ contains
       call err_flush()
 
    end subroutine add_stat_output_items
+   
+   !> Check if any structures of the indicated type lie across multiple partitions
+   function model_has_structures_across_partitions(location_specifier) result(res)
+      use m_structures, only: model_has_weirs_across_partitions, &
+                              model_has_general_structures_across_partitions, &
+                              model_has_orifices_across_partitions, &
+                              model_has_universal_weirs_across_partitions, &
+                              model_has_culverts_across_partitions, &
+                              model_has_pumps_across_partitions, &
+                              model_has_bridges_across_partitions, &
+                              model_has_long_culverts_across_partitions
+      use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
+      use m_monitoring_crosssections, only: crs
+      integer, intent(in) :: location_specifier    !< The location specifier indicating the type of structure (UNC_LOC_XXX)
+      logical             :: res                   !< Whether or not any structures of this type lie across multiple partitions
+      
+      res = .false.
+      
+      select case (location_specifier)
+      case default
+         return
+      case (UNC_LOC_OBSCRS)      ! Cross-sections
+         res = any_crosssections_lie_across_multiple_partitions(crs)
+      case (UNC_LOC_WEIRGEN)     ! Weirs
+         res = model_has_weirs_across_partitions
+      case (UNC_LOC_GENSTRU)     ! General structures
+         res = model_has_general_structures_across_partitions
+      case (UNC_LOC_ORIFICE)     ! Orifices
+         res = model_has_orifices_across_partitions
+      case (UNC_LOC_UNIWEIR)     ! Universal weirs
+         res = model_has_universal_weirs_across_partitions
+      case (UNC_LOC_CULVERT)     ! Culverts
+         res = model_has_culverts_across_partitions
+      case (UNC_LOC_PUMP)        ! Pumps
+         res = model_has_pumps_across_partitions
+      case (UNC_LOC_BRIDGE)      ! Bridges
+         res = model_has_bridges_across_partitions
+      case (UNC_LOC_LONGCULVERT) ! Long culverts
+         res = model_has_long_culverts_across_partitions
+      end select
+      
+   end function model_has_structures_across_partitions
 
    !> Parse the a statistical operation type from the start of a value string.
    !! Example input: "Wrihis_waterlevel = Current, Max(10)"
@@ -404,12 +416,6 @@ contains
       
       do j = 1, output_set%count
          item => output_set%statout(j)
-
-         ! First "init" call to callback functions, such that %source_input is allocated
-         if (associated(item%source_input_function_pointer)) then
-            call item%source_input_function_pointer(item%source_input)
-         endif
-
          input_size = size(item%source_input)
 
          select case (item%operation_type)
@@ -438,5 +444,24 @@ contains
       enddo
 
    end subroutine initialize_statistical_output
+   
+   !> Obtain a character string describing the statistics operation (for writing to screen)
+   function operation_type_to_string(operation_type) result(operation_string)
+      integer, intent(in) :: operation_type        !< Integer representing the operation type
+      character(len=256)  :: operation_string      !> Character string describing the operation type
+            
+      select case (operation_type)
+      case default
+         operation_string = 'UNKNOWN'
+      case (SO_CURRENT)
+         operation_string = 'current'
+      case (SO_MIN)
+         operation_string = 'min'
+      case (SO_MAX)
+         operation_string = 'max'
+      case (SO_AVERAGE)
+         operation_string = 'average'
+      end select
+   end function operation_type_to_string
 
 end module

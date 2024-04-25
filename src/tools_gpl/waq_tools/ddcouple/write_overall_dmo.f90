@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -27,13 +27,13 @@
 
       ! global declarations
 
-      use hydmod                   ! module contains everything for the hydrodynamic description
-      use m_dhfext
+      use m_hydmod                   ! module contains everything for the hydrodynamic description
+      use m_file_path_utils, only : extract_file_extension
 
       implicit none
 
-      type(t_hyd)          :: hyd              ! description of the overall hydrodynamics
-      type(t_hyd_coll)     :: domain_hyd_coll  ! description of the overall hydrodynamics
+      type(t_hydrodynamics)          :: hyd              ! description of the overall hydrodynamics
+      type(t_hydrodynamics_collection)     :: domain_hyd_coll  ! description of the overall hydrodynamics
       integer              :: lunrep           ! LU-number report file
       logical              :: success
 
@@ -77,7 +77,7 @@
       success = .false.
       opened  = .false.
 
-      do i = 1,hyd%domain_coll%cursize
+      do i = 1,hyd%domain_coll%current_size
           dmoname = trim(hyd%domain_coll%domain_pnts(i)%name) // ".dmo"
 
           if ( i > 1 ) then
@@ -92,7 +92,7 @@
           write(lunrep,'(2a,i10)') '   Detail DMO file found: ', trim(dmoname)
 
           if ( .not. opened ) then
-              call dhfext( hyd%file_hyd%name, filext, extpos, extlen )
+              call extract_file_extension( hyd%file_hyd%name, filext, extpos, extlen )
 
               open( 88, file = hyd%file_hyd%name(1:extpos-1) // ".dmo" )
               success = .true.

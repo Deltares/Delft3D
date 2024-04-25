@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,7 +34,7 @@ module partmem
 !     Created             : July    2011 by Leo Postma
 
       use m_waq_precision       ! single/double precision
-      use hydmod
+      use m_hydmod
       use typos           ! the derived types
 
       integer(int_wp )  , parameter          :: nfilesp =  100
@@ -45,7 +45,7 @@ module partmem
       real   (sp)   :: defang  , hmin    , ptlay   , accrjv
       logical       :: oil     , oil2dh  , oil3d   , ltrack  , acomp  , fout
 
-      type(t_hyd)              :: hyd           ! description of the hydrodynamics
+      type(t_hydrodynamics)              :: hyd           ! description of the hydrodynamics
       integer  ( int_wp )           :: bufsize       ! size of rbuffr
       integer  ( int_wp )           :: nosub_max     ! maximum number of substances
       integer  ( int_wp )           :: nmaxp         ! horizontal dimension 1 of flow file

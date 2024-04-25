@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@
 
       ! Format specifiers
       character(len=*), parameter  :: FMT21 = "(a10,f18.0,a1,1x,a50)"
-      character(len=*), parameter  :: FMT22 = "(a10,18x,  a1,1x,a50))"
+      character(len=*), parameter  :: FMT22 = "(a10,18x,  a1,1x,a50)"
       character(len=*), parameter  :: FMT31 = "(a10,f18.0,a1,1x,a50,5x,a20)"
       character(len=*), parameter  :: FMT32 = "(a10,18x,  a1,1x,a50,5x,a20)"
 

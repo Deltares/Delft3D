@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,86 +21,85 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_flxfrc
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine flxfrc     ( pmsa   , fl     , ipoint , increm, noseg , &
-                              noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                              noq3   , noq4   )
+    subroutine flxfrc     (pmsa, fl, ipoint, increm, noseg, &
+            noflux, iexpnt, iknmrk, noq1, noq2, &
+            noq3, noq4)
 
-      ! delwaq-pl routine to split a flux over fractions
+        ! delwaq-pl routine to split a flux over fractions
 
-      implicit none
+        implicit none
 
-      ! declaration of the arguments
+        ! declaration of the arguments
 
-      real(kind=real_wp)                ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp)                ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp)                ::ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
-      integer(kind=int_wp)                ::increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp)                ::noseg       ! I  Number of computational elements in the whole model schematisation
-      integer(kind=int_wp)                ::noflux      ! I  Number of fluxes, increment in the fl array
-      integer(kind=int_wp)                ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp)                ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp)                ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp)                ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp)                ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp)                ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+        integer(kind = int_wp) :: ipoint(*)   ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: increm(*)   ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+        integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+        integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
+        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
-      ! variables from pmsa array
+        ! variables from pmsa array
 
-      integer(kind=int_wp)                ::nfrac       ! I  number of fractions
-      real(kind=real_wp)                ::flx         ! I  flux to be split
-      real(kind=real_wp)                ::rfrac_p     ! I  relative fraction to be used for positive flux
+        integer(kind = int_wp) :: nfrac       ! I  number of fractions
+        real(kind = real_wp) :: flx         ! I  flux to be split
+        real(kind = real_wp) :: rfrac_p     ! I  relative fraction to be used for positive flux
 
-      ! local variables
+        ! local variables
 
-      integer(kind=int_wp)                ::npnt        !    number of pointers in pmsa
-      integer(kind=int_wp), allocatable ::ipnt(:)     !    local work array for the pointering
-      integer(kind=int_wp)                ::iseg        !    loop counter for computational element loop
-      integer(kind=int_wp)                ::ifrac       !    loop counter for fractions
-      integer(kind=int_wp)                ::iflux       !    index fluxes
+        integer(kind = int_wp) :: npnt        !    number of pointers in pmsa
+        integer(kind = int_wp), allocatable :: ipnt(:)     !    local work array for the pointering
+        integer(kind = int_wp) :: iseg        !    loop counter for computational element loop
+        integer(kind = int_wp) :: ifrac       !    loop counter for fractions
+        integer(kind = int_wp) :: iflux       !    index fluxes
 
-      ! initialise pointering in pmsa
+        ! initialise pointering in pmsa
 
-      nfrac = pmsa( ipoint(1) )
-      npnt  = 2*nfrac + 2
-      allocate(ipnt(npnt))
-      ipnt  = ipoint(1:npnt)
+        nfrac = pmsa(ipoint(1))
+        npnt = 2 * nfrac + 2
+        allocate(ipnt(npnt))
+        ipnt = ipoint(1:npnt)
 
-      ! loop over all segments
+        ! loop over all segments
 
-      iflux = 0
-      do iseg = 1 , noseg
+        iflux = 0
+        do iseg = 1, noseg
 
-         ! sum the fractions
+            ! sum the fractions
 
-         flx = pmsa(ipnt(2))
-         if ( flx .gt. 0.0 ) then
-            do ifrac = 1, nfrac
-               rfrac_p = pmsa(ipnt(2+ifrac))
-               fl(iflux+ifrac) = flx*rfrac_p
-            enddo
-         else
-            do ifrac = 1, nfrac
-               rfrac_p = pmsa(ipnt(2+nfrac+ifrac))
-               fl(iflux+ifrac) = flx*rfrac_p
-            enddo
-         endif
+            flx = pmsa(ipnt(2))
+            if (flx > 0.0) then
+                do ifrac = 1, nfrac
+                    rfrac_p = pmsa(ipnt(2 + ifrac))
+                    fl(iflux + ifrac) = flx * rfrac_p
+                enddo
+            else
+                do ifrac = 1, nfrac
+                    rfrac_p = pmsa(ipnt(2 + nfrac + ifrac))
+                    fl(iflux + ifrac) = flx * rfrac_p
+                enddo
+            endif
 
-         ! update pointering
+            ! update pointering
 
-         iflux = iflux + noflux
-         ipnt  = ipnt + increm(1:npnt)
+            iflux = iflux + noflux
+            ipnt = ipnt + increm(1:npnt)
 
-      enddo
+        enddo
 
-      return
-      end
+        return
+    end
 
 end module m_flxfrc

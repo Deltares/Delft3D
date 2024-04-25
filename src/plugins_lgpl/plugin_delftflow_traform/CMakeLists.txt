@@ -19,14 +19,4 @@ target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_poi
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_files})
 set_target_properties (${library_name} PROPERTIES FOLDER plugins_lgpl/plugin_delftflow_traform)
 
-# Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${library_name})
-
-install(TARGETS ${library_name} DESTINATION lib)
+install(TARGETS ${library_name} RUNTIME DESTINATION lib)

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,9 +33,9 @@
 !     'task' may be a better alternative for action
 !
 module m_actions
-      integer, parameter :: ACTION_INITIALISATION  = 1
-      integer, parameter :: ACTION_FINALISATION    = 2
-      integer, parameter :: ACTION_SINGLESTEP      = 3
-      integer, parameter :: ACTION_FULLCOMPUTATION = 4
+    integer, parameter :: ACTION_INITIALISATION = 1
+    integer, parameter :: ACTION_FINALISATION = 2
+    integer, parameter :: ACTION_SINGLESTEP = 3
+    integer, parameter :: ACTION_FULLCOMPUTATION = 4
 end module m_actions
 

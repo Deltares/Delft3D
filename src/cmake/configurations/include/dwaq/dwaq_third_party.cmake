@@ -1,25 +1,17 @@
 # Third-party targets needed for D-Waq
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq_functions.cmake)
 
-if(NOT TARGET kdtree2)
-    add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)
-endif()
+# List of targets and their module names
 
-if(NOT TARGET kdtree_wrapper)
-    add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
-endif()
+add_target_with_subdirectory(kdtree2 ${kdtree_module})
+add_target_with_subdirectory(kdtree_wrapper ${kdtree_wrapper_module})
+add_target_with_subdirectory(triangle_c ${triangle_c_module})
+add_target_with_subdirectory(fortrangis ${fortrangis_module})
+add_target_with_subdirectory(shp ${shp_module})
 
-if(NOT TARGET triangle_c)
-    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
-endif()
-
-if(NOT TARGET fortrangis)
-    add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
-endif()
-
-if(NOT TARGET shp)
-    add_subdirectory(${checkout_src_root}/${shp_module} shp)
-endif()
-
-if(NOT TARGET proj)
-    add_subdirectory(${checkout_src_root}/${proj_module} proj)
-endif()
+# proj
+if(WIN32)
+    set(MESSAGE_QUIET ON)
+    include_target_with_path(proj ${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+    unset(MESSAGE_QUIET)
+endif(WIN32)

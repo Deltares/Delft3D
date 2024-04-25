@@ -1,7 +1,7 @@
 module m_Culvert
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -96,7 +96,7 @@ contains
    subroutine ComputeCulvert(culvert, fum, rum, aum, dadsm, kfum, cmustr, s1m1, s1m2, qm,  &
                              q0m, u1m, u0m, dxm, dt, wetdown)
       use m_Roughness
-      
+
       implicit none
       !
       ! Global variables
@@ -153,7 +153,8 @@ contains
       double precision               :: frictloss
       double precision               :: totalLoss
       double precision               :: dlim
-      double precision :: dxlocal
+      double precision               :: dxlocal
+      double precision               :: eps10 = 1d-10
 
       ! Culvert Type
       
@@ -211,7 +212,8 @@ contains
          dpt = max(CrossSection%charHeight, dpt)
       endif
       call GetCSParsFlow(CrossSection, dpt, wArea, wPerimiter, wWidth)
-      if (warea==0) then 
+
+      if (abs(wArea) < eps10 .or. (culvert%has_valve .and. abs(culvert%valveOpening) < eps10)) then
          kfum  = 0
          fum   = 0.0d0
          rum   = 0.0d0

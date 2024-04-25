@@ -5,7 +5,7 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
                 & cesus     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -124,6 +124,7 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
        inquire (file = 'coef.inp', exist = exist)
        if (exist) then
           write (*, '(A)') 'Obsolete coef.inp file found; please use new keywords.'
+          call throwexception()
        endif
        first = .false.
     endif
@@ -135,7 +136,10 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     crits = par(13)
     critd = par(14)
     ! par(15) not used [was: d90]
-    ! par(16) not used [was: rk]
+    rk = par(16)
+    if (rk < 0.0_fp) then
+       rk = 12.0_fp * h * 10.0_fp ** -(chezy / 18.0_fp)
+    endif
     w = par(17)
     if (w < 0.0_fp) then
        w = ws
@@ -154,9 +158,7 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     epssl = par(22)
     crstr = epssl > 0.0_fp
     !
-    rkh = 12.0_fp  * 10.0_fp ** -(chezy / 18.0_fp)
-    !
-    if ((rkh >= 0.75_fp) .or. (h > 200.0_fp)) then
+    if ((h/rk <= 1.33_fp) .or. (h > 200.0_fp)) then
        sbotx = 0.0_fp
        sboty = 0.0_fp
        ssusx = 0.0_fp
@@ -165,7 +167,6 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
        return
     endif
     !
-    rk = rkh * max(h, 0.1_fp)
     uuvar = 0.0_fp
     call wavenr(h         ,t         ,kw        ,ag        )
     theta = dir*degrad
@@ -199,10 +200,11 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
     endif
     sbota = b * d50/chezy * sqrt(ag) * exp(arga) * (1.0_fp - por)
     eps = 0.001_fp
+    rkh = rk/h
     ri1 = 0.216_fp * rkh**(z - 1.0_fp)/(1.0_fp - rkh)**z * fgyint(rkh, 1.0_fp, z, eps, termfy)
     ri2 = 0.216_fp * rkh**(z - 1.0_fp)/(1.0_fp - rkh)**z * fgyint(rkh, 1.0_fp, z, eps, termgy)
     zfact = 1.83_fp
-    cesus = zfact*sbota*(ri1*log(33.0_fp/rkh) + ri2)
+    cesus = zfact * sbota * (ri1*log(33.0_fp/rkh) + ri2)
     !
     if (crstr) then
        call bailtr(h         ,hrms      ,t         ,theta     ,w         , &
@@ -214,7 +216,7 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
        ssksi = 0.0_fp
        sseta = 0.0_fp
     endif
-    ! 
+    !
     if (utot > 1.0e-10_fp) then
        sbotx = sbota*u + sbksi + ssksi
        sboty = sbota*v + sbeta + sseta

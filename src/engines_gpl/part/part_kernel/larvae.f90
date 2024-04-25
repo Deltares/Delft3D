@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -85,7 +85,7 @@ implicit none
       integer, save              :: nstage              ! number of stages
       integer, save              :: iday = 0            ! for csv output
       integer, save              :: ncum = 0            ! for csv output
-      character*256              :: filcsv
+      character(len=256)              :: filcsv
       integer, save              :: luncsv
       real(sp), allocatable,save :: astage(:)           ! a coefficient in stage development (-)
       real(sp), allocatable,save :: bstage(:)           ! b coefficient in stage development (-)

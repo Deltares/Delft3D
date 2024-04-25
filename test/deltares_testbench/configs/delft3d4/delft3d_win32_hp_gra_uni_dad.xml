@@ -159,7 +159,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/bin/win32</from>
 			</location>
-			<path>rtc\bin\rtc.exe</path>
+			<path>bin\rtc.exe</path>
 			<arguments>
 				<argument>rtc.fnm rtc.rtn</argument>
 			</arguments>
@@ -199,7 +199,7 @@
 			<location ref="local" type="check">
 				<from>teamcity_artifacts/bin/win32</from>
 			</location>
-			<path>dwaves\bin\wave.exe</path>
+			<path>bin\wave.exe</path>
 			<environments>
 				<environment name="D3D_HOME" type="path">[programpath(WAVE)]/../../..</environment>
 				<environment name="ARCH" type="raw">win32</environment>

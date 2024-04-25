@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -48,12 +48,12 @@
 !
       ! global declarations
 
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
 !     declaration of arguments
 
-      type(t_dlwqfile)                       :: file_lgt               ! aggregation-file
+      type(t_file)                       :: file_lgt               ! aggregation-file
       integer       mmax  , nmax  , nolay
 !
 !     local declarations
@@ -71,8 +71,8 @@
 !
 !     initialise file
 !
-      call dlwqfile_open(file_lgt)
-      lun    = file_lgt%unit_nr
+      call file_lgt%open()
+      lun    = file_lgt%unit
       filtyp = file_lgt%type
 !
 !     write table

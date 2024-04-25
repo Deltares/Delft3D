@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ module m_string_utils
 
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
-    public :: starts_with, index_in_array, string_equals
+    public :: starts_with, index_in_array, remove_duplicates, string_equals
 
     contains
 
@@ -149,6 +149,18 @@ module m_string_utils
         end do
     end function index_in_array
 
+    recursive function remove_duplicates( array ) result(unique_array)
+    !< Takes an array of strings which may contain duplicated strings and returns an array in which all duplicates have been removed.
+        character(*), dimension(:)         :: array            !< input array containing (possibly) duplicate strings.
+        character(len(array)), allocatable :: unique_array(:)  !< output array containing only unique elements.
+
+        if (size(array) > 0) then
+            unique_array = [array(1), remove_duplicates(pack(array(2:), array(2:) /= array(1)))]
+        else
+            allocate(unique_array(0))
+        endif
+    end function remove_duplicates
+
     logical function string_equals(source_string, target_string, exact_match, case_sensitive) result(found)
         !< Checks two strings to see if they are equal with the given conditions.
         character(len=*), intent(in) :: source_string !< string to compare
@@ -157,14 +169,23 @@ module m_string_utils
         logical, intent(in), optional :: exact_match     !< needs to be an exact match (not starts with) (default is false)
         logical, intent(in), optional :: case_sensitive  !< check case sensitive (default is false)
 
-        if (present(exact_match) .and. exact_match) then
-            if (present(case_sensitive) .and. case_sensitive) then
+        logical :: exact_match_
+        logical :: case_sensitive_
+
+        exact_match_ = .false.
+        if (present(exact_match)) exact_match_ = exact_match
+
+        case_sensitive_ = .false.
+        if (present(case_sensitive)) case_sensitive_ = case_sensitive
+
+        if (exact_match_) then
+            if (case_sensitive_) then
                 found = source_string == target_string
             else
                 found = str_tolower(source_string) == str_tolower(target_string)
             end if
         else
-            found = starts_with(target_string, source_string, case_sensitive)
+            found = starts_with(target_string, source_string, case_sensitive_)
         end if
 
     end function
@@ -180,15 +201,24 @@ module m_string_utils
 
         ! local variables
         character(len=len(string_to_search)) :: string_to_compare
+        logical :: exact_match_
+        logical :: case_sensitive_
+
+        case_sensitive_ = .false.
+        if (present(case_sensitive)) case_sensitive_ = case_sensitive
+
+        if (len(string_to_check)<len(string_to_search)) then
+            starts_with = .false.
+            return
+        end if
 
         string_to_compare = string_to_check(1:len(string_to_search))
 
-        if (present(case_sensitive) .and. case_sensitive) then
+        if (case_sensitive_) then
             starts_with = string_to_search == string_to_compare
             return
         end if
 
-        !starts_with = str_tolower(string_to_search) == str_tolower(string_to_compare)
         starts_with = check_case_insensitive(string_to_search, string_to_compare)
     end function
 

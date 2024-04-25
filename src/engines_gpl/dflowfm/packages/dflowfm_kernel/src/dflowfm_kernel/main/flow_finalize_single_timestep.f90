@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -49,6 +49,8 @@ use m_sedtrails_stats, st_is_numndvals=>is_numndvals
 use fm_statistical_output
 use m_statistical_output, only: update_statistical_output, update_source_data
 use m_update_fourier, only : update_fourier
+use mass_balance_areas_routines, only : comp_horflowmba
+use m_lateral, only : numlatsg
 
 implicit none
 integer, intent(out) :: iresult
@@ -148,8 +150,8 @@ integer, intent(out) :: iresult
     call update_statistical_output(out_variable_set_his%statout,dts)
  endif
  
-!call update_statistical_output(out_variable_set_map%statout,dts)
-!call update_statistical_output(out_variable_set_clm%statout,dts)
+!call update_statistical_output(out_variable_set_map%configs,dts)
+!call update_statistical_output(out_variable_set_clm%configs,dts)
  
  dnt    = dnt + 1
  time0  = time1                                      ! idem

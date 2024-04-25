@@ -5,6 +5,7 @@ Copyright (C)  Stichting Deltares, 2013
 """
 
 import os
+from typing import Optional
 import urllib.parse as parse
 import urllib.request as url_lib
 
@@ -35,7 +36,7 @@ class HTTPHandler(IHandler):
         from_path: str,
         to_path: str,
         credentials: Credentials,
-        version: str,
+        version: Optional[str],
         logger: ILogger,
     ):
         fn = from_path.split("/")[-1]

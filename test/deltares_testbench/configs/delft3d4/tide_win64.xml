@@ -186,7 +186,7 @@
     -->
     <testCases>
         <testCase name="e66_f01_c01_example_1" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c01_example_1</path>
+            <path version="2024-01-12T07:40:00">e66_tide/f01_analyse/c01_example_1</path>
             <checks>
                 <file name="anaex1.cmp" type="NUMBERTEXT"/>
                 <file name="anaex1.hdc" type="NUMBERTEXT"/>
@@ -200,7 +200,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c02_example_2" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c02_example_2</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c02_example_2</path>
             <checks>
                 <file name="anaex2.cmp" type="NUMBERTEXT"/>
                 <file name="anaex2.hdc" type="NUMBERTEXT"/>
@@ -214,7 +214,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c03_example_3" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c03_example_3</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c03_example_3</path>
             <checks>
                 <file name="anaex3.cmp" type="NUMBERTEXT"/>
                 <file name="anaex3.hdc" type="NUMBERTEXT"/>
@@ -228,7 +228,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c04_example_4" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c04_example_4</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c04_example_4</path>
             <checks>
                 <file name="anaex4.cmp" type="NUMBERTEXT"/>
                 <file name="anaex4.hdc" type="NUMBERTEXT"/>
@@ -242,7 +242,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c05_vlissingen" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c05_vlissingen</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c05_vlissingen</path>
             <checks>
                 <file name="181comp.cmp" type="NUMBERTEXT"/>
                 <file name="181comp.hdc" type="NUMBERTEXT"/>
@@ -256,7 +256,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c06_sa-3h-80-83(4jaar)" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c06_sa-3h-80-83(4jaar)</path>
+            <path version="2024-01-12T07:40:00">e66_tide/f01_analyse/c06_sa-3h-80-83(4jaar)</path>
             <checks>
                 <file name="sa-3h-80-83.cmp" type="NUMBERTEXT"/>
                 <file name="sa-3h-80-83.hdc" type="NUMBERTEXT"/>
@@ -271,7 +271,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c07_sa-3h-80-83(4jaar)" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c07_sa-3h-80-83(4jaar)</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c07_sa-3h-80-83(4jaar)</path>
             <checks>
                 <file name="sa-3h-80-83-2instr.cmp" type="NUMBERTEXT"/>
                 <file name="sa-3h-80-83-2instr.hdc" type="NUMBERTEXT"/>
@@ -286,7 +286,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c08_sa-3h-80-83(4jaar)" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c08_sa-3h-80-83(4jaar)</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c08_sa-3h-80-83(4jaar)</path>
             <checks>
                 <file name="sa-3h-80-83-4sub.cmp" type="NUMBERTEXT"/>
                 <file name="sa-3h-80-83-4sub.hdc" type="NUMBERTEXT"/>
@@ -301,7 +301,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c09_vlis-sa-1h-76-94(19jaar)" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c09_vlis-sa-1h-76-94(19jaar)</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c09_vlis-sa-1h-76-94(19jaar)</path>
             <checks>
                 <file name="vlis-sa-1h-76-94.cmp" type="NUMBERTEXT"/>
                 <file name="vlis-sa-1h-76-94.hdc" type="NUMBERTEXT"/>
@@ -316,7 +316,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c10_vlis-sa-ms0-1h-76-94(19jaar)" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c10_vlis-sa-ms0-1h-76-94(19jaar)</path>
+            <path version="2024-01-12T07:40:00">e66_tide/f01_analyse/c10_vlis-sa-ms0-1h-76-94(19jaar)</path>
             <checks>
                 <file name="vlis-sa-ms0-1h-76-94.cmp" type="NUMBERTEXT"/>
                 <file name="vlis-sa-ms0-1h-76-94.hdc" type="NUMBERTEXT"/>
@@ -331,7 +331,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f01_c11_vlissingen-12-subseries" ref="tide_analysis_default">
-            <path>e66_tide/f01_analyse/c11_vlissingen-12-subseries</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f01_analyse/c11_vlissingen-12-subseries</path>
             <checks>
                 <file name="181comp.cmp" type="NUMBERTEXT"/>
                 <file name="181comp.hdc" type="NUMBERTEXT"/>
@@ -346,7 +346,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f02_c01_example" ref="tide_ascon_default">
-             <path>e66_tide/f02_ascon/c01_example_1</path>
+             <path version="2024-01-12T07:30:00">e66_tide/f02_ascon/c01_example_1</path>
              <checks>
                   <file name="ascex1.prc" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -357,7 +357,7 @@
              <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f02_c02_example" ref="tide_ascon_default">
-             <path>e66_tide/f02_ascon/c02_example_2</path>
+             <path version="2024-01-12T07:30:00">e66_tide/f02_ascon/c02_example_2</path>
              <checks>
                   <file name="ascex2.prc" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -368,7 +368,7 @@
              <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f03_c01_example_1" ref="tide_sft_default">
-          <path>e66_tide/f03_fourier/c01_example_1</path>
+          <path version="2024-01-12T07:30:00">e66_tide/f03_fourier/c01_example_1</path>
              <checks>
                   <file name="anaex3.prf" type="NUMBERTEXT">
                     <skipline>[Version|VERSION]</skipline>
@@ -380,7 +380,7 @@
              <maxRunTime>6.0</maxRunTime>
         </testCase>
         <testCase name="e66_f03_c02_example_2" ref="tide_sft_default">
-            <path>e66_tide/f03_fourier/c02_example_2</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f03_fourier/c02_example_2</path>
             <checks>
                  <file name="sft_fouex2.prf" type="NUMBERTEXT">
                     <skipline>[Version|VERSION]</skipline>
@@ -392,7 +392,7 @@
             <maxRunTime>6.0</maxRunTime>
         </testCase>
         <testCase name="e66_f03_c03_example_3" ref="tide_fft_default">
-            <path>e66_tide/f03_fourier/c03_example_3</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f03_fourier/c03_example_3</path>
             <checks>
                  <file name="fft_fouex3.prt" type="NUMBERTEXT">
                     <skipline>[Version|VERSION]</skipline>
@@ -404,7 +404,7 @@
             <maxRunTime>6.0</maxRunTime>
         </testCase>
         <testCase name="e66_f04_c01_example_1" ref="tide_hilow_default">
-            <path>e66_tide/f04_hilow/c01_example_1</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f04_hilow/c01_example_1</path>
             <checks>
                  <file name="hlwex1.prh" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -420,7 +420,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f04_c02_example_2" ref="tide_hilow_default">
-            <path>e66_tide/f04_hilow/c02_example_2</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f04_hilow/c02_example_2</path>
             <checks>
                  <file name="hlwex2.prh" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -436,7 +436,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f04_c03_example_3" ref="tide_hilow_default">
-            <path>e66_tide/f04_hilow/c03_example_3</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f04_hilow/c03_example_3</path>
             <checks>
                  <file name="hlwex3.prh" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -452,7 +452,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f04_c04_vlissingen" ref="tide_hilow_default">
-            <path>e66_tide/f04_hilow/c04_vlissingen</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f04_hilow/c04_vlissingen</path>
             <checks>
                  <file name="181comp.prh" type="NUMBERTEXT">
                       <skipline>[Version|VERSION]</skipline>
@@ -468,7 +468,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f04_c05_vlissingen_10minobs" ref="tide_hilow_default">
-            <path>e66_tide/f04_hilow/c05_vlissingen_10minobs</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f04_hilow/c05_vlissingen_10minobs</path>
             <checks>
                 <file name="136comp.prh" type="NUMBERTEXT">
                     <skipline>[Version|VERSION]</skipline>
@@ -484,7 +484,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f05_c01_example" ref="tide_predict_default">
-        <path>e66_tide/f05_prediction/c01_example_1</path>
+        <path version="2024-01-12T07:30:00">e66_tide/f05_prediction/c01_example_1</path>
             <checks>
                 <file name="prdex1.prd" type="NUMBERTEXT"/>
                 <file name="prdex1.prp" type="NUMBERTEXT">
@@ -497,7 +497,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f05_c02_example" ref="tide_predict_default">
-            <path>e66_tide/f05_prediction/c02_example_2</path>
+            <path version="2024-01-12T07:30:00">e66_tide/f05_prediction/c02_example_2</path>
             <checks>
                  <file name="prdex2.prd" type="NUMBERTEXT"/>
                  <file name="prdex2.prp" type="NUMBERTEXT">
@@ -510,7 +510,7 @@
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="e66_f05_c03_amaliahaven" ref="tide_predict_default">
-        <path>e66_tide/f05_prediction/c03_amaliahaven</path>
+        <path version="2024-01-12T07:30:00">e66_tide/f05_prediction/c03_amaliahaven</path>
             <checks>
                 <file name="AMALH_18-6jaar_03.prd" type="NUMBERTEXT"/>
                 <file name="AMALH_18-6jaar_03.prp" type="NUMBERTEXT">

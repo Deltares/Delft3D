@@ -1,4 +1,4 @@
-!> This module contains the definition of the input items for the [output] section of the 
+!> This module contains the definition of the input items for the [output] section of the
 !! MDU file.
 module m_output_config
    use MessageHandling
@@ -7,13 +7,15 @@ module m_output_config
    use netcdf, only: nf90_double
    implicit none
 private
-   
+
    public scan_input_tree
    public set_properties
    public addoutval
    public realloc
    public dealloc
-   
+   public id_nc_type2nc_type_his
+   public location_specifier_to_string
+
    interface realloc
       module procedure realloc_config_output
    end interface
@@ -47,8 +49,11 @@ private
    integer, parameter, public :: UNC_LOC_OBSCRS      = 36 !< Data location: his file observation cross section data
    integer, parameter, public :: UNC_LOC_LATERAL     = 37 !< Data location: his file lateral locations data
    integer, parameter, public :: UNC_LOC_RUG         = 38 !< Data location: his file run-up gauge data
+   integer, parameter, public :: UNC_LOC_DREDGE      = 39 !< Data location: his file dredge data
+   integer, parameter, public :: UNC_LOC_DUMP        = 40 !< Data location: his file dump data
+   integer, parameter, public :: UNC_LOC_DRED_LINK   = 41 !< Data location: his file data on dredge links
    
-   !> indexes for output variables 
+   !> indices for output variables
    integer, public :: IDX_HIS_VOLTOT
    integer, public :: IDX_HIS_STOR
    integer, public :: IDX_HIS_VOLERR
@@ -95,7 +100,7 @@ private
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE
    integer, public :: IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME
-   integer, public :: IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE 
+   integer, public :: IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_DISCHARGE
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL
    integer, public :: IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL
@@ -250,12 +255,14 @@ private
    integer, public :: IDX_HIS_TWAV
    integer, public :: IDX_HIS_PHIWAV
    integer, public :: IDX_HIS_RLABDA
+   integer, public :: IDX_HIS_R
    integer, public :: IDX_HIS_UORB
    integer, public :: IDX_HIS_USTOKES
    integer, public :: IDX_HIS_VSTOKES
    integer, public :: IDX_HIS_TAUSX
    integer, public :: IDX_HIS_TAUSY
 
+   integer, public :: IDX_HIS_PATM
    integer, public :: IDX_HIS_WINDX
    integer, public :: IDX_HIS_WINDX_SFERIC
    integer, public :: IDX_HIS_WINDY
@@ -263,6 +270,8 @@ private
    integer, public :: IDX_HIS_RAIN
    integer, public :: IDX_HIS_INFILTRATION_CAP
    integer, public :: IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL
+
+   integer, public :: IDX_HIS_AIR_DENSITY
 
    integer, public :: IDX_HIS_WIND
    integer, public :: IDX_HIS_TAIR
@@ -276,12 +285,21 @@ private
    integer, public :: IDX_HIS_QFRCON
    integer, public :: IDX_HIS_QTOT
 
+   integer, public :: IDX_HIS_SED_FRAC_NAME
    integer, public :: IDX_HIS_SED
    integer, public :: IDX_HIS_WS
    integer, public :: IDX_HIS_SEDDIF
+   integer, public :: IDX_HIS_BODSED
+   integer, public :: IDX_HIS_DPSED
+
+   integer, public :: IDX_HIS_HWQ_ABSTRACT
+   integer, public :: IDX_HIS_WQBOT_ABSTRACT
+   integer, public :: IDX_HIS_WQBOT3D_ABSTRACT
+   
+   integer, public :: IDX_HIS_TRACERS_ABSTRACT
 
    integer, public :: IDX_HIS_OBSCRS_DISCHARGE
-   integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUM
+   integer, public :: IDX_HIS_OBSCRS_DISCHARGE_CUMUL
    integer, public :: IDX_HIS_OBSCRS_AREA
    integer, public :: IDX_HIS_OBSCRS_VELOCITY
    integer, public :: IDX_HIS_OBSCRS_CONST_ABSTRACT
@@ -290,13 +308,42 @@ private
    integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT
    integer, public :: IDX_HIS_OBSCRS_SED_STRANSPORT
    integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT
-   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_1
-   integer, public :: IDX_HIS_OBSCRS_SED_BTRANSPORT_N
+   integer, public :: IDX_HIS_OBSCRS_SED_STRANSPORT_PERFRAC_ABSTRACT
 
    integer, public :: IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS
    integer, public :: IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE
    integer, public :: IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS
    integer, public :: IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE
+   
+   integer, public :: IDX_HIS_TAUB
+   integer, public :: IDX_HIS_SBCX
+   integer, public :: IDX_HIS_SBCY
+   integer, public :: IDX_HIS_SBWX
+   integer, public :: IDX_HIS_SBWY
+   integer, public :: IDX_HIS_SSWX
+   integer, public :: IDX_HIS_SSWY
+   integer, public :: IDX_HIS_SSCX
+   integer, public :: IDX_HIS_SSCY
+   integer, public :: IDX_HIS_MSED
+   integer, public :: IDX_HIS_THLYR
+   integer, public :: IDX_HIS_POROS
+   integer, public :: IDX_HIS_LYRFRAC
+   integer, public :: IDX_HIS_FRAC
+   integer, public :: IDX_HIS_MUDFRAC
+   integer, public :: IDX_HIS_SANDFRAC
+   integer, public :: IDX_HIS_FIXFRAC
+   integer, public :: IDX_HIS_HIDEXP
+   integer, public :: IDX_HIS_MFLUFF
+
+   
+   integer, public :: IDX_HIS_DRED_AREA_NAME
+   integer, public :: IDX_HIS_DUMP_AREA_NAME
+   integer, public :: IDX_HIS_DRED_LINK_DISCHARGE
+   integer, public :: IDX_HIS_DRED_DISCHARGE
+   integer, public :: IDX_HIS_DUMP_DISCHARGE
+   integer, public :: IDX_HIS_DRED_TIME_FRAC
+   integer, public :: IDX_HIS_PLOUGH_TIME_FRAC
+
 
    integer, public :: IDX_MAP_S0
    integer, public :: IDX_MAP_S1
@@ -334,7 +381,7 @@ private
    integer, public :: IDX_MAP_DIU
    integer, public :: IDX_MAP_Q1
    integer, public :: IDX_MAP_Q1_MAIN
-   integer, public :: IDX_MAP_FIXED_WEIR_ENERGY_LOSS                   
+   integer, public :: IDX_MAP_FIXED_WEIR_ENERGY_LOSS
    integer, public :: IDX_MAP_SPIRCRV
    integer, public :: IDX_MAP_SPIRINT
    integer, public :: IDX_MAP_NUMLIMDT
@@ -377,16 +424,16 @@ private
    integer, public :: IDX_MAP_WINDSTRESSY
    integer, public :: IDX_MAP_WINDSTRESSX_SFERIC
    integer, public :: IDX_MAP_WINDSTRESSY_SFERIC
-   integer, public :: IDX_MAP_TAIR 
-   integer, public :: IDX_MAP_RHUM 
-   integer, public :: IDX_MAP_CLOU 
-   integer, public :: IDX_MAP_QSUN  
-   integer, public :: IDX_MAP_QEVA  
-   integer, public :: IDX_MAP_QCON  
-   integer, public :: IDX_MAP_QLONG 
+   integer, public :: IDX_MAP_TAIR
+   integer, public :: IDX_MAP_RHUM
+   integer, public :: IDX_MAP_CLOU
+   integer, public :: IDX_MAP_QSUN
+   integer, public :: IDX_MAP_QEVA
+   integer, public :: IDX_MAP_QCON
+   integer, public :: IDX_MAP_QLONG
    integer, public :: IDX_MAP_QFREVA
    integer, public :: IDX_MAP_QFRCON
-   integer, public :: IDX_MAP_QTOT  
+   integer, public :: IDX_MAP_QTOT
    integer, public :: IDX_MAP_TIDALPOTENTIAL
    integer, public :: IDX_MAP_SALPOTENTIAL
    integer, public :: IDX_MAP_INTERNAL_TIDES_DISSIPATION
@@ -446,35 +493,56 @@ private
    integer, public :: IDX_MAP_CUMULATIVE_TOTAL_NET_INFLOW_LATERAL
    integer, public :: IDX_MAP_WATER_LEVEL_GRADIENT
    integer, public :: IDX_MAP_QIN
-   integer, public :: IDX_CLS_S1         
+   integer, public :: IDX_CLS_S1
    integer, public :: IDX_CLS_WATERDEPTH
-   integer, public :: IDX_CLS_UCMAG  
+   integer, public :: IDX_CLS_UCMAG
    integer, public :: IDX_CLS_UCMAG_EULER
-   integer, public :: IDX_CLS_UCDIR 
+   integer, public :: IDX_CLS_UCDIR
    integer, public :: IDX_CLS_UCDIR_EULER
    
+   integer, public, parameter :: id_nc_undefined = -50
+   integer, public, parameter :: id_nc_byte      = -51
+   integer, public, parameter :: id_nc_char      = -52
+   integer, public, parameter :: id_nc_short     = -53
+   integer, public, parameter :: id_nc_int       = -54
+   integer, public, parameter :: id_nc_float     = -55
+   integer, public, parameter :: id_nc_double    = -56
+
    public t_output_quantity_config
-   !> Derived type for the input items, defining one entry [output] section of the MDU file. 
+   !> Derived type for the input items, defining one entry [output] section of the MDU file.
    type t_output_quantity_config
-      character(len=Idlen)             :: key             !< Key of the input item in the MDU file (e.g. wrimap_s1).                       
-      character(len=Idlen)             :: name            !< Name of the output item on the NETCDF file.      
-      integer                          :: nc_type         !< NetCDF variable type, one of: nf90_double, nf90_int, etc.
-      character(len=Idlen)             :: long_name       !< Long name of the output item on the NETCDF file.      
-      character(len=Idlen)             :: unit            !< unit of the output item on the NETCDF file.      
-      character(len=Idlen)             :: standard_name   !< Standard name of the output item on the NETCDF file.                     
-      character(len=Idlen)             :: input_value = ''!< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.         
-      character(len=Idlen)             :: description     !< Description of the input paragraph, key combination.
-      integer                          :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
-                                                             !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
+      character(len=Idlen)             :: key                   !< Key of the input item in the MDU file (e.g. wrimap_s1).
+      character(len=Idlen)             :: name                  !< Name of the output item on the NETCDF file.
+      integer                          :: id_nc_type            !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
+      character(len=Idlen)             :: long_name             !< Long name of the output item on the NETCDF file.
+      character(len=Idlen)             :: unit                  !< unit of the output item on the NETCDF file.
+      character(len=Idlen)             :: standard_name         !< Standard name of the output item on the NETCDF file.
+      character(len=Idlen)             :: input_value = ''      !< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.
+      character(len=Idlen)             :: description           !< Description of the input paragraph, key combination.
+      integer                          :: location_specifier    !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
+                                                                !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
       type(nc_att_set)                 :: additional_attributes !< optional additional NetCDF attributes for this quantity
+      type(t_nc_dim_ids), allocatable  :: nc_dim_ids            !< optional detailed specification of NetCDF dim-ids when UNC_LOC is insufficient
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
-      integer                                                :: size = 0                  !< Actual size of cross-section set
-      integer                                                :: growsby = 200             !< Increment for cross-section set
-      integer                                                :: count= 0                  !< Actual number of cross-section sets
-      type(t_output_quantity_config), pointer, dimension(:)    :: statout                   !< Current cross-section
+      integer                                                :: growsby = 200             !< Increment for config set
+      integer                                                :: count = 0                 !< Number of configs in config set 
+      integer                                                :: size  = 0                 !< Allocated size of config set (size = count + # of empty configs)
+      type(t_output_quantity_config), pointer, dimension(:)  :: configs                   !< array of output quantity configs in config set
    end type t_output_quantity_config_set
+
+   !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
+   type, public :: t_nc_dim_ids
+      logical :: laydim = .false.
+      logical :: laydim_interface_center = .false.
+      logical :: laydim_interface_edge = .false.
+      logical :: nlyrdim = .false.
+      logical :: statdim = .false.
+      logical :: sedsusdim = .false.
+      logical :: sedtotdim = .false.
+      logical :: timedim = .false.
+   end type t_nc_dim_ids
 
 contains
 
@@ -486,7 +554,7 @@ subroutine realloc_config_output(confoutput)
    implicit none
    ! Input/output parameters
    type(t_output_quantity_config_set), intent(inout)   :: confoutput !< Output configuration set.
-   
+
 
    ! Local variables
    integer                   :: ierr
@@ -495,17 +563,17 @@ subroutine realloc_config_output(confoutput)
    ! Program code
 
    if (confoutput%size > 0) then
-      oldstats=>confoutput%statout
+      oldstats=>confoutput%configs
    endif
 
    if (confoutput%growsBy <=0) then
       confoutput%growsBy = 200
    endif
-   allocate(confoutput%statout(confoutput%size+confoutput%growsBy),stat=ierr)
-   call aerr('statoutput%statout(statoutput%size+statoutput%growsBy)',ierr,confoutput%size+confoutput%growsBy)
+   allocate(confoutput%configs(confoutput%size+confoutput%growsBy),stat=ierr)
+   call aerr('statoutput%configs(statoutput%size+statoutput%growsBy)',ierr,confoutput%size+confoutput%growsBy)
 
    if (confoutput%size > 0) then
-      confoutput%statout(1:confoutput%size) = oldstats(1:confoutput%size)
+      confoutput%configs(1:confoutput%size) = oldstats(1:confoutput%size)
       deallocate(oldstats)
    endif
    confoutput%size = confoutput%size+confoutput%growsBy
@@ -518,13 +586,15 @@ subroutine dealloc_config_output(confoutput)
    type(t_output_quantity_config_set), intent(inout)   :: confoutput !< Output configuration set.
 
    if (confoutput%size> 0) then
-      deallocate(confoutput%statout)
+      deallocate(confoutput%configs)
    endif
 end subroutine dealloc_config_output
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
-subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_type, nc_atts, description)
-   type(t_output_quantity_config_set),  intent(inout) :: config_set         !< Array containing all output quantity configs.
+subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_atts, description)
+   use m_map_his_precision, only: md_nc_his_precision
+   use netcdf, only: nf90_double, nf90_float
+   type(t_output_quantity_config_set),  intent(inout) :: config_set      !< Array containing all output quantity configs.
    integer,                         intent(inout) :: idx                 !< Index for the current variable.
    character(len=*),                intent(in   ) :: key                 !< Key in the MDU file.
    character(len=*),                intent(in   ) :: name                !< Name of the variable on the NETCDF file.
@@ -532,18 +602,30 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    character(len=*),                intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
    character(len=*),                intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
    integer,                         intent(in   ) :: location_specifier  !< Location specifier of the variable.
-   integer,          optional,      intent(in   ) :: nc_type             !< NetCDF variable type, one of: nf90_double, nf90_int, etc. Default: nf90_double.
+   type(t_nc_dim_ids), optional,    intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
+   integer,          optional,      intent(in   ) :: id_nc_type          !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
    type(nc_attribute), optional,    intent(in   ) :: nc_atts(:)          !< (optional) list of additional NetCDF attributes to be stored for this output variable.
    character(len=*), optional,      intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
 
    integer :: numentries
-   integer :: nc_type_
+   integer :: id_nc_type_
    integer :: numatt
-   
-   if (present(nc_type)) then
-      nc_type_ = nc_type
+
+   if (present(id_nc_type)) then
+      ! Safety
+      if (.not. (id_nc_type == id_nc_undefined .or. &
+                 id_nc_type == id_nc_byte .or. &
+                 id_nc_type == id_nc_char .or. &
+                 id_nc_type == id_nc_short .or. &
+                 id_nc_type == id_nc_int .or. &
+                 id_nc_type == id_nc_float .or. &
+                 id_nc_type == id_nc_double)) then
+         call mess(LEVEL_ERROR,'addoutval - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+      end if
+      id_nc_type_ = id_nc_type
    else
-      nc_type_ = nf90_double
+      ! By default, use the netcdf precision that is later read from the mdu
+      id_nc_type_ = id_nc_undefined
    end if
 
    config_set%count = config_set%count+1
@@ -552,68 +634,180 @@ subroutine addoutval(config_set, idx, key, name, long_name, standard_name, unit,
    endif
    numentries = config_set%count
    idx = numentries
-   config_set%statout(numentries)%key                = key             
-   config_set%statout(numentries)%name               = name            
-   config_set%statout(numentries)%nc_type            = nc_type_
-   config_set%statout(numentries)%long_name          = long_name       
-   config_set%statout(numentries)%standard_name      = standard_name   
-   config_set%statout(numentries)%unit               = unit            
-   config_set%statout(numentries)%location_specifier = location_specifier
+   config_set%configs(numentries)%key                = key
+   config_set%configs(numentries)%name               = name
+   config_set%configs(numentries)%id_nc_type         = id_nc_type_
+   config_set%configs(numentries)%long_name          = long_name
+   config_set%configs(numentries)%standard_name      = standard_name
+   config_set%configs(numentries)%unit               = unit
+   config_set%configs(numentries)%location_specifier = location_specifier
+   config_set%configs(numentries)%input_value = ''
+
+   if (present(nc_dim_ids)) then
+      config_set%configs(numentries)%nc_dim_ids = nc_dim_ids
+   end if
 
    if (present(nc_atts)) then
       numatt = size(nc_atts)
-      call realloc(config_set%statout(numentries)%additional_attributes, numatt, keepExisting=.false.)
-      config_set%statout(numentries)%additional_attributes%count = numatt
-      config_set%statout(numentries)%additional_attributes%atts = nc_atts
+      call realloc(config_set%configs(numentries)%additional_attributes, numatt, keepExisting=.false.)
+      config_set%configs(numentries)%additional_attributes%count = numatt
+      config_set%configs(numentries)%additional_attributes%atts = nc_atts
    end if
 
    if (present(description)) then
-      config_set%statout(numentries)%description = description
+      config_set%configs(numentries)%description = description
    else
-      config_set%statout(numentries)%description = ''
+      config_set%configs(numentries)%description = ''
    endif
 
 end subroutine addoutval
 
-!> scan the input tree, using the keys in the statout_set
-subroutine scan_input_tree(tree, paragraph, statout_set)
-   use properties
+
+!> convert id_nc_type to actual nc_type for his file variables
+function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
+   use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
+   use m_map_his_precision, only: md_nc_his_precision, netcdf_data_type
+   implicit none
    
+   integer, intent(in   ) :: id_nc_type   !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
+   integer                :: nc_type      !> Actual netcdf type, one of: nf90_double, nf90_int, etc.
+  
+   select case (id_nc_type)
+   case default
+      call mess(LEVEL_ERROR,'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+   case (id_nc_undefined)
+      ! Use the netcdf precision for his files defined in the mdu
+      nc_type = netcdf_data_type(md_nc_his_precision)
+   case (id_nc_byte)
+      nc_type = nf90_byte
+   case (id_nc_char)
+      nc_type = nf90_char
+   case (id_nc_short)
+      nc_type = nf90_short
+   case (id_nc_int)
+      nc_type = nf90_int
+   case (id_nc_float)
+      nc_type = nf90_float
+   case (id_nc_double)
+      nc_type = nf90_double
+   end select
+  
+end function id_nc_type2nc_type_his
+
+
+!> scan the input tree, using the keys in the quantity_config_set
+subroutine scan_input_tree(tree, paragraph, quantity_config_set)
+   use properties
+
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: statout_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
-   type(t_output_quantity_config), pointer, dimension(:) :: statout
-   
-   statout => statout_set%statout
+   type(t_output_quantity_config), pointer, dimension(:) :: quantity_configs
 
-   do i = 1, statout_set%count
-      statout(i)%input_value = ''
-      call prop_get_string(tree, paragraph, statout(i)%key, statout(i)%input_value)
+   quantity_configs => quantity_config_set%configs
+
+   do i = 1, quantity_config_set%count
+      call prop_get_string(tree, paragraph, quantity_configs(i)%key, quantity_configs(i)%input_value)
    enddo
 
 end subroutine scan_input_tree
 
 !> Set the properties for the diagnostics file
-subroutine set_properties(tree, paragraph, statout_set)
+subroutine set_properties(tree, paragraph, quantity_config_set)
    use properties
 
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: statout_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
    type(t_output_quantity_config), pointer, dimension(:) :: statout
-   
-   statout => statout_set%statout
 
-   do i = 1, statout_set%count
-      if (len_trim(statout(i)%description)>0) then
+   statout => quantity_config_set%configs
+
+   do i = 1, quantity_config_set%count
+      if (len_trim(statout(i)%description)>0 .and. len_trim(statout(i)%input_value)>0) then
+         if (trim(statout(i)%input_value)=='current') then
+            statout(i)%input_value = '1'   
+         endif
          call prop_set(tree, trim(paragraph), trim(statout(i)%key), trim(statout(i)%input_value), trim(statout(i)%description))
       endif
    enddo
 
 end subroutine set_properties
+
+!> Convert a location specifier to a human-readable string
+function location_specifier_to_string(location_specifier) result(string)
+   use MessageHandling, only: mess, LEVEL_ERROR
+   
+   integer, intent(in) :: location_specifier !< The location specifier (UNC_LOC_XXX)
+   
+   character(:), allocatable :: string
+   
+   select case (location_specifier)
+   case default
+      call mess(LEVEL_ERROR,'Programming error, please report: unrecognised location_specifier in m_output_config/location_specifier_to_string')
+   case (UNC_LOC_CN          ) 
+      string = 'corner point'
+   case (UNC_LOC_S           ) 
+      string = 'pressure point'
+   case (UNC_LOC_U           ) 
+      string = 'horizontal velocity point'
+   case (UNC_LOC_L           ) 
+      string = 'horizontal net link'
+   case (UNC_LOC_S3D         ) 
+      string = 'pressure point in all layers'
+   case (UNC_LOC_U3D         ) 
+      string = 'horizontal velocity point in all layers'
+   case (UNC_LOC_W           ) 
+      string = 'vertical velocity point on all layer interfaces'
+   case (UNC_LOC_WU          ) 
+      string = 'vertical viscosity point on all layer interface'
+   case (UNC_LOC_GLOBAL      ) 
+      string = 'global variable'
+   case (UNC_LOC_SOSI        ) 
+      string = 'source/sink'
+   case (UNC_LOC_GENSTRU     ) 
+      string = 'general structure'
+   case (UNC_LOC_DAM         ) 
+      string = 'controllable dam'
+   case (UNC_LOC_PUMP        ) 
+      string = 'pump'
+   case (UNC_LOC_GATE        ) 
+      string = 'gate'
+   case (UNC_LOC_WEIRGEN     ) 
+      string = 'weir'
+   case (UNC_LOC_ORIFICE     ) 
+      string = 'orifice'
+   case (UNC_LOC_BRIDGE      ) 
+      string = 'bridge'
+   case (UNC_LOC_CULVERT     ) 
+      string = 'culvert'
+   case (UNC_LOC_DAMBREAK    ) 
+      string = 'dambreak'
+   case (UNC_LOC_UNIWEIR     ) 
+      string = 'universal weir'
+   case (UNC_LOC_CMPSTRU     ) 
+      string = 'compound structure'
+   case (UNC_LOC_LONGCULVERT ) 
+      string = 'long culvert'
+   case (UNC_LOC_STATION     ) 
+      string = 'observation station'
+   case (UNC_LOC_OBSCRS      ) 
+      string = 'observation cross section'
+   case (UNC_LOC_LATERAL     ) 
+      string = 'lateral location'
+   case (UNC_LOC_RUG         ) 
+      string = 'run-up gauge'
+   case (UNC_LOC_DREDGE      ) 
+      string = 'dredge'
+   case (UNC_LOC_DUMP        ) 
+      string = 'dump'
+   case (UNC_LOC_DRED_LINK   ) 
+      string = 'dredge link'
+   end select
+end function location_specifier_to_string
 
 end module m_output_config

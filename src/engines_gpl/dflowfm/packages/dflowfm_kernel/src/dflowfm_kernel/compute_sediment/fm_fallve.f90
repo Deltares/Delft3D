@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -40,7 +40,7 @@
    !!--declarations----------------------------------------------------------------
    use precision
    use m_physcoef, only: ee, ag, sag, vonkar, frcuni, backgroundsalinity, backgroundwatertemperature, vismol
-   use m_sediment, only: stmpar, sedtra, stm_included, mtd
+   use m_sediment, only: stmpar, sedtra, stm_included, mtd, sed
    use m_flowtimes, only: time1
    use m_flowgeom, only: ndx, ln, kfs,bl, wcl, lnx
    use m_flow    , only: ifrctypuni, z0, hs, iturbulencemodel,kbot,ktop,kmx,zws,ucxq,ucyq,sa1,tem1,ucx,ucy,ucz,ndkx,s1,z0ucur,z0urou,ifrcutp,hu,frcu,ucx_mor,ucy_mor
@@ -249,8 +249,8 @@
          ctot = 0d0
          cclay = 0d0
          do ll = 1, lsed
-            ctot = ctot + constituents(ISED1 - 1 +ll, kk)
-            if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1 - 1 +ll, kk)
+            ctot = ctot + sed(ll, kk)
+            if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + sed(ll, kk)
          end do
             !
          do ll = 1, lsed   
@@ -274,7 +274,7 @@
             dll_reals(WS_RP_SALIN) = real(salint ,hp)
             dll_reals(WS_RP_TEMP ) = real(temint ,hp)
             dll_reals(WS_RP_RHOWT) = real(rhoint ,hp)
-            dll_reals(WS_RP_CFRCB) = real(constituents(ised1-1+ll, kk),hp)
+            dll_reals(WS_RP_CFRCB) = real(sed(ll, kk),hp)
             dll_reals(WS_RP_CTOT ) = real(ctot   ,hp)
             dll_reals(WS_RP_KTUR ) = real(tur_k  ,hp)
             dll_reals(WS_RP_EPTUR) = real(tur_eps,hp)

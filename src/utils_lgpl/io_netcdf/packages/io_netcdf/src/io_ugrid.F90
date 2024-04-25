@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -701,7 +701,7 @@ end function ug_write_meshtopology
 !> Defines a new variable in an existing dataset.
 !! Does not write the actual data yet.
 function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name, standard_name, long_name, &
-                    units, cell_method, cell_measures, crs, ifill, dfill, writeopts) result(ierr)
+                    units, cell_method, cell_measures, crs, ifill, dfill, writeopts, do_deflate) result(ierr)
    integer,                 intent(in)    :: ncid          !< NetCDF dataset id
    integer,                 intent(out)   :: id_var        !< Created NetCDF variable id.
    integer, dimension(:),   intent(in)    :: id_dims       !< NetCDF dimension ids for this variable. Example: (/ id_edgedim /) for scalar data on edges, or (/ id_twodim, id_facedim /) for vector data on faces.
@@ -718,11 +718,14 @@ function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name,
    integer,          optional, intent(in)    :: ifill         !< (Optional) Integer fill value.
    double precision, optional, intent(in)    :: dfill         !< (Optional) Double precision fill value.
    integer,          optional, intent(in)    :: writeopts  !< integer option, currently only: UG_WRITE_LATLON
+   logical,          optional, intent(in)    :: do_deflate !< whether or not to apply compression (deflation)
    integer                                :: ierr          !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
    character(len=len_trim(mesh_name)) :: prefix
    integer :: wasInDefine
    logical :: add_latlon
+   
+   logical :: do_deflate_
 
    ierr = UG_SOMEERR
 
@@ -748,7 +751,22 @@ function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name,
 #endif
 
    prefix = trim(mesh_name)
-   ierr = nf90_def_var(ncid,prefix//'_'//trim(var_name), itype, id_dims, id_var)
+   
+   if (present( do_deflate)) then
+      do_deflate_ = do_deflate
+   else
+      do_deflate_ = .false.
+   end if
+   
+   if (do_deflate_) then
+      ! Define variable with shuffle and deflation. Chunk size is by default set to a single timeframe.
+      ! TB: some small-scale tests indicate that deflate_level > 1 barely reduces the file size any further.
+      ierr = nf90_def_var( ncid = ncid, name = prefix//'_'//trim(var_name), xtype = itype, dimids = id_dims, varid = id_var, &
+                           shuffle = .true., deflate_level = 1)
+   else
+      ierr = nf90_def_var( ncid = ncid, name = prefix//'_'//trim(var_name), xtype = itype, dimids = id_dims, varid = id_var)
+   end if
+   
    if (ierr /= nf90_noerr) then
       goto 888
    end if

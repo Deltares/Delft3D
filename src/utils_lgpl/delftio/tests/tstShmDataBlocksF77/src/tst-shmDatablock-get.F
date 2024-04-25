@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -46,11 +46,7 @@
 
       do t = 1, nGetTimes
 
-#if (defined(WIN32))
-        call sleepqq(50)
-#else
-        call DIOSYNCcSLEEP(50)
-#endif
+        call CUTIL_SLEEP(50)
 
         curTime = curTime + 10.D+00
 

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -65,14 +65,14 @@ contains
         totdep = zdepth + zlevel
 
         !interpolate
-        call intpltd_function(lunrep, mdxData, mdyData, real(totdep) *-1, maxdivedep)
+        call intpltd_function(lunrep, mdxData, mdyData, - real(totdep), maxdivedep)
 
         !apply max dive dep
-        if((maxdivedep * -1) .gt. (zdepth + (wsettl(ipart)*idelt))) then
+        if(-maxdivedep .gt. (zdepth + (wsettl(ipart)*idelt))) then
             !wsettl remains the same
             continue
         else
-            wsettl(ipart) = ((maxdivedep * -1) - zdepth )/idelt   ! swim up if to deep and down if not on maxdepth
+            wsettl(ipart) = ((-maxdivedep) - zdepth )/idelt   ! swim up if to deep and down if not on maxdepth
         endif
 
     return                                                                     	   !Return from the subroutine

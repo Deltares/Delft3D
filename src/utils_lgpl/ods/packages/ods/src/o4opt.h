@@ -1,4 +1,4 @@
-/* o4opt.h   (c)Copyright Sequiter Software Inc., 1990-2023.  All rights reserved. */
+/* o4opt.h   (c)Copyright Sequiter Software Inc., 1990-2024.  All rights reserved. */
 
 #define OPT4AVAIL -1
 #define OPT4NONE   0

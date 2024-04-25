@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -200,7 +200,7 @@ subroutine fm_vert_disp (lunpr, itime)
         if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
             tp     = 0.0
             itdelt = dts + iptime(ipart)
-            ddfac  = float(itdelt)/dts
+            ddfac  = real(itdelt)/dts
             dran1  = dran1 * sqrt(ddfac)
             abuac  = abuac * sqrt(ddfac)
         endif

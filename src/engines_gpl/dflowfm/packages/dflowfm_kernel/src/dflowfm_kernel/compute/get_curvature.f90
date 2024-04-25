@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -28,7 +28,33 @@
 !-------------------------------------------------------------------------------
 
 ! 
-! 
+!> Module for computing the curvature along streamlines for secondary flow. 
+module m_curvature
+
+use precision
+
+implicit none
+
+private !Prevent used modules from being exported
+
+public :: get_curvature, get_spirucm
+   
+    contains
+
+!> Compute module of velocity at cell centres.
+subroutine get_spirucm
+    use m_flow, only: ucx, ucy, spirucm, hs, epshu
+    use m_flowgeom, only: ndx
+    
+    integer :: k
+    
+    do k = 1,ndx
+       spirucm(k) = 0d0
+       if( hs(k) < epshu ) cycle
+       spirucm(k) = sqrt( ucx(k) * ucx(k) + ucy(k) * ucy(k) )
+    enddo
+    
+end subroutine get_spirucm
 
 !    Secondary Flow
 subroutine get_curvature         ! Find the curvature of the bend, to be used in secondary flow
@@ -36,16 +62,11 @@ subroutine get_curvature         ! Find the curvature of the bend, to be used in
     use m_flowgeom
     use m_netw
 
-    implicit none
     integer :: k, k1, k2, L, LL, n
     double precision :: cofa, cofb, cofc, cofd, cofe, coff, cofg, cofw, cofx, cofy, cofu, cofv, cof0
     double precision :: dudx, dudy, dvdx, dvdy
 
-    do k = 1,ndx
-       spirucm(k) = 0d0
-       if( hs(k) < epshu ) cycle
-       spirucm(k) = sqrt( ucx(k) * ucx(k) + ucy(k) * ucy(k) )
-    enddo
+    call get_spirucm()
 
     do k = 1,ndxi
        if( spirucm(k) < 1.0d-3 .or. hs(k) < epshu ) then
@@ -105,3 +126,5 @@ subroutine get_curvature         ! Find the curvature of the bend, to be used in
     enddo
 
 end subroutine get_curvature
+
+end module 

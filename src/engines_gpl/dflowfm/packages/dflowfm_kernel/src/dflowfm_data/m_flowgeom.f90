@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -103,7 +103,8 @@
  double precision, allocatable, target :: bai_mor(:) !< [m-2] inv morphologically active bottom area (m2)
  double precision, allocatable, target :: bl(:)      !< [m] bottom level (m) (positive upward) {"location": "face", "shape": ["ndx"]}
  double precision, allocatable, target :: bl_min(:)  !< [m] Minimal/deepest bottom level (m) (positive upward) {"location": "face", "shape": ["ndx"]}
- double precision, allocatable, target :: bl_ave(:)  !< [m] optional average bottom level in main channel required for dredging in 1D (m) (positive upward) (ndxi-ndx2d)
+ double precision, allocatable, target :: bl_ave(:)  !< [m] optional average bottom level in main channel required for dredging (m) (positive upward) (ndxi-ndx2d)
+ double precision, allocatable, target :: bl_ave0(:)  !< [m] optional average bottom level in main channel required for dredging (m) (positive upward) (ndxi-ndx2d)
  double precision, allocatable     :: aif(:)         !< cell based skewness ai factor sqrt(1+(dz/dy)**2) = abed/asurface
                                                      !< so that cfu=g(Au/conveyance)**2 = g*aif*(Au/convflat)**2
                                                      !< convflat is flat-bottom conveyance

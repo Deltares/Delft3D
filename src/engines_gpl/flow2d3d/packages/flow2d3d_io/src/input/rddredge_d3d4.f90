@@ -1,7 +1,7 @@
 subroutine rddredge_d3d4(gsqs      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -60,4 +60,7 @@ subroutine rddredge_d3d4(gsqs      ,gdp       )
     call rddredge(gdp%gddredge, dad_ptr, gdp%gdsedpar, gdp%gdbedformpar%lfbedfrm, &
                 & gdp%gdmorpar, gdp%gdinout%lundia, gdp%gdinttim%julday, &
                 & gsqs, gdp%griddim, gdp%runid, gdp%d%nmlb, gdp%d%nmub, error)
+    if (error) then
+        call d3stop(1,gdp)
+    endif
 end subroutine rddredge_d3d4

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -220,7 +220,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                 & ipardef, rpardef, NPARDEF, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
                 & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
-                & griddim, stm%sedpar%max_mud_sedtyp)
+                & griddim, julrefday, stm%sedpar%max_mud_sedtyp)
     if (error) return
     !
     ! update tratyp based on the transport formula selected

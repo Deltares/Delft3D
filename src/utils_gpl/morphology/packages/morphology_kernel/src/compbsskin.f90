@@ -1,7 +1,7 @@
 module compbsskin_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,15 +28,14 @@ module compbsskin_module
 !  
 !  
 !-------------------------------------------------------------------------------
+use precision
+implicit none
 
 contains
 
-function get_alpha_fluff(iflufflyr, lsed, nm, mfluff, trapar, sedpar) result (alpha_fluff)
+function get_alpha_fluff(iflufflyr, lsed, nm, mfluff, trapar, sedpar, timhr) result (alpha_fluff)
 !!--declarations----------------------------------------------------------------
-    use precision
-    use morphology_data_module, only:sedpar_type, trapar_type
-    !
-    implicit none
+    use morphology_data_module, only:sedpar_type, trapar_type, get_one_transport_parameter
 !
 ! Global variables
 !
@@ -46,15 +45,15 @@ function get_alpha_fluff(iflufflyr, lsed, nm, mfluff, trapar, sedpar) result (al
     real(fp), dimension(:), intent(in)    :: mfluff
     type(trapar_type)     , intent(in)    :: trapar
     type(sedpar_type)     , intent(in)    :: sedpar
- 
+    real(fp)              , intent(in)    :: timhr        !< time since reference date [h]
+
     real(fp)                              :: alpha_fluff
 !
 ! Local variables
 !
-    integer                        :: j
     integer                        :: l
-    real(fp)                       :: parfluff0
-    real(fp)                       :: parfluff1
+    real(fp)                       :: parfluff0(1)
+    real(fp)                       :: parfluff1(1)
     real(fp)                       :: fluff_cover_factor
 !
 !! executable statements -------------------------------------------------------
@@ -64,21 +63,10 @@ function get_alpha_fluff(iflufflyr, lsed, nm, mfluff, trapar, sedpar) result (al
        fluff_cover_factor = sedpar%sc_flcf
        do l = 1,lsed
           if (trapar%iform(l) == -3) then
-             j = trapar%iparfld(15,l)
-             if (j>0) then ! spatially varying
-                 parfluff0 = trapar%parfld(nm,j)
-             else
-                 parfluff0 = trapar%par(15,l)
-             endif
+             call get_one_transport_parameter(parfluff0, trapar, l, 15, timhr, nm)
+             call get_one_transport_parameter(parfluff1, trapar, l, 16, timhr, nm)
              !
-             j = trapar%iparfld(16,l)
-             if (j>0) then ! spatially varying
-                 parfluff1 = trapar%parfld(nm,j)
-             else
-                 parfluff1 = trapar%par(16,l)
-             endif
-             !
-             alpha_fluff = alpha_fluff + mfluff(l) * parfluff1 / parfluff0
+             alpha_fluff = alpha_fluff + mfluff(l) * parfluff1(1) / parfluff0(1)
           endif
        enddo
        alpha_fluff = min(alpha_fluff / fluff_cover_factor, 1.0_fp)
@@ -107,11 +95,8 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
 !          8) Mutiple mud fractions, each fraction own kssilt and kssand?????
 !
 !!--declarations----------------------------------------------------------------
-    use precision
     use mathconsts
     use morphology_data_module, only:sedpar_type, SC_MUDFRAC
-    !
-    implicit none
 !
 ! Local parameters
 !

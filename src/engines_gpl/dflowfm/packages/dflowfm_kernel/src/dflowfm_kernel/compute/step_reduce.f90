@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -46,8 +46,11 @@
  use m_sobekdfm
  use m_subsidence
  use m_fm_bott3d, only: fm_bott3d
+ use m_fm_erosed, only: ti_sedtrans
  use m_1d2d_fixedweirs, only : compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
-
+ use mass_balance_areas_routines, only: comp_bedload_fluxmba
+ use m_curvature, only: get_curvature
+ 
  implicit none
 
  integer :: ndraw
@@ -300,21 +303,24 @@
  hs = s1-bl
  hs = max(hs,0d0)
 
- if (jased > 0 .and. stm_included) then
-    if ( jatimer.eq.1 ) call starttimer(IEROSED)
-    !
-    call setucxucy_mor (u1)
-    call fm_flocculate()               ! fraction transitions due to flocculation
-    
-    call timstrt('Settling velocity   ', handle_extra(87))
-    call fm_fallve()                   ! update fall velocities
-    call timstop(handle_extra(87))
-    
-    call timstrt('Erosed_call         ', handle_extra(88))
-    call fm_erosed()                   ! source/sink, bedload/total load
-    call timstop(handle_extra(88))
-    
-    if ( jatimer.eq.1 ) call stoptimer(IEROSED)
+ if (jased > 0 .and. stm_included) then 
+    if (time1 >= tstart_user + ti_sedtrans * tfac) then
+       if ( jatimer.eq.1 ) call starttimer(IEROSED)
+       !
+       call setucxucy_mor (u1)
+       call fm_flocculate()               ! fraction transitions due to flocculation
+       
+       call timstrt('Settling velocity   ', handle_extra(87))
+       call fm_fallve()                   ! update fall velocities
+       call timstop(handle_extra(87))
+       
+       call timstrt('Erosed_call         ', handle_extra(88))
+       call fm_erosed()                   ! source/sink, bedload/total load
+       call timstop(handle_extra(88))
+       
+       call comp_bedload_fluxmba()
+       if ( jatimer.eq.1 ) call stoptimer(IEROSED)
+    endif 
  end if
 
  ! secondary flow
@@ -333,7 +339,9 @@
 
 
  if (jased > 0 .and. stm_included) then
-    call fm_bott3d() ! bottom update
+    if (time1 >= tstart_user + ti_sedtrans * tfac) then
+       call fm_bott3d() ! bottom update
+    endif
  endif
 
  if (jasubsupl>0) then

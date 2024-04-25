@@ -1,7 +1,7 @@
 module tables
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -825,7 +825,8 @@ subroutine org_readtable_keyword()
              elseif (trim(cfield(2)) == 'ddhhmmss') then
                  table%timeunit = 1.0_hp
              else
-                errorstring = 'Time unit must be ''date'', ''years'', ''decades'', ''days'', ''hours'', ''minutes'', ''seconds'', ''ddhhmmss'''
+                errorstring = 'Time unit must be ''date'', ''years'', ''decades'', ''days'', ''hours'', &
+                 ''minutes'', ''seconds'', ''ddhhmmss'''
                 error = .true.
                 goto 100
              endif

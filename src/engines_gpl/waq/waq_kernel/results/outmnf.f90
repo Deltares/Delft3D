@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -41,17 +41,17 @@
       !
       !     function           : gives map dump to nefis files
       !
-      !     subroutines called : dhdelf, deletes a file
-      !                          filldm, fills elements dimension array
-      !                          putgtc, handles i/o to nefis file for char's
+      !     subroutines called : delete_file, deletes a file
+      !                          fill_element_dimensions, fills elements dimension array
+      !                          manage_nefis_data_character, handles i/o to nefis file for char's
       !                          putget, handles i/o to nefis file for int/real(kind=real_wp) ::!
 
       use m_srstop
-      use m_putgtc
+      use nefis_data, only : manage_nefis_data_character
       use m_monsys
-      use m_filldm
+      use m_array_manipulation, only : fill_element_dimensions
       use timers
-      use m_dhdelf
+      use data_processing, only : delete_file
 
       implicit none
 
@@ -114,7 +114,7 @@
       integer(kind=int_wp), save                         ::fd_nef = -1            ! handle to NEFIS file
       integer(kind=int_wp) , external                    :: FLSDAT, FLSDEF
 
-      character*20                  , save :: duname(1) = ' '
+      character(len=20)                  , save :: duname(1) = ' '
       character(len=20), allocatable, save :: syname(:)              ! complete list of names
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "outmnf", ithandl )
@@ -128,7 +128,7 @@
 
 !     initialize file
 
-      if ( init .eq. 1 ) then
+      if ( init == 1 ) then
          init = 0
 
          ! allocate arrays
@@ -141,7 +141,7 @@
          if (allocated(syname)) deallocate(syname)
 
          allocate(elmnms(nelmxx),elmpts(nelmxx),elmdms(6,nelmxx),nbytsg(nelmxx),syname(notot),stat=ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then
+         if ( ierr_alloc /= 0 ) then
             write(lunout,*) 'ERROR : allocating nefis output structure'
             write(*,*) 'ERROR : allocating nefis output structure'
             call srstop(1)
@@ -165,7 +165,7 @@
             write (elmnms(isys+noparm)(7:9),'(i3.3)') isys
             elmpts(isys + noparm) = 'REAL'
             nbytsg(isys + noparm) = 4
-            if ( isys .le. notot1 ) then
+            if ( isys <= notot1 ) then
                syname(isys) = synam1(isys)
             else
                syname(isys) = synam2(isys-notot1)
@@ -176,7 +176,7 @@
 
          defnam = lchout
          do i = len(defnam), 1, -1
-            if (defnam(i:i) .eq. '.') then
+            if (defnam(i:i) == '.') then
 
                ! found filename separator, remove file-id
 
@@ -190,8 +190,8 @@
 
          ! delete existing nefis files
 
-         call dhdelf ( datnam, ierr )
-         call dhdelf ( defnam, ierr )
+         call delete_file ( datnam, ierr )
+         call delete_file ( defnam, ierr )
 
          ! initialize window
 
@@ -231,53 +231,53 @@
 
          ! group 1
 
-         call filldm (elmdms,1   ,1   ,1     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,2   ,1   ,4     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,3   ,1   ,notot ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,4   ,1   ,1     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,5   ,1   ,6     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,6   ,1   ,4     ,0     ,0    ,0     ,0    )
-         call filldm (elmdms,7   ,1   ,7     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,1   ,1   ,1     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,2   ,1   ,4     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,3   ,1   ,notot ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,4   ,1   ,1     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,5   ,1   ,6     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,6   ,1   ,4     ,0     ,0    ,0     ,0    )
+         call fill_element_dimensions (elmdms,7   ,1   ,7     ,0     ,0    ,0     ,0    )
 
          ! group 2
 
-         call filldm (elmdms,noparm,1       ,1    ,0    ,0     ,0     ,0    )
+         call fill_element_dimensions (elmdms,noparm,1       ,1    ,0    ,0     ,0     ,0    )
          do isys = 1, notot
-            call filldm (elmdms,noparm+isys ,1    ,noseg,0     ,0     ,0     ,0     )
+            call fill_element_dimensions (elmdms,noparm+isys ,1    ,noseg,0     ,0     ,0     ,0     )
          enddo
 
          ! write all elements to file; all definition and creation of files,
          ! data groups, cells and elements is handled by putget.
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(1), celid1, &
                     lwrite, ierr  , type  , fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(2), celid1, &
                     lwrite, ierr  , moname, fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(3), celid1, &
                     lwrite, ierr  , syname, fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
-         call putgtc(defnam, datnam, grnam1, noelm1   , elmnms, &
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(4), celid1, &
                     lwrite, ierr  , duname, fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(5), celid1, &
                     lwrite, ierr  , nosize, fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(6), celid1, &
                     lwrite, ierr  , window, fd_nef)
-         if (ierr .ne. 0) goto 110
+         if (ierr /= 0) goto 110
 
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(7), celid1, &
@@ -285,7 +285,7 @@
 
   110    continue
          ierrem = ierr
-         if ( ierrem .ne. 0 ) nefis = .false.
+         if ( ierrem /= 0 ) nefis = .false.
       endif
 
       ! produce a map record for nefis
@@ -298,7 +298,7 @@
          call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
                     elmdms, elmpts, nbytsg, elmnms(7), celid1, &
                     lwrite, ierr  , itoff , fd_nef)
-         if (ierr .ne. 0) goto 310
+         if (ierr /= 0) goto 310
 
          ! write actual time to cell
 
@@ -308,13 +308,13 @@
                      elmnms(noparm), celid2          , &
                      lwrite        , ierr            , &
                      itime         , fd_nef          )
-         if  (ierr .ne. 0) goto 310
+         if  (ierr /= 0) goto 310
 
          ! fill and write output buffer for every output variable to cell
 
          do isys = 1, notot
 
-            if ( isys .le. notot1 ) then
+            if ( isys <= notot1 ) then
 
                do iseg = 1, noseg
                   rbuffr(iseg) = conc1(isys,iseg)
@@ -337,7 +337,7 @@
                         elmnms(noparm+isys), celid2          , &
                         lwrite             , ierr            , &
                         rbuffr             , fd_nef          )
-            if  (ierr .ne. 0) goto 310
+            if  (ierr /= 0) goto 310
          enddo
 
          celid2 = celid2 + 1
@@ -347,7 +347,7 @@
 
       endif
 
-      if (ierrem .ne. 0) then
+      if (ierrem /= 0) then
 
          ! echo error to logging file
 

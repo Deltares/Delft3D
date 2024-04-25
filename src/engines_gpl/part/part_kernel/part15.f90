@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -136,7 +136,7 @@ contains
 
 !           determine interpolation factor
 
-            fract = float(itime - iwndtm(id-1)) / float(iwndtm(id) - iwndtm(id-1))
+            fract = real(itime - iwndtm(id-1)) / real(iwndtm(id) - iwndtm(id-1))
 
 !           interpolate
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -37,5 +37,4 @@ module m_dad
 !
    logical                           :: dad_included  !< Include dredging and dumping
    type(dredge_type), target         :: dadpar        !< Dredging related parameters
-
 end module m_dad

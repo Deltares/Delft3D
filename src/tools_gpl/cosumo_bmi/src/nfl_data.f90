@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2020.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -154,7 +154,7 @@ contains
 !
 !==============================================================================
 subroutine nfl_data_init()
-    use string_module, only: get_dirsep
+    use system_utils, only: FILESEP
     !
     ! Locals
     integer        :: i
@@ -235,7 +235,7 @@ subroutine nfl_data_init()
     !
     ! characters
     !
-    slash        = get_dirsep()
+    slash        = FILESEP
     call getcwd(cdummy)
     call getUniqueId(uniqueid,cdummy)
     !

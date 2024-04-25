@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -133,7 +133,7 @@
  do k = kt, kb, -1
     dzz  = zws(k) - zws(k-1)
     pu   =  pd
-    if (idensform < 10) then 
+    if ( .not. density_is_pressure_dependent() ) then
        rhosww(k-1) = densfm(saw(k-kb),tmw(k-kb),0d0) - rhomean 
     else  
        pdb  =  pdb + rhomean*dzz

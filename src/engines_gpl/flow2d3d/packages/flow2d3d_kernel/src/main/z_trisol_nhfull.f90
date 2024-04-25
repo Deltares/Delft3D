@@ -7,7 +7,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
                          & betac     ,tkemod    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -141,6 +141,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     real(fp)                             , pointer :: timsec
     real(fp)                             , pointer :: timhr
     integer                              , pointer :: itiwei
+    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itdiag
     integer                              , pointer :: julday
     integer                              , pointer :: ntstep
@@ -934,6 +935,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     bedupd              => gdp%gdmorpar%bedupd
     eqmbcsand           => gdp%gdmorpar%eqmbcsand
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     sedtyp              => gdp%gdsedpar%sedtyp
     !
     icx     = 0
@@ -1693,7 +1695,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -1916,7 +1918,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
        ! Suspended transport vector for output
        !
        call timer_start(timer_3dmor, gdp)
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           !
           ! don't compute suspended transport vector in middle of timestep
           ! note: IWRK1 used as local work array

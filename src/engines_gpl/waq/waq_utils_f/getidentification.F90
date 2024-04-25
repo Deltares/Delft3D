@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,21 +22,21 @@
 !!  rights reserved.
 module m_getidentification
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine getidentification(idstr)
-         !
-         ! Get the ident-string and version number for DELWAQ2
-         !
-         use delwaq_version_module
-         implicit none
-         
-         character(len=*) :: idstr
+    subroutine getidentification(idstr)
+        !
+        ! Get the ident-string and version number for DELWAQ2
+        !
+        use delwaq_version_module
+        implicit none
 
-         call getfullversionstring_delwaq(idstr)
+        character(len = *) :: idstr
 
-      end subroutine
+        call getfullversionstring_delwaq(idstr)
+
+    end subroutine
 end module m_getidentification

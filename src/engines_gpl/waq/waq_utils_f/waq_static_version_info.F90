@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2022.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,21 +21,21 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-#INCLUDE "waq_version.h"
+#include "waq_version.h"
 
 module waq_static_version_info
     implicit none
 
-    character(*),  public, parameter :: company      = COMPANY_NAME
-    character(*),  public, parameter :: company_url  = COMPANY_URL
+    character(*), public, parameter :: company = COMPANY_NAME
+    character(*), public, parameter :: company_url = COMPANY_URL
 
-    character(*),  public, parameter :: build_nr     = BUILD_NR
-    character(*),  public, parameter :: major        = MAJOR_STR
-    character(*),  public, parameter :: minor        = MINOR_STR
+    character(*), public, parameter :: build_nr = BUILD_NR
+    character(*), public, parameter :: major = MAJOR_STR
+    character(*), public, parameter :: minor = MINOR_STR
 
-    character(*),  public, parameter :: major_minor_buildnr = trim(major)//'.'//trim(minor)//'.'//trim(build_nr)
-    character(*),  public, parameter :: major_minor_buildnr_date_time = 'Version '//major_minor_buildnr//', '//__DATE__//', '//__TIME__
-    character(*),  public, parameter :: company_id   = '@(#)'// company
+    character(*), public, parameter :: major_minor_buildnr = trim(major) // '.' // trim(minor) // '.' // trim(build_nr)
+    character(*), public, parameter :: major_minor_buildnr_date_time = 'Version ' // major_minor_buildnr // ', ' // __DATE__ // ', ' // __TIME__
+    character(*), public, parameter :: company_id = '@(#)' // company
 
     ! While in principle we can use a literal constant, this allows the compiler/linker to get rid of the
     ! literal string. Since we want that string to be present in the executable or DLL, we need to use

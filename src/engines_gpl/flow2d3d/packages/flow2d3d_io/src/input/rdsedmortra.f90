@@ -4,7 +4,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                      & nambnd    ,lsec      ,tstart    ,tunit     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -194,11 +194,10 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
                 & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
-                   & gdp%griddim, gdp%gdsedpar%max_mud_sedtyp)
+                & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)
     endif
     if (.not.error) then
-     !
-
+       !
        ! update tratyp based on the transport formula selected
        ! switch off the bed load component when Partheniades-Krone is used.
        !
@@ -208,56 +207,56 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           endif     
        enddo    
        !
-    !--------------------------------------------------------------------------
-    if (gdp%gdprocs%flmd2l) then
-       if (gdp%gdmorpar%bedupd) then
-           call prterr(lundia, 'U190', 'Bed level updating automatically switched off for 2-layer fluid mud computation')
-           gdp%gdmorpar%bedupd = .false.
-       endif
-       if (gdp%gdmorpar%cmpupd) then
-           call prterr(lundia, 'U190', 'Bed composition updating automatically switched off for 2-layer fluid mud computation')
-           gdp%gdmorpar%cmpupd = .false.
-       endif
-    endif
-    !--------------------------------------------------------------------------
-    !
-    ! Echo sediment and transport parameters
-    !
-    call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-               & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
-    endif
-    if (.not.error) then
-    !
-    ! Echo morphology parameters
-    !
-    cmpupdall = all(gdp%gdsedpar%cmpupdfrac)
-    cmpupdany = any(gdp%gdsedpar%cmpupdfrac)
-    call echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto        , &
-               & nambnd    ,gdp%gdsedpar, gdp%gdmorpar, gdp%gdexttim%tunitstr, cmpupdall, cmpupdany)
-    endif
-    if (.not.error) then
-    !
-    ! Read scour and echo parameters
-    !
-    call rdscour(lundia    ,error     ,nmmax     ,gdp       )
-    endif
-    if (.not.error) then
-    !
-    ! If either Van Rijn 2004 transport formula (iform = -2) or the extended
-    ! SANTOSS version (iform = -4) is used, switch on the bed roughness height
-    ! predictor. By default this predictor is set to the Van Rijn 2004
-    ! formulations; give a warning if this has been set to a different predictor
-    ! by the user.
-    !
-    do i = 1, lsedtot
-       if (gdp%gdtrapar%iform(i) == -2 .or. gdp%gdtrapar%iform(i) == -4) then
-          if (gdp%gdbedformpar%bdfrpt /= 0) then
-             call prterr(lundia, 'U190', 'Van Rijn (2007) or SANTOSS transport formula combined with different bedform roughness predictor')
+       !--------------------------------------------------------------------------
+       if (gdp%gdprocs%flmd2l) then
+          if (gdp%gdmorpar%bedupd) then
+              call prterr(lundia, 'U190', 'Bed level updating automatically switched off for 2-layer fluid mud computation')
+              gdp%gdmorpar%bedupd = .false.
           endif
-          gdp%gdbedformpar%lfbedfrmrou = .true.
-          exit
+          if (gdp%gdmorpar%cmpupd) then
+              call prterr(lundia, 'U190', 'Bed composition updating automatically switched off for 2-layer fluid mud computation')
+              gdp%gdmorpar%cmpupd = .false.
+          endif
        endif
-    enddo
+       !--------------------------------------------------------------------------
+       !
+       ! Echo sediment and transport parameters
+       !
+       call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
+                  & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
+    endif
+    if (.not.error) then
+       !
+       ! Echo morphology parameters
+       !
+       cmpupdall = all(gdp%gdsedpar%cmpupdfrac)
+       cmpupdany = any(gdp%gdsedpar%cmpupdfrac)
+       call echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto        , &
+                  & nambnd    ,gdp%gdsedpar, gdp%gdmorpar, gdp%gdexttim%tunitstr, cmpupdall, cmpupdany)
+    endif
+    if (.not.error) then
+       !
+       ! Read scour and echo parameters
+       !
+       call rdscour(lundia    ,error     ,nmmax     ,gdp       )
+    endif
+    if (.not.error) then
+       !
+       ! If either Van Rijn 2004 transport formula (iform = -2) or the extended
+       ! SANTOSS version (iform = -4) is used, switch on the bed roughness height
+       ! predictor. By default this predictor is set to the Van Rijn 2004
+       ! formulations; give a warning if this has been set to a different predictor
+       ! by the user.
+       !
+       do i = 1, lsedtot
+          if (gdp%gdtrapar%iform(i) == -2 .or. gdp%gdtrapar%iform(i) == -4) then
+             if (gdp%gdbedformpar%bdfrpt /= 0) then
+                call prterr(lundia, 'U190', 'Van Rijn (2007) or SANTOSS transport formula combined with different bedform roughness predictor')
+             endif
+             gdp%gdbedformpar%lfbedfrmrou = .true.
+             exit
+          endif
+       enddo
     endif
     
     if (error) call d3stop(1, gdp)

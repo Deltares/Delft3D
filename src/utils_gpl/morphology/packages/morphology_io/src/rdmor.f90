@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -353,6 +353,10 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     logical                                                 :: exist
     integer                                                 :: j, nm
     !
+    ! === start for calculating sediment transport
+    !
+    call prop_get(mor_ptr, 'Morphology', 'SedTransStt', morpar%ti_sedtrans)
+    !
     ! === start for calculating morphological changes (backward compatibility)
     !
     call prop_get(mor_ptr, 'Morphology', 'MorStt', morpar%tmor)
@@ -388,6 +392,13 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! flag for doing composition updates
     !
     call prop_get_logical(mor_ptr, 'Morphology', 'CmpUpd', morpar%cmpupd)
+    !
+    if (morpar%ti_sedtrans > morpar%tmor .or. morpar%ti_sedtrans > morpar%tcmp) then
+        errmsg = 'SedTransStt must be smaller than or equal to CmpUpdStt and BedUpdStt (MorStt) in ' // trim(filmor)
+        call write_error(errmsg, unit=lundia)
+        error = .true.
+        return   
+    end if 
     !
     if (morpar%bedupd .and. morpar%tcmp > morpar%tmor) then
         errmsg = 'When BedUpd = true, CmpUpdStt must be smaller than or equal to BedUpdStt (MorStt) in ' // trim(filmor)
@@ -1335,6 +1346,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: dzmax
     real(fp)                               , pointer :: sus
     real(fp)                               , pointer :: bed
+    real(fp)                               , pointer :: ti_sedtrans
     real(fp)                               , pointer :: tmor
     real(fp)                               , pointer :: tcmp
     real(fp)              , dimension(:)   , pointer :: thetsd
@@ -1444,6 +1456,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     dzmax               => morpar%dzmax
     sus                 => morpar%sus
     bed                 => morpar%bed
+    ti_sedtrans         => morpar%ti_sedtrans
     tmor                => morpar%tmor
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
@@ -1527,6 +1540,8 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     ! output values to file
     !
     write (lundia, '(a)' ) '*** Start  of morphological input'
+    txtput3 = 'Sediment transport computation starts after ('//trim(dtunit)//')'
+    write (lundia, '(2a,e12.4)') txtput3(1:53), ':', ti_sedtrans
     !write (lundia, '(2a)') '    Morphology File Version: ', trim(versionstring)
     txtput1 = 'Morphological Timescale Factor'
     if (varyingmorfac) then

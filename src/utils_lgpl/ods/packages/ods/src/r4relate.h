@@ -1,4 +1,4 @@
-/* r4relate.h   (c)Copyright Sequiter Software Inc., 1992-2023.  All rights reserved. */
+/* r4relate.h   (c)Copyright Sequiter Software Inc., 1992-2024.  All rights reserved. */
 
 #define relate4filter_record 101
 #define relate4do_remove 102

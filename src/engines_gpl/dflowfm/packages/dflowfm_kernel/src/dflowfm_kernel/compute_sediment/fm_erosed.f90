@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -157,6 +157,7 @@
    real(fp), dimension(max(kmx,1))      :: siglc
    real(fp)                      :: thick0
    real(fp)                      :: thick1
+   real(fp)                      :: timhr
    real(fp)                      :: trsedeq   ! temporary variable for rsedeq
    real(fp)                      :: tsd
    real(fp)                      :: tsigmol   ! temporary variable for sigmol
@@ -209,6 +210,7 @@
    error = .false.
    if (.not.stm_included) return
    ubot_from_com = jauorbfromswan>0
+   timhr = time1/3600.0_fp
    !
    ! Allocate memory
    allocate(dzdx(1:ndx), dzdy(1:ndx), stat=istat)
@@ -231,7 +233,7 @@
    ! Mass conservation; s1 is updated before entering fm_erosed
    !
    if (varyingmorfac) then
-      call updmorfac(stmpar%morpar, time1/3600.0_fp, julrefdat)
+      call updmorfac(stmpar%morpar, timhr, julrefdat)
    endif
    !
    ! Reset some arrays before next iteration
@@ -699,7 +701,7 @@
          ! Compute bed stress resulting from skin friction
          !
          if (iflufflyr>0) then
-            afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), stmpar%trapar, stmpar%sedpar)
+            afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:,nm), stmpar%trapar, stmpar%sedpar, timhr)
          else
             afluff = 0d0
          endif
@@ -834,6 +836,7 @@
       dll_reals(RP_BLCHG) = real(dzbdt(nm) ,hp)   ! for dilatancy
       dll_reals(RP_DZDX)  = real(dzdx(nm)  ,hp)   ! for dilatancy
       dll_reals(RP_DZDY)  = real(dzdy(nm)  ,hp)   ! for dilatancy
+      dll_reals(RP_ZB   ) = real(bl(nm)    ,hp)
       !
       if (max_integers < MAX_IP) then
          write(errmsg,'(a)') 'fm_erosed::Insufficient space to pass integer values to transport routine.'
@@ -867,14 +870,7 @@
          ! on localpar, thus ensuring that the global array par is not
          ! messed up with specific, nm-/l-dependent data.
          !
-         do i = 1, npar
-            j = stmpar%trapar%iparfld(i,l)
-            if (j>0) then
-                localpar(i) = stmpar%trapar%parfld(nm,j)
-            else
-                localpar(i) = par(i,l)
-            endif
-         enddo
+         call get_transport_parameters(stmpar%trapar, l, nm, timhr, localpar)
          !
          ! fraction specific quantities
          !
@@ -927,6 +923,13 @@
                write(errmsg,'(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+            !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
             !
             if (iflufflyr>0) then
                if (iflufflyr==2) then
@@ -1090,6 +1093,13 @@
                call mess(LEVEL_FATAL, errmsg)
             end if
             !
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
+            !
             if (suspfrac) then
                aks(nm, l) = taks
                dss(nm, l) = tdss
@@ -1173,6 +1183,13 @@
                write(errmsg,'(a)') 'fm_erosed::eqtran in 2D returned an error. Check your inputs.'
                call mess(LEVEL_FATAL, errmsg)
             end if
+
+            if (stmpar%morpar%moroutput%sedpar) then
+               do i = 1,stmpar%trapar%noutpar(l)
+                  j = stmpar%trapar%ioutpar(i,l)
+                  stmpar%trapar%outpar(j, nm) = localpar(i)
+               enddo
+            endif
 
             if (suspfrac) then
                aks   (nm, l)       = taks

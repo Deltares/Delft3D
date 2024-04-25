@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -233,7 +233,7 @@ module m_caltau
     end subroutine update_loop_vars
 
     logical function must_calculate_segment(segment_attribute)
-        !< Boolean indicating whether the calculation for current cell (segement) should be carries out or not. If false, then the cell is skipped.
+        !< Boolean indicating whether the calculation for current cell (segment) should be carried out or not. If false, then the cell is skipped.
         use m_evaluate_waq_attribute
 
 

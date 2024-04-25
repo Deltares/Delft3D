@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -913,31 +913,17 @@ end subroutine DioStreamCloseAllUnits
 ! Sleep for a while
 !
 subroutine DioStreamDelay
-#if (defined(WIN32))
-    use DFLIB
-#endif
-
-    integer     ::  delay
+    integer     ::  delay !< sleep period in milliseconds
 
     call DioConfGetStProp(dio_st_Delay, delay)
 
-#if (defined(WIN32))
-    call sleepqq(delay)
-#elif (defined(salford32))
-    call sleep@(real(delay))
-#else
-    call DIOSYNCcSLEEP(delay)
-#endif
+    call CUTIL_SLEEP(delay)
 
-    return
 end subroutine DioStreamDelay
 
 
 function DioStreamSleep(timeWaited) result(retVal)
 
-#if (defined(WIN32))
-    use DFLIB
-#endif
     include 'dio-time-support.inc'
 
     logical                  :: retVal
@@ -954,18 +940,8 @@ function DioStreamSleep(timeWaited) result(retVal)
     timeOutJulian = DioDeltaTimeString2Julian(timeOutString)
     timeOut = timeOutJulian*DioDayToSec*1000
 
-#if (defined(WIN32))
-! sleepqq is millisecond sleep
-    call sleepqq(sleepTime)
+    call CUTIL_SLEEP(sleepTime)
     timeWaited = timeWaited + sleepTime                
-#elif (defined(salford32))
-    call sleep@(real(sleepTime))
-    timeWaited = timeWaited + sleepTime
-#else
-! dio-sync-C-function gives time waited in milliseconds
-    call DIOSYNCcSLEEP(sleepTime)
-    timeWaited = timeWaited + sleepTime
-#endif
 
     if ( timeWaited .gt. (timeOut) ) then
 #if (defined(USE_DLL))

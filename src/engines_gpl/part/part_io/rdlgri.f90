@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -69,7 +69,7 @@ contains
       use alloc_mod
       use dd_prepare_mod
       use openfl_mod
-      use hydmod
+      use m_hydmod
 
       implicit none               ! force explicit typing
 

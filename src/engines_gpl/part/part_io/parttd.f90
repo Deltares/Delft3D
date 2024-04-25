@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -139,7 +139,7 @@ contains
          enddo
       else
          it2  = itime - idtime
-         div  = float(itime2-itime1)
+         div  = real(itime2-itime1)
          fac1 = (itime2-it2   )/div
          fac2 = (it2   -itime1)/div
          ! Stack overflow on large grid
@@ -192,10 +192,10 @@ contains
       if ( timon ) call timstop ( ithndl )
       return
 
- 2000 format (   a16          ,' unit: ',i,', reading: ',a,/              &
+ 2000 format (   a16          ,' unit: ',i4,', reading: ',a,/              &
                ' at simulation time:',i12,' !',/,                          &
                ' time in file:      ',i12,' !')
- 2010 format (   a16          ,' unit: ',i,', reading: ',a,/              &
+ 2010 format (   a16          ,' unit: ',i4,', reading: ',a,/              &
                ' at simulation time:',i5,'d ',i2,'h ',i2,'m ',i2,'s !',/   &
                ' time in file:      ',i5,'d ',i2,'h ',i2,'m ',i2,'s !')
 

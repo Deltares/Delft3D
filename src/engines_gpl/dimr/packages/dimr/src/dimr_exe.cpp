@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -544,7 +544,7 @@ void DimrExe::openLibrary (void) {
         sprintf(this->library, "libdimr.so\0");
 #else
         this->library = new char[16];
-        sprintf(this->library, "dimr_dll.dll\0");
+        sprintf(this->library, "dimr.dll\0");
 #endif
 
         this->log->Write (DEBUG, my_rank, "Loading dimr library \"%s\"", this->library);
@@ -670,7 +670,7 @@ void DimrExe::freeLib (void) {
 static void printAbout (char * exeName) {
     printf ("\n\
 %s \n\
-Copyright (C)  Stichting Deltares, 2011-2023. \n\
+Copyright (C)  Stichting Deltares, 2011-2024. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
 sales@deltaressystems.nl \n", getfullversionstring_dimr_exe());
     printf("%s\n\n", geturlstring_dimr_exe());

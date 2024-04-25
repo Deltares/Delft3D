@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -44,10 +44,10 @@ contains
 !
       integer(kind=4) ::   lun
 
-      character*120 idstr
+      character(len=120) idstr
       integer (4)   i
 
-      character*75  startup_screen_text(7)
+      character(len=75)  startup_screen_text(7)
       
       data   startup_screen_text  / &
         '+-----------------------------------------------------------------------+', &

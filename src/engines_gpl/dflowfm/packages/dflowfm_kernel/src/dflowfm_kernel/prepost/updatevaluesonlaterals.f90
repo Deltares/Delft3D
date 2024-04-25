@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -34,7 +34,7 @@
 !! ! Note: if it is a parallel simulation, qplat is already for all subdomains, so no need for mpi communication.
 subroutine updateValuesOnLaterals(tim1, timestep)
    use m_flowtimes, only: ti_his, time_his, ti_hiss
-   use m_wind, only: qqLat, numlatsg, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
+   use m_lateral, only: qqLat, numlatsg, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
                      qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg,  n1latsg, n2latsg, nnlat
    use precision
    use m_alloc

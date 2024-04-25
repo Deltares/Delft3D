@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -625,8 +625,13 @@
  if ( allocated(dtcell) ) then
     deallocate(dtcell)
  endif
- allocate ( dtcell(ndkx) , stat = ierr)
- call aerr('dtcell(ndkx)', ierr , ndkx) ; dtcell = 0d0
+ if ( kmx > 0 ) then
+     allocate ( dtcell(ndkx) , stat = ierr)
+     call aerr('dtcell(ndkx)', ierr , ndkx) ; dtcell(:) = 0d0
+ else
+     allocate ( dtcell(ndx) , stat = ierr)
+     call aerr('dtcell(ndx)', ierr , ndx) ; dtcell(:) = 0d0
+ endif
 
  ! for 1D only
  if (network%loaded) then

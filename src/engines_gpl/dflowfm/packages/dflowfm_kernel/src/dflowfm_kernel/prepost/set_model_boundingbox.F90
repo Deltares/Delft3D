@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -48,7 +48,7 @@ use unstruc_netcdf, only: crs
 use unstruc_messages
 #ifdef HAVE_PROJ
 use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
-use proj
+use proj6
 #endif
 implicit none
 

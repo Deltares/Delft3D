@@ -1,4 +1,4 @@
-/* f4flag.h   (c)Copyright Sequiter Software Inc., 1990-2023.  All rights reserved. */
+/* f4flag.h   (c)Copyright Sequiter Software Inc., 1990-2024.  All rights reserved. */
 
 typedef struct
 {

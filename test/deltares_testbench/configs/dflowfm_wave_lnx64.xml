@@ -658,7 +658,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e29_f02_c010_weir_timeseries" ref="d_hydro_default">
-			<path>e29_dflowfm-d_hydro/f02_dflowfm_rtc/c010_weir_timeseries</path>
+			<path version="2024-01-11T14:00:00">e29_dflowfm-d_hydro/f02_dflowfm_rtc/c010_weir_timeseries</path>
 			<checks>
 				<file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_his.nc" type="netCDF">
                                          <parameters>
@@ -676,7 +676,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e29_f03_c010_weir_timeseries" ref="d_hydro_default">
-			<path>e29_dflowfm-d_hydro/f03_dflowfm_rtc_wave/c010_weir_timeseries</path>
+			<path version="2024-01-11T14:00:00">e29_dflowfm-d_hydro/f03_dflowfm_rtc_wave/c010_weir_timeseries</path>
 			<checks>
 				<file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_his.nc" type="netCDF">
                                          <parameters>

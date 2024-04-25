@@ -106,7 +106,7 @@
 			<location ref="local" type="check">
 			<from>teamcity_artifacts/bin/dflowfm/win64</from>
 			</location>
-			<path>dflowfm-cli.exe</path>
+			<path>run_dflowfm.bat</path>
 			<arguments>
 				<argument>--autostartstop</argument>
 			</arguments>

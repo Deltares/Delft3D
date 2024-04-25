@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -229,7 +229,9 @@ SUBROUTINE REASAM(MSAM, JADOORLADEN)
    COMMON /QNRGF/ JQN
    COMMON /DRAWTHIS/ ndraw(50)
 
-   CHARACTER REC*132, TEX*10, REC1*132
+   CHARACTER(len=132) :: REC, REC1
+   CHARACTER(len=10)  :: TEX
+
 
    CALL SAVESAM()
    NSM = 0

@@ -1,6 +1,6 @@
 <testCases>
     <testCase name="e03_f09_c01_river_with_load" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c01_river_with_load</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c01_river_with_load</path>
         <checks>
             <file name="dwaq/river_100segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -15,7 +15,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c02_intake_of_water" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c02_intake_of_water</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c02_intake_of_water</path>
         <checks>
             <file name="dwaq/plain_intake.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -30,7 +30,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c03_plug_flow_transport_scheme15" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c03_plug_flow_transport_scheme15</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c03_plug_flow_transport_scheme15</path>
         <checks>
             <file name="dwaq/plugflow_val15.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -51,7 +51,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c04_plug_flow_transport_scheme21" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c04_plug_flow_transport_scheme21</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c04_plug_flow_transport_scheme21</path>
         <checks>
             <file name="dwaq/plugflow_val21.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -72,7 +72,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c05_central_discharge_rectangular" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c05_central_discharge_rectangular</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c05_central_discharge_rectangular</path>
         <checks>
             <file name="dwaq/central_waste.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -87,7 +87,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c06_central_discharge_triangular_right_angled" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c06_central_discharge_triangular_right_angled</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c06_central_discharge_triangular_right_angled</path>
         <checks>
             <file name="dwaq/central_waste_triangle.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -102,7 +102,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c07_central_discharge_triangular_equilateral" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c07_central_discharge_triangular_equilateral</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c07_central_discharge_triangular_equilateral</path>
         <checks>
             <file name="dwaq/central_waste_triangle_flowfm.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -117,7 +117,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c08_channel_flow_closed_sides_scheme15" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c08_channel_flow_closed_sides_scheme15</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c08_channel_flow_closed_sides_scheme15</path>
         <checks>
             <file name="dwaq/channel_flow_closed_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -132,7 +132,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c09_channel_flow_closed_sides_scheme21" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c09_channel_flow_closed_sides_scheme21</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c09_channel_flow_closed_sides_scheme21</path>
         <checks>
             <file name="dwaq/channel_flow_closed_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -147,7 +147,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c10_channel_flow_closed_sides_scheme24" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c10_channel_flow_closed_sides_scheme24</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c10_channel_flow_closed_sides_scheme24</path>
         <checks>
             <file name="dwaq/channel_flow_closed_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -162,7 +162,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c11_channel_flow_open_sides_scheme15" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c11_channel_flow_open_sides_scheme15</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c11_channel_flow_open_sides_scheme15</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -177,7 +177,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c12_channel_flow_open_sides_scheme21" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c12_channel_flow_open_sides_scheme21</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c12_channel_flow_open_sides_scheme21</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -192,7 +192,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c13_channel_flow_open_sides_scheme24" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c13_channel_flow_open_sides_scheme24</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c13_channel_flow_open_sides_scheme24</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -207,7 +207,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c14_tidal_flow_one_dimensional_scheme15" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c14_tidal_flow_one_dimensional_scheme15</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c14_tidal_flow_one_dimensional_scheme15</path>
         <checks>
             <file name="dwaq/tidal_flow_wq.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -222,7 +222,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c15_tidal_flow_one_dimensional_scheme21" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c15_tidal_flow_one_dimensional_scheme21</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c15_tidal_flow_one_dimensional_scheme21</path>
         <checks>
             <file name="dwaq/tidal_flow_wq.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -237,7 +237,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c16_tidal_flow_one_dimensional_scheme24" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c16_tidal_flow_one_dimensional_scheme24</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c16_tidal_flow_one_dimensional_scheme24</path>
         <checks>
             <file name="dwaq/tidal_flow_wq.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -255,7 +255,7 @@
     <!-- Water quality processes, no transport -->
 
     <testCase name="e03_f09_c51_sedimentation_single_column" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c51_sedimentation_single_column</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c51_sedimentation_single_column</path>
         <checks>
             <file name="dwaq/sediment_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -270,7 +270,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c52_mortality_coliform_bacteria" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c52_mortality_coliform_bacteria</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c52_mortality_coliform_bacteria</path>
         <checks>
             <file name="dwaq/coliform_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -287,7 +287,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c53_reaeration_sod_single_column" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c53_reaeration_sod_single_column</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c53_reaeration_sod_single_column</path>
         <checks>
             <file name="dwaq/reaeration_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -302,7 +302,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c54_sedimentation_resuspension_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c54_sedimentation_resuspension_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c54_sedimentation_resuspension_0d</path>
         <checks>
             <file name="dwaq/sedres_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -319,7 +319,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c55_bod_do_interaction_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c55_bod_do_interaction_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c55_bod_do_interaction_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -338,7 +338,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c56_nitrification_oxygen_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c56_nitrification_oxygen_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c56_nitrification_oxygen_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -359,7 +359,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c57_partitioning_sedimentation_metals_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c57_partitioning_sedimentation_metals_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c57_partitioning_sedimentation_metals_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -394,7 +394,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c58_cascading _processes_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c58_cascading_processes_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c58_cascading_processes_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -417,7 +417,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c59_algal_growth_no_nutrient_limitation_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c59_algal_growth_no_nutrient_limitation_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c59_algal_growth_no_nutrient_limitation_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -458,7 +458,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c101_saturation_option1_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
         <checks>
             <file name="dwaq/separate_9segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -483,7 +483,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c102_saturation_option2_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c102_saturation_option2_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c102_saturation_option2_0d</path>
         <checks>
             <file name="dwaq/separate_9segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -508,7 +508,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c103_determination_oxic_sulfic_condittions_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c103_determination_oxic_sulfic_conditions_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c103_determination_oxic_sulfic_conditions_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -529,7 +529,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c104_calculation_diurnal_radiation_0d" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c104_calculation_diurnal_radiation_0d</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c104_calculation_diurnal_radiation_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -548,7 +548,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c105_calculation_daylength" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c105_calculation_daylength</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c105_calculation_daylength</path>
         <checks>
             <file name="dwaq/separate_4segments2.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -565,7 +565,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c106_light_climate_watercolumn" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c106_light_climate_watercolumn</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c106_light_climate_watercolumn</path>
         <checks>
             <file name="dwaq/column_20segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -584,7 +584,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c107_determination_shear_stress_max_nelson_criterium" ref="dwaq_default">
-        <path>e03_waq/f09_validation_water_quality_delwaq/c107_determination_shear_stress_max_nelson_criterium</path>
+        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c107_determination_shear_stress_max_nelson_criterium</path>
         <checks>
             <file name="dwaq/max_nelson_4_separate_segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -52,6 +52,7 @@
  integer                           :: ja_timestep_nostruct  !< Exclude (structure) links without advection from the time step limitation
  integer                           :: ja_timestep_noqout    !< Exclude negative qin term from timestep limitation.
  double precision                  :: tstart_user !< User specified time start (s) w.r.t. refdat
+ double precision                  :: tstart_tlfsmo_user !< User specified start time of tlfsmo (s) w.r.t. refdat
  double precision                  :: tstop_user  !< User specified time stop  (s) w.r.t. refdat
  double precision                  :: time_user   !< Next time of external forcings update (steps increment by dt_user).
 
@@ -220,6 +221,7 @@ subroutine default_flowtimes()
     tstart_user = 0d0               !< User specified time start (s) w.r.t. refdat
     tstop_user  = 100*24*3600       !< User specified time stop  (s) w.r.t. refdat
     time_user   = tstart_user       !< Next time of external forcings update (steps increment by dt_user).
+    tstart_tlfsmo_user = tstart_user     !< Start time of tlfsmo (s) w.r.t. refdat
 
     dnt_user    = 0                 !< counter for nr of user steps    ( )
     dnt         = 0                 !< number of timesteps ( )

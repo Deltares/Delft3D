@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_sysn
-!   System characteristics
+    !   System characteristics
 
     integer :: noseg    !  number of elements
     integer :: nolay    !  number of layers in the water
@@ -92,25 +92,25 @@ module m_sysn
     integer :: nrref    !  Maximum nr of input references for processes
     integer :: nothrd   !  Nr of threads to be used for parallel processing
     integer :: nototp   !  Total number of substances inclusive of particle tracking
-    
+
     integer, parameter :: insize = 72
 
-    common  /  sysn   / noseg  , nolay  , nseg2  , nosys  , notot  ,         &
-                    nodisp , novelo , noq1   , noq2   , noq3   ,         &
-                    noq4   , noq    , nodump , nobnd  , nowst  ,         &
-                    nocons , nopa   , nofun  , nosfun , nharms ,         &
-                    niharm , nlines , npoins , nolun  , nx     ,         &
-                    ny     , noitem , jtrack , nipmsa , nproc  ,         &
-                    noloc  , nflux  , nodef  , noutp  , nrvart ,         &
-                    nbufmx , ifiopk , ipbloo , ioffbl ,                  &
-                    ndspx  , nvelx  , nlocx  , ndspn  ,                  &
-                    nveln  , ndmpar , ndmpq  , ndmps  , ntdmpq ,         &
-                    ntdmps , ncbufm , noraai , ntraaq , newrsp ,         &
-                    newisp , nobtyp , nowtyp , nomat  , novec  ,         &
-                    mmax   , nmax   , kmax   , novar  , noarr  ,         &
-                    nogrid , nufil  , nrref  ,         &
-                    nothrd , nototp
+    common  /  sysn   / noseg, nolay, nseg2, nosys, notot, &
+            nodisp, novelo, noq1, noq2, noq3, &
+            noq4, noq, nodump, nobnd, nowst, &
+            nocons, nopa, nofun, nosfun, nharms, &
+            niharm, nlines, npoins, nolun, nx, &
+            ny, noitem, jtrack, nipmsa, nproc, &
+            noloc, nflux, nodef, noutp, nrvart, &
+            nbufmx, ifiopk, ipbloo, ioffbl, &
+            ndspx, nvelx, nlocx, ndspn, &
+            nveln, ndmpar, ndmpq, ndmps, ntdmpq, &
+            ntdmps, ncbufm, noraai, ntraaq, newrsp, &
+            newisp, nobtyp, nowtyp, nomat, novec, &
+            mmax, nmax, kmax, novar, noarr, &
+            nogrid, nufil, nrref, &
+            nothrd, nototp
 
-    integer          ::  in(insize)   
-    equivalence       ( in(1)  , noseg ) 
+    integer :: in(insize)
+    equivalence       (in(1), noseg)
 end module m_sysn

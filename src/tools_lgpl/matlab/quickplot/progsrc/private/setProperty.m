@@ -96,7 +96,7 @@ function [OPT Set Default] = setproperty(OPT, inputCell, varargin)
 
 %% Copyright notice
 %   --------------------------------------------------------------------
-%   Copyright (C) 2009-2023 Delft University of Technology
+%   Copyright (C) 2009-2024 Delft University of Technology
 %       C.(Kees) den Heijer
 %
 %       C.denHeijer@TUDelft.nl	

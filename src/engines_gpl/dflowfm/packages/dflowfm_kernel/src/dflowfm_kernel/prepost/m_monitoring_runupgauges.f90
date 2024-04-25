@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -45,7 +45,7 @@ module m_monitoring_runupgauges
       double precision                     :: maxruh        !< Runup water level
    end type trug
 
-    type (trug), allocatable               :: rug(:)
+    type (trug), allocatable, target       :: rug(:)
     integer                                :: nrug = 0
     integer                                :: maxrug = 2
     character(len=*), parameter, private   :: defaultName_ = 'Rug'

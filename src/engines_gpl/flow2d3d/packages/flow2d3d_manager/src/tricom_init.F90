@@ -1,7 +1,7 @@
 subroutine tricom_init(olv_handle, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -394,6 +394,9 @@ subroutine tricom_init(olv_handle, gdp)
     real(fp)                            , pointer :: anglon        ! Angle of longitude of the model centre (used to determine solar radiation) 
     real(fp)                            , pointer :: dtsec         ! DT in seconds 
     real(fp)                            , pointer :: timnow        ! Current timestep (multiples of dt)  = number of time steps since itdate, 00:00:00 hours
+    real(fp)                            , pointer :: ti_sedtrans   ! Sediment transport start time
+    integer                             , pointer :: iti_sedtrans  ! Sediment transport start time step
+    
 !
 ! Global variables
 !
@@ -532,9 +535,11 @@ subroutine tricom_init(olv_handle, gdp)
     itdiag              => gdp%gdinttim%itdiag
     julday              => gdp%gdinttim%julday
     ntstep              => gdp%gdinttim%ntstep
+    ti_sedtrans         => gdp%gdmorpar%ti_sedtrans
     tcmp                => gdp%gdmorpar%tcmp
     tmor                => gdp%gdmorpar%tmor
     rdc                 => gdp%gdmorpar%rdc
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     itcmp               => gdp%gdmorpar%itcmp
     itmor               => gdp%gdmorpar%itmor
     morbnd              => gdp%gdmorpar%morbnd
@@ -1014,6 +1019,18 @@ subroutine tricom_init(olv_handle, gdp)
        endif
        write(txtput,'(a,i0)') 'Bed level updating starts at (step) : ',itmor
        call prterr(lundia, 'G051', txtput)
+       
+       !
+       tdif  = ti_sedtrans + itstrt*dt
+       iti_sedtrans = nint(tdif/dt)
+       if (abs(iti_sedtrans*dt-tdif) > (0.1*dt)) then
+          error  = .true.
+          txtput = 'Sediment transport start time'
+          call prterr(lundia, 'U044', txtput)
+       endif
+       write(txtput,'(a,i0)') 'Sediment transport starts at (step) : ',iti_sedtrans
+       call prterr(lundia, 'G051', txtput)       
+       !
     endif
     !
     ! Initialize input arrays and verify input

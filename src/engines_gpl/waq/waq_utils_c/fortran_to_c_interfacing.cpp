@@ -1,4 +1,4 @@
-//  Copyright (C)  Stichting Deltares, 2012-2023.
+//  Copyright (C)  Stichting Deltares, 2012-2024.
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License version 3,
@@ -26,12 +26,14 @@
 #include <string.h>
 
 #ifndef min
-#  define min(a,b) (a)<(b) ? (a) : (b)
-#  define max(a,b) (a)>(b) ? (a) : (b)
+#  define min(a, b) (a)<(b) ? (a) : (b)
+#  define max(a, b) (a)>(b) ? (a) : (b)
 #endif
 
 #if defined(WIN32) || defined(SALF)
+
 #  include <windows.h>
+
 #elif defined(linux)
 #  include <dlfcn.h>
 #endif
@@ -63,41 +65,38 @@
  */
 
 #if defined(WIN32) || defined (SALF)
-    typedef HINSTANCE DllHandle;
+typedef HINSTANCE DllHandle;
 #elif defined(linux)
-    typedef void * DllHandle;
+typedef void * DllHandle;
 #endif
 
 typedef struct {
-    DllHandle   dllHandle;
+    DllHandle dllHandle;
 } SharedDLL;
 
 /*
  * ============================================================================
  */
-char * strFcpy(char * str_1, int len)
-{
+char *strFcpy(char *str_1, int len) {
     int m;
-    char * str_2;
-    m = min( len, (int) strlen(str_1));
-    str_2 = (char *) malloc( sizeof(char)*(m+1));
+    char *str_2;
+    m = min(len, (int) strlen(str_1));
+    str_2 = (char *) malloc(sizeof(char) * (m + 1));
     strncpy(str_2, str_1, m);
     str_2[m] = '\0';
     return str_2;
 }
 
-void RemoveTrailingBlanksXX(char * String)
-{
-  int i;
-  i = strlen(String)-1;
-  while ( String[i] == ' '  ||
-          String[i] == '\n' ||
-          String[i] == '\t'    )
-  {
-    String[i] = '\0';
-    i--;
-  }
-  return;
+void RemoveTrailingBlanksXX(char *String) {
+    int i;
+    i = strlen(String) - 1;
+    while (String[i] == ' ' ||
+           String[i] == '\n' ||
+           String[i] == '\t') {
+        String[i] = '\0';
+        i--;
+    }
+    return;
 }
 /*
  * ============================================================================
@@ -107,21 +106,21 @@ extern "C" {
  * OPEN_SHARED_LIBRARY and CLOSE_SHARED_LIBRARY are used from utils_lgpl\deltares_common\packages\deltares_common_c\src\shared_library_fortran_api.c
  */
 #if defined(WIN32)
-long STDCALL PERFORM_FUNCTION(DllHandle * sharedDLLHandle  ,
-                              char  * function,
-                              float * pmsa    ,
-                              float * fl      ,
-                              long  * ipoint  ,
-                              long  * increm  ,
-                              long  * noseg   ,
-                              long  * noflux  ,
-                              long  * iexpnt  ,
-                              long  * iknmrk  ,
-                              long  * noq1    ,
-                              long  * noq2    ,
-                              long  * noq3    ,
-                              long  * noq4    ,
-                              long    length_function)
+long STDCALL PERFORM_FUNCTION(DllHandle *sharedDLLHandle,
+                              char *function,
+                              float *pmsa,
+                              float *fl,
+                              long *ipoint,
+                              long *increm,
+                              long *noseg,
+                              long *noflux,
+                              long *iexpnt,
+                              long *iknmrk,
+                              long *noq1,
+                              long *noq2,
+                              long *noq3,
+                              long *noq4,
+                              long length_function)
 #elif defined(linux) || defined(SALF)
 /* TODO: This requires thinking about! */
 long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle ,
@@ -141,35 +140,34 @@ long STDCALL PERFORM_FUNCTION(long  * sharedDLLHandle ,
                               long    length_function)
 #endif
 {
-  int error = 1;
-  typedef void * (STDCALL * MyProc)(float *, float *,
-                            long *, long *, long *, long *, long *,
-                            long *, long *, long *, long *, long *);
-  MyProc proc;
-  char * fun_name;
-  SharedDLL * sharedDLL = (SharedDLL *) (*sharedDLLHandle);
+    int error = 1;
+    typedef void *(STDCALL *MyProc)(float *, float *,
+                                    long *, long *, long *, long *, long *,
+                                    long *, long *, long *, long *, long *);
+    MyProc proc;
+    char *fun_name;
+    SharedDLL *sharedDLL = (SharedDLL *) (*sharedDLLHandle);
 
-  if ( sharedDLL != NULL )
-  {
-  fun_name = strFcpy(function, length_function);
-  RemoveTrailingBlanksXX(fun_name);
+    if (sharedDLL != NULL) {
+        fun_name = strFcpy(function, length_function);
+        RemoveTrailingBlanksXX(fun_name);
 
 #if defined(WIN32) || defined (SALF)
-  proc = (MyProc) GetProcAddress( sharedDLL->dllHandle, fun_name);
+        proc = (MyProc) GetProcAddress(sharedDLL->dllHandle, fun_name);
 #elif defined(linux)
-  proc = (MyProc) dlsym( sharedDLL->dllHandle, fun_name);
+        proc = (MyProc) dlsym( sharedDLL->dllHandle, fun_name);
 #endif
 
-  if ( proc != NULL )
-  {
-     error = 0;
-     (void *) (*proc)(pmsa    , fl     ,
-                      ipoint  , increm , noseg  , noflux , iexpnt ,
-                      iknmrk  , noq1   , noq2   , noq3   , noq4   );
-  }
-  free(fun_name); fun_name = NULL;
-  }
-  return error;
+        if (proc != NULL) {
+            error = 0;
+            (void *) (*proc)(pmsa, fl,
+                             ipoint, increm, noseg, noflux, iexpnt,
+                             iknmrk, noq1, noq2, noq3, noq4);
+        }
+        free(fun_name);
+        fun_name = NULL;
+    }
+    return error;
 }
 
 /*

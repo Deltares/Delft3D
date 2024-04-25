@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -204,57 +204,26 @@ end function get_proj_string_from_epsg
 
 
 #ifdef HAVE_PROJ
-   !> Returns a projection object for the given projection string.
-   !! This function uses the proj4 library.
-   function get_projection(proj_string) result(projection)
-      use proj
+   !> Transforms the given coordinates using the provided coordinate transformation.
+   !! This subroutine uses the proj library for coordinate transformations.
+   subroutine transform(coord_trans, src_x, src_y, dst_x, dst_y)
+      use proj6
 
       implicit none
 
-      character(len=*), intent(in) :: proj_string !< proj4 string describing coordinate system.
+      type(pj_object), intent(in)                        :: coord_trans !< source coordinate system object.
+      real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_x       !< x coordinates to transform in degrees/meters.
+      real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_y       !< y coordinates to transform in degrees/meters.
+      real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_x       !< transformed x coordinates in degrees/meters.
+      real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_y       !< transformed y coordinates in degrees/meters.
 
-      type(pj_object)     :: projection !< coordinate system object.
-      character(len=1024) :: message !< Temporary variable for writing log messages.
+      integer                 :: error, i
+      character(len=1024)     :: message !< Temporary variable for writing log messages.
+      type(pj_coord_object)   :: coords(size(src_x))
 
-      projection = pj_init_plus(trim(proj_string)//char(0))
-      if (.not. pj_associated(projection)) then
-         message = 'get_projection: could not initialize projection for proj_string '''//trim(proj_string)//'''.'
-         call mess(LEVEL_WARN, trim(message))
-         return
-      endif
-   end function
-
-
-   !> Transforms the given coordinates from the given source coordinate system to the given destination coordinate system.
-   !! This subroutine uses the proj4 library for coordinate transformations.
-   subroutine transform(src_projection, dst_projection, src_x, src_y, dst_x, dst_y)
-      use proj
-
-      implicit none
-
-      type(pj_object), intent(in)                        :: src_projection !< source coordinate system object.
-      type(pj_object), intent(in)                        :: dst_projection !< destination coordinate system object.
-      real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_x          !< x coordinates to transform in degrees/meters.
-      real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_y          !< y coordinates to transform in degrees/meters.
-      real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_x          !< transformed x coordinates in degrees/meters.
-      real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_y          !< transformed y coordinates in degrees/meters.
-
-      integer             :: error
-      character(len=1024) :: message !< Temporary variable for writing log messages.
-
-      ! Copy coordinates to dst_x, dst_y. ! This code assumes that dst_x and dst_y have already been allocated and have the same length as src_x and src_y.
-      dst_x = src_x
-      dst_y = src_y
-
-      if (pj_is_latlong(src_projection) == 1) then ! If source is spherical coordinate system.
-         ! Convert degrees to radians.
-         dst_x = dst_x*pj_deg_to_rad
-         dst_y = dst_y*pj_deg_to_rad
-      end if
-
-      ! Transform coordinates in place in arrays dst_x, dst_y (in radians/meters).
-      error = pj_transform_f(src_projection, dst_projection, dst_x, dst_y)
-      if (error /= 0) then ! If error.
+      coords = [(pj_coord_object(x=src_x(i), y=src_y(i)), i = 1, size(src_x))]
+      error = proj_trans_f(coord_trans, PJ_FWD, coords)
+      if (error /= 0) then
          ! Put back original coordinates.
          dst_x = src_x
          dst_y = src_y
@@ -263,46 +232,41 @@ end function get_proj_string_from_epsg
          return
       endif
 
-      if (pj_is_latlong(dst_projection) == 1) then ! If destination is spherical coordinate system.
-         ! Convert radians to degrees.
-         dst_x = dst_x*pj_rad_to_deg
-         dst_y = dst_y*pj_rad_to_deg
-      end if
+      ! Copy results to destination.
+      do i = 1, size(coords)
+         dst_x(i) = coords(i)%x
+         dst_y(i) = coords(i)%y
+      end do
    end subroutine
 
    !> Transforms the given coordinates from the given source coordinate system to the given destination coordinate system.
-   !! This subroutine uses the proj4 library for coordinate transformations.
+   ! This subroutine uses the proj library for coordinate transformations.
    subroutine transform_coordinates(src_proj_string, dst_proj_string, src_x, src_y, dst_x, dst_y)
-      use proj
+      use proj6
 
       implicit none
 
-      character(len=*),                      intent(in)  :: src_proj_string !< proj4 string describing source coordinate system.
-      character(len=*),                      intent(in)  :: dst_proj_string !< proj4 string describing destination coordinate system.
+      character(len=*),                      intent(in)  :: src_proj_string !< proj string describing source coordinate system.
+      character(len=*),                      intent(in)  :: dst_proj_string !< proj string describing destination coordinate system.
       real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_x           !< x coordinates to transform in degrees/meters.
       real(kind=kind(1.0d00)), dimension(:), intent(in)  :: src_y           !< y coordinates to transform in degrees/meters.
       real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_x           !< transformed x coordinates in degrees/meters.
       real(kind=kind(1.0d00)), dimension(:), intent(out) :: dst_y           !< transformed y coordinates in degrees/meters.
 
-      type(pj_object) :: src_projection !< source coordinate system object.
-      type(pj_object) :: dst_projection !< destination coordinate system object.
+      type(pj_object) :: coord_trans !< Proj coordinate transformation.
 
-      ! Get projections.
-      src_projection = get_projection(src_proj_string)
-      dst_projection = get_projection(dst_proj_string)
+      ! Initialize coordinate transformation
+      coord_trans = proj_create_crs_to_crs(pj_default_ctx, src_proj_string, dst_proj_string, pj_area_object())
 
-      if (pj_associated(src_projection) .and. pj_associated(dst_projection)) then
-         call transform(src_projection, dst_projection, src_x, src_y, dst_x, dst_y)
+      if (proj_associated_pj(coord_trans)) then
+         call transform(coord_trans, src_x, src_y, dst_x, dst_y)
       end if
 
-      call pj_free(src_projection)
-      call pj_free(dst_projection)
+      coord_trans = proj_destroy(coord_trans)
    end subroutine
 
    !> Transforms input arrays of projected x/y coordinates into lon/lat coordinates and directly writes them to a NetCDF dataset.
    subroutine transform_and_put_latlon_coordinates(ncid, varid_lon, varid_lat, src_proj_string, src_x, src_y, start, count)
-      use proj
-
       implicit none
 
       integer,                                         intent(in) :: ncid            !< NetCDF data set id.

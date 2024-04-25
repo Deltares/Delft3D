@@ -1,7 +1,7 @@
 c
 c     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 c     *                                                               *
-c     *                  copyright (c) 1998-2023 by UCAR                   *
+c     *                  copyright (c) 1998-2024 by UCAR                   *
 c     *                                                               *
 c     *       University Corporation for Atmospheric Research         *
 c     *                                                               *

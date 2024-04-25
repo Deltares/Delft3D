@@ -57,27 +57,16 @@ echo Working directory: %workdir%
     rem
     rem Set the directories containing the binaries
     rem
-set D3D_HOME=%~dp0..\..\..
-
-    rem Remove "\dflowfm\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-25%
+set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
-    rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-echo ARCH             : %ARCH%
-
-set dflowfmexedir=%D3D_HOME%\%ARCH%\dflowfm\bin
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-
-
-    rem
-    rem No adaptions needed below
-    rem
+set exedir=%D3D_HOME%\bin
+set sharedir=%D3D_HOME%\share
+set libdir=%D3D_HOME%\lib
 
     rem Run
-set PATH=%dflowfmexedir%;%sharedir%
-echo executing: "%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8 %9
-"%dflowfmexedir%\dflowfm-cli.exe" --nodisplay --autostartstop %1 %2 %3 %4 %5 %6 %7 %8 %9
+set PATH=%sharedir%;%libdir%
+echo executing: "%exedir%\dflowfm-cli.exe" --autostartstop %*
+                "%exedir%\dflowfm-cli.exe" --autostartstop %*
 
 goto end
 

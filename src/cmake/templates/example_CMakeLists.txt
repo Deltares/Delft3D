@@ -178,17 +178,5 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER A_SolutionFolder/MyComponent)
 
 #---------------------------------------------------------------------------------------------------------------------------
-# Step #7: Set a post build setp
-
-# Set the post build step that calls the oss-post_build.cmd (Windows)
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-post_build_target (${library_name}
-                   ${install_dir} 
-                   ${build_dir} 
-                   ${checkout_src_root} 
-                   ${library_name})
-
-# Or alternatively call the install script for Linux
-install(TARGETS ${library_name} RUNTIME  DESTINATION bin)
+# Step #7: install targets, scripts and binaries go to bin, .DLL/.SO files go to lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin)

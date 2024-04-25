@@ -9,7 +9,7 @@
 !! The Fortran Standard Library, including this file, is distributed under
 !! the MIT license that should be included with the library's distribution.
 !!
-!!   Copyright (c) 2021 Fortran stdlib developers
+!!   Copyright (c) 2021-2024 Fortran stdlib developers
 !!
 !!   Permission is hereby granted, free of charge, to any person obtaining a
 !!   copy of this software and associated documentation files (the
@@ -35,7 +35,7 @@
 !! [`slice.rs`](https://github.com/rust-lang/rust/blob/90eb44a5897c39e3dff9c7e48e3973671dcd9496/src/liballoc/slice.rs)
 !! The `rust sort` implementation is distributed with the header:
 !!
-!!   Copyright 2012-2015 The Rust Project Developers. See the COPYRIGHT
+!!   Copyright 2012-2024 The Rust Project Developers. See the COPYRIGHT
 !!   file at the top-level directory of this distribution and at
 !!   http://rust-lang.org/COPYRIGHT.
 !!

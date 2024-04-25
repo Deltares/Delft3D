@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -37,7 +37,7 @@ subroutine flow_dredgeinit()
    use unstruc_model, only: md_dredgefile
    use m_sediment, only: stm_included, jased
    use MessageHandling, only: mess, LEVEL_FATAL
-
+   
    implicit none
 
    logical                   :: error
@@ -45,7 +45,7 @@ subroutine flow_dredgeinit()
    if (.not.stm_included) return
    dad_included = len_trim(md_dredgefile) /= 0
    if (.not. dad_included) return
-
+   
    call initdredge(dadpar)
    call fm_rddredge(dadpar, md_dredgefile, error)
    if (error) then

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -306,8 +306,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     int nSettingsSet;
 
     // RTCTools/Wanda/Flow1D2D: impossible to autodetect which partition will deliver this source var
-    //              Assumption: there is only one RTC/Wanda/Flow1D2D-instance
-    std::set<int> single_instance_component_set = { COMP_TYPE_RTC, COMP_TYPE_WANDA, COMP_TYPE_FLOW1D2D };
+    //              Assumption: there is only one RTC/Wanda/Flow1D2D/ZSF-instance
+    std::set<int> single_instance_component_set = { COMP_TYPE_RTC, COMP_TYPE_WANDA, COMP_TYPE_FLOW1D2D, COMP_TYPE_ZSF};
 
     if (use_mpi) {
         ierr = MPI_Comm_group(MPI_COMM_WORLD, &mpiGroupWorld);
@@ -1075,12 +1075,13 @@ void Dimr::receive(const char* name,
                     // || compType == COMP_TYPE_RR // SOBEK-51004: RR must use explicit set_var as long as get_var is not properly implemented for some variables.
                     || compType == COMP_TYPE_FLOW1D
                     || compType == COMP_TYPE_FLOW1D2D
+                    || compType == COMP_TYPE_ZSF
                     || compType == COMP_TYPE_WANDA) {
                     if (dllSetVar == NULL) {
                         throw Exception(true, Exception::ERR_METHOD_NOT_IMPLEMENTED, "ABORT: Dimr::receive: set_var function not defined while processing %s", name);
                     }
                     (dllSetVar)(name, (const void*)transferValuePtr);
-                    if (compType == COMP_TYPE_RTC) {
+                    if (compType == COMP_TYPE_RTC || COMP_TYPE_ZSF) {
                         // target = rtc
                         // SetVar(name, value) sets variable named "name" to "value" at the current time (t = n)
                         // But, in case of IMPLICIT method, this should be the next time (t = n + 1)
@@ -1198,7 +1199,7 @@ void Dimr::getAddress(
     log->Write(ALL, my_rank, "Dimr::getAddress (%s)", name);
 
     // These components only return a new pointer to a copy of the double value, so call it each time.
-    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM, COMP_TYPE_DELWAQ };
+    std::set<int> second_component_set = { COMP_TYPE_DEFAULT_BMI, COMP_TYPE_RTC, COMP_TYPE_ZSF, COMP_TYPE_FLOW1D, COMP_TYPE_FLOW1D2D, COMP_TYPE_FM, COMP_TYPE_DELWAQ };
 
     // The order is important: first catch the Wanda case:
     // Otherwise the "else if" part might be executed When "*sourceVarPtr==NULL" and "compType==COMP_TYPE_WANDA"
@@ -1492,6 +1493,9 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     }
     else if (strstr(libNameLowercase, "cosumo_bmi") != NULL) {
         newComp->type = COMP_TYPE_COSUMO_BMI;
+    }
+    else if (strstr(libNameLowercase, "zsf") != NULL) {
+        newComp->type = COMP_TYPE_ZSF;
     }
     else if (strstr(libNameLowercase, "dimr_testcomponent") != NULL) {
         newComp->type = COMP_TYPE_TEST;
@@ -1888,6 +1892,7 @@ void Dimr::connectLibs(void) {
             componentsList.components[i].type == COMP_TYPE_FLOW1D2D ||
             componentsList.components[i].type == COMP_TYPE_DELWAQ ||
             componentsList.components[i].type == COMP_TYPE_COSUMO_BMI ||
+            componentsList.components[i].type == COMP_TYPE_ZSF  ||
             componentsList.components[i].type == COMP_TYPE_TEST ||
             componentsList.components[i].type == COMP_TYPE_WANDA) {
             // RTC-Tools: setVar is used

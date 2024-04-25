@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -116,7 +116,7 @@ subroutine flow_trachyupdate()
     do itrtobs=1,ntrtobs
         iobs = trachy_fl%gen%obs(itrtobs)%id
         if (.not. (iobs == TRACHY_UNDEFINED)) then
-            trachy_fl%gen%obs(itrtobs)%val = valobs(IPNT_S1, iobs)
+            trachy_fl%gen%obs(itrtobs)%val = valobs( iobs,IPNT_S1)
         endif
     end do
     !

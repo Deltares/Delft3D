@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 /*
  *  ods_gnf.c -  ODS routines to "generically" read NEFIS files
  *
- *  Copyright (C) 2002-2023 Deltares
+ *  Copyright (C) 2002-2024 Deltares
  *
  *  Arjen Markus
  */

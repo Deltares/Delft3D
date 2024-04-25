@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -32,7 +32,7 @@
 
 !> returns the index of a named lateral in the global array from this module
 subroutine getLateralIndex(idlat, index)
-   use m_wind
+   use m_lateral, only : lat_ids, numlatsg
 
    implicit none
    character(len=*), intent(in)  :: idlat !< id of the lateral

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -20,16 +20,15 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_open_waq_files
-      use m_srstop
+module m_open_waq_files
+    use m_srstop
 
 
-      implicit none
+    implicit none
 
-      contains
+    contains
 
-
-      subroutine open_waq_files ( lun    , finam  , nropen , opmode , ierr   )
+    subroutine open_waq_files ( lun    , finam  , nropen , opmode , ierr   )
 
 !     Deltares Software Centre
 
@@ -45,38 +44,27 @@
 !     and harmonics (see local comments)
 !*********************************************************************
 
-!     SUBROUTINE CALLED  : SRSTOP, stopexecution
-
 !     LOGICAL UNITS      : LUN = unit to be opened
-      use cwd, only: getCWD
+
       implicit none
 
 !     Parameters          :
-
-!     kind           function         name        description
 
       integer      , intent(inout) :: lun       !< unit number of file to be opened
       character*(*), intent(in   ) :: finam     !< name of the file to be opened
       integer      , intent(in   ) :: nropen    !< Delwaq number of the file to be opened
       integer      , intent(in   ) :: opmode    !< Indicator how file must be opened
       integer      , intent(inout) :: ierr      !< Error flag
-!     Local variables     :
 
-      integer                         ierr2     !< Error flag
-      integer                         ierr_cwd  !< Error flag for obtaining current working directory
-      character(256)                  wd_path   !< Current working directory path
-      
       ierr   =   0
 
-
-      
 !     get the correct open statement
-
       select case ( nropen )
-         case ( 1 )                           !   common-block file
+         ! 1 = common-block file
+         case ( 1 )
             select case ( opmode )
                case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace' )
+                  call open_unformatted_stream(lun, finam, opmode, ierr, nropen)
                case ( 2 )
                   open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
                case ( 3 )
@@ -86,244 +74,26 @@
                   ierr = 3
             end select
 
-         case ( 2 )                           !   system file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
-               case default
-                  ierr = 3
-            end select
+         !  2 = system file;        4 = pointers functions; 5 = time steps file;   6 = grid layout;    9 = dispersion file;
+         ! 12 = velocities file;   14 = boundaries file;   15 = waste loads file; 16 = functions file; 18 = initial conditions file;
+         ! 24 = process work file; 25 = output work file
+         case ( 2, 4, 5, 6, 9, 12, 14, 15, 16, 18, 24, 25)
+            call open_unformatted_stream(lun, finam, opmode, ierr, nropen, .true.)
 
-         case ( 3 )                           !     harmonic functions, 'SHARED' because this NROPEN
-            select case ( opmode )            !     is used from DLWQI0 also for other files,
-               case ( 1 )                     !     which are intended to have the SHARED property
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  , status = 'old' )
-               case ( 11 )
-                  open ( lun, file = finam, err = 910, form='unformatted'  )
-               case ( 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' , status = 'old' )
-               case ( 21 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , status = 'old', &
-                                                       convert='big_endian' )
-               case ( 31 )
-                  open ( lun, file = finam, err = 910, form   ='unformatted' , &
-                                                       convert='big_endian' )
-               case ( 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted' , status = 'old', &
-                                                       convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
+         !  3 = harmonic functions; 7 = volumes file
+         ! 10 = areas file;        11 = flows        ; 13 = length file; 17 = segment functions file
+         ! 44 = pointer file
+         case ( 3, 7, 10, 11, 13, 17, 44 )
+            call open_unformatted(lun, finam, opmode, ierr, nropen, support_old_status=.false.)
 
-         case ( 4 )                           !     pointers functions
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-               ierr = 3
-            end select
+         !  8 = to-/from-pointers file;
+         ! 40 = Binary segment attribute file
+         case ( 8, 40 )
+            call open_unformatted(lun, finam, opmode, ierr, nropen, replace=.true.)
 
-         case ( 5 )                           !     time steps file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 6 )                           !     grid layout
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 7 )                           !     volumes file
-            select case ( opmode )
-               case (  1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case (  2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 8 )                           !     to-/from-pointers file
-            select case ( opmode )
-               case (  1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case (  2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
-               case ( 11 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted', status = 'old' )
-               case ( 21 )
-                  open ( lun, file = finam, err = 910, form   ='unformatted', access='stream', &
-                                                       convert='big_endian' )
-               case ( 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old', &
-                                                       convert='big_endian' )
-               case ( 31 )
-                  open ( lun, file = finam, err = 910, form   ='unformatted', &
-                                                       convert='big_endian' )
-               case ( 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', status = 'old', &
-                                                       convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 9 )                           !     dispersion file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 10 )                          !     areas file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'   )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 11 )                          !     flows
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'   )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 12 )                          !     velocities file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 13 )                          !     length file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'   )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 14 )                          !     boundaries file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 15 )                          !     waste loads file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 16 )                          !     functions file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 17 )                          !     segment functions file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'   )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 18 )                          !     initial conditions file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 19 )                          !     DELWAQ2 monitoring file (.mon)
+         ! 19 = DELWAQ2 monitoring file (.mon);
+         ! 20 = dump file
+         case ( 19, 20 )
             select case ( opmode )
                case ( 1 )
                   open ( newunit=lun, file = finam, err = 910 )
@@ -331,15 +101,8 @@
                   ierr = 3
             end select
 
-         case ( 20 )                          !     dump file
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910 )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 21 )                          !     history file
+         ! 21 = history file; 22 = map file; 23 = restart file
+         case ( 21, 22, 23 )
             select case ( opmode )
                case ( 1 )
                   open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
@@ -347,43 +110,8 @@
                   ierr = 3
             end select
 
-         case ( 22 )                          !     map file
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 23 )                          !     restart file
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 24 )                          !     process work file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 25 )                          !     output work file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'  )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 26 )                          !     input file
+         ! 26 = input file
+         case ( 26 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 900, status = 'old' )
@@ -391,7 +119,8 @@
                   ierr = 3
             end select
 
-         case ( 27 )                          !     stripped input file
+         ! 27 = stripped input file; 28 = aux. stripped input file
+         case ( 27, 28 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, status = 'scratch' )
@@ -399,16 +128,8 @@
                   ierr = 3
             end select
 
-         case ( 28 )                          !     aux. stripped input file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, status = 'scratch' )
-                  rewind ( lun )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 29 )                          !     DELWAQ1 input report file (.lst)
+         ! 29 = DELWAQ1 input report file (.lst)
+         case ( 29 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 910 )
@@ -418,7 +139,8 @@
                   ierr = 3
             end select
 
-         case ( 30 )                          !     dimensioning include file
+         ! 30 = dimensioning include file
+         case ( 30 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 910 )
@@ -428,7 +150,8 @@
                   ierr = 3
             end select
 
-         case ( 31 )                          !     scratch file time functions 1
+         ! 31 = scratch file time functions 1; 32 = scratch file time functions 2
+         case ( 31, 32 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, err = 910, form='unformatted', access='stream', status = 'scratch')
@@ -436,15 +159,8 @@
                   ierr = 3
             end select
 
-         case ( 32 )                          !     scratch file time functions 2
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, err = 910, form='unformatted', access='stream', status = 'scratch')
-               case default
-                  ierr = 3
-            end select
-
-         case ( 33 )                          !     auxiliary input file
+         ! 33 = auxiliary input file
+         case ( 33 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 900, status = 'old' )
@@ -454,7 +170,8 @@
                   ierr = 3
             end select
 
-         case ( 34 )                          !     proces definition file
+         ! 34 = proces definition file
+         case ( 34 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 910, status = 'old' )
@@ -466,7 +183,8 @@
                   ierr = 3
             end select
 
-         case ( 35 )                          !     DELWAQ1 proceses report file (.lsp)
+         ! 35 = DELWAQ1 proceses report file (.lsp); 36 = Proces stochi file
+         case ( 35, 36 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 910 )
@@ -474,15 +192,8 @@
                   ierr = 3
             end select
 
-         case ( 36 )                          !     Proces stochi file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910 )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 37 )                          !     bal file
+         ! 37 = bal file
+         case ( 37 )
             select case ( opmode )
                case ( 1 )
                   open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream' )
@@ -490,37 +201,8 @@
                   ierr = 3
             end select
 
-         case ( 40 )                          !     Binary segment attribute file
-            !
-            ! Because of the reserved range of LU-numbers (see dlwqt4.f) it is not all that easy to
-            ! use NEWUNIT= here - leave the old method for the moment
-            !
-            select case ( opmode )
-               case (  1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case (  2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
-               case ( 11 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted', status = 'old' )
-               case ( 21 )
-                  open ( lun, file = finam, err = 910, form   ='unformatted', access='stream', &
-                                                               convert='big_endian' )
-               case ( 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old', &
-                                                               convert='big_endian' )
-               case ( 31 )
-                  open ( lun, file = finam, err = 910, form   ='unformatted', &
-                                                               convert='big_endian' )
-               case ( 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', status = 'old', &
-                                                               convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case ( 41 )                          !     ASCII file with filenames of binary files
+         ! 41 = ASCII file with filenames of binary files
+         case ( 41 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 910 )
@@ -530,7 +212,8 @@
                   ierr = 3
             end select
 
-         case ( 42 )                          !     domain names configuration file, online dd
+         ! 42 = domain names configuration file, online dd
+         case ( 42 )
             select case ( opmode )
                case ( 1 )
                   open ( lun, file = finam, err = 900, status = 'old' )
@@ -538,24 +221,8 @@
                   ierr = 3
             end select
 
-         case ( 44 )                          !     pointer file
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream'  )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old'   )
-               case ( 11, 12 )
-                  open ( lun, file = finam, err = 910, form='unformatted' )
-               case ( 21, 22 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' , &
-                                                       convert='big_endian' )
-               case ( 31, 32 )
-                  open ( lun, file = finam, err = 910, form='unformatted', convert='big_endian' )
-               case default
-                  ierr = 3
-            end select
-
-         case default                         !     no valid number present
+         ! no valid number present
+         case default
             ierr = 2
 
       end select
@@ -568,19 +235,117 @@
 
 !     error while opening STOP with message
 
-  910 continue
-!     get current working directory
-      wd_path = ''
-      ierr_cwd = getCWD(wd_path)
-      if (ierr_cwd /= 0) then
-         wd_path = 'Current working directory not found!'
-      endif
-      
-      write ( * , 2000 ) nropen, lun, trim(finam), trim(wd_path)
-      call srstop ( 1 )
+  910 call report_error_and_stop(lun, nropen, finam)
+    end subroutine open_waq_files
 
- 2000 format (   ' ERROR opening file number:',I3,' on unit:',I3  , &
-               /,' Filename is: ',A , &
-               /,' Searching in working directory: ', /,'  ' A )
-      end
-      end module m_open_waq_files
+    subroutine report_error_and_stop(lun, nropen, finam)
+        use cwd, only: getCWD
+
+        integer      , intent(in) :: lun       !< unit number of file to be opened
+        character*(*) , intent(in) :: finam     !< name of the file to be opened
+        integer      , intent(in) :: nropen    !< Delwaq number of the file to be opened
+
+        integer ierr_cwd  !< Error flag for obtaining current working directory
+        character(256) wd_path   !< Current working directory path
+
+        wd_path = ''
+        ierr_cwd = getCWD(wd_path)
+        if (ierr_cwd /= 0) then
+           wd_path = 'Current working directory not found!'
+        endif
+
+        write ( * , 2000 ) nropen, lun, trim(finam), trim(wd_path)
+        call srstop ( 1 )
+
+   2000 format (   ' ERROR opening file number:',I3,' on unit:',I3  , &
+                 /,' Filename is: ',A , &
+                 /,' Searching in working directory: ', /,'  ' A )
+    end subroutine report_error_and_stop
+
+    subroutine open_unformatted(lun, finam, opmode, ierr, nropen, support_old_status, replace)
+        integer      , intent(in) :: lun         !< unit number of file to be opened
+        character*(*), intent(in) :: finam       !< name of the file to be opened
+        integer      , intent(in) :: nropen      !< Delwaq number of the file to be opened
+        integer      , intent(in) :: opmode      !< Indicator how file must be opened
+        integer      , intent(inout) :: ierr     !< Error flag
+        logical, intent(in), optional :: support_old_status !< use old status if applicable
+        logical, intent(in), optional :: replace !< use replace status for opmode 1
+
+        logical :: old_supported
+        integer :: stat
+
+        old_supported = .true.
+        stat = 0
+        if (present(support_old_status)) then
+            old_supported = support_old_status
+        end if
+
+        select case ( opmode )
+            case ( 1,2 )
+                call open_unformatted_stream(lun, finam, opmode, ierr, nropen)
+                return
+            case ( 11, 12 )
+                if (old_supported .and. opmode == 12) then
+                    open ( lun, file = finam, iostat=stat, form='unformatted' , status = 'old' )
+                else
+                    open ( lun, file = finam, iostat=stat, form='unformatted'  )
+                end if
+            case ( 21 )
+                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream' , &
+                                                    convert='big_endian' )
+            case ( 22 )
+                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream' , status = 'old', &
+                                                    convert='big_endian' )
+            case ( 31 )
+                open ( lun, file = finam, iostat=stat, form   ='unformatted' , &
+                                                    convert='big_endian' )
+            case ( 32 )
+                open ( lun, file = finam, iostat=stat, form='unformatted' , status = 'old', &
+                                                    convert='big_endian' )
+            case default
+                ierr = 3
+        end select
+
+        if (stat /= 0) then
+            call report_error_and_stop(lun, nropen, finam)
+        end if
+
+    end subroutine open_unformatted
+
+    subroutine open_unformatted_stream(lun, finam, opmode, ierr, nropen, replace)
+        integer      , intent(in) :: lun       !< unit number of file to be opened
+        character*(*), intent(in) :: finam     !< name of the file to be opened
+        integer      , intent(in) :: nropen    !< Delwaq number of the file to be opened
+        integer      , intent(in) :: opmode    !< Indicator how file must be opened
+        integer      , intent(inout) :: ierr      !< Error flag
+        logical, intent(in), optional :: replace !< use replace status for opmode 1
+
+        logical :: replace_
+        integer :: stat
+        
+        stat = 0
+        replace_ = .false.
+        if ( present(replace) ) then
+            replace_ = replace
+        endif
+
+        ierr = 0
+        select case ( opmode )
+            case ( 1 )
+                if ( replace_ ) then
+                    open ( lun, file = finam, iostat=stat, form='unformatted', access='stream', status = 'replace')
+                else
+                    ! using unknown status
+                    open ( lun, file = finam, iostat=stat, form='unformatted', access='stream')
+                end if
+            case ( 2 )
+                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream', status = 'old' )
+            case default
+                ierr = 3
+        end select
+        if (stat /= 0) then
+            call report_error_and_stop(lun, nropen, finam)
+        end if
+
+    end subroutine open_unformatted_stream
+end module m_open_waq_files

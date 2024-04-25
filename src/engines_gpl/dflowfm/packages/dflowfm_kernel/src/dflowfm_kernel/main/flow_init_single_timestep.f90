@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -40,6 +40,9 @@ use m_timer
 use dfm_error
 implicit none
 
+integer, parameter :: JAZWS0=0
+logical, parameter :: SET_HU=.true.
+logical, parameter :: USE_U1=.true.
 integer :: key
 integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
@@ -56,7 +59,7 @@ integer :: N, L
 
  if ( jatimer.eq.1 ) call starttimer(ITIMESTEP)
 
- call flow_initimestep(0, iresult)                   ! initialise timestep
+ call flow_initimestep(JAZWS0, SET_HU, USE_U1, iresult)                   ! initialise timestep
 
  if (iresult /= DFM_NOERR) then
     goto 888

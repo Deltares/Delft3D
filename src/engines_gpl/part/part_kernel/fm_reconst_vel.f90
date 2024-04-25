@@ -7,7 +7,7 @@ contains
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -99,7 +99,7 @@ subroutine reconst_vel_coeffs_fmx()
    jj = 0
    do icell=1,numcells
       ! get flownode number (for s, bl)
-      k = iabs(cell2nod(icell))
+      k = abs(cell2nod(icell))
 
       ! fill system for (ux,uy) = (ux0, uy0) + alpha (x-x0, y-y0)
       !

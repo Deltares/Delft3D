@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -33,7 +33,7 @@
 !> Fills in the geometry arrays of laterals for history output.
 !! In parallel models, only process with rank 0 will have the complete geometry arrays filled.
 subroutine fill_geometry_arrays_lateral()
-   use m_wind
+   use m_lateral, only : numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat
    use m_alloc
    use m_partitioninfo
    use m_cell_geometry, only: xz, yz

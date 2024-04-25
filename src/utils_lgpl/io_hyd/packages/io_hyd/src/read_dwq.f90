@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -34,12 +34,12 @@
       ! global declarations
 
       use m_srstop
-      use filmod                   ! module contains everything for the files
+      use m_waq_file                   ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
 
-      type(t_dlwqfile)                       :: file_dwq               ! aggregation-file
+      type(t_file)                       :: file_dwq               ! aggregation-file
       integer                                :: mmax                   ! grid cells m direction
       integer                                :: nmax                   ! grid cells n direction
       integer                                :: ipnt(nmax,mmax)        ! aggregation pointer
@@ -54,8 +54,8 @@
       integer                                :: n,m                    ! loop counters
       integer                                :: ioerr                  ! error on file
 
-      call dlwqfile_open(file_dwq)
-      read(file_dwq%unit_nr,*,iostat=ioerr) nmaxd, mmaxd, nmd, ioptdd, idum
+      call file_dwq%open()
+      read(file_dwq%unit,*,iostat=ioerr) nmaxd, mmaxd, nmd, ioptdd, idum
       if ( ioerr .ne. 0 ) then
          write(*,*) ' error reading dwq file'
          call srstop(1)
@@ -73,7 +73,7 @@
            call srstop(1)
         endif
       endif
-      read(file_dwq%unit_nr,*,iostat=ioerr) ((ipnt(n,m),n=1,nmax),m=1,mmax)
+      read(file_dwq%unit,*,iostat=ioerr) ((ipnt(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(*,*) ' error reading dwq file'
          call srstop(1)

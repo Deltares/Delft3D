@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:xi="http://www.w3.org/2001/XInclude"
+		 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+				<!--
+				Basic Linux   configuration file: tb3_cfg_lnx64_hp.xml
+				Basic Windows configuration file: tb3_cfg_win64_hp.xml
+				From hp to sp      : Replace "config_d_hydro.xml" by "config_d_hydro_sp.xml" (all occurences)
+				From hp to parallel: Use mpi as shell (in related program)
+									 Overrule maxruntime when needed
+									 Only cases that run in parallel mode
+				-->
+	<config>
+		<localPaths>
+			<testCasesDir>.\data\cases</testCasesDir>
+			<enginesDir>.\data\engines</enginesDir>
+			<referenceDir>.\data\references</referenceDir>
+		</localPaths>
+		<locations>
+			<location name="p-opt-engines">
+				<credential ref="commandline"/>
+				<root>\\deltapdc.deltares.nl\project\h4\opt</root>
+			</location>
+			<location name="testbench_v1-engines">
+				<credential ref="commandline"/>
+				<root>\\deltapdc.deltares.nl\project\delft3d\test_data</root>
+			</location>
+			<location name="dsctestbench-cases">
+				<credential ref="commandline"/>
+				<root>{server_base_url}/cases</root>
+			</location>
+			<location name="dsctestbench-references_bin">
+				<credential ref="commandline"/>
+				<root>{server_base_url}/references/bin</root>
+			</location>
+			<location name="dsctestbench-references_data">
+				<credential ref="commandline"/>
+				<root>{server_base_url}/references</root>
+			</location>
+			<location name="network-references">
+				<root>p:\delft3d\test_data\d3d-flow\flow\versions\6.01.10.4289</root>
+			</location>
+			<location name="local">
+				<root>./data/engines</root>
+			</location>
+		</locations>
+	</config>
+				<!--
+				Programs
+				
+				Optional attributes:
+					ignoreStandardError="true"       default: false
+					ignoreReturnValue="true"         default: false
+					logOutputToFile="true"           default: true
+					programStringRemoveQuotes="true" default: false
+						Needed by WAQ1: -p "proc_def" does NOT work
+										-p proc_def   does work
+					shellStringRemoveQuotes="true"   default: false
+						Needed by mpi: mpirun -n 3 "program program_args" does NOT work
+									   mpirun -n 3 program programargs    does work
+					storeOutput="true"               default: false
+						Needed by esm_create: The result must be passed through to setenv(DIO_SHM_ESM)/esm_delete
+						Before using this attribute, ALL program-output was stored. This caused problems on Linux.
+				
+				Path:
+					The path to the executable is build as follows:
+						<networkpath_root>/<from>path
+					To local:
+						<networkpath>/<from>
+						is copied to
+						<localPaths_enginesDir>/<to>
+						where "<to>" is by default the same value of "<from>"
+						When "<version" is defined, "_<version>" is added.
+					Example:
+						if:
+						<networpath_root>        = /f/h4/opt
+						<from> = <to>            = swan/lnx64
+						<path>                   = bin/swan.exe
+						<llocalPaths_enginesDir> = /tmp
+						then:
+						copyRecursive /f/h4/opt/swan/lnx64 /tmp/swan/lnx64
+						all subdirs of /tmp/swan/lnx64 are added to the searchPaths automatically
+				
+				Environment parameters:
+					type path:
+						"." resolves to <localPaths_enginesDir>/<to>                (in example above: /tmp/swan/lnx64)
+						example:
+						<environment name="D3D_HOME" type="path">..\.</environment> (in example above: /tmp/swan)
+					type raw:
+						just the value
+						example:
+						<environment name="ARCH" type="raw">lnx64</environment>
+				-->
+	<programs>
+		<!-- 
+		The order is important. Start with the following programs:
+			command_prompt
+			svn
+			mpi
+		-->
+		<program name="command_prompt">
+			<path>cmd</path>
+			<arguments>
+				<argument>/C</argument>
+			</arguments>
+		</program>
+		<program name="svn">
+			<path>thirdparty\svn\win64\svn.exe</path>
+		</program>
+		<program name="mpi" shellStringRemoveQuotes="true" addSearchPaths="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\mpiexec.exe</path>
+			<arguments>
+				<argument>-n 2 -localonly</argument>
+			</arguments>
+		</program>
+		<program name="COUP203" logOutputToFile="true" addSearchPaths="true">
+			<path>thirdparty\coup203\win64\coup203.exe</path>
+		</program>
+		<program name="FLOW2D3D" logOutputToFile="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<!-- Alternatively: point to a reference version on a network drive
+			<location ref="network-references" type="reference">
+				<from>win64</from>
+			</location>
+			-->
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\run_dflow2d3d_parallel.bat</path>
+			<arguments>
+				<argument>2</argument>
+			</arguments>
+		<!--
+			<environments>
+				<environment name="D3D_HOME" type="path">..\.</environment>
+				<environment name="ARCH" type="raw">win64</environment>
+			</environments>
+		-->
+		</program>
+		<program name="FLOW2D3D_WAVE" logOutputToFile="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\run_dflow2d3d_parallel_dwaves.bat</path>
+		</program>
+		<program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\mormerge.exe</path>
+		</program>
+		<program name="RTC" logOutputToFile="true" addSearchPaths="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\rtc.exe</path>
+			<arguments>
+				<argument>rtc.fnm rtc.rtn</argument>
+			</arguments>
+		<!--
+			<environments>
+				<environment name="D3D_HOME" type="path">..\.</environment>
+			</environments>
+		-->
+		</program>
+		<program name="vs">
+			<shell ref="command_prompt"/>
+			<path>thirdparty\vs\win64\vs.exe</path>
+			<environments>
+				<environment name="PAGER" type="raw">more</environment>
+			</environments>
+		</program>
+		<program name="WAVE" logOutputToFile="true" addSearchPaths="true">
+			<location ref="dsctestbench-references_bin" type="reference">
+				<from>delft3d_open_source/win64</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/x64</from>
+			</location>
+			<path>bin\wave.exe</path>
+		<!--
+			<environments>
+				<environment name="D3D_HOME" type="path">[programpath(WAVE)]\..\..\..</environment>
+				<environment name="ARCH" type="raw">win64</environment>
+			</environments>
+		-->
+		</program>
+	</programs>
+				<!--
+				default testCases
+				
+				Testcases may refer to a default testCase with the attribute
+				ref="name_of_default_testcase"
+				-->
+	<defaultTestCases>
+		<testCase name="flow2d3d_default">
+			<location ref="dsctestbench-cases" type="input">
+				<from>.</from>
+				<!-- if "to" is not specified, "from" is used as target -->
+			</location>
+			<location ref="dsctestbench-references_data" type="reference">
+				<from>win64</from>
+			</location>
+			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			<programs>
+				<program ref="FLOW2D3D"/>
+			</programs>
+		</testCase>
+		<testCase name="flow2d3d_wave_default">
+			<location ref="dsctestbench-cases" type="input">
+				<from>.</from>
+			</location>
+			<location ref="dsctestbench-references_data" type="reference">
+				<from>win64</from>
+			</location>
+			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
+			<programs>
+				<program ref="FLOW2D3D_WAVE"/>
+			</programs>
+		</testCase>
+	</defaultTestCases>
+	<!--
+	testCases
+	-->
+	<xi:include href="../include/delft3d4_hp_cases_flow_parallel.xml"/>
+</deltaresTestbench_v3>

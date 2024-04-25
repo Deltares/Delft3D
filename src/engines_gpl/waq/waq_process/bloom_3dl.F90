@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,151 +21,150 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_bloom_3dl
-use m_waq_precision
+    use m_waq_precision
 
-
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine init_3dl( noseg , nosegw, nosegl, nolay , ngro  , ntyp  )
-      
-      use m_srstop
-      use m_monsys
-      use bloom_data_3dl
+    subroutine init_3dl(noseg, nosegw, nosegl, nolay, ngro, ntyp)
 
-      implicit none
+        use m_srstop
+        use m_monsys
+        use bloom_data_3dl
 
-!     FUNCTION : set dimensions and allocate memory for bloom_data_3dl
+        implicit none
 
-!     subroutines called
+        !     FUNCTION : set dimensions and allocate memory for bloom_data_3dl
 
-!     GETMLU, get the untit number of the report file
-!     SRSTOP, stops execution
+        !     subroutines called
 
-!     arguments
-      integer(kind=int_wp)   ::noseg      ! input, total number of segments
-      integer(kind=int_wp)   ::nosegw     ! input, number of segments in the water phase
-      integer(kind=int_wp)   ::nosegl     ! input, number of segments per layer
-      integer(kind=int_wp)   ::nolay      ! input, number of layers
-      integer(kind=int_wp)   ::ngro       ! input, number of BLOOM algae groups
-      integer(kind=int_wp)   ::ntyp       ! input, number of BLOOM algae types
+        !     GETMLU, get the untit number of the report file
+        !     SRSTOP, stops execution
 
-!     local decalarations
-      integer(kind=int_wp)   ::ierr_alloc ! error number memory allocation
-      integer(kind=int_wp)   ::lunrep     ! unit number report file
+        !     arguments
+        integer(kind = int_wp) :: noseg      ! input, total number of segments
+        integer(kind = int_wp) :: nosegw     ! input, number of segments in the water phase
+        integer(kind = int_wp) :: nosegl     ! input, number of segments per layer
+        integer(kind = int_wp) :: nolay      ! input, number of layers
+        integer(kind = int_wp) :: ngro       ! input, number of BLOOM algae groups
+        integer(kind = int_wp) :: ntyp       ! input, number of BLOOM algae types
 
-      noseg_3dl  = noseg
-      nosegl_3dl = nosegl
-      nolay_3dl  = nolay
-      ngro_3dl   = ngro
-      ntyp_3dl   = ntyp
+        !     local decalarations
+        integer(kind = int_wp) :: ierr_alloc ! error number memory allocation
+        integer(kind = int_wp) :: lunrep     ! unit number report file
 
-      allocate ( radsurf_3dl(noseg), effic_3dl(ntyp,noseg), stat = ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then
-         call getmlu(lunrep)
-         write ( lunrep , 1000 ) ierr_alloc
-         write ( lunrep , 1001 ) noseg
-         write ( lunrep , 1002 ) ntyp
-         call srstop(1)
-      endif
-      effic_3dl    = 0.0
+        noseg_3dl = noseg
+        nosegl_3dl = nosegl
+        nolay_3dl = nolay
+        ngro_3dl = ngro
+        ntyp_3dl = ntyp
 
-      return
- 1000 format(' ERROR: allocating memory in INIT_3DL:',I10)
- 1001 format(' NOSEG, number of segments           :',I10)
- 1002 format(' NTYP , number of BLOOM  algae types :',I10)
-      end subroutine init_3dl
+        allocate (radsurf_3dl(noseg), effic_3dl(ntyp, noseg), stat = ierr_alloc)
+        if (ierr_alloc /= 0) then
+            call getmlu(lunrep)
+            write (lunrep, 1000) ierr_alloc
+            write (lunrep, 1001) noseg
+            write (lunrep, 1002) ntyp
+            call srstop(1)
+        endif
+        effic_3dl = 0.0
 
-      subroutine effi_3dl( effi , itype )
+        return
+        1000 format(' ERROR: allocating memory in INIT_3DL:', I10)
+        1001 format(' NOSEG, number of segments           :', I10)
+        1002 format(' NTYP , number of BLOOM  algae types :', I10)
+    end subroutine init_3dl
 
-!     FUNCTION : Gives average effeiciency over the layers
+    subroutine effi_3dl(effi, itype)
 
-!     use the results from the vertical distribution VTRANS
+        !     FUNCTION : Gives average effeiciency over the layers
 
-      use bloom_data_vtrans
-      use bloom_data_3dl
+        !     use the results from the vertical distribution VTRANS
 
-      implicit none
+        use bloom_data_vtrans
+        use bloom_data_3dl
 
-!     arguments
-      real(kind=dp)    ::effi       ! output, average effieciency
-      integer(kind=int_wp)   ::itype      ! input , index number of BLOOM algae type
+        implicit none
 
-!     local decalarations
-      integer(kind=int_wp)   ::ilay       ! layer counter
-      integer(kind=int_wp)   ::iseg       ! segment number
-      real(kind=dp)    ::flay       ! time factor in a specific layer
-      real(kind=dp)    ::elay       ! efficiency in a specific layer
+        !     arguments
+        real(kind = dp) :: effi       ! output, average effieciency
+        integer(kind = int_wp) :: itype      ! input , index number of BLOOM algae type
 
-!     check if active
-      if ( .not. active_3dl ) then
-!        just take efficiency for this layer
-         effi = effic_3dl(itype,iseg_3dl)
-      else
-!        accumulate efficiencies over the layers ELAY * the time fraction per layer FLAY
-         effi = 0.0
-         if(.not.fm_vtrans) then
-            do ilay = 1 , nolay_3dl
-               iseg  = (ilay-ilay_3dl)*nosegl_3dl + iseg_3dl
-               flay  = fracv(ilay,iseg_3dl)
-               elay  = effic_3dl(itype,iseg)
-               effi  = effi + flay*elay
-            enddo
-         else
-            do iseg = fmktop(iseg_3dl), fmkbot(iseg_3dl), -1
-               ilay = fmlayer(iseg)
-               flay  = fracv(ilay,iseg_3dl)
-               elay  = effic_3dl(itype,iseg)
-               effi  = effi + flay*elay
-            enddo
-         endif
-         effi = effi
-      endif
-      return
-      end subroutine effi_3dl
+        !     local decalarations
+        integer(kind = int_wp) :: ilay       ! layer counter
+        integer(kind = int_wp) :: iseg       ! segment number
+        real(kind = dp) :: flay       ! time factor in a specific layer
+        real(kind = dp) :: elay       ! efficiency in a specific layer
 
-      subroutine effilay_3dl( surf, exttot, dep   , igroup, itype )
+        !     check if active
+        if (.not. active_3dl) then
+            !        just take efficiency for this layer
+            effi = effic_3dl(itype, iseg_3dl)
+        else
+            !        accumulate efficiencies over the layers ELAY * the time fraction per layer FLAY
+            effi = 0.0
+            if(.not.fm_vtrans) then
+                do ilay = 1, nolay_3dl
+                    iseg = (ilay - ilay_3dl) * nosegl_3dl + iseg_3dl
+                    flay = fracv(ilay, iseg_3dl)
+                    elay = effic_3dl(itype, iseg)
+                    effi = effi + flay * elay
+                enddo
+            else
+                do iseg = fmktop(iseg_3dl), fmkbot(iseg_3dl), -1
+                    ilay = fmlayer(iseg)
+                    flay = fracv(ilay, iseg_3dl)
+                    elay = effic_3dl(itype, iseg)
+                    effi = effi + flay * elay
+                enddo
+            endif
+            effi = effi
+        endif
+        return
+    end subroutine effi_3dl
 
-      use m_ebcalc
-      use bloom_data_3dl
+    subroutine effilay_3dl(surf, exttot, dep, igroup, itype)
 
-      implicit none
+        use m_ebcalc
+        use bloom_data_3dl
 
-!     FUNCTION : calculate and store efficiency for this layer
+        implicit none
 
-!     arguments
-      real(kind=dp)    ::surf       ! input , corrected irradiation
-      real(kind=dp)    ::exttot     ! input , total extinction
-      real(kind=dp)    ::dep        ! input , depth of the layer
-      integer(kind=int_wp)   ::igroup     ! input , index number of BLOOM algae group
-      integer(kind=int_wp)   ::itype      ! input , index number of BLOOM algae type
+        !     FUNCTION : calculate and store efficiency for this layer
 
-!     local decalarations
-      real(kind=dp)    ::phi_s      ! x value tabulated function at surface
-      real(kind=dp)    ::fun_s      ! function at surface
-      real(kind=dp)    ::der_s      ! derivative at sutface
-      real(kind=dp)    ::phi_d      ! x value tabulated function at dep
-      real(kind=dp)    ::fun_d      ! function at surface at dep
-      real(kind=dp)    ::der_d      ! derivative at sutface at dep
-      real(kind=dp)    ::effi       ! calculated efficiency
+        !     arguments
+        real(kind = dp) :: surf       ! input , corrected irradiation
+        real(kind = dp) :: exttot     ! input , total extinction
+        real(kind = dp) :: dep        ! input , depth of the layer
+        integer(kind = int_wp) :: igroup     ! input , index number of BLOOM algae group
+        integer(kind = int_wp) :: itype      ! input , index number of BLOOM algae type
 
-      if ( surf .gt. 1.0 .and. exttot*dep .gt. 1.0d-10) then
-         phi_s = - dlog(surf)
-         call ebcalc(phi_s,fun_s,der_s,igroup)
-         phi_d = exttot*dep - dlog(surf)
-         call ebcalc(phi_d,fun_d,der_d,igroup)
-         effi   = (fun_d-fun_s)/exttot/dep
-         effi = max(effi,0.0)
-      else
-         effi = 0.0
-      endif
+        !     local decalarations
+        real(kind = dp) :: phi_s      ! x value tabulated function at surface
+        real(kind = dp) :: fun_s      ! function at surface
+        real(kind = dp) :: der_s      ! derivative at sutface
+        real(kind = dp) :: phi_d      ! x value tabulated function at dep
+        real(kind = dp) :: fun_d      ! function at surface at dep
+        real(kind = dp) :: der_d      ! derivative at sutface at dep
+        real(kind = dp) :: effi       ! calculated efficiency
 
-!     store for later use
-      effic_3dl(itype,iseg_3dl) = effi
+        if (surf > 1.0 .and. exttot * dep > 1.0d-10) then
+            phi_s = - dlog(surf)
+            call ebcalc(phi_s, fun_s, der_s, igroup)
+            phi_d = exttot * dep - dlog(surf)
+            call ebcalc(phi_d, fun_d, der_d, igroup)
+            effi = (fun_d - fun_s) / exttot / dep
+            effi = max(effi, 0.0)
+        else
+            effi = 0.0
+        endif
 
-      return
-      end subroutine effilay_3dl
+        !     store for later use
+        effic_3dl(itype, iseg_3dl) = effi
+
+        return
+    end subroutine effilay_3dl
 
 end module m_bloom_3dl

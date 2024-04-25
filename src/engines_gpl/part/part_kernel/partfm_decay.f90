@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -62,7 +62,7 @@ contains
 
       do ipart = 1, Nopart
           if(mpart(ipart).gt.0) then
-             tp = float(iptime(ipart))  ! TODO: his known?
+             tp = real(iptime(ipart))  ! TODO: his known?
              itdelt = dts
              ddfac  = 2.0
              if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading

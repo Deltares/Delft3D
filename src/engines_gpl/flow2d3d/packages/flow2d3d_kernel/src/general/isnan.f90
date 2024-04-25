@@ -5,7 +5,7 @@
         INTEGER IMACH
 !
 ! Use is made, where possible, of the Fortran 90 elemental functions.
-! Copyright (March, 1996-2023) by Visual Numerics, Inc.  All Rights Reserved.
+! Copyright (March, 1996-2024) by Visual Numerics, Inc.  All Rights Reserved.
       SELECT CASE (I)
          CASE (1)  ! Number of bits per integer storage word.
            IMACH = BIT_SIZE(1)
@@ -65,7 +65,7 @@
 
 ! Formats such as IEEE or Cray C-90, etc. (non-IEEE) are properly analyzed.
 ! If this code does not function properly please contact Visual Numerics, Inc.
-! Copyright (March, 1996-2023) by Visual Numerics, Inc.  All Rights Reserved.
+! Copyright (March, 1996-2024) by Visual Numerics, Inc.  All Rights Reserved.
         IMPLICIT NONE
 
         REAL(kind(0E0)):: AMACH; INTEGER, intent(in) :: I
@@ -150,7 +150,7 @@ CONTAINS
 
         function DMACH (I)
 ! Use is made, where possible, of the Fortran 90 elemental functions.
-! Copyright (March, 1996-2023) by Visual Numerics, Inc.  All Rights Reserved.
+! Copyright (March, 1996-2024) by Visual Numerics, Inc.  All Rights Reserved.
         IMPLICIT NONE
 
         REAL(kind(0D0)):: DMACH; INTEGER, intent(in) :: I

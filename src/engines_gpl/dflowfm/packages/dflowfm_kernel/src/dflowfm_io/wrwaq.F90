@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -1582,7 +1582,7 @@ subroutine waq_wri_bnd()
    use network_data
    use m_partitioninfo, only: is_ghost_node
    use m_flowexternalforcings
-   use m_wind, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+   use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, lat_ids
    use unstruc_files
    use m_sferic, only: jsferic, jasfer3D
    use m_missing, only : dmiss, dxymis
@@ -1767,6 +1767,7 @@ end subroutine waq_wri_model_files
 !! time. Thereafter, accumulated flux is associated with previous
 !! timestep. At the last time a dummy record is written in .are and .flo.
 subroutine waq_wri_couple_files(time)
+   use  m_lateral, only : numlatsg
    use m_flowtimes
    use m_flowgeom
    use m_flow
@@ -2358,7 +2359,7 @@ subroutine waq_prepare_lat()
    use m_flowgeom
    use m_flow
    use m_flowexternalforcings
-   use m_wind, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+   use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
    use m_alloc
    implicit none
 
@@ -2369,7 +2370,6 @@ subroutine waq_prepare_lat()
    waqpar%numlatsectwaq = 0
    call realloc(waqpar%numlatinsectwaq, numlatsg, fill=0, keepExisting=.false.)
 
-   if (numlatsg==0) return ! skip is no resources
    ! First determine the number of laterals actually used and the allocations needed
    do ilat = 1, numlatsg
       if (nodeCountLat(ilat) > 0) then
@@ -2390,6 +2390,7 @@ subroutine waq_prepare_lat()
          end do
       endif
    end do
+   ! Do not skip when numlatsg is zero - we need to have the arrays allocated, even to zero length
    call realloc (waqpar%ifrmtolat, (/ 2,waqpar%numlatwaq /), keepexisting=.true., fill=0 )
    call realloc (qlatwaq, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )
    call realloc (qlatwaq0, waqpar%numlatwaq , keepexisting=.true., fill=0.0D0 )

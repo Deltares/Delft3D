@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -99,7 +99,7 @@ subroutine sumvalueOnCrossSections(resu, numvals)
                  IPTOT = IP
                  do lsed = 1,stmpar%lsedsus ! sum of suspended load 
                     IP = IP + 1
-                    val = resu(IP,icrs) + sedtra%e_ssn(L,lsed) * wu(L) * dble(sign(1, Lf))
+                    val = sedtra%e_ssn(L,lsed) * wu(L) * dble(sign(1, Lf))
                     resu(IPTOT,icrs) = resu(IPTOT,icrs) + val   ! sum of suspended load on crosssections
                     resu(IP,icrs) = resu(IP,icrs) + val         ! suspended load on crosssections per fraction
                  enddo

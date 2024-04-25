@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -1592,7 +1592,7 @@ end subroutine unc_write_shp_genstruc
 
 !> Write a shape file for dam breaks
 subroutine unc_write_shp_dambreak()
-use m_flowexternalforcings, only: ndambreaksg, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
+use m_flowexternalforcings, only: ndambreaksignals, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne
 implicit none
@@ -1634,7 +1634,7 @@ double precision            :: tmp_x(2), tmp_y(2)
      return
    endif
    
-   do n = 1, ndambreaksg
+   do n = 1, ndambreaksignals
       
       !! add shapes
       i = 0

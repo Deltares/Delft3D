@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2023.
+// Copyright (C)  Stichting Deltares, 2011-2024.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -151,7 +151,7 @@
 /*   Program:    odstypes.h                                           */
 /*   Version:    1.01                                                 */
 /*   Programmer: Andre Hendriks                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   1.00 -- 4 Aug 1993 -- 07:44 -- Operating System: DOS              */
 /*   Project:    Open Data Structuur                                  */
@@ -355,7 +355,7 @@
 /*   Program:    odserr.h                                             */
 /*   Version:    1.00                                                 */
 /*   Programmer: Andre Hendriks                                       */
-/*   Copyright (C)  Stichting Deltares, 2011-2023.                    */
+/*   Copyright (C)  Stichting Deltares, 2011-2024.                    */
 /*   Previous version(s):                                             */
 /*   0.0 -- 4 Aug 1993 -- 07:44 -- Operating System: DOS              */
 /*   Project:    Open Data Structuur                                  */

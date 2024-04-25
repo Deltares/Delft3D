@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -24,7 +24,7 @@
 module part12_mod
 
 use m_stop_exit
-use m_filldm
+use m_array_manipulation, only : fill_element_dimensions
 use openfl_mod
 
 contains
@@ -309,22 +309,22 @@ contains
                nosize(6) = 0
 !           set up the element dimensions
 !           group 1
-               call filldm (elt_dims,1   ,1   ,1       ,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,2   ,1   ,4       ,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,3   ,1   ,nosubs+2,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,4   ,1   ,1       ,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,5   ,1   ,6       ,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,6   ,1   ,4       ,0    ,0    ,0    ,0 )
-               call filldm (elt_dims,7   ,1   ,itofmx  ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,1   ,1   ,1       ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,2   ,1   ,4       ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,3   ,1   ,nosubs+2,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,4   ,1   ,1       ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,5   ,1   ,6       ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,6   ,1   ,4       ,0    ,0    ,0    ,0 )
+               call fill_element_dimensions (elt_dims,7   ,1   ,itofmx  ,0    ,0    ,0    ,0 )
 !           group 2
-               call filldm( elt_dims, noparm, 1, 1, 0, 0, 0, 0 )
+               call fill_element_dimensions( elt_dims, noparm, 1, 1, 0, 0, 0, 0 )
                do i = 1, nosubs
-                  call filldm( elt_dims, noparm+i, 1, noseg, 0, 0, 0, 0 )
+                  call fill_element_dimensions( elt_dims, noparm+i, 1, noseg, 0, 0, 0, 0 )
                enddo
 !           local depths per layer
-               call filldm( elt_dims, noparm+nosubs+1, 1, noseg, 0, 0, 0, 0 )
+               call fill_element_dimensions( elt_dims, noparm+nosubs+1, 1, noseg, 0, 0, 0, 0 )
 !           number or particles
-               call filldm( elt_dims, noparm+nosubs+2, 1, noseg, 0, 0, 0, 0 )
+               call fill_element_dimensions( elt_dims, noparm+nosubs+2, 1, noseg, 0, 0, 0, 0 )
 !           now write nefis header
 !           write all elements to file; all definition and creation of files,
 !           data groups, cells and elements is handled by putget.

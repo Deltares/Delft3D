@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -306,7 +306,7 @@ contains
 !
       npmax = nopart + ndprt
 !
-      wpart1 = totmas/float(ndprt)
+      wpart1 = totmas/ndprt
       aconud(isout,iu) = wpart1
       do 20 i = nopart+1, nopart+ndprt
          iptime(i) = 0
@@ -342,7 +342,7 @@ contains
                          npseg = int(rpseg)
                          totma1 = totma1 + rmass
 !
-                         cbuf(iseg) = rpseg - float(npseg)
+                         cbuf(iseg) = rpseg - real(npseg)
                          if( cbuf(iseg)  < (-1.0e-20) ) then
                            write(*,*) ' Negative round off in mudrel '
                            write(lurep,*) 'Negative round off in mudrel'

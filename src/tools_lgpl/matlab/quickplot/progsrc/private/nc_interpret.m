@@ -8,7 +8,7 @@ function nc = nc_interpret(nc,NumPartitions,PartNr_StrOffset,nDigits,Part1)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2023 Stichting Deltares.                                     
+%   Copyright (C) 2011-2024 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -751,7 +751,7 @@ for ivar = 1:nvars
                 case 'aux-time'
                     Info.AuxTime = [Info.AuxTime sicvar];
                 case 'label'
-                    AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name'};
+                    AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
                     if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
                         Info.Station = [Info.Station sicvar];
                     elseif ismember(nc.Dataset(-sicvar).Name,AcceptedStationNames)

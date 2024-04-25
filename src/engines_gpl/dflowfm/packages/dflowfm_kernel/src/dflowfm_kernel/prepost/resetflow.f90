@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -50,12 +50,15 @@
  use m_longculverts, only: reset_longculverts
  use m_sedtrails_data
  use m_nearfield, only: reset_nearfieldData
+ use m_lateral, only : reset_lateral
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
     ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
 
     call reset_wind()
+    
+    call reset_lateral
 
     call reset_waves()
 

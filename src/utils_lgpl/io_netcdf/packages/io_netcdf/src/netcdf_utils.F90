@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2023.
+!  Copyright (C)  Stichting Deltares, 2011-2024.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -54,6 +54,7 @@ public :: ncu_att_to_varid
 public :: ncu_att_to_dimid
 public :: ncu_apply_to_att
 public :: ncu_set_att
+public :: ncu_sanitize_name
 
 interface realloc
    module procedure realloc_nc_att_set
@@ -951,5 +952,13 @@ subroutine ncu_set_att_reals(att, attname, attvalue)
    allocate(att%fltvalue(att%len))
    att%fltvalue = attvalue
 end subroutine ncu_set_att_reals
+
+!> Replace forbidden chars in NetCDF names by _.
+subroutine ncu_sanitize_name(name_string)
+   use string_module, only: replace_char
+   character(len=*), intent(inout) :: name_string !< Name to be used in NetCDF (variable, dimension etc.)
+   call replace_char(name_string, 32, 95) ! ' ' -> '_'
+   call replace_char(name_string, 47, 95) ! '/' -> '_'
+end subroutine ncu_sanitize_name
 
 end module netcdf_utils

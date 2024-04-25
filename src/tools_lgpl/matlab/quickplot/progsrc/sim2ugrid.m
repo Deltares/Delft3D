@@ -18,7 +18,7 @@ function outfile = sim2ugrid(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2023 Stichting Deltares.
+%   Copyright (C) 2011-2024 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -84,7 +84,7 @@ end
 %% Opening the file
 nFiles = length(filenames);
 simOrg = cell(1,nFiles);
-for i = 1:nFiles    
+for i = 1:nFiles
     fprintf(1, 'Opening %s ...\n', filenames{i});
     simOrg{i} = qpfopen(filenames{i});
 end
@@ -108,7 +108,7 @@ zb_loc = zb_locs{1};
 if ~strcmp(zb_loc,'node')
     warning('Bed levels defined at faces. Converted file not suitable for D-FAST Bank Erosion.')
 end
-    
+
 %% Checking time steps ...
 fprintf(1, 'Checking available time steps ...\n');
 ntimes = unique(cellfun(@(x)x.ntimes,simData));
@@ -147,25 +147,25 @@ try
     ifaces = netcdf.defDim(ncid, 'mesh2d_nfaces', total_nfaces);
     imaxfn = netcdf.defDim(ncid, 'mesh2d_nmax_face_nodes', 4);
     itimes = netcdf.defDim(ncid, 'time', netcdf.getConstant('UNLIMITED'));
-    %
+    
     mesh = netcdf.defVar(ncid, 'mesh2d', 'NC_DOUBLE', []);
     netcdf.putAtt(ncid, mesh, 'cf_role', 'mesh_topology')
     netcdf.putAtt(ncid, mesh, 'topology_dimension', int32(2))
     netcdf.putAtt(ncid, mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
     netcdf.putAtt(ncid, mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
-    %
+    
     ix = netcdf.defVar(ncid, 'mesh2d_node_x', 'NC_DOUBLE', inodes);
     netcdf.putAtt(ncid, ix, 'standard_name', 'projection_x_coordinate')
     netcdf.putAtt(ncid, ix, 'units', 'm')
-    %
+    
     iy = netcdf.defVar(ncid, 'mesh2d_node_y', 'NC_DOUBLE', inodes);
     netcdf.putAtt(ncid, iy, 'standard_name', 'projection_y_coordinate')
     netcdf.putAtt(ncid, iy, 'units', 'm')
-    %
+    
     ifnc = netcdf.defVar(ncid, 'mesh2d_face_nodes', 'NC_INT', [imaxfn, ifaces]);
     netcdf.putAtt(ncid, ifnc, 'cf_role', 'face_node_connectivity')
     netcdf.putAtt(ncid, ifnc, 'start_index', int32(1))
-    %
+    
     if strcmp(zb_loc,'node')
         idim = inodes;
     else
@@ -177,37 +177,37 @@ try
     netcdf.putAtt(ncid, izb, 'units', 'm')
     netcdf.putAtt(ncid, izb, 'mesh', 'mesh2d')
     netcdf.putAtt(ncid, izb, 'location', zb_loc)
-    %
+    
     it = netcdf.defVar(ncid, 'time', 'NC_DOUBLE', itimes);
     netcdf.putAtt(ncid, it, 'standard_name', 'time')
     netcdf.putAtt(ncid, it, 'units', tunits)
-    %
+    
     izw = netcdf.defVar(ncid, 'mesh2d_zw', 'NC_DOUBLE', [ifaces, itimes]);
     netcdf.putAtt(ncid, izw, 'standard_name', 'sea_surface_elevation')
     netcdf.putAtt(ncid, izw, 'long_name', 'Water level')
     netcdf.putAtt(ncid, izw, 'units', 'm')
     netcdf.putAtt(ncid, izw, 'mesh', 'mesh2d')
     netcdf.putAtt(ncid, izw, 'location', 'face')
-    %
+    
     ih = netcdf.defVar(ncid, 'mesh2d_h1', 'NC_DOUBLE', [ifaces, itimes]);
     netcdf.putAtt(ncid, ih, 'standard_name', 'sea_floor_depth_below_sea_surface')
     netcdf.putAtt(ncid, ih, 'long_name', 'Water depth')
     netcdf.putAtt(ncid, ih, 'units', 'm')
     netcdf.putAtt(ncid, ih, 'mesh', 'mesh2d')
     netcdf.putAtt(ncid, ih, 'location', 'face')
-    %
+    
     iucx = netcdf.defVar(ncid, 'mesh2d_ucx', 'NC_DOUBLE', [ifaces, itimes]);
     netcdf.putAtt(ncid, iucx, 'standard_name', 'sea_water_x_velocity')
     netcdf.putAtt(ncid, iucx, 'units', 'm s-1')
     netcdf.putAtt(ncid, iucx, 'mesh', 'mesh2d')
     netcdf.putAtt(ncid, iucx, 'location', 'face')
-    %
+    
     iucy = netcdf.defVar(ncid, 'mesh2d_ucy', 'NC_DOUBLE', [ifaces, itimes]);
     netcdf.putAtt(ncid, iucy, 'standard_name', 'sea_water_y_velocity')
     netcdf.putAtt(ncid, iucy, 'units', 'm s-1')
     netcdf.putAtt(ncid, iucy, 'mesh', 'mesh2d')
     netcdf.putAtt(ncid, iucy, 'location', 'face')
-    %
+    
     if has_chezy
         iczs = netcdf.defVar(ncid, 'mesh2d_czs', 'NC_DOUBLE', [ifaces, itimes]);
         netcdf.putAtt(ncid, iczs, 'long_name', 'Chezy roughness')
@@ -215,7 +215,7 @@ try
         netcdf.putAtt(ncid, iczs, 'mesh', 'mesh2d')
         netcdf.putAtt(ncid, iczs, 'location', 'face')
     end
-    %
+    
     iglobal = netcdf.getConstant('GLOBAL');
     pfilenames = protect(filenames);
     files = sprintf('"%s" ',pfilenames{:});
@@ -329,40 +329,87 @@ end
 function data = get_const(simOrg)
 data = [];
 switch simOrg.FileType
+    case 'samples'
+        % Reading from ASCII file format as exported using WAQPAN from SIMONA SDS-file
+        if ~isequal(simOrg.Params,{'x','y','z','m','n','id'})
+            error('Only sample files supported with columns x,y,z,m,n,id.')
+        end
+        filename = simOrg.FileName;
+        [p,f] = fileparts(filename);
+        quantity = sscanf(f,'xyz_%*[^-]-zeta.%i.Q%i');
+        if quantity(1)==1
+            type = 'reference';
+        else % 2
+            type = 'measure';
+        end
+        level = quantity(2);
+        data.ncfile = fullfile(p,sprintf('%s-Q%i_map.nc',type,level));
+        data.zb = zeros(size(simOrg.XYZ(:,3)));
+        data.zb_loc = 'face';
+        
+        data.ntimes = 1;
+        
+        szMN = max(simOrg.XYZ(:,[4 5]))+1;
+        face_active = accumarray(simOrg.XYZ(:,[4 5])+1,1,szMN) > 0;
+        
+        % These files only contain grid cell centre coordinates.
+        % Unfortunately, that's not enough to easily reconstruct the actual grid coordinates.
+        % So, let's use a Cartisian mesh matching grid indices instead.
+        [xnode,ynode] = ndgrid((1:szMN(1))-0.5, (1:szMN(2))-0.5);
+        
+        node_active = face_active | face_active([2:end end],:) | face_active(:,[2:end end]) | face_active([2:end end],[2:end end]);
+        nodes = nan(szMN);
+        nodes(node_active) = 1:sum(node_active(:));
+        
+        data.xnode = xnode(node_active);
+        data.ynode = ynode(node_active);
+        data.faces = face_node_connectivity(nodes);
+        data.face_active = face_active;
+        data.faces = reshape(data.faces, prod(szMN), 4);
+        data.faces = data.faces(data.face_active, :);
+        
+        data.has_chezy = false;
+        
+        data.tunits = 'seconds';
+        
+        data.modelname = 'UNKNOWN';
+        data.prehistory = 'Converted from WAQMORF samples.';
+
     case 'SIMONA SDS FILE'
+        % Reading directly from SIMONA SDS-file
         filename = simOrg.FileName;
         data.ncfile = [filename, '_map.nc'];
         [xd, yd] = waquaio(simOrg, '', 'dgrid');
         data.zb = waquaio(simOrg, '', 'height');
         data.zb_loc = 'node';
-        %
+        
         Info = waqua('read', simOrg, '', 'SOLUTION_FLOW_SEP', []);
         data.ntimes = length(Info.SimTime);
         last_time = data.ntimes;
         zw = waquaio(simOrg, '', 'wlvl', last_time);
-        %
+        
         node_active = ~isnan(xd(:));
         data.xnode = xd(node_active);
         data.ynode = yd(node_active);
         data.zb = data.zb(node_active);
         nnodes = length(data.xnode);
-        %
-        nodes = zeros(size(xd));
+        
+        nodes = zeros(size(xd)); % shouldn't this be NaN ?
         nodes(node_active) = 1:nnodes;
         data.faces = face_node_connectivity(nodes);
         data.face_active = all(~isnan(data.faces), 3) & ~isnan(zw);
         data.faces = reshape(data.faces, numel(xd), 4);
         data.faces = data.faces(data.face_active, :);
-        %
+        
         data.has_chezy = true;
-        %
+        
         refdate = waquaio(simOrg, '', 'refdate');
         [Y,M,D,h,m,s] = datevec(refdate);
         dimen = waqua('readsds',simOrg,'','MESH01_GENERAL_DIMENSIONS');
         tzone = dimen(13);
         data.tunits = 'days';
         data.tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',data.tunits,Y,M,D,h,m,s,tzone);
-        %
+        
         data.modelname = 'SIMONA';
         nmodifiers = length(simOrg.WriteProg);
         cprehistory = cell(1,nmodifiers);
@@ -370,9 +417,11 @@ switch simOrg.FileType
             cprehistory{nmodifiers - i + 1} = [datestr(simOrg.WriteProg(i).Date, sim2ugrid_dateformat), ': ', simOrg.WriteProg(i).Name];
         end
         data.prehistory = [sprintf('%s-',cprehistory{1:end-1}) cprehistory{end}];
+
     case 'NEFIS'
         switch simOrg.SubType
             case 'Delft3D-trim'
+                % Reading directly from Delft3D-FLOW trim-file
                 filename = simOrg.DatExt;
                 [p,f] = fileparts(filename);
                 data.ncfile = [p, filesep, f, '_map.nc'];
@@ -380,7 +429,7 @@ switch simOrg.FileType
                 yd = vs_get(simOrg, 'map-const', 'YCOR', 'quiet');
                 data.face_active = vs_get(simOrg, 'map-const', 'KCS', 'quiet') == 1;
                 node_active = data.face_active | data.face_active([2:end end],:) | data.face_active(:,[2:end end]) | data.face_active([2:end end],[2:end end]);
-                %
+                
                 Info = vs_disp(simOrg, 'map-series', []);
                 data.ntimes = Info.SizeDim;
                 last_time = data.ntimes;
@@ -397,7 +446,7 @@ switch simOrg.FileType
                         data.tunits = 'hours';
                 end
                 data.tunits = sprintf('%s since %4i-%2.2i-%2.2i %2i:%2.2i:%2.2i %+i:00',data.tunits,Y,M,D,h,m,s,tzone);
-                %
+                
                 [dps, success] = vs_get(simOrg, 'map-sed-series', {last_time}, 'DPS', 'quiet');
                 if success
                     data.zb = -dps;
@@ -412,33 +461,35 @@ switch simOrg.FileType
                         data.zb_loc = 'node';
                     end
                 end
-                %
+                
                 info = vs_disp('map-series','CFUROU');
                 data.has_chezy = isstruct(info);
-                %
+                
                 data.xnode = xd(node_active);
                 data.ynode = yd(node_active);
                 nnodes = length(data.xnode);
-                %
+                
                 nodes = zeros(size(xd));
                 nodes(node_active) = 1:nnodes;
                 data.faces = face_node_connectivity(nodes);
                 data.faces   = reshape(data.faces, numel(xd), 4);
                 data.faces   = data.faces(data.face_active, :);
-                %
+                
                 switch data.zb_loc
                     case 'face'
                         data.zb = data.zb(data.face_active);
                     case 'node'
                         data.zb = data.zb(node_active);
                 end
-                %
+                
                 data.modelname = 'Delft3D';
                 simdat = vs_get(simOrg, 'map-version', 'FLOW-SIMDAT', 'quiet');
                 simdat = datenum(sscanf(simdat,'%4d%2d%2d %2d%2d%2d',[1 6]));
                 data.prehistory = [datestr(simdat, sim2ugrid_dateformat), ': Delft3D-FLOW'];
+                
             otherwise
                 error('NEFIS %s files are not (yet) supported by SIM2UGRID.', simOrg.SubType)
+                
         end
     otherwise
         error('%s files are not (yet) supported by SIM2UGRID.', simOrg.FileType)
@@ -456,23 +507,50 @@ faces = cat(3, ...
 function data = get_time_dependent(simOrg,it,face_active,has_chezy)
 zw = [];
 switch simOrg.FileType
+    case 'samples'
+        % Reading from ASCII file format as exported using WAQPAN from SIMONA SDS-file
+        filename = simOrg.FileName;
+        [p,f,e] = fileparts(filename);
+        quantity = sscanf(f,'xyz_%[^-]');
+        quantity = char(quantity);
+        
+        switch quantity
+            case 'velocity'
+                ucx = simOrg.XYZ(:,3);
+                f2 = strrep(f,'velocity','waterdepth');
+                sim2 = qpfopen(fullfile(p,[f2,e]));
+                h = sim2.XYZ(:,3);
+            case 'waterdepth'
+                h = simOrg.XYZ(:,3);
+                f2 = strrep(f,'waterdepth','velocity');
+                sim2 = qpfopen(fullfile(p,[f2,e]));
+                ucx = sim2.XYZ(:,3);
+        end
+        ucy = zeros(size(ucx));
+        zw = ucy;
+        czs = [];
+        t = 0;
+
     case 'SIMONA SDS FILE'
+        % Reading directly from SIMONA SDS-file
         [zw, t_abs] = waquaio(simOrg, '', 'wlvl', it);
         h = waquaio(simOrg, '', 'wdepth', it);
         [ucx, ucy] = waquaio(simOrg, '', 'xyveloc', it);
         [chu, chv] = waquaio(simOrg, '', 'chezy'); % can this be time varying?
         refdate = waquaio(simOrg, '', 'refdate');
         czs = sqrt(4./(1./chu(:,[1 1:end-1]).^2 + 1./chu.^2 + 1./chv([1 1:end-1],:).^2 + 1./chv.^2));
-        %
+        
         zw = zw(face_active);
         h = h(face_active);
         ucx = ucx(face_active);
         ucy = ucy(face_active);
         czs = czs(face_active);
         t = t_abs - refdate;
+
     case 'NEFIS'
         switch simOrg.SubType
             case 'Delft3D-trim'
+                % Reading directly from Delft3D-FLOW trim-file
                 zw = vs_get(simOrg, 'map-series', {it}, 'S1', 'quiet');
                 h = qpread(simOrg, 'water depth', 'data', it);
                 h = h.Val';
@@ -482,12 +560,12 @@ switch simOrg.FileType
                 itmapc = vs_get(simOrg, 'map-info-series', {it}, 'ITMAPC', 'quiet');
                 dt = vs_get(simOrg, 'map-const', 'DT', 'quiet');
                 t = itmapc * dt;
-                %
+                
                 zw = zw(face_active);
                 h = h(face_active);
                 ucx = ucx(face_active);
                 ucy = ucy(face_active);
-                %
+                
                 if has_chezy
                     chu = vs_get(simOrg, 'map-series', {it}, 'CFUROU', 'quiet');
                     chv = vs_get(simOrg, 'map-series', {it}, 'CFVROU', 'quiet');

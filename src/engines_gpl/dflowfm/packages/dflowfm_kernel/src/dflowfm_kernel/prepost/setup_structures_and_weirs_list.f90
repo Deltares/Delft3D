@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -94,8 +94,8 @@ subroutine setup_structures_and_weirs_list()
       enddo
    enddo
 
-   if (ndambreak > 0) then ! needed, because ndambreaksg may be > 0, but ndambreak==0, and then arrays are not available.
-      do n = 1, ndambreaksg
+   if (ndambreaklinks > 0) then ! needed, because ndambreaksignals may be > 0, but ndambreaklinks==0, and then arrays are not available.
+      do n = 1, ndambreaksignals
          istru = dambreaks(n)
          if (istru.ne.0) then
             do k = L1dambreaksg(n), L2dambreaksg(n)

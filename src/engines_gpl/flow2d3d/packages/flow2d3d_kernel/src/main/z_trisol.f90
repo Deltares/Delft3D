@@ -7,7 +7,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                   & betac     ,tkemod    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -163,6 +163,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: itnflrf
     integer                              , pointer :: itnflri
     integer                              , pointer :: itiwei
+    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itdiag
     integer                              , pointer :: julday
     integer                              , pointer :: ntstep
@@ -972,6 +973,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     bedupd              => gdp%gdmorpar%bedupd
     eqmbcsand           => gdp%gdmorpar%eqmbcsand
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
+    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
     sedtyp              => gdp%gdsedpar%sedtyp
     ubot                => gdp%gdr_i_ch%ubot
     !
@@ -1643,7 +1645,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -1803,7 +1805,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! Suspended transport correction vector
        ! Suspended transport vector for output
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst>= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           !
           ! don't compute suspended transport vector in middle of timestep
@@ -2444,7 +2446,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
@@ -2740,7 +2742,7 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! except when run parallel to fluid mud
        !
        call timer_start(timer_3dmor, gdp)
-       if (lsedtot>0) then
+       if (lsedtot>0 .and. nst >= iti_sedtrans) then
           !
           ! compute suspended sediment transport vector at the end of each
           ! dt. Would be better to just calculate it when required for

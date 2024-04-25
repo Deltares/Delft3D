@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -67,7 +67,7 @@
     endif
     
     ! set correct flow areas for dambreaks, using the actual flow width
-    do n = 1, ndambreaksg
+    do n = 1, ndambreaksignals
        do k = L1dambreaksg(n), L2dambreaksg(n)
           L = abs(kdambreak(3,k))
           au(L) = hu(L) * dambreakLinksActualLength(k)

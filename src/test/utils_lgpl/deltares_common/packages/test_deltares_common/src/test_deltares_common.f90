@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,6 +34,7 @@ program test_deltares_common
     use test_time_module
     use test_running_mean
     use test_m_alloc
+    use test_reshape
 
     implicit none
 
@@ -55,6 +56,7 @@ program test_deltares_common
     call tests_geometry_module
     call tests_running_mean
     call tests_alloc
+    call tests_reshape
     !
     ! Done - properly finalize
     !

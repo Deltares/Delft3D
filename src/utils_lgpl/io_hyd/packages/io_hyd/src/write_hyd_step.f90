@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,10 +29,10 @@
 
       subroutine write_hyd_step(hyd, itime)
 
-      use hydmod
+      use m_hydmod
       implicit none
 
-      type(t_hyd)         :: hyd           ! description of the hydrodynamics
+      type(t_hydrodynamics)         :: hyd           ! description of the hydrodynamics
       integer             :: itime         ! relative time in file
 
       ! local

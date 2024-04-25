@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2023.                                
+!  Copyright (C)  Stichting Deltares, 2011-2024.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,7 +36,7 @@ contains
 subroutine initialize_mormerge (iresult, nmmax, lsed, runidIn, gdmorpar)
 !!--declarations----------------------------------------------------------------
     use precision
-    use string_module
+    use system_utils, only: FILESEP, FILESEP_OTHER_ARCH
     use morphology_data_module, only: morpar_type
 !
 ! Global variables
@@ -94,12 +94,8 @@ subroutine initialize_mormerge (iresult, nmmax, lsed, runidIn, gdmorpar)
        ! mmsync file name is going to be:
        ! <path>/sync/<condition>flow<runid>
        !
-       slash = get_dirsep()
-       if (slash == '\') then
-          otherslash = '/'
-       else
-          otherslash = '\'
-       endif
+       slash = FILESEP
+       otherslash = FILESEP_OTHER_ARCH
        !
        ! In filhand: replace all occurences of otherslash by slash
        ! Needed for further parsing

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2023.                                
+!  Copyright (C)  Stichting Deltares, 2017-2024.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -48,6 +48,7 @@ subroutine transport()                           ! transport for now, advect sal
  use unstruc_display, only: jaGUI
  use unstruc_messages
  use m_transport, only: NUMCONST, constituents, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itraN, itrac2const
+ use m_lateral, only : average_concentrations_for_laterals, apply_transport_is_used
 
  implicit none
 
@@ -445,6 +446,11 @@ subroutine transport()                           ! transport for now, advect sal
        enddo
     endif
  enddo
+
+ if (numconst > 0 .and. apply_transport_is_used) then
+    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, dts)
+ endif
+ 
 
  call timstop(handle_extra(52)) ! transport
 

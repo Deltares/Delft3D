@@ -1,6 +1,7 @@
 netCDF4
 lxml
 python-dateutil
+pyarrow # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
 pandas
 matplotlib
 numpy
@@ -10,6 +11,5 @@ pathlib
 tk
 minio
 pytest
-
-# TODO can be removed once minio production server is up and running, see DEVOPSDSC-41.
-python-certifi-win32
+pytest-mock
+pyfakefs

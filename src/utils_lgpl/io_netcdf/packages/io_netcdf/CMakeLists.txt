@@ -89,7 +89,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(library_name io_netcdf_dll)
     set(library_renamed libio_netcdf.so)
     # Add dynamic io_netcdf library
-    add_library(${library_name} SHARED ${src_path}/io_netcdf_api.F90 ${rc_version_file})
+    add_library(${library_name} SHARED ${src_path}/../../io_netcdf_api/io_netcdf_api.F90 ${rc_version_file})
     include_directories(${version_include_dir})
 
     set(oss_dependencies io_netcdf)
@@ -108,10 +108,5 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(install_dir ${CMAKE_BINARY_DIR})
     set(build_dir ${CMAKE_BINARY_DIR})
 
-    post_build_target (${library_name}
-                       ${install_dir}
-                       ${build_dir}
-                       ${checkout_src_root}
-                       ${library_name})
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_renamed} DESTINATION lib)
+    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME io_netcdf.${library_suffix} DESTINATION lib)
 endif()

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2023.
+!  Copyright (C)  Stichting Deltares, 2017-2024.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,15 +31,15 @@
 !
 
 module m_fm_wq_processes
-   use m_rd_sub
+   use data_processing, only : read_substances
    use m_dhnoseg
    use precision, only: fp, prec, fhp, pntrsize, hp, long
    use m_waq_precision, only : sp
    use processes_input
    use processes_pointers
-   use dlwq_hyd_data
+   use m_waq_data_structure
    use processet
-   use output
+   use results, only : OutputPointers
 
    character(20), allocatable                :: syunit_sub(:)               !< substance unit from substance file
    character(20), allocatable                :: coname_sub(:)               !< constant names from substance file
@@ -79,7 +79,7 @@ module m_fm_wq_processes
    integer                                   :: noq2                        !< Number of exchanges second direction
    integer                                   :: noq3                        !< Number of exchanges vertical
    integer                                   :: noq4                        !< Number of exchanges in the bed
-   integer,  allocatable, dimension(:,:)     :: iexpnt                      !< Exchange pointer
+   integer,  allocatable, dimension(:)       :: iexpnt                      !< Exchange pointer
 
    real(hp), allocatable, dimension(:,:)     :: amass                       !< mass array to be updated
    logical , allocatable, dimension(:)       :: wqactive                    !< indicates if processes are active based on volume ('VolumeDryThreshold') and depth ('DepthDryThreshold') criteria
@@ -114,7 +114,7 @@ module m_fm_wq_processes
    integer,  allocatable, dimension(:,:)     :: id_wqb3d                    !< 3d wqbot id's in map-file
    real(hp), allocatable, dimension(:,:)     :: wqbot                       !< water quality bottom variable values in double precision
 
-   type(outputcoll)                          :: outputs                     !< output structure
+   type(OutputPointers)                      :: outputs                     !< output structure
    integer,  allocatable, dimension(:,:)     :: id_waq                      !< waq output id's in map-file
    integer,  allocatable, dimension(:,:)     :: id_wqst                     !< waq stat time output id's in map-file
    integer,  allocatable, dimension(:,:)     :: id_wqse                     !< waq stat end output id's in map-file

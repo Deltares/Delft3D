@@ -57,7 +57,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>dimr/bin/dimr.exe</path>
+            <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>

@@ -48,7 +48,7 @@ BEGIN
             VALUE "FileDescription", "Data selection tool for Delft3D-nefis files\0"
             VALUE "FileVersion", "VN_MAJOR.VN_MINOR.VN_REVISION.VN_BUILD_NUMBER\0"
             VALUE "InternalName", "datsel\0"
-            VALUE "LegalCopyright", "Copyright © 2011-2023\0"
+            VALUE "LegalCopyright", "Copyright © 2011-2024\0"
             VALUE "LegalTrademarks", "Copyright © Stichting Deltares\0"
             VALUE "OriginalFilename", "datsel.exe\0"
             VALUE "PrivateBuild", "-\0"
