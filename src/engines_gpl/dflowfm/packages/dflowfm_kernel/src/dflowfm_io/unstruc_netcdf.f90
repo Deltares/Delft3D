@@ -4568,7 +4568,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
              ierr = nf90_put_var(irstfile, id_tr1(j-ITRA1+1), dum, (/ 1, itim /), (/ ndxi, 1 /) )
           endif
        enddo
-       if (allocated(dum)) deallocate(dum)
+       if (allocated(dum)) then
+          deallocate(dum)
+       endif
     endif
 
     ! water quality bottom variables
@@ -4594,7 +4596,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
              ierr = nf90_put_var(irstfile, id_rwqb(j), dum(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /) )
           endif
        enddo
-       if (allocated(dum)) deallocate(dum)
+       if (allocated(dum)) then
+          deallocate(dum)
+       endif
     endif
 
     ! JRE: review what is really necessary
@@ -4626,7 +4630,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
                 ierr = nf90_put_var(irstfile, id_sf1(j-ISED1+1), dum, (/ 1, itim /), (/ ndxi, 1 /) )
              endif !kmx
           enddo !j
-          if (allocated(dum)) deallocate(dum)
+          if (allocated(dum)) then
+             deallocate(dum)
+          endif
           !Boundary cells
           if (jarstbnd > 0 .and. ndxbnd > 0) then
               allocate(dum(ndxbnd))
@@ -4647,7 +4653,9 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
                     ierr = nf90_put_var(irstfile, id_sf1_bnd(j-ISED1+1), dum, (/ 1, itim /), (/ ndxbnd, 1 /) )
                  endif !kmx
               enddo !j
-              if (allocated(dum)) deallocate(dum)
+              if (allocated(dum)) then
+                 deallocate(dum)
+              endif
           endif !(jarstbnd > 0 .and. ndxbnd > 0)
           ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
           if (stmpar%morpar%densin) then
@@ -6703,7 +6711,9 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       endif
    endif
 
-   if (allocated(work1d)) deallocate(work1d)
+   if (allocated(work1d)) then 
+      deallocate(work1d)
+   endif
 
    ! Salinity
    if (jasal > 0 .and. jamapsal > 0) then
@@ -7338,8 +7348,12 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
       !
       if (ndx1d > 0 .and. stm_included) then
          if (stmpar%morpar%bedupd) then
-            if (allocated(work1d_z)) deallocate(work1d_z)
-            if (allocated(work1d_n)) deallocate(work1d_n)
+            if (allocated(work1d_z)) then 
+               deallocate(work1d_z)
+            endif
+            if (allocated(work1d_n)) then
+               deallocate(work1d_n)
+            endif
             allocate (work1d_z(jmax,nCrs), work1d_n(jmax,nCrs))
             work1d_z = dmiss
             work1d_n = dmiss
@@ -7497,7 +7511,9 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
             else
                wavfac = sqrt(2d0)
             endif
-            if (allocated(wa)) deallocate(wa, stat = ierr)
+            if (allocated(wa)) then 
+               deallocate(wa, stat = ierr)
+            endif
             allocate(wa(1:ndx), stat=ierr)
             wa = wavfac*hwav
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav        , UNC_LOC_S, wa, jabndnd=jabndnd_)
@@ -7581,7 +7597,9 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
            else
               wavfac = sqrt(2d0)
            endif
-           if (allocated(wa)) deallocate(wa, stat = ierr)
+           if (allocated(wa)) then 
+              deallocate(wa, stat = ierr)
+           endif
            allocate(wa(1:ndx), stat=ierr)
            wa = wavfac*hwav
            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, UNC_LOC_S, wa, jabndnd=jabndnd_)
@@ -9125,7 +9143,9 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
            if ( NUMCONST.eq.0 ) then
               ierr = unc_add_gridmapping_att(imapfile, (/ id_s1(iid), id_taus(iid), id_ucx(iid), id_ucy(iid), id_unorm(iid), id_sa1(iid), id_sed(iid) /), jsferic)   ! add id_ucz(iid)?
            else
-              if (allocated(idum)) deallocate(idum)
+              if (allocated(idum)) then
+                 deallocate(idum)
+              endif
               allocate(idum(7+NUMCONST))
               idum(1:7) = (/ id_s1(iid), id_taus(iid), id_ucx(iid), id_ucy(iid), id_unorm(iid), id_sa1(iid), id_sed(iid) /)
               do j=1,NUMCONST
@@ -9398,7 +9418,9 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
 
         ! 1D2D boundaries
         if (nbnd1d2d > 0 .and. jaseparate_ /= 2) then
-           if (allocated(idum)) deallocate(idum)
+           if (allocated(idum)) then 
+              deallocate(idum)
+           endif
            allocate(idum(nbnd1d2d))
            do i=1,nbnd1d2d
               idum(i) = kbnd1d2d(3, i) ! Flow link nrs
@@ -10172,7 +10194,9 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                       dum(kk) = waqoutputs(j,kk)
                    enddo
                    ierr = nf90_put_var(imapfile, id_waq(iid,j), dum, (/ 1, itim /), (/ NdxNdxi, 1 /) )
-                   if (allocated(dum)) deallocate(dum)
+                   if (allocated(dum)) then
+                      deallocate(dum)
+                   endif
                 endif
              endif
           enddo
@@ -10197,7 +10221,9 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                       dum(kk) = waqoutputs(jj,kk)
                    enddo
                    ierr = nf90_put_var(imapfile, id_wqst(iid,j), dum, (/ 1, itim /), (/ NdxNdxi, 1 /) )
-                   if (allocated(dum)) deallocate(dum)
+                   if (allocated(dum)) then 
+                      deallocate(dum)
+                   endif
                 endif
              endif
           enddo
@@ -10223,7 +10249,9 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                          dum(kk) = waqoutputs(jj,kk)
                       enddo
                       ierr = nf90_put_var(imapfile, id_wqse(iid,j), dum, (/ 1 /), (/ NdxNdxi, 1 /) )
-                      if (allocated(dum)) deallocate(dum)
+                      if (allocated(dum)) then 
+                         deallocate(dum)
+                      endif
                    endif
                 endif
              enddo
@@ -11152,8 +11180,12 @@ subroutine unc_write_net_filepointer(inetfile, janetcell, janetbnd, jaidomain, j
         ierr = nf90_redef(inetfile)
     endif
 
-    if (allocated(ibndlink)) deallocate(ibndlink)
-    if (allocated(kn3))      deallocate(kn3)
+    if (allocated(ibndlink)) then
+       deallocate(ibndlink)
+    endif
+    if (allocated(kn3)) then
+       deallocate(kn3)
+    endif
 
     call readyy('Writing net data',-1d0)
 end subroutine unc_write_net_filepointer
@@ -12072,8 +12104,12 @@ subroutine unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_re
    endif
 
    ! Old convention, with overlapping points
-   if (allocated(mesh1dNodeIds)) deallocate(mesh1dNodeIds)
-   if (allocated(mesh1dUnmergedToMerged)) deallocate(mesh1dUnmergedToMerged)
+   if (allocated(mesh1dNodeIds)) then 
+      deallocate(mesh1dNodeIds)
+   endif
+   if (allocated(mesh1dUnmergedToMerged)) then 
+      deallocate(mesh1dUnmergedToMerged)
+   endif
    !if (allocated(mesh1dMergedToUnMerged)) deallocate(mesh1dMergedToUnMerged)
 
    ! UNST-2510: Based on _net.nc version either read with or without duplicatie points on connection nodes.
@@ -12280,10 +12316,14 @@ subroutine unc_read_net_ugrid(filename, numk_keep, numl_keep, numk_read, numl_re
       !
       ! 3. Net links. Just append the edges from the mesh(es) as netlinks, later setnodadm() at call site will group them by 1D and 2D.
       !
-      if (allocated(kn12)) deallocate(kn12)
+      if (allocated(kn12)) then 
+         deallocate(kn12)
+      endif
       allocate(kn12(2, meshgeom%numedge))
 
-      if (allocated(kn3))  deallocate(kn3)
+      if (allocated(kn3)) then 
+         deallocate(kn3)
+      endif
       allocate(kn3(meshgeom%numedge))
 
       if (meshgeom%dim.ne.1) then
@@ -12826,7 +12866,9 @@ use dfm_error
             enddo
             if (numDims==2 .or. (numDims==1 .and. it_read==1)) then
                 d1 = tmpdims(1)
-                if (allocated(tmparray1D)) deallocate(tmparray1D)
+                if (allocated(tmparray1D)) then 
+                   deallocate(tmparray1D)
+                endif
                 allocate(tmparray1D(d1))
                 ierr = nf90_get_var(ncid, id_var, tmparray1D, start = (/1, it_read/), count = (/d1, 1/))
                 if (ierr /= nf90_noerr) goto 999
@@ -12856,7 +12898,9 @@ use dfm_error
       enddo
       if (numDims==3) then
           d1 = tmpdims(1); d2 =tmpdims(2)
-          if (allocated(tmparray2D)) deallocate(tmparray2D)
+          if (allocated(tmparray2D)) then 
+             deallocate(tmparray2D)
+          endif
           allocate(tmparray2D(d1,d2))
           ierr = nf90_get_var(ncid, id_var, tmparray2D, start = (/1, 1, it_read/), count = (/d1, d2, 1/))
           ! TODO: consider using loccount etc.: ierr = nf90_get_var(ncid, id_var, tmparray2D, start = (/1, locstart, it_read/), count = (/d1, loccount, 1/))
@@ -12909,8 +12953,12 @@ use dfm_error
       enddo
    endif
 
-   if (allocated(tmparray1D)) deallocate(tmparray1D)
-   if (allocated(tmparray2D)) deallocate(tmparray2D)
+   if (allocated(tmparray1D)) then 
+      deallocate(tmparray1D)
+   endif
+   if (allocated(tmparray2D)) then 
+      deallocate(tmparray2D)
+   endif
 999 continue
 
 end function get_var_and_shift
@@ -13766,7 +13814,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
           call read_sediment(constituents,'',imapfile,kstart,um%ndxi_own,it_read,um)  
           !boundary cells
           if (um%nbnd_read > 0) then
-             if (allocated(tmpvar)) deallocate(tmpvar)
+             if (allocated(tmpvar)) then 
+                deallocate(tmpvar)
+             endif
              allocate(tmpvar(ISEDN-ISED1+1,um%nbnd_read))
              call read_sediment(tmpvar,'_bnd',imapfile,kstart,um%nbnd_read,it_read,um)
              constituents(:,ndxi+1:ndx)=tmpvar
@@ -13794,8 +13844,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
        if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0 .and. sedsus_read == stmpar%lsedsus) then
           ierr = nf90_inq_varid(imapfile, 'mfluff', id_mfluff)
           if (ierr == nf90_noerr) then
-             if (allocated(tmpvar))     deallocate(tmpvar)
-             if (allocated(rst_mfluff)) deallocate(rst_mfluff)
+             if (allocated(tmpvar)) then
+                deallocate(tmpvar)
+             endif
+             if (allocated(rst_mfluff)) then 
+                deallocate(rst_mfluff)
+             endif
              allocate(tmpvar(sedsus_read, ndxi))
              allocate(rst_mfluff(stmpar%lsedsus, ndxi))
              ierr = nf90_get_var(imapfile, id_mfluff, tmpvar(1:sedsus_read, 1:um%ndxi_own), start = (/ 1, kstart, it_read/), count = (/sedsus_read, ndxi, 1/))
@@ -13818,8 +13872,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
        select case(stmpar%morlyr%settings%iunderlyr)
        case (1)
           ! bodsed
-          if (allocated(tmpvar)) deallocate(tmpvar)
-          if (allocated(rst_bodsed)) deallocate(rst_bodsed)
+          if (allocated(tmpvar)) then 
+             deallocate(tmpvar)
+          endif
+          if (allocated(rst_bodsed)) then 
+             deallocate(rst_bodsed)
+          endif
           allocate(tmpvar(sedtot_read, ndxi))
           allocate(rst_bodsed(sedtot_read, ndxi))
           ierr = nf90_inq_varid(imapfile, 'bodsed', id_bodsed)
@@ -13839,8 +13897,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
           layerfrac = 2
        case (2)
           ! msed (/ id_sedtotdim(iid) , id_nlyrdim(iid) , id_flowelemdim(iid) , id_timedim(iid) /)
-          if (allocated(tmpvar2)) deallocate(tmpvar2)
-          if (allocated(rst_msed)) deallocate(rst_msed)
+          if (allocated(tmpvar2)) then 
+             deallocate(tmpvar2)
+          endif
+          if (allocated(rst_msed)) then 
+             deallocate(rst_msed)
+          endif
           call realloc(tmpvar2,(/sedtot_read, nlyr_read, ndxi/) ,keepExisting = .false.)
           call realloc(rst_msed,(/sedtot_read, nlyr_read, ndxi/),keepExisting = .false.)
           !
@@ -13867,7 +13929,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
              if (ierr == nf90_noerr) then
                 !
                 ! lyrfrac (/ id_sedtotdim(iid) , id_nlyrdim(iid) , id_flowelemdim(iid) , id_timedim(iid) /)
-                if (allocated(tmpvar2)) deallocate(tmpvar2)
+                if (allocated(tmpvar2)) then 
+                   deallocate(tmpvar2)
+                endif
                 call realloc(tmpvar2,(/sedtot_read, nlyr_read, ndxi/) ,keepExisting = .false.)
                 !
                 do l = 1, sedtot_read
@@ -13892,8 +13956,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
              layerthk = 1
              !
              ! thlyr (/ id_nlyrdim(iid) , id_flowelemdim(iid) , id_timedim(iid) /)
-             if (allocated(tmpvar)) deallocate(tmpvar)
-             if (allocated(rst_thlyr)) deallocate(rst_thlyr)
+             if (allocated(tmpvar)) then
+                deallocate(tmpvar)
+             endif
+             if (allocated(rst_thlyr)) then 
+                deallocate(rst_thlyr)
+             endif
              call realloc(tmpvar,(/nlyr_read, ndxi/) ,keepExisting = .false.)
              call realloc(rst_thlyr,(/nlyr_read, ndxi/),keepExisting = .false.)
              !
@@ -14018,7 +14086,9 @@ subroutine unc_read_map_or_rst(filename, ierr)
                 if (ierr == 0) ierr = nf90_inquire_dimension(imapfile, id_jmax, len =jmax)
                 ierr = nf90_inq_dimid (imapfile, trim(mesh1dname)//'_ncrs', id_ncrs)
                 if (ierr == 0) ierr = nf90_inquire_dimension(imapfile, id_ncrs, len =nCrs)
-                if (allocated(work1d_z)) deallocate (work1d_z, work1d_n)
+                if (allocated(work1d_z)) then 
+                   deallocate (work1d_z, work1d_n)
+                endif
                 allocate (work1d_z(1:jmax,1:nCrs), work1d_n(1:jmax,1:nCrs))
                 ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
                 ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax,1:nCrs), start = (/ 1, 1/), count = (/jmax, nCrs/))
@@ -14210,15 +14280,33 @@ subroutine unc_read_map_or_rst(filename, ierr)
 999 continue
     itmp = unc_close(imapfile)
     call readyy('Reading map data',-1d0)
-    if (allocated(maptimes)) deallocate(maptimes)
-    if (allocated(max_threttim)) deallocate(max_threttim)
-    if (allocated(id_ttrabnd)) deallocate(id_ttrabnd)
-    if (allocated(id_ztrabnd)) deallocate(id_ztrabnd)
-    if (allocated(id_tsedfracbnd)) deallocate(id_tsedfracbnd)
-    if (allocated(id_zsedfracbnd)) deallocate(id_zsedfracbnd)
-    if (allocated(tmpvar)) deallocate(tmpvar)
-    if (allocated(tmpvar1)) deallocate(tmpvar1)
-    if (allocated(tmpvar2)) deallocate(tmpvar2)
+    if (allocated(maptimes)) then
+       deallocate(maptimes)
+    endif
+    if (allocated(max_threttim)) then 
+       deallocate(max_threttim)
+    endif
+    if (allocated(id_ttrabnd)) then 
+       deallocate(id_ttrabnd)
+    endif
+    if (allocated(id_ztrabnd)) then 
+       deallocate(id_ztrabnd)
+    endif
+    if (allocated(id_tsedfracbnd)) then
+       deallocate(id_tsedfracbnd)
+    endif
+    if (allocated(id_zsedfracbnd)) then
+       deallocate(id_zsedfracbnd)
+    endif
+    if (allocated(tmpvar)) then
+       deallocate(tmpvar)
+    endif
+    if (allocated(tmpvar1)) then
+       deallocate(tmpvar1)
+    endif
+    if (allocated(tmpvar2)) then
+       deallocate(tmpvar2)
+    endif
 
 end subroutine unc_read_map_or_rst
 
@@ -14761,9 +14849,15 @@ if (jahis > 0) then
     ierr = nf90_put_var(ihisfile, id_Strucgeom_input_node_coordy, geomYStrucInput,     start = (/ 1 /), count = (/ nNodeTot /))
     ierr = nf90_put_var(ihisfile, id_Strucgeom_input_node_count,  nNodesStrucInput,    start = (/ 1 /), count = (/ nstruc /))
 
-    if (allocated(geomXStrucInput) ) deallocate(geomXStrucInput)
-    if (allocated(geomYStrucInput) ) deallocate(geomYStrucInput)
-    if (allocated(nNodesStrucInput)) deallocate(nNodesStrucInput)
+    if (allocated(geomXStrucInput) ) then
+       deallocate(geomXStrucInput)
+    endif
+    if (allocated(geomYStrucInput) ) then
+       deallocate(geomYStrucInput)
+    endif
+    if (allocated(nNodesStrucInput)) then
+       deallocate(nNodesStrucInput)
+    endif
 
   endif
 endif
@@ -15323,13 +15417,25 @@ subroutine unc_write_flowgeom_filepointer_ugrid(ncid,id_tsp, jabndnd,jafou, ja2D
       ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts(1,:), contacts(2,:), contacttype)
    endif
 
-   if (allocated(edge_type)) deallocate(edge_type)
+   if (allocated(edge_type)) then
+      deallocate(edge_type)
+   endif
    ! TODO: AvD: also edge_type for 1D
-   if (associated(layer_zs)) deallocate(layer_zs)
-   if (associated(interface_zs)) deallocate(interface_zs)
-   if (allocated(contacts)) deallocate(contacts)
-   if (allocated(contacttype)) deallocate(contacttype)
-   if (allocated(edge_nodes)) deallocate(edge_nodes)
+   if (associated(layer_zs)) then
+      deallocate(layer_zs)
+   endif
+   if (associated(interface_zs)) then
+      deallocate(interface_zs)
+   endif
+   if (allocated(contacts)) then
+      deallocate(contacts)
+   endif
+   if (allocated(contacttype)) then
+      deallocate(contacttype)
+   endif
+   if (allocated(edge_nodes)) then
+      deallocate(edge_nodes)
+   endif
 
    ! TODO: AvD:
    ! * in WAVE: handle the obsolete 'nFlowElemWithBnd'/'nFlowElem' difference
@@ -15668,8 +15774,12 @@ subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid,jabndnd,jafou, ja2D, contact
 
       deallocate( work2 )
 
-      if (allocated(x1dn)) deallocate(x1dn, y1dn)
-      if (allocated(x1du)) deallocate(x1du, y1du)
+      if (allocated(x1dn)) then
+         deallocate(x1dn, y1dn)
+      endif
+      if (allocated(x1du)) then
+         deallocate(x1du, y1du)
+      endif
 
       deallocate(edge_nodes)
    endif ! 1D flow grid geometry
@@ -15709,13 +15819,25 @@ subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid,jabndnd,jafou, ja2D, contact
    endif
 
 
-   if (allocated(edge_type)) deallocate(edge_type)
+   if (allocated(edge_type)) then
+      deallocate(edge_type)
+   endif
    ! TODO: AvD: also edge_type for 1D
-   if (associated(layer_zs)) deallocate(layer_zs)
-   if (associated(interface_zs)) deallocate(interface_zs)
-   if (allocated(contacts)) deallocate(contacts)
-   if (allocated(contacttype)) deallocate(contacttype)
-   if (allocated(edge_nodes)) deallocate(edge_nodes)
+   if (associated(layer_zs)) then
+      deallocate(layer_zs)
+   endif
+   if (associated(interface_zs)) then
+      deallocate(interface_zs)
+   endif
+   if (allocated(contacts)) then
+      deallocate(contacts)
+   endif
+   if (allocated(contacttype)) then
+      deallocate(contacttype)
+   endif
+   if (allocated(edge_nodes)) then
+      deallocate(edge_nodes)
+   endif
 
    if (mb_latmin /= dmiss .and. mb_latmax /= dmiss .and. mb_lonmin /= dmiss .and. mb_lonmax /= dmiss) then
       ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
@@ -15964,7 +16086,9 @@ subroutine unc_write_flowgeom_filepointer(igeomfile, jabndnd)
        endif
     enddo
     ierr = nf90_put_var(igeomfile, id_flowelemzcc, zz(1:ndxndxi))
-    if (allocated(zz)) deallocate (zz, stat=ierr)
+    if (allocated(zz)) then
+       deallocate (zz, stat=ierr)
+    endif
 
     ! Flow cell center of mass coordinates (only 1D + internal 2D)
     ierr = nf90_put_var(igeomfile, id_flowelemxzw, xzw(1:ndxndxi))
@@ -16205,7 +16329,9 @@ subroutine read_flowsamples_from_netcdf(fileName, quantityName, ierr)
         ns   = ndxi_read
 
         ! Allocate the output variables to be read
-        if (allocated (xs) ) deallocate (xs,ys,zs)
+        if (allocated (xs) ) then
+           deallocate (xs,ys,zs)
+        endif
         allocate (xs(ns), ys(ns), zs(ns), stat=ierr)
 
         ! Read the xcoord data
@@ -16232,7 +16358,9 @@ subroutine read_flowsamples_from_netcdf(fileName, quantityName, ierr)
         ns   = ndxi_read
 
         ! Allocate the output variables to be read
-        if (allocated (xs) ) deallocate (xs,ys,zs)
+        if (allocated (xs) ) then
+           deallocate (xs,ys,zs)
+        endif
         allocate (xs(ns), ys(ns), zs(ns), stat=ierr)
 
         ! Read the xcoord data
@@ -16259,7 +16387,9 @@ subroutine read_flowsamples_from_netcdf(fileName, quantityName, ierr)
         ns   = ndxi_read
 
         ! Allocate the output variables to be read
-        if (allocated (xs) ) deallocate (xs,ys,zs)
+        if (allocated (xs) ) then
+           deallocate (xs,ys,zs)
+        endif
         allocate (xs(ns), ys(ns), zs(ns), stat=ierr)
 
         ! Read the xcoord data
@@ -16286,7 +16416,9 @@ subroutine read_flowsamples_from_netcdf(fileName, quantityName, ierr)
         ns   = ndxi_read
 
         ! Allocate the output variables to be read
-        if (allocated (xs) ) deallocate (xs,ys,zs)
+        if (allocated (xs) ) then
+           deallocate (xs,ys,zs)
+        endif
         allocate (xs(ns), ys(ns), zs(ns), stat=ierr)
 
         ! Read the xcoord data
@@ -16959,8 +17091,12 @@ integer function read_1d_mesh_convention_one(ioncid, numk_keep, numl_keep, numk_
 
 
    !reduce the scope, do deallocation here
-   if (allocated(mesh1dNodeIds)) deallocate(mesh1dNodeIds)
-   if (allocated(mesh1dUnmergedToMerged)) deallocate(mesh1dUnmergedToMerged)
+   if (allocated(mesh1dNodeIds)) then
+      deallocate(mesh1dNodeIds)
+   endif
+   if (allocated(mesh1dUnmergedToMerged)) then
+      deallocate(mesh1dUnmergedToMerged)
+   endif
    !if (allocated(mesh1dMergedToUnMerged)) deallocate(mesh1dMergedToUnMerged)
 
    allocate(mesh1dNodeIds(size(xk)))
