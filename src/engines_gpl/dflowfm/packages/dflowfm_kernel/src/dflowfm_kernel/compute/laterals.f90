@@ -27,9 +27,9 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 module m_lateral
-
+   use stdlib_kinds, only: dp
    implicit none
-   
+
       public reset_lateral
       public default_lateral
       public initialize_lateraldata
@@ -43,37 +43,37 @@ module m_lateral
       integer, parameter, public :: ILATTP_ALL = 0 !< Type code for laterals that apply to both 2D and 1D nodes.
       integer, parameter, public :: ILATTP_1D  = 1 !< Type code for laterals that only apply to 1D nodes.
       integer, parameter, public :: ILATTP_2D  = 2 !< Type code for laterals that only apply to 2D nodes.
-      
-      integer                      , target, public :: numlatsg          !< [-] nr of lateral discharge providers  {"rank": 0}
-      double precision, allocatable, target, public :: qplat(:)          !< [m3/s] Lateral discharge of provider {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qqlat(:)          !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["ndx"]}
-      double precision, allocatable, target, public :: balat(:)          !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
-      character(len=128), allocatable      , public :: lat_ids(:)        !< id of laterals {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qplatCum(:)       !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qplatCumPre(:)    !< [m3/s] Cumulative lateral discharge of provider at previous history output time{"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qplatAve(:)       !< [m3/s] Average lateral discharge of provider during the past history output interal {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qLatReal(:)       !< [m3/s] Realized lateral discharge {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qLatRealCum(:)    !< [m3/s] Cumulative realized lateral discharge {"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qLatRealCumPre(:) !< [m3/s] Cumulative realized lateral discharge at previous history output time{"shape": ["numlatsg"]}
-      double precision, allocatable, target, public :: qLatRealAve(:)    !< [m3/s] Average realized lateral discharge during the past history output interal{"shape": ["numlatsg"]}
-      
+
+      integer,                         target, public :: numlatsg          !< [-] nr of lateral discharge providers  {"rank": 0}
+      real(kind=dp),      allocatable, target, public :: qplat(:)          !< [m3/s] Lateral discharge of provider {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qqlat(:)          !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["ndx"]}
+      real(kind=dp),      allocatable, target, public :: balat(:)          !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
+      character(len=128), allocatable,         public :: lat_ids(:)        !< id of laterals {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qplatCum(:)       !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qplatCumPre(:)    !< [m3/s] Cumulative lateral discharge of provider at previous history output time{"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qplatAve(:)       !< [m3/s] Average lateral discharge of provider during the past history output interal {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qLatReal(:)       !< [m3/s] Realized lateral discharge {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qLatRealCum(:)    !< [m3/s] Cumulative realized lateral discharge {"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qLatRealCumPre(:) !< [m3/s] Cumulative realized lateral discharge at previous history output time{"shape": ["numlatsg"]}
+      real(kind=dp),      allocatable, target, public :: qLatRealAve(:)    !< [m3/s] Average realized lateral discharge during the past history output interal{"shape": ["numlatsg"]}
+
       !! Lateral lookup tables: n1/n2latsg(ilat) = n1/n2, nnlat(n1:n2) = { flow node nrs affected by lateral ilat }
-      integer                              , public :: nlatnd      !< lateral nodes dimension, counter of nnlat(:)
-      integer,          allocatable, target, public :: n1latsg(:)  !< [-] first  nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
-      integer,          allocatable, target, public :: n2latsg(:)  !< [-] second nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
-      integer,          allocatable, target, public :: nnlat(:)    !< [-] for each lateral node, flow node number == pointer to qplat/balat {"shape": ["nlatnd"]}
-      integer,          allocatable, target, public :: kclat(:)    !< [-] for each cell: 0 when not accepting lateral discharge (e.g. pipe) {"location": "face", "shape": ["ndx"]}
-      
+      integer,                      public :: nlatnd      !< lateral nodes dimension, counter of nnlat(:)
+      integer, allocatable, target, public :: n1latsg(:)  !< [-] first  nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
+      integer, allocatable, target, public :: n2latsg(:)  !< [-] second nlatnd point in lateral signal numlatsg {"shape": ["numlatsg"]}
+      integer, allocatable, target, public :: nnlat(:)    !< [-] for each lateral node, flow node number == pointer to qplat/balat {"shape": ["nlatnd"]}
+      integer, allocatable, target, public :: kclat(:)    !< [-] for each cell: 0 when not accepting lateral discharge (e.g. pipe) {"location": "face", "shape": ["ndx"]}
+
       !! Lateral geometry variables
-      integer                              , public :: nNodesLat           !< [-] Total number of geom nodes for all laterals.
-      integer,          allocatable, target, public :: nodeCountLat(:)     !< [-] Count of nodes per lateral.
-      double precision, allocatable, target, public :: geomXLat(:)         !< [m] x coordinates of laterals.
-      double precision, allocatable, target, public :: geomYLat(:)         !< [m] y coordinates of laterals.
-      
+      integer,                            public :: nNodesLat       !< [-] Total number of geom nodes for all laterals.
+      integer,       allocatable, target, public :: nodeCountLat(:) !< [-] Count of nodes per lateral.
+      real(kind=dp), allocatable, target, public :: geomXLat(:)     !< [m] x coordinates of laterals.
+      real(kind=dp), allocatable, target, public :: geomYLat(:)     !< [m] y coordinates of laterals.
+
       private
-      double precision, allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration   !< Average concentration per lateral discharge location.
-      double precision, allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration   !< Concentration of the inflowing water at the lateral discharge location.
-      integer,          allocatable, target, dimension(:),     public :: apply_transport              !< Flag to apply transport for laterals (0 means only water and no substances are transported).
+      real(kind=dp), allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration !< Average concentration per lateral discharge location.
+      real(kind=dp), allocatable, target, dimension(:,:,:), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
+      integer,       allocatable, target, dimension(:),     public :: apply_transport            !< Flag to apply transport for laterals (0 means only water and no substances are transported).
       logical, public :: apply_transport_is_used
       !> Reset the defaults for laterals
       interface default_lateral
@@ -106,11 +106,11 @@ module m_lateral
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface average_concentrations_for_laterals
          module subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents, dt)
-            integer                         , intent(in)    :: numconst       !< Number or constituents.
-            integer                         , intent(in)    :: kmx            !< Number of layers (0 means 2d computation).
-            double precision, dimension(:)  , intent(in)    :: bottom_area    !< Cell area.
-            double precision, dimension(:,:), intent(in)    :: constituents   !< concentrations.
-            double precision,                 intent(in)    :: dt             !< timestep in seconds
+            integer,                       intent(in) :: numconst       !< Number or constituents.
+            integer,                       intent(in) :: kmx            !< Number of layers (0 means 2d computation).
+            real(kind=dp), dimension(:)  , intent(in) :: bottom_area    !< Cell area.
+            real(kind=dp), dimension(:,:), intent(in) :: constituents   !< concentrations.
+            real(kind=dp),                 intent(in) :: dt             !< timestep in seconds
          end subroutine average_concentrations_for_laterals
       end interface average_concentrations_for_laterals
    
@@ -127,7 +127,7 @@ module m_lateral
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface finish_outgoing_lat_concentration
          module subroutine finish_outgoing_lat_concentration(time_interval)
-            double precision, intent(in   )  :: time_interval
+            real(kind=dp), intent(in):: time_interval
          end subroutine finish_outgoing_lat_concentration
       end interface finish_outgoing_lat_concentration
       

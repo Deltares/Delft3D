@@ -82,11 +82,11 @@ implicit none
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents, dt)
 
-      integer                         , intent(in)    :: numconst       !< Number or constituents.
-      integer                         , intent(in)    :: kmx            !< Number of layers (0 means 2d computation).
-      double precision, dimension(:)  , intent(in)    :: bottom_area    !< Cell area.
-      double precision, dimension(:,:), intent(in)    :: constituents   !< concentrations.
-      double precision,                 intent(in)    :: dt             !< timestep in seconds
+      integer,                       intent(in) :: numconst       !< Number or constituents.
+      integer,                       intent(in) :: kmx            !< Number of layers (0 means 2d computation).
+      real(kind=dp), dimension(:),   intent(in) :: bottom_area    !< Cell area.
+      real(kind=dp), dimension(:,:), intent(in) :: constituents   !< concentrations.
+      real(kind=dp),                 intent(in) :: dt             !< timestep in seconds
 
       integer :: ilat
       integer :: n, iconst, k, k1, kt, kb
@@ -123,7 +123,7 @@ implicit none
    !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine finish_outgoing_lat_concentration(time_interval)
-      double precision, intent(in   )  :: time_interval
+      real(kind=dp), intent(in) :: time_interval
       outgoing_lat_concentration = outgoing_lat_concentration/time_interval
    end subroutine finish_outgoing_lat_concentration
    
