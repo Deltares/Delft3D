@@ -625,6 +625,7 @@ contains
    use m_partitioninfo, only : jampi, idomain, my_rank
    use m_flowgeom, only : ndxi, ba
    use m_fm_erosed, only : lsed, stmpar, mfluff, morfac, iflufflyr
+   use m_partitioninfo, only : reduce_double_sum
 
    integer                      , intent(in)    :: lsedtot
    integer                      , intent(in)    :: nomba
