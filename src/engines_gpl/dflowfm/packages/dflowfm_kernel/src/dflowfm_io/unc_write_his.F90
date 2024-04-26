@@ -322,27 +322,8 @@ subroutine unc_write_his(tim)            ! wrihis
 
 
         ! Runup gauges
-        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, nrug, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, maxrug, 'none', 0, id_strlendim, &
                                                  id_rugdim, id_rugid) ! No geometry
-        if (nrug > 0) then
-           ierr = nf90_def_var(ihisfile, 'rug_x_coordinate', nf90_double, (/ id_rugdim, id_timedim /), id_rugx)
-           ierr = nf90_def_var(ihisfile, 'rug_y_coordinate', nf90_double, (/ id_rugdim, id_timedim /), id_rugy)
-
-           ierr = unc_addcoordatts(ihisfile, id_rugx, id_rugy, jsferic)
-           ierr = nf90_put_att(ihisfile, id_rugx, 'long_name', 'time-varying x-coordinate of shoreline position')
-           ierr = nf90_put_att(ihisfile, id_rugy, 'long_name', 'time-varying y-coordinate of shoreline position')
-
-           ierr = nf90_def_var(ihisfile, 'rug_name', nf90_char,   (/ id_strlendim, id_rugdim /), id_rugname)
-           ierr = nf90_put_att(ihisfile, id_rugname,  'cf_role', 'timeseries_id')
-           ierr = nf90_put_att(ihisfile, id_rugname,  'long_name'    , 'runup gauge name') ! REF
-
-           ierr = nf90_def_var(ihisfile, 'runup_height', nf90_double, (/ id_rugdim, id_timedim /), id_varruh)
-           ierr = nf90_put_att(ihisfile, id_varruh, 'standard_name', 'runup_height')
-           ierr = nf90_put_att(ihisfile, id_varruh, 'long_name', 'runup height')
-           ierr = nf90_put_att(ihisfile, id_varruh, 'units', 'm')
-           ierr = nf90_put_att(ihisfile, id_varruh, 'coordinates', 'rug_x_coordinate rug_y_coordinate rug_name')
-           ierr = nf90_put_att(ihisfile, id_varruh, '_FillValue', dmiss)
-        endif
 
         ! Source-sinks
         if (jahissourcesink > 0 .and. numsrc > 0) then
@@ -954,8 +935,8 @@ subroutine unc_write_his(tim)            ! wrihis
 
       select case(config%location_specifier)
       case ( UNC_LOC_OBSCRS, &
-         UNC_LOC_SOSI, &
          UNC_LOC_RUG, &
+         UNC_LOC_SOSI, &
          UNC_LOC_GENSTRU, &
          UNC_LOC_DAM, &
          UNC_LOC_PUMP, &
@@ -977,6 +958,8 @@ subroutine unc_write_his(tim)            ! wrihis
          call write_station_netcdf_variable(ihisfile, out_variable_set_his%statout(ivar))
       case (UNC_LOC_DRED_LINK)
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
+      !case (UNC_LOC_RUG)
+      !   ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /), count = (/ maxrug, 1 /))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /))

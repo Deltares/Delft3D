@@ -95,6 +95,8 @@ private
    integer, public :: IDX_HIS_EVAP_ICEPT
    integer, public :: IDX_HIS_PRECIP_GROUND
    integer, public :: IDX_HIS_RUG_RUHEIGHT
+   integer, public :: IDX_HIS_RUG_RUX
+   integer, public :: IDX_HIS_RUG_RUY
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT
    integer, public :: IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT

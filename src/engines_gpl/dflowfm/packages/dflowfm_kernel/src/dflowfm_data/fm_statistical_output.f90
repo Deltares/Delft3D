@@ -720,6 +720,12 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUHEIGHT,                   &
                      'Wrihis_runupgauge', 'runup_height', 'runup height', '',                     &
                      'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+      call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUX,                   &
+                     'Wrihis_runupgauge', 'rug_x_coordinate', 'time-varying x-coordinate of shoreline position', '',                     &
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
+      call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUY,                   &
+                     'Wrihis_runupgauge', 'rug_y_coordinate', 'time-varying y-coordinate of shoreline position', '',                     &
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
 
       !
       ! HIS: hydraulic structures
@@ -2206,8 +2212,9 @@ private
       ! Run-up gauge variables
       !
       if (nrug > 0) then
-         temp_pointer => rug%maxruh
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUHEIGHT), temp_pointer)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUHEIGHT), rug(:)%maxruh)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUX), rug(:)%maxx)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUY), rug(:)%maxy)
       endif
 
       !
@@ -2735,8 +2742,6 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC),     null(), calculate_dredge_time_fraction)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PLOUGH_TIME_FRAC),  time_ploughed)
       endif
-      
-      ! TODO: UNST-7239: runup gauges
 
 
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_S0                                                        )
