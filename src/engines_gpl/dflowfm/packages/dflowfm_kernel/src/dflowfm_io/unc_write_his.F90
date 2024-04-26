@@ -958,8 +958,6 @@ subroutine unc_write_his(tim)            ! wrihis
          call write_station_netcdf_variable(ihisfile, out_variable_set_his%statout(ivar))
       case (UNC_LOC_DRED_LINK)
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /))
-      !case (UNC_LOC_RUG)
-      !   ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /), count = (/ maxrug, 1 /))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
          ierr = nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /))
