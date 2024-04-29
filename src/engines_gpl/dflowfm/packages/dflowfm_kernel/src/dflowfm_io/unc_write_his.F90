@@ -261,16 +261,22 @@ subroutine unc_write_his(tim)            ! wrihis
            ierr = nf90_def_dim(ihisfile, 'laydimw', kmx+1, id_laydimw)
         end if
 
-        if (stm_included .and. ISED1 > 0 .and. jahissed > 0) then
-           ! New implementation, sedsus fraction is additional dimension
-           ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
-           ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
-           ! Names of different sediment fractions are saved in a separate character variable
-           ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
-           ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
+        if (stm_included .and. jahissed > 0) then
+           if ( ISED1 > 0 ) then
+              ! New implementation, sedsus fraction is additional dimension
+              ierr = nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
+              ierr = nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
+              ! Names of different sediment fractions are saved in a separate character variable
+              ierr = nf90_def_var(ihisfile, 'sedfrac_name', nf90_char, (/ id_strlendim, id_sedtotdim /), id_frac_name)
+              ierr = nf90_put_att(ihisfile, id_frac_name,'long_name', 'sediment fraction identifier')
+           endif
+           if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr==2) then
+              ierr = nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim)
+           endif
         endif
 
-        !
+
+        !if (jased > 0 .and. stm_included .and. jahissed > 0) then
         ! Time
         !
         ierr = nf90_def_var(ihisfile, 'time', nf90_double, id_timedim, id_time)
@@ -294,12 +300,13 @@ subroutine unc_write_his(tim)            ! wrihis
 
             nNodeTot = numobs+nummovobs
             ierr = unc_def_his_structure_static_vars(ihisfile, 'station', 'observation station', 1, numobs+nummovobs, 'point', nNodeTot, id_strlendim, &
-                                                     id_statdim, id_stat_id, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
+                                                     id_statdim, id_statname, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
                                                      add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
-            ierr = nf90_def_var(ihisfile, 'station_name',         nf90_char,   (/ id_strlendim, id_statdim /), id_statname)
-            ! ierr = nf90_put_att(ihisfile, id_statname,  'cf_role', 'timeseries_id') ! UNST-6901: only one cf_role var allowed, is now "station_id". Backwards incompatible for some postprocessors?
-            ierr = nf90_put_att(ihisfile, id_statname,  'long_name'    , 'observation station name') ! REF
-
+            
+            ! Special definition of station_id for backwards compatibility reasons..
+            ierr = nf90_def_var(ihisfile, 'station_id',         nf90_char,   (/ id_strlendim, id_statdim /), id_stat_id)
+            ierr = nf90_put_att(ihisfile, id_stat_id,  'cf_role',   'timeseries_id')
+            ierr = nf90_put_att(ihisfile, id_stat_id,  'long_name', 'id of station')
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
                                                   add_latlon, jawrizc, jawrizw, &
@@ -311,10 +318,6 @@ subroutine unc_write_his(tim)            ! wrihis
         if (ncrs > 0) then
             ierr = unc_def_his_structure_static_vars(ihisfile, 'cross_section', 'observation cross section', 1, ncrs, 'line', nNodesCrs, id_strlendim, &
                                                      id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy)
-
-            ierr = nf90_def_var(ihisfile, 'cross_section_name',         nf90_char,   (/ id_strlendim, id_crsdim /), id_crsname)
-            ierr = nf90_put_att(ihisfile, id_crsname,  'cf_role', 'timeseries_id')
-            ierr = nf90_put_att(ihisfile, id_crsname,  'long_name', 'cross section name'    )
         endif
 
 
@@ -362,6 +365,7 @@ subroutine unc_write_his(tim)            ! wrihis
         ierr = unc_def_his_structure_static_vars(ihisfile, 'source_sink', 'source and sink', jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, &
                                                  id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy)
         if (jahissourcesink > 0 .and. numsrc > 0) then
+           ierr = nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim)
            ierr = nf90_def_var(ihisfile, 'source_sink_x_coordinate', nf90_double, (/ id_srcdim, id_srcptsdim  /), id_srcx)
            ierr = nf90_def_var(ihisfile, 'source_sink_y_coordinate', nf90_double, (/ id_srcdim, id_srcptsdim /), id_srcy)
            ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
@@ -627,9 +631,9 @@ subroutine unc_write_his(tim)            ! wrihis
 
             select case(config%location_specifier)
             case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_x_coordinate rug_y_coordinate rug_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_GENSTRU)
                call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, attset=config%additional_attributes)
             case (UNC_LOC_DAM)
@@ -698,194 +702,191 @@ subroutine unc_write_his(tim)            ! wrihis
         if (timon) call timstop (handle_extra(61))
 
         if (timon) call timstrt ('unc_write_his timeindep data', handle_extra(63))
-
-        ! Observation stations
-        do i=1,numobs+nummovobs
-           ierr = nf90_put_var(ihisfile, id_stat_id, trimexact(namobs(i), strlen_netcdf), (/ 1, i /)) ! Extra for OpenDA-wrapper
-           ierr = nf90_put_var(ihisfile, id_statname, trimexact(namobs(i), strlen_netcdf), (/ 1, i /))
-        end do
-
-        ! Observation cross sections
-        if (ncrs > 0) then
-            do i=1,ncrs
-               ierr = nf90_put_var(ihisfile, id_crsname,  trimexact(crs(i)%name, strlen_netcdf),      (/ 1, i /))
-            end do
-            if (it_his == 0) then
-               ierr = nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs,     start = (/ 1 /), count = (/ nNodesCrs /))
-               ierr = nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs,     start = (/ 1 /), count = (/ nNodesCrs /))
-               ierr = nf90_put_var(ihisfile, id_crsgeom_node_count,  nodeCountCrs)
-               if (allocated(geomXCrs))     deallocate(geomXCrs)
-               if (allocated(geomYCrs))     deallocate(geomYCrs)
-               if (allocated(nodeCountCrs)) deallocate(nodeCountCrs)
-            end if
-        end if
-
-        ! Run-up gauges
-        if (nrug>0) then
-            do i=1,nrug
-                ierr = nf90_put_var(ihisfile, id_rugname,  trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /))
-                ierr = nf90_put_var(ihisfile, id_rugid,    trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /))
-            end do
-        endif
-
-        ! Source-sinks
-        if (jahissourcesink > 0 .and. numsrc > 0) then
-           do i = 1, numsrc
-              ierr = nf90_put_var(ihisfile, id_srcname, trimexact(srcname(i), strlen_netcdf), (/ 1, i/) )
-              ierr = nf90_put_var(ihisfile, id_qsrccur, qstss((numconst+1)*(i-1)+1), (/ i, it_his /)) ! Intentionally here for the first output time
-           enddo
-           ierr = nf90_put_var(ihisfile, id_srcx, xsrc)
-           ierr = nf90_put_var(ihisfile, id_srcy, ysrc)
-           j = 1
-           call realloc(node_count, numsrc, fill = 0)
-           call realloc(geom_x, 2)
-           call realloc(geom_y, 2)
-           do i = 1, numsrc
-              k1 = ksrc(1,i)
-              k2 = ksrc(4,i)
-              nNodes = 0
-              if (k1 > 0) then
-                 nNodes = nNodes + 1
-                 geom_x(nNodes) = xz(k1)
-                 geom_y(nNodes) = yz(k1)
-              end if
-              if (k2 > 0) then
-                 nNodes = nNodes + 1
-                 geom_x(nNodes) = xz(k2)
-                 geom_y(nNodes) = yz(k2)
-              end if
-
-              node_count(i) = nNodes
-              if (nNodes > 0) then
-                 ierr = nf90_put_var(ihisfile, id_srcgeom_node_coordx,  geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
-                 ierr = nf90_put_var(ihisfile, id_srcgeom_node_coordy,  geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
-              end if
-
-              j = j + nNodes
+        if (it_his == 0) then   
+           ! Observation stations
+           do i=1,numobs+nummovobs
+              ierr = nf90_put_var(ihisfile, id_stat_id, trimexact(namobs(i), strlen_netcdf), (/ 1, i /)) ! Extra for OpenDA-wrapper
+              ierr = nf90_put_var(ihisfile, id_statname, trimexact(namobs(i), strlen_netcdf), (/ 1, i /))
            end do
-           ierr = nf90_put_var(ihisfile, id_srcgeom_node_count, node_count)
-        end if
-
-        ! General structures
-        if (jahiscgen > 0 .and. ngenstru_ > 0) then
-            do i=1,ngenstru_
-               if (jaoldstr == 1) then
-                  igen = i
-               else
-                  if (network%sts%numGeneralStructures > 0) then
-                     istru = network%sts%generalStructureIndices(i)
-                     ierr = nf90_put_var(ihisfile, id_genstru_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
-                     cycle
-                  else
-                     igen = genstru2cgen(i)
-                  end if
-               end if
-               ierr = nf90_put_var(ihisfile, id_genstru_id,  trimexact(cgen_ids(igen), strlen_netcdf), (/ 1, i /))
-            end do
-        end if
-
-        if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
-           do i = 1, network%sts%numOrifices
-              istru = network%sts%orificeIndices(i)
-              ierr = nf90_put_var(ihisfile, id_orifgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
-
-        if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
-           do i = 1, network%sts%numBridges
-              istru = network%sts%bridgeIndices(i)
-              ierr = nf90_put_var(ihisfile, id_bridge_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
-
-        if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
-           do i = 1, network%sts%numCulverts
-              istru = network%sts%culvertIndices(i)
-              ierr = nf90_put_var(ihisfile, id_culvert_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
-
-        if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
-           do i = 1, network%sts%numuniweirs
-              istru = network%sts%uniweirIndices(i)
-              ierr = nf90_put_var(ihisfile, id_uniweir_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
-
-        if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
-           do i = 1, network%cmps%count
-              ierr = nf90_put_var(ihisfile, id_cmpstru_id,  trimexact(network%cmps%compound(i)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
-
-        ! Lateral discharges
-        if (jahislateral > 0 .and. numlatsg > 0) then
-           do i = 1, numlatsg
-              ierr = nf90_put_var(ihisfile, id_lat_id,  trimexact(lat_ids(i), strlen_netcdf), (/ 1, i /))
-           end do
-           ierr = nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
-           ierr = nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
-           ierr = nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat)
-        end if
-
-        if (jahisgate > 0 .and. ngatesg > 0) then
-            do i=1,ngatesg
-               ierr = nf90_put_var(ihisfile, id_gate_id,  trimexact(gate_ids(i), strlen_netcdf),      (/ 1, i /))
-            end do
-        end if
-        if (jahisgate > 0 .and. ngategen > 0) then
-           do i=1,ngategen
-              igen = gate2cgen(i)
-              ierr = nf90_put_var(ihisfile, id_gategen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /))
-           end do
-        end if
-        if (jahiscdam > 0 .and. ncdamsg > 0) then
-            do i=1,ncdamsg
-               ierr = nf90_put_var(ihisfile, id_cdam_id,  trimexact(cdam_ids(i), strlen_netcdf),      (/ 1, i /))
-            end do
-        end if
-        if (jahisweir > 0 .and. nweirgen > 0 ) then
-           if (allocated(weir2cgen)) then
-              do i=1,nweirgen
-                 igen = weir2cgen(i)
-                 ierr = nf90_put_var(ihisfile, id_weirgen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /))
+           !
+           ! Observation cross sections
+           if (ncrs > 0) then
+              do i=1,ncrs
+                 ierr = nf90_put_var(ihisfile, id_crs_id,  trimexact(crs(i)%name, strlen_netcdf),      (/ 1, i /))
               end do
-           else if (network%sts%numWeirs > 0) then
-              do i=1,nweirgen
-                 istru = network%sts%weirIndices(i)
-                 ierr = nf90_put_var(ihisfile, id_weirgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),      (/ 1, i /))
+              ierr = nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs,     start = (/ 1 /), count = (/ nNodesCrs /))
+              ierr = nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs,     start = (/ 1 /), count = (/ nNodesCrs /))
+              ierr = nf90_put_var(ihisfile, id_crsgeom_node_count,  nodeCountCrs)
+              if (allocated(geomXCrs))     deallocate(geomXCrs)
+              if (allocated(geomYCrs))     deallocate(geomYCrs)
+              if (allocated(nodeCountCrs)) deallocate(nodeCountCrs)
+           end if
+
+           ! Run-up gauges
+           if (nrug>0) then
+              do i=1,nrug
+                 ierr = nf90_put_var(ihisfile, id_rugname,  trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /))
+                 ierr = nf90_put_var(ihisfile, id_rugid,    trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /))
+              end do
+           endif
+
+           ! Source-sinks
+           if (jahissourcesink > 0 .and. numsrc > 0) then
+              do i = 1, numsrc
+                 ierr = nf90_put_var(ihisfile, id_srcname, trimexact(srcname(i), strlen_netcdf), (/ 1, i/) )
+                 ierr = nf90_put_var(ihisfile, id_qsrccur, qstss((numconst+1)*(i-1)+1), (/ i, it_his /)) ! Intentionally here for the first output time
+              enddo
+              ierr = nf90_put_var(ihisfile, id_srcx, xsrc)
+              ierr = nf90_put_var(ihisfile, id_srcy, ysrc)
+              j = 1
+              call realloc(node_count, numsrc, fill = 0)
+              call realloc(geom_x, 2)
+              call realloc(geom_y, 2)
+              do i = 1, numsrc
+                 k1 = ksrc(1,i)
+                 k2 = ksrc(4,i)
+                 nNodes = 0
+                 if (k1 > 0) then
+                    nNodes = nNodes + 1
+                    geom_x(nNodes) = xz(k1)
+                    geom_y(nNodes) = yz(k1)
+                 end if
+                 if (k2 > 0) then
+                    nNodes = nNodes + 1
+                    geom_x(nNodes) = xz(k2)
+                    geom_y(nNodes) = yz(k2)
+                 end if
+                 node_count(i) = nNodes
+                 if (nNodes > 0) then
+                    ierr = nf90_put_var(ihisfile, id_srcgeom_node_coordx,  geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /))
+                    ierr = nf90_put_var(ihisfile, id_srcgeom_node_coordy,  geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /))
+                 end if
+                 j = j + nNodes
+              end do
+              ierr = nf90_put_var(ihisfile, id_srcgeom_node_count, node_count)
+           end if
+
+           ! General structures
+           if (jahiscgen > 0 .and. ngenstru_ > 0) then
+              do i=1,ngenstru_
+                 if (jaoldstr == 1) then
+                    igen = i
+                 else
+                    if (network%sts%numGeneralStructures > 0) then
+                       istru = network%sts%generalStructureIndices(i)
+                       ierr = nf90_put_var(ihisfile, id_genstru_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
+                       cycle
+                    else
+                       igen = genstru2cgen(i)
+                    end if
+                 end if
+                 ierr = nf90_put_var(ihisfile, id_genstru_id,  trimexact(cgen_ids(igen), strlen_netcdf), (/ 1, i /))
               end do
            end if
-        end if
 
-        if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
-            do i = 1,ndambreaksignals
-               ierr = nf90_put_var(ihisfile, id_dambreak_id, trimexact(dambreak_ids(i), strlen_netcdf),(/ 1, i /))
-            end do
-        end if
+           if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+              do i = 1, network%sts%numOrifices
+                 istru = network%sts%orificeIndices(i)
+                 ierr = nf90_put_var(ihisfile, id_orifgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
 
-        if (jahislongculv > 0 .and. nlongculverts > 0) then
-           do i = 1, nlongculverts
-              ierr = nf90_put_var(ihisfile, id_longculvert_id,  trimexact(longculverts(i)%id, strlen_netcdf),  (/ 1, i /))
-           end do
-        end if
+           if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+              do i = 1, network%sts%numBridges
+                 istru = network%sts%bridgeIndices(i)
+                 ierr = nf90_put_var(ihisfile, id_bridge_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
 
-        if (jased>0 .and. stm_included .and. jahissed>0) then
-           do i=1,stmpar%lsedtot
-              ierr = nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /))
-           enddo
-        end if
+           if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
+              do i = 1, network%sts%numCulverts
+                 istru = network%sts%culvertIndices(i)
+                 ierr = nf90_put_var(ihisfile, id_culvert_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
 
-        if (dad_included) then
-           do i=1,(dadpar%dredge_dimension_length)
-              ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
-           enddo
-           !
-           do i=1,dadpar%nadump
-              ierr = nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/ 1, i /))
-           enddo
+           if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
+              do i = 1, network%sts%numuniweirs
+                 istru = network%sts%uniweirIndices(i)
+                 ierr = nf90_put_var(ihisfile, id_uniweir_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
+
+           if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
+              do i = 1, network%cmps%count
+                 ierr = nf90_put_var(ihisfile, id_cmpstru_id,  trimexact(network%cmps%compound(i)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
+
+           ! Lateral discharges
+           if (jahislateral > 0 .and. numlatsg > 0) then
+              do i = 1, numlatsg
+                 ierr = nf90_put_var(ihisfile, id_lat_id,  trimexact(lat_ids(i), strlen_netcdf), (/ 1, i /))
+              end do
+              ierr = nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
+              ierr = nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))
+              ierr = nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat)
+           end if
+
+           if (jahisgate > 0 .and. ngatesg > 0) then
+              do i=1,ngatesg
+                 ierr = nf90_put_var(ihisfile, id_gate_id,  trimexact(gate_ids(i), strlen_netcdf),      (/ 1, i /))
+              end do
+           end if
+           if (jahisgate > 0 .and. ngategen > 0) then
+              do i=1,ngategen
+                 igen = gate2cgen(i)
+                 ierr = nf90_put_var(ihisfile, id_gategen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /))
+              end do
+           end if
+           if (jahiscdam > 0 .and. ncdamsg > 0) then
+              do i=1,ncdamsg
+                 ierr = nf90_put_var(ihisfile, id_cdam_id,  trimexact(cdam_ids(i), strlen_netcdf),      (/ 1, i /))
+              end do
+           end if
+           if (jahisweir > 0 .and. nweirgen > 0 ) then
+              if (allocated(weir2cgen)) then
+                 do i=1,nweirgen
+                    igen = weir2cgen(i)
+                    ierr = nf90_put_var(ihisfile, id_weirgen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /))
+                 end do
+              else if (network%sts%numWeirs > 0) then
+                 do i=1,nweirgen
+                    istru = network%sts%weirIndices(i)
+                    ierr = nf90_put_var(ihisfile, id_weirgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),      (/ 1, i /))
+                 end do
+              end if
+           end if
+
+           if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
+              do i = 1,ndambreaksignals
+                 ierr = nf90_put_var(ihisfile, id_dambreak_id, trimexact(dambreak_ids(i), strlen_netcdf),(/ 1, i /))
+              end do
+           end if
+
+           if (jahislongculv > 0 .and. nlongculverts > 0) then
+              do i = 1, nlongculverts
+                 ierr = nf90_put_var(ihisfile, id_longculvert_id,  trimexact(longculverts(i)%id, strlen_netcdf),  (/ 1, i /))
+              end do
+           end if
+
+           if (jased>0 .and. stm_included .and. jahissed>0) then
+              do i=1,stmpar%lsedtot
+                 ierr = nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /))
+              enddo
+           end if
+
+           if (dad_included) then
+              do i=1,(dadpar%dredge_dimension_length)
+                 ierr = nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /))
+              enddo
+              !
+              do i=1,dadpar%nadump
+                 ierr = nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/ 1, i /))
+              enddo
+           endif
+           if (timon) call timstop ( handle_extra(63))
         endif
-        if (timon) call timstop ( handle_extra(63))
     endif
     ! Increment output counters in m_flowtimes.
     if (it_his == 0) then
@@ -1042,9 +1043,9 @@ contains
 
       if (output_enabled > 0 .and. count > 0) then
          ierr = nf90_def_dim(ihisfile, prefix, count, id_strdim)
-         ierr = nf90_def_var(ihisfile, prefix//'_id',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid)
+         ierr = nf90_def_var(ihisfile, prefix//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid)
          ierr = nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id')
-         ierr = nf90_put_att(ihisfile, id_strid,  'long_name', 'Id of '//trim(name))
+         ierr = nf90_put_att(ihisfile, id_strid,  'long_name', 'name of '//trim(name))
 
          if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
             ! Define geometry related variables

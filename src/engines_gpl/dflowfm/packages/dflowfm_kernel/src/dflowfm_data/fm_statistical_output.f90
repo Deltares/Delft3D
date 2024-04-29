@@ -141,7 +141,7 @@ private
       use netcdf_utils, only: ncu_set_att
       use m_observations, only: numobs, nummovobs
       use m_flow, only: kmx
-      type(t_output_quantity_config_set), intent(inout) :: output_config_set   !< Output configuration for the HIS file.
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set   !< Output configuration for the his-file.
       integer, allocatable, dimension(:), intent(  out) :: idx_his_hwq
 
       integer               :: i, ntot, num_layers
@@ -191,7 +191,7 @@ private
    use MessageHandling, only: err
 
    integer,                            intent(  out) :: num_const_items   !< Number of constituent items (including sediment).
-   type(t_output_quantity_config_set), intent(inout) :: output_config_set !< Output configuration for the HIS file.
+   type(t_output_quantity_config_set), intent(inout) :: output_config_set !< Output configuration for the his-file.
    integer, allocatable, dimension(:), intent(  out) :: idx_const         !< Indexes for the constituent output variables. To be used for
                                                                           !< the registration of the variables in the output set.
    integer ::  num, lenunitstr, lsed
@@ -408,7 +408,7 @@ private
       use netcdf_utils, only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use m_transportdata, only: const_names, const_units, ITRA1, ITRAN
-      type(t_output_quantity_config_set), intent(inout) :: output_config_set       !< Output configuration for the HIS file.
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set       !< Output configuration for the his-file.
       integer, allocatable,               intent(  out) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config_set array
 
       integer :: num_tracers
@@ -479,7 +479,7 @@ private
       
       implicit none
       
-      type(t_output_quantity_config_set), intent(inout) :: output_config_set         !< Output configuration set for the HIS file.
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set         !< Output configuration set for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
       
       character(len=idlen)                              :: waqb_sub_name
@@ -522,7 +522,7 @@ private
       
       implicit none
       
-      type(t_output_quantity_config_set), intent(inout) :: output_config_set           !< Output configuration for the HIS file.
+      type(t_output_quantity_config_set), intent(inout) :: output_config_set           !< Output configuration for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom    substances in output_config_set array
       
       character(len=idlen)                              :: waqb_sub_name
@@ -610,7 +610,7 @@ private
       ! HIS: Mass balances
       !
       call addoutval(out_quan_conf_his, IDX_HIS_VOLTOT,                                             &
-                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLTOT)), '', '', 'm3', UNC_LOC_GLOBAL, description='Write mass balance totals to his file')
+                     'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_VOLTOT)), '', '', 'm3', UNC_LOC_GLOBAL, description='Write mass balance totals to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_STOR,                                               &
                      'Wrihis_balance', 'water_balance_'//trim(voltotname(IDX_STOR)), '', '', 'm3', UNC_LOC_GLOBAL)
       call addoutval(out_quan_conf_his, IDX_HIS_VOLERR,                                             &
@@ -697,7 +697,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE,                   &
                      'Wrihis_sourcesink', 'source_sink_prescribed_discharge', '', '',                     &
-                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write sources-sinks statistics to his file')
+                     'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1), description='Write source-sink parameters to his file')
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT,          &
                      'Wrihis_sourcesink', 'source_sink_prescribed_salinity_increment', '', '',                     &
                      '1e-3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
@@ -708,10 +708,10 @@ private
                      'Wrihis_sourcesink', 'source_sink_current_discharge', '', '',                     &
                      'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME,                      &
-                     'Wrihis_sourcesink', 'source_sink_cumulative_volume', '', '',                     &
+                     'Wrihis_sourcesink', 'source_sink_cumulative_volume', 'Cumulative volume from the start time until current time at each source/sink', '',                     &
                      'm3', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
       call addoutval(out_quan_conf_his, IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE ,                     &
-                     'Wrihis_sourcesink', 'source_sink_discharge_average' , '', '',                     &
+                     'Wrihis_sourcesink', 'source_sink_discharge_average' , 'Average discharge in the past his-file output-interval at each source/sink', '',                     &
                      'm3 s-1', UNC_LOC_SOSI, nc_atts = atts(1:1)   )
 
       !
@@ -719,7 +719,7 @@ private
       !
       call addoutval(out_quan_conf_his, IDX_HIS_RUG_RUHEIGHT,                   &
                      'Wrihis_runupgauge', 'runup_height', 'runup height', '',                     &
-                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his file')
+                     'm', UNC_LOC_RUG, description='Write run-up gauge statistics to his-file')
 
       !
       ! HIS: hydraulic structures
@@ -730,7 +730,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_DISCHARGE,                        &
                      'Wrihis_structure_gen', 'general_structure_discharge', 'Total discharge through general structure', '',                     &
-                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts=atts(1:1), description='Write general structure parameters to his file')
+                     'm3 s-1', UNC_LOC_GENSTRU, nc_atts=atts(1:1), description='Write general structure parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL,                      &
                      'Wrihis_structure_gen', 'general_structure_crest_level', 'Crest level of general structure', '',                     &
                      'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
@@ -809,7 +809,7 @@ private
       !! Controllable dam (old .ext file)
       call addoutval(out_quan_conf_his, IDX_HIS_CDAM_DISCHARGE,                                     &
                      'Wrihis_structure_dam', 'cdam_discharge', 'controllable dam discharge',                         &
-                     '', 'm3 s-1', UNC_LOC_DAM, description='Write dam parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_DAM, description='Write dam parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_CDAM_CREST_LEVEL,                                   &
                      'Wrihis_structure_dam', 'cdam_crest_level', 'controllable dam crest level',                       &
                      '', 'm', UNC_LOC_DAM)
@@ -825,7 +825,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_STRUCTURE_DISCHARGE,                           &
                      'Wrihis_structure_pump', 'pump_structure_discharge', 'Discharge through pump',                             &
-                     '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1), description='Write pump parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1), description='Write pump parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_PUMP_CAPACITY,                                      &
                      'Wrihis_structure_pump', 'pump_capacity', 'Capacity of pump',                                   &
                      '', 'm3 s-1', UNC_LOC_PUMP, nc_atts = atts(1:1))
@@ -860,7 +860,7 @@ private
       !! Gate (old .ext file)
       call addoutval(out_quan_conf_his, IDX_HIS_GATE_DISCHARGE,                                     &
                      'Wrihis_structure_gate', 'gate_discharge', 'gate discharge',                                     &
-                     '', 'm3 s-1', UNC_LOC_GATE, description='Write gate parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_GATE, description='Write gate parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_GATE_LOWER_EDGE_LEVEL,                              &
                      'Wrihis_structure_gate', 'gate_lower_edge_level', 'gate lower edge level',                              &
                      '', 'm', UNC_LOC_GATE)
@@ -905,7 +905,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_DISCHARGE,                                  &
                      'Wrihis_structure_weir', 'weirgen_discharge', 'Discharge through weir',                             &
-                     '', 'm3 s-1', UNC_LOC_WEIRGEN, nc_atts = atts(1:1), description='Write weir parameters to his file')
+                     '', 'm3 s-1', UNC_LOC_WEIRGEN, nc_atts = atts(1:1), description='Write weir parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_CREST_LEVEL,                                &
                      'Wrihis_structure_weir', 'weirgen_crest_level', 'Crest level of weir',                                &
                      '', 'm', UNC_LOC_WEIRGEN, nc_atts = atts(1:1))
@@ -948,7 +948,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_DISCHARGE,                                  &
                      'Wrihis_structure_orifice', 'orifice_discharge', 'Discharge through orifice', '',                      &
-                     'm3 s-1', UNC_LOC_ORIFICE, nc_atts = atts(1:1), description='Write orifice parameters to his file')
+                     'm3 s-1', UNC_LOC_ORIFICE, nc_atts = atts(1:1), description='Write orifice parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_CREST_LEVEL,                                &
                      'Wrihis_structure_orifice', 'orifice_crest_level', 'Crest level of orifice', '',                      &
                      'm', UNC_LOC_ORIFICE, nc_atts = atts(1:1))
@@ -997,7 +997,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_DISCHARGE,                                   &
                      'Wrihis_structure_bridge', 'bridge_discharge', 'Discharge through bridge', '',                     &
-                     'm3 s-1', UNC_LOC_BRIDGE, description='Write bridge parameters to his file')
+                     'm3 s-1', UNC_LOC_BRIDGE, description='Write bridge parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_BRIDGE_S1UP,                                        &
                      'Wrihis_structure_bridge', 'bridge_s1up', 'Water level upstream of bridge', 'sea_surface_height',   &
                      'm', UNC_LOC_BRIDGE, nc_atts = atts(1:1))
@@ -1028,7 +1028,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_DISCHARGE,                                  &
                      'Wrihis_structure_culvert', 'culvert_discharge', 'Discharge through culvert', '',                     &
-                     'm3 s-1', UNC_LOC_CULVERT, nc_atts = atts(1:1), description='Write culvert parameters to his file')
+                     'm3 s-1', UNC_LOC_CULVERT, nc_atts = atts(1:1), description='Write culvert parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_CREST_LEVEL,                                &
                      'Wrihis_structure_culvert', 'culvert_crest_level', 'Crest level of culvert', '',                     &
                      'm', UNC_LOC_CULVERT, nc_atts = atts(1:1))
@@ -1065,7 +1065,7 @@ private
       !! Dambreak
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1UP,                                      &
                      'Wrihis_structure_damBreak', 'dambreak_s1up', 'Water level upstream of dambreak', 'sea_surface_height',   &
-                     'm', UNC_LOC_DAMBREAK, description='Write dam break parameters to his file')
+                     'm', UNC_LOC_DAMBREAK, description='Write dam break parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1DN,                                      &
                      'Wrihis_structure_damBreak', 'dambreak_s1dn', 'Water level downstream of dambreak', 'sea_surface_height',   &
                      'm', UNC_LOC_DAMBREAK)
@@ -1102,7 +1102,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_DISCHARGE,                                  &
                      'Wrihis_structure_uniWeir', 'uniweir_discharge', 'Discharge through uniweir', '',                     &
-                     'm3 s-1', UNC_LOC_UNIWEIR, nc_atts = atts(1:1), description='Write universal weir parameters to his file')
+                     'm3 s-1', UNC_LOC_UNIWEIR, nc_atts = atts(1:1), description='Write universal weir parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_UNIWEIR_CREST_LEVEL,                                &
                      'Wrihis_structure_uniWeir', 'uniweir_crest_level', 'Crest level of uniweir', '',                     &
                      'm', UNC_LOC_UNIWEIR, nc_atts = atts(1:1))
@@ -1125,7 +1125,7 @@ private
       !! Compound structure
       call addoutval(out_quan_conf_his, IDX_HIS_CMPSTRU_DISCHARGE,                                  &
                      'Wrihis_structure_compound', 'cmpstru_discharge', 'Discharge through cmpstru', '',                     &
-                     'm3 s-1', UNC_LOC_CMPSTRU, description='Write compound structure parameters to his file')
+                     'm3 s-1', UNC_LOC_CMPSTRU, description='Write compound structure parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_CMPSTRU_S1UP,                                       &
                      'Wrihis_structure_compound', 'cmpstru_s1up', 'Water level upstream of cmpstru', 'sea_surface_height',   &
                      'm', UNC_LOC_CMPSTRU)
@@ -1147,7 +1147,7 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_DISCHARGE,                              &
                      'Wrihis_structure_longculvert', 'longculvert_discharge', 'Discharge through longculvert', '',                     &
-                     'm3 s-1', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1), description='Write long culvert parameters to his file')
+                     'm3 s-1', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1), description='Write long culvert parameters to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_LONGCULVERT_S1UP,                                   &
                      'Wrihis_structure_longculvert', 'longculvert_s1up', 'Water level upstream of longculvert', 'sea_surface_height',   &
                      'm', UNC_LOC_LONGCULVERT, nc_atts = atts(1:1))
@@ -1177,22 +1177,22 @@ private
       ! and turn off options in flow_init_statistical_output_his
       call addoutval(out_quan_conf_his, IDX_HIS_WATERLEVEL,                                                  &
                      'Wrihis_waterlevel_s1', 'waterlevel', 'water level', 'sea_surface_height',              &
-                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water level to his file', &
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water level to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_BEDLEVEL,                                                    &
                      'Wrihis_bedlevel', 'bedlevel', 'bottom level', '',                                      &
-                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write bed level to his file',   &
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write bed level to his-file',   &
                       nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_WATERDEPTH,                                                  &
                      'Wrihis_waterdepth', 'waterdepth', 'water depth', '',                                   &
-                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water depth to his file', &
+                     'm', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write water depth to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_X_VELOCITY,                                                                                   &
-                     'Wrihis_velocity_vector', 'x_velocity', 'x-component of flow element center velocity vector',                            &
-                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity vectors to his file', &
+                     'Wrihis_velocity_vector', 'x_velocity', 'flow element center velocity vector, x-component',                            &
+                     'sea_water_x_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity vectors to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_Y_VELOCITY,                                                        &
-                     'Wrihis_velocity_vector', 'y_velocity', 'y-component of flow element center velocity vector', &
+                     'Wrihis_velocity_vector', 'y_velocity', 'flow element center velocity vector, y-component', &
                      'sea_water_y_velocity', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                        &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_Z_VELOCITY,                                                                      &
@@ -1210,7 +1210,7 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE,                                                                        &
                      'Wrihis_velocity', 'velocity_magnitude',                                                                              &
                      'velocity magnitude',                                                                                                 &
-                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity magnitude to his file', &
+                     'sea_water_speed', 'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write velocity magnitude to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_VELOCITY_MAGNITUDE_EULERIAN,                    &
                      'Wrihis_velocity', 'velocity_magnitude',                                   &
@@ -1221,12 +1221,12 @@ private
                      'Wrihis_discharge', 'discharge_magnitude',                                                 &
                      'average discharge magnitude',                                                             &
                      'water_volume_transport_in_river_channel', 'm3 s-1', UNC_LOC_STATION, nc_atts = atts(1:1), &
-                     description='Write discharge magnitude to his file', nc_dim_ids = nc_dims_3D_center)
+                     description='Write discharge magnitude to his-file', nc_dim_ids = nc_dims_3D_center)
 
       ! Turbulence model
       call addoutval(out_quan_conf_his, IDX_HIS_TKE,                                                                   &
                      'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                                       &
-                     'm2 s-2', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write k, eps and vicww to his file', &
+                     'm2 s-2', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write k, eps and vicww to his-file', &
                      nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_VICWW,                                       &
                      'Wrihis_turbulence', 'vicww' , 'turbulent vertical eddy viscosity', '', &
@@ -1241,22 +1241,22 @@ private
                      's-1', UNC_LOC_STATION, nc_atts = atts(1:1),            &
                      nc_dim_ids = nc_dims_3D_interface_center)
       call addoutval(out_quan_conf_his, IDX_HIS_RICH,               &
-                     'Wrihis_Richardsononoutput', 'rich', 'Richardson Nr', &
+                     'Richardsononoutput', 'rich', 'Richardson Nr', &
                      '', '-', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_3D_interface_center)
 
       ! Gravity + buoyancy
       call addoutval(out_quan_conf_his, IDX_HIS_SALINITY,                                                    &
                      'Wrihis_salinity', 'salinity', '', 'sea_water_salinity',                                &
-                     '1e-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write salinity to his file', &
+                     '1e-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write salinity to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_TEMPERATURE,                                        &
                      'Wrihis_temperature', 'temperature', '', 'sea_water_temperature',&
-                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write temperature to his file', &
+                     'degC', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write temperature to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_POTENTIAL_DENSITY,                                  &
                      'Wrihis_density', 'potential_density', 'potential_density', '',                     &
-                     'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write density to his file', &
+                     'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write density to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
       call addoutval(out_quan_conf_his, IDX_HIS_DENSITY,             &
                      'Wrihis_density', 'density', 'density', '',     &
@@ -1271,7 +1271,7 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_HWAV,                                                       &
                      'Wrihis_waves', 'hwav', 'Significant wave height',                                     &
                      'sea_surface_wave_significant_wave_height', 'm', UNC_LOC_STATION, nc_atts = atts(1:1), &
-                     description='Write wave data to his file', nc_dim_ids = nc_dims_2D)
+                     description='Write wave data to his-file', nc_dim_ids = nc_dims_2D)
       ! TODO: hwav sig vs. rms
       call addoutval(out_quan_conf_his, IDX_HIS_TWAV,                                      &
                      'Wrihis_waves', 'twav', 'Wave period',                                &
@@ -1304,18 +1304,18 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSX,                                                           &
                      'Wrihis_taucurrent', 'tausx',                                                               &
                      'Mean bottom shear stress vector, x-component',                                             &
-                     'Mean bottom shear stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
-                     description='Write mean bed shear stress to his file', nc_dim_ids = nc_dims_2D)
+                     'mean_bottom_shear_stress vector, x-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
+                     description='Write mean bed shear stress to his-file', nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_TAUSY,                                                           &
                      'Wrihis_taucurrent', 'tausy',                                                               &
                      'Mean bottom shear stress vector, y-component',                                             &
-                     'Mean bottom shear stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
+                     'mean_bottom_shear_stress vector, y-component', 'Pa', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_2D)
 
       ! Meteo
 
       call addoutval(out_quan_conf_his, IDX_HIS_PATM, 'Wrihis_wind', 'patm', 'atmospheric pressure', '', &
-                     'N m-2', UNC_LOC_STATION, nc_atts = atts(1:1), description = 'Write wind velocities to his file', &
+                     'N m-2', UNC_LOC_STATION, nc_atts = atts(1:1), description = 'Write wind velocities to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_WINDX,                                                               &
                      'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'eastward_wind', &
@@ -1335,11 +1335,11 @@ private
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_RAIN,                                                                 &
                      'Wrihis_rain', 'rain', 'precipitation depth per time unit', 'lwe_precipitation_rate',            &
-                     'mm day-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write precipitation to his file', &
+                     'mm day-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write precipitation to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_INFILTRATION_CAP,                                                   &
                      'Wrihis_infiltration', 'infiltration_cap', 'Infiltration capacity', '',                        &
-                     'mm hr-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write infiltration to his file', &
+                     'mm hr-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write infiltration to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL,                  &
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
@@ -1355,7 +1355,7 @@ private
       ! Heat flux model
       call addoutval(out_quan_conf_his, IDX_HIS_WIND,                                                            &
                      'Wrihis_heat_fluxes', 'wind'  , 'windspeed', '',                                            &
-                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write heat fluxes to his file', &
+                     'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write heat fluxes to his-file', &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_TAIR,                       &
                      'Wrihis_heat_fluxes', 'Tair'  , 'air temperature', '', &
@@ -1401,7 +1401,7 @@ private
       ! Sediment model
       call addoutval(out_quan_conf_his, IDX_HIS_SED,                                                                         &
                      'Wrihis_sediment', 'sed', 'Sediment concentration',                                                     &
-                     '', 'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write sediment transport to his file', &
+                     '', 'kg m-3', UNC_LOC_STATION, nc_atts = atts(1:1), description='Write sediment transport to his-file', &
                      nc_dim_ids = t_nc_dim_ids(laydim = .true., statdim = .true., sedsusdim = .true., timedim = .true.))
       call addoutval(out_quan_conf_his, IDX_HIS_WS,                         &
                      'Wrihis_sediment', 'ws', 'Sediment settling velocity', &
@@ -1500,20 +1500,20 @@ private
       ! The actual output variables will only be added later, during init_fm_statistical_output_his().
       ! This is necessary for reading the key from the MDU file and providing the input value.
       call addoutval(out_quan_conf_his, IDX_HIS_HWQ_ABSTRACT, 'Wrihis_water_quality_output', 'water_quality_output_abstract', &
-                     '', '', '-', UNC_LOC_STATION, nc_atts = atts(1:1), description = 'Write all water quality outputs to his file', &
+                     '', '', '-', UNC_LOC_STATION, nc_atts = atts(1:1), description = 'Write all water quality outputs to his-file', &
                      nc_dim_ids = nc_dims_3D_center)
 
       call addoutval(out_quan_conf_his, IDX_HIS_TRACERS_ABSTRACT, &
-                     'Wrihis_tracers', 'station_tracer_abstract', '', &
-                     '', '-', UNC_LOC_STATION, description = 'Write tracers to his file')
+                     'wrihis_constituents', 'station_tracer_abstract', '', &
+                     '', '-', UNC_LOC_STATION, description = 'Write tracers to his-file')
 
       call addoutval(out_quan_conf_his, IDX_HIS_WQBOT_ABSTRACT, &
                      'Wrihis_wqbot', 'station_wqb_abstract', '', &
-                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom substances to his file')
+                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom substances to his-file')
 
       call addoutval(out_quan_conf_his, IDX_HIS_WQBOT3D_ABSTRACT, &
                      'Wriwaqbot3Doutput', 'station_wqb3d_abstract', '', &
-                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom 3D substances to his file')
+                     '', '-', UNC_LOC_STATION, description = 'Write waq bottom 3D substances to his-file')
 
       ! HIS: Variables on observation cross sections
       !
@@ -1521,10 +1521,10 @@ private
 
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE,                                       &
                      'Wrihis_crs_flow', 'cross_section_discharge', 'Discharge through observation cross section',    &
-                     'ocean_volume_transport_across_line', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his file')
+                     '', 'm3 s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write data on observation cross sections to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_DISCHARGE_CUMUL,                                       &
                      'Wrihis_crs_flow', 'cross_section_cumulative_discharge', 'Cumulative volume transport through observation cross section',    &
-                     'integral_wrt_time_of_ocean_volume_transport_across_line', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
+                     '', 'm3', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_AREA,                                       &
                      'Wrihis_crs_flow', 'cross_section_area', 'Wet area of observation cross section',    &
                      '', 'm2', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
@@ -1540,7 +1540,7 @@ private
       ! and will only be added later, during init_fm_statistical_output_his().
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_CONST_ABSTRACT,                                       &
                      'Wrihis_crs_constituents', 'cross_section_const_abstract', '',                                                                 &
-                     '', '-', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write all transported constituents to his file')
+                     '', '-', UNC_LOC_OBSCRS, nc_atts = atts(1:1), description='Write all transported constituents to his-file')
 
       ! Sediment model nr. 4
       call addoutval(out_quan_conf_his, IDX_HIS_OBSCRS_SED_BTRANSPORT,                                       &
@@ -1571,7 +1571,7 @@ private
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS,         &
                      'Wrihis_lateral', 'lateral_prescribed_discharge_instantaneous',      &
                      'Prescribed discharge through lateral at current time step (instantaneous)',                   &
-                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1), description='Write lateral data to his file')
+                     '', 'm3 s-1', UNC_LOC_LATERAL, nc_atts = atts(1:1), description='Write lateral data to his-file')
       call addoutval(out_quan_conf_his, IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE,               &
                      'Wrihis_lateral', 'lateral_prescribed_discharge_average',            &
                      'Prescribed discharge through lateral, average over the last history time interval',           &
@@ -2147,10 +2147,16 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PRECIP_TOTAL               ),voltot(IDX_HIS_PRECIP_TOTAL            :IDX_HIS_PRECIP_TOTAL               )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EVAP                       ),voltot(IDX_HIS_EVAP                    :IDX_HIS_EVAP                       )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
+         if (jaFrcInternalTides2D == 1) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
+         endif
+         if (jatidep > 0) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
+         endif
+         if (jaselfal > 0) then
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
+         endif
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
@@ -2619,21 +2625,23 @@ private
          case (2)
             nlyrs = stmpar%morlyr%settings%nlyr
 
-            temp_pointer(1:(IVAL_MSEDN-IVAL_MSED1+1)*ntot*nlyrs) => valobs(:,IVAL_MSED1:IVAL_MSED1+(IVAL_MSEDN-IVAL_MSED1+1)*nlyrs)
+            temp_pointer(1:(IVAL_MSEDN-IVAL_MSED1+1)*ntot*nlyrs) => valobs(:,IPNT_MSED1:IPNT_MSED1-1+(IVAL_MSEDN-IVAL_MSED1+1)*(nlyrs))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_MSED),temp_pointer)
 
-            temp_pointer(1:(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*ntot*nlyrs) => valobs(:,IVAL_LYRFRAC1:IVAL_LYRFRAC1+(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*nlyrs)
+            temp_pointer(1:(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*ntot*nlyrs) => valobs(:,IPNT_LYRFRAC1:IPNT_LYRFRAC1-1+(IVAL_LYRFRACN-IVAL_LYRFRAC1+1)*(nlyrs))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LYRFRAC),temp_pointer)
 
             temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_THLYR:IPNT_THLYR+(nlyrs-1))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_THLYR),temp_pointer)
-
-            temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_POROS:IPNT_POROS+(nlyrs-1))
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POROS),temp_pointer)
+            
+            if (stmpar%morlyr%settings%iporosity > 0) then
+               temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_POROS:IPNT_POROS+(nlyrs-1))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POROS),temp_pointer)
+            endif
          end select
          !
          if (stmpar%morpar%moroutput%frac) then
-            temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
+            temp_pointer(1:ntot*(IPNT_FRACN-IPNT_FRAC1+1)) => valobs(:,IPNT_FRAC1:IPNT_FRACN)
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_FRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%mudfrac) then
@@ -2643,15 +2651,15 @@ private
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SANDFRAC),valobs(:,IPNT_SANDFRAC))
          endif
          if (stmpar%morpar%moroutput%fixfac) then
-            temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
+            temp_pointer(1:ntot*(IVAL_FIXFACN-IVAL_FIXFAC1+1)) => valobs(:,IVAL_FIXFAC1:IVAL_FIXFACN)
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_FIXFRAC),temp_pointer)
          endif
          if (stmpar%morpar%moroutput%hidexp) then
-            temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
+            temp_pointer(1:ntot*(IVAL_HIDEXPN-IVAL_HIDEXP1+1)) => valobs(:,IVAL_HIDEXP1:IVAL_HIDEXPN)
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HIDEXP),temp_pointer)
          endif
          if (stmpar%morpar%flufflyr%iflufflyr>0 .and. stmpar%lsedsus>0) then
-            temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
+            temp_pointer(1:ntot*(IVAL_MFLUFFN-IVAL_MFLUFF1+1)) => valobs(:,IVAL_MFLUFF1:IVAL_MFLUFFN)
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_MFLUFF),temp_pointer)
          end if
       endif

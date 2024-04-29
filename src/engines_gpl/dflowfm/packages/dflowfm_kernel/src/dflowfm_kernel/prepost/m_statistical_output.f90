@@ -224,8 +224,6 @@ contains
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
       use m_statistical_callback
-      use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
-      use m_monitoring_crosssections, only: crs
       use MessageHandling, only: mess, LEVEL_WARN
    
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
@@ -247,12 +245,11 @@ contains
             cycle
          else
       
-            ! Disable statistical output items on cross-sections if any cross-sections lie across multiple partitions
-            if (output_config%location_specifier == UNC_LOC_OBSCRS .and. &
-                any_crosssections_lie_across_multiple_partitions(crs) .and. &
-                (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX .or. item%operation_type == SO_AVERAGE)) then
-               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type2string(item%operation_type)) // ')"' // &
-                                    ' as at least one observation cross-section lies across multiple partitions, which could produce invalid output')
+            ! Disable statistics in time on structures of this type if any of them lie across multiple partitions
+            if (model_has_structures_across_partitions(output_config%location_specifier) .and. item%operation_type /= SO_CURRENT) then
+               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type_to_string(item%operation_type)) // ')"' // &
+                                    ' as at least one ' // trim(location_specifier_to_string(output_config%location_specifier)) // &
+                                    ' lies across multiple partitions, which could produce invalid output')
                cycle
             end if
             
@@ -283,6 +280,48 @@ contains
       call err_flush()
 
    end subroutine add_stat_output_items
+   
+   !> Check if any structures of the indicated type lie across multiple partitions
+   function model_has_structures_across_partitions(location_specifier) result(res)
+      use m_structures, only: model_has_weirs_across_partitions, &
+                              model_has_general_structures_across_partitions, &
+                              model_has_orifices_across_partitions, &
+                              model_has_universal_weirs_across_partitions, &
+                              model_has_culverts_across_partitions, &
+                              model_has_pumps_across_partitions, &
+                              model_has_bridges_across_partitions, &
+                              model_has_long_culverts_across_partitions
+      use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
+      use m_monitoring_crosssections, only: crs
+      integer, intent(in) :: location_specifier    !< The location specifier indicating the type of structure (UNC_LOC_XXX)
+      logical             :: res                   !< Whether or not any structures of this type lie across multiple partitions
+      
+      res = .false.
+      
+      select case (location_specifier)
+      case default
+         return
+      case (UNC_LOC_OBSCRS)      ! Cross-sections
+         res = any_crosssections_lie_across_multiple_partitions(crs)
+      case (UNC_LOC_WEIRGEN)     ! Weirs
+         res = model_has_weirs_across_partitions
+      case (UNC_LOC_GENSTRU)     ! General structures
+         res = model_has_general_structures_across_partitions
+      case (UNC_LOC_ORIFICE)     ! Orifices
+         res = model_has_orifices_across_partitions
+      case (UNC_LOC_UNIWEIR)     ! Universal weirs
+         res = model_has_universal_weirs_across_partitions
+      case (UNC_LOC_CULVERT)     ! Culverts
+         res = model_has_culverts_across_partitions
+      case (UNC_LOC_PUMP)        ! Pumps
+         res = model_has_pumps_across_partitions
+      case (UNC_LOC_BRIDGE)      ! Bridges
+         res = model_has_bridges_across_partitions
+      case (UNC_LOC_LONGCULVERT) ! Long culverts
+         res = model_has_long_culverts_across_partitions
+      end select
+      
+   end function model_has_structures_across_partitions
 
    !> Parse the a statistical operation type from the start of a value string.
    !! Example input: "Wrihis_waterlevel = Current, Max(10)"
@@ -407,7 +446,7 @@ contains
    end subroutine initialize_statistical_output
    
    !> Obtain a character string describing the statistics operation (for writing to screen)
-   function operation_type2string(operation_type) result(operation_string)
+   function operation_type_to_string(operation_type) result(operation_string)
       integer, intent(in) :: operation_type        !< Integer representing the operation type
       character(len=256)  :: operation_string      !> Character string describing the operation type
             
@@ -423,6 +462,6 @@ contains
       case (SO_AVERAGE)
          operation_string = 'average'
       end select
-   end function operation_type2string
+   end function operation_type_to_string
 
 end module
