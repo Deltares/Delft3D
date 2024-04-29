@@ -757,6 +757,17 @@ if XYRead || XYneeded || ZRead
     elseif strcmp(Info.Type,'ugrid_mesh_contact')
         meshes = Info.Mesh{2};
         Contacts = qp_netcdf_get(FI,FI.Dataset(Info.Mesh{3}));
+        if isempty(FI.Dataset(Info.Mesh{3}).Attribute)
+            istart = [];
+        else
+            istart = strmatch('start_index',{FI.Dataset(Info.Mesh{3}).Attribute.Name},'exact');
+        end
+        if isempty(istart)
+            start = 0;
+        else
+            start = FI.Dataset(Info.Mesh{3}).Attribute(istart).Value;
+        end
+        Contacts = Contacts - start + 1;
         Contacts = Contacts(idx{M_},:);
         for imesh = 2:-1:1
             % get X,Y coordinates of NODE/EDGE/FACE [see: meshes{imesh,2}] locations
@@ -803,6 +814,9 @@ if XYRead || XYneeded || ZRead
     elseif strcmp(Info.Type,'simple_geometry')
         simpleType = Info.Mesh{2};
         switch simpleType
+            case {'point'}
+                Ans.X = qp_netcdf_get(FI,FI.Dataset(Info.X));
+                Ans.Y = qp_netcdf_get(FI,FI.Dataset(Info.Y));
             case {'line'}
                 Ans.X = qp_netcdf_get(FI,FI.Dataset(Info.X));
                 Ans.Y = qp_netcdf_get(FI,FI.Dataset(Info.Y));
@@ -2570,7 +2584,11 @@ else
     [Stations, status] = qp_netcdf_get(FI,stcrd-1,FI.Dataset(stcrd).Dimension);
 end
 if t~=0
-    Stations = Stations(t,:);
+    if isa(Station,'string')
+        Stations = Stations(t);
+    else
+        Stations = Stations(t,:);
+    end
 end
 S=cellstr(Stations);
 % -----------------------------------------------------------------------------
