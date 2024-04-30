@@ -44,6 +44,7 @@ subroutine fill_valobs()
    use m_ship
    use Timers
    use m_alloc
+   use fm_statistical_output, only: model_is_3d
 
    implicit none
 
@@ -120,9 +121,9 @@ subroutine fill_valobs()
    valobs = DMISS
    do i = 1,numobs+nummovobs
       k = max(kobs(i),1)
-      if ( kobs(i).gt.0 ) then  ! rely on reduce_kobs to have selected the right global flow nodes
+      if ( kobs(i) > 0 ) then  ! rely on reduce_kobs to have selected the right global flow nodes
 
-         if ( kmx.gt.0 ) then
+         if ( model_is_3D() ) then
             call getkbotktop(k,kb,kt)
             call getlayerindices(k, nlayb, nrlay)
             call reconstructucz(k)
@@ -304,14 +305,14 @@ subroutine fill_valobs()
             endif
          endif
          !
-         if ( IVAL_WQB1.gt.0 ) then
+         if ( IVAL_WQB1 > 0 ) then
             do j=IVAL_WQB1,IVAL_WQBN
                ii = j-IVAL_WQB1+1
                valobs(i,IPNT_WQB1+ii-1) = wqbot(ii,kb)
             end do
          end if
 
-         if (kmx>0) then
+         if ( model_is_3D() ) then
             valobs(i,IPNT_UCXQ) = ucx(k)
             valobs(i,IPNT_UCYQ) = ucy(k)
          endif
@@ -319,7 +320,7 @@ subroutine fill_valobs()
          do kk=kb,kt
             klay = kk-kb+nlayb
 
-            if (kmx > 0) then
+            if ( model_is_3D() ) then
                valobs(i,IPNT_ZCS+klay-1) = 0.5d0*( zws(kk)+zws(kk-1) )
             endif
 
@@ -340,13 +341,13 @@ subroutine fill_valobs()
                endif
             endif
 
-            if ( kmx>0 ) then
+            if ( model_is_3D() ) then
                valobs(i,IPNT_UCZ+klay-1)  = ucz(kk)
             end if
-            if ( jasal.gt.0 ) then
+            if ( jasal > 0 ) then
                valobs(i,IPNT_SA1+klay-1)  = constituents(isalt, kk)
             end if
-            if ( jatem.gt.0 ) then
+            if ( jatem > 0 ) then
                valobs(i,IPNT_TEM1+klay-1) = constituents(itemp, kk)
             end if
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
@@ -364,49 +365,49 @@ subroutine fill_valobs()
                kmx_const = 1     ! to make numbering below work
             end if
 
-            if ( IVAL_TRA1.gt.0 ) then
+            if ( IVAL_TRA1 > 0 ) then
                do j=IVAL_TRA1,IVAL_TRAN
                   ii = j-IVAL_TRA1+1
                   valobs(i,IPNT_TRA1+(ii-1)*kmx_const+klay-1) = constituents(ITRA1+ii-1, kk)
                end do
             end if
 
-            if ( IVAL_HWQ1.gt.0 ) then
+            if ( IVAL_HWQ1 > 0 ) then
                do j=IVAL_HWQ1,IVAL_HWQN
                   ii = j-IVAL_HWQ1+1
                   valobs(i,IPNT_HWQ1+(ii-1)*kmx_const+klay-1) = waqoutputs(ii,kk-kbx+1)
                end do
             end if
 
-            if ( IVAL_WQB3D1.gt.0 ) then
+            if ( IVAL_WQB3D1 > 0 ) then
                do j=IVAL_WQB3D1,IVAL_WQB3DN
                   ii = j-IVAL_WQB3D1+1
                   valobs(i,IPNT_WQB3D1+(ii-1)*kmx_const+klay-1) = wqbot(ii,kk)
                end do
             end if
 
-            if ( IVAL_SF1.gt.0 ) then
+            if ( IVAL_SF1 > 0 ) then
                do j=IVAL_SF1,IVAL_SFN
                   ii = j-IVAL_SF1+1
                   valobs(i,IPNT_SF1+(ii-1)*kmx_const+klay-1) = constituents(ISED1+ii-1, kk)
                end do
             end if
 
-            if (kmx==0 .and. IVAL_WS1 .gt. 0) then
+            if (kmx==0 .and. IVAL_WS1 >0) then
                do j=IVAL_WS1,IVAL_WSN
                   ii = j-IVAL_WS1+1
                   valobs(i,IPNT_WS1+(ii-1)*kmx_const+klay-1) = mtd%ws(kk, ii)   ! 1:lsedsus
                end do
             end if
 
-            if ( jased.gt.0 .and. .not. stm_included) then
+            if ( jased > 0 .and. .not. stm_included) then
                valobs(i,IPNT_SED+klay-1) = sed(1, kk)
             end if
             valobs(i,IPNT_CMX) = max( valobs(i,IPNT_UCX), sqrt( ucx(kk)**2 + ucy(kk)**2 )  )
          end do
          valobs(i,IPNT_SMX) = max( smxobs(i), s1(k) )
 
-         if ( kmx.gt.0 ) then
+         if ( model_is_3D() ) then
             call getkbotktop(k, kb, kt)
             call getlayerindices(k, nlayb, nrlay)
             do kk = kb-1, kt
@@ -440,21 +441,21 @@ subroutine fill_valobs()
                   valobs(i,IPNT_ZWU+klay-1) = min(bob(1,LL),bob(2,LL)) + hu(L)
                end if
 
-               if ( IVAL_WS1.gt.0 ) then
+               if ( IVAL_WS1 > 0 ) then
                   do j=IVAL_WS1,IVAL_WSN
                      ii = j-IVAL_WS1+1
                      valobs(i,IPNT_WS1+(ii-1)*(kmx+1)+klay-1) =mtd%ws(kb+klay-2, ii)
                   end do
                end if
 
-               if ( IVAL_SEDDIF1.gt.0 ) then
+               if ( IVAL_SEDDIF1 > 0 ) then
                   do j=IVAL_SEDDIF1,IVAL_SEDDIFN
                      ii = j-IVAL_SEDDIF1+1
                      valobs(i,IPNT_SEDDIF1+(ii-1)*(kmx+1)+klay-1) =mtd%seddif(ii, kb+klay-2)
                   end do
                end if
             enddo
-            if ( iturbulencemodel.ge.3 ) then
+            if ( iturbulencemodel >= 3 ) then
                valobs(i,IPNT_TKIN:IPNT_TKIN+kmx) = 0d0
                valobs(i,IPNT_TEPS:IPNT_TEPS+kmx) = 0d0
             endif
@@ -468,7 +469,7 @@ subroutine fill_valobs()
                k3 = 1 ; if( nd(k)%ln(LL) > 0 ) k3 = 2
                do L = Lb-1,Lt
                   klay = L-Lb+2
-                  if ( iturbulencemodel.ge.3 ) then
+                  if ( iturbulencemodel >= 3 ) then
                      valobs(i,IPNT_TKIN  + klay-1) = valobs(i,IPNT_TKIN  + klay-1) + turkin1(L) * wcL(k3,LLa)
                      valobs(i,IPNT_TEPS  + klay-1) = valobs(i,IPNT_TEPS  + klay-1) + tureps1(L) * wcL(k3,LLa)
                   endif
@@ -478,10 +479,10 @@ subroutine fill_valobs()
                enddo
             enddo
 
-            if (iturbulencemodel.ge.2) then
+            if (iturbulencemodel >= 2) then
                call reorder_valobs_array(kmx+1,valobs(i,IPNT_VICWW:IPNT_VICWW+kmx), kb, kt, nlayb, dmiss)
             endif
-            if (iturbulencemodel.ge.3) then
+            if (iturbulencemodel >= 3) then
                call reorder_valobs_array(kmx+1,valobs(i,IPNT_TKIN:IPNT_TKIN+kmx), kb, kt, nlayb, dmiss)
                call reorder_valobs_array(kmx+1,valobs(i,IPNT_TEPS:IPNT_TEPS+kmx), kb, kt, nlayb, dmiss)
             endif
@@ -512,11 +513,11 @@ subroutine fill_valobs()
 !        Heatflux
          if (jatem > 0 .and. jahisheatflux > 0) then
             call getlink1(k,LL)
-            if ( jawind.gt.0 ) then
+            if ( jawind > 0 ) then
                valobs(i,IPNT_WIND) = sqrt(wx(LL)*wx(LL) + wy(LL)*wy(LL))
             end if
 
-            if ( jatem.gt.1 ) then   ! also heat modelling involved
+            if ( jatem > 1 ) then   ! also heat modelling involved
                valobs(i,IPNT_TAIR) = Tair(k)
             end if
 
