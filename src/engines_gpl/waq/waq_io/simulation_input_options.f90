@@ -33,7 +33,7 @@ module simulation_input_options
 
 contains
 
-    subroutine process_simulation_input_options(iopt1, lun, is, lchar, filtype, &
+    subroutine process_simulation_input_options(iopt1, file_unit_list, is, file_name_list, filtype, &
             is_date_format, is_yyddhh_format, nitem, ierr, status, &
             dont_read)
 
@@ -42,7 +42,7 @@ contains
         !!      - Open the file
         !!      - If ASCII, push file-info on include stack
         !! LOGICAL UNITS:
-        !!      - LUN(33) = working unit for opening binary files
+        !!      - file_unit_list(33) = working unit for opening binary files
 
         use m_open_waq_files
         use timers       !   performance timers
@@ -51,9 +51,9 @@ contains
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
 
         integer(kind = int_wp), intent(in) :: iopt1           !< Input option
-        integer(kind = int_wp), intent(inout) :: lun  (*)        !< DELWAQ Unit number array
-        integer(kind = int_wp), intent(in) :: is              !< entry in LUN for item
-        character(len=*), intent(inout) :: lchar(*)       !< IN/OUT  Filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list  (*)        !< DELWAQ Unit number array
+        integer(kind = int_wp), intent(in) :: is              !< entry in file_unit_list for item
+        character*(*), intent(inout) :: file_name_list(*)       !< IN/OUT  Filenames
         logical, intent(in) :: is_date_format         !< 'date'-format 1st time scale
         logical, intent(in) :: is_yyddhh_format         !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: nitem           !< nr of input items expected
@@ -68,7 +68,7 @@ contains
         character(25)  sstring
         integer(kind = int_wp) :: ifl       ! help variable for stack size
         integer(kind = int_wp) :: ierr2     ! help variable for error handling
-        integer(kind = int_wp) :: lunin     ! help variable for opening external ASCII file
+        integer(kind = int_wp) :: input_file     ! help variable for opening external ASCII file
         integer(kind = int_wp) :: nfil      ! nr of files in hydrodynamics steering file
         integer(kind = int_wp) :: intopt    ! interpolation option in hydrodynamics steering file
         integer(kind = int_wp) :: ifil      ! loop counter for number of files
@@ -102,19 +102,19 @@ contains
             if (gettoken(cdummy, ierr2) > 0) goto 30     !   Get file name
             write (lunut, 2020)  cdummy
             ifl = ifl + 1
-            lunin = 800 + ifl
-            call open_waq_files  (lunin, cdummy, 33, 1, ierr2)    !   Open the file
+            input_file = 800 + ifl
+            call open_waq_files  (input_file, cdummy, 33, 1, ierr2)    !   Open the file
             if (ierr2 > 0) then
                 ifl = ifl - 1
                 write (lunut, 2030)
             else
                 lch (ifl) = cdummy
-                ilun(ifl) = lunin
+                ilun(ifl) = input_file
             endif
 
         case (-2, 0)                   !    External binairy intermediate file
             if (dont_read) then
-                cdummy = lchar(is)
+                cdummy = file_name_list(is)
             else
                 10          if (gettoken(cdummy, ierr2) > 0) goto 30     !   Get file name
                 if (cdummy == 'UNFORMATTED') then
@@ -128,14 +128,14 @@ contains
                     goto 10
                 endif
             endif
-            lchar(is) = cdummy
+            file_name_list(is) = cdummy
             write (lunut, 2040) cdummy
             !                   Check if file exists
-            call open_waq_files  (lun(33), cdummy, 33, 2, ierr2)
+            call open_waq_files  (file_unit_list(33), cdummy, 33, 2, ierr2)
             if (ierr2 > 0) then
                 ierr2 = -2
             else
-                close (lun(33))
+                close (file_unit_list(33))
             endif
 
         case (-4)                      !    ASCII steering file taylored to read .hyd files
@@ -164,18 +164,18 @@ contains
             if (gettoken(intopt, ierr2) > 0) goto 30     !   Get interpolation option
             if (gettoken(sstring, ierr2) > 0) goto 30     !   Get file string
             ! Open the binary intermediate file for output
-            call extract_file_extension(lchar(27), filext, extpos, extlen)
-            lchar(is) = lchar(27)(1:max(1, (extpos - 1))) // '-' // sstring
-            call extract_file_extension(lchar(is), filext, extpos, extlen)
-            lchar(is)(extpos:) = '.wrk'
-            call open_waq_files  (lun(is), lchar(is), 1, 1, ierr2)
+            call extract_file_extension(file_name_list(27), filext, extpos, extlen)
+            file_name_list(is) = file_name_list(27)(1:max(1, (extpos - 1))) // '-' // sstring
+            call extract_file_extension(file_name_list(is), filext, extpos, extlen)
+            file_name_list(is)(extpos:) = '.wrk'
+            call open_waq_files  (file_unit_list(is), file_name_list(is), 1, 1, ierr2)
             if (ierr2 > 0) then
                 ierr2 = -2
                 goto 30
             endif
-            write(lunut, 2120)  lchar(is), intopt
-            write(lun(is))  'Steering file '
-            write(lun(is))   nfil, intopt
+            write(lunut, 2120)  file_name_list(is), intopt
+            write(file_unit_list(is))  'Steering file '
+            write(file_unit_list(is))   nfil, intopt
             write (lunut, 2080)
             do  ifil = 1, nfil
                 if (gettoken(fact, ierr2) > 0) goto 30  !   Get multiplication factor
@@ -235,17 +235,17 @@ contains
                 else                                               !     other file processing
                     cdummy = sfile
                     it2a = 0
-                    call open_waq_files  (lun(33), cdummy, 33, 2, ierr2)
+                    call open_waq_files  (file_unit_list(33), cdummy, 33, 2, ierr2)
                     if (ierr2 > 0) then
                         ierr2 = -2
                         goto 30
                     endif
-                    read (lun(33)) it1a, (adummy, k = 1, nitem)
-                    read (lun(33)) it3a
+                    read (file_unit_list(33)) it1a, (adummy, k = 1, nitem)
+                    read (file_unit_list(33)) it3a
                     it3a = it3a - it1a
-                    close (lun(33))
+                    close (file_unit_list(33))
                 endif
-                write (lun(is)) fact, it1, it2, it3, cdummy, it1a, it2a, it3a
+                write (file_unit_list(is)) fact, it1, it2, it3, cdummy, it1a, it2a, it3a
                 write (lunut, 2090) ifil, fact, &
                         it1 / 31536000, mod(it1, 31536000) / 86400, &
                         mod(it1, 86400) / 3600, mod(it1, 3600) / 60, &
@@ -261,7 +261,7 @@ contains
                     exit
                 endif
             end do
-            close (lun(is))
+            close (file_unit_list(is))
 
         case (1)            !   continue reading from current file
             write (lunut, 2050)
@@ -454,7 +454,7 @@ contains
         !>      If lun1 is positive the array are written
 
         !!     Subroutines called : scale  : to scale the matrix with the sacle factors
-        !!     Logical units      : LUNIN = unit input file
+        !!     Logical units      : input_file = unit input file
         !!                          LUNUT = unit formatted output file
         !!                          LUN1  = unit intermediate file ( system )
         use timers       !   performance timers
@@ -606,7 +606,7 @@ contains
 
     end subroutine read_constant_data
 
-    subroutine read_time_dependent_variables(lun, lchar, is, nitem, nvals, &
+    subroutine read_time_dependent_variables(file_unit_list, file_name_list, is, nitem, nvals, &
             nscal, ifact, dtflg, is_yyddhh_format, nrfunc, &
             nrharm, iwidth, output_verbose_level, ierr)
 
@@ -616,14 +616,14 @@ contains
         !>      - a table with values at breakpoints
         !>      - a table with harmonic or Fourier values
         !>          The values at breakpoints require following input:
-        !>       - iopt, should be 1 (no defaults) or 2 (defaults and overridings)
+        !>       - integration_id, should be 1 (no defaults) or 2 (defaults and overridings)
         !>       - number of items in this block    (nvarnw, read in read_item_num)
         !>       - that many ID values of the items (itemId, read in read_item_num)
         !>       - number of breakpoints (nobrk2, this in the number of time steps)
         !>       - scale values to be applied for this block ( 1 or nval1 )
         !>       - table of values in (nval1,nitem) order.
         !>       The function option requires the following input
-        !>       - iopt, should be 3 (harmonics) or 4 (Fouriers)
+        !>       - integration_id, should be 3 (harmonics) or 4 (Fouriers)
         !>       - number of items in this block    (nvarnw, read in read_item_num)
         !>       - that many ID values of the items (itemId, read in read_item_num)
         !>       - number of harmonics or Fourier components (nhar  , read in read_fourier_harmoic_func_values)
@@ -648,9 +648,9 @@ contains
 
         !! Logical units:
         !!      lunut   = unit formatted output file
-        !!      lun( 3) = unit binary intermediate file for harmonics
-        !!      lun( 4) = unit binary intermediate file for pointers
-        !!      lun(is) = unit binary intermediate file for function
+        !!      file_unit_list( 3) = unit binary intermediate file for harmonics
+        !!      file_unit_list( 4) = unit binary intermediate file for pointers
+        !!      file_unit_list(is) = unit binary intermediate file for function
 
         use matrix_utils, only : dmatrix
         use m_open_waq_files
@@ -658,9 +658,9 @@ contains
         use rd_token
         use m_sysn          ! System characteristics
 
-        integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
-        character(*), intent(in) :: lchar (*)         !< array with file names of the files
-        integer(kind = int_wp), intent(in) :: is                 !< entry in lun for this call
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
+        character(*), intent(in) :: file_name_list (*)         !< array with file names of the files
+        integer(kind = int_wp), intent(in) :: is                 !< entry in file_unit_list for this call
         integer(kind = int_wp), intent(in) :: nitem              !< number of required items
         integer(kind = int_wp), intent(in) :: nvals              !< number of values per item
         integer(kind = int_wp), intent(in) :: nscal              !< number of scale values
@@ -732,25 +732,25 @@ contains
         !        open the output work file
         !        write nr of items and nr of substances
         !        write default values ( IORDER = 1 , NPNT = 0 )
-        lunuit = lun(3)
-        if (.not. funcs) call open_waq_files (lun(is), lchar(is), is, 1, ierr2)
+        lunuit = file_unit_list(3)
+        if (.not. funcs) call open_waq_files (file_unit_list(is), file_name_list(is), is, 1, ierr2)
         if (bound) then
-            write (lun(is)) ' 4.900BOUND '
-            write (lun(is)) nitem, nval1
-            write (lun(is)) 1, 0, nval1, (k, k = 1, nval1), 1, 0
+            write (file_unit_list(is)) ' 4.900BOUND '
+            write (file_unit_list(is)) nitem, nval1
+            write (file_unit_list(is)) 1, 0, nval1, (k, k = 1, nval1), 1, 0
         endif
         if (waste) then
-            write (lun(is)) ' 4.900WASTE '
-            write (lun(is)) nitem, nval1
-            write (lun(is)) 1, 0, nval1, (k, k = 0, nval1 - 1), 1, 0
+            write (file_unit_list(is)) ' 4.900WASTE '
+            write (file_unit_list(is)) nitem, nval1
+            write (file_unit_list(is)) 1, 0, nval1, (k, k = 0, nval1 - 1), 1, 0
         endif
         if (bound .or. waste) then
-            write (lun(is)) 1
-            write (lun(is)) 0, (0.0, k = 1, nval1)
+            write (file_unit_list(is)) 1
+            write (file_unit_list(is)) 0, (0.0, k = 1, nval1)
             ifilsz = ifilsz + 2 + 3 + nval1 + 3 + 1
             jfilsz = jfilsz + nval1
         endif
-        if (bound .or. waste .or. funcs) lunuit = lun(is)
+        if (bound .or. waste .or. funcs) lunuit = file_unit_list(is)
 
         do while (ntotal - 1 < nitem)     ! loop over blocks till completion
 
@@ -767,10 +767,10 @@ contains
 
             ! new style for boundaries and wastes
             if (bound .or. funcs) &
-                    write (lun(is)) 1, nvarnw, (abs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                    write (file_unit_list(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
                             nvals, (k, k = 1, nvals), iopt3, 1
             if (waste) &
-                    write (lun(is)) 1, nvarnw, (abs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
+                    write (file_unit_list(is)) 1, nvarnw, (iabs(itemId(ntotal + k)), k = 0, nvarnw - 1), &
                             nval1, (k, k = 0, nval1 - 1), iopt3, 1
             if (bound .or. waste .or. funcs) &
                     ifilsz = ifilsz + 5 + nvarnw + nvals
@@ -789,10 +789,10 @@ contains
                         ifact, iwidth, output_verbose_level, ierr)
 
                 if (bound .or. waste .or. funcs) then
-                    write (lun(is)) nobrk2                      ! boundaries, wastes and
+                    write (file_unit_list(is)) nobrk2                      ! boundaries, wastes and
                     ifilsz = ifilsz + 1                           ! functions are written
                     do ibrk = 1, nobrk2                           ! directly per block
-                        write (lun(is)) break2(ibrk), value2(:, ibrk)
+                        write (file_unit_list(is)) break2(ibrk), value2(:, ibrk)
                     enddo
                     ifilsz = ifilsz + nobrk2
                     jfilsz = jfilsz + nobrk2 * nvarnw * nval1
@@ -817,9 +817,9 @@ contains
                 write (lunut, 2050)
                 nrec2 = 0                                        ! these function blocks are
                 if (bound .or. funcs) then                     ! are written in the
-                    ierr2 = -1                                    ! lunuit = lun(is) file
+                    ierr2 = -1                                    ! lunuit = file_unit_list(is) file
                 endif                                            ! for bounds, wastes and funcs
-                if (waste) then                                ! and to lunuit = lun(3), the
+                if (waste) then                                ! and to lunuit = file_unit_list(3), the
                     ierr2 = -2                                    ! system file, for others
                 endif
                 call read_fourier_harmoic_func_values(iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
@@ -868,11 +868,11 @@ contains
             newrsp = newrsp + jfilsz
             newisp = newisp + ifilsz
         else                         !    write pointers and breakpoint matrix
-            write (lun(4)) itemid, 0, 0, 0
+            write (file_unit_list(4)) itemid, 0, 0, 0
             do ibrk = 1, nobrkt
-                write (lun(is)) breaks(ibrk), values(:, ibrk)
+                write (file_unit_list(is)) breaks(ibrk), values(:, ibrk)
             enddo
-            close (lun(is))
+            close (file_unit_list(is))
             nlines = nlines + ntot * 2
             npoins = npoins + nitem + 3
             nrfunc = ntot
@@ -898,9 +898,9 @@ contains
 
     end subroutine read_time_dependent_variables
 
-    subroutine read_constants_time_variables(lun, is, noql1, noql2, noql3, &
+    subroutine read_constants_time_variables(file_unit_list, is, noql1, noql2, noql3, &
             ndim2, ndim3, nrftot, nrharm, ifact, &
-            is_date_format, disper, volume, iwidth, lchar, &
+            is_date_format, disper, volume, iwidth, file_name_list, &
             filtype, is_yyddhh_format, output_verbose_level, ierr, &
             status, dont_read)
 
@@ -920,21 +920,21 @@ contains
         !>          read_block_8_initial_conditions is a sort of dedicated verion of this routine
         !>          to read initial conditions
 
-        !!  Logical units: lun(27) = unit stripped DELWAQ input file
-        !!                  lun(28) = stripped workfile
-        !!                  lun(29) = unit formatted output file
-        !!                  lun( 2) = unit intermediate file (system)
-        !!                  lun( 3) = unit intermediate file (harmos)
-        !!                  lun( 4) = unit intermediate file (pointers)
-        !!                  lun(is) = unit intermediate file (items)
+        !!  Logical units: file_unit_list(27) = unit stripped DELWAQ input file
+        !!                  file_unit_list(28) = stripped workfile
+        !!                  file_unit_list(29) = unit formatted output file
+        !!                  file_unit_list( 2) = unit intermediate file (system)
+        !!                  file_unit_list( 3) = unit intermediate file (harmos)
+        !!                  file_unit_list( 4) = unit intermediate file (pointers)
+        !!                  file_unit_list(is) = unit intermediate file (items)
 
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
         use m_sysn          ! System characteristics
 
-        integer(kind = int_wp), intent(inout) :: lun    (*)     !< array with unit numbers
-        integer(kind = int_wp), intent(in) :: is             !< entry in lun for this call
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (*)     !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: is             !< entry in file_unit_list for this call
         integer(kind = int_wp), intent(in) :: noql1          !< number of exchanges 1st direction
         integer(kind = int_wp), intent(in) :: noql2          !< number of exchanges 2nd direction
         integer(kind = int_wp), intent(in) :: noql3          !< number of exchanges 3rd direction
@@ -947,7 +947,7 @@ contains
         logical, intent(in) :: disper        !< .true. then dispersion
         integer(kind = int_wp), intent(inout) :: volume         !< if 1 then volume ( out: 0 = computed volumes )
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
-        character(*), intent(inout) :: lchar  (*)    !< array with file names of the files
+        character(*), intent(inout) :: file_name_list  (*)    !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)     !< type of binary file
         logical, intent(in) :: is_yyddhh_format        !< 'date'-format (F;ddmmhhss,T;yydddhh)
         integer(kind = int_wp), intent(in) :: output_verbose_level         !< how extensive is output ?
@@ -1027,7 +1027,7 @@ contains
         endif
 
         write (lunut, 2000) iopt1
-        call process_simulation_input_options   (iopt1, lun, is, lchar, filtype, &
+        call process_simulation_input_options   (iopt1, file_unit_list, is, file_name_list, filtype, &
                 is_date_format, is_yyddhh_format, ndtot, ierr2, status, &
                 dont_read)
         if (ierr2 > 0) goto 50
@@ -1040,9 +1040,9 @@ contains
             nrftot = ndim1 * ndim2
             nrharm = 0
             if (volume == 1) then
-                write(lun(4)) (k, k = 1, ndim1), (idummy, k = 1, 3)
+                write(file_unit_list(4)) (k, k = 1, ndim1), (idummy, k = 1, 3)
             else
-                write(lun(4)) (-k, k = 1, ndim1), (idummy, k = 1, 3)
+                write(file_unit_list(4)) (-k, k = 1, ndim1), (idummy, k = 1, 3)
             endif
             iopt1 = 0
         endif
@@ -1050,11 +1050,11 @@ contains
         ! Dispersion in three directions if DISPER, return if NODISP=0
         if (disper) then
             if (iopt1 == 0) then                            ! binary file, then
-                write (lun(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
+                write (file_unit_list(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
             else
-                write (lun(2)) idummy
+                write (file_unit_list(2)) idummy
                 call read_constant_data (1, disp, 1, 3, 3, &
-                        iwidth, lun(2), output_verbose_level, ierr2)
+                        iwidth, file_unit_list(2), output_verbose_level, ierr2)
                 if (ierr2 > 0) goto 50
                 if (ndim2 == 0) goto 9999
             endif
@@ -1076,22 +1076,22 @@ contains
         select case (iopt2)
         case (1, 2)              !   Constants with and without defaults in three directions
             allocate (values(ndim2, max(noql1, noql2, noql3)))
-            call open_waq_files (lun(is), lchar(is), is, 1, ierr2)
-            write (lun(is)) idummy
+            call open_waq_files (file_unit_list(is), file_name_list(is), is, 1, ierr2)
+            write (file_unit_list(is)) idummy
             if (noql1 > 0) write (lunut, 2030)
             call read_constant_data (iopt2, values, noql1, ndim2, ndim3, &
-                    iwidth, lun(is), output_verbose_level, ierr2)
+                    iwidth, file_unit_list(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql2 > 0) write (lunut, 2040)
             call read_constant_data (iopt2, values, noql2, ndim2, ndim3, &
-                    iwidth, lun(is), output_verbose_level, ierr2)
+                    iwidth, file_unit_list(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
             if (noql3 > 0 .and. noql3 /= ndim1) write (lunut, 2050)
             call read_constant_data (iopt2, values, noql3, ndim2, ndim3, &
-                    iwidth, lun(is), output_verbose_level, ierr2)
-            close (lun(is))
+                    iwidth, file_unit_list(is), output_verbose_level, ierr2)
+            close (file_unit_list(is))
             if (ierr2 > 0) goto 50
 
         case (3)
@@ -1099,7 +1099,7 @@ contains
             ierr2 = 0
             if (bound) ierr2 = -1
             if (waste) ierr2 = -2
-            call read_time_dependent_variables (lun, lchar, is, ndim1, ndim2, &
+            call read_time_dependent_variables (file_unit_list, file_name_list, is, ndim1, ndim2, &
                     ndim3, ifact, is_date_format, is_yyddhh_format, nrftot, &
                     nrharm, iwidth, output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
@@ -1128,13 +1128,13 @@ contains
 
     end subroutine read_constants_time_variables
 
-    subroutine read_fourier_harmoic_func_values(iopt, nitem, nvals, item, nrec, &
+    subroutine read_fourier_harmoic_func_values(integration_id, nitem, nvals, item, nrec, &
             nhtot, ifact, dtflg, is_yyddhh_format, lununf, &
             iwidth, output_verbose_level, ierr)
 
         !! Reads function values (Fourier and Harmonic components)
         !!
-        !!           Harmonic components for iopt = 3 and Fouriers for iopt = 4/n
+        !!           Harmonic components for integration_id = 3 and Fouriers for integration_id = 4/n
         !!           Reads:
         !!           - number of frequencies exclusive of average value
         !!           - matrix(nvals*nitem) of average values
@@ -1162,7 +1162,7 @@ contains
         use rd_token       ! for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(in) :: iopt           !< 3 Harmonics, 4 Fourier
+        integer(kind = int_wp), intent(in) :: integration_id           !< 3 Harmonics, 4 Fourier
         integer(kind = int_wp), intent(in) :: nitem          !< number of input items
         integer(kind = int_wp), intent(in) :: nvals          !< number of values per item
         integer(kind = int_wp), intent(in) :: item (nitem)   !< item numbers
@@ -1200,9 +1200,9 @@ contains
         if (gettoken(nhar, ierr2) > 0) goto 100
         allocate (iperio(nhar + 1), value(ndim + 1, nhar + 1))
 
-        select case (iopt)
+        select case (integration_id)
 
-        case (3)        !      read values if IOPT = 3 ( harmonic function )
+        case (3)        !      read values if integration_id = 3 ( harmonic function )
 
             do k = 2, ndim + 1
                 if (gettoken(value(k, 1), ierr2) > 0) goto 100
@@ -1216,7 +1216,7 @@ contains
             call convert_time_format (iperio(2), nhar, ifact, dtflg, is_yyddhh_format)
             value(1, 1) = real(nhar)
 
-        case (4)        !      read values if IOPT = 4 ( fourier function )
+        case (4)        !      read values if integration_id = 4 ( fourier function )
 
             if (gettoken(ibase, ierr2) > 0) goto 100
             do k = 2, ndim + 1
@@ -1239,7 +1239,7 @@ contains
         if (output_verbose_level < 4) then
             write (lunut, 2070)
         else
-            if (iopt == 3) then
+            if (integration_id == 3) then
                 write (lunut, 2000) nhar
             else
                 write (lunut, 2010) nhar, ibase
@@ -1415,20 +1415,20 @@ contains
 
     end subroutine read_scale_block
 
-    subroutine read_item_num(nmax, iopt, output_verbose_level, ipnt, npnt, ierr)
+    subroutine read_item_num(nmax, integration_id, output_verbose_level, ipnt, npnt, ierr)
 
         !! Reads the item numbers of an input block
         !!
         !! This routine reads:
         !!      - amount of items contained in this block
         !!      - item numbers in this block
-        !!          If iopt = 1, then block function, item numbers negative
+        !!          If integration_id = 1, then block function, item numbers negative
 
         use timers       !   performance timers
         use rd_token       ! for the reading of tokens
 
         integer(kind = int_wp), intent(in) :: nmax               !< maximum amount of items
-        integer(kind = int_wp), intent(in) :: iopt               !< is 1 for block functions
+        integer(kind = int_wp), intent(in) :: integration_id               !< is 1 for block functions
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< how extensive is output ?
         integer(kind = int_wp), intent(out) :: ipnt  (nmax)       !< the item numbers of this block
         integer(kind = int_wp), intent(out) :: npnt               !< amount of items of this block
@@ -1461,8 +1461,8 @@ contains
             write(lunut, 2030)
         endif
 
-        ! Set negative values if IOPT = 1 ( block function )
-        if (iopt == 1) then
+        ! Set negative values if integration_id = 1 ( block function )
+        if (integration_id == 1) then
             do i = 1, npnt
                 ipnt(i) = -ipnt(i)
             enddo

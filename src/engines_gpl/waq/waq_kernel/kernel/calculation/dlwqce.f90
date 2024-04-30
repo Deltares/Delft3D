@@ -29,7 +29,7 @@ contains
 
 
     subroutine dlwqce (amass, volumn, voluml, nosys, notot, &
-            noseg, lun)
+            noseg, file_unit_list)
 
         !     Deltares Software Centre
 
@@ -44,7 +44,7 @@ contains
         !>         mass. To avoid this jump, the mass can be adjusted according to
         !>         the volume error made with the rewind of the dataset.
 
-        !     Logical unitnumbers : LUN     = number of monitoring file
+        !     Logical unitnumbers : file_unit_list     = number of monitoring file
 
         !     Subroutines called  : none
 
@@ -55,7 +55,7 @@ contains
 
         !     Kind        Function         Name                  Description
 
-        integer(kind = int_wp), intent(in) :: lun                 !< Unit number of the monitroing file
+        integer(kind = int_wp), intent(in) :: file_unit_list                 !< Unit number of the monitroing file
         integer(kind = int_wp), intent(in) :: nosys               !< Number of transport substances
         integer(kind = int_wp), intent(in) :: notot               !< Total number of substances
         integer(kind = int_wp), intent(in) :: noseg               !< Number of computational volumes
@@ -75,7 +75,7 @@ contains
 
         !     Say what you are doing
 
-        write (lun, 1000)
+        write (file_unit_list, 1000)
 
         !     Loop accross the number of computational elements
 
@@ -101,9 +101,9 @@ contains
 
         !     Write statistics
 
-        write (lun, 1010) tovoll
-        write (lun, 1020) tovoln
-        write (lun, 1030) tovoln / tovoll
+        write (file_unit_list, 1010) tovoll
+        write (file_unit_list, 1020) tovoln
+        write (file_unit_list, 1030) tovoln / tovoll
 
         if (timon) call timstop (ithandl)
         return

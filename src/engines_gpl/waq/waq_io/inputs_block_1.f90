@@ -37,7 +37,7 @@ module m_block_1_input_reader
 contains
 
 
-    subroutine read_block_1_from_input (lun, syname, nosys, notot, nomult, &
+    subroutine read_block_1_from_input (file_unit_list, syname, nosys, notot, nomult, &
             multp, iwidth, otime, isfact, refday, &
             output_verbose_level, status)
 
@@ -51,10 +51,10 @@ contains
         !>    - the substance names (need not necessarily be process library reserved names)
         !>      the names may end with *nn to indicate a multiple occurence of the substance
 
-        !       Logical units     : lun(26) = unit user input file
-        !                           lun(27) = unit stripped input file
-        !                           lun(29) = unit formatted output file
-        !                           lun( 2) = unit system-intermediate file
+        !       Logical units     : file_unit_list(26) = unit user input file
+        !                           file_unit_list(27) = unit stripped input file
+        !                           file_unit_list(29) = unit formatted output file
+        !                           file_unit_list( 2) = unit system-intermediate file
 
         ! Parameters
 
@@ -62,7 +62,7 @@ contains
 
         character(20), dimension(:), pointer :: syname !< array with substance names
 
-        integer(kind = int_wp), intent(in), dimension(*) :: lun    !< array with unit numbers
+        integer(kind = int_wp), intent(in), dimension(*) :: file_unit_list    !< array with unit numbers
         integer(kind = int_wp), intent(out) :: output_verbose_level !< flag for more or less output
         integer(kind = int_wp), intent(out) :: isfact !< Units (in sec) of the system clock
 
@@ -121,7 +121,7 @@ contains
 
         !     First line not tokenized : meta data
 
-        read (lun(26), *, end = 110, err = 120) npos, iwidth, cchar
+        read (file_unit_list(26), *, end = 110, err = 120) npos, iwidth, cchar
 
         if (iwidth /= 80 .and. iwidth /= 132) then
             write (lunut, 2000) iwidth
@@ -147,11 +147,11 @@ contains
         itype = 1
         if (gettoken (modid1, ierr2) > 0) goto 100
         if (gettoken (modid2, ierr2) > 0) goto 100
-        write (lun(2)) modid1, modid2
+        write (file_unit_list(2)) modid1, modid2
         write (lunut, 2010) modid1, modid2
         if (gettoken (runid1, ierr2) > 0) goto 100
         if (gettoken (runid2, ierr2) > 0) goto 100
-        write (lun(2)) runid1, runid2
+        write (file_unit_list(2)) runid1, runid2
         write (lunut, 2020) runid1, runid2
 
         !     identify an timer offset value in the last string
@@ -313,9 +313,9 @@ contains
         enddo
 
         !        Watch out !! in dlwq02.f subsequently the names of the particle tracking
-        !                     substances are written to lun(2)
+        !                     substances are written to file_unit_list(2)
 
-        write (lun(2)) (syname(isys), isys = 1, notot)
+        write (file_unit_list(2)) (syname(isys), isys = 1, notot)
 
         !        Check number of data in inputfile
 

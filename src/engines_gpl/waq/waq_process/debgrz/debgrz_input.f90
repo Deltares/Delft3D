@@ -112,8 +112,8 @@ module m_debgrz_input
 
     contains
 
+    !> Transfer values from generic array to process-specific input parameters.
     subroutine initialize_debgrz_input(this, iparray, pmsa)
-        !< Transfer values from generic array to process-specific input parameters.
         class(debgrz_input) :: this !< The input_variables instance
         real(kind=real_wp), intent(in)     :: pmsa(*)
         integer(kind=int_wp), intent(in)  :: iparray(*)
@@ -193,11 +193,10 @@ module m_debgrz_input
             this%dets1(i)    = max(0.,pmsa(iparray(66 + i + 2 * ntotnut))  )
             this%detbio(i)   = max(0.,this%detrit(i)*(1.0-this%gem) + this%pom(i)*this%gem)
         end do
-
     end subroutine initialize_debgrz_input
 
+    !> Allocates the input food arrays
     subroutine allocate_food_arrays(this, food_count)
-        !< Allocates the input food arrays
 
         class(debgrz_input) :: this !< The input_variables instance
         integer(kind=int_wp), intent(in)  :: food_count
@@ -206,8 +205,8 @@ module m_debgrz_input
         allocate(this%fffood(food_count))
     end subroutine allocate_food_arrays
 
+    !> Computes the area based on volume and depth
     real(kind=real_wp)function get_area(this) result(area)
-        !< Computes the area based on volume and depth
 
         class(debgrz_input) :: this !< The input_variables instance
 
@@ -216,7 +215,6 @@ module m_debgrz_input
         else
             area = this%volume / this%depth
         end if
-
     end function get_area
 
 end module m_debgrz_input

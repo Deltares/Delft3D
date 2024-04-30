@@ -344,9 +344,10 @@ type t_unc_mapids
    integer :: id_windstressx(MAX_ID_VAR) = -1  !< Variable ID for wind stress, on cell center, x-component
    integer :: id_windstressy(MAX_ID_VAR) = -1  !< Variable ID for wind stress, on cell center, y-component
    integer :: id_airdensity(MAX_ID_VAR)  = -1 !< Variable ID for air density
-   integer :: id_turkin1(MAX_ID_VAR)     = -1 !< Variable ID for
-   integer :: id_vicwwu(MAX_ID_VAR)      = -1 !< Variable ID for
-   integer :: id_tureps1(MAX_ID_VAR)     = -1 !< Variable ID for
+   integer :: id_turkin1(MAX_ID_VAR)     = -1 !< Variable ID for turbulent kinetic energy
+   integer :: id_vicwwu(MAX_ID_VAR)      = -1 !< Variable ID for turbulent vertical eddy viscosity at velocity points
+   integer :: id_vicwws(MAX_ID_VAR)      = -1 !< Variable ID for turbulent vertical eddy viscosity at pressure points
+   integer :: id_tureps1(MAX_ID_VAR)     = -1 !< Variable ID for turbulent kinetic energy dissipation
    integer :: id_sbcx(MAX_ID_VAR)        = -1 !< Variable ID for current related bedload sediment transport at cell centre before upwinding, secondary flow and bed slope effect (x-component)
    integer :: id_sbcy(MAX_ID_VAR)        = -1 !< Variable ID for current related bedload sediment transport at cell centre before upwinding, secondary flow and bed slope effect (y-component)
    integer :: id_sbcx_reconstructed(MAX_ID_VAR)     = -1 !< Variable ID for reconstructed bedload sediment transport at cell centre after upwinding, secondary flow and bed slope effect (x-component)
@@ -3009,7 +3010,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_flowelemdomain, id_flowelemglobalnr, id_flowlink, id_netelemnode, id_netlink,&
         id_flowelemxzw, id_flowelemyzw, id_flowlinkxu, id_flowlinkyu,&
         id_flowelemxbnd, id_flowelemybnd, id_bl, id_s0bnd, id_s1bnd, id_blbnd, &
-        id_unorma, id_vicwwu, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
+        id_unorma, id_vicwwu, id_vicwws, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
         id_squbnd, id_sqibnd, &
         id_weirdte, &
         id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
@@ -5756,7 +5757,8 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       if (jamaptur > 0 .and. kmx > 0) then
          if (iturbulencemodel >= 3) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, nc_precision, UNC_LOC_WU, 'turkin1', 'specific_turbulent_kinetic_energy_of_sea_water', 'turbulent kinetic energy',          'm2 s-2', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu,  nc_precision, UNC_LOC_WU, 'vicwwu',  'eddy_viscosity', 'turbulent vertical eddy viscosity', 'm2 s-1', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu,  nc_precision, UNC_LOC_WU, 'vicwwu',  'eddy_viscosity', 'turbulent vertical eddy viscosity at velocity points', 'm2 s-1', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws,  nc_precision, UNC_LOC_W,  'vicwws',  'eddy_viscosity', 'turbulent vertical eddy viscosity at pressure points', 'm2 s-1', jabndnd=jabndnd_)
             if (iturbulencemodel == 3) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, nc_precision, UNC_LOC_WU, 'tureps1', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water',    'turbulent energy dissipation', 'm2 s-3', jabndnd=jabndnd_)
             else if (iturbulencemodel == 4) then
@@ -6738,6 +6740,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       if (iturbulencemodel >= 3) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_turkin1, UNC_LOC_WU, turkin1, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwwu,  UNC_LOC_WU, vicwwu, jabndnd=jabndnd_)
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_vicwws,  UNC_LOC_W,  vicwws, jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tureps1, UNC_LOC_WU, tureps1, jabndnd=jabndnd_)
       endif
    endif
@@ -8013,7 +8016,7 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
     id_duneheight, id_dunelength, id_ksd, id_ksr, id_ksmr, id_ks, &
     id_taurat, id_dm, id_dg, id_dgsd, id_frac, id_mudfrac, id_sandfrac, id_fixfac, id_hidexp, id_mfluff, id_scrn, id_urmscc, id_Fxcc, id_Fycc, &
     id_sscx, id_sscy, id_sscx_reconstructed, id_sscy_reconstructed, &
-    id_turkin1, id_tureps1, id_vicwwu, id_swanbl, &
+    id_turkin1, id_tureps1, id_vicwwu, id_vicwws, id_swanbl, &
     id_rnveg, id_diaveg, id_veg_stemheight
 
     integer,          dimension(:,:),   allocatable, save :: id_dxx                     ! fractions
@@ -8587,9 +8590,15 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
 
                  ierr = nf90_def_var(imapfile, 'vicwwu' , nf90_double, (/ id_wdim(iid), id_flowlinkdim(iid) , id_timedim(iid) /) , id_vicwwu(iid))
                  ierr = nf90_put_att(imapfile, id_vicwwu(iid),  'coordinates'  , 'FlowLink_xu FlowLink_yu')
-                 ierr = nf90_put_att(imapfile, id_vicwwu(iid),  'long_name'    , 'turbulent vertical eddy viscosity')
+                 ierr = nf90_put_att(imapfile, id_vicwwu(iid),  'long_name'    , 'turbulent vertical eddy viscosity at velocity points')
                  ierr = nf90_put_att(imapfile, id_vicwwu(iid),  'units'        , 'm2 s-1')
                  ierr = nf90_put_att(imapfile, id_vicwwu(iid),  '_FillValue'   , dmiss)
+
+                 ierr = nf90_def_var(imapfile, 'vicwws' , nf90_double, (/ id_wdim(iid), id_flowelemdim(iid) , id_timedim(iid) /) , id_vicwws(iid))
+                 ierr = nf90_put_att(imapfile, id_vicwws(iid),  'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+                 ierr = nf90_put_att(imapfile, id_vicwws(iid),  'long_name'    , 'turbulent vertical eddy viscosity at pressure points')
+                 ierr = nf90_put_att(imapfile, id_vicwws(iid),  'units'        , 'm2 s-1')
+                 ierr = nf90_put_att(imapfile, id_vicwws(iid),  '_FillValue'   , dmiss)
 
                  ierr = nf90_def_var(imapfile, 'tureps1' , nf90_double, (/ id_wdim(iid), id_flowlinkdim(iid) , id_timedim(iid) /) , id_tureps1(iid))
                  ierr = nf90_put_att(imapfile, id_tureps1(iid),  'coordinates'  , 'FlowLink_xu FlowLink_yu')
@@ -9985,6 +9994,15 @@ subroutine unc_write_map_filepointer(imapfile, tim, jaseparate) ! wrimap
                 enddo
              enddo
              ierr = nf90_put_var(imapfile, id_vicwwu(iid)   , work0(0:kmx,1:lnx), start=(/ 1, 1, itim /), count=(/ kmx+1, lnx, 1 /))
+             work0 = dmiss
+             do kk = 1,ndxi
+             call getkbotktop(kk,kb,kt)
+             call getlayerindices(kk, nlayb, nrlay)
+             do k = kb-1,kt
+                 work0(k-kb+nlayb, kk) = vicwws(k)
+             enddo
+             enddo
+             ierr = nf90_put_var(imapfile, id_vicwws(iid), work0(0:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx+1, ndxi, 1 /))
           endif
 
        endif

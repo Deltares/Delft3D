@@ -477,7 +477,6 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahisvelvec               !< Write velocity vectors to his file, 0: no, 1: yes
  integer                           :: jahisww                   !< Write upward velocity to his file, 0: no, 1: yes
  integer                           :: jahissed                  !< Write sediment transport to his file, 0: no, 1: yes
- integer                           :: jahisconst                !< Write tracers to his file, 0: no, 1: yes
  integer                           :: jahiszcor                 !< Write the vertical coordinate to his file, 0: no, 1: yes
  integer                           :: jahiswav                  !< Write wave data to his file, 0: no, 1: yes
  integer                           :: jahislateral              !< Write lateral data to his file, 0: no, 1: yes
@@ -983,7 +982,6 @@ subroutine default_flowparameters()
     jahisvelvec = 1
     jahisww = 0
     jahissed = 1
-    jahisconst = 1
     jahiszcor  = 1
     jahiswav = 1
     jahislateral = 1

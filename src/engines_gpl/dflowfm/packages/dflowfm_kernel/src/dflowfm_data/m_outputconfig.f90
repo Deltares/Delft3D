@@ -724,7 +724,10 @@ subroutine set_properties(tree, paragraph, quantity_config_set)
    statout => quantity_config_set%configs
 
    do i = 1, quantity_config_set%count
-      if (len_trim(statout(i)%description)>0) then
+      if (len_trim(statout(i)%description)>0 .and. len_trim(statout(i)%input_value)>0) then
+         if (trim(statout(i)%input_value)=='current') then
+            statout(i)%input_value = '1'   
+         endif
          call prop_set(tree, trim(paragraph), trim(statout(i)%key), trim(statout(i)%input_value), trim(statout(i)%description))
       endif
    enddo

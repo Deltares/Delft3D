@@ -57,18 +57,18 @@ module m_debgrz
     end type process_variables
 contains
 
-    subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
+!> General routine for the dynamics of a grazer based on DEB theory.
+!! The modeled grazers can form either a cohort of equal organisms of
+!! increasing length (isomorphs) or a simplified population of individuals
+!! with an overall fixed size distribution (V1 morphs).
+!! Furthermore, the organisms can be either non-mobile or passively
+!! transported with the water.
+!! The organisms can consume various (pelagic and benthic) food types,
+!! including dynamo and bloom algae and various detritus fractions
+!! (DetX, POX and DetXS1). The consumer has a specific preference
+!! for each food type.
+subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
                       iexpnt, iknmrk, noq1, noq2, noq3, noq4)
-        !< General routine for the dynamics of a grazer based on DEB theory.
-        !< The modeled grazers can form either a cohort of equal organisms of
-        !< increasing length (isomorphs) or a simplified population of individuals
-        !< with an overall fixed size distribution (V1 morphs).
-        !< Furthermore, the organisms can be either non-mobile or passively
-        !< transported with the water.
-        !< The organisms can consume various (pelagic and benthic) food types,
-        !< including dynamo and bloom algae and various detritus fractions
-        !< (DetX, POX and DetXS1). The consumer has a specific preference
-        !< for each food type.
 
        ! subroutine arguments
         integer(kind=int_wp), dimension(*  ) :: ipoint !< Array of pointers in pmsa to get and store the data
@@ -121,10 +121,10 @@ contains
         return
     end subroutine debgrz
 
+    !> Make sure that the process may be run, stop simulation otherwise.
+    !! Prevents that simulation uses both Protist AND Dynamo/Bloom in different "processes" (=instances of debgrz).
+    !! This is not allowed due to biological reasons.
     logical function process_may_be_run(pmsa, ipoint) result(res)
-        !< Make sure that the process may be run, stop simulation otherwise.
-        !< Prevents that simulation uses both Protist AND Dynamo/Bloom in different "processes" (=instances of debgrz).
-        !< This is not allowed due to biological reasons.
         real(kind=real_wp), intent(in)   :: pmsa(*)   !< Process Manager System Array, window of routine to process library
         integer(kind=int_wp), intent(in) :: ipoint(*) !< Index pointer in pmsa array updated for each segment
 
@@ -142,9 +142,9 @@ contains
         res = (current_process_uses_protist .eqv. previous_process_uses_protist)
     end function process_may_be_run
 
+    !> Boolean indicating whether the calculation for current cell (segment) should
+    !! be carried out or not. If false, then the cell is skipped.
     logical function must_calculate_cell(segment_attribute, pmsa, iparray) result(must_calculate)
-        !< Boolean indicating whether the calculation for current cell (segment) should
-        !< be carried out or not. If false, then the cell is skipped.
 
         use m_evaluate_waq_attribute, only : evaluate_waq_attribute
 
@@ -170,9 +170,9 @@ contains
         end if
     end function must_calculate_cell
 
+    !> Boolean indicating if the species is benthic and the calculation is being done for a cell not in the bottom.
+    !! Benthic species, by definition, may only be located in the bottom. So a floating bethic species is nonsensical.
     logical function is_floating_benthic_species(cell_attributes, is_benthic) result(res)
-        !< Boolean indicating if the species is benthic and the calculation is being done for a cell not in the bottom.
-        !< Benthic species, by definition, may only be located in the bottom. So a floating bethic species is nonsensical.
         use m_evaluate_waq_attribute, only : evaluate_waq_attribute
 
         integer(kind=int_wp), intent(in) ::   cell_attributes !< Attributes of the currernt cell
@@ -185,8 +185,8 @@ contains
         res = ( (attribute_location == 1 .OR. attribute_location == 2 ) .AND. is_benthic.eq.1 )
     end function is_floating_benthic_species
 
+    !< Set number of parameters depending on usage with Protist or Dynamo/Bloom
     subroutine set_counters(use_with_protist, input_count, food_count, pointers_count)
-        !< Set number of parameters depending on usage with Protist or Dynamo/Bloom
         logical, intent(in)  :: use_with_protist    !< Indicates if the process uses protists (1) or not (0)
 
         integer(kind=int_wp), intent(out) :: input_count    !< Number of input parameters
@@ -218,10 +218,10 @@ contains
         pointers_count = input_count + 22
     end subroutine set_counters
 
+    !> If benthic species are present in any non-bottom cell (floaters), then this subroutine removes them
+    !! by setting the (out)flow exactly equal to the current amount.
+    !! In the next time iteration, once the flux has been applied, they will be exactly equal to zero.
     subroutine remove_floating_benthic_species(pmsa, ip, cell_count, iknmrk, fl, iflux, noflux)
-        !< If benthic species are present in any non-bottom cell (floaters), then this subroutine removes them
-        !< by setting the (out)flow exactly equal to the current amount.
-        !< In the next time iteration, once the flux has been applied, they will be exactly equal to zero.
         use m_evaluate_waq_attribute, only : evaluate_waq_attribute
 
         real(kind=real_wp), dimension(*), intent(in) :: pmsa(*)    !< Process Manager System Array, window of routine to process library
@@ -255,8 +255,8 @@ contains
         iflux = 0
     end subroutine remove_floating_benthic_species
 
+    !> Initializes arrays and other variables.
     subroutine initialize_variables(iparray, ipoint, iflux, p_vars, use_with_protist)
-        !< Initializes arrays and other variables.
         logical, intent(in) :: use_with_protist !< Process is used with protist
 
         integer(kind=int_wp), dimension(*), intent(in) :: ipoint     !< Array of pointers in pmsa to get and store the data
@@ -285,8 +285,8 @@ contains
         p_vars%food_count     = food_count
     end subroutine initialize_variables
 
+    !> Calculates the process for the current segment
     subroutine calculate_process_in_segment(process_vars, pmsa, ip, fl, iflux)
-        !< Calculates the process for the current segment
         integer(kind=int_wp), dimension(:), intent(in) :: ip !< Array of pointers in pmsa to get and store the data
         integer(kind=int_wp), intent(in) :: iflux            !< Start index of this process in flux array
 
@@ -565,10 +565,10 @@ contains
         end if
     end subroutine assign_fluxes
 
+    !> Calculates and sets computed output variables
     subroutine calculate_output_vars(ov, iv, fl, iflux, dens_m2, rmor, &
                                      rhrv, dspw, pa, dres, filtr, nfiltr, pfiltr, sifiltr, &
                                      food_pelagic, food_benthic, v_m2, e_m2, r_m2)
-        !< Calculate and set computed output variables
        ! arguments
         type(debgrz_input), intent(in) :: iv !< Input variables
 
@@ -668,8 +668,8 @@ contains
         end if
     end subroutine calculate_output_vars
 
+    !> Assigns/calculates food array values based on pmsa values
     subroutine assign_food_arrays(pmsa, ip, av, pref, fffood, detbio, food_count, use_with_protist, nqfood, dets1)
-        !< Assign/calculate food array values based on pmsa values
         real(kind=real_wp), dimension(4), intent(in) :: dets1  !< Detritus in layer S1 = benthic detritus
         real(kind=real_wp), dimension(4), intent(in) :: detbio !< Pelagic detritus
         real(kind=real_wp), dimension(*), intent(in) :: pmsa   !< Process Manager System Array, window of routine to process library
@@ -758,8 +758,8 @@ contains
         end if
     end subroutine assign_food_arrays
 
+    !> Update all variables for the next cell (segment) iteration.
     subroutine update_loop_vars(iflux, noflux, pv, pmsa, iparray, increm)
-        !< Update all variables for the next cell (segment) iteration.
         type(process_variables), intent(in) :: pv !< Object containing all process variables
 
         integer(kind=int_wp), dimension(*), intent(in) :: increm !< Increments in ipoint for segment loop

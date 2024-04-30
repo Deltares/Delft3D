@@ -55,7 +55,7 @@ contains
     end subroutine scale_array
 
     subroutine assign_matrix(lunut, int_array, noitm, itmnr, nodim, &
-            idmnr, iorder, real_array, iopt, rmat, &
+            idmnr, iorder, real_array, integration_id, rmat, &
             nocol, num_records, missing_value, iarp, rmatu)
 
         !! Assign matrix according to computational rules
@@ -69,7 +69,7 @@ contains
         !     IDMNR   INTEGER    1         IN/OUT  number of conc. for output
         !     IORDER  INTEGER    1         INPUT   =1 items first: =2 concen first
         !     real_array     REAL       *         INPUT   real constants in formulae
-        !     IOPT    LOGICAL    *         INPUT   3 & 4 is Fourier or harmonics
+        !     integration_id    LOGICAL    *         INPUT   3 & 4 is Fourier or harmonics
         !     RMAT    REAL       *         INPUT   real matrix of read values
         !     num_records   INTEGER    1         OUTPUT  number of records read
         !     missing_value   REAL       1         INPUT   this is a missing value
@@ -79,7 +79,7 @@ contains
         LOGICAL       MINIEM, MAXIEM
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: ioff1, noitm, itmnr, idmnr, nodim, iorder, ioff0
-        integer(kind = int_wp) :: locbas, iloc, itel, itels, ifrst, ibrk, ioff, iopt
+        integer(kind = int_wp) :: locbas, iloc, itel, itels, ifrst, ibrk, ioff, integration_id
         integer(kind = int_wp) :: ip, ip2, lunut, iloco, nocol, num_records, ioff2
         integer :: int_array(:), i, iarp(:)
         real :: accum, rmatu(:), amaxv, missing_value, aminv
@@ -116,7 +116,7 @@ contains
 
         ! assignment loop
         ! if harmonics then deal with the phase
-        10 if (iloc == 0 .and. (iopt==3.or.iopt==4) &
+        10 if (iloc == 0 .and. (integration_id==3.or.integration_id==4) &
                 .and.  ifrst == 0) then
             ioff = ioff + 1
             accum = rmat(ioff)

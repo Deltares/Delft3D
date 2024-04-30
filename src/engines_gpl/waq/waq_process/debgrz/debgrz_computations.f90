@@ -29,6 +29,9 @@ module m_debgrz_computations
 
     private
     public :: get_maximum_conversion_coeff, &
+              calculate_rescale_factors, &
+              rescale_non_food_vars, &
+              rescale_food_arrays, &
               rescale_units, &
               temperature_dependent_rate, &
               calculate_uptake, &
@@ -37,17 +40,20 @@ module m_debgrz_computations
               calculate_maintenance, &
               calculate_growth, &
               calculate_maturity_and_reproduction, &
+              get_maturity_fractions, &
+              get_gsi, &
+              calculate_maturity_and_reproduction_energies, &
+              calculate_spawning, &
               calculate_respiration,  &
               calculate_shell_formation_fluxes, &
               calculate_mortality
 
     contains
 
-
+    !> Costs for growth set a maximum to the energy content of structural material and thus to the conversion
+    !! coefficient conv_cm3_gC.
+    !! This may affect the overhead costs for growth (kappa_G)
     real(kind=real_wp) function get_maximum_conversion_coeff(conv_cm3_gc, conv_j_gc, eg_l3)
-        !< Costs for growth set a maximum to the energy content of structural material and thus to the conversion
-        !< coefficient conv_cm3_gC
-        !< This may affect the overhead costs for growth (kappa_G)
         real(kind=real_wp), intent(in) :: conv_cm3_gc !< Conversion factor from cm3 into gC         [gC/cm3]
         real(kind=real_wp), intent(in) :: conv_j_gc   !< Conversion factor from energy into mass      [gC/J]
         real(kind=real_wp), intent(in) :: eg_l3       !< Volume-spec costs for growth of DEB species [J/cm3]
@@ -68,8 +74,8 @@ module m_debgrz_computations
         get_maximum_conversion_coeff = min(conv_cm3_gC, conv_J_gC * eg_L3)
     end function get_maximum_conversion_coeff
 
+    !> Rescale the units of different parameters to per unit of surface instead of per volume
     subroutine rescale_units(iv, ov, av, dens, dens_m2, v_m2, e_m2, r_m2, food_count)
-        !< Rescale the units of different parameters to per unit of surface instead of per volume
         use m_debgrz_input
         use m_debgrz_output
         use m_debgrz_auxiliary
@@ -87,56 +93,117 @@ module m_debgrz_computations
         type(debgrz_auxiliary), intent(inout) :: av !< Auxiliary variables
 
         ! local
-        integer(kind=int_wp) :: ifood
         real(kind=real_wp)   :: area
         real(kind=real_wp)   :: vd
         real(kind=real_wp)   :: depth_factor
 
-        iv%etot=max(0.,iv%etot)
-        iv%rtot=max(0.,iv%rtot)
+        call calculate_rescale_factors(iv%switchv1, iv%benths, iv%shape, iv%length_ini, iv%vtot, iv%conv_cm3_gc, &
+                                         iv%dens_ini, iv%depth, vd, dens, depth_factor)
+
+        call rescale_non_food_vars(iv%switchv1, depth_factor, dens, iv%conv_cm3_gc, iv%conv_j_gc, iv%shape, iv%em_l3, &
+                                   vd, iv%vtot, iv%etot, iv%rtot, dens_m2, v_m2, e_m2, r_m2, &
+                                   ov%v, ov%e, ov%r, ov%length, ov%e_scaled)
+
+        call rescale_food_arrays(iv%get_area(), food_count, av%benfood, av%cfood)
+    end subroutine rescale_units
+
+    !> Calculates the factors to rescale units
+    subroutine calculate_rescale_factors(switchv1, benths, shape, length_ini, vtot, conv_cm3_gc, &
+                                         dens_ini, depth, vd, dens, depth_factor)
+        integer(kind=int_wp), intent(in   ) :: switchv1     !< Use ISO-morphs (0) or V1-morphs (1)            [-]
+        integer(kind=int_wp), intent(in   ) :: benths       !< Switch to use benthic or pelagic for DEB species
+                                                            !< 0 = do not use benthic = use pelagic;
+                                                            !< 1 = use benthic
+        real(kind=real_wp), intent(in   )   :: shape        !< Shape coefficient                              [-]
+        real(kind=real_wp), intent(in   )   :: length_ini   !< Initial Individual Length                 [gWW/m2]
+        real(kind=real_wp), intent(in   )   :: vtot         !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
+        real(kind=real_wp), intent(in   )   :: conv_cm3_gc  !< Conversion factor from cm3 into gC        [gC/cm3]
+        real(kind=real_wp), intent(in   )   :: dens_ini     !< Initial number of grazer individuals           [-]
+        real(kind=real_wp), intent(in   )   :: depth        !< Depth of segment                               [m]
+        real(kind=real_wp), intent(inout)   :: vd           !< Reference volume                             [cm3]
+        real(kind=real_wp), intent(  out)   :: dens         !< Density derived from Vtot(unit dep on BENTHS)
+        real(kind=real_wp), intent(  out)   :: depth_factor !< Factor to rescale depth
 
         ! convert benthic and pelagic grazer components to units /m2,
-        if (iv%switchv1==1) then
-            vd = (iv%shape*iv%length_ini)**3                                 !Vd is reference volume (cm3)
-            dens = max(((iv%vtot/iv%conv_cm3_gc)/vd),tiny(dens))             !Density derived from Vtot(unit dep on BENTHS)
+        if (switchv1==1) then
+            vd = (shape*length_ini)**3                                 !Vd is reference volume (cm3)
+            dens = max((vtot/conv_cm3_gc)/vd,tiny(dens))               !Density derived from Vtot(unit dep on BENTHS)
         else
-            dens = max(iv%dens_ini,tiny(dens))                               !Density is dynamic variable
+            dens = max(dens_ini,tiny(dens))                            !Density is dynamic variable
         end if
 
-        if (iv%benths==0) then          ! pelagics (=active substance)
-            depth_factor = iv%depth     ! conversion from #/m3 to #/m2
+        if (benths==0) then          ! pelagics (=active substance)
+            depth_factor = depth     ! conversion from #/m3 to #/m2
         else                            ! benthics (=inactive substance)
             depth_factor = 1.0          ! no conversion or conversion from #/cell to #/m2
         end if
+
+    end subroutine calculate_rescale_factors
+
+    !> Rescales non food-related variables
+    subroutine rescale_non_food_vars(switchv1, depth_factor, dens, conv_cm3_gc, conv_j_gc, shape, em_l3, &
+                                     vd, vtot, etot, rtot, dens_m2, v_m2, e_m2, r_m2, v, e, r, length, e_scaled)
+        integer(kind=int_wp), intent(in   ) :: switchv1     !< 
+
+        real(kind=real_wp), intent(in   )   :: depth_factor !< 
+        real(kind=real_wp), intent(in   )   :: dens         !< Density derived from Vtot(unit dep on BENTHS)
+        real(kind=real_wp), intent(in   )   :: conv_cm3_gc  !< Conversion factor from cm3 into gC        [gC/cm3]
+        real(kind=real_wp), intent(in   )   :: conv_j_gc    !< Conversion factor from energy into mass     [gC/J]
+        real(kind=real_wp), intent(in   )   :: shape        !< Shape coefficient                              [-]
+        real(kind=real_wp), intent(in   )   :: em_l3        !< Maximum storage density of DEB species     [J/cm3]
+        real(kind=real_wp), intent(in   )   :: vd           !< Reference volume                             [cm3]
+        real(kind=real_wp), intent(in   )   :: vtot         !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
+        real(kind=real_wp), intent(inout)   :: etot         !< Structural biomass grazer pop.    [gC/m3 or gC/m2]
+        real(kind=real_wp), intent(inout)   :: rtot         !< Reproductional storage grazer pop.[gC/m3 or gC/m2]
+        real(kind=real_wp), intent(  out)   :: dens_m2      !< Density derived from Vtot per m2
+        real(kind=real_wp), intent(  out)   :: v_m2         !< Population structural biomass             [gC/m2]
+        real(kind=real_wp), intent(  out)   :: e_m2         !< Population energy biomass                 [gC/m2]
+        real(kind=real_wp), intent(  out)   :: r_m2         !< Population gonadal (reproductive) biomass [gC/m2]
+        real(kind=real_wp), intent(  out)   :: v            !< Individual volume    [cm3/ind]
+        real(kind=real_wp), intent(  out)   :: e            !< Individual energy      [J/ind]
+        real(kind=real_wp), intent(  out)   :: r            !< Individual gonads      [J/ind]
+        real(kind=real_wp), intent(  out)   :: length       !< Individual Length         [cm]
+        real(kind=real_wp), intent(  out)   :: e_scaled     !< Scaled energy density      [-]
+
+        etot=max(0.,etot)
+        rtot=max(0.,rtot)
+        v_m2 = vtot * depth_factor
+        e_m2 = etot * depth_factor
+        r_m2 = rtot * depth_factor
         dens_m2 = dens * depth_factor
-        v_m2 = iv%vtot * depth_factor
-        e_m2 = iv%etot * depth_factor
-        r_m2 = iv%rtot * depth_factor
 
-        ov%v = max( v_m2 / (dens_m2 * iv%conv_cm3_gc), tiny(ov%v) )
-        ov%e = max( e_m2 / (dens_m2 * iv%conv_j_gc),   tiny(ov%e) )
-        ov%r = max( r_m2 / (dens_m2 * iv%conv_j_gc),   tiny(ov%r) )
+        v = max( vtot / (dens * conv_cm3_gc), tiny(v) )
+        e = max( etot / (dens * conv_j_gc),   tiny(e) )
+        r = max( rtot / (dens * conv_j_gc),   tiny(r) )
 
-        if (iv%switchv1==1) then
-            ov%v=vd                     !to avoid numerical artifacts at small biomasses
+        if (switchv1==1) then
+            v=vd                     !to avoid numerical artifacts at small biomasses
         end if
 
-        ov%length = (ov%v**(1/3.0))/iv%shape      !Length is derived from individual V
-        ov%e_scaled = ov%e /( iv%em_l3 * ov%v )   !E_scaled is derived from E and V
+        length = (v**(1/3.0))/shape      !Length is derived from individual V
+        e_scaled = e /( em_l3 * v )   !E_scaled is derived from E and V
+    end subroutine rescale_non_food_vars
 
-        ! convert benthic FOOD components to units gC m-2, do not convert pelagic components: unit stays gC m-3
-        area = iv%get_area()
+    !> Rescales food arrays using the area
+    subroutine rescale_food_arrays(area, food_count, benfood, cfood)
+        real(kind=real_wp),   intent(in   ) :: area       !< Area of the cell
+        integer(kind=int_wp), intent(in   ) :: food_count !< Number of food types
+        integer(kind=int_wp), intent(in   ) :: benfood(:) !< Benthic foods (true/false)
+        real(kind=real_wp),   intent(inout) :: cfood(:)   !< Carbon foods
 
+        integer(kind=int_wp) :: ifood
+
+        ! convert benthic FOOD components to units gC/m2, do not convert pelagic components: unit stays gC/m3
         do ifood = 1,food_count
-            if (av%benfood(ifood)==1) then
-                av%cfood(ifood)=max(av%cfood(ifood) / area , 0.)
+            if (benfood(ifood)==1) then
+                cfood(ifood)=max(cfood(ifood) / area , 0.)
             end if
         end do
-    end subroutine rescale_units
+    end subroutine rescale_food_arrays
 
+    !> Calculates a temperature-dependent rate (kT) using Arrhenius equations and additional factors to
+    !! describe the temperature sensitivity of biological processes
     function temperature_dependent_rate(temp, ta, tal, tah, th, tl) result(kt)
-        !< Calculates a temperature-dependent rate (kT) using Arrhenius equations and additional factors to
-        !< describe the temperature sensitivity of biological processes
 
         real(kind = real_wp), intent(in) :: temp !< Ambient water temperature                       [oC]
         real(kind = real_wp), intent(in) :: ta   !< Arrhenius temperature                            [K]
@@ -152,14 +219,14 @@ module m_debgrz_computations
               / (1. + exp(tal / (temp + 273.) - tal / tl) + exp(tah / th - tah / (temp + 273.)))
     end function temperature_dependent_rate
 
+    !> Calculates Uptake: filtration, ingestion and assimilation per individual,
+    !! effective food concentrations (gC/m3), and their faecal (=indigestible) fractions (faecal_fraction)
     subroutine calculate_uptake(food_count, is_food_benthic, cfood, fffood, pref, suspension, xk, &
                                 minfood, dfil, totaldepth, ccfood, ncfood, pcfood, sicfood, conv_j_gc, &
                                 jxm_l2, kappa_i, tim, yk, c_filtr, n_filtr, p_filtr, si_filtr, kT, &
                                 v, dens_m2, delt, depth, faecal_fraction, food_pelagic, food_benthic)
-        !< Calculates Uptake: filtration, ingestion and assimilation per individual,
-        !< effective food concentrations (gC/m3), and their faecal (=indigestible) fractions (faecal_fraction)
         integer(kind=int_wp), intent(in   ) :: food_count           !< Number of food types
-        integer(kind=int_wp), intent(in   ) :: is_food_benthic(:)   !< Is food type benthic (1) or not (0)
+        integer(kind=int_wp), intent(in   ) :: is_food_benthic(:)   !< Is food type benthic (1) or pelagic (0)
 
         real(kind=real_wp),   intent(inout) :: cfood(:)   !< Carbon foods
         real(kind=real_wp),   intent(in   ) :: fffood(:)  !< Faecal fraction of grazers
@@ -183,13 +250,13 @@ module m_debgrz_computations
         real(kind=real_wp),   intent(in   ) :: delt       !< Timestep for processes                               [d]
         real(kind=real_wp),   intent(in   ) :: depth      !< Depth of segment/cell                                [m]
 
-        real(kind=real_wp),   intent(inout) :: dfil(:)  !< Daily filtration rate for each food type [gC/ind/d]
+        real(kind=real_wp), intent(inout) :: faecal_fraction !< Global value for faecal fraction
+        real(kind=real_wp), intent(inout) :: dfil(:)         !< Daily filtration rate for each food type [gC/ind/d]
 
         real(kind=real_wp), intent(  out)   :: c_filtr  !< Daily filtration rate for carbon     [gC/ind/d]
         real(kind=real_wp), intent(  out)   :: n_filtr  !< Daily filtration rate for nitrogen   [gN/ind/d]
         real(kind=real_wp), intent(  out)   :: p_filtr  !< Daily filtration rate for phosphorus [gP/ind/d]
         real(kind=real_wp), intent(  out)   :: si_filtr !< Daily filtration rate for silicon   [gSi/ind/d]
-
         real(kind=real_wp), intent(  out)   :: food_pelagic !< Food for pelagic organisms
         real(kind=real_wp), intent(  out)   :: food_benthic !< Food for benthic organisms
 
@@ -198,7 +265,6 @@ module m_debgrz_computations
         real(kind=real_wp) :: food_bottom             !< Food at the bottom of the water column
         real(kind=real_wp) :: faecal_fraction_pelagic !< Faecal fraction corresponding to pelagic organisms
         real(kind=real_wp) :: faecal_fraction_benthic !< Faecal fraction corresponding to benthic organisms
-        real(kind=real_wp) :: faecal_fraction         !< Global value for faecal fraction
         real(kind=real_wp) :: xk_suspended            !< Half saturation for suspended food
         real(kind=real_wp) :: xk_bottom               !< Half saturation for food in bottom
         real(kind=real_wp) :: dupte                   !< Daily energy ingestion rate or uptake [J/ind/d]
@@ -254,11 +320,11 @@ module m_debgrz_computations
         si_filtr = 0.
 
         do ifood= 1, food_count
-            if (is_food_benthic(ifood)==1) then ! Deposit feeding
+            if (is_food_benthic(ifood)==1) then ! Deposit (benthic) feeding
                 dupte = (1.-suspension)*(cfood(ifood)/(food_benthic+tiny(food_benthic))) &
                         * food_bottom * kT  * (v**(2./3.)) * jxm_l2
                 dfil(ifood) = dupte * (conv_j_gc/(1.-faecal_fraction_benthic))*(1./kappa_i)
-            else                                ! Suspension feeding
+            else                                ! Suspension (pelagic) feeding
                 dupte = suspension * ( cfood(ifood) / (food_pelagic+tiny(food_pelagic))) &
                         * food_suspended * kT  * (v**(2./3.)) * jxm_l2
                 dfil(ifood) = dupte * (conv_j_gc/(1.-faecal_fraction_pelagic))*(1./kappa_i)
@@ -275,14 +341,14 @@ module m_debgrz_computations
         end do
     end subroutine calculate_uptake
 
+    !> Calculates defaecation per individual
+    !! From the ingested material, a fraction is lost due to (lack of) assimilation efficiency (kappa_A)
+    !! leading to faeces production and/or due to (lack of) ingestion efficiency (kappa_I), which, on its turn, leads to
+    !! pseudofaeces production. Also, the faecal food fraction (faecal_fraction) is not assimilated; it is assumed to
+    !! consist of carbon fibres only, and to be low in energy.
+    !! Furthermore the assimilated material has to match the N/C and P/C ratio of the grazer
     subroutine calculate_defaecation(kappa_i, kappa_a, tn, tp, conv_j_gc, c_filtr, n_filtr, p_filtr, si_filtr, &
                                     faecal_fraction, c_defaec, n_defaec, p_defaec, si_defaec, pa)
-        !< Calculates defaecation per individual
-        !< From the ingested material, a fraction is lost due to (lack of) assimilation efficiency (kappa_A)
-        !< leading to faeces production and/or due to (lack of) ingestion efficiency (kappa_I), which, on its turn, leads to
-        !< pseudofaeces production. Also, the faecal food fraction (faecal_fraction) is not assimilated; it is assumed to
-        !< consist of carbon fibres only, and to be low in energy.
-        !< Furthermore the assimilated material has to match the N/C and P/C ratio of the grazer
 
         real(kind=real_wp), intent(in   ) :: kappa_i         !< Ingestion efficiency (pseudofaeces production)  [-]
         real(kind=real_wp), intent(in   ) :: kappa_a         !< Assimilation efficiency                         [-]
@@ -306,17 +372,17 @@ module m_debgrz_computations
         real(kind=real_wp) :: lim_uptake !< Limiting uptake in carbon equivalents   [gC/ind/d]
 
         if (c_filtr > 0.) then
-            c_uptake = c_filtr  *(kappa_i * kappa_a) * (1.-faecal_fraction)
-            n_uptake = n_filtr *(kappa_i * kappa_a) / tn
-            p_uptake = p_filtr *(kappa_i * kappa_a) / tp
+            c_uptake = c_filtr * (kappa_i * kappa_a) * (1.-faecal_fraction)
+            n_uptake = n_filtr * (kappa_i * kappa_a) / tn
+            p_uptake = p_filtr * (kappa_i * kappa_a) / tp
             lim_uptake = min(n_uptake, p_uptake, c_uptake)
 
             ! Pseudofaeces, efficiency losses, and excess nutrients are all released as Faeces
             ! All uptake of silicate is lost by defaecation
-            c_defaec  =  c_filtr  - lim_uptake
-            n_defaec = (n_filtr/ tn - lim_uptake) * tn
-            p_defaec = (p_filtr/ tp - lim_uptake) * tp
-            si_defaec  = si_filtr
+            c_defaec  = c_filtr - lim_uptake
+            n_defaec  = (n_filtr/ tn - lim_uptake) * tn
+            p_defaec  = (p_filtr/tp - lim_uptake) * tp
+            si_defaec = si_filtr
         else ! no food uptake, so no stoichiometric losses
             c_defaec = 0.
             n_defaec = 0.
@@ -328,11 +394,11 @@ module m_debgrz_computations
         pa  =  lim_uptake / conv_j_gc
     end subroutine calculate_defaecation
 
+    !>  Energy reserve dynamics per individual
+    !!  Volume specific and theoretically maximum uptake rate
+    !!  this is the maximum rate with which energy can be obtained from the energy reserves
+    !!  and (being a theoretical maximum) it is not dependent on the actual algae uptake Pa
     subroutine calculate_energy_reserve_dynamics(jxm_l2, kappa_a, eg_l3, em_l3, pm_l3, kappa, delt, kT, v, e, pc)
-        !<  Energy reserve dynamics per individual
-        !<  Volume specific and theoretically maximum uptake rate
-        !<  this is the maximum rate with which energy can be obtained from the energy reserves
-        !<  and (being a theoretical maximum) it is not dependent on the actual algae uptake Pa
         real(kind=real_wp), intent(in   ) :: jxm_l2  !< Max ingestion rate of DEB species           [J/cm2/d]
         real(kind=real_wp), intent(in   ) :: kappa_a !< Assimilation efficiency                           [-]
         real(kind=real_wp), intent(in   ) :: eg_l3   !< Volume-spec costs for growth of DEB species   [J/cm3]
@@ -356,10 +422,10 @@ module m_debgrz_computations
         pc = max(pc, 0.)
     end subroutine calculate_energy_reserve_dynamics
 
+    !> Calculate maintenance per individual
+    !! Respiration is only due to basal respiration, not to activity or stress.
+    !! Respiration of nutrients is related to the carbon respiration with ratios TN and TP
     subroutine calculate_maintenance(pm_l3, v, kt, pm)
-        !< Calculate maintenance per individual
-        !< Respiration is only due to basal respiration, not to activity or stress.
-        !< Respiration of nutrients is related to the carbon respiration with ratios TN and TP
         real(kind=real_wp), intent(in   ) :: pm_l3  !< Respiration rate constant of DEB species [J/d]
         real(kind=real_wp), intent(in   ) :: v      !< Individual volume                    [cm3/ind]
         real(kind=real_wp), intent(in   ) :: kt     !< Temperature-dependent rate
@@ -368,11 +434,11 @@ module m_debgrz_computations
         pm = pm_l3 * v * kt
     end subroutine calculate_maintenance
 
+    !> Growth per individual:
+    !! when growing, energy will be put in the new tissue and some will be lost due to overhead costs
+    !! if too little energy catabolized to pay maintenance, the organisms will shrink
+    !! in that case, the overhead costs are assumed to be proportional to those for growth
     subroutine calculate_growth(kappa, pc, conv_cm3_gc, conv_j_gc, eg_l3, delt, v, pm, pv, pg, kappa_g)
-        !< Growth per individual:
-        !< when growing, energy will be put in the new tissue and some will be lost due to overhead costs
-        !< if too little energy catabolized to pay maintenance, the organisms will shrink
-        !< in that case, the overhead costs are assumed to be proportional to those for growth
         real(kind=real_wp), intent(in   ) :: kappa       !< Fraction of util.energy spent on maint&growth  [-]
         real(kind=real_wp), intent(in   ) :: pc          !< Energy reserve dynamics per individual   [J/ind/d]
         real(kind=real_wp), intent(in   ) :: conv_cm3_gc !< Conversion factor from cm3 into gC        [gC/cm3]
@@ -389,7 +455,7 @@ module m_debgrz_computations
         kappa_g = conv_cm3_gc/(conv_j_gc*eg_l3)
 
         if (pg > 0.) then
-            pv = kappa_g*pg  !(J/ind/d)
+            pv = kappa_g*pg
         else
             pv = (1.+ (1.-kappa_g))*pg
             pm = pm + abs((1.-kappa_g) * pg)
@@ -400,15 +466,15 @@ module m_debgrz_computations
         end if
     end subroutine calculate_growth
 
+    !> Maturity and reproduction per individual
+    !! ISO-morphs only produce gonads if they are larger than Vp and if GSI > G_upper
+    !! V1-morphs produce gonads with a fraction related to the ratio of V and Vp
+    !! Some adjustments were made with respect to original equations to make sure all catabolized energy is
+    !! being used
     subroutine calculate_maturity_and_reproduction(switchv1, vp, conv_j_gc, conv_cm3_gc, kappa, pm_l3, &
                                 kappar, delt, gsi_upper, gsi_lower, temp, minsptemp, &
                                 v, e, r, pc, kT, rspawn, tn, tp, dospawn, gsi, &
                                 pjj, prj, pja, pra, pr, dspw, dnspw, dpspw)
-        !< Maturity and reproduction per individual
-        !< ISO-morphs only produce gonads if they are larger than Vp and if GSI > G_upper
-        !< V1-morphs produce gonads with a fraction related to the ratio of V and Vp
-        !< Some adjustments were made with respect to original equations to make sure all catabolized energy is
-        !< being used
         integer(kind=int_wp), intent(in) :: switchv1     !< Use ISO-morphs (0) or V1-morphs (1)
 
         real(kind=real_wp), intent(in   ) :: vp          !< Volume at start of reproductive stage        [cm3]
@@ -441,26 +507,79 @@ module m_debgrz_computations
         real(kind=real_wp), intent(  out) :: dnspw       !< Delta energy for nitrogen for spawning   [J/ind/d]
         real(kind=real_wp), intent(  out) :: dpspw       !< Delta energy for phosphorus for spawning [J/ind/d]
 
-        real(kind=real_wp) :: fadult
-        real(kind=real_wp) :: fjuv
+        real(kind=real_wp) :: fadult                     !< Adult fraction of the population               [-]
+        real(kind=real_wp) :: fjuv                       !< Juvenile fraction of the population            [-]
+
+        call get_maturity_fractions(switchv1, v, vp, fjuv, fadult)
+        gsi = get_gsi(switchv1, vp, v, e, r, fadult, conv_j_gc, conv_cm3_gc)
+
+        call calculate_maturity_and_reproduction_energies(vp, kappa, pm_l3, kappar, delt, v, r, pc, kT, fadult, fjuv, &
+                                                          pjj, prj, pja, pra, pr)
+        call calculate_spawning(gsi, gsi_lower, gsi_upper, temp, minsptemp, r, rspawn, delt, tn, tp, &
+                                pr, dospawn, dspw, dnspw, dpspw)
+    end subroutine calculate_maturity_and_reproduction
+
+    !> Calculates the adult and juvenile fractions of the population.
+    subroutine get_maturity_fractions(switchv1, v, vp, fjuv, fadult)
+        integer(kind=int_wp), intent(in   ) :: switchv1 !< Use ISO-morphs (0) or V1-morphs (1)         [-]
+
+        real(kind=real_wp), intent(in   )   :: v        !< Individual volume                     [cm3/ind]
+        real(kind=real_wp), intent(in   )   :: vp       !< Volume at start of reproductive stage [cm3/ind]
+        real(kind=real_wp), intent(  out)   :: fjuv     !< Juvenile fraction of the population         [-]
+        real(kind=real_wp), intent(  out)   :: fadult   !< Adult fraction of the population            [-]
 
         if (switchv1==1) then
-            fjuv= vp/(vp+v)                                                 !juvenile fraction of the population
-            fadult= 1.-vp/(vp+v)                                            !adult fraction of the population
-            gsi = (r*conv_j_gc)/(v*fadult*conv_cm3_gc + &
-                    e*fadult*conv_j_gc + r*conv_j_gc)
+            fjuv= vp/(vp+v)
         elseif (v < vp) then
             fjuv=1.
-            fadult=0.
-            gsi = 0.
         else
             fjuv=0.
-            fadult=1.
-            gsi = (r*conv_j_gc)/(v*fadult*conv_cm3_gc + &
-                    e*fadult*conv_j_gc + r*conv_j_gc)
         end if
+        fadult = 1. - fjuv
+    end subroutine get_maturity_fractions
 
-        pjj = ((1.-kappa)/(kappa+tiny(kappa))) * pm_l3 * (v*fjuv) * kT    !maturity maintenance juveniles (J/ind/d)
+    !> Calculates the gonadosomatic index (GSI).
+    function get_gsi(switchv1, vp, v, e, r, fadult, conv_j_gc, conv_cm3_gc) result(gsi)
+        integer(kind=int_wp), intent(in   ) :: switchv1 !< Use ISO-morphs (0) or V1-morphs (1)            [-]
+
+        real(kind=real_wp), intent(in   )   :: vp          !< Volume at start of reproductive stage [cm3/ind]
+        real(kind=real_wp), intent(in   )   :: v           !< Individual volume                     [cm3/ind]
+        real(kind=real_wp), intent(in   )   :: e           !< Individual energy                       [J/ind]
+        real(kind=real_wp), intent(in   )   :: r           !< Individual gonads                       [J/ind]
+        real(kind=real_wp), intent(in   )   :: fadult      !< Adult fraction of the population            [-]
+        real(kind=real_wp), intent(in   )   :: conv_j_gc   !< Conversion factor from energy into mass  [gC/J]
+        real(kind=real_wp), intent(in   )   :: conv_cm3_gc !< Conversion factor from cm3 into gC     [gC/cm3]
+        real(kind=real_wp)                  :: gsi         !< Gonadosomatic Index                         [-]
+
+        if (switchv1/=1 .and. v < vp) then
+            gsi = 0.
+            return
+        end if
+        gsi = (r*conv_j_gc)/(v*fadult*conv_cm3_gc + &
+              e*fadult*conv_j_gc + r*conv_j_gc)
+    end function get_gsi
+
+    !> Calculates the energies associated to the different fractions and stages of development of the species.
+    subroutine calculate_maturity_and_reproduction_energies(vp, kappa, pm_l3, kappar, delt, v, r, pc, kT, fadult, fjuv, &
+                                                            pjj, prj, pja, pra, pr)
+        real(kind=real_wp), intent(in   ) :: vp          !< Volume at start of reproductive stage        [cm3]
+        real(kind=real_wp), intent(in   ) :: kappa       !< Fraction of util.energy spent on maint&growth  [-]
+        real(kind=real_wp), intent(in   ) :: pm_l3       !< Respiration rate constant of DEB species     [J/d]
+        real(kind=real_wp), intent(in   ) :: kappar      !< Fraction of repro.energy spent on              [-]
+        real(kind=real_wp), intent(in   ) :: delt        !< Timestep for processes                         [d]
+        real(kind=real_wp), intent(in   ) :: v           !< Individual volume                     [cm3/ind]
+        real(kind=real_wp), intent(in   ) :: r           !< Individual gonads                          [J/ind]
+        real(kind=real_wp), intent(in   ) :: pc          !< Energy reserve dynamics per individual   [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: kT          !< Temperature_dependent_rate
+        real(kind=real_wp), intent(in   ) :: fadult      !< Adult fraction of the population               [-]
+        real(kind=real_wp), intent(in   ) :: fjuv        !< Juvenile fraction of the population            [-]
+        real(kind=real_wp), intent(  out) :: pjj         !< Maturity maintenance juveniles           [J/ind/d]
+        real(kind=real_wp), intent(  out) :: prj         !< Maturity development                     [J/ind/d]
+        real(kind=real_wp), intent(  out) :: pja         !< Maturity maintenance adults              [J/ind/d]
+        real(kind=real_wp), intent(  out) :: pra         !< Specific energy for reproduction         [J/ind/d]
+        real(kind=real_wp), intent(  out) :: pr          !< Energy for reproduction                  [J/ind/d]
+
+        pjj = ((1.-kappa)/(kappa+tiny(kappa))) * pm_l3 * (v*fjuv) * kT
         pjj = min(pjj, ((1.-kappa) * pc * fjuv ))
         prj = max(0., ((1.-kappa) * pc * fjuv - pjj))                    !remainder goes to maturity development
         pja = ((1.-kappa)/(kappa+tiny(kappa)))* pm_l3 * (vp*fadult) * kT  !maturity maintenance adults (J/ind/d)
@@ -470,15 +589,35 @@ module m_debgrz_computations
         ! but if too little energy for adult mat maint, costs are paid by R with additional overhead costs
         ! proportional to kappaR:
         if (pra > 0.) then
-            pr = kappar*pra                                                          !(J/ind/d)
+            pr = kappar*pra
         else
             pr = (1.+(1.-kappar))*pra
             pja = pja + abs((1.-kappar) * pra)
 
-            pr = max(pr,(-r/delt))
+            pr  = max(pr,  (-r/delt))
             pra = max(pra, (((-r/delt)/(1.+(1.-kappar)))))
-            pja = min(pja,((1.-kappa)*pc*fadult + (r/delt)))
+            pja = min(pja, ((1.-kappa)*pc*fadult + (r/delt)))
         end if
+    end subroutine calculate_maturity_and_reproduction_energies
+
+    !> Calculates if spawing is taking place, and the deltas of energy associated to spawning for each nutrient type (C, N and P)
+    subroutine calculate_spawning(gsi, gsi_lower, gsi_upper, temp, minsptemp, r, rspawn, delt, tn, tp, &
+                                  pr, dospawn, dspw, dnspw, dpspw)
+        real(kind=real_wp), intent(in   ) :: gsi         !< Gonadosomatic Index                            [-]
+        real(kind=real_wp), intent(in   ) :: gsi_upper   !< Minimum GSI for spawning                       [-]
+        real(kind=real_wp), intent(in   ) :: gsi_lower   !< Minimum GSI while spawning                     [-]
+        real(kind=real_wp), intent(in   ) :: temp        !< Ambient water temperature                     [oC]
+        real(kind=real_wp), intent(in   ) :: minsptemp   !< Minimum temperature for spawning              [oC]
+        real(kind=real_wp), intent(in   ) :: r           !< Individual gonads                          [J/ind]
+        real(kind=real_wp), intent(in   ) :: rspawn      !< Spawning rate                                  [-]
+        real(kind=real_wp), intent(in   ) :: delt        !< Timestep for processes                         [d]
+        real(kind=real_wp), intent(in   ) :: tn          !< N:C ratio grazers                          [gN/gC]
+        real(kind=real_wp), intent(in   ) :: tp          !< P:C ratio grazers                          [gP/gC]
+        real(kind=real_wp), intent(in   ) :: pr          !< Energy for reproduction                  [J/ind/d]
+        real(kind=real_wp), intent(inout) :: dospawn     !< Indication of spawning                         [-]
+        real(kind=real_wp), intent(  out) :: dspw        !< Delta energy for carbon for spawning     [J/ind/d]
+        real(kind=real_wp), intent(  out) :: dnspw       !< Delta energy for nitrogen for spawning   [J/ind/d]
+        real(kind=real_wp), intent(  out) :: dpspw       !< Delta energy for phosphorus for spawning [J/ind/d]
 
         ! if conditions are suitable, spawning will start
         if (gsi > gsi_upper) then
@@ -488,9 +627,8 @@ module m_debgrz_computations
         ! spawning continues as long as conditions remain suitable
         if (dospawn > 0) then
             if (( gsi > gsi_lower .and. temp > minsptemp ) .and. r > 0 ) then
-
-                dspw = (rspawn * r + max(pr,0.))                                    !(J/ind/d)
-                dspw = min(dspw,(r/delt+min(pr,0.)))
+                dspw = (rspawn * r + max(pr, 0.))
+                dspw = min(dspw, (r/delt + min(pr,0.)) )
             else
                 dspw = 0.
             end if
@@ -504,11 +642,11 @@ module m_debgrz_computations
 
         dnspw = dspw * tn
         dpspw = dspw * tp
-    end subroutine calculate_maturity_and_reproduction
+    end subroutine calculate_spawning
 
+    !> Respiration per individual
+    !! Last two terms refer to overhead costs of growth and reproduction
     subroutine calculate_respiration(pm, pja, pjj, prj, kappa_g, pg, pra, kappar, tn, tp, dres, dnres, dpres)
-        !< Respiration per individual
-        !< Last two terms refer to overhead costs of growth and reproduction
         real(kind=real_wp), intent(in   ) :: pm      !< Maintenance per individual             [J/ind/d]
         real(kind=real_wp), intent(in   ) :: pja     !< Maturity maintenance adults            [J/ind/d]
         real(kind=real_wp), intent(in   ) :: pjj     !< Maturity maintenance juveniles         [J/ind/d]
@@ -528,13 +666,13 @@ module m_debgrz_computations
 
         overhead_costs_growth =       (1.-kappa_g) * max(pg, 0.)
         overhead_costs_reproduction = (1.-kappar)  * max(pra,0.)
-        dres =pm+pja+pjj+prj+(1.-kappa_g) * max(pg, 0.)+(1.-kappar)  * max(pra,0.)
+        dres = pm + pja + pjj + prj + overhead_costs_growth + overhead_costs_reproduction
         dnres = dres * tn
         dpres = dres * tp
     end subroutine calculate_respiration
 
+    !> Shell formation fluxes per individual
     subroutine calculate_shell_formation_fluxes(pv, frgsmo, frsmosmi, pomm, pca)
-        !< Shell formation fluxes per individual
         real(kind=real_wp), intent(in   ) :: pv       !< Overhead costs per volume                      [J/ind/d]
         real(kind=real_wp), intent(in   ) :: frgsmo   !< Fraction of growth flux to shell matrix              [-]
         real(kind=real_wp), intent(in   ) :: frsmosmi !< Fraction of shell matrix flux to calcification       [-]
@@ -545,10 +683,10 @@ module m_debgrz_computations
         pca  =  max(0., (pomm * frsmosmi))
     end subroutine calculate_shell_formation_fluxes
 
+    !> Natural mortality and harvesting (only former comes back into the system as detritus)
+    !! These added fractions cannot be larger than one (minus the material used for maintenance, at Pv<0)
     subroutine calculate_mortality(rmor_ref, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref, chrv, tn, tp, &
                         length, v, e, r, rmor, rhrv, dmor, dnmor, dpmor, kt, pv)
-        !< Natural mortality and harvesting (only former comes back into the system as detritus)
-        !< These added fractions cannot be larger than one (minus the material used for maintenance, at Pv<0)
 
         real(kind=real_wp), intent(in   ) :: rmor_ref    !< Reference mortality rate grazers           [1/d]
         real(kind=real_wp), intent(in   ) :: cmor        !< Length-dep coefficient mortality rate      [1/d]
@@ -570,12 +708,21 @@ module m_debgrz_computations
         real(kind=real_wp), intent(  out) :: dnmor       !< Mortality difference for nitrogen      [gN/m3/d]
         real(kind=real_wp), intent(  out) :: dpmor       !< Mortality difference for phosphorus    [gP/m3/d]
 
-        rmor  = rmor_ref * (length**cmor) * kt
-        rmor  = min(rmor,(1.+(min(pv,0.)*conv_j_gc)/(v*conv_cm3_gc)))
-        rhrv  = rhrv_ref * (length**chrv)
-        rhrv  = min(rhrv,(1.-rmor+(min(pv,0.)*conv_j_gc)/(v*conv_cm3_gc)))
+        ! local variables
+        real(kind=real_wp) :: pvmin
+        real(kind=real_wp) :: v_gc
+        real(kind=real_wp) :: x 
 
-        dmor  = rmor *(v*conv_cm3_gc+(e+r)*conv_j_gc)                             !(gC/ind/d)
+        pvmin = min(pv, 0.)
+        v_gc = v*conv_cm3_gc
+        x = (pvmin*conv_j_gc)/v_gc
+        
+        rmor  = rmor_ref * (length**cmor) * kt
+        rmor  = min(rmor,     (1. + (pvmin*conv_j_gc)/(v*conv_cm3_gc)))
+        rhrv  = rhrv_ref * (length**chrv)
+        rhrv  = min(rhrv,     (1. - rmor + (pvmin*conv_j_gc)/(v*conv_cm3_gc)))
+
+        dmor  = rmor * (v*conv_cm3_gc + (e+r) * conv_j_gc)
         dnmor = dmor * tn
         dpmor = dmor * tp
     end subroutine calculate_mortality

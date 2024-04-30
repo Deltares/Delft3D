@@ -980,11 +980,11 @@ contains
             int_output, real_output, ierr, ierr3)
         !! Boundary and waste data new style
 
-        ! LOGICAL UNITS: LUN(27) = unit stripped DELWAQ input file
-        !                LUN(29) = unit formatted output file
-        !                LUN( 2) = unit intermediate file (system)
-        !                LUN(14) = unit intermediate file (boundaries)
-        !                LUN(15) = unit intermediate file (wastes)
+        ! LOGICAL UNITS: file_unit_list(27) = unit stripped DELWAQ input file
+        !                file_unit_list(29) = unit formatted output file
+        !                file_unit_list( 2) = unit intermediate file (system)
+        !                file_unit_list(14) = unit intermediate file (boundaries)
+        !                file_unit_list(15) = unit intermediate file (wastes)
         !
         !     ILUN    INTEGER   LSTACK     INPUT   unitnumb include stack
         !     LSTACK  INTEGER    1         INPUT   include file stack size

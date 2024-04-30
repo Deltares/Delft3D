@@ -198,7 +198,7 @@
         </testCase>
         <!-- ======================================================================== -->
         <testCase name="e100_f08_c09" ref="dimr_trunk">
-            <path version="2024-04-15T21:03:46">e100_dflowfm-dwaves/f08_tutorial_course_models/c09_01d_straight_coast</path>
+            <path version="2024-04-23T09:18:20">e100_dflowfm-dwaves/f08_tutorial_course_models/c09_01d_straight_coast</path>
             <maxRunTime>300.0</maxRunTime> <!-- seconds -->
             <checks>
                 <file name="dflowfm/output/flowfm_his.nc" type="NETCDF">

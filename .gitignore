@@ -38,3 +38,6 @@ src/**/FortranCInterface.h
 
 # ignore copied files from failed_test.py teamcity script
 /test/deltares_testbench/failed/**
+
+# ignore generated doxygen documentation
+/doxy_output

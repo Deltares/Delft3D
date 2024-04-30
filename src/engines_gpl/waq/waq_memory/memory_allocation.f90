@@ -270,8 +270,7 @@ contains
     end subroutine set_admin_array_indices
 
     subroutine set_character_array_indices(logical_unit, declare_memory, arrpoi, arrtyp, arrbyt, &
-            arrlen, arrknd, arrdm1, arrdm2, arrdm3, &
-            arrnam, itotc, partition_data)
+            arrlen, arrknd, arrdm1, arrdm2, arrdm3, arrnam, char_arr_size, partition_data)
 
         ! Sets the array pointers in the SYSC common block. Gives array space of the kind C(pointer)
         ! Declares memory through C-interface if asked (routine is also called by preprocessor)
@@ -301,7 +300,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrdm2(:) ! dimension 2
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
         character(20), intent(inout) :: arrnam(:) ! Array name
-        integer(kind = int_wp), intent(inout) :: itotc     ! Required array space
+        integer(kind = int_wp), intent(inout) :: char_arr_size     ! Required array space
         type(memory_partition), intent(inout) :: partition_data ! Private variables for make_pointer
 
         character(len = 20) :: temp_array_name                      ! help variable for array name
@@ -447,12 +446,12 @@ contains
                     "  nr array name            array size"
         endif
 
-        itotc = 0
+        char_arr_size = 0
         do i_car = iasize + ijsize + 1, iasize + ijsize + nr_car
             arrlen(i_car) = arrdm1(i_car) * arrdm2(i_car) * arrdm3(i_car) * 5
             if (.not. declare_memory) write (328, 2040) i_car - iasize - ijsize, arrnam(i_car), arrlen(i_car)
-            itotc = itotc + arrlen(i_car)
-            if (itotc < 0) then
+            char_arr_size = char_arr_size + arrlen(i_car)
+            if (char_arr_size < 0) then
                 write(logical_unit, 2005)
                 call srstop(1)
             endif
@@ -486,12 +485,12 @@ contains
                 arrpoi(i_car) = ip
             enddo
         endif
-        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", itotc
+        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", char_arr_size
 
         ! raaien behind the dump areas
         ip_car(index_react_name - iasize - ijsize) = ip_car(index_dump_analysis - iasize - ijsize) + ndmpar * 20
         arrpoi(index_react_name) = arrpoi(index_dump_analysis) + ndmpar * 20
-        itotc = itotc + ndmpar
+        char_arr_size = char_arr_size + ndmpar
 
         close (328)
 
@@ -503,7 +502,7 @@ contains
 
     subroutine allocate_integer_arrays (logical_unit, declare_memory, arrpoi, arrtyp, arrbyt, &
             arrlen, arrknd, arrdm1, arrdm2, arrdm3, &
-            arrnam, itoti, partition_data)
+            arrnam, int_arr_size, partition_data)
 
         !! Allocates all integer arrays of DelwaQ
         !!  This routine:
@@ -543,7 +542,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
         character(len = 20), intent(inout) :: arrnam(:) ! Array name
         type(memory_partition), intent(inout) :: partition_data ! Private variables for make_pointer
-        integer(kind = int_wp), intent(inout) :: itoti     ! Required array space
+        integer(kind = int_wp), intent(inout) :: int_arr_size     ! Required array space
 
         ! Local declarations
         logical :: fluxco                            ! if .true. then flux correction
@@ -1022,12 +1021,12 @@ contains
                     "  nr array name            array size"
         endif
 
-        itoti = 0
+        int_arr_size = 0
         do i_jar = iasize + 1, iasize + nr_jar
             arrlen(i_jar) = arrdm1(i_jar) * arrdm2(i_jar) * arrdm3(i_jar)
             if (.not. declare_memory) write (328, 2040) i_jar - iasize, arrnam(i_jar), arrlen(i_jar)
-            itoti = itoti + arrlen(i_jar)
-            if (itoti < 0) then
+            int_arr_size = int_arr_size + arrlen(i_jar)
+            if (int_arr_size < 0) then
                 write(logical_unit, 2005)
                 call srstop(1)
             endif
@@ -1080,7 +1079,7 @@ contains
         ierr = 0
 
         nr_jar_new = nr_jar
-        itoti = itoti + (noseg + nseg2) * nogrid
+        int_arr_size = int_arr_size + (noseg + nseg2) * nogrid
         nr_jar_new = nr_jar_new + 1
         if (declare_memory) allocate (iknmkv(noseg + nseg2, nogrid), stat = ierr)
 
@@ -1090,7 +1089,7 @@ contains
         endif
         if (.not. declare_memory) write (328, 2040) nr_jar_new, "iknmkv              ", (noseg + nseg2) * nogrid
 
-        itoti = itoti + nowst
+        int_arr_size = int_arr_size + nowst
         nr_jar_new = nr_jar_new + 1                                    ! iwstkind
         if (declare_memory) allocate (iwstkind(nowst), stat = ierr)
         if (ierr /= 0) then
@@ -1100,14 +1099,14 @@ contains
         if (.not. declare_memory) write (328, 2040) nr_jar_new, "iwstkind            ", nowst
 
         if (nmax * mmax > 0) then
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, cellpnt, "cellpnt", noseg, noseg, itoti)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, flowpnt, "flowpnt", noq, noq, itoti)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, cellpnt, "cellpnt", noseg, noseg, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, flowpnt, "flowpnt", noq, noq, int_arr_size)
         endif
         if (f_solv) then
             noth = OMP_GET_MAX_THREADS()
 
             ! rowpnt
-            itoti = itoti + noseg + nobnd + 1
+            int_arr_size = int_arr_size + noseg + nobnd + 1
             nr_jar_new = nr_jar_new + 1
             if (declare_memory) allocate (rowpnt (0:noseg + nobnd), stat = ierr)
             if (ierr /= 0) then
@@ -1116,11 +1115,11 @@ contains
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "rowpnt              ", noseg + nobnd + 1
 
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, fmat, "fmat", noq, noq, itoti)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, tmat, "tmat", noq, noq, itoti)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, fmat, "fmat", noq, noq, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, tmat, "tmat", noq, noq, int_arr_size)
 
             ! iexseg
-            itoti = itoti + (noseg + nobnd) * noth
+            int_arr_size = int_arr_size + (noseg + nobnd) * noth
             nr_jar_new = nr_jar_new + 1
             if (declare_memory) allocate (iexseg (noseg + nobnd, noth), stat = ierr)
             if (ierr /= 0) then
@@ -1130,13 +1129,13 @@ contains
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "iexseg              ", (noseg + nobnd) * noth
         endif
         if (intsrt == 24) then
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibas, "ibas", noseg, noseg, itoti)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibaf, "ibaf", noq, noq, itoti)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, iords, "iords", noseg, noseg, itoti)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, iordf, "iordf", noq, noq, itoti)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibas, "ibas", noseg, noseg, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibaf, "ibaf", noq, noq, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, iords, "iords", noseg, noseg, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, iordf, "iordf", noq, noq, int_arr_size)
 
             ! nvert
-            itoti = itoti + 2 * noseg
+            int_arr_size = int_arr_size + 2 * noseg
             nr_jar_new = nr_jar_new + 1
             if (declare_memory) allocate (nvert(2, noseg), stat = ierr)
             if (ierr /= 0) then
@@ -1145,13 +1144,13 @@ contains
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "nvert               ", 2 * noseg
 
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ivert, "ivert", noseg, noseg, itoti)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ivert, "ivert", noseg, noseg, int_arr_size)
         endif
 
         call allocate_array(logical_unit, nr_jar_new, declare_memory, isegcol, "isegcol", &
-                noseg + nseg2, noseg + nseg2, itoti)
+                noseg + nseg2, noseg + nseg2, int_arr_size)
 
-        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", itoti
+        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", int_arr_size
 
         2005 format (' ERROR  : integer array is too big. Unable to create pointer. ')
         2010 format (' ERROR  : allocating integer array. Name   : ', A)
@@ -1160,8 +1159,7 @@ contains
     end subroutine allocate_integer_arrays
 
     subroutine allocate_real_arrays(logical_unit, declare_memory, arrpoi, arrtyp, arrbyt, &
-            arrlen, arrknd, arrdm1, arrdm2, arrdm3, &
-            arrnam, itota, partition_data)
+            arrlen, arrknd, arrdm1, arrdm2, arrdm3, arrnam, real_arr_size, partition_data)
 
         !! file Define the real arrays as partition_data of the one overall array Sets the array pointers in the
         !! SYSA common block. Gives array space of the kind A(pointer) Declares memory through C-interface if asked
@@ -1193,7 +1191,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrdm2(:) ! dimension 2
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
         character(len = 20), intent(inout) :: arrnam(:) ! Array name
-        integer(kind = int_wp), intent(inout) :: itota     ! Required array space
+        integer(kind = int_wp), intent(inout) :: real_arr_size     ! Required array space
         type(memory_partition), intent(inout) :: partition_data ! Private variables for make_pointer
 
         integer(kind = int_wp) :: i_rar                             ! loop counter
@@ -1607,7 +1605,7 @@ contains
                     "  nr array name            array size"
         endif
 
-        itota = 0
+        real_arr_size = 0
         do i_rar = 1, nr_rar
             arrlen(i_rar) = arrdm1(i_rar) * arrdm2(i_rar) * arrdm3(i_rar)
             if (arrlen(i_rar) < 0) then
@@ -1616,8 +1614,8 @@ contains
                 call srstop(1)
             endif
             if (.not. declare_memory) write (328, 2040) i_rar, arrnam(i_rar), arrlen(i_rar)
-            itota = itota + arrlen(i_rar)
-            if (itota < 0) then
+            real_arr_size = real_arr_size + arrlen(i_rar)
+            if (real_arr_size < 0) then
                 write(logical_unit, 2005)
                 write(logical_unit, 2010) arrnam(i_rar)
                 call srstop(1)
@@ -1706,13 +1704,13 @@ contains
 
         ierr = 0
         call allocate_array(logical_unit, nr_rar, declare_memory, surface, "surface", noseg + nseg2, &
-                noseg + nseg2, itota)
+                noseg + nseg2, real_arr_size)
         call allocate_array(logical_unit, nr_rar, declare_memory, wdrawal, "wdrawal", noseg + nseg2, &
-                noseg + nseg2, itota)
+                noseg + nseg2, real_arr_size)
 
         if (delmat) then
             num_to_file = nosys * noseg
-            call allocate_array(logical_unit, nr_rar, declare_memory, rhs, "rhs", nosys, noseg, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, rhs, "rhs", nosys, noseg, num_to_file, real_arr_size)
         endif
 
         if (intsrt == 11 .or. intsrt == 12 .or. &
@@ -1721,69 +1719,69 @@ contains
 
             num_to_file = notot * (noseg + nseg2) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, arhs, "arhs", notot, noseg + nseg2, &
-                    num_to_file, itota)
+                    num_to_file, real_arr_size)
 
             num_to_file = notot * (noseg + nseg2) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, adiag, "adiag", notot, &
-                    noseg + nseg2, num_to_file, itota)
+                    noseg + nseg2, num_to_file, real_arr_size)
 
             num_to_file = notot * max((noq3 + noq4), 1) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, acodia, "acodia", notot, &
-                    max(noq3 + noq4, 1), num_to_file, itota)
+                    max(noq3 + noq4, 1), num_to_file, real_arr_size)
 
             num_to_file = notot * max((noq3 + noq4), 1) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, bcodia, "bcodia", notot, &
-                    max(noq3 + noq4, 1), num_to_file, itota)
+                    max(noq3 + noq4, 1), num_to_file, real_arr_size)
         endif
 
         if (nmax * mmax > 0) then
             num_to_file = nmax * mmax
-            call allocate_array(logical_unit, nr_rar, declare_memory, cell_x, "cell_x", nmax, mmax, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, cell_x, "cell_x", nmax, mmax, num_to_file, real_arr_size)
 
             num_to_file = nmax * mmax
-            call allocate_array(logical_unit, nr_rar, declare_memory, cell_y, "cell_y", nmax, mmax, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, cell_y, "cell_y", nmax, mmax, num_to_file, real_arr_size)
         endif
 
         if (f_solv) then
-            call allocate_array(logical_unit, nr_rar, declare_memory, mixlen, "mixlen", noq, noq, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, mixlen, "mixlen", noq, noq, real_arr_size)
 
             num_to_file = (noseg + nobnd) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_rhs, "gm_rhs", noseg + nobnd, &
-                    noth, num_to_file, itota)
+                    noth, num_to_file, real_arr_size)
 
             num_to_file = (noseg + nobnd) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_sol, "gm_sol", noseg + nobnd, &
-                    noth, num_to_file, itota)
+                    noth, num_to_file, real_arr_size)
 
             num_to_file = (noseg + nobnd) * (novec + 5) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_work, "gm_work", &
-                    (noseg + nobnd) * (novec + 5), noth, num_to_file, itota)
+                    (noseg + nobnd) * (novec + 5), noth, num_to_file, real_arr_size)
 
             num_to_file = (novec + 1) * (novec + 2) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_hess, "gm_hess", &
-                    (novec + 1) * (novec + 2), noth, num_to_file, itota)
+                    (novec + 1) * (novec + 2), noth, num_to_file, real_arr_size)
 
             num_to_file = nomat * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_amat, "gm_amat", nomat, noth, &
-                    num_to_file, itota)
+                    num_to_file, real_arr_size)
 
             num_to_file = (noseg + nobnd) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_diag, "gm_diag", noseg + nobnd, &
-                    noth, num_to_file, itota)
+                    noth, num_to_file, real_arr_size)
 
             num_to_file = (noseg + nobnd) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_diac, "gm_diac", noseg + nobnd, &
-                    noth, num_to_file, itota)
+                    noth, num_to_file, real_arr_size)
 
             num_to_file = 6 * nolay * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_trid, "gm_trid", 6 * nolay, noth, &
-                    num_to_file, itota)
+                    num_to_file, real_arr_size)
 
             num_to_file = noq * noth
-            call allocate_array(logical_unit, nr_rar, declare_memory, flowtot, "flowtot", noq, noth, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, flowtot, "flowtot", noq, noth, num_to_file, real_arr_size)
 
             num_to_file = noq * noth
-            call allocate_array(logical_unit, nr_rar, declare_memory, disptot, "disptot", noq, noth, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, disptot, "disptot", noq, noth, num_to_file, real_arr_size)
 
             ! Note: trick for making sure that memory near the processor is assigned
             !       to the array. This has to do with the NUMA characteristics.
@@ -1865,41 +1863,41 @@ contains
 
             if (intsrt == 21) then
                 num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", noq, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", noq, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
                 call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", noseg, &
-                        noth, num_to_file, itota)
+                        noth, num_to_file, real_arr_size)
 
                 num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, flux, "flux", noq, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, flux, "flux", noq, noth, num_to_file, real_arr_size)
 
                 num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, lim, "lim", noq, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, lim, "lim", noq, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, maxi, "maxi", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, maxi, "maxi", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, mini, "mini", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, mini, "mini", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, l1, "l1", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, l1, "l1", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, l2, "l2", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, l2, "l2", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, m1, "m1", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, m1, "m1", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, m2, "m2", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, m2, "m2", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, n1, "n1", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, n1, "n1", noseg, noth, num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, n2, "n2", noseg, noth, num_to_file, itota)
+                call allocate_array(logical_unit, nr_rar, declare_memory, n2, "n2", noseg, noth, num_to_file, real_arr_size)
 
                 if (declare_memory) then
                     !$omp parallel
@@ -1994,11 +1992,11 @@ contains
             if (intsrt == 22) then
                 num_to_file = noq * noth
                 call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", noq, noth, &
-                        num_to_file, itota)
+                        num_to_file, real_arr_size)
 
                 num_to_file = noseg * noth
                 call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", noseg, &
-                        noth, num_to_file, itota)
+                        noth, num_to_file, real_arr_size)
 
                 if (declare_memory) then
                     !$omp parallel
@@ -2022,10 +2020,10 @@ contains
         endif
         if (intsrt == 24) then
             num_to_file = 3 * noseg * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, dwork, "dwork", 3, noseg, num_to_file, itota)
+            call allocate_array(logical_unit, nr_rar, declare_memory, dwork, "dwork", 3, noseg, num_to_file, real_arr_size)
 
             ! volint
-            itota = itota + noseg * 2
+            real_arr_size = real_arr_size + noseg * 2
             nr_rar = nr_rar + 1
             if (declare_memory) allocate (volint  (noseg), stat = ierr)
             if (ierr /= 0) then
@@ -2036,10 +2034,10 @@ contains
 
             num_to_file = notot * (noseg + nseg2) * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, dconc2, "dconc2", notot, &
-                    noseg + nseg2, num_to_file, itota)
+                    noseg + nseg2, num_to_file, real_arr_size)
 
         endif
-        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", itota
+        if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", real_arr_size
 
         return
 

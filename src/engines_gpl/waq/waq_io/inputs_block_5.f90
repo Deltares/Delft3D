@@ -34,7 +34,7 @@ module inputs_block_5
 
 contains
 
-    subroutine read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, int_array, &
+    subroutine read_block_5_boundary_conditions(file_unit_list, file_name_list, filtype, char_arr, int_array, &
             real_array, nrftot, nrharm, nobnd, nosys, &
             notot, nobtyp, max_real_size, max_int_size, is_date_format, &
             iwidth, intsrt, is_yyddhh_format, sname, &
@@ -46,12 +46,12 @@ contains
         !!      - the Open boundary concentrations
         !!
         !! Subroutines called : convert_time_format, read_constants_time_variables, CHECK, CNVTIM, RDTOK1
-        !! Logical units : LUN(27) = unit stripped DELWAQ input file
-        !                  LUN(29) = unit formatted output file
-        !                  LUN( 2) = unit intermediate file (system)
-        !                  LUN( 3) = unit intermediate file (harmonics)
-        !                  LUN( 4) = unit intermediate file (pointers)
-        !                  LUN(14) = unit intermediate file (boundaries)
+        !! Logical units : file_unit_list(27) = unit stripped DELWAQ input file
+        !                  file_unit_list(29) = unit formatted output file
+        !                  file_unit_list( 2) = unit intermediate file (system)
+        !                  file_unit_list( 3) = unit intermediate file (harmonics)
+        !                  file_unit_list( 4) = unit intermediate file (pointers)
+        !                  file_unit_list(14) = unit intermediate file (boundaries)
 
         use error_handling, only : check_error
         use m_srstop
@@ -61,8 +61,8 @@ contains
         use date_time_utils, only : convert_relative_time, convert_time_format
 
         integer(kind = int_wp), intent(in) :: max_real_size              !< size of the real workspace
-        integer(kind = int_wp), intent(inout) :: lun(:)             !< array with unit numbers
-        character(*), intent(inout) :: lchar(:)           !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list(:)             !< array with unit numbers
+        character(*), intent(inout) :: file_name_list(:)           !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         character(*), intent(inout) :: char_arr(:)             !< character workspace
         integer(kind = int_wp), intent(inout) :: int_array(:)             !< integer workspace ( dump locations at entrance )
@@ -111,8 +111,8 @@ contains
         disper = .false.
         volume = 0
         ifact = 1
-        lunut = lun(29)
-        binary_work_file = lun(2)
+        lunut = file_unit_list(29)
+        binary_work_file = file_unit_list(2)
         iposr = 0
         ierr2 = 0
         iwar2 = 0
@@ -423,7 +423,7 @@ contains
         k = nobnd + 1
         l = nobnd + nobtyp + 1
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
-        call read_boundary_concentrations (lun, lchar, 14, iwidth, max_char_size, &
+        call read_boundary_concentrations (file_unit_list, file_name_list, 14, iwidth, max_char_size, &
                 char_arr, max_int_size, int_array, max_real_size, real_array, &
                 sname, bndid, bndtype(1:nobtyp), nobnd, nosys, &
                 nobtyp, dp_array, is_date_format, is_yyddhh_format, &
@@ -445,9 +445,9 @@ contains
         ENDIF
         ! IERRH = -1 signals read_constants_time_variables that it is boundaries to deal with
         IERRH = -1
-        call read_constants_time_variables   (lun, 14, 0, 0, nobnd, &
+        call read_constants_time_variables   (file_unit_list, 14, 0, 0, nobnd, &
                 nosubs, nosubs, nrftot(8), nrharm(8), ifact, &
-                is_date_format, disper, volume, iwidth, lchar, &
+                is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierrh, &
                 status, .false.)
         call status%increase_error_count_with(ierrh)

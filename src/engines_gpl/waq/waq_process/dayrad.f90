@@ -171,7 +171,6 @@ contains
                 HOUR = MOD (TIME / AUXSYS + REFDAY, 1.) * 24.
                 RDIST = 1.D0 + .033 * COS(E * DAYNR)
                 OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
-                OMEGA0 = ACOS(-TAN(DECLIN) * TAN(LATITUDE))
 
                 DECLIN = 6.918D-3 - &
                         3.99912D-1 * DCOS (E * DAYNR) - &

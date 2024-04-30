@@ -1021,8 +1021,8 @@ contains
             itype, int_output, real_output, error_idx, status)
 
         !! Checks if column header exists
-        !! Logical Units : LUN(27) = unit stripped DELWAQ input file
-        !!                 LUN(29) = unit formatted output file
+        !! Logical Units : file_unit_list(27) = unit stripped DELWAQ input file
+        !!                 file_unit_list(29) = unit formatted output file
 
         use m_usefor, only : compact_usefor_list
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time

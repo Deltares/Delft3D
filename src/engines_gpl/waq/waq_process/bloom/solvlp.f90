@@ -55,7 +55,7 @@ contains
         ! 3.  All constraints with only zero A coefficients. (i.e. growth
         !     constraints of species not permitted).
 
-        integer(kind = int_wp) :: lsc(ia), lsctmp(ia), iopt(4), irs(3), lib(mx), libtmp(mx), libbas(mx), nonuni(mt)
+        integer(kind = int_wp) :: lsc(ia), lsctmp(ia), integration_id_list(4), irs(3), lib(mx), libtmp(mx), libbas(mx), nonuni(mt)
         integer(kind = int_wp) :: i, j, j1, k, l
         integer(kind = int_wp) :: index, ier, inow, numuni, nsolve, nustmp, nurtmp, nsolv
         real(kind = dp) :: atmp(ia, mt)
@@ -67,7 +67,7 @@ contains
         real(kind = dp) :: p(1)
         real(kind = dp) :: x(mx)
         real(kind = dp) :: sumx
-        save    lsc, iopt
+        save    lsc, integration_id_list
         logical :: lbasis(mx)
         data nsolv /0/
 
@@ -94,16 +94,16 @@ contains
         end do
         b(nuexro) = 0.0d0
 
-        !  Set values for maximum number of iterations: IOPT(1).
-        !  Set number of iterations before checking for numerical errors: IOPT(2)
-        !  Indicate that the original matrices do not have to be retored by QSLP: IOPT(3)
-        !  NOTE: change minimum dimension of D to (NR+1)*(NC+1) when IOPT(3)
+        !  Set values for maximum number of iterations: integration_id_list(1).
+        !  Set number of iterations before checking for numerical errors: integration_id_list(2)
+        !  Indicate that the original matrices do not have to be retored by QSLP: integration_id_list(3)
+        !  NOTE: change minimum dimension of D to (NR+1)*(NC+1) when integration_id_list(3)
         !  is NOT equal to 1!!
-        !  Indicate that the objective is to maximize: IOPT(4).
-        iopt(1) = 50
-        iopt(2) = 10
-        iopt(3) = 1
-        iopt(4) = 1
+        !  Indicate that the objective is to maximize: integration_id_list(4).
+        integration_id_list(1) = 50
+        integration_id_list(2) = 10
+        integration_id_list(3) = 1
+        integration_id_list(4) = 1
 
         ! Put coefficients for growth constraints into A-matrix.
         k = nuexro
@@ -207,7 +207,7 @@ contains
 
         !  Call subroutine "QSLP" to solve the linear program by the ordinary
         !  simplex algorithm.
-        call qslp(atmp, ia, nurtmp, nustmp, btmp, lsctmp, ctmp, iopt, irs, libtmp, d, mt, xtmp, p, ier)
+        call qslp(atmp, ia, nurtmp, nustmp, btmp, lsctmp, ctmp, integration_id_list, irs, libtmp, d, mt, xtmp, p, ier)
 
         !  Put results in appropriate form. Construct X, and LIB as if the
         !  complete problem had been solved by QSLP.
@@ -270,7 +270,7 @@ contains
 
         !  Determine, which species have a reduced cost coefficient of 0.0:
         !  these might have replaced one of the species in the optimal solution.
-        !  Note: use the resulting CTMP. Thisis only possible when IOPT(3) = 1!
+        !  Note: use the resulting CTMP. Thisis only possible when integration_id_list(3) = 1!
         j1 = 0
         numuni = 0
         do j = 1, nuspec

@@ -58,8 +58,8 @@ contains
 
         !        initialise values
 
-        lunrep = lun(29)
-        nolun = nlun
+        lunrep = file_unit_list(29)
+        num_file_units = num_files
         filtype = 0
         noitem = noitm
         noutp = nooutp
@@ -86,7 +86,7 @@ contains
         GridPs%current_size = 0
         GridPs%maxsize = 0
 
-        call create_work_file_one(lun, lchar, nolun, runid)
+        call create_work_file_one(file_unit_list, file_name_list, num_file_units, runid)
 
     end subroutine delwaq1_init
 end module m_delwaq1_init

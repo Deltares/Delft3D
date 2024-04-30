@@ -29,80 +29,61 @@ module m_setvat
 contains
 
 
-    SUBROUTINE SETVAT (LUREP, NOCONS, NOPA, NOFUN, NOSFUN, &
-            NOSYS, NOTOT, NODISP, NOVELO, NODEF, &
-            NOLOC, NDSPX, NVELX, NLOCX, NFLUX, &
-            NOPRED, NOVAR, VARARR, VARIDX, VARTDA, &
-            VARDAG, VARTAG, VARAGG, NOGRID, CONAME, &
-            PANAME, FUNAME, SFNAME, DENAME, SYNAME, &
-            LOCNAM, VARNAM)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:            : Jan van Beek
-        !
-        !     FUNCTION            : Set variable atributes
-        !
-        !     SUBROUTINES CALLED  :
-        !
-        !     FILES               :
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !
-        !     Declaration of arguments
-        !
+    subroutine setvat (lurep, nocons, nopa, nofun, nosfun, &
+            nosys, notot, nodisp, novelo, nodef, &
+            noloc, ndspx, nvelx, nlocx, nflux, &
+            nopred, novar, vararr, varidx, vartda, &
+            vardag, vartag, varagg, nogrid, coname, &
+            paname, funame, sfname, dename, syname, &
+            locnam, varnam)
+        !! Set variable atributes
+
         use m_srstop
         use m_monsys
         use timers       !   performance timers
 
-        INTEGER(kind = int_wp) :: LUREP, NOCONS, NOPA, NOFUN, NOSFUN, &
-                NOSYS, NOTOT, NODISP, NOVELO, NODEF, &
-                NOLOC, NDSPX, NVELX, NLOCX, NFLUX, &
-                NOPRED, NOVAR, NOGRID
-        INTEGER(kind = int_wp) :: VARARR(NOVAR), VARIDX(NOVAR), &
-                VARTDA(NOVAR), VARDAG(NOVAR), &
-                VARTAG(NOVAR), VARAGG(NOVAR)
-        character(len=20)        VARNAM(NOVAR)
-        !
-        !     Locals
-        !
-        integer(kind = int_wp), PARAMETER :: MAXLOC = 2000
-        INTEGER(kind = int_wp) :: VATTAG(MAXLOC), VATTDA(MAXLOC)
-        character(len=20) VATNAM(MAXLOC), VATNAG(MAXLOC), &
-                VATNDA(MAXLOC)
-        character(len=20) CONAME(*), PANAME(*), &
-                FUNAME(*), SFNAME(*), &
-                SYNAME(*), LOCNAM(*), &
-                DENAME(*)
-        character(len=79) LINE, NAME
-        LOGICAL      LEXI
-        INTEGER(kind = int_wp) :: LUN, IIVOL, IIAREA, IIFLOW, IILENG, IIDISP, IICONC, &
-                IIMASS, IIDERV, IIBOUN, IIBSET, IIBSAV, IIWSTE, IICONS, &
-                IIPARM, IIFUNC, IISFUN, IIDNEW, IIDIFF, IIVNEW, IIVELO, &
-                IIHARM, IIFARR, IIMAS2, IITIMR, IIVOL2, IITRAC, IIGWRK, &
-                IIGHES, IIGSOL, IIGDIA, IIGTRI, IISMAS, IIPLOC, IIDEFA, &
-                IIFLUX, IISTOC, IIFLXD, IIFLXI, IIRIOB, IIDSPX, IIVELX, &
-                IILOCX, IIDSTO, IIVSTO, IIDMPQ, IIDMPS, IITRRA, IINRSP, &
-                IIVOLL, IIVOL3, IIR1, IIQXK, IIQYK, IIQZK, IIDIFX, &
-                IIDIFY, IIDIFZ, IIVOLA, IIVOLB, IIGUV, IIGVU, IIGZZ, &
-                IIAAK, IIBBK, IICCK, IIBD3X, IIBDDX, IIBDX, IIBU3X, IIBUUX, &
-                IIBUX, IIWRK1, IIWRK2, IIAAKL, IIBBKL, IICCKL, IIDDKL
+        integer(kind = int_wp) :: lurep, nocons, nopa, nofun, nosfun, &
+                nosys, notot, nodisp, novelo, nodef, &
+                noloc, ndspx, nvelx, nlocx, nflux, &
+                nopred, novar, nogrid
+        integer(kind = int_wp) :: vararr(novar), varidx(novar), &
+                vartda(novar), vardag(novar), &
+                vartag(novar), varagg(novar)
+        character(len = 20)        varnam(novar)
 
-        integer(kind = int_wp) :: IVVOL, IVARE, IVFLO, IVLEN, IVCNS, IVPAR, IVFUN, IVSFU, IVCNC, &
-                IVMAS, IVDER, IVDSP, IVVEL, IVDEF, IVLOC, IVDSX, IVVLX, IVLCX, &
-                IVFLX
+        integer(kind = int_wp), parameter :: maxloc = 2000
+        integer(kind = int_wp) :: vattag(maxloc), vattda(maxloc)
+        character(len = 20) vatnam(maxloc), vatnag(maxloc), &
+                vatnda(maxloc)
+        character(len = 20) coname(*), paname(*), &
+                funame(*), sfname(*), &
+                syname(*), locnam(*), &
+                dename(*)
+        character(len = 79) line, name
+        logical      lexi
+        integer(kind = int_wp) :: file_unit, iivol, iiarea, iiflow, iileng, iidisp, iiconc, &
+                iimass, iiderv, iiboun, iibset, iibsav, iiwste, iicons, &
+                iiparm, iifunc, iisfun, iidnew, iidiff, iivnew, iivelo, &
+                iiharm, iifarr, iimas2, iitimr, iivol2, iitrac, iigwrk, &
+                iighes, iigsol, iigdia, iigtri, iismas, iiploc, iidefa, &
+                iiflux, iistoc, iiflxd, iiflxi, iiriob, iidspx, iivelx, &
+                iilocx, iidsto, iivsto, iidmpq, iidmps, iitrra, iinrsp, &
+                iivoll, iivol3, iir1, iiqxk, iiqyk, iiqzk, iidifx, &
+                iidify, iidifz, iivola, iivolb, iiguv, iigvu, iigzz, &
+                iiaak, iibbk, iicck, iibd3x, iibddx, iibdx, iibu3x, iibuux, &
+                iibux, iiwrk1, iiwrk2, iiaakl, iibbkl, iicckl, iiddkl
+
+        integer(kind = int_wp) :: ivvol, ivare, ivflo, ivlen, ivcns, ivpar, ivfun, ivsfu, ivcnc, &
+                ivmas, ivder, ivdsp, ivvel, ivdef, ivloc, ivdsx, ivvlx, ivlcx, &
+                ivflx
 
         integer(kind = int_wp) :: isys, ipa, ifun, idsp, isfun, ivel, idef, ivar, iv_da, iv_ag, &
                 idsx, ivlx, ilcx, iflx, novat, ierr, ivat, iloc, icons
 
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("setvat", ithndl)
-        !
-        !     Just take the used array's in the right order
-        !
+
+        ! Just take the used array's in the right order
         IIVOL = 1
         IIAREA = 2
         IIFLOW = 3
@@ -476,7 +457,7 @@ contains
         NOVAT = 0
         INQUIRE (FILE = 'aggrlist.dat', EXIST = LEXI)
         IF (LEXI) THEN
-            OPEN(NEWUNIT = LUN, FILE = 'aggrlist.dat')
+            OPEN(NEWUNIT = file_unit, FILE = 'aggrlist.dat')
             DO
                 NOVAT = NOVAT + 1
                 IF (NOVAT > MAXLOC) THEN
@@ -485,14 +466,14 @@ contains
                     WRITE(*, *) LINE
                     CALL SRSTOP(1)
                 ENDIF
-                READ(LUN, *, IOSTAT = IERR) VATNAM(NOVAT), VATTAG(NOVAT), VATNAG(NOVAT), &
+                READ(file_unit, *, IOSTAT = IERR) VATNAM(NOVAT), VATTAG(NOVAT), VATNAG(NOVAT), &
                         VATTDA(NOVAT), VATNDA(NOVAT)
                 IF (IERR /=0) THEN
                     EXIT
                 ENDIF
             ENDDO
             NOVAT = NOVAT - 1
-            CLOSE (LUN)
+            CLOSE (file_unit)
         ENDIF
         !
         !     Check if there are overrulings
@@ -602,9 +583,9 @@ contains
                 ENDIF
             ENDIF
         ENDDO
-        !
+
         if (timon) call timstop(ithndl)
-        RETURN
-    END
+
+    end subroutine setvat
 
 end module m_setvat

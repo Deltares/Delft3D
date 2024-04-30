@@ -133,8 +133,8 @@ contains
 
         !! Compacts USEFOR lists if unresolved externals
         !!
-        !!     Logical Units      : LUN(27) = unit stripped DELWAQ input file
-        !!                          LUN(29) = unit formatted output file
+        !!     Logical Units      : file_unit_list(27) = unit stripped DELWAQ input file
+        !!                          file_unit_list(29) = unit formatted output file
 
 
         !     Parameters    :

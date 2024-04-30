@@ -32,7 +32,7 @@ module monitoring_areas
 
 contains
 
-    subroutine read_monitoring_areas(lun, lchar, filtype, duname, nsegdmp, &
+    subroutine read_monitoring_areas(file_unit_list, file_name_list, filtype, duname, nsegdmp, &
             isegdmp, dmpbal, ndmpar, ntdmps, output_verbose_level, &
             ierr, status)
 
@@ -52,15 +52,15 @@ contains
         !! Subroutine called : process_simulation_input_options   - to open an external file
         !!                         ZOEK   - to searchs strings
         !!
-        !!     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
-        !!                         LUN(29) = unitnumber formatted output file
+        !!     Logical units     : file_unit_list(27) = unitnumber stripped DELWAQ input file
+        !!                         file_unit_list(29) = unitnumber formatted output file
 
         use simulation_input_options, only: process_simulation_input_options
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun    (*)         !< array with unit numbers
-        character(*), intent(inout) :: lchar  (*)        !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (*)        !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         character(20), pointer :: duname (:)        !< name of monitoring areas
         integer(kind = int_wp), pointer :: nsegdmp(:)         !< number of volumes per monitoring area
@@ -97,7 +97,7 @@ contains
             goto 20
         case (-1)                     ! old style <other ASCII file>
             write (lunut, 2000)  idopt1
-            call process_simulation_input_options   (idopt1, lun, 0, lchar, filtype, &
+            call process_simulation_input_options   (idopt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
@@ -233,7 +233,7 @@ contains
         2430 FORMAT (' Dump area is excluded from mass balance output')
     end subroutine read_monitoring_areas
 
-    subroutine read_monitoring_transects(lun, lchar, filtype, raname, nexcraai, &
+    subroutine read_monitoring_transects(file_unit_list, file_name_list, filtype, raname, nexcraai, &
             iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
             ierr, status)
 
@@ -258,8 +258,8 @@ contains
         !!     Subroutine called : process_simulation_input_options   -
         !!                         ZOEK   - to searchs strings
         !!
-        !!     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
-        !!                         LUN(29) = unitnumber formatted output file
+        !!     Logical units     : file_unit_list(27) = unitnumber stripped DELWAQ input file
+        !!                         file_unit_list(29) = unitnumber formatted output file
 
         use simulation_input_options, only : process_simulation_input_options
         use rd_token     !   for the reading of tokens
@@ -269,8 +269,8 @@ contains
         use m_string_utils
         use m_error_status
 
-        integer(kind = int_wp), intent(inout) :: lun     (*)        !< array with unit numbers
-        character(*), intent(inout) :: lchar   (*)       !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list     (*)        !< array with unit numbers
+        character(*), intent(inout) :: file_name_list   (*)       !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype (*)        !< type of binary file
         character(20), pointer :: raname  (:)       !< name of monitoring areas
         integer(kind = int_wp), pointer :: nexcraai(:)        !< number of exchanges per monitoring transect
@@ -306,7 +306,7 @@ contains
             goto 20
         case (-1)                     ! old style <other ASCII file>
             write (lunut, 2000)  iropt1
-            call process_simulation_input_options   (iropt1, lun, 0, lchar, filtype, &
+            call process_simulation_input_options   (iropt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
@@ -438,7 +438,7 @@ contains
         2500 format (/, ' ERROR. while reading transects')
     end subroutine read_monitoring_transects
 
-    subroutine create_write_monitoring_area_array(lun, ndmpar, ntdmps, noq, noseg, &
+    subroutine create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, noq, noseg, &
             nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
             noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
@@ -462,12 +462,12 @@ contains
         !>            plus the dimensions of these arrays./n
         !>            All arrays are written to the binary intermediate file.
         !!
-        !!     Logical units      : lun( 2) = unit unformatted system file
-        !!                          lun(29) = unit number output report file
+        !!     Logical units      : file_unit_list( 2) = unit unformatted system file
+        !!                          file_unit_list(29) = unit number output report file
 
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(in) :: lun     (*)        !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: file_unit_list     (*)        !< array with unit numbers
         integer(kind = int_wp), intent(in) :: ndmpar             !< number of dump areas
         integer(kind = int_wp), intent(in) :: ntdmps             !< number of volumes in dump array
         integer(kind = int_wp), intent(in) :: noq                !< total number of exchange
@@ -537,7 +537,7 @@ contains
         ntdmpq = 0
         ndmpq = 0
         ndmps = 0
-        lurep = lun(29)
+        lurep = file_unit_list(29)
 
         !     check segment numbers in dump areas
 
@@ -757,15 +757,15 @@ contains
         end do
 
         if (ndmpar > 0) then
-            write(lun(2)) (nqdmp  (i), i = 1, ndmpar), (ipdmpq (i), i = 1, ntdmpq)
-            write(lun(2)) (nsegdmp(i), i = 1, ndmpar), (isegdmp(i), i = 1, ntdmps)
+            write(file_unit_list(2)) (nqdmp  (i), i = 1, ndmpar), (ipdmpq (i), i = 1, ntdmpq)
+            write(file_unit_list(2)) (nsegdmp(i), i = 1, ndmpar), (isegdmp(i), i = 1, ntdmps)
         endif
         if (noraai > 0) then
-            write(lun(2)) (ioptraai(i), i = 1, noraai)
-            write(lun(2)) (nexcraai(i), i = 1, noraai)
-            write(lun(2)) (iexcraai(i), i = 1, ntraaq)
+            write(file_unit_list(2)) (ioptraai(i), i = 1, noraai)
+            write(file_unit_list(2)) (nexcraai(i), i = 1, noraai)
+            write(file_unit_list(2)) (iexcraai(i), i = 1, ntraaq)
         endif
-        write(lun(2)) (iqdmp(i), i = 1, noq)
+        write(file_unit_list(2)) (iqdmp(i), i = 1, noq)
 
         deallocate(ipdmpq)
 
@@ -781,7 +781,7 @@ contains
                     endif
                 endif
             enddo
-            write(lun(2)) (isdmp(i), i = 1, noseg)
+            write(file_unit_list(2)) (isdmp(i), i = 1, noseg)
         endif
 
         if (timon) call timstop(ithndl)

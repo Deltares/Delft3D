@@ -28,17 +28,10 @@ module m_dlwqt2
 contains
 
 
-    SUBROUTINE DLWQT2 (LUNIN, LUNOUT, ITIME, RESULT, NTOTAL, &
-            LUNTXT, ISFLAG, IFFLAG, ONLINE)
+    SUBROUTINE DLWQT2 (input_file, LUNOUT, ITIME, RESULT, NTOTAL, LUNTXT, ISFLAG, IFFLAG, ONLINE)
+        ! Makes values at ITIME for user supplied binary intermediate files
         !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:    march 1988 by L.Postma
-        !
-        !     FUNCTION            : Makes values at ITIME for user supplied
-        !                                         binary intermediate files
-        !
-        !     LOGICAL UNITNUMBERS : LUNIN  - input unit intermediate file
+        !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
         !                           LUNOUT - monitor file
         !
         !     SUBROUTINES CALLED  : SRSTOP, stops execution
@@ -47,7 +40,7 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     LUNIN   INTEGER       1     INPUT   unit number intermediate file
+        !     input_file   INTEGER       1     INPUT   unit number intermediate file
         !     LUNOUT  INTEGER       1     INPUT   unit number monitor file
         !     ITIME   INTEGER       1     INPUT   Model timer
         !     RESULT  REAL     NTOTAL     OUTPUT  result array at time ITIME
@@ -55,16 +48,14 @@ contains
         !     LUNTXT  CHAR*(*)      1     INPUT   text concerning unit numbers
         !     ISFLAG  INTEGER       1     INPUT   = 1 then 'ddhhmmss' format
         !     IFFLAG  INTEGER       1     INPUT   = 1 then first invocation
-        !
-        !     DECLARATIONS        :
-        !
+
         use m_srstop
         use timers
 
         real(kind = real_wp) :: RESULT(NTOTAL)
-        integer(kind = int_wp) :: LUNIN, LUNOUT, ITIME, NTOTAL, ISFLAG, IFFLAG
-        character(len=10)  MSGTXT(3)
-        character(len=*) LUNTXT
+        integer(kind = int_wp) :: input_file, LUNOUT, ITIME, NTOTAL, ISFLAG, IFFLAG
+        CHARACTER*10  MSGTXT(3)
+        CHARACTER*(*) LUNTXT
         LOGICAL       ONLINE
         DATA          MSGTXT /' REWIND   ', ' CONSTANT ', ' ERROR    '/
         logical        stream_access                     ! help variable to detect the type of file access
@@ -75,8 +66,8 @@ contains
         if (timon) call timstrt ("dlwqt2", ithandl)
 
         IF (ONLINE) THEN
-            if (lunin == 20) write (*, *) ' Read VOLUME record'
-            if (lunin == 24) write (*, *) ' Read FLOW   record'
+            if (input_file == 20) write (*, *) ' Read VOLUME record'
+            if (input_file == 24) write (*, *) ' Read FLOW   record'
         ENDIF
         !
         !         is this the first time?
@@ -87,49 +78,49 @@ contains
         !
         !         normal time varying read
         !
-        READ  (LUNIN, END = 10, ERR = 40) ITIME1, RESULT
+        READ  (input_file, END = 10, ERR = 40) ITIME1, RESULT
         goto 9999  !   RETURN
         !
         !         normal rewind.
         !
         10 MESSGE = 1
         IF (ONLINE) STOP 'REWIND NOT POSSIBLE IN ON-LINE MODE'
-        inquire(lunin, access = access)
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, RESULT
+        READ  (input_file, END = 40, ERR = 40) ITIME1, RESULT
         GOTO 50
         !
         !         This is the first time, check only for nr of records.
         !
         20 CONTINUE
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, RESULT
-        READ  (LUNIN, END = 30, ERR = 40) ITIME1, RESULT
-        inquire(lunin, access = access)
+        READ  (input_file, END = 40, ERR = 40) ITIME1, RESULT
+        READ  (input_file, END = 30, ERR = 40) ITIME1, RESULT
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 30, ERR = 40) ITIME1, RESULT
+        READ  (input_file, END = 30, ERR = 40) ITIME1, RESULT
         goto 9999  !   RETURN
         !
         !         file has only one record, array is constant
         !
         30 MESSGE = 2
-        inquire(lunin, access = access)
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, RESULT
+        READ  (input_file, END = 40, ERR = 40) ITIME1, RESULT
         IFFLAG = -1
         GOTO 50
         !
@@ -137,13 +128,13 @@ contains
         !
         40 MESSGE = 3
         50 IF (ISFLAG == 1) THEN
-            WRITE(LUNOUT, 2010) MSGTXT(MESSGE), LUNIN, LUNTXT, &
+            WRITE(LUNOUT, 2010) MSGTXT(MESSGE), input_file, LUNTXT, &
                     ITIME / 86400, MOD(ITIME, 86400) / 3600, &
                     MOD(ITIME, 3600) / 60, MOD(ITIME, 60), &
                     ITIME1 / 86400, MOD(ITIME1, 86400) / 3600, &
                     MOD(ITIME1, 3600) / 60, MOD(ITIME1, 60)
         ELSEIF (ISFLAG == 2) THEN
-            WRITE(LUNOUT, 2020) MSGTXT(MESSGE), LUNIN, LUNTXT, &
+            WRITE(LUNOUT, 2020) MSGTXT(MESSGE), input_file, LUNTXT, &
                     ITIME / 31536000, &
                     MOD(ITIME, 31536000) / 86400, &
                     MOD(ITIME, 86400) / 3600, &
@@ -155,7 +146,7 @@ contains
                     MOD(ITIME1, 3600) / 60, &
                     MOD(ITIME1, 60)
         ELSE
-            WRITE(LUNOUT, 2000) MSGTXT(MESSGE), LUNIN, LUNTXT, &
+            WRITE(LUNOUT, 2000) MSGTXT(MESSGE), input_file, LUNTXT, &
                     ITIME, ITIME1
         ENDIF
         IF (MESSGE < 3) goto 9999  !   RETURN

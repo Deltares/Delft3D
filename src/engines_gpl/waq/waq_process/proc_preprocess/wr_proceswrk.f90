@@ -39,8 +39,8 @@ contains
             nocons, nopa, nofun, nosfun, notot, &
             noloc, nodisp, novelo, ndspx, nvelx, &
             nlocx, nosys, nogrid, dename, coname, paname, &
-            funame, sfname, syname, intopt, lun, &
-            lchar, noutp, ioutps, outputs, ndmpar, &
+            funame, sfname, syname, intopt, file_unit_list, &
+            file_name_list, noutp, ioutps, outputs, ndmpar, &
             nbufmx, versio, ndspn, nveln, nrref, &
             proref, nproc, nflux, novar, nipmsa)
 
@@ -94,8 +94,8 @@ contains
         character(len = 20), intent(in) :: sfname(*)              !< segm.func. names
         character(len = 20), intent(in) :: syname(*)              !< substance names
         integer(kind = int_wp), intent(in) :: intopt                 !< integration sub options
-        integer(kind = int_wp), intent(inout) :: lun(*)                 !< unit numbers
-        character(len = *), intent(in) :: lchar(*)               !< filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)                 !< unit numbers
+        character(len = *), intent(in) :: file_name_list(*)               !< filenames
         integer(kind = int_wp), intent(in) :: noutp                  !< total number of output files
         integer(kind = int_wp), intent(in) :: ioutps(7, *)            !< (old) output structure
         type(OutputPointers), intent(in) :: outputs                !< output structure
@@ -207,28 +207,28 @@ contains
         ! write stochi file, set stochi array, balance output settings
 
         if (btest(intopt, 3) .and. .not. btest(intopt, 4)) then
-            call open_waq_files (lun(36), lchar(36), 36, 1, ierr2)
+            call open_waq_files (file_unit_list(36), file_name_list(36), 36, 1, ierr2)
         endif
         allocate(stochi(notot * no_flu))
-        call wrstoc (procesdef, lun(36), notot, syname, stochi, &
+        call wrstoc (procesdef, file_unit_list(36), notot, syname, stochi, &
                 noutp, ioutps, outputs, ndmpar, nbufmx, &
                 intopt)
         if (btest(intopt, 3) .and. .not. btest(intopt, 4)) then
-            close (lun(36))
+            close (file_unit_list(36))
         endif
 
         ! write process intermediate file
 
-        call open_waq_files (lun(24), lchar(24), 24, 1, ierr2)
+        call open_waq_files (file_unit_list(24), file_name_list(24), 24, 1, ierr2)
         call wripro (nproc, nsvar, iflux, nipmsa, prvvar, &
                 prvtyp, noloc, nodef, defaul, pronam, &
-                nflux, lun(24), versio, stochi, notot, &
+                nflux, file_unit_list(24), versio, stochi, notot, &
                 nosys, ndspx, nvelx, nlocx, dsto, &
                 vsto, ndspn, idpnw, nveln, ivpnw, &
                 progrd, prondt, novar, vararr, varidx, &
                 vartda, vardag, vartag, varagg, nrref, &
                 proref)
-        close (lun(24))
+        close (file_unit_list(24))
         deallocate(stochi, nsvar, iflux)
         deallocate(prvvar, prvtyp, progrd, prondt)
         deallocate(pronam)

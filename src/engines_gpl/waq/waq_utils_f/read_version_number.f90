@@ -29,8 +29,7 @@ module m_read_version_number
 contains
 
 
-    subroutine read_version_number (lunin, lfile, lunut, npos, input_version_number, &
-            output_verbose_level)
+    subroutine read_version_number (input_file, lfile, lunut, npos, input_version_number, output_verbose_level)
 
         !! Searches and reads the input file for the version string
         !! The version string looks like DELWAQ_VERSION_n.nnn\n
@@ -38,16 +37,16 @@ contains
         !! The n.nnn number is used to determine how to parse the
         !! input file
 
-        integer(kind = int_wp), intent(in) :: lunin             !< unit number input file
-        character(len=*), intent(in) :: lfile             !< file name
+        integer(kind = int_wp), intent(in) :: input_file             !< unit number input file
+        character(len = *), intent(in) :: lfile             !< file name
         integer(kind = int_wp), intent(in) :: lunut             !< unit number report file
         integer(kind = int_wp), intent(in) :: npos              !< number of significant positions in one line
         real(kind = real_wp), intent(out) :: input_version_number            !< Version number
         integer(kind = int_wp), intent(out) :: output_verbose_level            !< Output option
 
         ! Local
-        character(len=npos) char_arr                              !  read buffer
-        character(len=1)      ctrlz, ch_cr                    !  special characters
+        character(len = npos) char_arr                              !  read buffer
+        character(len = 1)      ctrlz, ch_cr                    !  special characters
         integer(kind = int_wp) :: i, i2                            !  loop counter
         integer(kind = int_wp) :: status                           !  iostatus
 
@@ -58,7 +57,7 @@ contains
         output_verbose_level = -1
         status = 0
         do while (status == 0)
-            read (lunin, '(a)', iostat = status) char_arr
+            read (input_file, '(a)', iostat = status) char_arr
 
             ! search the tokens, read the numbers
 
@@ -81,11 +80,11 @@ contains
         enddo
 
         if (status < 0) then    !        end of file encountered
-            rewind lunin
-            read (lunin, '(a)') char_arr
+            rewind input_file
+            read (input_file, '(a)') char_arr
             return
         else                         !        errors during read
-            write (lunut, 2000) lunin, lfile
+            write (lunut, 2000) input_file, lfile
             call srstop(1)
         endif
 

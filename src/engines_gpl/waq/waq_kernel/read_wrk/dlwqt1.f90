@@ -31,7 +31,7 @@ module m_dlwqt1
 contains
 
 
-    SUBROUTINE DLWQT1 (LUN, ITIME, ITIMEL, IHARM, HARMAT, &
+    SUBROUTINE DLWQT1 (file_unit_list, ITIME, ITIMEL, IHARM, HARMAT, &
             FARRAY, IPOINT, RESULT, NOSUB, NRHARM, &
             NTOT, NRFTOT, IPA, IPH, IPF, &
             IPI, LUNTXT, IS, ISFLAG, IFFLAG, &
@@ -51,9 +51,9 @@ contains
         !     FUNCTION            : Makes values at ITIME for time dependent
         !                                                            aspects
         !
-        !     LOGICAL UNITNUMBERS : LUN(IS) - input unit intermediate file
-        !                           LUN( 4) - function pointers file
-        !                           LUN(19) - job-log output file
+        !     LOGICAL UNITNUMBERS : file_unit_list(IS) - input unit intermediate file
+        !                           file_unit_list( 4) - function pointers file
+        !                           file_unit_list(19) - job-log output file
         !
         !     SUBROUTINES CALLED  : DLWQT2, makes values for user supplied files
         !                           DLWQT3, makes values for harmonic function
@@ -65,7 +65,7 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     LUN     INTEGER       *     INPUT   unit numbers
+        !     file_unit_list     INTEGER       *     INPUT   unit numbers
         !     ITIME   INTEGER       1     INPUT   Model timer
         !     ITIMEL  INTEGER       1     INPUT   Model timer previous time step
         !     IHARM   INTEGER   NRHARM    IN/OUT  integer harmonics space
@@ -87,7 +87,7 @@ contains
         !     IPF     INTEGER       1     IN/OUT  pointer in IHARM
         !     IPI     INTEGER       1     IN/OUT  pointer in IPOINT
         !     LUNTXT  CHAR*(*)      ?     INPUT   txt with the unit numbers
-        !     IS      INTEGER       1     INPUT   offset in LUN and LUNTXT
+        !     IS      INTEGER       1     INPUT   offset in file_unit_list and LUNTXT
         !     ISFLAG  INTEGER       1     INPUT   = 1 then 'ddhhmmss' format
         !     IFFLAG  INTEGER       1     INPUT   = 1 then first invocation
         !     UPDATE  LOGICAL       1     OUTPUT  set to T if function is updated
@@ -111,7 +111,7 @@ contains
         integer(kind = int_wp), intent(in) :: ftype  (*) !< type of files to be opened
         type(delwaq_data), intent(inout) :: dlwqd      !< derived type for persistent storage
 
-        integer(kind = int_wp) :: IHARM (*), IPOINT(*), LUN   (*), IWORK (*)
+        integer(kind = int_wp) :: IHARM (*), IPOINT(*), file_unit_list   (*), IWORK (*)
         real(kind = real_wp) :: HARMAT(*), FARRAY(*), RESULT(*), RECLST(*)
         character(len=*) LUNTXT(*)
         character(len=12)  CHLP
@@ -153,34 +153,34 @@ contains
         IF (NTOTAL > 0) THEN
             IF (IFFLAG == 1) THEN
                 IF (.NOT. NEWSET) THEN
-                    CALL open_waq_files (LUN(IS), LUNTXT(IS), IS, 2 + ftype(is), IERR)
+                    CALL open_waq_files (file_unit_list(IS), LUNTXT(IS), IS, 2 + ftype(is), IERR)
                     IF (IERR /= 0) THEN
-                        WRITE(LUN(19), *) 'ERROR in DLWQT1, opening file'
-                        WRITE(LUN(19), *) 'number  :', IS
-                        WRITE(LUN(19), *) 'file    :', LUNTXT(IS)
-                        WRITE(LUN(19), *) 'unit    :', LUN(IS)
+                        WRITE(file_unit_list(19), *) 'ERROR in DLWQT1, opening file'
+                        WRITE(file_unit_list(19), *) 'number  :', IS
+                        WRITE(file_unit_list(19), *) 'file    :', LUNTXT(IS)
+                        WRITE(file_unit_list(19), *) 'unit    :', file_unit_list(IS)
                         CALL SRSTOP(1)
                     ENDIF
-                    READ (LUN(IS), IOSTAT = IOERR) CHLP
+                    READ (file_unit_list(IS), IOSTAT = IOERR) CHLP
                     IF (IOERR==0 .AND. CHLP(1:6) == ' 4.900') THEN
                         NEWSET = .TRUE.
                         goto 9999        !  RETURN
                     ELSE
-                        CLOSE (LUN(IS))
-                        CALL open_waq_files (LUN(IS), LUNTXT(IS), IS, 2 + ftype(is), IERR)
+                        CLOSE (file_unit_list(IS))
+                        CALL open_waq_files (file_unit_list(IS), LUNTXT(IS), IS, 2 + ftype(is), IERR)
                     ENDIF
                 ELSE
                     IPSI = IPA
                     IPSA = IPH
-                    CALL DLWQIB (LUN(IS), LUN(19), HARMAT, IHARM, IS, &
+                    CALL DLWQIB (file_unit_list(IS), file_unit_list(19), HARMAT, IHARM, IS, &
                             IPA, IPH, IERR)
                     IPI = IPA - IPSI
                     IPA = IPSI
                     IPH = IPSA
-                    CLOSE (LUN(IS))
+                    CLOSE (file_unit_list(IS))
                     IF (IERR /= 0) THEN
-                        WRITE(LUN(19), *) 'ERROR in DLWQT1'
-                        WRITE(LUN(19), *) 'after call to DLWQIB'
+                        WRITE(file_unit_list(19), *) 'ERROR in DLWQT1'
+                        WRITE(file_unit_list(19), *) 'after call to DLWQIB'
                         CALL SRSTOP(1)
                     ENDIF
                 ENDIF
@@ -190,23 +190,23 @@ contains
             !
             IF (NEWSET) THEN
                 IPB = IPH
-                CALL DLWQTB (LUN(19), IOFF, HARMAT, IHARM, IPA, &
+                CALL DLWQTB (file_unit_list(19), IOFF, HARMAT, IHARM, IPA, &
                         IPH, IPI, ITIME, IPOINT, RESULT, &
                         IWORK, IERR)
                 IF (IERR /= 0) THEN
-                    WRITE(LUN(19), *) 'ERROR in DLWQT1'
-                    WRITE(LUN(19), *) 'after call to DLWQTB'
+                    WRITE(file_unit_list(19), *) 'ERROR in DLWQT1'
+                    WRITE(file_unit_list(19), *) 'after call to DLWQTB'
                     CALL SRSTOP(1)
                 ENDIF
                 goto 9999        !  RETURN
             ENDIF
 
-            CALL DLWQT2 (LUN(IS), LUN(19), ITIME, RESULT, NTOTAL, &
+            CALL DLWQT2 (file_unit_list(IS), file_unit_list(19), ITIME, RESULT, NTOTAL, &
                     LUNTXT(IS), ISFLAG, IFFLAG, ONLINE)
             IF (IFFLAG == -1) THEN
                 NRHARM = -1
                 IFFLAG = 1
-                CLOSE (LUN(IS))
+                CLOSE (file_unit_list(IS))
             ENDIF
             UPDATE = .TRUE.
         ELSE
@@ -217,7 +217,7 @@ contains
         !         first set result zero and evaluate the harmonic components
         !
         10 IF (IFFLAG == 1) THEN
-            READ (LUN(4)) (IPOINT(K), K = 1, NTOT + 3)
+            READ (file_unit_list(4)) (IPOINT(K), K = 1, NTOT + 3)
         ENDIF
         DO I = 1, NTOTAL
             RESULT(I) = 0.0
@@ -226,7 +226,7 @@ contains
         I2 = NRHARM + 1
         CALL DLWQT3 (ITIME, IHARM, HARMAT, HARMAT(I2), NRHARM, &
                 NOSUB, NOSPAC, IPOINT, NPOINT, RESULT, &
-                LUNTXT(3), LUN(3), LUN(19), ISFLAG, IFFLAG, &
+                LUNTXT(3), file_unit_list(3), file_unit_list(19), ISFLAG, IFFLAG, &
                 UPDATH)
         IF (UPDATH) UPDATE = .TRUE.
         !
@@ -238,7 +238,7 @@ contains
         J2 = NRFTOT + 1
         !         5 arguments of integer and real array space removed
         !         opening of binary file moved inside DLWQT4         July 2002
-        CALL DLWQT4 (LUN, LUNTXT, ftype, LUN(19), IS, &
+        CALL DLWQT4 (file_unit_list, LUNTXT, ftype, file_unit_list(19), IS, &
                 ITIME, RESULT, IPOINT(NPOINT), NOSUB, NRFTOT, &
                 ISFLAG, IFFLAG, UPDATB, NTOTAL, LSTREC, &
                 LREWIN, RECLST, dlwqd)

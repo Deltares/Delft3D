@@ -31,11 +31,11 @@ contains
 
         implicit none
 
-        ! Close all open LUN files
-        do i = 1, nlun
-            inquire (unit = lun(i), opened = unitop)
+        ! Close all open file_unit_list files
+        do i = 1, num_files
+            inquire (unit = file_unit_list(i), opened = unitop)
             if (unitop) then
-                close (unit = lun(i))
+                close (unit = file_unit_list(i))
             end if
         end do
 

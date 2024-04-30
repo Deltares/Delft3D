@@ -28,7 +28,7 @@ module m_dlwqtk
 contains
 
 
-    SUBROUTINE DLWQTK (LUN, ITIME, IKTIM, IKNMRK, NOSEG, &
+    SUBROUTINE DLWQTK (file_unit_list, ITIME, IKTIM, IKNMRK, NOSEG, &
             IS, LUNTXT, ISFLAG, IFFLAG, IFIOPK)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -37,8 +37,8 @@ contains
         !
         !     FUNCTION            : Updates kenmerk array
         !
-        !     LOGICAL UNITNUMBERS : LUN(IS) - input unit intermediate file
-        !                           LUN(19) - job-log output file
+        !     LOGICAL UNITNUMBERS : file_unit_list(IS) - input unit intermediate file
+        !                           file_unit_list(19) - job-log output file
         !
         !     SUBROUTINES CALLED  : SRSTOP, stops execution
         !
@@ -46,7 +46,7 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     LUN     INTEGER       *     INPUT   unit number intermediate file
+        !     file_unit_list     INTEGER       *     INPUT   unit number intermediate file
         !     ITIME   INTEGER       1     INPUT   Model timer
         !     IKTIM   INTEGER       *     IN/OUT  Timers in file
         !     IKNMRK  INTEGER   NOSEG,*   IN/OUT  Kenmerk array
@@ -69,7 +69,7 @@ contains
         use timers
         INTEGER(kind = int_wp) :: ITIME, NOSEG, IS, ISFLAG, IFFLAG, &
                 IFIOPK, IKMRK1
-        INTEGER(kind = int_wp) :: LUN(*), IKNMRK(NOSEG, *), &
+        INTEGER(kind = int_wp) :: file_unit_list(*), IKNMRK(NOSEG, *), &
                 IKTIM(*)
 
         character(len=*) LUNTXT(*)
@@ -86,14 +86,14 @@ contains
         !     If time variable then get variable kenmerk array
         !
         IF (IFIOPK > 0) THEN
-            LUNOUT = LUN(19)
+            LUNOUT = file_unit_list(19)
             !
             !        if first time open intermediate file and
             !        move original kenmerk array (column 1) to constant kenmerk array
             !        (column 2)
             !
             IF (IFFLAG == 1) THEN
-                CALL open_waq_files (LUN(IS), LUNTXT(IS), IS, 2, IERR)
+                CALL open_waq_files (file_unit_list(IS), LUNTXT(IS), IS, 2, IERR)
                 CALL copy_integer_array_elements (IKNMRK(1, 1), IKNMRK(1, 2), NOSEG)
             ENDIF
             !
@@ -103,19 +103,19 @@ contains
                 !
                 !           one record per time step
                 !
-                CALL DLWQKV(LUN(IS), LUNOUT, ITIME, IKNMRK(1, 3), NOSEG, &
+                CALL DLWQKV(file_unit_list(IS), LUNOUT, ITIME, IKNMRK(1, 3), NOSEG, &
                         LUNTXT(IS), ISFLAG, IFFLAG)
                 IF (IFFLAG == -1) THEN
                     IFIOPK = 0
                     IFFLAG = 1
-                    CLOSE (LUN(IS))
+                    CLOSE (file_unit_list(IS))
                 ENDIF
                 !
             ELSEIF (IFIOPK == 2) THEN
                 !
                 !           Block function
                 !
-                CALL DLWQKB (LUN(IS), LUNOUT, &
+                CALL DLWQKB (file_unit_list(IS), LUNOUT, &
                         ITIME, IKTIM(1), &
                         IKTIM(2), IKTIM(3), &
                         IKNMRK(1, 3), IKNMRK(1, 4), &
@@ -139,7 +139,7 @@ contains
             !
             !        Change the time-variable kenmerk-array (column 3) such that it
             !
-            CALL CHKNMR (LUN(19), NOSEG, IKNMRK(1, 3))
+            CALL CHKNMR (file_unit_list(19), NOSEG, IKNMRK(1, 3))
 
             !
             !        OR the constant and the time variable array's

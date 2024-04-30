@@ -33,7 +33,7 @@ module inputs_block_3
 
 contains
 
-    subroutine read_block_3_grid_layout (lun, lchar, filtype, nrftot, nrharm, &
+    subroutine read_block_3_grid_layout (file_unit_list, file_name_list, filtype, nrftot, nrharm, &
             ivflag, is_date_format, iwidth, is_yyddhh_format, &
             output_verbose_level, gridps, syname, status, &
             has_hydfile, nexch)
@@ -57,10 +57,10 @@ contains
         !                     srstop  stop with error code
         !                     check   end of block
 
-        ! Logical units     : LUN(40) = unit number to read attributes from binary file
-        !                     LUN( 2) = unit intermediate file (system)
-        !                     LUN( 6) = unit intermediate file (grid)
-        !                     LUN( 7) = unit intermediate file (volumes)
+        ! Logical units     : file_unit_list(40) = unit number to read attributes from binary file
+        !                     file_unit_list( 2) = unit intermediate file (system)
+        !                     file_unit_list( 6) = unit intermediate file (grid)
+        !                     file_unit_list( 7) = unit intermediate file (volumes)
 
         use error_handling, only : check_error
         use m_srstop
@@ -75,8 +75,8 @@ contains
         use m_sysn          ! System characteristics
         use m_error_status
 
-        integer(kind = int_wp), intent(inout) :: lun    (*)         !< array with unit numbers
-        character(*), intent(inout) :: lchar  (*)        !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (*)        !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         integer(kind = int_wp), intent(inout) :: nrftot (*)         !< number of function items
         integer(kind = int_wp), intent(inout) :: nrharm (*)         !< number of harmonic items
@@ -144,7 +144,7 @@ contains
 
         ! Check if there is a keyword for the grid or the hyd-file
         lncout = .false.
-        lchar (46) = ' '
+        file_name_list (46) = ' '
         if (gettoken(cdummy, idummy, itype, local_status%ierr) > 0) goto 240
         has_hydfile = .false.
         if (cdummy == 'HYD_FILE') then
@@ -158,10 +158,10 @@ contains
             write (lunut, 2450)
             write (lunut, 2460) trim(hydfile)
 
-            call read_hydfile(lunut, hydfile, lchar, noseg, nexch, local_status)
+            call read_hydfile(lunut, hydfile, file_name_list, noseg, nexch, local_status)
             if (local_status%ierr /= 0) goto 240
             has_hydfile = .true.
-            ugridfile = lchar(46)
+            ugridfile = file_name_list(46)
         endif
 
         if (cdummy == 'UGRID' .or. (has_hydfile .and. ugridfile /= ' ')) then
@@ -182,7 +182,7 @@ contains
                 lncout = .false.
             else
                 lncout = .true.
-                lchar (46) = ugridfile
+                file_name_list (46) = ugridfile
             endif
 
             if (lncout) then
@@ -205,7 +205,7 @@ contains
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2540)
                     lncout = .false.
-                    lchar(46) = ' '
+                    file_name_list(46) = ' '
                     call status%increase_error_count()
                 endif
 
@@ -266,7 +266,7 @@ contains
         endif
 
         ! Read optional multiple grids
-        call read_multiple_grids(lun, noseg, notot, nototp, nolay, &
+        call read_multiple_grids(file_unit_list, noseg, notot, nototp, nolay, &
                 gridps, nseg2, nogrid, syname, local_status)
         if (local_status%ierr > 0) goto 240
 
@@ -294,7 +294,7 @@ contains
                 ny = 0
             case default
                 ! call with record length 0 => IMOPT1 of -4 not allowed
-                call process_simulation_input_options (imopt1, lun, 6, lchar, filtype, &
+                call process_simulation_input_options (imopt1, file_unit_list, 6, file_name_list, filtype, &
                         is_date_format, is_yyddhh_format, 0, local_status%ierr, local_status, &
                         .false.)
                 if (local_status%ierr > 0) goto 240
@@ -323,9 +323,9 @@ contains
                             enddo
                         enddo
                         if (nx * ny > 0) then
-                            call open_waq_files  (lun(6), lchar(6), 6, 1, local_status%ierr)
-                            write (lun(6)) pgrid
-                            close (lun(6))
+                            call open_waq_files  (file_unit_list(6), file_name_list(6), 6, 1, local_status%ierr)
+                            write (file_unit_list(6)) pgrid
+                            close (file_unit_list(6))
                         else
                             write (lunut, 2050)
                         endif
@@ -346,7 +346,7 @@ contains
         ikmerge = 0
 
         if (has_hydfile) then
-            local_status%ierr = force_include_file(lchar(40))
+            local_status%ierr = force_include_file(file_name_list(40))
             if (local_status%ierr /= 0) goto 240
         endif
 
@@ -364,14 +364,14 @@ contains
 
             if (gettoken(ikopt1, local_status%ierr) > 0) goto 240      !   the file option for this info
             write (lunut, 2130) ikopt1
-            call process_simulation_input_options (ikopt1, lun, 40, lchar, filtype, &
+            call process_simulation_input_options (ikopt1, file_unit_list, 40, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, local_status%ierr, local_status, &
                     .false.)
             if (local_status%ierr  > 0) goto 240
             if (ikopt1 == 0) then                             !   binary file
-                call open_waq_files  (lun(40), lchar(40), 40, 2, local_status%ierr)
-                read  (lun(40), end = 250, err = 260) (iread(j), j = 1, noseg)
-                close (lun(40))
+                call open_waq_files  (file_unit_list(40), file_name_list(40), 40, 2, local_status%ierr)
+                read  (file_unit_list(40), end = 250, err = 260) (iread(j), j = 1, noseg)
+                close (file_unit_list(40))
             else
                 if (gettoken(ikopt2, local_status%ierr) > 0) goto 240   !   second option
                 write (lunut, 2140) ikopt2
@@ -497,7 +497,7 @@ contains
             ifiopk = 0
             if (gettoken(ikopt1, local_status%ierr) > 0) goto 240
             write (lunut, 2130) ikopt1
-            call process_simulation_input_options (ikopt1, lun, 40, lchar, filtype, &
+            call process_simulation_input_options (ikopt1, file_unit_list, 40, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, local_status%ierr, local_status, &
                     .false.)
             if (local_status%ierr > 0) goto 240
@@ -527,23 +527,23 @@ contains
         enddo
 
         ! Write to file
-        if (ikerr == 0) write(lun(2)) iamerge
+        if (ikerr == 0) write(file_unit_list(2)) iamerge
         deallocate (ikmerge, iamerge)
 
         ! read segment volumes
         write (lunut, 2390)
         local_status%ierr = 0
 
-        call read_constants_time_variables   (lun, 7, 0, 0, noseg, &
+        call read_constants_time_variables   (file_unit_list, 7, 0, 0, noseg, &
                 1, 1, nrftot(2), nrharm(2), ifact, &
-                is_date_format, disper, volume, iwidth, lchar, &
+                is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, local_status%ierr, &
                 local_status, has_hydfile)
 
-        call check_volume_time(lunut, lchar(7), noseg, local_status%ierr)
+        call check_volume_time(lunut, file_name_list(7), noseg, local_status%ierr)
 
         if (.not. alone) then
-            if (lchar(7) /= fnamep(6)) then
+            if (file_name_list(7) /= fnamep(6)) then
                 write (lunut, 2395) fnamep(6)
                 call status%increase_error_count()
             endif
@@ -558,11 +558,11 @@ contains
         goto 270
 
         ! error processing
-        250 write (lunut, 2400) lun(40), lchar(40)
+        250 write (lunut, 2400) file_unit_list(40), file_name_list(40)
         call status%increase_error_count()
         goto 270
 
-        260 write (lunut, 2410) lun(40), lchar(40)
+        260 write (lunut, 2410) file_unit_list(40), file_name_list(40)
         call status%increase_error_count()
 
         270 call check_error(cdummy, iwidth, 3, local_status%ierr, status)

@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_dlwqt0
+module time_dependent_variables
     use m_waq_precision
     use m_dlwqtk
     use m_dlwqta
@@ -30,7 +30,7 @@ module m_dlwqt0
 contains
 
 
-    subroutine dlwqt0 (lun, itime, itimel, harmat, array, &
+    subroutine initialize_time_dependent_variables(file_unit_list, itime, itimel, harmat, array, &
             iharm, nrharm, nrftot, idt, volume, &
             disper, area, flow, velo, aleng, &
             wastes, bounds, consts, param, funcs, &
@@ -40,22 +40,14 @@ contains
             inwtyp, iwork, lstrec, lrewin, vollst, &
             rdvolu, gridps, dlwqd)
 
-        !       Deltares Software Centre
-
-        !>\file
-        !>                         Updates time level of all external steering
+        !>  Updates time level of all external steering
         !>        Besides this routine, there is also the dlwq41 routine that does
         !>        same for volumes only. This routine is campletely used once at
         !>        the start of simulation. Furthermore it is only used without
         !>        reading the new volumes, that is then done by dlwq41.
 
-        !     Created: april- 8-1988 by Leo Postma
-
-        !     Updated: august 1997 by Leo Postma: Merged with DLWQ45 to one routine
-        !                   > 2000 by several authors.
-
-        !     LOGICAL UNITS       : LUN(3), harmonics file
-        !                           LUN(4), function pointer file
+        !     LOGICAL UNITS       : file_unit_list(3), harmonics file
+        !                           file_unit_list(4), function pointer file
 
         !     SUBROUTINES CALLED  : DLWQT1, makes one time function
         !                           DLWQTA, make values for const,param,func,sfunc
@@ -70,13 +62,7 @@ contains
         use m_sysn          ! System characteristics
         use m_syst          ! Time function flags
 
-        implicit none
-
-        !     Parameters          :
-
-        !     type     kind  function         name                         description
-
-        integer(kind = int_wp), intent(inout) :: lun   (*)                  !< Array with unit numbers
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)                  !< Array with unit numbers
         integer(kind = int_wp), intent(in) :: itime                      !< Model timer
         integer(kind = int_wp), intent(inout) :: itimel                     !< Model timer one step ago
         real(kind = real_wp), intent(inout) :: harmat(nharms)             !< Matrices harmonic components
@@ -130,7 +116,7 @@ contains
         integer(kind = int_wp) :: ierr                                     !  error flag (not tested)
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqt0", ithandl)
+        if (timon) call timstrt ("initialize_time_dependent_variables", ithandl)
 
         !         open the harmonics and pointer files
 
@@ -139,8 +125,8 @@ contains
             wstset = .false.
             funset = .false.
             othset = .false.
-            call open_waq_files (lun(3), luntxt(3), 3, 2, ierr)
-            call open_waq_files (lun(4), luntxt(4), 4, 2, ierr)
+            call open_waq_files (file_unit_list(3), luntxt(3), 3, 2, ierr)
+            call open_waq_files (file_unit_list(4), luntxt(4), 4, 2, ierr)
         endif
 
         !         initialisation
@@ -161,7 +147,7 @@ contains
         !         integration step size IDT
 
         if (nrftot(1) > 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), adt, 1, nrharm(1), &
                     1, nrftot(1), ipa, iph, ipf, &
                     ipi, luntxt, 5, isflag, ifflag, &
@@ -187,7 +173,7 @@ contains
             if   (rdvolu) then
                 !           if .not. computed volumes .or. this is the first time
                 if (ivflag     == 0 .or. ifflag == 1) then
-                    call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+                    call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                             array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
                             noseg, nrftot(2), ipa, iph, ipf, &
                             ipi, luntxt, 7, isflag, ifflag, &
@@ -214,7 +200,7 @@ contains
         !         dispersions
 
         if (nrharm(3) >= 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), disper, nodisp, nrharm(3), &
                     noq, nrftot(3), ipa, iph, ipf, &
                     ipi, luntxt, 9, isflag, ifflag, &
@@ -235,7 +221,7 @@ contains
         !         area
 
         if (nrharm(4) >= 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), area, 1, nrharm(4), &
                     noq, nrftot(4), ipa, iph, ipf, &
                     ipi, luntxt, 10, isflag, ifflag, &
@@ -256,7 +242,7 @@ contains
         !         flow
 
         if (nrharm(5) >= 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), flow, 1, nrharm(5), &
                     noq, nrftot(5), ipa, iph, ipf, &
                     ipi, luntxt, 11, isflag, ifflag, &
@@ -277,7 +263,7 @@ contains
         !         velocities
 
         if (nrharm(6) >= 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), velo, novelo, nrharm(6), &
                     noq, nrftot(6), ipa, iph, ipf, &
                     ipi, luntxt, 12, isflag, ifflag, &
@@ -298,7 +284,7 @@ contains
         !         'from'- and 'to'-length
 
         if (nrharm(7) >= 0 .and. ilflag == 1) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), aleng, 2, nrharm(7), &
                     noq, nrftot(7), ipa, iph, ipf, &
                     ipi, luntxt, 13, isflag, ifflag, &
@@ -323,7 +309,7 @@ contains
             nosubs = nosys
         endif
         if (nrharm(8) >= 0 .and. .not. bndset) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), bounds, nosubs, nrharm(8), &
                     nobnd, nrftot(8), ipa, iph, ipf, &
                     ipi, luntxt, 14, isflag, ifflag, &
@@ -340,7 +326,7 @@ contains
         endif
 
         if (bndset) then
-            call dlwqt1 (lun, itime, itimel, inwspc(ipni), anwspc(ipna), &
+            call dlwqt1 (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
                     adummy, inwtyp(it), bounds, nosubs, isnul2, &
                     nobnd, isnul, ipni, ipna, idummy, &
                     ibndmx, luntxt, 14, isflag, ifflag, &
@@ -358,7 +344,7 @@ contains
         !         wastes
 
         if (nrharm(9) >= 0 .and. .not. wstset) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), wastes, notot + 1, nrharm(9), &
                     nowst, nrftot(9), ipa, iph, ipf, &
                     ipi, luntxt, 15, isflag, ifflag, &
@@ -376,7 +362,7 @@ contains
         isnul = 0
         isnul2 = 0
         if (wstset) then
-            call dlwqt1 (lun, itime, itimel, inwspc(ipni), anwspc(ipna), &
+            call dlwqt1 (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
                     adummy, inwtyp(it), wastes, notot + 1, isnul2, &
                     nowst, isnul, ipni, ipna, idummy, &
                     iwstmx, luntxt, 15, isflag, ifflag, &
@@ -395,7 +381,7 @@ contains
 
         nosss = noseg + nseg2
         if (nrharm(10) >= 0) then
-            call dlwqta (lun(16), luntxt(16), lun(19), nosss, nocons, &
+            call dlwqta (file_unit_list(16), luntxt(16), file_unit_list(19), nosss, nocons, &
                     nopa, nofun, nosfun, consts, param, &
                     funcs, sfuncs, isflag, ifflag, itime, &
                     gridps, dlwqd, ierr)
@@ -404,16 +390,16 @@ contains
 
         !     kenmerk array
 
-        call dlwqtk (lun, itime, iktim, iknmrk, nosss, &
+        call dlwqtk (file_unit_list, itime, iktim, iknmrk, nosss, &
                 40, luntxt, isflag, ifflag, ifiopk)
 
         !         close the harmonics and pointer files
 
         10 if (ifflag == 1) then
-            close (lun(3))
-            close (lun(4))
+            close (file_unit_list(3))
+            close (file_unit_list(4))
             if (othset) then
-                write (lun(19), *) ' error, new time series processing', &
+                write (file_unit_list(19), *) ' error, new time series processing', &
                         ' wanted for an unsupported item: ', luntxt(is)
                 call srstop(1)
             endif
@@ -423,6 +409,6 @@ contains
         if (timon) call timstop (ithandl)
 
         return
-    end
+    end subroutine initialize_time_dependent_variables
 
-end module m_dlwqt0
+end module time_dependent_variables

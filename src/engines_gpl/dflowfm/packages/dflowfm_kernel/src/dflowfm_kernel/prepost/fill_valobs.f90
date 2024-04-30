@@ -411,7 +411,10 @@ subroutine fill_valobs()
             call getlayerindices(k, nlayb, nrlay)
             do kk = kb-1, kt
                klay = kk - kb + nlayb + 1
-               valobs(i,IPNT_ZWS+klay-1) = zws(kk)
+               valobs(i, IPNT_ZWS+klay-1) = zws(kk)
+               if (iturbulencemodel >= 2) then
+                   valobs(i, IPNT_VICWW + klay - 1) = vicwws(kk)
+               end if
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                   if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
                      if ( density_is_pressure_dependent() ) then
@@ -419,7 +422,7 @@ subroutine fill_valobs()
                         drhodz  = ( setrhofixedp(kk+1,prsappr) - setrhofixedp(kk,prsappr) ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs)
                      else 
                         drhodz  = ( rho(kk+1) - rho(kk)                                   ) / max(0.5d0*(zws(kk+1) - zws(kk-1)),epshs) 
-                     endif
+                     end if
                      rhomea  = 0.5d0*( rho(kk+1) + rho(kk) )
                      valobs(i,IPNT_BRUV+klay-1) = -ag*drhodz/rhomea
                   endif
@@ -451,9 +454,6 @@ subroutine fill_valobs()
                   end do
                end if
             enddo
-            if ( iturbulencemodel.ge.2 ) then
-               valobs(i,IPNT_VICWW:IPNT_VICWW+kmx) = 0d0
-            endif
             if ( iturbulencemodel.ge.3 ) then
                valobs(i,IPNT_TKIN:IPNT_TKIN+kmx) = 0d0
                valobs(i,IPNT_TEPS:IPNT_TEPS+kmx) = 0d0
@@ -468,9 +468,6 @@ subroutine fill_valobs()
                k3 = 1 ; if( nd(k)%ln(LL) > 0 ) k3 = 2
                do L = Lb-1,Lt
                   klay = L-Lb+2
-                  if ( iturbulencemodel.ge.2 ) then
-                     valobs(i,IPNT_VICWW + klay-1) = valobs(i,IPNT_VICWW + klay-1) + vicwwu(L) * wcL(k3,LLa)
-                  end if
                   if ( iturbulencemodel.ge.3 ) then
                      valobs(i,IPNT_TKIN  + klay-1) = valobs(i,IPNT_TKIN  + klay-1) + turkin1(L) * wcL(k3,LLa)
                      valobs(i,IPNT_TEPS  + klay-1) = valobs(i,IPNT_TEPS  + klay-1) + tureps1(L) * wcL(k3,LLa)

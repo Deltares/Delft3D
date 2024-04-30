@@ -29,7 +29,7 @@ module m_dlwq19
 contains
 
 
-    subroutine dlwq19 (lunut, nosys, notot, nototp, noseg, &
+    subroutine dlwq19(file_unit, nosys, notot, nototp, noseg, &
             nosss, noq1, noq2, noq3, noq, &
             noq4, nodisp, novelo, disp, disper, &
             velo, volold, volnew, area, flow, &
@@ -38,14 +38,11 @@ contains
             ibas, ibaf, work, volint, iords, &
             iordf, deriv, wdrawal, iaflag, amass2, &
             ndmpq, ndmps, nowst, iqdmp, dmpq, &
-            isdmp, dmps, iwaste, wstdmp, iopt, &
+            isdmp, dmps, iwaste, wstdmp, integration_id, &
             ilflag, rhs, diag, acodia, bcodia, &
             nvert, ivert, nocons, coname, const)
 
-        !     Deltares Software Centre
-
-        !>\file
-        !>        Computational core of the flexible step method.
+        !> Computational core of the flexible step method.
         !>
         !>        - Per time step it is determined what time step should be set for which computational cell.
         !>          Each cell is assigned the box number of the time step that it should use.
@@ -68,26 +65,10 @@ contains
         !>          too long. It is good possible to have an input variable that specifies a shorter time step
         !>          for the bed underneith all cells only. Please indicate if that is interesting.
 
-
-        !     Created             : October   2014 by Leo Postma
-        !                           October   2016    Jos van Gils vertical transport added to calculation of baskets
-        !                                                          optional upwind treatment of vertical
-
-        !     Modified            :
-
-        !     Files               : lunut     The monitoring file if 'iteration report' is set.
-
-        !     Routines            : none
-
         use m_cli_utils, only : retrieve_command_argument
         use timers
-        implicit none
 
-        !     Parameters          :
-
-        !     kind           function         name                     description
-
-        integer(kind = int_wp), intent(in) :: lunut                  !< unit number of the monitoring file
+        integer(kind = int_wp), intent(in) :: file_unit                  !< unit number of the monitoring file
         integer(kind = int_wp), intent(in) :: nosys                  !< number of transported substances
         integer(kind = int_wp), intent(in) :: notot                  !< total number of substances
         integer(kind = int_wp), intent(in) :: nototp                 !< number of particle substances
@@ -133,10 +114,10 @@ contains
         integer(kind = int_wp), intent(in) :: iqdmp  (noq)           !< pointer from echange to dump location
         real(kind = real_wp), intent(inout) :: dmpq   (nosys, ndmpq, 2)!< array with mass balance information
         integer(kind = int_wp), intent(in) :: isdmp  (noseg)        !< volume to dump-location pointer
-        real(kind = real_wp), intent(inout) :: dmps   (notot, ndmps, *)!< dumped segment fluxes if IOPT > 7
+        real(kind = real_wp), intent(inout) :: dmps   (notot, ndmps, *)!< dumped segment fluxes if integration_id > 7
         integer(kind = int_wp), intent(in) :: iwaste (nowst)        !< volume numbers of the waste locations
         real(kind = real_wp), intent(inout) :: wstdmp (notot, nowst, 2)!< accumulated wasteloads 1/2 in and out
-        integer(kind = int_wp), intent(in) :: iopt                   !< integration features integer(kind=int_wp) ::, see logicals
+        integer(kind = int_wp), intent(in) :: integration_id           !< integration
         integer(kind = int_wp), intent(in) :: ilflag                 !< if 0 then only 3 constant lenght values
         real(kind = dp), intent(inout) :: rhs    (notot, nosss)  !< local right hand side
         real(kind = dp), intent(inout) :: diag   (notot, nosss)  !< local diagonal filled with volumes
@@ -147,8 +128,6 @@ contains
         integer(kind = int_wp), intent(in) :: nocons                 !< Number of constants used
         character(20), intent(in) :: coname (nocons)        !< Constant names
         real(kind = real_wp), intent(in) :: const  (nocons)        !< Constants
-
-        !     Local variables     :
 
         integer(kind = int_wp) :: i, j, k         ! general loop counter
         integer(kind = int_wp) :: noqh            ! total number of horizontal interfaces
@@ -177,10 +156,10 @@ contains
         real(kind = dp) :: s               ! limiter sign variable
         real(kind = dp) :: f1, f2         ! correction factors central differences
         real(kind = dp) :: q1, q2, q3, q4  ! helpvariables to fill the matrix
-        logical       disp0q0         ! bit zero  of iopt: 1 if no dispersion at zero flow
-        logical       disp0bnd        ! bit one   of iopt: 1 if no dispersion across boundaries
-        logical       loword          ! bit two   of iopt: 1 if lower order across boundaries
-        logical       fluxes          ! bit three of iopt: 1 if mass balance output
+        logical       disp0q0         ! bit zero  of integration_id: 1 if no dispersion at zero flow
+        logical       disp0bnd        ! bit one   of integration_id: 1 if no dispersion across boundaries
+        logical       loword          ! bit two   of integration_id: 1 if lower order across boundaries
+        logical       fluxes          ! bit three of integration_id: 1 if mass balance output
         logical       abound          ! is it a boundary?
         logical       wetting         ! are cells becoming wet?
         logical, save :: sw_settling   ! if true, settling should be dealt with upwind
@@ -209,9 +188,9 @@ contains
         integer(kind = int_wp) :: changed, remained, iter  ! flooding help variables
         real(kind = dp), allocatable, save :: low(:), dia(:), upr(:)  !  matrix of one column
         logical             massbal                     ! set .true. if iaflag eq 1
-        logical, save :: report                      ! write iteation reports in monitoring file
+        logical, save :: report                            ! write iteation reports in monitoring file
         integer(kind = int_wp) :: ierr2                    !
-        real(kind = real_wp) :: acc_remained, acc_changed       ! For reporting: accumulated/averaged reporting parameters
+        real(kind = real_wp) :: acc_remained, acc_changed  ! For reporting: accumulated/averaged reporting parameters
         logical :: vertical_upwind             ! Set .true. for upwind scheme in the vertical
         integer(kind = int_wp) :: ithandl = 0
         integer(kind = int_wp) :: ithand1 = 0
@@ -228,28 +207,28 @@ contains
         if (timon) call timstrt ("administration", ithand1)
         noqh = noq1 + noq2
         massbal = iaflag == 1
-        disp0q0 = btest(iopt, 0)
-        disp0bnd = btest(iopt, 1)
-        loword = btest(iopt, 2)
-        fluxes = btest(iopt, 3)
-        vertical_upwind = .not. btest(iopt, 18)
+        disp0q0 = btest(integration_id, 0)
+        disp0bnd = btest(integration_id, 1)
+        loword = btest(integration_id, 2)
+        fluxes = btest(integration_id, 3)
+        vertical_upwind = .not. btest(integration_id, 18)
 
         if (init == 0) then
-            write (lunut, '(A)') ' Using local flexible time step method (scheme 24)'
+            write (file_unit, '(A)') ' Using local flexible time step method (scheme 24)'
             if (vertical_upwind) then
-                write (lunut, '(A)') ' Using upwind discretisation for vertical advection.'
+                write (file_unit, '(A)') ' Using upwind discretisation for vertical advection.'
             else
-                write (lunut, '(A)') ' Using central discretisation for vertical advection.'
+                write (file_unit, '(A)') ' Using central discretisation for vertical advection.'
             endif
             call retrieve_command_argument('-settling_backwards', 0, sw_settling, idummy, rdummy, cdummy, ierr2)
-            if (sw_settling) write(lunut, *) ' option -settling_backwards found'
+            if (sw_settling) write(file_unit, *) ' option -settling_backwards found'
             i = index_in_array('Number_of_baskets   ', coname)
             if (i > 0) then
                 nob = const(i)
-                write (lunut, '(A,i3)') ' Number of baskets         : ', nob
+                write (file_unit, '(A,i3)') ' Number of baskets         : ', nob
             else
                 nob = 13
-                write (lunut, '(A,i3)') ' Default number of baskets : ', nob
+                write (file_unit, '(A,i3)') ' Default number of baskets : ', nob
             endif
             allocate (its(nob + 2), itf(nob + 2), iqsep(nob + 2), dt(nob + 1))
             report = .false.
@@ -258,13 +237,13 @@ contains
                 report = const(i) > 0
             endif
             if (report) then
-                write (lunut, '(A)') ' Iteration report          : switched on'
+                write (file_unit, '(A)') ' Iteration report          : switched on'
             else
-                write (lunut, '(A)') ' Iteration report          : switched off'
+                write (file_unit, '(A)') ' Iteration report          : switched off'
             endif
 
             if (.not. disp0q0) then
-                write (lunut, '(/3A)') &
+                write (file_unit, '(/3A)') &
                         ' WARNING: Dispersion allowed if flow rate is zero', &
                         '          This is known to cause problems in some cases'
             endif
@@ -276,7 +255,7 @@ contains
                     ivert(iseg) = iseg
                 enddo
                 nosegl = noseg
-                write (lunut, '(A)') ' This model is vertically integrated!'
+                write (file_unit, '(A)') ' This model is vertically integrated!'
             else                            ! model with (per cell varying nr of) layers
                 ivert = 0
                 nvert = -1                                    !  Determine whether cells have a horizontal exchange
@@ -324,7 +303,7 @@ contains
                     endif
                 enddo
                 if (nosegl < noseg) nvert(1, nosegl + 1) = ioff + 1
-                write (lunut, '(A,i8,A)') ' This model has            : ', nosegl, ' columns of cells'
+                write (file_unit, '(A,i8,A)') ' This model has            : ', nosegl, ' columns of cells'
                 maxlay = 0
                 do i = 1, nosegl
                     is1 = nvert(1, i)                         !  offset of the cell that heads the column in ivert table
@@ -340,7 +319,7 @@ contains
                     enddo
                 enddo
                 allocate (low(maxlay), dia(maxlay), upr(maxlay))
-                write (lunut, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
+                write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
             endif
             !    after this all: ivert(1:noseg)     contains all water cell numbers in their order of appearance in the columns
             !                    nvert(1,1:nosegl)  contains the start locations in ivert of columns 1:nosegl
@@ -351,7 +330,7 @@ contains
             !                                                   the positive velocity or flow is from ipoint(1,iq) to ipoint(2,iq)
             !    it is easily seen that for 2D-horizontal models ivert and nvert(1:2,*) just contain the sequential cell numbers and
             !                    nosegl = noseg. Since nvert(1,noseg+1) is out of range, you will find statements that deal with this.
-            write (lunut, '(A)') ' '
+            write (file_unit, '(A)') ' '
             init = 1    !   do this only once per simulation
         endif
 
@@ -499,17 +478,17 @@ contains
         enddo
         if (wetting .and. report) then
             if (nosegl == noseg) then
-                write (lunut, '(/A/A)') &
+                write (file_unit, '(/A/A)') &
                         ' WARNING in dlwq19, next cells are becoming wet or dry:', &
                         '  cell       outflow         inflow          diffusion       volume-1        volume-2'
             else
-                write (lunut, '(/A/A)') &
+                write (file_unit, '(/A/A)') &
                         ' WARNING in dlwq19, next cells and the cells underneith are becoming wet or dry:', &
                         '  cell       outflow         inflow          diffusion       volume-1        volume-2'
             endif
             do i = 1, nosegl
                 iseg = ivert(nvert(1, i))
-                if (ibas(iseg) == nob + 1) write (lunut, '(i10,5e16.7)') &
+                if (ibas(iseg) == nob + 1) write (file_unit, '(i10,5e16.7)') &
                         iseg, work(1, iseg), work(2, iseg), work(3, iseg), volold(iseg), volnew(iseg)
             enddo
         endif
@@ -539,16 +518,16 @@ contains
         !          1g: write report on basket sizes
 
         if (report) then
-            write (lunut, *) ' box       cells    fluxes'
+            write (file_unit, *) ' box       cells    fluxes'
             isums = 0
             isumf = 0
             do ibox = 1, nob + 2
-                write (lunut, '(i5,2x,2i10)') ibox, its(ibox), itf(ibox)
-                if (ibox == nob) write (lunut, '(A)') ' '
+                write (file_unit, '(i5,2x,2i10)') ibox, its(ibox), itf(ibox)
+                if (ibox == nob) write (file_unit, '(A)') ' '
                 isums = isums + its(ibox)
                 isumf = isumf + itf(ibox)
             enddo
-            write (lunut, '(/a,2i9)') 'Total number of cells & fluxes: ', isums, isumf
+            write (file_unit, '(/a,2i9)') 'Total number of cells & fluxes: ', isums, isumf
         endif
 
         !          1h: determine execution order of the segments and fluxes
@@ -598,8 +577,8 @@ contains
             nstep = nstep * 2               ! so many sub-time steps will be set
         enddo
         if (report) then
-            write (lunut, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', nb, ',first: ', lbox, ', last: ', fbox
-            write (lunut, '(a,e15.7/)')       'Smallest time step in sec.: ', dt(fbox)
+            write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', nb, ',first: ', lbox, ', last: ', fbox
+            write (file_unit, '(a,e15.7/)')       'Smallest time step in sec.: ', dt(fbox)
         endif
         dt(nob + 1) = dt(fbox)             ! boxes running wet do so with the smallest step size
 
@@ -827,7 +806,7 @@ contains
                     acc_changed = acc_changed + changed
                     if (remained > 0 .and. changed == 0) then
                         if (report) then
-                            write (lunut, *) 'Warning: No further progress in the wetting procedure!'
+                            write (file_unit, *) 'Warning: No further progress in the wetting procedure!'
                         endif
                         exit
                     endif
@@ -915,7 +894,7 @@ contains
                 if (q <= volint(iseg)) then
                     volint(iseg) = volint(iseg) - q
                 else
-                    write (lunut, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, q, &
+                    write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, q, &
                             ' m3. Available is', volint(iseg), ' m3!'
                     q = volint(iseg)
                     volint(iseg) = 0.0d0
@@ -1323,7 +1302,7 @@ contains
                     if (q <= volint(iseg)) then
                         volint(iseg) = volint(iseg) - q
                     else
-                        write (lunut, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg, &
+                        write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg, &
                                 q, ' m3. Available is', volint(iseg), ' m3!'
                         q = volint(iseg)
                         volint(iseg) = 0.0d0
@@ -1413,9 +1392,9 @@ contains
         end do
 
         if (report .and. (acc_changed > 0.0 .or. acc_remained > 0.0)) then
-            write (lunut, '(a)') 'Averaged over all steps in this iteration:'
-            write (lunut, '(a,2g12.4)') 'Number of segments changed:  ', acc_changed / nstep
-            write (lunut, '(a,2g12.4)') 'Number of segments remained: ', acc_remained / nstep
+            write (file_unit, '(a)') 'Averaged over all steps in this iteration:'
+            write (file_unit, '(a,2g12.4)') 'Number of segments changed:  ', acc_changed / nstep
+            write (file_unit, '(a,2g12.4)') 'Number of segments remained: ', acc_remained / nstep
         endif
 
         do i = 1, its(nob + 2)                  !  update mass of box of dry cells
@@ -1801,7 +1780,7 @@ contains
             vol = volnew(iseg)
             if (report) then
                 if (abs(vol - volint(iseg)) > 1.0e-6 * max(vol, volint(iseg))) &
-                        write (lunut, '(A,i8,A,e16.7,A,e16.7)') &
+                        write (file_unit, '(A,i8,A,e16.7,A,e16.7)') &
                                 ' cell: ', iseg, '; computed volume: ', volint(iseg), '; in file: ', vol
             endif
             do isys = 1, nosys

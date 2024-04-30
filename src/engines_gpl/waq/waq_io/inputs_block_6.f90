@@ -34,7 +34,7 @@ module inputs_block_6
 
 contains
 
-    subroutine read_block_6_waste_loads_withdrawals (lun, lchar, filtype, max_char_size, char_arr, &
+    subroutine read_block_6_waste_loads_withdrawals (file_unit_list, file_name_list, filtype, max_char_size, char_arr, &
             max_int_size, int_array, max_real_size, real_array, notot, &
             noseg, sname, nowst, nowtyp, nrftot, &
             nrharm, is_date_format, is_yyddhh_format, iwidth, &
@@ -51,20 +51,20 @@ contains
         !!                      zoek     : search for presence of a string
         !!                      read_boundary_concentrations: modern context sensitive input data processing
         !!                      check    : check whether end of data block is encountred correctly
-        !! Logical units : lun(27) = unit DELWAQ input file
-        !!                 lun(29) = unit formatted output file
-        !!                 lun( 2) = unit intermediate file (system)
-        !!                 lun( 3) = unit intermediate file (harmonics)
-        !!                 lun( 4) = unit intermediate file (pointers)
-        !!                 lun(15) = unit intermediate file (waste load)
+        !! Logical units : file_unit_list(27) = unit DELWAQ input file
+        !!                 file_unit_list(29) = unit formatted output file
+        !!                 file_unit_list( 2) = unit intermediate file (system)
+        !!                 file_unit_list( 3) = unit intermediate file (harmonics)
+        !!                 file_unit_list( 4) = unit intermediate file (pointers)
+        !!                 file_unit_list(15) = unit intermediate file (waste load)
 
         use error_handling, only : check_error
         use m_srstop
         use rd_token
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun    (:)      !< array with unit numbers
-        character(*), intent(inout) :: lchar  (:)     !< Filenames for the items
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (:)      !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (:)     !< Filenames for the items
         integer(kind = int_wp), intent(inout) :: filtype(*)      !< type of binary files
         integer(kind = int_wp), intent(in) :: max_char_size           !< size of the character workspace
         character(20), intent(inout) :: char_arr   (max_char_size)  !< local character workspace
@@ -118,7 +118,7 @@ contains
 
         !     Init
 
-        binary_work_file = lun(2)
+        binary_work_file = file_unit_list(2)
         iposr = 0
         chkpar = .false.
         nowtyp = 0
@@ -128,7 +128,7 @@ contains
         if (gettoken(nowst, ierr2) > 0) goto 20
         if (nowst < 0) then       !   it says that info comes from auxiliary file
             write (lunut, 2000) nowst
-            call process_simulation_input_options   (-1, lun, 15, lchar, filtype, &
+            call process_simulation_input_options   (-1, file_unit_list, 15, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
@@ -315,7 +315,7 @@ contains
 
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
         idummy = notot + 1
-        call read_boundary_concentrations (lun, lchar, 15, iwidth, max_char_size, &
+        call read_boundary_concentrations (file_unit_list, file_name_list, 15, iwidth, max_char_size, &
                 char_arr, max_int_size, int_array, max_real_size, real_array, &
                 sname, wstid, wsttype, nowst, idummy, &
                 nowtyp, dp_array, is_date_format, is_yyddhh_format, &

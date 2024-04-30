@@ -37,10 +37,8 @@ contains
         !> a consistent set of binairy intermediate files.
 
         use m_delwaq1_allocate_workspace
-
         !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
-        implicit none
 
         character(len = *), intent(in), dimension(:) :: argv !< arguments as strings
         logical :: success !< if the run was successful

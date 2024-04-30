@@ -28,26 +28,15 @@ module m_dlwq13
 contains
 
 
-    SUBROUTINE DLWQ13 (LUN, LCHAR, CONC, ITIME, MNAME, &
-            SNAME, NOTOT, NOSEG)
-        !
-        !
-        !     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED            : june 1988  BY L. Postma
-        !
-        !     FUNCTION           : gives a complete system dump
+    SUBROUTINE DLWQ13 (file_unit_list, file_name_list, CONC, ITIME, MNAME, SNAME, NOTOT, NOSEG)
+        ! gives a complete system dump
         !
         !     LOGICAL UNITS      : IOUT = number of dump file
         !
-        !     SUBROUTINES CALLED : none
-        !
-        !     PARAMETERS         :
-        !
         !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     LUN     INTEGER  *           INPUT   unit numbers output files
-        !     LCHAR   CHAR*(*) *           INPUT   names of output files
+        !     file_unit_list     INTEGER  *           INPUT   unit numbers output files
+        !     file_name_list   CHAR*(*) *           INPUT   names of output files
         !     CONC    REAL     NOTOT*?     INPUT   concentration values
         !     ITIME   INTEGER  1           INPUT   present time in clock units
         !     MNAME   CHAR*40  4           INPUT   model identhification
@@ -60,11 +49,11 @@ contains
         use timers
 
         real(kind = real_wp) :: CONC  (NOTOT, NOSEG)
-        character(len=20)  SNAME (*)
-        character(len=40)  MNAME (*)
-        character(len=*) LCHAR (*)
-        character(len=255) LCHARMAP
-        integer(kind = int_wp) :: lun(*)
+        character(len = 20)  SNAME (*)
+        character(len = 40)  MNAME (*)
+        character(len = *) file_name_list(*)
+        character(len = 255) LCHARMAP
+        integer(kind = int_wp) :: file_unit_list(*)
 
         integer(kind = int_wp) :: i, j, k, itime
         integer(kind = int_wp) :: noseg, notot, nonan, ierr
@@ -85,17 +74,17 @@ contains
         enddo
 
         if (nonan /= 0) then
-            write (lun(19), *) ' Corrected concentrations as written to the restart file:'
-            write (lun(19), *) ' Number of values reset from NaN to zero: ', nonan
-            write (lun(19), *) ' Total amount of numbers in the array: ', notot * noseg
-            write (lun(19), *) ' This may indicate that the computation was unstable'
+            write (file_unit_list(19), *) ' Corrected concentrations as written to the restart file:'
+            write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nonan
+            write (file_unit_list(19), *) ' Total amount of numbers in the array: ', notot * noseg
+            write (file_unit_list(19), *) ' This may indicate that the computation was unstable'
         endif
 
         !
         !     write restart file in .map format
         !
         LCHARMAP = ' '
-        LCHARMAP(1:248) = LCHAR(23)(1:248)
+        LCHARMAP(1:248) = file_name_list(23)(1:248)
         DO I = 248, 1, -1
             IF (LCHARMAP(I:I) == '.') THEN
                 LCHARMAP(I:I + 7) = "_res.map"
@@ -104,16 +93,16 @@ contains
         end do
         WRITE (*, *) ' Invalid name of restart MAP file !'
         write (*, *) ' Restart file written to restart_temporary.map !'
-        WRITE (LUN(19), *) ' Invalid name of restart MAP file !'
-        write (lun(19), *) ' Restart file written to restart_temporary.map !'
+        WRITE (file_unit_list(19), *) ' Invalid name of restart MAP file !'
+        write (file_unit_list(19), *) ' Restart file written to restart_temporary.map !'
         lcharmap = 'restart_temporary.map'
 
-        20 CALL open_waq_files (LUN(23), LCHARMAP, 23, 1, IERR)
-        WRITE (LUN(23)) (MNAME(K), K = 1, 4)
-        WRITE (LUN(23))   NOTOT, NOSEG
-        WRITE (LUN(23)) (SNAME(K), K = 1, NOTOT)
-        WRITE (LUN(23)) ITIME, CONC
-        CLOSE (LUN(23))
+        20 CALL open_waq_files (file_unit_list(23), LCHARMAP, 23, 1, IERR)
+        WRITE (file_unit_list(23)) (MNAME(K), K = 1, 4)
+        WRITE (file_unit_list(23))   NOTOT, NOSEG
+        WRITE (file_unit_list(23)) (SNAME(K), K = 1, NOTOT)
+        WRITE (file_unit_list(23)) ITIME, CONC
+        CLOSE (file_unit_list(23))
         !
         if (timon) call timstop (ithandl)
         RETURN

@@ -52,11 +52,11 @@ contains
 
         cchar = ' '
         ilun = 0
-        ilun(1) = lun(26)
-        lch(1) = lchar(26)
-        lunut = lun(29)
+        ilun(1) = file_unit_list(26)
+        lch(1) = file_name_list(26)
+        lunut = file_unit_list(29)
 
-        call read_block_1_from_input(lun, psynam, nosys, notot, nomult, &
+        call read_block_1_from_input(file_unit_list, psynam, nosys, notot, nomult, &
                 multp, iwidth, otime, isfact, refday, &
                 output_verbose_level, status)
 
@@ -86,14 +86,15 @@ contains
         nullify (nexcraai)
         nullify (iexcraai)
         nullify (ioptraai)
-        call read_block_2_from_input(lun, lchar, filtype, nrftot, nlines, &
-                npoins, is_date_format, is_ddhhmmss_format, nodump, iopt, &
-                noint, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
+
+        call read_block_2_from_input(file_unit_list, file_name_list, filtype, nrftot, nlines, &
+                npoins, is_date_format, is_ddhhmmss_format, nodump, integration_id_list, &
+                num_integration_options, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
                 noraai, ntraaq, nosys, notot, nototp, &
                 output_verbose_level, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
-        call read_block_3_grid_layout(lun, lchar, filtype, nrftot, nrharm, &
+        call read_block_3_grid_layout(file_unit_list, file_name_list, filtype, nrftot, nrharm, &
                 ivflag, is_date_format, iwidth, is_yyddhh_format, &
                 output_verbose_level, gridps, syname, status, &
                 has_hydfile, nexch)
@@ -103,7 +104,7 @@ contains
         if (.not. associated(nexcraai)) allocate (nexcraai(1))
         if (.not. associated(iexcraai)) allocate (iexcraai(1))
         if (.not. associated(ioptraai)) allocate (ioptraai(1))
-        call read_block_4_flow_dims_pointers(lun, lchar, filtype, nrftot, nrharm, &
+        call read_block_4_flow_dims_pointers(file_unit_list, file_name_list, filtype, nrftot, nrharm, &
                 ilflag, is_date_format, iwidth, intsrt, is_yyddhh_format, &
                 output_verbose_level, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, gridps, status, &
@@ -115,7 +116,7 @@ contains
         if (associated(ioptraai)) deallocate (ioptraai)
 
         deltim = otime
-        call read_block_5_boundary_conditions(lun, lchar, filtype, char_arr, iar, &
+        call read_block_5_boundary_conditions(file_unit_list, file_name_list, filtype, char_arr, iar, &
                 real_array, nrftot, nrharm, nobnd, nosys, &
                 notot, nobtyp, rmax, imax, is_date_format, &
                 iwidth, intsrt, is_yyddhh_format, syname, &
@@ -124,7 +125,7 @@ contains
         deltim = otime
 
         nosss = noseg + nseg2     ! increase with bottom segments
-        call read_block_6_waste_loads_withdrawals(lun, lchar, filtype, icmak, char_arr(k), &
+        call read_block_6_waste_loads_withdrawals(file_unit_list, file_name_list, filtype, icmak, char_arr(k), &
                 imax, iar, rmax, real_array, notot, &
                 nosss, syname, nowst, nowtyp, nrftot, &
                 nrharm, is_date_format, is_yyddhh_format, iwidth, &
@@ -138,20 +139,20 @@ contains
 
         nrharm(10) = 0
         deltim = otime
-        call read_block_7_process_parameters(lun, lchar, filtype, inpfil, syname, &
+        call read_block_7_process_parameters(file_unit_list, file_name_list, filtype, inpfil, syname, &
                 iwidth, output_verbose_level, gridps, constants, chkpar, &
                 status)
 
         ! Finish and close system file ( read_block_9 can re-read it )
-        write (lun(2)) (nrftot(i), i = 1, noitem)
-        write (lun(2)) (nrharm(i), i = 1, noitem)
-        close (lun(2))
+        write (file_unit_list(2)) (nrftot(i), i = 1, noitem)
+        write (file_unit_list(2)) (nrharm(i), i = 1, noitem)
+        close (file_unit_list(2))
 
-        call read_block_8_initial_conditions(lun, lchar, filtype, nosss, notot, &
+        call read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, nosss, notot, &
                 syname, iwidth, output_verbose_level, inpfil, &
                 gridps, status)
 
-        call read_block_9(lun, lchar, filtype, char_arr, iar, &
+        call read_block_9(file_unit_list, file_name_list, filtype, char_arr, iar, &
                 icmak, max_int_size, iwidth, &
                 output_verbose_level, ioutps, outputs, status)
 
@@ -166,7 +167,7 @@ contains
         write (lunrep, '(  '' Number of ERRORS during input :'',I6)') status%ierr
         write (lunrep, '(  '' '')')
 
-        call dlwqp1(lun, lchar, &
+        call dlwqp1(file_unit_list, file_name_list, &
                 statprocesdef, allitems, &
                 ioutps, outputs, &
                 nomult, imultp, &

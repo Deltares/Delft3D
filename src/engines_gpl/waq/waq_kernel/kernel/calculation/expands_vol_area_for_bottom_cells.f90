@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_dlwqtd
+module m_expands_vol_area_for_bottom_cells
     use m_waq_precision
     use m_values
 
@@ -29,25 +29,15 @@ module m_dlwqtd
 contains
 
 
-    SUBROUTINE DLWQTD (LUN, NOSEG, NSEG2, NOLAY, NOGRID, &
+    SUBROUTINE expands_vol_area_for_bottom_cells(file_unit_list, NOSEG, NSEG2, NOLAY, NOGRID, &
             NOQ, NOQ4, IGREF, IGSEG, NOCONS, &
             NOPA, NOFUN, NOSFUN, CONST, CONAME, &
             PARAM, PANAME, FUNCS, FUNAME, SFUNCS, &
             SFNAME, IPOINT, VOLUME, AREA, FLOW, &
             ALENG)
+        ! Expands volume, area etc. for bottom cells
         !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:              January-2003 by L.Postma
-        !
-        !     LAST UPDATE:          ........
-        !
-        !     FUNCTION            : Expands volume, area etc. for bottom cells
-        !
-        !     LOGICAL UNITS       : LUN(19), error messages
-        !
-        !     SUBROUTINES CALLED  : GETVAL, to retrieve a value from the data
-        !                           SRSTOP, to stop with error
+        !     LOGICAL UNITS       : file_unit_list(19), error messages
         !
         !     PARAMETERS          :
         !
@@ -78,13 +68,11 @@ contains
         !     AREA    REAL    NOQ+NOQ4    IN/OUT  Exchange surfaces
         !     FLOW    REAL    NOQ+NOQ4    IN/OUT  Exchange flows
         !     ALENG   REAL   2,NOQ+NOQ4   IN/OUT  Diffusion lengthes
-        !
-        !
         use m_srstop
         use m_grid_utils_external
         use timers
 
-        INTEGER(kind = int_wp) :: LUN(*), IGREF(NOGRID), IGSEG(NOSEG, NOGRID), &
+        INTEGER(kind = int_wp) :: file_unit_list(*), IGREF(NOGRID), IGSEG(NOSEG, NOGRID), &
                 IPOINT(4, NOQ + NOQ4)
         REAL(kind = real_wp) :: CONST (NOCONS), PARAM (NOPA, NOSEG), &
                 FUNCS (NOFUN), SFUNCS(NOSEG, NOSFUN), &
@@ -103,7 +91,7 @@ contains
         integer(kind = int_wp) :: ierr, iq, iseg, nosss
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqtd", ithandl)
+        if (timon) call timstrt ("expands_vol_area_for_bottom_cells", ithandl)
         !
         NOSSS = NOSEG + NSEG2
         !
@@ -117,7 +105,7 @@ contains
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
         IF (IERR /= 0) THEN
-            write (lun(19), *) ' ERROR: Variabele SURF not found !'
+            write (file_unit_list(19), *) ' ERROR: Variabele SURF not found !'
             call srstop(1)
         endif
 
@@ -161,9 +149,8 @@ contains
                 NOFUN, NOSFUN, CONST, CONAME, PARAM, &
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
-        !
-        !        Expand the volumes
-        !
+
+        ! Expand the volumes
         CTAG = 'FIXTH'
         LGET = .true.
         Allocate (Thickn(NOSSS))
@@ -172,26 +159,25 @@ contains
                 PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
                 LGET, IERR)
         IF (IERR /= 0) THEN
-            write (lun(19), *) ' ERROR: Variabele FIXTH not found !'
+            write (file_unit_list(19), *) ' ERROR: Variabele FIXTH not found !'
             call srstop(1)
         endif
         do iseg = noseg + 1, noseg + nseg2
             volume(iseg) = Horsurf(iseg) * Thickn(iseg)
         enddo
-        !
-        !        Expand the areas, lengthes and flows
-        !
+
+        ! Expand the areas, lengthes and flows
         do iq = 1, NOQ4
             area (NOQ + iq) = Horsurf(IPOINT(1, NOQ + iq))
             aleng(1, NOQ + iq) = 1.0
             aleng(2, NOQ + iq) = 1.0
             flow (NOQ + iq) = 0.0
         enddo
-        !
-        deallocate (Horsurf, Thickn)
-        !
-        if (timon) call timstop (ithandl)
-        return
-    end
 
-end module m_dlwqtd
+        deallocate (Horsurf, Thickn)
+
+        if (timon) call timstop (ithandl)
+
+    end subroutine expands_vol_area_for_bottom_cells
+
+end module m_expands_vol_area_for_bottom_cells
