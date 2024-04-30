@@ -5,7 +5,7 @@ If you require a printed version of this Software License Agreement, e.g. prior 
 Read this software license agreement carefully
 
 This is a legal agreement between the prospective user, either an individual or an entity, (hereafter: “Licensee”) and Deltares (hereafter “Deltares”) to license the computer program subject to this contracting-procedure (hereafter “Computer Program”).
- 
+
 By clicking on (y)es:
 
 1.	you expressly declare being authorized to act on behalf of Licensee for the purposes of accepting this software license agreement (hereafter “License Agreement”);
