@@ -29,13 +29,10 @@ contains
 
 
     subroutine dlwqm7 (noq, noq1, noq2, area, flow, &
-            aleng, ilflag, iopt, ipoint, mixlen, &
+            aleng, ilflag, integration_id, ipoint, mixlen, &
             iknmrk)
 
-        !     Deltares Software Centre
-
-        !>/File
-        !>              prepares a mixing length array (area/length) once for all substances
+        !>  prepares a mixing length array (area/length) once for all substances
         !>
         !>              This subroutine does once and for all the logics of
         !>              either variable from and to lengthes or fixed lengthes.
@@ -44,12 +41,7 @@ contains
         !>              - no dispersion accross open boundaries
         !>              - no dispersion to dry compuational volumes
 
-        !     Created   : November 2009 by Leo Postma
-
-        !     Modified  :
-
         use timers
-        implicit none
 
         integer(kind = int_wp), intent(in) :: noq                 !< number of exchanges
         integer(kind = int_wp), intent(in) :: noq1                !< number of exchanges in first direction
@@ -58,7 +50,7 @@ contains
         real(kind = real_wp), intent(in) :: flow(noq)           !< flows accross exchange surfs (dim: noq)
         real(kind = real_wp), intent(in) :: aleng(2, noq)        !< from- and to lengths (dim: 2*noq)
         integer(kind = int_wp), intent(in) :: ilflag              !< if 0 then 3 length values (equidistant grid)
-        integer(kind = int_wp), intent(in) :: iopt                !< optoons for e.g. treatment of boundaries
+        integer(kind = int_wp), intent(in) :: integration_id                !< optoons for e.g. treatment of boundaries
         integer(kind = int_wp), intent(in) :: ipoint(4, noq)       !< exchange pointers (dim: 4 x noq)
         real(kind = real_wp), intent(out) :: mixlen(noq)         !< exchange surface areas (dim: noq)
         integer(kind = int_wp), intent(in) :: iknmrk(*)         !< feature array, bit zero indicates wet or not
@@ -90,21 +82,21 @@ contains
             enddo
         endif
 
-        if (btest(iopt, 0) .and.            & ! deals with no horizontal dispersion through the boundary
-                btest(iopt, 1)) then    ! thin dam option, no dispersion at zero flow
+        if (btest(integration_id, 0) .and.            & ! deals with no horizontal dispersion through the boundary
+                btest(integration_id, 1)) then    ! thin dam option, no dispersion at zero flow
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 if (ifrom <= 0 .or. ito <= 0) mixlen(iq) = 0.0
                 if (abs(flow(iq)) < 10.0e-25)  mixlen(iq) = 0.0
             enddo
-        else if (btest(iopt, 1)) then
+        else if (btest(integration_id, 1)) then
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 if (ifrom <= 0 .or. ito <= 0) mixlen(iq) = 0.0
             enddo
-        else if (btest(iopt, 0)) then
+        else if (btest(integration_id, 0)) then
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)

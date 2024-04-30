@@ -29,7 +29,7 @@
       contains
 
 
-      SUBROUTINE DLWQKB ( LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 , & 
+      SUBROUTINE DLWQKB ( input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
                          ITIME2 , IARRA1 , IARRA2 , NFTOT  , LUNTXT , & 
                          ISFLAG , IFFLAG )
 !
@@ -40,7 +40,7 @@
 !     FUNCTION            : Steps along in a time variable database
 !                           for integer block functions
 !
-!     LOGICAL UNITNUMBERS : LUNIN  - input unit intermediate file
+!     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
 !                           LUNOUT - monitor file
 !
 !     SUBROUTINES CALLED  : SRSTOP, stops execution
@@ -49,7 +49,7 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUNIN   INTEGER       1     INPUT   unit number intermediate file
+!     input_file   INTEGER       1     INPUT   unit number intermediate file
 !     LUNOUT  INTEGER       1     INPUT   unit number monitor file
 !     ITIME   INTEGER       1     INPUT   Model timer
 !     IDTIME  INTEGER       1     IN/OUT  Delta for this function
@@ -67,7 +67,7 @@
       use m_srstop
       use m_array_manipulation, only : copy_integer_array_elements
       use timers
-      INTEGER(kind=int_wp) ::LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 , & 
+      INTEGER(kind=int_wp) ::input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
                    ITIME2 , NFTOT  , ISFLAG , IFFLAG
       INTEGER(kind=int_wp) ::IARRA1(*), IARRA2(*)
       character(len=*) LUNTXT
@@ -91,8 +91,8 @@
 !
 !         This is the first time, so read.
 !
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       IDTIME = 0
 !
 !         Check for start time simulation before start time file
@@ -104,22 +104,22 @@
    10 IF ( ITIME-IDTIME < ITIME2 ) GOTO 100
       CALL copy_integer_array_elements ( IARRA2 , IARRA1 , NFTOT )
       ITIME1 = ITIME2
-      READ ( LUNIN , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       GOTO 10
 !
 !         normal rewind.
 !
    60 MESSGE = 1
-      inquire( lunin, access = access )
+      inquire( input_file, access = access )
       stream_access = access == 'STREAM'
       if (stream_access) then
-         read( lunin, iostat = ierr, pos = 1 )
+         read( input_file, iostat = ierr, pos = 1 )
       else
-         rewind lunin                            ! Start at the beginning again
+         rewind input_file                            ! Start at the beginning again
       endif
       IDTIME = IDTIME + ITIME1
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       IDTIME = IDTIME - ITIME1
       GOTO 100
 !
@@ -132,10 +132,10 @@
 !
   100 IF ( MESSGE == 0 ) goto 9999
       IF ( ISFLAG /= 1 ) THEN
-           WRITE(LUNOUT,2000) MSGTXT(MESSGE), LUNIN, LUNTXT, & 
+           WRITE(LUNOUT,2000) MSGTXT(MESSGE), input_file, LUNTXT, &
                              ITIME, ITIME1
       ELSE
-           WRITE(LUNOUT,2010) MSGTXT(MESSGE), LUNIN, LUNTXT, & 
+           WRITE(LUNOUT,2010) MSGTXT(MESSGE), input_file, LUNTXT, &
                              ITIME /86400, MOD(ITIME ,86400)/3600 , & 
                              MOD(ITIME ,3600)/60, MOD(ITIME ,60)  , & 
                              ITIME1/86400, MOD(ITIME1,86400)/3600 , & 

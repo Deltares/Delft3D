@@ -408,7 +408,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c093_chezy_trachytopes_ebb_flood_dependent" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c093_chezy_trachytopes_ebb_flood_dependent</path>
+      <path version="2024-04-10T16:26:00">e02_dflowfm/f004_bottomfriction/c093_chezy_trachytopes_ebb_flood_dependent</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -1464,7 +1464,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c088_qhbnd_bc_tripleboundary" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
+      <path version="2024-04-10T16:35:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/testcase01_map.nc" type="netCDF">
@@ -3774,7 +3774,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c031_alloutdtmaxlarge" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c031_alloutdtmaxlarge</path>
+      <path version="2024-04-10T16:40:00">e02_dflowfm/f012_inout/c031_alloutdtmaxlarge</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
@@ -4097,7 +4097,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f015_c019_iniwatlev_rst" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f015_spatial_interpolation/c019_iniwatlev_rst</path>
+      <path version="2024-04-10T16:40:00">e02_dflowfm/f015_spatial_interpolation/c019_iniwatlev_rst</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
@@ -6030,7 +6030,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c61_wl_q_roughness_ZW" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c61_wl_q_dependent_roughness</path>
+      <path version="2024-04-10T16:45:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c61_wl_q_dependent_roughness</path>
       <maxRunTime>25.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c61_his.nc" type="netCDF">

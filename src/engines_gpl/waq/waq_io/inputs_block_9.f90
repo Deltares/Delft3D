@@ -33,7 +33,7 @@ module inputs_block_9
 
 contains
 
-    subroutine read_block_9(lun, lchar, filtype, char_arr, int_array, &
+    subroutine read_block_9(file_unit_list, file_name_list, filtype, char_arr, int_array, &
             max_char_size, max_int_size, iwidth, &
             output_verbose_level, ioutps, outputs, status)
 
@@ -47,8 +47,8 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
 
-        integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
-        character(*), intent(inout) :: lchar (*)         !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
+        character(*), intent(inout) :: file_name_list (*)         !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         integer(kind = int_wp), intent(in) :: max_char_size              !< size of the character workspace
         character(20), intent(inout) :: char_arr   (max_char_size)     !< character workspace
@@ -97,7 +97,7 @@ contains
         ibflag = (mod(intopt, 16) > 7)
         NOQTT = NOQ + NOQ4
         NOSSS = NOSEG + NSEG2 ! with or without bottom
-        LUNUT = LUN(29)
+        LUNUT = file_unit_list(29)
         IF (IMSTRT <= ITSTOP .AND. IMSTRT <= IMSTOP .AND. IMSTEP > 0) THEN
             LMOUTP = .TRUE.
         ELSE
@@ -158,7 +158,7 @@ contains
             infile = .false.
             write (lunut, 2020)
         else                             !        Handle option -1 and 1
-            call process_simulation_input_options   (iopt1, lun, 18, lchar, filtype, &
+            call process_simulation_input_options   (iopt1, file_unit_list, 18, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 100
@@ -182,8 +182,8 @@ contains
             if (status%ierr == 0) then
 
                 ! Read part of delwaq file
-                call open_waq_files(lun(2), lchar(2), 2, 2, ierr2)
-                call read_working_file_4(lun(2), lunut, modid, sysid, notot, &
+                call open_waq_files(file_unit_list(2), file_name_list(2), 2, 2, ierr2)
+                call read_working_file_4(file_unit_list(2), lunut, modid, sysid, notot, &
                         nodump, nosys, nobnd, nowst, nocons, &
                         nopa, noseg, nseg2, coname, paname, &
                         funame, nofun, sfname, nosfun, nodisp, &
@@ -191,7 +191,7 @@ contains
                         ndmpar, ntdmpq, ntdmps, noqtt, noraai, &
                         ntraaq, nobtyp, nowtyp, nogrid, int_array, &
                         int_array, int_array)
-                close (lun(2))
+                close (file_unit_list(2))
 
                 ! Get output pointers
                 call get_output_pointers(noutp, nrvar, nrvarm, char_arr, int_array, nmis, notot, sysid, nocons, &

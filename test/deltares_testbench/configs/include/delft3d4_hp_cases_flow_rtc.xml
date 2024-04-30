@@ -27,7 +27,7 @@
 
 	<testCases>
 		<testCase name="e21_f01_c01-basic" ref="flow2d3d_rtc_default">
-			<path version="2024-01-11T14:00:00">e21_d3dflow-rtc/f01_general/c01-basic</path>
+			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c01-basic</path>
 			<maxRunTime>11.1540000439</maxRunTime>
 			<checks>
 				<file name="trih-2dw.dat" type="NEFIS">
@@ -47,7 +47,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e21_f01_c02-rtc_dd" ref="flow2d3d_rtc_default">
-			<path version="2024-01-11T14:00:00">e21_d3dflow-rtc/f01_general/c02-rtc_dd</path>
+			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c02-rtc_dd</path>
 			<maxRunTime>229.05099988</maxRunTime>
 			<checks>
 				<file name="trih-cha1.dat" type="NEFIS">
@@ -95,7 +95,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e21_f01_c03-s01a_dd" ref="flow2d3d_rtc_default">
-			<path version="2024-01-11T14:00:00">e21_d3dflow-rtc/f01_general/c03-s01a_dd</path>
+			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c03-s01a_dd</path>
 			<checks>
 				<file name="trih-cha1.dat" type="NEFIS">
 					<parameters name="his-series">

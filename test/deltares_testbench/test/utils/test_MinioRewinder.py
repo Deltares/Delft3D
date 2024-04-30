@@ -1,19 +1,27 @@
 import hashlib
 import itertools
-import os
 import random
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from pathlib import Path
+from typing import List, Optional
 from uuid import uuid4
 
-import minio
 import pytest
+from minio import Minio
 from minio.datatypes import Object as MinioObject
 from pyfakefs.fake_filesystem import FakeFilesystem
-from pytest import CaptureFixture
 from pytest_mock import MockerFixture
+from s3_path_wrangler.paths import S3Path
 
-from src.utils.minio_rewinder import Rewinder
+from src.utils.logging.i_logger import ILogger
+from src.utils.minio_rewinder import (
+    DEFAULT_MULTIPART_UPLOAD_PART_SIZE,
+    Operation,
+    Plan,
+    PlanItem,
+    Rewinder,
+    VersionPair,
+)
 
 
 def make_object(
@@ -36,49 +44,10 @@ def make_object(
     )
 
 
-def make_version(dt: Optional[datetime] = None) -> str:
-    dt = dt or datetime.now(timezone.utc)
-    return dt.isoformat().split(".", 1)[0].replace("-", ".")
-
-
 class TestMinioRewinder:
-    @pytest.mark.parametrize(
-        "version, expected_seconds",
-        [
-            ("2023.10.20T09:12", 0),
-            ("2023.10.20T09:12:33", 33),
-        ],
-    )
-    def test_rewind_correct_version_constructs_rewinder(
-        self, version: str, expected_seconds: int, mocker: MockerFixture
-    ):
-        # Mock Minio and Rewinder
-        minio_instance = mocker.Mock(spec=minio.Minio)
-
-        rewinder_instance = Rewinder(minio_instance, version)
-        assert rewinder_instance.rewind.year == 2023
-        assert rewinder_instance.rewind.month == 10
-        assert rewinder_instance.rewind.day == 20
-        assert rewinder_instance.rewind.hour == 9
-        assert rewinder_instance.rewind.minute == 12
-        assert rewinder_instance.rewind.second == expected_seconds
-
-    @pytest.mark.parametrize(
-        "version",
-        [
-            ("v1.2.3"),
-            ("1.2.3"),
-            ("abcd.ef.ghTij:kl"),
-        ],
-    )
-    def test_rewind_incorrect_version_throws_value_error(self, version: str, mocker: MockerFixture):
-        # Mock Minio
-        with pytest.raises(ValueError):
-            Rewinder(mocker.Mock(spec=minio.Minio), version)
-
     def test_rewind_download_delete_marker(self, mocker: MockerFixture):
         # Arrange
-        mock_minio_client = mocker.Mock(spec=minio.Minio)
+        mock_minio_client = mocker.Mock(spec=Minio)
 
         object1 = make_object(
             object_name="object1_name",
@@ -96,20 +65,21 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Act
-        rewinder_instance = Rewinder(mock_minio_client, "2023.10.20T12:00")
-        rewinder_instance.download("my_bucket", "https://minio/browser", ".")
+        rewinder_instance = Rewinder(mock_minio_client, logger)
+        timestamp = datetime(2023, 10, 20, 12, tzinfo=timezone.utc)
+        rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         # Assert
-        expected_path = os.path.join(".", "object1_name")
         mock_minio_client.fget_object.assert_called_once_with(
-            "my_bucket", "object1_name", expected_path, version_id=mocker.ANY
+            "my-bucket", "object1_name", str(Path("./object1_name")), version_id=mocker.ANY
         )
 
     def test_rewind_download_before_rewind(self, mocker: MockerFixture):
         # Create a Mock for the Minio client
-        mock_minio_client = mocker.Mock(spec=minio.Minio)
+        mock_minio_client = mocker.Mock(spec=Minio)
 
         object1 = make_object(
             object_name="object1_name",
@@ -126,15 +96,17 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
-        rewinder_instance = Rewinder(mock_minio_client, "2022.10.20T12:00")
-        rewinder_instance.download("my_bucket", "https://minio/browser", ".")
+        rewinder_instance = Rewinder(mock_minio_client, logger)
+        timestamp = datetime(2022, 10, 20, 12, tzinfo=timezone.utc)
+        rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         mock_minio_client.fget_object.assert_not_called()
 
     def test_rewind_download_after_rewind(self, mocker: MockerFixture):
         # Arrange
-        mock_minio_client = mocker.Mock(spec=minio.Minio)
+        mock_minio_client = mocker.Mock(spec=Minio)
 
         object1 = make_object(
             object_name="object1_name",
@@ -151,24 +123,24 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Act
-        rewinder_instance = Rewinder(mock_minio_client, "2024.10.20T12:00")
-        rewinder_instance.download("my_bucket", "https://minio/browser", ".")
+        rewinder_instance = Rewinder(mock_minio_client, logger)
+        timestamp = datetime(2024, 10, 20, 12, tzinfo=timezone.utc)
+        rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         # Assert
-        expected_path1 = os.path.join(".", "object1_name")
         mock_minio_client.fget_object.assert_any_call(
-            "my_bucket", "object1_name", expected_path1, version_id=mocker.ANY
+            "my-bucket", "object1_name", str(Path("object1_name")), version_id=mocker.ANY
         )
-        expected_path2 = os.path.join(".", "object2_name")
         mock_minio_client.fget_object.assert_any_call(
-            "my_bucket", "object2_name", expected_path2, version_id=mocker.ANY
+            "my-bucket", "object2_name", str(Path("object2_name")), version_id=mocker.ANY
         )
 
     def test_rewind_download_on_rewind(self, mocker: MockerFixture):
         # Create a Mock for the Minio client
-        mock_minio_client = mocker.Mock(spec=minio.Minio)
+        mock_minio_client = mocker.Mock(spec=Minio)
 
         object1 = make_object(
             object_name="object1_name",
@@ -185,10 +157,12 @@ class TestMinioRewinder:
         object_list = [object1, object2]
 
         mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
 
         # Mock Minio and Rewinder
-        rewinder_instance = Rewinder(mock_minio_client, "2023.10.20T10:00")
-        rewinder_instance.download("my_bucket", "https://minio/browser", ".")
+        rewinder_instance = Rewinder(mock_minio_client, logger)
+        timestamp = datetime(2023, 10, 20, 9, 59, 59, tzinfo=timezone.utc)
+        rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         mock_minio_client.fget_object.assert_not_called()
 
@@ -197,97 +171,94 @@ class TestMinioRewinder:
     ) -> None:
         """It should list the objects in `source/path` and download them to directory `destination/path`."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         minio_client.list_objects.return_value = (
             make_object(f"source/path/{key}", bucket_name="my-bucket", version_id=f"v{i}")
-            for i, key in enumerate(("foo", "bar", "baz"))
+            for i, key in enumerate(("bar", "baz", "foo"))
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert minio_client.fget_object.call_args_list == [
+        assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.args[1]) == [
             mocker.call(
                 "my-bucket",
                 f"source/path/{name}",
-                f"destination/path/{name}",
+                str(Path(f"destination/path/{name}")),
                 version_id=f"v{i}",
             )
-            for i, name in enumerate(("foo", "bar", "baz"))
+            for i, name in enumerate(("bar", "baz", "foo"))
         ]
 
     def test_download__source_path_has_trailing_slash(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         """It should list the objects in `source/path/` and download them to directory `destination/path`."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path/", "destination/path")
+        rewinder.download("my-bucket", "source/path/", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
         minio_client.fget_object.assert_called_once_with(
             "my-bucket",
             "source/path/foo",
-            "destination/path/foo",
+            str(Path("destination/path/foo")),
             version_id="v1",
         )
 
     def test_download__destination_dir_exists_and_empty__no_message(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should not print a message saying the destination dir is not empty."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
         fs.create_dir("destination/path")
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination dir still exists.
-        assert "is not empty" not in captured.out
+        logger.error.assert_not_called()
         minio_client.fget_object.assert_called_once_with(
-            "my-bucket", "source/path/foo", "destination/path/foo", version_id="v1"
+            "my-bucket", "source/path/foo", str(Path("destination/path/foo")), version_id="v1"
         )
 
     def test_download__destination_dir_exists_and_not_empty__print_not_empty_message(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should not print a message saying the destination dir is not empty."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
         fs.create_file("destination/path/bar")
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination dir still exists.
-        assert "is not empty" in captured.out  # Warn that destination dir is not empty.
+        logger.warning.assert_called()  # Warn that destination dir is not empty.
         minio_client.fget_object.assert_called_once_with(
-            "my-bucket", "source/path/foo", "destination/path/foo", version_id="v1"
+            "my-bucket", "source/path/foo", str(Path("destination/path/foo")), version_id="v1"
         )
 
     def test_download__same_key_multiple_versions__get_latest_versions(
@@ -295,9 +266,9 @@ class TestMinioRewinder:
     ) -> None:
         """It should download only the latest versions of objects in Minio."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         now = datetime.now(timezone.utc)
         minio_client.list_objects.return_value = (
             make_object(
@@ -313,26 +284,27 @@ class TestMinioRewinder:
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert minio_client.fget_object.call_args_list == [
+        assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.args[1]) == [
             mocker.call(
                 "my-bucket",
                 f"source/path/{name}",
-                f"destination/path/{name}",
+                str(Path(f"destination/path/{name}")),
                 version_id=f"{name}-minus-1-hours",
             )
-            for name in ("foo", "bar", "baz")
+            for name in ("bar", "baz", "foo")
         ]
 
     def test_download__rewind__dont_download_latest(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         """After a rewind, it shouldn't get future versions of objects."""
         # Arrange
         past = datetime.now(timezone.utc) - timedelta(days=30)
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(past))
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = (
             make_object(
                 "source/path/foo",
@@ -344,25 +316,26 @@ class TestMinioRewinder:
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
+        rewinder.download("my-bucket", "source/path", Path("destination/path"), past)
 
         # Assert
         assert fs.exists("destination/path")
         minio_client.fget_object.assert_called_once_with(
             "my-bucket",
             "source/path/foo",
-            "destination/path/foo",
+            str(Path("destination/path/foo")),
             version_id="foo-minus-31-days",
         )
 
     def test_download__rewinded_object_has_delete_marker__dont_download_it(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """After a rewind, it shouldn't get future versions of objects."""
         # Arrange
         past = datetime.now(timezone.utc) - timedelta(days=30)
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(past))
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = (
             make_object(
                 "source/path/foo",
@@ -375,20 +348,19 @@ class TestMinioRewinder:
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", Path("destination/path"), past)
 
         # Assert
-        assert "No downloads found" in captured.out
+        logger.error.assert_called()
         assert not fs.exists("destination/path")
         minio_client.fget_object.assert_not_called()
 
     def test_download__dont_get_objects_with_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         """It should skip downloading objects that have a delete marker."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = (
             make_object(
                 f"source/path/{key}",
@@ -402,28 +374,28 @@ class TestMinioRewinder:
         )
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert minio_client.fget_object.call_args_list == [
+        assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.args[1]) == [
             mocker.call(
                 "my-bucket",
                 f"source/path/{name}",
-                f"destination/path/{name}",
+                str(Path(f"destination/path/{name}")),
                 version_id="not-deleted",
             )
-            for name in ("foo", "baz", "quux")
+            for name in ("baz", "foo", "quux")
         ]
 
     def test_download__object_already_exists_and_content_is_the_same__skip_download(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should skip downloading objects that already exist in the destination directory."""
         # Arrange
-        version = make_version()
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, version)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = itertools.chain(
             (make_object("source/path/empty-file", "my-bucket", "v42", etag=hashlib.md5(b"").hexdigest()),),
             (
@@ -440,33 +412,36 @@ class TestMinioRewinder:
         fs.create_file("destination/path/bar", contents="bar")
         fs.create_file("destination/path/qux", contents="qux")
         fs.create_file("destination/baz", contents="baz")  # Not in destination directory.
+        dest_path = Path("destination/path")
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", dest_path)
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert "Skipping download: destination/path/empty-file" in captured.out
-        assert "Skipping download: destination/path/bar" in captured.out
-        assert "Skipping download: destination/path/qux" in captured.out
-        assert minio_client.fget_object.call_args_list == [
+        warnings = [call.args[0] for call in logger.warning.call_args_list]
+        assert all(
+            f"Skipping download: {dest_path / name}, it already exists." in warnings
+            for name in ["empty-file", "bar", "qux"]
+        )
+        assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.kwargs["version_id"]) == [
             mocker.call(
                 "my-bucket",
                 f"source/path/{name}",
-                f"destination/path/{name}",
+                str(Path(f"destination/path/{name}")),
                 version_id=f"v{i}",
             )
             for i, name in ((0, "foo"), (2, "baz"), (4, "quux"))
         ]
 
     def test_download__object_already_exists_and_content_is_different__download_object(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should downloading objects that already exist in the destination directory but have chagned."""
         # Arrange
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version())
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = iter(
             [
                 make_object(
@@ -480,21 +455,21 @@ class TestMinioRewinder:
         fs.create_file("destination/path/foo", contents="old_foo")
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert "Skipping download: destination/path/foo" not in captured.out
+        warning = f"Destination directory '{Path('destination/path')}' is not empty."
+        logger.warning.assert_called_once_with(warning)
         minio_client.fget_object.assert_called_once_with(
             "my-bucket",
             "source/path/foo",
-            "destination/path/foo",
+            str(Path("destination/path/foo")),
             version_id="v1",
         )
 
     def test_download__large_object_already_exists_and_content_is_the_same__skip_download(
-        self, mocker: MockerFixture, fs: FakeFilesystem, capsys: CaptureFixture
+        self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should skip downloading large objects that already exist in the destination directory.
 
@@ -511,18 +486,765 @@ class TestMinioRewinder:
         digests = (hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(parts))
         etag = hashlib.md5(b"".join(digests)).hexdigest() + f"-{parts}"
 
-        minio_client = mocker.Mock(spec=minio.Minio)
-        rewinder = Rewinder(minio_client, make_version(), part_size=part_size)
+        logger = mocker.Mock(spec=ILogger)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, logger, part_size=part_size)
         minio_client.list_objects.return_value = iter(
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1", etag=etag)]
         )
         fs.create_file("destination/path/foo", contents=content)
 
         # Act
-        rewinder.download("my-bucket", "source/path", "destination/path")
-        captured = capsys.readouterr()
+        rewinder.download("my-bucket", "source/path", Path("destination/path"))
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        assert "Skipping download: destination/path/foo" in captured.out
+        warning = f'Skipping download: {Path("destination/path/foo")}, it already exists.'
+        assert mocker.call(warning) in logger.warning.call_args_list
         minio_client.fget_object.assert_not_called()
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__no_objects_in_minio__create_objects(
+        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should create new objects in MinIO if there's files in the current directory."""
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        fs.create_dir(local_dir)
+        for path in ("foo.txt", "bar/baz.txt", "qux/quux/quuux.txt"):  # Create three local files.
+            fs.create_file(local_dir / path, contents=path)
+
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        minio_client.list_objects.return_value = iter([])  # List objects returns no objects.
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        expected_items = (
+            []
+            if update_only
+            else [
+                PlanItem.create(local_dir / path, minio_prefix / path)
+                for path in ("bar/baz.txt", "foo.txt", "qux/quux/quuux.txt")
+            ]
+        )
+        assert sorted(plan.items, key=lambda op: str(op.minio_path)) == expected_items
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__empty_directory__remove_objects(
+        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should remove objects in MinIO if the local directory does not contain them."""
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        fs.create_dir(local_dir)  # Create empty dir
+
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        minio_client.list_objects.return_value = (
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / path).key,
+                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+            )
+            for path in ("foo.txt", "bar/baz.txt", "qux/quux/quuux.txt")
+        )
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        expected_items = (
+            []
+            if update_only
+            else [
+                PlanItem.remove(minio_prefix / path)
+                for path in (
+                    "bar/baz.txt",
+                    "foo.txt",
+                    "qux/quux/quuux.txt",
+                )
+            ]
+        )
+        assert sorted(plan.items, key=lambda op: str(op.minio_path)) == expected_items
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__local_files_exists_in_minio_with_no_changes__empty_plan(
+        self,
+        update_only: bool,
+        mocker: MockerFixture,
+        fs: FakeFilesystem,
+    ) -> None:
+        """It shouldn't re-upload files if the content is the same."""
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        paths = ["foo.txt", "bar/baz.txt", "qux/quux/quuux.txt"]
+        # Create objects in MinIO
+        minio_client.list_objects.return_value = (
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / path).key,
+                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+            )
+            for path in paths
+        )
+        # Create files in filesystem
+        for path in paths:
+            fs.create_file(local_dir / path, contents=path)
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        assert not plan.items
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__local_files_exists_in_minio_with_changes__upload_files(
+        self,
+        update_only: bool,
+        mocker: MockerFixture,
+        fs: FakeFilesystem,
+    ) -> None:
+        """It should re-upload files if there's changes in the content."""
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        paths = ["foo.txt", "bar/baz.txt", "qux/quux/quuux.txt"]
+        # Create objects in MinIO
+        minio_client.list_objects.return_value = (
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / path).key,
+                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+            )
+            for path in paths
+        )
+        # Create files in filesystem
+        fs.create_dir(local_dir)  # Create empty dir
+        for path in paths:
+            fs.create_file(local_dir / path, contents=f"{path} changed!")
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        assert sorted(plan.items, key=lambda op: str(op.minio_path)) == [
+            PlanItem.update(local_dir / path, minio_prefix / path)
+            for path in (
+                "bar/baz.txt",
+                "foo.txt",
+                "qux/quux/quuux.txt",
+            )
+        ]
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__mixed_operations(self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        """It should include all different kind of operations in the computed plan.
+
+        This test covers all of the branches in the big `if` statement in the `build_plan`
+        method of the `Rewinder`.
+        """
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        # Create files in filesystem.
+        fs.create_dir(local_dir)  # Create empty dir
+        fs.create_file(local_dir / "new-file", contents="This file is new.")
+        fs.create_file(local_dir / "unchanged-file", contents="Content unchanged.")
+        fs.create_file(local_dir / "changed-file", contents="This content is new.")
+
+        # Create objects in MinIO
+        minio_client.list_objects.return_value = [
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / "unchanged-file").key,
+                etag=hashlib.md5(b"Content unchanged.").hexdigest(),
+            ),
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / "changed-file").key,
+                etag=hashlib.md5(b"This content is old.").hexdigest(),
+            ),
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / "removed-file").key,
+                etag=hashlib.md5(b"This object is removed.").hexdigest(),
+            ),
+        ]
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        items = [
+            PlanItem.update(local_dir / "changed-file", minio_prefix / "changed-file"),
+            None if update_only else PlanItem.create(local_dir / "new-file", minio_prefix / "new-file"),
+            None if update_only else PlanItem.remove(minio_prefix / "removed-file"),
+        ]
+        assert plan.items == list(filter(None, items))
+
+    @pytest.mark.parametrize("update_only", [False, True])
+    def test_build_plan__randomized_mixed_operations(
+        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should include all different kind of operations in the computed plan.
+
+        This test covers the case of a large amount of changes between the local
+        directory and MinIO. It's randomized so it should be able to catch any remaining
+        bugs in the implementation.
+        """
+        # Arrange
+        local_dir = Path("path/to/local/data")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        # Create files in filesystem and MinIO.
+        file_count = random.randrange(10, 100)
+        create_count, update_count, remove_count = 0, 0, 0
+        minio_objects = []
+        for i in range(file_count):
+            name = f"file-{i}"
+
+            file_content, object_content = name, name
+            create_file, create_object = True, True
+            rand = random.random()
+            if 0.25 <= rand < 0.5:  # Changed object
+                update_count += 1
+                file_content = f"{name} changed!"
+            elif 0.5 <= rand < 0.75:  # Deleted object
+                remove_count += 1
+                create_file = False
+            elif 0.75 <= rand <= 1.0:  # Created object
+                create_count += 1
+                create_object = False
+
+            if create_file:
+                fs.create_file(local_dir / name, contents=file_content)
+            if create_object:
+                minio_objects.append(
+                    MinioObject(
+                        bucket_name=minio_prefix.bucket,
+                        object_name=(minio_prefix / name).key,
+                        etag=hashlib.md5(object_content.encode("utf-8")).hexdigest(),
+                    )
+                )
+
+        minio_client.list_objects.return_value = minio_objects
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+
+        # Assert
+        if update_only:
+            create_count = remove_count = 0
+        assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
+        assert sum(1 for op in plan.items if op.operation == Operation.CREATE) == create_count
+        assert sum(1 for op in plan.items if op.operation == Operation.UPDATE) == update_count
+        assert sum(1 for op in plan.items if op.operation == Operation.REMOVE) == remove_count
+        assert len(plan.items) == create_count + update_count + remove_count
+
+    def test_build_plan__multipart_upload_etag_computation(
+        self,
+        mocker: MockerFixture,
+        fs: FakeFilesystem,
+    ) -> None:
+        """It should compute the ETag correctly in the case of a multipart upload."""
+        # Arrange
+        local_dir = Path("path/to/local/data/")
+        minio_prefix = S3Path("s3://my-bucket/minio/path/prefix")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        size = 1024
+        part_size = random.randrange(256, 1024)
+        content = random.getrandbits(size * 8).to_bytes(size, "big")
+        part_count = (size + part_size - 1) // part_size
+        assert len(content) == 1024  # 1024 random bytes.
+        hashes = [hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(part_count)]
+        expected_etag = hashlib.md5(b"".join(hashes)).hexdigest() + f"-{part_count}"
+
+        fs.create_file(local_dir / "foo/bar.baz", contents=content)
+        minio_client.list_objects.return_value = [
+            MinioObject(
+                bucket_name=minio_prefix.bucket,
+                object_name=(minio_prefix / "foo/bar.baz").key,
+                etag=expected_etag,
+            )
+        ]
+
+        # Act
+        plan = rewinder.build_plan(local_dir, minio_prefix, part_size=part_size)
+
+        # Assert
+        assert plan.multipart_upload_part_size == part_size
+        assert not plan.items
+
+    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    def test_execute_plan__create_or_update_operation__put_object(
+        self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should call `fput_object` on `CREATE` operations."""
+        # Arrange
+        local_path = Path("local/path/to/data.txt")
+        minio_path = S3Path("s3://bucket/remote/path/to/data.txt")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem(operation=type_, minio_path=minio_path, local_path=local_path)],
+            multipart_upload_part_size=42 * 1024,
+        )
+        fs.create_file(local_path)
+
+        # Act
+        rewinder.execute_plan(plan)
+
+        # Assert
+        minio_client.fput_object.assert_called_once_with(
+            bucket_name="bucket",
+            object_name="remote/path/to/data.txt",
+            file_path=str(local_path),
+            part_size=42 * 1024,
+            tags=None,
+        )
+
+    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    def test_execute_plan__create_or_update_operation_with_tags__put_object(
+        self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should call `fput_object` on `CREATE` operations."""
+        # Arrange
+        local_path = Path("local/path/to/data.txt")
+        minio_path = S3Path("s3://bucket/remote/path/to/data.txt")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem(operation=type_, minio_path=minio_path, local_path=local_path)],
+            multipart_upload_part_size=42 * 1024,
+            tags={"foo": "bar"},  # type: ignore
+        )
+        fs.create_file(local_path)
+
+        # Act
+        rewinder.execute_plan(plan)
+
+        # Assert
+        minio_client.fput_object.assert_called_once_with(
+            bucket_name="bucket",
+            object_name="remote/path/to/data.txt",
+            file_path=str(local_path),
+            part_size=42 * 1024,
+            tags={"foo": "bar"},
+        )
+
+    def test_execute_plan__create_minio_keep_file__put_object(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        """It should call `fput_object` on `CREATE` operations."""
+        # Arrange
+        local_path = Path("local/path/to/.miniokeep")
+        minio_path = S3Path("s3://bucket/remote/path/to/.miniokeep")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem.create(local_path, minio_path)],
+            multipart_upload_part_size=42 * 1024,
+        )
+
+        # Act
+        rewinder.execute_plan(plan)
+
+        # Assert
+        minio_client.put_object.assert_called_once_with(
+            bucket_name="bucket",
+            object_name="remote/path/to/.miniokeep",
+            data=mocker.ANY,  # Empty BytesIO object.
+            length=0,
+            tags=None,
+        )
+        assert minio_client.put_object.call_args.kwargs["data"].read() == b""
+
+    def test_execute_plan__create_minio_keep_file_with_tags__put_object(
+        self, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
+        """It should call `fput_object` on `CREATE` operations."""
+        # Arrange
+        local_path = Path("local/path/to/.miniokeep")
+        minio_path = S3Path("s3://bucket/remote/path/to/.miniokeep")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem.create(local_path, minio_path)],
+            multipart_upload_part_size=42 * 1024,
+            tags={"foo": "bar"},  # type: ignore
+        )
+
+        # Act
+        rewinder.execute_plan(plan)
+
+        # Assert
+        minio_client.put_object.assert_called_once_with(
+            bucket_name="bucket",
+            object_name="remote/path/to/.miniokeep",
+            data=mocker.ANY,  # Empty BytesIO object.
+            length=0,
+            tags={"foo": "bar"},
+        )
+        assert minio_client.put_object.call_args.kwargs["data"].read() == b""
+
+    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    def test_execute_plan__create_or_update_non_existent_file__raise_error(
+        self, type_: Operation, mocker: MockerFixture
+    ) -> None:
+        """It should raise an error when creating/updating non-existent files."""
+        # Arrange
+        local_path = Path("local/path/to/data.txt")
+        minio_path = S3Path("s3://bucket/remote/path/to/data.txt")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem(operation=type_, minio_path=minio_path, local_path=local_path)],
+        )
+
+        # Act
+        with pytest.raises(RuntimeError, match="non-existent local file"):
+            rewinder.execute_plan(plan)
+
+    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    def test_execute_plan__create_or_update_without_local_path__raise_error(
+        self, type_: Operation, mocker: MockerFixture
+    ) -> None:
+        """It should call `fput_object` on `CREATE` operations."""
+        # Arrange
+        minio_path = S3Path("s3://bucket/remote/path/to/data.txt")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem(operation=type_, minio_path=minio_path, local_path=None)],
+        )
+
+        # Act
+        with pytest.raises(RuntimeError, match="must have"):
+            rewinder.execute_plan(plan)
+
+    def test_execute_plan__remove_operation__delete_object(self, mocker: MockerFixture) -> None:
+        """It should call `remove_object` on `REMOVE` operations."""
+        # Arrange
+        minio_path = S3Path("s3://bucket/remote/path/to/data.txt")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        plan = Plan(
+            local_dir=Path("local/path"),
+            minio_prefix=S3Path("s3://bucket/remote/path"),
+            items=[PlanItem.remove(minio_path)],
+        )
+
+        # Act
+        rewinder.execute_plan(plan)
+
+        # Assert
+        minio_client.remove_object.assert_called_once_with(
+            bucket_name="bucket",
+            object_name="remote/path/to/data.txt",
+        )
+
+    def test_execute_plan__randomized_mixed_operations(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        """It should call `fput_object` on `CREATE`/`UPDATE` and `delete_object` on `REMOVE`s."""
+        # Arrange
+        minio_prefix = S3Path("s3://bucket/prefix/")
+        local_dir = Path("local/dir/")
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger), 42 * 1024)
+
+        operations = [
+            PlanItem(
+                operation=type_,
+                minio_path=minio_prefix / file_name,
+                local_path=None if type_ == Operation.REMOVE else local_dir / file_name,
+            )
+            for type_, file_name in [
+                (
+                    random.choice([op for op in Operation if op != Operation.NONE]),
+                    "".join(chr(random.randrange(ord("a"), ord("z") + 1)) for _ in range(random.randrange(2, 10))),
+                )
+                for _ in range(random.randrange(42))
+            ]
+        ]
+        for op in operations:
+            if op.operation != Operation.REMOVE and op.local_path is not None:
+                fs.create_file(op.local_path)
+
+        # Act
+        rewinder.execute_plan(
+            plan=Plan(
+                local_dir=Path("local/path"),
+                minio_prefix=S3Path("s3://bucket/remote/path"),
+                items=operations,
+            )
+        )
+
+        # Assert
+        remove_count = len([op for op in operations if op.operation == Operation.REMOVE])
+        assert minio_client.remove_object.call_count == remove_count
+        assert minio_client.fput_object.call_count == len(operations) - remove_count
+
+    def test_detect_conflicts__object_didnt_exist_but_now_does__create_drift(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        new_object = MinioObject("my-bucket", "data/foo", now)
+        minio_client.list_objects.return_value = [new_object]
+
+        # Act
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, now - timedelta(days=1))
+
+        # Assert
+        assert not conflicts
+        assert conflict == VersionPair(None, new_object)
+        assert conflict.update_type == Operation.CREATE
+
+    def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_drift(
+        self, mocker: MockerFixture
+    ) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        minio_client.list_objects.return_value = [
+            MinioObject("my-bucket", "data/foo", now, is_delete_marker=True),
+        ]
+
+        # Act
+        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(days=1))
+
+        # Assert
+        assert not conflicts
+
+    def test_detect_conflicts__rewinded_object_is_the_latest_version__no_drift(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        minio_client.list_objects.return_value = [
+            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="v1"),
+            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new").hexdigest(), version_id="v2"),
+        ]
+
+        # Act
+        conflicts = rewinder.detect_conflicts(prefix, now)
+
+        # Assert
+        assert not conflicts
+
+    def test_detect_conflicts__new_version_exists__update_drift(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        objects = [
+            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new!").hexdigest(), version_id="2"),
+            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="1"),
+        ]
+        minio_client.list_objects.return_value = objects
+
+        # Act
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday)
+
+        # Assert
+        assert not conflicts
+        assert conflict == VersionPair(objects[1], objects[0])
+        assert conflict.update_type == Operation.UPDATE
+
+    def test_detect_conflicts__new_version_exists_but_content_not_different__no_drift(
+        self, mocker: MockerFixture
+    ) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        etag = hashlib.md5(b"old").hexdigest()
+        minio_client.list_objects.return_value = [
+            MinioObject("my-bucket", "data/foo", yesterday, etag=etag, version_id="1"),
+            MinioObject("my-bucket", "data/foo", now, etag=etag, version_id="2"),
+        ]
+
+        # Act
+        conflicts = rewinder.detect_conflicts(prefix, yesterday)
+
+        # Assert
+        assert not conflicts
+
+    def test_detect_conflicts__new_version_exists_but_is_a_delete_marker__remove_drift(
+        self, mocker: MockerFixture
+    ) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        objects = [
+            MinioObject("my-bucket", "data/foo", yesterday, version_id="1"),
+            MinioObject("my-bucket", "data/foo", now, version_id="2", is_delete_marker=True),
+        ]
+        minio_client.list_objects.return_value = objects
+
+        # Act
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, yesterday)
+
+        # Assert
+        assert not conflicts
+        assert conflict == VersionPair(objects[0], objects[1])
+        assert conflict.update_type == Operation.REMOVE
+
+    def test_detect_conflicts__old_version_is_delete_marker_but_new_version_is_not__create_drift(
+        self, mocker: MockerFixture
+    ) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        objects = [
+            MinioObject("my-bucket", "data/foo", now - timedelta(days=2), version_id="1"),
+            MinioObject("my-bucket", "data/foo", now - timedelta(days=1), version_id="2", is_delete_marker=True),
+            MinioObject("my-bucket", "data/foo", now, version_id="3"),
+        ]
+        minio_client.list_objects.return_value = objects
+
+        # Act
+        conflict, *conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12))
+
+        # Assert
+        assert not conflicts
+        assert conflict == VersionPair(objects[1], objects[2])
+        assert conflict.update_type == Operation.CREATE
+
+    def test_detect_conflicts__old_version_is_delete_marker_and_new_version_is_too__no_drift(
+        self, mocker: MockerFixture
+    ) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        minio_client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        minio_client.list_objects.return_value = [
+            MinioObject("my-bucket", "data/foo", now - timedelta(days=2), version_id="1"),
+            MinioObject("my-bucket", "data/foo", now - timedelta(days=1), version_id="2", is_delete_marker=True),
+            MinioObject("my-bucket", "data/foo", now, version_id="3", is_delete_marker=True),
+        ]
+
+        # Act
+        conflicts = rewinder.detect_conflicts(prefix, now - timedelta(hours=12))
+
+        # Assert
+        assert not conflicts
+
+    def test_detect_conflicts__multiple_files_and_versions_randomized(self, mocker: MockerFixture) -> None:
+        """It should detect object conflict across a large amount of objects and object versions.
+
+        This test performs a more complicated setup by preparing a large list of
+        object versions. The test data is randomized so we're not relying on the
+        order of the returned data.
+        """
+        # Arrange
+        now = datetime.now(timezone.utc)
+        rewind = now - timedelta(days=3)  # Rewind three days in the past.
+        minio_client = mocker.Mock(spec=Minio)
+        prefix = S3Path.from_bucket("my-bucket") / "data"
+        rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
+
+        # Prepare output of `list_objects`
+        objects: List[MinioObject] = []
+        object_count = random.randrange(10, 42)
+        create_count, update_count, remove_count = 0, 0, 0  # Initialize counters.
+        for i in range(object_count):
+            key = f"data/file-{i}"
+            version_count = random.randrange(1, 9)
+            versions = [
+                MinioObject(
+                    bucket_name="my-bucket",
+                    object_name=key,
+                    last_modified=now - timedelta(days=j),
+                    etag=hashlib.md5(f"{key}-v{j}".encode("utf-8")).hexdigest(),
+                    version_id=f"{key}-v{j}",
+                    is_delete_marker=False,
+                )
+                for j in range(version_count)
+            ]
+            past_object_exists = version_count > 3
+
+            rand = random.random()
+            if rand < 0.25:  # Do nothing to most recent version
+                if past_object_exists:
+                    update_count += 1  # Object has been updated.
+                else:
+                    create_count += 1  # Now this object exists.
+            if 0.25 <= rand < 0.5:  # Most recent version is delete marker.
+                versions[0] = MinioObject("my-bucket", key, now, is_delete_marker=True, version_id=f"{key}-v0")
+                if past_object_exists:
+                    remove_count += 1
+            if 0.5 <= rand < 0.75:  # The past version is a delete marker.
+                if past_object_exists:
+                    versions[3] = MinioObject(
+                        "my-bucket", key, now - timedelta(days=3), is_delete_marker=True, version_id=f"{key}-v3"
+                    )
+                create_count += 1
+            if 0.75 <= rand:  # The past and latest versions have the same content.
+                if past_object_exists:
+                    etag = hashlib.md5(b"same content!").hexdigest()
+                    versions[0] = MinioObject("my-bucket", key, now, etag, version_id=f"{key}-v0")
+                    versions[3] = MinioObject("my-bucket", key, now - timedelta(days=3), etag, version_id=f"{key}-v3")
+                else:
+                    create_count += 1
+
+            objects.extend(versions)
+
+        random.shuffle(objects)  # Randomize order of returned objects
+        minio_client.list_objects.return_value = objects
+
+        # Act
+        conflicts = rewinder.detect_conflicts(prefix, rewind)
+
+        # Assert
+        assert sum(1 for elem in conflicts if elem.update_type == Operation.CREATE) == create_count
+        assert sum(1 for elem in conflicts if elem.update_type == Operation.UPDATE) == update_count
+        assert sum(1 for elem in conflicts if elem.update_type == Operation.REMOVE) == remove_count

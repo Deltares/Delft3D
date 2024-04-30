@@ -45,7 +45,7 @@ class ConsoleLogger(IMainLogger):
 
     def __create_logger(self, log_level: LogLevel) -> logging.Logger:
         level = self.__get_internal_log_level(log_level)
-        logger = logging.getLogger("")
+        logger = logging.getLogger(__name__)
         logger.setLevel(level)
         logger.isEnabledFor(level)
 

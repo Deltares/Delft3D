@@ -30,9 +30,9 @@ module m_block_2_input_reader
 
 contains
 
-    subroutine read_block_2_from_input (lun, lchar, filtype, nrftot, nlines, &
-            npoins, is_date_format, is_ddhhmmss_format, nodump, iopt, &
-            noint, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
+    subroutine read_block_2_from_input (file_unit_list, file_name_list, filtype, nrftot, nlines, &
+            npoins, is_date_format, is_ddhhmmss_format, nodump, integration_id_list, &
+            num_integration_options, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
             noraai, ntraaq, nosys, notot, nototp, &
             output_verbose_level, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
@@ -70,12 +70,12 @@ contains
         use integration_options, only : check_integration_option
         use m_time_validation
 
-        character(*), intent(inout), dimension(*) :: lchar !< array with file names of the files
+        character(*), intent(inout), dimension(*) :: file_name_list !< array with file names of the files
 
-        integer(kind = int_wp), intent(inout), dimension(*) :: lun      !< array with unit numbers
+        integer(kind = int_wp), intent(inout), dimension(*) :: file_unit_list      !< array with unit numbers
         integer(kind = int_wp), intent(inout), dimension(*) :: filtype  !< type of binary file
         integer(kind = int_wp), intent(inout), dimension(*) :: nrftot   !< number of function items
-        integer(kind = int_wp), intent(in), dimension(*) :: iopt     !< array with valid integration options
+        integer(kind = int_wp), intent(in), dimension(*) :: integration_id_list     !< array with valid integration options
         integer(kind = int_wp), dimension(:), pointer :: nsegdmp  !< number of volumes in this monitoring area
         integer(kind = int_wp), dimension(:), pointer :: isegdmp  !< computational volume numbers
         integer(kind = int_wp), dimension(:), pointer :: nexcraai !< number of exchanges in this monitoring transect
@@ -84,7 +84,7 @@ contains
         integer(kind = int_wp), intent(inout) :: nlines   !< cumulative record  space
         integer(kind = int_wp), intent(inout) :: npoins   !< cumulative pointer space
         integer(kind = int_wp), intent(out) :: nodump   !< number of monitoring points output
-        integer(kind = int_wp), intent(in) :: noint    !< dimension of iopt
+        integer(kind = int_wp), intent(in) :: num_integration_options    !< dimension of integration_id_list
         integer(kind = int_wp), intent(in) :: iwidth   !< width of the output file
         integer(kind = int_wp), intent(out) :: ndmpar   !< number of dump areas
         integer(kind = int_wp), intent(out) :: ntdmps   !< total number segments in dump area
@@ -140,7 +140,7 @@ contains
         ierr2 = 0
         iwar2 = 0
         alone = .true.      ! not coupled with Delpar
-        lchar(45) = ' '      ! so no Delpar input file
+        file_name_list(45) = ' '      ! so no Delpar input file
 
         !     There should be at least one substance in the input.
 
@@ -224,8 +224,8 @@ contains
             endif
             ibflag = 1
         endif
-        do i = 1, noint
-            if (int(10. * aint) == iopt(i)) goto 10
+        do i = 1, num_integration_options
+            if (int(10. * aint) == integration_id_list(i)) goto 10
         enddo
         write (lunut, '(/,A)') ' ERROR !!!! Invalid integration option ! ****'
         call status%increase_error_count()
@@ -251,7 +251,7 @@ contains
                 !                Delpar in Delwaq
 
                 if (gettoken(cdummy, ierr2) > 0) goto 30          ! get the input file name for particles
-                lchar(45) = cdummy
+                file_name_list(45) = cdummy
                 call rdfnam (lunitp, cdummy, fnamep, nfilesp, 2, 1, .false.)
                 call report_date_time  (lunitp(2))
                 call rdlgri (nfilesp, lunitp, fnamep)
@@ -264,7 +264,7 @@ contains
                         ' The following ', nosubs, ' DELPAR substances are added as passive substances to DELWAQ.'
                 do i = 1, nosubs
                     write (lunut, '(i4,2x,a)') notot + i, substi(i)
-                    write (lun(2)) substi(i)
+                    write (file_unit_list(2)) substi(i)
                 enddo
                 nototp = nosubs
                 notot = notot + nototp
@@ -409,7 +409,7 @@ contains
             nrftot (1) = 1
             nlines = nlines + 2
             npoins = npoins + 1 + 3
-            write (lun(4)) -1, (0, k = 1, 3)
+            write (file_unit_list(4)) -1, (0, k = 1, 3)
 
             if (is_date_format) then
                 call convert_time_format (int_array, num_records * 2, 1, is_date_format, is_yyddhh_format)
@@ -437,9 +437,9 @@ contains
                         ' ERROR', int_array(1), ' larger than start time:', itstrt
                 call status%increase_error_count()
             endif
-            call open_waq_files  (lun(5), lchar(5), 5, 1, ioerr)
+            call open_waq_files  (file_unit_list(5), file_name_list(5), 5, 1, ioerr)
             do ibrk = 1, num_records * 2, 2
-                write (lun(5)) int_array(ibrk), float (int_array(ibrk + 1))
+                write (file_unit_list(5)) int_array(ibrk), float (int_array(ibrk + 1))
                 if (int_array(ibrk + 1) <= 0) then
                     write (lunut, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', int_array(ibrk + 1)
                     call status%increase_error_count()
@@ -452,7 +452,7 @@ contains
                     call status%increase_error_count()
                 endif
             enddo
-            close (lun(5))
+            close (file_unit_list(5))
             ! option not implemented
         case default
             write (lunut, *) ' ERROR !!!! This option is not implemented !!!'
@@ -470,14 +470,14 @@ contains
         !             new input processssing
 
         ierr2 = 0
-        call read_monitoring_areas (lun, lchar, filtype, duname, nsegdmp, &
+        call read_monitoring_areas (file_unit_list, file_name_list, filtype, duname, nsegdmp, &
                 isegdmp, dmpbal, ndmpar, ntdmps, output_verbose_level, &
                 ierr2, status)
         if (ierr2 /= 0) goto 30
 
         if (ndmpar > 0) then
-            write (lun(2)) (duname(k), k = 1, ndmpar)
-            write (lun(2)) (dmpbal(k), k = 1, ndmpar)
+            write (file_unit_list(2)) (duname(k), k = 1, ndmpar)
+            write (file_unit_list(2)) (dmpbal(k), k = 1, ndmpar)
         endif
         if (associated(duname)) deallocate(duname)
         if (associated(dmpbal)) deallocate(dmpbal)
@@ -486,7 +486,7 @@ contains
 
         ierr2 = 0
         nullify(raname)
-        call read_monitoring_transects (lun, lchar, filtype, raname, nexcraai, &
+        call read_monitoring_transects (file_unit_list, file_name_list, filtype, raname, nexcraai, &
                 iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
                 ierr2, status)
         if (ierr2 /= 0) goto 30
@@ -499,7 +499,7 @@ contains
             intopt = ibset(intopt, 4)
         endif
         if (noraai > 0 .and. status%ierr == 0) then
-            write (lun(2)) (raname(k), k = 1, noraai)
+            write (file_unit_list(2)) (raname(k), k = 1, noraai)
         endif
         if (associated(raname)) deallocate(raname)
 

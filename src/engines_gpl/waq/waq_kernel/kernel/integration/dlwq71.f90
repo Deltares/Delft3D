@@ -31,22 +31,11 @@ contains
     SUBROUTINE DLWQ71 (DISP, DISPER, AREA, FLOW, ALENG, &
             VELO, CONC, BOUND, IPOINT, NOSYS, &
             NOTOT, NOQ1, NOQ2, NOQ, NODISP, &
-            NOVELO, IDPNT, IVPNT, IOPT, AMASS2, &
+            NOVELO, IDPNT, IVPNT, integration_id, AMASS2, &
             ILFLAG, DMPQ, NDMPQ, IQDMP)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED:    march 1988 by L.Postma
-        !
-        !     FUNCTION            : Makes a mass balance with central
-        !                           differencing in space.
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
+
+        ! Makes a mass balance with central differencing in space.
+
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     DISP    REAL        3       INPUT   dispersion in 3 directions
@@ -68,7 +57,7 @@ contains
         !     NOVELO  INTEGER     1       INPUT   number  of additional velos.
         !     IDPNT   INTEGER   NOSYS     INPUT   pointer systems to dispersions
         !     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
-        !     IOPT    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
+        !     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
         !                                         = 1 or 3 no DISP at zero flow
         !                                         = 0 or 1 DISP over boundary
         !                                         = 2 or 3 no DISP over boundary
@@ -88,7 +77,7 @@ contains
                 AMASS2(*), DMPQ  (*)
         integer(kind = int_wp) :: IPOINT(4, *), IDPNT(*), IVPNT(*)
 
-        integer(kind = int_wp) :: i, i3, i4, i5, i6, is, iq, ibflag, ipb, ipq, iopt
+        integer(kind = int_wp) :: i, i3, i4, i5, i6, is, iq, ibflag, ipb, ipq, integration_id
         integer(kind = int_wp) :: j, k1, k2
         integer(kind = int_wp) :: notot, nosys, noq, noq1, noq2, novelo, nodisp
 
@@ -102,7 +91,7 @@ contains
         I4 = 3 * NOTOT
         I5 = 4 * NOTOT
         I6 = NOSYS * NDMPQ
-        IF (MOD(IOPT, 16) >= 8) THEN
+        IF (MOD(integration_id, 16) >= 8) THEN
             IBFLAG = 1
         ELSE
             IBFLAG = 0
@@ -131,7 +120,7 @@ contains
             IF (I > 0 .AND. J > 0 .AND. IPB == 0) GOTO 60
             A = AREA(IQ)
             Q = FLOW(IQ)
-            IF (MOD(IOPT, 2) == 1) THEN
+            IF (MOD(integration_id, 2) == 1) THEN
                 IF (ABS(Q) < 10.0E-25)  GOTO 60
             ENDIF
             E = DISP(1)
@@ -193,11 +182,11 @@ contains
                 V = Q
                 IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
                 D = 0.0
-                IF (MOD(IOPT, 4) <  2) THEN
+                IF (MOD(integration_id, 4) <  2) THEN
                     D = E
                     IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
                 ENDIF
-                IF (MOD(IOPT, 8) >=  4) THEN
+                IF (MOD(integration_id, 8) >=  4) THEN
                     IF (V > 0.0) THEN
                         F1 = 1.0
                         F2 = 0.0
@@ -232,11 +221,11 @@ contains
                 V = Q
                 IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
                 D = 0.0
-                IF (MOD(IOPT, 4)  <  2) THEN
+                IF (MOD(integration_id, 4)  <  2) THEN
                     D = E
                     IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
                 ENDIF
-                IF (MOD(IOPT, 8) >=  4) THEN
+                IF (MOD(integration_id, 8) >=  4) THEN
                     IF (V > 0.0) THEN
                         F1 = 1.0
                         F2 = 0.0

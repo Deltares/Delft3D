@@ -31,13 +31,9 @@ module m_integration_scheme_6
 contains
 
 
-    subroutine integration_scheme_6 (buffer, lun, lchar, &
-            action, dlwqd, gridps)
+    subroutine integration_scheme_6 (buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-        !       Deltares Software Centre
-
-        !>\file
-        !>                         upwind advection, direct stationaly method (6)
+        !> upwind advection, direct stationaly method (6)
         !>
         !>                         Stationairy solution. Upwind 1st order.
         !>                         Fully implicit with a direct method.\n
@@ -45,17 +41,15 @@ contains
         !>                         the method can be used. In 1D the method outperforms the
         !>                         iterative methods.
 
-        !     CREATED            : June  1988 by Leo Postma
-
         !     Modified           : March 2011 by Jos van Gils
         !                          revive the water quality processes routine
         !                          change call to dlwq15 to support single substances
         !
-        !     LOGICAL UNITS      : LUN(19) , output, monitoring file
-        !                          LUN(20) , output, formatted dump file
-        !                          LUN(21) , output, unformatted hist. file
-        !                          LUN(22) , output, unformatted dump file
-        !                          LUN(23) , output, unformatted restart file
+        !     LOGICAL UNITS      : file_unit_list(19) , output, monitoring file
+        !                          file_unit_list(20) , output, formatted dump file
+        !                          file_unit_list(21) , output, unformatted hist. file
+        !                          file_unit_list(22) , output, unformatted dump file
+        !                          file_unit_list(23) , output, unformatted restart file
         !
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
         !                          DLWQ13, system postpro-dump routine
@@ -78,8 +72,8 @@ contains
         !     A       REAL       *      LOCAL  real      workspace array
         !     J       INTEGER    *      LOCAL  integer   workspace array
         !     C       CHARACTER  *      LOCAL  character workspace array
-        !     LUN     INTEGER    *      INPUT  array with unit numbers
-        !     LCHAR   CHARACTER  *      INPUT  filenames
+        !     file_unit_list     INTEGER    *      INPUT  array with unit numbers
+        !     file_name_list   CHARACTER  *      INPUT  filenames
         !
         !     Declaration of arguments
         !
@@ -109,14 +103,9 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
 
-        implicit none
-
-        !
-        !     Declaration of arguments
-        !
         type(waq_data_buffer), target :: buffer      !< System total array space
-        INTEGER(kind = int_wp), DIMENSION(*) :: LUN
-        character(len=*), DIMENSION(*) :: LCHAR
+        INTEGER(kind = int_wp), DIMENSION(*) :: file_unit_list
+        CHARACTER*(*), DIMENSION(*) :: file_name_list
         INTEGER(kind = int_wp) :: ACTION
         TYPE(DELWAQ_DATA) :: DLWQD
         type(GridPointerColl) :: GridPs               ! collection off all grid definitions
@@ -177,7 +166,7 @@ contains
             !        They cannot have explicit processes during this time step
 
             call hsurf  (noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, lun(19))
+                    c(isfna:), a(isfun:), surface, file_unit_list(19))
             call dryfld (noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
                     a(iarea:), nocons, c(icnam:), a(icons:), sindex, &
                     surface, j(iknmr:), iknmkv)
@@ -188,15 +177,15 @@ contains
 
                 call initialize_real_array (A(IVOL2:), NOSEG)
             ELSE IF (J(INRH2 + 1)>=0 .AND. IVFLAG==0) THEN
-                CALL DLWQ41 (LUN, ITIME, ITIMEL, A(IHARM:), A(IFARR:), &
+                CALL DLWQ41 (file_unit_list, ITIME, ITIMEL, A(IHARM:), A(IFARR:), &
                         J(INRHA:), J(INRH2:), J(INRFT:), NOSEG, A(IVOL2:), &
-                        J(IBULK:), LCHAR, ftype, ISFLAG, IVFLAG, &
+                        J(IBULK:), file_name_list, ftype, ISFLAG, IVFLAG, &
                         LDUMMY, J(INISP:), A(INRSP:), J(INTYP:), J(IWORK:), &
                         LSTREC, LREWIN, A(IVOLL:), dlwqd)
                 CALL DLWQ65 (A(IVOL2:), A(IVOL:), IDT, NOSEG)
             ELSE
                 call initialize_real_array (A(IVOL2:), NOSEG)
-                WRITE (LUN(19), 1000)
+                WRITE (file_unit_list(19), 1000)
             ENDIF
             !
             !          loop over the systems
@@ -269,7 +258,7 @@ contains
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
-                    LCHAR, LUN, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
+                    file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
                     C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
                     C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
                     NOSYS, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
@@ -293,11 +282,11 @@ contains
             !          close files, except monitor file
             !
             call CloseHydroFiles(dlwqd%collcoll)
-            call close_files(lun)
+            call close_files(file_unit_list)
             !
             !          write restart file
             !
-            CALL DLWQ13 (LUN, LCHAR, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
             !
             !          output formats

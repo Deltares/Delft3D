@@ -29,7 +29,7 @@ module m_dlwqp1
     use m_set_old_items
     use m_set_fractions
     use m_set_active
-    use m_setprg
+    use m_set_grid_all_processes, only : set_grid_all_processes
     use m_setopp
     use m_setopo
     use m_setdvp
@@ -49,7 +49,7 @@ module m_dlwqp1
 
 contains
 
-    subroutine dlwqp1(lun, lchar, &
+    subroutine dlwqp1(file_unit_list, file_name_list, &
             statprocesdef, allitems, &
             ioutps, outputs, &
             nomult, imultp, &
@@ -87,8 +87,8 @@ contains
 
         ! declaration of arguments
 
-        integer(kind = int_wp), intent(inout) :: lun(*)           !< unit numbers
-        character(len = *), intent(inout) :: lchar(*)        !< filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)           !< unit numbers
+        character(len = *), intent(inout) :: file_name_list(*)        !< filenames
         type(procespropcoll), intent(in) :: statprocesdef   !< the statistical proces definition
         type(itempropcoll), intent(inout) :: allitems        !< all items of the proces system
         integer(kind = int_wp), intent(inout) :: ioutps(7, *)      !< (old) output structure
@@ -267,7 +267,7 @@ contains
 
         ! start
 
-        lchar(34) = 'proc_def'
+        file_name_list(34) = 'proc_def'
         noloc = 0
         nodef = 0
         ndspx = 0
@@ -284,8 +284,8 @@ contains
 
         ! open report file
 
-        call open_waq_files(lun(35), lchar(35), 35, 1, ierr2)
-        lurep = lun(35)
+        call open_waq_files(file_unit_list(35), file_name_list(35), 35, 1, ierr2)
+        lurep = file_unit_list(35)
         line = ' '
         call setmlu(lurep)
         call startup_screen(lurep)
@@ -344,11 +344,11 @@ contains
                 pdffil = ' '
             end if
             if (pdffil /= ' ') then
-                lchar(34) = pdffil
+                file_name_list(34) = pdffil
                 write (line, '(a)') ' found -p command line switch'
                 call monsys(line, 1)
             else
-                pdffil = lchar(34)
+                pdffil = file_name_list(34)
             end if
             ierr2 = status%ierr
             call rd_tabs(pdffil, lurep, versio, serial, status)
@@ -367,7 +367,7 @@ contains
                 call srstop(1)
             else
                 write (lurep, *)
-                write (lurep, 2001) trim(lchar(34))
+                write (lurep, 2001) trim(file_name_list(34))
                 write (lurep, 2002) versio
                 write (lurep, 2003) serial
                 write (lurep, *)
@@ -499,8 +499,8 @@ contains
 
         ! read ( rest ) of relevant delwaq files
 
-        call open_waq_files(lun(2), lchar(2), 2, 2, ierr2)
-        call read_working_file_4(lun(2), lurep, modid, syname, notot, &
+        call open_waq_files(file_unit_list(2), file_name_list(2), 2, 2, ierr2)
+        call read_working_file_4(file_unit_list(2), lurep, modid, syname, notot, &
                 nodump, nosys, nobnd, nowst, nocons, &
                 nopa, noseg, nseg2, coname, paname, &
                 funame, nofun, sfname, nosfun, nodisp, &
@@ -510,7 +510,7 @@ contains
                 sysgrd, sysndt)
         write (lurep, 2020) (modid(i), i = 1, 2)
         write (lurep, 2030) (modid(i), i = 3, 4)
-        close (lun(2))
+        close (file_unit_list(2))
 
         ! change names according to old_items table
 
@@ -760,8 +760,8 @@ contains
         ! if not all input present , stop with exit code
 
         if (nmis > 0) then
-            call open_waq_files(lun(24), lchar(24), 24, 1, ierr2)
-            close (lun(24))
+            call open_waq_files(file_unit_list(24), file_name_list(24), 24, 1, ierr2)
+            close (file_unit_list(24))
             write (lurep, *) ' not all input available.'
             write (lurep, *) ' number off missing variables :', nmis
             write (lurep, *) ' simulation impossible.'
@@ -775,7 +775,7 @@ contains
 
         ! set grid for processes
 
-        call setprg(procesdef, nogrid, notot, grdref, sysgrd, sysndt)
+        call set_grid_all_processes(procesdef, nogrid, notot, grdref, sysgrd, sysndt)
         deallocate (grdref, sysgrd, sysndt)
 
         ! write proces work file
@@ -784,8 +784,8 @@ contains
                 nocons, nopa, nofun, nosfun, notot, &
                 noloc, nodisp, novelo, ndspx, nvelx, &
                 nlocx, nosys, nogrid, dename, coname, paname, &
-                funame, sfname, syname, intopt, lun, &
-                lchar, noutp, ioutps, outputs, ndmpar, &
+                funame, sfname, syname, intopt, file_unit_list, &
+                file_name_list, noutp, ioutps, outputs, ndmpar, &
                 nbufmx, versio, ndspn, nveln, nrref, &
                 proref, nproc, nflux, novar, nipmsa)
         deallocate (defaul, dsto, vsto)
@@ -882,16 +882,16 @@ contains
         end do
         ! write updated output work file ( output.wrk )
 
-        call open_waq_files(lun(25), lchar(25), 25, 1, ierr2)
-        call wrwrko(lun(25), noutp, nbufmx, ioutps, outputs, &
+        call open_waq_files(file_unit_list(25), file_name_list(25), 25, 1, ierr2)
+        call wrwrko(file_unit_list(25), noutp, nbufmx, ioutps, outputs, &
                 notot, substdname, subunit, subdescr)
-        close (lun(25))
+        close (file_unit_list(25))
 
         ! write altoys input files, only for old balance file
         ! ( altoys.inp batoys.inp altoys.ini altoys.fil)
 
         if (btest(intopt, 3) .and. .not. btest(intopt, 4)) then
-            call wrtoys(lchar, lun, notot, syname, noutp, ioutps, outputs)
+            call wrtoys(file_name_list, file_unit_list, notot, syname, noutp, ioutps, outputs)
         end if
 
         if (timon) call timstop(ithndl)

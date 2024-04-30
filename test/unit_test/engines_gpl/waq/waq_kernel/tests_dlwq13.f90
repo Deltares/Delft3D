@@ -103,7 +103,7 @@ contains
         integer :: itime
         integer, dimension(30) :: lun
         character(len = 200) :: dataPath
-        character(len = 255), dimension(30) :: lchar
+        character(len = 255), dimension(30) :: file_name_list
         character(len = 40), dimension(4) :: mname
         character(len = 20), dimension(10) :: sname
 
@@ -112,19 +112,19 @@ contains
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
 
-        lchar(18) = trim(dataPath) // '/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
-        lchar(19) = trim(dataPath) // '/test_dlwq13_no_nans.mon'
-        lchar(23) = trim(dataPath) // '/test_dlwq13_no_nans.res'
+        file_name_list(18) = trim(dataPath) // '/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
+        file_name_list(19) = trim(dataPath) // '/test_dlwq13_no_nans.mon'
+        file_name_list(23) = trim(dataPath) // '/test_dlwq13_no_nans.res'
 
-        open (newunit = lun(19), file = lchar(19))
+        open (newunit = lun(19), file = file_name_list(19))
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, lchar, conc, itime, mname, sname, notot, noseg)
+        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 
-        call assert_files_comparable(lchar(19), lchar(18), 'Monitor file contains no messages', 1.0e-7)
+        call assert_files_comparable(file_name_list(19), file_name_list(18), 'Monitor file contains no messages', 1.0e-7)
         call assert_true(all(conc == 1.0), 'Concentration array unchanged')
 
     end subroutine test_dlwq13_no_nans
@@ -142,7 +142,7 @@ contains
         integer :: itime
         integer, dimension(30) :: lun
         character(len = 200) :: dataPath
-        character(len = 255), dimension(30) :: lchar
+        character(len = 255), dimension(30) :: file_name_list
         character(len = 40), dimension(4)   :: mname
         character(len = 20), dimension(10)  :: sname
         real                                :: x
@@ -154,19 +154,19 @@ contains
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
 
-        lchar(18) = trim(dataPath) // '/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
-        lchar(19) = trim(dataPath) // '/test_dlwq13_with_nans.mon'
-        lchar(23) = trim(dataPath) // '/test_dlwq13_with_nans.res'
+        file_name_list(18) = trim(dataPath) // '/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
+        file_name_list(19) = trim(dataPath) // '/test_dlwq13_with_nans.mon'
+        file_name_list(23) = trim(dataPath) // '/test_dlwq13_with_nans.res'
 
-        open (newunit = lun(19), file = lchar(19))
+        open (newunit = lun(19), file = file_name_list(19))
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, lchar, conc, itime, mname, sname, notot, noseg)
+        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 
-        call assert_files_comparable(lchar(19), lchar(18), 'Monitor file contains no messages', 1.0e-7)
+        call assert_files_comparable(file_name_list(19), file_name_list(18), 'Monitor file contains no messages', 1.0e-7)
         call assert_true(any(conc == 0.0), 'NaNs in concentration array replaced by 0')
 
     end subroutine test_dlwq13_with_nans

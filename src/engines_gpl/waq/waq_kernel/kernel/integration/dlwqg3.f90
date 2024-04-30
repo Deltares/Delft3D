@@ -31,7 +31,7 @@ contains
     subroutine dlwqg3 (noseg, nobnd, noq1, noq2, noq, &
             &                    ipoint, nodisp, novelo, idpnt, ivpnt, &
             &                    area, flow, aleng, disp, disper, &
-            &                    velo, isys, iopt, ilflag, nomat, &
+            &                    velo, isys, integration_id, ilflag, nomat, &
             &                    amat, imat, idiag, diag, diagcc, &
             &                    iscale, fmat, tmat, iknmrk)
 
@@ -47,8 +47,8 @@ contains
 
         !     Modified  : Feb. 1997, Robert Vos  : Check on zero's in the scaling
         !                 Feb. 1997, Kian Tan    : central differences vertically
-        !                            IOPT 2,3 implemented by RJV for scheme 16
-        !                            IOPT > 3 implemented by RJV for scheme 16 in vertical
+        !                            integration_id 2,3 implemented by RJV for scheme 16
+        !                            integration_id > 3 implemented by RJV for scheme 16 in vertical
         !                 July 2008, Leo Postma  : WAQ perfomance timers
         !                 July 2009, Leo Postma  : double precission version
 
@@ -77,7 +77,7 @@ contains
         real(kind = real_wp), intent(in) :: disper(nodisp, noq)  ! additional dispersion arrays
         real(kind = real_wp), intent(in) :: velo  (novelo, noq)  ! additional velocity arrays
         integer(kind = int_wp), intent(in) :: isys                ! substances number to be used for this matrix
-        integer(kind = int_wp), intent(in) :: iopt                ! = 0 or 2 DISP at zero flow
+        integer(kind = int_wp), intent(in) :: integration_id                ! = 0 or 2 DISP at zero flow
         ! = 1 or 3 no DISP at zero flow
         ! = 0 or 1 DISP over boundary
         ! = 2 or 3 no DISP over boundary
@@ -125,9 +125,9 @@ contains
 
         !     set the logicals for dispersion and scaling and other fixed items
 
-        zerof = btest(iopt, 0)
-        zerob = btest(iopt, 1)
-        loword = btest(iopt, 2)
+        zerof = btest(integration_id, 0)
+        zerob = btest(integration_id, 1)
+        loword = btest(integration_id, 2)
         lscale = iscale == 1
         length = ilflag == 1
         idp = idpnt(isys)
@@ -153,10 +153,9 @@ contains
             endif
 
             !         initialisations
-
             a = area(iq)
             q = flow(iq)
-            if (abs(q) < 10.0e-25 .and. btest(iopt, 0)) cycle   ! thin dam option, no dispersion at zero flow
+            if (abs(q) < 10.0e-25 .and. btest(integration_id, 0)) cycle   ! thin dam option, no dispersion at zero flow
             if (iq <= noq1) then
                 e = disp(1)
                 if (length) then

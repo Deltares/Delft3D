@@ -28,27 +28,16 @@ module m_dlwqtb
 contains
 
 
-    SUBROUTINE DLWQTB (LUNUT, IOFF, A, J, IIPNT, &
-            IRPNT, max_int_size, ITIME, KTYPE, AVAL, &
+    SUBROUTINE DLWQTB(file_unit, IOFF, A, J, IIPNT, IRPNT, max_int_size, ITIME, KTYPE, AVAL, &
             IVAL, IERR)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED             : april 1996 by L. Postma
-        !     MODIFIED            : march 2000 by L. Postma
-        !                                 skip assignments if aal values missing
-        !
-        !     FUNCTION            : Updates the boundary and waste arrays
-        !
-        !     LOGICAL UNITNUMBERS : LUNUT - monitoring file
-        !
-        !     SUBROUTINES CALLED  : none
-        !
+
+        !! Updates the boundary and waste arrays
+
         !     PARAMETERS          :
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     LUNUT   INTEGER    1        INPUT   unit number monitoring file
+        !     file_unit   INTEGER    1        INPUT   unit number monitoring file
         !     IOFF    INTEGER    1        INPUT   index of first concentration
         !     A       REAL       ?        INPUT   Real    boundary workspace
         !     J       INTEGER    ?        INPUT   Integer boundary workspace
@@ -60,29 +49,25 @@ contains
         !     AVAL    REAL    NOTOT,NOITM OUTPUT  Values of the bounds/wastes
         !     IVAL    INTEGER NOTOT,NOITM LOCAL   Count array for averages
         !     IERR    INTEGER    1        IN/OUT  error count
-        !
-        !     Declaration of arguments
-        !
+
         use timers
 
         real(kind = real_wp), PARAMETER :: TWOPI = 6.28319
         integer(kind = int_wp) :: J(*), KTYPE(*), IVAL(*)
         real(kind = real_wp) :: A(*), AVAL(*)
-        integer(kind = int_wp) :: IERR, LUNUT, IRPNT, max_int_size, ITIME, IOFF, IIPNT
+        integer(kind = int_wp) :: IERR, file_unit, IRPNT, max_int_size, ITIME, IOFF, IIPNT
 
-        !     local
+        ! local
         real(kind = real_wp) :: missing_value, aa, ab, aphase, func
         integer(kind = int_wp) :: noitm, notot, nobrk
         integer(kind = int_wp) :: i, i1, i2, i3, ia, ib, ic, ij, ii
-        integer(kind = int_wp) :: iopt, ipro, iord, itim1, itim2
+        integer(kind = int_wp) :: integration_id, ipro, iord, itim1, itim2
         integer(kind = int_wp) :: irec, idt, itimf, it1c, it2c, idtc, iperio
         integer(kind = int_wp) :: npnt, npst, ndim, ndst, ntt
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqtb", ithandl)
-        !
-        !         initialise the system
-        !
+
         missing_value = -999.
         !       Number of items
         NOITM = J(1)
@@ -98,7 +83,7 @@ contains
         !                            NPST = start of item nr's in the J-array
         !                            NDIM = nr of substances
         !                            NDST = start of subs nr's in the J-array
-        !                            IOPT = option 1 and 2 at breakpoints etc.
+        !                            integration_id = option 1 and 2 at breakpoints etc.
         !                            IPRO = procedure (overrule or not)
         !
         10 IJ = IJ + 1
@@ -117,7 +102,7 @@ contains
             NPST = NDST + NDIM + 1
         ENDIF
         IJ = IJ + NDIM + NPNT + 4
-        IOPT = J(IJ - 2)
+        integration_id = J(IJ - 2)
         IPRO = J(IJ - 1)
         NTT = NDIM * NPNT
         !
@@ -140,9 +125,9 @@ contains
             GOTO 150
         ENDIF
         !
-        !       IOPT = 1 : Block function , IOPT = 2 : Linearly interpolated
+        !       integration_id = 1 : Block function , integration_id = 2 : Linearly interpolated
         !
-        IF (IOPT == 1 .OR. IOPT == 2) THEN
+        IF (integration_id == 1 .OR. integration_id == 2) THEN
             !
             !           Get the right time in the block
             !
@@ -161,11 +146,11 @@ contains
                 IF (ITIME >= ITIM2) &
                         ITIMF = ITIME - ((ITIME - ITIM2) / IDT + 1) * IDT
                 !
-                !           Make interpolation constants if IOPT = 2
+                !           Make interpolation constants if integration_id = 2
                 !
                 DO I = 2, NOBRK
                     IF (J(IJ + I) > ITIMF) THEN
-                        IF (IOPT == 2) THEN
+                        IF (integration_id == 2) THEN
                             ITIM1 = ITIMF - J(IJ + I - 1)
                             ITIM2 = J(IJ + I) - ITIMF
                         ELSE
@@ -211,7 +196,7 @@ contains
                             !     Dealing with missing values
                             IF (AA == missing_value .OR. AB == missing_value) &
                                     CALL DLWMIS(A, I, missing_value, NTT, IREC, &
-                                            J, IJ, NOBRK, ITIMF, IOPT, &
+                                            J, IJ, NOBRK, ITIMF, integration_id, &
                                             IT1C, IT2C, IDTC, AA, AB)
                             !           If no value is found, then skip the assignment, except flow set missing
                             IF (IT1C /= 0 .OR. IT2C /= 0) THEN
@@ -268,7 +253,7 @@ contains
                             !     Dealing with missing values
                             IF (AA == missing_value .OR. AB == missing_value) &
                                     CALL DLWMIS(A, I, missing_value, NTT, IREC, &
-                                            J, IJ, NOBRK, ITIMF, IOPT, &
+                                            J, IJ, NOBRK, ITIMF, integration_id, &
                                             IT1C, IT2C, IDTC, AA, AB)
                             !           If no value is found, then skip the assignment
                             IF (IT1C /= 0 .OR. IT2C /= 0) THEN
@@ -309,9 +294,9 @@ contains
             IA = IA + NOBRK * NTT
         ENDIF
         !
-        !       IOPT = 3 and 4 : Harmonics and fouriers, treated equally
+        !       integration_id = 3 and 4 : Harmonics and fouriers, treated equally
         !
-        IF (IOPT == 3 .OR. IOPT == 4) THEN
+        IF (integration_id == 3 .OR. integration_id == 4) THEN
             !
             DO I = 1, NOBRK
                 !
@@ -369,23 +354,23 @@ contains
             IRPNT = IRPNT + IA
             goto 9999    !   RETURN
         ENDIF
-        WRITE (LUNUT, 2010)
+        WRITE (file_unit, 2010)
         IERR = IERR + 1
         9999 if (timon) call timstop (ithandl)
         RETURN
         !
         2010 FORMAT (' ERROR, updating time functions new style !')
         !
-    END
-    !
+    END SUBROUTINE DLWQTB
+
     SUBROUTINE DLWMIS (A, I, missing_value, NTT, IREC, &
-            J, IJ, NOBRK, ITIMF, IOPT, &
+            J, IJ, NOBRK, ITIMF, integration_id, &
             IT1C, IT2C, IDTC, AA, AB)
         use timers
-        !
+
         real(kind = real_wp) :: A(*)
         integer(kind = int_wp) :: J(*)
-        integer(kind = int_wp) :: I, IJ, NTT, IREC, NOBRK, ITIMF, IOPT, IT1C, IT2C, IDTC
+        integer(kind = int_wp) :: I, IJ, NTT, IREC, NOBRK, ITIMF, integration_id, IT1C, IT2C, IDTC
         real(kind = real_wp) :: missing_value, AA, AB
 
         !  	local
@@ -415,8 +400,8 @@ contains
         !           There was a backward valid point
         IF (JJ /= 0) THEN
             AA = A(I + (JJ - IREC) * NTT)
-            IF (IOPT == 1) IT2C = 1
-            IF (IOPT == 2) THEN
+            IF (integration_id == 1) IT2C = 1
+            IF (integration_id == 2) THEN
                 IF (KK /= 0) THEN
                     IT1C = ITIMF - J(IJ + JJ)
                 ELSE
@@ -427,8 +412,8 @@ contains
         !           There was a forward valid point
         IF (KK /= 0) THEN
             AB = A(I + (KK - IREC) * NTT)
-            IF (IOPT == 1 .AND. JJ == 0) IT1C = 1
-            IF (IOPT == 2) THEN
+            IF (integration_id == 1 .AND. JJ == 0) IT1C = 1
+            IF (integration_id == 2) THEN
                 IF (JJ /= 0) THEN
                     IT2C = J(IJ + KK) - ITIMF
                 ELSE

@@ -35,7 +35,7 @@ module m_hsurf
 contains
 
     subroutine hsurf    (noseg, nopa, paname, param, nosfun, &
-            sfname, segfun, surface, lun)
+            sfname, segfun, surface, file_unit_list)
 
         !     Deltares Software Centre
 
@@ -44,7 +44,7 @@ contains
 
         !     Created             :    September 2012 by Christophe Thiange
 
-        !     Logical unitnumbers : lun     = number of monitoring file
+        !     Logical unitnumbers : file_unit_list     = number of monitoring file
 
         !     Subroutines called  : none
 
@@ -62,7 +62,7 @@ contains
         character(20), intent(in) :: sfname(nosfun)          !< names of the segment functions
         real(kind = real_wp), intent(in) :: segfun(noseg, nosfun)   !< segment function values
         real(kind = real_wp), intent(inout) :: surface(noseg)          !< horizontal surface
-        integer(kind = int_wp), intent(in) :: lun                     !< logical unit number monitoring file
+        integer(kind = int_wp), intent(in) :: file_unit_list                     !< logical unit number monitoring file
 
 
         !     local variables
@@ -88,7 +88,7 @@ contains
                     mode = -1
                 else
                     surface = 1.0
-                    write(lun, 2000)
+                    write(file_unit_list, 2000)
                 endif
             endif
         endif

@@ -32,7 +32,7 @@ module initial_conditions
 contains
 
 
-    subroutine read_initial_conditions(lun, lchar, filtype, inpfil, notot, &
+    subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, notot, &
             syname, iwidth, output_verbose_level, gridps, noseg, &
             conc, ierr, status)
 
@@ -46,8 +46,8 @@ contains
         use rd_token
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun(*)        ! unit numbers used
-        character(len = *), intent(inout) :: lchar(*)     ! filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)        ! unit numbers used
+        character(len = *), intent(inout) :: file_name_list(*)     ! filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
         type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack and flags
         integer(kind = int_wp), intent(in) :: notot         ! nr of substances
@@ -104,7 +104,7 @@ contains
             write (segments%name(i), '(''segment '',i8)') i
         enddo
 
-        lunut = lun(29)
+        lunut = file_unit_list(29)
         ierr2 = 0
 
         do
@@ -115,7 +115,7 @@ contains
 
                 ! new file structure
                 push = .true.
-                call read_block(lun, lchar, filtype, inpfil, output_verbose_level, &
+                call read_block(file_unit_list, file_name_list, filtype, inpfil, output_verbose_level, &
                         iwidth, substances, constants, parameters, functions, &
                         segfuncs, segments, gridps, dlwqdata, ierr2, &
                         status)
@@ -156,7 +156,6 @@ contains
         enddo
 
         !     initials opruimen ? or keep for e.g. reboot, or keep for delwaq1-delwaq2 merge
-
         ierr3 = substances%cleanup()
         ierr3 = parameters%cleanup()
         ierr3 = functions%cleanup()

@@ -32,14 +32,11 @@ contains
             noq3, noq, nodisp, novelo, disp, &
             disper, velo, volume, area, flow, &
             aleng, ipoint, iknmrk, idpnt, ivpnt, &
-            conc, conc2, bound, iopt, ilflag, &
+            conc, conc2, bound, integration_id, ilflag, &
             idt, iaflag, amass2, ndmpq, iqdmp, &
             dmpq)
 
-        !     Deltares Software Centre
-
-        !>\file
-        !>       Performs flux correction in the direction of flow according to Boris and Book.
+        !> Performs flux correction in the direction of flow according to Boris and Book.
         !>
         !>       This routine makes for the nosys transported substaces the flux correction term after
         !>       the upwind advection step is set by dlwq50/18 producing CONC2(notot,noseg) array.\n
@@ -53,8 +50,8 @@ contains
         !>       correction term. Salezac's method looks around a cell, but that has disadvantages in
         !>       stratified systems.\n
         !>       The application is subject to the following switches:
-        !>       - 1) no dispersion accross open boundaries (bit 1 of iopt is 1)
-        !>       - 2) first order processing accross open boundaries (bit 2 of iopt is 1)
+        !>       - 1) no dispersion accross open boundaries (bit 1 of integration_id is 1)
+        !>       - 2) first order processing accross open boundaries (bit 2 of integration_id is 1)
         !>       Because the routine corrects the CONC2 array, the flux correction (as mass/timestep)
         !>       is divided by the new volume of the cell to get concentratiosn again.\n
         !>       This routine also accumulates on the fly the mass balance information for the whole area in
@@ -63,17 +60,7 @@ contains
         !>       Furthermore the fluxes in and out of monitoring areas for detail balances are accumulated on
         !>       the fly. Which flux needs to be accumulated in what balance is given in the IQDMP(noq) array.
 
-
-        !     Files               : none
-
-        !     Routines            : none
-
         use timers
-        implicit none
-
-        !     Parameters          :
-
-        !     kind           function         name                   description
 
         integer(kind = int_wp), intent(in) :: nosys                !< number of transported substances
         integer(kind = int_wp), intent(in) :: notot                !< total number of substances
@@ -98,7 +85,7 @@ contains
         real(kind = real_wp), intent(in) :: conc  (notot, noseg)  !< concentrations at previous time level
         real(kind = real_wp), intent(inout) :: conc2 (notot, noseg)  !< first estimate to be flux corrected
         real(kind = real_wp), intent(in) :: bound (nosys, *)  !< open boundary concentrations
-        integer(kind = int_wp), intent(in) :: iopt                 !< bit 0: 1 if no dispersion at zero flow
+        integer(kind = int_wp), intent(in) :: integration_id                 !< bit 0: 1 if no dispersion at zero flow
         !< bit 1: 1 if no dispersion across boundaries
         !< bit 2: 1 if lower order across boundaries
         !< bit 3: 1 if mass balance output
@@ -159,12 +146,12 @@ contains
 
             a = area(iq)
             q = flow(iq)
-            if (abs(q) < 10.0e-25 .and. iq <= noq12 .and. btest(iopt, 0))  cycle
+            if (abs(q) < 10.0e-25 .and. iq <= noq12 .and. btest(integration_id, 0))  cycle
             ! thin dam option, no dispersion at zero flow
             !     Check if exchange is dump exchange, set IPB
 
             ipb = 0
-            if (btest(iopt, 3)) then
+            if (btest(integration_id, 3)) then
                 if (iqdmp(iq) > 0) ipb = iqdmp(iq)
             endif
 
@@ -267,11 +254,11 @@ contains
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo  (ivpnt(isys), iq) * a
                 d = 0.0
-                if (.not. btest(iopt, 1)) then
+                if (.not. btest(integration_id, 1)) then
                     d = e
                     if (idpnt(isys) > 0) d = d + disper(idpnt(isys), iq) * dl
                 endif
-                if (.not. btest(iopt, 2)) then
+                if (.not. btest(integration_id, 2)) then
                     f2 = f1
                     if (v < 0.0) f2 = f2 - 1.0
                     d = d - f2 * v + 0.5 * v * v * idt / a / al
@@ -311,11 +298,11 @@ contains
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo  (ivpnt(isys), iq) * a
                 d = 0.0
-                if (.not. btest(iopt, 1)) then
+                if (.not. btest(integration_id, 1)) then
                     d = e
                     if (idpnt(isys) > 0) d = d + disper(idpnt(isys), iq) * dl
                 endif
-                if (.not. btest(iopt, 2)) then
+                if (.not. btest(integration_id, 2)) then
                     f2 = f1
                     if (v < 0) f2 = f2 - 1.0
                     d = -f2 * v + d + 0.5 * v * v * idt / a / al

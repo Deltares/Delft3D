@@ -34,13 +34,8 @@ module m_integration_scheme_17
 contains
 
 
-    subroutine integration_scheme_17 (buffer, lun, lchar, &
-            action, dlwqd, gridps)
-
-        !       Deltares Software Centre
-
-        !>\file
-        !>                         Iterative stationary upwind method (17)
+    subroutine integration_scheme_17 (buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+        !> Iterative stationary upwind method (17)
         !>
         !>                         Performs substance by substance a stationairy solution.\n
         !>                         Uses the GMRES method with Krilov sub-spaces.\n
@@ -52,11 +47,11 @@ contains
         !     MODIFIED           : feb 1997, by RJ Vos; like 6 but steady state solver
         !                          is GMRES and compact storage from option 15
         !
-        !     LOGICAL UNITS      : LUN(19) , output, monitoring file
-        !                          LUN(20) , output, formatted dump file
-        !                          LUN(21) , output, unformatted hist. file
-        !                          LUN(22) , output, unformatted dump file
-        !                          LUN(23) , output, unformatted restart file
+        !     LOGICAL UNITS      : file_unit_list(19) , output, monitoring file
+        !                          file_unit_list(20) , output, formatted dump file
+        !                          file_unit_list(21) , output, unformatted hist. file
+        !                          file_unit_list(22) , output, unformatted dump file
+        !                          file_unit_list(23) , output, unformatted restart file
         !
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
         !                          DLWQO2, DELWAQ4 output routine
@@ -85,8 +80,8 @@ contains
         !     A       REAL       *      LOCAL  real      workspace array
         !     J       INTEGER    *      LOCAL  integer   workspace array
         !     C       CHARACTER  *      LOCAL  character workspace array
-        !     LUN     INTEGER    *      INPUT  array with unit numbers
-        !     LCHAR   CHARACTER  *      INPUT  filenames
+        !     file_unit_list     INTEGER    *      INPUT  array with unit numbers
+        !     file_name_list   CHARACTER  *      INPUT  filenames
         !
         !     Declaration of arguments
         !
@@ -118,21 +113,13 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
 
-        implicit none
-
-        !
-        !     Declaration of arguments
-        !
         type(waq_data_buffer), target :: buffer      !< System total array space
-        INTEGER(kind = int_wp), DIMENSION(*) :: LUN
-        character(len=*), DIMENSION(*) :: LCHAR
+        INTEGER(kind = int_wp), DIMENSION(*) :: file_unit_list
+        CHARACTER*(*), DIMENSION(*) :: file_name_list
         INTEGER(kind = int_wp) :: ACTION
         TYPE(DELWAQ_DATA) :: DLWQD
         type(GridPointerColl) :: GridPs               ! collection off all grid definitions
 
-        !
-        !     Local declarations
-        !
         LOGICAL          IMFLAG, IDFLAG, IHFLAG
         LOGICAL          LDUMMY, LSTREC, LREWIN
         logical, save :: litrep
@@ -185,7 +172,7 @@ contains
             ithandl = 0
             if (timon) call timstrt ("integration_scheme_17", ithandl)
 
-            call dlwqf5 (lun(19), nocons, c(icnam:), a(icons:), ioptpc, &
+            call dlwqf5 (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
                     iter, tol, iscale, litrep, noseg, &
                     noq3, noq, nobnd, novec, nomat, &
                     nolay, intsrt, intopt)
@@ -223,9 +210,9 @@ contains
 
             if (j(inrh2 + 1) >= 0 .and. ivflag == 0 .and. &
                     idt       > 0 .and. lstrec) then
-                call dlwq41 (lun, itstrt + idt, itstrt, a(iharm:), a(ifarr:), &
+                call dlwq41 (file_unit_list, itstrt + idt, itstrt, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
-                        j(ibulk:), lchar, ftype, isflag, ivflag, &
+                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         update, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivoll:), dlwqd)
                 call dlwq65 (a(ivol2:), a(ivol:), idt, noseg)
@@ -236,7 +223,7 @@ contains
             !        Determine the volumes and areas that ran dry at start of time step
 
             call hsurf  (noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, lun(19))
+                    c(isfna:), a(isfun:), surface, file_unit_list(19))
             call dryfld (noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
                     a(iarea:), nocons, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
@@ -253,7 +240,7 @@ contains
 
             !jvb  Temporary ? set the variables grid-setting for the DELWAQ variables
 
-            call setset (lun(19), nocons, nopa, nofun, nosfun, &
+            call setset (file_unit_list(19), nocons, nopa, nofun, nosfun, &
                     nosys, notot, nodisp, novelo, nodef, &
                     noloc, ndspx, nvelx, nlocx, nflux, &
                     nopred, novar, nogrid, j(ivset:))
@@ -278,7 +265,7 @@ contains
                     j(igseg:), novar, a, nogrid, ndmps, &
                     c(iprna:), intsrt, &
                     j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
-                    surface, lun(19))
+                    surface, file_unit_list(19))
 
             !          save computation time
 
@@ -336,7 +323,7 @@ contains
                         noseg + nobnd, gm_hess(1, ith), novec + 1, iter, tol, &
                         nomat, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
                         nolay, ioptpc, nobnd, gm_trid(1, ith), iexseg (:, ith), &
-                        lun(19), litrep)
+                        file_unit_list(19), litrep)
 
                 !           copy solution for this substance into concentration array, note that the array for
                 !                                                                      segment dumps is not filled yet
@@ -362,7 +349,7 @@ contains
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
-                    LCHAR, LUN, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
+                    file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
                     C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
                     C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
                     NOSYS, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
@@ -387,11 +374,11 @@ contains
             !          close files, except monitor file
             !
             call CloseHydroFiles(dlwqd%collcoll)
-            call close_files(lun)
+            call close_files(file_unit_list)
             !
             !          write restart file
             !
-            CALL DLWQ13 (LUN, LCHAR, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
             !
         end associate

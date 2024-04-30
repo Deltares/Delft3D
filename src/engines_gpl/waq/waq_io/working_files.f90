@@ -31,17 +31,17 @@ module m_working_files
 contains
 
 
-    subroutine create_work_file_one(lun, lchar, nolun, runid)
+    subroutine create_work_file_one(file_unit_list, file_name_list, num_file_units, runid)
         !! Reads the input filename* ( keyboard /command line ) ;
         !! sets filenames* ; opens system files
         !! the subroutine creates the following files lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, filenaam.wrk files
         !! Logical units     : 5       = keyboard
-        !!                     lun(26) = unit user input file
-        !!                     lun(27) = unit stripped input file
-        !!                     lun(29) = unit formatted output file
-        !!                     lun( 2) = unit system-intermediate file
-        !!                     lun( 3) = unit intermediate file (harmonics)
-        !!                     lun( 4) = unit intermediate file (pointers)
+        !!                     file_unit_list(26) = unit user input file
+        !!                     file_unit_list(27) = unit stripped input file
+        !!                     file_unit_list(29) = unit formatted output file
+        !!                     file_unit_list( 2) = unit system-intermediate file
+        !!                     file_unit_list( 3) = unit intermediate file (harmonics)
+        !!                     file_unit_list( 4) = unit intermediate file (pointers)
 
         use m_srstop
         use m_monsys
@@ -53,9 +53,9 @@ contains
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: nolun           !< Amount of unit numbers
-        integer(kind = int_wp), intent(inout) :: lun(nolun)      !< Unit numbers
-        character(*), intent(inout) :: lchar(nolun)    !< File names
+        integer(kind = int_wp), intent(in) :: num_file_units           !< Amount of unit numbers
+        integer(kind = int_wp), intent(inout) :: file_unit_list(num_file_units)      !< Unit numbers
+        character(*), intent(inout) :: file_name_list(num_file_units)    !< File names
         character(*), intent(inout) :: runid           !< Runid
 
         ! Local
@@ -79,7 +79,7 @@ contains
 
         ! Get filename  ( keyboard / command line )
 
-        check = lchar(29)
+        check = file_name_list(29)
         call get_input_filename(runid, check)
 
         ! Specific output dir?
@@ -107,39 +107,39 @@ contains
         endif
 
         !  Pad the model name in the file names
-        do ilun = 1, nolun
-            if (specout .and. index(lchar(ilun), '.wrk') == 0 .and. index(lchar(ilun), '.inp') == 0) then
-                lchar(ilun) = trim(outid) // lchar(ilun)
+        do ilun = 1, num_file_units
+            if (specout .and. index(file_name_list(ilun), '.wrk') == 0 .and. index(file_name_list(ilun), '.inp') == 0) then
+                file_name_list(ilun) = trim(outid) // file_name_list(ilun)
             else
-                lchar(ilun) = trim(runid) // lchar(ilun)
+                file_name_list(ilun) = trim(runid) // file_name_list(ilun)
             endif
         enddo
 
         ! Remove any existing work files
 
-        do ilun = 1, nolun
-            if (index(lchar(ilun), '.wrk') > 0) call delete_file(lchar(ilun), ioerr)
+        do ilun = 1, num_file_units
+            if (index(file_name_list(ilun), '.wrk') > 0) call delete_file(file_name_list(ilun), ioerr)
         enddo
 
         ! Open the neccessary unit numbers
         ! create the lst file
-        call open_waq_files(lun(29), lchar(29), 29, 1, ioerr)
+        call open_waq_files(file_unit_list(29), file_name_list(29), 29, 1, ioerr)
         !
-        call setmlu(lun(29))
+        call setmlu(file_unit_list(29))
         ! open the input file (.inp)
-        call open_waq_files(lun(26), lchar(26), 26, 1, ioerr)
+        call open_waq_files(file_unit_list(26), file_name_list(26), 26, 1, ioerr)
         if (ioerr > 0) then
-            write (lun(29), 1000) lun(26), lchar(26)
+            write (file_unit_list(29), 1000) file_unit_list(26), file_name_list(26)
             call srstop (1)
         endif
         ! create the delwaq04.wrk binary file
-        call open_waq_files(lun(2), lchar(2), 2, 1, ioerr)
+        call open_waq_files(file_unit_list(2), file_name_list(2), 2, 1, ioerr)
         ! create the harmonic.wrk file
-        call open_waq_files(lun(3), lchar(3), 3, 1, ioerr)
+        call open_waq_files(file_unit_list(3), file_name_list(3), 3, 1, ioerr)
         ! create the pointers.wrk file
-        call open_waq_files(lun(4), lchar(4), 4, 1, ioerr)
+        call open_waq_files(file_unit_list(4), file_name_list(4), 4, 1, ioerr)
         ! create the filenaam.wrk file
-        call open_waq_files(lun(41), lchar(41), 41, 1, ioerr)
+        call open_waq_files(file_unit_list(41), file_name_list(41), 41, 1, ioerr)
 
         if (timon) call timstop(ithndl)
         return

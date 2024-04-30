@@ -46,11 +46,7 @@
 
       do t = 1, nGetTimes
 
-#if (defined(WIN32))
-        call sleep(50)
-#else
-        call DIOSYNCcSLEEP(50)
-#endif
+        call CUTIL_SLEEP(50)
 
         curTime = curTime + 10.D+00
 

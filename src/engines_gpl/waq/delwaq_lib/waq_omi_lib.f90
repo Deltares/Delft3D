@@ -21,23 +21,22 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-!> @file
-!!    Interface routines for Delta-Shell
-!!
-!!    Note:
-!!    Not all routines can be in a module, they have to
-!!    be callable from outside Fortran.
-!<
-
-!> Utilities for the routines here (effectively a private module)
 module waq_omi_utils
+    !! Interface routines for Delta-Shell
+    !!
+    !! Note:
+    !! Not all routines can be in a module, they have to
+    !! be callable from outside Fortran.
+
     use m_waq_precision
     use monitoring_areas, only : create_write_monitoring_area_array
-    use integration_options, only: check_integration_option
+    use integration_options, only : check_integration_option
     use inputs_block_9
     use m_delwaq2_main
     use m_dlwqp1
     use m_open_waq_files
+
+    implicit None
 
     integer(kind = int_wp), parameter :: LEVEL_FATAL = 1
     integer(kind = int_wp), parameter :: LEVEL_ERROR = 2
@@ -48,6 +47,7 @@ module waq_omi_utils
 
     integer(kind = int_wp), save :: msg_level = LEVEL_INFO
     character(len = 200), save :: msg_text = 'No message'
+
 
 contains
 
@@ -74,8 +74,6 @@ contains
     subroutine set_intopt(option, keyword_true, keyword_false)
 
         use m_sysi          ! Timer characteristics
-
-        implicit none
 
         logical :: option                                  !< Selected value of the option
         character(len = *) :: keyword_true                   !< Keyword describing "true" value for the option
@@ -122,14 +120,15 @@ contains
 
 end module waq_omi_utils
 
-!
-! interface routines
-!
+
 module waq_omi_interface
     use m_waq_precision
 
+    implicit none
+
 contains
-    !> Return the last known message
+
+    !! Return the last known message
     logical function GetLastMessage(level, text)
 
         !DEC$ ATTRIBUTES DLLEXPORT::GetLastMessage
@@ -154,8 +153,6 @@ contains
         use delwaq2_global_data
         use m_sysi          ! Timer characteristics
 
-        implicit none
-
         integer(kind = int_wp), intent(out) :: notot          !< Number of substances
         integer(kind = int_wp), intent(out) :: noseg          !< Number of segments
 
@@ -174,8 +171,6 @@ contains
 
         use delwaq2_global_data
         use m_sysi          ! Timer characteristics
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: startTime        !< Start time in seconds since the reference date/time
         integer(kind = int_wp), intent(in) :: endTime          !< Stop time in seconds since the reference date/time
@@ -200,8 +195,6 @@ contains
         use delwaq2_global_data
         use m_sysi          ! Timer characteristics
 
-        implicit none
-
         integer(kind = int_wp), intent(out) :: startTime        !< Start time in seconds since the reference date/time
         integer(kind = int_wp), intent(out) :: endTime          !< Stop time in seconds since the reference date/time
         integer(kind = int_wp), intent(out) :: timeStep         !< Time step in seconds
@@ -222,9 +215,8 @@ contains
         !DEC$ ATTRIBUTES DLLEXPORT::SetTimeFormat
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETTIMEFORMAT' :: SetTimeFormat
 
-        implicit none
-
-        integer(kind = int_wp), intent(in) :: timeFormat       !< Time format (0 = integer, 1 = dd:hh:mm:ss, 2 = yy:ddd:hh:mm:ss)
+        integer(kind = int_wp), intent(in) :: timeFormat  !< Time format
+        ! (0 = integer, 1 = dd:hh:mm:ss, 2 = yy:ddd:hh:mm:ss)
 
         isflag = timeFormat
 
@@ -261,7 +253,6 @@ contains
     ! SetOutputTimers --
     !     Set the timers for the output:
     !     type: defines what type of output (1 = monitor, 2 = history, 3 = map)
-    !
     logical function SetOutputTimers(type, startTime, endTime, timeStep)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetOutputTimers
@@ -270,8 +261,6 @@ contains
         use delwaq2_global_data
         use m_sysn
         use m_sysi
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: type
         integer(kind = int_wp), intent(in) :: startTime
@@ -303,7 +292,6 @@ contains
     !     Set an attribute
     !
     !     Note: use before ModelInitialize!
-    !
     logical function SetAttributeInit(idx, ivalue)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetAttributeInit
@@ -312,8 +300,6 @@ contains
         use waq_omi_utils
         use delwaq2_global_data
         use m_sysn
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: idx
         integer(kind = int_wp), dimension(*), intent(in) :: ivalue
@@ -361,8 +347,6 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-
-        implicit none
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), intent(in) :: value
@@ -413,8 +397,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysa          ! Pointers in real array workspace
 
-        implicit none
-
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(in) :: value
 
@@ -448,7 +430,6 @@ contains
     !     Set the current value of a process parameter
     !
     !     Note: use after ModelInitialize!
-    !
     logical function SetCurrentValueScalarRun(name, value)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetCurrentValueScalarRun
@@ -458,8 +439,6 @@ contains
         use delwaq2_global_data
         use m_sysn          ! System characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), intent(in) :: value
@@ -494,7 +473,6 @@ contains
     !     Set the current value of a process parameter (which varies per segment)
     !
     !     Note: use after ModelInitialize!
-    !
     logical function SetCurrentValueFieldRun(name, value)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetCurrentValueFieldRun
@@ -504,8 +482,6 @@ contains
         use delwaq2_global_data
         use m_sysn          ! System characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(in) :: value
@@ -535,7 +511,6 @@ contains
     ! GetCurrentValue --
     !     Get the current value of a substance or process parameter
     !     for ALL segments. The array value is assumed to be large enough
-    !
     logical function GetCurrentValue(name, value)
 
         !DEC$ ATTRIBUTES DLLEXPORT::GetCurrentValue
@@ -546,8 +521,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(out) :: value
@@ -581,7 +554,6 @@ contains
 
     ! SetIntegrationOptions --
     !     Set the integration option (and all its subparameters)
-    !
     logical function SetIntegrationOptions(method, disp_flow_zero, disp_bound, first_order, forester, anticreep)
         !DEC$ ATTRIBUTES DLLEXPORT::SetIntegrationOptions
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETINTEGRATIONOPTIONS' :: SetIntegrationOptions
@@ -589,8 +561,6 @@ contains
         use waq_omi_utils
         use delwaq2_global_data
         use m_sysi
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: method
         logical, intent(in) :: disp_flow_zero
@@ -617,16 +587,14 @@ contains
 
     ! SetBalanceOutputOptions --
     !     Set the output options for balances
-    !
-    logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_transport, suppress_space, suppress_time, unit_type)
+    logical function SetBalanceOutputOptions(type, lump_processes, lump_loads, lump_transport, suppress_space, &
+            suppress_time, unit_type)
         !DEC$ ATTRIBUTES DLLEXPORT::SetBalanceOutputOptions
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETBALANCEOUTPUTOPTIONS' :: SetBalanceOutputOptions
 
         use waq_omi_utils
         use delwaq2_global_data
         use m_sysi
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: type
         logical, intent(in) :: lump_processes
@@ -673,8 +641,6 @@ contains
         use delwaq2_global_data
         use m_sysn
         use matrix_utils, only : compute_matrix_size
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: number_segments
         integer(kind = int_wp), dimension(4) :: number_exchanges
@@ -767,15 +733,12 @@ contains
     !
     !     Note:
     !     Use after DefineWQSchematisation
-    !
     logical function DefineWQDispersion(dispc, length)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineWQDispersion
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQDISPERSION' :: DefineWQDispersion
 
         use delwaq2_global_data
         use m_sysn
-
-        implicit none
 
         real(kind = real_wp), dimension(3), intent(in) :: dispc
         real(kind = real_wp), dimension(2, noq) :: length
@@ -797,7 +760,6 @@ contains
 
     ! SetWQProcessDefinition --
     !     Set the mode and the process definition file
-    !
     logical function SetProcessDefinition(mode, procdef_file)
         !DEC$ ATTRIBUTES DLLEXPORT::SetProcessDefinition
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETPROCESSDEFINITION' :: SetProcessDefinition
@@ -811,7 +773,6 @@ contains
 
     ! SetWQProcessDefinitionX --
     !     Set the mode, the process definition file and sfrac options file
-    !
     logical function SetProcessDefinitionX(mode, procdef_file, sfrac_file)
         !DEC$ ATTRIBUTES DLLEXPORT::SetProcessDefinitionX
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETPROCESSDEFINITIONX' :: SetProcessDefinitionX
@@ -826,7 +787,6 @@ contains
 
     ! SetWQProcessDefinitionCore --
     !     Set the mode, the process definition file and sfrac options file
-    !
     logical function SetProcessDefinitionCore(mode, procdef_file, sfrac_file)
 
         use delwaq2_global_data
@@ -840,15 +800,11 @@ contains
         end if
 
         if (sfrac_file == ' ') then
-
             allocate (argv(5))
-
         else
-
             allocate (argv(7))
             argv(6) = '-sfrac'
             argv(7) = sfrac_file
-
         end if
 
         argv(1) = 'dlwqlib.dll'
@@ -865,14 +821,11 @@ contains
 
     ! DefineWQProcesses --
     !     Define the substances, process parameters etc.
-
     logical function DefineWQProcesses(substance, number_substances, number_transported, &
             process_parameter, number_parameters, &
             process, number_processes)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineWQProcesses
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQPROCESSES' :: DefineWQProcesses
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: number_substances
         character(len = *), dimension(number_substances) :: substance
@@ -896,7 +849,6 @@ contains
 
     ! DefineWQProcessesX --
     !     Define the substances, multiplicity, process parameters etc.
-    !
     logical function DefineWQProcessesX(substance, substance_mult, &
             number_substances, number_transported, &
             process_parameter, number_parameters, &
@@ -904,8 +856,6 @@ contains
             process, number_processes)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineWQProcessesX
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQPROCESSESX' :: DefineWQProcessesX
-
-        implicit none
 
         character(len = *), dimension(*) :: substance
         integer(kind = int_wp), dimension(*) :: substance_mult
@@ -931,7 +881,6 @@ contains
     !
     !     TODO: DELWAQ parameters (now: everything is considered a constant)
     !           Output parameters
-    !
     logical function DefineWQProcessesCore(substance, substance_mult, &
             number_substances, number_transported, &
             process_parameter, number_parameters, &
@@ -940,8 +889,6 @@ contains
 
         use delwaq2_global_data
         use m_sysn
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: number_substances
         integer(kind = int_wp), intent(in) :: number_parameters
@@ -1050,14 +997,11 @@ contains
 
     ! DefineWQExtraOutputParameters --
     !     Define extra output parameters
-    !
     logical function DefineWQExtraOutputParameters(extra_output, number_output)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineWQExtraOutputParameters
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQEXTRAOUTPUTPARAMETERS' :: DefineWQEXTRAOUTPUTPARAMETERS
 
         use delwaq2_global_data
-
-        implicit none
 
         integer(kind = int_wp) :: number_output
         character(len = *), dimension(number_output) :: extra_output
@@ -1078,7 +1022,6 @@ contains
     !     Note:
     !     For the moment there is no support for different types of waste loads
     !     or for names
-    !
     logical function DefineDischargeLocations(cell, number_loads)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineDischargeLocations
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEDISCHARGELOCATIONS' :: DefineDischargeLocations
@@ -1086,8 +1029,6 @@ contains
         use waq_omi_utils
         use delwaq2_global_data
         use m_sysn
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: number_loads
         integer(kind = int_wp), dimension(number_loads) :: cell
@@ -1134,9 +1075,8 @@ contains
     ! DefineMonitoringLocations --
     !     Define the location of monitoring points and areas
     !
-    !     Note:
-    !     For the moment there is no support for monitoring areas or transects
-    !
+    ! Note:
+    ! For the moment there is no support for monitoring areas or transects
     logical function DefineMonitoringLocations(cell, name, number_monitoring)
         !DEC$ ATTRIBUTES DLLEXPORT::DefineMonitoringLocations
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEMONITORINGLOCATIONS' :: DefineMonitoringLocations
@@ -1144,8 +1084,6 @@ contains
         use waq_omi_utils
         use delwaq2_global_data
         use m_sysn
-
-        implicit none
 
         integer(kind = int_wp), intent(in) :: number_monitoring
         character(len = *), dimension(number_monitoring) :: name
@@ -1190,7 +1128,6 @@ contains
     !     Set the initial volume for all segments
     !
     !     Note: use before ModelInitialize
-    !
     logical function SetInitialVolume(volume)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetInitialVolume
@@ -1201,8 +1138,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         real(kind = real_wp), dimension(noseg), intent(in) :: volume
 
@@ -1227,7 +1162,6 @@ contains
     !     Set the current volumes, areas and flows
     !
     !     Note: use before ModelPerformTimeStep, after ModelInitialize
-    !
     logical function SetFlowData(volume, area, flow)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetFlowData
@@ -1238,8 +1172,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         real(kind = real_wp), dimension(noseg), intent(in) :: volume
         real(kind = real_wp), dimension(noq), intent(in) :: area
@@ -1259,7 +1191,6 @@ contains
     !     Set the current volumes only
     !
     !     Note: use before ModelPerformTimeStep, after ModelInitialize
-    !
     logical function SetFlowDataVolume(volume)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetFlowDataVolume
@@ -1270,8 +1201,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         real(kind = real_wp), dimension(noseg), intent(in) :: volume
 
@@ -1294,8 +1223,6 @@ contains
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
 
-        implicit none
-
         real(kind = real_wp), dimension(noq), intent(in) :: velocity
 
         SetFlowDataVelocity = .false.
@@ -1314,7 +1241,6 @@ contains
     !
     !     Note: the initial volume and the horizontal surface area
     !           should NOT be zero
-    !
     integer function CorrectVolumeSurface(volume, surf, mass_per_m2)
 
         !DEC$ ATTRIBUTES DLLEXPORT::CorrectVolumeSurface
@@ -1325,8 +1251,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         real(kind = real_wp), dimension(noseg), intent(in) :: volume
         real(kind = real_wp), dimension(noseg), intent(in) :: surf
@@ -1392,7 +1316,6 @@ contains
     !     Set the current values for a single waste load
     !
     !     Note: use before ModelPerformTimeStep, after ModelInitialize
-    !
     logical function SetWasteLoadValues(idx, value)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetWasteLoadValues
@@ -1403,8 +1326,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         integer(kind = int_wp) :: idx
         real(kind = real_wp), dimension(notot + 1), intent(in) :: value
@@ -1449,7 +1370,6 @@ contains
     !
     !     TODO:
     !     Make the index work correctly
-    !
     logical function SetBoundaryConditions(idx, value)
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetBoundaryConditions
@@ -1460,8 +1380,6 @@ contains
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
-
-        implicit none
 
         integer(kind = int_wp) :: idx
         real(kind = real_wp), dimension(nosys), intent(in) :: value
@@ -1496,7 +1414,6 @@ contains
 
     ! ModelPerformTimeStep --
     !     Set a single time step
-    !
     integer function ModelPerformTimeStep()
         !DEC$ ATTRIBUTES DLLEXPORT::ModelPerformTimeStep
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELPERFORMTIMESTEP' :: ModelPerformTimeStep
@@ -1504,8 +1421,6 @@ contains
         use delwaq2_global_data
         use m_delwaq2_main
         use m_actions
-
-        implicit none
 
         character(len = 20), dimension(0) :: argv_dummy
 
@@ -1517,39 +1432,35 @@ contains
 
     ! WriteRestartFileDefaultName --
     !     Write a restart file in .map format using default filename with current status of the model
-    !
     integer function WriteRestartFileDefaultName()
         !DEC$ ATTRIBUTES DLLEXPORT::WriteRestartFileDefaultName
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'WRITERESTARTFILEDEFAULTNAME' :: WriteRestartFileDefaultName
 
         use delwaq2_global_data
 
-        implicit none
-
-        character(len = 255) lcharmap
+        character(len = 255) file_name
         integer(kind = int_wp) :: i, k, ierr, found
 
-        lcharmap = lchar(23)
+        file_name = file_name_list(23)
         found = 0
         do i = 248, 1, -1
-            if (lcharmap(i:i) == '.' .and. found == 0) then
-                lcharmap(i:i + 7) = "_res.map"
+            if (file_name(i:i) == '.' .and. found == 0) then
+                file_name(i:i + 7) = "_res.map"
                 found = 1
             end if
         end do
         if (found == 0) then
             write (*, *) ' Invalid name of restart MAP file !'
-            write (lun(19), *) ' Invalid name of restart MAP file !'
+            write (file_unit_list(19), *) ' Invalid name of restart MAP file !'
             WriteRestartFileDefaultName = 1
         else
-            WriteRestartFileDefaultName = WriteRestartFile(lcharmap)
+            WriteRestartFileDefaultName = WriteRestartFile(file_name)
         end if
     end function
 
     ! WriteRestartFile --
     !     Write a restart file in .map format with current status of the model
-    !
-    integer function WriteRestartFile(lcharmap)
+    integer function WriteRestartFile(file_name)
         !DEC$ ATTRIBUTES DLLEXPORT::WriteRestartFile
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'WRITERESTARTFILE' :: WriteRestartFile
 
@@ -1559,29 +1470,26 @@ contains
         use m_sysc          ! Pointers in character array workspace
         use m_sysa          ! Pointers in real array workspace
 
-        implicit none
-
-        character(len = *) lcharmap
+        character(len = *) file_name
         integer(kind = int_wp) :: i, k, ierr
 
-        call open_waq_files(lun(23), lcharmap, 23, 1, ierr)
+        call open_waq_files(file_unit_list(23), file_name, 23, 1, ierr)
         if (ierr == 0) then
-            write (lun(23)) (dlwqd%buffer%chbuf(imnam + k - 1), k = 1, 160)
-            write (lun(23)) notot, noseg
-            write (lun(23)) (substance_name(k), k = 1, notot)
-            write (lun(23)) dlwqd%itime, ((dlwqd%buffer%rbuf(iconc + (k - 1) + (i - 1) * notot), k = 1, notot), i = 1, noseg)
-            close (lun(23))
+            write (file_unit_list(23)) (dlwqd%buffer%chbuf(imnam + k - 1), k = 1, 160)
+            write (file_unit_list(23)) notot, noseg
+            write (file_unit_list(23)) (substance_name(k), k = 1, notot)
+            write (file_unit_list(23)) dlwqd%itime, ((dlwqd%buffer%rbuf(iconc + (k - 1) + (i - 1) * notot), k = 1, notot), i = 1, noseg)
+            close (file_unit_list(23))
             WriteRestartFile = 0
         else
             write (*, *) ' Could not open restart MAP file !'
-            write (lun(19), *) ' Could not open restart MAP file !'
+            write (file_unit_list(19), *) ' Could not open restart MAP file !'
             WriteRestartFile = 1
         end if
     end function
 
     ! ModelInitialize --
     !     Initialize the model run
-    !
     integer function ModelInitialize()
         !DEC$ ATTRIBUTES DLLEXPORT::ModelInitialize
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELINITIALIZE' :: ModelInitialize
@@ -1595,8 +1503,6 @@ contains
         use m_sysi          ! Timer characteristics
         use m_sysa          ! Pointers in real array workspace
         use m_sysj          ! Pointers in integer array workspace
-
-        implicit none
 
         type(t_waq_item) :: constants    !< delwaq constants list
         integer(kind = int_wp) :: lunrep, lunwrk
@@ -1618,18 +1524,18 @@ contains
         !
         ! Some parameters that still need to be set
         !
-        lunrep = lun(19)
+        lunrep = file_unit_list(19)
         ! VORTech: early, otherwise we get those fort.1 files
-        call open_waq_files(lunrep, lchar(19), 19, 1, ierr)
+        call open_waq_files(lunrep, file_name_list(19), 19, 1, ierr)
 
         !
         ! Make sure the harmonic work file exists
         !
 
-        open (newunit = lunwrk, file = lchar(3), form = 'unformatted', access = 'stream')
+        open (newunit = lunwrk, file = file_name_list(3), form = 'unformatted', access = 'stream')
         close (lunwrk)
 
-        nolun = 45      ! nolun has been declared in sysn_ff.inc
+        num_file_units = 45      ! num_file_units has been declared in sysn_ff.inc
         !
         nothrd = 1       ! Set OpenMP threads to 1 (note: read_block_7_process_parameters code to overrule isn't called)
         nogrid = 1       ! No multiple grid option at the moment
@@ -1663,7 +1569,7 @@ contains
         call write_array_2d(argv(2), 'initials', substance_conc)
         if (nopa > 0) then
             call write_array_2d(argv(2), 'params', procparam_param_value)
-            open (newunit = lunwrk, file = lchar(41))
+            open (newunit = lunwrk, file = file_name_list(41))
             write (lunwrk, '(i5,a1,a256)') 0, ' ', trim(argv(2)) // '-params.wrk'
             close (lunwrk)
         end if
@@ -1702,14 +1608,12 @@ contains
         ModelInitialize = 0
 
     contains
-        ! write_delwaq03 --
-        !     Write the first DELWAQ system intermediate file
+
+        ! Write the first DELWAQ system intermediate file
         subroutine write_delwaq03(name)
             use workspace, only : set_array_indexes
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
-
-            implicit none
 
             character(len = *) :: name
 
@@ -1730,9 +1634,9 @@ contains
             write (lunwrk) ii
             write (lunwrk) imaxa, imaxi, imaxc
 
-            write (lunwrk) lun(1:nolun)
-            write (lunwrk) lchar(1:nolun)
-            write (lunwrk) filtype(1:nolun)
+            write (lunwrk) file_unit_list(1:num_file_units)
+            write (lunwrk) file_name_list(1:num_file_units)
+            write (lunwrk) filtype(1:num_file_units)
             close (lunwrk)
 
         end subroutine write_delwaq03
@@ -1744,8 +1648,6 @@ contains
             use m_grid_utils_external
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
-
-            implicit none
 
             character(len = *) :: name
 
@@ -1804,8 +1706,8 @@ contains
             ! Now the rest ...
             !
             idummy = 1
-            write (lunwrk) (idummy, i = 1, notot) ! SYSGRD in SETPRG
-            write (lunwrk) (idummy, i = 1, notot) ! SYSNDT in SETPRG
+            write (lunwrk) (idummy, i = 1, notot) ! SYSGRD in set_grid_all_processes
+            write (lunwrk) (idummy, i = 1, notot) ! SYSNDT in set_grid_all_processes
 
             write (lunwrk) iknmrk
 
@@ -1886,9 +1788,9 @@ contains
 
             noraai = 0      ! For now
             ntraaq = 0      ! For now
-            lun(2) = 10
+            file_unit_list(2) = 10
 
-            call create_write_monitoring_area_array(lun, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
+            call create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
                     noraai, ntraaq, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
                     status)
 
@@ -1902,8 +1804,6 @@ contains
             use processet
             use results
             use m_sysn          ! System characteristics
-
-            implicit none
 
             character(len = *) :: name
 
@@ -1946,8 +1846,6 @@ contains
             use results, only : OutputPointers
             use rd_token
             use m_sysn          ! System characteristics
-
-            implicit none
 
             character(len = *) :: name
 
@@ -1992,7 +1890,7 @@ contains
             !
 
             open (9, file = trim(name) // '.inp')
-            open (lun(29), file = trim(name) // '.lstdummy')
+            open (file_unit_list(29), file = trim(name) // '.lstdummy')
 
             npos = 100
             cchar = ';'
@@ -2003,14 +1901,14 @@ contains
             ilun(1) = 9
             lch(1) = trim(name) // '.inp'
 
-            call read_block_9(lun, lchar, filtype, char_arr, iar, max_char_size, &
+            call read_block_9(file_unit_list, file_name_list, filtype, char_arr, iar, max_char_size, &
                     max_int_size, iwidth, &
                     output_verbose_level, ioutps, outputs, status)
 
             close (9) ! TODO: status = 'delete'
             close (11)
 
-            call dlwqp1(lun, lchar, statprocesdef, allitems, &
+            call dlwqp1(file_unit_list, file_name_list, statprocesdef, allitems, &
                     ioutps, outputs, nomult, mult, constants, &
                     refday, status)
 
@@ -2019,25 +1917,24 @@ contains
         end subroutine handle_processes
 
         subroutine write_array_2d(name, suffix, array)
-            implicit none
+
             character(len = *) :: name
             character(len = *) :: suffix
             real(kind = real_wp), dimension(:, :) :: array
 
             integer(kind = int_wp) :: time_dummy
-            integer(kind = int_wp) :: lunwrk
+            integer(kind = int_wp) :: file_unit
 
             time_dummy = 0
 
-            open (newunit = lunwrk, file = trim(name) // '-' // trim(suffix) // '.wrk', form = 'unformatted', access = 'stream')
-            write (lunwrk) time_dummy, array
-            close (lunwrk)
+            open (newunit = file_unit, file = trim(name) // '-' // trim(suffix) // '.wrk', form = 'unformatted', &
+                    access = 'stream')
+            write (file_unit) time_dummy, array
+            close (file_unit)
 
         end subroutine write_array_2d
 
-        ! write_functions --
-        !     Write the file with constants, functions etc
-        !
+        ! Write the file with constants, functions etc
         subroutine write_functions(name)
             character(len = *), intent(in) :: name
 
@@ -2045,12 +1942,12 @@ contains
             integer(kind = int_wp), parameter :: ITEM_NAME_SIZE = 20
             integer(kind = int_wp) :: k
             integer(kind = int_wp) :: i
-            integer(kind = int_wp) :: lun = 10
+            integer(kind = int_wp) :: file_unit = 10
             character(len = FILE_NAME_SIZE) :: filename
             character(len = ITEM_NAME_SIZE) :: loc
 
-            open (lun, file = trim(name) // '-function.wrk', form = 'unformatted', access = 'stream')
-            write (lun) ' 5.000PROCES'
+            open (file_unit, file = trim(name) // '-function.wrk', form = 'unformatted', access = 'stream')
+            write (file_unit) ' 5.000PROCES'
             i = 0
             if (nocons > 0) then
                 i = i + 1
@@ -2058,127 +1955,123 @@ contains
             if (nopa > 0) then
                 i = i + 1
             end if
-            write (lun) i ! proc_pars%current_size
+
+            write (file_unit) i ! proc_pars%current_size
             if (nocons > 0) then
-                write (lun) 10       ! subject SUBJECT_CONSTANT
-                write (lun) nocons   ! no_param
-                write (lun) 1        ! no_loc
-                write (lun) 0        ! no_brk
-                write (lun) 0        ! functype FUNCTYPE_CONSTANT
-                write (lun) 1        ! igrid
-                write (lun) .false.  ! extern
-                write (lun) 0        ! filetype FILE_NONE
+                write (file_unit) 10       ! subject SUBJECT_CONSTANT
+                write (file_unit) nocons   ! no_param
+                write (file_unit) 1        ! no_loc
+                write (file_unit) 0        ! no_brk
+                write (file_unit) 0        ! functype FUNCTYPE_CONSTANT
+                write (file_unit) 1        ! igrid
+                write (file_unit) .false.  ! extern
+                write (file_unit) 0        ! filetype FILE_NONE
                 filename = ''
-                write (lun) filename
-                write (lun) 2        ! iorder ORDER_LOC_PARAM
-                write (lun) .true.   ! param_named
-                write (lun) procparam_const
-                write (lun) .true.   ! loc_named
+                write (file_unit) filename
+                write (file_unit) 2        ! iorder ORDER_LOC_PARAM
+                write (file_unit) .true.   ! param_named
+                write (file_unit) procparam_const
+                write (file_unit) .true.   ! loc_named
                 loc = 'constant'
-                write (lun) loc
-                write (lun) .true.   ! param_pointered
-                write (lun) (i, i = 1, nocons)
-                write (lun) .false.  ! loc_defaults
-                write (lun) .false.  ! loc_pointered
-                write (lun) .false.  ! scaled
-                write (lun) 1.0_4    ! scale_factor
-                write (lun) .false.  ! param_scaled
-                write (lun) .false.  ! loc_scaled
-                write (lun) procparam_const_value
+                write (file_unit) loc
+                write (file_unit) .true.   ! param_pointered
+                write (file_unit) (i, i = 1, nocons)
+                write (file_unit) .false.  ! loc_defaults
+                write (file_unit) .false.  ! loc_pointered
+                write (file_unit) .false.  ! scaled
+                write (file_unit) 1.0_4    ! scale_factor
+                write (file_unit) .false.  ! param_scaled
+                write (file_unit) .false.  ! loc_scaled
+                write (file_unit) procparam_const_value
             end if
             if (nopa > 0) then
-                write (lun) 11       ! subject SUBJECT_PARAMETER
-                write (lun) nopa     ! no_param
-                write (lun) noseg    ! no_loc
-                write (lun) 0        ! no_brk
-                write (lun) 0        ! functype FUNCTYPE_CONSTANT
-                write (lun) 1        ! igrid
-                write (lun) .false.  ! extern
-                write (lun) 0        ! filetype FILE_NONE
+                write (file_unit) 11       ! subject SUBJECT_PARAMETER
+                write (file_unit) nopa     ! no_param
+                write (file_unit) noseg    ! no_loc
+                write (file_unit) 0        ! no_brk
+                write (file_unit) 0        ! functype FUNCTYPE_CONSTANT
+                write (file_unit) 1        ! igrid
+                write (file_unit) .false.  ! extern
+                write (file_unit) 0        ! filetype FILE_NONE
                 filename = ''
-                write (lun) filename
-                write (lun) 2        ! iorder ORDER_LOC_PARAM
-                write (lun) .true.   ! param_named
-                write (lun) procparam_param
-                write (lun) .true.   ! loc_named
+                write (file_unit) filename
+                write (file_unit) 2        ! iorder ORDER_LOC_PARAM
+                write (file_unit) .true.   ! param_named
+                write (file_unit) procparam_param
+                write (file_unit) .true.   ! loc_named
                 do i = 1, noseg
                     write (loc, '(A8,I8)') 'segment ', i
-                    write (lun) loc
+                    write (file_unit) loc
                 end do
-                write (lun) .true.   ! param_pointered
-                write (lun) (i, i = 1, nopa)
-                write (lun) .false.  ! loc_defaults
-                write (lun) .false.  ! loc_pointered
-                write (lun) .false.  ! scaled
-                write (lun) 1.0_4    ! scale_factor
-                write (lun) .false.  ! param_scaled
-                write (lun) .false.  ! loc_scaled
-                write (lun) transpose(procparam_param_value)
+                write (file_unit) .true.   ! param_pointered
+                write (file_unit) (i, i = 1, nopa)
+                write (file_unit) .false.  ! loc_defaults
+                write (file_unit) .false.  ! loc_pointered
+                write (file_unit) .false.  ! scaled
+                write (file_unit) 1.0_4    ! scale_factor
+                write (file_unit) .false.  ! param_scaled
+                write (file_unit) .false.  ! loc_scaled
+                write (file_unit) transpose(procparam_param_value)
             end if
 
-            close (lun)
+            close (file_unit)
 
         end subroutine write_functions
 
-        ! report_model_data --
-        !     Report the model input in the monitor file
-        !
-        subroutine report_model_data(lunrep)
-            integer(kind = int_wp), intent(in) :: lunrep
-
+        ! Report the model input in the monitor file
+        subroutine report_model_data(file_unit)
+            integer(kind = int_wp), intent(in) :: file_unit
             integer(kind = int_wp) :: i
 
-            write (lunrep, '(a)') 'Run:'
-            write (lunrep, '(4x,a)') title
-
-            write (lunrep, '(/,a)') 'Integration details:'
-            write (lunrep, '(4x,a,i5)') 'Integration method: ', intsrt
-            write (lunrep, '(4x,a,i5)') 'Secondary options:  ', intopt
-            write (lunrep, '(/,a)') 'Schematisation:'
-            write (lunrep, '(4x,a,i10)') 'Number of segments: ', noseg
-            write (lunrep, '(4x,a,4i10)') 'Number of exchanges:', noq1, noq2, noq3, noq4
-            write (lunrep, '(/,a)') 'Substances:'
-            write (lunrep, '(i5,1x,a20)') (i, substance_name(i), i = 1, size(substance_name))
-            write (lunrep, '(/,a)') 'Constants/functions:'
+            write (file_unit, '(a)') 'Run:'
+            write (file_unit, '(4x,a)') title
+            write (file_unit, '(/,a)') 'Integration details:'
+            write (file_unit, '(4x,a,i5)') 'Integration method: ', intsrt
+            write (file_unit, '(4x,a,i5)') 'Secondary options:  ', intopt
+            write (file_unit, '(/,a)') 'Schematisation:'
+            write (file_unit, '(4x,a,i10)') 'Number of segments: ', noseg
+            write (file_unit, '(4x,a,4i10)') 'Number of exchanges:', noq1, noq2, noq3, noq4
+            write (file_unit, '(/,a)') 'Substances:'
+            write (file_unit, '(i5,1x,a20)') (i, substance_name(i), i = 1, size(substance_name))
+            write (file_unit, '(/,a)') 'Constants/functions:'
             if (size(procparam_const) > 0) then
-                write (lunrep, '(i5,1x,a20,g14.5)') (i, procparam_const(i), procparam_const_value(i), i = 1, size(procparam_const))
+                write (file_unit, '(i5,1x,a20,g14.5)') (i, procparam_const(i), procparam_const_value(i), i = 1, size(procparam_const))
             else
-                write (lunrep, '(4xa)') 'None'
+                write (file_unit, '(4xa)') 'None'
             end if
-            write (lunrep, '(/,a)') 'Parameters/segment functions:'
+            write (file_unit, '(/,a)') 'Parameters/segment functions:'
 
             if (size(procparam_param) > 0) then
-                write (lunrep, '(i5,1x,a20)') (i, procparam_param(i), i = 1, size(procparam_param))
+                write (file_unit, '(i5,1x,a20)') (i, procparam_param(i), i = 1, size(procparam_param))
             else
-                write (lunrep, '(4xa)') 'None'
+                write (file_unit, '(4xa)') 'None'
             end if
-            write (lunrep, '(/,a)') 'Monitor points:'
+            write (file_unit, '(/,a)') 'Monitor points:'
             if (size(monitor_name) > 0) then
-                write (lunrep, '(i5,1x,a20,i10)') (i, monitor_name(i), monitor_cell(i), i = 1, size(monitor_name))
+                write (file_unit, '(i5,1x,a20,i10)') (i, monitor_name(i), monitor_cell(i), i = 1, size(monitor_name))
             else
-                write (lunrep, '(4xa)') 'None'
+                write (file_unit, '(4xa)') 'None'
             end if
-            write (lunrep, '(/,a)') 'Waste load points:'
+            write (file_unit, '(/,a)') 'Waste load points:'
             if (size(load_name) > 0) then
-                write (lunrep, '(i5,1x,a20,i10,1x,a20)') (i, load_name(i), load_cell(i), load_type(i), i = 1, size(load_name))
+                write (file_unit, '(i5,1x,a20,i10,1x,a20)') (i, load_name(i), load_cell(i), load_type(i), i = 1, size(load_name))
             else
-                write (lunrep, '(4xa)') 'None'
+                write (file_unit, '(4xa)') 'None'
             end if
-            write (lunrep, '(/,a)') 'Boundary cells:'
+            write (file_unit, '(/,a)') 'Boundary cells:'
             if (size(boundary_name) > 0) then
-                write (lunrep, '(i5,1x,a20,a20,1x,a20)') (i, boundary_name(i), boundary_id(i), boundary_type(i), i = 1, size(boundary_name))
+                write(file_unit, '(i5,1x,a20,a20,1x,a20)') (i, boundary_name(i), boundary_id(i), boundary_type(i), i = 1, size(boundary_name))
             else
-                write (lunrep, '(4xa)') 'None'
+                write (file_unit, '(4xa)') 'None'
             end if
 
-            write (lunrep, '(//)')
+            write (file_unit, '(//)')
         end subroutine report_model_data
 
     end function ModelInitialize
 
-    ! ModelFinalize --
-    !     Conclude the model run - final output will be written
-    !
+
+    ! Conclude the model run - final output will be written
     integer function ModelFinalize()
         !DEC$ ATTRIBUTES DLLEXPORT::ModelFinalize
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELFINALIZE' :: ModelFinalize
@@ -2186,8 +2079,6 @@ contains
         use delwaq2_global_data
         use m_delwaq2_main
         use m_actions
-
-        implicit none
 
         character(len = 20), dimension(0) :: argv_dummy
         integer(kind = int_wp) :: ierr
@@ -2203,10 +2094,8 @@ contains
 
     end function ModelFinalize
 
-    ! ModelInitialize_By_Id --
-    !     Create the model instance from an ID (currently: the name of a
-    !     preprocessed input file)
-    !
+    ! Create the model instance from an ID (currently: the name of a
+    ! preprocessed input file)
     integer function ModelInitialize_By_Id(runid_given)
         !DEC$ ATTRIBUTES DLLEXPORT::ModelInitialize_By_id
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'MODELINITIALIZE_BY_ID' :: ModelInitialize_By_Id
@@ -2221,13 +2110,9 @@ contains
         use m_sysa          ! Pointers in real array workspace
         use m_sysj          ! Pointers in integer array workspace
 
-        implicit none
-
         character(len = *), intent(in) :: runid_given
 
-        !
         ! TODO: it is probably not all that simple
-        !
         if (.not. allocated(argv)) then
             allocate (argv(3))
         end if
@@ -2236,14 +2121,11 @@ contains
         argv(3) = '-waq'
 
         call store_command_arguments(argv)
-
         call delwaq2_global_data_initialize(runid_given)
-        !
+
         ! Leave everything to DELWAQ itself
-        !
         call dlwqmain(ACTION_INITIALISATION, 2, argv, dlwqd)
 
-        !
         ! Extract some data (mostly names) from the DLWQD data structure
         ! for later use
         !

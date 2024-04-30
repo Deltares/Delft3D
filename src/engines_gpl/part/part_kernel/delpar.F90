@@ -54,7 +54,7 @@ contains
 !
 !
 !     subroutines called    : write_version - echo header to screen
-!                             dlwqtd - does time inteprolation (like delwaq)
+!                             expands_vol_area_for_bottom_cells - does time inteprolation (like delwaq)
 !                             oildsp - oil dispersion (modtyp=model_oil)
 !                             part01 - calculate distances and angles in grid
 !                             part06 - calculate dump-sites in the grids

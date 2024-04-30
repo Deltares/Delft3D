@@ -39,7 +39,7 @@ contains
         !
         !     SUBROUTINES CALLED : RDTOK1 tokenized data file reading
         !
-        !     LOGICAL UNITS      : LUNIN = unit formatted inputfile
+        !     LOGICAL UNITS      : input_file = unit formatted inputfile
         !                          LUNREP= unit formatted outputfile
         !
         !     PARAMETERS         :

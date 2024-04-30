@@ -33,15 +33,10 @@ program test_put_shmds_f90
     integer :: t, nTimes = 10
     double precision :: curTime = 100.D+00
     character(len=100) :: name = 'testje'
-    integer :: sleepSec = 999
+    integer :: sleepMilliSec = 999
 
     do t = 1, nTimes
-#if (defined(WIN32))
-        call sleep(sleepSec)
-#else
-        write(*,*) 'sleeping'
-        call DIOSYNCcSLEEP(sleepSec)
-#endif
+        call CUTIL_SLEEP(sleepMilliSec)
         curTime = curTime + 10.D+00
         write(*,*) 'Step: ', t, ' Sending: ', curTime
         call DioShmDataBlockPutDouble(name, curTime)

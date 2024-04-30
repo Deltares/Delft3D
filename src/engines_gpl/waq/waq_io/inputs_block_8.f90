@@ -35,7 +35,7 @@ module inputs_block_8
 contains
 
 
-    subroutine read_block_8_initial_conditions(lun, lchar, filtype, noseg, notot, &
+    subroutine read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, noseg, notot, &
             syname, iwidth, output_verbose_level, inpfil, &
             gridps, status)
 
@@ -51,7 +51,7 @@ contains
         !!          lowest value to the first active cell in a Z-layer model
         !!       - Binary files not being a .map file are assumed to be in mass/gridcell
         !!       - .map files are scanned for the presence of the mass/m2 token at
-        !!          the end of title string 3 by the simulation system (dlwqi0.f)
+        !!          the end of title string 3 by the simulation system (initialize_all_conditions.f)
         !!       - The simulation system only produces mass/m2 .map files for restart
         !!          purposes any more.
 
@@ -61,9 +61,9 @@ contains
         !!                       open_waq_files  ( to open the binary intermediate file )
         !!                       check   ( to see of the group was read correctly )
 
-        !! Logical units : lun(27) = unit DELWAQ input file
-        !!                 lun(29) = unit formatted output file
-        !!                 lun(18) = unit intermediate file (initials)
+        !! Logical units : file_unit_list(27) = unit DELWAQ input file
+        !!                 file_unit_list(29) = unit formatted output file
+        !!                 file_unit_list(18) = unit intermediate file (initials)
 
         use error_handling, only : check_error
         use m_srstop
@@ -74,8 +74,8 @@ contains
         use timers         ! performance timers
         use string_module  ! string manipulation tools
 
-        integer(kind = int_wp), intent(inout) :: lun  (*)       !< array with unit numbers
-        character       (*), intent(inout) :: lchar(*)       !< filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list  (*)       !< array with unit numbers
+        character       (*), intent(inout) :: file_name_list(*)       !< filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)     !< type of binary file
         integer(kind = int_wp), intent(in) :: noseg          !< nr of computational volumes
         integer(kind = int_wp), intent(in) :: notot          !< nr of delwaq + delpar state variables
@@ -117,7 +117,7 @@ contains
         !        Initialisations
 
         iposr = 0                                  ! start at begin of the input line with reading
-        lunut = lun(29)
+        lunut = file_unit_list(29)
         ierr2 = 0
         masspm2 = .false.
         transp = .false.
@@ -162,19 +162,19 @@ contains
 
         !        Get the input file name
 
-        call process_simulation_input_options   (icopt1, lun, 18, lchar, filtype, &
+        call process_simulation_input_options   (icopt1, file_unit_list, 18, file_name_list, filtype, &
                 ldummy, ldummy, 0, ierr2, status, &
                 .false.)
         if (ierr2  > 0) goto 10
         if (icopt1 == BINARY) then
-            ip = scan (lchar(18), '.', back = .true.)              ! look for the file type
-            cext = lchar(18)(ip:ip + 3)
+            ip = scan (file_name_list(18), '.', back = .true.)              ! look for the file type
+            cext = file_name_list(18)(ip:ip + 3)
             call str_lower(cext)
             if (cext == '.map' .or. cext == '.rmp' .or. &
                     cext == '.rm2') then                             ! if .rmp or .rm2 (Sobek) or .map, it is a map-file
-                call open_waq_files(lun(18), lchar(18), 18, 2, ierr2)
-                read (lun(18)) cdummy(1:160)                        ! read title of simulation
-                close (lun(18))
+                call open_waq_files(file_unit_list(18), file_name_list(18), 18, 2, ierr2)
+                read (file_unit_list(18)) cdummy(1:160)                        ! read title of simulation
+                close (file_unit_list(18))
                 if (cdummy(114:120) == 'mass/m2' .or. &
                         cdummy(114:120) == 'MASS/M2') then            !  at end of third line ...
                     write (lunut, 2070)
@@ -197,13 +197,13 @@ contains
 
         !        Make the file a .map file instead of the previous .wrk file
 
-        ip = scan (lchar(18), '.', back = .true.)
+        ip = scan (file_name_list(18), '.', back = .true.)
         if (ip == 0) then
-            lchar(18) = trim(lchar(18)) // '.map'
+            file_name_list(18) = trim(file_name_list(18)) // '.map'
         else
-            lchar(18)(ip:ip + 3) = '.map'
+            file_name_list(18)(ip:ip + 3) = '.map'
         endif
-        call open_waq_files(lun(18), lchar(18), 18, 1, ierr2)
+        call open_waq_files(file_unit_list(18), file_name_list(18), 18, 1, ierr2)
         if (ierr2 > 0) goto 10
 
         !        Write the .map header
@@ -219,8 +219,8 @@ contains
             cdummy(81:120) = '                                        '
             cdummy(121:160) = 'there is no time string in this file    '
         endif
-        write (lun(18)) cdummy(1:160), notot, noseg
-        write (lun(18)) (syname(i), i = 1, notot)
+        write (file_unit_list(18)) cdummy(1:160), notot, noseg
+        write (file_unit_list(18)) (syname(i), i = 1, notot)
 
         if (old_input) then
             !                see how the data comes
@@ -245,19 +245,19 @@ contains
 
             !           Get the data and write it to unit 18
 
-            write (lun(18)) 0
+            write (file_unit_list(18)) 0
             if (transp) then
                 allocate (values(noseg, notot))
                 call read_constant_data  (icopt2, values, notot, noseg, 1, &
                         iwidth, 0, output_verbose_level, ierr2)
-                write (lun(18)) (values(i, :), i = 1, noseg)
+                write (file_unit_list(18)) (values(i, :), i = 1, noseg)
             else
                 allocate (values(notot, noseg))
                 call read_constant_data  (icopt2, values, noseg, notot, notot, &
                         iwidth, 0, output_verbose_level, ierr2)
-                write (lun(18)) values
+                write (file_unit_list(18)) values
             endif
-            close (lun(18))
+            close (file_unit_list(18))
             if (ierr2 > 0) goto 10
 
         else
@@ -269,12 +269,12 @@ contains
                 goto 10
             endif
             push = .true.
-            call read_initial_conditions (lun, lchar, filtype, inpfil, notot, &
+            call read_initial_conditions (file_unit_list, file_name_list, filtype, inpfil, notot, &
                     syname, iwidth, output_verbose_level, gridps, noseg, &
                     values, ierr2, status)
             itime = 0
-            write(lun(18)) itime, values
-            close (lun(18))
+            write(file_unit_list(18)) itime, values
+            close (file_unit_list(18))
             if (ierr2 > 0) goto 10
 
         endif

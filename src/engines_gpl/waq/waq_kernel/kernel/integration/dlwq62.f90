@@ -33,7 +33,7 @@
                          velo   , bound  , ipoint , nosys  , isys   , & 
                          nsys   , noq1   , noq2   , noq    , nodisp , & 
                          novelo , idpnt  , ivpnt  , deriv  , amat   , & 
-                                           jtrack , iopt   , ilflag )
+                                           jtrack , integration_id   , ilflag )
 
 !     Deltares - Delft Software Centre
 
@@ -75,7 +75,7 @@
       real(kind=real_wp), intent(in   )  ::bound (nosys , * )  ! Values at the open boundaries
       real(kind=real_wp), intent(inout)  ::deriv ( nsys , * )  ! Right hand side of the equations
       integer(kind=int_wp), intent(in   )  ::jtrack              ! Number of codiagonals of amat
-      integer(kind=int_wp), intent(in   )  ::iopt                ! = 0 or 2 DISP at zero flow
+      integer(kind=int_wp), intent(in   )  ::integration_id                ! = 0 or 2 DISP at zero flow
                                                        ! = 1 or 3 no DISP at zero flow
                                                        ! = 0 or 1 DISP over boundary
                                                        ! = 2 or 3 no DISP over boundary
@@ -103,8 +103,8 @@
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwq62", ithandl )
 
-      zerof  = btest( iopt, 0 )
-      zerob  = btest( iopt, 1 )
+      zerof  = btest( integration_id, 0 )
+      zerob  = btest( integration_id, 1 )
       length = ilflag == 1
       idp    = idpnt(isys)
       ivp    = ivpnt(isys)

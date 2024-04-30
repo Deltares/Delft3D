@@ -27,7 +27,7 @@
 
 	<testCases>
 		<testCase name="e23_f01_c04-botnow_curnow" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f01_general/c04-botnow_curnow</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c04-botnow_curnow</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -62,7 +62,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f01_c06-wavecon" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f01_general/c06-wavecon</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c06-wavecon</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -90,7 +90,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f01_c07-wavewatch_file" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f01_general/c07-wavewatch_file</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c07-wavewatch_file</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -125,7 +125,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f01_c08-f34" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f01_general/c08-f34</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f01_general/c08-f34</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -160,7 +160,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
-			<path version="2024-02-22T14:50:00">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
+			<path version="2024-04-17T17:50:00">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -197,7 +197,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f02_c05-flow_wave_roller" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f02_roller/c05-flow_wave_roller</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f02_roller/c05-flow_wave_roller</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -232,7 +232,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f02_c11-roller_thindam" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f02_roller/c11-roller_thindam</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f02_roller/c11-roller_thindam</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -267,7 +267,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f03_c01-trench_dd" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f03_dd/c01-trench_dd</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f03_dd/c01-trench_dd</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -316,7 +316,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f03_c02-lido_dd" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f03_dd/c02-lido_dd</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f03_dd/c02-lido_dd</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -365,7 +365,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f03_c03-coafin_dd" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f03_dd/c03-coafin_dd</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f03_dd/c03-coafin_dd</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -421,7 +421,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f03_c09-map_flow_var_dd" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f03_dd/c09-map_flow_var_dd</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f03_dd/c09-map_flow_var_dd</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -470,7 +470,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f03_c10-coafin_meteo_dd" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f03_dd/c10-coafin_meteo_dd</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f03_dd/c10-coafin_meteo_dd</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -526,7 +526,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c09-21.05-flow_wave_no-roller_z" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c09-21.05-flow_wave_no-roller_z</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c09-21.05-flow_wave_no-roller_z</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -562,7 +562,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -597,7 +597,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c11-wave_boers" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c11-wave_boers</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c11-wave_boers</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -634,7 +634,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c12-wave_ripcurrent" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c12-wave_ripcurrent</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c12-wave_ripcurrent</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -669,7 +669,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c13-wave_klopman_wfc_z" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c13-wave_klopman_wfc_z</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c13-wave_klopman_wfc_z</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -704,7 +704,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c14-wave_boers_z" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c14-wave_boers_z</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c14-wave_boers_z</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -739,7 +739,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c15-wave_ripcurrent_z" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f27_zmodel_updates/c15-wave_ripcurrent_z</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c15-wave_ripcurrent_z</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -774,7 +774,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f99_c99-of_loosdrecht_mean" ref="flow2d3d_wave_default">
-			<path version="2024-01-11T14:00:00">e23_d3dflow-wave/f99_longruns/c99-of_loosdrecht_mean</path>
+			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f99_longruns/c99-of_loosdrecht_mean</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>

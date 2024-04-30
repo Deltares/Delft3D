@@ -32,8 +32,6 @@ contains
         use m_delwaq1_data
         use m_dattim
 
-        implicit none
-
         type(error_status) :: status !< current error status
 
         write (lunrep, '(//'' Messages presented including .lsp file:'')')
@@ -51,16 +49,16 @@ contains
             call set_array_indexes(lunrep, .false., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                     itota, itoti, itotc)
             ! create the delwaq03.wrk file
-            call open_waq_files(lun(1), lchar(1), 1, 1, ioerr)
-            write (lun(1)) in
-            write (lun(1)) ii
-            write (lun(1)) itota, itoti, itotc
-            write (lun(1)) (lun(k), k = 1, nolun)
-            write (lun(1)) (lchar(k), k = 1, nolun)
-            write (lun(1)) (filtype(k), k = 1, nolun)
+            call open_waq_files(file_unit_list(1), file_name_list(1), 1, 1, ioerr)
+            write (file_unit_list(1)) in
+            write (file_unit_list(1)) ii
+            write (file_unit_list(1)) itota, itoti, itotc
+            write (file_unit_list(1)) (file_unit_list(k), k = 1, num_file_units)
+            write (file_unit_list(1)) (file_name_list(k), k = 1, num_file_units)
+            write (file_unit_list(1)) (filtype(k), k = 1, num_file_units)
         else
             write (lunrep, '(  '' SIMULATION PROHIBITED !!!!!!!!'')')
-            call open_waq_files(lun(1), lchar(1), 1, 3, ioerr)
+            call open_waq_files(file_unit_list(1), file_name_list(1), 1, 3, ioerr)
         end if
 
         call dattim(rundat)

@@ -37,7 +37,7 @@ module grid_utils
 
 contains
 
-    subroutine read_multiple_grids(lun, noseg, notot, nototp, nolay, &
+    subroutine read_multiple_grids(file_unit_list, noseg, notot, nototp, nolay, &
             gridps, nseg2, nogrid, syname, status)
 
         !!  Reads optional multiple grids
@@ -54,12 +54,12 @@ contains
         !!          - BEDGRID. Seems to be the right name for BOTTOMGRID.
         !!          - PROCESSGRID. Specifies grid for processes. Diverts to read_grid.
 
-        !!     Logical units  : LUN(29) = unit formatted output file
-        !!                      LUN( 2) = unit intermediate file (system)
+        !!     Logical units  : file_unit_list(29) = unit formatted output file
+        !!                      file_unit_list( 2) = unit intermediate file (system)
 
         use m_grid_utils_external        !   for the storage of contraction grids
 
-        integer(kind = int_wp), intent(inout) :: lun   (*)          !< array with unit numbers
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
         integer(kind = int_wp), intent(in) :: noseg              !< number of computational volumes
         integer(kind = int_wp), intent(in) :: notot              !< total number of substances
         integer(kind = int_wp), intent(in) :: nototp             !< total number of particle-substances
@@ -215,8 +215,10 @@ contains
 
             case ('BOTTOMGRID', 'BEDGRID')
                 aGrid%itype = Bottomgrid
-                call read_grid(lun, aGrid, GridPs, .false., nosegl_bottom, status)
+
+                call read_grid(file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
                 igrid = GridPs%add(aGrid)
+
                 if (GridPs%bottom_grid /= 0) then
                     write (lunut, 2070)
                     call status%increase_warning_count()
@@ -226,12 +228,12 @@ contains
 
             case ('PROCESSGRID')
                 aGrid%itype = ProcessGrid
-                call read_grid (lun, aGrid, GridPs, .false., nosegl_bottom, status)
+                call read_grid (file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
                 igrid = GridPs%add(aGrid)
 
             case ('SUBGRID')
                 aGrid%itype = ProcessGrid
-                call read_grid (lun, aGrid, GridPs, .false., nosegl_bottom, status)
+                call read_grid (file_unit_list, aGrid, GridPs, .false., nosegl_bottom, status)
                 igrid = GridPs%add(aGrid)
 
             case ('NOBOTTOMLAY')
@@ -252,7 +254,8 @@ contains
                 if (.not. newinput) then
                     aGrid%itype = ProcessGrid
                     push = .true.
-                    call read_grid (lun, aGrid, GridPs, .true., nosegl_bottom, status)
+
+                    call read_grid (file_unit_list, aGrid, GridPs, .true., nosegl_bottom, status)
                     igrid = GridPs%add(aGrid)
                     exit
                 else
@@ -337,17 +340,17 @@ contains
         ! Write grid to system file
         do igrid = 1, nogrid
             if (igrid == GridPs%bottom_grid) then
-                write(lun(2)) GridPs%Pointers(iGrid)%noseg, &
+                write(file_unit_list(2)) GridPs%Pointers(iGrid)%noseg, &
                         -GridPs%Pointers(iGrid)%nolay, &
                         GridPs%Pointers(iGrid)%finalpointer
             else
-                write(lun(2)) GridPs%Pointers(iGrid)%noseg, &
+                write(file_unit_list(2)) GridPs%Pointers(iGrid)%noseg, &
                         GridPs%Pointers(iGrid)%iref, &
                         GridPs%Pointers(iGrid)%finalpointer
             endif
         enddo
         do igrid = 1, nogrid
-            ierr2 = gridps%pointers(igrid)%write(lun(2))
+            ierr2 = gridps%pointers(igrid)%write(file_unit_list(2))
         enddo
 
         ! Read per substance grid and time
@@ -376,8 +379,8 @@ contains
 
         ! Write substance info to system file
 
-        write(lun(2)) isysg
-        write(lun(2)) isyst
+        write(file_unit_list(2)) isysg
+        write(file_unit_list(2)) isyst
 
         if (timon) call timstop(ithndl)
         return
@@ -495,7 +498,7 @@ contains
 
     end subroutine read_sub_procgrid
 
-    subroutine read_grid(lun, aGrid, GridPs, oldproc, nosegl_bottom, status)
+    subroutine read_grid(file_unit_list, aGrid, GridPs, oldproc, nosegl_bottom, status)
 
         !!  Reads a grid definition
         !!
@@ -518,8 +521,7 @@ contains
 
         use m_open_waq_files
         use m_grid_utils_external     !   for the storage of contraction grids
-
-        integer(kind = int_wp), intent(inout) :: lun(*)         !< unit numbers used
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)         !< unit numbers used
         type(t_grid), intent(inout) :: aGrid         !< collection off all grid definitions
         type(GridPointerColl), intent(in) :: GridPs        !< collection off all grid definitions
         logical, intent(in) :: oldproc       !< true if old processing
@@ -589,17 +591,17 @@ contains
 
                 case ('AGGREGATIONFILE')                      ! it is the filename keyword
                     if (gettoken(ctoken, ierr2) > 0) goto 1000
-                    call open_waq_files (lun(33), ctoken, 33, 1, ierr2)
+                    call open_waq_files (file_unit_list(33), ctoken, 33, 1, ierr2)
                     if (ierr2 /= 0) goto 1000
-                    read  (lun(33), *) nmax, mmax, noseg_fil, idummy, idummy
+                    read  (file_unit_list(33), *) nmax, mmax, noseg_fil, idummy, idummy
                     write (lunut, 2020) ctoken, nmax, mmax, noseg_fil
                     if (noseg_fil /= noseg_lay) then
                         write (lunut, 2030) noseg_fil, noseg_lay
                         goto 1000
                     endif
                     allocate (aGrid%iarray(noseg))
-                    read  (lun(33), *) (aGrid%iarray(iseg), iseg = 1, noseg_fil)
-                    close (lun(33))
+                    read  (file_unit_list(33), *) (aGrid%iarray(iseg), iseg = 1, noseg_fil)
+                    close (file_unit_list(33))
                     exit                                         ! input for the grid is ready
 
                 case ('BOTTOMGRID_FROM_ATTRIBUTES')       ! it is the filename keyword

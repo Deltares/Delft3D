@@ -24,7 +24,6 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
 module m_grid_utils_external
     !!  module contains everything for specification of multiple grids
     !!

@@ -73,6 +73,17 @@
                 <environment name="PAGER" type="raw">more</environment>
             </environments>
         </program>
+
+        <!-- Meant for the test cases where WAQ and PART are combined -->
+        <program name="WAQ-PART" logOutputToFile="true"     addSearchPaths="true">
+            <location ref="reference_engines" type="reference">
+                <from>bin/delft3d/x64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/x64</from>
+            </location>
+            <path>bin/run_delwaq.bat</path>
+        </program>
     </programs>
     <!--
     default testCases
@@ -113,4 +124,5 @@
     testCases
     -->
     <xi:include href="../include/dwaq_all_cases.xml"/>
+    <xi:include href="../include/dwaq_dpart_combination.xml"/>
 </deltaresTestbench_v3>

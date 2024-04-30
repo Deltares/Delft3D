@@ -96,6 +96,7 @@ contains
         if (mdpfile /= ' ') then
             call norm_init()
             alone = .false.
+            close( lunitp(2) ) ! Report file is already open, when run under DIMR
             call rdfnam (lunitp, mdpfile, fnamep, nfilesp, 2, &
                     1, .false.)
             lunut = lunitp(2)

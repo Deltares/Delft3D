@@ -3774,6 +3774,8 @@ subroutine write_swan_inp (wavedata, calccount, &
           if (sr%output_table) then
              ! Write the (constructed) name of the tabfile to pntfilnamtab
              ! The indexes indstart and indend are used to flag the region in line containing this name
+             ! Result should look like: TABLE 'test' HEAD 'testn05t05000001.tab' XP YP DEP HS DIR RTP TM01
+             ! This allows for up to 99 nested wave models
              !
              line(1:6)  = 'TABLE '
              i          = 7
@@ -3788,18 +3790,14 @@ subroutine write_swan_inp (wavedata, calccount, &
              line(i+1:) = pointname
              indstart   = i+1
              i          = i+1+len_trim(pointname)
-             if (nnest>1) then
-                line(i:) = 'n'
-                write (line(i+1:), '(I1)') inest
-                i = i+2
-             endif
+             call add_inest(nnest, line, i, inest)
              if (nttide>1 .or. wavedata%mode /= stand_alone) then
                 line(i:) = 't'
                 i = i+1
                 if (nttide > 1) then
-                    write (line(i+1:), '(I7.7)') 1000000*inest + itide
+                    write (line(i:), '(I8.8)') 1000000*inest + itide
                 else  ! wavedata%mode /= stand_alone
-                   write (line(i+1:), '(I7.7)') calccount
+                   write (line(i:), '(I8.8)') calccount
                 endif
                 i = i+8
              endif
@@ -3831,11 +3829,7 @@ subroutine write_swan_inp (wavedata, calccount, &
              line(i:i)  = ''''''
              line(i+1:) = sr%pntfilnam(loc)
              i          = i+1+lc
-             if (nnest>1) then
-                line(i:) = 'n'
-                write (line(i+1:), '(I1)') inest
-                i = i+2
-             endif
+             call add_inest(nnest, line, i, inest)
              !
              ! Running online with Delft3D-FLOW: itide contains the output counter 
              !
@@ -3867,11 +3861,7 @@ subroutine write_swan_inp (wavedata, calccount, &
              line(i:i)  = ''''''
              line(i+1:) = pointname
              i          = i+1+len_trim(pointname)
-             if (nnest>1) then
-                line(i:) = 'n'
-                write (line(i+1:), '(I1)') inest
-                i = i+2
-             endif
+             call add_inest(nnest, line, i, inest)
              !
              ! Running online with Delft3D-FLOW: itide contains the output counter 
              !
@@ -4297,5 +4287,22 @@ function get_pointname(pntfilnam) result (pointname)
       pointname(maxPointNameLength+1:) = ' '
    end if
 end function get_pointname
+
+!> add nest index as to the string
+subroutine add_inest(nnest, line, i, inest)
+
+   implicit none
+
+   integer,        intent(in)    :: nnest
+   integer,        intent(in)    :: inest
+   integer,        intent(inout) :: i
+   character(256), intent(inout) :: line
+   
+   if (nnest>1) then
+      line(i:) = 'n'
+      write (line(i+1:), '(I2.2)') inest
+      i = i+3
+   endif
+end subroutine
 
 end module swan_input

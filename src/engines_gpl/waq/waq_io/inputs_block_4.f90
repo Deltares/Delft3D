@@ -36,7 +36,7 @@ module inputs_block_4
 
 contains
 
-    subroutine read_block_4_flow_dims_pointers (lun, lchar, filtype, nrftot, nrharm, &
+    subroutine read_block_4_flow_dims_pointers (file_unit_list, file_name_list, filtype, nrftot, nrharm, &
             ilflag, is_date_format, iwidth, intsrt, is_yyddhh_format, &
             output_verbose_level, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, gridps, status, &
@@ -58,18 +58,18 @@ contains
         !>               - information on the time series of additional velocities
         !>               - information on the time series of from- and to lengthes
 
-        !   Logical units      : LUN(27) = unit stripped DELWAQ input file
-        !                        LUN(29) = unit formatted output file
-        !                        LUN( 2) = unit intermediate file (system)
-        !                        LUN( 3) = unit intermediate file (harmonics)
-        !                        LUN( 4) = unit intermediate file (pointers)
-        !                        LUN( 7) = unit intermediate file (volumes)
-        !                        LUN( 8) = unit intermediate file ('to-from')
-        !                        LUN( 9) = unit intermediate file (dispersions
-        !                        LUN(10) = unit intermediate file (areas)
-        !                        LUN(11) = unit intermediate file (flows)
-        !                        LUN(12) = unit intermediate file (velocities)
-        !                        LUN(13) = unit intermediate file (lengths)
+        !   Logical units      : file_unit_list(27) = unit stripped DELWAQ input file
+        !                        file_unit_list(29) = unit formatted output file
+        !                        file_unit_list( 2) = unit intermediate file (system)
+        !                        file_unit_list( 3) = unit intermediate file (harmonics)
+        !                        file_unit_list( 4) = unit intermediate file (pointers)
+        !                        file_unit_list( 7) = unit intermediate file (volumes)
+        !                        file_unit_list( 8) = unit intermediate file ('to-from')
+        !                        file_unit_list( 9) = unit intermediate file (dispersions
+        !                        file_unit_list(10) = unit intermediate file (areas)
+        !                        file_unit_list(11) = unit intermediate file (flows)
+        !                        file_unit_list(12) = unit intermediate file (velocities)
+        !                        file_unit_list(13) = unit intermediate file (lengths)
 
         use error_handling, only : check_error
         use m_srstop
@@ -82,8 +82,8 @@ contains
         use m_sysn          ! System characteristics
         use m_error_status
 
-        integer(kind = int_wp), intent(inout) :: lun    (*)         !< array with unit numbers
-        character(*), intent(inout) :: lchar  (*)        !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (*)        !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         integer(kind = int_wp), intent(inout) :: nrftot (*)         !< number of function items
         integer(kind = int_wp), intent(inout) :: nrharm (*)         !< number of harmonic items
@@ -148,7 +148,7 @@ contains
         integer(kind = int_wp) :: noqt       !  total number of exchanges (water and bed)
         integer(kind = int_wp) :: i, j, k    !  loop counters
         integer(kind = int_wp) :: ifound     !  help variable to find things
-        integer(kind = int_wp) :: iopt       !  option for type of input (2 = tabular input)
+        integer(kind = int_wp) :: integration_id       !  option for type of input (2 = tabular input)
         integer(kind = int_wp) :: iopt1      !  option for file type (1 = this file etc.)
         integer(kind = int_wp) :: itype      !  the type of token that was presented
         logical         regular   !  if .true. indicates presence of a regular grid
@@ -272,7 +272,7 @@ contains
                 write (lunut, 2090)
             endif
             write (lunut, *)
-            write (lun(2)) (dispnam(i), i = 1, nodisp)
+            write (file_unit_list(2)) (dispnam(i), i = 1, nodisp)
             deallocate (dispnam)
 
             do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
@@ -307,7 +307,7 @@ contains
                 write (lunut, 2090)
             endif
             write (lunut, *)
-            write (lun(2)) (dispnam(i), i = 1, novelo)
+            write (file_unit_list(2)) (dispnam(i), i = 1, novelo)
             deallocate (dispnam)
 
             do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
@@ -321,8 +321,8 @@ contains
         !           write a report if sensible and write binary file
         if ((nodisp > 0 .or. novelo > 0) .and. output_verbose_level >= 2) &
                 write (lunut, 2140) (i, idisp(i), ivelo(i), i = 1, nosys)
-        write (lun(2)) idisp
-        write (lun(2)) ivelo
+        write (file_unit_list(2)) idisp
+        write (file_unit_list(2)) ivelo
         !           a very obvious (and rude) check on correctness
         if (noq1 < 0 .or. noq2   < 0 .or. noq3   < 0 .or. &
                 noq  == 0 .or. nodisp < 0 .or. novelo < 0) then
@@ -335,10 +335,10 @@ contains
         if (has_hydfile) then
             iopt1 = 0
         else
-            if (gettoken(iopt, ierr2) > 0) goto 100
-            write (lunut, 2170) iopt
+            if (gettoken(integration_id, ierr2) > 0) goto 100
+            write (lunut, 2170) integration_id
             noqt = noq
-            if (iopt == 2) goto 10
+            if (integration_id == 2) goto 10
 
             !***************  first type of input ******************
 
@@ -348,12 +348,12 @@ contains
             write (lunut, 2180)  iopt1
 
             if (regular) then  !        Regular grid
-                call process_simulation_input_options (iopt1, lun, 8, lchar, filtype, &
+                call process_simulation_input_options (iopt1, file_unit_list, 8, file_name_list, filtype, &
                         is_date_format, is_yyddhh_format, 0, ierr2, status, &
                         .false.)
                 if (ierr2  > 0) goto 100
                 noqt = noq4
-                call read_exchange_pointers_regular_grid (lun, lchar, noseg, nmax, mmax, &
+                call read_exchange_pointers_regular_grid (file_unit_list, file_name_list, noseg, nmax, mmax, &
                         kmax, noq, noq1, noq2, noq3, &
                         noqt, nobnd, ipnt, intsrt, iopt1, &
                         jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
@@ -361,7 +361,7 @@ contains
             endif
         endif
         if (has_hydfile .or. .not. (regular)) then  ! Irregular grid/hyd-file
-            call process_simulation_input_options (iopt1, lun, 44, lchar, filtype, &
+            call process_simulation_input_options (iopt1, file_unit_list, 44, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, ierr2, status, &
                     has_hydfile)
             if (ierr2  > 0) goto 100
@@ -372,7 +372,7 @@ contains
                 goto 100
             endif
             ipnt = 0
-            call read_exchange_pointers_irregular_grid (lun, lchar, noseg, noq, noq1, &
+            call read_exchange_pointers_irregular_grid (file_unit_list, file_name_list, noseg, noq, noq1, &
                     noq2, noq3, noqt, nobnd, ipnt, &
                     intsrt, iopt1, jtrack, filtype(44), output_verbose_level, &
                     GridPs, status)
@@ -382,7 +382,7 @@ contains
 
         !        set dump area structure
 
-        call create_write_monitoring_area_array (lun, ndmpar, ntdmps, noqt, nosss, &
+        call create_write_monitoring_area_array (file_unit_list, ndmpar, ntdmps, noqt, nosss, &
                 nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
                 noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
@@ -405,9 +405,9 @@ contains
         write (lunut, 2200)
         disper = .true.
         ierr2 = 0
-        call read_constants_time_variables   (lun, 9, noq1, noq2, noq3, &
+        call read_constants_time_variables   (file_unit_list, 9, noq1, noq2, noq3, &
                 nodisp, 1, nrftot(3), nrharm(3), ifact, &
-                is_date_format, disper, volume, iwidth, lchar, &
+                is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                 status, .false.)
         call status%increase_error_count_with(ierr2)
@@ -417,9 +417,9 @@ contains
 
         write (lunut, 2210)
         ierr2 = 0
-        call read_constants_time_variables   (lun, 10, noq1, noq2, noq3, &
+        call read_constants_time_variables   (file_unit_list, 10, noq1, noq2, noq3, &
                 1, 1, nrftot(4), nrharm(4), ifact, &
-                is_date_format, disper, volume, iwidth, lchar, &
+                is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                 status, has_hydfile)
         call status%increase_error_count_with(ierr2)
@@ -428,14 +428,14 @@ contains
 
         write (lunut, 2220)
         ierr2 = 0
-        call read_constants_time_variables   (lun, 11, noq1, noq2, noq3, &
+        call read_constants_time_variables   (file_unit_list, 11, noq1, noq2, noq3, &
                 1, 1, nrftot(5), nrharm(5), ifact, &
-                is_date_format, disper, volume, iwidth, lchar, &
+                is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                 status, has_hydfile)
         call status%increase_error_count_with(ierr2)
         if (.not. alone) then
-            if (lchar(11) /= fnamep(7)) then
+            if (file_name_list(11) /= fnamep(7)) then
                 write (lunut, 2225) fnamep(7)
                 call status%increase_error_count()
             endif
@@ -446,9 +446,9 @@ contains
         if (novelo > 0) then
             write (lunut, 2230)
             ierr2 = 0
-            call read_constants_time_variables   (lun, 12, noq1, noq2, noq3, &
+            call read_constants_time_variables   (file_unit_list, 12, noq1, noq2, noq3, &
                     novelo, 1, nrftot(6), nrharm(6), ifact, &
-                    is_date_format, disper, volume, iwidth, lchar, &
+                    is_date_format, disper, volume, iwidth, file_name_list, &
                     filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                     status, .false.)
             call status%increase_error_count_with(ierr2)
@@ -468,17 +468,17 @@ contains
         case (0)
             write (lunut, 2260)
             idum = 4
-            write (lun(2)) idummy
+            write (file_unit_list(2)) idummy
             call read_constant_data (1, length, 1, 3, 1, &
-                    iwidth, lun(2), idum, ierr2)
+                    iwidth, file_unit_list(2), idum, ierr2)
 
         case (1)
             write (lunut, 2270)
-            write (lun(2)) idummy, (adummy, k = 1, 3)
+            write (file_unit_list(2)) idummy, (adummy, k = 1, 3)
             ierr2 = 0
-            call read_constants_time_variables   (lun, 13, noq1, noq2, noq3, &
+            call read_constants_time_variables   (file_unit_list, 13, noq1, noq2, noq3, &
                     2, 1, nrftot(7), nrharm(7), ifact, &
-                    is_date_format, disper, volume, iwidth, lchar, &
+                    is_date_format, disper, volume, iwidth, file_name_list, &
                     filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                     status, has_hydfile)
 
@@ -521,7 +521,7 @@ contains
         endif
         idum = 0
 
-        call process_simulation_input_options (iopt1, lun, idum, lchar, filtype, &
+        call process_simulation_input_options (iopt1, file_unit_list, idum, file_name_list, filtype, &
                 is_date_format, is_yyddhh_format, 0, ierr2, status, &
                 .false.)
         if (ierr2  > 0) goto 100
@@ -546,13 +546,13 @@ contains
 
         !       calculate number of boundaries and bandwith of matrix
 
-        call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
+        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
                 output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
         !        set dump area structure
 
-        call create_write_monitoring_area_array (lun, ndmpar, ntdmps, noq, noseg, &
+        call create_write_monitoring_area_array (file_unit_list, ndmpar, ntdmps, noq, noseg, &
                 nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
                 noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
@@ -570,42 +570,42 @@ contains
         factor(5) = factor(4)
         call scale_array (rwork, factor)
 
-        write (lun(2)) idummy, (adummy, k = 1, 3)
-        write (lun(2)) idummy, (adummy, k = 1, 3)
+        write (file_unit_list(2)) idummy, (adummy, k = 1, 3)
+        write (file_unit_list(2)) idummy, (adummy, k = 1, 3)
 
-        call open_waq_files  (lun(8), lchar(8), 8, 1, ierr2)
+        call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        if (noq1 > 0) write(lun(8))(ipnt(:, i), i = 1, noq1)
-        if (noq2 > 0) write(lun(8))(ipnt(:, i), i = noq1 + 1, noq12)
-        if (noq3 > 0) write(lun(8))(ipnt(:, i), i = noq12 + 1, noq)
-        close (lun(8))
+        if (noq1 > 0) write(file_unit_list(8))(ipnt(:, i), i = 1, noq1)
+        if (noq2 > 0) write(file_unit_list(8))(ipnt(:, i), i = noq1 + 1, noq12)
+        if (noq3 > 0) write(file_unit_list(8))(ipnt(:, i), i = noq12 + 1, noq)
+        close (file_unit_list(8))
 
-        call open_waq_files  (lun(9), lchar(9), 9, 1, ierr2)
+        call open_waq_files  (file_unit_list(9), file_name_list(9), 9, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (lun(9)) idummy, (rwork(1, i), (adummy, k = 1, nodisp - 1), i = 1, noq)
-        close (lun(9))
+        write (file_unit_list(9)) idummy, (rwork(1, i), (adummy, k = 1, nodisp - 1), i = 1, noq)
+        close (file_unit_list(9))
 
-        call open_waq_files  (lun(10), lchar(10), 10, 1, ierr2)
+        call open_waq_files  (file_unit_list(10), file_name_list(10), 10, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (lun(10)) idummy, (rwork(2, i), i = 1, noq)
-        close (lun(10))
+        write (file_unit_list(10)) idummy, (rwork(2, i), i = 1, noq)
+        close (file_unit_list(10))
 
-        call open_waq_files (lun(11), lchar(11), 11, 1, ierr2)
+        call open_waq_files (file_unit_list(11), file_name_list(11), 11, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (lun(11)) idummy, (rwork(3, i), i = 1, noq)
-        close (lun(11))
+        write (file_unit_list(11)) idummy, (rwork(3, i), i = 1, noq)
+        close (file_unit_list(11))
 
         if (novelo > 0) then
-            call open_waq_files  (lun(12), lchar(12), 12, 1, ierr2)
+            call open_waq_files  (file_unit_list(12), file_name_list(12), 12, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            write (lun(12)) idummy, ((adummy, k = 1, novelo), i = 1, noq)
-            close (lun(12))
+            write (file_unit_list(12)) idummy, ((adummy, k = 1, novelo), i = 1, noq)
+            close (file_unit_list(12))
         endif
 
-        call open_waq_files  (lun(13), lchar(13), 13, 1, ierr2)
+        call open_waq_files  (file_unit_list(13), file_name_list(13), 13, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (lun(13)) idummy, (rwork(4, i), rwork(5, i), i = 1, noq)
-        close (lun(13))
+        write (file_unit_list(13)) idummy, (rwork(4, i), rwork(5, i), i = 1, noq)
+        close (file_unit_list(13))
 
         deallocate(ipnt, rwork)
         ierr2 = 0

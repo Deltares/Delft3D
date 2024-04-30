@@ -34,7 +34,7 @@ module exchange_pointers
 
 contains
 
-    subroutine read_exchange_pointers_regular_grid(lun, lchar, noseg, nmax, mmax, &
+    subroutine read_exchange_pointers_regular_grid(file_unit_list, file_name_list, noseg, nmax, mmax, &
             kmax, noq, noq1, noq2, noq3, &
             noqt, nobnd, ipnt, intsrt, ipopt1, &
             jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
@@ -53,14 +53,14 @@ contains
         !! SUBROUTINES CALLED : create_pointer_table, bound, open_waq_files
         !! LOGICAL UNITS:
         !!          lunut   = unit formatted output file
-        !!           lun( 8) = unit intermediate file ('to-from')
+        !!           file_unit_list( 8) = unit intermediate file ('to-from')
 
         use m_grid_utils_external        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun   (*)      !< array with unit numbers
-        character(*), intent(inout) :: lchar (*)     !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)      !< array with unit numbers
+        character(*), intent(inout) :: file_name_list (*)     !< array with file names of the files
         integer(kind = int_wp), intent(in) :: noseg          !< number of computational volumes
         integer(kind = int_wp), intent(in) :: nmax           !< dimension of first direction of grid
         integer(kind = int_wp), intent(in) :: mmax           !< dimension of second direction of grid
@@ -103,9 +103,9 @@ contains
 
         ! Read and check first line of matrix
         if (ipopt1 == 0)  then         ! binary file
-            call open_waq_files  (lun(8), lchar(8), 8, 2, ierr2)
+            call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 2, ierr2)
             if (ierr2 /= 0) goto 100
-            read  (lun(8)) nmax2, mmax2, nm, nlay, noq1, noq2, noq3
+            read  (file_unit_list(8)) nmax2, mmax2, nm, nlay, noq1, noq2, noq3
         else
             if (gettoken(nmax2, ierr2) > 0) goto 100
             if (gettoken(mmax2, ierr2) > 0) goto 100
@@ -145,17 +145,17 @@ contains
 
         ! Read the pointer itself, write it to the intermediate file
         if (ipopt1 == 0)  then
-            read  (lun(8)) imat
+            read  (file_unit_list(8)) imat
         else
             do i1 = 1, ntot
                 if (gettoken(imat(i1), ierr2) > 0) goto 100
             enddo
-            call open_waq_files  (lun(8), lchar(8), 8, 1, ierr2)
+            call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            write (lun(8)) nmax, mmax, noseg, kmax, noq1, noq2, noq3
-            write (lun(8)) imat
+            write (file_unit_list(8)) nmax, mmax, noseg, kmax, noq1, noq2, noq3
+            write (file_unit_list(8)) imat
         endif
-        close (lun(8))
+        close (file_unit_list(8))
 
         ! Print the matrix
         do i2 = 1, nmax, iwidth * 2
@@ -177,19 +177,19 @@ contains
                 cellpnt, flowpnt)
 
         ! calculate number of boundaries and bandwith of matrix
-        call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
+        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
                 output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
         ! open cco-file
-        filename = lchar(8)(1:index(lchar(8), '.', .true.)) // 'cco'
-        call open_waq_files (lun(8), filename, 8, 2, ierr2)
+        filename = file_name_list(8)(1:index(file_name_list(8), '.', .true.)) // 'cco'
+        call open_waq_files (file_unit_list(8), filename, 8, 2, ierr2)
         if (ierr2 /= 0) then
             write (lunut, 2060) filename
             goto 100
         endif
-        read (lun(8))
-        read (lun(8)) mmax2, nmax2, x0, y0, alpha, npart, nlay
+        read (file_unit_list(8))
+        read (file_unit_list(8)) mmax2, nmax2, x0, y0, alpha, npart, nlay
         if (mmax2 /= mmax .or. nmax2 /= nmax .or. &
                 nlay  /= kmax) then
             write (lunut, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
@@ -199,7 +199,7 @@ contains
 
         deallocate (imat)
         100 if (ierr2 /= 0) call status%increase_error_count()
-        close (lun(8))
+        close (file_unit_list(8))
         if (timon) call timstop(ithndl)
         return
 
@@ -219,7 +219,7 @@ contains
 
     end subroutine read_exchange_pointers_regular_grid
 
-    subroutine read_exchange_pointers_irregular_grid(lun, lchar, noseg, noq, noq1, &
+    subroutine read_exchange_pointers_irregular_grid(file_unit_list, file_name_list, noseg, noq, noq1, &
             noq2, noq3, noqt, nobnd, ipnt, &
             intsrt, ipopt1, jtrack, ftype, output_verbose_level, &
             GridPs, status)
@@ -232,15 +232,15 @@ contains
         !!      - compute number of codiagonals for direct implicit matrices
         !! Logical units:
         !!          lunut   = unit formatted output file
-        !           lun( 8) = unit intermediate file ('to-from')
+        !           file_unit_list( 8) = unit intermediate file ('to-from')
 
         use m_open_waq_files
         use m_grid_utils_external          ! for the storage of contraction grids
         use rd_token       ! for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun   (*)      !< array with unit numbers
-        character(*), intent(inout) :: lchar (*)     !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)      !< array with unit numbers
+        character(*), intent(inout) :: file_name_list (*)     !< array with file names of the files
         integer(kind = int_wp), intent(in) :: noseg          !< number of computational volumes
         integer(kind = int_wp), intent(in) :: noq            !< noq1 + noq2 + noq3
         integer(kind = int_wp), intent(in) :: noq1           !< number of exchanges 1st direction
@@ -273,13 +273,13 @@ contains
         ! Read exchange pointers
         noq12 = noq1 + noq2
         if (ipopt1 == 0)  then
-            call open_waq_files(lun(44), lchar(44), 44, 2 + ftype, ierr2)
+            call open_waq_files(file_unit_list(44), file_name_list(44), 44, 2 + ftype, ierr2)
             if (ierr2 /= 0) goto 100
             do iq = 1, noq
-                read (lun(44), iostat = ierr1) ipnt(:, iq)
+                read (file_unit_list(44), iostat = ierr1) ipnt(:, iq)
                 if (ierr1 /= 0) then
                     write(lunut, 2100) iq - 1
-                    close (lun(44))
+                    close (file_unit_list(44))
                     ierr2 = 1
                     goto 100
                 endif
@@ -291,13 +291,13 @@ contains
 
             if (noqt > noq) then
                 ! Any extra exchange pointers already present?
-                read (lun(44), iostat = ierr1) idummy
+                read (file_unit_list(44), iostat = ierr1) idummy
                 if (ierr1 == 0) then
                     ! Skip all extra exchange pointers that are expected
-                    read (lun(44), iostat = ierr1) (idummy, iq = 2, 4 * (noqt - noq))
+                    read (file_unit_list(44), iostat = ierr1) (idummy, iq = 2, 4 * (noqt - noq))
                     if (ierr1 /= 0) then
                         write(lunut, 2111)
-                        close (lun(44))
+                        close (file_unit_list(44))
                         ierr2 = 1
                         goto 100
                     endif
@@ -305,32 +305,32 @@ contains
             endif
 
             ! Any data after the expected exchange pointers indicate a problem
-            read (lun(44), iostat = ierr1) cdummy
+            read (file_unit_list(44), iostat = ierr1) cdummy
             if (ierr1 == 0) then
                 write(lunut, 2110)
-                close (lun(44))
+                close (file_unit_list(44))
                 ierr2 = 1
                 goto 100
             endif
 
             ! No problems found, so continue
-            close (lun(44))
-            call open_waq_files  (lun(8), lchar(8), 8, 1, ierr2)
+            close (file_unit_list(44))
+            call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            if (noq1 > 0) write(lun(8))(ipnt(:, iq), iq = 1, noq1)
-            if (noq2 > 0) write(lun(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
-            if (noq3 > 0) write(lun(8))(ipnt(:, iq), iq = noq12 + 1, noq)
+            if (noq1 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, noq1)
+            if (noq2 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
+            if (noq3 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, noq)
         else
             do iq = 1, noq
                 do ip = 1, 4
                     if (gettoken(ipnt(ip, iq), ierr2) > 0) goto 100
                 enddo
             enddo
-            call open_waq_files  (lun(8), lchar(8), 8, 1, ierr2)
+            call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            if (noq1 > 0) write(lun(8))(ipnt(:, iq), iq = 1, noq1)
-            if (noq2 > 0) write(lun(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
-            if (noq3 > 0) write(lun(8))(ipnt(:, iq), iq = noq12 + 1, noq)
+            if (noq1 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, noq1)
+            if (noq2 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
+            if (noq3 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, noq)
 
             if (output_verbose_level < 4) then
                 write (lunut, 2000)
@@ -357,11 +357,11 @@ contains
 
         ! calculate number of boundaries and bandwith of matrix
 
-        call create_boundary_pointers  (lun, noseg, noq, noqt, intsrt, &
+        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
                 output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
                 status)
 
-        close (lun(8))
+        close (file_unit_list(8))
         100 if (ierr2 > 0) call status%increase_error_count()
         if (timon) call timstop(ithndl)
         return
@@ -379,7 +379,7 @@ contains
 
     end subroutine read_exchange_pointers_irregular_grid
 
-    subroutine generate_bed_layer_pointers(lun, output_verbose_level, gridps, ibnd, ipoint, &
+    subroutine generate_bed_layer_pointers(file_unit_list, output_verbose_level, gridps, ibnd, ipoint, &
             noqt, status)
 
         !! Makes and write additional pointer for the water bed
@@ -393,14 +393,14 @@ contains
         !!         The amount thus created exchanges is checked to the given amount noqt./n
         !!         The result is written to the system file and arrays are deallocated
         !! Logical units:
-        !!          LUN(29) = unit formatted output file
-        !!          LUN( 2) = unit intermediate file (system)
+        !!          file_unit_list(29) = unit formatted output file
+        !!          file_unit_list( 2) = unit intermediate file (system)
 
         use timers       !   performance timers
         use m_grid_utils_external ! for the storage of contraction grids
         use m_sysn          ! System characteristics
 
-        integer(kind = int_wp), intent(in) :: lun   (*)         !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: file_unit_list   (*)         !< array with unit numbers
         integer(kind = int_wp), intent(in) :: output_verbose_level              !< how extensive is output ?
         type(GridPointerColl)           GridPs             !< Collection of grid pointers
         integer(kind = int_wp), intent(in) :: ibnd  (nobnd, 2)  !< normal boundary pointers
@@ -434,7 +434,7 @@ contains
         !     NTRAAQ  INTEGER  1           INPUT   total number of exch. in raaien
         !     NOMAT   INTEGER  1           OUTPUT  size of the fastsolvers matrix
 
-        integer(kind = int_wp) :: lunut            ! output unit number (lun(29))
+        integer(kind = int_wp) :: lunut            ! output unit number (file_unit_list(29))
         integer(kind = int_wp), allocatable :: IAbnd(:, :)       ! array with boundary information in the bed
         integer(kind = int_wp) :: ilay             ! index layer number
         integer(kind = int_wp) :: isegb            ! counter for bed volumes
@@ -458,13 +458,13 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("generate_bed_layer_pointers", ithndl)
 
-        lunut = lun(29)
+        lunut = file_unit_list(29)
 
         ! is there a bottom direction ?
         if (noq4 == 0) then
             if (nobnd > 0) then
-                write (lun(2)) (ibnd (k, 1), k = 1, nobnd)
-                write (lun(2)) (ibnd (k, 2), k = 1, nobnd)
+                write (file_unit_list(2)) (ibnd (k, 1), k = 1, nobnd)
+                write (file_unit_list(2)) (ibnd (k, 2), k = 1, nobnd)
             endif
             goto 9999
         endif
@@ -616,13 +616,13 @@ contains
         else
             write (lunut, 1090)
         endif
-        write (lun(8)) ((ipoint(i, iq), i = 1, 4), iq = noq + 1, iqt)
+        write (file_unit_list(8)) ((ipoint(i, iq), i = 1, 4), iq = noq + 1, iqt)
         write (lunut, 1100)
 
         ! Write boundary pointers to work file
         if (nobnd > 0 .or. nsegb > 0) then
-            write (lun(2)) (ibnd (k, 1), k = 1, nobnd), (iabnd(k, 1), k = 1, nsegb)
-            write (lun(2)) (ibnd (k, 2), k = 1, nobnd), (iabnd(k, 2), k = 1, nsegb)
+            write (file_unit_list(2)) (ibnd (k, 1), k = 1, nobnd), (iabnd(k, 1), k = 1, nsegb)
+            write (file_unit_list(2)) (ibnd (k, 2), k = 1, nobnd), (iabnd(k, 2), k = 1, nsegb)
         endif
         deallocate (iabnd)
         nobnd = nobnd + nsegb
@@ -649,19 +649,19 @@ contains
 
     END SUBROUTINE generate_bed_layer_pointers
 
-    subroutine create_boundary_pointers(lun, noseg, noq, noqt, intsrt, &
+    subroutine create_boundary_pointers(file_unit_list, noseg, noq, noqt, intsrt, &
             output_verbose_level, GridPs, nobnd, jtrack, ipoint, &
             status)
 
         !! Determines boundary pointers and number of codiagonals
         !!     Subroutines called : generate_bed_layer_pointers to add pointers in the water bed
-        !!     Logical units      : lun(29) = unit formatted output file
-        !!                          lun( 2) = unit unformatted system file
+        !!     Logical units      : file_unit_list(29) = unit formatted output file
+        !!                          file_unit_list( 2) = unit unformatted system file
 
         use m_grid_utils_external        !   for the storage of contraction grids
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(in) :: lun   (*)          !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: file_unit_list   (*)          !< array with unit numbers
         integer(kind = int_wp), intent(in) :: noseg              !< number of volumes
         integer(kind = int_wp), intent(in) :: noq                !< number of exchanges from input
         integer(kind = int_wp), intent(in) :: noqt               !< total number of exchanges
@@ -687,7 +687,7 @@ contains
 
         ierr2 = 0
         iwar2 = 0
-        lunut = lun(29)
+        lunut = file_unit_list(29)
 
         ! calculate number of boundaries
         nobnd = 0
@@ -727,9 +727,9 @@ contains
         ! Set boundary pointers
         if (nobnd > 0) then
             if (output_verbose_level < 3) then
-                write (lun(29), 2040)
+                write (file_unit_list(29), 2040)
             else
-                write (lun(29), 2050)
+                write (file_unit_list(29), 2050)
             endif
             do iq = 1, noq
                 ip1 = ipoint(1, iq)
@@ -770,7 +770,7 @@ contains
         end if
 
         ! Additional pointers and boundaries bottom grid
-        call generate_bed_layer_pointers (lun, output_verbose_level, gridps, ibnd, ipoint, &
+        call generate_bed_layer_pointers (file_unit_list, output_verbose_level, gridps, ibnd, ipoint, &
                 noqt, status)
 
         deallocate(ibnd)

@@ -37,11 +37,7 @@
       name = 'testje'
 
       do t = 1, nTimes
-#if (defined(WIN32))
-        call sleep(999)
-#else
-        call DIOSYNCcSLEEP(999)
-#endif
+        call CUTIL_SLEEP(999)
         curTime = curTime + 10.D+00
         write(*,*) 'Step: ', t, ' Sending: ', curTime
         call dio_shm_f77_putdb_double(name, curTime)

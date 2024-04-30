@@ -35,7 +35,7 @@ module m_read_block
 contains
 
 
-    subroutine read_block(lun, lchar, filtype, inpfil, output_verbose_level, &
+    subroutine read_block(file_unit_list, file_name_list, filtype, inpfil, output_verbose_level, &
             iwidth, substances, constants, parameters, functions, &
             segfuncs, segments, gridps, data_block, ierr, &
             status)
@@ -50,8 +50,8 @@ contains
         use rd_token
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun(*)        !< unit numbers used
-        character(len = *), intent(inout) :: lchar(*)     !< filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)        !< unit numbers used
+        character(len = *), intent(inout) :: file_name_list(*)     !< filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
         type(t_input_file), intent(inout) :: inpfil       !< input file structure with include stack and flags
         integer(kind = int_wp), intent(in) :: output_verbose_level        !< level of reporting to ascii output file
@@ -254,12 +254,12 @@ contains
                 endif
 
                 ! handle file option, should we resolve the use of 17? = work file segment-functions
-                call process_simulation_input_options(-4, lun, 17, lchar, filtype, &
+                call process_simulation_input_options(-4, file_unit_list, 17, file_name_list, filtype, &
                         is_date_format, is_yyddhh_format, noseg, ierr2, status, &
                         .false.)
                 if (ierr2 /= 0) exit
 
-                ierr2 = puttoken(lchar(17))
+                ierr2 = puttoken(file_name_list(17))
                 data_block%is_external = .true.
                 data_block%filetype = FILE_BINARY
                 cycle
@@ -674,7 +674,7 @@ contains
         integer(kind = int_wp), intent(out) :: ierr
 
         integer(kind = int_wp) :: norcd, i
-        integer(kind = int_wp) :: lun
+        integer(kind = int_wp) :: file_unit
         integer(kind = int_wp) :: time
         real(kind = real_wp), dimension(:), allocatable :: data
         character(14) :: strng
@@ -684,9 +684,9 @@ contains
         ierr = 0
         ! Check that the file exists and can be opened
         if (type == FILE_BINARY) then
-            open(newunit = lun, file = filename, iostat = ierr, status = 'old', access = 'stream')
+            open(newunit = file_unit, file = filename, iostat = ierr, status = 'old', access = 'stream')
         else
-            open(newunit = lun, file = filename, iostat = ierr, status = 'old', form = 'unformatted')
+            open(newunit = file_unit, file = filename, iostat = ierr, status = 'old', form = 'unformatted')
         endif
         if (ierr /= 0) then
             ierr = -999 ! Explicitly mark the file as unuseable
@@ -694,29 +694,29 @@ contains
         endif
 
         ! Check if this is a steering file
-        read (lun, iostat = ierr) strng
+        read (file_unit, iostat = ierr) strng
         if (ierr /= 0) then
             ierr = 0
             strng = 'x'
         endif
         if (strng(1:14) /= 'Steering file ') then
             if (type == FILE_BINARY) then
-                inquire(lun, size = filesize)
-                close(lun)
+                inquire(file_unit, size = filesize)
+                close(file_unit)
 
                 recordsize = 4 * (nodata + 1) ! single-precision reals occupy four bytes, also 4 bytes for the time
                 if (mod(filesize, recordsize) /= 0) then
                     ierr = 1
                 endif
             else
-                rewind(lun)
+                rewind(file_unit)
                 allocate(data(nodata))
 
                 ! Determine the number of records - iostat does not seem to distinguish between partly fulfilled
                 ! reads and end-of-file
                 norcd = 0
                 do
-                    read(lun, iostat = ierr) time, data
+                    read(file_unit, iostat = ierr) time, data
                     if (ierr /= 0) then
                         exit
                     endif
@@ -726,12 +726,12 @@ contains
                 ! The last record may have been too short, so try again:
                 ! - Read all the records we have been able to read
                 ! - Try reading an extra number (time). This should fail
-                rewind(lun)
+                rewind(file_unit)
                 do i = 1, norcd
-                    read(lun, iostat = ierr) time, data
+                    read(file_unit, iostat = ierr) time, data
                 enddo
 
-                read(lun, iostat = ierr) time
+                read(file_unit, iostat = ierr) time
 
                 ! If we have been able to read at least one record and the last read
                 ! let to and end-of-file condition, we accept the file. Otherwise return
@@ -741,7 +741,7 @@ contains
                 else
                     ierr = 1
                 endif
-                close(lun)
+                close(file_unit)
                 deallocate(data)
             endif
         else
