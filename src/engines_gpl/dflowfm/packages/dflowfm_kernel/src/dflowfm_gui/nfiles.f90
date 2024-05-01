@@ -56,6 +56,7 @@
    use gridoperations
    use string_module, only: strcmpi
    use m_setucxcuy_leastsquare, only: reconst2nd
+   use fm_unc_write_map, only: unc_write_map
 
    implicit none
    integer :: MODE, NUM,  NWHAT,  KEY

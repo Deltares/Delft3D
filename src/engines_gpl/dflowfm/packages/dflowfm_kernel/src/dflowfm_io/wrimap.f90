@@ -41,6 +41,7 @@ subroutine wrimap(tim)
     use m_fm_update_crosssections, only: fm_update_mor_width_mean_bedlevel
     use m_flowgeom, only: ndx2d, ndxi
     use Timers
+    use fm_unc_write_map, only: unc_write_map, unc_write_map_filepointer, unc_write_map_filepointer_ugrid
 
     implicit none
     double precision, intent(in) :: tim
