@@ -3,14 +3,11 @@ Description: Executes MinIO commands
 -----------------------------------------------------
 Copyright (C)  Stichting Deltares, 2024
 """
-
-import re
 from datetime import datetime, timezone
-from pathlib import Path
+import os.path
+import re
 from typing import Optional
-
 from minio import Minio
-
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
 from src.utils.logging.i_logger import ILogger
@@ -18,16 +15,33 @@ from src.utils.minio_rewinder import Rewinder
 
 
 class MinIOHandler(IHandler):
-    """MinIO wrapper, has handler interface"""
-
-    def prepare_upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
+    """ MinIO wrapper, has handler interface """
+    def prepare_upload(
+        self,
+        from_path: str,
+        to_path: str,
+        logger: ILogger
+    ) -> None:
         logger.debug("Preparing upload to MinIO not implemented yet")
 
-    def upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
+    def upload(
+        self,
+        from_path: str,
+        to_path: str,
+        credentials: Credentials,
+        logger: ILogger
+    ) -> None:
         logger.debug("Uploading to MinIO not implemented yet")
 
-    def download(self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger):
-        """Sets up a Minio client connection. You can specify the download
+    def download(
+        self,
+        from_path: str,
+        to_path: str,
+        credentials: Credentials,
+        version: Optional[str],
+        logger: ILogger
+    ):
+        """ Sets up a Minio client connection. You can specify the download
         source and destination
 
         Args:
@@ -38,27 +52,29 @@ class MinIOHandler(IHandler):
             logger (ILogger): The logger that logs to a file
         """
 
-        match = re.match(r"^https://(?P<hostname>[^/]*)/(?P<bucket>[^/]*)/(?P<path>.*)$", from_path)
+        match = re.match(r'^https://(?P<hostname>[^/]*)/(?P<bucket>[^/]*)/(?P<path>.*)$', from_path)
         if match is None:
             raise ValueError("Invalid `from_path` value. Must match pattern `https://{hostname}/{bucket-name}/{path}`")
-        s3_storage = match.group("hostname")
-        s3_bucket = match.group("bucket")
-        s3_path = match.group("path")
+        s3_storage = match.group('hostname')
+        s3_bucket = match.group('bucket')
+        s3_path = match.group('path')
 
         # Minio client connection
-        my_client = Minio(s3_storage, access_key=credentials.username, secret_key=credentials.password)
-        rewinder = Rewinder(my_client, logger)
+        my_client = Minio(
+            s3_storage,
+            access_key=credentials.username,
+            secret_key=credentials.password
+        )
+
+        if version is None:
+            # Version is allowed to be `None`. In this case check out the latest version.
+            version = datetime.now(timezone.utc).isoformat().split("+")[0]
+
+        # Prepare the rewind-settings
+        rewinder = Rewinder(my_client, logger, version)
 
         # Download the objects
-        minio_path = s3_path.replace("/./", "/")
+        minio_path = s3_path.replace('/./', '/')
+        destination_path = os.path.normpath(to_path)
         logger.debug(f"downloading from minIO: {minio_path}")
-        rewinder.download(s3_bucket, minio_path, Path(to_path), self.__parse_timestamp(version))
-
-    @staticmethod
-    def __parse_timestamp(version: Optional[str]) -> datetime:
-        if version is None:
-            return datetime.now(timezone.utc)
-        timestamp = datetime.fromisoformat(version)
-        if timestamp.tzinfo is None:
-            timestamp = timestamp.replace(tzinfo=timezone.utc)
-        return timestamp
+        rewinder.download(s3_bucket, minio_path, destination_path)

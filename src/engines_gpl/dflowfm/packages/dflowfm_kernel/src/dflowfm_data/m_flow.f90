@@ -547,6 +547,7 @@
  integer, parameter :: IDX_PRECIP_GROUND = 40
 
  logical :: ucxyq_read_rst       !< determines if variables `ucxq` and `ucxy` have been read from restart.
+ logical :: rho_read_rst         !< determines if variable  `rho`             has  been read from restart.
  
 contains
 !> Sets ALL (scalar) variables in this module to their default values.

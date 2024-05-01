@@ -11,6 +11,5 @@ pathlib
 tk
 minio
 pytest
-s3-path-wrangler
-pyfakefs
 pytest-mock
+pyfakefs

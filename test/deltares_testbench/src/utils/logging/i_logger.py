@@ -13,7 +13,7 @@ class ILogger(ABC):
     """Interface for a logger"""
 
     @abstractmethod
-    def error(self, message: str, exc_info: bool = False):
+    def error(self, message: str):
         """Logs a error message
 
         Args:
