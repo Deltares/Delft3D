@@ -7942,7 +7942,7 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
    if (timon) call timstop (handle_extra(70))
 
 end subroutine unc_write_map_filepointer_ugrid
-
+!> Adds variable at nodes to map-file. 
 function unc_put_var_map_nodes(ncid, id_tsp, id_var, values, jabndnd_) result(ierr)
    use network_data, only: kc, numk
    use m_missing, only: dmiss
