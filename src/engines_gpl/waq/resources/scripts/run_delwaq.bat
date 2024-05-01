@@ -38,7 +38,6 @@ set waqdir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share\delft3d
 set libdir=%D3D_HOME%\lib
 set PATH=%sharedir%;%libdir%;%waqdir%
-rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
 
 rem
 rem process other arguments

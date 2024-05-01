@@ -30,7 +30,7 @@ program ddcouple
       use m_cli_utils, only : retrieve_command_argument
       use m_string_manipulation, only : upper_case
       use merge_step_mod
-      use delwaq_version_module
+      use ddcouple_version_module, only: getfullversionstring_ddcouple
       use m_dattim
       use m_file_path_utils, only : extract_file_extension
       use m_cli_utils, only : get_argument_from_list
@@ -160,16 +160,14 @@ program ddcouple
       logical                  :: success
       logical                  :: interactive   ! no commandline arguments given, work in interactive mode
       character*1              :: askparallel   ! get a character
-      character*80             :: cident        ! version string
+      character(len=80)        :: version       ! version string
 !
 !     Version string
 !
       interactive = .false.
-      cident = ' '
-      call getfullversionstring_delwaq(cident)
-      length = len_trim(cident)
+      call getfullversionstring_ddcouple(version)
       write(*,*)
-      write(*,'(a)') ' ', cident(5:length)
+      write(*,'(a)') ' ', trim(version)
       write(*,*)
 
       ! some init

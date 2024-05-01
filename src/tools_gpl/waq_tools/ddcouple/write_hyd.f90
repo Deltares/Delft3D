@@ -30,7 +30,7 @@
       use m_monsys
       use m_hydmod
       use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
-      use delwaq_version_module
+      use ddcouple_version_module, only: getfullversionstring_ddcouple
       use m_dattim
 
       implicit none
@@ -56,7 +56,7 @@
       integer                   :: i_dd_bound             ! index in collection
       type(t_dd_bound),pointer  :: dd_bound               ! one dd_bound description
 
-      character(Len=80) :: version_string_full
+      character(Len=80) :: version
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
 
@@ -70,8 +70,8 @@
       call hyd%file_hyd%open()
       lunhyd = hyd%file_hyd%unit
 
-      call getfullversionstring_delwaq(version_string_full)
-      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_string_full(5:))
+      call getfullversionstring_ddcouple(version)
+      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version)
 
       call dattim(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)

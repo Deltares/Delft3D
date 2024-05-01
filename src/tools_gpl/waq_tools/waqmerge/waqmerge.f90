@@ -30,7 +30,7 @@ program waqmerge
       use m_hydmod
       use hyd_waqgeom_old
       use m_alloc
-      use delwaq_version_module
+      use waqmerge_version_module, only: getfullversionstring_waqmerge
       use m_dattim
       use m_file_path_utils, only : extract_file_extension
 
@@ -43,7 +43,6 @@ program waqmerge
       character(len=10)         :: c_domain        ! number of domains
       integer                   :: n_domain        ! number of domains
       integer                   :: i_domain        ! domain index
-      character(len=80)         :: version_temp    ! temp version string
       character(len=80)         :: version         ! version string
       character(len=20)         :: rundat          ! date and time string
       type(t_file)          :: file_rep        ! report file
@@ -72,9 +71,7 @@ program waqmerge
 
       ! Version string
 
-      version_temp = ' '
-      call getfullversionstring_delwaq(version_temp)
-      version = version_temp(5:)
+      call getfullversionstring_waqmerge(version)
       write(*,*)
       write (*,'(a)') ' ', trim(version)
 
@@ -153,9 +150,9 @@ program waqmerge
       if (n_domain .eq.0) then
          write(lunrep,'(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ',trim(waq_output_dir)
          write(*     ,'(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ',trim(waq_output_dir)
-         write(lunrep,'(a)')     '        Possible cause: the outputper domain is in separate directories', &
+         write(lunrep,'(a)')     '        Possible cause: the output per domain is in separate directories', &
                                  '        - this is an obsolete organisation of the files'
-         write(*     ,'(a)')     '        Possible cause: the outputper domain is in separate directories', &
+         write(*     ,'(a)')     '        Possible cause: the output per domain is in separate directories', &
                                  '        - this is an obsolete organisation of the files'
          write(lunrep,'(a,a)') ' Execution will stop '
          write(*     ,'(a,a)') ' Execution will stop '
