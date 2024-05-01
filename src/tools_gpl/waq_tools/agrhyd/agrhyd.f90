@@ -31,8 +31,7 @@ program agrhyd
     use time_module
     use io_ugrid
     use system_utils, only: makedir
-    use waq_static_version_info, only : major_minor_buildnr
-    use delwaq_version_module, only : delwaq_version_full
+    use agrhyd_version_module, only: getfullversionstring_agrhyd
     use m_dattim
 
     implicit none
@@ -96,12 +95,14 @@ program agrhyd
     type(t_file) :: new_grd               ! new grd file
     logical :: singapore_rename_discharges ! special option rename discharges for singapore
     character(len = 256) :: singapore_discharge_names   ! special option filename for singapore
+    character(len=80)        :: version       ! version string
 
     ! sing_z variables
     integer :: iseg1, iseg2, iseg, ik1, ik2, isegb, lenname
 
+    call getfullversionstring_agrhyd(version)
     write(*, *)
-    write(*, '(a,a)') ' (c) ', delwaq_version_full
+    write(*, '(a,a)') ' (c) ', trim(version)
     write(*, *)
 
     ! get input file from commandline
@@ -116,7 +117,7 @@ program agrhyd
     if (input_file == ' ') then
         open(lunrep, file = 'agrhyd.rep', recl = 132)
         call dattim(rundat)
-        write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
+        write(lunrep, '(a,a)') ' (c) ', trim(version)
         write(lunrep, '(a,a)') ' execution start: ', rundat
         write(lunrep, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
         write(*, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
@@ -128,7 +129,7 @@ program agrhyd
     if (.not. exist_ini) then
         open(lunrep, file = 'agrhyd.rep', recl = 132)
         call dattim(rundat)
-        write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
+        write(lunrep, '(a,a)') ' (c) ', trim(version)
         write(lunrep, '(a,a)') ' execution start: ', rundat
         write(lunrep, '(a,a)') ' error: ini-file not found: ', trim(input_file)
         write(*, '(a,a)') ' error: ini-file not found: ', trim(input_file)
@@ -157,7 +158,7 @@ program agrhyd
     open(lunrep, file = trim(name) // '-agrhyd.rep', recl = 132)
     call setmlu(lunrep)
     call SetMessageHandling(lunMessages = lunrep)
-    write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
+    write(lunrep, '(a,a)') ' (c) ', trim(version)
     call dattim(rundat)
     write(lunrep, '(2a)') ' execution start: ', rundat
     write(lunrep, *)
@@ -549,7 +550,7 @@ program agrhyd
     endif
 
     ! write hyd file
-    call write_hyd(output_hyd, major_minor_buildnr)
+    call write_hyd(output_hyd, version)
 
     ! write time independent data
 

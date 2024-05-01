@@ -61,6 +61,7 @@
       type(t_file)    :: file_src       !< hydrodynamics-file
 
       file_src = hyd%file_com
+      file_src%type = FT_ASC
 
       call file_src%open()
 
@@ -71,8 +72,10 @@
       cchar  = ';'
       ierr = 0
 
-      if (gettoken( string, int, reel, itype, ierr) .ne. 0) then
-         write(lunrep,*) ' error opening ddbound file'
+      ! read first domain
+
+      if (gettoken( dd_bound%name1, ierr) .ne. 0) then
+         write(lunrep,*) ' error reading ddbound file'
          write(lunrep,*) ' file: ',trim(hyd%file_com%name)
       endif
 
@@ -85,15 +88,7 @@
 
       do
 
-         ! read first domain
-
-         if (gettoken( dd_bound%name1, ierr) .ne. 0) then
-            ! if end of file the exit loop
-            exit
-        endif
-
          ! read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
-
 
          if (gettoken( dd_bound%m_begin1, ierr) .ne. 0 ) goto 900
          if (gettoken( dd_bound%n_begin1, ierr) .ne. 0 ) goto 900
@@ -140,6 +135,12 @@
 
          i_dd_bound = hyd%dd_bound_coll%add(dd_bound)
 
+         ! read next domain (when available)
+
+         if (gettoken( dd_bound%name1, ierr) .ne. 0) then
+            ! if end of file the exit loop
+            exit
+        endif
       enddo
 
       return
