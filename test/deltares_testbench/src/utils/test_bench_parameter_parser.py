@@ -48,7 +48,7 @@ class TestBenchParameterParser:
         new_settings.server_base_url = (
             cls.__get_argument_value("server_base_url", args) or ""
         )
-        new_settings.rstr = args.__dict__["or_paths"]
+        new_settings.override_paths = args.__dict__["or_paths"]
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
         if args.__dict__["loglevel"] != "":

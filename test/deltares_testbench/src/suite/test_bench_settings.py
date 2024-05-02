@@ -36,7 +36,7 @@ class TestBenchSettings:
     test_bench_script_name: Optional[str] = None
     test_bench_startup_dir: Optional[str] = None
     server_base_url: str = ""
-    rstr: str = ""
+    override_paths: str = ""
 
     def log_overview(self, logger: Logger):
         """Logs overview of the parameters

@@ -27,6 +27,7 @@ from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
 
+
 def loop(dictionary: Dict[str, Any], key: str) -> List:
     if key in dictionary:
         if isinstance(dictionary[key], list):
@@ -196,7 +197,7 @@ class XmlConfigParser(object):
                 new_location.credentials = c
             # overwrite roots if specified
             newroot = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, new_location.name, "root"
+                self.__testbench_settings.override_paths, new_location.name, "root"
             )
             if newroot:
                 new_location.root = newroot
@@ -248,7 +249,7 @@ class XmlConfigParser(object):
         if "path" in element:
             #  overwrite paths if specified
             newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, new_location.name, "path"
+                self.__testbench_settings.override_paths, new_location.name, "path"
             )
             if newpath:
                 new_location.from_path = newpath
@@ -259,7 +260,7 @@ class XmlConfigParser(object):
         if "from" in element:
             # overwrite from if specified
             newfrom = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, new_location.name, "from"
+                self.__testbench_settings.override_paths, new_location.name, "from"
             )
             if newfrom:
                 new_location.from_path = newfrom
@@ -269,7 +270,7 @@ class XmlConfigParser(object):
         if "to" in element:
             # overwrite to if specified
             newto = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, new_location.name, "to"
+                self.__testbench_settings.override_paths, new_location.name, "to"
             )
             if newto:
                 new_location.to_path = newto
@@ -333,7 +334,7 @@ class XmlConfigParser(object):
         if "path" in element:
             # overwrite path if specified
             newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, p.name, "path"
+                self.__testbench_settings.override_paths, p.name, "path"
             )
             if newpath:
                 p.path = newpath
@@ -498,7 +499,7 @@ class XmlConfigParser(object):
         if "path" in element:
             # overwrite path if specified
             newpath = self.__getOverwritePaths__(
-                self.__testbench_settings.rstr, test_case.name, "path"
+                self.__testbench_settings.override_paths, test_case.name, "path"
             )
             if newpath:
                 test_case.path = TestCasePath(newpath, None)
