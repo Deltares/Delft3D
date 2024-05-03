@@ -528,19 +528,19 @@ end subroutine set_parameters_for_dissipation_driven_forces
 
 !> set wave parameters for jawave == 7 (offline wave coupling) and waveforcing == 3 (wave forces via 3D dissipation distribution)
 subroutine set_parameters_for_3d_dissipation_driven_forces()
-
-    success = success .and. ecGetValues(ecInstancePtr, item_tp     , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_dir    , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_hrms   , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_fx     , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_fy     , ecTime)
-    success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime) 
-    success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
-    sbxwav (:) = 0d0
-    sbywav (:) = 0d0
-    mxwav  (:) = 0d0
-    mywav  (:) = 0d0
-    uorbwav(:) = 0d0
+   implicit none
+   success = success .and. ecGetValues(ecInstancePtr, item_tp     , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_dir    , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_hrms   , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_fx     , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_fy     , ecTime)
+   success = success .and. ecGetValues(ecInstancePtr, item_dissurf, ecTime) 
+   success = success .and. ecGetValues(ecInstancePtr, item_diswcap, ecTime)
+   sbxwav (:) = 0d0
+   sbywav (:) = 0d0
+   mxwav  (:) = 0d0
+   mywav  (:) = 0d0
+   uorbwav(:) = 0d0
 
 end subroutine set_parameters_for_3d_dissipation_driven_forces
     

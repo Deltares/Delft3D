@@ -7260,7 +7260,7 @@ module m_meteo
             itemPtr1 => item_my
             dataPtr1 => mywav
             jamapwav_mywav = 1
-         case ('dissurf','freesurfacedissipation')
+         case ('dissurf','wavebreakerdissipation')
             itemPtr1 => item_dissurf
             dataPtr1 => dsurf
             jamapwav_dsurf = 1
@@ -8052,7 +8052,7 @@ module m_meteo
                 fileReaderPtr%one_time_field = .true.
             endif
          case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
-               'freesurfacedissipation','whitecappingdissipation', 'totalwaveenergydissipation')
+               'wavebreakerdissipation','whitecappingdissipation', 'totalwaveenergydissipation')
             ! the name of the source item created by the file reader will be the same as the ext.force. var name
             sourceItemName = varname
          case ('wavedirection')

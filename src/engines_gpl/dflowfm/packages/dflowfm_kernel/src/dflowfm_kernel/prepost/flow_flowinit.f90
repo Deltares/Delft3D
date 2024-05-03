@@ -1230,12 +1230,15 @@ end subroutine set_initial_velocity_in_3D
 
 !> set wave modelling
 subroutine set_wave_modelling()
-   use m_flowparameters,       only : jawave, flowWithoutWaves
+   use m_flowparameters,       only : jawave, flowWithoutWaves, waveforcing
    use m_flow,                 only : hs, hu, kmx, kmxn
+   use m_flowgeom,             only : ndx
    use mathconsts,             only : sqrt2_hp
-   use m_waves,                only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
+   use m_waves                !only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
    use m_flowgeom,             only : lnx, ln, csu, snu
    use m_sferic,               only : dg2rd
+   use m_physcoef,             only : ag
+   use m_transform_wave_physics
 
    implicit none
    
@@ -1246,6 +1249,7 @@ subroutine set_wave_modelling()
    integer            :: link
    integer            :: left_node
    integer            :: right_node
+   integer            :: ierror
 
    double precision   :: hw
    double precision   :: tw
@@ -1256,18 +1260,27 @@ subroutine set_wave_modelling()
    double precision   :: ustt
    double precision   :: hh
 
-   if ((jawave == SWAN .or. jawave == SWAN_NetCDF ) .and. .not. flowWithoutWaves) then
+   if ((jawave == SWAN .or. jawave >= SWAN_NetCDF ) .and. .not. flowWithoutWaves) then
       ! Normal situation: use wave info in FLOW
       hs = max(hs, 0d0)
-      if (jawave == SWAN_NetCDF) then
+      if (jawave >= SWAN_NetCDF) then
         ! HSIG is read from SWAN NetCDF file. Convert to HRMS
         hwav = hwavcom / sqrt2_hp
       else
         hwav = hwavcom
       end if
       hwav = min(hwav, gammax*hs)
-   !
-      call wave_uorbrlabda()                      
+      !
+      if (jawave==7) then
+         call transform_wave_physics_hp(  hwavcom      ,phiwav    ,twavcom   ,hs     , &
+                            & sxwav        ,sywav     ,mxwav     ,mywav  , &
+                            & distot       ,dsurf     ,dwcap             , &
+                            & ndx          ,1         ,hwav      ,twav   , &
+                            & ag           ,.true.    ,waveforcing       , &
+                            & JONSWAPgamma0, sbxwav   ,sbywav    ,ierror   )
+      end if
+      !
+      call wave_uorbrlabda()
       if( kmx == 0 ) then
          call wave_comp_stokes_velocities()
          call tauwave()

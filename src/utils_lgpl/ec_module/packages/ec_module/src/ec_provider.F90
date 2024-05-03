@@ -392,7 +392,7 @@ module m_ec_provider
                            "solarradiation", "longwaveradiation", "wavesignificantheight", &
                            "waveperiod", "wavedirection","friction_coefficient_time_dependent", &
                            "xwaveforce", "ywaveforce", &
-                           "freesurfacedissipation","whitecappingdissipation","totalwaveenergydissipation")
+                           "wavebreakerdissipation","whitecappingdissipation","totalwaveenergydissipation")
                         success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
                      case ("hrms","tp", "tps", "rtp","dir","fx","fy","wsbu","wsbv","mx","my","dissurf","diswcap","ubot")
                         success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2661,7 +2661,7 @@ module m_ec_provider
          case ('ywaveforce')
              ncvarnames(1) = 'yfor'
              ncstdnames(1) = 'northward_wave_force'
-         case ('freesurfacedissipation')
+         case ('wavebreakerdissipation')
              ncvarnames(1) = 'ssurf'
              ncstdnames(1) = 'depth_induced_surf_breaking_energy_dissipation'
          case ('whitecappingdissipation')
