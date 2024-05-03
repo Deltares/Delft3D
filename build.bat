@@ -32,13 +32,15 @@ echo     ifort       : !ifort!
 echo     prepareonly : !prepareonly!
 echo     coverage    : !coverage!
 echo     vs          : !vs!
-echo.
 
 call :Checks
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
-call :vcvarsall
-if !ERRORLEVEL! NEQ 0 exit /B %~1
+rem Only set the enviroment if not run from a developer command prompt
+if "%VCINSTALLDIR%" == "" (
+    call :vcvarsall
+    if !ERRORLEVEL! NEQ 0 exit /B %~1
+)
 
 call :DoCMake !config!
 if !ERRORLEVEL! NEQ 0 exit /B %~1
@@ -55,16 +57,9 @@ if !ERRORLEVEL! NEQ 0 exit /B %~1
 call :installall
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
+
 echo.
-echo Visual Studio sln-files:
-echo all       : %root%\build_all\all.sln
-echo D-Flow FM : %root%\build_dflowfm\dflowfm.sln
-echo DIMR      : %root%\build_dimr\dimr.sln
-echo DWAQ      : %root%\build_dwaq\dwaq.sln
-echo D-Waves   : %root%\build_dwaves\dwaves.sln
-echo Tests     : %root%\build_tests\tests.sln
-echo Delft3D4  : %root%\build_delft3d4\delft3d4.sln
-echo.
+echo Generated Visual Studio solution file: %root%\build_%config%\%config%.sln
 echo Finished
 goto :end
 
@@ -77,7 +72,7 @@ rem === Command line arguments    ===
 rem =================================
 :GetArguments
     echo.
-    echo "Get command line arguments ..."
+    echo Get command line arguments ...
 
     if [%1] EQU [] (
         rem No arguments: continue with defaults
@@ -102,12 +97,12 @@ rem =================================
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
-    if not "%~1"=="" (
+    if not "%~1" == "" (
       set "test=!options:*%~1:=! "
-      if "!test!"=="!options! " (
+      if "!test!" == "!options! " (
           echo Error: Invalid option %~1
           goto :argument_error
-      ) else if "!test:~0,1!"==" " (
+      ) else if "!test:~0,1!" == " " (
           set "%~1=1"
       ) else (
           set "%~1=%~2"
@@ -137,8 +132,7 @@ rem === Get environment variables ===
 rem =================================
 :GetEnvironmentVars
     echo.
-    echo "Get environment variables ..."
-    rem # Try to find the latest versions of Visual Studio and ifort
+    echo Attempting to find latest versions of ifort and Visual Studio based on environment variables ...
 
     if NOT "%IFORT_COMPILER16%" == "" (
         set ifort=16
@@ -165,27 +159,50 @@ rem =================================
         echo Found: Intel Fortran 2024
     )
 
+    if NOT !-ifort! == 0 (
+        echo Overriding automatically found ifort version !ifort! with argument !-ifort!
+        set ifort=!-ifort!
+    )
+
+    set "vs2017_found="
+    if NOT "%VS2017INSTALLDIR%" == "" (
+        set "vs2017_found=true"
+    )
     if "%VisualStudioVersion%" == "15.0" (
+        set "vs2017_found=true"
+    )
+    if "%vs2017_found%" == "true" (
         set vs=2017
         echo Found: VisualStudio 15 2017
     )
+
+    set "vs2019_found="
+    if NOT "%VS2019INSTALLDIR%" == "" (
+        set "vs2019_found=true"
+    )
     if "%VisualStudioVersion%" == "16.0" (
+        set "vs2019_found=true"
+    )
+    if "%vs2019_found%" == "true" (
         set vs=2019
         echo Found: VisualStudio 16 2019
     )
+
+    set "vs2022_found="
+    if NOT "%VS2022INSTALLDIR%" == "" (
+        set "vs2022_found=true"
+    )
     if "%VisualStudioVersion%" == "17.0" (
+        set "vs2022_found=true"
+    )
+    if "%vs2022_found%" == "true" (
         set vs=2022
         echo Found: VisualStudio 17 2022
     )
 
     if NOT !-vs! == 0 (
+        echo Overriding automatically found VS version !vs! with argument !-vs!
         set vs=!-vs!
-        echo overriding vs with !-vs!
-    )
-
-    if NOT !-ifort! == 0 (
-        set ifort=!-ifort!
-        echo overriding ifort with !-ifort!
     )
     goto :eof
 
@@ -194,7 +211,7 @@ rem === Check CMake installation ===
 rem ================================
 :CheckCMakeInstallation
     echo.
-    echo "Checking whether CMake is installed ..."
+    echo Checking whether CMake is installed ...
     set count=1
     for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
       if !count! LEQ 1 (
@@ -267,23 +284,19 @@ rem =================
 rem === vcvarsall ===
 rem =================
 :vcvarsall
-    rem # Execute vcvarsall.bat in case of compilation
+    rem # Attempt to execute vcvarsall.bat if not run from a developer command prompt
     if %prepareonly% EQU 1 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
 
     echo.
-    if !generator! == "Visual Studio 15 2017" (
-        echo "Calling vcvarsall.bat for VisualStudio 2017 ..."
-        call "%VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat" amd64
+
+    if "!VS%vs%INSTALLDIR!" == "" (
+        echo Cannot set Visual Studio enviroment variables, please run build.bat from a Visual Studio developer command prompt.
+        set ERRORLEVEL=1
+        goto :end
     )
-    if !generator! == "Visual Studio 16 2019" (
-        echo "Calling vcvarsall.bat for VisualStudio 2019 ..."
-        call "%VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat" amd64
-    )
-    if !generator! == "Visual Studio 17 2022" (
-        echo "Calling vcvarsall.bat for VisualStudio 2022 ..."
-        call "%VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat" amd64
-    )
+    echo Calling vcvarsall.bat for VisualStudio %vs% ...
+    call "!VS%vs%INSTALLDIR!\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
     rem # Execution of vcvarsall results in a jump to the C-drive. Jump back to the script directory
     cd /d "%root%\"
@@ -297,7 +310,7 @@ rem =======================
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
     call :createCMakeDir build_%~1
-    echo "Running CMake for %~1 ..."
+    echo Running CMake for %~1 ...
     cd /d "%root%\build_%~1\"
     !cmake! ..\src\cmake -G %generator% -A x64 -B "." -D CONFIGURATION_TYPE="%~1" 1>cmake_%~1.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
@@ -334,7 +347,7 @@ rem =======================
     if %prepareonly% EQU 1 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    echo "Building %~1 ..."
+    echo Building %~1 ...
     cd /d "%root%\build_%~1\"
     call :VSbuild %~1
     cd /d "%root%\"
@@ -346,8 +359,7 @@ rem =======================
 rem === createCMakeDir ====
 rem =======================
 :createCMakeDir
-    echo.
-    echo "Creating directory %root%\%~1 ..."
+    echo Creating directory %root%\%~1 ...
     cd /d %root%
     if exist "%root%\%~1\" rmdir /s/q "%root%\%~1\" > del.log 2>&1
     mkdir    "%root%\%~1\"                          > del.log 2>&1
@@ -361,7 +373,7 @@ rem === VSbuild        ====
 rem =======================
 :VSbuild
     echo.
-    echo "Building with VisualStudio: %~1 ..."
+    echo Building with VisualStudio: %~1 ...
     set currentWorkDir=%CD%
     devenv.com %~1.sln /Rebuild "Release|x64" 1>%currentWorkDir%\build_%~1.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
@@ -379,7 +391,7 @@ rem =======================
 
     if "!config!" == "all" (
         echo.
-        echo "Installing in build_all ..."
+        echo Installing in build_all ...
         xcopy %root%\build_all\x64\Release\dimr                     %root%\build_all\x64\dimr\            /E /C /Y /Q > del.log 2>&1
 
         xcopy %root%\build_all\x64\Release\dflowfm\bin\dflowfm*     %root%\build_all\x64\dflowfm\bin\     /E /C /Y /Q > del.log 2>&1
@@ -424,7 +436,7 @@ rem =======================
     )
     if "!config!" == "delft3d4" (
         echo.
-        echo "Installing in build_delft3d4 ..."
+        echo Installing in build_delft3d4 ...
         xcopy %root%\build_delft3d4\x64\Release\dflow2d3d                %root%\build_delft3d4\x64\dflow2d3d\       /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_delft3d4\x64\Release\dimr                     %root%\build_delft3d4\x64\dimr\            /E /C /Y /Q > del.log 2>&1
         xcopy %root%\build_delft3d4\x64\Release\dpart                    %root%\build_delft3d4\x64\dpart\           /E /C /Y /Q > del.log 2>&1
@@ -485,8 +497,6 @@ rem =======================
     set ERRORLEVEL=1
     goto :end
 
-
-
 rem =======================
 rem === errorMessage ======
 rem =======================
@@ -494,9 +504,7 @@ rem =======================
     echo.
     echo.
     echo.
-    echo ERROR: Check log files in build_* directories
-    echo        Is the correct Fortran compiler installed, available and selected?
-    echo        Common problem: NetExtender needs to be switched on to reach the license server.
+    echo ERROR: Please check the log files in the build_%config% directory.
     goto :eof
 
 
