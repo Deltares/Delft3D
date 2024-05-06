@@ -7,6 +7,7 @@ Copyright (C)  Stichting Deltares, 2013
 import copy
 import re
 import sys
+import operator
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from lxml import etree
