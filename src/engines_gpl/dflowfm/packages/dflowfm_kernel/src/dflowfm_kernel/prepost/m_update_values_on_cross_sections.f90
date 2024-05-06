@@ -108,7 +108,9 @@ subroutine update_values_on_cross_sections( reset)
    time_of_last_call = time1
    
    if (reset) then
-      crs(icrs)%sumvalcum = 0.0_dp
+      do icrs = 1, ncrs
+         crs(icrs)%sumvalcum = 0.0_dp
+      end do
       time_of_last_reset = time1
    end if
    
