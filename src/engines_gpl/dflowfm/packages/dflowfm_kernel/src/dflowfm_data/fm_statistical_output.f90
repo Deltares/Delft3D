@@ -599,7 +599,7 @@ private
       use m_sediment, only: stmpar
       use m_output_config, only: id_nc_byte, id_nc_char, id_nc_short, id_nc_int, id_nc_float, id_nc_double
 
-      type(ug_nc_attribute) :: atts(5)
+      type(ug_nc_attribute) :: atts(4)
       character(len=25)     :: transpunit
 
       out_quan_conf_his%count = 0
@@ -801,10 +801,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4 /))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_STATE,                            &
                      'Wrihis_structure_gen', 'general_structure_state', 'Flow state at general structure', '',                     &
-                     '', UNC_LOC_GENSTRU, id_nc_type = id_nc_int, nc_atts = atts(1:5))
+                     '', UNC_LOC_GENSTRU, id_nc_type = id_nc_int, nc_atts = atts(1:4))
       call addoutval(out_quan_conf_his, IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST,                      &
                      'Wrihis_structure_gen', 'general_structure_s1_on_crest', 'Water level on crest of general structure',          &
                      '', 'm', UNC_LOC_GENSTRU, nc_atts = atts(1:1))
@@ -937,10 +936,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2 /))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_STATE,                                      &
                      'Wrihis_structure_weir', 'weirgen_state', 'Flow state at weir',                                 &
-                     '', '', UNC_LOC_WEIRGEN, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', '', UNC_LOC_WEIRGEN, nc_atts = atts(1:4), id_nc_type = id_nc_int)
 
       call addoutval(out_quan_conf_his, IDX_HIS_WEIRGEN_FORCE_DIFFERENCE,                           &
                      'Wrihis_structure_weir', 'weirgen_force_difference', 'Force difference per unit width at weir', '',                      &
@@ -983,10 +981,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2, 3, 4/))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 4 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_STATE,                                      &
                      'Wrihis_structure_orifice', 'orifice_state', 'Flow state at orifice', '',                      &
-                     '', UNC_LOC_ORIFICE, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', UNC_LOC_ORIFICE, nc_atts = atts(1:4), id_nc_type = id_nc_int)
 
       call addoutval(out_quan_conf_his, IDX_HIS_ORIFICE_S1_ON_CREST,                                &
                      'Wrihis_structure_orifice', 'orifice_s1_on_crest', 'Water level on crest of orifice', '',                     &
@@ -1063,10 +1060,9 @@ private
       call ncu_set_att(atts(2), 'flag_values', (/ 0, 1, 2/))
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
       call ncu_set_att(atts(4), 'valid_range', (/ 0, 2 /))
-      call ncu_set_att(atts(5), '_FillValue', int(dmiss))
       call addoutval(out_quan_conf_his, IDX_HIS_CULVERT_STATE,                                      &
                      'Wrihis_structure_culvert', 'culvert_state', 'Flow state at culvert', '',                     &
-                     '', UNC_LOC_CULVERT, nc_atts = atts(1:5), id_nc_type = id_nc_int)
+                     '', UNC_LOC_CULVERT, nc_atts = atts(1:4), id_nc_type = id_nc_int)
 
       !! Dambreak
       call addoutval(out_quan_conf_his, IDX_HIS_DAMBREAK_S1UP,                                      &
