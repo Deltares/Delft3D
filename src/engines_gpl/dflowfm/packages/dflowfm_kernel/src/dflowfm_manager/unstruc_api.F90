@@ -274,6 +274,7 @@ end subroutine api_loadmodel
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
    use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
    use m_statistical_output, only: update_source_data, update_statistical_output
+   use m_update_values_on_cross_sections, only: update_values_on_cross_sections
    integer, external :: flow_modelinit
    integer          :: timerHandle, inner_timerhandle
 
@@ -307,21 +308,20 @@ end subroutine api_loadmodel
     inner_timerhandle = 0
     call timstrt('Update various', inner_timerhandle)
     
-    call updateValuesOnCrossSections(time1)             ! Initial statistics, copied from flow_usertimestep
-    call updateValuesOnRunupGauges()
-    if (jahisbal > 0) then                              ! Update WaterBalances etc.
+   call update_values_on_cross_sections(.true.)
+   call updateValuesOnRunupGauges()
+   if (jahisbal > 0) then                              ! Update WaterBalances etc.
       call updateBalance()
-   endif
+   end if
    call updateValuesonSourceSinks(time1)
    
-    if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
-       call updateValuesOnLaterals(time1, dts)
-    end if
+   if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      call updateValuesOnLaterals(time1, dts)
+   end if
 
    if (jampi == 1) then
-      call updateValuesOnCrossSections_mpi(time1)
       call updateValuesOnRunupGauges_mpi()
-   endif
+   end if
    call timstop(inner_timerhandle)
    
    call update_source_data(out_variable_set_his)

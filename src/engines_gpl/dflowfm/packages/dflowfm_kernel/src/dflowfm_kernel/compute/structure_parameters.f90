@@ -67,7 +67,7 @@
       endif
 
       if (ti_his <= 0) return
-      ! in order to compute the cumulative discharge, we have to compute the time step (see update updateValuesOnCrossSections)
+      ! in order to compute the cumulative discharge, we have to compute the time step (see update_values_on_cross_sections)
       if (timprev == -1d0) then
         timstep  = 0d0
       else

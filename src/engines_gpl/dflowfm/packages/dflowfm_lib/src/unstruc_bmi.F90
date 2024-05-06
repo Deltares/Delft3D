@@ -1920,6 +1920,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    use unstruc_channel_flow, only: network
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
+   use m_update_values_on_cross_sections, only: update_values_on_cross_sections
   
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2249,10 +2250,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
          return
       end if
 
-      call updateValuesOnCrossSections(time1)
-      if (jampi == 1) then
-         call updateValuesOnCrossSections_mpi(time1)
-      endif
+      call update_values_on_cross_sections(.true.)
 
       select case(field_name)
       case("discharge")
