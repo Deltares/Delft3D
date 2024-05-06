@@ -1892,7 +1892,7 @@ subroutine prop_get_integer(tree, chapter, key, value, success, valuesfirst)
     value = valuearray(1)
 end subroutine prop_get_integer
 
-!> Get the integer value for a property and if not found set it to the supplied default value
+!> Get the integer value for a property and if not found set it to the supplied default value in the tree.
 subroutine prop_get_set_integer(tree, chapter, key, value, success, values_first, allow_statoutput_keywords)
    implicit none
    type(tree_data)  , pointer       :: tree                       !< The property tree
@@ -1903,10 +1903,10 @@ subroutine prop_get_set_integer(tree, chapter, key, value, success, values_first
    logical, optional, intent(in)    :: values_first               !< Whether value should be specified before any comments (optional)
    logical, optional, intent(in)    :: allow_statoutput_keywords  !< Whether statistical output keywords are allowed here
                                                                   !! (if so, valid strings such as 'current','average', etc. will return a value of 1
-                                         
+
    character(len=255) :: value_string
    logical :: allow_statoutput_keywords_
-    
+
    if (present(allow_statoutput_keywords)) then
       allow_statoutput_keywords_ = allow_statoutput_keywords
    else
@@ -1921,22 +1921,21 @@ subroutine prop_get_set_integer(tree, chapter, key, value, success, values_first
          ! Couldn't read an integer; try reading a statistical output keyword instead
          call prop_get_string(tree, chapter, key, value_string, success)
          if (success) then
-            if (index(value_string,'current') > 0 .or. &
-                  index(value_string,'average') > 0 .or. &
-                  index(value_string,'max') > 0 .or. &
-                  index(value_string,'min') > 0) then
+            if (index(value_string, 'current') > 0 .or. &
+                  index(value_string, 'average') > 0 .or. &
+                  index(value_string, 'max') > 0 .or. &
+                  index(value_string, 'min') > 0) then
                value = 1
-            elseif (index(value_string,'none') > 0) then
+            else if (index(value_string, 'none') > 0) then
                value = 0
             end if
          end if
       end if
    end if
-    
+
    if (.not. success .and. value > 0) then
       call prop_set(tree, chapter, key, value, '')
    end if
-   
 end subroutine prop_get_set_integer
 
 !> Get the array of integer values for a property

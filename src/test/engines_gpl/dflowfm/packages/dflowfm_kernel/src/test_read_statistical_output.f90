@@ -151,10 +151,10 @@ subroutine test_parse_empty_string()
 end subroutine
 
 subroutine test_output_requested()
-   call assert_equal(output_requested_in_value_string('none, max'), .true., '')
+   call assert_equal(is_output_requested_in_value_string('none, max'), .true., '')
 end subroutine test_output_requested
 
 subroutine test_no_output_requested()
-   call assert_equal(output_requested_in_value_string('none, none'), .false., '')
+   call assert_equal(is_output_requested_in_value_string('none, none'), .false., '')
 end subroutine test_no_output_requested
 end module test_read_statistical_output

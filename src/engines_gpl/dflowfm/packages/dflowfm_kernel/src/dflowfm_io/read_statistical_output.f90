@@ -39,7 +39,7 @@ module m_read_statistical_output
    integer, parameter, public :: SO_EOR            = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
 
    public parse_next_stat_type_from_value_string
-   public output_requested_in_value_string
+   public is_output_requested_in_value_string
    contains
 
    !> Parse the a statistical operation type from the start of a value string.
@@ -122,7 +122,7 @@ module m_read_statistical_output
    end function get_operation_type
 
    !> Test if any output is requested in the value string
-   function output_requested_in_value_string(value_string) result(res)
+   function is_output_requested_in_value_string(value_string) result(res)
       character(*), value :: value_string !< The string provided as a value in the MDU file
       logical             :: res
 
@@ -138,5 +138,5 @@ module m_read_statistical_output
             res = .true.
          end if
       end do
-   end function output_requested_in_value_string
+   end function is_output_requested_in_value_string
 end module m_read_statistical_output
