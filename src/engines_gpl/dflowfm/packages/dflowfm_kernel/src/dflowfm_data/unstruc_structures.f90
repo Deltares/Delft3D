@@ -238,6 +238,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  logical, protected :: model_has_pumps_across_partitions              = .false.
  logical, protected :: model_has_bridges_across_partitions            = .false. 
  logical, protected :: model_has_long_culverts_across_partitions      = .false.
+ logical, protected :: model_has_dams_across_partitions               = .false.
  
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
@@ -1439,6 +1440,32 @@ subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, node
    end if
 end subroutine fill_geometry_arrays_structure
 
+!> Check if the model has any dams that lie across multiple partitions
+!! (needed to disable possibly invalid statistical output items)
+subroutine check_model_has_dams_across_partitions
+   use m_partitioninfo, only: jampi, any_structures_lie_across_multiple_partitions
+   use m_flowexternalforcings, only: ncdamsg
+   
+   integer :: i_dam
+   integer, dimension(:), allocatable :: links, nlinks_per_dam
+
+   if (jampi == 0) then
+      model_has_dams_across_partitions = .false.
+      return
+   end if
+   
+   allocate(nlinks_per_dam(ncdamsg), source = 0)
+   
+   do i_dam = 1, ncdamsg
+      call retrieve_set_of_flowlinks_dam(i_dam, links)
+      nlinks_per_dam(i_dam) = size(links)
+      deallocate(links)
+   end do
+   
+   model_has_dams_across_partitions = any_structures_lie_across_multiple_partitions(nlinks_per_dam)
+      
+end subroutine check_model_has_dams_across_partitions
+
 !> Fill in array valstruct for a givin general structure, weir or orifice.
 subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
    use m_missing, only: dmiss
@@ -1696,6 +1723,26 @@ subroutine retrieve_set_of_flowlinks_pump(i_pump, links)
    end do
    
 end subroutine retrieve_set_of_flowlinks_pump
+
+subroutine retrieve_set_of_flowlinks_dam(i_dam, links)
+   use m_flowexternalforcings, only: L1cdamsg, L2cdamsg, kcdam
+   
+   integer,                            intent(in   ) :: i_dam       !< Index of the dam
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dam has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2cdamsg(i_dam) + 1 - L1cdamsg(i_dam)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1cdamsg(i_dam), L2cdamsg(i_dam)
+      i = i+1
+      links(i) = kcdam(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_dam
 
 !> Calculate the x,y-coordinates of the midpoint of a set of flowlinks
 !! (presumably those that a polyline has been snapped to)
