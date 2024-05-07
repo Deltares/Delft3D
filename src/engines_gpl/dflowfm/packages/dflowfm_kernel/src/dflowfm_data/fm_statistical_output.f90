@@ -13,9 +13,9 @@ private
    type(t_output_quantity_config_set), public :: out_quan_conf_map
    type(t_output_quantity_config_set), public :: out_quan_conf_clm
 
-   type(t_output_variable_set), public :: out_variable_set_his
-   type(t_output_variable_set), public :: out_variable_set_map
-   type(t_output_variable_set), public :: out_variable_set_clm
+   type(t_output_variable_set), target, public :: out_variable_set_his
+   type(t_output_variable_set), target, public :: out_variable_set_map
+   type(t_output_variable_set), target, public :: out_variable_set_clm
    
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
           model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations
@@ -2896,7 +2896,7 @@ private
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_CLS_UCDIR_EULER                                               )
       !
       call process_output_quantity_configs(output_config_set)
-      call realloc(output_set, output_set%count) ! set size to count
+      call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
 
    end subroutine flow_init_statistical_output_his
