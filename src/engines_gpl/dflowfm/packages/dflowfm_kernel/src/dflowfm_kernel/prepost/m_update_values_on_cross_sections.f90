@@ -43,7 +43,7 @@ module m_update_values_on_cross_sections
 contains
 
 !> Updates all monitored data on all cross sections, including time-integrated values
-subroutine update_values_on_cross_sections( reset)
+subroutine update_values_on_cross_sections( reduce_and_reset)
    use m_monitoring_crosssections, only: nval, ncrs, crs_values, crs_timescales, crs
    use precision, only: comparereal
    use m_transport, only: NUMCONST_MDU
@@ -51,7 +51,7 @@ subroutine update_values_on_cross_sections( reset)
    use m_flowtimes, only: time1
    use m_partitioninfo, only: jampi
    
-   logical, intent(in) :: reset
+   logical, intent(in) :: reduce_and_reset
 
    real(dp)       :: time_since_last_reset, time_since_last_call
    integer        :: iv, icrs
@@ -82,7 +82,7 @@ subroutine update_values_on_cross_sections( reset)
       crs_values = 0.0_dp
    end if
 
-   call integrate_over_cross_section_flowlinks
+   call integrate_over_cross_section_flowlinks(reduce_and_reset)
    
    if (comparereal(time_of_last_reset, -1.0_dp) == 0) then
       time_of_last_reset = time1
@@ -107,7 +107,7 @@ subroutine update_values_on_cross_sections( reset)
 
    time_of_last_call = time1
    
-   if (reset) then
+   if (reduce_and_reset) then
       do icrs = 1, ncrs
          crs(icrs)%sumvalcum = 0.0_dp
       end do
@@ -117,8 +117,8 @@ subroutine update_values_on_cross_sections( reset)
 end subroutine update_values_on_cross_sections
 
 !> Integrate monitored values over the flowlinks of each cross-section
-!! Includes reduction across processes in case of a parallel model
-subroutine integrate_over_cross_section_flowlinks
+!! Optionally includes reduction across processes in case of a parallel model
+subroutine integrate_over_cross_section_flowlinks(do_reduce)
    use m_monitoring_crosssections, only: ncrs, crs_values, crs_timescales, crs, IPNT_Q1C, IPNT_AUC, IPNT_S1A, IPNT_HUA, IPNT_U1A
    use m_flowgeom, only: ln, wu, wu_mor
    use m_flow, only: q1, au, s1, hu, Lbot, Ltop
@@ -127,6 +127,8 @@ subroutine integrate_over_cross_section_flowlinks
    use m_partitioninfo, only: jampi
 
    implicit none
+   
+   logical, intent(in) :: do_reduce
 
    integer  :: icrs, i, Lf, L, k1, k2, IP, num, LL, IPTOT, lsed
    real(dp) :: val
@@ -157,7 +159,7 @@ subroutine integrate_over_cross_section_flowlinks
             do LL = Lbot(L), Ltop(L)
                k1 = ln(1,LL); k2 = ln(2,LL)
                crs_values(IP,icrs) = crs_values(IP,icrs) + real(sign(1, Lf),dp) * (max(q1(LL),0.0_dp) * constituents(num,k1) &
-                                                                                                 + min(q1(LL),0.0_dp) * constituents(num,k2))
+                                                                                 + min(q1(LL),0.0_dp) * constituents(num,k2))
             end do
          end do
 
@@ -206,7 +208,10 @@ subroutine integrate_over_cross_section_flowlinks
       end if
    end if
    
-   if (jampi == 1) then
+   ! DENK DROM
+   write(0,*) 'beep - do_reduce = ', do_reduce
+   
+   if (jampi == 1 .and. do_reduce) then
       call reduce_cross_section_flowlink_integrals()
    endif
 
