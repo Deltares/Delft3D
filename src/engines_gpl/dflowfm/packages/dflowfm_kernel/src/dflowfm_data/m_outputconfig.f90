@@ -524,10 +524,9 @@ private
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
-      integer                                                :: growsby = 200             !< Increment for config set
-      integer                                                :: count = 0                 !< Number of configs in config set 
-      integer                                                :: capacity  = 0                 !< Allocated size of config set (size = count + # of empty configs)
-      type(t_output_quantity_config), pointer, dimension(:)  :: configs                   !< array of output quantity configs in config set
+      integer                                                           :: count = 0                 !< Number of configs in config set 
+      integer                                                           :: capacity  = 0                 !< Allocated size of config set (size = count + # of empty configs)
+      type(t_output_quantity_config), allocatable,       dimension(:) :: configs                   !< array of output quantity configs in config set
    end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
@@ -546,35 +545,21 @@ contains
 
 !> Reallocate config set.
 subroutine realloc_config_set(config_set)
-   ! Modules
    use m_alloc
 
-   implicit none
-   ! Input/output parameters
    type(t_output_quantity_config_set), intent(inout)   :: config_set !< Output configuration set.
 
+   type(t_output_quantity_config), dimension(:), allocatable :: new_configs
 
-   ! Local variables
-   integer                   :: ierr
-   type(t_output_quantity_config), pointer, dimension(:)    :: old_configs
-
-   ! Program code
-
-   if (config_set%capacity > 0) then
-      old_configs=>config_set%configs
-   endif
-
-   if (config_set%growsBy <=0) then
-      config_set%growsBy = 200
-   endif
-   allocate(config_set%configs(config_set%capacity+config_set%growsBy),stat=ierr)
-   call aerr('statoutput%configs(statoutput%size+statoutput%growsBy)',ierr,config_set%capacity+config_set%growsBy)
-
-   if (config_set%capacity > 0) then
-      config_set%configs(1:config_set%capacity) = old_configs(1:config_set%capacity)
-      deallocate(old_configs)
-   endif
-   config_set%capacity = config_set%capacity+config_set%growsBy
+if(allocated(config_set%configs) .and. config_set%capacity > 0) then
+   allocate(new_configs(config_set%capacity*2))
+   new_configs(1:config_set%capacity) = config_set%configs
+   call move_alloc(new_configs,config_set%configs)
+else
+   allocate(config_set%configs(200))
+end if
+   config_set%capacity = size(config_set%configs)
+   
 end subroutine realloc_config_set
 
 !> Deallocate config set.
@@ -702,12 +687,9 @@ subroutine scan_input_tree(tree, paragraph, quantity_config_set)
    type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
-   type(t_output_quantity_config), pointer, dimension(:) :: quantity_configs
-
-   quantity_configs => quantity_config_set%configs
 
    do i = 1, quantity_config_set%count
-      call prop_get_string(tree, paragraph, quantity_configs(i)%key, quantity_configs(i)%input_value)
+      call prop_get_string(tree, paragraph, quantity_config_set%configs(i)%key, quantity_config_set%configs(i)%input_value)
    enddo
 
 end subroutine scan_input_tree
@@ -716,23 +698,23 @@ end subroutine scan_input_tree
 subroutine set_properties(tree, paragraph, quantity_config_set)
    use properties
 
-   type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
-   character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
+   type(tree_data), pointer,           intent(in   )     :: tree        !< Property tree
+   character(len=*),                   intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
+   type(t_output_quantity_config_set), intent(inout)     :: quantity_config_set !< Contains the keys and configuration information on the output variables.
 
    integer i
-   type(t_output_quantity_config), pointer, dimension(:) :: statout
-
-   statout => quantity_config_set%configs
-
+   type(t_output_quantity_config), pointer :: config
+   
+   associate(config => quantity_config_set%configs(i))
    do i = 1, quantity_config_set%count
-      if (len_trim(statout(i)%description)>0 .and. len_trim(statout(i)%input_value)>0) then
-         if (trim(statout(i)%input_value)=='current') then
-            statout(i)%input_value = '1'   
+      if (len_trim(config%description)>0 .and. len_trim(config%input_value)>0) then
+         if (trim(config%input_value)=='current') then
+            config%input_value = '1'   
          endif
-         call prop_set(tree, trim(paragraph), trim(statout(i)%key), trim(statout(i)%input_value), trim(statout(i)%description))
+         call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
       endif
    enddo
+   end associate
 
 end subroutine set_properties
 

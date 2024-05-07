@@ -2906,13 +2906,14 @@ private
       type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set !< The set of configs for all possible output variables
       type(t_output_quantity_config), pointer :: config
       integer :: i
-
+      
+      associate(config => output_quantity_config_set%configs(i))
       do i = 1, output_quantity_config_set%count
-         config => output_quantity_config_set%configs(i)
          if (allocated(config%nc_dim_ids)) then
             call process_nc_dim_ids(config%nc_dim_ids)
          end if
       end do
+      end associate
    end subroutine process_output_quantity_configs
 
    !> Deactivate 3D dimension IDs for 2D variables
