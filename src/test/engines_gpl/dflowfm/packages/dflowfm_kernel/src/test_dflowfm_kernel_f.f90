@@ -51,6 +51,9 @@ program test_dflowfm_kernel
     call tests_read_property
     call tests_compute_airdensity
     call tests_lateral
+    ! tests_iniField_1dField is calling flow_allocflow(), but no deallocation of global state variables is done yet.
+    ! To ensure that other tests are not influenced by these global variables still in memory, the test is put
+    ! last. It can only be moved upward when the deallocation is done properly.
     call tests_iniField_1dField
     !
     ! Done - properly finalize

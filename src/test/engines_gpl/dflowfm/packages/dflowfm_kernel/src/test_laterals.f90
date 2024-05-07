@@ -200,7 +200,7 @@ subroutine setup_testcase()
    allocate(n1latsg(numlatsg),stat=ierr)
    allocate(n2latsg(numlatsg),stat=ierr)
    allocate(nnlat(nlatnd),stat=ierr)
-   allocate(qplat(numlatsg),stat=ierr)
+   allocate(qplat(1,numlatsg),stat=ierr)
    allocate(ba(ndxi),stat=ierr)
    allocate(balat(numlatsg),stat=ierr)
    allocate(vol1(ndxi),stat=ierr)
@@ -223,7 +223,7 @@ subroutine setup_testcase()
       enddo
    enddo
    ! positive qplat is considered inflow (source), negative value outflow (sink) 
-   qplat = (/9_dp,-10_dp/)
+   qplat(1,:) = (/9_dp,-10_dp/)
    ! top layer, per constituent, lateral 1, 
    incoming_lat_concentration(1,:,1) = (/31.0_dp,20.0_dp,0.23_dp/)  
    ! top layer, all constituents, lateral 2. 

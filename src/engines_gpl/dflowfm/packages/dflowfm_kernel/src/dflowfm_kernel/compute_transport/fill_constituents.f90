@@ -152,8 +152,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       end do
    end if
 
-   ! TODO AJV only when necessary, ie numlatsg > 0, apply_transport > 0)
-   ! add lateral in- and outflow of constituents as souces and sinks
+   ! add lateral in- and outflow of constituents as sources and sinks
    if (apply_transport_is_used) then 
       allocate(qin_over_laterals(numlatsg,ndxi),stat=ierr)
       allocate(qout_over_laterals(numlatsg,ndxi),stat=ierr)

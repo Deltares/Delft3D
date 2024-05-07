@@ -137,7 +137,7 @@ implicit none
             do k1=n1latsg(i_lateral),n2latsg(i_lateral)
                ! k1 loopt over de actieve elementen van bepaalde lateral, binnen een domein
                i_cell = nnlat(k1)
-               qlat = qplat(i_lateral)*ba(i_cell)/balat(i_lateral)
+               qlat = qplat(1,i_lateral)*ba(i_cell)/balat(i_lateral)
                if (qlat > 0) then
                   if (.not. is_ghost_node(i_cell)) then 
                      lateral_discharge_in(i_lateral,i_cell) = lateral_discharge_in(i_lateral,i_cell) + qlat
