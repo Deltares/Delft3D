@@ -51,6 +51,7 @@ use m_statistical_output, only: update_statistical_output, update_source_data
 use m_update_fourier, only : update_fourier
 use mass_balance_areas_routines, only : comp_horflowmba
 use m_lateral, only : numlatsg
+use m_update_values_on_cross_sections, only: update_values_on_cross_sections
 
 implicit none
 integer, intent(out) :: iresult
@@ -87,7 +88,6 @@ integer, intent(out) :: iresult
       if (comparereal(time1, time_his, eps10)>=0) then
          !do_fourier = do_fourier .or. (md_fou_step == 2)
          if (jampi == 1) then
-            call updateValuesOnCrossSections_mpi(time1)
             call updateValuesOnRunupGauges_mpi()
             !call reduce_particles()
          endif
@@ -102,13 +102,13 @@ integer, intent(out) :: iresult
       endif
       call timstop(handle_extra(75))
 
-  call updateValuesOnCrossSections(time1)             ! Compute sum values across cross sections.
-  call updateValuesOnRunupGauges()
- if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
-    if (numsrc > 0) then
-       call updateValuesonSourceSinks(time1)         ! Compute discharge and volume on sources and sinks
-    endif
- endif
+   call update_values_on_cross_sections(.false.)
+   call updateValuesOnRunupGauges()
+   if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
+      if (numsrc > 0) then
+         call updateValuesonSourceSinks(time1)         ! Compute discharge and volume on sources and sinks
+      end if
+   end if
 
  if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
     call updateValuesOnLaterals(time1, dts)

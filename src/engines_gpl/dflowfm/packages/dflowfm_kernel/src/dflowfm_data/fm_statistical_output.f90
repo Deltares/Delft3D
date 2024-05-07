@@ -336,7 +336,7 @@ private
       obscrs_data(i, 2) = crs(i)%sumvalcum(IPNT_Q1C)
       ! Cross sectional areas A*u
       obscrs_data(i, 3) = crs(i)%sumvalcur(IPNT_AUC)
-         ! Average velocity Q/Au
+      ! Average velocity Q/Au
       obscrs_data(i, 4) = crs(i)%sumvalcur(IPNT_U1A)
       ! Entry 5 intentionally left blank (IPNT_S1A)
    end do
@@ -1535,7 +1535,8 @@ private
                      '', 'm s-1', UNC_LOC_OBSCRS, nc_atts = atts(1:1))
       ! Disable writing cross_section_velocity_avg (see UNST-1148), because in a parallel run, it is impossible to compute
       ! summation of area (denominator) at each computational time step in a cheap way, i.e. without communication between
-      ! partitions. @see subroutines: sumvalueOnCrossSections, updateValuesOnCrossSections
+      ! partitions. @see subroutine: update_values_on_cross_sections
+      ! TODO: UNST-7786 this is no longer the case, allow writing this? Where is it even disabled?
 
       ! The following output value is an abstract entry representing all constituents.
       ! The constituents that are actually available depend on the model initialization
