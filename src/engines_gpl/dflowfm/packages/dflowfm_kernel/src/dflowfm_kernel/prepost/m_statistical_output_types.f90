@@ -62,7 +62,7 @@ module m_statistical_output_types
    type, public :: t_output_variable_set
       integer                                                    :: capacity = 0  !< allocated size of output variable set
       integer                                                    :: count = 0     !< count of actual items in output variable set
-      type(t_output_variable_item), allocatable, dimension(:)    :: statout       !< pointer to array of output variable items
+      type(t_output_variable_item), pointer, dimension(:)        :: statout       !< pointer to array of output variable items
    end type t_output_variable_set
 
 end module m_statistical_output_types

@@ -67,29 +67,41 @@ contains
 
    subroutine reallocate_output_set(output_set, crop)
       use m_alloc
+
+      type(t_output_variable_set), intent(inout)   :: output_set !< output variable set to reallocate
+      logical, intent(in), optional                :: crop       !< crop output set to number of valid items
       
-      type(t_output_variable_set), intent(inout)   :: output_set !< output set to reallocate
-      logical, intent(in), optional                :: crop       !< whether we want to crop the output set so that capacity and count are the same
-      
-      integer                                                 :: ierr, new_capacity
-      type(t_output_variable_item), dimension(:), allocatable :: new_output_set
-      
-      if(allocated(output_set%statout) .and. output_set%capacity > 0) then
-         if(present(crop)) then
-            if(crop) then
-               new_capacity = output_set%count
-            endif
-         else
-            new_capacity = output_set%capacity*2
-         endif
-         allocate(new_output_set(new_capacity))
-         new_output_set(1:output_set%capacity) = output_set%statout
-         call move_alloc(new_output_set, output_set%statout)
-      else
-         allocate(output_set%statout(200)) ! hardcoded default start size of 200
-      end if
-      output_set%capacity = size(output_set%statout)
+      integer                   :: ierr
+      logical                   :: crop_local
+      type(t_output_variable_item), pointer, dimension(:)    :: old_statout
    
+      crop_local = .false.
+      if(present(crop)) then
+         crop_local = crop
+      end if
+      if (output_set%capacity > 0) then
+         old_statout => output_set%statout
+      end if
+      
+      if (crop_local) then
+         allocate(output_set%statout(output_set%count), stat=ierr)
+         call aerr('output_set%statout(size)', ierr, output_set%count)
+
+         output_set%statout(1:output_set%count) = old_statout(1:output_set%count)
+         deallocate(old_statout)
+         output_set%capacity = output_set%count
+      else
+         if (output_set%capacity > 0) then
+            output_set%capacity = output_set%capacity*2
+            allocate(output_set%statout(output_set%capacity), stat=ierr)
+            output_set%statout(1:output_set%count) = old_statout(1:output_set%count)
+            deallocate(old_statout)
+         else
+           output_set%capacity = 200
+           allocate(output_set%statout(output_set%capacity), stat=ierr)
+         end if
+      end if
+
    end subroutine reallocate_output_set
 
    subroutine deallocate_output_set(output_set)
@@ -97,7 +109,7 @@ contains
       ! Input/output parameters
       type(t_output_variable_set), intent(inout)   :: output_set !< Current cross-section definition
 
-      if (allocated(output_set%statout)) then
+      if (associated(output_set%statout)) then
          deallocate(output_set%statout)
       end if
    end subroutine deallocate_output_set
@@ -110,13 +122,14 @@ contains
 
       integer :: j
       
-      associate(item => output_set%statout(j))
       do j = 1, output_set%count
-         if (associated(item%source_input_function_pointer)) then
-            call item%source_input_function_pointer(item%source_input)
-         end if
+         associate(item => output_set%statout(j))
+            if (associated(item%source_input_function_pointer)) then
+               call item%source_input_function_pointer(item%source_input)
+            end if
+         end associate
       end do
-      end associate
+
    end subroutine update_source_input
 
    !> Update the stat_output of an item, depending on the operation_type.

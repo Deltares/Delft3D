@@ -702,16 +702,17 @@ subroutine set_properties(tree, paragraph, quantity_config_set)
    integer :: i
    type(t_output_quantity_config), pointer :: config
    
-   associate(config => quantity_config_set%configs(i))
    do i = 1, quantity_config_set%count
-      if (len_trim(config%description)>0 .and. len_trim(config%input_value)>0) then
-         if (trim(config%input_value)=='current') then
-            config%input_value = '1'   
+      associate(config => quantity_config_set%configs(i))
+         if (len_trim(config%description) > 0 .and. len_trim(config%input_value) > 0) then
+            if (trim(config%input_value)=='current') then
+               config%input_value = '1'   
+            endif
+            call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
          endif
-         call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
-      endif
+      end associate
    enddo
-   end associate
+
 
 end subroutine set_properties
 

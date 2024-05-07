@@ -13,9 +13,9 @@ private
    type(t_output_quantity_config_set), public :: out_quan_conf_map
    type(t_output_quantity_config_set), public :: out_quan_conf_clm
 
-   type(t_output_variable_set), target, public :: out_variable_set_his
-   type(t_output_variable_set), target, public :: out_variable_set_map
-   type(t_output_variable_set), target, public :: out_variable_set_clm
+   type(t_output_variable_set), public :: out_variable_set_his
+   type(t_output_variable_set), public :: out_variable_set_map
+   type(t_output_variable_set), public :: out_variable_set_clm
    
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
           model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations
