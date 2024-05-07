@@ -226,15 +226,19 @@ subroutine reduce_cross_section_flowlink_integrals
    use m_monitoring_crosssections, only: nval, ncrs, crs_values
    use m_partitioninfo
    use m_timer
+#ifdef HAVE_MPI
    use mpi
+#endif
    
    implicit none
    
    integer  :: ierror
     
-   if (jatimer == 1) call starttimer(IOUTPUTMPI) 
+#ifdef HAVE_MPI
+   if (jatimer == 1) call starttimer(IOUTPUTMPI)
    call mpi_allreduce(mpi_in_place, crs_values, nval*ncrs, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
    if (jatimer == 1) call stoptimer(IOUTPUTMPI)
+#endif
    
 end subroutine reduce_cross_section_flowlink_integrals
 
