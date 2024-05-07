@@ -259,9 +259,14 @@ contains
                               model_has_culverts_across_partitions, &
                               model_has_pumps_across_partitions, &
                               model_has_bridges_across_partitions, &
-                              model_has_long_culverts_across_partitions
+                              model_has_long_culverts_across_partitions, &
+                              model_has_dams_across_partitions, &
+                              model_has_dambreaks_across_partitions, &
+                              model_has_gates_across_partitions, &
+                              model_has_compound_structures_across_partitions
       use m_dad, only:        model_has_dredge_links_across_partitions
       use m_partitioninfo, only: any_crosssections_lie_across_multiple_partitions
+      use m_lateral, only: model_has_laterals_across_partitions
       use m_monitoring_crosssections, only: crs
       integer, intent(in) :: location_specifier    !< The location specifier indicating the type of structure (UNC_LOC_XXX)
       logical             :: res                   !< Whether or not any structures of this type lie across multiple partitions
@@ -289,8 +294,18 @@ contains
          res = model_has_bridges_across_partitions
       case (UNC_LOC_LONGCULVERT) ! Long culverts
          res = model_has_long_culverts_across_partitions
-      case (UNC_LOC_DRED_LINK) ! Dredge links
+      case (UNC_LOC_DRED_LINK)   ! Dredge links
          res = model_has_dredge_links_across_partitions
+      case (UNC_LOC_DAM)         ! Dams
+         res = model_has_dams_across_partitions
+      case (UNC_LOC_DAMBREAK)    ! Dam breaks
+         res = model_has_dambreaks_across_partitions
+      case (UNC_LOC_GATE)        ! Gates
+         res = model_has_gates_across_partitions
+      case (UNC_LOC_CMPSTRU)     ! Compound structures
+         res = model_has_compound_structures_across_partitions
+      case (UNC_LOC_LATERAL)     ! Laterals
+         res = model_has_laterals_across_partitions
       end select
       
    end function model_has_structures_across_partitions
