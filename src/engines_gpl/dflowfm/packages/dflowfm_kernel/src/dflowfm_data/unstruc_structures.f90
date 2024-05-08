@@ -1488,16 +1488,20 @@ subroutine check_model_has_strucs_across_partitions
    do i_struc_type_id = 1, 4
       struc_type_id = struc_type_ids(i_struc_type_id)
       number_of_structures = get_number_of_structures(struc_type_id)
-   
-      allocate(nlinks_per_struc(number_of_structures), source = 0)
       
-      do i_struc = 1, number_of_structures
-         call retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
-         nlinks_per_struc(i_struc) = size(links)
-         deallocate(links)
-      end do
+      if (number_of_structures == 0) then
+         res = .false.
+      else
+         allocate(nlinks_per_struc(number_of_structures), source = 0)
       
-      res = any_structures_lie_across_multiple_partitions(nlinks_per_struc)
+         do i_struc = 1, number_of_structures
+            call retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
+            nlinks_per_struc(i_struc) = size(links)
+            deallocate(links)
+         end do
+      
+         res = any_structures_lie_across_multiple_partitions(nlinks_per_struc)
+      end if
    
       select case (struc_type_id)
       case (ST_DAM)
