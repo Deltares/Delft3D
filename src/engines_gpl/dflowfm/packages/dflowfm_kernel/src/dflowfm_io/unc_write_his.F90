@@ -74,7 +74,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use odugrid
     use m_statistical_output
     use fm_statistical_output
-    use m_output_config, only: T_output_quantity_config
+    use m_output_config
     use MessageHandling, only: err
 
     implicit none
@@ -533,8 +533,8 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
         
          do ivar = 1,out_variable_set_his%count
-            config => out_variable_set_his%statout(ivar)%output_config
-            id_var => out_variable_set_his%statout(ivar)%id_var
+            associate(config => out_variable_set_his%statout(ivar)%output_config, &
+                      id_var => out_variable_set_his%statout(ivar)%id_var)
                
             if (config%location_specifier         /= UNC_LOC_STATION &
                   .and. config%location_specifier /= UNC_LOC_OBSCRS &
@@ -663,6 +663,7 @@ subroutine unc_write_his(tim)            ! wrihis
             if (len_trim(stat_cell_methods) > 0) then
                call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods) // trim(stat_cell_methods_filter_postfix)))
             end if
+            end associate
          end do
 
         call check_netcdf_error( nf90_enddef(ihisfile))
@@ -894,8 +895,8 @@ subroutine unc_write_his(tim)            ! wrihis
    end if
      
    do ivar = 1,out_variable_set_his%count
-      config => out_variable_set_his%statout(ivar)%output_config
-      id_var => out_variable_set_his%statout(ivar)%id_var
+      associate(config => out_variable_set_his%statout(ivar)%output_config, &
+                id_var => out_variable_set_his%statout(ivar)%id_var)
 
       if (config%location_specifier /= UNC_LOC_STATION &
             .and. config%location_specifier /= UNC_LOC_OBSCRS &
@@ -953,6 +954,7 @@ subroutine unc_write_his(tim)            ! wrihis
          call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /)))
          if (timon) call timstop(handle_extra(67))
       end select
+      end associate
    end do
 
     ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)

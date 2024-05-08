@@ -523,11 +523,11 @@ private
       type(t_nc_dim_ids), allocatable  :: nc_dim_ids            !< optional detailed specification of NetCDF dim-ids when UNC_LOC is insufficient
    end type t_output_quantity_config
 
-   type, public :: t_output_config_set
+   type, public :: t_output_quantity_config_set
       integer                                                   :: count = 0      !< Number of configs in config set 
       integer                                                   :: capacity  = 0  !< Allocated size of config set (size = count + # of empty configs)
       type(t_output_quantity_config), allocatable, dimension(:) :: configs        !< array of output quantity configs in config set
-   end type t_output_config_set
+   end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for which does not follow default for its UNC_LOC.
    type, public :: t_nc_dim_ids
@@ -547,16 +547,20 @@ contains
 subroutine reallocate_config_set(config_set)
    use m_alloc
 
-   type(t_output_config_set), intent(inout) :: config_set !< Output configuration set.
+   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
 
    type(t_output_quantity_config), dimension(:), allocatable :: new_configs
 
    if(allocated(config_set%configs) .and. config_set%capacity > 0) then
-      allocate(new_configs(config_set%capacity*2))
-      new_configs(1:config_set%capacity) = config_set%configs
-      call move_alloc(new_configs,config_set%configs)
+      if (config_set%count > config_set%capacity) then !only increase capacity if necessary
+         config_set%capacity = config_set%capacity*2
+         allocate(new_configs(config_set%capacity))
+         new_configs(1:size(config_set%configs)) = config_set%configs
+         call move_alloc(new_configs,config_set%configs)
+      end if
    else
-      allocate(config_set%configs(200)) ! hardcoded default start size of 200
+      config_set%capacity = 200 ! hardcoded default start size of 200
+      allocate(config_set%configs(config_set%capacity)) 
    end if
    config_set%capacity = size(config_set%configs)
 
@@ -565,7 +569,7 @@ end subroutine reallocate_config_set
 !> Deallocate config set.
 subroutine deallocate_config_set(config_set)
    ! Input/output parameters
-   type(t_output_config_set), intent(inout) :: config_set !< Output configuration set.
+   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
 
    if (config_set%capacity > 0) then
       deallocate(config_set%configs)
@@ -577,7 +581,7 @@ subroutine add_output_config(config_set, idx, key, name, long_name, standard_nam
    use m_map_his_precision, only: md_nc_his_precision
    use netcdf, only: nf90_double, nf90_float
    
-   type(t_output_config_set), intent(inout) :: config_set          !< Array containing all output quantity configs.
+   type(t_output_quantity_config_set), intent(inout) :: config_set          !< Array containing all output quantity configs.
    integer,                            intent(  out) :: idx                 !< Index for the current variable.
    character(len=*),                   intent(in   ) :: key                 !< Key in the MDU file.
    character(len=*),                   intent(in   ) :: name                !< Name of the variable on the NETCDF file.
@@ -681,7 +685,7 @@ subroutine scan_input_tree(tree, paragraph, config_set)
 
    type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
    character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_config_set),                   intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),                   intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
 
    integer :: i
 
@@ -697,7 +701,7 @@ subroutine set_properties(tree, paragraph, config_set)
 
    type(tree_data), pointer,           intent(in   )     :: tree        !< Property tree
    character(len=*),                   intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_config_set),          intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
+   type(t_output_quantity_config_set),          intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
 
    integer :: i
    type(t_output_quantity_config), pointer :: config

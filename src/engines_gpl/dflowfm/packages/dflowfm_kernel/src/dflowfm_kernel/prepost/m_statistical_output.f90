@@ -71,34 +71,30 @@ contains
       type(t_output_variable_set), intent(inout)   :: output_set !< output variable set to reallocate
       logical, intent(in), optional                :: crop       !< crop output set to number of valid items
       
-      integer                   :: ierr
       logical                   :: crop_
-      type(t_output_variable_item), pointer, dimension(:)    :: old_statout
+      type(t_output_variable_item), allocatable, dimension(:)    :: new_statout
    
       crop_ = .false.
       if(present(crop)) then
          crop_ = crop
       end if
-      if (output_set%capacity > 0) then
-         old_statout => output_set%statout
-      end if
       
-      if (crop_) then
-         allocate(output_set%statout(output_set%count), stat=ierr)
-         call aerr('output_set%statout(size)', ierr, output_set%count)
-
-         output_set%statout(1:output_set%count) = old_statout(1:output_set%count)
-         deallocate(old_statout)
+      if (crop_ .and. output_set%count < output_set%capacity) then
+         allocate(new_statout(output_set%count))
+         new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
+         call move_alloc(new_statout,output_set%statout)
          output_set%capacity = output_set%count
       else
-         if (output_set%capacity > 0) then
-            output_set%capacity = output_set%capacity*2
-            allocate(output_set%statout(output_set%capacity), stat=ierr)
-            output_set%statout(1:output_set%count) = old_statout(1:output_set%count)
-            deallocate(old_statout)
+         if (allocated(output_set%statout) .and. output_set%capacity > 0) then
+            if (output_set%count > output_set%capacity) then ! only increase size if necessary
+               output_set%capacity = output_set%capacity*2
+               allocate(new_statout(output_set%capacity))
+               new_statout(1:size(output_set%statout)) =  output_set%statout
+               call move_alloc(new_statout,output_set%statout)
+            end if
          else
            output_set%capacity = 200
-           allocate(output_set%statout(output_set%capacity), stat=ierr)
+           allocate(output_set%statout(output_set%capacity))
          end if
       end if
 
@@ -109,7 +105,7 @@ contains
       ! Input/output parameters
       type(t_output_variable_set), intent(inout)   :: output_set !< Current cross-section definition
 
-      if (associated(output_set%statout)) then
+      if (allocated(output_set%statout)) then
          deallocate(output_set%statout)
       end if
    end subroutine deallocate_output_set
