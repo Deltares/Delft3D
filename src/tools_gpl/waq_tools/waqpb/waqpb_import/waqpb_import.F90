@@ -50,7 +50,7 @@
                    noffsf, iitem
       integer   :: delete, replac, insert, abort , none
       parameter    (delete = 1, replac = 2, insert = 3, abort  = 0, none   = 4)
-      logical   :: newtab, duprol, newfrm
+      logical   :: newtab, duprol
       integer   :: ierr, linecount
       integer   :: io_mes, io_asc, io_inp, lunfil
       data         grp /'DummyGroup                          '/
@@ -65,7 +65,6 @@
       ! Command line arguments
 
       newtab = .false.
-      newfrm = .true.
       duprol = .false.
       pdffil = 'proces.asc'
       do i=1, command_argument_count()
@@ -75,7 +74,6 @@
             endif
             if (trim(argument) == '-duprol') duprol = .true.
             if (trim(argument) =='-newtab') newtab = .true.
-            if (trim(argument) =='-oldfrm') newfrm = .false.
       enddo
 
       open ( newunit=io_mes, file = 'waqpb_import.log' )
@@ -83,18 +81,12 @@
           write (io_mes,'(''DUPROL import'')')
           newtab = .true.
           write (io_mes,'('' (obligatory to create new tables'')')
-          newfrm = .true.
           write (io_mes,'('' (obligatory to use new format'')')
       else
           if (newtab) then
-          write (io_mes,'(''Creating new tables'')')
+            write (io_mes,'(''Creating new tables'')')
           else
-          write (io_mes,'(''Updating existing tables'')')
-          endif
-          if (newfrm) then
-          write (io_mes,'(''Using NEW format'')')
-          else
-          write (io_mes,'(''Using OLD format'')')
+            write (io_mes,'(''Updating existing tables'')')
           endif
       endif
       initialConfgName = initialConfgId
@@ -207,18 +199,13 @@
           ihulp = naanta
           do iaanta = 1,naanta
               linecount = linecount + 1
-              if ( newfrm ) then
-                  read ( io_asc , FMT31, iostat = ierr ) c10,value,c1,c50,c20
-              else
-                  read ( io_asc , FMT21, iostat = ierr ) c10,value,c1,c50
-                c20 = ' '
-              endif
+              read ( io_asc , FMT31, iostat = ierr ) c10,value,c1,c50,c20
               if ( ierr /= 0 ) then
                   write(*,*) 'Error reading input item (segment level) at line', linecount
                   error stop
               endif
 
-              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, .false. )
 
               ninpu = ninpu + 1
               if ( ninpu > ninpum ) then
@@ -260,18 +247,13 @@
 
           do iaanta = 1,naanta
               linecount = linecount + 1
-              if ( newfrm ) then
-                  read ( io_asc , FMT31, iostat = ierr ) c10,value,c1,c50,c20
-              else
-                  read ( io_asc , FMT21, iostat = ierr ) c10,value,c1,c50
-                c20 = ' '
-              endif
+              read ( io_asc , FMT31, iostat = ierr ) c10,value,c1,c50,c20
               if ( ierr /= 0 ) then
                   write(*,*) 'Error reading input item (exchange level) at line', linecount
                   error stop
               endif
 
-              call upd_p2 ( c10, c50, value, 2, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 2, newtab, grp, io_mes, iitem, c20, .false. )
               ninpu = ninpu + 1
               if ( ninpu > ninpum ) then
                   write (*,*) ninpu
@@ -311,19 +293,14 @@
           ihulp = naanta
           do iaanta = 1,naanta
               linecount = linecount + 1
-              if ( newfrm ) then
-                  read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
-              else
-                  read ( io_asc , FMT22, iostat = ierr ) c10,c1,c50
-                c20 = ' '
-              endif
+              read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
               if ( ierr /= 0 ) then
                   write(*,*) 'Error reading output item (segment level) at line', linecount
                   error stop
               endif
 
               value = -999.
-              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, .false. )
               noutp = noutp + 1
               if ( noutp > noutpm ) stop 'DIMENSION NOUTPM'
               outppr(noutp) = procid(nproc)
@@ -345,19 +322,14 @@
 
           do iaanta = 1,naanta
               linecount = linecount + 1
-              if ( newfrm ) then
-                  read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
-              else
-                  read ( io_asc , FMT22, iostat = ierr ) c10,c1,c50
-                c20 = ' '
-              endif
+              read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
               if ( ierr /= 0 ) then
                   write(*,*) 'Error reading output item (exchange level) at line', linecount
                   error stop
               endif
 
               value = -999.
-              call upd_p2 ( c10, c50, value, 2, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 2, newtab, grp, io_mes, iitem, c20, .false. )
               noutp = noutp + 1
               if ( noutp > noutpm ) stop 'DIMENSION NOUTPM'
               outppr(noutp) = procid(nproc)
@@ -380,19 +352,14 @@
 
           do iaanta = 1,naanta
               linecount = linecount + 1
-              if ( newfrm ) then
-                  read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
-              else
-                  read ( io_asc , FMT22, iostat = ierr ) c10,c1,c50
-                c20 = ' '
-              endif
+              read ( io_asc , FMT32, iostat = ierr ) c10,c1,c50,c20
               if ( ierr /= 0 ) then
                   write(*,*) 'Error reading flux at line', linecount
                   error stop
               endif
 
               value = -999.
-              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 1, newtab, grp, io_mes, iitem, c20, .false. )
               noutf = noutf + 1
               if ( noutf > noutfm ) stop 'DIMENSION NOUTFM'
               outfpr(noutf) = procid(nproc)
@@ -435,7 +402,7 @@
               value = -999.
               c50 = ' '
               c20 = ' '
-              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, .false. )
           enddo
 
           ! stochi lines D
@@ -465,7 +432,7 @@
               value = -999.
               c50 = ' '
               c20 = ' '
-              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, .false. )
           enddo
 
           ! stochi lines V
@@ -495,7 +462,7 @@
               value = -999.
               c50 = ' '
               c20 = ' '
-              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, .false. )
           enddo
           linecount = linecount + 1
           read ( io_asc , '(a10)', iostat = ierr ) c10
@@ -520,7 +487,7 @@
                   error stop
               endif
               value = -999.
-              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, newfrm, .false. )
+              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, .false. )
           enddo
 
           linecount = linecount + 1
@@ -538,7 +505,7 @@
                   error stop
               endif
               value = -999.
-              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, newfrm, .true. )
+              call upd_p2 ( c10, c50, value, 0, newtab, grp, io_mes, iitem, c20, .true. )
           enddo
       endif
       close (io_asc)

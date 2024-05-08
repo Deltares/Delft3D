@@ -28,7 +28,7 @@
 !
 
       subroutine upd_p2 ( c10   , c50   , value , segmnt, newtab, & 
-                         grp   , io_mes, iitem , c20   , newfrm, & 
+                         grp   , io_mes, iitem , c20   , & 
                          bodem )
       use m_validate_input
       use m_string_utils
@@ -41,7 +41,7 @@
       real         value
       integer      jndex , segmnt, ihulp1, ihulp2, io_mes, ihulp, j
       integer      ihulp3, ihulp4, iitem
-      logical      newtab, newfrm, bodem
+      logical      newtab, bodem
       integer      nitem0
       save         nitem0
       data         nitem0 /-999/
@@ -62,43 +62,16 @@
           nitem = jndex
           itemid(jndex) = c10
 
-!              Alternative approach for newfrm and EXISTING formats
-
-          if (newfrm) then
-!                  newfrm format
-              if ( c50 .eq. ' ' ) then
-                  itemnm(jndex) = 'undefined'
-               else
-                  itemnm(jndex) = c50
-              endif
-              if ( c20 .eq. ' ' ) then
-                  itemun(jndex) = '{no unit}'
-               else
-                  itemun(jndex) = c20
-              endif
-!                  end newfrm format
-	    else
-!                  existing format
-              if ( c50 .eq. ' ' ) then
-                  itemnm(jndex) = 'undefined'
-                  itemun(jndex) = '{no unit}'
-               else
-!                      Separate descriptions from units
-                  ihulp = 0
-                  c50l = c50
-                  call finuni ( c50l , ihulp )
-                  if ( ihulp .gt. 0 ) then
-!                      ihulp = max(ihulp,31)
-                  itemun(jndex) = c50l(ihulp:50)
-                  do 145 j = ihulp, 50
-  145             c50l(j:j) = ' '
-                  else
-                      itemun(jndex) = '{no unit}'
-                  endif
-                  itemnm(jndex) = c50l
-              endif
-!                  end existing format
-	    endif
+          if ( c50 .eq. ' ' ) then
+              itemnm(jndex) = 'undefined'
+          else
+              itemnm(jndex) = c50
+          endif
+          if ( c20 .eq. ' ' ) then
+              itemun(jndex) = '{no unit}'
+          else
+              itemun(jndex) = c20
+          endif
           itemse(jndex) = ' '
           itemex(jndex) = ' '
           itemde(jndex) = -999.
@@ -112,35 +85,11 @@
 
 !              Existing item, only actions if certain fields are undefined
 
-!              Alternative approach for newfrm and EXISTING formats
 
-          if (newfrm) then
-!                  newfrm format
-              if ( itemnm(jndex) .eq. 'undefined' .and. & 
-                 c50 .ne. ' ' ) itemnm(jndex) = c50
-              if ( itemun(jndex) .eq. '{no unit}' .and. & 
-                 c20 .ne. ' ' ) itemun(jndex) = c20
-!                  end newfrm format
-	    else
-!                  existing format
-              if ( itemnm(jndex) .eq. 'undefined' .and. & 
-                 c50 .ne. ' ' ) then
-!                      Separate descriptions from units
-                  ihulp = 0
-                  c50l = c50
-                  call finuni ( c50l , ihulp )
-                  if ( ihulp .gt. 0 ) then
-!                      ihulp = max(ihulp,31)
-                  itemun(jndex) = c50l(ihulp:50)
-                  do 146 j = ihulp, 50
-  146             c50l(j:j) = ' '
-                  else
-                      itemun(jndex) = '{no unit}'
-                  endif
-                  itemnm(jndex) = c50l
-              endif
-!                  end existing format
-          endif
+          if ( itemnm(jndex) .eq. 'undefined' .and. & 
+             c50 .ne. ' ' ) itemnm(jndex) = c50
+          if ( itemun(jndex) .eq. '{no unit}' .and. & 
+             c20 .ne. ' ' ) itemun(jndex) = c20
       endif
 
       call validate_units(itemun(jndex), io_mes)
@@ -149,33 +98,12 @@
 
       if ( jndex .gt. nitem0 ) then
           if ( segmnt .eq. 0 ) then
-
-!              Alternative approach for newfrm and EXISTING formats
-
-          if (newfrm) then
-!                  newfrm format
-              itemgr(jndex) = grp
-              if ( bodem ) then
-                  itemwk(jndex) = ' '
-              else
-                  itemwk(jndex) = 'x'
-              endif
-!                  end newfrm format
-	    else
-!                  existing format
-              itemgr(jndex) = grp
-              ihulp1 = index ( c10 , 'S1' )
-              ihulp2 = index ( c10 , 'S2' )
-
-              if ( ihulp1 .gt. 2 .or. ihulp2 .gt. 2 .or. & 
-                  string_equals(c10(1:4),'SOD ') .or. & 
-                  string_equals(c10(1:6),'Zsand ')) then
-                  itemwk(jndex) = ' '
-              else
-                  itemwk(jndex) = 'x'
-              endif
-!                  end existing format
-	    endif
+            itemgr(jndex) = grp
+            if ( bodem ) then
+                itemwk(jndex) = ' '
+            else
+                itemwk(jndex) = 'x'
+            endif
           endif
           if ( segmnt .eq. 1 ) itemse(jndex) = 'x'
           if ( segmnt .eq. 2 ) itemex(jndex) = 'x'

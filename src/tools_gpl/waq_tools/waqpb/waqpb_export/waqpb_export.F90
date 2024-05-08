@@ -49,7 +49,6 @@
                    istoc , iconf , naant2, serial, &
                    ierror, icnsb , imodv , i
       logical      itmswi(nitemm)
-      logical      newfrm
       logical      generate_latex_tables
       character*10 c10, num_decimals_version_char
       character*20 c20
@@ -60,9 +59,8 @@
 
 !     Defaults for command line arguments
 
-      version = 6.00
-      serial = 20230101
-      newfrm = .true.
+      version = 999
+      serial = 999
       generate_latex_tables = .false.
 
       do i=1,command_argument_count()
@@ -73,20 +71,13 @@
             if (argument(:7)=='-serial') then
                 read(argument(8:), '(i20)',iostat=status) serial
             endif
-            if (trim(argument) == '-newfrm') newfrm = .true.
-            if (trim(argument) == '-oldfrm') newfrm = .false.
             if (trim(argument) == '-latex') generate_latex_tables = .true.
       enddo
 
 
       itmswi = .false.
       open ( newunit=lu_mes , file = 'waqpb_export.log' )
-      if (newfrm) then
-        write (lu_mes,'(''Using NEW format'')')
-	else
-        write (lu_mes,'(''Using OLD format'')')
-	endif
-
+      
       write (*,'('' Reading data......'')')
 
 !----------------------------------------------------------------------c
@@ -227,24 +218,16 @@
                   ins = ins + 1
                   if ( ins .gt. insmax ) stop 'DIMENSION insmax'
                   ins_id(ins) = itemid(iitem)
-                  if (newfrm) then
                   ins_nm(ins) = itemnm(iitem)
                   ins_un(ins) = itemun(iitem)
-                  else
-                  ins_nm(ins) = adduni(itemnm(iitem),itemun(iitem))
-                  endif
                   ins_va(ins) = actdef
                   ins_do(ins) = inpudo(iinpu)
               else
                   ine = ine + 1
                   if ( ine .gt. inemax ) stop 'DIMENSION inemax'
                   ine_id(ine) = itemid(iitem)
-                  if (newfrm) then
                   ine_nm(ine) = itemnm(iitem)
                   ine_un(ine) = itemun(iitem)
-                  else
-                  ine_nm(ine) = adduni(itemnm(iitem),itemun(iitem))
-                  endif
                   ine_va(ine) = actdef
                   ine_do(ine) = inpudo(iinpu)
               endif
@@ -281,23 +264,15 @@
                   ous = ous + 1
                   if ( ous .gt. ousmax ) stop 'DIMENSION ousmax'
                   ous_id(ous) = itemid(iitem)
-                  if (newfrm) then
                   ous_nm(ous) = itemnm(iitem)
                   ous_un(ous) = itemun(iitem)
-                  else
-                  ous_nm(ous) = adduni(itemnm(iitem),itemun(iitem))
-                  endif
                   ous_do(ous) = outpdo(ioutp)
               else
                   oue = oue + 1
                   if ( oue .gt. ouemax ) stop 'DIMENSION ouemax'
                   oue_id(oue) = itemid(iitem)
-                  if (newfrm) then
                   oue_nm(oue) = itemnm(iitem)
                   oue_un(oue) = itemun(iitem)
-                  else
-                  oue_nm(oue) = adduni(itemnm(iitem),itemun(iitem))
-                  endif
                   oue_do(oue) = outpdo(ioutp)
 
 !                 SCAN VELO and DISP TABLES FOR LINES ASSOCIATED WITH
@@ -391,12 +366,8 @@
 
 !             Find and store flux properties
               flu_id(flu) = itemid(iitem)
-              if (newfrm) then
               flu_nm(flu) = itemnm(iitem)
               flu_un(flu) = itemun(iitem)
-              else
-              flu_nm(flu) = adduni(itemnm(iitem),itemun(iitem))
-              endif
               flu_do(flu) = outfdo(ioutf)
 
 !             SCAN STOCHI TABLE FOR LINES ASSOCIATED WITH PRESENT FLUX
@@ -441,12 +412,7 @@
 !----------------------------------------------------------------------c
 
 !         Write PDF file (formats as in HARMONIZE to allow comparison)
-
-          if (newfrm) then
           call wripdn ( procid(iproc), procnm(iproc), procco(iproc), procfo(iproc), lunfil )
-          else
-          call wripdf ( procid(iproc), procnm(iproc), procco(iproc), procfo(iproc), lunfil )
-          endif
   800 continue
       close (lunfil)
 
