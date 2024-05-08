@@ -101,7 +101,6 @@ contains
         !
         use m_outhis
         use m_dmpval
-        use m_dmpsurf
         use m_logger, only : terminate_execution, get_log_unit_number
         use data_processing, only : extract_value_from_group
         use m_cli_utils, only : retrieve_command_argument
@@ -1335,8 +1334,59 @@ contains
         ENDDO
 
         if (timon) call timstop (ithandl)
-        RETURN
-    END
+
+    END SUBROUTINE UPDBAL
+
+
+    subroutine sum_sub_areas_surfaces(nosss, ndmpar, ipdmp, isegcol, surf, dmp_surf)
+
+        !! sums surf for sub-area's no double counting over the layers
+
+        use timers
+
+        integer(kind = int_wp), intent(in) :: nosss          ! total number of segments
+        integer(kind = int_wp), intent(in) :: ndmpar         ! Number of dump areas
+        integer(kind = int_wp), intent(in) :: ipdmp(*)       ! pointer structure dump area's
+        integer(kind = int_wp), intent(in) :: isegcol(*)     ! pointer from segment to top of column
+        real(kind = real_wp), intent(in) :: surf(*)        ! horizontal surface per segment
+        real(kind = real_wp), intent(out) :: dmp_surf(*)    ! horizontal surface per dump area
+
+        ! local declarations
+
+        integer(kind = int_wp) :: itel           ! index counter
+        integer(kind = int_wp) :: idump          ! dump area number
+        integer(kind = int_wp) :: nsc            ! number of segment contributions
+        integer(kind = int_wp) :: isc            ! index of segment contributions
+        integer(kind = int_wp) :: iseg           ! segment number
+        integer(kind = int_wp) :: icol           ! segment number top of column
+        integer(kind = int_wp), allocatable :: i_surf(:)      ! indication if column is already in area
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("sum_sub_areas_surfaces", ithandl)
+
+        ! loop over the dump area's, sum value
+
+        allocate(i_surf(nosss))
+        dmp_surf(1:ndmpar) = 0.0
+        itel = 0
+        do idump = 1, ndmpar
+            i_surf = 0
+            nsc = ipdmp(idump)
+            do isc = 1, nsc
+                itel = itel + 1
+                iseg = ipdmp(ndmpar + itel)
+                if (iseg > 0) then
+                    icol = isegcol(iseg)
+                    if (i_surf(icol) == 0) then
+                        dmp_surf(idump) = dmp_surf(idump) + surf  (iseg)
+                        i_surf(icol) = 1
+                    endif
+                endif
+            enddo
+        enddo
+        deallocate(i_surf)
+
+        if (timon) call timstop (ithandl)
+    end subroutine sum_sub_areas_surfaces
 
 
 end module m_sobbal
