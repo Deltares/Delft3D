@@ -757,7 +757,7 @@ contains
 
             ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR)
             IF (IERR > 0) GOTO 9000
-            CALL DMPSURF(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
+            CALL sum_sub_areas_surfaces(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
             IDUMP_OUT = 0
             DO IDUMP = 1, NDMPAR
                 IF (DMPBAL(IDUMP) == 1) THEN
@@ -899,7 +899,7 @@ contains
             !         In mass/m2
             ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR)
             IF (IERR > 0) GOTO 9000
-            CALL DMPSURF(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
+            CALL sum_sub_areas_surfaces(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
             IDUMP_OUT = 0
             DO IDUMP = 1, NDMPAR
                 IF (DMPBAL(IDUMP) == 1) THEN

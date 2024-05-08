@@ -28,12 +28,11 @@ module m_dmpsurf
 contains
 
 
-    subroutine dmpsurf(nosss, ndmpar, ipdmp, isegcol, surf, dmp_surf)
+    subroutine sum_sub_areas_surfaces(nosss, ndmpar, ipdmp, isegcol, surf, dmp_surf)
 
-        ! function            : sums surf for sub-area's no double counting over the layers
+        !! sums surf for sub-area's no double counting over the layers
 
         use timers
-        implicit none
 
         integer(kind = int_wp), intent(in) :: nosss          ! total number of segments
         integer(kind = int_wp), intent(in) :: ndmpar         ! Number of dump areas
@@ -52,7 +51,7 @@ contains
         integer(kind = int_wp) :: icol           ! segment number top of column
         integer(kind = int_wp), allocatable :: i_surf(:)      ! indication if column is already in area
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dmpsurf", ithandl)
+        if (timon) call timstrt ("sum_sub_areas_surfaces", ithandl)
 
         ! loop over the dump area's, sum value
 
@@ -78,6 +77,6 @@ contains
 
         if (timon) call timstop (ithandl)
         return
-    end
+    end subroutine sum_sub_areas_surfaces
 
 end module m_dmpsurf
