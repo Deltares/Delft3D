@@ -43,4 +43,53 @@
       </file>
     </checks>
   </testCase>
+  <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">    <!-- dflowfm + dwaq -->
+    <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+    <programs>
+      <program ref="dimr" seq="1">
+      </program>
+      <program ref="checkhydbal" seq="2">
+        <arguments>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.hyd</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="3">
+        <arguments>
+          <argument>-p</argument>
+          <argument>2</argument>
+          <argument>run_maptonetcdf.sh</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum.map</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt_waqgeom.nc</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="4">
+        <arguments>
+          <argument>-p</argument>
+          <argument>2</argument>
+          <argument>run_maptonetcdf.sh</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-err.map</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt_waqgeom.nc</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="poi2asc" seq="5">
+        <arguments>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.poi</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.table</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="dimr_waq" seq="6">
+      </program>
+    </programs>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="deltashell_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_agg_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
 </testCases>

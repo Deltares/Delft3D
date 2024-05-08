@@ -50,6 +50,46 @@
 				<environment name="OMP_NUM_THREADS" type="raw">1</environment>
 			</environments>
 		</program>
+		<program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
+			<location ref="local" type="check">
+				<from>teamcity_artifacts</from>
+			</location>
+			<path>execute_singularity_tc.sh</path>
+			<environments>
+				<environment name="OMP_NUM_THREADS" type="raw">1</environment>
+				<environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+			</environments>
+			<arguments>
+				<argument>-p</argument>
+				<argument>2</argument>
+				<argument>run_dimr.sh</argument>
+				<argument>-m dimr.xml</argument>
+				<argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+			</arguments>
+		</program>
+		<program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true">
+			<location ref="local" type="check">
+				<from>teamcity_artifacts</from>
+			</location>
+			<path>execute_singularity_tc.sh</path>
+			<environments>
+				<environment name="OMP_NUM_THREADS" type="raw">1</environment>
+				<environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+			</environments>
+			<arguments>
+				<argument>-p</argument>
+				<argument>2</argument>
+				<argument>run_dimr.sh</argument>
+				<argument>-m dimr_waq.xml</argument>
+				<argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
+			</arguments>
+		</program>
+		<program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
+			<path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
+		</program>
+		<program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
+			<path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>
+		</program>
 	</programs>
 
 	<defaultTestCases>
@@ -92,6 +132,15 @@
 				<from>win64</from>
 			</location>
 			<maxRunTime>14400.0</maxRunTime>
+		</testCase>
+		<testCase name="dflowfm_default">
+			<location ref="cases" type="input">
+				<from>.</from>				<!-- if "to" is not specified, "from" is used as target -->
+			</location>
+			<location ref="reference_results" type="reference">
+				<from>win64</from>
+			</location>
+			<maxRunTime>3600.0</maxRunTime>
 		</testCase>
 	</defaultTestCases>
 	<xi:include href="../../include/dimr_smoke_test_cases.xml"/>
