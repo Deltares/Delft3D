@@ -28,25 +28,16 @@ module m_outhis
 contains
 
 
-    SUBROUTINE OUTHIS (IOHIS, NAMFIH, ITIME, MONAME, NODUMP, &
+    SUBROUTINE write_history_output(history_file_unit, NAMFIH, ITIME, MONAME, NODUMP, &
             IDUMP, DUNAME, NOTOT1, SYNAM1, CONC1, &
             NOTOT2, SYNAM2, CONC2, INIT)
-        !
-        !     Deltares        SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED            : may  1993  BY Jan van Beek
-        !
-        !     FUNCTION           : Writes history output
-        !
-        !     LOGICAL UNITS      : IOHIS = number of history file
-        !
-        !     SUBROUTINES CALLED : none
-        !
-        !     PARAMETERS         : 19
+        ! Writes history output
+
+
         !
         !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     IOHIS   INTEGER  1           INPUT   unit number output file
+        !     history_file_unit   INTEGER  1           INPUT   unit number output file
         !     NAMFIH  CHAR*(*) 1           INPUT   name output file
         !     ITIME   INTEGER  1           INPUT   present time in clock units
         !     MONAME  CHAR*40  4           INPUT   model identhification
@@ -60,43 +51,35 @@ contains
         !     SYNAM2  CHAR*20  NOTOT       INPUT   names of extra vars
         !     CONC2   REAL    NOTOT2,NX*NY INPUT   values for extra vars
         !     INIT    INTEGER  1           IN/OUT  Initialize flag
-        !
-        !     Declaration of arguments
-        !
+
         use timers
 
-        INTEGER(kind = int_wp) :: IOHIS, ITIME, NODUMP, NOTOT1, NOTOT2, &
-                INIT
+        INTEGER(kind = int_wp) :: history_file_unit, ITIME, NODUMP, NOTOT1, NOTOT2, INIT
         INTEGER(kind = int_wp) :: IDUMP(*)
         character(len=*) MONAME(4), NAMFIH
         character(len=*) DUNAME(*), SYNAM1(*), SYNAM2(*)
         REAL(kind = real_wp) :: CONC1(*), CONC2(*)
-
-        !     local
         integer(kind = int_wp) :: i, k1, k2, j
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("outhis", ithandl)
-        !
-        !     Initialize file
-        !
+        if (timon) call timstrt ("write_history_output", ithandl)
+
+        ! Initialize file
         IF (INIT == 1) THEN
             INIT = 0
-            WRITE (IOHIS) (MONAME(I), I = 1, 4)
-            WRITE (IOHIS)  NOTOT1 + NOTOT2, NODUMP
-            WRITE (IOHIS) (SYNAM1(I), I = 1, NOTOT1), (SYNAM2(I), I = 1, NOTOT2)
-            WRITE (IOHIS) (I, DUNAME(I), I = 1, NODUMP)
+            WRITE (history_file_unit) (MONAME(I), I = 1, 4)
+            WRITE (history_file_unit)  NOTOT1 + NOTOT2, NODUMP
+            WRITE (history_file_unit) (SYNAM1(I), I = 1, NOTOT1), (SYNAM2(I), I = 1, NOTOT2)
+            WRITE (history_file_unit) (I, DUNAME(I), I = 1, NODUMP)
         ENDIF
-        !
-        !     Perform output
-        !
-        WRITE (IOHIS) ITIME, (&
+
+        ! Perform output
+        WRITE (history_file_unit) ITIME, (&
                 (CONC1(K1 + (IDUMP(J) - 1) * NOTOT1), K1 = 1, NOTOT1), &
                 (CONC2(K2 + (J - 1) * NOTOT2), K2 = 1, NOTOT2), &
                 J = 1, NODUMP)
-        !
         if (timon) call timstop (ithandl)
-        RETURN
-    END
+
+    END SUBROUTINE write_history_output
 
 end module m_outhis

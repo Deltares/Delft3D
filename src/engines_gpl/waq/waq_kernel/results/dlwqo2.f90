@@ -523,7 +523,7 @@ contains
                 !
             elseif (isrtou == ihis) then
                 !
-                call outhis (lunout, lchout, itime, moname, nodump, &
+                call write_history_output (lunout, lchout, itime, moname, nodump, &
                         idump, duname, notot, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
                 !
@@ -549,7 +549,7 @@ contains
                 !
             elseif (isrtou == ihi2) then
                 !
-                call outhis (lunout, lchout, itime, moname, nodump, &
+                call write_history_output (lunout, lchout, itime, moname, nodump, &
                         idump, duname, 0, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
                 !
@@ -579,7 +579,7 @@ contains
                 !
                 nrvar3 = notot + nrvar2
                 nsegou = ndmpar + noraai
-                call outhis (lunout, lchout, itime, moname, nsegou, &
+                call write_history_output (lunout, lchout, itime, moname, nsegou, &
                         idump, danam, 0, syname, conc, &
                         nrvar3, nambuf, riobuf, iniout)
 
@@ -611,7 +611,7 @@ contains
 
             elseif (isrtou == ihi4) then
 
-                call outhis (lunout, lchout, itime, moname, ndmpar, &
+                call write_history_output (lunout, lchout, itime, moname, ndmpar, &
                         idump, danam, 0, syname, conc, &
                         nrvar2, ounam(k1), riobuf, iniout)
 
@@ -681,7 +681,7 @@ contains
 
             elseif (isrtou == iba2) then
 
-                call outhis (lunout, lchout, itime, moname, ndmpar, idump, danam, 0, syname, conc, &
+                call write_history_output (lunout, lchout, itime, moname, ndmpar, idump, danam, 0, syname, conc, &
                         nrvar, ounam(k1), riobuf, iniout)
             elseif (isrtou == iba3) then
                 allocate(surf(noseg))

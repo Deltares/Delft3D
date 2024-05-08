@@ -797,12 +797,12 @@ contains
         ENDIF
         IF (.NOT. SUPPFT) THEN
             IF (ONLYSM) THEN
-                CALL OUTHIS (LUNOUT, CDUM, ITIME, MONAME, 1, &
+                CALL write_history_output (LUNOUT, CDUM, ITIME, MONAME, 1, &
                         JDUMP(NDMPAR_OUT + 1), DANAMP(NDMPAR_OUT + 1), &
                         NOOUT, OUNAME, BALANS, &
                         0, CDUM, RDUM, IINIT)
             ELSE
-                CALL OUTHIS (LUNOUT, CDUM, ITIME, MONAME, NDMPAR_OUT + 1, &
+                CALL write_history_output (LUNOUT, CDUM, ITIME, MONAME, NDMPAR_OUT + 1, &
                         JDUMP, DANAMP, NOOUT, OUNAME, BALANS, &
                         0, CDUM, RDUM, IINIT)
             ENDIF
