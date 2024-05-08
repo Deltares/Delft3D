@@ -56,7 +56,7 @@ contains
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
         !                          PROCES, DELWAQ proces system
         !                          DLWQO2, DELWAQ output system
-        !                          DLWQ13, system postpro-dump routine
+        !                          write_restart_map_file, system postpro-dump routine
         !                          DLWQ14, scales waterquality
         !                          DLWQ15, wasteload routine
         !                          DLWQ17, boundary routine
@@ -97,7 +97,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -492,7 +492,7 @@ contains
 
                 !            write restart file
 
-                CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, NOSSS)
             endif
         end associate

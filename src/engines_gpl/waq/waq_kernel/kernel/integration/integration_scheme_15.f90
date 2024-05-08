@@ -92,7 +92,7 @@ contains
         !      |                   integrate_areas_fluxes: integration of fluxes for mass balances per monitoring area
         !     VVV                  srwshl: call to the standaard-raamwerk-water interface if switched 'on'
         !      V                   initialize_time_dependent_variables: updates all time dependent items (in this case exclusive of volumes)
-        !                          dlwq13: system dump routine of restart files at the end
+        !                          write_restart_map_file: system dump routine of restart files at the end
         !   Not mentioned are the routines: to start and stop the performance timers
         !                                   the routines used for stepwise execution within a
         !                                   stepwise executing user interface
@@ -113,7 +113,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -595,7 +595,7 @@ contains
                 call close_files(file_unit_list)
 
                 !     write restart file
-                call dlwq13 (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                call write_restart_map_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
 

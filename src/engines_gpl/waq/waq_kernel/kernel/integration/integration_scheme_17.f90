@@ -55,7 +55,7 @@ contains
         !
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
         !                          DLWQO2, DELWAQ4 output routine
-        !                          DLWQ13, system postpro-dump routine
+        !                          write_restart_map_file, system postpro-dump routine
         !                          DLWQ15, wasteload routine
         !                          DLWQ60, scales water quality
         !                          DLWQH1, set diagonal and deriv in deriv(1)
@@ -98,7 +98,7 @@ contains
         use m_dlwq60
         use m_dlwq41
         use m_dlwq15
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_array_manipulation, only : initialize_real_array
         use data_processing, only : close_files
         use m_grid_utils_external
@@ -378,7 +378,7 @@ contains
             !
             !          write restart file
             !
-            CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
             !
         end associate

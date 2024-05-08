@@ -27,7 +27,7 @@ program test_dlwq13
 
     use ftnunit, only : runtests_init, runtests, runtests_final, assert_true, assert_files_comparable, test, &
             prepare_tests
-    use m_dlwq13, only : dlwq13
+    use m_write_restart_map_file, only : write_restart_map_file
 
     implicit none
     character(len = 200) :: cmd_arg
@@ -71,11 +71,11 @@ contains
     end subroutine call_test_dlwq13_recognise_nans
 
     subroutine call_test_dlwq13_no_nans
-        call test(test_dlwq13_no_nans, 'DLWQ13: final result without NaNs')
+        call test(test_dlwq13_no_nans, 'write_restart_map_file: final result without NaNs')
     end subroutine call_test_dlwq13_no_nans
 
     subroutine call_test_dlwq13_with_nans
-        call test(test_dlwq13_with_nans, 'DLWQ13: final result with NaNs')
+        call test(test_dlwq13_with_nans, 'write_restart_map_file: final result with NaNs')
     end subroutine call_test_dlwq13_with_nans
 
     subroutine test_dlwq13_recognise_nans
@@ -93,7 +93,7 @@ contains
 
     subroutine test_dlwq13_no_nans
         ! test_dlwq13_no_nans --
-        !     Unit test for DLWQ13 (write restart file)
+        !     Unit test for write_restart_map_file (write restart file)
         ! Note:
         !     There should be no error message
 
@@ -112,7 +112,7 @@ contains
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
 
-        file_name_list(18) = trim(dataPath) // '/test_dlwq13_no_nans.ref' ! Not used in DLWQ13
+        file_name_list(18) = trim(dataPath) // '/test_dlwq13_no_nans.ref' ! Not used in write_restart_map_file
         file_name_list(19) = trim(dataPath) // '/test_dlwq13_no_nans.mon'
         file_name_list(23) = trim(dataPath) // '/test_dlwq13_no_nans.res'
 
@@ -120,7 +120,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 
@@ -131,7 +131,7 @@ contains
 
     subroutine test_dlwq13_with_nans
         ! test_dlwq13_with_nans --
-        !     Unit test for DLWQ13 (write restart file)
+        !     Unit test for write_restart_map_file (write restart file)
         !
         ! Note:
         !     There should be no error message
@@ -154,7 +154,7 @@ contains
         ! Get the DATA_PATH environment variable
         call get_environment_variable("DATA_PATH", dataPath)
 
-        file_name_list(18) = trim(dataPath) // '/test_dlwq13_with_nans.ref' ! Not used in DLWQ13
+        file_name_list(18) = trim(dataPath) // '/test_dlwq13_with_nans.ref' ! Not used in write_restart_map_file
         file_name_list(19) = trim(dataPath) // '/test_dlwq13_with_nans.mon'
         file_name_list(23) = trim(dataPath) // '/test_dlwq13_with_nans.res'
 
@@ -162,7 +162,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 

@@ -46,7 +46,7 @@ contains
         !                          file_unit_list(22) , output, unformatted dump file
         !
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
-        !                          DLWQ13, system postpro-dump routine
+        !                          write_restart_map_file, system postpro-dump routine
         !                          DLWQ15, wasteload routine
         !                          DLWQ60, scales water quality
         !                          DLWQ61, clears the matrix
@@ -81,7 +81,7 @@ contains
         use m_dlwq60
         use m_dlwq41
         use m_dlwq15
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delmat
         use m_array_manipulation, only : initialize_real_array
         use data_processing, only : close_files
@@ -277,7 +277,7 @@ contains
             !
             !          write restart file
             !
-            CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
             !
             !          output formats

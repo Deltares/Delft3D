@@ -39,6 +39,9 @@ module m_dlwqo2
 
     implicit none
 
+    private
+    public :: dlwqo2
+
 contains
 
 
@@ -160,7 +163,7 @@ contains
         !     intopt  integer     1       input   Integration and balance suboptions
         !     ==================================================================
         !
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_array_manipulation, only : initialize_real_array
         use m_logger, only : terminate_execution
         use m_cli_utils, only : retrieve_command_argument
@@ -290,7 +293,7 @@ contains
                 write(*, '(A)')   '          Current concentration fields written to _res.map.'
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
-                call dlwq13 (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
+                call write_restart_map_file (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
                 call terminate_execution(1)
             endif
         endif
