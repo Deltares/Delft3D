@@ -73,6 +73,26 @@
 			</location>
 			<maxRunTime>6000.0</maxRunTime>
 		</testCase>
+		<testCase name="dimr_trunk_win64">
+			<programs>
+				<program ref="execute_singularity">
+					<arguments>
+						<argument>-p</argument>
+						<argument>2</argument>
+						<argument>run_dimr.sh</argument>
+						<argument>-m</argument>
+						<argument>dimr_config.xml</argument>
+					</arguments>
+				</program>
+			</programs>
+			<location ref="cases" type="input">
+				<from>.</from>				<!-- if "to" is not specified, "from" is used as target -->
+			</location>
+			<location ref="reference_results" type="reference">
+				<from>win64</from>
+			</location>
+			<maxRunTime>14400.0</maxRunTime>
+		</testCase>
 	</defaultTestCases>
 	<xi:include href="../../include/dimr_smoke_test_cases.xml"/>
 </deltaresTestbench_v3>
