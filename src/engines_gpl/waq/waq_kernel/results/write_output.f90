@@ -28,7 +28,7 @@ module m_write_output
     use m_write_monitoring_output
     use m_write_nefis_output
     use m_write_map_output
-    use m_outhnf
+    use m_write_nefis_history_ouput
     use m_write_netcdf_output
     use m_write_history_output
     use m_outdmp
@@ -530,7 +530,7 @@ contains
             elseif (isrtou == ihnf) then
                 !
                 iof = nrvar * nodump + 1
-                call outhnf (lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_ouput (lunout, lchout, itime, moname, noseg, &
                         notot, conc, nambuf, nrvar, riobuf, &
                         iostrt, iostop, iostep, nodump, idump, &
                         duname, riobuf(iof), iniout)
@@ -556,7 +556,7 @@ contains
             elseif (isrtou == ihn2) then
                 !
                 iof = nrvar * nodump + 1
-                call outhnf (lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_ouput (lunout, lchout, itime, moname, noseg, &
                         0, conc, ounam(k1), nrvar, riobuf, &
                         iostrt, iostop, iostep, nodump, idump, &
                         duname, riobuf(iof), iniout)
@@ -589,7 +589,7 @@ contains
                 nrvar3 = notot + nrvar2
                 nsegou = ndmpar + noraai
                 iof = nrvar3 * nsegou + 1
-                call outhnf (lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_ouput (lunout, lchout, itime, moname, noseg, &
                         0, conc, nambuf, nrvar3, riobuf, &
                         iostrt, iostop, iostep, nsegou, idump, &
                         danam, riobuf(iof), iniout)
@@ -618,7 +618,7 @@ contains
             elseif (isrtou == ihn4) then
 
                 iof = nrvar2 * ndmpar + 1
-                call outhnf (lunout, lchout, itime, moname, noseg, &
+                call write_nefis_history_ouput (lunout, lchout, itime, moname, noseg, &
                         0, conc, ounam(k1), nrvar2, riobuf, &
                         iostrt, iostop, iostep, ndmpar, idump, &
                         danam, riobuf(iof), iniout)

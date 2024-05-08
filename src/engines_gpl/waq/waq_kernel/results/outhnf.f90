@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_outhnf
+module m_write_nefis_history_ouput
     use m_waq_precision
 
     implicit none
@@ -28,7 +28,7 @@ module m_outhnf
 contains
 
 
-    subroutine outhnf (iout, lchout, itime, moname, noseg, &
+    subroutine write_nefis_history_ouput (iout, lchout, itime, moname, noseg, &
             notot1, conc1, syname, notot2, conc2, &
             iostrt, iostop, iostep, nodump, idump, &
             duname, rbuffr, init)
@@ -114,7 +114,7 @@ contains
         integer(kind = int_wp), external :: FLSDAT, FLSDEF
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("outhnf", ithandl)
+        if (timon) call timstrt ("write_nefis_history_ouput", ithandl)
 
         !     some init
 
@@ -357,6 +357,6 @@ contains
 
         2000 format ('ERROR writing NEFIS history file errno:', I7)
 
-    end subroutine outhnf
+    end subroutine write_nefis_history_ouput
 
-end module m_outhnf
+end module m_write_nefis_history_ouput
