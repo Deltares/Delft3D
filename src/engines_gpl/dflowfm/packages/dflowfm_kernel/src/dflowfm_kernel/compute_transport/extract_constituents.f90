@@ -165,7 +165,7 @@ subroutine extract_constituents()
      call doforester()
   endif
   !
-  ! When a cell become dries, keep track of the mass in the water column in sscum array. This will be accounted
+  ! When a cell become dries, keep track of the mass in the water column in ssccum array. This will be accounted
   ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and exploding bed levels.
   if (stm_included) then
      if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor*tfac) then

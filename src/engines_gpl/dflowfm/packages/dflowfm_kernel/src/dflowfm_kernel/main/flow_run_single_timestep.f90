@@ -63,25 +63,6 @@ integer :: N, L
     time1  = time0 + dts                             ! progress without pressure coupling
  endif
 
- if (jaeverydt > 0) then
-    if ((comparereal(time1, ti_maps, eps10) >= 0) .and. (comparereal(time1, ti_mape, eps10) <= 0)) then
-       if (jamapFlowAnalysis > 0) then
-          ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
-          call updateFlowAnalysisParameters()
-       endif
-         
-       call wrimap(time1)
-       
-       if (jamapFlowAnalysis > 0) then
-          ! Reset the interval related flow analysis arrays
-          negativeDepths = 0
-          noiterations = 0
-          limitingTimestepEstimation = 0
-          flowCourantNumber = 0d0
-       endif
-    
-    end if
- end if
    ! Finalize timestep code used to be here, now flow_finalize_single_timestep()
 
    if (iresult /= DFM_TIMESETBACK) then

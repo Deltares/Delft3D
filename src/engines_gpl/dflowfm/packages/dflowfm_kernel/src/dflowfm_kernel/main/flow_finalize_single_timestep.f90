@@ -73,6 +73,26 @@ integer, intent(out) :: iresult
  ! Update water depth at pressure points (for output).
  ! TODO: UNST-3415: investigate if this statement can be moved to step_reduce.
  hs = s1 - bl
+ 
+ if (jaeverydt > 0) then
+   if ((comparereal(time1, ti_maps, eps10) >= 0) .and. (comparereal(time1, ti_mape, eps10) <= 0)) then
+      if (jamapFlowAnalysis > 0) then
+         ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
+         call updateFlowAnalysisParameters()
+      endif
+      
+      call wrimap(time1)
+      
+      if (jamapFlowAnalysis > 0) then
+         ! Reset the interval related flow analysis arrays
+         negativeDepths = 0
+         noiterations = 0
+         limitingTimestepEstimation = 0
+         flowCourantNumber = 0d0
+      endif
+    
+    end if
+ end if
 
  ! The subroutine below is called in every time step.
  ! TODO: consider to treat it as the cross section, that the mpi reduction is made at his-output time step.

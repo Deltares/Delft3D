@@ -165,9 +165,9 @@
          if (wrwaqon.and. size(qsrcwaq) > 0) then     
            qsrcwaq = qsrcwaq0                            ! restore cumulative qsrc for waq from start of this time step to avoid
            qlatwaq = qlatwaq0                            ! double accumulation and use of incorrect dts in case of time step reduction
-         endif 
+         endif
        endif
-                                       
+       
        call setkfs()
        if (jposhchk == 2 .or. jposhchk == 4) then       ! redo without timestep reduction, setting hu=0 => 333 s1ini
           if (nonlin >= 2) then
@@ -358,13 +358,5 @@
        call setkbotktop(0)            ! and 3D for cell volumes
     endif
  end if
-
- ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
- if (layertype > 1 .and. kmx.gt.0 ) then
-
-     ! ln = ln0 ! was ok.
-
- endif
 
  end subroutine step_reduce
