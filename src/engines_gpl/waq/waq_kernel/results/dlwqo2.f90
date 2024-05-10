@@ -359,8 +359,7 @@ contains
          nrvar  = ioutps(4,iout)
 !
 !        Output required ?
-         call stepyn (itime , idt   , iostrt, iostop, iostep, & 
-                     loflag, ldummy)
+         call stepyn (itime , idt, iostrt, iostop, iostep, loflag, ldummy)
          if ( .not. loflag ) goto 100
 !
 !        Map output structure to single variables part 2

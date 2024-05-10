@@ -70,15 +70,15 @@ module m_dlwqf5
         integer(kind = int_wp), intent(in)  :: integration_option ! integration option
 
         !     Local declarations
-        integer(kind = int_wp) :: ierr                      ! Error count
-        integer(kind = int_wp) :: def_preconditioner = 3    ! Default preconditioner switch
-        integer(kind = int_wp) :: def_max_iterations = 100  ! Default maximum number of iterations
-        integer(kind = int_wp) :: def_row_scaling = 1       ! Default value for row scaling
-        real(kind = dp)        :: def_rel_tolerance = 1.D-7 ! Default value for relative tolerance
-        integer(kind = int_wp) :: def_report_iterations = 0 ! Default value for iteration report
-        integer(kind = int_wp) :: idef, itrep               ! Auxiliary variables
-        character(20) defnam                                ! Auxiliary string
-        integer(kind = int_wp) :: threads_count             ! Number of available threads
+        integer(kind = int_wp) :: ierr                          ! Error count
+        integer(kind = int_wp) :: default_preconditioner = 3    ! Default preconditioner switch
+        integer(kind = int_wp) :: default_max_iterations = 100  ! Default maximum number of iterations
+        integer(kind = int_wp) :: default_row_scaling = 1       ! Default value for row scaling
+        real(kind = dp)        :: default_rel_tolerance = 1.D-7 ! Default value for relative tolerance
+        integer(kind = int_wp) :: default_report_iterations = 0 ! Default value for iteration report
+        integer(kind = int_wp) :: idef, itrep                   ! Auxiliary variables
+        character(20) defnam                                    ! Auxiliary string
+        integer(kind = int_wp) :: threads_count                 ! Number of available threads
 
         !     The WAQ-timer
         integer(kind = int_wp) :: ithandl = 0
@@ -102,7 +102,7 @@ module m_dlwqf5
             preconditioner = nint(cons(idef))
             write (lunrep, 2010)
         else
-            preconditioner = def_preconditioner
+            preconditioner = default_preconditioner
             write (lunrep, 2020)
         end if
         ! Check value
@@ -123,7 +123,7 @@ module m_dlwqf5
             max_iterations = nint(cons(idef))
             write (lunrep, 2080)
         else
-            max_iterations = def_max_iterations
+            max_iterations = default_max_iterations
             write (lunrep, 2090)
         end if
         ! Check value
@@ -145,7 +145,7 @@ module m_dlwqf5
             rel_tolerance = cons(idef)
             write (lunrep, 2120)
         else
-            rel_tolerance = def_rel_tolerance
+            rel_tolerance = default_rel_tolerance
             write (lunrep, 2130)
         end if
         ! Check value
@@ -164,7 +164,7 @@ module m_dlwqf5
             row_scaling = nint(cons(idef))
             write (lunrep, 2160)
         else
-            row_scaling = def_row_scaling
+            row_scaling = default_row_scaling
             write (lunrep, 2170)
         end if
         ! Check value
@@ -183,7 +183,7 @@ module m_dlwqf5
             itrep = nint(cons(idef))
             write (lunrep, 2210)
         else
-            itrep = def_report_iterations
+            itrep = default_report_iterations
             write (lunrep, 2220)
         end if
         !     Check value
