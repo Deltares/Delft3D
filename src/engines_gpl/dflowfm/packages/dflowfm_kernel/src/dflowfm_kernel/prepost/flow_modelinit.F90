@@ -450,7 +450,7 @@
  call timstop(handle_extra(31)) ! end set fcru mor
 
 ! Initialise debug array
-!if (jawritedebug) then
+ !if (jawritedebug) then
 !  call init_debugarr(ndx,stmpar%lsedtot)
 !endif
 
