@@ -17787,6 +17787,7 @@ subroutine definencvar(ncid, idq, itype, idims, name, desc, unit, namecoord, geo
    use netcdf
    use netcdf_utils
    use m_sferic
+   use m_missing, only: dmiss, intmiss
    implicit none
 
    integer,                   intent(in   ) :: ncid  !< NetCDF dataset id.
@@ -17797,11 +17798,13 @@ subroutine definencvar(ncid, idq, itype, idims, name, desc, unit, namecoord, geo
    character(len=*),          intent(in   ) :: desc  !< Description of the variable, used in the :long_name attribute.
    character(len=*),          intent(in   ) :: unit  !< Units of the variable (udunit-compatible), used in the :units attribute.
    character(len=*),          intent(in   ) :: namecoord !< Text string the with coordinate variable names, used in the :coordinates attribute.
+   real(dp),         optional,intent(in   ) :: fillVal  !< Fill value that will be stored in the standard :_FillValue attribute
    character(len=*), optional,intent(in   ) :: geometry !< (optional) Variable name of a geometry variable in the same dataset, used in the :geometry attribute.
-   double precision, optional,intent(in   ) :: fillVal  !< Fill value that will be stored in the standard :_FillValue attribute
    logical,          optional,intent(in   ) :: add_gridmapping !< Whether or not to add a grid mapping attribute. Default: false.. Only use this if your coordinates in namecoord rely on this grid mapping.
    type(nc_att_set), optional,intent(in   ) :: attset !< (optional) Set containing additional custom NetCDF attributes for this variable.
-   integer                          :: ierr
+   
+   integer                          :: ierr, int_fill
+   real(dp)                         :: dp_fill
    
    logical :: add_gridmapping_
 
@@ -17834,17 +17837,23 @@ subroutine definencvar(ncid, idq, itype, idims, name, desc, unit, namecoord, geo
    endif
 
    if (present(fillVal)) then
-      ! Add a fill value of the correct type
-      if (itype == nf90_short .or. itype == nf90_int) then
-         ierr = nf90_put_att(ncid, idq, '_FillValue', int(fillVal))
-      elseif (itype == nf90_float) then
-         ierr = nf90_put_att(ncid, idq, '_FillValue', real(fillVal))
-      elseif (itype == nf90_double) then
-         ierr = nf90_put_att(ncid, idq, '_FillValue', fillVal)
-      else
-         call mess(LEVEL_ERROR,'unstruc_netcdf/definencvar: invalid netcdf type for fill_value!')
-      end if
-   end if
+      dp_fill = fillVal
+      int_fill = int(fillVal)
+   else
+      dp_fill = dmiss
+      int_fill = intmiss
+   endif
+   ! Add a fill value of the correct type
+   select case (itype)
+   case (nf90_short, nf90_int)   
+      ierr = nf90_put_att(ncid, idq, '_FillValue', int_fill)
+   case (nf90_float) 
+      ierr = nf90_put_att(ncid, idq, '_FillValue', real(dp_fill))
+   case (nf90_double)
+      ierr = nf90_put_att(ncid, idq, '_FillValue', dp_fill)
+   case default
+      call mess(LEVEL_ERROR,'unstruc_netcdf/definencvar: invalid netcdf type for fill_value!')
+   end select
 
    if (present(attset)) then
       if (attset%count > 0) then

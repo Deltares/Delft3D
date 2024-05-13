@@ -50,6 +50,7 @@ subroutine flow_finalize_usertimestep(iresult)
    use mass_balance_areas_routines, only : mba_update
    use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
    use m_statistical_output, only: update_source_data
+   use m_update_values_on_cross_sections, only: update_values_on_cross_sections
    implicit none
 
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -100,7 +101,6 @@ subroutine flow_finalize_usertimestep(iresult)
             do_fourier = do_fourier .or. (md_fou_step == 2)
             call updateValuesOnObservationStations()
             if (jampi == 1) then
-               call updateValuesOnCrossSections_mpi(time1)
                call updateValuesOnRunupGauges_mpi()
             endif
             if ( jacheckmonitor == 1 ) then
@@ -117,14 +117,12 @@ subroutine flow_finalize_usertimestep(iresult)
          if (flow_trachy_needs_update(time1)) then
             if (trachy_fl%gen%ntrtobs > 0) then
                call updateValuesOnObservationStations()
-            endif
-            if (trachy_fl%gen%ntrtcrs > 0) then
-               if (jampi == 1) then
-                  call updateValuesOnCrossSections_mpi(time1)
-               endif
-            endif
-         endif
-      endif
+            end if
+         end if
+      end if
+      
+      ! update values on cross-sections and reduce them across the partitions
+      call update_values_on_cross_sections(.true.)
 
       ! valobs was updated, also call the function pointers to make sure that the data has been processed properly for writing in flow_externaloutput
       call update_source_data(out_variable_set_his)
