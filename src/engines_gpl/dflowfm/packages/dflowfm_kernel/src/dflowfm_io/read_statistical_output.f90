@@ -40,6 +40,8 @@ module m_read_statistical_output
 
    public parse_next_stat_type_from_value_string
    public is_output_requested_in_value_string
+   public read_output_parameter_toggle
+
    contains
 
    !> Parse the a statistical operation type from the start of a value string.
@@ -97,8 +99,8 @@ module m_read_statistical_output
 
    !> Determine integer operation_type given a string value.
    function get_operation_type(value_string) result(operation_type)
-   use string_module, only: strcmpi
-   use MessageHandling, only: msgbuf, err_flush
+      use string_module, only: strcmpi
+      use MessageHandling, only: msgbuf, err_flush
 
       character(len=*) :: value_string !<The input value string, typically stored in an output_config item
       integer          :: operation_type !< Corresponding operation type (one of: SO_CURRENT/AVERAGE/MAX/MIN/NONE/UNKNOWN).
@@ -139,4 +141,29 @@ module m_read_statistical_output
          end if
       end do
    end function is_output_requested_in_value_string
+
+   !> Get the integer value for the toggle whether to write a certain output variable.
+   !! Set it to the supplied default value in the tree if the keyword is not found and the default is 1 (on).
+   !! Valid strings such as 'current','average', etc. will return a value of 1.
+   subroutine read_output_parameter_toggle(tree, chapter, key, value, success)
+      use tree_structures, only: tree_data
+      use properties, only: prop_get_string, prop_set
+      implicit none
+      type(tree_data), pointer, intent(in   ) :: tree    !< The property tree
+      character(*),             intent(in   ) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
+      character(*),             intent(in   ) :: key     !< Name of the key (case-insensitive)
+      integer,                  intent(inout) :: value   !< If key is found value will be read from tree. If not found value will be written to tree.
+      logical,                  intent(  out) :: success !< Whether successful or not
+
+      character(len=255) :: value_string
+
+      call prop_get_string(tree, chapter, key, value_string, success)
+      if (success) then
+         value = merge(1, 0, is_output_requested_in_value_string(value_string))
+      end if
+
+      if (.not. success .and. value /= 0) then
+         call prop_set(tree, chapter, key, value, '')
+      end if
+   end subroutine read_output_parameter_toggle
 end module m_read_statistical_output

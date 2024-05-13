@@ -728,6 +728,7 @@ subroutine readMDUFile(filename, istat)
     use unstruc_display,  only: jaGUI 
     use m_output_config, only: scan_input_tree
     use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use m_read_statistical_output, only: read_output_parameter_toggle
     
     use m_map_his_precision
 
@@ -1846,59 +1847,59 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_balance'                    , jahisbal              , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_sourcesink'                 , jahissourcesink       , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_gen'              , jahiscgen             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_dam'              , jahiscdam             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_pump'             , jahispump             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_gate'             , jahisgate             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_weir'             , jahisweir             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_orifice'          , jahisorif             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_bridge'           , jahisbridge           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_culvert'          , jahisculv             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_damBreak'         , jahisdambreak         , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_uniWeir'          , jahisuniweir          , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_compound'         , jahiscmpstru          , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_longculvert'      , jahislongculv         , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_turbulence'                 , jahistur              , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wind'                       , jahiswind             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_rain'                       , jahisrain             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_infiltration'               , jahisinfilt           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_airdensity'                 , jahis_airdensity      , success, allow_statoutput_keywords = .true.) 
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_density'                    , jahisrho              , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waterlevel_s1'              , jahiswatlev           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_bedlevel'                   , jahisbedlev           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waterdepth'                 , jahiswatdep           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waves'                      , jahiswav              , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity_vector'            , jahisvelvec           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_upward_velocity_component'  , jahisww               , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_sediment'                   , jahissed              , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_zcor'                       , jahiszcor             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_lateral'                    , jahislateral          , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_taucurrent'                 , jahistaucurrent       , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity'                   , jahisvelocity         , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_discharge'                  , jahisdischarge        , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heat_fluxes'                , jahisheatflux         , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_runupgauge'                 , jahisrunupgauge       , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wqbot'                      , jahiswaqbot           , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_constituents'               , jahistracers          , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow'                   , jahiscrs_flow         , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_constituents'           , jahiscrs_constituents , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_sediment'               , jahiscrs_sediment     , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_dred'                       , jahisdred             , success, allow_statoutput_keywords = .true.)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_water_quality_output'       , jahiswaq              , success, allow_statoutput_keywords = .true.)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance'                    , jahisbal              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink'                 , jahissourcesink       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen'              , jahiscgen             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam'              , jahiscdam             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump'             , jahispump             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate'             , jahisgate             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir'             , jahisweir             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice'          , jahisorif             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge'           , jahisbridge           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert'          , jahisculv             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak'         , jahisdambreak         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir'          , jahisuniweir          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound'         , jahiscmpstru          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert'      , jahislongculv         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence'                 , jahistur              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind'                       , jahiswind             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain'                       , jahisrain             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration'               , jahisinfilt           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity'                 , jahis_airdensity      , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density'                    , jahisrho              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1'              , jahiswatlev           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel'                   , jahisbedlev           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth'                 , jahiswatdep           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves'                      , jahiswav              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector'            , jahisvelvec           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component'  , jahisww               , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment'                   , jahissed              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor'                       , jahiszcor             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral'                    , jahislateral          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent'                 , jahistaucurrent       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity'                   , jahisvelocity         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge'                  , jahisdischarge        , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes'                , jahisheatflux         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge'                 , jahisrunupgauge       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot'                      , jahiswaqbot           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents'               , jahistracers          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow'                   , jahiscrs_flow         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents'           , jahiscrs_constituents , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment'               , jahiscrs_sediment     , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred'                       , jahisdred             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output'       , jahiswaq              , success)
     
     if (.not. success) then
-      call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success, allow_statoutput_keywords = .true.)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)
     endif
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_temperature', jahistem, success, allow_statoutput_keywords = .true.)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
     if (success .and. jahistem == 1 .and. jatem < 1) then
       write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
          //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" '&
          //' and do not write temperature to his file.'
       call warn_flush()
     end if
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_salinity', jahissal, success, allow_statoutput_keywords = .true.)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
     if (success .and. jahissal == 1 .and. jasal < 1) then
       write (msgbuf, '(a)') 'MDU setting "Wrihis_salinity = 1" asks to write salinity to the output his file, ' &
          //'but no salinity is involved due to MDU setting "Salinity = 0". So we set "Wrihis_salinity = 0" '&
@@ -2052,7 +2053,7 @@ subroutine readMDUFile(filename, istat)
         ice_mapout = .true.
     endif     
 
-    call prop_get_set_integer(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success, allow_statoutput_keywords = .true.)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
 
     call prop_get_integer(md_ptr, 'output', 'Wrishp_crs', jashp_crs, success)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_obs', jashp_obs, success)

@@ -45,6 +45,9 @@ subroutine tests_read_statistical_output
     call test(test_parse_empty_string, 'Tests parsing of mdu empty string setting for statistical output')
     call test(test_output_requested, 'Tests that data collection is  turned on when some output is requested')
     call test(test_no_output_requested, 'Tests that data collection is not turned on when no output is requested')
+    call test(test_read_output_parameter_toggle_default_zero, 'Tests that unset key in tree results in default zero value')
+    call test(test_read_output_parameter_toggle_default_one, 'Tests that unset key in tree results in default unit value and is set in tree')
+    call test(test_read_output_parameter_toggle_from_tree, 'Tests that set key in tree is read properly')
 end subroutine tests_read_statistical_output
 
 subroutine test_parse_current()
@@ -157,4 +160,69 @@ end subroutine test_output_requested
 subroutine test_no_output_requested()
    call assert_equal(is_output_requested_in_value_string('none, none'), .false., '')
 end subroutine test_no_output_requested
+
+function create_dummy_tree() result(tree)
+   use tree_structures, only: tree_data, tree_create
+   type(tree_data), pointer :: tree
+
+   call tree_create('my_tree', tree)
+end function create_dummy_tree
+
+!> Test that the value for the toggle that is read from the tree equals the default value when it is not supplied,
+!! and test that is is set into the tree if the default value is 1
+subroutine generic_test_read_output_parameter_toggle_default(default_value)
+   use tree_structures, only: tree_data
+   use properties, only: prop_get_integer
+
+   integer, intent(in) :: default_value !< The value if the property is not set in the tree, either 0 or 1
+   type(tree_data), pointer :: my_tree
+   integer :: value
+   logical :: success
+   character(:), allocatable :: chapter_name, variable_name
+
+   chapter_name = 'my_chap'
+   variable_name = 'write_my_var'
+   value = default_value
+   my_tree => create_dummy_tree()
+
+   call read_output_parameter_toggle(my_tree, chapter_name, variable_name, value, success)
+   call assert_equal(success, .false., '')
+   call assert_equal(value, default_value, '')
+
+   ! Since the default is zero, it is not set into the tree to prevent the variable to end up in the dia file
+   call prop_get_integer(my_tree, chapter_name, variable_name, value, success)
+   call assert_equal(success, default_value == 1, '')
+   call assert_equal(value, default_value, '')
+end subroutine generic_test_read_output_parameter_toggle_default
+
+subroutine test_read_output_parameter_toggle_default_zero()
+   call generic_test_read_output_parameter_toggle_default(0)
+end subroutine test_read_output_parameter_toggle_default_zero
+
+subroutine test_read_output_parameter_toggle_default_one()
+   call generic_test_read_output_parameter_toggle_default(1)
+end subroutine test_read_output_parameter_toggle_default_one
+
+subroutine test_read_output_parameter_toggle_from_tree()
+   use tree_structures, only: tree_data
+   use properties, only: prop_get_integer, prop_set_integer
+
+   type(tree_data), pointer :: my_tree
+   integer :: value, default_value, actual_value
+   logical :: success
+   character(:), allocatable :: chapter_name, variable_name
+
+   chapter_name = 'my_chap'
+   variable_name = 'write_my_var'
+   default_value = 0
+   actual_value = 1
+   value = default_value
+   my_tree => create_dummy_tree()
+   call prop_set_integer(my_tree, chapter_name, variable_name, actual_value, success = success)
+   call assert_equal(success, .true., '')
+
+   call read_output_parameter_toggle(my_tree, chapter_name, variable_name, value, success)
+   call assert_equal(success, .true., '')
+   call assert_equal(value, actual_value, '')
+end subroutine test_read_output_parameter_toggle_from_tree
 end module test_read_statistical_output
