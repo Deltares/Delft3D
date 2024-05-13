@@ -2250,7 +2250,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
          return
       end if
 
-      call update_values_on_cross_sections(.true.)
+      call update_values_on_cross_sections
 
       select case(field_name)
       case("discharge")

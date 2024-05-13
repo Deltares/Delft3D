@@ -5372,17 +5372,16 @@ end function any_structures_lie_across_multiple_partitions
 !! This is currently used for statistical output, to disable output items that
 !! would in this case produce incorrect results (as integrated values on cross-sections
 !! are only reduced every user time step, so min/max in time would not be valid)
-function model_has_crosssections_across_partitions(crs) result(res)
-   use m_monitoring_crosssections, only: tcrs
+function model_has_crosssections_across_partitions result(res)
+   use m_monitoring_crosssections, only: ncrs, crs
   
-   type(tcrs), intent(in) :: crs(:)    !< The array of all cross-section objects to check
-   logical                :: res       !< True if the crs array contains any cross-sections that lie across multiple partitions, false otherwise
+   logical :: res !< True if the crs array contains any cross-sections that lie across multiple partitions, false otherwise
    
    integer :: icrs
    
    res = .false.
    
-   do icrs = 1, size(crs)
+   do icrs = 1, ncrs
       if (flowlinks_are_across_multiple_partitions(crs(icrs)%path%ln)) then
          res = .true.
       end if
