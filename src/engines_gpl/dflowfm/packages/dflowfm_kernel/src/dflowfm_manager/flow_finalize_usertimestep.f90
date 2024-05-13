@@ -121,8 +121,8 @@ subroutine flow_finalize_usertimestep(iresult)
          end if
       end if
       
-      ! update values on cross-sections and reduce them across the partitions
-      call update_values_on_cross_sections(.true.)
+      ! update values on cross-sections
+      call update_values_on_cross_sections
 
       ! valobs was updated, also call the function pointers to make sure that the data has been processed properly for writing in flow_externaloutput
       call update_source_data(out_variable_set_his)

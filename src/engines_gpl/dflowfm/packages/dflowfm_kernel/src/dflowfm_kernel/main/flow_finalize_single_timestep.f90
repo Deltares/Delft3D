@@ -102,7 +102,7 @@ integer, intent(out) :: iresult
       endif
       call timstop(handle_extra(75))
 
-   call update_values_on_cross_sections(.false.)
+   call update_values_on_cross_sections
    call updateValuesOnRunupGauges()
    if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
       if (numsrc > 0) then

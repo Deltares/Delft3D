@@ -43,12 +43,10 @@ module m_update_values_on_cross_sections
 contains
 
 !> Updates all monitored data on all cross sections, including time-integrated values
-subroutine update_values_on_cross_sections(do_reduce)
+subroutine update_values_on_cross_sections
    use m_monitoring_crosssections, only: nval, ncrs, crs_values, crs_timescales, crs
    use precision, only: comparereal
    use m_flowtimes, only: time1
-   
-   logical, intent(in) :: do_reduce
 
    real(dp)       :: time_since_last_reset, time_since_last_call
    integer        :: iv, icrs
@@ -61,7 +59,7 @@ subroutine update_values_on_cross_sections(do_reduce)
       call initialise_cross_section_integrals
    end if
 
-   call integrate_over_cross_section_flowlinks(do_reduce)
+   call integrate_over_cross_section_flowlinks
    
    time_since_last_call  = time1 - time_of_last_call
    
@@ -119,8 +117,8 @@ subroutine initialise_cross_section_integrals
 end subroutine initialise_cross_section_integrals
 
 !> Integrate monitored values over the flowlinks of each cross-section
-!! Optionally includes reduction across processes in case of a parallel model
-subroutine integrate_over_cross_section_flowlinks(do_reduce)
+!! Always includes reduction across processes in case of a parallel model
+subroutine integrate_over_cross_section_flowlinks
    use m_monitoring_crosssections, only: ncrs, crs_values, crs_timescales, crs, IPNT_Q1C, IPNT_AUC, IPNT_S1A, IPNT_HUA, IPNT_U1A
    use m_flowgeom, only: ln, wu, wu_mor
    use m_flow, only: q1, au, s1, hu, Lbot, Ltop
@@ -129,8 +127,6 @@ subroutine integrate_over_cross_section_flowlinks(do_reduce)
    use m_partitioninfo, only: jampi
 
    implicit none
-   
-   logical, intent(in) :: do_reduce
 
    integer  :: icrs, i, Lf, L, k1, k2, IP, num, LL, IPTOT, lsed
    real(dp) :: val
@@ -210,9 +206,10 @@ subroutine integrate_over_cross_section_flowlinks(do_reduce)
       end if
    end if
    
-   if (jampi == 1 .and. do_reduce) then
+   ! Reduce before calculating the averages
+   if (jampi == 1) then
       call reduce_cross_section_flowlink_integrals()
-   endif
+   end if
 
    ! Calculate cross section area-averaged quantities
    do icrs = 1, ncrs
