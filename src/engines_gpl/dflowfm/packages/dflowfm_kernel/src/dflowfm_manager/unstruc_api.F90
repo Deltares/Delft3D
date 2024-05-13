@@ -308,7 +308,7 @@ end subroutine api_loadmodel
     inner_timerhandle = 0
     call timstrt('Update various', inner_timerhandle)
     
-   call update_values_on_cross_sections(.true.)
+   call update_values_on_cross_sections
    call updateValuesOnRunupGauges()
    if (jahisbal > 0) then                              ! Update WaterBalances etc.
       call updateBalance()
