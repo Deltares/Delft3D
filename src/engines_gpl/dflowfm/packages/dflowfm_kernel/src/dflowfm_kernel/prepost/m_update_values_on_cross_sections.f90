@@ -207,7 +207,9 @@ subroutine integrate_over_cross_section_flowlinks
    end if
    
    ! Reduce before calculating the averages
-   call reduce_cross_section_flowlink_integrals()
+   if (jampi == 1) then
+      call reduce_cross_section_flowlink_integrals()
+   end if
 
    ! Calculate cross section area-averaged quantities
    do icrs = 1, ncrs
