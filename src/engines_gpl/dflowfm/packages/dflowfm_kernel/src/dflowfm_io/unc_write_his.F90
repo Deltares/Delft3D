@@ -320,7 +320,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
 
         ! Runup gauges
-        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, rug_allocated_size, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, 'runup_gauge', 'runup gauge', 1, num_rugs, 'none', 0, id_strlendim, &
                                                  id_rugdim, id_rugid) ! No geometry
 
         ! Source-sinks
