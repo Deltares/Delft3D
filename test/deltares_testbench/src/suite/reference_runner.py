@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from distutils import dir_util, file_util
+import shutil
 from typing import List
 
 from src.config.test_case_config import TestCaseConfig
@@ -60,10 +60,10 @@ class ReferenceRunner(TestSetRunner):
             fl = os.path.join(test_case_config.absolute_test_case_path, f)
             fr = os.path.join(test_case_config.absolute_test_case_reference_path, f)
             if os.path.isfile(fl):
-                file_util.copy_file(fl, fr)
+                shutil.copyfile(fl, fr)
             if os.path.isdir(fl):
-                dir_util.copy_tree(fl, fr)
-        file_util.copy_file(
+                shutil.copytree(fl, fr)
+        shutil.copyfile(
             os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run"),
             os.path.join(
                 test_case_config.absolute_test_case_reference_path, "_tb3_char.run"
