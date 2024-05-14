@@ -276,7 +276,7 @@ contains
       case default
          return
       case (UNC_LOC_OBSCRS)      ! Cross-sections
-         res = model_has_crosssections_across_partitions(crs)
+         res = model_has_crosssections_across_partitions()
       case (UNC_LOC_WEIRGEN)     ! Weirs
          res = model_has_weirs_across_partitions
       case (UNC_LOC_GENSTRU)     ! General structures
