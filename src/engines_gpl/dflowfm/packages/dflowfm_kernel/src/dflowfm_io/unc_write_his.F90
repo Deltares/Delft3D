@@ -299,7 +299,7 @@ subroutine unc_write_his(tim)            ! wrihis
             
             ! Special definition of station_id for backwards compatibility reasons..
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
+            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', extra_attributes=attributes(1:1))
             
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
@@ -996,6 +996,7 @@ contains
       integer, optional, intent(  out) :: id_poly_ymid         !< NetCDF variable id created for the y-coordinate of the structure's polyline midpoint
 
       integer                          :: ierr                 !< Result status (NF90_NOERR if successful)
+      type(ug_nc_attribute) :: extra_attributes(1) 
 
       ierr = DFM_NOERR
 
@@ -1004,8 +1005,8 @@ contains
       end if
       
       call check_netcdf_error( nf90_def_dim(ihisfile, prefix, count, id_strdim))
-      call definencvar(ihisfile, id_strid, nf90_char, (/ id_strlendim, id_strdim /),prefix//'_name',  'name of '//trim(name))
-      call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id'))
+      call ncu_set_att(extra_attributes(1), 'cf_role', 'timeseries_id')
+      call definencvar(ihisfile, id_strid, nf90_char, (/ id_strlendim, id_strdim /),prefix//'_name',  'name of '//trim(name),extra_attributes=extra_attributes)
 
       if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
          ! Define geometry related variables
@@ -1229,32 +1230,29 @@ contains
       integer,             intent(  out) :: id_zwu          !< NetCDF variable id created for the station zcoordinate_wu
 
       integer                            :: ierr            !< Result status (NF90_NOERR if successful)
-
+      type(ug_nc_attribute)              :: extra_attributes(1)
       ierr = DFM_NOERR
 
       if (.not. model_is_3D()) then
          return
       end if
-
+      call ncu_set_att(extra_attributes(1), 'positive', 'up')
       ! If so specified, add the zcoordinate_c
       if (jawrizc == 1) then
          call definencvar(ihisfile, id_zcs, nc_precision, [id_laydim, id_statdim, id_timedim], &
             'zcoordinate_c', 'vertical coordinate at center of flow element and layer', 'm', &
-            trim(statcoordstring) // ' zcoordinate_c', geometry = 'station_geom', fillVal = dmiss)
-         call check_netcdf_error( nf90_put_att(ihisfile, id_zcs, 'positive', 'up'))
+            trim(statcoordstring) // ' zcoordinate_c', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
       end if
 
       ! If so specified, add the zcoordinate_w + zcoordinate_wu
       if (jawrizw == 1) then
          call definencvar(ihisfile, id_zws, nc_precision, [id_laydimw, id_statdim, id_timedim], &
             'zcoordinate_w', 'vertical coordinate at centre of flow element and at layer interface', 'm', &
-            trim(statcoordstring) // ' zcoordinate_w', geometry = 'station_geom', fillVal = dmiss)
-         call check_netcdf_error( nf90_put_att(ihisfile, id_zws, 'positive', 'up'))
+            trim(statcoordstring) // ' zcoordinate_w', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
 
          call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim], &
             'zcoordinate_wu', 'vertical coordinate at edge of flow element and at layer interface', 'm', &
-            trim(statcoordstring) // ' zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss)
-         call check_netcdf_error( nf90_put_att(ihisfile, id_zwu, 'positive', 'up'))
+            trim(statcoordstring) // ' zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
       end if
    end function unc_def_his_station_coord_vars_z
 
