@@ -101,7 +101,7 @@ contains
                                 ierr2 = constants%resize(nocon2)
                                 if (ierr2 > 0) then
                                     write(line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
-                                    call write_log_message(line, 1)
+                                    call write_log_message(line)
                                     call terminate_execution(1)
                                 endif
                                 constants%no_item = nocon2
