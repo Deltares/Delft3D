@@ -12,6 +12,6 @@ add_target_with_subdirectory(shp ${shp_module})
 # proj
 if(WIN32)
     set(MESSAGE_QUIET ON)
-    include_target_with_path(proj ${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+    include_target_with_path(proj ${checkout_src_root}/cmake/configurations/include/proj_configuration.cmake)
     unset(MESSAGE_QUIET)
 endif(WIN32)

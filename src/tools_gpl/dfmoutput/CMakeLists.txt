@@ -5,7 +5,7 @@ set(res_path res)
 # Set version file variables
 
 set(rc_version_file ${res_path}/dfmoutput_version.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(fortran_version_files ${src_path}/dfmoutput_version.F90
                           ${src_path}/dfmoutput_static_version_info.F90)
 set_source_files_properties(${fortran_version_files}

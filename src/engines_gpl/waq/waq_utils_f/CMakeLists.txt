@@ -1,8 +1,8 @@
 set(library_name waq_utils_f)
 
-set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq) # Trace back to the WAQ path
+set(waq_root_path ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq) # Trace back to the WAQ path
 
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(waq_version_path ${waq_root_path}/resources/version)
 set(fortran_static_version_file ${waq_root_path}/waq_utils/static_version_info.f90)
 

@@ -3,7 +3,7 @@ set(src_path src)
 file(GLOB meteo_sources ${src_path}/meteo/*.f90)
 file(GLOB sources ${src_path}/*.f90 ${src_path}/*.F90)
 
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(rc_dir ${CMAKE_CURRENT_SOURCE_DIR}/version)
 set(rc_version_file ${rc_dir}/ec_version_number.rc)
 

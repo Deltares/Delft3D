@@ -7,7 +7,7 @@ set(res_path res)
 # Gather the source files
 get_fortran_source_files(${src_path} sources)
 set(rc_version_file ${res_path}/dfm_volume_tool_version.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(fortran_version_files ${src_path}/dfm_volume_tool_version.F90
                           ${src_path}/dfm_volume_tool_static_version_info.F90)
 set_source_files_properties(${fortran_version_files}

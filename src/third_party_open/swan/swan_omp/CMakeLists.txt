@@ -7,7 +7,7 @@ unset(CMAKE_Fortran_MODULE_DIRECTORY)
 
 # Set directory which contains all source files
 set(src_path ../src)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 # Gather source files
 set(headers ../include/swanout1_deltares.inc)

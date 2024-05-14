@@ -2,7 +2,7 @@ set(library_name kubint_f)
 
 # Set version file variables
 set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/src/kubint_common_version.F90")
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(src_path src)
 
 # Define include directories

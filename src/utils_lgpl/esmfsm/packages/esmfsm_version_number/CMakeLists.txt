@@ -1,6 +1,6 @@
 # Set version file variables
 set(include_path include)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 include_directories(${include_path}
                     ${version_include_dir})

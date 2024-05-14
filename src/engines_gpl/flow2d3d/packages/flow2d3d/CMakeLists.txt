@@ -30,7 +30,7 @@ message(STATUS "Configuring '${library_name}' with the following esmfsm include 
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(flow2d3d_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../)
 set(flow2d3d_version_path ${flow2d3d_root_path}/version)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 set(include_path ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -188,19 +188,19 @@ set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/flow2d3d)
 
 install(TARGETS ${library_name} RUNTIME DESTINATION lib)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)
 endif(UNIX)
 
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d.${platform_extension}                   DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_dwaves.${platform_extension}            DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_fluidmud.${platform_extension}          DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel.${platform_extension}          DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel_dwaves.${platform_extension}   DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/run_dflow2d3d_rtc.${platform_extension}               DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/dioconfig.ini    DESTINATION share/delft3d)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/files.def        DESTINATION share/delft3d)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/default/tabmom           DESTINATION share/delft3d)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d.${platform_extension}                   DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d_dwaves.${platform_extension}            DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d_fluidmud.${platform_extension}          DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel.${platform_extension}          DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d_parallel_dwaves.${platform_extension}   DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/scripts/run_dflow2d3d_rtc.${platform_extension}               DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/default/dioconfig.ini    DESTINATION share/delft3d)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/default/files.def        DESTINATION share/delft3d)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/flow2d3d/default/tabmom           DESTINATION share/delft3d)
 
 
 # Change project flags at the end of this file

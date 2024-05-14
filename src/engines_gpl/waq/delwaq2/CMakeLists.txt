@@ -3,7 +3,7 @@ set(executable_name delwaq2)
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(waq_version_path ${waq_root_path}/resources/version)
 set(rc_version_file ${waq_version_path}/version_number_delwaq2.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 # Set icon file
 set(icon_file ${waq_version_path}/waq_icon.rc)

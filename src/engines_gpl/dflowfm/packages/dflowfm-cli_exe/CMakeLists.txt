@@ -9,7 +9,7 @@ set(dflowfm_cli_path "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 # Set the directory referring to the res folder
 set(res_path ${dflowfm_path}/res)
 
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(dflowfm_version_header_path ${dflowfm_path}/version)
 set(rc_version_file ${dflowfm_version_header_path}/dflowfm_cli_version.rc)
 
@@ -233,12 +233,12 @@ endif(WIN32)
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/parallel/generate_parallel_mdu.sh  DESTINATION bin)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/submit_dflowfm_h7.sh     DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/parallel/generate_parallel_mdu.sh  DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/team-city/submit_dflowfm_h7.sh     DESTINATION bin)
 endif(UNIX)
 
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm.${platform_extension}           DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.${platform_extension} DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfmoutput.${platform_extension}         DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfm_volume_tool.${platform_extension}   DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/team-city/run_dflowfm.${platform_extension}           DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.${platform_extension} DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/team-city/run_dfmoutput.${platform_extension}         DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/dflowfm/scripts/team-city/run_dfm_volume_tool.${platform_extension}   DESTINATION bin)
 

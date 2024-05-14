@@ -18,7 +18,7 @@ message(STATUS "Configuring '${library_name}' with the following esmfsm include 
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(flow2d3d_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../../)
 set(flow2d3d_version_path ${flow2d3d_root_path}/version)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 set(include_path ${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${include_path}

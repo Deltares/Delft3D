@@ -9,7 +9,7 @@ set(fortran_version_files ${mormerge_root_path}/packages/mormerge/src/mormerge_v
                           ${mormerge_root_path}/packages/mormerge/src/mormerge_static_version_info.F90)
 
 set(rc_version_file ${mormerge_version_path}/mormerge_version.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 
 # Gather source files
@@ -74,8 +74,8 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/mormerge.tcl     DESTINATION bin)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../tools_gpl/mormerge/scripts/run_mormerge.${platform_extension}  DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/tools_gpl/mormerge/scripts/mormerge.tcl     DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/tools_gpl/mormerge/scripts/run_mormerge.${platform_extension}  DESTINATION bin)
 if (WIN32)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/tcl/bin/win64/tclkitsh852.exe DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/third_party_open/tcl/bin/win64/tclkitsh852.exe DESTINATION bin)
 endif(WIN32)

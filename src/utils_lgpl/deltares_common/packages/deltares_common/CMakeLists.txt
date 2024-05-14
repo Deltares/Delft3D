@@ -3,7 +3,7 @@ set(deltares_common_include_path ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set version file variables
 set(fortran_version_file "${CMAKE_CURRENT_SOURCE_DIR}/src/deltares_common_version.F90")
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 # Set include path to have it accessible for other components
 set(public_include_path ${deltares_common_include_path})

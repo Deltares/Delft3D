@@ -10,7 +10,7 @@ set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 set(res_path ${dflowfm_path}/res)
 
 #Version includes
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(dflowfm_version_header_path ${dflowfm_path}/version)
 set(rc_version_file ${dflowfm_version_header_path}/dflowfm_dll_version.rc)
 

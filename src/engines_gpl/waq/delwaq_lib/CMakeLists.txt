@@ -3,7 +3,7 @@ set(library_name delwaq_lib)
 # Set version file variables
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(rc_version_file ${waq_root_path}/resources/version/version_number.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 create_target(
         ${library_name} ${CMAKE_CURRENT_SOURCE_DIR}
@@ -70,8 +70,8 @@ set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)
 set_target_properties(${library_name} PROPERTIES OUTPUT_NAME delwaq)
 
 install(TARGETS ${library_name} RUNTIME DESTINATION lib)
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/bloom.spe DESTINATION share/delft3d)
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.dat DESTINATION share/delft3d)
-install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq/resources/process_lib/bloom.spe DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq/resources/process_lib/proc_def.dat DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)

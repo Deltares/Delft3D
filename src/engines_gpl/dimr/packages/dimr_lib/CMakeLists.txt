@@ -20,7 +20,7 @@ endif(UNIX)
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
 set(rc_version_file "${absolute_header_path}/dimr_lib_version.rc")
 set(header_version_file "${absolute_header_path}/dimr_lib_version.h")
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 # Gather source files
 file(GLOB source ${src_path}/*.cpp)

@@ -1,5 +1,5 @@
 # tests
-set(dwaq_dir ${dir}/src/cmake/configurations/include/dwaq)
+set(dwaq_dir ${checkout_src_root}/cmake/configurations/include/dwaq)
 
 if(NOT TARGET ftnunit)
     add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)

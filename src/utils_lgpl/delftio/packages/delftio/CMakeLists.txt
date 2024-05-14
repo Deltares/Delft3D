@@ -1,7 +1,7 @@
 # Set path for include files 
 # Note that the CMAKE_CURRENT_SOURCE_DIR has a path to THIS CMakeLists location
 set(delftio_include_path ${CMAKE_CURRENT_SOURCE_DIR}/../../include)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 include_directories(${delftio_include_path}
                     ${version_include_dir})

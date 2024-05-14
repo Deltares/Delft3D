@@ -2,7 +2,7 @@ set(library_name waq_plugin_wasteload)
 
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(rc_version_file ${waq_root_path}/resources/version/version_number_waq_plugin_wasteload.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 
 create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . src resource_files ${rc_version_file} shared)

@@ -1,9 +1,9 @@
 set(executable_name delpar)
 
-set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq)
+set(waq_root_path ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq)
 set(waq_version_path ${waq_root_path}/resources/version)
 set(rc_version_file ${waq_version_path}/version_number_delpar.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(icon_file ${waq_version_path}/part_icon.rc)
 
 create_target(

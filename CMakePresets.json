@@ -6,17 +6,17 @@
     "patch": 0
   },
   "configurePresets": [
-  {
-    "name": "dwaq",
-    "displayName": "D-WAQ IFORT win 64 Release",
-    "description": "Configure D-WAQ using Visual Studio 17 2022 generator",
-    "generator": "Visual Studio 17 2022",
-    "binaryDir": "build_dwaq",
-    "cacheVariables": {
+    {
+      "name": "dwaq",
+      "displayName": "D-WAQ IFORT win 64 Release",
+      "description": "Configure D-WAQ using Visual Studio 17 2022 generator",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build_dwaq",
+      "cacheVariables": {
         "CONFIGURATION_TYPE": "dwaq",
         "CMAKE_INSTALL_PREFIX": "install_dwaq",
         "ENABLE_CODE_COVERAGE": "OFF"
+      }
     }
-  }
   ]
 }

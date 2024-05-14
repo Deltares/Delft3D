@@ -19,7 +19,7 @@ message(STATUS "Configuring '${executable_name}' with the following deltares_com
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
 set(rc_version_file "${absolute_header_path}/d_hydro_version.rc")
 set(header_version_file "${absolute_header_path}/d_hydro_version.h")
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 include_directories(${include_path}
                     ${deltares_common_c_include_path}

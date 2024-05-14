@@ -127,16 +127,16 @@ elseif (WIN32)
     install(PROGRAMS $<TARGET_FILE:${executable_name}> RENAME wave.exe DESTINATION bin)
 endif()
 
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/wave/scripts/run_dwaves.${platform_extension}  DESTINATION bin)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/engines_gpl/wave/scripts/run_dwaves.${platform_extension}  DESTINATION bin)
 if (UNIX)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh DESTINATION bin)
 endif(UNIX)
 if(WIN32)
-    install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
-    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION lib
+    install(PROGRAMS ${CMAKE_SOURCE_DIR}/src/third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
+    install (DIRECTORY ${CMAKE_SOURCE_DIR}/src/third_party_open/esmf/win64/bin/ DESTINATION lib
 FILES_MATCHING
 PATTERN "*.dll"
 PATTERN "*.dll.a"
 )
-    install (PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ESMF_RegridWeightGen.exe DESTINATION bin)
+    install (PROGRAMS ${CMAKE_SOURCE_DIR}/src/third_party_open/esmf/win64/bin/ESMF_RegridWeightGen.exe DESTINATION bin)
 endif(WIN32)

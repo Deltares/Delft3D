@@ -15,7 +15,7 @@ set(headers include/blasfm.h)
 
 # Set version file variables
 set(dflowfm_version_header_path ${dflowfm_path}/version)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 set(dflowfm_version_path ${src_path}/dflowfm_version)
 set(fortran_version_files ${dflowfm_version_path}/dflowfm_version.F90
                           ${dflowfm_version_path}/static_version_info.F90)

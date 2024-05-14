@@ -6,7 +6,7 @@ set(wave_version_path ${wave_root_path}/version)
 
 set(fortran_version_files ${wave_root_path}/packages/data/src/wave_version.F90
                           ${wave_root_path}/packages/data/src/dwaves_static_version_info.F90)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
 
 # Set directory which contains all source files
 set(src_path src)

@@ -1,9 +1,9 @@
 set(executable_name ddcouple)
 
-set(waq_root_path ${CMAKE_SOURCE_DIR}/../engines_gpl/waq)
+set(waq_root_path ${CMAKE_SOURCE_DIR}/src/engines_gpl/waq)
 set(rc_version_file ${waq_root_path}/resources/version/version_number_ddcouple.rc)
-set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-
+set(version_include_dir ${CMAKE_SOURCE_DIR}/src/version_includes)
+message("QQQ",${waq_root_path})
 create_target(
         ${executable_name}
         ${CMAKE_CURRENT_SOURCE_DIR}
