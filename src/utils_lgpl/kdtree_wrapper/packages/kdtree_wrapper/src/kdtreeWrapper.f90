@@ -32,9 +32,11 @@ module kdtree2Factory
    ! and if theres more trees, then use them locally: (eg trininterpfast)
    ! type(kdtree_instance) :: myowntree
    !! build_kdtree..(myowntree, x, nx, ..)
-
-   integer :: janeedfix = 0  ! need to use fix (1) for duplicate data or not (0)
-
+   
+   !! NOTE: in UNST-7957, here we removed the "janeedfix" flag, which detected and
+   ! "fixed" (i.e. moved apart) overlapping nodes, which could lead build_kdtree to
+   ! become stuck. This option was not used for several years; in the unlikely event
+   ! that this problem re-appears in the future, look for this issue.
 
    contains
 

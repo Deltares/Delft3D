@@ -78,44 +78,8 @@
 
      call klok(t0)
 
-     if ( janeedfix.eq.1 ) then
-
-!       reduce double stations ( see "fix for Wim" in subroutine rmdouble)
-        allocate(iperm(Ns), invperm(Ns))
-        iperm = 0
-        invperm = 0
-        allocate(xx(Ns),yy(Ns))
-        xx = 0d0
-        yy = 0d0
-        num = 0
-        do i=1,Ns
-           if ( xs(i).ne.DMISS .and. ys(i).ne.DMISS ) then
-              jadouble = .false.
-              do inum=1,num
-                 if ( xs(i).eq.xx(inum) .and. ys(i).eq.yy(inum) )  then
-                   jadouble = .true.
-                   exit
-                 end if
-              end do
-              if ( jadouble ) then
-                 invperm(i) = -iperm(inum)      ! store unique station index
-                 cycle
-              end if
-
-!             new unique observation station
-              num        = num+1
-              xx(num)    = xs(i)
-              yy(num)    = ys(i)
-              iperm(num) = i
-              invperm(i) = num   ! really the inverse permutation
-           end if
-        end do
-
-!       build kdtree
-        call build_kdtree(treeinst, num, xx, yy, ierror, jsferic, dmiss)
-     else
-        call build_kdtree(treeinst, Ns, xs, ys, ierror, jsferic, dmiss)
-     end if
+!    build kdtree
+     call build_kdtree(treeinst, Ns, xs, ys, ierror, jsferic, dmiss)
 
      if ( ierror.ne.0 ) then
         goto 1234
@@ -176,13 +140,7 @@
 
 !       check if samples are in cell
         do i=1,NN
-           if ( janeedfix.eq.1 ) then
-              jj = treeinst%results(i)%idx
-!             find samples in original numbering (excluding the doubles)
-              isam = iperm(jj)
-           else
-              isam = treeinst%results(i)%idx
-           end if
+           isam = treeinst%results(i)%idx
 
            if ( k>ndx2D .and. k<ndxi+1 .and. jaoutside.eq.1 ) then  ! For 1D nodes, skip point-in-cell check
               in = 1                           ! These are always accepted if closest.
@@ -240,16 +198,6 @@
         end do
      end do
 
-     if ( janeedfix.eq.1 ) then
-!       fill double stations (by copy from respective unique  one)
-        do isam=1,Ns
-           i=invperm(isam) ! the unique number
-           if ( i.lt.0 ) then
-              inod(isam) = inod(-i)
-           end if
-        end do
-     end if
-
      call klok(t1)
 
      write(mesg, "('done in ', F12.5, ' sec.')") t1-t0
@@ -260,12 +208,6 @@
 
 !    deallocate
      if ( treeinst%itreestat.ne.ITREE_EMPTY ) call delete_kdtree2(treeinst)
-     if ( janeedfix.eq.1 ) then
-        if ( allocated(iperm)   ) deallocate(iperm)
-        if ( allocated(invperm) ) deallocate(invperm)
-        if ( allocated(xx)      ) deallocate(xx)
-        if ( allocated(yy)      ) deallocate(yy)
-     end if
 
      return
   end subroutine find_flowcells_kdtree
