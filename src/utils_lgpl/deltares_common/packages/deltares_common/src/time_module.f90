@@ -1326,7 +1326,7 @@ module time_module
           ( ISEC   .LT.     0 ) .OR. ( ISEC   .GT. 60 )) THEN
          julian_with_leapyears = -1.0
          WRITE(LINE,'(A33,I8,''-'',I6)') 'ERROR in JULIAN interpreting time:',IDATE,ITIME
-         CALL write_log_message(LINE,1)
+         CALL write_log_message(LINE)
          GOTO 999
       ELSE
          TEMP1  = INT (( IMONTH-14.0) / 12.0 )

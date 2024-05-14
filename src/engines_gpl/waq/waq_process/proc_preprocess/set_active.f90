@@ -82,9 +82,9 @@ contains
                     no_act = no_act + 1
                     if (no_act > no_act_max) then
                         write(line, 2130)
-                        call write_log_message(line, 1)
+                        call write_log_message(line)
                         write(line, 2110) no_act, no_act_max
-                        call write_log_message(line, 1)
+                        call write_log_message(line)
                         call terminate_execution(1)
                     endif
                     actlst(no_act) = name10
@@ -101,13 +101,13 @@ contains
             ix_dbl = index_in_array(name10, actlst(:no_act))
             if (ix_dbl <= 0) then
                 write(line, 2140)
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 no_act = no_act + 1
                 if (no_act > no_act_max) then
                     write(line, 2130)
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     write(line, 2110) no_act, no_act_max
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     call terminate_execution(1)
                 endif
                 actlst(no_act) = name10

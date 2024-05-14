@@ -460,7 +460,7 @@ contains
                 NOVAT = NOVAT + 1
                 IF (NOVAT > MAXLOC) THEN
                     LINE = 'ERROR : local dimension overflow in SETVAT'
-                    CALL write_log_message(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(*, *) LINE
                     CALL terminate_execution(1)
                 ENDIF
@@ -523,10 +523,10 @@ contains
                     IERR = IERR + 1
                     LINE = 'ERROR : undefined type off aggregation for :' // &
                             VARNAM(IVAR)
-                    CALL write_log_message(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(LINE, '(''type:'',I5,'' from aggrlist.dat'')') &
                             VATTAG(IVAT)
-                    CALL write_log_message(LINE, 1)
+                    CALL write_log_message(line)
                     !
                 ENDIF
                 !
@@ -573,10 +573,10 @@ contains
                     IERR = IERR + 1
                     LINE = 'ERROR : undefined type off dis-aggregation for :' &
                             // VARNAM(IVAR)
-                    CALL write_log_message(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(LINE, '(''type:'',I5,'' from aggrlist.dat'')') &
                             VATTAG(IVAT)
-                    CALL write_log_message(LINE, 1)
+                    CALL write_log_message(line)
                     !
                 ENDIF
             ENDIF

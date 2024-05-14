@@ -128,7 +128,6 @@ contains
         integer(kind = int_wp) :: lunblm           ! unit number bloom file
         integer(kind = int_wp) :: lunfrm           ! unit number bloom frm file
         integer(kind = int_wp) :: lund09           ! unit number bloom d09 file
-        integer(kind = int_wp) :: mlevel           ! monitoring level
 
         integer(kind = int_wp) :: isys             ! index variable
         integer(kind = int_wp) :: igrp             ! index variable
@@ -288,30 +287,22 @@ contains
         line = ' '
         call set_log_unit_number(lurep)
         call startup_screen(lurep)
-        call write_log_message(line, 11)
-        call write_log_message(line, 1)
+        call write_log_message(line)
 
         ! command line settingen , commands
 
         ! monitoring level
 
-        call retrieve_command_argument('-m', 1, lfound, mlevel, rdummy, cdummy, ierr2)
-        if (lfound) then
-            if (ierr2 == 0) then
-                call set_verbosity_level(mlevel)
-            else
-                call set_verbosity_level(10)
-            end if
-        end if
+        call retrieve_command_argument('-m', 1, lfound, idummy, rdummy, cdummy, ierr2)
 
         ! active processes only switch
 
         call retrieve_command_argument('-a', 1, lfound, idummy, rdummy, cdummy, ierr2)
         if (lfound) then
             write (line, '(a)') ' found -a command line switch'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             write (line, '(a)') ' only activated processes are switched on'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             laswi = .true.
         else
             laswi = .false.
@@ -323,9 +314,9 @@ contains
         if (lfound) then
             swi_nopro = .true.
             write (line, '(a)') ' found -np command line switch'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             write (line, '(a)') ' no processes from the process definition file are switched on'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             versio = versip
         else
             swi_nopro = .false.
@@ -345,7 +336,7 @@ contains
             if (pdffil /= ' ') then
                 file_name_list(34) = pdffil
                 write (line, '(a)') ' found -p command line switch'
-                call write_log_message(line, 1)
+                call write_log_message(line)
             else
                 pdffil = file_name_list(34)
             end if
@@ -383,15 +374,15 @@ contains
             call retrieve_command_argument('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
             if (lfound) then
                 write (line, '(a)') ' found -target_serial command line switch'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 if (ierr2 /= 0) then
                     old_items%target_serial = target_serial
                     write (line, '(a)') ' no serial number given, using current'
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = serial
                 else
                     write (line, '(a,i13)') ' using target serial number: ', target_serial
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = target_serial
                 end if
             else
@@ -404,14 +395,14 @@ contains
         call retrieve_command_argument('-conf', 3, lfound, idummy, rdummy, config, ierr2)
         if (lfound) then
             write (line, '(a)') ' found -conf command line switch'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             if (ierr2 /= 0) then
                 write (line, '(a)') ' no configuration id given, using default'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 config = ' '
             else
                 write (line, '(a25,a10)') ' using configuration id: ', config
-                call write_log_message(line, 1)
+                call write_log_message(line)
             end if
         else
             config = ' '
@@ -423,16 +414,16 @@ contains
         if (lfound) then
             l_eco = .true.
             line = ' '
-            call write_log_message(line, 1)
+            call write_log_message(line)
             write (line, '(a)') ' found -eco command line switch'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             if (ierr2 /= 0) then
                 blmfil = 'bloom.spe'
                 write (line, '(a30,a50)') ' using default eco input file:', blmfil
-                call write_log_message(line, 1)
+                call write_log_message(line)
             else
                 write (line, '(a22,a58)') ' using eco input file:', blmfil
-                call write_log_message(line, 1)
+                call write_log_message(line)
             end if
         else
             blmnam = 'ACTIVE_BLOOM_P'
@@ -440,12 +431,12 @@ contains
             if (blm_act > 0 .and. .not. swi_nopro) then
                 l_eco = .true.
                 line = ' '
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 write (line, '(a)') ' found constant ACTIVE_BLOOM_P without -eco command line switch'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 blmfil = 'bloom.spe'
                 write (line, '(a39,a41)') ' will try using default eco input file:', blmfil
-                call write_log_message(line, 1)
+                call write_log_message(line)
             else
                 l_eco = .false.
                 noprot = 0
@@ -459,7 +450,7 @@ contains
             if (ierr2 /= 0) then
                 call status%increase_error_count()
                 write (line, '(3a)') ' eco input file - ', trim(blmfil), ' not found! Exiting'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 return
             end if
 
@@ -541,7 +532,7 @@ contains
             ! when no algae were found, turn of eco mode
             if (noalg == 0) then
                 write (line, '(a)') ' no BLOOM algae were found, switching off eco mode.'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 l_eco = .false.
             else
                 ! set algal group list
@@ -568,9 +559,9 @@ contains
         ix_act = constants%find(swinam)
         if (ix_act > 0) then
             write (line, '(a)') ' found only_active constant'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             write (line, '(a)') ' only activated processes are switched on'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             laswi = .true.
         end if
 
@@ -591,7 +582,7 @@ contains
                     config = 'waq'
                 end if
                 write (line, '(a,a10)') ' using default configuration: ', config
-                call write_log_message(line, 1)
+                call write_log_message(line)
             end if
         end if
 
@@ -728,7 +719,7 @@ contains
             locnam(1) = parnam
             outputs%pointers(parindx) = nopred + nocons + nopa + nofun + nosfun + notot + 1
             write (line, '(3a)') ' output [', parnam, '] will be generated by numerical scheme'
-            call write_log_message(line, 4)
+            call write_log_message(line)
         end if
 
         call getinv(procesdef, notot, syname, nocons, constants, &

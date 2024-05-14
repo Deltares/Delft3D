@@ -25,41 +25,20 @@ module m_logger
     implicit none
 
     private
-    public :: write_log_message, set_verbosity_level, get_verbosity_level, set_log_unit_number, get_log_unit_number, &
+    public :: write_log_message, set_log_unit_number, get_log_unit_number, &
             write_error_message_with_values, write_error_message, terminate_execution
 
     ! Module variables with descriptive names and initialization.
     integer, save :: log_unit_number = 0  ! Log file unit number, initialized to 0.
-    integer, save :: verbosity_level = 5  ! Monitoring verbosity level, initialized to 5.
 
 contains
 
-    subroutine write_log_message(message, level)
-        !! Writes a message to the log based on the current monitoring level.
+    subroutine write_log_message(message)
+        !! Writes a message to the log based
         character(len = *), intent(in) :: message  ! The message to be logged.
-        integer, intent(in) :: level  ! The importance level of the message.
 
-        if (level <= verbosity_level) then
-            write(log_unit_number, '(A)') message
-        endif
+        write(log_unit_number, '(A)') message
     end subroutine write_log_message
-
-    subroutine set_verbosity_level(level)
-        !! Sets the verbosity level for the application.
-        integer, intent(in) :: level  ! The new monitoring level to be set.
-
-        ! set verbosity level
-        verbosity_level = level
-
-    end subroutine set_verbosity_level
-
-    subroutine get_verbosity_level(level)
-        ! Retrieves the current verbosity level.
-        integer, intent(out) :: level  ! The current monitoring level.
-
-        level = verbosity_level
-
-    end subroutine get_verbosity_level
 
     subroutine set_log_unit_number(file_unit)
         ! Sets the log file unit number where messages will be written.

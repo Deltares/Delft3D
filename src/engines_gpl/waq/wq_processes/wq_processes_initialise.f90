@@ -67,7 +67,7 @@ contains
         use m_algrep
         use m_actrep
         use m_date_time_utils_external, only : write_date_time
-        use m_logger, only : terminate_execution, write_log_message, set_verbosity_level
+        use m_logger, only : terminate_execution, write_log_message
         use m_rd_stt
         use m_getidentification
         use m_cli_utils, only : retrieve_command_argument
@@ -283,9 +283,6 @@ contains
         write(lunlsp, '(/)')
         ! command line settingen , commands
 
-        ! monitoring level
-        call set_verbosity_level (10)
-
         ! active processes only switch
         ! only activated processes are switched on
         laswi = .true.
@@ -366,15 +363,15 @@ contains
             call retrieve_command_argument ('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
             if (lfound) then
                 write(line, '(a)') ' found -target_serial command line switch'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 if (ierr2/= 0) then
                     old_items%target_serial = target_serial
                     write(line, '(a)')' no serial number given, using current'
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = serial
                 else
                     write(line, '(a,i13)') ' using target serial number: ', target_serial
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = target_serial
                 endif
             else
@@ -387,14 +384,14 @@ contains
         call retrieve_command_argument ('-conf', 3, lfound, idummy, rdummy, config, ierr2)
         if (lfound) then
             write(line, '(a)') ' found -conf command line switch'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             if (ierr2/= 0) then
                 write(line, '(a)')' no configuration id given, using default'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 config = ' '
             else
                 write(line, '(a25,a10)') ' using configuration id: ', config
-                call write_log_message(line, 1)
+                call write_log_message(line)
             endif
         else
             config = ' '
@@ -412,11 +409,11 @@ contains
                 inquire(file = blmfil, exist = l_eco)
                 if (l_eco) then
                     line = ' '
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' found constant ACTIVE_BLOOM_P without -eco command line switch'
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' and found default file bloom.spe. Will using default BLOOM file.'
-                    call write_log_message(line, 1)
+                    call write_log_message(line)
                 else
                     l_eco = .false.
                     noprot = 0
@@ -485,7 +482,7 @@ contains
             ! when no algae were found, turn of eco mode
             if (noalg == 0) then
                 write(line, '(a)') ' no BLOOM algae were found, switching off eco mode.'
-                call write_log_message(line, 1)
+                call write_log_message(line)
                 l_eco = .false.
             else
                 ! set algal group list
@@ -512,9 +509,9 @@ contains
         ix_act = constants%find(swinam)
         if (ix_act > 0) then
             write(line, '(a)') ' found only_active constant'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             write(line, '(a)') ' only activated processes are switched on'
-            call write_log_message(line, 1)
+            call write_log_message(line)
             laswi = .true.
         endif
 
@@ -535,7 +532,7 @@ contains
                     config = 'waq'
                 endif
                 write(line, '(a,a10)') ' using default configuration: ', config
-                call write_log_message(line, 1)
+                call write_log_message(line)
             endif
         endif
 
