@@ -33,7 +33,7 @@ module m_find_flownode
    
    private
    
-   public :: find_flownode, find_flownode_for_obs
+   public :: find_flownode, find_flownode_for_obs, find_flowcells_kdtree
    
    contains
 
@@ -291,6 +291,162 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
 1234 continue
 
 end subroutine find_flownode
+
+!> find flow cells with kdtree2
+subroutine find_flowcells_kdtree(treeinst, Ns, xs, ys, inod, jaoutside, iLocTp, ierror)
+
+   use m_missing
+   use m_flowgeom
+   use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
+   use kdtree2Factory
+   use m_sferic
+   use unstruc_messages
+   use gridoperations
+   use geometry_module, only: dbdistance, pinpok
+
+   implicit none
+
+   type(kdtree_instance),           intent(inout) :: treeinst
+   integer,                         intent(in)    :: Ns         !< number of samples
+   double precision, dimension(Ns), intent(in)    :: xs, ys     !< observation coordinates
+   integer,          dimension(Ns), intent(out)   :: inod       !< flow nodes
+   integer,                         intent(in)    :: jaoutside  !< allow outside cells (for 1D) (1) or not (0)
+   integer,                         intent(in)    :: iLocTp     !< (0) not for obs, or obs with locationtype==0, (1) for obs with locationtype==1, (2) for obs with locationtype==2
+   integer,                         intent(out)   :: ierror     !< error (>0), or not (0)
+
+   double precision, dimension(:),  allocatable   :: xx, yy     !< unique station coordinates
+   integer,          dimension(:),  allocatable   :: iperm      !< permutation array
+   integer,          dimension(:),  allocatable   :: invperm    !< inverse array
+     
+   character(len=128)                             :: mesg, FNAM
+
+   integer,          parameter                    :: Msize = 10
+
+   double precision, dimension(Msize)             :: xloc, yloc
+   integer,          dimension(Msize)             :: Lorg
+   integer,          dimension(Msize)             :: LnnL
+
+   double precision                               :: dmaxsize, R2search, t0, t1, zz
+
+   integer                                        :: i, ip1, isam, in, k, N, NN
+   integer                                        :: inum, num, jj
+   integer                                        :: in3D, j, fid
+   integer                                        :: nstart, nend
+   logical                                        :: jadouble
+   double precision                               :: dist_old, dist_new
+
+   ierror = 1
+
+   inod = 0
+
+   call klok(t0)
+
+   ! build kdtree
+   call build_kdtree(treeinst, Ns, xs, ys, ierror, jsferic, dmiss)
+
+   if (ierror /= 0) then
+      goto 1234
+   end if
+
+   ! define the searching range, this is especially for the purpose of snapping obs to 1D, 2D or 1D+2D flownodes.
+   ! For other purpose it should stay as before
+   select case(iLocTp)
+   case (INDTP_ALL)
+      nstart = 1
+      nend   = ndx
+   case(INDTP_1D) ! 1d flownodes coordinates
+      nstart = ndx2D+1
+      nend   = ndx
+   case(INDTP_2D) ! 2d flownodes coordinates
+      nstart = 1
+      nend   = ndx2D
+   end select
+
+   call mess(LEVEL_INFO, 'Finding flow nodes...')
+
+   ! loop over flownodes
+   do k = nstart, nend
+        
+      ! fill query vector
+      call make_queryvector_kdtree(treeinst, xz(k), yz(k), jsferic)
+
+      ! compute maximum flowcell dimension
+      dmaxsize = 0d0
+      N = size(nd(k)%x)
+      do i = 1, N
+         ip1 = i+1
+         if (ip1 > N) then
+            ip1 = ip1 - N
+         end if
+         dmaxsize = max(dmaxsize, dbdistance( nd(k)%x(i), nd(k)%y(i), nd(k)%x(ip1), nd(k)%y(ip1), jsferic, jasfer3D, dmiss))
+      end do
+
+      ! determine square search radius
+      R2search = 1.1d0*dmaxsize**2  ! 1.1d0: safety
+
+      ! get the cell polygon that is safe for periodic, spherical coordinates, inluding poles
+      call get_cellpolygon(k, Msize, N, 1d0, xloc, yloc, LnnL, Lorg, zz)
+
+      if (N < 1) then
+         if (k <= Ndxi) then
+            continue
+         end if
+         cycle
+      end if
+
+      ! count number of points in search area
+      NN = kdtree2_r_count(treeinst%tree,treeinst%qv,R2search)
+
+      if (NN == 0) cycle ! no links found
+
+      ! reallocate if necessary
+      call realloc_results_kdtree(treeinst,NN)
+
+      ! find nearest NN samples
+      call kdtree2_n_nearest(treeinst%tree, treeinst%qv, NN, treeinst%results)
+
+      ! check if samples are in cell
+      do i = 1, NN
+         isam = treeinst%results(i)%idx
+
+         if (k > ndx2D .and. k < ndxi+1 .and. jaoutside == 1) then  ! For 1D nodes, skip point-in-cell check
+            in = 1 ! These are always accepted if closest.
+         else
+            call pinpok(xs(isam), ys(isam), N, xloc, yloc, in, jins, dmiss)
+         end if
+         if (in == 1) then
+            if (inod(isam) /= 0) then            ! should not happen, but it can: for example in case of overlapping 1D branches
+               write(mesg, "('find_flowcells_kdtree: sample/point ', I0, ' in cells ', I0, ' and ', I0)") isam, inod(isam), k
+               call mess(LEVEL_INFO, mesg  )
+               ! goto 1234
+               if (k > ndx2D .and. k < ndxi+1 .and. jaoutside == 1) then  ! ONLY in case of a 1D node, consider replacing, if the 1D node is closer
+                  dist_old = dbdistance( xs(isam), ys(isam), xz(inod(isam)), yz(inod(isam)), jsferic, jasfer3D, dmiss)
+                  dist_new = dbdistance( xs(isam), ys(isam), xz(k         ), yz(k         ), jsferic, jasfer3D, dmiss)
+                  if (dist_new<dist_old) then            ! if the new candidate is nearer to the observation station  ...
+                     inod(isam) = k                      ! ... adopt the new candidate as primary candidate
+                  end if
+                  write(mesg, "('   selected : ',I0,' based on distance comparison.')")  inod(isam)
+                  call mess(LEVEL_INFO, mesg  )
+               end if
+            else
+               inod(isam) = k
+            end if
+         end if
+      end do
+   end do
+
+   call klok(t1)
+
+   write(mesg, "('done in ', F12.5, ' sec.')") t1-t0
+   call mess(LEVEL_INFO, trim(mesg))
+
+   ierror = 0
+1234 continue
+
+   ! deallocate
+   if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+
+end subroutine find_flowcells_kdtree
 
 subroutine find_flownode_bruteforce(x, y, node_id_closest)  ! IF NOT IN FLOWCELL, MAYBE CLOSE TO 1d OF BND
                                                   ! je moet dwars op een flow liggen, anders doe je niet mee

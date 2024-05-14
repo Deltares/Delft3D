@@ -68,6 +68,7 @@
  use Timers
  use m_structures
  use unstruc_messages
+ use m_find_flownode, only: find_flowcells_kdtree
 
  implicit none
 

@@ -847,7 +847,10 @@ contains
    use m_partitioninfo
    use kdtree2Factory
    use unstruc_messages
+   use m_find_flownode, only: find_flowcells_kdtree
+   
    implicit none
+   
    integer          :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
    integer, save    :: ini = 0
    double precision :: alf, x, y

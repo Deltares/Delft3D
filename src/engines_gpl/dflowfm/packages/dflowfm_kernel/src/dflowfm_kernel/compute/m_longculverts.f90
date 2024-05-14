@@ -1146,6 +1146,7 @@ contains
    use m_partitioninfo, only: jampi,reduce_int_max
    use kdtree2Factory
    use m_hash_search
+   use m_find_flownode, only: find_flowcells_kdtree
    
    type(t_network) , intent(inout)    :: network      !< Network structure
    integer, intent(in)                :: numcoords    !< number of polyline coordinates

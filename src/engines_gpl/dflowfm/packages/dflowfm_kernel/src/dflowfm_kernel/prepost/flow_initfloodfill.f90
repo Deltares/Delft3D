@@ -45,6 +45,8 @@ use m_flowgeom
 use m_GlobalParameters, only: INDTP_ALL
 use m_alloc
 use kdtree2Factory
+use m_find_flownode, only: find_flowcells_kdtree
+   
 implicit none
 
 integer :: i, inod, iL, Lf, k, k2, nx

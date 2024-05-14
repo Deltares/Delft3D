@@ -49,15 +49,14 @@ module kdtree2Factory
       use physicalconsts, only: earth_radius 
       use mathconsts, only: degrad_hp 
    
-      type(kdtree_instance)          :: treeinst
-      integer                        :: N       !< number of entries
-      double precision, dimension(N) :: x, y    !< coordinates
-      integer,          intent(out)  :: ierror  !< error (1) or not (0)
+      type(kdtree_instance),          intent(inout) :: treeinst
+      integer,                        intent(in   ) :: N       !< number of entries
+      double precision, dimension(N), intent(in   ) :: x, y    !< coordinates
+      integer,                        intent(  out) :: ierror  !< error (1) or not (0)
+      integer,                        intent(in   ) :: jsferic
+      double precision,               intent(in   ) :: dmiss
 
-      integer                        :: k, num, ierr
-
-      integer, intent(in)            :: jsferic
-      double precision, intent(in)   :: dmiss
+      integer                                       :: k, num, ierr
 
       ierror = 1
 
@@ -133,46 +132,38 @@ module kdtree2Factory
 
    end subroutine build_kdtree
    
-   !----------------------------------------------------------------------------!
-   !> 2. Delete subroutine
-   !----------------------------------------------------------------------------!
+   !> Delete (deallocate) a k-d tree
    subroutine delete_kdtree2(treeinst)
-      !LC: use unstruc_messages
-      implicit none
-      type(kdtree_instance) :: treeinst
+   
+      type(kdtree_instance), intent(inout) :: treeinst
 
-      if ( treeinst%itreestat.eq.ITREE_EMPTY ) return
+      if (treeinst%itreestat == ITREE_EMPTY) then
+         return
+      end if
 
       call kdtree2_destroy(treeinst%tree)
 
-      if ( associated(treeinst%sample_coords) ) deallocate(treeinst%sample_coords)
-      if ( associated(treeinst%qv) )            deallocate(treeinst%qv)
-      if ( allocated(treeinst%results) )        deallocate(treeinst%results)
+      if (associated(treeinst%sample_coords)) deallocate(treeinst%sample_coords)
+      if (associated(treeinst%qv))            deallocate(treeinst%qv)
+      if (allocated(treeinst%results))        deallocate(treeinst%results)
 
       treeinst%itreestat = ITREE_EMPTY
       IRESULTSIZE = 0
-
-      !LC call mess(LEVEL_INFO, 'Delete kdtree...')
-      return
+      
    end subroutine delete_kdtree2
    
-      
-   !----------------------------------------------------------------------------!
-   !> 3. Query 
-   !----------------------------------------------------------------------------!  
+   !> Make a k-d tree query vector
    subroutine make_queryvector_kdtree(treeinst, x, y, jsferic)
-   
-      use physicalconsts, only: earth_radius 
-      use mathconsts, only: degrad_hp 
-   
-      implicit none
 
-      double precision, intent(in)   :: x, y   !< coordinates
-      type(kdtree_instance)          :: treeinst
-      integer, intent(in)            :: jsferic
+      use physicalconsts, only: earth_radius
+      use mathconsts, only: degrad_hp
 
-      !  fill query vector
-      if ( jsferic.eq.0 ) then
+      type(kdtree_instance), intent(inout) :: treeinst
+      double precision,      intent(in   ) :: x, y   !< coordinates
+      integer,               intent(in   ) :: jsferic
+
+      ! fill query vector
+      if (jsferic == 0) then
          treeinst%qv(1) = x
          treeinst%qv(2) = y
       else
@@ -181,88 +172,80 @@ module kdtree2Factory
          treeinst%qv(3) = earth_radius * sin(y*degrad_hp)
       end if
 
-      return
    end subroutine make_queryvector_kdtree
 
-   !----------------------------------------------------------------------------!
-   !> 4. Realloc results 
-   !----------------------------------------------------------------------------!  
-   subroutine realloc_results_kdtree(treeinst,NN)
-      implicit none
+   !> Reallocate the k-d tree results array
+   subroutine realloc_results_kdtree(treeinst, NN)
 
-      integer, intent(in) :: NN  !< array size
-      type(kdtree_instance) :: treeinst
+      type(kdtree_instance), intent(inout) :: treeinst
+      integer,               intent(in   ) :: NN  !< array size
 
-      if ( .not.allocated(treeinst%results) ) then
+      if (.not. allocated(treeinst%results)) then
          IRESULTSIZE = INIRESULTSIZE
          allocate(treeinst%results(IRESULTSIZE))
       else
-         if ( NN.gt.IRESULTSIZE ) then
-            IRESULTSIZE = max(int(1.2d0*dble(NN))+1,INIRESULTSIZE)
+         if (NN > IRESULTSIZE) then
+            IRESULTSIZE = max(int(1.2d0*dble(NN))+1, INIRESULTSIZE)
             deallocate(treeinst%results)
             allocate(treeinst%results(IRESULTSIZE))
          end if
       end if
-      return
+
    end subroutine realloc_results_kdtree
    
 
-   !----------------------------------------------------------------------------!
-   !> 5. Find nearest sample with kdtree2
-   !----------------------------------------------------------------------------!  
-   subroutine find_nearest_sample_kdtree(treeinst,Ns,Ndim,xs,ys,zs,xk,yk,NN,isam,ierror, jsferic, dmiss)
+   !> Find nearest sample with kdtree2 
+   subroutine find_nearest_sample_kdtree(treeinst, Ns, Ndim, xs, ys, zs, xk, yk, NN, isam, ierror, jsferic, dmiss)
       use m_alloc
-      implicit none
       
-      integer,                                           intent(in)    :: Ns      !< number of samples
-      integer,                                           intent(in)    :: Ndim    !< dimension of sample vector
-      double precision,     dimension(Ns),               intent(in)    :: xs, ys  !< sample coordinates
-      double precision,     dimension(Ndim,Ns),          intent(in)    :: zs      !< sample values
-      double precision,                                  intent(in)    :: xk, yk  !< query point coordinates
-      integer,                                           intent(in)    :: NN      !< number of nearest samples
-      integer,              dimension(NN),               intent(out)   :: isam    !< nearest sample points
-      integer,                                           intent(out)   :: ierror  !< error (>0), or not (0)
+      type(kdtree_instance),                intent(inout) :: treeinst
+      integer,                              intent(in   ) :: Ns      !< number of samples
+      integer,                              intent(in   ) :: Ndim    !< dimension of sample vector
+      double precision, dimension(Ns),      intent(in   ) :: xs, ys  !< sample coordinates
+      double precision, dimension(Ndim,Ns), intent(in   ) :: zs      !< sample values
+      double precision,                     intent(in   ) :: xk, yk  !< query point coordinates
+      integer,                              intent(in   ) :: NN      !< number of nearest samples
+      integer,          dimension(NN),      intent(  out) :: isam    !< nearest sample points
+      integer,                              intent(  out) :: ierror  !< error (>0), or not (0)
+      integer,                              intent(in   ) :: jsferic
+      double precision,                     intent(in   ) :: dmiss
       
-      double precision,     dimension(:), allocatable                  :: xx, yy
+      integer, parameter                          :: Nquerydim = 2 !< query vector length
       
-      integer, parameter                                               :: Nquerydim = 2 !< query vector length
-      
-      integer                                                          :: i, num
-      type(kdtree_instance), intent(in)                                :: treeinst
-      integer, intent(in)                                              :: jsferic
-      double precision, intent(in)                                     :: dmiss
+      integer                                     :: i, num
       
       ierror = 0     
       
       ! build tree if necessary
-      if ( treeinst%itreestat.ne.ITREE_OK ) then
+      if (treeinst%itreestat /= ITREE_OK) then
       
-         if ( treeinst%itreestat.ne.ITREE_EMPTY ) then
+         if (treeinst%itreestat /= ITREE_EMPTY) then
             call delete_kdtree2(treeinst)
          end if
       
          ! save memory by inserting samples directly (can give problems with DMISS-valued samples)
-         call build_kdtree(treeinst,NS,xs,ys,ierror, jsferic, dmiss)
+         call build_kdtree(treeinst, NS, xs, ys, ierror, jsferic, dmiss)
       
       end if
       
-      if ( ierror.eq.0 ) then
+      if (ierror == 0) then
+         
          ! fill query vector
-         call make_queryvector_kdtree(treeinst,xk,yk, jsferic)
+         call make_queryvector_kdtree(treeinst, xk, yk, jsferic)
       
          ! reallocate if necessary
-         call realloc_results_kdtree(treeinst,NN)
+         call realloc_results_kdtree(treeinst, NN)
       
          ! find nearest sample points
-         call kdtree2_n_nearest(treeinst%tree,treeinst%qv,NN,treeinst%results)
+         call kdtree2_n_nearest(treeinst%tree, treeinst%qv, NN, treeinst%results)
       
          ! copy to output
-         do i=1,NN
+         do i = 1, NN
             isam(i) = treeinst%results(i)%idx
          end do
+         
       end if
       
-      return
    end subroutine find_nearest_sample_kdtree
    
    
