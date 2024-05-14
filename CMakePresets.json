@@ -23,8 +23,13 @@
       "name": "windows",
       "hidden": true,
       "inherits": "default",
-      "displayName": "win64 config",
-      "description": "win64 config using Visual Studio 17 2022 generator",
+      "displayName": "Windows-only configuration",
+      "description": "This build is only available on Windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "generator": "Visual Studio 17 2022",
       "cacheVariables": {
         "architecture": {
@@ -34,10 +39,15 @@
     },
     {
       "name": "linux",
-      "hidden": true,
+      "hidden": false,
       "inherits": "default",
-      "displayName": "linux config",
-      "description": "linux config using Ninja generator",
+      "displayName": "Linux-only configuration",
+      "description": "This build is only available on Linux",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
       "generator": "Ninja"
     },
     {
@@ -106,5 +116,31 @@
       "displayName": "SWAN IFORT win64 Release",
       "description": "Configure SWAN using Visual Studio 17 2022 generator"
     }
-  ]
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default"
+        },
+        {
+          "type": "build",
+          "name": "default"
+        }
+      ]
+    }
+  ],
+  "vendor": {
+    "www.deltares.nl": {
+      "autoFormat": false
+    }
+  }
 }
