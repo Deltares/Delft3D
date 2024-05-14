@@ -17783,25 +17783,25 @@ subroutine read_structure_dimensions_from_rst(ncid, filename, istrtypein, struna
 end subroutine read_structure_dimensions_from_rst
 
 !> Defines a new variable in a NetCDF dataset, also setting some frequently used attributes.
-subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord, geometry, fillVal, add_gridmapping, attset)
+subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord, geometry, fillVal, add_gridmapping, extra_attributes)
    use netcdf
    use netcdf_utils
    use m_sferic
    use m_missing, only: dmiss, intmiss
    implicit none
 
-   integer,                    intent(in   ) :: ncid  !< NetCDF dataset id.
-   integer,                    intent(inout) :: idq   !< NetCDF variable id for the newly created variable.
-   integer,                    intent(in   ) :: itype !< data type, one of the standard nf90_* data types.
-   integer,                    intent(in   ) :: idims(:) !< NetCDF dimension id(s) for this variable.
-   character(len=*),           intent(in   ) :: name  !< Variable name in the dataset
-   character(len=*), optional, intent(in   ) :: long_name  !< Description of the variable, used in the :long_name attribute.
-   character(len=*), optional, intent(in   ) :: unit  !< Units of the variable (udunit-compatible), used in the :units attribute.
-   character(len=*), optional, intent(in   ) :: namecoord !< Text string the with coordinate variable names, used in the :coordinates attribute.
-   real(dp),         optional, intent(in   ) :: fillVal  !< Fill value that will be stored in the standard :_FillValue attribute
-   character(len=*), optional, intent(in   ) :: geometry !< (optional) Variable name of a geometry variable in the same dataset, used in the :geometry attribute.
-   logical,          optional, intent(in   ) :: add_gridmapping !< Whether or not to add a grid mapping attribute. Default: false.. Only use this if your coordinates in namecoord rely on this grid mapping.
-   type(nc_att_set), optional, intent(in   ) :: attset !< (optional) Set containing additional custom NetCDF attributes for this variable.
+   integer,                         intent(in   ) :: ncid  !< NetCDF dataset id.
+   integer,                         intent(inout) :: idq   !< NetCDF variable id for the newly created variable.
+   integer,                         intent(in   ) :: itype !< data type, one of the standard nf90_* data types.
+   integer,                         intent(in   ) :: idims(:) !< NetCDF dimension id(s) for this variable.
+   character(len=*),                intent(in   ) :: name  !< Variable name in the dataset
+   character(len=*),      optional, intent(in   ) :: long_name  !< Description of the variable, used in the :long_name attribute.
+   character(len=*),      optional, intent(in   ) :: unit  !< Units of the variable (udunit-compatible), used in the :units attribute.
+   character(len=*),      optional, intent(in   ) :: namecoord !< Text string the with coordinate variable names, used in the :coordinates attribute.
+   real(dp),              optional, intent(in   ) :: fillVal  !< Fill value that will be stored in the standard :_FillValue attribute
+   character(len=*),      optional, intent(in   ) :: geometry !< (optional) Variable name of a geometry variable in the same dataset, used in the :geometry attribute.
+   logical,               optional, intent(in   ) :: add_gridmapping !< Whether or not to add a grid mapping attribute. Default: false.. Only use this if your coordinates in namecoord rely on this grid mapping.
+   type(ug_nc_attribute), optional, intent(in   ) :: extra_attributes(:) !< (optional) Set containing additional custom NetCDF attributes for this variable.
    
    integer                          :: ierr, int_fill
    real(dp)                         :: dp_fill
@@ -17855,9 +17855,9 @@ subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord
       call mess(LEVEL_ERROR,'unstruc_netcdf/definencvar: invalid netcdf type for fill_value!')
    end select
 
-   if (present(attset)) then
-      if (associated(attset%atts)) then
-         ierr = ncu_put_var_attset(ncid, idq, attset%atts(1:size(attset%atts)))
+   if (present(extra_attributes)) then
+      if (size(extra_attributes) > 0) then
+         ierr = ncu_put_var_attset(ncid, idq, extra_attributes)
       end if
    end if
 

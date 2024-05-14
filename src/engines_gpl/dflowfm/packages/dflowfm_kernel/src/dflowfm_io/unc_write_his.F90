@@ -281,10 +281,8 @@ subroutine unc_write_his(tim)            ! wrihis
         !
         call ncu_set_att(attributes(1), 'standard_name', 'time')
         call ncu_set_att(attributes(2), 'bounds', 'time_bds')
-        attribute_set%atts => attributes(1:2)
-        call definencvar(ihisfile, id_time, nf90_double, (/ id_timedim /), 'time', unit=trim(Tudunitstr),attset=attribute_set)
-        attribute_set%atts => attributes(1:1)
-        call definencvar(ihisfile, id_timebds, nf90_double,(/ id_twodim, id_timedim /), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),attset=attribute_set)
+        call definencvar(ihisfile, id_time, nf90_double, (/ id_timedim /), 'time', unit=trim(Tudunitstr),extra_attributes=attributes(1:2))
+        call definencvar(ihisfile, id_timebds, nf90_double,(/ id_twodim, id_timedim /), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
 
         ! Size of latest timestep
         ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
@@ -301,7 +299,7 @@ subroutine unc_write_his(tim)            ! wrihis
             
             ! Special definition of station_id for backwards compatibility reasons..
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', unit=trim(Tudunitstr),attset=attribute_set)
+            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
             
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
@@ -381,7 +379,7 @@ subroutine unc_write_his(tim)            ! wrihis
         if (jahispump > 0 .and. npumpsg > 0) then
             call check_netcdf_error( nf90_def_dim(ihisfile, 'pumps', npumpsg, id_pumpdim))
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',attset=attribute_set)
+            call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
         end if
         ierr = unc_def_his_structure_static_vars(ihisfile, 'pump', 'pump', jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                  id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
@@ -581,41 +579,41 @@ subroutine unc_write_his(tim)            ! wrihis
 
             select case(config%location_specifier)
             case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GENSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DAM)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_PUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GATE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_WEIRGEN)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_ORIFICE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_BRIDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_CULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DAMBREAK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_UNIWEIR)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_CMPSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_LONGCULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_LATERAL)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DREDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
              case (UNC_LOC_DUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
              case (UNC_LOC_DRED_LINK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_STATION)
                if (allocated(config%nc_dim_ids)) then
                   if (config%nc_dim_ids%laydim) then
@@ -628,15 +626,15 @@ subroutine unc_write_his(tim)            ! wrihis
                      local_statcoordstring = statcoordstring
                   end if
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), build_nc_dimension_id_list(config%nc_dim_ids), var_name, var_long_name, &
-                                   config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., attset=config%additional_attributes)
+                                   config%unit, local_statcoordstring, fillVal=dmiss, add_gridmapping = .true., extra_attributes=config%additional_attributes%atts)
                else
                   call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
                end if
             case (UNC_LOC_OBSCRS)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GLOBAL)
                if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, attset=config%additional_attributes)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                if (timon) call timstop (handle_extra(59))
             end select
 
