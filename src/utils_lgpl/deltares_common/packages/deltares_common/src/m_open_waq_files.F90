@@ -21,229 +21,216 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_open_waq_files
-    use m_srstop
-
+    use m_logger, only : terminate_execution
 
     implicit none
+    private
+    public :: open_waq_files
 
-    contains
+contains
 
-    subroutine open_waq_files ( lun    , finam  , nropen , opmode , ierr   )
+    subroutine open_waq_files(file_unit, file_name, file_id, mode, ierr)
+        !! Opens all Delwaq files
+        !! SHARED is used for those files which are optionally prepared at runtime by another programme
+        !! running on-line. To enable this, the reading is synchronised (DLWQI0, DLWQT4)
+        !!
+        !! Files opened with this option are:
+        !!      volumes, flows, areas, lengths, segment functions and harmonics (see local comments)
+        integer, intent(inout) :: file_unit       !< unit number of file to be opened
+        character*(*), intent(in) :: file_name     !< name of the file to be opened
+        integer, intent(in) :: file_id    !< Delwaq number of the file to be opened
+        integer, intent(in) :: mode    !< Indicator how file must be opened
+        integer, intent(inout) :: ierr      !< Error flag
 
-!     Deltares Software Centre
+        ierr = 0
 
-!>\File
-!>           Opens all Delwaq files
-!
-!*********************************************************************
-!     SHARED is used for those files which are optionally prepared
-!     at runtime by another programme, running on-line.
-!     To enable this, the reading is synchronised (DLWQI0, DLWQT4)
-!     Files opened with this option are:
-!     volumes, flows, areas, lengths, segment functions
-!     and harmonics (see local comments)
-!*********************************************************************
-
-!     LOGICAL UNITS      : LUN = unit to be opened
-
-      implicit none
-
-!     Parameters          :
-
-      integer      , intent(inout) :: lun       !< unit number of file to be opened
-      character*(*), intent(in   ) :: finam     !< name of the file to be opened
-      integer      , intent(in   ) :: nropen    !< Delwaq number of the file to be opened
-      integer      , intent(in   ) :: opmode    !< Indicator how file must be opened
-      integer      , intent(inout) :: ierr      !< Error flag
-
-      ierr   =   0
-
-!     get the correct open statement
-      select case ( nropen )
-         ! 1 = common-block file
-         case ( 1 )
-            select case ( opmode )
-               case ( 1 )
-                  call open_unformatted_stream(lun, finam, opmode, ierr, nropen)
-               case ( 2 )
-                  open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
-               case ( 3 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream' )
-                  close( lun, status = 'delete', err = 910 )
-               case default
-                  ierr = 3
+        ! get the correct open statement
+        select case (file_id)
+            ! 1 = common-block file
+        case (1)
+            select case (mode)
+            case (1)
+                call open_unformatted_stream(file_unit, file_name, mode, ierr, file_id)
+            case (2)
+                open (newunit = file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', &
+                        status = 'old')
+            case (3)
+                open (file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream')
+                close(file_unit, status = 'delete', err = 910)
+            case default
+                ierr = 3
             end select
 
-         !  2 = system file;        4 = pointers functions; 5 = time steps file;   6 = grid layout;    9 = dispersion file;
-         ! 12 = velocities file;   14 = boundaries file;   15 = waste loads file; 16 = functions file; 18 = initial conditions file;
-         ! 24 = process work file; 25 = output work file
-         case ( 2, 4, 5, 6, 9, 12, 14, 15, 16, 18, 24, 25)
-            call open_unformatted_stream(lun, finam, opmode, ierr, nropen, .true.)
+            !  2 = system file;        4 = pointers functions;      5 = time steps file;   6 = grid layout;
+            !  9 = dispersion file;   12 = velocities file;        14 = boundaries file;  15 = waste loads file;
+            ! 16 = functions file;    18 = initial conditions file;24 = process work file;25 = output work file
+        case (2, 4, 5, 6, 9, 12, 14, 15, 16, 18, 24, 25)
+            call open_unformatted_stream(file_unit, file_name, mode, ierr, file_id, .true.)
 
-         !  3 = harmonic functions; 7 = volumes file
-         ! 10 = areas file;        11 = flows        ; 13 = length file; 17 = segment functions file
-         ! 44 = pointer file
-         case ( 3, 7, 10, 11, 13, 17, 44 )
-            call open_unformatted(lun, finam, opmode, ierr, nropen, support_old_status=.false.)
+            !  3 = harmonic functions; 7 = volumes file
+            ! 10 = areas file;        11 = flows        ; 13 = length file; 17 = segment functions file
+            ! 44 = pointer file
+        case (3, 7, 10, 11, 13, 17, 44)
+            call open_unformatted(file_unit, file_name, mode, ierr, file_id, support_old_status = .false.)
 
-         !  8 = to-/from-pointers file;
-         ! 40 = Binary segment attribute file
-         case ( 8, 40 )
-            call open_unformatted(lun, finam, opmode, ierr, nropen, replace=.true.)
+            !  8 = to-/from-pointers file;
+            ! 40 = Binary segment attribute file
+        case (8, 40)
+            call open_unformatted(file_unit, file_name, mode, ierr, file_id, replace = .true.)
 
-         ! 19 = DELWAQ2 monitoring file (.mon);
-         ! 20 = dump file
-         case ( 19, 20 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910 )
-               case default
-                  ierr = 3
+            ! 19 = DELWAQ2 monitoring file (.mon);
+            ! 20 = dump file
+        case (19, 20)
+            select case (mode)
+            case (1)
+                open (newunit = file_unit, file = file_name, err = 910)
+            case default
+                ierr = 3
             end select
 
-         ! 21 = history file; 22 = map file; 23 = restart file
-         case ( 21, 22, 23 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace'  )
-               case default
-                  ierr = 3
+            ! 21 = history file; 22 = map file; 23 = restart file
+        case (21, 22, 23)
+            select case (mode)
+            case (1)
+                open (newunit = file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', &
+                        status = 'replace')
+            case default
+                ierr = 3
             end select
 
-         ! 26 = input file
-         case ( 26 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 900, status = 'old' )
-               case default
-                  ierr = 3
+            ! 26 = input file
+        case (26)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 900, status = 'old')
+            case default
+                ierr = 3
             end select
 
-         ! 27 = stripped input file; 28 = aux. stripped input file
-         case ( 27, 28 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, status = 'scratch' )
-               case default
-                  ierr = 3
+            ! 27 = stripped input file; 28 = aux. stripped input file
+        case (27, 28)
+            select case (mode)
+            case (1)
+                open (file_unit, status = 'scratch')
+            case default
+                ierr = 3
             end select
 
-         ! 29 = DELWAQ1 input report file (.lst)
-         case ( 29 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910 )
-               case ( 2 )
-                  open ( lun, file = finam, err = 900, status = 'new' )
-               case default
-                  ierr = 3
+            ! 29 = DELWAQ1 input report file (.lst)
+        case (29)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 910)
+            case (2)
+                open (file_unit, file = file_name, err = 900, status = 'new')
+            case default
+                ierr = 3
             end select
 
-         ! 30 = dimensioning include file
-         case ( 30 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910 )
-               case ( 2 )
-                  open ( lun, file = finam, err = 900, status = 'old' )
-               case default
-                  ierr = 3
+            ! 30 = dimensioning include file
+        case (30)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 910)
+            case (2)
+                open (file_unit, file = file_name, err = 900, status = 'old')
+            case default
+                ierr = 3
             end select
 
-         ! 31 = scratch file time functions 1; 32 = scratch file time functions 2
-         case ( 31, 32 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, err = 910, form='unformatted', access='stream', status = 'scratch')
-               case default
-                  ierr = 3
+            ! 31 = scratch file time functions 1; 32 = scratch file time functions 2
+        case (31, 32)
+            select case (mode)
+            case (1)
+                open (file_unit, err = 910, form = 'unformatted', access = 'stream', status = 'scratch')
+            case default
+                ierr = 3
             end select
 
-         ! 33 = auxiliary input file
-         case ( 33 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 900, status = 'old' )
-               case ( 2 )
-                  open ( lun, file = finam, err = 900, form='unformatted', access='stream', status = 'old' )
-               case default
-                  ierr = 3
+            ! 33 = auxiliary input file
+        case (33)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 900, status = 'old')
+            case (2)
+                open (file_unit, file = file_name, err = 900, form = 'unformatted', access = 'stream', status = 'old')
+            case default
+                ierr = 3
             end select
 
-         ! 34 = proces definition file
-         case ( 34 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910, status = 'old' )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'old' )
-               case ( 3 )
-                  open ( lun, file = finam, err = 910, form='unformatted', access='stream', status = 'replace' )
-               case default
-                  ierr = 3
+            ! 34 = proces definition file
+        case (34)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 910, status = 'old')
+            case (2)
+                open (file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', status = 'old')
+            case (3)
+
+                open (file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', &
+                        status = 'replace')
+            case default
+                ierr = 3
             end select
 
-         ! 35 = DELWAQ1 proceses report file (.lsp); 36 = Proces stochi file
-         case ( 35, 36 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910 )
-               case default
-                  ierr = 3
+            ! 35 = DELWAQ1 proceses report file (.lsp); 36 = Proces stochi file
+        case (35, 36)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 910)
+            case default
+                ierr = 3
             end select
 
-         ! 37 = bal file
-         case ( 37 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( newunit=lun, file = finam, err = 910, form='unformatted', access='stream' )
-               case default
-                  ierr = 3
+            ! 37 = bal file
+        case (37)
+            select case (mode)
+            case (1)
+                open (newunit = file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream')
+            case default
+                ierr = 3
             end select
 
-         ! 41 = ASCII file with filenames of binary files
-         case ( 41 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 910 )
-               case ( 2 )
-                  open ( lun, file = finam, err = 910, status = 'old' )
-               case default
-                  ierr = 3
+            ! 41 = ASCII file with filenames of binary files
+        case (41)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 910)
+            case (2)
+                open (file_unit, file = file_name, err = 910, status = 'old')
+            case default
+                ierr = 3
             end select
 
-         ! 42 = domain names configuration file, online dd
-         case ( 42 )
-            select case ( opmode )
-               case ( 1 )
-                  open ( lun, file = finam, err = 900, status = 'old' )
-               case default
-                  ierr = 3
+            ! 42 = domain names configuration file, online dd
+        case (42)
+            select case (mode)
+            case (1)
+                open (file_unit, file = file_name, err = 900, status = 'old')
+            case default
+                ierr = 3
             end select
 
-         ! no valid number present
-         case default
+            ! no valid number present
+        case default
             ierr = 2
+        end select
+        return
 
-      end select
-      return
+        ! error while opening with return value
+        900 ierr = 1
+        return
 
-!     error while opening with return value
-
-  900 ierr = 1
-      return
-
-!     error while opening STOP with message
-
-  910 call report_error_and_stop(lun, nropen, finam)
+        ! error while opening STOP with message
+        910 call report_error_and_stop(file_unit, file_id, file_name)
     end subroutine open_waq_files
 
-    subroutine report_error_and_stop(lun, nropen, finam)
-        use cwd, only: getCWD
+    subroutine report_error_and_stop(file_unit, file_id, file_name)
+        use cwd, only : getCWD
 
-        integer      , intent(in) :: lun       !< unit number of file to be opened
-        character*(*) , intent(in) :: finam     !< name of the file to be opened
-        integer      , intent(in) :: nropen    !< Delwaq number of the file to be opened
+        integer, intent(in) :: file_unit       !< unit number of file to be opened
+        character*(*), intent(in) :: file_name     !< name of the file to be opened
+        integer, intent(in) :: file_id    !< Delwaq number of the file to be opened
 
         integer ierr_cwd  !< Error flag for obtaining current working directory
         character(256) wd_path   !< Current working directory path
@@ -251,25 +238,26 @@ module m_open_waq_files
         wd_path = ''
         ierr_cwd = getCWD(wd_path)
         if (ierr_cwd /= 0) then
-           wd_path = 'Current working directory not found!'
+            wd_path = 'Current working directory not found!'
         endif
 
-        write ( * , 2000 ) nropen, lun, trim(finam), trim(wd_path)
-        call srstop ( 1 )
+        write (*, 2000) file_id, file_unit, trim(file_name), trim(wd_path)
+        call terminate_execution(1)
 
-   2000 format (   ' ERROR opening file number:',I3,' on unit:',I3  , &
-                 /,' Filename is: ',A , &
-                 /,' Searching in working directory: ', /,'  ' A )
+
+        2000 format (' ERROR opening file number:', I3, ' on unit:', I3, &
+                /, ' Filename is: ', A, &
+                /, ' Searching in working directory: ', /, '  ' A)
     end subroutine report_error_and_stop
 
-    subroutine open_unformatted(lun, finam, opmode, ierr, nropen, support_old_status, replace)
-        integer      , intent(in) :: lun         !< unit number of file to be opened
-        character*(*), intent(in) :: finam       !< name of the file to be opened
-        integer      , intent(in) :: nropen      !< Delwaq number of the file to be opened
-        integer      , intent(in) :: opmode      !< Indicator how file must be opened
-        integer      , intent(inout) :: ierr     !< Error flag
+    subroutine open_unformatted(file_unit, file_name, mode, ierr, file_id, support_old_status, replace)
+        integer, intent(in) :: file_unit         !< unit number of file to be opened
+        character*(*), intent(in) :: file_name       !< name of the file to be opened
+        integer, intent(in) :: file_id      !< Delwaq number of the file to be opened
+        integer, intent(in) :: mode      !< Indicator how file must be opened
+        integer, intent(inout) :: ierr     !< Error flag
         logical, intent(in), optional :: support_old_status !< use old status if applicable
-        logical, intent(in), optional :: replace !< use replace status for opmode 1
+        logical, intent(in), optional :: replace !< use replace status for mode 1
 
         logical :: old_supported
         integer :: stat
@@ -280,71 +268,72 @@ module m_open_waq_files
             old_supported = support_old_status
         end if
 
-        select case ( opmode )
-            case ( 1,2 )
-                call open_unformatted_stream(lun, finam, opmode, ierr, nropen)
-                return
-            case ( 11, 12 )
-                if (old_supported .and. opmode == 12) then
-                    open ( lun, file = finam, iostat=stat, form='unformatted' , status = 'old' )
-                else
-                    open ( lun, file = finam, iostat=stat, form='unformatted'  )
-                end if
-            case ( 21 )
-                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream' , &
-                                                    convert='big_endian' )
-            case ( 22 )
-                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream' , status = 'old', &
-                                                    convert='big_endian' )
-            case ( 31 )
-                open ( lun, file = finam, iostat=stat, form   ='unformatted' , &
-                                                    convert='big_endian' )
-            case ( 32 )
-                open ( lun, file = finam, iostat=stat, form='unformatted' , status = 'old', &
-                                                    convert='big_endian' )
-            case default
-                ierr = 3
+        select case (mode)
+        case (1, 2)
+            call open_unformatted_stream(file_unit, file_name, mode, ierr, file_id)
+            return
+        case (11, 12)
+            if (old_supported .and. mode == 12) then
+                open (file_unit, file = file_name, iostat = stat, form = 'unformatted', status = 'old')
+            else
+                open (file_unit, file = file_name, iostat = stat, form = 'unformatted')
+            end if
+        case (21)
+            open (file_unit, file = file_name, iostat = stat, form = 'unformatted', access = 'stream', &
+                    convert = 'big_endian')
+        case (22)
+            open (file_unit, file = file_name, iostat = stat, form = 'unformatted', access = 'stream', status = 'old', &
+                    convert = 'big_endian')
+        case (31)
+            open (file_unit, file = file_name, iostat = stat, form = 'unformatted', &
+                    convert = 'big_endian')
+        case (32)
+            open (file_unit, file = file_name, iostat = stat, form = 'unformatted', status = 'old', &
+                    convert = 'big_endian')
+        case default
+            ierr = 3
         end select
 
         if (stat /= 0) then
-            call report_error_and_stop(lun, nropen, finam)
+            call report_error_and_stop(file_unit, file_id, file_name)
         end if
 
     end subroutine open_unformatted
 
-    subroutine open_unformatted_stream(lun, finam, opmode, ierr, nropen, replace)
-        integer      , intent(in) :: lun       !< unit number of file to be opened
-        character*(*), intent(in) :: finam     !< name of the file to be opened
-        integer      , intent(in) :: nropen    !< Delwaq number of the file to be opened
-        integer      , intent(in) :: opmode    !< Indicator how file must be opened
-        integer      , intent(inout) :: ierr      !< Error flag
-        logical, intent(in), optional :: replace !< use replace status for opmode 1
+    subroutine open_unformatted_stream(file_unit, file_name, mode, ierr, file_id, replace)
+        integer, intent(in) :: file_unit       !< unit number of file to be opened
+        character*(*), intent(in) :: file_name     !< name of the file to be opened
+        integer, intent(in) :: file_id    !< Delwaq number of the file to be opened
+        integer, intent(in) :: mode    !< Indicator how file must be opened
+        integer, intent(inout) :: ierr      !< Error flag
+        logical, intent(in), optional :: replace !< use replace status for mode 1
 
         logical :: replace_
         integer :: stat
-        
+
         stat = 0
         replace_ = .false.
-        if ( present(replace) ) then
+        if (present(replace)) then
             replace_ = replace
         endif
 
         ierr = 0
-        select case ( opmode )
-            case ( 1 )
-                if ( replace_ ) then
-                    open ( lun, file = finam, iostat=stat, form='unformatted', access='stream', status = 'replace')
-                else
-                    ! using unknown status
-                    open ( lun, file = finam, iostat=stat, form='unformatted', access='stream')
-                end if
-            case ( 2 )
-                open ( lun, file = finam, iostat=stat, form='unformatted', access='stream', status = 'old' )
-            case default
-                ierr = 3
+        select case (mode)
+        case (1)
+            if (replace_) then
+                open (file_unit, file = file_name, iostat = stat, form = 'unformatted', access = 'stream', &
+                        status = 'replace')
+            else
+                ! using unknown status
+                open (file_unit, file = file_name, iostat = stat, form = 'unformatted', access = 'stream')
+            end if
+        case (2)
+            open (file_unit, file = file_name, iostat = stat, form = 'unformatted', access = 'stream', status = 'old')
+        case default
+            ierr = 3
         end select
         if (stat /= 0) then
-            call report_error_and_stop(lun, nropen, finam)
+            call report_error_and_stop(file_unit, file_id, file_name)
         end if
 
     end subroutine open_unformatted_stream

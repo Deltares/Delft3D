@@ -67,7 +67,7 @@ contains
                 return
             end if
         else
-            rmax = irmax
+            rmax = MAX_REAL_SIZE
         end if
         call retrieve_command_argument('-cmax', 1, lfound, cmax, rdummy, cdummy, status%ierr)
         if (lfound) then

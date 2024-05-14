@@ -31,7 +31,7 @@ module integration_options
 
 contains
 
-    subroutine check_integration_option(keynam, intopt, lunut, ierr2)
+    subroutine check_integration_option(keynam, intopt, file_unit, ierr2)
 
         !! Checks for integration option keywords
         !!
@@ -59,11 +59,11 @@ contains
         use timers       !   performance timers
 
 
-        !     Logical units     : LUNUT  = report file
+        !     Logical units     : file_unit  = report file
 
         character(len=*), intent(in) :: keynam            !< string to test
         integer(kind = int_wp), intent(inout) :: intopt             !< integration option
-        integer(kind = int_wp), intent(in) :: lunut              !< unit number report file
+        integer(kind = int_wp), intent(in) :: file_unit              !< unit number report file
         integer(kind = int_wp), intent(out) :: ierr2              !< 0 if keyword found
 
         integer(kind = int_wp), parameter :: nokey = 19
@@ -100,7 +100,7 @@ contains
         lockey = keynam
         ikey = index_in_array(lockey, keywords)   ! look in the keywords
         if (ikey > 0) then
-            write (lunut, 1000) ikey, lockey
+            write (file_unit, 1000) ikey, lockey
             intopt = ibset(intopt, ikey - 1)
             select case (ikey)
             case (4)            !  if old style then don't set gpp style and sobek style
@@ -116,7 +116,7 @@ contains
         else
             ikey = index_in_array(lockey, defkeys)  ! look in the defaults
             if (ikey > 0) then
-                write (lunut, 1000) ikey, lockey
+                write (file_unit, 1000) ikey, lockey
                 intopt = ibclr(intopt, ikey - 1)
             else
                 ierr2 = 1

@@ -10,7 +10,7 @@ contains
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
       use data_processing, only : extract_value_from_group
-      use m_write_error_message
+      use m_logger, only : write_error_message
       use m_evaluate_waq_attribute
 
 !!!!!!!DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'ESPACE' :: ESPACE

@@ -125,6 +125,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    integer                       :: tmp_nbndu
    integer                       :: tmp_nbndn
    integer                       :: tmp_nbndt
+   integer                       :: num_layers
 
 
    iresult = DFM_NOERR
@@ -218,7 +219,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    if (nbndz > 0) then                                 ! now you know the elementsets for the waterlevel bnds
       allocate ( xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz) , stat=ierr     )
       call aerr('xbndz(nbndz), ybndz(nbndz), xy2bndz(2,nbndz), zbndz(nbndz), kbndz(n4,nbndz), zbndz0(nbndz), kdz(nbndz)', ierr, nbndz*10 )
-      if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+      if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
          if (allocated(zkbndz) ) deallocate (zkbndz, kbanz)
          allocate ( zkbndz(2,nbndz) ,stat= ierr    )
          call aerr('zkbndz(2,nbndz)',ierr, 2*nbndz )
@@ -267,7 +268,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
             iadv(Lf) = 0
          endif
 
-         if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+         if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
             zkbndz(1,k) = zk(lncn(1,Lf) )
             zkbndz(2,k) = zk(lncn(2,Lf) )
          endif
@@ -305,7 +306,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    tmp_nbndu = max(nbndu,1)
    allocate ( xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(n4,tmp_nbndu), kdu(tmp_nbndu) , stat=ierr)
    call aerr('xbndu(tmp_nbndu), ybndu(tmp_nbndu), xy2bndu(2,tmp_nbndu), kbndu(n4,tmp_nbndu), kdu(tmp_nbndu)', ierr, tmp_nbndu*(n4+5) )
-   if (jased ==1 .or. jased == 2 .and. jaceneqtr == 2) then
+   if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
        if (allocated (zkbndu) ) deallocate(zkbndu, kbanu)
        allocate ( zkbndu(2,tmp_nbndu) , stat= ierr    )
        call aerr('zkbndu(2,tmp_nbndu)', ierr, 2*tmp_nbndu )
@@ -356,7 +357,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
            iadv(Lf)   = -1                              ! switch off adv at open u-bnd's
 
-           if (jased > 1 .and. jaceneqtr == 2 .and. .not. stm_included) then
+           if (jased > 0 .and. jaceneqtr == 2 .and. .not. stm_included) then
                zkbndu(1,k) = zk(lncn(1,Lf) )
                zkbndu(2,k) = zk(lncn(2,Lf) )
            endif
@@ -1516,7 +1517,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                if (allocated (kcw) ) deallocate(kcw)
                allocate( kcw(ndx) )
                kcw = 1
-               jasol = 2 
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
 
@@ -1545,6 +1545,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
                   tair_available = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
@@ -1559,6 +1560,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                if (success) then
                   dewpoint_available = .true.
                   tair_available = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'nudge_salinity_temperature') then
@@ -1695,7 +1697,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jasol = 1 ;  btempforcingtypS = .true.
+                  btempforcingtypS = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'longwaveradiation') then
@@ -1706,7 +1709,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jalongwave = 1 ;  btempforcingtypL = .true.
+                  btempforcingtypL = .true.
+                  longwave_available = .true.
                endif
 
             else if (qid(1:8) == 'rainfall' ) then
@@ -2208,7 +2212,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       ! Allow laterals from old ext, even when new structures file is present (but only when *no* [Lateral]s were in new extforce file).
       if (num_lat_ini_blocks == 0 .and. numlatsg > 0) then 
          call realloc(balat, numlatsg, keepExisting = .false., fill = 0d0)
-         call realloc(qplat, numlatsg, keepExisting = .false., fill = 0d0)
+         num_layers = max(1, kmx)
+         call realloc(qplat, (/num_layers, numlatsg/), keepExisting = .false., fill = 0d0)
          call realloc(lat_ids, numlatsg, keepExisting = .false., fill = '')
 
          do n = 1,numlatsg
@@ -2235,7 +2240,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                numlatsg = numlatsg + 1
 
                L = index(filename,'.', back=.true.) - 1
-               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat)
+               success = adduniformtimerelation_objects('lateral_discharge', filename, 'lateral', filename(1:L), 'discharge', '', numlatsg, kx, qplat(1,:))
                if (success) then
                   ! assign id derived from pol file
                   lat_ids(numlatsg) = filename(1:L)
@@ -2484,10 +2489,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    if (allocated (xy2pump) ) deallocate (xy2pump)
 
    if (allocated (xdum)    ) deallocate( xdum, ydum, kdum, xy2dum)
-
-   if (jasol == 2) then
-      if (allocated (qrad) ) deallocate (qrad)
-   endif
 
    if (mxgr > 0 .and. .not.stm_included) then
       do j = 1,mxgr

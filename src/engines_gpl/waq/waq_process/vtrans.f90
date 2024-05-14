@@ -42,8 +42,7 @@ contains
         ! NOLAY   I*4 1 I     number of layers
         !
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_cli_utils, only : retrieve_command_argument
         use m_dhnoseg
         use m_dhnolay
@@ -112,7 +111,7 @@ contains
         !     initialise and allocate memory in module bloom_data_vtrans
         if (.not. init_vtrans) then
             init_vtrans = .true.
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             if (noq3 > 0) then
                 if (nolay/=0) then
                     nosegl = nosegw / nolay
@@ -160,7 +159,7 @@ contains
                     write (lunrep, 1000) ierr_alloc
                     write (lunrep, 1001) noseg
                     write (lunrep, 1002) nolay
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
 
                 ! read initial file?

@@ -33,7 +33,7 @@ contains
 
         use m_getidentification
         use timers
-        use m_dattim
+        use m_date_time_utils_external, only : write_date_time
 
         implicit none
 
@@ -76,7 +76,7 @@ contains
             enddo
         endif
         write (lunrep, '(1x,a)') trim(version_string)
-        call dattim(run_date_time)
+        call write_date_time(run_date_time)
         write (lunrep, '(2a)') ' Execution start: ', run_date_time
 
         if (timon) call timstop(ithndl)

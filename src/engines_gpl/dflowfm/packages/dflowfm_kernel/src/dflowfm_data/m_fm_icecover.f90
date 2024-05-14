@@ -363,7 +363,7 @@ subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind, timhr)
     converged = .false.
     
     ! Compute freezing point
-    t_freeze = ( -0.0575d0 - 2.154996d-4*saltcon ) * saltcon
+    t_freeze =    freezing_temperature(saltcon)
 
     select case (ja_icecover)
     case (ICECOVER_SEMTNER)
@@ -460,7 +460,7 @@ subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind, timhr)
         !
         ! Calculate heat flux out of the ocean
         !
-        qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01, tempwat - t_freeze ) 
+        qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze) ) 
         !
         ! extra output for ice testbasin
         !if (n==25) then

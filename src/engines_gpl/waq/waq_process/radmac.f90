@@ -31,7 +31,7 @@ contains
     SUBROUTINE RADMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_monsys
+        use m_logger
         use m_evaluate_waq_attribute
 
         !
@@ -81,7 +81,7 @@ contains
                     !         Access conditions from the cell where the top of the plant is
                     ITOPSEG = NINT(PMSA(IPNT(1)))
                     IF (ITOPSEG <= 0) THEN
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         WRITE(LUNREP, *) 'RADMAC: top segment missing - needed for light intensity at tip of plant'
                         WRITE(LUNREP, *) '   ISEG    =', ISEG
                         WRITE(LUNREP, *) '   ITOPSEG =', ITOPSEG
@@ -102,7 +102,7 @@ contains
                     IF (DZ<0.0 .OR. DZ>DEPTH) THEN
                         NR_MSG = NR_MSG + 1
                         IF (NR_MSG <= 25) THEN
-                            CALL GETMLU(LUNREP)
+                            CALL get_log_unit_number(LUNREP)
                             WRITE(LUNREP, *) 'RADMAC: depth out of range'
                             WRITE(LUNREP, *) '   ISEG  =', ISEG
                             WRITE(LUNREP, *) '   ITOPS =', ITOPSEG

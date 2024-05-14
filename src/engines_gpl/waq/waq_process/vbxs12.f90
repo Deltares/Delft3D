@@ -31,8 +31,7 @@ contains
     subroutine VBXS12     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
-        use m_write_error_message
+        use m_logger, only : write_error_message, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VBXS12' :: VBXS12
@@ -372,7 +371,7 @@ contains
         !$omp critical
         if (first) then
             first_handled = .true.
-            CALL GETMLU(ILUMON)
+            CALL get_log_unit_number(ILUMON)
 
             allocate(botseg(noseg))
             allocate(work(NFlxWat, noseg))

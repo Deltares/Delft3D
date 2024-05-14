@@ -30,12 +30,8 @@
       subroutine write_ddp(hyd)
 
       ! function : write a ddp file, dd boundary administration for part
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use m_hydmod                   ! module contains everything for the hydrodynamics
+      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_hydmod        ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
@@ -74,8 +70,9 @@
 
       ! some init
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
       n_domain = hyd%domain_coll%current_size
+
       nddb = 0
       nddb_max = 500
       allocate(iadmddb(22,nddb_max))
@@ -104,13 +101,13 @@
          i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
-            call srstop(1)
+            call terminate_execution(1)
          endif
          dd_bound%i_domain1 = i_domain1
          i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
-            call srstop(1)
+            call terminate_execution(1)
          endif
          dd_bound%i_domain2 = i_domain2
 

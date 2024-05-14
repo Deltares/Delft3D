@@ -34,7 +34,7 @@ module inputs_block_6
 
 contains
 
-    subroutine read_block_6_waste_loads_withdrawals (lun, lchar, filtype, max_char_size, char_arr, &
+    subroutine read_block_6_waste_loads_withdrawals (file_unit_list, file_name_list, filtype, max_char_size, char_arr, &
             max_int_size, int_array, max_real_size, real_array, notot, &
             noseg, sname, nowst, nowtyp, nrftot, &
             nrharm, is_date_format, is_yyddhh_format, iwidth, &
@@ -47,24 +47,24 @@ contains
         !!      - the wasteload concentration/mass values
         !! Subroutines called : read_constants_time_variables     : previous versions input processing (one matrix does all)
         !!                      gettoken : tokenized data input
-        !!                      srstop   : stop after error with return code
+        !!                      terminate_execution   : stop after error with return code
         !!                      zoek     : search for presence of a string
         !!                      read_boundary_concentrations: modern context sensitive input data processing
         !!                      check    : check whether end of data block is encountred correctly
-        !! Logical units : lun(27) = unit DELWAQ input file
-        !!                 lun(29) = unit formatted output file
-        !!                 lun( 2) = unit intermediate file (system)
-        !!                 lun( 3) = unit intermediate file (harmonics)
-        !!                 lun( 4) = unit intermediate file (pointers)
-        !!                 lun(15) = unit intermediate file (waste load)
+        !! Logical units : file_unit_list(27) = unit DELWAQ input file
+        !!                 file_unit_list(29) = unit formatted output file
+        !!                 file_unit_list( 2) = unit intermediate file (system)
+        !!                 file_unit_list( 3) = unit intermediate file (harmonics)
+        !!                 file_unit_list( 4) = unit intermediate file (pointers)
+        !!                 file_unit_list(15) = unit intermediate file (waste load)
 
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use rd_token
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun    (:)      !< array with unit numbers
-        character(*), intent(inout) :: lchar  (:)     !< Filenames for the items
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (:)      !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (:)     !< Filenames for the items
         integer(kind = int_wp), intent(inout) :: filtype(*)      !< type of binary files
         integer(kind = int_wp), intent(in) :: max_char_size           !< size of the character workspace
         character(20), intent(inout) :: char_arr   (max_char_size)  !< local character workspace
@@ -89,7 +89,7 @@ contains
 
         !     Locals
 
-        character(40)                 charachter_output       (3) !  Help for reading
+        character(40)                 character_output       (3) !  Help for reading
         character(255)                 cdummy          !  Help for reading
         character(20), allocatable :: wstid       (:) !  wasteload id's 20 character
         character(40), allocatable :: wstname     (:) !  wasteload names
@@ -118,7 +118,7 @@ contains
 
         !     Init
 
-        binary_work_file = lun(2)
+        binary_work_file = file_unit_list(2)
         iposr = 0
         chkpar = .false.
         nowtyp = 0
@@ -127,15 +127,15 @@ contains
 
         if (gettoken(nowst, ierr2) > 0) goto 20
         if (nowst < 0) then       !   it says that info comes from auxiliary file
-            write (lunut, 2000) nowst
-            call process_simulation_input_options   (-1, lun, 15, lchar, filtype, &
+            write (file_unit, 2000) nowst
+            call process_simulation_input_options   (-1, file_unit_list, 15, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
             if (gettoken(nowst, ierr2) > 0) goto 20
         endif
         if (nowst == 0) then
-            write (lunut, 2010)
+            write (file_unit, 2010)
             goto 20
         endif
 
@@ -146,18 +146,18 @@ contains
                 wstid_long(nowst), wsttype_long(nowst), iwstseg(nowst), &
                 iwsttype  (nowst), iwstkind    (nowst), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2160) ierr_alloc
-            write (lunut, 2040) nowst
-            call SRSTOP(1)
+            write (file_unit, 2160) ierr_alloc
+            write (file_unit, 2040) nowst
+            call terminate_execution(1)
         endif
-        write (lunut, 2040) nowst
+        write (file_unit, 2040) nowst
         if (output_verbose_level < 3) then
-            write (lunut, 2045)
+            write (file_unit, 2045)
         else
             if (iwidth == 5) then
-                write (lunut, 2050)
+                write (file_unit, 2050)
             else
-                write (lunut, 2060)
+                write (file_unit, 2060)
             endif
         endif
 
@@ -167,12 +167,12 @@ contains
 
             iwsttype(i) = 0
             iwstkind(i) = 0
-            if (gettoken(charachter_output(1), iwstseg(i), itype, ierr2) > 0) goto 20
+            if (gettoken(character_output(1), iwstseg(i), itype, ierr2) > 0) goto 20
             if (itype == 1) then                  !    character, either SURFACE, BANK or BOTTOM
                 iwstseg(i) = 0
-                if (charachter_output(1) == "SURFACE") iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
-                if (charachter_output(1) == "BANK") iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
-                if (charachter_output(1) == "BED") iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
+                if (character_output(1) == "SURFACE") iwstseg(i) = -1; iwstkind(i) = 2 ! e.g. atmospheric deposition
+                if (character_output(1) == "BANK") iwstseg(i) = -2; iwstkind(i) = 2 ! e.g. bank infiltration, 1D river systems
+                if (character_output(1) == "BED") iwstseg(i) = -3; iwstkind(i) = 2 ! e.g. well and sink
                 if (iwstseg(i) == 0) then
                     ierr2 = 1
                     goto 20
@@ -214,22 +214,22 @@ contains
             if (output_verbose_level >= 3) then
                 if (iwidth == 5) then
                     if (iwstseg(i) > 0) &
-                            write (lunut, 2070) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2070) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -1) &
-                            write (lunut, 2075) i, "SURFACE", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2075) i, "SURFACE", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -2) &
-                            write (lunut, 2075) i, "BANK   ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2075) i, "BANK   ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -3) &
-                            write (lunut, 2075) i, "BED    ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2075) i, "BED    ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                 else
                     if (iwstseg(i) > 0) &
-                            write (lunut, 2080) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2080) i, iwstseg(i), iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -1) &
-                            write (lunut, 2085) i, "SURFACE", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2085) i, "SURFACE", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -2) &
-                            write (lunut, 2085) i, "BANK   ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2085) i, "BANK   ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                     if (iwstseg(i) == -3) &
-                            write (lunut, 2085) i, "BED    ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
+                            write (file_unit, 2085) i, "BED    ", iwstkind(i), wstid(i), wstname(i), wsttype(i)
                 endif
             endif
 
@@ -239,10 +239,10 @@ contains
             if (ifound > 0) then
                 ifound2 = index_in_array(wstid_long(i), wstid_long(:i - 1))
                 if (ifound == ifound2) then
-                    write(lunut, 2130) wstid(i)
+                    write(file_unit, 2130) wstid(i)
                     call status%increase_warning_count()
                 else
-                    write(lunut, 2140) wstid(i)
+                    write(file_unit, 2140) wstid(i)
                     call status%increase_error_count()
                 endif
             endif
@@ -252,7 +252,7 @@ contains
             ifound = index_in_array(wsttype(i), wsttype(:nowtyp))
             ifound2 = index_in_array(wsttype_long(i), wsttype_long(:nowtyp))
             if (ifound /= ifound2) then
-                write(lunut, 2150) trim(wsttype_long(i))
+                write(file_unit, 2150) trim(wsttype_long(i))
                 call status%increase_error_count()
             endif
 
@@ -271,7 +271,7 @@ contains
 
             if (iwstseg(i) < -3 .or.  iwstseg(i) > noseg .or. &
                     iwstseg(i) ==  0) then
-                write (lunut, 2090) iwstseg(i)
+                write (file_unit, 2090) iwstseg(i)
                 call status%increase_error_count()
             endif
 
@@ -284,25 +284,25 @@ contains
         !          provide information about the special parameters
 
         if (chkpar(1)) then
-            write(lunut, 2210)
+            write(file_unit, 2210)
         endif
         if (chkpar(2)) then
-            write(lunut, 2220)
+            write(file_unit, 2220)
         endif
 
 
         !          give list of all identified wasteload types and write info to system file
 
-        write (lunut, *)
-        write (lunut, 2110) nowtyp
+        write (file_unit, *)
+        write (file_unit, 2110) nowtyp
         if (output_verbose_level < 2) then
-            write (lunut, 2115)
+            write (file_unit, 2115)
         else
-            write (lunut, 2112)
+            write (file_unit, 2112)
             do i = 1, nowtyp
-                write (lunut, 2120) i, wsttype(i)
+                write (file_unit, 2120) i, wsttype(i)
             enddo
-            write (lunut, *)
+            write (file_unit, *)
         endif
         write (binary_work_file)  (wsttype(i), i = 1, nowtyp)
         write (binary_work_file)  (iwsttype(i), i = 1, nowst)
@@ -315,7 +315,7 @@ contains
 
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
         idummy = notot + 1
-        call read_boundary_concentrations (lun, lchar, 15, iwidth, max_char_size, &
+        call read_boundary_concentrations (file_unit_list, file_name_list, 15, iwidth, max_char_size, &
                 char_arr, max_int_size, int_array, max_real_size, real_array, &
                 sname, wstid, wsttype, nowst, idummy, &
                 nowtyp, dp_array, is_date_format, is_yyddhh_format, &
@@ -332,7 +332,7 @@ contains
         !     error processing
 
         20 if (ierr2 > 0) call status%increase_error_count()      !   if 2, end of block reached
-        if (ierr2 == 3) call SRSTOP(1)        !   end of file reached
+        if (ierr2 == 3) call terminate_execution(1)        !   end of file reached
         call check_error(cdummy, iwidth, 6, ierr2, status)
         30 if (timon) call timstop(ithndl)
         return

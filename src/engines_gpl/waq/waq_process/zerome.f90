@@ -29,18 +29,17 @@ contains
 
 
     SUBROUTINE ZEROME (NAME)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
 
         character(len=*) NAME
         INTEGER(kind = int_wp) :: LUNREP
 
-        CALL GETMLU(LUNREP)
+        CALL get_log_unit_number(LUNREP)
         WRITE (LUNREP, *) ' Coefficient ', NAME, ' = 0'
         WRITE (LUNREP, *) ' Please supply value not equal to zero'
         WRITE (*, *) ' Coefficient ', NAME, ' = 0'
         WRITE (*, *) ' Please supply value not equal to zero'
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         RETURN
     END
 

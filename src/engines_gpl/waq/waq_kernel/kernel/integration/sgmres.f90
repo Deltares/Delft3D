@@ -31,127 +31,119 @@ module m_sgmres
     private
     public :: sgmres
 
-contains
+    contains
 
 
+    !> Generalized Minimal Residual solver (GMRES)
+    !!
+    !! The solver:
+    !! preconditions with the psolve routine either:
+    !!  - none
+    !!  - upper triangular matrix
+    !!  - lower triangular matrix
+    !!  - both (this is the default preconditioner)
+    !!  - constructs an orthonormal set of approximation vectors (Krylov space)
+    !!  - if no convergence at end of Krilov space, solver restarts
+    !!  - if no convergence at maxiter the solver stops
     subroutine sgmres (ntrace, rhs, sol, restrt, work, &
             ldw, hess, ldh, maxit, tol, &
             nomat, amat, imat, diag, idiag, &
             klay, ioptpc, nobnd, triwrk, iexseg, &
             lurep, litrep)
 
-        !! This is the GMRES solver
-        !!
-        !! The solver:
-        !! preconditions with the psolve routine either:
-        !!  - none
-        !!  - upper triangular matrix
-        !!  - lower triangular matrix
-        !!  - both (this is the default preconditioner)
-        !!  - constructs an orthonormal set of approximation vectors (Krylov space)
-        !!  - if no convergence at end of Krilov space, solver restarts
-        !!  - if no convergence at maxiter the solver stops
-
         use m_psolve
         use m_matvec
-        use m_srstop
+        use m_logger, only : terminate_execution
 
-        integer(kind = int_wp), intent(in) :: ntrace                      !< Dimension of the matrix
-        real(kind = dp), intent(in) :: rhs    (ntrace)             !< right-hand side (1 substance)
-        real(kind = dp), intent(inout) :: sol    (ntrace)             !< on entry: initial guess / on exit: solution
-        integer(kind = int_wp), intent(in) :: restrt                      !< size of Krylov space, restrt < ntrace !
-        real(kind = dp) :: work   (ntrace, restrt + 5)  !< workspace
-        integer(kind = int_wp), intent(in) :: ldw !< leading dimension >= max(1,ntrace  ) (probably superfluous lp)
-        real(kind = dp), intent(in) :: hess   (restrt + 1, restrt + 2)  !< hessenberg matrix
-        integer(kind = int_wp), intent(in) :: ldh !< leading dimension >= max(1,restrt+1) (probably superfluous lp)
-        integer(kind = int_wp), intent(in) :: maxit !< maximum number of iterations
-        real(kind = dp), intent(in) :: tol                         !< convergence criterion
-        integer(kind = int_wp), intent(in) :: nomat !< number of off-diagonal entries of matrix a (format from lp)
-        real(kind = dp), intent(in) :: amat   (nomat)              !< off-diagonal entries of matrix a (format from lp)
-        integer(kind = int_wp), intent(in) :: imat   (nomat)              !< pointer table off-diagonal entries
-        real(kind = dp), intent(in) :: diag   (ntrace)             !< diagonal entries of matrix a
-        integer(kind = int_wp), intent(in) :: idiag  (0:ntrace)           !< position of the diagonals in amat
-        integer(kind = int_wp), intent(in) :: klay                        !< number of layers
-        integer(kind = int_wp), intent(in) :: ioptpc                      !< option for preconditioner
-        integer(kind = int_wp), intent(in) :: nobnd                       !< number of open boundaries
-        real(kind = dp) :: triwrk (klay * 6)             !< workspace for tridiagonal solution vertical
-        integer(kind = int_wp), intent(in) :: iexseg (ntrace)             !< 0 for explicit volumes
-        integer(kind = int_wp), intent(in) :: lurep                       !< Unit number report file
-        logical, intent(in) :: litrep                      !< Perform report on iteration process if TRUE
+        integer(kind = int_wp), intent(in   ) :: ntrace                       !< Dimension of the matrix
+        real(kind = dp),        intent(in   ) :: rhs(ntrace)                  !< right-hand side (1 substance)
+        real(kind = dp),        intent(inout) :: sol(ntrace)                  !< on entry: initial guess / on exit: solution
+        integer(kind = int_wp), intent(in   ) :: restrt                       !< size of Krylov space, restrt < ntrace !
+        real(kind = dp),        intent(inout) :: work(ntrace, restrt + 5)     !< workspace
+        integer(kind = int_wp), intent(in   ) :: ldw                          !< leading dimension >= max(1,ntrace  ) (probably superfluous lp)
+        real(kind = dp),        intent(in   ) :: hess(restrt + 1, restrt + 2) !< hessenberg matrix
+        integer(kind = int_wp), intent(in   ) :: ldh                          !< leading dimension >= max(1,restrt+1) (probably superfluous lp)
+        integer(kind = int_wp), intent(in   ) :: maxit                        !< maximum number of iterations
+        real(kind = dp),        intent(in   ) :: tol                          !< convergence criterion
+        integer(kind = int_wp), intent(in   ) :: nomat                        !< number of off-diagonal entries of matrix a (format from lp)
+        real(kind = dp),        intent(in   ) :: amat(nomat)                  !< off-diagonal entries of matrix a (format from lp)
+        integer(kind = int_wp), intent(in   ) :: imat(nomat)                  !< pointer table off-diagonal entries
+        real(kind = dp),        intent(in   ) :: diag   (ntrace)              !< diagonal entries of matrix a
+        integer(kind = int_wp), intent(in   ) :: idiag  (0:ntrace)            !< position of the diagonals in amat
+        integer(kind = int_wp), intent(in   ) :: klay                         !< number of layers
+        integer(kind = int_wp), intent(in   ) :: ioptpc                       !< option for preconditioner
+        integer(kind = int_wp), intent(in   ) :: nobnd                        !< number of open boundaries
+        real(kind = dp),        intent(inout) :: triwrk (klay * 6)            !< workspace for tridiagonal solution vertical
+        integer(kind = int_wp), intent(in   ) :: iexseg (ntrace)              !< 0 for explicit volumes
+        integer(kind = int_wp), intent(in   ) :: lurep                        !< Unit number report file
+        logical,                intent(in   ) :: litrep                       !< Perform report on iteration process if TRUE
 
         ! Local constants
-
         REAL(kind = dp) :: SMALL, SMALL2
 
         ! SMALL MUST always be larger then SMALL2 !!!!!!!!!!!
-
         PARAMETER (SMALL = 1.0E-7, SMALL2 = 1.0E-25)
 
-        INTEGER(kind = int_wp) :: I, J, K, iter, AV, CS, &
-                &          SN, R, S, V, W, Y, &
-                &          I2, IERR, imax, iloop
-        REAL(kind = dp) :: AA, BB, BNRM2, RNORM, RESID, rmax
+        INTEGER(kind = int_wp) :: i, j, k, iter, av, cs, &
+                &          sn, r, s, v, w, y, &
+                &          i2, ierr, imax, iloop
+        real(kind = dp) :: aa, bb, bnrm2, rnorm, resid, rmax
 
-        LOGICAL   FIRST
-        DATA            FIRST  /.TRUE./
-
+        logical   first
+        data      first  /.true./
         integer(kind = int_wp) :: ithandl = 0
+
+
         if (timon) call timstrt ("sgmres", ithandl)
 
         ! sloppy way of output
-
-        ITER = 0
-        IERR = 0
-        IF (FIRST) THEN
-            FIRST = .FALSE.
-            IF (LITREP) THEN
-                WRITE(LUREP, *) '   ITER       TOL  OPTION:   ', maxit, TOL, IOPTPC
-                WRITE(LUREP, *) '   CYCLE    RESID  '
-            ENDIF
-        ENDIF
+        iter = 0
+        ierr = 0
+        if (first) then
+            first = .false.
+            if (litrep) then
+                write(lurep, *) '   ITER       TOL  OPTION:   ', maxit, tol, ioptpc
+                write(lurep, *) '   CYCLE    RESID  '
+            end if
+        end if
 
         ! Test the input parameters.
-
-        IF (ntrace < 0) THEN
-            IERR = -1
-        ELSE IF (LDW < MAX(1, ntrace)) THEN
-            IERR = -2
-        ELSE IF (maxit <= 0) THEN
-            IERR = -3
-        ELSE IF (LDH < RESTRT + 1) THEN
-            IERR = -4
-        ENDIF
-        IF (IERR /= 0) goto 9999
+        if (ntrace < 0) then
+            ierr = -1
+        else if (ldw < max(1, ntrace)) then
+            ierr = -2
+        else if (maxit <= 0) then
+            ierr = -3
+        else if (ldh < restrt + 1) then
+            ierr = -4
+        endif
+        if (ierr /= 0) goto 9999
 
 
         !     Alias workspace columns.
-
-        R = 1
-        S = R + 1
-        W = S + 1
-        Y = W
-        AV = Y + 1
-        V = AV + 1
+        r = 1
+        s = r + 1
+        w = s + 1
+        y = w
+        av = y + 1
+        v = av + 1
 
 
         !     Store the Givens parameters in matrix H.
-
-        CS = RESTRT + 1
-        SN = CS + 1
+        cs = restrt + 1
+        sn = cs + 1
 
         !   Adapt initial guess if necessary
-
         do iloop = 1, ntrace
             if (isnan(rhs(iloop))) then
                 write (lurep, '(''ERROR: NaN in RHS of segment:'', i10)') iloop
-                call srstop(1)
+                call terminate_execution(1)
             endif
         enddo
         bnrm2 = sqrt(sum(rhs * rhs))
         if (bnrm2 < small) sol = 0.0
 
         !     Set initial residual (AV is temporary workspace here).
-
         work(:, av) = rhs
         IF (sqrt(sum(sol * sol)) /= 0.0D+00) THEN
             CALL MATVEC (ntrace, NOMAT, -1.0D+00, amat, imat, &
@@ -183,7 +175,6 @@ contains
 
 
         !     Main GMRES iteration loop
-
         10 CONTINUE
 
         I = 0
@@ -336,70 +327,63 @@ contains
 
         !        if on error, stop
 
-        IF (IERR > 0) THEN
-            WRITE (*, *) 'ERROR in GMRES', IERR
-            WRITE (LUrep, *) ' ERROR in GMRES 1', IERR
-            WRITE (LUrep, *) ' Solver did not reach convergence'
-            WRITE (LUrep, *) ' maximum contribution in error:', resid
+        if (ierr > 0) then
+            write (*, *) 'ERROR in GMRES', IERR
+            write (LUrep, *) ' ERROR in GMRES 1', IERR
+            write (LUrep, *) ' Solver did not reach convergence'
+            write (LUrep, *) ' maximum contribution in error:', resid
             if (.not. litrep) WRITE (LUrep, *) ' Switch ITERATION REPORT to on to see details'
-            WRITE (LUrep, *) ' Reduce the output time step to 1 time step close to point of failure'
-            WRITE (lurep, *) ' Possible causes in decreasing frequency of likelyness:'
-            WRITE (lurep, *) ' 1. NaNs in the solution of water quality'
-            WRITE (lurep, *) '    inspect total mass in monitoring file for substance(s) on NaNs'
-            WRITE (lurep, *) ' 2. Inconsistency in drying and flooding of hydrodynamics'
-            WRITE (lurep, *) '    exact cause will be difficult to identify, cell nr. may help'
-            WRITE (lurep, *) ' 3. Normal lack of convergence, e.g. strongly diffusive problem'
-            WRITE (LUrep, *) '    possible solutions: increase TOLERANCE'
-            WRITE (LUrep, *) '                        decrease timestep'
-            WRITE (LUrep, *) '                        increase MAXITER'
-            WRITE (lurep, *) ' 4. other: exact cause will be difficult to identify, cell nr. may help'
-            CALL SRSTOP(1)
-        ELSEIF (IERR < 0) THEN
-            WRITE (*, *) 'ERROR in GMRES', IERR
-            WRITE (LUrep, *) ' ERROR in GMRES 1', IERR
-            WRITE (LUrep, *) ' solver entered with wrong parameters'
-            WRITE (LUrep, *) ' consult the WAQ helpdesk'
+            write (LUrep, *) ' Reduce the output time step to 1 time step close to point of failure'
+            write (lurep, *) ' Possible causes in decreasing frequency of likelyness:'
+            write (lurep, *) ' 1. NaNs in the solution of water quality'
+            write (lurep, *) '    inspect total mass in monitoring file for substance(s) on NaNs'
+            write (lurep, *) ' 2. Inconsistency in drying and flooding of hydrodynamics'
+            write (lurep, *) '    exact cause will be difficult to identify, cell nr. may help'
+            write (lurep, *) ' 3. Normal lack of convergence, e.g. strongly diffusive problem'
+            write (LUrep, *) '    possible solutions: increase TOLERANCE'
+            write (LUrep, *) '                        decrease timestep'
+            write (LUrep, *) '                        increase MAXITER'
+            write (lurep, *) ' 4. other: exact cause will be difficult to identify, cell nr. may help'
+            call terminate_execution(1)
+        elseif (iERR < 0) then
+            write (*, *) 'ERROR in GMRES', IERR
+            write (LUrep, *) ' ERROR in GMRES 1', IERR
+            write (LUrep, *) ' solver entered with wrong parameters'
+            write (LUrep, *) ' consult the WAQ helpdesk'
         ENDIF
 
         RETURN
-    END SUBROUTINE SGMRES
+    end subroutine sgmres
 
 
-    SUBROUTINE UPDATS (I, N, X, H, LDH, Y, S, V, LDV)
+    !> Update the GMRES iterated solution approximation.
+    subroutine updats (i, n, x, h, ldh, y, s, v, ldv)
         use m_sgemv
 
-        INTEGER(kind = int_wp) :: N, I, LDH, LDV
-        REAL(kind = dp) :: X(*), Y(i), S(i), H(LDH, *), V(LDV, *)
-
-        !     This routine updates the GMRES iterated solution approximation.
+        integer(kind = int_wp) :: n, i, ldh, ldv
+        real(kind = dp) :: x(*), y(i), s(i), h(ldh, *), v(ldv, *)
 
         integer(kind = int_wp) :: ithandl = 0
+
         if (timon) call timstrt ("updats", ithandl)
 
-
-        !     Solve H*Y = S for upper triangualar H.
-
+        ! Solve H*Y = S for upper triangualar H.
         y = s
-        CALL STRSV ('UPPER', 'NOTRANS', 'NONUNIT', I, H, LDH, Y, 1)
+        call strsv('UPPER', 'NOTRANS', 'NONUNIT', i, h, ldh, y, 1)
 
-
-        !     Compute current solution vector X = X + V*Y.
-
-        CALL SGEMV ('NOTRANS', N, I, 1.0D+00, V, LDV, Y, 1, 1.0D+00, X, 1)
+        ! Compute current solution vector X = X + V*Y.
+        call sgemv('NOTRANS', n, i, 1.0d+00, v, ldv, y, 1, 1.0d+00, x, 1)
 
         if (timon) call timstop (ithandl)
-        RETURN
-    END SUBROUTINE UPDATS
+    end subroutine updats
 
-
+    !> Construct the I-th column of the upper Hessenberg matrix H
+    !! using the Modified Gram-Schmidt process on V and W.
     subroutine basis (i, n, h, v, ldv, w)
-
         integer(kind = int_wp) :: i, n, ldv
         real(kind = dp) :: h(i + 1), w(n), v(n, i + 1)
 
-        ! Construct the I-th column of the upper Hessenberg matrix H
-        ! using the Modified Gram-Schmidt process on V and W.
-        real(kind = dp) :: hscal, aid
+        real(kind = dp) :: hscal, aux
         integer(kind = int_wp) :: k
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("basis", ithandl)
@@ -407,36 +391,31 @@ contains
         do k = 1, i
             h(k) = sum(w * v(:, k))
             w = w - h(k) * v(:, k)
-        enddo
+        end do
 
         ! re-orthogonalisation
         do k = 1, i
-            aid = sum (w * v(:, k))
-            h(k) = h(k) + aid
-            w = w - aid * v(:, k)
-        enddo
+            aux = sum (w * v(:, k))
+            h(k) = h(k) + aux
+            w = w - aux * v(:, k)
+        end do
 
         h(i + 1) = sqrt(sum(w * w))
-        hscal = 1.0D+00 / max(h(i + 1), 1.0d-12)
+        hscal = 1.0d+00 / max(h(i + 1), 1.0d-12)
         v(:, i + 1) = w * hscal
 
         if (timon) call timstop (ithandl)
-
     end subroutine basis
 
-
+    !> Applies a plane rotation.
+    !! Jack Dongarra, linpack, 3/11/78.
     subroutine apply_plane_rotation(vector_size, vector_x, increment_x, vector_y, increment_y, cosine_angle, sine_angle)
-        ! applies a plane rotation.
-        ! jack dongarra, linpack, 3/11/78.
-
-
         real(kind = dp) :: vector_x(1), vector_y(1), stemp, cosine_angle, sine_angle
         integer(kind = int_wp) :: i, increment_x, increment_y, ix, iy, vector_size
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("apply_plane_rotation", ithandl)
 
         if(vector_size > 0) then
-
             if(increment_x == 1 .and. increment_y == 1) then
                 do i = 1, vector_size
                     stemp = cosine_angle * vector_x(i) + sine_angle * vector_y(i)
@@ -444,11 +423,10 @@ contains
                     vector_x(i) = stemp
                 end do
             else
-                ! code for unequal increments or equal increments not equal to 1
                 ix = 1
                 iy = 1
-                if(increment_x < 0)ix = (-vector_size + 1) * increment_x + 1
-                if(increment_y < 0)iy = (-vector_size + 1) * increment_y + 1
+                if(increment_x<0) ix = 1 + (1 - vector_size) * increment_x
+                if(increment_y<0) iy = 1 + (1 - vector_size) * increment_y
                 do i = 1, vector_size
                     stemp = cosine_angle * vector_x(ix) + sine_angle * vector_y(iy)
                     vector_y(iy) = cosine_angle * vector_y(iy) - sine_angle * vector_x(ix)
@@ -458,8 +436,6 @@ contains
                 end do
             end if
         endif
-
-        ! code for both increments equal to 1
         if (timon) call timstop (ithandl)
     end subroutine apply_plane_rotation
 end module m_sgmres

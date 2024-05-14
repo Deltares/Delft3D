@@ -25,10 +25,7 @@
 
       ! function : merge data_2 into data_1 not fully implemeted but ok for the discharges in ddcouple
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_data_structure             ! module contains everything for the data
       
       implicit none
@@ -50,7 +47,7 @@
       type(t_data_block)                       :: data_tmp               ! temporary block of data with merged data
       integer                                :: ierr_alloc             ! error indication
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       ! nothing to add then return
 
@@ -71,10 +68,11 @@
                   stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) then
             write(lunrep,*) ' error allocating data arrays'
+
             write(lunrep,*) ' number of parameters :',data_1%num_parameters
             write(lunrep,*) ' number of brakpoints :',data_1%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_1%num_locations
-            call srstop(1)
+            call terminate_execution(1)
          endif
          data_1%times  = data_2%times
          data_1%values = data_2%values
@@ -123,7 +121,7 @@
             write(lunrep,*) ' number of parameters :',data_tmp%num_parameters
             write(lunrep,*) ' number of brakpoints :',data_tmp%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_tmp%num_locations
-            call srstop(1)
+            call terminate_execution(1)
          endif
 
          ! set new timeseries

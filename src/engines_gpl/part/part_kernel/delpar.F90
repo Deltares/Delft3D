@@ -54,7 +54,7 @@ contains
 !
 !
 !     subroutines called    : write_version - echo header to screen
-!                             dlwqtd - does time inteprolation (like delwaq)
+!                             expands_vol_area_for_bottom_cells - does time inteprolation (like delwaq)
 !                             oildsp - oil dispersion (modtyp=model_oil)
 !                             part01 - calculate distances and angles in grid
 !                             part06 - calculate dump-sites in the grids
@@ -325,7 +325,7 @@ contains
       use m_rdfnam
       use m_rdccol
       use m_getdps
-      use m_monsys
+      use m_logger
       use m_waq_precision                  ! single/double precision
       use timers
       use fileinfo  , lun=> lunit    ! logical unit numbers for files
@@ -394,7 +394,7 @@ contains
       call rdfnam ( lun     , ifnam   , fname   , nfiles  , 2       ,    &
                     1       , alone   )
       lunpr = lun(2)
-      call setmlu( lunpr )
+      call set_log_unit_number( lunpr )
 
       hyd%file_hyd%name = fname(18)
       call read_hyd(hyd)

@@ -31,10 +31,7 @@
 
       ! function : read a cco file and check dimensions
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -62,37 +59,37 @@
       real                                   :: rdum                   ! dummy
       integer                                :: lunrep                 ! unit number report file
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       call file_cco%open()
       read(file_cco%unit,iostat=ioerr) mmaxd, nmaxd, x0, y0, alpha, npart, nolay
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file header record'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       if ( nmaxd.ne.nmax .or. mmaxd.ne.mmax ) then
          write(lunrep,*) ' dimensions cco file differ from input hydrodynamics'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       do i=1 , 2*npart+9
          read(file_cco%unit,iostat=ioerr) rdum
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading cco file dummy records'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       enddo
 
       read(file_cco%unit,iostat=ioerr) ((xdepth(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file xdepth'
-         call srstop(1)
+         call terminate_execution(1)
       endif
       read(file_cco%unit,iostat=ioerr) ((ydepth(n,m),n=1,nmax),m=1,mmax)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file ydepth'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       close(file_cco%unit)

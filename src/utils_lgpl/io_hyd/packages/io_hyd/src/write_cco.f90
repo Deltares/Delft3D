@@ -33,7 +33,7 @@
 
       ! global declarations
 
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -76,42 +76,42 @@
          write(file_cco%unit,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
-            call srstop(1)
+            call terminate_execution(1)
          endif
 
          do i=1 , 2*npart+9
             write(file_cco%unit,iostat=ioerr) rdum
             if ( ioerr .ne. 0 ) then
                write(*,*) ' error writing cco file dummy records'
-               call srstop(1)
+               call terminate_execution(1)
             endif
          enddo
 
          write(file_cco%unit,iostat=ioerr) xdepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file xdepth'
-            call srstop(1)
+            call terminate_execution(1)
          endif
          write(file_cco%unit,iostat=ioerr) ydepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file ydepth'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       else
          write(file_cco%unit,*,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
-            call srstop(1)
+            call terminate_execution(1)
          endif
          write(file_cco%unit,*,iostat=ioerr) xdepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file xdepth'
-            call srstop(1)
+            call terminate_execution(1)
          endif
          write(file_cco%unit,*,iostat=ioerr) ydepth
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file ydepth'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       endif
 

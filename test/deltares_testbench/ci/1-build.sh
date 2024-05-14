@@ -9,6 +9,6 @@ fi
 IMAGE=$2
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cp -f "$SCRIPT_DIR"/../requirements.txt "$SCRIPT_DIR"/requirements.txt
+cp -f "$SCRIPT_DIR"/../{requirements.txt,pytest.ini} "$SCRIPT_DIR"
 docker build -t "$IMAGE" "$SCRIPT_DIR"
-rm "$SCRIPT_DIR"/requirements.txt
+rm "$SCRIPT_DIR"/{requirements.txt,pytest.ini}

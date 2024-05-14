@@ -31,8 +31,7 @@ contains
     subroutine decbod (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
 
         !>\file
         !>       Oxydation of BOD-fractions with Monod kinetics for the TEWOR models
@@ -139,22 +138,22 @@ contains
                 !           Check if RC's are non zero
 
                 IF (RCBOD1 < 1E-10) THEN
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD: Invalid value (zero)!'
                     WRITE (*, *) 'RCBOD: Invalid value (zero)!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 IF (RCBOD2 < 1E-10) THEN
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD_2: Invalid value (zero)!'
                     WRITE (*, *) 'RCBOD_2: Invalid value (zero)!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 IF (RCBOD3 < 1E-10) THEN
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD_3: Invalid value (zero)!'
                     WRITE (*, *) 'RCBOD_3: Invalid value (zero)!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 !
                 !           Calculation of ultimate BOD concentrations

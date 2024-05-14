@@ -14,5 +14,8 @@ COPY requirements.txt /data/
 RUN python3 -m pip install --upgrade pip \
     && pip3 install -r requirements.txt
 
+# Copy pytest configuration file
+COPY pytest.ini /data/
+
 # Set the default command to run pytest
-CMD python -m pytest test --junitxml=logs/pytest_results.xml -W error
+CMD python -m pytest

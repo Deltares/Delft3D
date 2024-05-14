@@ -29,7 +29,7 @@
       contains
 
 
-      SUBROUTINE DLWQIB ( LUN    , LUNUT  , A      , J      , MODE   , & 
+      SUBROUTINE DLWQIB ( file_unit_list    , LUNUT  , A      , J      , MODE   , &
                                            IISP   , IRSP   , IERR   )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -38,7 +38,7 @@
 !
 !     FUNCTION            : Initialises the complete boundary subsystem
 !
-!     LOGICAL UNITNUMBERS : LUN   - binary boundary system file
+!     LOGICAL UNITNUMBERS : file_unit_list   - binary boundary system file
 !                           LUNUT - monitoring file
 !
 !     SUBROUTINES CALLED  : none
@@ -47,7 +47,7 @@
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUN     INTEGER    1        INPUT   unit number input file
+!     file_unit_list     INTEGER    1        INPUT   unit number input file
 !     A       REAL       ?        IN/OUT  Real      boundary workspace
 !     J       INTEGER    ?        IN/OUT  Integer   boundary workspace
 !     MODE    INTEGER    1        INPUT   File number involved
@@ -61,7 +61,7 @@
 
       real(kind=real_wp) ::A(*)
       integer(kind=int_wp) ::J(*)
-      integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, LUN, LUNUT
+      integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, file_unit_list, LUNUT
 
       integer(kind=int_wp) ::i, ia, ij, k, time_function_type
       integer(kind=int_wp) ::noitm, nosys, npnt, ndim, ntal, nobrk
@@ -75,14 +75,14 @@
 !
 !       Read the system dimensions
 !
-      READ ( LUN , END=40 , ERR=110 )  J(IJ), J(IJ+1)
+      READ ( file_unit_list , END=40 , ERR=110 )  J(IJ), J(IJ+1)
       NOITM = J(IJ)
       NOSYS = J(IJ+1)
       IJ = 3
 !
 !       Read the pointers for this block of data
 !
-   10 READ ( LUN , END=40 , ERR=110 )  J(IJ), & 
+   10 READ ( file_unit_list , END=40 , ERR=110 )  J(IJ), &
                      NPNT, ( J(IJ+K) , K=2,NPNT+1 )  , & 
                      NDIM, ( J(IJ+NPNT+2+K) , K = 1, NDIM+2 )
       J(IJ     +1) = NPNT
@@ -99,12 +99,12 @@
 !
 !       Nr of breakpoints or harmonics
 !
-      READ ( LUN , END=100 , ERR=110 ) NOBRK
+      READ ( file_unit_list , END=100 , ERR=110 ) NOBRK
       J(IJ) = NOBRK
       IJ = IJ + 1
 !
       DO I=1,NOBRK
-         READ ( LUN , END=100 , ERR=110 ) J(IJ) , & 
+         READ ( file_unit_list , END=100 , ERR=110 ) J(IJ) , &
                     ( A(IA+K) , K=0,NPNT*NDIM-1+NTAL )
          IJ = IJ + 1
          IA = IA + NPNT*NDIM + NTAL

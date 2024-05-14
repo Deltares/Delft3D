@@ -613,14 +613,14 @@ contains
     end subroutine registerSubstances
 
     !> Subroutine for testing - write out the contents
-    subroutine writeItems(lun)
+    subroutine writeItems(file_unit_list)
 
-        integer(kind = int_wp), intent(in) :: lun
+        integer(kind = int_wp), intent(in) :: file_unit_list
 
         integer(kind = int_wp) :: i
 
         do i = 1, size(item)
-            write (lun, '(3a,i5,l5,e15.6)') &
+            write (file_unit_list, '(3a,i5,l5,e15.6)') &
                     item(i)%name, item(i)%description, item(i)%unit, item(i)%type, item(i)%private, item(i)%value
         end do
 

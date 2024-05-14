@@ -32,8 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_zerome
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !>\file
@@ -285,11 +284,11 @@ contains
                         !
                         !         8. Thackston - Krenkel [1966]
                         !
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) &
                                 ' Reaeration formula 8 has not been implemented'
                         WRITE (*, *) ' Reaeration formula 8 has not been implemented'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
 
                     ELSEIF (IFREAR == 9) THEN
                         !
@@ -359,10 +358,10 @@ contains
                         REARTC = 1.0
                         !
                     ELSE
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) ' Invalid option for reaeration formula'
                         WRITE (*, *) ' Invalid option for reaeration formula'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
 
                     PMSA (IP26) = REARRC / DEPTH

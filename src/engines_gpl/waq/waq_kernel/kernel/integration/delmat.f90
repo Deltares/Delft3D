@@ -28,7 +28,7 @@ module m_delmat
 contains
 
 
-    SUBROUTINE DELMAT (N, NUC, NLC, M, A, B, IOPT)
+    SUBROUTINE DELMAT (N, NUC, NLC, M, A, B, integration_id)
         !
         !         THE SUBROUTINE DELMAT IS A DELFT-HYDRAULICS-LABORATORY
         !         PRODUCT TO SOLVE SETS OF LINEAR EQUATIONS DESCRIBED BY
@@ -44,7 +44,7 @@ contains
         !         HOWEVER THE ROWS AND COLLUMNS MUST BE INTERCHANGED.
         !         THE SAME HOLDS FOR THE FULL MATRIX OF KNOWN VECTORS "B".
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !         NOTATION:                               CHANGED DURING
         !                                                  CALCULATION
@@ -58,7 +58,7 @@ contains
         !             ONE DIMENSIONAL FORM
         !      B    = MATRIX OF KNOWN VECTORS IN             YES/NO
         !             ONE DIMENSIONAL FORM
-        !      IOPT = CALCULATION OPTION                       NO
+        !      integration_id = CALCULATION OPTION                       NO
         !
         !      OPTION 0 RETURNS THE LU-DECOMPOSITION IN MATRIX A, WHICH CAN
         !                       BE USED AGAIN FOR NEW KNOWN VECTORS AND IT
@@ -69,7 +69,7 @@ contains
         !                       IT NEEDS A PROPER DECOMPOSED AND STORED MATRIX
         !                       A AS AN INPUT
         !
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
 
         REAL(kind = real_wp) :: A(*), B(*)
@@ -78,7 +78,7 @@ contains
         integer(kind = int_wp) :: NUC, NLC, N, NMUC, NMLC, NDM1, ND, N1
         integer(kind = int_wp) :: L1, L2, L3, L4, L5
         integer(kind = int_wp) :: K1, K2, K3, K4, K5, K6
-        integer(kind = int_wp) :: M, IOPT
+        integer(kind = int_wp) :: M, integration_id
 
         real(kind = real_wp) :: F, P
 
@@ -87,7 +87,7 @@ contains
         NMLC = N - NLC
         NDM1 = NUC + NLC
         ND = NDM1 + 1
-        IF (IOPT==2) GOTO 1000
+        IF (integration_id==2) GOTO 1000
         !
         !           THE LU-DECOMPOSITION
         !
@@ -104,7 +104,7 @@ contains
         IF (ABS(P) < 1.0E-35) THEN
             WRITE(6, '('' Matrix for DELMAT singular at element:'',I5)') &
                     K1 / ND + 1
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
         !
         !           K2 IS THE MIDDLE LOOP VARIABLE COUNTING THE NUMBER OF
@@ -150,7 +150,7 @@ contains
         IF (ABS(P) < 1.0E-35) THEN
             WRITE(6, '('' Matrix for DELMAT singular at element:'',I5)') &
                     K1 / ND + 1
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
         K2 = K1
         L2 = K1 + N1 * NDM1
@@ -170,7 +170,7 @@ contains
         !
         !           ENTRY FOR SUBSTITUTION OPTION
         !
-        700 IF(IOPT==1) goto 9999  !   RETURN
+        700 IF(integration_id==1) goto 9999  !   RETURN
         1000 CONTINUE
         !
         !           THE FORWARD SUBSTITUTION HAS ESSENTIALLY THE SAME

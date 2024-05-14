@@ -31,26 +31,13 @@ contains
     SUBROUTINE DLWQB5 (DISP, DISPER, AREA, FLOW, ALENG, &
             VELO, CONC, BOUND, IPOINT, NOSYS, &
             NOTOT, NOQ1, NOQ2, NOQ, NODISP, &
-            NOVELO, IDPNT, IVPNT, IOPT, AMASS2, &
+            NOVELO, IDPNT, IVPNT, integration_id, AMASS2, &
             ILFLAG, DMPQ, NDMPQ, IDT, IQDMP)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED             : march 1988 by L.Postma
-        !                           may 1992 by J.v.Gils
-        !
-        !     FUNCTION            : Makes a mass balance final to
-        !                           implicit integration methods.
-        !                           Identical to DLWQ64, but with dimension
-        !                           BOUND(NOSYS,*), with multiplication
-        !                           factor IDT on mass balances and with
-        !                           loop over active substances only
-        !                           (loops 10, 30 and 50).
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
+
+        !! Makes a mass balance final to implicit integration methods.
+        !! Identical to DLWQ64, but with dimension BOUND(NOSYS,*), with multiplication factor IDT on mass balances and
+        !! with loop over active substances only (loops 10, 30 and 50).
+
         !     PARAMETERS          :
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
@@ -74,7 +61,7 @@ contains
         !     NOVELO  INTEGER     1       INPUT   number  of additional velos.
         !     IDPNT   INTEGER   NOSYS     INPUT   pointer systems to dispersions
         !     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
-        !     IOPT    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
+        !     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
         !                                         = 1 or 3 no DISP at zero flow
         !                                         = 0 or 1 DISP over boundary
         !                                         = 2 or 3 no DISP over boundary
@@ -94,7 +81,7 @@ contains
                 ALENG (*), VELO  (*), CONC (*), BOUND (*), &
                 AMASS2(*), DMPQ(*)
         integer(kind = int_wp) :: NOSYS, NOTOT, NOQ1, NOQ2, NOQ, NODISP, NOVELO
-        integer(kind = int_wp) :: IOPT, ILFLAG, IDT
+        integer(kind = int_wp) :: integration_id, ILFLAG, IDT
 
         integer(kind = int_wp) :: i, i3, i4, i5, i6, iq, ipq, is
         integer(kind = int_wp) :: noq12, ibflag, j, ipb, k1, k2
@@ -110,7 +97,7 @@ contains
         I5 = 4 * NOTOT
         I6 = NOSYS * NDMPQ
         NOQ12 = NOQ1 + NOQ2
-        IF (MOD(IOPT, 16) >= 8) THEN
+        IF (MOD(integration_id, 16) >= 8) THEN
             IBFLAG = 1
         ELSE
             IBFLAG = 0
@@ -139,7 +126,7 @@ contains
             IF (I > 0 .AND. J > 0 .AND. IPB == 0) GOTO 60
             A = AREA(IQ)
             Q = FLOW(IQ)
-            IF (MOD(IOPT, 2) == 1 .AND. IQ <= NOQ12) THEN
+            IF (MOD(integration_id, 2) == 1 .AND. IQ <= NOQ12) THEN
                 IF (ABS(Q) < 10.0E-25)  GOTO 60
             ENDIF
             E = DISP(1)
@@ -213,7 +200,7 @@ contains
                 V = Q
                 D = 0.0
                 IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
-                IF (MOD(IOPT, 4) <  2) THEN
+                IF (MOD(integration_id, 4) <  2) THEN
                     D = E
                     IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
                 ENDIF
@@ -246,7 +233,7 @@ contains
                 V = Q
                 D = 0.0
                 IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
-                IF (MOD(IOPT, 4)  <  2) THEN
+                IF (MOD(integration_id, 4)  <  2) THEN
                     D = E
                     IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
                 ENDIF

@@ -61,8 +61,8 @@ module m_debgrz_output
 
     contains
 
+    !< Assign output variables to pmsa array
     subroutine update_pmsa(this, pmsa, iparray, input_count)
-        !< Assign output variables to pmsa array
         class(debgrz_output) :: this !< This instance of output_variables
 
         real(kind=real_wp),   intent(inout)   :: pmsa(*)

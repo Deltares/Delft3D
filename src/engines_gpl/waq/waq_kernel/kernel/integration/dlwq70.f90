@@ -33,7 +33,7 @@
                          VELO   , BOUND  , IPOINT , NOTOT  , ISYS   , & 
                          NSYS   , NOQ1   , NOQ2   , NOQ    , NODISP , & 
                          NOVELO , IDPNT  , IVPNT  , DERIV  , AMAT   , & 
-                                           JTRACK , IOPT   , ILFLAG )
+                                           JTRACK , integration_id   , ILFLAG )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
 !
@@ -71,7 +71,7 @@
 !     DERIV   REAL   NOTOT*NOSEG  OUTPUT  derivatives
 !     AMAT    REAL      large     IN/OUT  matrix to be updated
 !     JTRACK  INTEGER     1       INPUT   number of codiagonals of AMAT
-!     IOPT    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
+!     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
 !                                         = 1 or 3 no DISP at zero flow
 !                                         = 0 or 1 DISP over boundary
 !                                         = 2 or 3 no DISP over boundary
@@ -84,7 +84,7 @@
                 DERIV(*)
       integer(kind=int_wp) ::IPOINT(4,*) , IDPNT(*)  , IVPNT(*)
 
-      integer(kind=int_wp) ::iband, iq, i, it, i3, i4, iopt, ilflag, isys
+      integer(kind=int_wp) ::iband, iq, i, it, i3, i4, integration_id, ilflag, isys
       integer(kind=int_wp) ::j, jtrack, jt
       integer(kind=int_wp) ::noq, noq1, noq2, nodisp, novelo, notot, nsys
       integer(kind=int_wp) ::kt, k1, k2
@@ -104,7 +104,7 @@
       IF ( I == 0 .OR. J == 0 ) GOTO 50
       A    = AREA(IQ)
       Q    = FLOW(IQ)
-      IF ( MOD(IOPT,2) == 1 .AND. ABS(Q) < 10.0E-25 ) GOTO 50
+      IF ( MOD(integration_id,2) == 1 .AND. ABS(Q) < 10.0E-25 ) GOTO 50
            IF ( A < 1.0E-25 )  A = 1.0
       E  = DISP(1)
       AL = ALENG(1)
@@ -148,8 +148,8 @@
 !        The 'from' segment is a boundary
 !
    10 IF ( J    < 0 ) GOTO 50
-      IF ( MOD(IOPT,4) > 1 ) E = 0.0
-      IF ( MOD(IOPT,8) >= 4 ) THEN
+      IF ( MOD(integration_id,4) > 1 ) E = 0.0
+      IF ( MOD(integration_id,8) >= 4 ) THEN
            IF ( Q > 0.0 ) THEN
                 Q1 = Q
                 Q2 = 0.0
@@ -170,8 +170,8 @@
 !
 !        The 'to' element was a boundary.
 !
-   30 IF ( MOD(IOPT,4) > 1 ) E = 0.0
-      IF ( MOD(IOPT,8) >= 4 ) THEN
+   30 IF ( MOD(integration_id,4) > 1 ) E = 0.0
+      IF ( MOD(integration_id,8) >= 4 ) THEN
            IF ( Q > 0.0 ) THEN
                 Q1 = Q
                 Q2 = 0.0

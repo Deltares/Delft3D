@@ -31,8 +31,7 @@ contains
     subroutine makpoc (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
 
         !>\file
         !>       Derive OOC from IM-fractions and percentage POM in IMx
@@ -98,37 +97,37 @@ contains
                 IF (OCPOM * FRC1 < 1.0D0) THEN
                     POC1 = FRC1 * IM1 / (1 - OCPOM * FRC1)
                 ELSE
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE(LUNREP, *) 'ERROR in MAKPOC'
                     WRITE(LUNREP, *) 'Segment:', ISEG
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed1 :', FRC1
                     WRITE(LUNREP, *) 'fctr * fcsed1 must be less than 1.00'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 END IF
 
                 IF (OCPOM * FRC2 < 1.0D0) THEN
                     POC2 = FRC2 * IM2 / (1 - OCPOM * FRC2)
                 ELSE
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE(LUNREP, *) 'ERROR in MAKPOC'
                     WRITE(LUNREP, *) 'Segment:', ISEG
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed2 :', FRC2
                     WRITE(LUNREP, *) 'fctr * fcsed2 must be less than 1.00'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 END IF
 
                 IF (OCPOM * FRC3 < 1.0D0) THEN
                     POC3 = FRC3 * IM3 / (1 - OCPOM * FRC3)
                 ELSE
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE(LUNREP, *) 'ERROR in MAKPOC'
                     WRITE(LUNREP, *) 'Segment:', ISEG
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed3 :', FRC3
                     WRITE(LUNREP, *) 'fctr * fcsed3 must be less than 1'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 END IF
 
                 !     Total POC

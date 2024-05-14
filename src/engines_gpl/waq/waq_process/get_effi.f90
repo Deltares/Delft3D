@@ -208,8 +208,7 @@ contains
 
     subroutine lookupeffi(rad, effi, numgr)
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use bloom_data_dim
         use bloom_data_arran
 
@@ -224,14 +223,14 @@ contains
 
         if (first) then
             if (power(npoint)==0.0) then
-                call getmlu(lunrep)
+                call get_log_unit_number(lunrep)
                 write(lunrep, *) &
                         'ERROR: the highest power in the light curve is 0.0.', &
                         'Check if your bloom.spe file contains light curves!'
                 write(*, *) &
                         'ERROR: the highest power in the light curve is 0.0.', &
                         'Check if your bloom.spe file contains light curves!'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             first = .false.
         endif

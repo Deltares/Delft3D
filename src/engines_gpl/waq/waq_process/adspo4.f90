@@ -31,8 +31,7 @@ contains
     subroutine adspo4 (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
-        use m_write_error_message
+        use m_logger, only : write_error_message, get_log_unit_number
 
         !>\file
         !>       P-ad/desorption to particulate inorganic matter. 3 options for sorption formulation.
@@ -379,13 +378,13 @@ contains
                                 ('POROS in ADSPO4 equals zero')
                         IF (TFE < 1.E-10) THEN
                             IF (NR_MES < 25) THEN
-                                CALL GETMLU(ILUMON)
+                                CALL get_log_unit_number(ILUMON)
                                 NR_MES = NR_MES + 1
                                 WRITE (ILUMON, *) 'WARNING :zero TFE in ADSPO4', &
                                         ' segment=', ISEG, ' TFE=', TFE
                             ENDIF
                             IF (NR_MES == 25) THEN
-                                CALL GETMLU(ILUMON)
+                                CALL get_log_unit_number(ILUMON)
                                 NR_MES = NR_MES + 1
                                 WRITE(ILUMON, *) ' 25 WARNINGS on zero TFE'
                                 WRITE(ILUMON, *) ' Further messages on algae surpressed'

@@ -30,7 +30,7 @@ contains
 
     subroutine wq_processes_pmsa_size (lunrep, noseg, noq, isizea)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_array_manipulation, only : make_pointer, memory_partition, real_type
         use processes_input
         use processes_pointers
@@ -172,7 +172,7 @@ contains
             endif
             if (isizea < 0) then
                 write(lunrep, 2005)
-                call srstop(1)
+                call terminate_execution(1)
             endif
         enddo
 
@@ -186,7 +186,7 @@ contains
                 ip = make_pointer(part, iartyp, iarlen)
                 if (ip <= 0) then
                     write(lunrep, 2010) namarr
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
             else
                 ip = 0

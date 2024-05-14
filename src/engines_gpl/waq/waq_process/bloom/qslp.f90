@@ -34,13 +34,13 @@ contains
     ! The call to this routine is similar to the one to DOSP.
 
     !-----------------------------------------------------------------------
-    subroutine qslp(a, ia, nr, nc, b, lsc, c, iopt, irs, lib, d, mt, x, p, ier)
+    subroutine qslp(a, ia, nr, nc, b, lsc, c, integration_id_list, irs, lib, d, mt, x, p, ier)
 
         implicit none
 
         real(kind = dp) :: a(1:ia, 1:mt), b(*), c(*), d(*), x(*), p(*)
         real(kind = dp) :: xopt, bpivot, bmin, cpivot, apivot, aipj, cj, aijp, bi, ap, cjpap
-        integer(kind = int_wp) :: lib(*), ier, lsc(*), iopt(*), irs(*), nqslp
+        integer(kind = int_wp) :: lib(*), ier, lsc(*), integration_id_list(*), irs(*), nqslp
         integer(kind = int_wp) :: i, j, k, l, ia, mt, ip, jp, jpneg
         integer(kind = int_wp) :: ineg, iter, itflag, ihelp1, ihelp2
         integer(kind = int_wp) :: nr, nc, method
@@ -75,7 +75,7 @@ contains
         ! Optionally copy A, B and C to D, which is not used for computational
         ! purposes in this subroutine (unlike DOSP).
         ! At the end the original values of these arrays are restored.
-        if (iopt(3) == 1) go to 60
+        if (integration_id_list(3) == 1) go to 60
         k = 0
         l = nr * nc
         do j = 1, nc
@@ -115,7 +115,7 @@ contains
 
         ! Reverse the sign of the C vector for a maximization problem.
         ! Note: minimization is NOT currently supported!
-        if (iopt(4) == 1) then
+        if (integration_id_list(4) == 1) then
             do j = 1, nc
                 c (j) = - c(j)
             end do
@@ -265,7 +265,7 @@ contains
         itflag = itflag + 1
 
         ! Check the number of iterations. If exceeded, abort.
-        if (iter >= iopt(1)) then
+        if (iter >= integration_id_list(1)) then
             ier = 100
             irs(2) = 2
             go to 290
@@ -274,7 +274,7 @@ contains
         ! Check the number of operations since the last update of the arrays.
         ! If exceeded, reset all small numbers to 0.0D0 to avoid round-off
         ! errors becoming to large.
-        if (itflag >= iopt(2)) then
+        if (itflag >= integration_id_list(2)) then
             itflag = 0
             do i = 1, nr
                 if (dabs(b(i)) < 1.0d-12) b(i) = 0.0d0
@@ -350,7 +350,7 @@ contains
         x(nr + nc + 1) = xopt
 
         ! Optionally restore the original A, B and C arrays.
-        if (iopt(3) == 1) go to 340
+        if (integration_id_list(3) == 1) go to 340
         k = 0
         l = nr * nc
         do j = 1, nc

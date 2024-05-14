@@ -58,8 +58,7 @@ contains
         !
         !     Declaration of arguments
         !
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use timers
 
         INTEGER(kind = int_wp) :: NOTOT, NOFLUX, NDMPAR, NOBALT
@@ -93,10 +92,10 @@ contains
                 IF (ABS(ST) > 1.E-20) THEN
                     IBALT = IBALT + 1
                     IF (IBALT > NOBALT) THEN
-                        CALL GETMLU(LUREP)
+                        CALL get_log_unit_number(LUREP)
                         WRITE(LUREP, *) 'ERROR, INTERNAL FLXBAL'
                         WRITE(*, *)     'ERROR, INTERNAL FLXBAL'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                     DO IDMP = 1, NDMPAR
                         BALINT(IBALT, IDMP) = FLXINT(IFLX, IDMP) * ST

@@ -40,7 +40,7 @@ contains
 
         ! Checks which processes can be activated
 
-        use m_monsys
+        use m_logger
         use waq_attribute_utils, only : evaluate_dimension_match
         use m_array_manipulation, only : is_missing
         use m_waq_data_structure
@@ -92,7 +92,6 @@ contains
         integer(kind = int_wp) :: i_input ! index input item
         integer(kind = int_wp) :: ioutput ! index output item
         integer(kind = int_wp) :: iact    ! index in active list
-        integer(kind = int_wp) :: imolev  ! monitoring level
         integer(kind = int_wp) :: nmis    ! actual number of missing variables
         integer(kind = int_wp) :: imis    ! index number of missing variables
         integer(kind = int_wp) :: i_star  ! index of * in name
@@ -106,10 +105,9 @@ contains
         if (timon) call timstrt("makbar", ithndl)
 
         write (line, '(a)') '# Determining which processes can be switched on'
-        call monsys(line, 2)
+        call write_log_message(line)
         line = ' '
-        call monsys(line, 2)
-        call getmmo(imolev)
+        call write_log_message(line)
 
         nproc = procesdef%current_size
         do iproc = 1, nproc
@@ -128,15 +126,15 @@ contains
             call evaluate_dimension_match(proc1%swtransp, noq3, iok)
             if (.not. iok) then
                 write (line, '(4a)') ' Input for [', proc1%name, '] ', proc1%text(1:50)
-                call monsys(line, 4)
+                call write_log_message(line)
                 write (line, '(a)') ' process for different model dimensions'
-                call monsys(line, 4)
+                call write_log_message(line)
                 proc1%linvok = .false.
                 goto 550
             endif
 
             write (line, '(4a)') ' Input for [', proc1%name, '] ', proc1%text(1:50)
-            call monsys(line, 4)
+            call write_log_message(line)
             proc1%linvok = .true.
 
             ! check input items
@@ -145,11 +143,11 @@ contains
 
                 if (proc1%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT) then
 
-                    if (.not.is_missing(proc1%input_item(i_input)%actdef) .and. imolev < 7) cycle
+                    if (.not.is_missing(proc1%input_item(i_input)%actdef)) cycle
                     valnam = proc1%input_item(i_input)%name
                     valtxt = proc1%input_item(i_input)%item%text
                     write(line, '(4a)') '       [', valnam, '] ', valtxt
-                    call monsys(line, 7)
+                    call write_log_message(line)
 
                     10          continue
 
@@ -205,9 +203,9 @@ contains
                         if (i_star > 1) then
                             valnam(i_star:) = ' '
                             write(line, '(a)') '       fraction specific input not found, trying generic name'
-                            call monsys(line, 7)
+                            call write_log_message(line)
                             write(line, '(4a)') '       [', valnam, '] ', valtxt
-                            call monsys(line, 7)
+                            call write_log_message(line)
                             goto 10
                         endif
 
@@ -223,7 +221,7 @@ contains
                             write(line, '(a)') '       can use default value'
                         endif
                     endif
-                    call monsys(line, 7)
+                    call write_log_message(line)
 
                 endif
             enddo
@@ -234,11 +232,11 @@ contains
 
                 if (proc1%input_item(i_input)%type == IOTYPE_EXCHANG_INPUT) then
 
-                    if (.not.is_missing(proc1%input_item(i_input)%actdef) .and. imolev < 7) cycle
+                    if (.not.is_missing(proc1%input_item(i_input)%actdef)) cycle
                     valnam = proc1%input_item(i_input)%name
                     valtxt = proc1%input_item(i_input)%item%text
                     write(line, '(4a)') '       [', valnam, '] ', valtxt
-                    call monsys(line, 7)
+                    call write_log_message(line)
 
                     20          continue
 
@@ -281,9 +279,9 @@ contains
                         if (i_star > 1) then
                             valnam(i_star:) = ' '
                             write(line, '(a)') '       fraction specific input not found, trying generic name'
-                            call monsys(line, 7)
+                            call write_log_message(line)
                             write(line, '(4a)') '       [', valnam, '] ', valtxt
-                            call monsys(line, 7)
+                            call write_log_message(line)
                             goto 20
                         endif
 
@@ -299,7 +297,7 @@ contains
                             write(line, '(a)') '       can use default value'
                         endif
                     endif
-                    call monsys(line, 7)
+                    call write_log_message(line)
                 endif
             enddo
 
@@ -310,9 +308,9 @@ contains
                     if (proc1%linvok) then
                         proc1%active = .true.
                         write(line, '(a)') '   Process is activated'
-                        call monsys(line, 4)
+                        call write_log_message(line)
                         write(line, '(a,a)') '   Process subroutine: ', proc1%routine
-                        call monsys(line, 4)
+                        call write_log_message(line)
                     else
                         if (proc1%name(1:8)=='VertDisp') then
                             call status%increase_warning_count()
@@ -321,20 +319,20 @@ contains
                             call status%increase_error_count()
                             write(line, '(a)') '   ERROR : activated process can NOT be switched on'
                         end if
-                        call monsys(line, 4)
+                        call write_log_message(line)
                         do imis = 1, min(nmis, mismax)
                             write(line, '(4a)') '   Not found:[', misnam(imis), '] ', mistxt(imis)
-                            call monsys(line, 4)
+                            call write_log_message(line)
                         enddo
                         if (nmis > mismax) then
                             write(line, '(a)') '   and more ...'
-                            call monsys(line, 4)
+                            call write_log_message(line)
                         endif
                     endif
                 else
                     proc1%linvok = .false.
                     write(line, '(a)') '   Process is not activated'
-                    call monsys(line, 4)
+                    call write_log_message(line)
                 endif
             else
                 if (proc1%linvok) then
@@ -342,12 +340,12 @@ contains
                 else
                     write(line, '(a)') '   Proces can NOT be switched on'
                 endif
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
             line = ' '
-            call monsys(line, 4)
+            call write_log_message(line)
         enddo
-        call monsys(line, 2)
+        call write_log_message(line)
 
         if (timon) call timstop(ithndl)
         return

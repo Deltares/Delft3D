@@ -101,7 +101,7 @@ contains
 
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
-      if ( timon ) call timstrt( "dlwqtd", ithndl )
+      if ( timon ) call timstrt( "expands_vol_area_for_bottom_cells", ithndl )
 !
       update = .false.
       messge = 0

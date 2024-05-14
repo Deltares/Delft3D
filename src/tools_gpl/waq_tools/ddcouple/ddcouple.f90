@@ -23,15 +23,13 @@
 
 program ddcouple
 
-      use m_srstop
-      use m_monsys
-
+      use m_logger, only : terminate_execution, set_log_unit_number
       use m_hydmod
       use m_cli_utils, only : retrieve_command_argument
       use m_string_manipulation, only : upper_case
       use merge_step_mod
-      use delwaq_version_module
-      use m_dattim
+      use ddcouple_version_module, only: getfullversionstring_ddcouple
+      use m_date_time_utils_external, only : write_date_time
       use m_file_path_utils, only : extract_file_extension
       use m_cli_utils, only : get_argument_from_list
 
@@ -160,16 +158,14 @@ program ddcouple
       logical                  :: success
       logical                  :: interactive   ! no commandline arguments given, work in interactive mode
       character*1              :: askparallel   ! get a character
-      character*80             :: cident        ! version string
+      character(len=80)        :: version       ! version string
 !
 !     Version string
 !
       interactive = .false.
-      cident = ' '
-      call getfullversionstring_delwaq(cident)
-      length = len_trim(cident)
+      call getfullversionstring_ddcouple(version)
       write(*,*)
-      write(*,'(a)') ' ', cident(5:length)
+      write(*,'(a)') ' ', trim(version)
       write(*,*)
 
       ! some init
@@ -194,7 +190,7 @@ program ddcouple
          write(lunrep,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
          write(*,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
 
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
@@ -205,7 +201,7 @@ program ddcouple
       call file_rep%open()
       lunrep = file_rep%unit
       call ddc_version(lunrep)
-      call setmlu(lunrep)
+      call set_log_unit_number(lunrep)
 
       ! check if input comes from hyd or ddb
       call upper_case(filext, filext, len(filext))
@@ -301,7 +297,7 @@ program ddcouple
       else
          write(*,'(a)') ' ERROR unknown coupling task from hyd file'
          write(lunrep,'(a)') ' ERROR unknown coupling task from hyd file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
       write(lunrep,*)
 
@@ -311,7 +307,7 @@ program ddcouple
       if ( n_domain .le. 0 ) then
          write(*,*) 'ERROR no domains specified in hydrodynamic description'
          write(lunrep,*) 'ERROR no domains specified in hydrodynamic description'
-         call srstop(1)
+         call terminate_execution(1)
       endif
       allocate(domain_hyd_coll%hyd_pnts(n_domain),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 900
@@ -413,14 +409,14 @@ program ddcouple
          if ( i_domain1 .le. 0 ) then
             write(*,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
-            call srstop(1)
+            call terminate_execution(1)
          endif
          dd_bound%i_domain1 = i_domain1
          i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain2 .le. 0 ) then
             write(*,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
-            call srstop(1)
+            call terminate_execution(1)
          endif
          dd_bound%i_domain2 = i_domain2
 
@@ -1277,7 +1273,7 @@ program ddcouple
                   write(lunrep,'(a,i10)') 'Time in domain: ', itime_domain
                   write(lunrep,'(a,i10)') 'Time expected:  ', itime
                   write(lunrep,'(a,i10)') 'Domain is:      ', i_domain
-                  call srstop(1)
+                  call terminate_execution(1)
                endif
                if ( iend_domain .ne. iend ) then
                   write(*,'(a)') ' Warning end time in domains not equal'
@@ -1302,42 +1298,42 @@ program ddcouple
 
       ! finished
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       write (lunrep,*)
       write (lunrep,'(a)') ' Normal end of execution'
       write (lunrep,'(2a)') ' Execution stop : ',rundat
       write (*,*)
       write (*,'(a)') ' Normal end of execution'
       write (*,'(2a)') ' Execution stop : ',rundat
-      call srstop(0)
+      call terminate_execution(0)
 
       ! error handling
 
   900 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'number of domains:',n_domain
-      call srstop(1)
+      call terminate_execution(1)
   905 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noseg:',hyd%noseg
-      call srstop(1)
+      call terminate_execution(1)
   910 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noq:',hyd%noq
-      call srstop(1)
+      call terminate_execution(1)
   915 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'maxnoq:',maxnoq
-      call srstop(1)
+      call terminate_execution(1)
   920 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%nosegl:',hyd%nosegl
-      call srstop(1)
+      call terminate_execution(1)
   930 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'maxbnd:',maxbnd
       write(lunrep,*) 'maxseg:',maxseg
-      call srstop(1)
+      call terminate_execution(1)
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%nmax:',hyd%nmax
       write(lunrep,*) 'hyd%mmax:',hyd%mmax
-      call srstop(1)
+      call terminate_execution(1)
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noseg:',hyd%noseg
-      call srstop(1)
+      call terminate_execution(1)
 
 end program

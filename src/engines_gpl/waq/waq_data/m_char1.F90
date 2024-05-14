@@ -43,7 +43,7 @@ module m_char1
     common /intgr/ irow(maxaij), jcol(maxaij), jcomp(maxn), &
             ijfind(maxn2), kl(maxp2), m, mend, ncomp, n, nit, not, pf, &
             iter, itmax, ierror, lastcp, ke, ncycle, nbstar, kpf, &
-            naij, iopt, mtog, marith, nemb, nema, iarith, ifind, &
+            naij, integration_id_list, mtog, marith, nemb, nema, iarith, ifind, &
             intitl, insolv, ijohn, ilp, imatrx, ipush, irows, iscale
     common /water/ c1(maxn), c2(maxn), diam(maxn), gamma(maxn), &
             delth(maxn), ch(maxn), gfw(maxn), ehk, ceck, &

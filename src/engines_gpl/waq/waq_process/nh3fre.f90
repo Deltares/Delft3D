@@ -58,7 +58,7 @@ contains
         !-----------------------------------------------------------------------
         !     Name     Type   Library
         !     ------   -----  ------------
-        use m_write_error_message
+        use m_logger
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)

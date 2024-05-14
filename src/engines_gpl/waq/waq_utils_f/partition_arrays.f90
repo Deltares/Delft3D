@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module partition_arrays
-    use m_srstop
+    use m_logger, only : terminate_execution
 
 
     !     Deltares Software Centre
@@ -86,7 +86,7 @@ contains
             write(*, *) &
                     'Fatal error in MAKPTR: variable type not implemented: ', &
                     vtype
-            call srstop(1)
+            call terminate_execution(1)
         end select
 
     end function makptr

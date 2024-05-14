@@ -52,7 +52,7 @@ include: yum
 
     echo "Installing RPM..."
     rm -rf /opt/delft3dfm_$VERSION \
-        && rpm -i /opt/tmp/delft3dfm-cli-hmwq_*.rpm --nofiledigest \
+        && rpm -i /opt/tmp/delft3dfm-cli-hmwq_*.rpm --force --nofiledigest \
         && ln -s /opt/delft3dfm_$VERSION /opt/delft3dfm_latest \
         && rm /opt/delft3dfm_latest/lnx64/lib/libmpi* \
         && rm -rf /opt/tmp/

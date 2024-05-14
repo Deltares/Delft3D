@@ -40,7 +40,7 @@ contains
         !!      noopt = 1 : the monitoring file
         !!      noopt = 2 : the map        file
         !!      noopt = 3 : the history    file
-        !! Logical units : lunut = unitnumber formatted output file
+        !! Logical units : file_unit = unitnumber formatted output file
         !! Subroutines called : convert_time_format  converts a 'DATE' integer to seconds
         !!                          convert_string_to_time_offset  converts an absolute time string to seconds
 
@@ -70,11 +70,11 @@ contains
         if (itype == 1) then
             call convert_string_to_time_offset (cdummy, it1, .false., .false., ierr)
             if (it1 == -999.) then
-                write (lunut, 2030) trim(cdummy)
+                write (file_unit, 2030) trim(cdummy)
                 goto 9999
             endif
             if (ierr /= 0) then
-                write (lunut, 2040) trim(cdummy)
+                write (file_unit, 2040) trim(cdummy)
                 goto 9999
             endif
         else
@@ -85,11 +85,11 @@ contains
         if (itype == 1) then
             call convert_string_to_time_offset (cdummy, it2, .false., .false., ierr)
             if (it2 == -999.) then
-                write (lunut, 2030) trim(cdummy)
+                write (file_unit, 2030) trim(cdummy)
                 goto 9999
             endif
             if (ierr /= 0) then
-                write (lunut, 2040) trim(cdummy)
+                write (file_unit, 2040) trim(cdummy)
                 goto 9999
             endif
         else
@@ -100,20 +100,20 @@ contains
         if (itype == 1) then
             call convert_string_to_time_offset (cdummy, it3, .false., .false., ierr)
             if (it3 == -999.) then
-                write (lunut, 2030) trim(cdummy)
+                write (file_unit, 2030) trim(cdummy)
                 goto 9999
             endif
             if (ierr /= 0) then
-                write (lunut, 2040) trim(cdummy)
+                write (file_unit, 2040) trim(cdummy)
                 goto 9999
             endif
         else
             call convert_relative_time (it3, 1, is_date_format, is_yyddhh_format)
         endif
 
-        write (lunut, 2000) txt(noopt)
+        write (file_unit, 2000) txt(noopt)
         if (is_date_format) then
-            write (lunut, 2010)it1 / 31536000, mod(it1, 31536000) / 86400, &
+            write (file_unit, 2010)it1 / 31536000, mod(it1, 31536000) / 86400, &
                     mod(it1, 86400) / 3600, mod(it1, 3600) / 60, &
                     mod(it1, 60), &
                     it2 / 31536000, mod(it2, 31536000) / 86400, &
@@ -123,7 +123,7 @@ contains
                     mod(it3, 86400) / 3600, mod(it3, 3600) / 60, &
                     mod(it3, 60)
         else
-            write (lunut, 2020) it1, it2, it3
+            write (file_unit, 2020) it1, it2, it3
         endif
         if (timon) call timstop(ithndl)
         return
@@ -159,7 +159,7 @@ contains
         !! then be negative
         !!
         !! Logical units:
-        !!      lunut = unit formatted output file
+        !!      file_unit = unit formatted output file
 
         use time_module
         use rd_token       ! for definition and storage of data
@@ -182,13 +182,13 @@ contains
         if (timon) call timstrt("read_time_delay", ithndl)
 
         ! tell what you are doing here
-        write (lunut, 1000)
+        write (file_unit, 1000)
 
         ! get two integers date and time
         if (gettoken(idate, ierr2) /= 0) goto 900
         if (gettoken(itime, ierr2) /= 0) goto 900
 
-        write (lunut, 1010) idate, itime
+        write (file_unit, 1010) idate, itime
 
         ! convert Julian time offset of the system time to integers
         call gregor (otime, iyear, imonth, iday, ihour, &
@@ -239,13 +239,13 @@ contains
         deltim = julian_with_leapyears (idate, itime)
 
         ! write meaningfull message to check procedure
-        write (lunut, 1020) iday, imonth, iyear, ihour, imin, isec
+        write (file_unit, 1020) iday, imonth, iyear, ihour, imin, isec
 
         if (timon) call timstop(ithndl)
         return
 
         ! error handling
-        900 write (lunut, 1030)
+        900 write (file_unit, 1030)
         ierr = ierr + 1
         if (timon) call timstop(ithndl)
         return

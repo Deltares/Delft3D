@@ -29,12 +29,8 @@
 
       subroutine read_src_tmp(file_src_tmp, nolay, wasteload_coll, wasteload_data)
 
-      ! function : read a src file
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      ! read a src file
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
@@ -73,7 +69,7 @@
       real, allocatable                      :: flow_data(:,:,:)       ! array with the flows from file
       character(len=255)                     :: ctoken                 ! line buffer input file
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       no_waste = wasteload_coll%current_size
       if(no_waste.eq.0) return
@@ -214,18 +210,17 @@
       ierr = wasteload_data_tmp%copy(wasteload_data)
       if ( ierr .ne. 0 ) then
          write(*,*) ' error copying wasteload data'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       deallocate(flow_data)
 
   200 continue
       if ( ierr .ne. 0 ) then
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       close(file_src_tmp%unit)
       file_src_tmp%status = FILE_STAT_UNOPENED
 
-      return
-      end
+      end subroutine read_src_tmp

@@ -29,7 +29,7 @@ module m_dlwq41
 contains
 
 
-    subroutine dlwq41 (lun, itime, itimel, harmat, array, &
+    subroutine dlwq41 (file_unit_list, itime, itimel, harmat, array, &
             iharm, nrharm, nrftot, noseg, volume, &
             ipoint, luntxt, ftype, isflag, ivflag, &
             updatv, inwspc, anwspc, inwtyp, iwork, &
@@ -40,7 +40,7 @@ contains
         !>/file
         !>              Makes values at ITIME for volumes only
         !>
-        !>              Routine is a stripped version of dlwqt0 to read volumes
+        !>              Routine is a stripped version of initialize_time_dependent_variables to read volumes
         !>              at the end of the time step only. Remainder of the time
         !>              varying info is updated after the time step has finished.
         !>              Ratio is that the end-volume of a time step is often needed
@@ -49,7 +49,7 @@ contains
 
         !     Created             : april- 8-1988 by Leo Postma
 
-        !     Logical unitnumbers : LUN(..) -
+        !     Logical unitnumbers : file_unit_list(..) -
 
         !     Subroutines called  : DLWQT1, makes one time function
 
@@ -63,7 +63,7 @@ contains
 
         !     Kind        Function         Name                  Description
 
-        integer(kind = int_wp), intent(in) :: lun   (*)           !< Array with unit numbers
+        integer(kind = int_wp), intent(in) :: file_unit_list   (*)           !< Array with unit numbers
         integer(kind = int_wp), intent(in) :: itime               !< The model timer
         integer(kind = int_wp), intent(in) :: itimel              !< The model timer last step
         real(kind = real_wp), intent(inout) :: harmat(*)           !< Matrices harmonic components
@@ -119,7 +119,7 @@ contains
         !         volumes
 
         if (nrharm(2) >= 0) then
-            call dlwqt1 (lun, itime, itimel, iharm(ipf), harmat(iph), &
+            call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
                     noseg, nrftot(2), ipa, iph, ipf, &
                     ipi, luntxt, 7, isflag, ifflag, &

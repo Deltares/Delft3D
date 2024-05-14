@@ -31,7 +31,7 @@ contains
     SUBROUTINE GRZMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_monsys
+        use m_logger
         use m_evaluate_waq_attribute
 
         !
@@ -126,7 +126,7 @@ contains
 
                 IF (DEPTH < 1E-20) THEN
                     NR_MSG = NR_MSG + 1
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     IF (NR_MSG <= 25) THEN
                         WRITE(LUNREP, *) 'GRZMAC: WARNING - depth zero or negative'
                         WRITE(LUNREP, *) '   Segment:', ISEG
@@ -140,7 +140,7 @@ contains
                 SURF = VOLUME / MAX(DEPTH, 1.0E-20)
                 IF (SURF < 1E-20) THEN
                     NR_MSG = NR_MSG + 1
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     IF (NR_MSG <= 25) THEN
                         WRITE(LUNREP, *) 'GRZMAC: WARNING - surface zero or negative'
                         WRITE(LUNREP, *) '   Segment:', ISEG

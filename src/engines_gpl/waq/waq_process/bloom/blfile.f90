@@ -30,7 +30,7 @@ contains
 
     subroutine blfile (lunrep)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use bloom_data_io
 
         implicit none
@@ -46,7 +46,7 @@ contains
         if (iost /= 0) then
             write (*, *) 'blfile: error opening .frm file'
             write (lunrep, *) 'blfile: error opening .frm file'
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         ! Open statement for BLOOM II debug file.
@@ -55,7 +55,7 @@ contains
         if (iost /= 0) then
             write (*, *) 'blfile: error opening .dbg file'
             write (lunrep, *) 'blfile: error opening .dbg file'
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         return

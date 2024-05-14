@@ -31,8 +31,7 @@ contains
     subroutine rfpart (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
 
         !>\file
         !>       Reprofunctions for HM partition coefficients
@@ -178,14 +177,14 @@ contains
 
                     !              switch for function out of range
 
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE(LUNREP, *) 'ERROR in RFPART'
                     WRITE(LUNREP, *) 'Illegal option for repro function partition coefficient'
                     WRITE(LUNREP, *) 'Option in input:', IVERSN
                     WRITE(*, *) ' ERROR in RFPART'
                     WRITE(*, *) ' Illegal option for repro function partition coefficient'
                     WRITE(*, *) ' Option in input:', IVERSN
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
 
                 ENDIF
                 !

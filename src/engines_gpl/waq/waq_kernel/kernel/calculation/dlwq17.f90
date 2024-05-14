@@ -25,30 +25,18 @@ module m_dlwq17
 
     implicit none
 
-contains
+    contains
 
 
-    subroutine dlwq17 (bset, bsave, ibpnt, nobnd, nosys, &
+        !> Implements the Thatcher-Harleman boundary conditions
+        !> For each open boundary condition:
+        !> - at outflow, updates last saved outflow concentration bsave
+        !> - at outflow, sets open boundary condition to this outflow value
+        !> - at inflow, set open boundary condition to:
+        !>       - prescribed value if inflow time larger than the time-lag
+        !>       - evaluates Tatcher-Harleman boundary if inflow time is less than time-lag
+    subroutine thatcher_harleman_bc(bset, bsave, ibpnt, nobnd, nosys, &
             notot, idt, conc, flow, bound)
-
-        !     Deltares - Delft Software Department
-
-        !>\file
-        !>            Makes the Tatcher-Harleman boundary conditions
-        !>
-        !>            This routine performs per open boundary condition:
-        !>            - at outflow, updates last saved outflow concentration bsave
-        !>            - at outflow, sets open boundary condition to this outflow value
-        !>            - at inflow, set open boundary condition to:
-        !>                  - prescribed value if inflow time larger then time lag
-        !>                  - evaluates Tatcher-Harleman boundary if inflow time is less
-
-        !     Created     : April      4, 1988 by Leo Postma
-        !     Modified    : September 12, 2012 by Leo Postma: Fortran 90 look and feel
-
-        !     File-IO     : none
-
-        !     Subroutines : none
 
         use m_cli_utils, only : retrieve_command_argument
         use timers
@@ -145,9 +133,6 @@ contains
                 enddo
             endif
         enddo
-
         if (timon) call timstop (ithandl)
-        return
-    end
-
+    end subroutine thatcher_harleman_bc
 end module m_dlwq17

@@ -26,174 +26,155 @@ module m_dlwqf5
 
     implicit none
 
-contains
+    contains
 
 
-    subroutine dlwqf5 (lunrep, nocons, coname, cons, ioptpc, &
-            &                    iter, tol, iscale, litrep, noseg, &
-            &                    noq3, noq, nobnd, novec, nomat, &
-            &                    nolay, intsrt, intopt)
-
-        !     Deltares - Delft Software Department
-
-        !     Created   : December 96 by Jan van Beek
-
-        !     Function  : Initialise numerical parameters for GMRES Fast Solver
-        !                 from user input-parameters or from the default values.
-
-        !     Modified  : feb. 1997, Jan van Beek: set prec. switch equal 3 default
-        !                                          added iteration report
-        !                 July 2009, Leo Postma  : allocation double precission arrays
+    !> Initialise numerical parameters for Generalized Minimal Residual (GMRES) method
+    !! from user input-parameters (if found) or from the default values (if not user-defined).
+    !! The numerical parameters assigned are:
+    !!    * Preconditioner: 0 = none, 1 = GS (Lower), 2 = GS (Upper), 3 = (default) Symmetric-> SSOR (Lower and Upper)
+    !!    * Maximum number of iterations: default = 100
+    !!    * Relative tolerance: default = 1.D-7
+    !!    * Row scaling: 0 = no, 1 = (default) yes
+    !!    * Generate iteration report: true or false
+    subroutine initialize_gmres(lunrep, nocons, coname, cons, preconditioner, &
+            &                   max_iterations, rel_tolerance, row_scaling, report_iterations, noseg, &
+            &                   noq3, noq, novec, matrix_size, &
+            &                   nolay, integration_type, integration_option)
 
         use timers                         ! WAQ performance timers
 
         implicit none
 
-        !     Arguments           :
-
-        !     Kind           Function         Name             Description
-
-        integer(kind = int_wp), intent(in) :: lunrep         ! Unit number report file
-        integer(kind = int_wp), intent(in) :: nocons         ! Number of constants used
-        character(20), intent(in) :: coname(nocons) ! Constant names
-        real(kind = real_wp), intent(in) :: cons  (nocons) ! Model constants
-        integer(kind = int_wp), intent(out) :: ioptpc         ! Preconditioner switch, 0 = none,
-        ! 1 = GS (L), 2 = GS (U),3 = SSOR
-        integer(kind = int_wp), intent(out) :: iter           ! Maximum number of iterations
-        real(kind = dp), intent(out) :: tol            ! Relative tolerance
-        integer(kind = int_wp), intent(out) :: iscale         ! Row scaling switch [0 = no, 1 =yes]
-        logical, intent(out) :: litrep         ! Switch on reporting iterarions
-        integer(kind = int_wp), intent(in) :: noseg          ! Number of computational volumes
-        integer(kind = int_wp), intent(in) :: noq3           ! Number of exchange surfaces in 3rd direction
-        integer(kind = int_wp), intent(in) :: noq            ! total number of exchange surfaces
-        integer(kind = int_wp), intent(in) :: nobnd          ! Number of open boundaries
-        integer(kind = int_wp), intent(in) :: novec          !
-        integer(kind = int_wp), intent(in) :: nomat          ! size of matrix with off-diagonals
-        integer(kind = int_wp), intent(out) :: nolay          ! number of layers
-        integer(kind = int_wp), intent(in) :: intsrt         ! integration type
-        integer(kind = int_wp), intent(in) :: intopt         ! integration option
+        integer(kind = int_wp), intent(in)  :: lunrep             ! Unit number report file
+        integer(kind = int_wp), intent(in)  :: nocons             ! Number of constants used
+        character(20),          intent(in)  :: coname(nocons)     ! Constant names
+        real(kind = real_wp),   intent(in)  :: cons  (nocons)     ! Model constants
+        integer(kind = int_wp), intent(out) :: preconditioner     ! Preconditioner switch:
+                                                                  ! 0 = none
+                                                                  ! 1 = GS (L)
+                                                                  ! 2 = GS (U)
+                                                                  ! 3 = SSOR
+        integer(kind = int_wp), intent(out) :: max_iterations     ! Maximum number of iterations
+        real(kind = dp),        intent(out) :: rel_tolerance      ! Relative tolerance
+        integer(kind = int_wp), intent(out) :: row_scaling        ! Row scaling switch [0 = no, 1 =yes]
+        logical,                intent(out) :: report_iterations  ! Switch on reporting iterarions
+        integer(kind = int_wp), intent(in)  :: noseg              ! Number of cells or computational volumes
+        integer(kind = int_wp), intent(in)  :: noq3               ! Number of exchange surfaces in 3rd direction
+        integer(kind = int_wp), intent(in)  :: noq                ! total number of exchange surfaces
+        integer(kind = int_wp), intent(in)  :: novec              ! vector_count
+        integer(kind = int_wp), intent(in)  :: matrix_size        ! size of matrix with off-diagonals
+        integer(kind = int_wp), intent(out) :: nolay              ! number of layers
+        integer(kind = int_wp), intent(in)  :: integration_type   ! integration type
+        integer(kind = int_wp), intent(in)  :: integration_option ! integration option
 
         !     Local declarations
-
-        integer(kind = int_wp) :: ierr               ! Error count
-        integer(kind = int_wp) :: defopt = 3    ! Default preconditioner switch
-        integer(kind = int_wp) :: defite = 100    ! Default maximum number of iterations
-        integer(kind = int_wp) :: defsca = 1    ! Default value for row scaling
-        real(kind = dp) :: deftol = 1.D-7    ! Default tolerance value
-        integer(kind = int_wp) :: defrep = 0    ! Default value for iteration report
-        integer(kind = int_wp) :: idef, itrep        ! Help variables
-        character(20) defnam             ! Help string
-        integer(kind = int_wp) :: noth               ! Number of available threads
+        integer(kind = int_wp) :: ierr                          ! Error count
+        integer(kind = int_wp) :: default_preconditioner = 3    ! Default preconditioner switch
+        integer(kind = int_wp) :: default_max_iterations = 100  ! Default maximum number of iterations
+        integer(kind = int_wp) :: default_row_scaling = 1       ! Default value for row scaling
+        real(kind = dp)        :: default_rel_tolerance = 1.D-7 ! Default value for relative tolerance
+        integer(kind = int_wp) :: default_report_iterations = 0 ! Default value for iteration report
+        integer(kind = int_wp) :: idef, itrep                   ! Auxiliary variables
+        character(20) defnam                                    ! Auxiliary string
+        integer(kind = int_wp) :: threads_count                 ! Number of available threads
 
         !     The WAQ-timer
-
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqf5", ithandl)
 
-        !     look for unstructured setting, this is misuse of nolay, fractim depends also on this
-
-        if (btest(intopt, 15)) then
+        ! look for unstructured setting, this is misuse of nolay, fractim depends also on this
+        if (btest(integration_option, 15)) then
             nolay = 1
-        endif
+        end if
 
-        !     Some initialisations
-
+        ! Some initialisations
         ierr = 0
         write (lunrep, *)
         write (lunrep, 2000)
 
-        !     Look for preconditioner switch
-
+        ! Preconditioner switch
         write (lunrep, *)
         defnam = 'swprecond'
         idef = index_in_array(defnam, coname)
         if (idef > 0) then
-            ioptpc = nint(cons(idef))
+            preconditioner = nint(cons(idef))
             write (lunrep, 2010)
         else
-            ioptpc = defopt
+            preconditioner = default_preconditioner
             write (lunrep, 2020)
-        endif
-
-        !     Check value
-
-        select case (ioptpc)
-        case (0)   ; write (lunrep, 2030) ioptpc
-        case (1)   ; write (lunrep, 2040) ioptpc
-        case (2)   ; write (lunrep, 2050) ioptpc
-        case (3)   ; write (lunrep, 2060) ioptpc
+        end if
+        ! Check value
+        select case (preconditioner)
+        case (0)   ; write (lunrep, 2030) preconditioner
+        case (1)   ; write (lunrep, 2040) preconditioner
+        case (2)   ; write (lunrep, 2050) preconditioner
+        case (3)   ; write (lunrep, 2060) preconditioner
         case default ; ierr = ierr + 1
-        write (lunrep, 2070) ioptpc
+        write (lunrep, 2070) preconditioner
         end select
 
-        !     Look for maximum number of iterations
-
+        ! Maximum number of iterations
         write (lunrep, *)
         defnam = 'maxiter'
         idef = index_in_array(defnam, coname)
         if (idef > 0) then
-            iter = nint(cons(idef))
+            max_iterations = nint(cons(idef))
             write (lunrep, 2080)
         else
-            iter = defite
+            max_iterations = default_max_iterations
             write (lunrep, 2090)
-        endif
+        end if
+        ! Check value
+        if (max_iterations > 0) then
+            write (lunrep, 2100) max_iterations
+        else
+            ierr = ierr + 1
+            write (lunrep, 2110) max_iterations
+        end if
 
-        !     Check value
-
-        if (iter > 0) then ; write (lunrep, 2100) iter
-        else                    ; ierr = ierr + 1
-        write (lunrep, 2110) iter
-        endif
-
-        !     Nr. of vectors
-
+        ! Number of vectors
         write (lunrep, 2260) novec
 
-        !     Look for the relative tolerance
-
+        ! Relative tolerance
         write (lunrep, *)
         defnam = 'tolerance'
         idef = index_in_array(defnam, coname)
         if (idef > 0) then
-            tol = cons(idef)
+            rel_tolerance = cons(idef)
             write (lunrep, 2120)
         else
-            tol = deftol
+            rel_tolerance = default_rel_tolerance
             write (lunrep, 2130)
-        endif
+        end if
+        ! Check value
+        if (rel_tolerance  > 0.0) then
+            write (lunrep, 2140) rel_tolerance
+        else
+            ierr = ierr + 1
+            write (lunrep, 2150) rel_tolerance
+        end if
 
-        !     Check value
-
-        if (tol  > 0.0) then ; write (lunrep, 2140) tol
-        else                      ; ierr = ierr + 1
-        write (lunrep, 2150) tol
-        endif
-
-        !     Look for the row scaling switch
-
+        ! Look for the row scaling switch
         write (lunrep, *)
         defnam = 'swscale'
         idef = index_in_array(defnam, coname)
         if (idef > 0) then
-            iscale = nint(cons(idef))
+            row_scaling = nint(cons(idef))
             write (lunrep, 2160)
         else
-            iscale = defsca
+            row_scaling = default_row_scaling
             write (lunrep, 2170)
-        endif
-
-        !     Check value
-
-        select case (iscale)
-        case (0)   ; write (lunrep, 2180) iscale
-        case (1)   ; write (lunrep, 2190) iscale
+        end if
+        ! Check value
+        select case (row_scaling)
+        case (0)   ; write (lunrep, 2180) row_scaling
+        case (1)   ; write (lunrep, 2190) row_scaling
         case default ; ierr = ierr + 1
-        write (lunrep, 2200) iscale
+        write (lunrep, 2200) row_scaling
         end select
 
-        !     Look for the iteration report flag
-
+        ! Iteration report flag
         write (lunrep, *)
         defnam = 'iteration report'
         idef = index_in_array(defnam, coname)
@@ -201,28 +182,24 @@ contains
             itrep = nint(cons(idef))
             write (lunrep, 2210)
         else
-            itrep = defrep
+            itrep = default_report_iterations
             write (lunrep, 2220)
-        endif
-
+        end if
         !     Check value
-
         select case (itrep)
         case (0)   ; write (lunrep, 2230) itrep
-        litrep = .false.
+        report_iterations = .false.
         case (1)   ; write (lunrep, 2240) itrep
-        litrep = .true.
+        report_iterations = .true.
         case default ; ierr = ierr + 1
         write (lunrep, 2250) itrep
         end select
 
         !     Close timer and return
-
         if (timon) call timstop (ithandl)
         return
 
         !     Formats
-
         2000 format(' Initialising numerical options for method 15...18')
         2010 format(' Preconditioner switch found in input')
         2020 format(' Preconditioner switch not found, using default')

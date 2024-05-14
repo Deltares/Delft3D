@@ -31,8 +31,7 @@ contains
     subroutine VBGRO      (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
-        use m_write_error_message
+        use m_logger, only : write_error_message, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !
@@ -147,7 +146,7 @@ contains
         ipnt = ipoint
         IdVB1 = 1
 
-        CALL GETMLU(ILUMON)
+        CALL get_log_unit_number(ILUMON)
 
         do  iseg = 1, noseg
 

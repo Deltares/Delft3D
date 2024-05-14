@@ -41,7 +41,7 @@ program test_read_boundary_concentrations
 
     type :: bc_fixture
         integer(kind = int_wp) :: nosys, nobnd, nobtyp, output_verbose_level, ierr2
-        character(255) :: bc_file, wrk_file, lchar(50)
+        character(255) :: bc_file, wrk_file, file_name_list(50)
         character(20), dimension(:), allocatable :: bc_ids
         character(20), dimension(:), allocatable :: bc_types
         character(20), dimension(:), allocatable :: sname
@@ -153,16 +153,16 @@ contains
         ! global variables declared in m_delwaq1_data
 
         call this%status%initialize(0, 0, 0)
-        this%lchar(14) = trim(data_path) // '/' // trim(case_name) // '.wrk'
-        this%lchar(26) = trim(data_path) // '/' // trim(case_name) // '.inc'
+        this%file_name_list(14) = trim(data_path) // '/' // trim(case_name) // '.wrk'
+        this%file_name_list(26) = trim(data_path) // '/' // trim(case_name) // '.inc'
         this%is_date_format = .true.
         this%is_yyddhh_format = .false.
         ! lun:  global variable declared in m_delwaq1_data
         ilun(1) = this%lun(26)   ! ilun: global variable declared in rd_token
-        lch(1) = this%lchar(26)  ! lch:  global variable declared in rd_token
+        lch(1) = this%file_name_list(26)  ! lch:  global variable declared in rd_token
 
         !! Open input file
-        open (this%lun(26), file = this%lchar(26), status = 'old')
+        open (this%lun(26), file = this%file_name_list(26), status = 'old')
     end subroutine setup_case
 
     subroutine teardown_case(fx)
@@ -205,7 +205,7 @@ contains
     subroutine parse_bc(fixture)
         type(bc_fixture), intent(inout) :: fixture
 
-        call read_boundary_concentrations(fixture%lun, fixture%lchar, 14, fixture%iwidth, fixture%icmax, &
+        call read_boundary_concentrations(fixture%lun, fixture%file_name_list, 14, fixture%iwidth, fixture%icmax, &
                 fixture%car, fixture%iimax, fixture%iar, fixture%irmax, fixture%rar, &
                 fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%nobtyp), fixture%nobnd, fixture%nosys, &
                 fixture%nobtyp, fixture%drar, fixture%is_date_format, fixture%is_yyddhh_format, fixture%output_verbose_level, &

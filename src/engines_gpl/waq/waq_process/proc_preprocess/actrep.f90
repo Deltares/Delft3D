@@ -36,8 +36,7 @@ contains
         !>/File
         !>      replace active proto processes with actual processes
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, write_error_message, get_log_unit_number, write_log_message
         use m_string_manipulation, only : upper_case
         use m_string_manipulation, only : get_trimmed_length
         use timers         !< performance timers
@@ -102,8 +101,8 @@ contains
                                 ierr2 = constants%resize(nocon2)
                                 if (ierr2 > 0) then
                                     write(line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
-                                    call monsys(line, 1)
-                                    call srstop(1)
+                                    call write_log_message(line)
+                                    call terminate_execution(1)
                                 endif
                                 constants%no_item = nocon2
                                 constants%name(nocon2) = constants%name(ico)

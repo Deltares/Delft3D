@@ -31,8 +31,7 @@ contains
     subroutine satoxy (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
 
         !>\file
         !>       Saturation concentration of oxygen
@@ -115,14 +114,14 @@ contains
                 OXSAT = EXP(PART1 + PART2) * 1.428571
                 !
             ELSE
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) 'ERROR in SATOXY'
                 WRITE(LUNREP, *) 'Illegal option for oxygen saturation formula'
                 WRITE(LUNREP, *) 'Option in input:', SWITCH
                 WRITE(*, *) ' ERROR in SATOXY'
                 WRITE(*, *) ' Illegal option for oxygen saturation formula'
                 WRITE(*, *) ' Option in input:', SWITCH
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
 
             !     Output of calculated oxygen saturation

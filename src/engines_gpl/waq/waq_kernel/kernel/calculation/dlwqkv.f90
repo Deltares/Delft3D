@@ -28,7 +28,7 @@ module m_dlwqkv
 contains
 
 
-    SUBROUTINE DLWQKV (LUNIN, LUNOUT, ITIME, IARRAY, NTOTAL, &
+    SUBROUTINE DLWQKV (input_file, LUNOUT, ITIME, IARRAY, NTOTAL, &
             LUNTXT, ISFLAG, IFFLAG)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -37,16 +37,16 @@ contains
         !     FUNCTION            : Makes values at ITIME for user supplied
         !                                         binary intermediate files
         !
-        !     LOGICAL UNITNUMBERS : LUNIN  - input unit intermediate file
+        !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
         !                           LUNOUT - monitor file
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !     PARAMETERS          :
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     LUNIN   INTEGER       1     INPUT   unit number intermediate file
+        !     input_file   INTEGER       1     INPUT   unit number intermediate file
         !     LUNOUT  INTEGER       1     INPUT   unit number monitor file
         !     ITIME   INTEGER       1     INPUT   Model timer
         !     IARRAY  INTEGER  NTOTAL     OUTPUT  result array at time ITIME
@@ -57,9 +57,9 @@ contains
         !
         !     DECLARATIONS        :
         !
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
-        INTEGER(kind = int_wp) :: LUNIN, LUNOUT, ITIME, NTOTAL, ISFLAG, &
+        INTEGER(kind = int_wp) :: input_file, LUNOUT, ITIME, NTOTAL, ISFLAG, &
                 IFFLAG
         INTEGER(kind = int_wp) :: IARRAY(NTOTAL)
         character(len=*) LUNTXT
@@ -83,48 +83,48 @@ contains
         !
         !         normal time varying read
         !
-        READ  (LUNIN, END = 10, ERR = 40) ITIME1, IARRAY
+        READ  (input_file, END = 10, ERR = 40) ITIME1, IARRAY
         goto 9999
         !
         !         normal rewind.
         !
         10 MESSGE = 1
-        inquire(lunin, access = access)
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, IARRAY
+        READ  (input_file, END = 40, ERR = 40) ITIME1, IARRAY
         GOTO 50
         !
         !         This is the first time, check only for nr of records.
         !
         20 CONTINUE
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, IARRAY
-        READ  (LUNIN, END = 30, ERR = 40) ITIME1, IARRAY
-        inquire(lunin, access = access)
+        READ  (input_file, END = 40, ERR = 40) ITIME1, IARRAY
+        READ  (input_file, END = 30, ERR = 40) ITIME1, IARRAY
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 30, ERR = 40) ITIME1, IARRAY
+        READ  (input_file, END = 30, ERR = 40) ITIME1, IARRAY
         goto 9999
         !
         !         file has only one record, array is constant
         !
         30 MESSGE = 2
-        inquire(lunin, access = access)
+        inquire(input_file, access = access)
         stream_access = access == 'STREAM'
         if (stream_access) then
-            read(lunin, iostat = ierr, pos = 1)
+            read(input_file, iostat = ierr, pos = 1)
         else
-            rewind lunin                            ! Start at the beginning again
+            rewind input_file                            ! Start at the beginning again
         endif
-        READ  (LUNIN, END = 40, ERR = 40) ITIME1, IARRAY
+        READ  (input_file, END = 40, ERR = 40) ITIME1, IARRAY
         IFFLAG = -1
         GOTO 50
         !
@@ -132,17 +132,17 @@ contains
         !
         40 MESSGE = 3
         50 IF (ISFLAG /= 1) THEN
-            WRITE(LUNOUT, 2000) MSGTXT(MESSGE), LUNIN, LUNTXT, &
+            WRITE(LUNOUT, 2000) MSGTXT(MESSGE), input_file, LUNTXT, &
                     ITIME, ITIME1
         ELSE
-            WRITE(LUNOUT, 2010) MSGTXT(MESSGE), LUNIN, LUNTXT, &
+            WRITE(LUNOUT, 2010) MSGTXT(MESSGE), input_file, LUNTXT, &
                     ITIME / 86400, MOD(ITIME, 86400) / 3600, &
                     MOD(ITIME, 3600) / 60, MOD(ITIME, 60), &
                     ITIME1 / 86400, MOD(ITIME1, 86400) / 3600, &
                     MOD(ITIME1, 3600) / 60, MOD(ITIME1, 60)
         ENDIF
         IF (MESSGE < 3) goto 9999
-        CALL SRSTOP (1)
+        CALL terminate_execution (1)
         9999 if (timon) call timstop (ithandl)
         !
         2000 FORMAT (A10, 'ON UNIT:', I10, ', READING: ', A20, / &

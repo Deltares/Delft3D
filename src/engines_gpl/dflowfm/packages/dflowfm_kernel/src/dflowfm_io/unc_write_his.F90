@@ -1185,7 +1185,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_def_var(ihisfile, 'cross_section_'//trim(tmpstr), nc_precision, (/ id_crsdim, id_timedim /), id_const(num))
                ierr = nf90_put_att(ihisfile, id_const(num), 'long_name', 'flux (based on upwind flow cell) for '//trim(tmpstr)//'.')
 
-               if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then    ! if the constituent is sediment
                   select case(stmpar%morpar%moroutput%transptype)
                   case (0)
                      tmpstr = 'kg'
@@ -1203,7 +1203,7 @@ subroutine unc_write_his(tim)            ! wrihis
                ierr = nf90_put_att(ihisfile, id_const_cum(num), 'coordinates', 'cross_section_name')
                ierr = nf90_put_att(ihisfile, id_const_cum(num), 'geometry', crs_geom_container_name)
 
-               if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+               if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then    ! if the constituent is sediment
                   select case(stmpar%morpar%moroutput%transptype)
                   case (0)
                      tmpstr = 'kg/s'
@@ -3136,7 +3136,7 @@ subroutine unc_write_his(tim)            ! wrihis
              IP = IPNT_HUA
              do num = 1,NUMCONST_MDU
                 IP = IP + 1
-                if (num >= ISED1 .and. num <= ISEDN) then
+                if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
                    l = sedtot2sedsus(num-ISED1+1)
                    select case(stmpar%morpar%moroutput%transptype)
                    case (0)
@@ -3583,10 +3583,10 @@ subroutine unc_write_his(tim)            ! wrihis
          end if
 
       if (jahislateral > 0 .and. numlatsg > 0) then
-         ierr = nf90_put_var(ihisfile, id_lat_predis_inst,  qplat,       start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_predis_ave,   qplatAve,    start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_realdis_inst, qLatReal,    start = (/1,it_his/), count = (/numlatsg,1/))
-         ierr = nf90_put_var(ihisfile, id_lat_realdis_ave,  qLatRealAve, start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_predis_inst,  sum(qplat,dim=1),start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_predis_ave,   qplatAve,        start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_realdis_inst, qLatReal,        start = (/1,it_his/), count = (/numlatsg,1/))
+         ierr = nf90_put_var(ihisfile, id_lat_realdis_ave,  qLatRealAve,     start = (/1,it_his/), count = (/numlatsg,1/))
          ! write geometry variables at the first time of history output
          if (it_his == 1) then
             ierr = nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /))

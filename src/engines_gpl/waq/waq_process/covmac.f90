@@ -35,7 +35,7 @@ contains
         !*******************************************************************************
         !
         use m_evaluate_waq_attribute
-        use m_write_error_message
+        use m_logger, only : write_error_message_with_values
         IMPLICIT NONE
         !
         !     Type    Name         I/O Description

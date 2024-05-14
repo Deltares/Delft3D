@@ -79,8 +79,8 @@ integer                           :: jatair              !< use air temperature 
 integer                           :: jarhum              !< use relative humidity yes or no
 integer                           :: jaclou              !< use cloudiness        yes or no
 integer                           :: ja_airdensity       !< use variabele air density yes or no
-integer                           :: jasol = 0           !< use 1 = use solrad, 2 = use cloudiness
-integer                           :: jalongwave = 0      !< >0 longwaveradiation from file; otherwise internal formulation
+logical                           :: solrad_available = .false.   !< solar radiation provided by user
+logical                           :: longwave_available = .false. !< longwave radiation provided by user
 integer                           :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
 integer                           :: jaQext              !< use Qin externally provided yes or no
 integer                           :: jaqin               !< use qin , sum of all in fluxes

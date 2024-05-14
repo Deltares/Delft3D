@@ -73,8 +73,8 @@ module delwaq2_global_data
 
     character(len = 20), dimension(:), allocatable :: procparam_name
 
-    integer(kind = int_wp), dimension(50) :: lun
-    character(len = 255), dimension(50) :: lchar
+    integer(kind = int_wp), dimension(50) :: file_unit_list
+    character(len = 255), dimension(50) :: file_name_list
     integer(kind = int_wp), dimension(50) :: filtype
 
     character(len = 255), save :: runid = 'deltashell'
@@ -112,13 +112,13 @@ contains
         character(len = *) :: runid_given
         integer(kind = int_wp) :: i
 
-        lun = (/14, 15, 16, 17, 18, 19, 20, 21, 22, 23, &
+        file_unit_list = (/14, 15, 16, 17, 18, 19, 20, 21, 22, 23, &
                 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, &
                 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, &
                 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, &
                 54, 55, 56, 57, 58, -1, -1, -1, -1, -1/)
 
-        lchar = (/'-delwaq03.wrk', '-delwaq04.wrk', &
+        file_name_list = (/'-delwaq03.wrk', '-delwaq04.wrk', &
                 '-harmonic.wrk', '-pointers.wrk', &
                 '-timestep.wrk', '-gridding.wrk', &
                 '-volumes.wrk ', '-to_from.wrk ', &
@@ -148,9 +148,9 @@ contains
 
         runid = runid_given
 
-        do i = 1, size(lchar)
-            if (lchar(i) /= ' ') then
-                lchar(i) = trim(runid) // lchar(i)
+        do i = 1, size(file_name_list)
+            if (file_name_list(i) /= ' ') then
+                file_name_list(i) = trim(runid) // file_name_list(i)
             end if
         end do
     end subroutine delwaq2_global_data_initialize
@@ -209,8 +209,8 @@ contains
         ! close all files; should have been done already, but this statement
         ! nevertheless proves necessary
         do i = 1, 50
-            if (lun(i) > 0) then
-                close (lun(i))
+            if (file_unit_list(i) > 0) then
+                close (file_unit_list(i))
             end if
         end do
 

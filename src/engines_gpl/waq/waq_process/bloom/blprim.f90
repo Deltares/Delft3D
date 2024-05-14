@@ -43,7 +43,7 @@ contains
             flxcon, noutlim, outlim, nunucom, nuecogm, &
             con2out, swblsa, totnin, totpin, totsiin)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use bloom_data_dim
         use bloom_data_size
         use bloom_data_caldynam
@@ -211,7 +211,7 @@ contains
                     if (ierror == merror) then
                         write (outdbg, *) 'Fatal ERROR in Bloom module: time step too big'
                         write (*, *) 'Fatal ERROR in Bloom module: time step too big'
-                        call srstop(1)
+                        call terminate_execution(1)
                     end if
                 end if
                 1050    format (' Integration error number ', I3, /, &

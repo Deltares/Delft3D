@@ -31,8 +31,7 @@ contains
     subroutine dredge_process     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
 
         implicit none
@@ -157,7 +156,7 @@ contains
         integer(kind = int_wp) :: ifrac_dump_im2   ! dump towards this fraction
         integer(kind = int_wp) :: ifrac_dump_im3   ! dump towards this fraction
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
 
         ! initialise pointers in pmsa array
 
@@ -176,7 +175,7 @@ contains
                     write (lunrep, *) 'basin_no is greater than max_basin in dredge process'
                     write (*, *) 'ERROR in dredge process'
                     write (*, *) 'basin_no is greater than max_basin in dredge process'
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
                 no_basin = max(no_basin, basin_no)
                 ip_basin_no = ip_basin_no + increm(2)

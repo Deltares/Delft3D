@@ -33,12 +33,14 @@ program test_dflowfm_kernel
     use test_1d_grid
     use test_read_property
     use test_airdensity
+    use test_lateral
     
     implicit none
     
     call prepareTests
     call runtests_init
 
+    call tests_lateral
     call tests_roughness
     call tests_cross_sections
     call tests_observations
@@ -46,9 +48,9 @@ program test_dflowfm_kernel
     call tests_MDU_fileversion
     call tests_1d_grid
     call tests_storageNodes
-    call tests_iniField_1dField
     call tests_read_property
     call tests_compute_airdensity
+    call tests_iniField_1dField
     !
     ! Done - properly finalize
     !

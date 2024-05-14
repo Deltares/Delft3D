@@ -33,7 +33,7 @@ contains
 
         ! add the dispersion and velocity stochi for fractions
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use ProcesSet
         use timers       !   performance timers
 
@@ -100,7 +100,7 @@ contains
                                     write(lunrep, *) 'error allocating work array in routine add_dspfrc:', ierr_alloc
                                     write(lunrep, *) 'array length:', proc%no_dispstochi + nfrac
                                     write(*, *) 'error allocating array:', ierr_alloc
-                                    call srstop(1)
+                                    call terminate_execution(1)
                                 endif
 
                                 ! copy the existing stochis
@@ -151,7 +151,7 @@ contains
                                     write(lunrep, *) 'error allocating work array in routine add_dspfrc:', ierr_alloc
                                     write(lunrep, *) 'array length:', proc%no_velostochi + nfrac
                                     write(*, *) 'error allocating array:', ierr_alloc
-                                    call srstop(1)
+                                    call terminate_execution(1)
                                 endif
 
                                 ! copy the existing stochis

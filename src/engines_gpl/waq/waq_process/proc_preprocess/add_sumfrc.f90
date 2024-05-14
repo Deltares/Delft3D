@@ -33,7 +33,7 @@ contains
 
         ! add calculation of the sum of the fractions
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use processet
         use timers       !   performance timers
 
@@ -82,7 +82,7 @@ contains
                 write(lunrep, *) 'error allocating work array in routine add_sumfrc:', ierr_alloc
                 write(lunrep, *) 'array length:', proc%no_input, proc%no_output
                 write(*, *) 'error allocating array:', ierr_alloc
-                call srstop(1)
+                call terminate_execution(1)
             endif
 
             ! input on segments

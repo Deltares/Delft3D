@@ -24,16 +24,18 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
+!  
+!  
 
 subroutine read_hyd_step(hyd, itime, iend)
 
     ! global declarations
 
-    use m_srstop
-    use m_hydmod
-    implicit none
+      use m_logger, only : terminate_execution
+      use m_hydmod
+      implicit none
 
-    ! decalration of arguments
+      ! decalration of arguments
 
     type(t_hydrodynamics) :: hyd           ! description of the hydrodynamics
     integer :: itime         ! relative time in file
@@ -51,20 +53,20 @@ subroutine read_hyd_step(hyd, itime, iend)
     !     write(*,*) 'iend:',iend
     if (iend /= 0) return
 
-    ! for the rest read
+      ! for the rest read
 
     call hyd%file_are%open()
     read(hyd%file_are%unit, iostat = ierr) itime, (hyd%area(i), i = 1, hyd%noq)
     if (ierr /= 0) then
         write(*, *) 'ERROR: reading are file: ', hyd%file_are%unit, trim(hyd%file_are%name)
-        call srstop(1)
+        call terminate_execution(1)
     endif
 
     call hyd%file_flo%open()
     read(hyd%file_flo%unit, iostat = ierr) itime, (hyd%flow(i), i = 1, hyd%noq)
     if (ierr /= 0) then
         write(*, *) 'ERROR: reading flo file: ', hyd%file_flo%unit, trim(hyd%file_flo%name)
-        call srstop(1)
+        call terminate_execution(1)
     endif
 
     if (hyd%sal_present) then
@@ -72,7 +74,7 @@ subroutine read_hyd_step(hyd, itime, iend)
         read(hyd%file_sal%unit, iostat = ierr) itime, (hyd%sal(i), i = 1, hyd%noseg)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading sal file: ', hyd%file_sal%unit, trim(hyd%file_sal%name)
-            call srstop(1)
+            call terminate_execution(1)
         endif
     endif
 
@@ -81,7 +83,7 @@ subroutine read_hyd_step(hyd, itime, iend)
         read(hyd%file_tem%unit, iostat = ierr) itime, (hyd%tem(i), i = 1, hyd%noseg)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading tem file: ', hyd%file_tem%unit, trim(hyd%file_tem%name)
-            call srstop(1)
+            call terminate_execution(1)
         endif
     endif
 
@@ -90,7 +92,7 @@ subroutine read_hyd_step(hyd, itime, iend)
         read(hyd%file_tau%unit, iostat = ierr) itime, (hyd%tau(i), i = 1, hyd%noseg)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading tau file: ', hyd%file_tau%unit, trim(hyd%file_tau%name)
-            call srstop(1)
+            call terminate_execution(1)
         endif
     endif
 
@@ -99,9 +101,8 @@ subroutine read_hyd_step(hyd, itime, iend)
         read(hyd%file_vdf%unit, iostat = ierr) itime, (hyd%vdf(i), i = 1, hyd%noseg)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading vdf file: ', hyd%file_vdf%unit, trim(hyd%file_vdf%name)
-            call srstop(1)
+            call terminate_execution(1)
         endif
     endif
 
-    return
 end subroutine read_hyd_step

@@ -1,10 +1,10 @@
 configuration 'ECO' serial 2015061701
-substance 'OXY' active 
+substance 'OXY' active
    description        'Dissolved Oxygen'
    concentration-unit '(g/m3)'
    waste-load-unit    '-'
 end-substance
-substance 'CBOD5' active 
+substance 'CBOD5' active
    description        'carbonaceous BOD (first pool) at 5 days'
    concentration-unit '(gO2/m3)'
    waste-load-unit    '-'
@@ -59,4 +59,5 @@ active-processes
      name  'DynDepth' 'dynamic calculation of the depth'
      name  'SaturOXY' 'Saturation concentration oxygen'
      name  'TotDepth' 'depth water column'
+     name  'Veloc' 'Horizontal flow velocity'
 end-active-processes

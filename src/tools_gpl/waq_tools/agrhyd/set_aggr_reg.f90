@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_hydmod
       implicit none
 
@@ -81,7 +81,7 @@
                      write(*,*) 'iseg=:',iseg
                      write(*,*) 'ipnt=:',ipnt(iseg)
                      write(*,*) 'ipnt_h=:',ipnt_h(n,m)
-                     call srstop(1)
+                     call terminate_execution(1)
                   endif
 
                else
@@ -137,7 +137,7 @@
                   write(*,*) 'n=:',n
                   write(*,*) 'iseg=:',iseg
                   write(*,*) 'ipnt_h=:',ipnt_h(n,m)
-                  call srstop(1)
+                  call terminate_execution(1)
 
                endif
             endif

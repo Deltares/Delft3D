@@ -42,10 +42,7 @@ contains
         !>/File
         !>                makes list of active processes
 
-        !     Created   : Aug   2012 by Jan van Beek
-
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, write_log_message
         use timers         !< performance timers
         use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
@@ -85,10 +82,10 @@ contains
                     no_act = no_act + 1
                     if (no_act > no_act_max) then
                         write(line, 2130)
-                        call monsys(line, 1)
+                        call write_log_message(line)
                         write(line, 2110) no_act, no_act_max
-                        call monsys(line, 1)
-                        call srstop(1)
+                        call write_log_message(line)
+                        call terminate_execution(1)
                     endif
                     actlst(no_act) = name10
                 endif
@@ -104,14 +101,14 @@ contains
             ix_dbl = index_in_array(name10, actlst(:no_act))
             if (ix_dbl <= 0) then
                 write(line, 2140)
-                call monsys(line, 1)
+                call write_log_message(line)
                 no_act = no_act + 1
                 if (no_act > no_act_max) then
                     write(line, 2130)
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     write(line, 2110) no_act, no_act_max
-                    call monsys(line, 1)
-                    call srstop(1)
+                    call write_log_message(line)
+                    call terminate_execution(1)
                 endif
                 actlst(no_act) = name10
             endif

@@ -41,7 +41,7 @@ contains
 
         !     Modified  : Aug   2012 by Jan van Beek : licence check configurations moved from rd_tabs
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers         !< performance timers
         use processet      !< use processet definitions
         use m_process_lib_data
@@ -118,12 +118,12 @@ contains
                 write(lunrep, *) &
                         'error: configuration not found in process definition file'
                 write(lunrep, *) 'configuration id:', config
-                call srstop(1)
+                call terminate_execution(1)
             else
                 if (liconf(iconf) /= 1) then
                     write(lunrep, *) &
                             'error: no valid license found for configuration:', config
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
             endif
         else
@@ -136,7 +136,7 @@ contains
         allocate(itemidx(nitem), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             WRITE (lunrep, *) 'error allocating work array in PRPROP:', ierr_alloc, nitem
-            call srstop(1)
+            call terminate_execution(1)
         endif
         do iitem = 1, nitem
             aItemProp%name = itemid(iitem)
@@ -247,7 +247,7 @@ contains
                         iitem = ItemPropCollFind(AllItems, aItemProp)
                         if (iitem <= 0) then
                             write(lunrep, *) 'ERROR: unknown ITEM:', aItemProp%name
-                            call srstop(1)
+                            call terminate_execution(1)
                         endif
 
                         ! check this name in the old items table
@@ -312,7 +312,7 @@ contains
                         iitem = ItemPropCollFind(AllItems, aItemProp)
                         if (iitem <= 0) then
                             write(lunrep, *) 'ERROR: unknown ITEM:', aItemProp%name
-                            call srstop(1)
+                            call terminate_execution(1)
                         endif
                         aIOitemProp%item => AllItems%ItemPropPnts(iitem)%pnt
                         aIOitemProp%name = AllItems%ItemPropPnts(iitem)%pnt%name

@@ -29,12 +29,9 @@
 
       subroutine read_hyd_init(hyd)
 
-      ! function : read the time independent data from a hydrodynamics
+      ! read the time independent data from a hydrodynamics
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number, terminate_execution
       use m_hydmod
       use io_netcdf
       use m_read_waqgeom
@@ -60,7 +57,7 @@
 
       ! some init
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       ! allocate and read or define grid table
 
@@ -165,7 +162,7 @@
       if ( ierr .ne. 0 ) then
          write(*,*) 'ERROR: reading dispersion length file'
          write(lunrep,*) 'ERROR: reading dispersion length file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       ! read attributes
@@ -194,12 +191,12 @@
       return
   970 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noseg:',hyd%noseg
-      call srstop(1)
+      call terminate_execution(1)
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%nmax:',hyd%nmax
       write(lunrep,*) 'hyd%mmax:',hyd%mmax
-      call srstop(1)
+      call terminate_execution(1)
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noq:',hyd%noq
-      call srstop(1)
+      call terminate_execution(1)
       end

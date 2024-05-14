@@ -41,7 +41,7 @@ contains
         ! if nessacary turns on secondary processes
         ! fills defaults in defaul array
 
-        use m_monsys
+        use m_logger
         use m_array_manipulation, only : is_missing
         use timers       !   performance timers
         use m_waq_data_structure
@@ -115,9 +115,9 @@ contains
         line2 = ' '
 
         write (line, '(a)') '# determining the input for the processes (in reversed order)'
-        call monsys(line, 2)
+        call write_log_message(line)
         line = ' '
-        call monsys(line, 2)
+        call write_log_message(line)
 
         ! loop over all possible processes
 
@@ -126,7 +126,7 @@ contains
             proc1 => procesdef%procesprops(iproc)
             if (proc1%active) then
                 write (line, '(4a)') ' Input for [', proc1%name, '] ', proc1%text(1:50)
-                call monsys(line, 4)
+                call write_log_message(line)
 
                 ! loop over the number of input items for this process
 
@@ -268,9 +268,9 @@ contains
                             endif
                         endif
                         proc1%input_item(i_input)%ip_val = ivalip
-                        if (line  /= ' ') call monsys(line, 4)
-                        if (line1 /= ' ') call monsys(line1, 4)
-                        if (line2 /= ' ') call monsys(line2, 4)
+                        if (line  /= ' ') call write_log_message(line)
+                        if (line1 /= ' ') call write_log_message(line1)
+                        if (line2 /= ' ') call write_log_message(line2)
                         line = ' '
                         line1 = ' '
                         line2 = ' '
@@ -368,9 +368,9 @@ contains
                             endif
                         endif
                         proc1%input_item(i_input)%ip_val = ivalip
-                        if (line  /= ' ') call monsys(line, 4)
-                        if (line1 /= ' ') call monsys(line1, 4)
-                        if (line2 /= ' ') call monsys(line2, 4)
+                        if (line  /= ' ') call write_log_message(line)
+                        if (line1 /= ' ') call write_log_message(line1)
+                        if (line2 /= ' ') call write_log_message(line2)
                         line = ' '
                         line1 = ' '
                         line2 = ' '
@@ -412,7 +412,7 @@ contains
                     endif
                 enddo
 
-                call monsys(line, 2)
+                call write_log_message(line)
             endif
         enddo
 

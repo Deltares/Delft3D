@@ -37,8 +37,7 @@ contains
         !                active water segments
         !
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
@@ -109,12 +108,12 @@ contains
         IP11 = IPOINT(11)
 
         IF (IP7/=IP9) THEN
-            CALL GETMLU(LUNREP)
+            CALL get_log_unit_number(LUNREP)
             WRITE(LUNREP, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(LUNREP, *) 'Use the correct proc_def!'
             WRITE(*, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(*, *) 'Use the correct proc_def!'
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         END IF
 
         IN1 = INCREM(1)

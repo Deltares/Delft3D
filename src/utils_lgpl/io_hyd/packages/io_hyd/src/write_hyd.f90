@@ -30,14 +30,11 @@
       subroutine write_hyd(hyd, version_full)
 
       ! function : write a hydrodynamic description file
-
-      ! global declarations
-
-      use m_monsys
+      use m_logger, only: get_log_unit_number
       use m_hydmod
       use system_utils
-      use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
-      use m_dattim
+      use m_hyd_keys, only: key, nokey     ! keywords in hydfile
+      use m_date_time_utils_external, only : write_date_time
 
       implicit none
 
@@ -70,14 +67,14 @@
       character(len=2),parameter :: csq = ' '''     ! space with quote
 
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       call hyd%file_hyd%open()
       lunhyd = hyd%file_hyd%unit
 
       write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_full)
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 

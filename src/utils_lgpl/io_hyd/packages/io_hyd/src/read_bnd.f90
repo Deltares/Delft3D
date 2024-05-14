@@ -30,10 +30,7 @@
 
       ! function : read a bnd file and add to the collection
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token                 ! tokenized reading
@@ -62,7 +59,7 @@
       type(t_open_boundary_line)                     :: openbndlin             ! single open boundary lin
       integer                                :: iret                   ! return value
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       ! open file
 
@@ -139,7 +136,7 @@
       enddo
   200 continue
       if ( ierr .ne. 0 ) then
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       close(file_bnd%unit)

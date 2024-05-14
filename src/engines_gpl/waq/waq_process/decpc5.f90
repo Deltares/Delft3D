@@ -31,7 +31,7 @@ contains
     SUBROUTINE DECPC5 (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_write_error_message
+        use m_logger, only : write_error_message
         use m_evaluate_waq_attribute
 
 

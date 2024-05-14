@@ -82,8 +82,8 @@ contains
    use m_flowgeom, only : Lnxi, ln, lne2ln
    use unstruc_model, only : md_ident, md_ident_sequential
    use m_flowexternalforcings
-   use m_sediment, only : jased
-   use m_fm_erosed, only : lsedtot, lsed, stmpar
+   use m_sediment, only : stm_included
+   use m_fm_erosed, only : lsedtot, lsed, stmpar, iflufflyr
    use unstruc_files
 
    integer :: iwqbot, istart, ibnd, isrc, L, LL, Lf, kk1, kk2, ba1, ba2, to, from
@@ -106,7 +106,7 @@ contains
 
 !  Allocate the mass names, balance flux and derivative arrays
    nombs = numconst + numwqbots
-   if (jased == 4) then
+   if (stm_included) then
        nombs = nombs + (lsedtot - lsed)
        call realloc(ised2mbs, lsedtot, keepExisting=.false., fill=0)
    end if
@@ -129,7 +129,7 @@ contains
       mbsname(imbs) = wqbotnames(iwqbot)
       imbs2sys(imbs) = nosys + iwqbot
    end do
-   if (jased == 4) then
+   if (stm_included) then
       do ised = lsed + 1, lsedtot
          imbs = numconst + numwqbots + ised - lsed
          mbsname(imbs) = stmpar%sedpar%namsed(ised)
@@ -159,17 +159,21 @@ contains
    call realloc(mbamassbegintot, [nombs, nomba], keepExisting=.false., fill=0d0)
    call realloc(mbamassend     , [nombs, nomba], keepExisting=.false., fill=0d0)
 
-   if (jased == 4) then
+   if (stm_included) then
        call realloc(mbabedmassbegin        , [lsedtot, nomba], keepExisting=.false., fill=0d0)
        call realloc(mbabedmassbegintot     , [lsedtot, nomba], keepExisting=.false., fill=0d0)
+       call realloc(mbabedmassend          , [lsedtot, nomba], keepExisting=.false., fill=0d0)
+
        call realloc(mbabedshortmassbegin   , [lsedtot, nomba], keepExisting=.false., fill=0d0)
        call realloc(mbabedshortmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-       call realloc(mbafluffmassbegin      , [lsedtot, nomba], keepExisting=.false., fill=0d0)
-       call realloc(mbafluffmassbegintot   , [lsedtot, nomba], keepExisting=.false., fill=0d0)
-       call realloc(mbabedmassend          , [lsedtot, nomba], keepExisting=.false., fill=0d0)
        call realloc(mbabedshortmassend     , [lsedtot, nomba], keepExisting=.false., fill=0d0)
-       call realloc(mbafluffmassend        , [lsedtot, nomba], keepExisting=.false., fill=0d0)
-       
+
+       if (iflufflyr > 0) then
+          call realloc(mbafluffmassbegin      , [lsedtot, nomba], keepExisting=.false., fill=0d0)
+          call realloc(mbafluffmassbegintot   , [lsedtot, nomba], keepExisting=.false., fill=0d0)
+          call realloc(mbafluffmassend        , [lsedtot, nomba], keepExisting=.false., fill=0d0)
+       end if
+
        call realloc(mbasedflux          , [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
        call realloc(mbasedfluxtot       , [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
        if ( jampi == 1 ) then
@@ -311,21 +315,15 @@ contains
       end do
    end if
    
-   if (jased == 4) then
-      call mba_sum_morphology(lsedtot, nomba, mbadefdomain, mbamorfacend, mbabedmassend, mbabedshortmassend, mbafluffmassend)
-      if ( jampi == 1 ) then
-         call reduce_double_sum(lsedtot * nomba, mbabedmassend, mbamassreduce)
-         mbabedmassend(:,:) = mbamassreduce(:,:)
-         call reduce_double_sum(lsedtot * nomba, mbabedshortmassend, mbamassreduce)
-         mbabedshortmassend(:,:) = mbamassreduce(:,:)
-         call reduce_double_sum(lsedtot * nomba, mbafluffmassend, mbamassreduce)
-         mbafluffmassend(:,:) = mbamassreduce(:,:)
-      end if
+   if (stm_included) then
+      call mba_sum_morphology(lsedtot, nomba, mbadefdomain, mbamorfacend, mbabedmassend, mbabedshortmassend, mbafluffmassend, mbamassreduce)
          
       mbamorfacbegin               = mbamorfacend
       mbabedmassbegin(:,:)         = mbabedmassend(:,:)
       mbabedshortmassbegin(:,:)    = mbabedshortmassend(:,:)
-      mbafluffmassbegin(:,:)       = mbafluffmassend(:,:)
+      if (iflufflyr > 0) then
+         mbafluffmassbegin(:,:)       = mbafluffmassend(:,:)
+      end if
    end if
 
    mbavolumebegin(:) = mbavolumeend(:)
@@ -334,11 +332,13 @@ contains
    mbavolumebegintot(:) = mbavolumebegin(:)
    mbamassbegintot(:,:) = mbamassbegin(:,:)
       
-   if (jased == 4) then
+   if (stm_included) then
       mbamorfacbegintot            = mbamorfacbegin
       mbabedmassbegintot(:,:)      = mbabedmassbegin(:,:)
       mbabedshortmassbegintot(:,:) = mbabedshortmassbegin(:,:)
-      mbafluffmassbegintot(:,:)    = mbafluffmassbegin(:,:)
+      if (iflufflyr > 0) then
+         mbafluffmassbegintot(:,:)    = mbafluffmassbegin(:,:)
+      end if
    end if
 
    write_balance = .true.
@@ -412,8 +412,8 @@ contains
    use m_flowparameters, only : jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
    use m_flowtimes, only : refdate_mjd
    use m_transport, only : numconst
-   use m_sediment, only : jased
-   use m_fm_erosed, only : lsedtot
+   use m_sediment, only : stm_included
+   use m_fm_erosed, only : lsedtot, iflufflyr
    use time_module, only : mjd2date
 
    double precision, intent(in) :: time !< time     for waq in seconds
@@ -468,16 +468,9 @@ contains
       end if
    end if
    
-   if (jased == 4) then
-      call mba_sum_morphology(lsedtot, nomba, mbadefdomain, mbamorfacend, mbabedmassend, mbabedshortmassend, mbafluffmassend)
+   if (stm_included) then
+      call mba_sum_morphology(lsedtot, nomba, mbadefdomain, mbamorfacend, mbabedmassend, mbabedshortmassend, mbafluffmassend, mbamassreduce)
       if ( jampi == 1 ) then
-         call reduce_double_sum(lsedtot * nomba, mbabedmassend, mbamassreduce)
-         mbabedmassend(:,:) = mbamassreduce(:,:)
-         call reduce_double_sum(lsedtot * nomba, mbabedshortmassend, mbamassreduce)
-         mbabedshortmassend(:,:) = mbamassreduce(:,:)
-         call reduce_double_sum(lsedtot * nomba, mbafluffmassend, mbamassreduce)
-         mbafluffmassend(:,:) = mbamassreduce(:,:)
-         
          call reduce_double_sum(2 * lsedtot * nombabnd * nombabnd, mbasedflux, mbasedfluxreduce)
          mbasedflux(:,:,:,:) = mbasedfluxreduce(:,:,:,:)
       end if
@@ -494,7 +487,7 @@ contains
    if (nflux > 0) then
       flxdmptot(:,:,:) = flxdmptot(:,:,:) + flxdmp(:,:,:)
    end if
-   if (jased == 4) then
+   if (stm_included) then
       mbasedfluxtot(:,:,:,:) = mbasedfluxtot(:,:,:,:) + mbasedflux(:,:,:,:)
    end if
 
@@ -517,10 +510,12 @@ contains
    timembastart = timembaend
    mbavolumebegin(:) = mbavolumeend(:)
    mbamassbegin(:,:) = mbamassend(:,:)
-   if (jased == 4) then
+   if (stm_included) then
       mbabedmassbegin(:,:)      = mbabedmassend(:,:)
       mbabedshortmassbegin(:,:) = mbabedshortmassend(:,:)
-      mbafluffmassbegin(:,:)    = mbafluffmassend(:,:)
+      if (iflufflyr > 0) then
+         mbafluffmassbegin(:,:)    = mbafluffmassend(:,:)
+      end if
    end if
 
    ! reset flux accumulators
@@ -533,7 +528,7 @@ contains
    mbafluxheat = 0.0d0
    flxdmp = 0.0
    
-   if (jased == 4) then
+   if (stm_included) then
       mbasedflux(:,:,:,:) = 0.0d0
    end if
 
@@ -625,19 +620,21 @@ contains
       end do
    end do
    end subroutine mba_sum
-
-   subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass)
+   
+   subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce)
    use m_partitioninfo, only : jampi, idomain, my_rank
    use m_flowgeom, only : ndxi, ba
-   use m_fm_erosed, only : lsed, stmpar, mfluff, morfac
+   use m_fm_erosed, only : lsed, stmpar, mfluff, morfac, iflufflyr
+   use m_partitioninfo, only : reduce_double_sum
 
-   integer         , intent(in)    :: lsedtot
-   integer         , intent(in)    :: nomba
-   integer         , intent(in)    :: mbadef(ndxi)
-   double precision, intent(out)   :: mbamorfac
-   double precision, intent(out)   :: mbabedmass(lsedtot, nomba)
-   double precision, intent(out)   :: mbabedshortmass(lsedtot, nomba)
-   double precision, intent(out)   :: mbafluffmass(lsedtot, nomba)
+   integer                      , intent(in)    :: lsedtot
+   integer                      , intent(in)    :: nomba
+   integer                      , intent(in)    :: mbadef(ndxi)
+   double precision             , intent(out)   :: mbamorfac
+   double precision             , intent(out)   :: mbabedmass(lsedtot, nomba)
+   double precision             , intent(out)   :: mbabedshortmass(lsedtot, nomba)
+   double precision, allocatable, intent(out)   :: mbafluffmass(:,:)
+   double precision, allocatable, intent(out)   :: mbamassreduce(:,:)
 
    integer :: imba  !< mass balance area number
    integer :: ised  !< sediment fraction
@@ -647,7 +644,9 @@ contains
    mbamorfac       = morfac
    mbabedmass      = 0.0d0
    mbabedshortmass = 0.0d0
-   mbafluffmass    = 0.0d0
+   if (allocated(mbafluffmass)) then
+      mbafluffmass    = 0.0d0
+   end if
 
    do nm = 1,ndxi
       if ( jampi == 1 ) then
@@ -672,10 +671,23 @@ contains
          mbabedshortmass(ised,imba) = mbabedshortmass(ised,imba) + stmpar%morlyr%state%sedshort(ised,nm) * ba(nm)
       end do
       ! fluff layer
-      do ised = 1, lsed
-         mbafluffmass(ised,imba) = mbafluffmass(ised,imba) + mfluff(ised,nm) * ba(nm)
-      end do
+      if (allocated(mbafluffmass)) then
+         do ised = 1, lsed
+            mbafluffmass(ised,imba) = mbafluffmass(ised,imba) + mfluff(ised,nm) * ba(nm)
+         end do
+      end if
    end do
+   
+   if ( jampi == 1 ) then
+      call reduce_double_sum(lsedtot * nomba, mbabedmass, mbamassreduce)
+      mbabedmass(:,:) = mbamassreduce(:,:)
+      call reduce_double_sum(lsedtot * nomba, mbabedshortmass, mbamassreduce)
+      mbabedshortmass(:,:) = mbamassreduce(:,:)
+      if (iflufflyr > 0) then
+         call reduce_double_sum(lsedtot * nomba, mbafluffmass, mbamassreduce)
+         mbafluffmass(:,:) = mbamassreduce(:,:)
+      end if
+   end if   
    end subroutine mba_sum_morphology
 
    subroutine mba_sum_area(nomba, mbadef, mbaba)
@@ -758,34 +770,52 @@ contains
 
    subroutine comp_horfluxmba()
    use m_flow, only : Lbot, Ltop
-   use m_transport, only : numconst, fluxhor
    use m_flowtimes, only : dts
    use m_mass_balance_areas
    use timers
+   use m_transport, only : numconst, fluxhor
+   use m_fm_erosed, only : lsedtot, morfac
 
-   integer :: LL, L, Lb, Lt, k1, k2, i
-   integer :: iconst
+   integer          :: i      !< balance area exchange link index
+   integer          :: iconst !< constituent number
+   integer          :: k1     !< index of balance from-area
+   integer          :: k2     !< index of balance to-area
+   integer          :: L      !< index of 3D flow link
+   integer          :: Lb     !< index of bottom-most 3D flow link
+   integer          :: LL     !< index of 2D flow link
+   integer          :: Lt     !< index of top-most 3D flow link
+   integer          :: n      !< source/sink index
+   double precision :: dt     !< effective time step
 
-   integer(4) ithndl /0/
+   integer(4)       :: ithndl = 0 !< timer handle
+   
    if (timon) call timstrt ( "comp_horfluxmba", ithndl )
 
    do iconst = 1, numconst
-      do i=1,nombaln
+      if (imbs2sed(iconst) > 0) then
+          dt = dts * morfac
+      else
+          dt = dts
+      end if
+      
+      do i = 1,nombaln
          LL = mbalnlist(i)
          Lb = Lbot(LL)
          Lt = Ltop(LL)
          k1 = mbalnfromto(1,i)
          k2 = mbalnfromto(2,i)
-         do L=Lb,Lt
+         do L = Lb,Lt
             if (fluxhor(iconst,L) > 0.0) then
-               mbafluxhor(2,iconst,k1,k2) = mbafluxhor(2,iconst,k1,k2) + fluxhor(iconst,L) * dts
-               mbafluxhor(1,iconst,k2,k1) = mbafluxhor(1,iconst,k2,k1) + fluxhor(iconst,L) * dts
+               mbafluxhor(2,iconst,k1,k2) = mbafluxhor(2,iconst,k1,k2) + fluxhor(iconst,L) * dt
+               mbafluxhor(1,iconst,k2,k1) = mbafluxhor(1,iconst,k2,k1) + fluxhor(iconst,L) * dt
             else
-               mbafluxhor(1,iconst,k1,k2) = mbafluxhor(1,iconst,k1,k2) - fluxhor(iconst,L) * dts
-               mbafluxhor(2,iconst,k2,k1) = mbafluxhor(2,iconst,k2,k1) - fluxhor(iconst,L) * dts
+               mbafluxhor(1,iconst,k1,k2) = mbafluxhor(1,iconst,k1,k2) - fluxhor(iconst,L) * dt
+               mbafluxhor(2,iconst,k2,k1) = mbafluxhor(2,iconst,k2,k1) - fluxhor(iconst,L) * dt
             end if
          end do
       end do
+
+      ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts
    end do
 
    if (timon) call timstop( ithndl )
@@ -829,7 +859,7 @@ contains
 
    use dflowfm_version_module, only : getfullversionstring_dflowfm
    use dflowfm_version_module, only : getbranch_dflowfm
-   use m_sediment, only : jased
+   use m_sediment, only : stm_included
    use m_fm_erosed, only : lsed, lsedtot, stmpar
    use m_transport, only : ised1, isedn
 
@@ -893,7 +923,7 @@ contains
       write (lunbal, '( "Total number of WQ substances                   :",I8)') notot
       write (lunbal, '( "Number of active (transported) substances       :",I8)') nosys
       write (lunbal, '( "Number of inactive (not transported) substances :",I8)') notot - nosys
-      if (jased == 4) then
+      if (stm_included) then
          write (lunbal, '( "Total number of suspended sediment fractions    :",I8)') lsed
          write (lunbal, '( "Total number of bedload sediment fractions      :",I8)') lsedtot-lsed
       end if
@@ -919,7 +949,7 @@ contains
       end do
    end if
 
-   if (jased == 4) then
+   if (stm_included) then
       if (lsed < lsedtot) then
          write (lunbal, '(/"List of bedload sediment fractions")')
          write (lunbal, '(/" FM number   WQ number   Sed fract  Name")')
@@ -969,7 +999,7 @@ contains
       call mba_prepare_names_fluxes_whole_model(imbs)
    end do
 
-   call allocate_value_arrays()
+   call allocate_all_value_arrays()
    end subroutine mba_prepare_names
    
    subroutine allocate_name_arrays()
@@ -996,38 +1026,44 @@ contains
    end do
    end subroutine allocate_name_arrays
    
-   subroutine allocate_value_arrays()
+   subroutine allocate_all_value_arrays()
    use m_mass_balance_areas, only : nomba, nombs, water_flow, const_flux
-   use m_alloc
          
-   integer                            :: imba         !< mass balance area number
    integer                            :: imbs         !< mass balance substance number
-   integer                            :: nflux        !< number of flows/fluxes
    
-   allocate(water_flow%bal_error(nomba+1))
-   do imba = 1, nomba + 1
-      nflux =  water_flow%bal_area(imba)%n_entries
-      call realloc(water_flow%bal_area(imba)%group, nflux, keepExisting=.true.)
-      call realloc(water_flow%bal_area(imba)%name , nflux, keepExisting=.true.)
-      allocate(water_flow%bal_area(imba)%values(2,nflux))
-   end do
-   
+   call allocate_value_arrays(water_flow, nomba)
    do imbs = 1, nombs
-      allocate(const_flux(imbs)%bal_error(nomba+1))
-      do imba = 1, nomba + 1
-         nflux =  const_flux(imbs)%bal_area(imba)%n_entries
-         call realloc(const_flux(imbs)%bal_area(imba)%group, nflux, keepExisting=.true.)
-         call realloc(const_flux(imbs)%bal_area(imba)%name , nflux, keepExisting=.true.)
-         allocate(const_flux(imbs)%bal_area(imba)%values(2,nflux))
-      end do
+      call allocate_value_arrays(const_flux(imbs), nomba)
    end do
-   end subroutine allocate_value_arrays
-   
-   subroutine add_name(balance, group, name)
-   use m_mass_balance_areas, only : bal_area_type
+   end subroutine allocate_all_value_arrays
+
+   subroutine allocate_value_arrays(bal_group, nomba)
+   use m_mass_balance_areas, only : bal_group_type
    use m_alloc
    
-   type(bal_area_type), intent(inout) :: balance      !< derived type containing the flux groups, names and values
+   type(bal_group_type), intent(inout) :: bal_group    !< derived type containing the balances for one quantity
+   integer             , intent(in)    :: nomba        !< number of mass balance areas
+   
+   integer                             :: imba         !< mass balance area number
+   integer                             :: nflux        !< number of flows/fluxes
+   
+   allocate(bal_group%bal_error(nomba+1))
+   allocate(bal_group%bal_cumerror(nomba+1))
+   do imba = 1, nomba + 1
+      nflux =  bal_group%bal_area(imba)%n_entries
+      call realloc(bal_group%bal_area(imba)%group, nflux, keepExisting=.true.)
+      call realloc(bal_group%bal_area(imba)%name , nflux, keepExisting=.true.)
+      allocate(bal_group%bal_area(imba)%values(2,nflux))
+   end do
+   
+   bal_group%bal_cumerror = 0d0
+   end subroutine allocate_value_arrays
+
+   subroutine add_name(balance, group, name)
+   use m_mass_balance_areas, only : balance_type
+   use m_alloc
+   
+   type(balance_type) , intent(inout) :: balance      !< derived type containing the flux groups, names and values
    character(*)       , intent(in)    :: group        !< group of flow/flux to be added
    character(*)       , intent(in)    :: name         !< name of flow/flux to be added
    
@@ -1161,7 +1197,7 @@ contains
    integer :: jmba                                                 !< index of other mass balance area or open boundary
    integer :: isrc                                                 !< index of source/sink
 
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    balance => water_flow%bal_area(imba)
 
@@ -1309,6 +1345,7 @@ contains
    end if
    
    water_flow%bal_error(imba) = sum(flows(DIR_TO,:)) - sum(flows(DIR_FROM,:))
+   water_flow%bal_cumerror(imba) = water_flow%bal_cumerror(imba) + water_flow%bal_error(imba)
    end subroutine mba_prepare_values_flows
 
    subroutine mba_prepare_names_flows_whole_model()
@@ -1320,7 +1357,7 @@ contains
    integer :: jmba                                                 !< index of other mass balance area or open boundary
    integer :: isrc                                                 !< index of source/sink
 
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    balance => water_flow%bal_area(nomba+1)
 
@@ -1439,6 +1476,7 @@ contains
    end if
    
    water_flow%bal_error(nomba+1) = sum(flows(DIR_TO,:)) - sum(flows(DIR_FROM,:))
+   water_flow%bal_cumerror(nomba+1) = water_flow%bal_cumerror(nomba+1) + water_flow%bal_error(nomba+1)
    end subroutine mba_prepare_values_flows_whole_model
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
@@ -1447,7 +1485,7 @@ contains
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
    use processes_pointers, only : nfluxsys, fluxsys, ipfluxsys, fluxname
    use m_fm_wq_processes, only : imbs2sys
    
@@ -1464,7 +1502,7 @@ contains
    
    character(:), allocatable    :: postfix                     !< Optional postfix for group label
    
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    balance => const_flux(imbs)%bal_area(imba)
 
@@ -1473,7 +1511,7 @@ contains
    postfix = ''
    if (ised == 0) then
       call add_name(balance, labelstt, labelstn)
-   else if (ised < lsed) then
+   else if (ised <= lsed) then
       call add_name(balance, labelstt, labelsus)
       postfix = postfix_sus
    else
@@ -1585,7 +1623,7 @@ contains
       ! change in bed shortage mass
       call add_name(balance, labelstt, labelbsh)
 
-      if (ised < lsed) then
+      if (ised <= lsed .and. iflufflyr > 0) then
          ! fluff layer
          call add_name(balance, labelstt, labelflf)
       end if
@@ -1600,7 +1638,8 @@ contains
    use m_mass_balance_areas
    use processes_pointers, only : nfluxsys, fluxsys, ipfluxsys, stochi
    use m_fm_wq_processes, only : flxdmp, flxdmptot, imbs2sys
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
+   use m_sediment, only : stm_included
    
    integer         , intent(in) :: imba                        !< index mass balance area
    integer         , intent(in) :: imbs                        !< index mass balance substance/quantity
@@ -1635,22 +1674,30 @@ contains
        p_mbafluxsorsin  => mbafluxsorsintot
        p_mbafluxheat    => mbafluxheattot
        p_flxdmp         => flxdmptot
-       p_mbasedflux     => mbasedfluxtot
-       p_mbamorfacbegin => mbamorfacbegin
-       p_mbabedmassbegin => mbabedmassbegintot
-       p_mbabedshortmassbegin => mbabedshortmassbegintot
-       p_mbafluffmassbegin => mbafluffmassbegintot
+       if (stm_included) then
+          p_mbasedflux     => mbasedfluxtot
+          p_mbamorfacbegin => mbamorfacbegin
+          p_mbabedmassbegin => mbabedmassbegintot
+          p_mbabedshortmassbegin => mbabedshortmassbegintot
+          if (iflufflyr > 0) then
+             p_mbafluffmassbegin => mbafluffmassbegintot
+          end if
+       end if
    else
        p_mbamassbegin   => mbamassbegin
        p_mbafluxhor     => mbafluxhor
        p_mbafluxsorsin  => mbafluxsorsin
        p_mbafluxheat    => mbafluxheat
        p_flxdmp         => flxdmp
-       p_mbasedflux     => mbasedflux
-       p_mbamorfacbegin => mbamorfacbegin
-       p_mbabedmassbegin => mbabedmassbegin
-       p_mbabedshortmassbegin => mbabedshortmassbegin
-       p_mbafluffmassbegin => mbafluffmassbegin
+       if (stm_included) then
+          p_mbasedflux     => mbasedflux
+          p_mbamorfacbegin => mbamorfacbegin
+          p_mbabedmassbegin => mbabedmassbegin
+          p_mbabedshortmassbegin => mbabedshortmassbegin
+          if (iflufflyr > 0) then
+             p_mbafluffmassbegin => mbafluffmassbegin
+          end if
+       end if
    end if
       
    fluxes => const_flux(imbs)%bal_area(imba)%values
@@ -1746,13 +1793,14 @@ contains
       ! change in bed shortage mass
       call add_value_change(fluxes, imbf, p_mbabedshortmassbegin(ised, imba), mbabedshortmassend(ised, imba) )
 
-      if (ised < lsed) then
+      if (ised <= lsed .and. iflufflyr > 0) then
          ! fluff layer
          call add_value_change(fluxes, imbf, p_mbafluffmassbegin(ised, imba), mbafluffmassend(ised, imba) )
       end if
    end if
    
    const_flux(imbs)%bal_error(imba) = sum(fluxes(DIR_TO,:)) - sum(fluxes(DIR_FROM,:))
+   const_flux(imbs)%bal_cumerror(imba) = const_flux(imbs)%bal_cumerror(imba) + const_flux(imbs)%bal_error(imba)
    end subroutine mba_prepare_values_fluxes
 
 
@@ -1762,7 +1810,7 @@ contains
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
    use processes_pointers, only : nfluxsys, fluxsys, ipfluxsys, fluxname
    use m_fm_wq_processes, only : imbs2sys
    
@@ -1777,7 +1825,7 @@ contains
    
    character(:), allocatable    :: postfix                     !< Optional postfix for group label
    
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    balance => const_flux(imbs)%bal_area(nomba+1)
 
@@ -1786,7 +1834,7 @@ contains
    postfix = ''
    if (ised == 0) then
       call add_name(balance, labelstt, labelstn)
-   else if (ised < lsed) then
+   else if (ised <= lsed) then
       call add_name(balance, labelstt, labelsus)
       postfix = postfix_sus
    else
@@ -1865,7 +1913,7 @@ contains
       ! change in bed shortage mass
       call add_name(balance, labelstt, labelbsh)
 
-      if (ised < lsed) then
+      if (ised <= lsed .and. iflufflyr > 0) then
          ! fluff layer
          call add_name(balance, labelstt, labelflf)
       end if
@@ -1880,7 +1928,8 @@ contains
    use m_mass_balance_areas
    use processes_pointers, only : nfluxsys, fluxsys, ipfluxsys, stochi
    use m_fm_wq_processes, only : flxdmp, flxdmptot, imbs2sys
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
+   use m_sediment, only : stm_included
    
    integer         , intent(in) :: imbs                        !< index mass balance substance/quantity
    logical         , intent(in) :: overall_balance             !< balance period: use the total begin arrays, or just the last period
@@ -1914,22 +1963,30 @@ contains
        p_mbafluxsorsin  => mbafluxsorsintot
        p_mbafluxheat    => mbafluxheattot
        p_flxdmp         => flxdmptot
-       p_mbasedflux     => mbasedfluxtot
-       p_mbamorfacbegin => mbamorfacbegintot
-       p_mbabedmassbegin => mbabedmassbegintot
-       p_mbabedshortmassbegin => mbabedshortmassbegintot
-       p_mbafluffmassbegin => mbafluffmassbegintot
+       if (stm_included) then       
+          p_mbasedflux     => mbasedfluxtot
+          p_mbamorfacbegin => mbamorfacbegintot
+          p_mbabedmassbegin => mbabedmassbegintot
+          p_mbabedshortmassbegin => mbabedshortmassbegintot
+          if (iflufflyr > 0) then
+             p_mbafluffmassbegin => mbafluffmassbegintot
+          end if
+       end if
    else
        p_mbamassbegin   => mbamassbegin
        p_mbafluxhor     => mbafluxhor
        p_mbafluxsorsin  => mbafluxsorsin
        p_mbafluxheat    => mbafluxheat
        p_flxdmp         => flxdmp
-       p_mbasedflux     => mbasedflux
-       p_mbamorfacbegin => mbamorfacbegin
-       p_mbabedmassbegin => mbabedmassbegin
-       p_mbabedshortmassbegin => mbabedshortmassbegin
-       p_mbafluffmassbegin => mbafluffmassbegin
+       if (stm_included) then
+          p_mbasedflux     => mbasedflux
+          p_mbamorfacbegin => mbamorfacbegin
+          p_mbabedmassbegin => mbabedmassbegin
+          p_mbabedshortmassbegin => mbabedshortmassbegin
+          if (iflufflyr > 0) then
+             p_mbafluffmassbegin => mbafluffmassbegin
+          end if
+       end if
    end if
       
    fluxes => const_flux(imbs)%bal_area(nomba+1)%values
@@ -2009,13 +2066,14 @@ contains
       ! change in bed shortage mass
       call add_value_change(fluxes, imbf, sum(mbabedshortmassbegin(ised, :)), sum(mbabedshortmassend(ised, :)) )
 
-      if (ised < lsed) then
+      if (ised <= lsed .and. iflufflyr > 0) then
          ! fluff layer
          call add_value_change(fluxes, imbf, sum(mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)) )
       end if
    end if
    
    const_flux(imbs)%bal_error(nomba+1) = sum(fluxes(DIR_TO,:)) - sum(fluxes(DIR_FROM,:))
+   const_flux(imbs)%bal_cumerror(nomba+1) = const_flux(imbs)%bal_cumerror(nomba+1) + const_flux(imbs)%bal_error(nomba+1)
    end subroutine mba_prepare_values_fluxes_whole_model
 
    
@@ -2025,7 +2083,7 @@ contains
    use m_flowtimes, only : Tudunitstr
    use m_mass_balance_areas
    use netcdf, only : nf90_char, nf90_double, nf90_unlimited, nf90_def_dim, nf90_def_var, nf90_put_att, nf90_put_var, nf90_enddef
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
    use m_transport, only : numconst
    use string_module, only : int2str
    use m_fm_wq_processes, only : numwqbots
@@ -2086,12 +2144,17 @@ contains
    ierr = nf90_def_var(ncid_bal_file, 'water_balance_error', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_water_balance_error)
    ierr = nf90_put_att(ncid_bal_file, ncid_bal_water_balance_error, 'long_name', 'water balance error')
    ierr = nf90_put_att(ncid_bal_file, ncid_bal_water_balance_error, 'units', 'm^3')
+      
+   ierr = nf90_def_var(ncid_bal_file, 'water_balance_cumerror', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_water_balance_cumerror)
+   ierr = nf90_put_att(ncid_bal_file, ncid_bal_water_balance_cumerror, 'long_name', 'water balance cumulative error')
+   ierr = nf90_put_att(ncid_bal_file, ncid_bal_water_balance_cumerror, 'units', 'm^3')
    
    allocate(ncid_bal_water_flow_dim(nomba+1))
    allocate(ncid_bal_water_flow_names(nomba+1))
    allocate(ncid_bal_water_flow_values(nomba+1))
 
    allocate(ncid_bal_const_balance_error(nombs))
+   allocate(ncid_bal_const_balance_cumerror(nombs))
    allocate(ncid_bal_const_mass(nombs))
    allocate(ncid_bal_const_bed_mass(nombs))
    allocate(ncid_bal_const_bedshort_mass(nombs))
@@ -2139,7 +2202,12 @@ contains
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_conc(imbs), 'units', conc_units)
          
          if (imbs <= numconst) then
-            ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass')
+            if (ised > 0) then
+                ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass in suspension')
+                ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_mass(imbs), 'units', mass_units)
+            else
+                ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass')
+            end if
             ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_conc(imbs), 'long_name', 'area-averaged '//trim(mbsname(imbs)) )
          else
             ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass in water column')
@@ -2148,21 +2216,28 @@ contains
       end if
       
       if (ised > 0) then ! sediment
-         if (ised <= lsed) then ! not for bedload sediment
+         if (ised <= lsed .and. iflufflyr > 0) then ! not for bedload sediment
             ierr = nf90_def_var(ncid_bal_file, mbs_str//'_fluff_mass', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_const_fluff_mass(imbs))
             ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_fluff_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass in fluff layer')
+            ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_fluff_mass(imbs), 'units', mass_units)
          endif
          
          ierr = nf90_def_var(ncid_bal_file, mbs_str//'_bed_mass', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_const_bed_mass(imbs))
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_bed_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass in bed stratigraphy')
+         ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_bed_mass(imbs), 'units', mass_units)
          
          ierr = nf90_def_var(ncid_bal_file, mbs_str//'_bedshort_mass', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_const_bedshort_mass(imbs))
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_bedshort_mass(imbs), 'long_name', 'total '//trim(mbsname(imbs))//' mass already eroded but not yet removed from bed stratigraphy')
+         ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_bedshort_mass(imbs), 'units', mass_units)
       end if
       
       ierr = nf90_def_var(ncid_bal_file, mbs_str//'_balance_error', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_const_balance_error(imbs))
       ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_balance_error(imbs), 'long_name', trim(mbsname(imbs))//' balance error')
       ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_balance_error(imbs), 'units', mass_units)
+      
+      ierr = nf90_def_var(ncid_bal_file, mbs_str//'_balance_cumerror', nc_precision, [ncid_nbalarea_dim, ncid_bal_time], ncid_bal_const_balance_cumerror(imbs))
+      ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_balance_cumerror(imbs), 'long_name', trim(mbsname(imbs))//' balance cumulative error')
+      ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_balance_cumerror(imbs), 'units', mass_units)
       
       do imba = 1, nomba + 1
          if (imba <= nomba) then
@@ -2179,7 +2254,7 @@ contains
          ierr = nf90_def_var(ncid_bal_file, mba_str//mbs_str//'_flux_values', nc_precision, [ncid_bal_flux_dir_dim, ncid_bal_const_flux_dim(imbs,imba), ncid_bal_time], ncid_bal_const_flux_values(imbs,imba))
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), 'long_name', trim(mba_name)//': '//trim(mbsname(imbs))//' balance fluxes')
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), 'balance_area', trim(mba_name))
-         ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), 'balance_quantity', 'water')
+         ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), 'balance_quantity', trim(mbsname(imbs)))
          ierr = nf90_put_att(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), 'units', mass_units)
       end do
    end do
@@ -2193,9 +2268,9 @@ contains
    ierr = nf90_put_var(ncid_bal_file, ncid_bal_area_names, mba_name, [1, nomba + 1], [NAMMBALEN, 1])
    
    do imba = 1,nomba+1
-      ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_flow_names(imba), water_flow%bal_area(imba)%name, [1, 1])
+      ierr = mba_write_netcdf_flux_names(ncid_bal_file, ncid_bal_water_flow_names(imba), water_flow%bal_area(imba))
       do imbs = 1, nombs
-          ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_flux_names(imbs,imba), const_flux(imbs)%bal_area(imba)%name, [1, 1])
+          ierr = mba_write_netcdf_flux_names(ncid_bal_file, ncid_bal_const_flux_names(imbs,imba), const_flux(imbs)%bal_area(imba))
       end do
    end do
    
@@ -2210,12 +2285,33 @@ contains
    ierr = unc_close(ncid_bal_file)   
    end subroutine mba_write_netcdf_header
 
+   !> write the names of one balance to the netCDF file
+   function mba_write_netcdf_flux_names(ncid_bal_file, ncid_balance, balance) result (ierr)
+   use m_mass_balance_areas, only : balance_type, NAMMBALEN
+   use netcdf, only : nf90_put_var
+   
+   integer             , intent(in)    :: ncid_bal_file     !< id of the netCDF balances file
+   integer             , intent(in)    :: ncid_balance      !< netCDF id of the water flow/constituent flux names
+   type(balance_type)  , intent(in)    :: balance           !< derived type containing the flux groups, names and values
+   integer                             :: ierr              !< netCDF return code
+  
+   integer                             :: i                 !< loop variable for the fluxes
+   character(NAMMBALEN), allocatable   :: balance_names(:)  !< temporary array for the names
+   
+   allocate(balance_names(balance%n_entries))
+   do i = 1, balance%n_entries
+       balance_names(i) = trim(balance%group(i)) // ', ' // balance%name(i)
+   end do      
+   ierr = nf90_put_var(ncid_bal_file, ncid_balance, balance_names, [1, 1])
+   deallocate(balance_names)
+   end function mba_write_netcdf_flux_names
+   
    subroutine mba_write_netcdf_step()
    use m_flowtimes, only : time1
    use m_mass_balance_areas
    use netcdf, only : nf90_write, nf90_put_var, nf90_strerror
    use unstruc_netcdf, only : unc_open, unc_close
-   use m_fm_erosed, only : lsed
+   use m_fm_erosed, only : lsed, iflufflyr
    use m_transport, only : numconst
    use m_fm_wq_processes, only : numwqbots
    
@@ -2238,8 +2334,6 @@ contains
       flux => water_flow%bal_area(imba)%values
       nflux = water_flow%bal_area(imba)%n_entries
       ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_flow_values(imba), flux, [1, 1, nc_bal_itime], [2, nflux, 1])
-      
-      water_flow%bal_error(imba) = sum(flux(DIR_TO,:)) - sum(flux(DIR_FROM,:))
    end do
    
    allocate(var(nomba+1))
@@ -2252,6 +2346,7 @@ contains
    ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_depth, var, [1, nc_bal_itime])
 
    ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_balance_error, water_flow%bal_error, [1, nc_bal_itime])
+   ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_balance_cumerror, water_flow%bal_cumerror, [1, nc_bal_itime])
 
    ! write constituent balance variables
    do imbs = 1,nombs
@@ -2279,7 +2374,7 @@ contains
       end if
       
       if (ised > 0) then ! sediment
-         if (ised <= lsed) then ! not for bedload sediment
+         if (ised <= lsed .and. iflufflyr > 0) then ! not for bedload sediment
             var(1:nomba) = mbafluffmassend(imbs,:)
             var(nomba+1) = sum(mbafluffmassend(imbs,:))
             ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_fluff_mass(imbs), var, [1, nc_bal_itime])
@@ -2295,6 +2390,7 @@ contains
       end if
       
       ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_balance_error(imbs), const_flux(imbs)%bal_error, [1, nc_bal_itime])
+      ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_balance_cumerror(imbs), const_flux(imbs)%bal_cumerror, [1, nc_bal_itime])
    end do
    
    ! close file
@@ -2339,7 +2435,7 @@ contains
    double precision, parameter :: zero = 0.0d0              !< zero
    double precision, parameter :: tiny = 1.0d-10            !< tiny
    
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    double precision, pointer   :: p_mbavolumebegin(:)
    double precision, pointer   :: p_mbaflowhor(:,:,:)
@@ -2594,7 +2690,7 @@ contains
 
    character(len=128)          :: datetimmbambs
 
-   type(bal_area_type), pointer       :: balance      !< derived type containing the flux groups, names and values
+   type(balance_type), pointer       :: balance      !< derived type containing the flux groups, names and values
 
    ! Output per mass balance area
    do imba = 1, nomba

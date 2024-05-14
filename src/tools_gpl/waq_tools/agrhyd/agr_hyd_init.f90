@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_hydmod
       use m_aggregate_waqgeom
       use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_WEIGHTED_AVERAGE
@@ -86,7 +86,7 @@
             output_hyd%nmax = input_hyd%nmax
             output_hyd%kmax = input_hyd%kmax
             allocate(output_hyd%lgrid(output_hyd%nmax,output_hyd%mmax),stat=ierr_alloc)
-            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
             do m = 1 , input_hyd%mmax
                do n = 1 , input_hyd%nmax
                   if ( input_hyd%lgrid(n,m) .eq. 0 ) then
@@ -121,7 +121,7 @@
           if ( .not. success ) then
              write(message, *) 'There was and error when aggregating the grid! agrhyd will stop.'
              call mess(LEVEL_ERROR, trim(message))
-             call srstop(1)
+             call terminate_execution(1)
           endif
           output_hyd%kmax  = input_hyd%kmax
           output_hyd%nolay = maxval(ipnt_v)
@@ -134,7 +134,7 @@
           no_sect = input_hyd%openbndsect_coll%current_size
           do i_sect = 1, no_sect
              iret = output_hyd%openbndsect_coll%add(input_hyd%openbndsect_coll%openbndsect_pnts(i_sect))
-             if ( iret .ne. i_sect ) then ; write(*,*) ' error copying boundary section data' ; call srstop(1) ; endif
+             if ( iret .ne. i_sect ) then ; write(*,*) ' error copying boundary section data' ; call terminate_execution(1) ; endif
           end do
       endif
 
@@ -142,18 +142,18 @@
 
       if ( l_regular ) then
          allocate(output_hyd%ipoint(4,input_hyd%noq),stat=ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
          output_hyd%ipoint = 0
          call agr_poi_reg ( ipnt, ipnt_b, input_hyd, output_hyd, ipnt_q)
       elseif ( l_expand ) then
          noq_new = (3*output_hyd%nolay-1)*output_hyd%nosegl
          allocate(output_hyd%ipoint(4,noq_new),stat=ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
          output_hyd%ipoint = 0
          call agr_poi_exp ( ipnt, ipnt_b, input_hyd, output_hyd, ipnt_q)
       else
          allocate(output_hyd%ipoint(4,input_hyd%noq),stat=ierr_alloc)
-         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+         if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
          output_hyd%ipoint = 0
          call agr_poi( ipnt             , input_hyd%noq    , & 
                       input_hyd%noq1   , input_hyd%noq2   , & 
@@ -170,7 +170,7 @@
       ! horizontal surface, always greater then 0.0, aggregate one layer then copy to all new layers
 
       allocate(output_hyd%surf(output_hyd%noseg),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       call aggregate_extended( input_hyd%nosegl, output_hyd%nosegl, & 
                   1               , 1                , & 
                   1               , 1                , & 
@@ -189,7 +189,7 @@
 
 !     allocate(output_hyd%displen(2,input_hyd%noq),stat=ierr_alloc)
       allocate(output_hyd%displen(2,output_hyd%noq),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       call agr_len( input_hyd        , output_hyd       , & 
                    ipnt_h           , ipnt_q           , & 
                    l_expand         , l_lenlen         )
@@ -197,9 +197,9 @@
       ! depth
 
       allocate(output_hyd%depth(output_hyd%nosegl),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       allocate(rwork(output_hyd%nosegl),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       call aggregate_extended( input_hyd%nosegl, output_hyd%nosegl, & 
                   1               , 1                , & 
                   1               , 1                , & 
@@ -209,12 +209,12 @@
                   input_hyd%depth , input_hyd%surf   , & 
                   rwork           , output_hyd%depth )
       deallocate(rwork,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
 
       ! attributes
 
       allocate(output_hyd%attributes(output_hyd%noseg),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       call agr_atr(input_hyd , ipnt, output_hyd)
 
       ! allocate the time dependent arrays
@@ -253,9 +253,9 @@
 
          if ( .not. l_regular ) then
             allocate(output_hyd%xdepth(output_hyd%nmax,output_hyd%mmax),stat=ierr_alloc)
-            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory xdepth' ; call srstop(1) ; endif
+            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory xdepth' ; call terminate_execution(1) ; endif
             allocate(output_hyd%ydepth(output_hyd%nmax,output_hyd%mmax),stat=ierr_alloc)
-            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory ydepth' ; call srstop(1) ; endif
+            if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory ydepth' ; call terminate_execution(1) ; endif
             output_hyd%xdepth = input_hyd%xdepth
             output_hyd%ydepth = input_hyd%ydepth
          endif
@@ -264,7 +264,7 @@
       ! flow layers
 
       allocate(output_hyd%hyd_layers(output_hyd%kmax),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       do ilay = 1 , output_hyd%kmax
          output_hyd%hyd_layers(ilay) = input_hyd%hyd_layers(ilay)
       enddo
@@ -272,7 +272,7 @@
       ! waq layers
 
       allocate(output_hyd%waq_layers(output_hyd%nolay),stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error allocating memory' ; call terminate_execution(1) ; endif
       output_hyd%waq_layers = 0
       do ilay = 1 , input_hyd%nolay
          newlay = ipnt_v(ilay)
@@ -316,7 +316,7 @@
       enddo
       if ( output_hyd%wasteload_coll%current_size .gt. 0 ) then
          ierror = input_hyd%wasteload_data%copy(output_hyd%wasteload_data)
-         if ( ierror .ne. 0 ) then ; write(*,*) ' error copying wasteload data' ; call srstop(1) ; endif
+         if ( ierror .ne. 0 ) then ; write(*,*) ' error copying wasteload data' ; call terminate_execution(1) ; endif
       endif
 
       ! some things

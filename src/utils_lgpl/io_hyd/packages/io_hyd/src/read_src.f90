@@ -29,12 +29,8 @@
 
       subroutine read_src(file_src, nolay, wasteload_coll, wasteload_data, time_in_seconds)
 
-      ! function : read a src file
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      ! read a src file
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
@@ -79,7 +75,7 @@
       integer*8                              :: itime                  ! time in seconds
 
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       ! count how many wasteload flows we expect in the file (uniform loads have nolay flows)
 
@@ -291,7 +287,7 @@
 
   200 continue
       if ( ierr .ne. 0 ) then
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       ! time always in seconds

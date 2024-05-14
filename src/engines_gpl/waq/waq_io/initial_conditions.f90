@@ -32,7 +32,7 @@ module initial_conditions
 contains
 
 
-    subroutine read_initial_conditions(lun, lchar, filtype, inpfil, notot, &
+    subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, notot, &
             syname, iwidth, output_verbose_level, gridps, noseg, &
             conc, ierr, status)
 
@@ -40,14 +40,14 @@ contains
 
         use m_read_block
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun(*)        ! unit numbers used
-        character(len = *), intent(inout) :: lchar(*)     ! filenames
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)        ! unit numbers used
+        character(len = *), intent(inout) :: file_name_list(*)     ! filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
         type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack and flags
         integer(kind = int_wp), intent(in) :: notot         ! nr of substances
@@ -80,6 +80,7 @@ contains
         integer(kind = int_wp) :: itime                 ! dummy time
         integer(kind = int_wp) :: i                     ! loop counter
         integer(kind = int_wp) :: idummy                ! dummy
+        !integer(kind = int_wp) :: file_unit
         real(kind = real_wp) :: rdummy                ! dummy
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_initial_conditions", ithndl)
@@ -104,7 +105,7 @@ contains
             write (segments%name(i), '(''segment '',i8)') i
         enddo
 
-        lunut = lun(29)
+        file_unit = file_unit_list(29)
         ierr2 = 0
 
         do
@@ -115,13 +116,13 @@ contains
 
                 ! new file structure
                 push = .true.
-                call read_block(lun, lchar, filtype, inpfil, output_verbose_level, &
+                call read_block(file_unit_list, file_name_list, filtype, inpfil, output_verbose_level, &
                         iwidth, substances, constants, parameters, functions, &
                         segfuncs, segments, gridps, dlwqdata, ierr2, &
                         status)
                 if (ierr2 > 0) goto 30
                 if (dlwqdata%is_external) then
-                    ierr = dlwqdata%read_external(lunut)
+                    ierr = dlwqdata%read_external(file_unit)
                     if (ierr /= 0) goto 30
                     dlwqdata%is_external = .false.
                 endif
@@ -130,7 +131,7 @@ contains
             else
                 ! unrecognised keyword
                 if (ctoken(1:1) /= '#') then
-                    write (lunut, 2050) trim(ctoken)
+                    write (file_unit, 2050) trim(ctoken)
                     ierr = ierr + 1
                     goto 30
                 else
@@ -150,13 +151,12 @@ contains
         do idata = 1, initials%current_size
             ierr3 = initials%data_block(idata)%evaluate(gridps, itime, notot, noseg, conc)
             if (ierr3 /= 0) then
-                write(lunut, 2060)
-                call srstop(1)
+                write(file_unit, 2060)
+                call terminate_execution(1)
             endif
         enddo
 
         !     initials opruimen ? or keep for e.g. reboot, or keep for delwaq1-delwaq2 merge
-
         ierr3 = substances%cleanup()
         ierr3 = parameters%cleanup()
         ierr3 = functions%cleanup()
@@ -165,7 +165,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error(ctoken, iwidth, 8, ierr2, status)
         if (timon) call timstop(ithndl)
         return
