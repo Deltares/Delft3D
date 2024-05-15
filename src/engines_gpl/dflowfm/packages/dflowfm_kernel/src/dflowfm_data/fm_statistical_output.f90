@@ -1324,7 +1324,7 @@ private
                      'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1), &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_WINDX_SFERIC,                                                 &
-                     'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'x_wind', &
+                     'Wrihis_wind', 'windx_sferic', 'velocity of air on flow element center, x-component', 'x_wind', &
                      'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                           &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_WINDY,                                                                &
@@ -1332,7 +1332,7 @@ private
                      'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                                   &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_WINDY_SFERIC,                                                 &
-                     'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'y_wind', &
+                     'Wrihis_wind', 'windy_sferic', 'velocity of air on flow element center, y-component', 'y_wind', &
                      'm s-1', UNC_LOC_STATION, nc_atts = atts(1:1),                                           &
                      nc_dim_ids = nc_dims_2D)
       call addoutval(out_quan_conf_his, IDX_HIS_RAIN,                                                                 &

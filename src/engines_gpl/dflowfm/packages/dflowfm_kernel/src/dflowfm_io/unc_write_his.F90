@@ -647,6 +647,9 @@ subroutine unc_write_his(tim)            ! wrihis
             if (len_trim(stat_cell_methods) > 0) then
                call check_netcdf_error( nf90_put_att(ihisfile, id_var, 'cell_methods', trim(stat_cell_methods) // trim(stat_cell_methods_filter_postfix)))
             end if
+            if (id_var == 0) then
+               call mess(LEVEL_ERROR, 'invalid netcdf variable definition')
+            end if
          end do
 
         call check_netcdf_error( nf90_enddef(ihisfile))

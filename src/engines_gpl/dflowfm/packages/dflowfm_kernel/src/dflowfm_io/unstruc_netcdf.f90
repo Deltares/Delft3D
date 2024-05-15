@@ -17815,23 +17815,23 @@ subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord
       add_gridmapping_ = .false.
    end if
 
-   ierr = nf90_def_var(ncid, name , itype, idims , idq)
+   call check_netcdf_error(nf90_def_var(ncid, name , itype, idims , idq))
    if (present(namecoord)) then
-         ierr = nf90_put_att(ncid, idq  , 'coordinates'  , namecoord)
+         call check_netcdf_error(nf90_put_att(ncid, idq  , 'coordinates'  , namecoord))
    endif
    if (present(long_name)) then
-      ierr = nf90_put_att(ncid, idq  , 'long_name'    , long_name)
+      call check_netcdf_error(nf90_put_att(ncid, idq  , 'long_name'    , long_name))
    endif
    if (present(unit)) then
-      ierr = nf90_put_att(ncid, idq  , 'units'        , unit)
+      call check_netcdf_error(nf90_put_att(ncid, idq  , 'units'        , unit))
    endif
 
    if (add_gridmapping_) then
-      ierr = unc_add_gridmapping_att(ncid, (/idq/), jsferic)
+      call check_netcdf_error(unc_add_gridmapping_att(ncid, (/idq/), jsferic))
    end if
 
    if (present(geometry)) then
-      ierr = nf90_put_att(ncid, idq, 'geometry', geometry)
+      call check_netcdf_error(nf90_put_att(ncid, idq, 'geometry', geometry))
    endif
 
    if (present(fillVal)) then
@@ -17844,11 +17844,11 @@ subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord
    ! Add a fill value of the correct type
    select case (itype)
    case (nf90_short, nf90_int)   
-      ierr = nf90_put_att(ncid, idq, '_FillValue', int_fill)
+      call check_netcdf_error(nf90_put_att(ncid, idq, '_FillValue', int_fill))
    case (nf90_float) 
-      ierr = nf90_put_att(ncid, idq, '_FillValue', real(dp_fill))
+      call check_netcdf_error(nf90_put_att(ncid, idq, '_FillValue', real(dp_fill)))
    case (nf90_double)
-      ierr = nf90_put_att(ncid, idq, '_FillValue', dp_fill)
+      call check_netcdf_error(nf90_put_att(ncid, idq, '_FillValue', dp_fill))
    case (nf90_char)
       continue 
    case default
@@ -17857,7 +17857,7 @@ subroutine definencvar(ncid, idq, itype, idims, name, long_name, unit, namecoord
 
    if (present(extra_attributes)) then
       if (size(extra_attributes) > 0) then
-         ierr = ncu_put_var_attset(ncid, idq, extra_attributes)
+         call check_netcdf_error(ncu_put_var_attset(ncid, idq, extra_attributes))
       end if
    end if
 
