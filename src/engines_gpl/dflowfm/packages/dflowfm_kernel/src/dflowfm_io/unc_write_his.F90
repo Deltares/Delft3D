@@ -159,7 +159,6 @@ subroutine unc_write_his(tim)            ! wrihis
     character(len=255)           :: var_name, var_standard_name, var_long_name
     type(t_output_quantity_config), pointer:: config
     type(ug_nc_attribute), target :: attributes(4)
-    type(nc_att_set), target :: attribute_set
     integer :: ivar
     integer, pointer :: id_var
 
@@ -387,7 +386,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
         ierr = unc_def_his_structure_static_vars(ihisfile, 'gate', 'gate', jahisgate, ngatesg, 'none', 0, id_strlendim, &
-                                                 id_gatedim, id_gate_id) !reuse gategendim
+                                                 id_gatedim, id_gate_id)
 
         if(jahisgate > 0 .and. ngategen > 0 ) then
             ! Define geometry related variables
@@ -1203,7 +1202,7 @@ contains
       ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
       ierr = unc_addcoordatts(ihisfile, id_statx, id_staty, jsferic)
       
-      deallocate( dim_ids) ! TODO: TB: paragraph 4.4 of the style guide recommends using deallocate even though it is no longer necessary, should this recommendation be removed?
+      deallocate( dim_ids)
 
    end function unc_def_his_station_coord_vars_xy
 

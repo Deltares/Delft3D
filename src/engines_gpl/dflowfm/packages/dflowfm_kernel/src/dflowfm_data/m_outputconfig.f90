@@ -36,8 +36,8 @@ private
    integer, parameter, public :: UNC_LOC_GENSTRU   = 23 !< Data location: his file general structure data
    integer, parameter, public :: UNC_LOC_DAM       = 24   !< Data location: his file controllable dam data
    integer, parameter, public :: UNC_LOC_PUMP      = 25   !< Data location: his file pump data
-   integer, parameter, public :: UNC_LOC_GATE      = 26   !< Data location: his file gate datadata
-   integer, parameter, public :: UNC_LOC_GATEGEN   = 42   !< Data location: his file gate datadata
+   integer, parameter, public :: UNC_LOC_GATE      = 26   !< Data location: his file old gate data
+   integer, parameter, public :: UNC_LOC_GATEGEN   = 42   !< Data location: his file new gate data
    integer, parameter, public :: UNC_LOC_WEIRGEN   = 27   !< Data location: his file weir data
    integer, parameter, public :: UNC_LOC_ORIFICE   = 28   !< Data location: his file orifice data
    integer, parameter, public :: UNC_LOC_BRIDGE    = 29   !< Data location: his file bridge data
