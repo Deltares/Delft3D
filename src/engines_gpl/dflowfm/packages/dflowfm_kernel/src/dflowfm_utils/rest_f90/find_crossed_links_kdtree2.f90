@@ -190,11 +190,7 @@
          dlinlen = dbdistance(xa,ya,xb,yb, jsferic, jasfer3D, dmiss)
 
 !        determine square search radius
-         if ( jsferic.eq.0 ) then
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol)**2  ! 1.1d0: safety
-         else
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol*Ra)**2  ! 1.1d0: safety
-         end if
+         R2search = 1.1d0*(dlinlen+dmaxpollen)**2  ! 1.1d0: safety
 
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree,treeinst%qv,R2search)
