@@ -501,7 +501,6 @@ subroutine unc_write_his(tim)            ! wrihis
            do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY 
               out_quan_conf_his%configs(ivar)%unit = transpunit
            end do
-           call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
         end if
 
         ! WAQ statistic outputs are kept outside of the statistical output framework
