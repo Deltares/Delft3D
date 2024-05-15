@@ -20,8 +20,21 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-   
-module m_statistical_callback
+
+module m_statistical_output_types
+   use stdlib_kinds, only: dp
+   use m_output_config, only: t_output_quantity_config
+   use m_temporal_statistics, only: t_moving_average_data
+   implicit none
+   private
+
+   integer, parameter, public :: SO_UNKNOWN = -1 !< Unknown operation type (e.g., input error)
+   integer, parameter, public :: SO_NONE    = 0  !< Dummy value for 'None', to switch off output
+   integer, parameter, public :: SO_CURRENT = 1
+   integer, parameter, public :: SO_AVERAGE = 2
+   integer, parameter, public :: SO_MAX     = 3
+   integer, parameter, public :: SO_MIN     = 4
+
    abstract interface
       !> function pointer to be called by update_source_data when advanced operations are required and the data to be
       !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
@@ -33,22 +46,8 @@ module m_statistical_callback
          double precision, pointer, dimension(:), intent(inout) :: datapointer !< pointer to function in-output data
       end subroutine process_data_double_interface
    end interface
-end module m_statistical_callback
-   
-module m_statistical_output_types
-   use stdlib_kinds, only: dp
-   use m_output_config, only: t_output_quantity_config
-   use m_statistical_callback, only: process_data_double_interface
-   use m_temporal_statistics, only: t_moving_average_data
 
-   integer, parameter, public :: SO_UNKNOWN = -1 !< Unknown operation type (e.g., input error)
-   integer, parameter, public :: SO_NONE    = 0  !< Dummy value for 'None', to switch off output
-   integer, parameter, public :: SO_CURRENT = 1
-   integer, parameter, public :: SO_AVERAGE = 2
-   integer, parameter, public :: SO_MAX     = 3
-   integer, parameter, public :: SO_MIN     = 4
-
-   private
+   public :: process_data_double_interface
 
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item
@@ -64,7 +63,7 @@ module m_statistical_output_types
       type(t_moving_average_data), allocatable                  :: moving_average_data   !< Data stored for keeping track of a moving average
       integer                                                   :: moving_average_window !< Number of time steps over which a moving average is calculated
    end type t_output_variable_item
-   
+
    !> Derived type to store the cross-section set
    type, public :: t_output_variable_set
       integer                                                :: size = 0      !< size of output variable set

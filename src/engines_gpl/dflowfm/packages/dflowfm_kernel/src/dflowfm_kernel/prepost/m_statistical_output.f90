@@ -179,7 +179,7 @@ contains
 
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-      use m_statistical_callback, only: process_data_double_interface
+      use m_statistical_output_types, only: process_data_double_interface
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
