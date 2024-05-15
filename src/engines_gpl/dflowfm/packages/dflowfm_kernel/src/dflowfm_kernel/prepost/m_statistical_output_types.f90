@@ -46,15 +46,8 @@ module m_statistical_output_types
          double precision, pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
       end subroutine process_data_interface_double
    end interface
-end module m_statistical_callback
-   
-module m_statistical_output_types
-   use stdlib_kinds, only: dp
-   use m_output_config, only: t_output_quantity_config
-   use m_statistical_callback, only: process_data_double_interface
-   use m_temporal_statistics, only: t_moving_average_data
 
-   public :: process_data_double_interface
+   public :: process_data_interface_double
 
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item

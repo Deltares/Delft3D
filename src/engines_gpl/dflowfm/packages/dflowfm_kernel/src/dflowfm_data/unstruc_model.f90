@@ -727,7 +727,7 @@ subroutine readMDUFile(filename, istat)
     use m_sedtrails_data, only: sedtrails_analysis
     use unstruc_display,  only: jaGUI 
     use m_output_config, only: scan_input_tree
-    use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
     use m_read_statistical_output, only: read_output_parameter_toggle
     
     use m_map_his_precision

@@ -37,7 +37,7 @@ module m_statistical_output
 
    public realloc
    public dealloc
-   public update_statistical_output, update_source_data, add_stat_output_items, &
+   public update_statistical_output, update_source_input, add_stat_output_items, &
       initialize_statistical_output, reset_statistical_output, finalize_average
 
    !> Realloc memory cross-section definition or cross-sections
@@ -174,7 +174,7 @@ contains
 
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-      use m_statistical_output_types, only: process_data_double_interface
+      use m_statistical_output_types, only: process_data_interface_double
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to

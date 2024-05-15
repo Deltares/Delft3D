@@ -2108,7 +2108,7 @@ private
       use m_structures
       use m_observations
       use m_physcoef, only: density_is_pressure_dependent
-      use m_statistical_output_types, only: process_data_double_interface
+      use m_statistical_output_types, only: process_data_interface_double
       use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
       use m_longculverts, only: nlongculverts
