@@ -727,7 +727,7 @@ subroutine readMDUFile(filename, istat)
     use m_sedtrails_data, only: sedtrails_analysis
     use unstruc_display,  only: jaGUI 
     use m_output_config, only: scan_input_tree
-    use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
     use m_read_statistical_output, only: read_output_parameter_toggle
     
     use m_map_his_precision
@@ -2026,9 +2026,9 @@ subroutine readMDUFile(filename, istat)
     
     ! Output
     ! [output] OutputDir was read earlier already.
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_his)
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_map)
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_clm)
+    call scan_input_tree(md_ptr, 'Output', config_set_his)
+    call scan_input_tree(md_ptr, 'Output', config_set_map)
+    call scan_input_tree(md_ptr, 'Output', config_set_clm)
     !if (md_mapformat /= 4 .and. jamapwindstress /= 0) then
      !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
     !endif
@@ -2724,7 +2724,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use unstruc_channel_flow
     use m_sedtrails_data
     use m_output_config, only: set_properties
-    use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
     use m_map_his_precision
 
     integer, intent(in)  :: mout  !< File pointer where to write to.
@@ -3937,13 +3937,13 @@ endif
        call prop_set(prop_ptr, 'output', 'GenerateUUID', unc_uuidgen, 'Generate UUID as unique dataset identifier and include in output NetCDF files.')
     end if
     
-    call set_properties(prop_ptr, 'Output', out_quan_conf_his)
+    call set_properties(prop_ptr, 'Output', config_set_his)
     
     if (writeall .or. jahiszcor /= 1) then
        call prop_set(prop_ptr, 'output', 'Wrihis_zcor', jahiszcor, 'Write vertical coordinates to his file (1: yes, 0: no)' )
     endif
 
-    call set_properties(prop_ptr, 'Output', out_quan_conf_map)
+    call set_properties(prop_ptr, 'Output', config_set_map)
     
     if (jamapbnd > 0 .or. writeall) then
        call prop_set(prop_ptr, 'output', 'Wrimap_bnd', jamapbnd, 'Write boundary points to map file (1: yes, 0: no)')
@@ -4015,7 +4015,7 @@ endif
     if(writeall .or. jatekcd /= 0) then
        call prop_set(prop_ptr, 'output', 'Writek_CdWind', jatekcd, 'Write wind friction coeffs to tek file (1: yes, 0: no)')
     endif
-    call set_properties(prop_ptr, 'Output', out_quan_conf_clm)
+    call set_properties(prop_ptr, 'Output', config_set_clm)
 
 
 !  processes (WAQ)

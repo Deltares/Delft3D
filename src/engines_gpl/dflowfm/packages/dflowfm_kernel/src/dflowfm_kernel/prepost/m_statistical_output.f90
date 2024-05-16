@@ -37,87 +37,83 @@ module m_statistical_output
 
    public realloc
    public dealloc
-   public update_statistical_output, update_source_data, add_stat_output_items, &
+   public update_statistical_output, update_source_input, add_stat_output_items, &
       initialize_statistical_output, reset_statistical_output, finalize_average
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
-      module procedure realloc_stat_output
+      module procedure reallocate_output_set
    end interface
 
    !> Free the memory of cross-section definition or cross-sections
    interface dealloc
-      module procedure dealloc_stat_output
+      module procedure deallocate_output_set
    end interface dealloc
 
 contains
 
-   subroutine realloc_stat_output(statoutput, size)
-      ! Modules
+   subroutine reallocate_output_set(output_set, crop)
       use m_alloc
 
-      implicit none
-      ! Input/output parameters
-      type(t_output_variable_set), intent(inout)   :: statoutput !< Current cross-section definition
-      integer, intent(in), optional                :: size       !< for when a specific size is requested
-
-      ! Local variables
-      integer                   :: ierr
-      type(t_output_variable_item), pointer, dimension(:)    :: oldstats
-
-      ! Program code
-
-      if (statoutput%size > 0) then
-         oldstats=>statoutput%statout
-      end if
-
-      if (statoutput%growsBy <=0) then
-         statoutput%growsBy = 200
+      type(t_output_variable_set), intent(inout)   :: output_set !< output variable set to reallocate
+      logical, intent(in), optional                :: crop       !< crop output set to number of valid items
+      
+      logical                   :: crop_
+      type(t_output_variable_item), allocatable, dimension(:)    :: new_statout
+   
+      crop_ = .false.
+      if(present(crop)) then
+         crop_ = crop
       end if
       
-      if (present(size) .and. size > statoutput%count) then
-         allocate(statoutput%statout(size), stat=ierr)
-         call aerr('statoutput%statout(size)', ierr, size)
-         statoutput%statout(1:size) = oldstats(1:size)
-         deallocate(oldstats)
-         statoutput%size = size
+      if (crop_ .and. output_set%count < output_set%capacity) then
+         allocate(new_statout(output_set%count))
+         new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
+         call move_alloc(new_statout,output_set%statout)
+         output_set%capacity = output_set%count
       else
-         allocate(statoutput%statout(statoutput%size+statoutput%growsBy), stat=ierr)
-         call aerr('statoutput%statout(statoutput%size+statoutput%growsBy)', ierr, statoutput%size+statoutput%growsBy)
-
-         if (statoutput%size > 0) then
-            statoutput%statout(1:statoutput%size) = oldstats(1:statoutput%size)
-            deallocate(oldstats)
+         if (allocated(output_set%statout)) then
+            if (output_set%count > output_set%capacity) then ! only increase size if necessary
+               output_set%capacity = output_set%capacity*2
+               allocate(new_statout(output_set%capacity))
+               new_statout(1:size(output_set%statout)) =  output_set%statout
+               call move_alloc(new_statout,output_set%statout)
+            end if
+         else
+           output_set%capacity = 200
+           allocate(output_set%statout(output_set%capacity))
          end if
-         statoutput%size = statoutput%size+statoutput%growsBy
       end if
-   end subroutine realloc_stat_output
 
-   subroutine dealloc_stat_output(statoutput)
+   end subroutine reallocate_output_set
+
+   subroutine deallocate_output_set(output_set)
       implicit none
       ! Input/output parameters
-      type(t_output_variable_set), intent(inout)   :: statoutput !< Current cross-section definition
+      type(t_output_variable_set), intent(inout)   :: output_set !< Current cross-section definition
 
-      if (associated(statoutput%statout)) then
-         deallocate(statoutput%statout)
+      if (allocated(output_set%statout)) then
+         deallocate(output_set%statout)
       end if
-   end subroutine dealloc_stat_output
+   end subroutine deallocate_output_set
 
    !> Update the variables that need a separate subroutine call to update their source_input array
-   subroutine update_source_data(output_set)
+   subroutine update_source_input(output_set)
       type(t_output_variable_set), intent(inout) :: output_set !< output set that we wish to update
 
       type(t_output_variable_item), pointer      :: item
 
       integer :: j
-
+      
       do j = 1, output_set%count
-         item => output_set%statout(j)
-         if (associated(item%source_input_function_pointer)) then
-            call item%source_input_function_pointer(item%source_input)
-         end if
+         associate(item => output_set%statout(j))
+            if (associated(item%source_input_function_pointer)) then
+               call item%source_input_function_pointer(item%source_input)
+            end if
+         end associate
       end do
-   end subroutine update_source_data
+
+   end subroutine update_source_input
 
    !> Update the stat_output of an item, depending on the operation_type.
    elemental subroutine update_statistical_output(item, dts)
@@ -178,14 +174,14 @@ contains
 
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-      use m_statistical_output_types, only: process_data_double_interface
+      use m_statistical_output_types, only: process_data_interface_double
       use MessageHandling, only: mess, LEVEL_WARN
 
       type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
       type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
       double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
-      procedure(process_data_double_interface), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
-
+      procedure(process_data_interface_double), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
+      
       type(t_output_variable_item)                       :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring
       integer                                            :: ierr
@@ -209,8 +205,8 @@ contains
             end if
 
             output_set%count = output_set%count + 1
-            if (output_set%count > output_set%size) then
-               call realloc_stat_output(output_set)
+            if (output_set%count > output_set%capacity) then
+               call reallocate_output_set(output_set)
             end if
 
             item%output_config => output_config

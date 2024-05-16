@@ -437,7 +437,7 @@
  call timstop(handle_extra(29)) ! end structure parameters
 
  ! Prepare for his/map/clm output via statistical_output module
- call flow_init_statistical_output_his(out_quan_conf_his, out_variable_set_his)
+ call flow_init_statistical_output_his(config_set_his, out_variable_set_his)
 
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then

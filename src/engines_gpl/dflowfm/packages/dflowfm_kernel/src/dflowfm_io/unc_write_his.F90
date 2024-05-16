@@ -160,7 +160,6 @@ subroutine unc_write_his(tim)            ! wrihis
     type(t_output_quantity_config), pointer:: config
     type(ug_nc_attribute), target :: attributes(4)
     integer :: ivar
-    integer, pointer :: id_var
 
     integer :: id_twodim, nc_precision
     integer, save :: id_timebds
@@ -498,7 +497,7 @@ subroutine unc_write_his(tim)            ! wrihis
               transpunit = 'm3 s-1 m-1'
            end select
            do ivar = IDX_HIS_SBCX,IDX_HIS_SSCY 
-              out_quan_conf_his%configs(ivar)%unit = transpunit
+              config_set_his%configs(ivar)%unit = transpunit
            end do
         end if
 
@@ -512,8 +511,8 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
         
          do ivar = 1,out_variable_set_his%count
-            config => out_variable_set_his%statout(ivar)%output_config
-            id_var => out_variable_set_his%statout(ivar)%id_var
+            associate(config => out_variable_set_his%statout(ivar)%output_config, &
+                      id_var => out_variable_set_his%statout(ivar)%id_var)
                
             if (config%location_specifier         /= UNC_LOC_STATION &
                   .and. config%location_specifier /= UNC_LOC_OBSCRS &
@@ -878,8 +877,8 @@ subroutine unc_write_his(tim)            ! wrihis
    end if
      
    do ivar = 1,out_variable_set_his%count
-      config => out_variable_set_his%statout(ivar)%output_config
-      id_var => out_variable_set_his%statout(ivar)%id_var
+      associate(config => out_variable_set_his%statout(ivar)%output_config, &
+                id_var => out_variable_set_his%statout(ivar)%id_var)
 
       if (config%location_specifier /= UNC_LOC_STATION &
             .and. config%location_specifier /= UNC_LOC_OBSCRS &
@@ -939,6 +938,7 @@ subroutine unc_write_his(tim)            ! wrihis
          call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /)))
          if (timon) call timstop(handle_extra(67))
       end select
+      end associate
    end do
 
     ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)

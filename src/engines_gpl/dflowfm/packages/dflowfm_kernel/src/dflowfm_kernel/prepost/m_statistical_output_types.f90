@@ -36,18 +36,18 @@ module m_statistical_output_types
    integer, parameter, public :: SO_MIN     = 4
 
    abstract interface
-      !> function pointer to be called by update_source_data when advanced operations are required and the data to be
+      !> subroutine to be called by update_source_input when advanced operations are required and the data to be
       !! written to the his/map file cannot be a pointer but must be calculated and stored every timestep.
       !!
-      !! NOTE: these callback functions are also called once during init_statistical_output();
+      !! NOTE: these callback subroutines are also called once during init_statistical_output();
       !!       if %source_input must point to newly allocated memory, that is the time to do it once,
       !!       and should never be reallocated after that.
-      subroutine process_data_double_interface(datapointer)
-         double precision, pointer, dimension(:), intent(inout) :: datapointer !< pointer to function in-output data
-      end subroutine process_data_double_interface
+      subroutine process_data_interface_double(data_pointer)
+         double precision, pointer, dimension(:), intent(inout) :: data_pointer !< pointer to function in-output data
+      end subroutine process_data_interface_double
    end interface
 
-   public :: process_data_double_interface
+   public :: process_data_interface_double
 
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item
@@ -58,7 +58,7 @@ module m_statistical_output_types
                                                                                          !! required this variable points to the basic variable (e.g. s1).
                                                                                          !! Otherwise during the simulation the intermediate results are stored.
       real(dp), pointer, dimension(:)                           :: source_input          !< The (possibly transformed) data over which statistics are gathered
-      procedure(process_data_double_interface), nopass, pointer :: source_input_function_pointer => null() !< Function pointer for operation that needs to be performed to produce source_input
+      procedure(process_data_interface_double), nopass, pointer :: source_input_function_pointer => null() !< Function pointer for operation that needs to be performed to produce source_input
       real(dp)                                                  :: time_step_sum         !< Sum of time steps since the last output interval, used for average calculation
       type(t_moving_average_data), allocatable                  :: moving_average_data   !< Data stored for keeping track of a moving average
       integer                                                   :: moving_average_window !< Number of time steps over which a moving average is calculated
@@ -66,10 +66,9 @@ module m_statistical_output_types
 
    !> Derived type to store the cross-section set
    type, public :: t_output_variable_set
-      integer                                                :: size = 0      !< size of output variable set
-      integer                                                :: growsby = 200 !< increment of output variable set
-      integer                                                :: count= 0      !< count of items in output variable set
-      type(t_output_variable_item), pointer, dimension(:)    :: statout       !< pointer to array of output variable items
+      integer                                                  :: capacity = 0  !< allocated size of output variable set
+      integer                                                  :: count = 0     !< count of actual items in output variable set
+      type(t_output_variable_item), allocatable,  dimension(:) :: statout       !< pointer to array of output variable items
    end type t_output_variable_set
 
 end module m_statistical_output_types

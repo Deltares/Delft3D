@@ -49,7 +49,7 @@ subroutine flow_finalize_usertimestep(iresult)
    use m_update_fourier, only : update_fourier
    use mass_balance_areas_routines, only : mba_update
    use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
-   use m_statistical_output, only: update_source_data
+   use m_statistical_output, only: update_source_input
    use m_update_values_on_cross_sections, only: update_values_on_cross_sections
    implicit none
 
@@ -125,9 +125,9 @@ subroutine flow_finalize_usertimestep(iresult)
       call update_values_on_cross_sections
 
       ! valobs was updated, also call the function pointers to make sure that the data has been processed properly for writing in flow_externaloutput
-      call update_source_data(out_variable_set_his)
-      call update_source_data(out_variable_set_map)
-      call update_source_data(out_variable_set_clm)
+      call update_source_input(out_variable_set_his)
+      call update_source_input(out_variable_set_map)
+      call update_source_input(out_variable_set_clm)
       
       if (ti_his > 0 .and. &
           comparereal(time1, time_his, eps10) >= 0 .and. &

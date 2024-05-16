@@ -273,8 +273,8 @@ end subroutine api_loadmodel
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
    use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
-   use m_statistical_output, only: update_source_data, update_statistical_output
    use m_update_values_on_cross_sections, only: update_values_on_cross_sections
+   use m_statistical_output, only: update_source_input, update_statistical_output
    integer, external :: flow_modelinit
    integer          :: timerHandle, inner_timerhandle
 
@@ -324,9 +324,9 @@ end subroutine api_loadmodel
    end if
    call timstop(inner_timerhandle)
    
-   call update_source_data(out_variable_set_his)
-   call update_source_data(out_variable_set_map)
-   call update_source_data(out_variable_set_clm)
+   call update_source_input(out_variable_set_his)
+   call update_source_input(out_variable_set_map)
+   call update_source_input(out_variable_set_clm)
 
    if (out_variable_set_his%count > 0) then
       call update_statistical_output(out_variable_set_his%statout,dts)
