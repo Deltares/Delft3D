@@ -33,22 +33,21 @@ module m_find_flowlink
    
    private
    
-   public :: find_flowlink_bruteforce
+   public :: find_1D_or_boundary_flowlink_bruteforce
    
    contains
    
-   !> Find the flowlink with the shortest perpendicular distance to the point [x,y]
+   !> Find the 1-D or boundary flowlink with the shortest perpendicular distance to the point [x,y]
    !! Brute-force approach: simply check all flowlinks in the entire grid
-   subroutine find_flowlink_bruteforce(x, y, link_id_closest)
+   subroutine find_1D_or_boundary_flowlink_bruteforce(x, y, link_id_closest)
       use stdlib_kinds, only: dp
-      use MessageHandling, only: mess, LEVEL_WARN, LEVEL_ERROR
-      use m_flowgeom, only: lnx, lnx1D, lnxi, ln, xz, yz
+      use m_flowgeom, only: lnx, lnx1D, lnxi, ln, xz, yz, ndx
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dlinedis
       use m_missing, only: dmiss
       
       real(dp), intent(in   ) :: x, y            !< x,y-coordinates
-      integer,  intent(  out) :: link_id_closest !< id of the link whose midpoint lies closest to the point [x,y]
+      integer,  intent(  out) :: link_id_closest !< id of the flowlink whose midpoint lies closest to the point [x,y]
       
       integer  :: link_id, ka, kb
       real(dp) :: dist_perp, dist_perp_min
@@ -59,7 +58,7 @@ module m_find_flowlink
       dist_perp_min   = huge(dist_perp_min)
    
       do link_id = 1, lnx
-         if (link_id <= lnx1D .or. link_id > lnxi) then
+         if (link_id <= lnx1D .or. link_id > lnxi) then ! Only check 1-D and boundary flowlinks
             ka = ln(1,link_id)
             kb = ln(2,link_id)
             xa = xz(ka)
@@ -76,6 +75,6 @@ module m_find_flowlink
          end if
       end do
       
-   end subroutine find_flowlink_bruteforce
+   end subroutine find_1D_or_boundary_flowlink_bruteforce
    
 end module m_find_flowlink
