@@ -42,7 +42,7 @@ contains
         !! Writes map output to NetCDF
 
         use timers
-        use waq_netcdf_utils    !, only: set_debug_status, read_dimensions, find_mesh_by_attributes, &
+        use waq_netcdf_utils    !, only: set_dlwqnc_debug_status, read_dimensions, find_mesh_by_attributes, &
         !copy_variable_attributes, copy_mesh, create_dimension, create_layer_dimension, create_time_variable, &
         !create_variable, write_time
         use delwaq_version_module
@@ -125,7 +125,7 @@ contains
         if (ncidmap < 0) then
 
             ! Turn on debug info from dlwaqnc
-            inc_error = set_debug_status(.true.)
+            inc_error = set_dlwqnc_debug_status(.true.)
 
             ! Prepare a Delwaq-NetCDF output-file for map data from the UGRID-file
             ! To do: we should check if everything went right, if not, NetCDF output is not possible...
@@ -808,7 +808,7 @@ contains
         use m_universally_unique_id_generator
         use m_logger, only: terminate_execution
         use timers
-        use waq_netcdf_utils    !, only: set_debug_status, create_time_variable, write_time
+        use waq_netcdf_utils    !, only: set_dlwqnc_debug_status, create_time_variable, write_time
         use results, only: ncopt
 
         integer(kind = int_wp), intent(inout) :: ncidhis              ! NetCDF id of output history file
@@ -895,7 +895,7 @@ contains
         ! Initialize file
         if (ncidhis < 0) then
             ! Turn on debug info from dlwaqnc
-            inc_error = set_debug_status(.true.)
+            inc_error = set_dlwqnc_debug_status(.true.)
 
             ! Prepare a Delwaq-NetCDF output-file for history data from the UGRID-file
             ! To do: we should check if everything went right, if not, NetCDF output is not possible...

@@ -154,7 +154,7 @@ contains
         if (cdummy == 'UGRID' .or. (has_hydfile .and. ugridfile /= ' ')) then
 
             ! Turn on debug info from dlwaqnc
-            inc_error = set_debug_status(.true.)
+            inc_error = set_dlwqnc_debug_status(.true.)
             ! Check if the UGRID file is suitable for Delwaq Output
             write (file_unit, 2500)
 
