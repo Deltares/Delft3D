@@ -86,6 +86,13 @@ if(WIN32)
     endif()
 endif()
 
+# proj
+if(WIN32)
+    if(NOT TARGET proj)
+        include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/include/proj_configuration.cmake)
+    endif()
+endif(WIN32)
+
 # kdtree2
 if(NOT TARGET kdtree2)
     add_subdirectory(${CMAKE_SOURCE_DIR}/src/${kdtree_module} kdtree2)
