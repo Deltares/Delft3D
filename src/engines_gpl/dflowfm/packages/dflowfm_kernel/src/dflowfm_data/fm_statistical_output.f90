@@ -4,7 +4,8 @@ module fm_statistical_output
    use m_statistical_output
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
-   
+   use stdlib_kinds, only: dp
+
    implicit none
 
 private
@@ -16,26 +17,66 @@ private
    type(t_output_variable_set), public :: out_variable_set_his
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
-   
+
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
-          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations
+          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations, close_fm_statistical_output
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
-   double precision, dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
-   double precision, dimension(:),   allocatable, target :: time_dredged, time_ploughed
-   double precision, dimension(:),   allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   real(dp), dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
+   real(dp), dimension(:),   allocatable, target :: time_dredged, time_ploughed
+   real(dp), dimension(:),   allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   real(dp), dimension(:),   allocatable, target :: qplat_data
 
    contains
 
+   subroutine close_fm_statistical_output()
+      if (allocated(obscrs_data)) then
+         deallocate(obscrs_data)
+      end if
+      if (allocated(time_dredged)) then
+         deallocate(time_dredged)
+      end if
+      if (allocated(time_ploughed)) then
+         deallocate(time_ploughed)
+      end if
+      if (allocated(SBCX)) then
+         deallocate(SBCX)
+      end if
+      if (allocated(SBCY)) then
+         deallocate(SBCY)
+      end if
+      if (allocated(SBWX)) then
+         deallocate(SBWX)
+      end if
+      if (allocated(SBWY)) then
+         deallocate(SBWY)
+      end if
+      if (allocated(SSWX)) then
+         deallocate(SSWX)
+      end if
+      if (allocated(SSWY)) then
+         deallocate(SSWY)
+      end if
+      if (allocated(SSCX)) then
+         deallocate(SSCX)
+      end if
+      if (allocated(SSCY)) then
+         deallocate(SSCY)
+      end if
+      if (allocated(qplat_data)) then
+         deallocate(qplat_data)
+      end if
+   end subroutine close_fm_statistical_output
+
    !> allocate array and associate pointer with it if not already done.
    subroutine allocate_and_associate(source_input, size, array1, array2)
-   double precision, pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
-   double precision, dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
-   double precision, dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
+   real(dp), pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
+   real(dp), dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
+   real(dp), dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
    integer, intent(in) :: size
 
    if (.not. allocated(array1)) then
@@ -49,18 +90,23 @@ private
    endif
    end subroutine allocate_and_associate
 
+   subroutine transform_qplat(source_input)
+      use m_lateral, only : qplat
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
+      qplat_data = sum(qplat, dim = 1)
+   end subroutine transform_qplat
+
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X,Y,IPNT_X,IPNT_Y)
    use m_sediment
    use m_observations
 
-   double precision, dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
+   real(dp), dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
    integer, intent(in) :: IPNT_X, IPNT_Y              !< location specifier inside valobs array
 
-
    integer :: l, k, ntot
-   double precision :: rhol
-   
+   real(dp) :: rhol
+
    ntot = numobs + nummovobs
    do l = 1, stmpar%lsedtot
       select case(stmpar%morpar%moroutput%transptype)
@@ -76,34 +122,34 @@ private
       Y(k+1:k+ntot) = valobs(:,IPNT_Y+l-1)/rhol
    end do
    end subroutine assign_sediment_transport
-   
+
    !> Wrapper function that will allocate and fill the dredge time arrays
    subroutine calculate_dredge_time_fraction(source_input)
    use m_dad
    use m_flowtimes, only: time1
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
    integer :: num_dredges
-   double precision :: cof0
-   
+   real(dp) :: cof0
+
    call allocate_and_associate(source_input,dadpar%dredge_dimension_length,time_dredged,time_ploughed)
-   
+
    cof0 = 1d0 ; if( time1 > 0d0 ) cof0 = time1
    time_dredged = dadpar%tim_dredged/cof0
    time_ploughed = dadpar%tim_ploughed/cof0
-   
+
    end subroutine calculate_dredge_time_fraction
-   
+
    integer function get_sediment_array_size()
    use m_observations, only: numobs, nummovobs
    use m_sediment, only: stmpar
-   
+
    get_sediment_array_size = (numobs + nummovobs)*stmpar%lsedtot
    end function
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSW(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SSWX,SSWY)
    call assign_sediment_transport(SSWX,SSWY,IPNT_SSWX1,IPNT_SSWY1)
    end subroutine calculate_sediment_SSW
@@ -111,7 +157,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSC(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SSCX,SSCY)
    call assign_sediment_transport(SSCX,SSCY,IPNT_SSCX1,IPNT_SSCY1)
    end subroutine calculate_sediment_SSC
@@ -119,7 +165,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBW(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SBWX,SBWY)
    call assign_sediment_transport(SBWX,SBWY,IPNT_SBWX1,IPNT_SBWY1)
    end subroutine calculate_sediment_SBW
@@ -127,7 +173,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBC(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SBCX,SBCY)
    call assign_sediment_transport(SBCX,SBCY,IPNT_SBCX1,IPNT_SBCY1)
    end subroutine calculate_sediment_SBC
@@ -288,7 +334,7 @@ private
                   output_config_set%configs(IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT)%input_value
          end do
       end if
-   
+
       if (stmpar%lsedsus > 0) then
          ! Just to get the complete list of indexes in idx_const
          idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1) = IDX_HIS_OBSCRS_SED_STRANSPORT
@@ -319,10 +365,10 @@ private
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
    use m_sediment, only: sedtot2sedsus, stmpar, jased
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
+   real(dp), pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
 
    integer :: i, IP, num, l, lsed
-   double precision :: rhol
+   real(dp) :: rhol
 
    if (ncrs == 0) then
       return
@@ -364,7 +410,7 @@ private
    enddo
 
    if (jased == 4) then
-      
+
       if (stmpar%lsedtot > 0) then
          ! Bed load (cumulative)
          IP = IPNT_HUA + NUMCONST_MDU + 1
@@ -380,7 +426,7 @@ private
             end do
          end do
       end if
-      
+
       if (stmpar%lsedsus > 0) then
          ! Suspended load (cumulative)
          IP = IP + 1
@@ -396,7 +442,7 @@ private
             end do
          end do
       end if
-      
+
    end if
 
    end subroutine aggregate_obscrs_data
@@ -452,7 +498,7 @@ private
    integer,                            intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config_set array
 
    integer :: num_tracers, num_layers, ntot, variable_index, i_start
-   double precision, pointer :: flattened_valobs_slice(:)
+   real(dp), pointer :: flattened_valobs_slice(:)
 
    num_layers = max(1, kmx)
    ntot = numobs + nummovobs
@@ -465,30 +511,30 @@ private
    end do
 
    end subroutine add_station_tracer_output_items
-   
+
    !> Add output configs for the waq bottom substances on observation stations just in time,
    !! because these substances are only known during model initialization.
    !! Return config indices for these variables such that they can be added to the output items for the same substances
    !! NOTE (TB): apparently, these are the 'inactive' substances defined in the waq substance file
    subroutine add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
-      
+
       implicit none
-      
+
       type(t_output_quantity_config_set), intent(inout) :: output_config_set         !< Output configuration set for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
-      
+
       character(len=idlen)                              :: waqb_sub_name
       character(len=idlen)                              :: unit_string
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
       allocate(idx_wqbot_stations(numwqbots), source = 0)
-      
+
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
       do i = 1, numwqbots
@@ -507,31 +553,31 @@ private
          output_config_set%configs(idx_wqbot_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
       end do
-   
+
    end subroutine add_station_wqbot_configs
-   
+
    !> Add output configs for the 3D waq bottom substances on observation stations just in time,
    !! because these substances are only known during model initialization.
    !! Return config indices for these variables such that they can be added to the output items for the same substances
    subroutine add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
-   
+
       use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
-      
+
       implicit none
-      
+
       type(t_output_quantity_config_set), intent(inout) :: output_config_set           !< Output configuration for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom    substances in output_config_set array
-      
+
       character(len=idlen)                              :: waqb_sub_name
       character(len=idlen)                              :: unit_string
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
       allocate(idx_wqbot3D_stations(numwqbots), source = 0)
-      
+
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
       do i = 1, numwqbots
@@ -550,15 +596,15 @@ private
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
       end do
-   
+
    end subroutine add_station_wqbot3D_configs
 
    !> Add output items for all waq bottom substances on stations to output set.
    subroutine add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots
       use m_observations, only: valobs, IPNT_WQB1
-      
+
       type(t_output_variable_set),        intent(inout) :: output_set                !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in   ) :: output_config_set         !< Read config items out of config set
       integer,                            intent(in   ) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
@@ -573,10 +619,10 @@ private
 
    !> Add output items for all 3D waq bottom substances on stations to output set.
    subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots, wqbot3D_output
       use m_observations, only: valobs, IPNT_WQB3D1
-      
+
       type(t_output_variable_set),        intent(inout) :: output_set                  !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in   ) :: output_config_set           !< Read config items out of config set
       integer,                            intent(in   ) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
@@ -1347,7 +1393,7 @@ private
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                      'mm hr-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                              &
                      nc_dim_ids = nc_dims_2D)
-      
+
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY,                  &
                      'Wrihis_airdensity', 'rhoair', 'air density', '', &
@@ -1587,7 +1633,7 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_attributes = atts(1:1))
-      
+
       ! HIS: Dredge & Dump variables
       !call add_output_config(config_set_his, IDX_HIS_DRED_AREA_NAME,                 &
       !               'Wrihis_dred', 'dredge_area_name',              &
@@ -2123,7 +2169,7 @@ private
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
-      double precision, pointer, dimension(:) :: temp_pointer
+      real(dp), pointer, dimension(:) :: temp_pointer
 
       procedure(process_data_interface_double), pointer :: function_pointer => NULL()
 
@@ -2483,7 +2529,7 @@ private
                temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_RHOP:IPNT_RHOP+kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
             endif
-            
+
             temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_BRUV:IPNT_BRUV+kmx)
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRUNT_VAISALA_N2),temp_pointer)
          else
@@ -2539,7 +2585,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_CAP)                 ,valobs(:,IPNT_infiltcap)                                          )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL) ,valobs(:,IPNT_infiltact)            )
       endif
-      
+
       if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_AIR_DENSITY),valobs(:,IPNT_AIRDENSITY))
       end if
@@ -2637,7 +2683,7 @@ private
 
             temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_THLYR:IPNT_THLYR+(nlyrs-1))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_THLYR),temp_pointer)
-            
+
             if (stmpar%morlyr%settings%iporosity > 0) then
                temp_pointer(1:ntot*nlyrs) => valobs(:,IPNT_POROS:IPNT_POROS+(nlyrs-1))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POROS),temp_pointer)
@@ -2678,7 +2724,7 @@ private
             call add_stat_output_items(output_set, output_config_set%configs(idx_his_hwq(variable_index)), temp_pointer)
          end do
       end if
-      
+
       ! Water quality bottom substances
       if (numwqbots > 0) then
          call add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
@@ -2726,10 +2772,11 @@ private
       ! Variables on lateral discharges
       !
       if (jahislateral > 0 .and. numlatsg > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
+         allocate(qplat_data(size(qplat, dim = 2)))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ), qplatAve)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ), qLatReal)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ), qLatRealAve)
       endif
       if (dad_included) then  ! Output for dredging and dumping
          temp_pointer(1:size(stmpar%sedpar%rhosol,1)*dadpar%nalink) => dadpar%link_sum
@@ -2902,7 +2949,7 @@ private
    subroutine process_output_quantity_configs(output_quantity_config_set)
       type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set !< The set of configs for all possible output variables
       integer :: i
-      
+
       do i = 1, output_quantity_config_set%count
          associate(config => output_quantity_config_set%configs(i))
             if (allocated(config%nc_dim_ids)) then
@@ -2931,7 +2978,7 @@ private
 
       res = (kmx > 0)
    end function model_is_3D
-   
+
    !> Check if model has fixed observation stations
    pure function model_has_fixed_obs_stations() result(res)
       use m_observations, only: numobs
@@ -2939,7 +2986,7 @@ private
 
       res = (numobs > 0)
    end function model_has_fixed_obs_stations
-   
+
    !> Check if model has moving observation stations
    pure function model_has_moving_obs_stations() result(res)
       use m_observations, only: nummovobs
@@ -2947,7 +2994,7 @@ private
 
       res = (nummovobs > 0)
    end function model_has_moving_obs_stations
-   
+
    !> Check if model has any observation stations, fixed or moving
    pure function model_has_obs_stations() result(res)
       use m_observations, only: numobs, nummovobs
@@ -2955,7 +3002,7 @@ private
 
       res = (numobs + nummovobs > 0)
    end function model_has_obs_stations
-   
+
 
    !> Check if model contains tracers.
    pure function model_has_tracers() result(res)

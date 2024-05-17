@@ -8014,6 +8014,7 @@ end subroutine unc_write_map_filepointer_ugrid
 function unc_put_var_map_nodes(ncid, id_tsp, id_var, values, jabndnd_) result(ierr)
    use network_data, only: kc, numk
    use m_missing, only: dmiss
+   use m_output_config, only: UNC_LOC_CN
    
    integer, intent(in)                     :: ncid
    type(t_unc_timespace_id),   intent(in)  :: id_tsp        !< Map file and other NetCDF ids.
