@@ -167,8 +167,8 @@ contains
         use m_baldmp
         use m_actloc
         use m_array_manipulation, only : initialize_real_array
-        use m_logger, only : terminate_execution
-        use m_cli_utils, only : retrieve_command_argument
+        use m_logger_helper, only : stop_with_error
+        use m_cli_utils, only : is_command_arg_specified
         use timers
         use results
         use nan_check_module
@@ -256,10 +256,6 @@ contains
         logical       loflag, lmfirs, ldfirs, lhfirs, ldummy, lnonans
         logical       lget, lread
         real(kind = real_wp), allocatable :: surf(:)
-        integer(kind = int_wp) :: idummy       ! dummy not used
-        real(kind = real_wp) :: rdummy       ! dummy not used
-        character(len = 256) :: adummy       ! dummy not used
-        logical :: lfound       ! Keyword found (or not)
         logical, save :: lnancheck    ! Do check on NAN in conc array
 
         integer(kind = int_wp), save :: mncrec = 0                            ! netCDF map
@@ -279,9 +275,8 @@ contains
         if (first) then
             allocate(mncwqid1(notot, 3), mncwqid2(novar, 3))
             allocate(hncwqid1(notot, 2), hncwqid2(novar, 2))
-            !        allow switching of NAN concentrations check
-            call retrieve_command_argument ('-nonancheck', 0, lfound, idummy, rdummy, adummy, ierr2)
-            lnancheck = .not. lfound
+            ! allow switching of NAN concentrations check
+            lnancheck = .not. is_command_arg_specified('-nonancheck')
             first = .false.
         endif
 
@@ -297,7 +292,7 @@ contains
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 call write_restart_file (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         endif
         !

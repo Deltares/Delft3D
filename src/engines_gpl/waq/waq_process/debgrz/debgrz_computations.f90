@@ -23,7 +23,7 @@
 
 module m_debgrz_computations
     use m_waq_precision
-    use m_logger
+    use m_logger_helper
 
     implicit none
 
@@ -143,9 +143,9 @@ module m_debgrz_computations
     !> Rescales non food-related variables
     subroutine rescale_non_food_vars(switchv1, depth_factor, dens, conv_cm3_gc, conv_j_gc, shape, em_l3, &
                                      vd, vtot, etot, rtot, dens_m2, v_m2, e_m2, r_m2, v, e, r, length, e_scaled)
-        integer(kind=int_wp), intent(in   ) :: switchv1     !< 
+        integer(kind=int_wp), intent(in   ) :: switchv1     !<
 
-        real(kind=real_wp), intent(in   )   :: depth_factor !< 
+        real(kind=real_wp), intent(in   )   :: depth_factor !<
         real(kind=real_wp), intent(in   )   :: dens         !< Density derived from Vtot(unit dep on BENTHS)
         real(kind=real_wp), intent(in   )   :: conv_cm3_gc  !< Conversion factor from cm3 into gC        [gC/cm3]
         real(kind=real_wp), intent(in   )   :: conv_j_gc    !< Conversion factor from energy into mass     [gC/J]
@@ -711,12 +711,12 @@ module m_debgrz_computations
         ! local variables
         real(kind=real_wp) :: pvmin
         real(kind=real_wp) :: v_gc
-        real(kind=real_wp) :: x 
+        real(kind=real_wp) :: x
 
         pvmin = min(pv, 0.)
         v_gc = v*conv_cm3_gc
         x = (pvmin*conv_j_gc)/v_gc
-        
+
         rmor  = rmor_ref * (length**cmor) * kt
         rmor  = min(rmor,     (1. + (pvmin*conv_j_gc)/(v*conv_cm3_gc)))
         rhrv  = rhrv_ref * (length**chrv)

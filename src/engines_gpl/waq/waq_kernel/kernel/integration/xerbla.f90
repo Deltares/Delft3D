@@ -29,7 +29,7 @@ contains
 
 
     SUBROUTINE XERBLA (SRNAME, INFO)
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers
 
         !          ..    Scalar Arguments ..
@@ -70,7 +70,7 @@ contains
         !
         WRITE (*, 99999) SRNAME, INFO
         !
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         !
         99999 FORMAT (' ** On entry to ', A6, ' parameter number ', I2, &
                 ' had an illegal value')

@@ -47,7 +47,7 @@ contains
         !                 November 2009, Leo Postma  : streamlined for parallel computing
 
         use m_lsolve
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers
         implicit none
 
@@ -95,7 +95,7 @@ contains
         nsegl = noseg / nolay
         if (nsegl * nolay /= noseg) then
             write(*, *) 'ERROR in PSOLVE'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         if (ioptpc == 0) then
@@ -184,7 +184,7 @@ contains
         else
             write(*, *) ' This option for Pre-Conditioning '
             write(*, *) ' is not implemented :   ABORT     '
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         if (timon) call timstop (ithandl)

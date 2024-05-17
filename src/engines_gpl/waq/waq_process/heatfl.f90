@@ -92,7 +92,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_evaluate_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
@@ -255,7 +255,7 @@ contains
                         CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) ' Illegal option for emissivity formula'
                         WRITE (*, *) ' Illegal option for emissivity formula'
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     !
                     Qan = Qa * (1 - Fa)

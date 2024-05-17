@@ -65,7 +65,7 @@ contains
         !>          too long. It is good possible to have an input variable that specifies a shorter time step
         !>          for the bed underneith all cells only. Please indicate if that is interesting.
 
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         use timers
 
         integer(kind = int_wp), intent(in) :: file_unit                  !< unit number of the monitoring file
@@ -164,9 +164,6 @@ contains
         logical       wetting         ! are cells becoming wet?
         logical, save :: sw_settling   ! if true, settling should be dealt with upwind
         integer(kind = int_wp), save :: init = 0      ! first call ?
-        character :: cdummy        !
-        integer(kind = int_wp) :: idummy        !
-        real(kind = real_wp) :: rdummy        !
 
         integer(kind = int_wp), save :: nob       ! number of baskets for transportables
         integer(kind = int_wp), allocatable, save :: its  (:)  ! baskets accumulator cells
@@ -189,7 +186,6 @@ contains
         real(kind = dp), allocatable, save :: low(:), dia(:), upr(:)  !  matrix of one column
         logical             massbal                     ! set .true. if iaflag eq 1
         logical, save :: report                            ! write iteation reports in monitoring file
-        integer(kind = int_wp) :: ierr2                    !
         real(kind = real_wp) :: acc_remained, acc_changed  ! For reporting: accumulated/averaged reporting parameters
         logical :: vertical_upwind             ! Set .true. for upwind scheme in the vertical
         integer(kind = int_wp) :: ithandl = 0
@@ -220,7 +216,8 @@ contains
             else
                 write (file_unit, '(A)') ' Using central discretisation for vertical advection.'
             endif
-            call retrieve_command_argument('-settling_backwards', 0, sw_settling, idummy, rdummy, cdummy, ierr2)
+
+            sw_settling = is_command_arg_specified('-settling_backwards')
             if (sw_settling) write(file_unit, *) ' option -settling_backwards found'
             i = index_in_array('Number_of_baskets   ', coname)
             if (i > 0) then

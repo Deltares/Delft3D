@@ -41,7 +41,7 @@ contains
         ! if nessacary turns on secondary processes
         ! fills defaults in defaul array
 
-        use m_logger
+        use m_logger_helper
         use m_array_manipulation, only : is_missing
         use timers       !   performance timers
         use m_waq_data_structure

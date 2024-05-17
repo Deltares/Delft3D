@@ -46,7 +46,7 @@ contains
     subroutine delpar00 (mdpfile, noseg, noq, dwqvol, dwqflo, &
             nosfun, sfname, segfun)
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use partmem      !   for PARTicle tracking
         use alloc_mod    !   for PARTicle tracking
         use writrk_mod   !   for PARTicle tracking
@@ -260,7 +260,7 @@ contains
                         write (lunut, *) '        number of substances in the model setup: ', nosubs
                         write (*, *) ' Error: number of substances in the ini-file   : ', nosubs_idp
                         write (*, *) '        number of substances in the model setup: ', nosubs
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                     do ilp = 1, nopart
                         read(luini) npart(ilp), mpart(ilp), kpart(ilp), xpart(ilp), ypart(ilp), zpart(ilp), wpart(1:nosubs, ilp), &
@@ -276,7 +276,7 @@ contains
                         write (lunut, *) '        number of substances in the model setup: ', nosubs
                         write (*, *) ' Error: number of substances in the ini-file   : ', nosubs_idp
                         write (*, *) '        number of substances in the model setup: ', nosubs
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                     do ilp = 1, nopart
                         read(luini) npart(ilp), mpart(ilp), kpart(ilp), xpart(ilp), ypart(ilp), zpart(ilp), wpart(1:nosubs, ilp), &
@@ -332,7 +332,7 @@ contains
                 pblay = 0.7
             else
                 write(*, *) 'This model type has not been implemented yet '
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             ptlay = 1.0 - pblay
             nstep = 1 + (itstopp - itstrtp) / idelt

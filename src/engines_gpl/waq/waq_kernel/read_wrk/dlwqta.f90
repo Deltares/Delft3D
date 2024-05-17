@@ -36,7 +36,7 @@ contains
         !! Makes values at time = itime for the process parameters
 
         use m_dlwqt4
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use waq_file_utils_external, only : create_new_file_unit_number
         use timers
@@ -90,18 +90,18 @@ contains
                     write(lunrep, *) 'error in dlwqta, opening file'
                     write(lunrep, *) 'file    :', lch
                     write(lunrep, *) 'unit    :', file_unit_list
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 read (file_unit_list, iostat = ierr2) chlp
                 if (ierr2/=0 .or. chlp(1:6) /= ' 5.000') then
                     write(lunrep, *) 'error in dlwqta, file not new'
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
 
                 read(file_unit_list, iostat = ierr2) no_proc_pars
                 if (ierr2 /= 0) then
                     write(lunrep, 1000) trim(lch)
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 allocate(dlwqd%proc_pars%data_block(no_proc_pars))
                 dlwqd%proc_pars%maxsize = no_proc_pars
@@ -111,7 +111,7 @@ contains
                     ierr2 = dlwqd%proc_pars%data_block(i)%read(lunrep, file_unit_list)
                     if (ierr2 /= 0) then
                         write(lunrep, 1000) trim(lch)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                     proc_par => dlwqd%proc_pars%data_block(i)
                     if (proc_par%is_external .and. (mod(proc_par%filetype, 10) == FILE_BINARY .or. &
@@ -169,25 +169,25 @@ contains
                     ierr2 = proc_par%evaluate(GridPs, itime, nocons, 1, const)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_FUNCTION) then
                     ierr2 = proc_par%evaluate(GridPs, itime, nofun, 1, funcs)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_PARAMETER .and. ifflag == 1) then
                     ierr2 = proc_par%evaluate(GridPs, itime, nopa, noseg, param)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_SEGFUNC) then
                     ierr2 = proc_par%evaluate(GridPs, itime, noseg, nosfun, sfuncs)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 endif
             enddo

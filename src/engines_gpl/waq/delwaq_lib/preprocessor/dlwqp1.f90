@@ -69,9 +69,10 @@ contains
         use m_algrep
         use m_actrep
         use m_startup_screen
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_working_files, only : read_working_file_4
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name, &
+                                is_command_arg_specified
         use m_open_waq_files
         use timers
         use m_waq_data_structure
@@ -156,6 +157,7 @@ contains
         integer(kind = int_wp) :: idummy           ! dummy variable
         real(kind = real_wp) :: rdummy           ! dummy variable
         character :: cdummy            ! dummy variable
+        logical :: parsing_error
 
         integer(kind = int_wp), allocatable :: idpnt(:)         ! dispersion pointers
         integer(kind = int_wp), allocatable :: ivpnt(:)         ! velocity pointers
@@ -203,8 +205,8 @@ contains
         character(len=80) :: swinam
         character(len=80) :: blmnam
         character(len=80) :: line
-        character(len=256) :: pdffil
-        character(len=10) :: config
+        character(:), allocatable :: pdffil
+        character(:), allocatable :: config
         logical :: lfound, laswi, swi_nopro
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
@@ -215,7 +217,7 @@ contains
 
         ! bloom-species database
 
-        character(len=256) :: blmfil
+        character(:), allocatable :: blmfil
         logical :: l_eco
         integer(kind = int_wp) :: maxtyp, maxcof
         parameter(maxtyp = 500, maxcof = 50)
@@ -291,14 +293,10 @@ contains
 
         ! command line settingen , commands
 
-        ! monitoring level
-
-        call retrieve_command_argument('-m', 1, lfound, idummy, rdummy, cdummy, ierr2)
 
         ! active processes only switch
 
-        call retrieve_command_argument('-a', 1, lfound, idummy, rdummy, cdummy, ierr2)
-        if (lfound) then
+        if (is_command_arg_specified('-a')) then
             write (line, '(a)') ' found -a command line switch'
             call write_log_message(line)
             write (line, '(a)') ' only activated processes are switched on'
@@ -310,8 +308,7 @@ contains
 
         ! no processes
 
-        call retrieve_command_argument('-np', 0, lfound, idummy, rdummy, cdummy, ierr2)
-        if (lfound) then
+        if (is_command_arg_specified('-np')) then
             swi_nopro = .true.
             write (line, '(a)') ' found -np command line switch'
             call write_log_message(line)
@@ -325,9 +322,8 @@ contains
         ! process definition file
 
         if (.not. swi_nopro) then
-            call retrieve_command_argument('-p', 3, lfound, idummy, rdummy, pdffil, ierr2)
-            if (lfound) then
-                if (ierr2 /= 0) then
+            if (get_command_argument_by_name('-p', pdffil, parsing_error)) then
+                if (parsing_error) then
                     pdffil = ' '
                 end if
             else
@@ -354,7 +350,7 @@ contains
                 write (*, *) '        Check if the filename after -p is correct, and exists.'
                 write (*, *) '        Use -np if you want to run without processes.'
                 write (*, *) ' '
-                call terminate_execution(1)
+                call stop_with_error()
             else
                 write (lurep, *)
                 write (lurep, 2001) trim(file_name_list(34))
@@ -371,11 +367,10 @@ contains
         ! old serial definitions
 
         if (.not. swi_nopro) then
-            call retrieve_command_argument('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
-            if (lfound) then
+            if (get_command_argument_by_name('-target_serial', target_serial, parsing_error)) then
                 write (line, '(a)') ' found -target_serial command line switch'
                 call write_log_message(line)
-                if (ierr2 /= 0) then
+                if (parsing_error) then
                     old_items%target_serial = target_serial
                     write (line, '(a)') ' no serial number given, using current'
                     call write_log_message(line)
@@ -392,11 +387,10 @@ contains
 
         ! configuration
 
-        call retrieve_command_argument('-conf', 3, lfound, idummy, rdummy, config, ierr2)
-        if (lfound) then
+        if (get_command_argument_by_name('-conf', config, parsing_error)) then
             write (line, '(a)') ' found -conf command line switch'
             call write_log_message(line)
-            if (ierr2 /= 0) then
+            if (parsing_error) then
                 write (line, '(a)') ' no configuration id given, using default'
                 call write_log_message(line)
                 config = ' '
@@ -410,14 +404,13 @@ contains
 
         ! eco coupling
 
-        call retrieve_command_argument('-eco', 3, lfound, idummy, rdummy, blmfil, ierr2)
-        if (lfound) then
+        if (get_command_argument_by_name('-eco', blmfil, parsing_error)) then
             l_eco = .true.
             line = ' '
             call write_log_message(line)
             write (line, '(a)') ' found -eco command line switch'
             call write_log_message(line)
-            if (ierr2 /= 0) then
+            if (parsing_error) then
                 blmfil = 'bloom.spe'
                 write (line, '(a30,a50)') ' using default eco input file:', blmfil
                 call write_log_message(line)
@@ -755,7 +748,7 @@ contains
             write (lurep, *) ' not all input available.'
             write (lurep, *) ' number off missing variables :', nmis
             write (lurep, *) ' simulation impossible.'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
 
         ! set new pointer for dispersion and velocity

@@ -31,7 +31,7 @@ contains
     subroutine burial (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !>\file
@@ -229,7 +229,7 @@ contains
                         WRITE(LUNREP, *) 'BURIAL: SwSediment should equal 0 or 1! Not', &
                                 ISW
                         WRITE(*, *) 'BURIAL: SwSediment should equal 0 or 1! Not', ISW
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
 
                     ENDIF
 

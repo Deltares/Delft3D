@@ -31,7 +31,7 @@ contains
     subroutine dredge_process     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_evaluate_waq_attribute
 
         implicit none
@@ -175,7 +175,7 @@ contains
                     write (lunrep, *) 'basin_no is greater than max_basin in dredge process'
                     write (*, *) 'ERROR in dredge process'
                     write (*, *) 'basin_no is greater than max_basin in dredge process'
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 no_basin = max(no_basin, basin_no)
                 ip_basin_no = ip_basin_no + increm(2)

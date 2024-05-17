@@ -38,7 +38,7 @@ module m_dlwq17
     subroutine thatcher_harleman_bc(bset, bsave, ibpnt, nobnd, nosys, &
             notot, idt, conc, flow, bound)
 
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         use timers
         implicit none
 
@@ -73,18 +73,12 @@ module m_dlwq17
 
         logical, save :: init = .true.
         logical, save :: bndmirror = .false.
-        logical :: lfound
-        character :: cdummy
-        integer(kind = int_wp) :: idummy
-        real(kind = real_wp) :: rdummy
-        integer(kind = int_wp) :: ierr2
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq17", ithandl)
 
         if (init) then
-            call retrieve_command_argument ('-bndmirror', 0, lfound, idummy, rdummy, cdummy, ierr2)
-            if (lfound) then
+            if (is_command_arg_specified('-bndmirror')) then
                 write(*, *) 'Using mirroring boundaries'
                 bndmirror = .true.
             else

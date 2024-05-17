@@ -31,7 +31,7 @@ contains
     subroutine depave (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         !>\file
         !>       Average depth for a Bloom time step (typically a day)
 
@@ -78,7 +78,7 @@ contains
                         ' DEPAVE: INPUT parameters function(x) not ALLOWED'
                 WRITE (*, *) &
                         ' DEPAVE: INPUT parameters function(x) not ALLOWED'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
         ENDIF
 

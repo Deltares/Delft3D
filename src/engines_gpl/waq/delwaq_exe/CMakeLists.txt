@@ -1,13 +1,12 @@
-set(executable_name delwaq2)
+set(executable_name delwaq)
 
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(waq_version_path ${waq_root_path}/resources/version)
-set(rc_version_file ${waq_version_path}/version_number_delwaq2.rc)
+set(rc_version_file ${waq_version_path}/version_number_delwaq.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Set icon file
 set(icon_file ${waq_version_path}/waq_icon.rc)
-
 
 create_target(
         ${executable_name} ${CMAKE_CURRENT_SOURCE_DIR}
@@ -17,7 +16,8 @@ create_target(
 )
 
 # Add dependencies
-set(oss_dependencies delwaq_lib)
+set(oss_dependencies delwaq_lib
+                     waq_logging)
 
 if (UNIX)
     target_link_libraries(${executable_name}
@@ -27,16 +27,13 @@ endif (UNIX)
 
 target_link_libraries(${executable_name} ${oss_dependencies})
 
-
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 if (UNIX)
     target_include_directories(${executable_name} PRIVATE ${version_include_dir})
-
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-
     target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif (UNIX)
 
@@ -49,7 +46,6 @@ if (WIN32)
             "${mpi_library_path}"
             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
-
 
     target_link_libraries(${executable_name}
             "comctl32.lib"
@@ -66,14 +62,13 @@ if (WIN32)
 
     # Set linker options
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
-endif (WIN32)
+    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
+
+    configure_visual_studio_user_file(${executable_name})
+endif(WIN32)
 
 target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/waq)
-if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
-    configure_visual_studio_user_file(${executable_name})
-endif (WIN32)
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delwaq.${platform_extension}  DESTINATION bin)

@@ -58,7 +58,7 @@ contains
         !
         !     Declaration of arguments
         !
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use timers
 
         INTEGER(kind = int_wp) :: NOTOT, NOFLUX, NDMPAR, NOBALT
@@ -95,7 +95,7 @@ contains
                         CALL get_log_unit_number(LUREP)
                         WRITE(LUREP, *) 'ERROR, INTERNAL FLXBAL'
                         WRITE(*, *)     'ERROR, INTERNAL FLXBAL'
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     DO IDMP = 1, NDMPAR
                         BALINT(IBALT, IDMP) = FLXINT(IFLX, IDMP) * ST
