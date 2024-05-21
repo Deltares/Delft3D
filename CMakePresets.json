@@ -42,7 +42,7 @@
     },
     {
       "name": "linux",
-      "hidden": false,
+      "hidden": true,
       "inherits": "default",
       "displayName": "Linux-only configuration",
       "description": "This build is only available on Linux",
@@ -94,6 +94,12 @@
       "inherits": "windows",
       "displayName": "D-WAQ/D-PART IFORT win64 Release",
       "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator"
+    },
+    {
+      "name": "dwaq2",
+      "inherits": "linux",
+      "displayName": "D-WAQ/D-PART IFORT linux",
+      "description": "Configure D-WAQ/D-PART using Ninja generator"
     },
     {
       "name": "dwaves",
