@@ -76,7 +76,7 @@ implicit none
    
       if (allocated(incoming_lat_concentration)) then
          deallocate(incoming_lat_concentration, outgoing_lat_concentration)
-      endif
+      end if
    
 
    end subroutine dealloc_lateraldata
@@ -106,13 +106,13 @@ implicit none
                      ! For now we only use the top layer
                      call getkbotktop(n, kb, kt)
                      k = kt
-                  endif
+                  end if
                   outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
                                                                  dt * bottom_area(n) * constituents(iconst, k)/balat(ilat)
-               endif
-            enddo
-         enddo
-      enddo
+               end if
+            end do
+         end do
+      end do
 
    end subroutine average_concentrations_for_laterals
    
@@ -142,16 +142,16 @@ implicit none
                if (qlat > 0) then
                   if (.not. is_ghost_node(i_cell)) then 
                      lateral_discharge_in(i_lateral,i_cell) = lateral_discharge_in(i_lateral,i_cell) + qlat
-                  endif
+                  end if
                else if (hs(i_cell) > epshu) then
                   qlat = - min(0.5_dp*vol1(i_cell)/dts , -qlat) ! this is required to conserve mass
                   if (.not. is_ghost_node(i_cell)) then
                      lateral_discharge_out(i_lateral,i_cell) = lateral_discharge_out(i_lateral,i_cell) - qlat
-                  endif
-               endif
-            enddo
-         enddo
-      endif
+                  end if
+               end if
+            end do
+         end do
+      end if
    end subroutine get_lateral_discharge
    
    
@@ -177,9 +177,9 @@ implicit none
                ! only multiply transport_load with concentration
                transport_load(i_const,i_cell) = transport_load(i_const,i_cell) + dvoli * discharge_in(i_lateral,i_cell) * incoming_lat_concentration(1,i_const,i_lateral)
                transport_sink(i_const,i_cell) = transport_sink(i_const,i_cell) + dvoli * discharge_out(i_lateral,i_cell)
-            enddo
-         enddo
-      enddo   
+            end do
+         end do
+      end do   
    end subroutine add_lateral_load_and_sink
       
    !> Compute water volume per layer in each lateral
@@ -201,9 +201,9 @@ implicit none
             do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
                lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
                i_layer = i_layer + 1
-            enddo
-         enddo
-      enddo
+            end do
+         end do
+      end do
       
    end subroutine get_lateral_volume_per_layer
 
