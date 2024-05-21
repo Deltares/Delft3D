@@ -35,6 +35,9 @@
         "architecture": {
           "value": "x64"
         }
+      },
+      "environment": {
+        "oneAPI_root": "C:\\Program Files (x86)\\Intel\\oneAPI"
       }
     },
     {
@@ -115,36 +118,45 @@
     {
       "name": "build-base",
       "hidden": true,
-      "configurePreset": "debug"
+      "environment": {
+        "oneAPI_root": "C:\\Program Files (x86)\\Intel\\oneAPI"
+      },
+      "targets": "install"
     },
     {
-      "name": "debug",
-      "displayName": "Build Debug",
+      "name": "build-dwaq",
+      "displayName": "Build D-Waq/D-Part",
       "inherits": "build-base",
       "configurePreset": "dwaq"
     },
     {
-      "name": "release",
-      "displayName": "Build Release",
+      "name": "build-dimr",
+      "displayName": "Build DIMR",
       "inherits": "build-base",
-      "configurePreset": "dwaq"
-    }
-  ],
-  "workflowPresets": [
+      "configurePreset": "dimr"
+    },
     {
-      "name": "default",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "dwaq"
-        },
-        {
-          "type": "build",
-          "name": "release"
-        }
-      ]
+      "name": "build-all",
+      "displayName": "Build All",
+      "inherits": "build-base",
+      "configurePreset": "all"
     }
   ],
+  // "workflowPresets": [
+  //   {
+  //     "name": "default",
+  //     "steps": [
+  //       {
+  //         "type": "configure",
+  //         "name": "dwaq"
+  //       },
+  //       {
+  //         "type": "build",
+  //         "name": "release"
+  //       }
+  //     ]
+  //   }
+  // ],
   "vendor": {
     "www.deltares.nl": {
       "autoFormat": false
