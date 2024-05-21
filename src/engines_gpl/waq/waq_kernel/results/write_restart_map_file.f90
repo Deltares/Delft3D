@@ -31,7 +31,7 @@ module m_write_restart_map_file
 contains
 
 
-    SUBROUTINE write_restart_map_file(file_unit_list, file_name_list, concentration_values, time_clock_unit, &
+    subroutine write_restart_map_file(file_unit_list, file_name_list, concentration_values, time_clock_unit, &
             model_name, substances_names, num_systems, num_segments)
         ! gives a complete system dump
 
@@ -54,25 +54,24 @@ contains
         integer(kind = int_wp) :: file_unit_list(*)
 
         integer(kind = int_wp) :: i, j, k
-
-        integer(kind = int_wp) :: nonan, ierr, ithandl = 0
+        integer(kind = int_wp) :: nan_count, ierr, ithandl = 0
 
         if (timon) call timstrt ("write_restart_map_file", ithandl)
 
         ! check for NaNs
-        nonan = 0
+        nan_count = 0
         do j = 1, num_segments
             do i = 1, num_systems
                 if (concentration_values(i, j) /= concentration_values(i, j)) then
                     concentration_values(i, j) = 0.0
-                    nonan = nonan + 1
+                    nan_count = nan_count + 1
                 endif
             enddo
         enddo
 
-        if (nonan /= 0) then
+        if (nan_count /= 0) then
             write (file_unit_list(19), *) ' Corrected concentrations as written to the restart file:'
-            write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nonan
+            write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nan_count
             write (file_unit_list(19), *) ' Total amount of numbers in the array: ', num_systems * num_segments
             write (file_unit_list(19), *) ' This may indicate that the computation was unstable'
         endif
