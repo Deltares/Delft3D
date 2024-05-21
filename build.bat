@@ -179,7 +179,7 @@ rem =================================
         echo Overriding automatically found ifort version !ifort! with argument !-ifort!
         set ifort=!-ifort!
     ) else if "!ifort!" == "" (
-        echo Error: ifort not found.
+        echo Error: ifort not set. Please install ifort, run it from a prompt with the right enviroment set, or provide the installed version using the -ifort option.
         set ERRORLEVEL=1
         goto :end
     )
@@ -228,7 +228,7 @@ rem =================================
         echo Overriding automatically found VS version !vs! with argument !-vs!
         set vs=!-vs!
     ) else if "!vs!" == "" (
-        echo Error: Visual Studio not found.
+        echo Error: Visual Studio not found. Please install Visual Studio, run it from a prompt with the right enviroment set, or provide the installed version using the -vs option.
         set ERRORLEVEL=1
         goto :end
     )
