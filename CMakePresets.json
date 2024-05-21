@@ -142,6 +142,19 @@
       "configurePreset": "all"
     }
   ],
+  "testPresets": [
+    {
+      "name": "test-base",
+      "hidden": true,
+      "environment": {
+        "oneAPI_root": "C:\\Program Files (x86)\\Intel\\oneAPI"
+      },
+      "description": "For now I did not extend this. D-Waq ctests are in a separate folder, --unit-test dir with presets is not yet supported in cmake 3.29, will be in 3.30 (MDK 21-05-2024)"
+    }
+  ]
+  // ctest -C %build_type% --output-on-failure --output-log testRes.log --output-junit testRes.xml
+  // 
+  // ctest --test-dir build_dwaq -C Debug --output-on-failure
   // "workflowPresets": [
   //   {
   //     "name": "default",
@@ -157,9 +170,4 @@
   //     ]
   //   }
   // ],
-  "vendor": {
-    "www.deltares.nl": {
-      "autoFormat": false
-    }
-  }
 }
