@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_debgrz
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
     use m_waq_precision
     use m_debgrz_computations, &
       only: get_maximum_conversion_coeff, &
@@ -99,7 +99,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         if (.not. process_may_be_run(pmsa, ipoint)) then
             call get_log_unit_number(lunrep)
             write(lunrep,*) 'ERROR: DEB in combination with Protist AND Dynamo/Bloom is not allowed.'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
         call initialize_variables(ip, ipoint, iflux, process_vars, (pmsa(ipoint(1))/=0))
 

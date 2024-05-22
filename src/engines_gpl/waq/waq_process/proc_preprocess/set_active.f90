@@ -42,7 +42,7 @@ contains
         !>/File
         !>                makes list of active processes
 
-        use m_logger, only : terminate_execution, write_log_message
+        use m_logger_helper, only : stop_with_error, write_log_message
         use timers         !< performance timers
         use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
@@ -85,7 +85,7 @@ contains
                         call write_log_message(line)
                         write(line, 2110) no_act, no_act_max
                         call write_log_message(line)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                     actlst(no_act) = name10
                 endif
@@ -108,7 +108,7 @@ contains
                     call write_log_message(line)
                     write(line, 2110) no_act, no_act_max
                     call write_log_message(line)
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 actlst(no_act) = name10
             endif

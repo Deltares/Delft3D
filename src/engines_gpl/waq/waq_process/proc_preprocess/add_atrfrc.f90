@@ -33,7 +33,7 @@ contains
         ! add attributes to processes from file
 
         use data_processing, only : extract_value_from_group
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use m_string_manipulation, only : upper_case
         use processet
         use timers       !   performance timers
@@ -51,18 +51,13 @@ contains
         type(procesprop), pointer :: proc              ! single process
         integer(kind = int_wp) :: nproc             ! number of processes
         integer(kind = int_wp) :: iproc             ! loop counter processes
-        logical :: lfound            ! command line argument found
-        integer(kind = int_wp) :: idummy            ! dummy
-        real(kind = real_wp) :: rdummy            ! dummy
-        character(len = 256) :: patrfil           ! process attributes file
+        character(:), allocatable :: patrfil        ! process attributes file
         integer(kind = int_wp) :: lun_patr          ! unit number
         character(len = 256) :: type              ! sfrac_type from file
-        integer(kind = int_wp) :: ierr              ! ierr
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("add_atrfrc", ithndl)
 
-        call retrieve_command_argument ('-sfrac', 3, lfound, idummy, rdummy, patrfil, ierr)
-        if (lfound) then
+        if (get_command_argument_by_name('-sfrac', patrfil)) then
             open(newunit = lun_patr, file = patrfil)
 
             ! loop over the processes

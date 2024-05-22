@@ -593,8 +593,12 @@ class TestSetRunner(ABC):
                     if attempts < 3:
                         logger.warning(error_message)
                     else:
-                        logger.exception(error_message)
-                        raise TestBenchError(f"Unable to download testcase {repr(e)}")
+                        if hasattr(e, "message"):
+                            error = e.message
+                        else:
+                            error = repr(e)
+                        error_message = f"Unable to download testcase: {error}"
+                        raise TestBenchError(error_message) from e
 
     def __SetupVersionForDownload(self, location: Location, version: Optional[str]) -> None:
         if location.version is None and version is not None:
@@ -608,8 +612,9 @@ class TestSetRunner(ABC):
         location_description: str,
         logger: ILogger,
     ):
-        if self.__settings.only_post:
+        if self.__settings.only_post and location_description == "input of case":
             logger.info("Skipping testcase download (postprocess only)")
+            return
         else:
             logger.debug(
                 f"Downloading {location_description}, {local_path} from {remote_path}"

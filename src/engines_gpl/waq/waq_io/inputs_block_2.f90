@@ -55,7 +55,7 @@ contains
         use m_rdlgri
         use m_rdfnam
         use m_rdccol
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking
@@ -146,7 +146,7 @@ contains
 
         if (notot < 1) then
             write (file_unit, '(/, A)') ' ERROR: No substances have been specified.'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         !        Read timers
@@ -379,7 +379,7 @@ contains
             if (idt <= 0) then
                 write (file_unit, '(/, A ,I8)') 'ERROR, constant time step must be greater than 0:', idt
                 call status%increase_error_count()
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. alone) then
                 if (idt /= idelt) then
@@ -443,7 +443,7 @@ contains
                 if (int_array(ibrk + 1) <= 0) then
                     write (file_unit, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', int_array(ibrk + 1)
                     call status%increase_error_count()
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 if (ibrk == 1) cycle
                 if (int_array(ibrk) <= int_array(ibrk - 2)) then
@@ -532,7 +532,7 @@ contains
         if (ierr2 /= 0) then
             call status%increase_error_count()
         end if
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error(cdummy, iwidth, 2, ierr2, status)
         call status%increase_warning_count_with(iwar2)
         if (timon) call timstop(ithndl)

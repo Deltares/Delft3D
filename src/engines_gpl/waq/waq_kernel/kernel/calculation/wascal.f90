@@ -41,7 +41,7 @@ contains
 
         ! global declarations
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use delwaq_loads, only : wasteloads
         use delwaq_user_wasteloads
         use timers
@@ -89,7 +89,7 @@ contains
             if (ierr_alloc /= 0) then
                 write(lunrep, *) 'ERROR : allocating wasteloads structure'
                 write(*, *) 'ERROR : allocating wasteloads structure'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             do iwst = 1, nowst
                 allocate(wasteloads(iwst)%loads(notot + 1))

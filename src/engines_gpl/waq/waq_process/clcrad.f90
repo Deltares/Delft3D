@@ -37,7 +37,7 @@ contains
         !                active water segments
         !
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
@@ -113,7 +113,7 @@ contains
             WRITE(LUNREP, *) 'Use the correct proc_def!'
             WRITE(*, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(*, *) 'Use the correct proc_def!'
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         END IF
 
         IN1 = INCREM(1)

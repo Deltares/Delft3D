@@ -37,7 +37,7 @@ contains
         !>\file
         !>       detect and activate primary processes (which act directly on substances)
 
-        use m_logger
+        use m_logger_helper
         use processet
         use timers       !   performance timers
 

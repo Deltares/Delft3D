@@ -228,6 +228,14 @@ while ~feof(fid)
                         cval{ncval} = A;
                         kyw=next-1;
                         kywval=NaN;
+                    otherwise
+                        if ~isempty(values)
+                            ncval = ncval+1;
+                            ijcval(ncval,:) = [nl+1 length(values)+1];
+                            cval{ncval} = strtrim(str);
+                            kyw=length(str);
+                            kywval=NaN;
+                        end
                 end
             end
             if kyw>0
@@ -285,9 +293,18 @@ if ncval>0
     cval = cval(1:ncval);
     %
     cols = unique(ijcval(:,2));
-    if length(cols)>1 || cols<size(z,2) || ~isequal(ijcval(:,1)',1:size(z,1))
-        error('String column should be last data column.')
-    else
+    if length(cols)>1 || cols<size(z,2)
+        error('Strings only accepted in last data column.')
+    elseif isequal(ijcval(:,1)',1:size(z,1))
         z = {z(:,1:cols-1) cval};
+    else
+        cval2 = cell(size(z,1),1);
+        cval2(ijcval(:,1)) = cval;
+        for i = 1:size(z,1)
+            if isempty(cval2{i})
+                cval2{i} = num2str(z(i,end));
+            end
+        end
+        z = {z(:,1:cols-1) cval2};
     end
 end

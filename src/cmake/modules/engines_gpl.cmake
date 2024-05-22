@@ -21,8 +21,8 @@ set(waq_memory_module ${waq_module_path}/waq_memory)
 set(waq_io_module ${waq_module_path}/waq_io)
 set(waq_data_module ${waq_module_path}/waq_data)
 set(delwaq_lib_module ${waq_module_path}/delwaq_lib)
-set(delwaq1_module ${waq_module_path}/delwaq1)
-set(delwaq2_module ${waq_module_path}/delwaq2)
+set(waq_logging_module ${waq_module_path}/waq_logging)
+set(delwaq_exe_module ${waq_module_path}/delwaq_exe)
 
 # Waves
 set(wave_module_path "${engines_gpl_path}/wave/packages")

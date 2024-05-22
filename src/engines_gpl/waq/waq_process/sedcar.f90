@@ -63,8 +63,8 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_logger
-        use m_cli_utils, only : retrieve_command_argument
+        use m_logger_helper, only: get_log_unit_number
+        use m_cli_utils, only : get_command_argument_by_name
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
@@ -78,18 +78,14 @@ contains
         REAL(kind = real_wp) :: MINDEP, MINDE2, DEPTH, DEPTH2
 
         LOGICAL, SAVE :: FIRST = .TRUE.
-        LOGICAL :: SW_PSEDMIN
-        INTEGER(kind = int_wp) :: IDUMMY
         REAL(kind = real_wp), SAVE :: PSEDMIN
-        CHARACTER :: CDUMMY
-        INTEGER(kind = int_wp) :: IERR2
         INTEGER(kind = int_wp) :: LUNREP
+        logical :: parsing_error
 
         IF (FIRST) THEN
-            CALL retrieve_command_argument('-psedmin', 2, SW_PSEDMIN, IDUMMY, PSEDMIN, CDUMMY, IERR2)
-            IF (SW_PSEDMIN) THEN
+            IF (get_command_argument_by_name('-psedmin', PSEDMIN, parsing_error)) THEN
                 CALL get_log_unit_number(LUNREP)
-                IF (IERR2 == 0) THEN
+                IF (.not. parsing_error) THEN
                     WRITE(LUNREP, *) ' option -psedmin found, value: ', PSEDMIN
                 ELSE
                     WRITE(LUNREP, *) ' ERROR: option -psedmin found but value not correct: ', PSEDMIN

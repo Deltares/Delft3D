@@ -24,7 +24,7 @@
 module partable
     use m_waq_precision
     use m_valpoi
-    use m_logger
+    use m_logger_helper
     use m_string_utils
 
 

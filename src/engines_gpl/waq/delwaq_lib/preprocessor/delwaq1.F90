@@ -27,30 +27,33 @@ module m_delwaq1
     use m_delwaq1_read_input_data, only : delwaq1_read_input_data
     use m_delwaq1_init
     use m_delwaq1_close_lunfiles
+    use m_cli_utils, only : is_command_arg_specified, store_command_arguments
 
     implicit none
 
 contains
 
+    !> Reads the DELWAQ inputfiles and generates
+    !! a consistent set of binairy intermediate files.
     function delwaq1(argv) result(success)
-        !> Reads the DELWAQ inputfiles and generates
-        !> a consistent set of binairy intermediate files.
 
         use m_delwaq1_allocate_workspace
         !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
-        character(len = *), intent(in), dimension(:) :: argv !< arguments as strings
+        character(len=*), allocatable :: argv(:)
         logical :: success !< if the run was successful
 
         type(error_status) :: status
 
         call status%initialize(0, 0, 0)
 
+        call store_command_arguments(argv)
+
         ! create the lst, delwaq04.wrk, harmonic.wrk, pointers.wrk, and filenaam.wrk files
-        call delwaq1_init(argv)
+        call delwaq1_init()
 
         call delwaq1_startup_screen()
-        call delwaq1_allocate_workspace(argv, status)
+        call delwaq1_allocate_workspace(status)
 
         if (status%ierr == 0) then
             call delwaq1_read_input_data(status)

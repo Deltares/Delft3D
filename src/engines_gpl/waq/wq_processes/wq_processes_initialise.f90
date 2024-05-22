@@ -67,10 +67,10 @@ contains
         use m_algrep
         use m_actrep
         use m_date_time_utils_external, only : write_date_time
-        use m_logger, only : terminate_execution, write_log_message
+        use m_logger_helper, only : stop_with_error, write_log_message
         use m_rd_stt
         use m_getidentification
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use processes_input
         use processes_pointers
         use process_registration
@@ -155,10 +155,6 @@ contains
         integer(kind = int_wp) :: iret             ! return value
         integer(kind = int_wp) :: ierr2            ! error count
 
-        integer(kind = int_wp) :: idummy           ! dummy variable
-        real(kind = real_wp) :: rdummy           ! dummy variable
-        character :: cdummy          ! dummy variable
-
         character(len=20), allocatable :: ainame(:)       ! all item names names in the proc_def
         character(len=20) :: subname         ! substance name
         character(len=100), allocatable :: substdname(:)   ! substance standard name
@@ -189,10 +185,10 @@ contains
         character(len=80)   swinam
         character(len=80)   blmnam
         character(len=80)   line
-        character(len=80)   idstr
+        character(len=80)   identification_text
         character(len=20)   rundat
-        character(len=10)   config
-        logical        lfound, laswi, swi_nopro
+        character(:), allocatable :: config
+        logical :: parsing_error, laswi, swi_nopro
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
         ! information
@@ -266,8 +262,8 @@ contains
         ! open report file
 
         ! Header for lsp
-        call getidentification(idstr)
-        write(lunlsp, '(XA/)') idstr
+        call getidentification(identification_text)
+        write(lunlsp, '(XA/)') identification_text
         call write_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
@@ -360,11 +356,10 @@ contains
         ! old serial definitions
         swi_nopro = .false.
         if (.not. swi_nopro) then
-            call retrieve_command_argument ('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
-            if (lfound) then
+            if (get_command_argument_by_name('-target_serial', target_serial, parsing_error)) then
                 write(line, '(a)') ' found -target_serial command line switch'
                 call write_log_message(line)
-                if (ierr2/= 0) then
+                if (parsing_error) then
                     old_items%target_serial = target_serial
                     write(line, '(a)')' no serial number given, using current'
                     call write_log_message(line)
@@ -381,11 +376,10 @@ contains
 
         ! configuration
 
-        call retrieve_command_argument ('-conf', 3, lfound, idummy, rdummy, config, ierr2)
-        if (lfound) then
+        if (get_command_argument_by_name('-conf', config, parsing_error)) then
             write(line, '(a)') ' found -conf command line switch'
             call write_log_message(line)
-            if (ierr2/= 0) then
+            if (parsing_error) then
                 write(line, '(a)')' no configuration id given, using default'
                 call write_log_message(line)
                 config = ' '
@@ -738,7 +732,7 @@ contains
             write(lunlsp, *) ' not all input available.'
             write(lunlsp, *) ' number off missing variables :', nmis
             write(lunlsp, *) ' simulation impossible.'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         ! set new pointer for dispersion and velocity

@@ -29,10 +29,10 @@
       contains
 
 
-      subroutine harves     ( pmsa   , fl     , ipoint , increm, noseg , & 
-                             noflux , iexpnt , iknmrk , noq1  , noq2  , & 
+      subroutine harves     ( pmsa   , fl     , ipoint , increm, noseg , &
+                             noflux , iexpnt , iknmrk , noq1  , noq2  , &
                              noq3   , noq4   )
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_dhnoseg
       use m_dhnolay
 
@@ -92,7 +92,7 @@
       if ( nosegl*nolay /= nosegw ) then
          write(lunrep,*) ' ERROR: unstructured 3d application'
          write(lunrep,*) ' harvesting module not possible'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       ! check if unit switch global, consbl allows it to be variable
@@ -100,7 +100,7 @@
       if ( increm(5) /= 0 ) then
          write(lunrep,*) ' ERROR: unit switch not a constant'
          write(lunrep,*) ' harvesting module not possible'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       grunitsw   = nint(pmsa(ipoint(5)))

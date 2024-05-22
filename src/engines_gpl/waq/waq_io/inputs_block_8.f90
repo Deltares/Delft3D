@@ -66,7 +66,7 @@ contains
         !!                 file_unit_list(18) = unit intermediate file (initials)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
@@ -282,7 +282,7 @@ contains
         ierr2 = 0
         10 if (ierr2 > 0) call status%increase_error_count()
         if (ierr2 > 0) write (file_unit, 2050)
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         if (old_input) then
             call check_error(cdummy, iwidth, 8, ierr2, status)
         endif

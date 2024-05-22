@@ -1,32 +1,32 @@
 module time_module
    !----- LGPL --------------------------------------------------------------------
-   !                                                                               
-   !  Copyright (C)  Stichting Deltares, 2011-2024.                                
-   !                                                                               
-   !  This library is free software; you can redistribute it and/or                
-   !  modify it under the terms of the GNU Lesser General Public                   
-   !  License as published by the Free Software Foundation version 2.1.            
-   !                                                                               
-   !  This library is distributed in the hope that it will be useful,              
-   !  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-   !  Lesser General Public License for more details.                              
-   !                                                                               
-   !  You should have received a copy of the GNU Lesser General Public             
-   !  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-   !                                                                               
-   !  contact: delft3d.support@deltares.nl                                         
-   !  Stichting Deltares                                                           
-   !  P.O. Box 177                                                                 
-   !  2600 MH Delft, The Netherlands                                               
-   !                                                                               
-   !  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-   !  are registered trademarks of Stichting Deltares, and remain the property of  
-   !  Stichting Deltares. All rights reserved.                                     
-   !                                                                               
+   !
+   !  Copyright (C)  Stichting Deltares, 2011-2024.
+   !
+   !  This library is free software; you can redistribute it and/or
+   !  modify it under the terms of the GNU Lesser General Public
+   !  License as published by the Free Software Foundation version 2.1.
+   !
+   !  This library is distributed in the hope that it will be useful,
+   !  but WITHOUT ANY WARRANTY; without even the implied warranty of
+   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   !  Lesser General Public License for more details.
+   !
+   !  You should have received a copy of the GNU Lesser General Public
+   !  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+   !
+   !  contact: delft3d.support@deltares.nl
+   !  Stichting Deltares
+   !  P.O. Box 177
+   !  2600 MH Delft, The Netherlands
+   !
+   !  All indications and logos of, and references to, "Delft3D" and "Deltares"
+   !  are registered trademarks of Stichting Deltares, and remain the property of
+   !  Stichting Deltares. All rights reserved.
+   !
    !-------------------------------------------------------------------------------
-   !  
-   !  
+   !
+   !
    !!--description-----------------------------------------------------------------
    !
    !    Function: - Various time processing routines
@@ -35,7 +35,7 @@ module time_module
    ! NONE
    !!--declarations----------------------------------------------------------------
    use precision_basics, only : hp
-   use m_logger, only :  write_log_message
+   use m_logger_helper, only :  write_log_message
    implicit none
 
    private
@@ -44,7 +44,7 @@ module time_module
    public :: datetime2sec
    public :: sec2ddhhmmss
    public :: ymd2jul, ymd2modified_jul
-   public :: jul2mjd 
+   public :: jul2mjd
    public :: date2mjd   ! obsolete, use ymd2modified_jul
    public :: mjd2date
    public :: duration_to_string
@@ -247,12 +247,12 @@ module time_module
 
          if (month>=1 .and. month <= 12 .and. day>=1 .and. year>=1) then
             modified_jul_date = julian(year*10000 + month * 100 + day, 0)
-            if (modified_jul_date == -1) return 
-            modified_jul_date = modified_jul_date - offset_modified_jd 
+            if (modified_jul_date == -1) return
+            modified_jul_date = modified_jul_date - offset_modified_jd
          else
             return
          endif
-         success = .true. 
+         success = .true.
       end function ymd2modified_jul_string
 
       !> calculates modified Julian Date base on a integer yyyyddmm
@@ -277,18 +277,18 @@ module time_module
          real(kind=hp), intent(out) :: modified_jul_date !< output modified Julian Date number
          logical                    :: success           !< function result
 
-         integer :: jdn       
-         real(kind=hp) :: jd 
-         
+         integer :: jdn
+         real(kind=hp) :: jd
+
          jdn = CalendarYearMonthDayToJulianDateNumber(year, month, day)
-         ! jdn is an integer value (and the result of an integer computation). 
-         ! To compute the Julian date at YYYYMMDDhhmmss as a real number for a moment 
-         ! after 12:00 noon one must add (hh - 12)/24 + mm/1440 + sec/86400 (real divisions). 
-         ! 
-         ! In this function, only calendar days starting at midnight, are assumed. 
+         ! jdn is an integer value (and the result of an integer computation).
+         ! To compute the Julian date at YYYYMMDDhhmmss as a real number for a moment
+         ! after 12:00 noon one must add (hh - 12)/24 + mm/1440 + sec/86400 (real divisions).
+         !
+         ! In this function, only calendar days starting at midnight, are assumed.
          ! For midnight, exactly 12 hours before noon, one must add (0-12)/24 + 0 + 0 = -0.5
          jd = real(jdn, hp) - real(0.5, hp)
-         
+
          if (jdn == 0) then
             modified_jul_date = 0.0_hp
             success = .false.
@@ -864,7 +864,7 @@ module time_module
       end function datetime2mjd
 
 !---------------------------------------------------------------------------------------------
-! private: convert Julian day to Modified Julian 
+! private: convert Julian day to Modified Julian
 !---------------------------------------------------------------------------------------------
       function jul2mjd(jul,frac) result(days)
          implicit none
@@ -926,15 +926,15 @@ module time_module
          mjd = days
          do while (ntry <= 2)
             jul = mjd + offset_modified_jd
-            dayfrac = mjd - floor(mjd)         
+            dayfrac = mjd - floor(mjd)
             hour = int(dayfrac*24)
             minute = int(mod(dayfrac*1440,60._hp))
-            second = mod(dayfrac*86400,60._hp)            
+            second = mod(dayfrac*86400,60._hp)
             if (nint(second) >= 60) then
                ! add less than 0.5 second to mjd (1/86400 = 1.157E-5) and retry
                mjd = mjd + 0.000005_hp
                ntry = ntry + 1
-            else 
+            else
                exit
             endif
          enddo
@@ -1055,7 +1055,7 @@ module time_module
               ok = (iPart == nParts)
          enddo
       end function parse_time
-      
+
       !> Given datetime string, compute time in seconds from refdat
      subroutine datetimestring_to_seconds(dateandtime,refdat,timsec,stat)
          implicit none
@@ -1063,7 +1063,7 @@ module time_module
          character,         intent(in)  :: dateandtime*(*) !< Input datetime string, format '201201010000', note that seconds are ignored.
          character (len=8), intent(in)  :: refdat          !< reference date
          integer,           intent(out) :: stat
- 
+
 
          double precision              :: timmin
          double precision, intent(out) :: timsec
@@ -1084,7 +1084,7 @@ module time_module
          if (ierr /= 0) goto 999
          read(dateandtime(13:14),'(i2.2)',iostat=ierr) isec
          if (ierr /= 0) goto 999
-         
+
          call seconds_since_refdat(iyear, imonth, iday, ihour, imin, isec, refdat, timsec)
 
          timmin  = timsec/60d0
@@ -1095,7 +1095,7 @@ module time_module
          stat = ierr
          return
      end subroutine datetimestring_to_seconds
-      
+
      !> Given time in seconds from refdat, fill dateandtime string
      !! NOTE: seconds_to_datetimestring and datetimestring_to_seconds are not compatible, because of minutes versus seconds, and different format string.
      subroutine seconds_to_datetimestring(dateandtime,refdat,tim)
@@ -1121,7 +1121,7 @@ module time_module
 
          return
      end subroutine seconds_to_datetimestring
- 
+
       DOUBLE PRECISION FUNCTION JULIAN ( IDATE , ITIME )
 !***********************************************************************
 !
@@ -1188,7 +1188,7 @@ module time_module
       IHOUR  = ITIME/10000
       IMIN   = ITIME/100 - IHOUR*100
       ISEC   = ITIME - IHOUR*10000 - IMIN*100
-      
+
       IF (( IYEAR  .LT. -4713 ) .OR. ( IMONTH .LT.  1 ) .OR. &
           ( IMONTH .GT.    12 ) .OR. ( IDAY   .LT.  1 ) .OR. &
           ( IDAY   .GT. MONLEN(IMONTH) ) .OR. &
@@ -1312,12 +1312,12 @@ module time_module
       ELSE IF (MOD(IYEAR,400) .NE. 0) THEN
 !        IT IS A COMMON YEAR
          MONLEN(2) = 28
-      ELSE 
+      ELSE
 !        IT IS A LEAP YEAR
          MONLEN(2) = 29
       END IF
-         
-      
+
+
       IF (( IYEAR  .LT. -4713 ) .OR. ( IMONTH .LT.  1 ) .OR. &
           ( IMONTH .GT.    12 ) .OR. ( IDAY   .LT.  1 ) .OR. &
           ( IDAY   .GT. MONLEN(IMONTH) ) .OR. &
@@ -1395,7 +1395,7 @@ module time_module
 !***********************************************************************
 !
       delta = 0.0D+00
- 
+
       IF ( JULIAN .LT. 0.0 ) THEN
          IYEAR = -9999
       ELSE IF ( JULIAN < real(firstGregorianDayNr, hp)) then

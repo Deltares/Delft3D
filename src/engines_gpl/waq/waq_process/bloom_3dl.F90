@@ -30,7 +30,7 @@ contains
 
     subroutine init_3dl(noseg, nosegw, nosegl, nolay, ngro, ntyp)
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use bloom_data_3dl
 
         implicit none
@@ -40,7 +40,7 @@ contains
         !     subroutines called
 
         !     get_log_unit_number, get the untit number of the report file
-        !     terminate_execution, stops execution
+        !     stop_with_error, stops execution
 
         !     arguments
         integer(kind = int_wp) :: noseg      ! input, total number of segments
@@ -66,7 +66,7 @@ contains
             write (lunrep, 1000) ierr_alloc
             write (lunrep, 1001) noseg
             write (lunrep, 1002) ntyp
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         effic_3dl = 0.0
 

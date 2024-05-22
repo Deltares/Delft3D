@@ -32,20 +32,20 @@ subroutine ddc_version(lunrep)
 
     ! local variables
 
-    character(len=120)       :: idstr         ! identification string
+    character(len=120)       :: identification_text         ! identification string
     character(len=20)        :: rundat        ! date and time string
     integer                  :: lennam        ! length of a string (dummy here)
 
     ! set version
 
-    call getfullversionstring_delwaq(idstr)
-    k = len_trim(idstr)
+    call getfullversionstring_delwaq(identification_text)
+    k = len_trim(identification_text)
 
     ! write credentials to report file
 
     call write_date_time(rundat)
     write(lunrep, *)
-    write(lunrep, '(a)') idstr(5:k)
+    write(lunrep, '(a)') identification_text(5:k)
     write(lunrep, *)
     write(lunrep,'(2a)') ' execution start: ',rundat
     write(lunrep,*)

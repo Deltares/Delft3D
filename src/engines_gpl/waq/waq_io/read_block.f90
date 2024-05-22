@@ -44,7 +44,7 @@ contains
         use open_data_structure, only : read_time_dependant_data_matrix
         use simulation_input_options, only : process_simulation_input_options
         use matrix_utils, only : compute_matrix, print_matrix
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
@@ -101,7 +101,6 @@ contains
         character(len = 10) :: strng2       ! kind of item
         character(len = 10) :: strng3       ! kind of item
 
-        logical :: lfound       ! Keyword found (or not)
         logical :: lsegfuncheck ! Do check if segmentfunctions are correct
         integer(kind = INT64) :: filesize      ! Reported size of the file
 
@@ -111,8 +110,7 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_block", ithndl)
 
-        call retrieve_command_argument ('-nosegfuncheck', 0, lfound, idummy, rdummy, adummy, ierr2)
-        lsegfuncheck = .not. lfound
+        lsegfuncheck = .not. is_command_arg_specified('-nosegfuncheck')
 
         ! defaults and initialisation
         data_block%subject = SUBJECT_UNKNOWN

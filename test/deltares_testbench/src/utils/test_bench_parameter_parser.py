@@ -97,27 +97,23 @@ class TestBenchParameterParser:
         return return_value
 
     @classmethod
-    def __get_credentials(cls, args: Namespace) -> Credentials:
+    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool) -> Credentials:
         credentials = Credentials()
+        credential_handler = CredentialHandler(credentials)
         credentials.name = "commandline"
 
         is_interactive = cls.__get_argument_value("interactive", args) or False
+        make_interactive = not credential_handler.credential_file_exists() and is_interactive
         credentials.username = (
-            cls.__get_argument_value("username", args, is_interactive) or ""
+            cls.__get_argument_value("username", args, make_interactive) or ""
         )
-        if credentials.username == "":
-            print(
-                'No username on commandline. add "-i True" to enable interactive input'
-            )
 
         credentials.password = (
-            cls.__get_argument_value("password", args, is_interactive, True) or ""
+            cls.__get_argument_value("password", args, make_interactive, True) or ""
         )
-        if credentials.password == "":
-            print(
-                'No password on commandline. add "-i True" to enable interactive input'
-            )
 
+        if not is_active_directory_user:
+            credential_handler.setup_credentials(is_interactive)
         return credentials
 
     @classmethod

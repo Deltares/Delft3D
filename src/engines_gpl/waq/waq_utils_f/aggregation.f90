@@ -24,7 +24,7 @@
 module aggregation
 
     use m_waq_precision
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : get_log_unit_number, stop_with_error
 
     implicit none
 
@@ -154,7 +154,7 @@ contains
         case default
             call get_log_unit_number(lurep)
             write(lurep, 2000) agg_type
-            call terminate_execution(1)
+            call stop_with_error()
 
         end select
 
@@ -168,7 +168,7 @@ contains
 
         ! Aggregates value to coarser grid, extended version with minimum aggregation, and signed accumulation, and
         ! command line option for minimum weight
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
 
         integer(kind = int_wp), intent(in) :: fine_grid_segs                 !! Number of segments on finer grid
         integer(kind = int_wp), intent(in) :: coarse_grid_segs               !! Number of segments on coarser grid
@@ -189,10 +189,8 @@ contains
 
         integer(kind = int_wp) :: seg_fine, seg_coarse, LUREP
         real(kind = real_wp) :: min_weight          ! minimum in weight variable
-        logical :: command_found              ! command line option found
-        integer(kind = int_wp) :: int_arg
-        character :: char_arg
-        integer(kind = int_wp) :: error_status
+        logical :: parsing_error
+
         integer(kind = int_wp) :: file_unit        ! report file
         logical :: lfirst = .true.
         real(kind = real_wp), parameter :: NO_DATA_VALUE = -999.
@@ -200,13 +198,13 @@ contains
 
         if (lfirst) then
             lfirst = .false.
-            call retrieve_command_argument('-vmin', 2, command_found, int_arg, min_weight, char_arg, error_status)
-            if (command_found) then
+
+            if (get_command_argument_by_name('-vmin', min_weight, parsing_error)) then
                 call get_log_unit_number(file_unit)
-                if (error_status /= 0) then
+                if (parsing_error) then
                     write(*, *) 'error commandline option -vmin value could not be interpreted'
                     write(file_unit, *) 'error commandline option -vmin value could not be interpreted'
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 write(*, *) ' commandline option -vmin ', min_weight
                 write(file_unit, *) ' commandline option -vmin ', min_weight
@@ -288,7 +286,7 @@ contains
         ELSE
             CALL get_log_unit_number(LUREP)
             WRITE(LUREP, 2000) agg_type
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
         ! Average
         IF (agg_type == AGGREGATION_TYPE_AVERAGE .OR. agg_type == AGGREGATION_TYPE_WEIGHTED_AVERAGE) THEN
@@ -438,7 +436,7 @@ contains
             ! ERROR , undefined dis-aggregation type
             CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
 
         RETURN
@@ -554,7 +552,7 @@ contains
             ! ERROR , undefined dis-aggregation type
             CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
 
         RETURN

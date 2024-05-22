@@ -223,7 +223,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: disinp
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
@@ -675,7 +675,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
     disch               => gdp%gdr_i_ch%disch
     disinp              => gdp%gdr_i_ch%disinp
     discum              => gdp%gdr_i_ch%discum
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
@@ -1099,7 +1099,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
                  & icx       ,icy       ,i(kfsmn0) ,i(kfsmx0) , &
                  & ch(disint),ch(dismmt),i(itdis)  ,i(kcu)    ,i(kcv)    , &
                  & i(kfs)    ,i(ibuff)  ,i(mnksrc) ,r(alfas)  ,r(xcor)   , &
-                 & r(ycor)   ,r(dp)     ,r(disch)  ,r(voldis) , &
+                 & r(ycor)   ,r(dpd)    ,r(disch)  ,r(voldis) , &
                  & r(disch0) ,r(disch1) ,r(rint)   ,r(rint0)  ,r(rint1)  , &
                  & r(umdis)  ,r(umdis0) ,r(umdis1) ,r(vmdis)  ,r(vmdis0) , &                 
                  & r(vmdis1) ,bubble    ,r(r0)     ,r(thick)  ,r(zwork)  , &
@@ -1864,7 +1864,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
           call timer_start(timer_tur2d, gdp)
           call tur2d(dischy    ,jstart    ,nmmaxj    ,nmmax     ,nmax      , &
                    & mmax      ,kmax      ,icx       ,icy       ,i(kfs)    , &
-                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dp)     , &
+                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dpd)    , &
                    & d(dps)    ,r(s1)     ,r(umean)  ,r(vmean)  ,r(rtu2d0) , &
                    & r(rtu2d1) ,r(rtubnd) ,r(thick)  ,r(guu)    ,r(gvv)    , &
                    & r(guv)    ,r(gvu)    ,r(vicww)  ,r(dicww)  ,r(vicuv)  , &
@@ -1931,7 +1931,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
                       & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                       & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
                       & d(dps)    ,r(gsqs)   ,r(guu)    , &
-                      & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
+                      & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                       & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                       & r(depchg) ,nst       ,r(hu)     , &
                       & r(hv)     ,r(sig)    ,r(u1)     ,r(v1)     , &
@@ -2040,7 +2040,7 @@ subroutine z_trisol_nhfull(dischy    ,solver    ,icreep   ,ithisc    , &
                     &  zmodel    , &
                     &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                     &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                    &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                    &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
                     &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
                     &  r(thick)  ,gdp       )
        endif

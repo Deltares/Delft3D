@@ -9,13 +9,13 @@ from typing import Optional
 
 from minio import Minio
 from minio.commonconfig import Tags
-from minio.credentials.providers import AWSConfigProvider
 from minio.error import MinioException, S3Error
 from tools.minio import config, prompt
 from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
 from src.config.types.path_type import PathType
 from src.utils.minio_rewinder import Rewinder
+from src.utils.handlers.credential_handler import CredentialHandler
 
 HELP_CONFIG = "Path to test bench config file"
 HELP_TEST_CASE_NAME = (
@@ -102,9 +102,7 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
 
     minio_client = Minio(
         endpoint="s3.deltares.nl",
-        credentials=AWSConfigProvider(
-            filename=str(Path("~/.aws/credentials").expanduser()),
-        ),
+        credentials=CredentialHandler().get_credentials(),
     )
     return MinioTool(
         rewinder=Rewinder(minio_client, logger),  # type: ignore

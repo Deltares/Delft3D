@@ -36,7 +36,7 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 #ifdef BRANCH
 #define DESCRIPTION BRANCH
 #else
-#define DESCRIPTION "Processor Water Quality Modelling Engine (1D,2D,3D)\0"
+#define DESCRIPTION "Preprocessor Water Quality Modelling Engine (1D,2D,3D)\0"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
@@ -62,7 +62,7 @@ BEGIN
             VALUE "InternalName", COMPANY_NAME
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "LegalTrademarks", LEGAL_TRADEMARKS
-            VALUE "OriginalFilename", "delwaq2.exe\0"
+            VALUE "OriginalFilename", "delwaq.exe\0"
             VALUE "PrivateBuild", "-\0"
             VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", VERSION_FULL
@@ -117,4 +117,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

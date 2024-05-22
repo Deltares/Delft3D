@@ -40,7 +40,7 @@ contains
 
         ! Checks which processes can be activated
 
-        use m_logger
+        use m_logger_helper
         use waq_attribute_utils, only : evaluate_dimension_match
         use m_array_manipulation, only : is_missing
         use m_waq_data_structure

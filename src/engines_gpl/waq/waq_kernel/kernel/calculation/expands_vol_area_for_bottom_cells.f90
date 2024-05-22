@@ -68,7 +68,7 @@ contains
         !     AREA    REAL    NOQ+NOQ4    IN/OUT  Exchange surfaces
         !     FLOW    REAL    NOQ+NOQ4    IN/OUT  Exchange flows
         !     ALENG   REAL   2,NOQ+NOQ4   IN/OUT  Diffusion lengthes
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_grid_utils_external
         use timers
 
@@ -106,7 +106,7 @@ contains
                 LGET, IERR)
         IF (IERR /= 0) THEN
             write (file_unit_list(19), *) ' ERROR: Variabele SURF not found !'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         ! set surface of the first layer of sediment bed
@@ -160,7 +160,7 @@ contains
                 LGET, IERR)
         IF (IERR /= 0) THEN
             write (file_unit_list(19), *) ' ERROR: Variabele FIXTH not found !'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         do iseg = noseg + 1, noseg + nseg2
             volume(iseg) = Horsurf(iseg) * Thickn(iseg)

@@ -29,12 +29,11 @@
 
       ! global declarations
 
-      use m_logger, only : terminate_execution
-      use m_logger
-      use m_cli_utils, only : retrieve_command_argument
+      use m_logger_helper, only: get_log_unit_number, stop_with_error
+      use m_cli_utils, only : get_command_argument_by_name
       use m_hydmod
       use MessageHandling
-      
+
       implicit none
 
       ! declaration of the arguments
@@ -68,12 +67,12 @@
       real                :: x1,x2,y1,y2     ! coordinates
       integer             :: lunrep          ! report file
       integer             :: ierr_alloc      ! allocation error indicator
-      integer             :: ierr2           ! io errors
-      type(t_file)    :: file_guu        ! guu quickin file
-      type(t_file)    :: file_gvv        ! gvv quickin file
-      logical             :: lfound
-      integer             :: idummy          ! dummy
-      real                :: rdummy          ! dummy
+      type(t_file)        :: file_guu        ! guu quickin file
+      type(t_file)        :: file_gvv        ! gvv quickin file
+      logical             :: parsing_error
+
+      character(:), allocatable :: temp_buffer
+
 
       ! some init
 
@@ -101,10 +100,10 @@
             call mess(LEVEL_INFO, trim(message))
          else
             spherical = .false.
-            write(message, *) 'The grid has Cartesian coordinates.' 
+            write(message, *) 'The grid has Cartesian coordinates.'
             call mess(LEVEL_INFO, trim(message))
          endif
-         do iq = 1, output_hyd%noq1 
+         do iq = 1, output_hyd%noq1
             ip1   = output_hyd%ipoint(1,iq)
             ip2   = output_hyd%ipoint(2,iq)
             if ( ip1 .eq. 0 .or. ip1 .eq. 0) cycle
@@ -114,13 +113,13 @@
             else
                ig1 = ip1
                ig2 = ip2
-            endif   
+            endif
             if ( ip1 .lt. 0 ) then
                displen = 0.5*sqrt(output_hyd%surf(ig2))
             else if ( ip2 .lt. 0 ) then
                displen = 0.5*sqrt(output_hyd%surf(ig2))
             else
-               call distance(spherical, output_hyd%waqgeom%facex(ig1), output_hyd%waqgeom%facey(ig1), & 
+               call distance(spherical, output_hyd%waqgeom%facex(ig1), output_hyd%waqgeom%facey(ig1), &
                             output_hyd%waqgeom%facex(ig2), output_hyd%waqgeom%facey(ig2), ddistance, dearthrad)
                displen = 0.5 * ddistance
             endif
@@ -134,17 +133,17 @@
 
       file_gvv=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
       file_guu=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
-      call retrieve_command_argument ( '-guu'  , 3    , lfound, idummy, rdummy, file_guu%name, ierr2)
-      if ( lfound ) then
-         if ( ierr2.ne. 0 ) then
+      if (get_command_argument_by_name('-guu', temp_buffer, parsing_error)) then
+         file_guu%name = temp_buffer
+         if (parsing_error) then
             file_guu%name = ' '
          endif
       else
          file_guu%name = ' '
       endif
-      call retrieve_command_argument ( '-gvv'  , 3    , lfound, idummy, rdummy, file_gvv%name, ierr2)
-      if ( lfound ) then
-         if ( ierr2.ne. 0 ) then
+      if (get_command_argument_by_name('-gvv', temp_buffer, parsing_error)) then
+         file_gvv%name = temp_buffer
+         if (parsing_error) then
             file_gvv%name = ' '
          endif
       else
@@ -218,7 +217,7 @@
          enddo
       enddo
       deallocate(len1,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call stop_with_error() ; endif
 
       ! length per new segments first direction
 
@@ -244,7 +243,7 @@
          enddo
       enddo
       deallocate(len2,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call stop_with_error() ; endif
 
       ! length for the pointers
 
@@ -277,7 +276,7 @@
          output_hyd%displen(2,iq) = 1.0
       enddo
       deallocate(len1_n,len2_n,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call stop_with_error() ; endif
 
       ! length for boundaries equal to length within the grid
 
@@ -305,11 +304,11 @@
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'input_hyd%nmax:',input_hyd%nmax
       write(lunrep,*) 'input_hyd%mmax:',input_hyd%mmax
-      call terminate_execution(1)
+      call stop_with_error()
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'input_hyd%nosegl',input_hyd%nosegl
-      call terminate_execution(1)
+      call stop_with_error()
   995 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'output_hyd%noq',output_hyd%noq
-      call terminate_execution(1)
+      call stop_with_error()
       end

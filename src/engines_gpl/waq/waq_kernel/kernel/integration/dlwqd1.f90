@@ -57,7 +57,7 @@ contains
         !>                Note the option to have settling substances modelled 'upwind'
         !>                whereas the water velocity is taken centrally.
 
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         use timers
 
         integer(kind = int_wp), intent(in) :: nosys                !< number of transported substances
@@ -123,23 +123,19 @@ contains
         logical       loword                ! bit two  lower order accross bounds
         logical       abound                ! is it a boundary?
 
-        logical, save :: sw_settling   ! if true, settling should be dealt with upwind
-        integer(kind = int_wp), save :: init = 1      ! first call ?
-        character :: cdummy        !
-        integer(kind = int_wp) :: idummy        !
-        real(kind = real_wp) :: rdummy        !
-        integer(kind = int_wp) :: ierr2         !
+      logical   , save :: sw_settling   ! if true, settling should be dealt with upwind
+      integer(kind=int_wp), save  ::init = 1      ! first call ?
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqd1", ithandl)
 
         !         get special option from command line
 
-        if (init == 1) then
-            init = 0
-            call retrieve_command_argument('-settling_backwards', 0, sw_settling, idummy, rdummy, cdummy, ierr2)
-            if (sw_settling) write(file_unit_list, *) ' option -settling_backwards found'
-        endif
+      if ( init == 1 ) then
+         init = 0
+         sw_settling = is_command_arg_specified('-settling_backwards')
+         if ( sw_settling ) write( file_unit_list, * ) ' option -settling_backwards found'
+      endif
 
         !         Initialisation
 

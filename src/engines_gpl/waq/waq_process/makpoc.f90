@@ -31,7 +31,7 @@ contains
     subroutine makpoc (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Derive OOC from IM-fractions and percentage POM in IMx
@@ -103,7 +103,7 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed1 :', FRC1
                     WRITE(LUNREP, *) 'fctr * fcsed1 must be less than 1.00'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 IF (OCPOM * FRC2 < 1.0D0) THEN
@@ -115,7 +115,7 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed2 :', FRC2
                     WRITE(LUNREP, *) 'fctr * fcsed2 must be less than 1.00'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 IF (OCPOM * FRC3 < 1.0D0) THEN
@@ -127,7 +127,7 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed3 :', FRC3
                     WRITE(LUNREP, *) 'fctr * fcsed3 must be less than 1'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 !     Total POC

@@ -91,7 +91,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: cvalu0
     integer(pntrsize)                    , pointer :: cvalv0
     integer(pntrsize)                    , pointer :: dicww
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
@@ -281,7 +281,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     cvalu0              => gdp%gdr_i_ch%cvalu0
     cvalv0              => gdp%gdr_i_ch%cvalv0
     dicww               => gdp%gdr_i_ch%dicww
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
@@ -557,7 +557,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & zmodel    ,ch(namsrc),ch(namcon),namsed    , &
                     & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(irocol) , &
                     & r(xcor)   ,r(ycor)   ,r(xz)     ,r(yz)     ,r(alfas)  , &
-                    & r(dp)     ,r(thick)  ,r(sig)    ,r(sig)    , &
+                    & r(dpd)    ,r(thick)  ,r(sig)    ,r(sig)    , &
                     & d(dps)    ,r(dpu)    ,r(dpv)    ,r(gsqs)   ,wrifou    , &
                     & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
                     & nf        ,nl        ,nostatto  ,nostatgl  ,order_sta , &

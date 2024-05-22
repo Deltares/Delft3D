@@ -85,7 +85,7 @@ case $key in
     if [[ $# -ge 1 ]]
         then
         userspefile="$1" ## using only -eco would result in using the default spe-file in $D3D_HOME/share/delft3d/
-    else 
+    else
         userspefile=none
     fi
     ;;
@@ -143,10 +143,10 @@ if [ "$eco" == "true" ]
           echo "ERROR: default bloom.spe $spefile does not exist"
           echo "ERROR: the optional specified bloom.spe $userspefile does not exist either"
           print_usage_info
-       else  
+       else
           echo "Using default bloom.spe"
-       fi   
-   else  
+       fi
+   else
        echo "Using specified bloom.spe $userspefile"
        spefile=$userspefile
    fi
@@ -160,7 +160,7 @@ if [ "$eco" == "true" ]
 fi
 echo "    D3D_HOME         : $D3D_HOME"
 echo "    Working directory: $workdir"
-echo 
+echo
 
     #
     # Set the directories containing the binaries
@@ -177,20 +177,17 @@ libdir=$D3D_HOME/lib
     # Run
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 
-module load intelmpi/21.2.0 &>/dev/null
-export FI_PROVIDER=tcp
-
 if [ "$eco" == "true" ]
    then
         echo "executing:"
-        echo "$bindir/delwaq1 $configfile -p $procfile -eco $spefile $switches"
-        echo 
+        echo "$bindir/delwaq $configfile -p $procfile -eco $spefile $switches"
+        echo
         $bindir/delwaq1 $configfile -p "$procfile" -eco "$spefile" $switches
     else
         echo "executing:"
-        echo "$bindir/delwaq1 $configfile -p $procfile $switches"
-        echo 
-        $bindir/delwaq1 $configfile -p "$procfile" $switches
+        echo "$bindir/delwaq $configfile -p $procfile $switches"
+        echo
+        $bindir/delwaq $configfile -p "$procfile" $switches
     fi
 
     #
@@ -200,30 +197,10 @@ wait
 if [ $? == 0 ]
   then
     echo ""
-    echo "Delwaq1 did run without errors."
-
-    #
-    # Run delwaq 2
-    #
-    echo "executing:"
-    echo "$bindir/delwaq2 $configfile $switches"
-$bindir/delwaq2 $configfile $switches
-
-    if [ $? -eq 0 ]
-      then
-        echo ""
-        echo "Delwaq2 did run without errors."
-      else
-        echo ""
-        echo "Delwaq2 did not run correctly."
-    fi
+    echo "Delwaq did run without errors."
 else
     echo ""
     echo "Delwaq1 did not run correctly, ending calculation"
 fi
-
-
-
     # Wait until all child processes are finished
 wait
-
