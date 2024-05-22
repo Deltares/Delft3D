@@ -25,12 +25,12 @@ module m_write_nefis_output
 
     implicit none
     private
-    public :: write_map_to_nefis_file
+    public :: write_nefis_map_output
 
 contains
 
 
-    subroutine write_map_to_nefis_file(iout, lchout, itime, moname, noseg, &
+    subroutine write_nefis_map_output(iout, lchout, itime, moname, noseg, &
             notot1, conc1, synam1, notot2, conc2, &
             synam2, iostrt, iostop, iostep, rbuffr, &
             init)
@@ -102,7 +102,7 @@ contains
         character(len = 20), save :: duname(1) = ' '
         character(len = 20), allocatable, save :: syname(:)              ! complete list of names
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("write_map_to_nefis_file", ithandl)
+        if (timon) call timstrt ("write_nefis_map_output", ithandl)
 
         ! some init
         notot = notot1 + notot2
@@ -336,6 +336,6 @@ contains
 
         2000 format ('ERROR writing NEFIS map file errno:', i7)
 
-    end subroutine write_map_to_nefis_file
+    end subroutine write_nefis_map_output
 
 end module m_write_nefis_output
