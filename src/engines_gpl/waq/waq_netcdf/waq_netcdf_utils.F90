@@ -1188,7 +1188,7 @@ contains
 
     end function create_time_variable
 
-    integer function create_variable(nc_id, mesh_name, variable_name, long_name, standard_name, unit, &
+    integer function create_variable(nc_id, mesh_name, delwaq_variable_name, long_name, standard_name, unit, &
             time_dimension_id, segments_num, layers_num, variable_id)
         !! Create a WQ variable in the output file
         !!
