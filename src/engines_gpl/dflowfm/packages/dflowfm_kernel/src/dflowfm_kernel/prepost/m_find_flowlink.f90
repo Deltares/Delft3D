@@ -106,7 +106,8 @@ module m_find_flowlink
       real(dp), dimension(lnx)             :: zs_dummy
       type(kdtree_instance)                :: treeinst
       integer, parameter                   :: n_nearest_kdtree = 100
-      integer, dimension(n_nearest_kdtree) :: link_ids_closest_midpoint
+      integer                              :: n_nearest_kdtree_
+      integer, dimension(:), allocatable   :: link_ids_closest_midpoint
       integer                              :: i_sample
       real(dp)                             :: dist_perp
       
@@ -122,6 +123,9 @@ module m_find_flowlink
          flowlink_midpoints_y(link_id) = (yz(ka) + yz(kb)) / 2.0_dp
       end do
       
+      n_nearest_kdtree_ = min(n_nearest_kdtree, lnx)
+      allocate(link_ids_closest_midpoint(n_nearest_kdtree_), source = 0)
+      
       number_of_points = size(xx)
       do i_point = 1, number_of_points
          
@@ -130,14 +134,18 @@ module m_find_flowlink
          ! To solve this, we query the nearest n points (default 100) and then
          ! do a brute-force search on this (very) small subset
          call find_nearest_sample_kdtree(treeinst, lnx, 2, flowlink_midpoints_x, flowlink_midpoints_y, zs_dummy, &
-                                         xx(i_point), yy(i_point), n_nearest_kdtree, link_ids_closest_midpoint, &
+                                         xx(i_point), yy(i_point), n_nearest_kdtree_, link_ids_closest_midpoint, &
                                          ierror, jsferic, dmiss)
          if (ierror /= 0) then  ! Failed to build a k-d tree
             exit
          end if
+         if (link_ids_closest_midpoint( 1) == 0) then ! Failed to build a k-d tree?
+            ierror = 1
+            exit
+         end if
          
          ! Now loop over the n nearest points to find the one with the shortest perpendicular distance
-         do i_sample = 1, n_nearest_kdtree
+         do i_sample = 1, n_nearest_kdtree_
             link_id = link_ids_closest_midpoint(i_sample)
             call perpendicular_distance_to_flowlink(xx(i_point), yy(i_point), link_id, dist_perp)
             if (dist_perp < distances(i_point)) then
