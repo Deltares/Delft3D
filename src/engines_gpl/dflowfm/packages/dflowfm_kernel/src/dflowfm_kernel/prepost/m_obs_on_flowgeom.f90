@@ -80,11 +80,11 @@ subroutine obs_on_flowgeom(iobstype)
     if (cache_success) then
        ! When necessary, process also the moving observation points (which are not in cache file)
        if ((iobstype == 1 .or. iobstype == 2) .and. nummovobs > 0) then
-          call find_flownodes_for_all_observation_stations(numobs+1, numobs+nummovobs)
+          call find_flownodes_and_links_for_all_observation_stations(numobs+1, numobs+nummovobs)
        end if
     else
        ! No cache, so process all requested observation points.
-       call find_flownodes_for_all_observation_stations(n1, n2)
+       call find_flownodes_and_links_for_all_observation_stations(n1, n2)
     endif
 
     if (loglevel_StdOut == LEVEL_DEBUG) then
@@ -106,7 +106,7 @@ end subroutine obs_on_flowgeom
 !! obs that are defined in *.ini file by xy coordinate, to be snaped to only 1D flow node (Locationtype == 1), use kdtree
 !! obs that are defined in *.ini file by xy coordinate, to be snaped to only 2D flow node (Locationtype == 2), use kdtree
 !! obs that are defined in *.ini file by branchID and chainage, to be snaped to only 1D flow node (Locationtype == 3), do not use kdtree
-subroutine find_flownodes_for_all_observation_stations(nstart, nend)
+subroutine find_flownodes_and_links_for_all_observation_stations(nstart, nend)
    use MessageHandling
    use m_network
    use m_ObservationPoints
@@ -118,6 +118,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    use m_alloc
    use m_flowgeom
    use m_find_flownode, only: find_nearest_flownodes
+   use m_find_flowlink, only: find_nearest_flowlinks
    
    implicit none
    
@@ -126,6 +127,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    integer                           :: i, nodenr, branchIdx, ntotal, nobsini, ierr, jakdtree, jabybranch
    integer, allocatable              :: ixy2obs0(:), ixy2obs1(:), ixy2obs2(:)
    integer, allocatable              :: kobs_tmp0(:), kobs_tmp1(:), kobs_tmp2(:)
+   integer, allocatable              :: lobs_tmp0(:), lobs_tmp1(:), lobs_tmp2(:)
    double precision, allocatable     :: xobs_tmp0(:), xobs_tmp1(:), xobs_tmp2(:)
    double precision, allocatable     :: yobs_tmp0(:), yobs_tmp1(:), yobs_tmp2(:)
    character(len=IdLen), allocatable :: namobs_tmp0(:), namobs_tmp1(:), namobs_tmp2(:)
@@ -143,6 +145,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    call realloc(xobs_tmp0,   ntotal, keepExisting=.false.)
    call realloc(yobs_tmp0,   ntotal, keepExisting=.false.)
    call realloc(kobs_tmp0,   ntotal, keepExisting=.false.)
+   call realloc(lobs_tmp0,   ntotal, keepExisting=.false.)
    call realloc(namobs_tmp0, ntotal, keepExisting=.false.)
 
    nobsini = network%obs%Count
@@ -150,12 +153,14 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    call realloc(xobs_tmp1,   nobsini, keepExisting=.false.)
    call realloc(yobs_tmp1,   nobsini, keepExisting=.false.)
    call realloc(kobs_tmp1,   nobsini, keepExisting=.false.)
+   call realloc(lobs_tmp1,   nobsini, keepExisting=.false.)
    call realloc(namobs_tmp1, nobsini, keepExisting=.false.)
 
    call realloc(ixy2obs2,    nobsini, keepExisting=.false.)
    call realloc(xobs_tmp2,   nobsini, keepExisting=.false.)
    call realloc(yobs_tmp2,   nobsini, keepExisting=.false.)
    call realloc(kobs_tmp2,   nobsini, keepExisting=.false.)
+   call realloc(lobs_tmp2,   nobsini, keepExisting=.false.)
    call realloc(namobs_tmp2, nobsini, keepExisting=.false.)
 
    nloctype1D = 0
@@ -221,46 +226,33 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    jakdtree = 1
    if (nloctypeAll > 0) then
       call find_nearest_flownodes(nloctypeAll, xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), namobs_tmp0(1:nloctypeAll), kobs_tmp0(1:nloctypeAll), jakdtree, 1, INDTP_ALL)
+      call find_nearest_flowlinks(xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), lobs_tmp0(1:nloctypeAll))
       do i = 1, nloctypeAll
          kobs(ixy2obs0(i)) = kobs_tmp0(i)
+         lobs(ixy2obs0(i)) = lobs_tmp0(i)
       end do
    end if
 
    jakdtree = 1
    if (nloctype1D > 0) then
       call find_nearest_flownodes(nloctype1D, xobs_tmp1(1:nloctype1D), yobs_tmp1(1:nloctype1D), namobs_tmp1(1:nloctype1D), kobs_tmp1(1:nloctype1D), jakdtree, 0, INDTP_1D)
+      call find_nearest_flowlinks(xobs_tmp1(1:nloctype1D), yobs_tmp1(1:nloctype1D), lobs_tmp1(1:nloctype1D))
       do i = 1, nloctype1D
          kobs(ixy2obs1(i)) = kobs_tmp1(i)
+         lobs(ixy2obs1(i)) = lobs_tmp1(i)
       end do
    end if
 
    jakdtree = 1
    if (nloctype2D > 0) then
       call find_nearest_flownodes(nloctype2D, xobs_tmp2(1:nloctype2D), yobs_tmp2(1:nloctype2D), namobs_tmp2(1:nloctype2D), kobs_tmp2(1:nloctype2D), jakdtree, 0, INDTP_2D)
+      call find_nearest_flowlinks(xobs_tmp2(1:nloctype2D), yobs_tmp2(1:nloctype2D), lobs_tmp2(1:nloctype2D))
        do i = 1, nloctype2D
          kobs(ixy2obs2(i)) = kobs_tmp2(i)
+         lobs(ixy2obs2(i)) = lobs_tmp2(i)
       end do
    end if
 
-
-   if (allocated(ixy2obs0))    deallocate(ixy2obs0)
-   if (allocated(xobs_tmp0))   deallocate(xobs_tmp0)
-   if (allocated(yobs_tmp0))   deallocate(yobs_tmp0)
-   if (allocated(yobs_tmp0))   deallocate(yobs_tmp0)
-   if (allocated(namobs_tmp0)) deallocate(namobs_tmp0)
-
-   if (allocated(ixy2obs1))    deallocate(ixy2obs1)
-   if (allocated(xobs_tmp1))   deallocate(xobs_tmp1)
-   if (allocated(yobs_tmp1))   deallocate(yobs_tmp1)
-   if (allocated(yobs_tmp1))   deallocate(yobs_tmp1)
-   if (allocated(namobs_tmp1)) deallocate(namobs_tmp1)
-
-   if (allocated(ixy2obs2))    deallocate(ixy2obs2)
-   if (allocated(xobs_tmp2))   deallocate(xobs_tmp2)
-   if (allocated(yobs_tmp2))   deallocate(yobs_tmp2)
-   if (allocated(yobs_tmp2))   deallocate(yobs_tmp2)
-   if (allocated(namobs_tmp2)) deallocate(namobs_tmp2)
-
-end subroutine find_flownodes_for_all_observation_stations
+end subroutine find_flownodes_and_links_for_all_observation_stations
 
 end module m_obs_on_flowgeom
