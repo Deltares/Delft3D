@@ -320,7 +320,7 @@ contains
         !
         if (imflag .or. (ihflag .and. noraai > 0)) then
             if (ibflag == 1) then
-                call fill_sub_areas_balances (notot, nosys, noflux, ndmpar, ndmpq, &
+                call fill_dump_areas_balances(notot, nosys, noflux, ndmpar, ndmpq, &
                         ndmps, ntdmpq, iqdmp, isdmp, ipdmp, &
                         dmpq, amass, dmps, flxdmp, asmass, &
                         flxint)
@@ -705,7 +705,7 @@ contains
         if (timon) call timstop (ithandl)
     end subroutine write_output
 
-    subroutine fill_sub_areas_balances(NOTOT, NOSYS, NOFLUX, NDMPAR, NDMPQ, &
+    subroutine fill_dump_areas_balances(NOTOT, NOSYS, NOFLUX, NDMPAR, NDMPQ, &
             NDMPS, NTDMPQ, IQDMP, ISDMP, IPDMP, &
             DMPQ, MASS, DMPS, FLXDMP, ASMASS, &
             FLXINT)
@@ -745,7 +745,7 @@ contains
                 IQC, IQ, IPQ, ISYS, NSC, &
                 ISC, ISEG, IPS
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("fill_sub_areas_balances", ithandl)
+        if (timon) call timstrt ("fill_dump_areas_balances", ithandl)
 
         !
         !     Loop over the dump area's
@@ -809,7 +809,7 @@ contains
 
         if (timon) call timstop (ithandl)
 
-    END SUBROUTINE fill_sub_areas_balances
+    end subroutine fill_dump_areas_balances
 
     SUBROUTINE FIORAA (OUTVAL, NRVAR, TRRAAI, NORAAI, NOSYS)
 
