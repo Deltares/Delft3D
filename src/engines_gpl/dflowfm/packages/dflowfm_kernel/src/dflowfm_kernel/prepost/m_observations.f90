@@ -85,6 +85,7 @@ implicit none
     double precision, allocatable     :: smxobs(:)      !< maximum waterlevel of observation points
     double precision, allocatable     :: cmxobs(:)      !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
     integer, allocatable              :: kobs(:)        !< node nrs of ACTIVE observation points
+    integer, allocatable              :: lobs(:)        !< flowlink nrs of active observation points
     ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
     character(len=IdLen), allocatable :: namobs(:)      ! names of observation points
     integer, allocatable              :: locTpObs(:)    !< location type of observation points, determining to which flownodes to snap to (0=1d2d, 1=1d, 2=2d, 3=1d defined by branchID+chainage)
@@ -895,6 +896,7 @@ use m_GlobalParameters, only: INDTP_ALL
         call realloc(yobs,   numobs+nummovobs+capacity_)
         call realloc(xyobs,  2*(nummovobs+capacity_))
         call realloc(kobs,   numobs+nummovobs+capacity_)
+        call realloc(lobs,   numobs+nummovobs+capacity_)
         call realloc(namobs, numobs+nummovobs+capacity_)
         call realloc(smxobs, numobs+nummovobs+capacity_)
         call realloc(cmxobs, numobs+nummovobs+capacity_)
@@ -909,6 +911,7 @@ use m_GlobalParameters, only: INDTP_ALL
             xobs(i+1)   = xobs(i)
             yobs(i+1)   = yobs(i)
             kobs(i+1)   = kobs(i)
+            lobs(i+1)   = lobs(i)
             namobs(i+1) = namobs(i)
             smxobs(i+1) = smxobs(i)
             cmxobs(i+1) = cmxobs(i)
@@ -927,6 +930,7 @@ use m_GlobalParameters, only: INDTP_ALL
     yobs(inew)   = y
     namobs(inew) = name_
     kobs(inew)   = -999   ! Cell number is set elsewhere
+    lobs(inew)   = -999   ! Flow link number is set elsewhere
     smxobs(inew) = -999d0 ! max waterlevel
     cmxobs(inew) = -999d0 ! max velocity mag.
     locTpObs(inew) = loctype_
@@ -1045,6 +1049,7 @@ subroutine purgeObservations()
             xobs(k)   = xobs(i)
             yobs(k)   = yobs(i)
             kobs(k)   = kobs(i)
+            lobs(k)   = lobs(i)
             namobs(k) = namobs(i)
             if (i <= numobs) then
                 kk = k
@@ -1065,6 +1070,7 @@ use unstruc_channel_flow, only: network
        deallocate(yobs)
        deallocate(xyobs)
        deallocate(kobs)
+       deallocate(lobs)
        deallocate(namobs)
        deallocate(smxobs)
        deallocate(cmxobs)
@@ -1078,6 +1084,7 @@ use unstruc_channel_flow, only: network
     allocate(yobs(capacity_))
     allocate(xyobs(2*capacity_))
     allocate(kobs(capacity_))
+    allocate(lobs(capacity_))
     allocate(namobs(capacity_))
     allocate(smxobs(capacity_))
     allocate(cmxobs(capacity_))
@@ -1086,6 +1093,7 @@ use unstruc_channel_flow, only: network
 
 
     kobs = -999
+    lobs = -999
 
     numobs = 0
     nummovobs = 0
