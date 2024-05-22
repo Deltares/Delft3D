@@ -54,7 +54,7 @@ contains
         !                           DLWQTK, make values for kenmerk array
         !                           open_waq_files, opens files
         use m_dlwqt1
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use timers
         use delwaq2_data
@@ -401,7 +401,7 @@ contains
             if (othset) then
                 write (file_unit_list(19), *) ' error, new time series processing', &
                         ' wanted for an unsupported item: ', luntxt(is)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         endif
 

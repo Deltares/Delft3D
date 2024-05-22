@@ -180,7 +180,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: df
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
@@ -544,7 +544,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     df                  => gdp%gdr_i_ch%df
     disch               => gdp%gdr_i_ch%disch
     discum              => gdp%gdr_i_ch%discum
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
@@ -1288,7 +1288,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
        icx = nmaxddb
        icy = 1
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
     endif
     !

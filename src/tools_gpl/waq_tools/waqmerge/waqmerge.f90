@@ -23,7 +23,7 @@
 
 program waqmerge
 
-      use m_logger, only : terminate_execution, set_log_unit_number
+      use m_logger_helper, only : stop_with_error, set_log_unit_number
       use io_netcdf
       use m_write_waqgeom
       use m_hydmod
@@ -82,8 +82,8 @@ program waqmerge
          mdu_exist = .false.
          inquire(file = trim(hyd%file_hyd%name),exist = mdu_exist)
          if (.not. mdu_exist) then
-            write(*     ,'(a,a)'), '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
-            call terminate_execution(1)
+            write(*     ,'(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
+            call stop_with_error()
          endif
 
          ! report
@@ -177,7 +177,7 @@ program waqmerge
                domain_hyd%file_bnd%name = domain_hyd%file_lga%name
             else
                write(lunrep,'(a)') ' error: no boundary file found for domain'
-               call terminate_execution(1)
+               call stop_with_error()
             endif
          endif
          if (domain_hyd%file_geo%name .eq. ' ') then
@@ -186,7 +186,7 @@ program waqmerge
                domain_hyd%file_geo%name = domain_hyd%file_cco%name
             else
                write(lunrep,'(a)') ' error: no waqgeom file found for domain'
-               call terminate_execution(1)
+               call stop_with_error()
             endif
          endif
          call read_hyd_init(domain_hyd)
@@ -265,7 +265,7 @@ program waqmerge
                write(lunrep,'(a,i10)') 'Time in domain: ', itime_domain
                write(lunrep,'(a,i10)') 'Time expected:  ', itime
                write(lunrep,'(a,i10)') 'Domain is:      ', i_domain
-               call terminate_execution(1)
+               call stop_with_error()
             endif
             if ( iend_domain .ne. iend ) then
                write(lunrep,'(a)') ' warning end time in domains not equal'

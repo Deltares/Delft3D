@@ -156,7 +156,7 @@ contains
                     IF (IOERR /= 0) THEN
                         WRITE (file_unit_list(19), '(A,I3,A,A)') &
                                 ' ERROR opening file on unit: ', 800 + I, ' filename: ', FINAM
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     ICLEN = LEN(FINAM)
                     DO IC = 1, MIN(ICLEN, 200)
@@ -282,7 +282,7 @@ contains
                     write (file_unit_list(19), '(a,a,/,a,i10)') &
                             ' ERROR reading initial conditions - filename: ', file_name_list(18), &
                             ' Number of substances does not match : ', idummy
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 ! should be nr. of comp. volumes
                 read (file_unit_list(18)) idummy
@@ -290,7 +290,7 @@ contains
                     write (file_unit_list(19), '(a,a,/,a,i10)') &
                             ' ERROR reading initial conditions - filename: ', file_name_list(18), &
                             ' Number of computational volumes does not match : ', idummy
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 do i = 1, notot
                     read (file_unit_list(18)) finam(1:20)
@@ -304,7 +304,7 @@ contains
                         file_name_list(18), &
                         ' Too few data - file contents does not match current ' // &
                                 'model'
-                call terminate_execution(1)
+                call stop_with_error()
             else
                 read  (file_unit_list(18), iostat = ierrio) idummy
                 if (ierrio == 0) then
@@ -313,7 +313,7 @@ contains
                             file_name_list(18), &
                             ' Too many data - file contents does not match ' // &
                                     'current model'
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
             endif
             close (file_unit_list(18))
@@ -396,7 +396,7 @@ contains
                         write (file_unit_list(19), '(a,a)')               & !   not found
                                 ' Error reading initial conditions: ', &
                                 ' horizontal surface area not found! '
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 endif
             endif
@@ -713,7 +713,7 @@ contains
         !         unsuccessful read
         !
         40 WRITE (file_unit_list(19), 2010)
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         !
         !         output formats
         !

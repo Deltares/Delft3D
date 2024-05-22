@@ -7,7 +7,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
                 & gvv       ,guv       ,gvu       ,gsqs      ,gsqd      , &
                 & alfas     ,thick     ,zk        ,namsrc    ,mnksrc    , &
                 & xyzsrc    ,irocol    ,mnbnd     ,nob       ,kcu       , &
-                & kcv       ,kcs       ,dp        ,dps       ,cfurou    , &
+                & kcv       ,kcs       ,dpd       ,dps       ,cfurou    , &
                 & cfvrou    ,ibuff     ,rbuff     ,rbuffz    ,sferic    , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -91,7 +91,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
     real(fp)                                                            :: zbot   !  Description and declaration in zmodel.igs
     real(fp)  , dimension(3, nsrc)                                      :: xyzsrc !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: alfas  !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: gsqd   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: gsqs   !  Description and declaration in esm_alloc_real.f90
@@ -158,7 +158,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
     ! Write group INITBOT
     !
     call wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
-              & nmaxus    ,dp        ,dps       ,rbuff     ,gdp       )
+              & nmaxus    ,dpd       ,dps       ,rbuff     ,gdp       )
     if (error) goto 9999
     !
     ! Write group ROUGHNESS

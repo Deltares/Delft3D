@@ -36,7 +36,7 @@ contains
         !>/File
         !>      replace active proto processes with actual processes
 
-        use m_logger, only : terminate_execution, write_error_message, get_log_unit_number, write_log_message
+        use m_logger_helper, only : stop_with_error, write_error_message, get_log_unit_number, write_log_message
         use m_string_manipulation, only : upper_case
         use m_string_manipulation, only : get_trimmed_length
         use timers         !< performance timers
@@ -102,7 +102,7 @@ contains
                                 if (ierr2 > 0) then
                                     write(line, '(a,i10)') ' ERROR: actrep resize error constants size:', nocon2
                                     call write_log_message(line)
-                                    call terminate_execution(1)
+                                    call stop_with_error()
                                 endif
                                 constants%no_item = nocon2
                                 constants%name(nocon2) = constants%name(ico)

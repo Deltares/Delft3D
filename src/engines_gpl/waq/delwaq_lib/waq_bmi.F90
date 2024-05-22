@@ -169,15 +169,13 @@ contains
         !DEC$ ATTRIBUTES DLLEXPORT::initialize
         use m_actions
         use m_sysi
+        use m_cli_utils, only: store_command_arguments
 
         character(kind = c_char), intent(in) :: c_config_file(MAXSTRLEN)  !< Name of the DELWAQ input file
 
         character(len = strlen(c_config_file)) :: runid_given
         integer(kind = int_wp) :: argc
         integer(kind = int_wp) :: iarg
-
-        ! local
-        logical :: init_successful
 
         write (88, *) 'Initialise ...'
         flush (88)
@@ -199,19 +197,15 @@ contains
         else
             argc = 0
         end if
-        allocate (argv(argc + 2))
-        argv(1) = 'delwaq.dll' ! argument 0 is the executable name on the command line
-        argv(2) = runid_given
+        allocate (argv(argc + 1))
+        argv(1) = runid_given
         do iarg = 1, argc
-            argv(iarg + 2) = argv_tmp(iarg)
+            argv(iarg + 1) = argv_tmp(iarg)
         end do
-        argc = argc + 2
 
-        init_successful = delwaq1(argv)
-
-        if (init_successful) then
+        if (delwaq1(argv)) then
             call delwaq2_global_data_initialize(runid_given)
-            call dlwqmain(ACTION_INITIALISATION, argc, argv, dlwqd)
+            call dlwqmain(ACTION_INITIALISATION, dlwqd)
             call delwaq2_global_data_copy(dlwqd)
             initialize = 0
         else
@@ -233,13 +227,13 @@ contains
 
         character(kind = c_char), intent(out) :: c_version_string(MAXSTRLEN)
         character(len = MAXSTRLEN) :: name
-        character(len = 120) :: idstr
+        character(len = 120) :: identification_text
 
         write (88, *) 'Get_version_string ...'
         flush (88)
 
-        call getidentification(idstr)
-        name = trim(idstr)
+        call getidentification(identification_text)
+        name = trim(identification_text)
         c_version_string = string_to_char_array(trim(name))
     end subroutine get_version_string
 
@@ -334,7 +328,6 @@ contains
         !! May involve one or more internal timesteps
 
         integer(kind = int_wp) :: update_steps, step
-        character(len = 20), dimension(0) :: argv_dummy
 
         update_steps = nint(tupdate - dlwqd%itime) / idt
 
@@ -349,7 +342,7 @@ contains
         call update_from_incoming_data(connection)
 
         do step = 1, update_steps
-            call dlwqmain(ACTION_SINGLESTEP, 0, argv_dummy, dlwqd)
+            call dlwqmain(ACTION_SINGLESTEP, dlwqd)
         end do
         update_until = 0
 
@@ -370,16 +363,14 @@ contains
         !DEC$ ATTRIBUTES DLLEXPORT :: finalize
         use m_actions
 
-        character(len = 20), dimension(0) :: argv_dummy
-
         write (88, *) 'Finalise ...', dlwqd%itime
         flush (88)
 
         write (88, *) 'Finalise ...', dlwqd%itime
         flush (88)
 
-        call dlwqmain(ACTION_SINGLESTEP, 0, argv_dummy, dlwqd)
-        call dlwqmain(ACTION_FINALISATION, 0, argv_dummy, dlwqd)
+        call dlwqmain(ACTION_SINGLESTEP, dlwqd)
+        call dlwqmain(ACTION_FINALISATION, dlwqd)
         call delwaq2_global_data_finalize()
 
         finalize = 0

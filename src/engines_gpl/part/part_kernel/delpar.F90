@@ -325,7 +325,7 @@ contains
       use m_rdfnam
       use m_rdccol
       use m_getdps
-      use m_logger
+      use m_logger_helper
       use m_waq_precision                  ! single/double precision
       use timers
       use fileinfo  , lun=> lunit    ! logical unit numbers for files

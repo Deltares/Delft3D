@@ -57,21 +57,38 @@ contains
         end do
     end function join_strings
 
-    logical function contains_any(whole_string, substring_array)
+    logical function contains_any(whole_string, substring_array, case_sensitive)
         !< Returns true if any of the substrings in <substring_array> is contained in <whole_string>.
         character(*), dimension(:), intent(in) :: substring_array !< Array containing multiple (sub)strings.
-        character(*), intent(in) :: whole_string    !< String to check if any of the substrings in contained inside.
+        character(*), intent(in)               :: whole_string    !< String to check if any of the substrings in contained inside.
+        logical, intent(in), optional :: case_sensitive           !< check case sensitive (true by default)
 
+        character(:), allocatable :: string_to_check
+        character(:), allocatable :: string_to_compare
+        logical :: case_sensitive_
         integer :: i
+
+        contains_any = .false.
+        case_sensitive_ = .true.
+
+        if (present(case_sensitive)) then
+            case_sensitive_ = case_sensitive
+        end if
+
         do i = 1, size(substring_array)
-            if (index(trim(whole_string), trim(substring_array(i))) > 0) then
+            string_to_compare = trim(substring_array(i))
+            string_to_check = trim(whole_string)
+
+            if (.not. case_sensitive_) then
+                string_to_check = str_tolower(string_to_check)
+                string_to_compare = str_tolower(string_to_compare)
+            end if
+
+            if (index(string_to_check, string_to_compare) > 0) then
                 contains_any = .true.
                 return
             end if
         end do
-
-        contains_any = .false.
-
     end function contains_any
 
     logical function contains_only_valid_chars(names_array, valid_characters, logging_unit)

@@ -34,7 +34,7 @@ contains
         !< Logical units     : file_unit = unitnumber output log-file
         !<                     ILUN  = array with input unit nr's stack
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use rd_token
         use timers       !   performance timers
 
@@ -68,7 +68,7 @@ contains
         case (3)               !   fatal
             write (file_unit, 2030) iblock
             write (file_unit, 2040) status%ierr
-            call terminate_execution (1)
+            call stop_with_error()
         end select
 
         ! Second round of dealing with ierr2
@@ -82,7 +82,7 @@ contains
         case (3)               !   fatal
             write (file_unit, 2020) iblock
             write (file_unit, 2040) status%ierr
-            call terminate_execution (1)
+            call stop_with_error()
         end select
 
         if (ierr2 == 2) then          !   end block found check number
@@ -91,13 +91,13 @@ contains
                 write (file_unit, 2020) iblock
                 call status%increase_error_count()
                 write (file_unit, 2040) status%ierr
-                call terminate_execution (1)
+                call stop_with_error()
             endif
         ELSE                              !   error reading
             call status%increase_error_count()
             write (file_unit, 2030) iblock
             write (file_unit, 2040) status%ierr
-            call terminate_execution (1)
+            call stop_with_error()
         endif
 
         ! normal end (can be with error)

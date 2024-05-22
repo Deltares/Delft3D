@@ -43,12 +43,10 @@ dlwqd%set_timer = .true.
 ! dlwqd%islibrary = .true.
 
 ! Initialise both instances
-argc = 0
-argv = ' '
 
 action = ACTION_INITIALISATION
-call dlwqmain(action, argc, argv, dlwqd(1))
-call dlwqmain(action, argc, argv, dlwqd(2))
+call dlwqmain(action, dlwqd(1))
+call dlwqmain(action, dlwqd(2))
 
 ! Set the timestep directly for the second instance
 !dlwqd(2)%in(3) = dlwqd(2)%in(3) / 2
@@ -56,14 +54,14 @@ call dlwqmain(action, argc, argv, dlwqd(2))
 ! Set a few steps
 action = ACTION_SINGLESTEP
 do i = 1, 2000
-   call dlwqmain(action, argc, argv, dlwqd(1))
+   call dlwqmain(action, dlwqd(1))
 
-   call dlwqmain(action, argc, argv, dlwqd(2))
+   call dlwqmain(action, dlwqd(2))
 end do
 
 ! Finish the computation
 action = ACTION_FINALISATION
-call dlwqmain(action, argc, argv, dlwqd(1))
-call dlwqmain(action, argc, argv, dlwqd(2))
+call dlwqmain(action, dlwqd(1))
+call dlwqmain(action, dlwqd(2))
 
 end program delwaq2_two_instances

@@ -42,6 +42,7 @@ include: yum
 %post
     echo "Installing required packages..."
     mkdir -p /opt/tmp \
+        && yum upgrade -y -v \
         && yum -y -v install libgomp libfabric &> /opt/tmp/libgomp.log
     
     # This sets the version in the metadata

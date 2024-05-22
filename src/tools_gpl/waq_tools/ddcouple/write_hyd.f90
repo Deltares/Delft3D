@@ -24,7 +24,7 @@
       subroutine write_hyd(hyd, parallel)
       ! function : write a hydrodynamic description file
 
-      use m_logger
+      use m_logger_helper
       use m_hydmod
       use m_hyd_keys, only: key, nokey     ! keywords in hydfile
       use ddcouple_version_module, only: getfullversionstring_ddcouple

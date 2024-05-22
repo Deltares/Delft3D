@@ -342,7 +342,7 @@ subroutine compute_secundary_state(gdp       )
     integer(pntrsize)                    , pointer :: dis
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
@@ -696,7 +696,7 @@ subroutine compute_secundary_state(gdp       )
     dis                 => gdp%gdr_i_ch%dis
     disch               => gdp%gdr_i_ch%disch
     discum              => gdp%gdr_i_ch%discum
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
@@ -907,13 +907,13 @@ subroutine compute_secundary_state(gdp       )
     icx = nmaxddb
     icy = 1
     call caldps(nmmax     ,nfltyp    ,icx       , &
-                 & icy       ,i(kcs)    ,r(dp)     ,d(dps)    ,gdp       )
+                 & icy       ,i(kcs)    ,r(dpd)    ,d(dps)    ,gdp       )
     !
     call caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
                  & zmodel    , &
                  & i(kcs)    ,i(kcu)    ,i(kcv)    , &
                  & i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                 & r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)    , &
+                 & r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)    , &
                  & d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)     , &
                  & r(thick)  ,gdp       )
     !
@@ -1256,7 +1256,7 @@ subroutine compute_secundary_state(gdp       )
        icx = nmaxddb
        icy = 1
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
     endif
     !

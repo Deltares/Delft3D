@@ -90,7 +90,7 @@ contains
 
         !     Modules called : -
         !
-        use m_logger
+        use m_logger_helper
         USE MOD_CHEMCONST
         USE MOD_ACBW_PHSOLVERS
         USE PHYSICALCONSTS, ONLY : CtoKelvin

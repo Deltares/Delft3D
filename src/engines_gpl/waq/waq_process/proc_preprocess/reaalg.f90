@@ -36,7 +36,7 @@ contains
         !
         !     Read the BLOOM-species database.
         !
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers       !   performance timers
 
         implicit none
@@ -118,62 +118,62 @@ contains
         900 continue
         write(lunrep, 3000)
         write(*, 3000)
-        call terminate_execution(1)
+        call stop_with_error()
         3000 format(' Error reading BLOOM database, number of types')
         901 continue
         write(lunrep, 3001)
         write(*, 3001)
-        call terminate_execution(1)
+        call stop_with_error()
         3001 format(' Error reading BLOOM database, number of coefficients')
         902 continue
         write(lunrep, 3002)
         write(*, 3002)
-        call terminate_execution(1)
+        call stop_with_error()
         3002 format(' Error reading BLOOM database, coefficient names')
         903 continue
         write(lunrep, 3003)
         write(*, 3003)
-        call terminate_execution(1)
+        call stop_with_error()
         3003 format(' Error reading BLOOM database, types and coefficients')
         904 continue
         write(lunrep, 3004)
         write(*, 3004)
-        call terminate_execution(1)
+        call stop_with_error()
         3004 format(' Error reading BLOOM database, no. of output per group')
         905 continue
         write(lunrep, 3005)
         write(*, 3005)
-        call terminate_execution(1)
+        call stop_with_error()
         3005 format(' Error reading BLOOM database, output var. per group')
         906 continue
         write(lunrep, 3006)
         write(*, 3006)
-        call terminate_execution(1)
+        call stop_with_error()
         3006 format(' Error reading BLOOM database, no. of output per type')
         907 continue
         write(lunrep, 3007)
         write(*, 3007)
-        call terminate_execution(1)
+        call stop_with_error()
         3007 format(' Error reading BLOOM database, output var. per type')
         908 continue
         write(lunrep, 3008)
         write(*, 3008)
-        call terminate_execution(1)
+        call stop_with_error()
         3008 format(' Error reading BLOOM database, no. of single processes')
         909 continue
         write(lunrep, 3009)
         write(*, 3009)
-        call terminate_execution(1)
+        call stop_with_error()
         3009 format(' Error reading BLOOM database, single processes')
         910 continue
         write(lunrep, 3010)
         write(*, 3010)
-        call terminate_execution(1)
+        call stop_with_error()
         3010 format(' Error reading BLOOM database, no. of processes per type')
         911 continue
         write(lunrep, 3011)
         write(*, 3011)
-        call terminate_execution(1)
+        call stop_with_error()
         3011 format(' Error reading BLOOM database, processes per type')
         !
     end

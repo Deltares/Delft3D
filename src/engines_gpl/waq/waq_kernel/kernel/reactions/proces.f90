@@ -73,14 +73,13 @@ contains
         !                           PROVEL, calculate new velocities/dispersions
         !                           aggregate_extended, aggrgation of a variable
         !                           get_log_unit_number, get unit number monitor file
-        !                           terminate_execution, stops execution with an error indication
+        !                           stop_with_error, stops execution with an error indication
 
         !     Files               : Monitoring file if needed for messages
 
         use m_dlwqp0
         use m_dlwq14
-        use m_logger, only : terminate_execution
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use aggregation, only : aggregate, aggregate_extended, resample, aggregate_attributes
         use m_dhgvar
         use m_array_manipulation, only : set_array_parameters
@@ -205,12 +204,10 @@ contains
         integer(kind = int_wp) :: perf_function
         integer(kind = int_wp), save :: ifirst = 1
         integer(c_intptr_t), save :: dll_opb     ! open proces library dll handle
-        character(len = 256) :: shared_dll
-        logical :: lfound
-        integer(kind = int_wp) :: idummy
-        real(kind = real_wp) :: rdummy
         integer(kind = int_wp) :: ierror
-        integer(kind = int_wp) :: ierr2
+        character(:), allocatable :: shared_dll
+
+        logical :: parsing_error
         logical :: l_stop
 
 
@@ -239,9 +236,8 @@ contains
 
         if (ifirst == 1) then
             call get_log_unit_number(lunrep)
-            call retrieve_command_argument ('-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
-            if (lfound) then
-                if (ierr2== 0) then
+            if (get_command_argument_by_name('-openpb', shared_dll, parsing_error)) then
+                if (.not. parsing_error) then
                     write(lunrep, *) ' -openpb command line argument found'
                     write(lunrep, *) ' using dll : ', trim(shared_dll)
                 else
@@ -264,7 +260,7 @@ contains
                 write(lunrep, *) 'ERROR : opening process library DLL'
                 write(lunrep, *) 'DLL   : ', trim(shared_dll)
                 write(lunrep, *) 'dll handle: ', dll_opb
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             ifirst = 0
         endif

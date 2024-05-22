@@ -71,7 +71,7 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-        use m_logger
+        use m_logger_helper
         use m_evaluate_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT REAL    (A-H, J-Z)

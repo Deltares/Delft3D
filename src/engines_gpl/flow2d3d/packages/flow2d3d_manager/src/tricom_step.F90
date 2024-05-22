@@ -188,7 +188,6 @@ subroutine tricom_step(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: dis
     integer(pntrsize)                   , pointer :: disch
     integer(pntrsize)                   , pointer :: discom
-    integer(pntrsize)                   , pointer :: dp
     integer(pntrsize)                   , pointer :: dpc
     integer(pntrsize)                   , pointer :: dps
     integer(pntrsize)                   , pointer :: dpu
@@ -479,7 +478,6 @@ subroutine tricom_step(olv_handle, gdp)
     dis                 => gdp%gdr_i_ch%dis
     disch               => gdp%gdr_i_ch%disch
     discom              => gdp%gdr_i_ch%discom
-    dp                  => gdp%gdr_i_ch%dp
     dpc                 => gdp%gdr_i_ch%dpc
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu

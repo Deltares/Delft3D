@@ -41,7 +41,7 @@ subroutine fm_wq_processes_ini_sub()
     use m_flowtimes
     use timers
     use m_string_utils, only : index_in_array
-    use m_logger, only : set_log_unit_number
+    use m_logger_helper, only : set_log_unit_number
     use m_wind, only : jawind, jarain
 
     implicit none
@@ -387,7 +387,7 @@ subroutine fm_wq_processes_ini_proc()
     use timers
     use m_wind, only : jawind, jarain
     use date_time_utils, only : compute_reference_day
-    use m_logger, only : set_log_unit_number
+    use m_logger_helper, only : set_log_unit_number
 
     implicit none
 

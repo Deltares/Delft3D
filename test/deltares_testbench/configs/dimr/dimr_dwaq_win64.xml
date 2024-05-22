@@ -3,9 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns:xi="http://www.w3.org/2001/XInclude"
         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
-    <!--
-    Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
-    -->
+
     <config>
         <localPaths>
             <testCasesDir>./data/cases</testCasesDir>
@@ -13,10 +11,6 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
-            <location name="reference_engines">
-                <credential ref="commandline"/>
-                <root>{server_base_url}/cases</root>
-            </location>
             <location name="reference_results">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
@@ -25,12 +19,12 @@
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
+            <location name="local">
+                <root>./data/engines</root>
+            </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
-            </location>
-            <location name="local">
-                <root>./data/engines</root>
             </location>
         </locations>
     </config>
@@ -38,27 +32,15 @@
     Programs
     -->
     <programs>
-        <!--
-        The order is important. Start with the following programs:
-            command_prompt
-            svn
-            mpi
-        -->
         <program name="command_prompt">
             <path>cmd</path>
             <arguments>
                 <argument>/C</argument>
             </arguments>
         </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
-        </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <path>bin/run_dimr.bat</path>
             <shell ref="command_prompt"/>
-            <location ref="reference_engines" type="reference">
-                <from>win64</from>
-            </location>
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
@@ -76,9 +58,6 @@
 
         <!-- Meant for the test cases where WAQ and PART are combined -->
         <program name="WAQ-PART" logOutputToFile="true"     addSearchPaths="true">
-            <location ref="reference_engines" type="reference">
-                <from>bin/delft3d/x64</from>
-            </location>
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>

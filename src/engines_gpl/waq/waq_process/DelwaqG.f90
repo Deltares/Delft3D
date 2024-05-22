@@ -33,7 +33,7 @@ contains
      subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-     use m_logger, only : write_error_message, get_log_unit_number
+     use m_logger_helper, only : write_error_message, get_log_unit_number
      use m_evaluate_waq_attribute
 
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
@@ -2193,7 +2193,7 @@ contains
       ! Routine to initialise the sediment concentrations from the initial conditions file or from "S1" substances
       !
       subroutine initialise_sedconc
-     
+
       integer(kind=int_wp)  ::ilay, iseg, iseg2d, ip, isys, iflux
       integer(kind=int_wp)  ::ierr, luinit, lumon
       integer(kind=int_wp)  ::timeini, nosysini, nosegini
@@ -2318,7 +2318,7 @@ contains
       end subroutine write_sedconc
 
       subroutine handle_zone_information( thickness, poros )
-      use m_logger
+      use m_logger_helper
 
       real(kind=real_wp), intent(in) ::thickness, poros
 

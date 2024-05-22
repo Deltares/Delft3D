@@ -27,7 +27,7 @@
 
 module m_waq_file
     !! module contains everything for the files
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
 
     implicit none
 
@@ -59,8 +59,8 @@ module m_waq_file
 
     ! data type to define a single file
     type t_file
-        character(len = FILE_NAME_SIZE) :: name                   ! name of file
-        character(len = TEXT_SIZE) :: description            ! description of file
+        character(len=FILE_NAME_SIZE) :: name   ! name of file
+        character(len=TEXT_SIZE) :: description ! description of file
         integer :: unit                ! unit number
         integer :: type                ! file type to be used
         integer :: status              ! status
@@ -103,7 +103,7 @@ contains
                 write(file_unit, *) 'ERROR opening file:', trim(self%name)
                 write(*, *) 'unknown filetype:', self%type
                 write(file_unit, *) 'unknown filetype:', self%type
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (io_error /= 0) then
                 call get_log_unit_number(file_unit)
@@ -111,7 +111,7 @@ contains
                 write(file_unit, *) 'ERROR opening file:', trim(self%name)
                 write(*, *) 'ERROR message: ', trim(message)
                 write(file_unit, *) 'ERROR message: ', trim(message)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             self%status = 1
         endif

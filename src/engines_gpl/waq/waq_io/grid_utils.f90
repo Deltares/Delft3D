@@ -28,7 +28,7 @@ module grid_utils
     use m_error_status
     use timers
     use rd_token
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
 
     implicit none
 
@@ -828,7 +828,7 @@ contains
             call status%increase_error_count()
         end if
 
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         write(file_unit, 2000)
         return
 
@@ -836,7 +836,7 @@ contains
         if (ierr2 > 0) then
             call status%increase_error_count()
         end if
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         write(file_unit, 2001)
 
         return

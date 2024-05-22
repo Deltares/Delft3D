@@ -3,7 +3,7 @@ subroutine incdis(lundia    ,sferic    ,grdang    ,timnow    ,nsrcd     , &
                 & icx       ,icy       ,kfsmin    ,kfsmx0    , &
                 & disint    ,dismmt    ,itdis     ,kcu       ,kcv       , &
                 & kfs       ,iwrk      ,mnksrc    ,alfas     ,xcor      , &
-                & ycor      ,dp        ,disch     ,voldis    , &
+                & ycor      ,dpd       ,disch     ,voldis    , &
                 & disch0    ,disch1    ,rint      ,rint0     ,rint1     , &
                 & umdis     ,umdis0    ,umdis1    ,vmdis     ,vmdis0    , &
                 & vmdis1    ,bubble    ,r0        ,thick     ,relthk    , &
@@ -104,7 +104,7 @@ subroutine incdis(lundia    ,sferic    ,grdang    ,timnow    ,nsrcd     , &
     real(fp)                                                                  :: grdang !  Description and declaration in tricom.igs
     real(fp)                                                                  :: timnow !!  Current timestep (multiples of dt)
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                            :: alfas  !  Description and declaration in esm_alloc_real.f90
-    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                            :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                            :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                            :: xcor   !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                            :: ycor   !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r0     ! Description and declaration in esm_alloc_real.f90
@@ -190,7 +190,7 @@ subroutine incdis(lundia    ,sferic    ,grdang    ,timnow    ,nsrcd     , &
           jsrc = mnksrc(2,i)
           nm = jsrc + ddb + ((isrc+ddb)-1)*icxy
           if (kfs(nm) == 0) then
-             call wetdis(i         ,isrc      ,jsrc      ,dp        ,xcor      , &
+             call wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
                        & ycor      ,kcu       ,kcv       ,kfs       ,iwrk      , &
                        & j         ,nmmaxj    ,icx       ,icy       ,gdp       )
           endif

@@ -33,7 +33,7 @@ contains
         !>/File
         !>      sets processes for requested output
 
-        use m_logger
+        use m_logger_helper
         use timers         !< performance timers
         use processet      !< processet definitions
         use results, only : OutputPointers         !< output definitions

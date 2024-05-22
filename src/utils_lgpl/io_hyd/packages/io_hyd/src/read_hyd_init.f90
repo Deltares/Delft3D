@@ -31,7 +31,7 @@
 
       ! read the time independent data from a hydrodynamics
 
-      use m_logger, only : terminate_execution, get_log_unit_number, terminate_execution
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_hydmod
       use io_netcdf
       use m_read_waqgeom
@@ -162,7 +162,7 @@
       if ( ierr .ne. 0 ) then
          write(*,*) 'ERROR: reading dispersion length file'
          write(lunrep,*) 'ERROR: reading dispersion length file'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       ! read attributes
@@ -191,12 +191,12 @@
       return
   970 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noseg:',hyd%noseg
-      call terminate_execution(1)
+      call stop_with_error()
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%nmax:',hyd%nmax
       write(lunrep,*) 'hyd%mmax:',hyd%mmax
-      call terminate_execution(1)
+      call stop_with_error()
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'hyd%noq:',hyd%noq
-      call terminate_execution(1)
+      call stop_with_error()
       end

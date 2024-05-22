@@ -1,36 +1,36 @@
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine read_src(file_src, nolay, wasteload_coll, wasteload_data, time_in_seconds)
 
       ! read a src file
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
@@ -110,7 +110,7 @@
          write(lunrep,*) ' error reading sources file'
          goto 200
       endif
-          
+
       if ( itype .eq. 1) then
           if (string .eq. 'SECONDS' .or. string .eq. 'seconds') then
               time_in_seconds = .true.
@@ -119,14 +119,14 @@
                  write(lunrep,*) ' expected integer with option time dependent sources'
                  goto 200
               endif
-          else  
+          else
               write(lunrep,*) ' error reading sources file'
               write(lunrep,*) ' string at the beginning of the file should be either ''SECONDS'' or ''seconds'''
               goto 200
           endif
       else if ( itype .eq. 2) then
           iopt_time = int
-      else  
+      else
           write(lunrep,*) ' error reading sources file'
           write(lunrep,*) ' expected integer with option time dependent sources or a ''SECONDS'' or ''seconds'' string'
           goto 200
@@ -287,7 +287,7 @@
 
   200 continue
       if ( ierr .ne. 0 ) then
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       ! time always in seconds
