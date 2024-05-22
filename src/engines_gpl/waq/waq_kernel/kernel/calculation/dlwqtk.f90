@@ -134,7 +134,7 @@ contains
             !        (column 2)
             !
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
+                CALL extract_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
             end do
             !
             !        Change the time-variable kenmerk-array (column 3) such that it

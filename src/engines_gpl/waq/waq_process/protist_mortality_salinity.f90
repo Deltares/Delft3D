@@ -156,7 +156,7 @@ module m_protist_mortality_salinity
         ! locals
         integer(kind=int_wp) :: active_attribute
 
-        call evaluate_waq_attribute(1, segment_attribute, active_attribute)
+        call extract_waq_attribute(1, segment_attribute, active_attribute)
 
         must_calculate_segment = active_attribute == 1
     end function must_calculate_segment

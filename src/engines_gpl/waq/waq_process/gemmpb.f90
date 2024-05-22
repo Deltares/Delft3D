@@ -289,8 +289,8 @@ contains
 
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
             TEMP = PMSA(IP(1))
             BIOMAS_MPB1 = MAX(0.0, PMSA(IP(2)))

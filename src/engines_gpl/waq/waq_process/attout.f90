@@ -68,7 +68,7 @@ contains
             if (idx==0) then
                 attrib = iknmrk(iseg)
             else
-                call evaluate_waq_attribute(idx, iknmrk(iseg), attrib)
+                call extract_waq_attribute(idx, iknmrk(iseg), attrib)
             endif
             ! Store the value
             pmsa(ip(2)) = attrib

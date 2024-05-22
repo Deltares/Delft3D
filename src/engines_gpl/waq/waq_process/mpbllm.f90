@@ -141,8 +141,8 @@ contains
 
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
             RADSURF = PMSA(IP(1))
             RADTOP = PMSA(IP(2))

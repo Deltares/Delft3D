@@ -124,12 +124,12 @@ contains
 
             !        Zoek eerste kenmerk van- en naar-segmenten
             IF (IVAN > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             ELSE
                 IKMRKV = -1
             ENDIF
             IF (INAAR > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
             ELSE
                 IKMRKN = -1
             ENDIF

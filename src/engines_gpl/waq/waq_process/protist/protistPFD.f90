@@ -82,7 +82,7 @@ contains
 
         ! segment loop
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 Rad = PMSA(ipnt(1))  !    irradiation at the segment upper-boundary              (W/m2)

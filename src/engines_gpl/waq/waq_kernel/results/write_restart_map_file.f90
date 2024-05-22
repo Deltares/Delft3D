@@ -86,21 +86,21 @@ contains
             ENDIF
         end do
 
-        WRITE (*, *) ' Invalid name of restart MAP file !'
+        write (*, *) ' Invalid name of restart MAP file !'
         write (*, *) ' Restart file written to restart_temporary.map !'
-        WRITE (file_unit_list(19), *) ' Invalid name of restart MAP file !'
+        write (file_unit_list(19), *) ' Invalid name of restart MAP file !'
         write (file_unit_list(19), *) ' Restart file written to restart_temporary.map !'
         file_name = 'restart_temporary.map'
 
-        20 CALL open_waq_files (file_unit_list(23), file_name, 23, 1, IERR)
-        WRITE (file_unit_list(23)) (model_name(K), K = 1, 4)
-        WRITE (file_unit_list(23))   num_systems, num_segments
-        WRITE (file_unit_list(23)) (substances_names(K), K = 1, num_systems)
-        WRITE (file_unit_list(23)) time_clock_unit, concentration_values
-        CLOSE (file_unit_list(23))
+        20 call open_waq_files (file_unit_list(23), file_name, 23, 1, ierr)
+        write (file_unit_list(23)) (model_name(k), k = 1, 4)
+        write (file_unit_list(23))   num_systems, num_segments
+        write (file_unit_list(23)) (substances_names(k), k = 1, num_systems)
+        write (file_unit_list(23)) time_clock_unit, concentration_values
+        close (file_unit_list(23))
 
         if (timon) call timstop (ithandl)
 
-    END SUBROUTINE write_restart_map_file
+    end subroutine write_restart_map_file
 
 end module m_write_restart_map_file

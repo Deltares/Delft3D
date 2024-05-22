@@ -179,7 +179,7 @@ contains
             !
             !       In all active dry or wet segments
             !
-            CALL evaluate_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
+            CALL extract_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
 
             IF (IKMRK3==1 .OR. IKMRK3==3) THEN
                 !

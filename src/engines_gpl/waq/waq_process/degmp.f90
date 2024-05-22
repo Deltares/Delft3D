@@ -131,7 +131,7 @@ contains
         DO ISEG = 1, NOSEG
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
                     IVERSN = NINT(PMSA(IP10))
                     !

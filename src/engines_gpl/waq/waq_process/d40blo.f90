@@ -486,10 +486,10 @@ contains
         ! 3DL
         IF (.NOT.ACTIVE_EFFT) THEN
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     ISEG_3DL = ISEG
                     ILAY_3DL = (ISEG - 1) / NOSEGL_3DL + 1
                     EXTTOT = PMSA(IP2)
@@ -590,9 +590,9 @@ contains
 
         IFLUX = 0
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1 .OR. IKMRK1==3) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 !
                 ! 3DL
                 IF (.NOT.ACTIVE_EFFT) THEN

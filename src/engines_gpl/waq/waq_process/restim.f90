@@ -119,7 +119,7 @@ contains
         DO ISEG = 1, NOSEG
 
             !........Niet-actieve segmenten afhandelen
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK)
             IF (IKMRK == 0) THEN
                 PMSA(IP4) = -999.999
                 GOTO 100

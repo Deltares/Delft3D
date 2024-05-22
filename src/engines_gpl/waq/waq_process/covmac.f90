@@ -96,7 +96,7 @@ contains
             IPNT(21) = IPOINT(21)
             DO ISEG = 1, NOSEG
                 PMSA(IPNT(21)) = -1
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     PMSA(IPNT(21)) = ISEG
                 ENDIF
@@ -134,10 +134,10 @@ contains
         !
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             IF (IKMRK1==1) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
 
                     !           Calculation of fcover for top layer only

@@ -589,8 +589,8 @@ contains
 
                 ! Process first attribute
                 ! 0 = inactive , 1 = active , 2 = GEM bottom
-                CALL evaluate_waq_attribute(1, attribute_array(base_segment, 1, 1), attr1_base_grid)
-                CALL evaluate_waq_attribute(1, attribute_array(coarser_segment, 1, grid_index), attr1_coarser_grid)
+                CALL extract_waq_attribute(1, attribute_array(base_segment, 1, 1), attr1_base_grid)
+                CALL extract_waq_attribute(1, attribute_array(coarser_segment, 1, grid_index), attr1_coarser_grid)
                 IF (attr1_base_grid > 0) THEN
                     attr1_coarser_grid = attr1_base_grid
                 ENDIF
@@ -600,8 +600,8 @@ contains
                 !             2 = middle segment
                 !             3 = bottom
 
-                CALL evaluate_waq_attribute(2, attribute_array(base_segment, 1, 1), attr2_base_grid)
-                CALL evaluate_waq_attribute(2, attribute_array(coarser_segment, 1, grid_index), attr2_coarser_grid)
+                CALL extract_waq_attribute(2, attribute_array(base_segment, 1, 1), attr2_base_grid)
+                CALL extract_waq_attribute(2, attribute_array(coarser_segment, 1, grid_index), attr2_coarser_grid)
 
                 SELECT CASE (attr2_base_grid)
                 CASE (0)

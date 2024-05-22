@@ -1044,13 +1044,13 @@ contains
 
     end function write_time
 
-    integer function write_3d_variable(nc_id, variable_id, record_index, values)
+    integer function write_3d_variable(nc_id, variable_id, record_index, real_data_3d)
         !! Write a 3D variable to the output NetCDF file
         !! Returns nf90_noerr if all okay, otherwise an error code
         integer, intent(in) :: nc_id      !! ID of the output NetCDF file
         integer, intent(in) :: variable_id         !! ID of the WQ variable in the output file
         integer, intent(in) :: record_index       !! Index of the record in the output file
-        real, dimension(:, :), intent(in) :: values     !! Array of values
+        real, dimension(:, :), intent(in) :: real_data_3d     !! Array of values
 
         integer :: ierror
         integer, dimension(3) :: start
@@ -1059,19 +1059,19 @@ contains
         write_3d_variable = nf90_noerr
 
         start = (/1, 1, record_index /)
-        count = (/ size(values, 1), size(values, 2), 1 /)
-        ierror = nf90_put_var(nc_id, variable_id, values, start = start, count = count)
+        count = (/ size(real_data_3d, 1), size(real_data_3d, 2), 1 /)
+        ierror = nf90_put_var(nc_id, variable_id, real_data_3d, start = start, count = count)
         if (ierror /= nf90_noerr) then
             write_3d_variable = ierror
             return
         endif
     end function write_3d_variable
 
-    integer function write_2d_variable(nc_id, variable_id, record_index, values)
+    integer function write_2d_variable(nc_id, variable_id, record_index, real_data_2d)
         integer, intent(in) :: nc_id
         integer, intent(in) :: variable_id
         integer, intent(in) :: record_index
-        real, dimension(:), intent(in) :: values
+        real, dimension(:), intent(in) :: real_data_2d
 
         integer :: ierror
         integer, dimension(2) :: start
@@ -1080,8 +1080,8 @@ contains
         write_2d_variable = nf90_noerr
 
         start = (/1, record_index /)
-        count = (/ size(values), 1 /)
-        ierror = nf90_put_var(nc_id, variable_id, values, start = start, count = count)
+        count = (/ size(real_data_2d), 1 /)
+        ierror = nf90_put_var(nc_id, variable_id, real_data_2d, start = start, count = count)
         if (ierror /= nf90_noerr) then
             write_2d_variable = ierror
             return
@@ -1201,7 +1201,7 @@ contains
 
         integer, intent(in) :: nc_id              !! ID of the output NetCDF file
         character(len = *), intent(in) :: mesh_name !! Name of the mesh
-        character(len = *), intent(in) :: variable_name    !! DELWAQ name of the WQ variable
+        character(len = *), intent(in) :: delwaq_variable_name    !! DELWAQ name of the WQ variable
         character(len = *), intent(in) :: long_name  !! Long descriptive name of the WQ variable
         character(len = *), intent(in) :: standard_name
         !! Standard name according to CF convention (or identical to wqname)
@@ -1235,8 +1235,8 @@ contains
         else
             k = k - 1
         endif
-        write(name, '(a,a,a)') mesh_name(1:k), '_', trim(variable_name)
-        write(name2d, '(a,a,a)') mesh_name(1:k), '_2d_', trim(variable_name)
+        write(name, '(a,a,a)') mesh_name(1:k), '_', trim(delwaq_variable_name)
+        write(name2d, '(a,a,a)') mesh_name(1:k), '_2d_', trim(delwaq_variable_name)
 
         do i = 1, len_trim(name)
             if (name(i:i) == ' ') then
@@ -1325,7 +1325,7 @@ contains
             endif
         enddo
 
-        if (lowercase(variable_name) /= 'volume') then
+        if (lowercase(delwaq_variable_name) /= 'volume') then
             write(name, '(a,a,a)') 'volume: ', mesh_name(1:k), '_volume'
             ierror = nf90_put_att(nc_id, variable_id, "cell_measures", name)
             if (ierror /= 0) then
@@ -1375,19 +1375,19 @@ contains
         endif
 
         if (layers_num /= dlwqnc_type2d .and. layers_num /= dlwqnc_type1d) then
-            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", variable_name)
+            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", delwaq_variable_name)
             if (ierror /= 0) then
                 create_variable = ierror
                 return
             endif
         else if (layers_num == dlwqnc_type2d) then
-            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", trim(variable_name) // "_avg")
+            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", trim(delwaq_variable_name) // "_avg")
             if (ierror /= 0) then
                 create_variable = ierror
                 return
             endif
         else
-            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", trim(variable_name) // "_1d")
+            ierror = nf90_put_att(nc_id, variable_id, "delwaq_name", trim(delwaq_variable_name) // "_1d")
             if (ierror /= 0) then
                 create_variable = ierror
                 return

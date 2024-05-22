@@ -177,7 +177,7 @@ contains
 
         ! segment loop
         segmentLoop : do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 Temp = PMSA(ipnt(3))  !    temperature                                            (C)

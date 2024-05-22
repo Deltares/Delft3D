@@ -442,7 +442,7 @@ contains
                 ikmerge(iknm1) = 1
                 iknmrk = 10**(iknm1 - 1)
                 do iseg = 1, noseg
-                    call evaluate_waq_attribute(iknm2, iread(iseg), ivalk)
+                    call extract_waq_attribute(iknm2, iread(iseg), ivalk)
                     iamerge(iseg) = iamerge(iseg) + iknmrk * ivalk
                 enddo
             end do

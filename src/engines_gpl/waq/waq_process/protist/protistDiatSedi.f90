@@ -131,9 +131,9 @@ contains
         ! segment loop
         do iseg = 1, noseg
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     ! species independent items
                     Tau = PMSA(ipnt(5))  !    total bottom shear stress                              (N/m2)
@@ -248,8 +248,8 @@ contains
 
             if (i_origin > 0 .and. i_dest > 0) then
                 ! find first index of the origin and destination segment
-                call evaluate_waq_attribute(1, iknmrk(i_origin), ikmrkv)
-                call evaluate_waq_attribute(1, iknmrk(i_dest), ikmrkn)
+                call extract_waq_attribute(1, iknmrk(i_origin), ikmrkv)
+                call extract_waq_attribute(1, iknmrk(i_dest), ikmrkn)
                 if (ikmrkv==1 .and. ikmrkn==1) then
                     ! water-water exchange
                     ! convert value from m/d to m/s

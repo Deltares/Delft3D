@@ -101,7 +101,7 @@ contains
 
         do iseg = 1, noseg
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 c1 = pmsa(ipnt(1))

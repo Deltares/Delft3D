@@ -92,9 +92,9 @@ contains
         ipnt(1:nitem) = ipoint(1:nitem)
 
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if (ikmrk2<=4) then   ! surface water
 
                     ! input independentt of fractions
