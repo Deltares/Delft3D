@@ -71,8 +71,8 @@
  use m_sferic, only : default_sferic
  use m_1d2d_fixedweirs, only : default_1d2d_fixedweirs
  use m_lateral, only : default_lateral
+ use m_sediment, only : deallocgrains, default_sediment
  use fm_statistical_output
- 
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
@@ -148,6 +148,10 @@
 
 
     call default_nearfieldData()
+    
+    call reset_sedtra()
+    call deallocgrains()
+    call default_sediment()
 
     !Reset samples:
     ns = 0

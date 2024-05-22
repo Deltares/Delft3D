@@ -1123,19 +1123,22 @@ module m_oned_functions
    
    !> Update total net inflow of all laterals for each 1d node with given computational time step.
    subroutine updateTotalInflowLat(dts)
-   use m_flow, only: vTotLat, qCurLat
+   use m_flow, only: vTotLat, qCurLat, kmx
    use m_flowgeom, only: ndx2d, ndxi
    use m_lateral, only: qqlat
    implicit none
    double precision, intent(in) :: dts ! current computational time step
-   integer                      :: n
+   integer                      :: n, nlayer, num_layers
 
    qCurLat = 0d0
+   num_layers = max(1,kmx)
    ! Don't reset vTotLat
    if (allocated(qqlat)) then
       do n = ndx2d+1, ndxi ! all 1d nodes
-         qCurLat(n) = qCurLat(n) + qqlat(n)
-         vTotLat(n) = vTotLat(n) + qqlat(n)*dts
+         do nlayer = 1, num_layers !loop on layers
+            qCurLat(n) = qCurLat(n) + qqlat(nlayer, n)
+            vTotLat(n) = vTotLat(n) + qqlat(nlayer, n)*dts
+         end do
       end do
    else
       return

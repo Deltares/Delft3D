@@ -9648,7 +9648,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c30_mortality_salinity" ref="dwaq_default">
-        <path version="2024-02-22T15:50:00">e03_waq/f12_protist/c30_mortality_salinity</path>
+        <path version="2024-05-13T15:50:00">e03_waq/f12_protist/c30_mortality_salinity</path>
         <checks>
             <file name="dwaq/mortality_protist_salinity.lsp" type="NUMBERTEXT">
                    <skipline> Deltares, DELWAQ Version</skipline>

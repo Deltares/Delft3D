@@ -23,7 +23,7 @@
 
 module m_outmnc
     use m_waq_precision
-    use m_srstop
+    use m_logger, only : terminate_execution
     use m_universally_unique_id_generator
 
 contains
@@ -748,7 +748,7 @@ contains
         write (lunut, 2610) trim(nf90_strerror(inc_error))
         write (*, 2542)
         write (lunut, 2542)
-        call srstop (1)
+        call terminate_execution (1)
 
         900  continue
         if (timon) call timstop (ithandl)

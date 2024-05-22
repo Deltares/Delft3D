@@ -31,7 +31,7 @@ contains
     subroutine tmode  (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_write_error_message
+        use m_logger
 
         !>\file
         !>       Defnines meaning of two modelled statevars ModTemp and NatTemp

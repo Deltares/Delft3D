@@ -39,8 +39,8 @@ contains
         !! Reads block 7 of input, process parameters
 
         use error_handling, only : check_error
+        use m_logger, only : terminate_execution
         use m_string_utils, only : index_in_array
-        use m_srstop
         use m_open_waq_files
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
@@ -142,15 +142,15 @@ contains
                     inovec = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
                     if (inovec > 0) then
                         novec = nint(dlwqdata%values(inovec, 1, 1))
-                        write(lunut, 2240)
-                        write(lunut, 2250) novec
+                        write(file_unit, 2240)
+                        write(file_unit, 2250) novec
                     endif
                     ch20 = 'NOTHREADS'
                     inothr = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
                     if (inothr > 0) then
                         nothrd = nint(dlwqdata%values(inothr, 1, 1))
-                        write(lunut, 2310)
-                        write(lunut, 2320) nothrd
+                        write(file_unit, 2310)
+                        write(file_unit, 2320) nothrd
                         if (nothrd > 0) call omp_set_num_threads(nothrd)
                         nothrd = omp_get_max_threads()
                     endif
@@ -170,7 +170,7 @@ contains
                 ! unrecognised keyword
 
                 if (ctoken(1:1) /= '#') then
-                    write (lunut, 2040) trim(ctoken)
+                    write (file_unit, 2040) trim(ctoken)
                     call status%increase_error_count()
                     goto 30
                 else
@@ -184,16 +184,16 @@ contains
         if (.not. alone) then              ! Delwaq runs with Delpar
             if (lsettl .or. layt > 1) then
                 if (taupart) then
-                    write (lunut, 2330)
+                    write (file_unit, 2330)
                 else
-                    write (lunut, 2340)
+                    write (file_unit, 2340)
                     call status%increase_warning_count()
                 endif
                 if (layt > 1) then
                     if (vdfpart) then
-                        write (lunut, 2350)
+                        write (file_unit, 2350)
                     else
-                        write (lunut, 2360)
+                        write (file_unit, 2360)
                         call status%increase_warning_count()
                     endif
                 endif
@@ -206,10 +206,10 @@ contains
         nofun = functions%no_item
         nosfun = segfuncs%no_item
 
-        write (lunut, 2050) constants%no_item
-        write (lunut, 2060) parameters%no_item
-        write (lunut, 2070) functions%no_item
-        write (lunut, 2080) segfuncs%no_item
+        write (file_unit, 2050) constants%no_item
+        write (file_unit, 2060) parameters%no_item
+        write (file_unit, 2070) functions%no_item
+        write (file_unit, 2080) segfuncs%no_item
         if (constants%no_item  > 0) write (file_unit_list(2)) (constants%name(i), i = 1, constants%no_item)
         if (parameters%no_item > 0) write (file_unit_list(2)) (parameters%name(i), i = 1, parameters%no_item)
         if (functions%no_item  > 0) write (file_unit_list(2)) (functions%name(i), i = 1, functions%no_item)
@@ -239,7 +239,7 @@ contains
                 special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
                 if (special <= 0) then
                     call status%increase_error_count()
-                    write(lunut, 2410)
+                    write(file_unit, 2410)
                 endif
             endif
         endif
@@ -251,7 +251,7 @@ contains
                 special = index_in_array(ch20, segfuncs%name(:segfuncs%no_item))
                 if (special <= 0) then
                     call status%increase_error_count()
-                    write(lunut, 2420)
+                    write(file_unit, 2420)
                 endif
             endif
         endif
@@ -265,7 +265,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) call status%increase_error_count()
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error(ctoken, iwidth, 7, ierr2, status)
         if (timon) call timstop(ithndl)
 

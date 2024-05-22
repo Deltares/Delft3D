@@ -236,7 +236,7 @@ class TestSetRunner(ABC):
                 logger.test_Result(TestResultType.Passed)
 
         except Exception as exception:
-            logger.error(str(exception))
+            logger.exception(f"Could not run test case: {repr(exception)}")
             test_result = self.create_error_result(config, run_data)
 
             if not skip_testcase:
@@ -309,8 +309,8 @@ class TestSetRunner(ABC):
 
     def __log_failed_test(self, exception: BaseException):
         self.finished_tests += 1
-        self.__logger.error(
-            f"Error running ({self.finished_tests}/{len(self.__settings.configs)}): {str(exception)}"
+        self.__logger.exception(
+            f"Error running ({self.finished_tests}/{len(self.__settings.configs)}): {repr(exception)}"
         )
 
     def __check_for_skipping(self, config: TestCaseConfig):
@@ -593,8 +593,8 @@ class TestSetRunner(ABC):
                     if attempts < 3:
                         logger.warning(error_message)
                     else:
-                        logger.error(error_message)
-                        raise TestBenchError("Unable to download testcase " + str(e))
+                        logger.exception(error_message)
+                        raise TestBenchError(f"Unable to download testcase {repr(e)}")
 
     def __SetupVersionForDownload(self, location: Location, version: Optional[str]) -> None:
         if location.version is None and version is not None:
@@ -627,7 +627,7 @@ class TestSetRunner(ABC):
             )
         except Exception as exception:
             # We need always case input data
-            logger.error(f"Could not download from {remote_path}")
+            logger.exception(f"Could not download from {remote_path}")
             raise exception
 
     def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger):

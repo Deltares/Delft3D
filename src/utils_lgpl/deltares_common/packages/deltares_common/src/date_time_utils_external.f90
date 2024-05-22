@@ -20,34 +20,28 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_file_unit_number
+module m_date_time_utils_external
 
-      implicit none
+    implicit none
+    private
+    public write_date_time
 
-      contains
+contains
 
-      subroutine create_new_file_unit_number(start_index, file_unit_number)
-!     function : sets next free unit number, starting at start_index till start_index + 98
+    !> Current date and time containing a combination of DATE and TIME format: 'yyyy/mm/dd hh:mm:ss '
+    !!
+    subroutine write_date_time(file_id)
+        
 
-!     declaration of the arguments
+        character(len = 20) :: file_id
+        character(len = 8) :: date
+        character(len = 10) :: time
+        character(len = 5) :: zone
+        integer :: values(8)
 
-      integer, intent(in)    :: start_index        !< start looking from here
-      integer, intent(out)   :: file_unit_number   !< next free unit number
+        call date_and_time(date, time, zone, values)
+        write (file_id, 1000) values(1), values(2), values(3), values(5), values(6), values(7)
+        1000 format (i4.4, '/', i2.2, '/', i2.2, ' ', i2.2, ':', i2.2, ':', i2.2)
 
-!     local declaration
-
-      integer :: ilun   !< loop counter
-      logical :: lopen  !< opened indicator
-
-      file_unit_number = 0
-      do ilun = start_index, start_index + 100000
-         inquire(ilun,opened=lopen)
-         if ( .not. lopen ) then
-            file_unit_number = ilun
-            exit
-         endif
-      enddo
-
-      return
-      end
-      end module m_file_unit_number
+    end subroutine write_date_time
+end module m_date_time_utils_external

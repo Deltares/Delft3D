@@ -2153,11 +2153,6 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                         <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                 </parameters>
                         </file>
-                        <file name="trk-cont-release02.dat" type="NEFIS">
-                                <parameters name="trk-series">
-                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                                </parameters>
-                        </file>
                 </checks>
         </testCase>
         <testCase name="e05_f05_c04_inst-release00" ref="part_default">

@@ -323,7 +323,7 @@ contains
         !! from the user. It also optionally checks the existence of a file with a specified extension
 
         USE ISO_FORTRAN_ENV, ONLY : INPUT_UNIT, OUTPUT_UNIT
-        use m_srstop, only : SRSTOP
+        use m_logger, only : terminate_execution
 
         character(len = *), intent(out) :: file_name        !! file name input file
         character(len = *), intent(in) :: extension_check   !! if not empty then check existance of file with this
@@ -397,7 +397,7 @@ contains
             ! If empty string then stop
             IF (file_name == ' ') THEN
                 WRITE (OUTPUT_UNIT, *) ' ERROR no filename entered!'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
             ! check existence of output file
             IF (extension_check /= ' ') THEN
@@ -411,7 +411,7 @@ contains
                     WRITE (OUTPUT_UNIT, *) ' Do you want it to be replaced ? '
                     WRITE (OUTPUT_UNIT, *) ' Answer yes or no ? '
                     READ  (INPUT_UNIT, '(A3)') user_answer
-                    IF (user_answer(1:1) == 'N' .OR.  user_answer(1:1) == 'n') CALL SRSTOP (1)
+                    IF (user_answer(1:1) == 'N' .OR.  user_answer(1:1) == 'n') CALL terminate_execution (1)
                 ENDIF
             ENDIF
 

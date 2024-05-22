@@ -27,12 +27,14 @@
 !
 !-------------------------------------------------------------------------------
 Module fm_manhole_losses
+   use stdlib_kinds, only: dp
+
    implicit none
    public calculate_manhole_losses, init_manhole_losses
    private
       
-   double precision, allocatable, dimension(:,:) :: k_bend
-   double precision, allocatable, dimension(:)   :: reference_angle
+   real (kind=dp), allocatable, dimension(:,:) :: k_bend
+   real (kind=dp), allocatable, dimension(:)   :: reference_angle
    contains
 
    !> Calculate signed "outflow" for a given manhole flow node and a link index of one of its connected pipes.
@@ -40,10 +42,10 @@ Module fm_manhole_losses
 
    use m_flowgeom, only: nd
    use m_flow, only: q1
-      integer,          intent(in   ) :: nod !< Flow node number
-      integer,          intent(in   ) :: iL  !< This flow node's link index (in nd(nod)%lin(:))
-      integer,          intent(  out) :: L   !< The flow link number on position iL
-      double precision, intent(  out) :: q_manhole_to_pipe !< The signed "outflow" on flow link L w.r.t. flow node nod.
+      integer,        intent(in   ) :: nod                !< Flow node number
+      integer,        intent(in   ) :: iL                 !< This flow node's link index (in nd(nod)%lin(:))
+      integer,        intent(  out) :: L                  !< The flow link number on position iL
+      real (kind=dp), intent(  out) :: q_manhole_to_pipe  !< The signed "outflow" on flow link L w.r.t. flow node nod.
 
       integer :: L_signed
    
@@ -67,18 +69,18 @@ Module fm_manhole_losses
    use gridoperations, only: dlinkangle
    
    type(t_storage_set),           intent(in   ) :: storS     !<  set of storage nodes that contain manhole parameters
-   double precision, allocatable, intent(inout) :: advi  (:) !<  advection implicit part (1/s), energy losses are applied here.
+   real (kind=dp), allocatable,   intent(inout) :: advi  (:) !<  advection implicit part (1/s), energy losses are applied here.
 
    ! Manhole Losses
    integer                  :: iL, nstor, nod, L, i
-   double precision         :: ref_angle_local, total_m2p_area, total_p2m_area, k_exp, q_temp, q_manhole_to_pipe, angle
-   double precision         :: energy_loss_total, v2_m2p, v2_p2m, k_correction
+   real (kind=dp)           :: ref_angle_local, total_outflow_from_manhole_area, total_inflow_to_manhole_area, k_exp, q_temp, q_manhole_to_pipe, angle
+   real (kind=dp)           :: energy_loss_total, v_squared_outflow_from_manhole, v_squared_inflow_to_manhole, k_correction
    type(t_storage), pointer :: pstor
    integer                  :: count
    
    nstor = storS%count
    !$OMP PARALLEL DO                       &
-   !$OMP PRIVATE(i,iL,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_m2p_area,total_p2m_area,v2_m2p,v2_p2m,energy_loss_total)
+   !$OMP PRIVATE(i,iL,L,ref_angle_local,angle,count,q_temp,pstor,nod,q_manhole_to_pipe,total_outflow_from_manhole_area,total_inflow_to_manhole_area,v_squared_outflow_from_manhole,v_squared_inflow_to_manhole,energy_loss_total)
    do i = 1,nstor                                                                                                                
       pstor => storS%stor(i)
       nod = pstor%grid_point
@@ -123,18 +125,18 @@ Module fm_manhole_losses
 
       if (pstor%expansion_loss /= 0d0) then 
          !calculate average output area
-         total_m2p_area = 0d0
-         total_p2m_area = 0d0
+         total_outflow_from_manhole_area = 0d0
+         total_inflow_to_manhole_area = 0d0
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod,iL,L,q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0d0) then
-               total_m2p_area = total_m2p_area + au(L)
+               total_outflow_from_manhole_area = total_outflow_from_manhole_area + au(L)
             else
-               total_p2m_area = total_p2m_area + au(L)
+               total_inflow_to_manhole_area = total_inflow_to_manhole_area + au(L)
             endif
          enddo
          
-         select case (comparereal(total_p2m_area, total_m2p_area)) 
+         select case (comparereal(total_inflow_to_manhole_area, total_outflow_from_manhole_area)) 
          case (0)
             ! then no expansion or contraction losses
             k_exp = 0d0
@@ -155,24 +157,24 @@ Module fm_manhole_losses
           pstor%entrance_loss /= 0d0 .or. pstor%exit_loss /= 0d0) then
          ! compute the total energy loss
          energy_loss_total = 0d0
-         v2_m2p = 0d0
-         v2_p2m = 0d0
+         v_squared_outflow_from_manhole = 0d0
+         v_squared_inflow_to_manhole = 0d0
          count = 0
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
                energy_loss_total = energy_loss_total + 0.5d0*(k_exp + pstor%entrance_loss)*u1(L)**2/ag
-               v2_m2p = max(v2_m2p, u1(L)**2)
+               v_squared_outflow_from_manhole = max(v_squared_outflow_from_manhole, u1(L)**2)
             else
                count = count+1
                energy_loss_total = energy_loss_total + 0.5d0*(k_bend(count,i)-k_exp+ pstor%exit_loss)*u1(L)**2/ag
-               v2_p2m = max(v2_p2m, u1(L)**2)
+               v_squared_inflow_to_manhole = max(v_squared_inflow_to_manhole, u1(L)**2)
             endif
          enddo
-         if (energy_loss_total < 0.05d0*v2_m2p/(2d0*ag)) then
-            k_correction = (0.05d0*v2_m2p/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
-         else if (energy_loss_total > (v2_p2m+0.5d0*v2_m2p)/(2d0*ag) ) then
-            k_correction = ((v2_p2m+0.5d0*v2_m2p)/(2d0*ag) - energy_loss_total)*2*ag/v2_p2m
+         if (energy_loss_total < 0.05d0*v_squared_outflow_from_manhole/(2d0*ag)) then
+            k_correction = (0.05d0*v_squared_outflow_from_manhole/(2d0*ag) - energy_loss_total)*2*ag/v_squared_outflow_from_manhole
+         else if (energy_loss_total > (v_squared_inflow_to_manhole+0.5d0*v_squared_outflow_from_manhole)/(2d0*ag) ) then
+            k_correction = ((v_squared_inflow_to_manhole+0.5d0*v_squared_outflow_from_manhole)/(2d0*ag) - energy_loss_total)*2*ag/v_squared_outflow_from_manhole
          else
             k_correction = 0d0
          endif
@@ -181,9 +183,9 @@ Module fm_manhole_losses
          do iL = 1, nd(nod)%lnx
             call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
             if (q_manhole_to_pipe > 0) then
-               advi(L) = advi(L) + 0.5d0*(k_exp + pstor%exit_loss)*u1(L)*dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_correction + k_exp + pstor%exit_loss)*u1(L)*dxi(L)
             else
-               advi(L) = advi(L) + 0.5d0*(k_correction + k_bend(count,i)-k_exp+ pstor%entrance_loss)*u1(L)*dxi(L)
+               advi(L) = advi(L) + 0.5d0*(k_bend(count,i)-k_exp+ pstor%entrance_loss)*u1(L)*dxi(L)
             endif
          enddo
       endif

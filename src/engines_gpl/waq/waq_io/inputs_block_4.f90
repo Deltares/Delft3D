@@ -72,7 +72,7 @@ contains
         !                        file_unit_list(13) = unit intermediate file (lengths)
 
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_open_waq_files
         use m_grid_utils_external        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
@@ -205,14 +205,14 @@ contains
             nmax = noq1
             mmax = noq2
             kmax = noq3
-            write (lunut, 2000) nmax, mmax, kmax
+            write(file_unit, 2000) nmax, mmax, kmax
             GridPs%Pointers(1)%nolay = kmax
             nolay = kmax
         else
             nmax = 0
             mmax = 0
             kmax = 0
-            write (lunut, 2010) noq1, noq2, noq3, noq
+            write (file_unit, 2010) noq1, noq2, noq3, noq
 
             !        detect number of layers (only structured sigma or z model, otherwise KMAX=0)
 
@@ -239,7 +239,7 @@ contains
         endif
         if (.not. alone) then
             if (noq /= noqp) then
-                write (lunut, 2020) noqp
+                write (file_unit, 2020) noqp
                 call status%increase_error_count()
             endif
         endif
@@ -247,13 +247,13 @@ contains
         if (nseg2 /= 0) then
             noq4 = nseg2 + noseg / nolay
             noq4 = noq4 * 2
-            write (lunut, 2040) noq4
+            write (file_unit, 2040) noq4
         endif
 
         !        Read number of additional dispersion arrays NODISP
 
         if (gettoken(nodisp, ierr2) > 0) goto 100
-        write (lunut, 2050) nodisp
+        write (file_unit, 2050) nodisp
         idisp = 0
         if (nodisp > 0) then
             allocate (dispnam(nodisp))   !    'Dispersion nnnn'
@@ -262,23 +262,23 @@ contains
                 if (dispnam(i) == ' ') write (dispnam(i), 2060) i
                 ifound = index_in_array(dispnam(i), dispnam(1:i - 1))
                 if (ifound > 0) then
-                    write(lunut, 2070) dispnam(i)
+                    write(file_unit, 2070) dispnam(i)
                     call status%increase_error_count()
                 endif
             enddo
             if (output_verbose_level >= 2) then
-                write (lunut, 2080) (i, dispnam(i), i = 1, nodisp)
+                write (file_unit, 2080) (i, dispnam(i), i = 1, nodisp)
             else
-                write (lunut, 2090)
+                write (file_unit, 2090)
             endif
-            write (lunut, *)
+            write (file_unit, *)
             write (file_unit_list(2)) (dispnam(i), i = 1, nodisp)
             deallocate (dispnam)
 
             do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
                 if (gettoken(idisp(i), ierr2) > 0) goto 100
                 if (idisp(i) > nodisp) then
-                    write (lunut, 2100) idisp(i), nodisp
+                    write (file_unit, 2100) idisp(i), nodisp
                     call status%increase_error_count()
                 endif
             enddo
@@ -288,7 +288,7 @@ contains
         !                   the same way (could probably be better 1 code)
 
         if (gettoken(novelo, ierr2) > 0) goto 100
-        write (lunut, 2110) novelo
+        write (file_unit, 2110) novelo
         ivelo = 0
         if (novelo > 0) then
             allocate (dispnam(novelo))   !
@@ -297,36 +297,36 @@ contains
                 if (dispnam(i) == ' ') write (dispnam(i), 2120) i
                 ifound = index_in_array(dispnam(i), dispnam(1:i - 1))
                 if (ifound > 0) then
-                    write(lunut, 2130) dispnam(i)
+                    write(file_unit, 2130) dispnam(i)
                     call status%increase_error_count()
                 endif
             enddo
             if (output_verbose_level >= 2) then
-                write (lunut, 2080) (i, dispnam(i), i = 1, novelo)
+                write (file_unit, 2080) (i, dispnam(i), i = 1, novelo)
             else
-                write (lunut, 2090)
+                write (file_unit, 2090)
             endif
-            write (lunut, *)
+            write (file_unit, *)
             write (file_unit_list(2)) (dispnam(i), i = 1, novelo)
             deallocate (dispnam)
 
             do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
                 if (gettoken(ivelo(i), ierr2) > 0) goto 100
                 if (ivelo(i) > novelo) then
-                    write (lunut, 2100) ivelo(i), novelo
+                    write (file_unit, 2100) ivelo(i), novelo
                     call status%increase_error_count()
                 endif
             enddo
         endif
         !           write a report if sensible and write binary file
         if ((nodisp > 0 .or. novelo > 0) .and. output_verbose_level >= 2) &
-                write (lunut, 2140) (i, idisp(i), ivelo(i), i = 1, nosys)
+                write (file_unit, 2140) (i, idisp(i), ivelo(i), i = 1, nosys)
         write (file_unit_list(2)) idisp
         write (file_unit_list(2)) ivelo
         !           a very obvious (and rude) check on correctness
         if (noq1 < 0 .or. noq2   < 0 .or. noq3   < 0 .or. &
                 noq  == 0 .or. nodisp < 0 .or. novelo < 0) then
-            write (lunut, 2150)
+            write (file_unit, 2150)
             call status%increase_error_count()
         endif
 
@@ -336,7 +336,7 @@ contains
             iopt1 = 0
         else
             if (gettoken(integration_id, ierr2) > 0) goto 100
-            write (lunut, 2170) integration_id
+            write (file_unit, 2170) integration_id
             noqt = noq
             if (integration_id == 2) goto 10
 
@@ -345,7 +345,7 @@ contains
             !        Read exchange pointers
 
             if (gettoken(iopt1, ierr2) > 0) goto 100
-            write (lunut, 2180)  iopt1
+            write (file_unit, 2180)  iopt1
 
             if (regular) then  !        Regular grid
                 call process_simulation_input_options (iopt1, file_unit_list, 8, file_name_list, filtype, &
@@ -368,7 +368,7 @@ contains
             noqt = noq + noq4
             allocate (ipnt(4, noqt), stat = ierr2)
             if (ierr2 /= 0) then
-                write (lunut, 2160) ierr2, 4 * noqt
+                write (file_unit, 2160) ierr2, 4 * noqt
                 goto 100
             endif
             ipnt = 0
@@ -394,7 +394,7 @@ contains
                 intsrt == 21 .or. intsrt == 22) then
             call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
                     nomat)
-            write (lunut, 2190) nomat
+            write (file_unit, 2190) nomat
         endif
         if (associated(ipnt)) then
             deallocate (ipnt)
@@ -402,7 +402,7 @@ contains
 
         !        Read dispersions
 
-        write (lunut, 2200)
+        write (file_unit, 2200)
         disper = .true.
         ierr2 = 0
         call read_constants_time_variables   (file_unit_list, 9, noq1, noq2, noq3, &
@@ -415,7 +415,7 @@ contains
 
         !        Read areas
 
-        write (lunut, 2210)
+        write (file_unit, 2210)
         ierr2 = 0
         call read_constants_time_variables   (file_unit_list, 10, noq1, noq2, noq3, &
                 1, 1, nrftot(4), nrharm(4), ifact, &
@@ -426,7 +426,7 @@ contains
 
         !        Read flows
 
-        write (lunut, 2220)
+        write (file_unit, 2220)
         ierr2 = 0
         call read_constants_time_variables   (file_unit_list, 11, noq1, noq2, noq3, &
                 1, 1, nrftot(5), nrharm(5), ifact, &
@@ -436,7 +436,7 @@ contains
         call status%increase_error_count_with(ierr2)
         if (.not. alone) then
             if (file_name_list(11) /= fnamep(7)) then
-                write (lunut, 2225) fnamep(7)
+                write (file_unit, 2225) fnamep(7)
                 call status%increase_error_count()
             endif
         endif
@@ -444,7 +444,7 @@ contains
         !        Read velos
 
         if (novelo > 0) then
-            write (lunut, 2230)
+            write (file_unit, 2230)
             ierr2 = 0
             call read_constants_time_variables   (file_unit_list, 12, noq1, noq2, noq3, &
                     novelo, 1, nrftot(6), nrharm(6), ifact, &
@@ -456,24 +456,24 @@ contains
 
         !        Read length "to" and "from" surfaces
 
-        write (lunut, 2240)
+        write (file_unit, 2240)
 
         if (has_hydfile) then
             ilflag = 1
         else
             if (gettoken(ilflag, ierr2) > 0) goto 100
-            write (lunut, 2250) ilflag
+            write (file_unit, 2250) ilflag
         endif
         select case (ilflag)
         case (0)
-            write (lunut, 2260)
+            write (file_unit, 2260)
             idum = 4
             write (file_unit_list(2)) idummy
             call read_constant_data (1, length, 1, 3, 1, &
                     iwidth, file_unit_list(2), idum, ierr2)
 
         case (1)
-            write (lunut, 2270)
+            write (file_unit, 2270)
             write (file_unit_list(2)) idummy, (adummy, k = 1, 3)
             ierr2 = 0
             call read_constants_time_variables   (file_unit_list, 13, noq1, noq2, noq3, &
@@ -483,7 +483,7 @@ contains
                     status, has_hydfile)
 
         case default
-            write (lunut, 2280)
+            write (file_unit, 2280)
             call status%increase_error_count()
 
         end select
@@ -494,28 +494,28 @@ contains
         10 continue
         allocate (ipnt(4, noqt), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2160) ierr2, 4 * noqt
+            write (file_unit, 2160) ierr2, 4 * noqt
             goto 100
         endif
         ipnt = 0
 
         ilflag = 1
         if (nodisp < 1) then
-            write (lunut, 2290) nodisp
+            write (file_unit, 2290) nodisp
             ierr2 = 1
             goto 100
         endif
 
         allocate (rwork(5, noq), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2310) ierr2, 5 * noq
+            write (file_unit, 2310) ierr2, 5 * noq
             goto 100
         endif
 
         if (gettoken(iopt1, ierr2) > 0) goto 100
-        write (lunut, 2320) iopt1
+        write (file_unit, 2320) iopt1
         if (iopt1 == 0) then
-            write (lunut, 2280)
+            write (file_unit, 2280)
             ierr2 = 1
             goto 100
         endif
@@ -539,9 +539,9 @@ contains
             enddo
         enddo
 
-        write (lunut, 2330) (factor(i), i = 1, 4)
-        write (lunut, 2340)
-        write (lunut, 2350) ((ipnt (i, j), i = 1, 4), &
+        write (file_unit, 2330) (factor(i), i = 1, 4)
+        write (file_unit, 2340)
+        write (file_unit, 2350) ((ipnt (i, j), i = 1, 4), &
                 (rwork(i, j), i = 1, 5), j = 1, noq)
 
         !       calculate number of boundaries and bandwith of matrix
@@ -564,7 +564,7 @@ contains
                 intsrt == 21 .or. intsrt == 22) then
             call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
                     nomat)
-            write (lunut, 2190) nomat
+            write (file_unit, 2190) nomat
         endif
 
         factor(5) = factor(4)
@@ -621,17 +621,17 @@ contains
         if (noq3 /= 0) then
             if (nolay == 1) then
                 call status%increase_warning_count()
-                write(lunut, 3000) noseg, noq3, noseg - noq3
-                write(lunut, 3005)
+                write(file_unit, 3000) noseg, noq3, noseg - noq3
+                write(file_unit, 3005)
                 write(*, '(1x,a)') 'WARNING: inconsistency if 3D model', &
                         '         check .lst file'
             else
-                write(lunut, 3010) nolay
+                write(file_unit, 3010) nolay
             endif
         endif
 
         if (ierr2 > 0) call status%increase_error_count()
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error(cdummy, iwidth, 4, ierr2, status)
         if (timon) call timstop(ithndl)
         return

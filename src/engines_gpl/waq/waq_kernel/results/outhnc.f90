@@ -40,7 +40,7 @@ contains
         !     Function            : Writes history output to NetCDF
 
         use m_universally_unique_id_generator
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
         use dlwq_netcdf  !   read/write grid in netcdf
         use results, only : ncopt
@@ -455,7 +455,7 @@ contains
         ! There were errors!
         write (lunut, 2600) inc_error
         write (lunut, 2610) trim(nf90_strerror(inc_error))
-        call srstop (1)
+        call terminate_execution (1)
 
         900  continue
         if (timon) call timstop (ithandl)

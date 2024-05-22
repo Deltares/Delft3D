@@ -32,8 +32,7 @@
       subroutine varoxy ( pmsa   , fl     , ipoint , increm , noseg  , & 
                          noflux , iexpnt , iknmrk , noq1   , noq2   , & 
                          noq3   , noq4   )
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
 
 !>\file
 !>       Variation of oxygen due to variation in primary production within day
@@ -91,12 +90,12 @@
           (INCREM(5) > 0) .OR. &
           (INCREM(6) > 0) ) THEN
 
-          CALL GETMLU(LUNREP)
+          CALL get_log_unit_number(LUNREP)
           WRITE (LUNREP,*) & 
          ' VAROXY: Time parameters function(x) not ALLOWED'
           WRITE (*,*) & 
          ' VAROXY: Time parameters function(x) not ALLOWED'
-          CALL SRSTOP(1)
+          CALL terminate_execution(1)
       ENDIF
 
       IFLUX = 1

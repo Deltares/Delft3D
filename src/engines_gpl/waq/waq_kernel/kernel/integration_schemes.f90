@@ -44,8 +44,6 @@ module integration_schemes
     use m_integration_scheme_1
     use m_integration_scheme_0
     use m_startup_screen
-    use m_srstop
-    use m_monsys
     use m_cli_utils, only : retrieve_command_argument
     use m_open_waq_files
 
@@ -75,6 +73,7 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
         use m_cli_utils, only : get_input_filename
+        use m_logger, only : set_log_unit_number
 
         type(waq_data_buffer), target :: buffer
         integer(kind = int_wp) :: max_real_arr_size, max_int_arr_size, max_char_arr_size
@@ -128,7 +127,7 @@ contains
                 write(*, '(a)') 'integration_schemes cannot run - the system work file is missing'
                 write(*, '(2a)') '    File name: ', trim(file_name_list(1))
                 write(*, '(2a)') '    Please check if DELWAQ1 ran correctly'
-                call srstop(1)
+                call terminate_execution(1)
             endif
 
             ! the file does exist, so continue processing
@@ -146,7 +145,7 @@ contains
             close(input_file)
 
             CALL open_waq_files(file_unit_list(19), file_name_list(19), 19, 1, IERRD)
-            CALL SETMLU(file_unit_list(19))
+            CALL set_log_unit_number(file_unit_list(19))
 
             ! Show startup screen
             IF (INIT2) THEN
@@ -244,28 +243,26 @@ contains
 
         end select
 
-        IF (ACTION == ACTION_FINALISATION    .OR. &
-                ACTION == ACTION_FULLCOMPUTATION) THEN
-
+        if (action == action_finalisation    .or. &
+                action == action_fullcomputation) then
             ! print timer-results
             if (timon) then
                 call timstop (ithndl)
                 call timdump (TRIM(RUNID) // '-timers.out')
                 call timfinalize()
             endif
-
         endif
 
         return
 
         990 WRITE (*, *) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         991 WRITE (*, *) ' ERROR: INTEGRATION OPTION DEPRECATED'
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         992 WRITE (*, *) ' ERROR : INITIALISATION FAILED'
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         999 WRITE (*, *) ' ERROR: NO VALID SET OF MODEL-INTERMEDIATE-FILES'
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
     END SUBROUTINE run_integration_schemes
 
 END MODULE integration_schemes

@@ -31,8 +31,8 @@ contains
     subroutine bodcod (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
+
 
         !>\file
         !>       Decay of BOD, COD and NBOD and associated oxygen consumption
@@ -289,15 +289,15 @@ contains
 
                 !     CHECK IF RC'S ARE NON ZERO
                 IF (RCBOD < 1E-10) THEN
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD: Invalid value (zero)!'
                     WRITE (*, *) 'RCBOD: Invalid value (zero)!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 IF (RCBOD2 < 1E-10) THEN
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD-2: Invalid value (zero)!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
 
 
@@ -385,10 +385,10 @@ contains
                     OXYDEM = DBOD5 + DBOD52 + DBODU + DBODU2 + DNBOD5 + DNBODU + &
                             DCODCR + DCODMN
                 ELSE
-                    CALL GETMLU(LUNREP)
+                    CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'BODCOD: Invalid option for SwOXYDem!'
                     WRITE (*, *) 'BODCOD: Invalid option for SwOXYDem!'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
 
                 PMSA(IP37) = O2FBOD

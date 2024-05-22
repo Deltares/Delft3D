@@ -92,8 +92,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
@@ -253,10 +252,10 @@ contains
                                 (1.0 + 0.17 * cloud ** 2.0)
                         !
                     ELSE
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) ' Illegal option for emissivity formula'
                         WRITE (*, *) ' Illegal option for emissivity formula'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                     !
                     Qan = Qa * (1 - Fa)

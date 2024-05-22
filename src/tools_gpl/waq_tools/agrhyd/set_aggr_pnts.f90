@@ -31,7 +31,7 @@
 
       ! global declarations
 
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_hydmod
       implicit none
 
@@ -117,7 +117,7 @@
                      write(*,*) 'segment number before aggregation                 = ',iseg
                      write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
                      write(*,*) 'the same segment number was already aggregated to = ',ipnt(iseg)
-                     call srstop(1)
+                     call terminate_execution(1)
                   endif
                else
                   if ( ipnt_h(n,m) .eq. 0 ) then
@@ -162,7 +162,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call srstop(1)
+                  call terminate_execution(1)
                endif
             else
                if ( ipnt_h(n,m) .eq. 0 ) then
@@ -181,7 +181,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call srstop(1)
+                  call terminate_execution(1)
                end if      
             endif
          enddo

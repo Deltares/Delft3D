@@ -23,7 +23,7 @@
 module m_block_1_input_reader
     use m_waq_precision
     use error_handling, only : check_error
-    use m_srstop
+    use m_logger, only : terminate_execution
     use m_read_version_number
     use time_module
     use m_error_status
@@ -124,7 +124,7 @@ contains
         read (file_unit_list(26), *, end = 110, err = 120) npos, iwidth, cchar
 
         if (iwidth /= 80 .and. iwidth /= 132) then
-            write (lunut, 2000) iwidth
+            write(file_unit, 2000) iwidth
             iwidth = 80
         endif
 
@@ -133,8 +133,8 @@ contains
 
         !     Read version number and initialize position on start of new line
 
-        call read_version_number (ilun(1), lch(1), lunut, npos, input_version_number, output_verbose_level)
-        call compare_version_number_to_lower_limit(input_version_number, lunut)
+        call read_version_number (ilun(1), lch(1), file_unit, npos, input_version_number, output_verbose_level)
+        call compare_version_number_to_lower_limit(input_version_number, file_unit)
 
         iposr = 0
 
@@ -147,25 +147,25 @@ contains
         itype = 1
         if (gettoken (modid1, ierr2) > 0) goto 100
         if (gettoken (modid2, ierr2) > 0) goto 100
+
         write (file_unit_list(2)) modid1, modid2
-        write (lunut, 2010) modid1, modid2
+        write (file_unit, 2010) modid1, modid2
         if (gettoken (runid1, ierr2) > 0) goto 100
         if (gettoken (runid2, ierr2) > 0) goto 100
         write (file_unit_list(2)) runid1, runid2
-        write (lunut, 2020) runid1, runid2
+        write (file_unit, 2020) runid1, runid2
 
         !     identify an timer offset value in the last string
-
         if (runid2(1:3) /= 't0: ' .and. &
                 runid2(1:3) /= 'T0: ' .and. &
                 runid2(1:3) /= 't0= ' .and. &
                 runid2(1:3) /= 'T0= ') then
-            write (lunut, 2030)
+            write (file_unit, 2030)
             call status%increase_warning_count()
             isfact = 1
             otime = 0.0d+00
         else
-            write (lunut, 2040)
+            write (file_unit, 2040)
             read (runid2(5:8), '(i4)') iyear
             read (runid2(10:11), '(i2)') imonth
             read (runid2(13:14), '(i2)') iday
@@ -177,9 +177,9 @@ contains
             itime = ihour * 10000 + iminut * 100 + isecnd
             otime = julian_with_leapyears (idate, itime)
             if (isfact > 0) then
-                write (lunut, 2050)  isfact
+                write (file_unit, 2050)  isfact
             else
-                write (lunut, 2060) -isfact
+                write (file_unit, 2060) -isfact
             endif
         endif
 
@@ -212,7 +212,7 @@ contains
             endif                                     ! read substanceID
             if (gettoken (cdummy, ierr2) > 0) goto 100
             if (idummy <= 0 .or. idummy > notot) then
-                write (lunut, 2070) idummy, cdummy
+                write (file_unit, 2070) idummy, cdummy
                 call status%increase_error_count()
             else
                 sname(idummy) = cdummy
@@ -222,7 +222,7 @@ contains
             if (ifound /= 0) goto 100
             if (itype == 1) then                  ! a string was found. must be *n
                 if (cdummy(1:1) /= '*') then       ! only a multiplication is accepted
-                    write(lunut, 2170) trim(cdummy)
+                    write(file_unit, 2170) trim(cdummy)
                     goto 100
                 endif
                 read (cdummy(2:), *) imult(isys)
@@ -260,18 +260,18 @@ contains
         enddo
         allocate (syname(notot + nomult))
 
-        write (lunut, 2080) nosys, notot - nosys, notot
+        write (file_unit, 2080) nosys, notot - nosys, notot
         if (nosys < 0 .or. idummy < 0 .or. notot <= 0) then
-            write (lunut, 2090)
+            write (file_unit, 2090)
             call status%increase_error_count()
         endif
 
         !        Fill in their names
 
         if (output_verbose_level >= 1) then
-            write (lunut, 2100)
+            write (file_unit, 2100)
         else
-            write (lunut, 2110)
+            write (file_unit, 2110)
         endif
         nosyss = 1
         nomult = 0
@@ -282,7 +282,7 @@ contains
             if (sname(isys) == ' ') write (sname(isys), 2120) isys
             do isys2 = 1, isys - 1
                 if (string_equals(sname(isys), sname(isys2))) then
-                    write(lunut, 2130)
+                    write(file_unit, 2130)
                     call status%increase_error_count()
                 endif
             enddo
@@ -291,7 +291,7 @@ contains
 
             if (imult(isys) == 1) then
                 syname(nosyss) = sname(isys)
-                if (output_verbose_level >= 1) write (lunut, 2140) nosyss, syname(nosyss)
+                if (output_verbose_level >= 1) write (file_unit, 2140) nosyss, syname(nosyss)
                 nosyss = nosyss + 1
             else
                 nomult = nomult + 1
@@ -306,7 +306,7 @@ contains
                     else
                         write (syname(nosyss)(ilen + 1:), '(      i3)') isys2
                     endif
-                    if (output_verbose_level >= 1) write (lunut, 2140) nosyss, syname(nosyss)
+                    if (output_verbose_level >= 1) write (file_unit, 2140) nosyss, syname(nosyss)
                     nosyss = nosyss + 1
                 enddo
             endif
@@ -321,18 +321,18 @@ contains
 
         100 continue
         if (ierr2 /= 0 .and. ierr2 /= 2) call status%increase_error_count()
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error  (cdummy, iwidth, 1, ierr2, status)
         call status%increase_warning_count_with(iwar2)
         if (timon) call timstop(ithndl)
         return
 
-        110 write (lunut, 2150) ilun(1), lch(1)
-        call srstop (1)
+        110 write (file_unit, 2150) ilun(1), lch(1)
+        call terminate_execution (1)
         return
 
-        120 write (lunut, 2160) ilun(1), lch(1)
-        call srstop (1)
+        120 write (file_unit, 2160) ilun(1), lch(1)
+        call terminate_execution (1)
         return
 
         !        Output formats

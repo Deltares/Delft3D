@@ -69,7 +69,7 @@ contains
             idstrt, idstop, idstep, &
             ihstrt, ihstop, ihstep)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
 
         integer(kind = int_wp), intent(in) :: log_unit               !! logical unit number of logging file (*.lst)
         integer(kind = int_wp), intent(in) :: itstrt, itstop, idt    !! start, stop and time step of entire simulation
@@ -109,7 +109,7 @@ contains
         call validate_time_coincidence(ihstrt, ihstep, itstrt, idt, status, log_unit, 3)
 
         if (status%ierr > 0) then
-            call srstop(1)
+            call terminate_execution(1)
         end if
 
     end subroutine validate_time_settings

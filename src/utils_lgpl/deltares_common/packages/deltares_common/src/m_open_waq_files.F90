@@ -21,10 +21,9 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_open_waq_files
-    use m_srstop
+    use m_logger, only : terminate_execution
 
     implicit none
-
     private
     public :: open_waq_files
 
@@ -32,13 +31,11 @@ contains
 
     subroutine open_waq_files(file_unit, file_name, file_id, mode, ierr)
         !! Opens all Delwaq files
-        !!
         !! SHARED is used for those files which are optionally prepared at runtime by another programme
         !! running on-line. To enable this, the reading is synchronised (DLWQI0, DLWQT4)
         !!
         !! Files opened with this option are:
         !!      volumes, flows, areas, lengths, segment functions and harmonics (see local comments)
-
         integer, intent(inout) :: file_unit       !< unit number of file to be opened
         character*(*), intent(in) :: file_name     !< name of the file to be opened
         integer, intent(in) :: file_id    !< Delwaq number of the file to be opened
@@ -46,6 +43,7 @@ contains
         integer, intent(inout) :: ierr      !< Error flag
 
         ierr = 0
+
         ! get the correct open statement
         select case (file_id)
             ! 1 = common-block file
@@ -168,6 +166,7 @@ contains
             case (2)
                 open (file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', status = 'old')
             case (3)
+
                 open (file_unit, file = file_name, err = 910, form = 'unformatted', access = 'stream', &
                         status = 'replace')
             case default
@@ -215,9 +214,9 @@ contains
             ! no valid number present
         case default
             ierr = 2
-
         end select
         return
+
         ! error while opening with return value
         900 ierr = 1
         return
@@ -243,7 +242,8 @@ contains
         endif
 
         write (*, 2000) file_id, file_unit, trim(file_name), trim(wd_path)
-        call srstop (1)
+        call terminate_execution(1)
+
 
         2000 format (' ERROR opening file number:', I3, ' on unit:', I3, &
                 /, ' Filename is: ', A, &

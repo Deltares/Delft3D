@@ -102,8 +102,7 @@ contains
         use m_outhis
         use m_dmpval
         use m_dmpsurf
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use data_processing, only : extract_value_from_group
         use m_cli_utils, only : retrieve_command_argument
         use m_open_waq_files
@@ -221,7 +220,7 @@ contains
 
         IF (INIOUT == 1) THEN
             IFIRST = .TRUE.
-            CALL GETMLU(LUNREP)
+            CALL get_log_unit_number(LUNREP)
 
             !         Process flags
 
@@ -962,7 +961,7 @@ contains
         return
         9000 write (lunrep, *) 'Error allocating memory'
         write (*, *) 'Error allocating memory'
-        call srstop(1)
+        call terminate_execution(1)
     end
     SUBROUTINE OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT, &
             NOTOT, NDMPAR, DANAMP, OUNAME, SYNAME, &
@@ -1133,8 +1132,7 @@ contains
 
     subroutine comsum (nosum, tfacto, notot, syname, sfacto, nocons, coname, cons)
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use timers
         use bloom_data_mass_balance
 
@@ -1212,10 +1210,10 @@ contains
         !     local functionality nosum = 2, check!!!!!!!!!!!!!
 
         if (nosum /= 2) then
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             write (lunrep, *) 'BUG IN COMSUM!'
             write (*, *) 'BUG IN COMSUM!'
-            call srstop(1)
+            call terminate_execution(1)
         end if
 
         !     Initialise substance shares in sum parameters as well as totals

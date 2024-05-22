@@ -28,16 +28,12 @@
 !
 
       subroutine read_hyd(hyd)
+      ! read a hydrodynamic description file
 
-      ! function : read a hydrodynamic description file
-
-      ! global declarations
-
-      use m_monsys
+      use m_logger, only : get_log_unit_number, write_error_message
       use time_module
-      use m_get_filepath_and_pathlen
+      use waq_file_utils_external, only : get_filepath_and_pathlen
       use m_hydmod
-      use m_write_error_message
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
 
@@ -174,7 +170,7 @@
       key(84) = 'z-layers-zbot'
 
       ft_dat = ft_bin
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       hyd%file_hyd%type = ft_asc
       call hyd%file_hyd%open()

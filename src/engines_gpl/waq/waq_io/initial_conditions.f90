@@ -40,7 +40,7 @@ contains
 
         use m_read_block
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
@@ -80,6 +80,7 @@ contains
         integer(kind = int_wp) :: itime                 ! dummy time
         integer(kind = int_wp) :: i                     ! loop counter
         integer(kind = int_wp) :: idummy                ! dummy
+        !integer(kind = int_wp) :: file_unit
         real(kind = real_wp) :: rdummy                ! dummy
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_initial_conditions", ithndl)
@@ -104,7 +105,7 @@ contains
             write (segments%name(i), '(''segment '',i8)') i
         enddo
 
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
         ierr2 = 0
 
         do
@@ -121,7 +122,7 @@ contains
                         status)
                 if (ierr2 > 0) goto 30
                 if (dlwqdata%is_external) then
-                    ierr = dlwqdata%read_external(lunut)
+                    ierr = dlwqdata%read_external(file_unit)
                     if (ierr /= 0) goto 30
                     dlwqdata%is_external = .false.
                 endif
@@ -130,7 +131,7 @@ contains
             else
                 ! unrecognised keyword
                 if (ctoken(1:1) /= '#') then
-                    write (lunut, 2050) trim(ctoken)
+                    write (file_unit, 2050) trim(ctoken)
                     ierr = ierr + 1
                     goto 30
                 else
@@ -150,8 +151,8 @@ contains
         do idata = 1, initials%current_size
             ierr3 = initials%data_block(idata)%evaluate(gridps, itime, notot, noseg, conc)
             if (ierr3 /= 0) then
-                write(lunut, 2060)
-                call srstop(1)
+                write(file_unit, 2060)
+                call terminate_execution(1)
             endif
         enddo
 
@@ -164,7 +165,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error(ctoken, iwidth, 8, ierr2, status)
         if (timon) call timstop(ithndl)
         return

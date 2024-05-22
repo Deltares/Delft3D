@@ -33,7 +33,7 @@ contains
     subroutine blinpu (ntyp_m, ntyp_a, ngro_a, algtyp, lmixo, lfixn, lcarb, nunucom, nutcon, flxcon, con2out, &
             swblsolint, swblobject, bltemlim, blbasmor, swblgrochk, blbiobas, swblmorchk, bltoplev)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_readfrm
         use m_getidentification
         use bloom_data_dim
@@ -209,7 +209,7 @@ contains
         if (nunuco>nunucom) then
             write(outdbg, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
             write(*, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
-            call srstop(1)
+            call terminate_execution(1)
         end if
 
         !  Establish various column and row indicators for A-matrix and output
@@ -345,13 +345,13 @@ contains
         if (nuspec > mt)  then
             write(outdbg, *) 'ERROR: Number of types if greater than the maximum number of types in BLOOM'
             write(*, *) 'ERROR: Number of types if greater than the maximum number of types in BLOOM'
-            call srstop(1)
+            call terminate_execution(1)
         end if
 
         if (nunuco > mn)  then
             write(outdbg, *) 'ERROR: Number of nutrients if greater than the maximum number of nutrients in BLOOM'
             write(*, *) 'ERROR: Number of nutrients if greater than the maximum number of nutrients in BLOOM'
-            call srstop(1)
+            call terminate_execution(1)
         end if
 
         !     Pass actual number of groups and species to main program

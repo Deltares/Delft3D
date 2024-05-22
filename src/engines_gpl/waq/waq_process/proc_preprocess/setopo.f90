@@ -34,7 +34,7 @@ contains
 
         ! set output pointers
 
-        use m_monsys
+        use m_logger
         use timers         !< performance timers
         use processet
         use results, only : OutputPointers
@@ -72,9 +72,9 @@ contains
         ! set "output from active processes to output param" pointers
 
         write(line, '(a)') '# locating requested output from active processes'
-        call monsys(line, 2)
+        call write_log_message(line)
         line = ' '
-        call monsys(line, 2)
+        call write_log_message(line)
 
         nproc = procesdef%current_size
 
@@ -112,7 +112,7 @@ contains
 
                             if (proc%output_item(ioutput)%ip_val == outputs%pointers(iou)) then
                                 write (line, '(5a)') ' output [', outputs%names (iou)(1:20), '] from proces [', proc%name(1:10), ']'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                                 goto 300
                             endif
                         endif
@@ -127,19 +127,19 @@ contains
                 indx = index_in_array(outputs%names(iou), predef)
                 if (indx == 1) then
                     write(line, '(3a)') ' output [', outputs%names (iou)(1:20), '] using delwaq volume'
-                    call monsys(line, 4)
+                    call write_log_message(line)
                     outputs%pointers(iou) = 1
                     goto 300
                 endif
                 if (indx == 2) then
                     write(line, '(3a)') ' output [', outputs%names (iou)(1:20), '] using delwaq itime'
-                    call monsys(line, 4)
+                    call write_log_message(line)
                     outputs%pointers(iou) = 2
                     goto 300
                 endif
                 if (indx == 3) then
                     write(line, '(3a)') ' output [', outputs%names (iou)(1:20), '] using delwaq idt'
-                    call monsys(line, 4)
+                    call write_log_message(line)
                     outputs%pointers(iou) = 3
                     goto 300
                 endif
@@ -158,7 +158,7 @@ contains
                                     proc%input_item(i_input)%ip_val <= iflx) then
                                 outputs%pointers(iou) = proc%input_item(i_input)%ip_val
                                 write (line, '(5a)') ' output [', outputs%names (iou)(1:20), '] default from [', proc%name, ']'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                                 goto 300
                             endif
                         endif
@@ -168,13 +168,13 @@ contains
 
                 call status%increase_warning_count()
                 write (line, '(5a)') ' warning: output [', outputs%names (iou)(1:20), '] not located'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
             300 continue
         end do
 
         line = ' '
-        call monsys(line, 4)
+        call write_log_message(line)
 
         if (timon) call timstop(ithndl)
         return

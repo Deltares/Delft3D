@@ -39,7 +39,7 @@ contains
 
         !     Modified  :
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
         implicit none
 
@@ -101,7 +101,7 @@ contains
         if (rowpnt(noseg + nobnd) > nomat) then
             write (*, *) ' System error in fast solvers matrix.'
             write (*, *) ' NOMAT = ', nomat, ', Required = ', rowpnt(noseg + nobnd)
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         !         fill the (pointers in) matrix for the first 2 directions

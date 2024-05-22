@@ -31,9 +31,7 @@ contains
     subroutine partmp (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
-        use m_write_error_message
+        use m_logger, only : terminate_execution, write_error_message, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !>\file
@@ -329,41 +327,41 @@ contains
 
         IF (TWOFRC) THEN
             IF (IN1==0) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
                 WRITE(*, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
             IF (IN2==0) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPDIS in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPDIS in dis/par modelling'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
             IF (IN3==0) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPPAR in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPPAR in dis/par modelling'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
         ELSE
             IF (IN2>0) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPDIS and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPDIS and MP!'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
             IF (IN3>0) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPPAR and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPPAR and MP!'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
         ENDIF
         !        Compute F-values or not
@@ -418,13 +416,13 @@ contains
 
                     IF (TWOFRC) THEN
                         IF (IGROUP==2) THEN
-                            CALL GETMLU(LUNREP)
+                            CALL get_log_unit_number(LUNREP)
                             WRITE(LUNREP, *) &
                                     'PARTMP: Kinetic sorption for Chromium not ', &
                                     'implemented!'
                             WRITE(*, *) 'PARTMP: Kinetic sorption for Chromium not ', &
                                     'implemented!'
-                            CALL SRSTOP(1)
+                            CALL terminate_execution(1)
                         ENDIF
                         MP = MPDIS + MPPAR
                     ENDIF
@@ -544,7 +542,7 @@ contains
                         ENDIF
                         IF (HVTADS > 1E-20 .OR. HVTDES > 1E-20) THEN
                             IF (.NOT.TWOFRC) THEN
-                                CALL GETMLU(LUNREP)
+                                CALL get_log_unit_number(LUNREP)
                                 WRITE(LUNREP, *) &
                                         'PARTMP: Kinetic sorption one MP fraction ', &
                                         'not possible!'
@@ -556,7 +554,7 @@ contains
                                         'not possible!'
                                 WRITE(*, *) 'Create MP-Dis & MP-Part for kinetic sorption'
                                 WRITE(*, *) 'or set HLTAdsMP and HLTDesMP to zero'
-                                CALL SRSTOP(1)
+                                CALL terminate_execution(1)
                             ENDIF
                             !           Let op: PART is in dit verband POC + IMx + PHYT !!!
                             !           Actual fraction PART
@@ -803,7 +801,7 @@ contains
                         PMSA(IP41) = CDIS
 
                     ELSE
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
 
                         WRITE(LUNREP, *) 'Invalid option for partitioning!'
                         WRITE(LUNREP, *) 'SwOXIC= ', ISWOX, ' 1- oxic, 0 - anoxic'
@@ -814,7 +812,7 @@ contains
                         WRITE(*, *) 'SwOXIC= ', ISWOX, ' 1- oxic, 0 - anoxic'
                         WRITE(*, *) 'Group = ', IGROUP, ' 1- General, 2-Cr, 3-As/Va, 4-OMP, &
                                 5-virus'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                     !
                     !     Addition of former process MPQUAL

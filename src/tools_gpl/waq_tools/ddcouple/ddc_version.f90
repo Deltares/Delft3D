@@ -24,7 +24,7 @@
 subroutine ddc_version(lunrep)
 
     use delwaq_version_module
-    use m_dattim
+    use m_date_time_utils_external, only : write_date_time
 
     ! print version to report file
 
@@ -43,7 +43,7 @@ subroutine ddc_version(lunrep)
 
     ! write credentials to report file
 
-    call dattim(rundat)
+    call write_date_time(rundat)
     write(lunrep, *)
     write(lunrep, '(a)') idstr(5:k)
     write(lunrep, *)

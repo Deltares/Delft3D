@@ -28,13 +28,9 @@
 !  
 
       subroutine write_rfl(hyd)
-
       ! function : write the source in delwaq format
 
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_hydmod                   ! module contains everything for the hydrodynamics
       use time_module, only: mjd2date
       implicit none
@@ -79,7 +75,7 @@
       integer           :: isec
       integer           :: success
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
@@ -89,8 +85,9 @@
       if ( nowast .ne. hyd%wasteload_data%num_locations ) then
          write(lunrep,*) 'error, number of wasteloads in hyd file does not equal the data files'
          write(lunrep,*) 'number from hyd file:',nowast
+
          write(lunrep,*) 'number from data    :',hyd%wasteload_data%num_locations
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       if ( nolay .gt. 1 ) then

@@ -79,7 +79,7 @@ contains
 
         !     Subroutines called  : wascal : the user specified wasteload dll
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_evaluate_waq_attribute
         use timers
         implicit none
@@ -188,7 +188,7 @@ contains
                     write(*, *) 'ERROR: allocating work array in DLWQ15'
                     write(*, *) 'ierr_alloc :', ierr_alloc
                     write(*, *) 'noseg,nowst:', noseg, nowst
-                    call SRSTOP(1)
+                    call terminate_execution(1)
                 endif
             endif
             IBpoint = 0

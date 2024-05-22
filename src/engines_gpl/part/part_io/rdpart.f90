@@ -143,11 +143,11 @@ contains
          enddo
          write  ( lun2, '(/'' including file: '',a )' ) lch(i)
          cchar_save = cchar
-         lunut_save = lunut
+         lunut_save = file_unit
          npos_save  = npos
       endif
       cchar   = ';'
-      lunut   = lun2
+      file_unit = lun2
       push    = .false.
       npos    = 200
       iposr   =   0
@@ -2068,7 +2068,7 @@ contains
          write ( lun2, '(A   )' ) ' '
          if ( .not. alone ) then        ! reset Delwaq settings
             cchar = cchar_save
-            lunut = lunut_save
+            file_unit = lunut_save
             npos  = npos_save
          endif
       endif

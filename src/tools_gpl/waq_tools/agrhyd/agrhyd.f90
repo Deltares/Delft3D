@@ -23,17 +23,16 @@
 
 program agrhyd
 
-    use m_srstop
-    use m_monsys
+    use m_logger, only : terminate_execution, set_log_unit_number
     use m_hydmod
     use m_cli_utils, only : retrieve_command_argument
     use data_processing, only : extract_value_from_group, extract_logical, extract_integer, extract_real
     use time_module
     use io_ugrid
     use system_utils, only: makedir
-    use waq_static_version_info, only : major_minor_buildnr
-    use delwaq_version_module, only : delwaq_version_full
-    use m_dattim
+    use m_date_time_utils_external, only : write_date_time
+    use agrhyd_version_module, only: getfullversionstring_agrhyd
+
 
     implicit none
 
@@ -96,12 +95,14 @@ program agrhyd
     type(t_file) :: new_grd               ! new grd file
     logical :: singapore_rename_discharges ! special option rename discharges for singapore
     character(len = 256) :: singapore_discharge_names   ! special option filename for singapore
+    character(len=80)        :: version       ! version string
 
     ! sing_z variables
     integer :: iseg1, iseg2, iseg, ik1, ik2, isegb, lenname
 
+    call getfullversionstring_agrhyd(version)
     write(*, *)
-    write(*, '(a,a)') ' (c) ', delwaq_version_full
+    write(*, '(a,a)') ' (c) ', trim(version)
     write(*, *)
 
     ! get input file from commandline
@@ -115,25 +116,25 @@ program agrhyd
     end if
     if (input_file == ' ') then
         open(lunrep, file = 'agrhyd.rep', recl = 132)
-        call dattim(rundat)
-        write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
+        call write_date_time(rundat)
+        write(lunrep, '(a,a)') ' (c) ', trim(version)
         write(lunrep, '(a,a)') ' execution start: ', rundat
         write(lunrep, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
         write(*, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
 
-        call srstop(1)
+        call terminate_execution(1)
     endif
 
     inquire (file = input_file, exist = exist_ini)
     if (.not. exist_ini) then
         open(lunrep, file = 'agrhyd.rep', recl = 132)
-        call dattim(rundat)
-        write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
+        call write_date_time(rundat)
+        write(lunrep, '(a,a)') ' (c) ', trim(version)
         write(lunrep, '(a,a)') ' execution start: ', rundat
         write(lunrep, '(a,a)') ' error: ini-file not found: ', trim(input_file)
         write(*, '(a,a)') ' error: ini-file not found: ', trim(input_file)
 
-        call srstop(1)
+        call terminate_execution(1)
     endif
 
     luninp = 10
@@ -155,10 +156,10 @@ program agrhyd
     endif
 
     open(lunrep, file = trim(name) // '-agrhyd.rep', recl = 132)
-    call setmlu(lunrep)
+    call set_log_unit_number(lunrep)
     call SetMessageHandling(lunMessages = lunrep)
-    write(lunrep, '(a,a)') ' (c) ', delwaq_version_full
-    call dattim(rundat)
+    write(lunrep, '(a,a)') ' (c) ', trim(version)
+    call write_date_time(rundat)
     write(lunrep, '(2a)') ' execution start: ', rundat
     write(lunrep, *)
     write(lunrep, *) 'input file name          : ', trim(input_file)
@@ -225,7 +226,7 @@ program agrhyd
             input_hyd%geometry /= HYD_GEOM_UNSTRUC) then
         write(lunrep, *) 'error: unknown geometry specification, agrhyd only supports "curvilinear-grid" and "unstructured"'
         write(*, *) 'error: unknown geometry specification, agrhyd only supports "curvilinear-grid" and "unstructured"'
-        call srstop(1)
+        call terminate_execution(1)
     endif
     if (output_hyd%file_dwq%name /= ' ') then
         write(lunrep, *) 'horizontal aggregation   : ', trim(output_hyd%file_dwq%name)
@@ -243,12 +244,12 @@ program agrhyd
         if (input_hyd%geometry /= HYD_GEOM_CURVI) then
             write(lunrep, *) 'error: expand option only possible on curvilinear grids'
             write(*, *) 'error: regular option only possible on curvilinear grids'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         if (output_hyd%file_dwq%name /= ' ') then
             write(lunrep, *) 'error: expand option not allowed in combination with horizontal aggregation file'
             write(*, *) 'error: expand option not allowed in combination with horizontal aggregation file'
-            call srstop(1)
+            call terminate_execution(1)
         endif
     endif
     if (l_regular) then
@@ -256,17 +257,17 @@ program agrhyd
         if (input_hyd%geometry /= HYD_GEOM_CURVI) then
             write(lunrep, *) 'error: regular option only possible on curvilinear grids'
             write(*, *) 'error: regular option only possible on curvilinear grids'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         if (output_hyd%file_dwq%name /= ' ') then
             write(lunrep, *) 'error: regular option not allowed in combination with horizontal aggregation file'
             write(*, *) 'error: regular option not allowed in combination with horizontal aggregation file'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         if (l_expand) then
             write(lunrep, *) 'error: regular option not allowed in combination with expand option'
             write(*, *) 'error: regular option not allowed in combination with expand option'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         write(lunrep, *) 'aggregation factor m dir.: ', m_fact
         write(lunrep, *) 'aggregation factor n dir.: ', n_fact
@@ -314,12 +315,12 @@ program agrhyd
             if (input_hyd%noseg /= input_patch_hyd(ipatch)%noseg) then
                 write(lunrep, *) 'error: patch hyd file does not contain the same number of segments as the main hyd-file!'
                 write(*, *) 'error: patch hyd file does not contain the same number of segments as the main hyd-file!'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             if (input_hyd%noq /= input_patch_hyd(ipatch)%noq) then
                 write(lunrep, *) 'error: patch hyd file does not contain the same number of exchanges as the main hyd-file!'
                 write(*, *) 'error: patch hyd file does not contain the same number of exchanges as the main hyd-file!'
-                call srstop(1)
+                call terminate_execution(1)
             endif
         endif
     enddo
@@ -410,10 +411,10 @@ program agrhyd
     ! allocate aggregation pointers
 
     allocate(ipnt_h(input_hyd%nmax, input_hyd%mmax), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
     allocate(ipnt_v(input_hyd%nolay), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
 
     ! read or set horizontal aggregation
@@ -454,13 +455,13 @@ program agrhyd
     ! set aggregation pointers
 
     allocate(ipnt(input_hyd%noseg), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
     allocate(ipnt_vdf(input_hyd%noseg), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
     allocate(ipnt_tau(input_hyd%noseg), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
     !     nosegb     = -minval(ipnt_h)*input_hyd%nolay
     !     nosegb     = -minval(input_hyd%lgrid)*input_hyd%nolay
@@ -473,7 +474,7 @@ program agrhyd
         allocate(ipnt_b(1), stat = ierr_alloc)
         ipnt_b(1) = 0
     endif
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
 
     call set_aggr_pnts(input_hyd, ipnt_h, ipnt_v, ipnt, ipnt_vdf, &
@@ -484,7 +485,7 @@ program agrhyd
 
     write(*, '(a)') 'Starting aggregation ...'
     allocate(ipnt_q(input_hyd%noq), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
     call agr_hyd_init(input_hyd, ipnt, ipnt_h, ipnt_q, ipnt_vdf, ipnt_b, ipnt_v, output_hyd, l_regular, l_expand, l_lenlen)
 
@@ -549,7 +550,7 @@ program agrhyd
     endif
 
     ! write hyd file
-    call write_hyd(output_hyd, major_minor_buildnr)
+    call write_hyd(output_hyd, version)
 
     ! write time independent data
 
@@ -609,7 +610,7 @@ program agrhyd
                         trim(input_patch_hyd(ipatch)%file_hyd%name)
                 write(*, *) 'error: could not read first timestep of input hydrodynamics patch : ' // &
                         trim(input_patch_hyd(ipatch)%file_hyd%name)
-                call srstop(1)
+                call terminate_execution(1)
             endif
         endif
     end do
@@ -694,13 +695,13 @@ program agrhyd
 
     ! finished
 
-    call dattim(rundat)
+    call write_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' normal end of execution'
     write (lunrep, '(2a)') ' execution stop : ', rundat
     write (*, *)
     write (*, '(a)') ' normal end of execution'
     write (*, '(2a)') ' execution stop : ', rundat
-    call srstop(0)
+    call terminate_execution(0)
 
 end program

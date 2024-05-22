@@ -27,7 +27,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     ! global declarations
 
-    use m_srstop
+    use m_logger, only : terminate_execution
     use m_hydmod
     use aggregation, only : aggregate_extended, AGGREGATION_TYPE_ACCUMULATE, AGGREGATION_TYPE_ACCUMULATE_SIGNED, &
             AGGREGATION_TYPE_WEIGHTED_AVERAGE, AGGREGATION_TYPE_MINIMUM
@@ -59,7 +59,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     ! some init
 
     allocate(rwork(output_hyd%noseg), stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
     endif
 
     ! volumes
@@ -170,7 +170,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
             noseg2 = input_hyd%nosegl * output_hyd%nolay
             allocate(vdfwork(noseg2), stat = ierr_alloc)
-            if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call srstop(1) ;
+            if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call terminate_execution(1) ;
             endif
             do iseg = 1, noseg2
                 vdfwork(iseg) = rmiss
@@ -207,7 +207,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
             output_hyd%vdf(i2:output_hyd%noseg) = 0.0
 
             deallocate(vdfwork, stat = ierr_alloc)
-            if (ierr_alloc /= 0) then ; write(*, *) ' error deallocating memory' ; call srstop(1) ;
+            if (ierr_alloc /= 0) then ; write(*, *) ' error deallocating memory' ; call terminate_execution(1) ;
             endif
 
         else
@@ -227,7 +227,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     endif
 
     deallocate(rwork, stat = ierr_alloc)
-    if (ierr_alloc /= 0) then ; write(*, *) ' error deallocating memory' ; call srstop(1) ;
+    if (ierr_alloc /= 0) then ; write(*, *) ' error deallocating memory' ; call terminate_execution(1) ;
     endif
     return
 end

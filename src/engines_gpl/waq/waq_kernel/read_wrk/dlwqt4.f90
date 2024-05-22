@@ -280,13 +280,11 @@ contains
 
     END
 
-    SUBROUTINE MESSAG (LUNOUT, MESSGE, ISFLAG, LLUN, SFILE, &
-            ITIME, ITIME1)
+    subroutine messag (lunout, messge, isflag, llun, sfile, itime, itime1)
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
-
-        integer(kind = int_wp) :: LUNOUT, ISFLAG, LLUN, ITIME, ITIME1, MESSGE
+        integer(kind = int_wp) :: lunout, isflag, llun, itime, itime1, messge
 
         character(len = 24)  MSGTXT(6)
         character(len = *) SFILE
@@ -296,35 +294,35 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("messag", ithandl)
 
-        IF (MESSGE == 0) goto 9999
-        IF (ISFLAG == 1) THEN
-            WRITE(LUNOUT, 2010) MSGTXT(MESSGE), LLUN, TRIM(SFILE), &
-                    ITIME / 86400, &
-                    MOD(ITIME, 86400) / 3600, &
-                    MOD(ITIME, 3600) / 60, &
-                    MOD(ITIME, 60), &
-                    ITIME1 / 86400, &
-                    MOD(ITIME1, 86400) / 3600, &
-                    MOD(ITIME1, 3600) / 60, &
-                    MOD(ITIME1, 60)
-        ELSEIF (ISFLAG == 2) THEN
-            WRITE(LUNOUT, 2020) MSGTXT(MESSGE), LLUN, TRIM(SFILE), &
-                    ITIME / 31536000, &
-                    MOD(ITIME, 31536000) / 86400, &
-                    MOD(ITIME, 86400) / 3600, &
-                    MOD(ITIME, 3600) / 60, &
-                    MOD(ITIME, 60), &
-                    ITIME1 / 31536000, &
-                    MOD(ITIME1, 31536000) / 86400, &
-                    MOD(ITIME1, 86400) / 3600, &
-                    MOD(ITIME1, 3600) / 60, &
-                    MOD(ITIME1, 60)
-        ELSE
-            WRITE(LUNOUT, 2000) MSGTXT(MESSGE), LLUN, TRIM(SFILE), ITIME
-        ENDIF
-        IF (MESSGE == 1) goto 9999
-        IF (MESSGE == 2) goto 9999
-        CALL SRSTOP (1)
+        if (messge == 0) goto 9999
+        if (isflag == 1) then
+            write(lunout, 2010) msgtxt(messge), llun, trim(sfile), &
+                    itime / 86400, &
+                    mod(itime, 86400) / 3600, &
+                    mod(itime, 3600) / 60, &
+                    mod(itime, 60), &
+                    itime1 / 86400, &
+                    mod(itime1, 86400) / 3600, &
+                    mod(itime1, 3600) / 60, &
+                    mod(itime1, 60)
+        elseif (isflag == 2) then
+            write(lunout, 2020) msgtxt(messge), llun, trim(sfile), &
+                    itime / 31536000, &
+                    mod(itime, 31536000) / 86400, &
+                    mod(itime, 86400) / 3600, &
+                    mod(itime, 3600) / 60, &
+                    mod(itime, 60), &
+                    itime1 / 31536000, &
+                    mod(itime1, 31536000) / 86400, &
+                    mod(itime1, 86400) / 3600, &
+                    mod(itime1, 3600) / 60, &
+                    mod(itime1, 60)
+        else
+            write(lunout, 2000) msgtxt(messge), llun, trim(sfile), itime
+        endif
+        if (messge == 1) goto 9999
+        if (messge == 2) goto 9999
+        call terminate_execution (1)
         9999 if (timon) call timstop (ithandl)
         return
 
@@ -337,6 +335,6 @@ contains
                 ' SIMULATION TIME :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .', / &
                 ' TIME IN FILE    :', I2, 'Y ', I3, 'D ', I2, 'H ', I2, 'M ', I2, 'S .')
 
-    END
+    end subroutine messag
 
 end module m_dlwqt4

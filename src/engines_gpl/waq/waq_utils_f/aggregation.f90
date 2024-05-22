@@ -24,8 +24,7 @@
 module aggregation
 
     use m_waq_precision
-    use m_srstop, only : srstop
-    use m_monsys, only : getmlu
+    use m_logger, only : terminate_execution, get_log_unit_number
 
     implicit none
 
@@ -153,9 +152,9 @@ contains
             enddo
 
         case default
-            call getmlu(lurep)
+            call get_log_unit_number(lurep)
             write(lurep, 2000) agg_type
-            call srstop(1)
+            call terminate_execution(1)
 
         end select
 
@@ -203,11 +202,11 @@ contains
             lfirst = .false.
             call retrieve_command_argument('-vmin', 2, command_found, int_arg, min_weight, char_arg, error_status)
             if (command_found) then
-                call getmlu(file_unit)
+                call get_log_unit_number(file_unit)
                 if (error_status /= 0) then
                     write(*, *) 'error commandline option -vmin value could not be interpreted'
                     write(file_unit, *) 'error commandline option -vmin value could not be interpreted'
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
                 write(*, *) ' commandline option -vmin ', min_weight
                 write(file_unit, *) ' commandline option -vmin ', min_weight
@@ -287,9 +286,9 @@ contains
                 ENDIF
             ENDDO
         ELSE
-            CALL GETMLU(LUREP)
+            CALL get_log_unit_number(LUREP)
             WRITE(LUREP, 2000) agg_type
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
         ! Average
         IF (agg_type == AGGREGATION_TYPE_AVERAGE .OR. agg_type == AGGREGATION_TYPE_WEIGHTED_AVERAGE) THEN
@@ -437,9 +436,9 @@ contains
             ENDDO
         ELSE
             ! ERROR , undefined dis-aggregation type
-            CALL GETMLU(file_unit)
+            CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
 
         RETURN
@@ -553,9 +552,9 @@ contains
             ENDDO
         ELSE
             ! ERROR , undefined dis-aggregation type
-            CALL GETMLU(file_unit)
+            CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
 
         RETURN

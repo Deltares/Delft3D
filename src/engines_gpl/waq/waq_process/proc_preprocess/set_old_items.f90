@@ -44,7 +44,7 @@ contains
         !>/File
         !>      rename items according the old_items table
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers         !< performance timers
         use m_waq_data_structure      !< data definitions
         use processet      !< use processet definitions
@@ -94,7 +94,7 @@ contains
                     ierr2 = constants%resize(nocons)
                     if (ierr2 > 0) then
                         write(lurep, '(a,i10)') ' ERROR: set_old_items resize error constants size:', nocons
-                        call srstop(1)
+                        call terminate_execution(1)
                     endif
                     constants%no_item = nocons
                     constants%name(nocons) = 'active_' // old_items%old_items(i)%new_name

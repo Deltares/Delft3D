@@ -32,8 +32,8 @@ module m_waq_data_structure
     !!   t_data_column!
     !!       a collection of dlwqdata, for instance all wasteloads
 
-    use m_srstop
-    use m_monsys
+    use m_logger, only : terminate_execution, get_log_unit_number
+    use waq_file_utils_external, only : create_new_file_unit_number
     use m_open_waq_files
     use m_string_utils
 
@@ -207,7 +207,7 @@ contains
             allocate (dlwqdatas (self%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, self%maxsize
                 dlwqdatas(i) = self%data_block(i)            ! copies the contents
@@ -788,7 +788,7 @@ contains
             allocate (data_item_used (self%maxsize + MAX_NUM), stat = ierr_alloc3)
             if (ierr_alloc1 /= 0 .or. ierr_alloc2 /= 0 .or. ierr_alloc3 /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, self%maxsize
                 dlwq_foritems(i) = self%for_item(i)                ! copies the contents
@@ -810,7 +810,7 @@ contains
 
     function read_external_data_block(self, lunrep) result (ierror)
 
-        use m_file_unit_number
+        use waq_file_utils_external, only: create_new_file_unit_number
 
         class(t_data_block), intent(inout) :: self             ! data block to be used
         integer, intent(in) :: lunrep               ! unit number report file
@@ -956,7 +956,7 @@ contains
         integer :: lunrep       ! unit number report file
         integer :: ierr_alloc
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
 
         ierror = 0
         nopar = self%num_parameters

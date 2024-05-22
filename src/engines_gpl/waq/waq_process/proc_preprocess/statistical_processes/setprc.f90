@@ -39,7 +39,7 @@ contains
 
         !! Sets io list for statistical routine STAPRC
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !                           ZOEK  , finds string in character array
         !
         !
@@ -59,7 +59,7 @@ contains
         !     aProcesProp               OUTPUT  properties for this proces
         !     AllItems                  INPUT   all items known to the proces system
         !
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_string_manipulation, only : get_trimmed_length
         use timers
         USE ProcesSet
@@ -88,7 +88,7 @@ contains
             WRITE(LUNREP, *) 'ERROR allocating buffer array:', IERR_ALLOC
             WRITE(LUNREP, *) 'in routine SETPRC_3, buffer length:', NOKEY
             WRITE(*, *) 'ERROR allocating buffer array:', IERR_ALLOC
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
         ISUSED = 0
         KEY = 'OUTPUT-OPERATION'
@@ -117,7 +117,7 @@ contains
             WRITE(LUNREP, *) 'ERROR allocating IOitem array:', IERR_ALLOC
             WRITE(LUNREP, *) 'in routine SETDAY_1, array length:', aProcesProp%no_input, aProcesProp%no_output
             WRITE(*, *) 'ERROR allocating array:', IERR_ALLOC
-            CALL SRSTOP(1)
+            CALL terminate_execution(1)
         ENDIF
 
         ! input on segments

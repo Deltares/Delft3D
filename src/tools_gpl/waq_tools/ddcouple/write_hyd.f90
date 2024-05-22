@@ -22,16 +22,13 @@
 !!  rights reserved.
 
       subroutine write_hyd(hyd, parallel)
-
       ! function : write a hydrodynamic description file
 
-      ! global declarations
-
-      use m_monsys
+      use m_logger
       use m_hydmod
-      use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
-      use delwaq_version_module
-      use m_dattim
+      use m_hyd_keys, only: key, nokey     ! keywords in hydfile
+      use ddcouple_version_module, only: getfullversionstring_ddcouple
+      use m_date_time_utils_external, only : write_date_time
 
       implicit none
 
@@ -56,7 +53,7 @@
       integer                   :: i_dd_bound             ! index in collection
       type(t_dd_bound),pointer  :: dd_bound               ! one dd_bound description
 
-      character(Len=80) :: version_string_full
+      character(Len=80) :: version
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
 
@@ -65,15 +62,15 @@
       character(len=2),parameter :: cqs = ''' '     ! quote with space
       character(len=2),parameter :: csq = ' '''     ! space with quote
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       call hyd%file_hyd%open()
       lunhyd = hyd%file_hyd%unit
 
-      call getfullversionstring_delwaq(version_string_full)
-      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_string_full(5:))
+      call getfullversionstring_ddcouple(version)
+      write(lunhyd,'(A,A)') 'file-created-by  '//trim(version)
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 

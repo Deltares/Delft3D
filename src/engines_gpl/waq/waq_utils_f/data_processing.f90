@@ -351,8 +351,8 @@ contains
             num_outputs, substance_names, substance_units, constant_names, constant_values, output_names, &
             output_descriptions, error_status, error_message)
 
-        use m_monsys
-        use rd_token, only : ilun, lch, lstack, gettoken, lunut, npos, cchar
+        use m_logger
+        use rd_token, only : ilun, lch, lstack, gettoken, file_unit, npos, cchar
 
         implicit none
 
@@ -411,7 +411,7 @@ contains
                 'value               ', 'name                ' /
 
         ! Open input file
-        call getmlu(lunut)
+        call get_log_unit_number(file_unit)
         ilun = 0
         lch (1) = input_file
         open (newunit = ilun(1), file = lch(1), status = 'old', iostat = error_status)

@@ -167,7 +167,7 @@ contains
         use m_baldmp
         use m_actloc
         use m_array_manipulation, only : initialize_real_array
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_cli_utils, only : retrieve_command_argument
         use timers
         use results
@@ -296,8 +296,8 @@ contains
                 write(*, '(A)')   '          Current concentration fields written to _res.map.'
                 write(lunout, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
                 write(*, '(/A/)') '  INFO  : If you don''t want NAN checks, use -nonancheck at command line.'
-                call dlwq13 (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
-                call srstop(1)
+                call write_restart_file (file_unit_list, file_name_list, conc, itime, moname, syname, notot, noseg)
+                call terminate_execution(1)
             endif
         endif
         !
@@ -334,49 +334,42 @@ contains
                         flxint)
             endif
 
-            if (noraai > 0) then
-                if (lhfirs) then
-                    call initialize_real_array   (trraai, noraai * nosys)
-                else
-                    call raatra (nosys, ndmpq, noraai, ntraaq, ioraai, &
-                            nqraai, iqraai, iqdmp, dmpq, trraai)
-                endif
+         if ( noraai > 0 ) then
+            if ( lhfirs ) then
+               call initialize_real_array   (trraai, noraai*nosys  )
+            else
+               call raatra (nosys , ndmpq , noraai, ntraaq, ioraai, & 
+                              nqraai, iqraai, iqdmp , dmpq  , trraai)
             endif
-            !
-        endif
-        !
-        !     Initialize K1, pointer in IOPOIN and OUNAM
-        !
-        lread = .true.
-        k1 = 1
-        !
-        !     Loop over the output files
-        !
-        do iout = 1, noutp
-            !
-            !        Map output structure to single variables part 1
-            !
-            iostrt = ioutps(1, iout)
-            iostop = ioutps(2, iout)
-            iostep = ioutps(3, iout)
-            nrvar = ioutps(4, iout)
-            !
-            !        Output required ?
-            !
-            call stepyn (itime, idt, iostrt, iostop, iostep, &
-                    loflag, ldummy)
-            !
-            if (.not. loflag) goto 100
-            !
-            !        Map output structure to single variables part 2
-            !
-            isrtou = ioutps(5, iout)
-            igrdou = ioutps(6, iout)
-            iniout = ioutps(7, iout)
-            if (iout <= 4) then
-                ifi = iout + luoff
-            elseif (iout <= 7) then
-                ifi = iout + luoff2 - 4
+         endif
+      endif
+!
+!     Initialize K1, pointer in IOPOIN and OUNAM
+      lread = .true.
+      k1 = 1
+!
+!     Loop over the output files
+!
+      do iout = 1 , noutp
+!
+!        Map output structure to single variables part 1
+         iostrt = ioutps(1,iout)
+         iostop = ioutps(2,iout)
+         iostep = ioutps(3,iout)
+         nrvar  = ioutps(4,iout)
+!
+!        Output required ?
+         call stepyn (itime , idt, iostrt, iostop, iostep, loflag, ldummy)
+         if ( .not. loflag ) goto 100
+!
+!        Map output structure to single variables part 2
+            isrtou = ioutps(5,iout)
+            igrdou = ioutps(6,iout)
+            iniout = ioutps(7,iout)
+            if ( iout <= 4 ) then
+               ifi = iout + luoff
+            elseif ( iout <= 7 ) then
+               ifi = iout + luoff2 - 4
             else
                 ifi = iout + luoff2 - 2
             endif
@@ -446,16 +439,15 @@ contains
                         nx, ny, lgrid, igrdou, bound, &
                         noloc, proloc, nodef, defaul)
             endif
-            !
-            !        Fill character buffer with substance names and output names
-            !
-            if (isrtou == imnf .or. &
-                    isrtou == ihnf .or. &
-                    isrtou == ihnf .or. &
-                    isrtou == ihnc3 .or. &
-                    isrtou == imo3 .or. &
-                    isrtou == ihi3 .or. &
-                    isrtou == ihn3) then
+!
+!        Fill character buffer with substance names and output names
+            if ( isrtou == imnf .or. &
+                isrtou == ihnf .or. &
+                isrtou == ihnf .or. &
+                isrtou == ihnc3 .or. &
+                isrtou == imo3 .or. &
+                isrtou == ihi3 .or. &
+                isrtou == ihn3     ) then
 
                 if (allocated(hnc_standard)) then
                     deallocate(hnc_standard)
@@ -726,17 +718,14 @@ contains
                 deallocate (surf)
                 !
             endif
-            !
-            ioutps(7, iout) = iniout
-            !
-            !
-            100    continue
-            !
-            !        Update K1, pointer in IOPOIN and OUNAM
-            !
-            k1 = k1 + nrvar
-            !
-        end do
+            ioutps(7,iout) = iniout
+  100    continue
+!
+!        Update K1, pointer in IOPOIN and OUNAM
+!
+         k1 = k1 + nrvar
+!
+      end do
 
         if (timon) call timstop (ithandl)
         return

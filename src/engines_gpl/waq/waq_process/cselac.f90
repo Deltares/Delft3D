@@ -31,7 +31,7 @@ contains
     subroutine cselac (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
+        use m_logger
 
         !>\file
         !>       Consumption of electron acceptors (new, generic!)
@@ -174,7 +174,7 @@ contains
         SAVE     FIRST, ONLY_OX
         DATA     FIRST /.TRUE./
         !
-        CALL GETMLU(ILUMON)
+        CALL get_log_unit_number(ILUMON)
         !
         IN = INCREM
         IP = IPOINT

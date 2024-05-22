@@ -72,15 +72,14 @@ contains
         !                           PROINT, integrate fluxes at dump segments
         !                           PROVEL, calculate new velocities/dispersions
         !                           aggregate_extended, aggrgation of a variable
-        !                           GETMLU, get unit number monitor file
-        !                           SRSTOP, stops execution with an error indication
+        !                           get_log_unit_number, get unit number monitor file
+        !                           terminate_execution, stops execution with an error indication
 
         !     Files               : Monitoring file if needed for messages
 
         use m_dlwqp0
         use m_dlwq14
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution
         use m_cli_utils, only : retrieve_command_argument
         use aggregation, only : aggregate, aggregate_extended, resample, aggregate_attributes
         use m_dhgvar
@@ -239,7 +238,7 @@ contains
         ! open openpb dll
 
         if (ifirst == 1) then
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             call retrieve_command_argument ('-openpb', 3, lfound, idummy, rdummy, shared_dll, ierr2)
             if (lfound) then
                 if (ierr2== 0) then
@@ -265,7 +264,7 @@ contains
                 write(lunrep, *) 'ERROR : opening process library DLL'
                 write(lunrep, *) 'DLL   : ', trim(shared_dll)
                 write(lunrep, *) 'dll handle: ', dll_opb
-                call srstop(1)
+                call terminate_execution(1)
             endif
             ifirst = 0
         endif
@@ -431,9 +430,8 @@ contains
                 endif
 
                 !           Scale fluxes and update "processes" accumulation arrays
-
-                call dlwq14 (deriv, notot, noseg, itfact, amass2, &
-                        idt, iaflag, dmps, intopt, isdmp)
+                call scale_processes_derivs_and_update_balances (deriv, notot, noseg, itfact, amass2, &
+                     idt, iaflag, dmps, intopt, isdmp)
 
                 !           Integration (derivs are zeroed)
 
@@ -611,8 +609,8 @@ contains
 
                 !           Scale fluxes and update "processes" accumulation arrays
 
-                call dlwq14 (deriv, notot, noseg, itfact, amass2, &
-                        idt, iaflag, dmps, intopt, isdmp)
+                call scale_processes_derivs_and_update_balances(deriv, notot, noseg, itfact, amass2, &
+                     idt, iaflag, dmps, intopt, isdmp)
 
                 !           Integration (derivs are zeroed)
 

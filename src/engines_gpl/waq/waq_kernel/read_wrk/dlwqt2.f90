@@ -34,7 +34,7 @@ contains
         !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
         !                           LUNOUT - monitor file
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !     PARAMETERS          :
         !
@@ -48,8 +48,7 @@ contains
         !     LUNTXT  CHAR*(*)      1     INPUT   text concerning unit numbers
         !     ISFLAG  INTEGER       1     INPUT   = 1 then 'ddhhmmss' format
         !     IFFLAG  INTEGER       1     INPUT   = 1 then first invocation
-
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
 
         real(kind = real_wp) :: RESULT(NTOTAL)
@@ -150,7 +149,7 @@ contains
                     ITIME, ITIME1
         ENDIF
         IF (MESSGE < 3) goto 9999  !   RETURN
-        CALL SRSTOP (1)
+        CALL terminate_execution (1)
         9999 if (timon) call timstop (ithandl)
         RETURN
         !

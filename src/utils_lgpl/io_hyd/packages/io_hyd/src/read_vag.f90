@@ -30,22 +30,17 @@
       subroutine read_vag(file_vag, nolay, ipnt, lunrep )
 
       ! function : read a vag file (vertical aggregation) and check dimensions
-
-      ! global declarations
-
-      use m_srstop
-      use m_waq_file                   ! module contains everything for the files
+      use m_logger, only : terminate_execution
+      use m_waq_file        ! module contains everything for the files
       implicit none
 
       ! declaration of the arguments
-
       type(t_file)                       :: file_vag               ! aggregation-file
       integer                                :: nolay                  ! number of layers
       integer                                :: ipnt(nolay)            ! aggregation pointer
       integer                                :: lunrep                 ! unit number report file
 
       ! local declarations
-
       integer                                :: nolayd                 ! number of layers from vag file
       integer                                :: i                      ! loop counter
       integer                                :: ioerr                  ! error on file
@@ -55,7 +50,7 @@
       if(.not.ex) then
          write(lunrep,*) 'ERROR vertical aggregation file does not exist:',trim(file_vag%name)
          write(*,*) 'ERROR vertical aggregation file does not exist:',trim(file_vag%name)
-         call srstop(1)
+         call terminate_execution(1)
       endif            
       
       call file_vag%open()
@@ -63,7 +58,7 @@
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading vag file'
          write(*,*) ' error reading vag file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       if ( nolayd .eq. -1 ) then
@@ -78,14 +73,14 @@
          if ( nolayd .ne. nolay ) then
             write(lunrep,*) ' dimensions grid on vertical aggregation file differ from input hydrodynamics'
             write(*,*) ' dimensions grid on vertical aggregation file differ from input hydrodynamics'
-            call srstop(1)
+            call terminate_execution(1)
          endif
 
          read(file_vag%unit,*,iostat=ioerr) (ipnt(i),i=1,nolay)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading vag file'
             write(*,*) ' error reading vag file'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       endif
       

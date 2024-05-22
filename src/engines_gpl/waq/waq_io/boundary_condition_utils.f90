@@ -34,17 +34,18 @@ module boundary_condition_utils
 
 contains
 
-    subroutine parse_boundary_condition_data(lunut, input_file_start_position, num_significant_char, &
-            comment_charachter, char_arr, int_array, max_char_size, max_int_size, all_names, all_types, &
+    subroutine parse_boundary_condition_data(file_unit, input_file_start_position, num_significant_char, &
+            comment_character, char_arr, int_array, max_char_size, max_int_size, all_names, all_types, &
             num_bc_waste, num_bc_waste_types, parsed_items_count, noits, chkflg, caller, ilun, file_name_list, &
             lstack, itype, real_array, nconst, itmnr, parsed_str, output_verbose_level, error_ind, status)
 
         use m_string_utils, only : index_in_array, join_strings, string_equals
+        use rd_token, only : rdtok1
 
         integer(kind = int_wp), intent(in) :: max_char_size        !< Max. Char workspace dimension
         integer(kind = int_wp), intent(in) :: max_int_size        !< Max. Int. Workspace dimension
         integer(kind = int_wp), intent(in) :: chkflg       !< Check on input or add items
-        integer(kind = int_wp), intent(in) :: lunut        !< Unit Formatted Output File
+        integer(kind = int_wp), intent(in) :: file_unit        !< Unit Formatted Output File
         integer(kind = int_wp), intent(inout) :: input_file_start_position        !< Start position on input line
         integer(kind = int_wp), intent(in) :: num_significant_char         !< Nr of significant characters
         integer(kind = int_wp), intent(out) :: int_array(:)       !< Integer workspace
@@ -61,7 +62,7 @@ contains
 
         real(kind = real_wp), intent(out) :: real_array(:)       !< Array with real values
 
-        character(1), intent(in) :: comment_charachter        !< Comment character
+        character(1), intent(in) :: comment_character        !< Comment character
         character(*), intent(out) :: char_arr(:)       !< Character workspace
         character(*), intent(inout) :: all_names(:)     !< Id's of the boundaries/wastes
         character(*), intent(in) :: all_types(:)     !< Types of the boundaries/wastes
@@ -125,7 +126,7 @@ contains
         read_and_process : do
             itype = -3
             if (operator_on .or. (usefor_on .and. substitution_on)) itype = 0
-            call rdtok1(lunut, ilun, file_name_list, lstack, comment_charachter, &
+            call rdtok1(file_unit, ilun, file_name_list, lstack, comment_character, &
                     input_file_start_position, num_significant_char, parsed_str, parsed_int, parsed_real, &
                     itype, error_ind)
             if (error_ind /= 0) then
@@ -137,7 +138,7 @@ contains
                 ! Scenario: type==1 and a keyword was met
                 if (any(keywords == trim(parsed_str))) then
                     if (usefor_on) then
-                        write (lunut, 1035) parsed_str
+                        write (file_unit, 1035) parsed_str
                         call error_and_finish(error_ind, ithndl)
                         return
                     else
@@ -149,12 +150,12 @@ contains
                 ! Scenario: type==1 and computation was met
                 if (any(operations == trim(parsed_str))) then
                     if (.not. can_compute) then
-                        write (lunut, 1070)
+                        write (file_unit, 1070)
                         call error_and_finish(error_ind, ithndl)
                         return
                     end if
                     if (operator_on) then
-                        write (lunut, '(A)') ' ERROR: arithmetics should be separated by items !'
+                        write (file_unit, '(A)') ' ERROR: arithmetics should be separated by items !'
                         call error_and_finish(error_ind, ithndl)
                         return
                     end if
@@ -188,7 +189,7 @@ contains
                         if (ifound == 1) then
                             noits = noits - 1
                             i2 = int_array(itmnr + parsed_items_count)
-                            call log_item_number_name(i2, lunut, i, parsed_str)
+                            call log_item_number_name(i2, file_unit, i, parsed_str)
                             int_array(itmnr + parsed_items_count) = i2 + i
                             char_arr(itmnr + parsed_items_count + ioff) = '&$&$SYSTEM_NAME&$&$!'
                             operator_on = .false.
@@ -196,7 +197,7 @@ contains
                         end if
                     end do
                     i2 = int_array(itmnr + parsed_items_count)
-                    call log_local_substitution(i2, lunut, parsed_str)
+                    call log_local_substitution(i2, file_unit, parsed_str)
                     int_array (itmnr + parsed_items_count + parsed_items_count) = noits
                     char_arr (itmnr + parsed_items_count + ioff) = parsed_str
                     operator_on = .false.
@@ -206,7 +207,7 @@ contains
                 ! Scenario: a local redirection of the name of an item or substance
                 if (parsed_str == 'USEFOR') then
                     if (usefor_on) then
-                        write (lunut, 1035) parsed_str
+                        write (file_unit, 1035) parsed_str
                         call error_and_finish(error_ind, ithndl)
                         return
                     else
@@ -220,7 +221,7 @@ contains
                 if (usefor_on .and. substitution_on) then
                     name_index = int_array(itmnr)
                     if (logging_on) then
-                        call log_name_substitution(name_index, lunut, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .false.)
+                        call log_name_substitution(name_index, file_unit, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .false.)
                     end if
                     int_array(itmnr + parsed_items_count + parsed_items_count) = noits
                     char_arr(itmnr + parsed_items_count + ioff) = parsed_str
@@ -250,7 +251,7 @@ contains
                     char_arr (itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
                     if (logging_on .and. .not. usefor_on) then
-                        write (lunut, 1020) caller, itmnr, caller, 0, 'FLOW'
+                        write (file_unit, 1020) caller, itmnr, caller, 0, 'FLOW'
                     end if
                     cycle read_and_process
                 end if
@@ -270,7 +271,7 @@ contains
                     char_arr(itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
                     if (logging_on .and. .not. usefor_on) then
-                        write (lunut, 1020) caller, itmnr, caller, ifound, all_names(ifound)
+                        write (file_unit, 1020) caller, itmnr, caller, ifound, all_names(ifound)
                     end if
                     cycle read_and_process
                 end if
@@ -290,7 +291,7 @@ contains
                     char_arr(itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
                     if (logging_on .and. .not. usefor_on) then
-                        write (lunut, 1030) caller, itmnr, caller, ifound, all_types(ifound)
+                        write (file_unit, 1030) caller, itmnr, caller, ifound, all_types(ifound)
                     end if
                     cycle read_and_process
                 end if
@@ -311,7 +312,7 @@ contains
                     char_arr (itmnr + ioff) = parsed_str
                     char_arr (itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
-                    write(lunut, 1040) caller, itmnr, parsed_str
+                    write(file_unit, 1040) caller, itmnr, parsed_str
 
                     call status%increase_warning_count()
                 else
@@ -337,7 +338,7 @@ contains
                     char_arr(itmnr + parsed_items_count + ioff) = parsed_str
                     if (usefor_on) substitution_on = .true.
                     if (logging_on .and. .not. usefor_on) then
-                        write (lunut, 1020) caller, itmnr, caller, num_bc_waste, all_names(num_bc_waste)
+                        write (file_unit, 1020) caller, itmnr, caller, num_bc_waste, all_names(num_bc_waste)
                     end if
                 end if
                 cycle read_and_process
@@ -353,7 +354,7 @@ contains
                     char_arr(itmnr + parsed_items_count + ioff) = '&$&$SYSTEM_NAME&$&$!'
                     if (operator_on) then
                         if (logging_on) then
-                            call log_number_in_operation(i2, lunut, parsed_real)
+                            call log_number_in_operation(i2, file_unit, parsed_real)
                         end if
                         int_array(itmnr + parsed_items_count) = i2 - nconst
                         operator_on = .false.
@@ -361,7 +362,7 @@ contains
                     if (substitution_on) then
                         name_index = int_array(itmnr)
                         if (logging_on) then
-                            call log_name_substitution(name_index, lunut, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .true.)
+                            call log_name_substitution(name_index, file_unit, all_names, caller, itmnr, all_types, parsed_real, parsed_str, .true.)
                         end if
                         int_array(itmnr + parsed_items_count) = -nconst
                         int_array(itmnr + parsed_items_count + parsed_items_count) = 0
@@ -388,33 +389,33 @@ contains
                     int_array (itmnr + parsed_items_count + parsed_items_count) = noits
                     if (caller == 'segment') then
                         if (parsed_int <= 0) then
-                            write (lunut, 1060) parsed_int
+                            write (file_unit, 1060) parsed_int
                             call error_and_finish(error_ind, ithndl)
                             return
                         end if
                         if (logging_on .and. .not. usefor_on) then
-                            write (lunut, 1015) caller, itmnr, caller, parsed_int
+                            write (file_unit, 1015) caller, itmnr, caller, parsed_int
                         end if
                         write (parsed_str, '(''Segment '',I8)') parsed_int
                     else if (parsed_int == 0 .and. caller /= 'CONCENTR. ') then
-                        write (lunut, 1060) parsed_int
+                        write (file_unit, 1060) parsed_int
                         call error_and_finish(error_ind, ithndl)
                         return
                     else if (parsed_int > 0) then
                         if (logging_on .and. .not. usefor_on) then
-                            write (lunut, 1020) caller, itmnr, caller, parsed_int, &
+                            write (file_unit, 1020) caller, itmnr, caller, parsed_int, &
                                     all_names(parsed_int)
                         end if
                         parsed_str = all_names(parsed_int)
                     else if (parsed_int == 0 .and. caller == 'CONCENTR. ') then
                         if (logging_on .and. .not. usefor_on) then
-                            write (lunut, 1020) caller, itmnr, caller, parsed_int, &
+                            write (file_unit, 1020) caller, itmnr, caller, parsed_int, &
                                     'FLOW'
                         end if
                         parsed_str = 'FLOW'
                     else
                         if (logging_on .and. .not. usefor_on) then
-                            write (lunut, 1030) caller, itmnr, caller, -parsed_int, &
+                            write (file_unit, 1030) caller, itmnr, caller, -parsed_int, &
                                     all_types(-parsed_int)
                         end if
                         parsed_str = all_types(-parsed_int)
@@ -424,7 +425,7 @@ contains
                     if (usefor_on) substitution_on = .true.
                     cycle read_and_process
                 else
-                    write (lunut, 1060) parsed_int
+                    write (file_unit, 1060) parsed_int
                     call error_and_finish(error_ind, ithndl)
                     return
                 end if
@@ -975,7 +976,7 @@ contains
 
     subroutine read_time_series_table(file_unit, int_array, real_array, max_int_size, max_real_size, &
             input_file_start_position, num_significant_char, ilun, file_name_list, lstack, &
-            comment_charachter, charachter_output, notot, nototc, time_dependent, num_records, &
+            comment_character, character_output, notot, nototc, time_dependent, num_records, &
             time_function_type, is_date_format, is_yyddhh_format, itfact, itype, &
             int_output, real_output, ierr, ierr3)
         !! Boundary and waste data new style
@@ -988,7 +989,7 @@ contains
         !
         !     ILUN    INTEGER   LSTACK     INPUT   unitnumb include stack
         !     LSTACK  INTEGER    1         INPUT   include file stack size
-        !     charachter_output   CHAR*(*)   1         OUTPUT  space for limiting token
+        !     character_output   CHAR*(*)   1         OUTPUT  space for limiting token
         !     NOTOT   INTEGER    1         INPUT   size of the matrix to be read
         !     ITTIM   INTEGER    1         INPUT   0 if steady, 1 if time function
         !     ITFACT  INTEGER    1         INPUT   factor between clocks
@@ -998,13 +999,14 @@ contains
 
         use timers       !   performance timers
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
+        use rd_token, only : rdtok1
 
         !< true if the bc or waste load definition is time dependent (linear, harmonic or fourier), and false if it
         !! is constant.
         logical, intent(in) :: time_dependent
         integer(kind = int_wp), intent(in) :: max_int_size, max_real_size, file_unit
-        character(len = *), intent(in) :: file_name_list(lstack), charachter_output     !! file name stack, 4 deep
-        character(len = 1), intent(in) :: comment_charachter
+        character(len = *), intent(in) :: file_name_list(lstack), character_output     !! file name stack, 4 deep
+        character(len = 1), intent(in) :: comment_character
         dimension     ilun(lstack)
         logical :: newrec, ignore
         logical, intent(in) :: is_date_format                     !! True if time in 'date' format
@@ -1040,19 +1042,19 @@ contains
         else
             itype = 3                                          ! a real value schould follow
         endif
-        call rdtok1 (file_unit, ilun, file_name_list, lstack, comment_charachter, &
-                input_file_start_position, num_significant_char, charachter_output, int_output, real_output, &
+        call rdtok1 (file_unit, ilun, file_name_list, lstack, comment_character, &
+                input_file_start_position, num_significant_char, character_output, int_output, real_output, &
                 itype, ierr)
         ! a read error
         if (ierr  /= 0) goto 9999
         ! a token has arrived
         if (itype == 1) then                                   ! that must be an absolute timer string
             !  2^31 =  2147483648
-            call convert_string_to_time_offset (charachter_output, int_output, .false., .false., ierr)
+            call convert_string_to_time_offset (character_output, int_output, .false., .false., ierr)
             ! yyyydddhhmmss so 64 bits integer
             if (int_output == -999) then
                 ierr = 1
-                write (file_unit, 1020) trim(charachter_output)
+                write (file_unit, 1020) trim(character_output)
                 goto 9999
             endif
             if (ierr /= 0) then                                ! the found entry is not a new time value

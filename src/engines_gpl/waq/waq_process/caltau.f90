@@ -134,7 +134,7 @@ module m_caltau
 
     subroutine validate_switches(switch_tau, switch_tau_velocity, switch_hrms)
         !< Evaluates, based on switches, whether the proces calculation must be carried out or not. If not, it immediately stops entire calculation.
-        use m_write_error_message, only : write_error_message
+        use m_logger, only : write_error_message
 
         integer, intent(in) :: switch_tau, switch_tau_velocity, switch_hrms
 

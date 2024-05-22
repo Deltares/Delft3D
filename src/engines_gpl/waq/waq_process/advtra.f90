@@ -802,8 +802,7 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
@@ -821,7 +820,7 @@ contains
         DATA FIRST / .true. /
         INTEGER(kind = int_wp) :: lunrep, errorcode
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
         errorcode = 0
 
         !     Check for bottom collumns anyway
@@ -914,7 +913,7 @@ contains
         9006 if (errorcode==0) errorcode = 9006
         write (lunrep, *)'Illegal structure of pointer table MAKKOL: ', errorcode
         write (*, *)'Illegal structure of pointer table MAKKOL: ', errorcode
-        call srstop(1)
+        call terminate_execution(1)
         !
     END
 

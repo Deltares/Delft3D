@@ -4,7 +4,8 @@ module fm_statistical_output
    use m_statistical_output
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
-   
+   use stdlib_kinds, only: dp
+
    implicit none
 
 private
@@ -16,51 +17,96 @@ private
    type(t_output_variable_set), public :: out_variable_set_his
    type(t_output_variable_set), public :: out_variable_set_map
    type(t_output_variable_set), public :: out_variable_set_clm
-   
+
    public default_fm_statistical_output, flow_init_statistical_output_his, model_is_3D, &
-          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations
+          model_has_fixed_obs_stations, model_has_moving_obs_stations, model_has_obs_stations, close_fm_statistical_output
 
    type(t_nc_dim_ids), parameter :: nc_dims_2D = t_nc_dim_ids(statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_center = t_nc_dim_ids(laydim = .true., statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_center = t_nc_dim_ids(laydim_interface_center = .true., statdim = .true., timedim = .true.)
    type(t_nc_dim_ids), parameter :: nc_dims_3D_interface_edge = t_nc_dim_ids(laydim_interface_edge = .true., statdim = .true., timedim = .true.)
 
-   double precision, dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
-   double precision, dimension(:),   allocatable, target :: time_dredged, time_ploughed
-   double precision, dimension(:),   allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   real(dp), dimension(:,:), allocatable, target :: obscrs_data !< observation cross section constituent data on observation cross sections to be written
+   real(dp), dimension(:),   allocatable, target :: time_dredged, time_ploughed
+   real(dp), dimension(:),   allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
+   real(dp), dimension(:),   allocatable, target :: qplat_data
 
    contains
 
+   subroutine close_fm_statistical_output()
+      if (allocated(obscrs_data)) then
+         deallocate(obscrs_data)
+      end if
+      if (allocated(time_dredged)) then
+         deallocate(time_dredged)
+      end if
+      if (allocated(time_ploughed)) then
+         deallocate(time_ploughed)
+      end if
+      if (allocated(SBCX)) then
+         deallocate(SBCX)
+      end if
+      if (allocated(SBCY)) then
+         deallocate(SBCY)
+      end if
+      if (allocated(SBWX)) then
+         deallocate(SBWX)
+      end if
+      if (allocated(SBWY)) then
+         deallocate(SBWY)
+      end if
+      if (allocated(SSWX)) then
+         deallocate(SSWX)
+      end if
+      if (allocated(SSWY)) then
+         deallocate(SSWY)
+      end if
+      if (allocated(SSCX)) then
+         deallocate(SSCX)
+      end if
+      if (allocated(SSCY)) then
+         deallocate(SSCY)
+      end if
+      if (allocated(qplat_data)) then
+         deallocate(qplat_data)
+      end if
+   end subroutine close_fm_statistical_output
+
    !> allocate array and associate pointer with it if not already done.
    subroutine allocate_and_associate(source_input, size, array1, array2)
-   double precision, pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
-   double precision, dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
-   double precision, dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
+   real(dp), pointer, dimension(:), intent(inout)                        :: source_input   !< Pointer to associate with array1
+   real(dp), dimension(:), allocatable, target, intent(inout)            :: array1         !< Data array 1 to allocate
+   real(dp), dimension(:), allocatable, target, intent(inout), optional  :: array2         !< Data array 2 to allocate (but not point to)
    integer, intent(in) :: size
 
    if (.not. allocated(array1)) then
          allocate(array1(size))
       if (present(array2)) then !array 1 and array2 are either both allocated or both not.
          allocate(array2(size))
-      endif
-   endif
+      end if
+   end if
    if (.not. associated(source_input))then
       source_input => array1
-   endif
+   end if
    end subroutine allocate_and_associate
+
+   subroutine transform_qplat(source_input)
+      use m_lateral, only : qplat
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
+      qplat_data = sum(qplat, dim = 1)
+   end subroutine transform_qplat
 
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X,Y,IPNT_X,IPNT_Y)
    use m_sediment
    use m_observations
 
-   double precision, dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
+   real(dp), dimension(:), intent(out) :: X,Y !< arrays to assign valobs values to
    integer, intent(in) :: IPNT_X, IPNT_Y              !< location specifier inside valobs array
 
-
    integer :: l, k, ntot
-   double precision :: rhol
-   
+   real(dp) :: rhol
+
    ntot = numobs + nummovobs
    do l = 1, stmpar%lsedtot
       select case(stmpar%morpar%moroutput%transptype)
@@ -76,34 +122,34 @@ private
       Y(k+1:k+ntot) = valobs(:,IPNT_Y+l-1)/rhol
    end do
    end subroutine assign_sediment_transport
-   
+
    !> Wrapper function that will allocate and fill the dredge time arrays
    subroutine calculate_dredge_time_fraction(source_input)
    use m_dad
    use m_flowtimes, only: time1
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
    integer :: num_dredges
-   double precision :: cof0
-   
+   real(dp) :: cof0
+
    call allocate_and_associate(source_input,dadpar%dredge_dimension_length,time_dredged,time_ploughed)
-   
+
    cof0 = 1d0 ; if( time1 > 0d0 ) cof0 = time1
    time_dredged = dadpar%tim_dredged/cof0
    time_ploughed = dadpar%tim_ploughed/cof0
-   
+
    end subroutine calculate_dredge_time_fraction
-   
+
    integer function get_sediment_array_size()
    use m_observations, only: numobs, nummovobs
    use m_sediment, only: stmpar
-   
+
    get_sediment_array_size = (numobs + nummovobs)*stmpar%lsedtot
    end function
-   
+
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSW(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SSWX,SSWY)
    call assign_sediment_transport(SSWX,SSWY,IPNT_SSWX1,IPNT_SSWY1)
    end subroutine calculate_sediment_SSW
@@ -111,7 +157,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSC(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SSCX,SSCY)
    call assign_sediment_transport(SSCX,SSCY,IPNT_SSCX1,IPNT_SSCY1)
    end subroutine calculate_sediment_SSC
@@ -119,7 +165,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBW(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SBWX,SBWY)
    call assign_sediment_transport(SBWX,SBWY,IPNT_SBWX1,IPNT_SBWY1)
    end subroutine calculate_sediment_SBW
@@ -127,7 +173,7 @@ private
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBC(source_input)
    use m_observations
-   double precision, pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+   real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
    call allocate_and_associate(source_input,get_sediment_array_size(),SBCX,SBCY)
    call assign_sediment_transport(SBCX,SBCY,IPNT_SBCX1,IPNT_SBCY1)
    end subroutine calculate_sediment_SBC
@@ -184,7 +230,7 @@ private
    use m_monitoring_crosssections, only: ncrs
    use m_ug_nc_attribute
    use m_transport, only: NUMCONST_MDU, const_names, isedn, ised1, const_units
-   use m_sediment, only: stmpar, jased
+   use m_sediment, only: stmpar, jased, stm_included
    use messagehandling, only : Idlen
    use string_module, only: replace_char
    use netcdf_utils, only: ncu_set_att
@@ -194,9 +240,9 @@ private
    type(t_output_quantity_config_set), intent(inout) :: output_config_set !< Output configuration for the his-file.
    integer, allocatable, dimension(:), intent(  out) :: idx_const         !< Indexes for the constituent output variables. To be used for
                                                                           !< the registration of the variables in the output set.
-   integer ::  num, lenunitstr, lsed
+   integer ::  num, lsed
    character(len=idlen) :: conststr
-   character(len=idlen) :: unitstr
+   character(len=idlen) :: constituent_unit, constituent_cumul_unit
    type(ug_nc_attribute) :: atts(1)
 
    if (ncrs == 0) then
@@ -221,54 +267,48 @@ private
       allocate(idx_const(num_const_items), source = 0)
    else
       call err('Internal error, please report: obscrs_data was already allocated')
-   endif
+   end if
 
-   do num = 1,NUMCONST_MDU
+   do num = 1, NUMCONST_MDU
       conststr = const_names(num)
       ! Forbidden chars in NetCDF names: space, /, and more.
       call replace_char(conststr,32,95) ! ' ' -> '_'
       call replace_char(conststr,47,95) ! '/' -> '_'
 
-      unitstr = ''
-      if (num >= ISED1 .and. num <= ISEDN) then    ! if the constituent is sediment
+      constituent_unit = ''
+      constituent_cumul_unit = ''
+      if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then ! The constituent is sediment
          select case(stmpar%morpar%moroutput%transptype)
          case (0)
-            unitstr = 'kg s-1'
+            constituent_cumul_unit = 'kg'
          case (1, 2)
-            unitstr = 'm3 s-1'
+            constituent_cumul_unit = 'm3'
          end select
-      else
-         if (const_units(num) /= ' ') then
-            unitstr = trim(const_units(num)) // ' m3 s-1'
-         else
-            unitstr = ''
-         endif
-      endif
+      else if (const_units(num) /= ' ') then
+            constituent_cumul_unit = trim(const_units(num)) // ' m3'
+      end if
+      if (len_trim(constituent_cumul_unit) > 0) then
+         constituent_unit = trim(constituent_cumul_unit) // ' s-1'
+      end if
 
       ! Just-in-time add *config* item for this constituent current transport
-      call add_output_config(output_config_set, idx_const(2*num-1),                                       &
+      call add_output_config(output_config_set, idx_const(2 * num - 1), &
             'Wrihis_crs_constituents', 'cross_section_'//trim(conststr), &
             'Flux (based on upwind flow cell) for '//trim(conststr), &
-            '', trim(unitstr), UNC_LOC_OBSCRS, nc_attributes = atts(1:1))
+            '', trim(constituent_unit), UNC_LOC_OBSCRS, nc_attributes = atts(1:1))
 
-      output_config_set%configs(idx_const(2*num-1))%input_value =     &
+      output_config_set%configs(idx_const(2*num-1))%input_value = &
             output_config_set%configs(IDX_HIS_OBSCRS_CONST_ABSTRACT)%input_value
 
 
       ! Just-in-time add *config* item for this constituent cumulative transport
-      lenunitstr = len_trim(unitstr)
-      if (lenunitstr > 4) then
-         unitstr = unitstr(1:lenunitstr-4) ! Trim off ' s-1'
-      end if
-
-      call add_output_config(output_config_set, idx_const(2*num),                                       &
+      call add_output_config(output_config_set, idx_const(2*num), &
             'Wrihis_crs_constituents', 'cross_section_cumulative_'//trim(conststr), &
             'Cumulative flux (based on upwind flow cell) for '//trim(conststr), &
-            '', trim(unitstr), UNC_LOC_OBSCRS, nc_attributes = atts(1:1))
+            '', trim(constituent_cumul_unit), UNC_LOC_OBSCRS, nc_attributes = atts(1:1))
 
-      output_config_set%configs(idx_const(2*num))%input_value =     &
+      output_config_set%configs(idx_const(2*num))%input_value = &
             output_config_set%configs(IDX_HIS_OBSCRS_CONST_ABSTRACT)%input_value
-
    enddo
    !
    ! Sediment transport
@@ -288,7 +328,7 @@ private
                   output_config_set%configs(IDX_HIS_OBSCRS_SED_BTRANSPORT_PERFRAC_ABSTRACT)%input_value
          end do
       end if
-   
+
       if (stmpar%lsedsus > 0) then
          ! Just to get the complete list of indexes in idx_const
          idx_const(NUMCONST_MDU*2 + 1 + stmpar%lsedtot + 1) = IDX_HIS_OBSCRS_SED_STRANSPORT
@@ -318,11 +358,11 @@ private
    subroutine aggregate_obscrs_data(data_pointer)
    use m_monitoring_crosssections
    use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
-   use m_sediment, only: sedtot2sedsus, stmpar, jased
-   double precision, pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
+   use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included
+   real(dp), pointer, dimension(:), intent(inout) :: data_pointer  !< pointer to constit_crs_obs_data
 
    integer :: i, IP, num, l, lsed
-   double precision :: rhol
+   real(dp) :: rhol
 
    if (ncrs == 0) then
       return
@@ -344,7 +384,7 @@ private
    ! Fill all constituent transport through observation crosssection
    do num = 1,NUMCONST_MDU
       IP = IPNT_HUA + num
-      if (num >= ISED1 .and. num <= ISEDN) then
+      if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
          l = sedtot2sedsus(num-ISED1+1)
          select case(stmpar%morpar%moroutput%transptype)
          case (0)
@@ -356,7 +396,7 @@ private
          end select
       else
          rhol = 1d0 ! dummy
-      endif
+      end if
       do i=1,ncrs
          obscrs_data(i, 5 + (num-1)*2 + 1) = crs(i)%sumvalcur(IP)/rhol
          obscrs_data(i, 5 + (num-1)*2 + 2) = crs(i)%sumvalcum(IP)/rhol
@@ -364,7 +404,7 @@ private
    enddo
 
    if (jased == 4) then
-      
+
       if (stmpar%lsedtot > 0) then
          ! Bed load (cumulative)
          IP = IPNT_HUA + NUMCONST_MDU + 1
@@ -380,7 +420,7 @@ private
             end do
          end do
       end if
-      
+
       if (stmpar%lsedsus > 0) then
          ! Suspended load (cumulative)
          IP = IP + 1
@@ -396,7 +436,7 @@ private
             end do
          end do
       end if
-      
+
    end if
 
    end subroutine aggregate_obscrs_data
@@ -431,7 +471,7 @@ private
             unit_string = const_units(constituent_index)
          else
             unit_string = '-'
-         endif
+         end if
 
          ! add output config item
          call add_output_config(output_config_set, idx_tracers_stations(tracer_index), 'Wrihis_constituents', constituent_string, &
@@ -452,7 +492,7 @@ private
    integer,                            intent(in   ) :: idx_tracers_stations(:) !< Indices of just-in-time added tracers in output_config_set array
 
    integer :: num_tracers, num_layers, ntot, variable_index, i_start
-   double precision, pointer :: flattened_valobs_slice(:)
+   real(dp), pointer :: flattened_valobs_slice(:)
 
    num_layers = max(1, kmx)
    ntot = numobs + nummovobs
@@ -465,30 +505,30 @@ private
    end do
 
    end subroutine add_station_tracer_output_items
-   
+
    !> Add output configs for the waq bottom substances on observation stations just in time,
    !! because these substances are only known during model initialization.
    !! Return config indices for these variables such that they can be added to the output items for the same substances
    !! NOTE (TB): apparently, these are the 'inactive' substances defined in the waq substance file
    subroutine add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
-      
+
       implicit none
-      
+
       type(t_output_quantity_config_set), intent(inout) :: output_config_set         !< Output configuration set for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
-      
+
       character(len=idlen)                              :: waqb_sub_name
       character(len=idlen)                              :: unit_string
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
       allocate(idx_wqbot_stations(numwqbots), source = 0)
-      
+
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
       do i = 1, numwqbots
@@ -498,7 +538,7 @@ private
          unit_string = wqbotunits(i)
          if (unit_string == ' ') then
             unit_string = '-'
-         endif
+         end if
 
          ! add output config item
          call add_output_config(output_config_set, idx_wqbot_stations(i), 'Wrihis_wqbot', waqb_sub_name, &
@@ -507,31 +547,31 @@ private
          output_config_set%configs(idx_wqbot_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
       end do
-   
+
    end subroutine add_station_wqbot_configs
-   
+
    !> Add output configs for the 3D waq bottom substances on observation stations just in time,
    !! because these substances are only known during model initialization.
    !! Return config indices for these variables such that they can be added to the output items for the same substances
    subroutine add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
-   
+
       use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits
       use netcdf_utils,      only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils,      only: ncu_set_att
-      
+
       implicit none
-      
+
       type(t_output_quantity_config_set), intent(inout) :: output_config_set           !< Output configuration for the his-file.
       integer, allocatable,               intent(  out) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom    substances in output_config_set array
-      
+
       character(len=idlen)                              :: waqb_sub_name
       character(len=idlen)                              :: unit_string
       type(ug_nc_attribute)                             :: atts(1)
       integer                                           :: i
 
       allocate(idx_wqbot3D_stations(numwqbots), source = 0)
-      
+
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
 
       do i = 1, numwqbots
@@ -541,7 +581,7 @@ private
          unit_string = wqbotunits(i)
          if (unit_string == ' ') then
             unit_string = '-'
-         endif
+         end if
 
          ! add output config item
          call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_wqbot3d', waqb_sub_name, &
@@ -550,15 +590,15 @@ private
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &
             output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
       end do
-   
+
    end subroutine add_station_wqbot3D_configs
 
    !> Add output items for all waq bottom substances on stations to output set.
    subroutine add_station_wqbot_output_items(output_set, output_config_set, idx_wqbot_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots
       use m_observations, only: valobs, IPNT_WQB1
-      
+
       type(t_output_variable_set),        intent(inout) :: output_set                !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in   ) :: output_config_set         !< Read config items out of config set
       integer,                            intent(in   ) :: idx_wqbot_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
@@ -573,10 +613,10 @@ private
 
    !> Add output items for all 3D waq bottom substances on stations to output set.
    subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
-   
+
       use m_fm_wq_processes, only: numwqbots, wqbot3D_output
       use m_observations, only: valobs, IPNT_WQB3D1
-      
+
       type(t_output_variable_set),        intent(inout) :: output_set                  !< Output set that item will be added to
       type(t_output_quantity_config_set), intent(in   ) :: output_config_set           !< Read config items out of config set
       integer,                            intent(in   ) :: idx_wqbot3D_stations(:)     !< Indices of just-in-time added waq bottom substances in output_config_set array
@@ -1347,7 +1387,7 @@ private
                      'Wrihis_infiltration', 'infiltration_actual', 'Actual infiltration rate', '', &
                      'mm hr-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                              &
                      nc_dim_ids = nc_dims_2D)
-      
+
       ! Variable (computed) air density
       call add_output_config(config_set_his, IDX_HIS_AIR_DENSITY,                  &
                      'Wrihis_airdensity', 'rhoair', 'air density', '', &
@@ -1587,7 +1627,7 @@ private
                      'Wrihis_lateral', 'lateral_realized_discharge_average',              &
                      'Realized discharge through lateral, average over the last history time interval',             &
                      '', 'm3 s-1', UNC_LOC_LATERAL, nc_attributes = atts(1:1))
-      
+
       ! HIS: Dredge & Dump variables
       !call add_output_config(config_set_his, IDX_HIS_DRED_AREA_NAME,                 &
       !               'Wrihis_dred', 'dredge_area_name',              &
@@ -2123,7 +2163,7 @@ private
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
       type(t_output_variable_set),        intent(inout) :: output_set    !< output set that items need to be added to
 
-      double precision, pointer, dimension(:) :: temp_pointer
+      real(dp), pointer, dimension(:) :: temp_pointer
 
       procedure(process_data_interface_double), pointer :: function_pointer => NULL()
 
@@ -2152,14 +2192,14 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOUR                       ),voltot(IDX_HIS_SOUR                    :IDX_HIS_SOUR                       )                                  )
          if (jaFrcInternalTides2D == 1) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INTERNALTIDESDISSIPATION   ),voltot(IDX_HIS_INTERNALTIDESDISSIPATION:IDX_HIS_INTERNALTIDESDISSIPATION   )                                  )
-         endif
+         end if
          if (jatidep > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GravInput                  ),voltot(IDX_HIS_GravInput               :IDX_HIS_GravInput                  )                                  )
-         endif
+         end if
          if (jaselfal > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput                   ),voltot(IDX_HIS_SalInput                :IDX_HIS_SalInput                   )                                  )
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SalInput2                  ),voltot(IDX_HIS_SalInput2               :IDX_HIS_SalInput2                  )                                  )
-         endif
+         end if
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWIN                      ),voltot(IDX_HIS_GRWIN                   :IDX_HIS_GRWIN                      )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWOUT                     ),voltot(IDX_HIS_GRWOUT                  :IDX_HIS_GRWOUT                     )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GRWTOT                     ),voltot(IDX_HIS_GRWTOT                  :IDX_HIS_GRWTOT                     )                                  )
@@ -2184,7 +2224,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICEPT                      ),voltot(IDX_HIS_ICEPT                   :IDX_HIS_ICEPT                      )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EVAP_ICEPT                 ),voltot(IDX_HIS_EVAP_ICEPT              :IDX_HIS_EVAP_ICEPT                 )                                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PRECIP_GROUND              ),voltot(IDX_HIS_PRECIP_GROUND           :IDX_HIS_PRECIP_GROUND              )                                  )
-      endif
+      end if
 
       !
       ! Source-sink variables
@@ -2195,15 +2235,15 @@ private
          if (isalt > 0) then
             i = i + 1
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT),   qstss(i:(numconst+1)*numsrc:(numconst+i)))
-         endif
+         end if
          if (itemp > 0) then
             i = i + 1
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT),qstss(i:(numconst+1)*numsrc:(numconst+i)))
-         endif
+         end if
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE),qsrc)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME),vsrccum)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE),qsrcavg)
-      endif
+      end if
 
       !
       ! Run-up gauge variables
@@ -2212,7 +2252,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUHEIGHT), rug(:)%max_rug_height)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUX), rug(:)%max_x)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RUG_RUY), rug(:)%max_y)
-      endif
+      end if
 
       !
       ! Hydraulic structures variables
@@ -2227,7 +2267,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_HEAD                 ),valgenstru(IVAL_HEAD  ,1:ngenstru))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_FLOW_AREA            ),valgenstru(IVAL_AREA  ,1:ngenstru))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_VELOCITY             ),valgenstru(IVAL_VEL   ,1:ngenstru))
-      endif
+      end if
       if (network%sts%numGeneralStructures > 0) then ! write extra fields for new general structure
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_CREST_WIDTH                   ),valgenstru(IVAL_CRESTW   ,1:network%sts%numGeneralStructures))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE_THROUGH_GATE_OPENING),valgenstru(IVAL_DIS_OPEN ,1:network%sts%numGeneralStructures))
@@ -2244,13 +2284,13 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_STATE                         ),valgenstru(IVAL_STATE     ,1:network%sts%numGeneralStructures))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST                   ),valgenstru(IVAL_S1ONCREST ,1:network%sts%numGeneralStructures))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE              ),valgenstru(IVAL_FORCEDIF  ,1:network%sts%numGeneralStructures))
-      endif
+      end if
       if (jahiscdam > 0 .and. ncdamsg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_DISCHARGE           ), valcdam(2,:)                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_CREST_LEVEL         ), zcdam                      )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_S1UP                ), valcdam(3,:)                  )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_S1DN                ), valcdam(4,:)                  )
-      endif
+      end if
       if (jahispump > 0 .and. npumpsg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_STRUCTURE_DISCHARGE),valpump(IVAL_DIS       ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_CAPACITY           ),valpump(IVAL_PP_CAP    ,1:npumpsg))
@@ -2263,13 +2303,13 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_REDUCTION_FACTOR   ),valpump(IVAL_PP_RED    ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_S1_DELIVERY_SIDE   ),valpump(IVAL_PP_S1DEL  ,1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_S1_SUCTION_SIDE    ),valpump(IVAL_PP_S1SUC  ,1:npumpsg))
-      endif
+      end if
       if (jahisgate > 0 .and. ngatesg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_DISCHARGE       ),valgate(2,:)                                   )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_LOWER_EDGE_LEVEL),zgate                                          )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_S1UP            ),valgate(3,:)                                   )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_S1DN            ),valgate(4,:)                                   )
-      endif
+      end if
       if (jahisgate > 0 .and. ngategen > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_DISCHARGE            ),valgategen(IVAL_DIS,:)                                 )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_CREST_LEVEL          ),valgategen(IVAL_GATE_SILLH,:)                           )
@@ -2279,7 +2319,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_GATE_OPENING_WIDTH   ),valgategen(IVAL_GATE_OPENW,:)                                )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_S1UP                 ),valgategen(IVAL_S1UP,:)                                )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_S1DN                 ),valgategen(IVAL_S1DN,:)    )
-      endif
+      end if
       if (jahisweir > 0 .and. nweirgen > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_DISCHARGE       ),valweirgen(IVAL_DIS       ,1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_CREST_LEVEL     ),valweirgen(IVAL_CRESTL    ,1:nweirgen))
@@ -2292,7 +2332,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_STATE           ),valweirgen(IVAL_STATE     ,1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE),valweirgen(IVAL_FORCEDIF  ,1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_S1_ON_CREST     ),valweirgen(IVAL_S1ONCREST ,1:nweirgen))
-      endif
+      end if
       if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_DISCHARGE            ),valorifgen(IVAL_DIS       ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_CREST_LEVEL          ),valorifgen(IVAL_CRESTL    ,1:network%sts%numOrifices))
@@ -2307,7 +2347,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_S1_ON_CREST          ),valorifgen(IVAL_S1ONCREST ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_VELOCITY             ),valorifgen(IVAL_VEL       ,1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_FORCE_DIFFERENCE     ),valorifgen(IVAL_FORCEDIF  ,1:network%sts%numOrifices))
-      endif
+      end if
       if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_DISCHARGE ),valbridge(IVAL_DIS,     1:network%sts%numBridges)        )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_S1UP      ),valbridge(IVAL_S1UP,    1:network%sts%numBridges)        )
@@ -2318,7 +2358,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_BLUP      ),valbridge(IVAL_BLUP,    1:network%sts%numBridges)        )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_BLDN      ),valbridge(IVAL_BLDN,    1:network%sts%numBridges)        )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_BL_ACTUAL ),valbridge(IVAL_BLACTUAL,1:network%sts%numBridges)        )
-      endif
+      end if
       if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_DISCHARGE            ),valculvert(IVAL_DIS        ,1:network%sts%numCulverts)            )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_CREST_LEVEL          ),valculvert(IVAL_CL_CRESTL  ,1:network%sts%numCulverts)            )
@@ -2330,7 +2370,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_FLOW_AREA            ),valculvert(IVAL_AREA       ,1:network%sts%numCulverts)            )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_VELOCITY             ),valculvert(IVAL_VEL        ,1:network%sts%numCulverts)            )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_STATE                ),valculvert(IVAL_CL_STATE   ,1:network%sts%numCulverts)            )
-      endif
+      end if
       if (jahisdambreak > 0 .and. ndambreaksignals > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1UP                        ),valdambreak(IVAL_S1UP,1:ndambreaksignals)      )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1DN                        ),valdambreak(IVAL_S1DN,1:ndambreaksignals)      )
@@ -2343,7 +2383,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_CREST_WIDTH                 ),valdambreak(IVAL_DB_CRESTW,1:ndambreaksignals) )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE),valdambreak(IVAL_DB_TIMEDIV,1:ndambreaksignals))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP            ),valdambreak(IVAL_DB_JUMP,1:ndambreaksignals)   )
-      endif
+      end if
       if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_DISCHARGE  ),valuniweir(IVAL_DIS,1:network%sts%numuniweirs)      )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_CREST_LEVEL),valuniweir(IVAL_UW_CRESTL,1:network%sts%numuniweirs))
@@ -2352,7 +2392,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_HEAD       ),valuniweir(IVAL_HEAD,1:network%sts%numuniweirs)     )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_FLOW_AREA  ),valuniweir(IVAL_AREA,1:network%sts%numuniweirs)     )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_VELOCITY   ),valuniweir(IVAL_VEL,1:network%sts%numuniweirs)      )
-      endif
+      end if
       if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_DISCHARGE),valcmpstru(IVAL_DIS,1:network%cmps%count) )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_S1UP     ),valcmpstru(IVAL_S1UP,1:network%cmps%count))
@@ -2360,7 +2400,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_HEAD     ),valcmpstru(IVAL_HEAD,1:network%cmps%count))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_FLOW_AREA),valcmpstru(IVAL_AREA,1:network%cmps%count))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_VELOCITY ),valcmpstru(IVAL_VEL,1:network%cmps%count) )
-      endif
+      end if
       if (jahislongculv > 0 .and. nlongculverts > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_DISCHARGE             ),vallongculvert(IVAL_DIS,1:nlongculverts)     )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_S1UP                  ),vallongculvert(IVAL_S1UP,1:nlongculverts)    )
@@ -2369,7 +2409,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_FLOW_AREA             ),vallongculvert(IVAL_AREA,1:nlongculverts)    )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_VELOCITY              ),vallongculvert(IVAL_VEL,1:nlongculverts)     )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_VALVE_RELATIVE_OPENING),vallongculvert(IVAL_LC_VALVE,1:nlongculverts))
-      endif
+      end if
 
       !
       ! Output on observation stations
@@ -2380,9 +2420,13 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WATERLEVEL),valobs(:,IPNT_S1)                               )
          if(stm_included) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BEDLEVEL)  ,valobs(:,IPNT_BL)                             )
-         endif
+         end if
          if (jahiswatdep > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WATERDEPTH),valobs(:,IPNT_HS)                               )
+         end if
+      end if
+      if (jahisvelvec > 0) then
+         if (numobs+nummovobs > 0) then
          endif
          if (jahisvelvec > 0) then
             if (model_is_3D()) then
@@ -2718,18 +2762,19 @@ private
          do i = 1, num_const_items
             if (idx_constituents_crs(i) > 0) then
                call add_stat_output_items(output_set, output_config_set%configs(idx_constituents_crs(i)), obscrs_data(:,5 + i))
-            endif
+            end if
          enddo
-      endif
+      end if
       !
       ! Variables on lateral discharges
       !
       if (jahislateral > 0 .and. numlatsg > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS),qplat               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ),qplatAve               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ),qLatReal               )
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ),qLatRealAve               )
-      endif
+         allocate(qplat_data(size(qplat, dim = 2)))
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE      ), qplatAve)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS  ), qLatReal)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE        ), qLatRealAve)
+      end if
       if (dad_included) then  ! Output for dredging and dumping
          temp_pointer(1:size(stmpar%sedpar%rhosol,1)*dadpar%nalink) => dadpar%link_sum
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_LINK_DISCHARGE),   temp_pointer               )
@@ -2737,7 +2782,7 @@ private
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DUMP_DISCHARGE),        dadpar%totvoldump               )
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC),     null(), calculate_dredge_time_fraction)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PLOUGH_TIME_FRAC),  time_ploughed)
-      endif
+      end if
 
 
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_MAP_S0                                                        )
@@ -2901,7 +2946,7 @@ private
    subroutine process_output_quantity_configs(output_quantity_config_set)
       type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set !< The set of configs for all possible output variables
       integer :: i
-      
+
       do i = 1, output_quantity_config_set%count
          associate(config => output_quantity_config_set%configs(i))
             if (allocated(config%nc_dim_ids)) then
@@ -2930,7 +2975,7 @@ private
 
       res = (kmx > 0)
    end function model_is_3D
-   
+
    !> Check if model has fixed observation stations
    pure function model_has_fixed_obs_stations() result(res)
       use m_observations, only: numobs
@@ -2938,7 +2983,7 @@ private
 
       res = (numobs > 0)
    end function model_has_fixed_obs_stations
-   
+
    !> Check if model has moving observation stations
    pure function model_has_moving_obs_stations() result(res)
       use m_observations, only: nummovobs
@@ -2946,7 +2991,7 @@ private
 
       res = (nummovobs > 0)
    end function model_has_moving_obs_stations
-   
+
    !> Check if model has any observation stations, fixed or moving
    pure function model_has_obs_stations() result(res)
       use m_observations, only: numobs, nummovobs
@@ -2954,7 +2999,7 @@ private
 
       res = (numobs + nummovobs > 0)
    end function model_has_obs_stations
-   
+
 
    !> Check if model contains tracers.
    pure function model_has_tracers() result(res)

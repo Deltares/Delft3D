@@ -103,7 +103,7 @@ contains
         !
         use m_dlwqt2
         use m_dlwqib
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_open_waq_files
         use timers
         use delwaq2_data
@@ -159,7 +159,7 @@ contains
                         WRITE(file_unit_list(19), *) 'number  :', IS
                         WRITE(file_unit_list(19), *) 'file    :', LUNTXT(IS)
                         WRITE(file_unit_list(19), *) 'unit    :', file_unit_list(IS)
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                     READ (file_unit_list(IS), IOSTAT = IOERR) CHLP
                     IF (IOERR==0 .AND. CHLP(1:6) == ' 4.900') THEN
@@ -181,7 +181,7 @@ contains
                     IF (IERR /= 0) THEN
                         WRITE(file_unit_list(19), *) 'ERROR in DLWQT1'
                         WRITE(file_unit_list(19), *) 'after call to DLWQIB'
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                 ENDIF
             ENDIF
@@ -196,7 +196,7 @@ contains
                 IF (IERR /= 0) THEN
                     WRITE(file_unit_list(19), *) 'ERROR in DLWQT1'
                     WRITE(file_unit_list(19), *) 'after call to DLWQTB'
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 goto 9999        !  RETURN
             ENDIF

@@ -8,7 +8,7 @@ See section "Workflow" below in case you want to contribute to the source code.
 # About compiling https://git.deltares.nl/oss/delft3d
 
 #### Windows: 
-- build.bat   
+- build.bat  
   Execute "build.bat --help" to show the usage   
   Currently used as default build process: "build.bat all -vs 2019 -ifort 21"   
   This will execute "Microsoft_VisualStudio\vcvarsall.bat". When using other versions, modifications will be needed.   

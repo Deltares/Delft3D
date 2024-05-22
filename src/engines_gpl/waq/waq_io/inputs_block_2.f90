@@ -55,7 +55,7 @@ contains
         use m_rdlgri
         use m_rdfnam
         use m_rdccol
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_open_waq_files
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking
@@ -145,8 +145,8 @@ contains
         !     There should be at least one substance in the input.
 
         if (notot < 1) then
-            write (lunut, '(/, A)') ' ERROR: No substances have been specified.'
-            call srstop(1)
+            write (file_unit, '(/, A)') ' ERROR: No substances have been specified.'
+            call terminate_execution(1)
         endif
 
         !        Read timers
@@ -154,26 +154,26 @@ contains
         if (gettoken(itfact, ierr2) > 0) goto 30
         if (gettoken(date1, ierr2) > 0) goto 30
         if (gettoken(date2, ierr2) > 0) goto 30
-        write (lunut, '(/,/,A, I10)') ' Factor between two clocks :  ', itfact
+        write (file_unit, '(/,/,A, I10)') ' Factor between two clocks :  ', itfact
 
         !        Day string for date1                                              for date2:
 
         if (date1 == 'DDHHMMSS' .or. date1 == 'ddhhmmss') then
             is_date_format = .true.
             isflag = 1
-            write (lunut, *)' System clock in date-format  DDHHMMSS '
+            write (file_unit, *)' System clock in date-format  DDHHMMSS '
             if (date2 == 'DDHHMMSS' .or. date2 == 'ddhhmmss') then    ! allowed
                 is_ddhhmmss_format = .true.
-                write (lunut, *) ' Auxiliary timer in date-format DDHHMMSS '
-                if (itfact /= 1) write (lunut, 2040)
+                write (file_unit, *) ' Auxiliary timer in date-format DDHHMMSS '
+                if (itfact /= 1) write (file_unit, 2040)
             elseif (date2 == 'YYDDDHH'.or. date2 =='yydddhh') then    ! not allowed
-                write (lunut, '(/, A, /, A, /, A)') &
+                write (file_unit, '(/, A, /, A, /, A)') &
                         ' ERROR !!!! Auxiliary timer YYDDDHH-format ! ****', &
                         ' This option is invalid in combination with ', &
                         ' system clock in DDHHMMSS format !'
                 call status%increase_error_count()
             elseif (date2 /= ' ') then                                  ! or blank
-                write (lunut, 2060) date2
+                write (file_unit, 2060) date2
                 call status%increase_error_count()
             endif
 
@@ -183,26 +183,26 @@ contains
             is_date_format = .true.
             is_yyddhh_format = .true.
             isflag = 1
-            write (lunut, *) ' System clock in date-format  YYDDDHH '
+            write (file_unit, *) ' System clock in date-format  YYDDDHH '
             if (date2 == 'YYDDDHH' .or. date2 == 'yydddhh') then      ! allowed
                 is_ddhhmmss_format = .true.
-                write (lunut, *) ' Auxiliary timer in date-format YYDDDHH '
-                if (itfact /= 1) write (lunut, 2040)
+                write (file_unit, *) ' Auxiliary timer in date-format YYDDDHH '
+                if (itfact /= 1) write (file_unit, 2040)
             elseif (date2 =='DDHHMMSS' .or. date2 =='ddhhmmss') then  ! not allowed
-                write (lunut, '(/, A, /, A, /, A)') &
+                write (file_unit, '(/, A, /, A, /, A)') &
                         ' ERROR !!!! Auxiliary timer DDHHMMSS-format ! ****', &
                         ' This option is invalid in combination with ', &
                         ' system clock in YYDDDHH format !'
                 call status%increase_error_count()
             elseif (date2 /= ' ') then                                  ! or blank
-                write (lunut, 2060) date2
+                write (file_unit, 2060) date2
                 call status%increase_error_count()
             endif
 
             !        or blank for date1
 
         elseif (date1 /= ' ') then
-            write (lunut, '(/,A)') ' ERROR System timer format not recognised :' // date1
+            write (file_unit, '(/,A)') ' ERROR System timer format not recognised :' // date1
             call status%increase_error_count()
         endif
 
@@ -227,15 +227,15 @@ contains
         do i = 1, num_integration_options
             if (int(10. * aint) == integration_id_list(i)) goto 10
         enddo
-        write (lunut, '(/,A)') ' ERROR !!!! Invalid integration option ! ****'
+        write (file_unit, '(/,A)') ' ERROR !!!! Invalid integration option ! ****'
         call status%increase_error_count()
-        10 write (lunut, '(/,A, F5.2)') ' Integration option :               ', aint
+        10 write (file_unit, '(/,A, F5.2)') ' Integration option :               ', aint
 
         !     No in-active substances for fast solver steady state
 
         if (notot /= nosys .and. (intsrt == 17 .or. intsrt == 18)) then
             call status%increase_error_count()
-            write (lunut, '(/,A)') ' ERROR No in-active substances allowed for' // &
+            write (file_unit, '(/,A)') ' ERROR No in-active substances allowed for' // &
                     ' fast-solver steady state scheme'
         endif
 
@@ -244,7 +244,7 @@ contains
         nototp = 0
         if (gettoken(cdummy, idummy, itype, ierr2) > 0) goto 30
         do while (itype == 1)                                      ! read a collection of tokens
-            call check_integration_option (cdummy, intopt, lunut, ierr2)
+            call check_integration_option (cdummy, intopt, file_unit, ierr2)
             if (btest(intopt, 17) .and. alone) then
                 alone = .false.
 
@@ -260,10 +260,10 @@ contains
 
                 nolayp = layt
                 call rdpart (lunitp(1), lunitp(2), fnamep(1))
-                write (lunut, '(A,i3,A)') &
+                write (file_unit, '(A,i3,A)') &
                         ' The following ', nosubs, ' DELPAR substances are added as passive substances to DELWAQ.'
                 do i = 1, nosubs
-                    write (lunut, '(i4,2x,a)') notot + i, substi(i)
+                    write (file_unit, '(i4,2x,a)') notot + i, substi(i)
                     write (file_unit_list(2)) substi(i)
                 enddo
                 nototp = nosubs
@@ -276,11 +276,11 @@ contains
             else                                                        ! it was no keyword but a time string
                 call convert_string_to_time_offset (cdummy, itstrt, .false., .false., ierr2)  ! returns start time in seconds since time offset,
                 if (itstrt == -999) then                             ! max is about 68 year since time offset
-                    write (lunut, 2140) trim(cdummy)
+                    write (file_unit, 2140) trim(cdummy)
                     goto 30
                 endif
                 if (ierr2 > 0) then
-                    write (lunut, '(/,A)') ' ERROR: String is not recognised as a keyword and' // &
+                    write (file_unit, '(/,A)') ' ERROR: String is not recognised as a keyword and' // &
                             ' it is not a valid absolute timer :' // &
                             trim(cdummy)
                     goto 30
@@ -294,7 +294,7 @@ contains
         endif
         if (.not. alone) then
             if (itstrt /= itstrtp) then
-                write (lunut, '(/, A, I10, A, I10)') &
+                write (file_unit, '(/, A, I10, A, I10)') &
                         ' ERROR: DELWAQ start time:', itstrt, ' not equal to DELPAR start time:', itstrtp
                 call status%increase_error_count()
             endif
@@ -306,11 +306,11 @@ contains
         if (itype == 1) then                                       !  a time string
             call convert_string_to_time_offset (cdummy, itstop, .false., .false., ierr2)
             if (itstop == -999) then
-                write (lunut, 2140) trim(cdummy)
+                write (file_unit, 2140) trim(cdummy)
                 goto 30
             endif
             if (ierr2 > 0) then
-                write (lunut, *) ' ERROR: String is not recognised as a keyword and' // &
+                write (file_unit, *) ' ERROR: String is not recognised as a keyword and' // &
                         ' it is not a valid absolute timer :' // &
                         trim(cdummy)
                 goto 30
@@ -321,30 +321,30 @@ contains
         endif
         if (.not. alone) then
             if (itstop /= itstopp) then
-                write (lunut, '(/,A, I10, A, I10)') &
+                write (file_unit, '(/,A, I10, A, I10)') &
                         ' ERROR: DELWAQ stop time :', itstop, ' not equal to DELPAR stop time :', itstopp
                 call status%increase_error_count()
             endif
         endif
         if (itstrt < 0) then
-            write (lunut, '(A, I10, A, /, A)') &
+            write (file_unit, '(A, I10, A, /, A)') &
                     ' ERROR: Start time (', itstrt, ') absolute timer is less than zero' // &
                     ' or auxiliary timer is set before T0.', &
                     '        This is not supported!'
             call status%increase_error_count()
         endif
         if (itstrt > itstop) then
-            write (lunut, '(A, I10, A, I10, A)') &
+            write (file_unit, '(A, I10, A, I10, A)') &
                     ' ERROR, Stop time (', itstop, &
                     ') smaller than start time(', itstrt, ').'
             call status%increase_error_count()
         endif
         if (is_date_format) then
-            write (lunut, '(A, A, /, A, A)') &
+            write (file_unit, '(A, A, /, A, A)') &
                     ' Start of simulation :', get_formatted_date_time(itstrt), &
                     ' End of simulation   :', get_formatted_date_time(itstop)
         else
-            write (lunut, '(A, I10, /, A, I10)') &
+            write (file_unit, '(A, I10, /, A, I10)') &
                     ' Start of simulation :        ', itstrt, &
                     ' End of simulation   :        ', itstop
         endif
@@ -354,7 +354,7 @@ contains
             if (intsrt == 8 .or.  intsrt ==  9) then
                 if (gettoken(itstop, ierr2) > 0) goto 30
                 if (gettoken(imstop, ierr2) > 0) goto 30
-                write (lunut, '(A, I10, /, A, I2, A)') &
+                write (file_unit, '(A, I10, /, A, I2, A)') &
                         ' Maximum number of iterations:', itstop, &
                         ' Stop iteration after rel. difference smaller than' // &
                                 ' 1.0E-', imstop, '.'
@@ -365,25 +365,25 @@ contains
         !        Now the time step size
 
         if (gettoken(itype, ierr2) > 0) goto 30
-        write (lunut, '(A, I2)') ' Selected option for time step size : ', itype
+        write (file_unit, '(A, I2)') ' Selected option for time step size : ', itype
         select case (itype)
             ! constant time step
         case (0)
             if (gettoken(idt, ierr2) > 0) goto 30
             if (is_date_format) then
                 call convert_relative_time (idt, 1, is_date_format, is_yyddhh_format)
-                write (lunut, *) ' Integration time stepsize is :' // get_formatted_date_time(idt)
+                write (file_unit, *) ' Integration time stepsize is :' // get_formatted_date_time(idt)
             else
-                write (lunut, '(A, I9)') ' Integration time stepsize is :', idt
+                write (file_unit, '(A, I9)') ' Integration time stepsize is :', idt
             endif
             if (idt <= 0) then
-                write (lunut, '(/, A ,I8)') 'ERROR, constant time step must be greater than 0:', idt
+                write (file_unit, '(/, A ,I8)') 'ERROR, constant time step must be greater than 0:', idt
                 call status%increase_error_count()
-                call srstop(1)
+                call terminate_execution(1)
             endif
             if (.not. alone) then
                 if (idt /= idelt) then
-                    write (lunut, '(/,A, I10, A, I10)') ' ERROR: DELWAQ time step :', idt, ' not equal to DELPAR time step :', idelt
+                    write (file_unit, '(/,A, I10, A, I10)') ' ERROR: DELWAQ time step :', idt, ' not equal to DELPAR time step :', idelt
                     call status%increase_error_count()
                 endif
             endif
@@ -391,15 +391,15 @@ contains
             ! time varying time step
         case (1)
             if (.not. alone) then
-                write (lunut, '(/,A)') &
+                write (file_unit, '(/,A)') &
                         ' ERROR: DELWAQ time step is variable. DELPAR does not support variable step sizes.'
                 call status%increase_error_count()
             endif
             if (gettoken(num_records, ierr2) > 0) goto 30
-            write (lunut, '(A,i8)') ' Variable time step with number of breakpoints is ', num_records
+            write (file_unit, '(A,i8)') ' Variable time step with number of breakpoints is ', num_records
             allocate (int_array(num_records * 2), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
-                write (lunut, '(/, A, I4)') ' ERROR. allocating memory for variable timestep:', ierr_alloc
+                write (file_unit, '(/, A, I4)') ' ERROR. allocating memory for variable timestep:', ierr_alloc
                 call status%increase_error_count()
                 goto 30
             endif
@@ -416,24 +416,24 @@ contains
             end if
 
             if (output_verbose_level >= 4) then
-                write (lunut, '(A,/)') ' Breakpoint          Timestep '
+                write (file_unit, '(A,/)') ' Breakpoint          Timestep '
 
                 if (is_date_format) then
                     do k = 1, num_records * 2, 2
-                        write (lunut, '(A, 3X, A)') &
+                        write (file_unit, '(A, 3X, A)') &
                                 get_formatted_date_time(int_array(k)), &
                                 get_formatted_date_time(int_array(k + 1)) // '.'
                     end do
                 else
-                    write (lunut, '(I10,10X,I10)') (int_array(k), k = 1, num_records * 2)
+                    write (file_unit, '(I10,10X,I10)') (int_array(k), k = 1, num_records * 2)
                 end if
             else
-                write (lunut, *) ' Variable timestep. Information will be printed for ' // &
+                write (file_unit, *) ' Variable timestep. Information will be printed for ' // &
                         'output option 4 or higher !'
             endif
 
             if (int_array(1) > itstrt) then
-                write (lunut, '(/, A, I10, A, I10)') &
+                write (file_unit, '(/, A, I10, A, I10)') &
                         ' ERROR', int_array(1), ' larger than start time:', itstrt
                 call status%increase_error_count()
             endif
@@ -441,13 +441,13 @@ contains
             do ibrk = 1, num_records * 2, 2
                 write (file_unit_list(5)) int_array(ibrk), float (int_array(ibrk + 1))
                 if (int_array(ibrk + 1) <= 0) then
-                    write (lunut, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', int_array(ibrk + 1)
+                    write (file_unit, '(/, A, I10)') ' ERROR variable time step must not be smaller 0:', int_array(ibrk + 1)
                     call status%increase_error_count()
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
                 if (ibrk == 1) cycle
                 if (int_array(ibrk) <= int_array(ibrk - 2)) then
-                    write (lunut, '(/, A, I10, A, I10, A)') &
+                    write (file_unit, '(/, A, I10, A, I10, A)') &
                             ' ERROR', int_array(ibrk), ' smaller than ', int_array(ibrk - 2), ' descending order !'
                     call status%increase_error_count()
                 endif
@@ -455,7 +455,7 @@ contains
             close (file_unit_list(5))
             ! option not implemented
         case default
-            write (lunut, *) ' ERROR !!!! This option is not implemented !!!'
+            write (file_unit, *) ' ERROR !!!! This option is not implemented !!!'
             call status%increase_error_count()
         end select
 
@@ -491,7 +491,7 @@ contains
                 ierr2, status)
         if (ierr2 /= 0) goto 30
         if (noraai > 0 .and. ibflag == 0) then
-            write (lunut, '(/, A, /, A)') &
+            write (file_unit, '(/, A, /, A)') &
                     ' WARNING: Transects used without balance option specified,', &
                     ' Balances automaticaly switched on!'
             iwar2 = iwar2 + 1
@@ -519,7 +519,7 @@ contains
         endif
         ierr2 = 0
 
-        call validate_time_settings(lunut, status, &
+        call validate_time_settings(file_unit, status, &
                 itstrt, itstop, idt, &
                 imstrt, imstop, imstep, &
                 idstrt, idstop, idstep, &
@@ -532,7 +532,7 @@ contains
         if (ierr2 /= 0) then
             call status%increase_error_count()
         end if
-        if (ierr2 == 3) call srstop(1)
+        if (ierr2 == 3) call terminate_execution(1)
         call check_error(cdummy, iwidth, 2, ierr2, status)
         call status%increase_warning_count_with(iwar2)
         if (timon) call timstop(ithndl)

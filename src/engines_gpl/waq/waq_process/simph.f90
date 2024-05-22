@@ -67,7 +67,7 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-        use m_monsys
+        use m_logger
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
@@ -117,7 +117,7 @@ contains
                 !     Error messages
 
                 IF (CARBTOT < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NR_MES < 10) THEN
                         NR_MES = NR_MES + 1
                         WRITE (ILUMON, *) 'WARNING :total carbonate <= 0', &
@@ -131,7 +131,7 @@ contains
                     CARBTOT = 1E-30
                 ENDIF
                 IF (SAL < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES2 < 10) THEN
                         NRMES2 = NRMES2 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity <= 0', &
@@ -145,7 +145,7 @@ contains
                     SAL = 1E-30
                 ENDIF
                 IF (SAL > 50.) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES4 < 10) THEN
                         NRMES4 = NRMES4 + 1
                         WRITE (ILUMON, *) 'WARNING :salinity => 50.', &
@@ -159,7 +159,7 @@ contains
                     SAL = 50.
                 ENDIF
                 IF (ALKA < 1E-30) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES3 < 10) THEN
                         NRMES3 = NRMES3 + 1
                         WRITE (ILUMON, *) 'WARNING: alkalinity <= 0', &
@@ -222,14 +222,14 @@ contains
                 C = K2 * (ALKA - 2 * CARBTOT)
                 D = B**2 - 4 * A * C
                 IF (D < 0) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     WRITE (ILUMON, *) 'No solution for pH: discriminant<0'
                     goto 10
                 ENDIF
 
                 AHPLUS = (-B + SQRT (D)) / (2 * A)
                 IF (AHPLUS <= 0) THEN
-                    CALL GETMLU(ILUMON)
+                    CALL get_log_unit_number(ILUMON)
                     IF (NRMES5 < 10) THEN
                         NRMES5 = NRMES5 + 1
                         WRITE (ILUMON, *) 'WARNING: H+ negative: ', AHPLUS, ' in segment ', ISEG

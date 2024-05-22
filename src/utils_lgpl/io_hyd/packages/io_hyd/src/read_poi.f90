@@ -27,15 +27,9 @@
 !  
 !  
 
-      subroutine read_poi(file_poi, noq   , noq1    , noq2  , noq3  , &
-                          ipoint  )
-
+      subroutine read_poi(file_poi, noq   , noq1    , noq2  , noq3  , ipoint  )
       ! function : read a poi file and check dimensions
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -54,7 +48,7 @@
       integer                                :: ioerr                  ! error on file
       integer                                :: lunrep                 ! unit number report file
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       call file_poi%open()
 
@@ -62,7 +56,7 @@
          read(file_poi%unit,iostat=ioerr) ((ipoint(i,j),i=1,4),j=1,noq1)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading poi file'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       endif
       if ( noq2 .gt. 0 ) then
@@ -71,7 +65,7 @@
          read(file_poi%unit,iostat=ioerr) ((ipoint(i,j),i=1,4),j=ip1,ip2)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading poi file'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       endif
       if ( noq3 .gt. 0 ) then
@@ -80,7 +74,7 @@
          read(file_poi%unit,iostat=ioerr) ((ipoint(i,j),i=1,4),j=ip1,ip2)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading poi file'
-            call srstop(1)
+            call terminate_execution(1)
          endif
       endif
 

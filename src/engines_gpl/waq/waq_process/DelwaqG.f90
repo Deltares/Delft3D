@@ -33,8 +33,7 @@ contains
      subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-     use m_monsys
-     use m_write_error_message
+     use m_logger, only : write_error_message, get_log_unit_number
      use m_evaluate_waq_attribute
 
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
@@ -2111,7 +2110,7 @@ contains
       logical                      :: exists, skip_tt_td
       integer(kind=int_wp)                       ::i, lumon, ierr
 
-      call getmlu( lumon )
+      call get_log_unit_number( lumon )
 
       inquire( file = param_file, exist = exists )
 
@@ -2221,7 +2220,7 @@ contains
       else
           open( newunit = luinit, file = initfile, access = 'stream', iostat = ierr )
           if ( ierr /= 0 ) then
-              call getmlu( lumon )
+              call get_log_unit_number( lumon )
               write( lumon, '(2a)' ) 'Error reading file: ', trim(initfile)
               write( lumon, '(2a)' ) 'File does not exist - terminating calculation'
               call write_error_message( 'Initial conditions file for sediment not found')
@@ -2231,7 +2230,7 @@ contains
           read( luinit ) nosysini, nosegini
 
           if ( nosysini /= nototsed .or. nosegini /= nolay * noseg2d ) then
-              call getmlu( lumon )
+              call get_log_unit_number( lumon )
               write( lumon, '(2a)' )     'Error reading file: ', trim(initfile)
               write( lumon, '(a,2i10)' ) 'Wrong size parameters:', nosysini, nosegini
               write( lumon, '(a,2i10)' ) 'Expected parameters:  ', nototsed, nolay * noseg2d
@@ -2319,7 +2318,7 @@ contains
       end subroutine write_sedconc
 
       subroutine handle_zone_information( thickness, poros )
-      use m_monsys
+      use m_logger
 
       real(kind=real_wp), intent(in) ::thickness, poros
 
@@ -2333,7 +2332,7 @@ contains
 
       integer(kind=int_wp), parameter                  ::first_s1 = 142
 
-      call getmlu( lumon )
+      call get_log_unit_number( lumon )
 
       read( luinp, *, iostat = ierr ) zonefile
 

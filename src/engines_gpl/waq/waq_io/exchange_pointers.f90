@@ -52,7 +52,7 @@ contains
         !!          This leans on full matrices and does not support 'active only' coupling.
         !! SUBROUTINES CALLED : create_pointer_table, bound, open_waq_files
         !! LOGICAL UNITS:
-        !!          lunut   = unit formatted output file
+        !!          file_unit   = unit formatted output file
         !!           file_unit_list( 8) = unit intermediate file ('to-from')
 
         use m_grid_utils_external        !   for the storage of contraction grids
@@ -119,18 +119,18 @@ contains
             if (kmax > 1) noq3 = (noseg / kmax) * (kmax - 1)
         endif
         if (nmax2 /= nmax .or. mmax2 /= mmax .or. nlay  /= kmax) then
-            write (lunut, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
+            write (file_unit, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
             ierr2 = 1
             goto 100
         endif
         noq = noq1 + noq2 + noq3
-        write (lunut, 2050) noq1, noq2, noq3, noqt, noq + noqt
+        write (file_unit, 2050) noq1, noq2, noq3, noqt, noq + noqt
 
         ! Allocate pointer space
         noqt = noq + noqt
         allocate (ipnt(4, noqt), cellpnt(noseg), flowpnt(noq), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2160) ierr2, 4 * noqt
+            write (file_unit, 2160) ierr2, 4 * noqt
             goto 100
         endif
 
@@ -139,7 +139,7 @@ contains
         ntot = nmax * mmax
         allocate (imat(ntot), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2000) ierr2, nmax * mmax
+            write (file_unit, 2000) ierr2, nmax * mmax
             goto 100
         endif
 
@@ -150,7 +150,7 @@ contains
             do i1 = 1, ntot
                 if (gettoken(imat(i1), ierr2) > 0) goto 100
             enddo
-            call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
+            call open_waq_files(file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
             write (file_unit_list(8)) nmax, mmax, noseg, kmax, noq1, noq2, noq3
             write (file_unit_list(8)) imat
@@ -160,10 +160,10 @@ contains
         ! Print the matrix
         do i2 = 1, nmax, iwidth * 2
             i3 = min(nmax, i2 + iwidth * 2 - 1)
-            write (lunut, 2020) (k, k = i2, i3)
+            write (file_unit, 2020) (k, k = i2, i3)
             do i1 = 1, mmax
                 ist = (i1 - 1) * nmax
-                write (lunut, 2030) i1, (imat(k), k = ist + i2, ist + i3)
+                write (file_unit, 2030) i1, (imat(k), k = ist + i2, ist + i3)
             enddo
         enddo
 
@@ -185,14 +185,14 @@ contains
         filename = file_name_list(8)(1:index(file_name_list(8), '.', .true.)) // 'cco'
         call open_waq_files (file_unit_list(8), filename, 8, 2, ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2060) filename
+            write (file_unit, 2060) filename
             goto 100
         endif
         read (file_unit_list(8))
         read (file_unit_list(8)) mmax2, nmax2, x0, y0, alpha, npart, nlay
         if (mmax2 /= mmax .or. nmax2 /= nmax .or. &
                 nlay  /= kmax) then
-            write (lunut, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
+            write (file_unit, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
             ierr2 = 1
             goto 100
         endif
@@ -231,7 +231,7 @@ contains
         !!      - adds the bed pointers to the pointer set to make noqt
         !!      - compute number of codiagonals for direct implicit matrices
         !! Logical units:
-        !!          lunut   = unit formatted output file
+        !!          file_unit   = unit formatted output file
         !           file_unit_list( 8) = unit intermediate file ('to-from')
 
         use m_open_waq_files
@@ -239,8 +239,8 @@ contains
         use rd_token       ! for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: file_unit_list   (*)      !< array with unit numbers
-        character(*), intent(inout) :: file_name_list (*)     !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)      !< array with unit numbers
+        character(*), intent(inout) :: file_name_list(*)     !< array with file names of the files
         integer(kind = int_wp), intent(in) :: noseg          !< number of computational volumes
         integer(kind = int_wp), intent(in) :: noq            !< noq1 + noq2 + noq3
         integer(kind = int_wp), intent(in) :: noq1           !< number of exchanges 1st direction
@@ -248,7 +248,7 @@ contains
         integer(kind = int_wp), intent(in) :: noq3           !< number of exchanges 3rd direction
         integer(kind = int_wp), intent(in) :: noqt           !< total number of exchanges
         integer(kind = int_wp), intent(out) :: nobnd          !< number of open boundaries
-        integer(kind = int_wp), intent(out) :: ipnt (4, noqt)  !< exchange pointer
+        integer(kind = int_wp), intent(out) :: ipnt(4, noqt)  !< exchange pointer
         integer(kind = int_wp), intent(in) :: intsrt         !< integration number
         integer(kind = int_wp), intent(in) :: ipopt1         !< file option ( 0 = binary )
         integer(kind = int_wp), intent(out) :: jtrack         !< number of codiagonals of matrix
@@ -278,7 +278,7 @@ contains
             do iq = 1, noq
                 read (file_unit_list(44), iostat = ierr1) ipnt(:, iq)
                 if (ierr1 /= 0) then
-                    write(lunut, 2100) iq - 1
+                    write(file_unit, 2100) iq - 1
                     close (file_unit_list(44))
                     ierr2 = 1
                     goto 100
@@ -296,7 +296,7 @@ contains
                     ! Skip all extra exchange pointers that are expected
                     read (file_unit_list(44), iostat = ierr1) (idummy, iq = 2, 4 * (noqt - noq))
                     if (ierr1 /= 0) then
-                        write(lunut, 2111)
+                        write(file_unit, 2111)
                         close (file_unit_list(44))
                         ierr2 = 1
                         goto 100
@@ -307,7 +307,7 @@ contains
             ! Any data after the expected exchange pointers indicate a problem
             read (file_unit_list(44), iostat = ierr1) cdummy
             if (ierr1 == 0) then
-                write(lunut, 2110)
+                write(file_unit, 2110)
                 close (file_unit_list(44))
                 ierr2 = 1
                 goto 100
@@ -333,24 +333,24 @@ contains
             if (noq3 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, noq)
 
             if (output_verbose_level < 4) then
-                write (lunut, 2000)
+                write (file_unit, 2000)
             else
                 if (noq1 > 0) then
-                    write (lunut, 2010)
-                    write (lunut, 2020)
-                    write (lunut, 2030) (iq, ipnt(:, iq), iq = 1, noq1)
+                    write (file_unit, 2010)
+                    write (file_unit, 2020)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = 1, noq1)
                 endif
 
                 if (noq2 > 0) then
-                    write (lunut, 2040)
-                    write (lunut, 2020)
-                    write (lunut, 2030) (iq, ipnt(:, iq), iq = noq1 + 1, noq12)
+                    write (file_unit, 2040)
+                    write (file_unit, 2020)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = noq1 + 1, noq12)
                 endif
 
                 if (noq3>0) then
-                    write (lunut, 2050)
-                    write (lunut, 2020)
-                    write (lunut, 2030) (iq, ipnt(:, iq), iq = noq12 + 1, noq)
+                    write (file_unit, 2050)
+                    write (file_unit, 2020)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = noq12 + 1, noq)
                 endif
             endif
         endif
@@ -434,7 +434,7 @@ contains
         !     NTRAAQ  INTEGER  1           INPUT   total number of exch. in raaien
         !     NOMAT   INTEGER  1           OUTPUT  size of the fastsolvers matrix
 
-        integer(kind = int_wp) :: lunut            ! output unit number (file_unit_list(29))
+        integer(kind = int_wp) :: file_unit            ! output unit number (file_unit_list(29))
         integer(kind = int_wp), allocatable :: IAbnd(:, :)       ! array with boundary information in the bed
         integer(kind = int_wp) :: ilay             ! index layer number
         integer(kind = int_wp) :: isegb            ! counter for bed volumes
@@ -458,7 +458,7 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("generate_bed_layer_pointers", ithndl)
 
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
 
         ! is there a bottom direction ?
         if (noq4 == 0) then
@@ -472,7 +472,7 @@ contains
         ! is there a bottom grid ?
         JBott = GridPs%bottom_grid
         if (JBott == 0) then
-            write (lunut, 1050)
+            write (file_unit, 1050)
             call status%increase_error_count()
             goto 9999
         endif
@@ -512,11 +512,11 @@ contains
 
         ! sorted after bottom segment number !!
 
-        if (output_verbose_level < 4) write (lunut, 1000)
+        if (output_verbose_level < 4) write (file_unit, 1000)
         ioff1 = (nlay - 1) * nsegl
         ioff2 = max((nlay - 2) * nsegl, 0)
         iqt = noq
-        write (lunut, *) ' nsegb: ', nsegb
+        write (file_unit, *) ' nsegb: ', nsegb
         do isegb = 1, nsegb
 
             if (space_var_nolay) nlayb = GridPs%Pointers(JBott)%nolay_var(isegb)
@@ -524,8 +524,8 @@ contains
 
             ! header for water-bottom
             if (output_verbose_level >= 4) then
-                write (lunut, 1010) ib, noseg + ib
-                write (lunut, 1030)
+                write (file_unit, 1010) ib, noseg + ib
+                write (file_unit, 1030)
             endif
 
             if (nlayb > 1) then
@@ -543,13 +543,13 @@ contains
                     ipoint(2, iq + iqt) = ib + noseg
                     ipoint(3, iq + iqt) = ioff2 + i
                     ipoint(4, iq + iqt) = inaarplus
-                    if (output_verbose_level >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
+                    if (output_verbose_level >= 4) write(file_unit, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
                 endif
             end do
             ! header within the bottom
             if (output_verbose_level >= 4) then
-                write (lunut, 1020)
-                write (lunut, 1030)
+                write (file_unit, 1020)
+                write (file_unit, 1030)
             endif
 
             do ilay = 1, nlayb     ! from bottom to next bottom layer
@@ -580,7 +580,7 @@ contains
                 else
                     ipoint(4, iq + iqt) = -ib - nobnd
                 endif
-                if (output_verbose_level >= 4) write(lunut, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
+                if (output_verbose_level >= 4) write(file_unit, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
 
             end do
             ! copy the column
@@ -593,20 +593,20 @@ contains
             iqt = iqt + 2 * iq
         end do
         if (noqt /= iqt) then
-            write (lunut, 1110) noq4, iqt - noq
+            write (file_unit, 1110) noq4, iqt - noq
             call status%increase_error_count()
             goto 9999
         endif
-        write (lunut, 1060) nsegb
+        write (file_unit, 1060) nsegb
         odd = .true.
         if (output_verbose_level >= 3) then
-            write (lunut, 1070)
+            write (file_unit, 1070)
             do iq = noq + 1, noq + noq4
                 if (ipoint(1, iq) < 0 .or. &
                         ipoint(2, iq) < 0) then
                     ib = min (ipoint(1, iq), ipoint(2, iq))
                     if (odd) then
-                        write (lunut, 1080) ib, iq, (ipoint(k, iq), k = 1, 2)
+                        write (file_unit, 1080) ib, iq, (ipoint(k, iq), k = 1, 2)
                         odd = .false.
                     else
                         odd = .true.
@@ -614,10 +614,10 @@ contains
                 endif
             enddo
         else
-            write (lunut, 1090)
+            write (file_unit, 1090)
         endif
         write (file_unit_list(8)) ((ipoint(i, iq), i = 1, 4), iq = noq + 1, iqt)
-        write (lunut, 1100)
+        write (file_unit, 1100)
 
         ! Write boundary pointers to work file
         if (nobnd > 0 .or. nsegb > 0) then
@@ -681,13 +681,13 @@ contains
         integer(kind = int_wp) :: iq         ! loop counter exchanges
         integer(kind = int_wp) :: ip1, ip2   ! from and to pointers
         integer(kind = int_wp) :: i          ! loop counter
-        integer(kind = int_wp) :: lunut      ! output report file
+        integer(kind = int_wp) :: file_unit      ! output report file
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("create_boundary_pointers", ithndl)
 
         ierr2 = 0
         iwar2 = 0
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
 
         ! calculate number of boundaries
         nobnd = 0
@@ -695,14 +695,14 @@ contains
             do i = 1, 4
                 ip1 = ipoint(i, iq)
                 if (ip1 > noseg) then
-                    write (lunut, 2000) ip1, iq, noseg
+                    write (file_unit, 2000) ip1, iq, noseg
                     call status%increase_error_count()
                 endif
                 nobnd = min(nobnd, ip1)
             enddo
         enddo
         nobnd = -nobnd
-        write (lunut, 2010) nobnd
+        write (file_unit, 2010) nobnd
 
         ! Determine JTRACK
         jtrack = 0
@@ -712,13 +712,13 @@ contains
             if (ip1 > 0 .and. ip2 > 0) jtrack = max(jtrack, abs(ip1 - ip2))
         enddo
         if (intsrt == 6 .or. intsrt == 7 .or. intsrt == 10) then
-            write (lunut, 2020) jtrack
+            write (file_unit, 2020) jtrack
         endif
 
         ! Allocate and zero boundary pointers
         allocate (ibnd(nobnd, 2), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2030) ierr2
+            write (file_unit, 2030) ierr2
             call status%increase_error_count()
             goto 9999
         endif
@@ -738,14 +738,14 @@ contains
                     if (ip2 > 0) then
                         ibnd(-ip1, 1) = -iq
                         ibnd(-ip1, 2) = ip2
-                        if (output_verbose_level >= 3) write (lunut, 2060) -ip1, iq, ip1, ip2
+                        if (output_verbose_level >= 3) write (file_unit, 2060) -ip1, iq, ip1, ip2
                     endif
                 endif
                 if (ip2 < 0) then
                     if (ip1 > 0) then
                         ibnd(-ip2, 1) = iq
                         ibnd(-ip2, 2) = ip1
-                        if (output_verbose_level >= 3) write (lunut, 2060) -ip2, iq, ip1, ip2
+                        if (output_verbose_level >= 3) write (file_unit, 2060) -ip2, iq, ip1, ip2
                     endif
                 endif
             enddo
@@ -756,16 +756,16 @@ contains
         do iq = 1, nobnd
             iwar2_old = iwar2
             if (ibnd(iq, 1) == 0) then
-                write (lunut, 2070) iq
+                write (file_unit, 2070) iq
                 iwar2 = iwar2 + 1
             endif
             if (ibnd(iq, 2) == 0) then
-                write (lunut, 2080) iq
+                write (file_unit, 2080) iq
                 iwar2 = iwar2 + 1
             endif
         enddo
         if (iwar2 > iwar2_old) then
-            write (lunut, 2090)
+            write (file_unit, 2090)
             iwar2 = iwar2 + 1
         end if
 

@@ -39,7 +39,6 @@ contains
         use m_delwaq1_allocate_workspace
         !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
-
         character(len = *), intent(in), dimension(:) :: argv !< arguments as strings
         logical :: success !< if the run was successful
 

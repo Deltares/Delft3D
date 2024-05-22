@@ -31,19 +31,19 @@ module m_usefor
 contains
 
 
-    subroutine compact_usefor(lunut, waq_param, data_param, i, icnt)
+    subroutine compact_usefor(file_unit, waq_param, data_param, i, icnt)
         !!compacts usefor lists if unresolved externals
 
         use m_waq_data_structure !   for definition and storage of data
         use timers        !   performance timers
 
-        integer(kind = int_wp), intent(in) :: lunut         ! report file
+        integer(kind = int_wp), intent(in) :: file_unit         ! report file
         type(t_waq_item), intent(inout) :: waq_param  !! list of param items to be set in this block ( substances etc )
         type(t_waq_item), intent(inout) :: data_param   ! list of param items in the data
         integer(kind = int_wp), intent(in) :: i             ! item index
         integer(kind = int_wp), intent(inout) :: icnt          ! shift in item index
 
-        character(len = 20) :: charachter_output        ! item name
+        character(len = 20) :: character_output        ! item name
         integer(kind = int_wp) :: nitm          ! number of items in data
         integer(kind = int_wp) :: ishft         ! number of items shifted in data
         integer(kind = int_wp) :: i1            ! item index
@@ -55,8 +55,8 @@ contains
         if (timon) call timstrt("compact_usefor", ithndl)
 
         ! write message
-        write (lunut, *)
-        write (lunut, 1010) i + icnt, data_param%name(i)
+        write (file_unit, *)
+        write (file_unit, 1010) i + icnt, data_param%name(i)
         nitm = data_param%no_item
 
         ! look backwards
@@ -74,16 +74,16 @@ contains
                 if (i5 > 0) i4 = i5
                 if (i5 <= 0 .and. i5 > -100000) i4 = i4 + 1
             enddo
-            charachter_output = waq_param%name(i4)
-            if (data_param%name(i) /= charachter_output) then
-                write (lunut, 1030) i4, charachter_output
+            character_output = waq_param%name(i4)
+            if (data_param%name(i) /= character_output) then
+                write (file_unit, 1030) i4, character_output
             endif
         endif
         if (i2 > 0 .and. i2 <  100000) then
             i4 = i2
-            charachter_output = waq_param%name(i2)
-            if (data_param%name(i) /= charachter_output) then
-                write (lunut, 1030)  i2, charachter_output
+            character_output = waq_param%name(i2)
+            if (data_param%name(i) /= character_output) then
+                write (file_unit, 1030)  i2, character_output
             endif
         endif
         i2 = i4
@@ -127,7 +127,7 @@ contains
 
     end subroutine compact_usefor
 
-    subroutine compact_usefor_list(lunut, int_array, itmnr, noitm, idmnr, &
+    subroutine compact_usefor_list(file_unit, int_array, itmnr, noitm, idmnr, &
             nodim, iorder, char_arr, ioffi, ioffc, &
             iods, ioffd, idx_missing, count_missing, ierr, status)
 
@@ -141,7 +141,7 @@ contains
         !
         !     Name    Kind     Length     Funct.  Description
         !     ---------------------------------------------------------
-        !     lunut   integer    1         input   unit number for ascii output
+        !     file_unit   integer    1         input   unit number for ascii output
         !     int_array     integer  max_int_size       in/out  integer   workspace
         !     itmnr   integer    1         in/out  nr of items for assignment
         !     noitm   integer    1         in      nr of items in computational rule
@@ -162,10 +162,10 @@ contains
 
         character(len=*) char_arr(:)
         integer(kind = int_wp), intent(inout) :: int_array(:)
-        character(len=20)  charachter_output, message_type
+        character(len=20)  character_output, message_type
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: i1, i3, i4, i5
-        integer(kind = int_wp) :: lunut, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim
+        integer(kind = int_wp) :: file_unit, idx_missing, count_missing, ioffc, iorder, ntt, idmnr, nitm, nodim
         integer(kind = int_wp) :: itmnr, noitm, i2, ioffd, ishft, ioffi, iods
 
         integer(kind = int_wp) :: ierr
@@ -175,7 +175,7 @@ contains
         if (timon) call timstrt("compact_usefor_list", ithndl)
 
         ! Write message
-        write (lunut, *)
+        write (file_unit, *)
 
         if (iorder == 1) then ! items first
             ntt = idmnr
@@ -200,29 +200,29 @@ contains
                 if (i5 > -100000 .and. i5 <= 0)  i4 = i4 + 1
                 if (i5 > 0)                      i4 = int_array(ioffc + i3)
             end do
-            charachter_output = char_arr(ioffd + i4)
-            if (char_arr(ioffc + idx_missing) /= charachter_output) then ! log not resolved
+            character_output = char_arr(ioffd + i4)
+            if (char_arr(ioffc + idx_missing) /= character_output) then ! log not resolved
                 if (iorder == 2) then
-                    write (lunut, 1030) i4, charachter_output
+                    write (file_unit, 1030) i4, character_output
                 else
-                    write (lunut, 1040) i4, charachter_output
+                    write (file_unit, 1040) i4, character_output
                 end if
             end if
         else if (i2 > 0 .and. i2 <  100000) then
             i4 = i2
-            charachter_output = char_arr(ioffd + i2)
-            if (char_arr(ioffc + idx_missing) == charachter_output) then
+            character_output = char_arr(ioffd + i2)
+            if (char_arr(ioffc + idx_missing) == character_output) then
                 call status%increase_warning_count()
                 message_type = "WARNING"
-                write (lunut, 1010) message_type, idx_missing + count_missing, char_arr(ioffc + idx_missing)
+                write (file_unit, 1010) message_type, idx_missing + count_missing, char_arr(ioffc + idx_missing)
             else ! pseudo-error
                 message_type = "ERROR"
-                write (lunut, 1010) message_type, idx_missing + count_missing, char_arr(ioffc + idx_missing)
+                write (file_unit, 1010) message_type, idx_missing + count_missing, char_arr(ioffc + idx_missing)
                 ierr = 1
                 if (iorder == 2) then
-                    write (lunut, 1030)  message_type, i2, charachter_output
+                    write (file_unit, 1030)  message_type, i2, character_output
                 else
-                    write (lunut, 1040)  message_type, i2, charachter_output
+                    write (file_unit, 1040)  message_type, i2, character_output
                 end if
             end if
         endif

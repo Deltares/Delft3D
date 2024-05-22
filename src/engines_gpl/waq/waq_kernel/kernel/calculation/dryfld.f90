@@ -27,22 +27,20 @@ module dryfld_mod
     real(kind = real_wp), dimension(:), allocatable, save :: sumvol
 end module dryfld_mod
 
-subroutine dryfld (nosegw, noseg, nolay, volume, noq12, &
+!>      Sets feature of dry cells to zero
+!!
+!!      Determines which cells were dry at start of time step.
+!!      This is an explicit setting of the feature in the
+!!      sense that it gives the state of the start of the time step.
+!!      The DRY_THRESH variable is used as a thickness (default 1.0 mm) together with
+!!      the SURF parameter of segment function. If SURF is absent, 1.0 m2 is
+!!      assumed and the DRY_THRESH directly compares vomes in m3.
+!!      A dry cell may have transport, because it may be wet at the
+!!      end of the time step. It has however no processes yet. The wetting within the
+!!      time step is tested by the dryfle routine later in this file.
+subroutine dryfld(nosegw, noseg, nolay, volume, noq12, &
         area, nocons, coname, cons, surface, &
         iknmrk, iknmkv)
-
-
-    !>      Sets feature of dry cells to zero
-    !>
-    !>      Determines which cells were dry at start of time step.
-    !>      This is an explicit setting of the feature in the
-    !>      sense that it gives the state of the start of the time step.\n
-    !>      The DRY_THRESH variable is used as a thickness (default 1.0 mm) together with
-    !>      the SURF parameter of segment function. If SURF is absent, 1.0 m2 is
-    !>      assumed and the DRY_THRESH directly compares vomes in m3.\n
-    !>      A dry cell may have transport, because it may be wet at the
-    !>      end of the time step. It has however no processes yet. The wetting within the
-    !>      time step is tested by the dryfle routine later in this file.
 
     use timers
     use dryfld_mod
@@ -50,31 +48,30 @@ subroutine dryfld (nosegw, noseg, nolay, volume, noq12, &
     use m_string_utils, only : index_in_array
     implicit none
 
-    integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
-    integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes total
-    integer(kind = int_wp), intent(in) :: nolay                !< number of layers
+    integer(kind = int_wp), intent(in)  :: nosegw               !< number of computational volumes water
+    integer(kind = int_wp), intent(in)  :: noseg                !< number of computational volumes total
+    integer(kind = int_wp), intent(in)  :: nolay                !< number of layers
     real(kind = real_wp), intent(inout) :: volume (noseg)       !< volumes at start of time step
-    integer(kind = int_wp), intent(in) :: noq12                !< number of horizontal exchanges
+    integer(kind = int_wp), intent(in)  :: noq12                !< number of horizontal exchanges
     real(kind = real_wp), intent(inout) :: area   (noq12)       !< areas at start of time step
-    integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-    character(20), intent(in) :: coname (nocons)      !< names of the constants
-    real(kind = real_wp), intent(in) :: cons   (nocons)      !< values of the constants
-    real(kind = real_wp), intent(in) :: surface(noseg)       !< horizontal surface area
-    integer(kind = int_wp), intent(in) :: iknmrk (noseg)       !< constant feature array
+    integer(kind = int_wp), intent(in)  :: nocons               !< number of constants
+    character(20), intent(in)           :: coname (nocons)      !< names of the constants
+    real(kind = real_wp), intent(in)    :: cons   (nocons)      !< values of the constants
+    real(kind = real_wp), intent(in)    :: surface(noseg)       !< horizontal surface area
+    integer(kind = int_wp), intent(in)  :: iknmrk (noseg)       !< constant feature array
     integer(kind = int_wp), intent(out) :: iknmkv (noseg)       !< time varying feature array
 
-    !     Local declarations
-
+    !     Local variables
     integer(kind = int_wp) :: idryfld         ! help variable to find dry_tresh constant
-    real(kind = real_wp) :: threshold       ! drying and flooding value
-    real(kind = real_wp) :: minvolume       ! minimum volume in a cell
-    real(kind = real_wp) :: minarea         ! minimum exhange area of a horizontal exchange
+    real(kind = real_wp)   :: threshold       ! drying and flooding value
+    real(kind = real_wp)   :: minvolume       ! minimum volume in a cell
+    real(kind = real_wp)   :: minarea         ! minimum exhange area of a horizontal exchange
     integer(kind = int_wp) :: nosegl          ! number of computational volumes per layer
     integer(kind = int_wp) :: isegl           ! loop variable volumes
     integer(kind = int_wp) :: ivol            ! index for this computational volumes
     integer(kind = int_wp) :: ilay            ! loop variable layers
     integer(kind = int_wp) :: ikm             ! feature
-    real(kind = real_wp) :: sum             ! help variable
+    real(kind = real_wp)   :: sum             ! help variable
 
     integer(kind = int_wp) :: ithandl = 0
     if (timon) call timstrt ("dryfld", ithandl)
@@ -140,46 +137,41 @@ subroutine dryfld (nosegw, noseg, nolay, volume, noq12, &
     return
 end
 
-subroutine dryfle (nosegw, noseg, volume, nolay, nocons, &
+!>               Wettens cells that became wet during the time step
+!!
+!!               Determines which cells have become wet during the time step.
+!!               A dry cell may have transport, because it may be wet at the
+!!               end of the time step. It has however no processes yet in this step.\n
+!!               NB. This routine does NOT set cells dry, it only wettens any dry cells.
+subroutine dryfle(nosegw, noseg, volume, nolay, nocons, &
         coname, cons, surface, iknmrk, iknmkv)
-
-    !>               Wettens cells that became wet during the time step
-    !>
-    !>               Determines which cells have become wet during the time step.
-    !>               A dry cell may have transport, because it may be wet at the
-    !>               end of the time step. It has however no processes yet in this step.\n
-    !>               NB. This routine does NOT set cells dry, it only wettens any dry cells.
-    !     Created             : September 2010 by Leo Postma
-    !     Modified            : August    2011 by Leo Postma: test the volume of the water column
-    !                           April     2013    Leo Postma  integrated with hsurf routine
-    !                           April     2014    Michelle Jeuken introduction of constant for
-    !                                             minimum value of volumes.
 
     use timers
     use dryfld_mod
     use m_string_utils, only : index_in_array
     implicit none
 
-    integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
-    integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes
-    real(kind = real_wp), intent(inout) :: volume (noseg)       !< volumes at end of time step
-    integer(kind = int_wp), intent(in) :: nolay                !< number of layers
-    integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-    character(20), intent(in) :: coname (nocons)      !< names of the constants
-    real(kind = real_wp), intent(in) :: cons   (nocons)      !< values of the constants
-    real(kind = real_wp), intent(in) :: surface(noseg)       !< horizontal surface area
-    integer(kind = int_wp), intent(in) :: iknmrk (noseg)       !< constant feature array
+    integer(kind = int_wp), intent(in)    :: nosegw               !< number of computational volumes water
+    integer(kind = int_wp), intent(in)    :: noseg                !< number of computational volumes
+    real(kind = real_wp), intent(inout)   :: volume (noseg)       !< volumes at end of time step
+    integer(kind = int_wp), intent(in)    :: nolay                !< number of layers
+    integer(kind = int_wp), intent(in)    :: nocons               !< number of constants
+    character(20), intent(in)             :: coname (nocons)      !< names of the constants
+    real(kind = real_wp), intent(in)      :: cons   (nocons)      !< values of the constants
+    real(kind = real_wp), intent(in)      :: surface(noseg)       !< horizontal surface area
+    integer(kind = int_wp), intent(in)    :: iknmrk (noseg)       !< constant feature array
     integer(kind = int_wp), intent(inout) :: iknmkv (noseg)       !< time varying feature array
 
+    ! local variables
     integer(kind = int_wp) :: idryfld         ! help variable to find dry_tresh constant
-    real(kind = real_wp) :: threshold       ! drying and flooding value
-    real(kind = real_wp) :: minvolume       ! minimum volume in a cell
+    real(kind = real_wp)   :: threshold       ! drying and flooding value
+    real(kind = real_wp)   :: minvolume       ! minimum volume in a cell
     integer(kind = int_wp) :: nosegl          ! number of computational volumes per layer
     integer(kind = int_wp) :: isegl           ! loop variable
     integer(kind = int_wp) :: ivol            ! this computational volume
     integer(kind = int_wp) :: ilay            ! loop variable layers
     integer(kind = int_wp) :: ikm             ! feature
-    real(kind = real_wp) :: sum             ! help variable
+    real(kind = real_wp)   :: sum             ! help variable
 
     integer(kind = int_wp) :: ithandl = 0
     if (timon) call timstrt ("dryfle", ithandl)
@@ -225,8 +217,6 @@ subroutine dryfle (nosegw, noseg, volume, nolay, nocons, &
             volume(ivol) = max(volume(ivol), minvolume)
         enddo
     enddo
-
     if (timon) call timstop (ithandl)
-
     return
 end subroutine dryfle

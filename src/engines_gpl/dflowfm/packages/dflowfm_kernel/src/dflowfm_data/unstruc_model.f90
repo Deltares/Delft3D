@@ -1414,6 +1414,12 @@ subroutine readMDUFile(filename, istat)
     endif
     call prop_get_string (md_ptr, 'sediment', 'SedFile',              md_sedfile,    success)
     call prop_get_string (md_ptr, 'sediment', 'MorFile',              md_morfile,    success)
+    
+    stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
+    if (jased == 4 .and. .not. stm_included) then
+       call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
+    endif
+
     call prop_get_string (md_ptr, 'sediment', 'DredgeFile',           md_dredgefile, success)
     call prop_get_integer(md_ptr, 'sediment', 'BndTreatment',         jabndtreatment, success)           ! separate treatment boundary links in upwinding transports
     call prop_get_integer(md_ptr, 'sediment', 'SourSink',             jasourcesink, success)             ! switch off source or sink terms for sed advection
@@ -1427,17 +1433,26 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     
-    call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
-    call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
+    if (jased > 0 .and. .not. stm_included) then
+       call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
+       MxgrKrone = -1
+       call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
+       if (Mxgr <= 0) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of sediment fractions (Nr_of_sedfractions) should be larger than 0.')
+       elseif (MxgrKrone < 0) then
+          if (jased == 1) then
+              MxgrKrone = Mxgr
+          else
+              MxgrKrone = 0
+          endif
+       elseif (MxgrKrone == 0 .and. jased == 1) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for Sedimentmodelnr = 1.')
+       elseif (MxgrKrone > Mxgr) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be larger than total number of fractions (Nr_of_sedfractions).')
+       endif
+    endif
     call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling'    ,  jaseddenscoupling)
     call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
-
-
-    stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased .eq. 4)
-
-    if (jased .eq. 4 .and. .not. stm_included) then
-       call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
-    endif
 
     if (jased*mxgr > 0 .and. .not. stm_included) then
 
@@ -1446,7 +1461,6 @@ subroutine readMDUFile(filename, istat)
       call prop_get_doubles(md_ptr, 'sediment', 'D50'                ,  D50, Mxgr)
       call prop_get_doubles(md_ptr, 'sediment', 'Rhosed'             ,  rhosed, Mxgr)
       call setgrainsizes()
-
 
       if (mxgrKrone > 0) then
          call prop_get_doubles(md_ptr, 'sediment', 'Ws'              ,  Ws,        MxgrKrone)

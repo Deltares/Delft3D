@@ -41,8 +41,7 @@ contains
 
         ! global declarations
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use delwaq_loads, only : wasteloads
         use delwaq_user_wasteloads
         use timers
@@ -81,7 +80,7 @@ contains
 
         ! initialise dll
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
 
         ! update the actual loads from the delwaq arrays to the wasteload structure
 
@@ -90,7 +89,7 @@ contains
             if (ierr_alloc /= 0) then
                 write(lunrep, *) 'ERROR : allocating wasteloads structure'
                 write(*, *) 'ERROR : allocating wasteloads structure'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do iwst = 1, nowst
                 allocate(wasteloads(iwst)%loads(notot + 1))

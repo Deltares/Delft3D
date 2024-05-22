@@ -92,18 +92,18 @@ contains
         if (gettoken(idopt1, ierr2) > 0) goto 20
         select case (idopt1)
         case (:-2)
-            write (lunut, 2000)  idopt1
-            write (lunut, 2010)
+            write (file_unit, 2000)  idopt1
+            write (file_unit, 2010)
             goto 20
         case (-1)                     ! old style <other ASCII file>
-            write (lunut, 2000)  idopt1
+            write (file_unit, 2000)  idopt1
             call process_simulation_input_options   (idopt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
             if (gettoken(ndmpar, ierr2) > 0) goto 20
         case (0)                      ! new style (October 2012) no dump areas
-            write (lunut, 2020)       ! old style would have produced an error
+            write (file_unit, 2020)       ! old style would have produced an error
             ndmpar = 0
             ntdmps = 0
             goto 30
@@ -113,7 +113,7 @@ contains
                 push = .true.
                 ndmpar = idopt1
             else
-                write (lunut, 2000)  idopt1
+                write (file_unit, 2000)  idopt1
             endif
         case (2)                      ! old style <no dump areas> or new style 2 areas
             if (gettoken(option, ndmpar, itype, ierr2) > 0) goto 20
@@ -121,8 +121,8 @@ contains
             if (itype == 1) then     ! a string, so first dump-ID from 2 areas
                 ndmpar = idopt1
             else                         ! an integer, so 2 meant <not used>
-                write (lunut, 2000)  idopt1
-                write (lunut, 2020)
+                write (file_unit, 2000)  idopt1
+                write (file_unit, 2020)
                 ndmpar = 0
                 ntdmps = 0
                 goto 30
@@ -133,23 +133,23 @@ contains
         end select
 
         ! Write number of dump areas, allocate arrays
-        write(lunut, 2030) ndmpar
+        write(file_unit, 2030) ndmpar
         ntdmps = 0
         allocate (duname(ndmpar), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2380) ierr_alloc
+            write (file_unit, 2380) ierr_alloc
             goto 20
         endif
         allocate (nsegdmp(ndmpar), isegdmp(ndmpar), dmpbal(ndmpar), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2390) ierr_alloc
+            write (file_unit, 2390) ierr_alloc
             goto 20
         endif
         max_ntdmps = ndmpar
 
         ! Read specification of the dump areas
-        if (output_verbose_level < 2) write (lunut, 2040)
-        if (output_verbose_level == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (file_unit, 2040)
+        if (output_verbose_level == 2) write (file_unit, 2050)
         do id = 1, ndmpar
             if (gettoken(duname(id), ierr2) > 0) goto 20
             if (gettoken(option, nseg, itype, ierr2) > 0) goto 20
@@ -159,7 +159,7 @@ contains
                 elseif (option == 'NO_BALANCE') then
                     dmpbal(id) = 0
                 else
-                    write(lunut, 2420) trim(option)
+                    write(file_unit, 2420) trim(option)
                     goto 20
                 endif
                 if (gettoken(nseg, ierr2) > 0) goto 20
@@ -170,7 +170,7 @@ contains
                 max_ntdmps = 2 * (ntdmps + nseg)
                 allocate (isegdmp_2(max_ntdmps), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
-                    write (lunut, 2400) ierr_alloc
+                    write (file_unit, 2400) ierr_alloc
                     goto 20
                 endif
                 isegdmp_2(1:ntdmps) = isegdmp(1:ntdmps)
@@ -185,19 +185,19 @@ contains
             ! check if name is unique
             do k = 1, id - 1
                 if (string_equals(duname(id), duname(k))) then
-                    write(lunut, 2410) duname(id)
+                    write(file_unit, 2410) duname(id)
                     ierr = ierr + 1
                 endif
             enddo
 
             if (output_verbose_level >= 2) then
-                write(lunut, 2060) id, duname(id), nseg
+                write(file_unit, 2060) id, duname(id), nseg
                 if (dmpbal(id) == 0) then
-                    write(lunut, 2430)
+                    write(file_unit, 2430)
                 endif
                 if (output_verbose_level >= 3) then
-                    write(lunut, 2070)
-                    write(lunut, 2080) (k, isegdmp(ntdmps + k), k = 1, nseg)
+                    write(file_unit, 2070)
+                    write(file_unit, 2080) (k, isegdmp(ntdmps + k), k = 1, nseg)
                 endif
             endif
 
@@ -301,18 +301,18 @@ contains
         if (gettoken(iropt1, ierr2) > 0) goto 20
         select case (iropt1)
         case (:-2)
-            write (lunut, 2000)  iropt1
-            write (lunut, 2010)
+            write (file_unit, 2000)  iropt1
+            write (file_unit, 2010)
             goto 20
         case (-1)                     ! old style <other ASCII file>
-            write (lunut, 2000)  iropt1
-            call process_simulation_input_options   (iropt1, file_unit_list, 0, file_name_list, filtype, &
+            write (file_unit, 2000)  iropt1
+            call process_simulation_input_options(iropt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
             if (gettoken(noraai, ierr2) > 0) goto 20
         case (0)                      ! new style (October 2012) no dump transects
-            write (lunut, 2020)       ! old style would have produced an error
+            write (file_unit, 2020)       ! old style would have produced an error
             noraai = 0
             ntraaq = 0
             goto 30
@@ -322,7 +322,7 @@ contains
                 push = .true.
                 noraai = iropt1
             else
-                write (lunut, 2000)  iropt1
+                write (file_unit, 2000)  iropt1
             endif
         case (2)                      ! old style <no dump transects> or new style 2 transects
             if (gettoken(option, noraai, itype, ierr2) > 0) goto 20
@@ -332,14 +332,14 @@ contains
                 if (ierr2 /= 0) then
                     noraai = iropt1
                 else
-                    write (lunut, 2000)  iropt1
-                    write (lunut, 2020)
+                    write (file_unit, 2000)  iropt1
+                    write (file_unit, 2020)
                     noraai = 0
                     ntraaq = 0
                     goto 30
                 endif
             else                         ! an integer, so 2 meant <not used>
-                write (lunut, 2020)
+                write (file_unit, 2020)
                 noraai = 0
                 ntraaq = 0
                 goto 30
@@ -350,24 +350,24 @@ contains
         end select
 
         ! Write number of dump transects, allocate arrays
-        write(lunut, 2030) noraai
+        write(file_unit, 2030) noraai
         ntraaq = 0
         allocate (raname  (noraai), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2380) ierr_alloc
+            write (file_unit, 2380) ierr_alloc
             goto 20
         endif
         allocate (nexcraai(noraai), ioptraai(noraai), &
                 iexcraai(noraai * 2), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2390) ierr_alloc
+            write (file_unit, 2390) ierr_alloc
             goto 20
         endif
         max_ntraaq = noraai * 2
 
         ! Read specification of the transects
-        if (output_verbose_level < 2) write (lunut, 2040)
-        if (output_verbose_level == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (file_unit, 2040)
+        if (output_verbose_level == 2) write (file_unit, 2050)
         do ir = 1, noraai
             if (gettoken(raname  (ir), ierr2) > 0) goto 20
             if (gettoken(ioptraai(ir), ierr2) > 0) goto 20
@@ -376,7 +376,7 @@ contains
                 max_ntraaq = 2 * (ntraaq + nq)
                 allocate (iexcraai_2(max_ntraaq), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
-                    write (lunut, 2400) ierr_alloc
+                    write (file_unit, 2400) ierr_alloc
                     goto 20
                 endif
                 iexcraai_2(1:ntraaq) = iexcraai(1:ntraaq)
@@ -392,16 +392,16 @@ contains
 
             do k = 1, ir - 1
                 if (string_equals(raname(ir), raname(k))) then
-                    write(lunut, 2410) raname(ir)
+                    write(file_unit, 2410) raname(ir)
                     ierr = ierr + 1
                 endif
             enddo
 
             if (output_verbose_level >= 2) then
-                write(lunut, 2060) ir, raname(ir), ioptraai(ir), nq
+                write(file_unit, 2060) ir, raname(ir), ioptraai(ir), nq
                 if (output_verbose_level >= 3) then
-                    write(lunut, 2070)
-                    write(lunut, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
+                    write(file_unit, 2070)
+                    write(file_unit, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
                 endif
             endif
 
@@ -412,7 +412,7 @@ contains
         goto 30
 
         ! Error handling
-        20 write (lunut, 2500)
+        20 write (file_unit, 2500)
         ierr = ierr + 1
         30 if (timon) call timstop(ithndl)
         return

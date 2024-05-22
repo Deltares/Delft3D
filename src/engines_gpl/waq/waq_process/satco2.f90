@@ -56,8 +56,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
 
@@ -128,14 +127,14 @@ contains
                 RKCO2 = EXP(PART1 + PART2)
                 !
             ELSE
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) 'ERROR in SATCO2'
                 WRITE(LUNREP, *) 'Illegal option for CO2 saturation formula'
                 WRITE(LUNREP, *) 'Option in input:', SWITCH
                 WRITE(*, *) ' ERROR in SATCO2'
                 WRITE(*, *) ' Illegal option for CO2 saturation formula'
                 WRITE(*, *) ' Option in input:', SWITCH
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
 
             !     Output of calculated saturation

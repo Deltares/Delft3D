@@ -40,7 +40,7 @@ contains
         !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
         !                           LUNOUT - monitor file
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !     PARAMETERS          :
         !
@@ -57,7 +57,7 @@ contains
         !
         !     DECLARATIONS        :
         !
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
         INTEGER(kind = int_wp) :: input_file, LUNOUT, ITIME, NTOTAL, ISFLAG, &
                 IFFLAG
@@ -142,7 +142,7 @@ contains
                     MOD(ITIME1, 3600) / 60, MOD(ITIME1, 60)
         ENDIF
         IF (MESSGE < 3) goto 9999
-        CALL SRSTOP (1)
+        CALL terminate_execution (1)
         9999 if (timon) call timstop (ithandl)
         !
         2000 FORMAT (A10, 'ON UNIT:', I10, ', READING: ', A20, / &

@@ -23,8 +23,7 @@
 
 module ProcesSet
     use m_string_utils
-    use m_monsys
-    use m_srstop
+    use m_logger, only : terminate_execution, get_log_unit_number
 
     ! module contains everything for proces definition and proces input-output
     !
@@ -285,7 +284,7 @@ contains
             allocate (aProcesProps (aProcesPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, aProcesPropColl%maxsize
                 aProcesProps(i) = aProcesPropColl%ProcesProps (i)        ! copies the contents
@@ -313,7 +312,7 @@ contains
             allocate (aIOitemProps (aIOitemPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, aIOitemPropColl%maxsize
                 aIOitemProps(i) = aIOitemPropColl%IOitemProps (i)        ! copies the contents
@@ -339,11 +338,11 @@ contains
         type(IOitemProp), pointer :: aIOitemProps(:)   ! should be a pointer for the resize operation
 
         if (indx <= 0) then
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             write(lunrep, *) 'ERROR : in IOitemPropCollAddIndx'
             write(lunrep, *) 'requested index not allowed :', indx
             write(*, *) 'ERROR : internal error'
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         if (indx > aIOitemPropColl%maxsize) then
@@ -352,11 +351,11 @@ contains
 
             allocate (aIOitemProps (indx + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
-                call getmlu(lunrep)
+                call get_log_unit_number(lunrep)
                 write(lunrep, *) 'ERROR : allocating IOitemPropColl array'
                 write(lunrep, *) 'requested size :', indx + MAX_NUM
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
 
             ! copy the old items
@@ -406,7 +405,7 @@ contains
             allocate (aStochiProps (aStochiPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, aStochiPropColl%maxsize
                 aStochiProps(i) = aStochiPropColl%StochiProps (i)        ! copies the contents
@@ -434,7 +433,7 @@ contains
             allocate (aArrayProps (aArrayPropColl%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, aArrayPropColl%maxsize
                 aArrayProps(i) = aArrayPropColl%ArrayProps (i)        ! copies the contents
@@ -462,7 +461,7 @@ contains
             allocate (a_old_items(a_old_item_coll%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             do i = 1, a_old_item_coll%maxsize
                 a_old_items(i) = a_old_item_coll%old_items (i)        ! copies the contents

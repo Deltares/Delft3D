@@ -31,9 +31,7 @@ contains
     subroutine depave (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
-
+        use m_logger, only : terminate_execution, get_log_unit_number
         !>\file
         !>       Average depth for a Bloom time step (typically a day)
 
@@ -75,12 +73,12 @@ contains
             FIRST = .FALSE.
             IF ((INCREM(1) > 0) .OR. &
                     (INCREM(2) > 0)) THEN
-                CALL GETMLU(LUNREP)
+                CALL get_log_unit_number(LUNREP)
                 WRITE (LUNREP, *) &
                         ' DEPAVE: INPUT parameters function(x) not ALLOWED'
                 WRITE (*, *) &
                         ' DEPAVE: INPUT parameters function(x) not ALLOWED'
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
             ENDIF
         ENDIF
 

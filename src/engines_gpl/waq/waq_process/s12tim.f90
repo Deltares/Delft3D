@@ -31,8 +31,7 @@ contains
     subroutine s12tim (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, get_log_unit_number
         use m_evaluate_waq_attribute
 
 
@@ -102,12 +101,12 @@ contains
                     iswres = nint(pmsa(ip(17)))
                     !     if iswres = 1 then the resuspension flux is independent of the other fractions and calculated here
                     if (iswres == 1) then
-                        call getmlu(lunrep)
+                        call get_log_unit_number(lunrep)
                         write(lunrep, *) "Please remove processes S12TraIMx from your  &
                                 sub-file, and use the Res_Pickup process instead."
                         write(*, *) "Please remove processes S12TraIMx from your  &
                                 sub-file, and use the Res_Pickup process instead."
-                        call srstop(1)
+                        call terminate_execution(1)
                     else
                         fracs1_res = fracs1
                         fracs2_res = fracs2

@@ -37,8 +37,7 @@ contains
         !>\file
         !>       detect and activate primary processes (which act directly on substances)
 
-        use m_monsys
-        use m_write_error_message
+        use m_logger
         use processet
         use timers       !   performance timers
 
@@ -84,9 +83,9 @@ contains
         if (timon) call timstrt("primpro", ithndl)
 
         write (line, '(a)') '# Determining the processes to model the substances.'
-        call monsys(line, 2)
+        call write_log_message(line)
         line = ' '
-        call monsys(line, 2)
+        call write_log_message(line)
 
         ! some init
 
@@ -100,7 +99,7 @@ contains
 
             gen = syname(isys)
             write (line, '(3a)') '-fluxes for [', gen, ']'
-            call monsys(line, 4)
+            call write_log_message(line)
 
             ! loop over the processes
 
@@ -128,9 +127,9 @@ contains
                             endif
                             write (line, '(4a)') ' found flux  [', proc%fluxstochi(istochi)%ioitem(1:20), '] ', &
                                     proc%fluxoutput(iflux)%item%text
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             write (line, '(4a)') '   from proces [', proc%name(1:20), '] ', proc%text(1:50)
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             if (proc%linvok) then
                                 if (.not. proc%active) then
 
@@ -138,16 +137,16 @@ contains
 
                                     proc%active = .true.
                                     write (line, '(3a)') '   switching [', proc%name(1:20), '] on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 else
                                     write (line, '(a)') '   process is switched on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 endif
                                 proc%fluxstochi(istochi)%subindx = isys
                             else
                                 call status%increase_info_count()
                                 write (line, '(3a)') '   info : can not switch [', proc%name(1:20), '] on, not using flux.'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                             endif
                         endif
                     endif
@@ -155,13 +154,13 @@ contains
             enddo
             if (ifl == 0) then
                 write (line, '(a)') ' no fluxes found'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
 
             ! check dispersion rules
 
             write (line, '(3a)') '-dispersion for [', gen, ']'
-            call monsys(line, 4)
+            call write_log_message(line)
 
             idsp = 0
             do iproc = 1, nproc
@@ -182,13 +181,13 @@ contains
                             endif
                             write (line, '(4a)') ' found dispersion[', proc%dispstochi(istochi)%ioitem, '] ', &
                                     proc%output_item(ioutput)%item%text
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             write (line, '(4a)') '   from proces [', proc%name, '] ', proc%text(1:50)
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             if (isys > nosys) then
                                 call status%increase_info_count()
                                 write (line, '(2a)') '   info : inactive substance not using dispersion.'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                                 cycle
                             endif
                             if (proc%linvok) then
@@ -198,10 +197,10 @@ contains
 
                                     proc%active = .true.
                                     write (line, '(3a)') '   switching [', proc%name, '] on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 else
                                     write (line, '(a)')  '   process is switched on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 endif
 
                                 if (proc%output_item(ioutput)%ip_val == 0) then
@@ -217,7 +216,7 @@ contains
                             else
                                 call status%increase_info_count()
                                 write (line, '(3a)') '   info : can not switch [', proc%name, '] on, not using disp.'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                             endif
                         endif
                     endif
@@ -225,13 +224,13 @@ contains
             enddo
             if (idsp == 0) then
                 write (line, '(a)') ' no dispersions found'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
 
             ! check velocity
 
             write (line, '(3a)') '-velocity for [', gen, ']'
-            call monsys(line, 4)
+            call write_log_message(line)
 
             ivel = 0
             do iproc = 1, nproc
@@ -252,13 +251,13 @@ contains
                             endif
                             write (line, '(4a)') ' found velocity [', proc%velostochi(istochi)%ioitem, '] ', &
                                     proc%output_item(ioutput)%item%text
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             write (line, '(4a)') '   from proces [', proc%name, '] ', proc%text(1:50)
-                            call monsys(line, 4)
+                            call write_log_message(line)
                             if (isys > nosys) then
                                 call status%increase_info_count()
                                 write (line, '(2a)') '   info : inactive substance not using velocity.'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                                 cycle
                             endif
                             if (proc%linvok) then
@@ -268,10 +267,10 @@ contains
 
                                     proc%active = .true.
                                     write (line, '(3a)') '   switching [', proc%name, '] on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 else
                                     write (line, '(a)')  '   process is switched on.'
-                                    call monsys(line, 4)
+                                    call write_log_message(line)
                                 endif
 
                                 if (proc%output_item(ioutput)%ip_val == 0) then
@@ -287,7 +286,7 @@ contains
                             else
                                 call status%increase_info_count()
                                 write (line, '(3a)') '   info : can not switch [', proc%name, '] on, not using velo.'
-                                call monsys(line, 4)
+                                call write_log_message(line)
                             endif
                         endif
                     endif
@@ -295,11 +294,11 @@ contains
             enddo
             if (ivel == 0) then
                 write (line, '(a)') ' no velocity found'
-                call monsys(line, 4)
+                call write_log_message(line)
             endif
 
             line = ' '
-            call monsys(line, 4)
+            call write_log_message(line)
 
         enddo
 

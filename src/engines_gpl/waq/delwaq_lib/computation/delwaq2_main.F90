@@ -96,9 +96,9 @@ contains
 
     subroutine delwaq2_main_finalise(action, file_unit, rundat)
 
-        use m_monsys
         use m_actions
-        use m_dattim
+        use m_date_time_utils_external, only : write_date_time
+        use m_logger, only : get_log_unit_number
 
         integer(kind = int_wp), intent(in) :: action
         character(len = 20), intent(in) :: rundat
@@ -107,13 +107,13 @@ contains
         !     Finalise - only if the full computation was done
         if ((action == action_fullcomputation) .or. (action == action_finalisation)) then
 
-            call getmlu(file_unit)
+            call get_log_unit_number(file_unit)
             write (*, *)
             write (*, *) ' SIMULATION ENDED '
             write (*, *)
             write (file_unit, *)
             write (file_unit, '(A)') ' Simulation ended normal'
-            call dattim(rundat)
+            call write_date_time(rundat)
             write (file_unit, '(2A)') ' Execution stop : ', rundat
 
             close (file_unit)

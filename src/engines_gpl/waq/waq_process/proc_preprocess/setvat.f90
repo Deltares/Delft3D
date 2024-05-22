@@ -36,10 +36,8 @@ contains
             vardag, vartag, varagg, nogrid, coname, &
             paname, funame, sfname, dename, syname, &
             locnam, varnam)
-        !! Set variable atributes
-
-        use m_srstop
-        use m_monsys
+        ! Set variable atributes
+        use m_logger, only : terminate_execution, write_log_message
         use timers       !   performance timers
 
         integer(kind = int_wp) :: lurep, nocons, nopa, nofun, nosfun, &
@@ -462,9 +460,9 @@ contains
                 NOVAT = NOVAT + 1
                 IF (NOVAT > MAXLOC) THEN
                     LINE = 'ERROR : local dimension overflow in SETVAT'
-                    CALL MONSYS(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(*, *) LINE
-                    CALL SRSTOP(1)
+                    CALL terminate_execution(1)
                 ENDIF
                 READ(file_unit, *, IOSTAT = IERR) VATNAM(NOVAT), VATTAG(NOVAT), VATNAG(NOVAT), &
                         VATTDA(NOVAT), VATNDA(NOVAT)
@@ -525,10 +523,10 @@ contains
                     IERR = IERR + 1
                     LINE = 'ERROR : undefined type off aggregation for :' // &
                             VARNAM(IVAR)
-                    CALL MONSYS(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(LINE, '(''type:'',I5,'' from aggrlist.dat'')') &
                             VATTAG(IVAT)
-                    CALL MONSYS(LINE, 1)
+                    CALL write_log_message(line)
                     !
                 ENDIF
                 !
@@ -575,10 +573,10 @@ contains
                     IERR = IERR + 1
                     LINE = 'ERROR : undefined type off dis-aggregation for :' &
                             // VARNAM(IVAR)
-                    CALL MONSYS(LINE, 1)
+                    CALL write_log_message(line)
                     WRITE(LINE, '(''type:'',I5,'' from aggrlist.dat'')') &
                             VATTAG(IVAT)
-                    CALL MONSYS(LINE, 1)
+                    CALL write_log_message(line)
                     !
                 ENDIF
             ENDIF

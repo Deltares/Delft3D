@@ -42,7 +42,7 @@ contains
         !     LOGICAL UNITNUMBERS : input_file file for initialisation of harmonics
         !                           LUNOUT - monitor file
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !     PARAMETERS          :
         !
@@ -81,7 +81,7 @@ contains
         !
         !     DECLARATIONS        :
         !
-        use m_srstop
+        use m_logger, only : terminate_execution
         use timers
 
         real(kind = real_wp), PARAMETER :: TWOPI = 6.28319
@@ -197,7 +197,7 @@ contains
         ELSE
             WRITE(LUNOUT, 2010) input_file, LUNTXT, ITIME
         ENDIF
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         9999 if (timon) call timstop (ithandl)
         RETURN
         !

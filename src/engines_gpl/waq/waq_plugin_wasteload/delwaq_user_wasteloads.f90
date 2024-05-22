@@ -23,7 +23,7 @@
 
 module delwaq_user_wasteloads
 
-    use m_srstop
+    use m_logger, only : terminate_execution
     use m_open_waq_files
     use m_string_utils
     use delwaq_loads, wsl => wasteloads   ! This will be available via the argument list
@@ -68,7 +68,7 @@ contains
             call open_waq_files (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
             if (ierr /= 0) then
                 write(*, '(A)') 'Could not open delwaq_user_wasteloads.mon for writing.'
-                call srstop(1)
+                call terminate_execution(1)
             endif
 
             ! waq_plugin_wasteload version number
@@ -659,7 +659,7 @@ contains
                     read(lunwlk, *, iostat = ierr) dummy, dummy, dummy, dummy
                     if (ierr /= 0) then
                         write(lunrep, 2004) next_time
-                        call srstop(1)
+                        call terminate_execution(1)
                     endif
                 enddo
 

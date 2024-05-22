@@ -66,7 +66,7 @@ contains
         !!                 file_unit_list(18) = unit intermediate file (initials)
 
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_open_waq_files
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
@@ -117,7 +117,7 @@ contains
         !        Initialisations
 
         iposr = 0                                  ! start at begin of the input line with reading
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
         ierr2 = 0
         masspm2 = .false.
         transp = .false.
@@ -129,10 +129,10 @@ contains
             if (cdummy == 'mass/m2' .or. &
                     cdummy == 'MASS/M2') then
                 masspm2 = .true.
-                write (lunut, 2030)
+                write (file_unit, 2030)
                 if (gettoken(cdummy, icopt1, itype, ierr2) > 0) goto 10
             elseif (cdummy /= 'INITIALS') then
-                write (lunut, 2040) trim(cdummy)
+                write (file_unit, 2040) trim(cdummy)
                 ierr2 = 3
                 goto 10
             endif
@@ -143,7 +143,7 @@ contains
                 icopt1 = THISFILE
                 old_input = .false.
             else
-                write (lunut, 2040) trim(cdummy)
+                write (file_unit, 2040) trim(cdummy)
                 ierr2 = 3
                 goto 10
             endif
@@ -153,10 +153,10 @@ contains
 
         !        The file option
 
-        write (lunut, 2000) icopt1
+        write (file_unit, 2000) icopt1
         if (icopt1 /= EXTASCII .and. icopt1 /= BINARY   .and. &
                 icopt1 /= THISFILE) then
-            write (lunut, 2020)
+            write (file_unit, 2020)
             goto 10
         endif
 
@@ -177,19 +177,19 @@ contains
                 close (file_unit_list(18))
                 if (cdummy(114:120) == 'mass/m2' .or. &
                         cdummy(114:120) == 'MASS/M2') then            !  at end of third line ...
-                    write (lunut, 2070)
+                    write (file_unit, 2070)
                 else if (masspm2) then
-                    write (lunut, 2080)
+                    write (file_unit, 2080)
                     call status%increase_error_count()
                 else
-                    write (lunut, 2090)
+                    write (file_unit, 2090)
                     call status%increase_warning_count()
                 endif
             else if (masspm2) then
-                write (lunut, 2100)
+                write (file_unit, 2100)
                 call status%increase_error_count()
             else
-                write (lunut, 2110)
+                write (file_unit, 2110)
                 call status%increase_warning_count()
             endif
             goto 10
@@ -229,17 +229,17 @@ contains
             if (itype == STRING) then
                 if (cdummy == 'TRANSPOSE') then
                     transp = .true.
-                    write (lunut, 2060)
+                    write (file_unit, 2060)
                     if (gettoken(icopt2, ierr2) > 0) goto 10
                 else
-                    write (lunut, 2040) trim(cdummy)
+                    write (file_unit, 2040) trim(cdummy)
                     ierr2 = 3
                     goto 10
                 endif
             endif
-            write (lunut, 2010) icopt2
+            write (file_unit, 2010) icopt2
             if (icopt2 /= NODEFAUL .and. icopt2 /= DEFAULTS) then
-                write (lunut, 2020)
+                write (file_unit, 2020)
                 goto 10
             endif
 
@@ -264,7 +264,7 @@ contains
 
             allocate (values(notot, noseg), stat = ierr2)
             if (ierr2 /= 0) then
-                write(lunut, *) 'ERROR allocating memory for initials'
+                write(file_unit, *) 'ERROR allocating memory for initials'
                 ierr2 = 3
                 goto 10
             endif
@@ -281,8 +281,8 @@ contains
 
         ierr2 = 0
         10 if (ierr2 > 0) call status%increase_error_count()
-        if (ierr2 > 0) write (lunut, 2050)
-        if (ierr2 == 3) call SRSTOP(1)
+        if (ierr2 > 0) write (file_unit, 2050)
+        if (ierr2 == 3) call terminate_execution(1)
         if (old_input) then
             call check_error(cdummy, iwidth, 8, ierr2, status)
         endif

@@ -31,7 +31,7 @@ contains
     subroutine watage (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_write_error_message
+        use m_logger
 
         !>\file
         !>       Age of water through the tracer substances

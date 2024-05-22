@@ -23,7 +23,7 @@
 
 module m_debgrz_computations
     use m_waq_precision
-    use m_monsys
+    use m_logger
 
     implicit none
 
@@ -64,7 +64,7 @@ module m_debgrz_computations
 
         if (.not. conv_adjustment_logged) then
             if (conv_cm3_gc > conv_j_gc * eg_l3) then
-                call getmlu(lunrep)
+                call get_log_unit_number(lunrep)
                 write(lunrep,*) 'WARNING: conv_cm3_gC larger than costs for growth.'
                 write(lunrep,*) 'Therefore adjusted to conv_J_gC * Eg_L3'
                 write(lunrep,*) 'This implies kappa_G=0 (no overhead costs for growth)'

@@ -101,7 +101,7 @@ module m_sediment
  integer, allocatable              :: sedtot2sedsus(:)       !< mapping of suspended fractions to total fraction index; name is somewhat misleading, but hey, who said this stuff should make sense..
  integer                           :: sedparopt=1            !< for interactor plotting
  integer                           :: numoptsed
- integer                           :: jaBndTreatment
+ integer                           :: jabndtreatment
  integer                           :: jamorcfl
  double precision                  :: dzbdtmax
  double precision                  :: botcrit       !< mass balance: minimum depth after bottom update to adapt concentrations
@@ -111,21 +111,21 @@ module m_sediment
  !
  !-------------------------------------------------- old sediment transport and morphology
  integer                           :: mxgrKrone     !< mx grainsize index nr that followsKrone. Rest follows v.Rijn
- double precision, allocatable     :: D50(:)        !< mean sand diameter (m)         ! used only if Ws ==0
- double precision, allocatable     :: D90(:)        !< 90percentile sand diameter (m) ! not in Krone Partheniades
+ double precision, allocatable     :: d50(:)        !< mean sand diameter (m)         ! used only if Ws ==0
+ double precision, allocatable     :: d90(:)        !< 90percentile sand diameter (m) ! not in Krone Partheniades
  double precision, allocatable     :: rhosed(:)     !< rho of sediment (kg/m3)
  double precision, allocatable     :: rhodelta(:)   !< relative density diff  (rhosed-rhomean)/rhomean ( )
  double precision, allocatable     :: dstar(:)      !< dimensionless particle diameter( )
  double precision, allocatable     :: dstar03(:)    !< dimensionless particle diameter( ) **-0.3d0
- double precision, allocatable     :: Ws(:)         !< Fall velocity (m/s) ( used only if D50=0)
+ double precision, allocatable     :: ws(:)         !< Fall velocity (m/s) ( used only if d50=0)
  double precision, allocatable     :: erosionpar(:) !< Pickup erosion parameter ( kg/(m2s) ) Krone
- double precision, allocatable     :: Ustcre2(:)    !< ustar critic erosion **2  ( m2/s2)
- double precision, allocatable     :: sqsgd50(:)    !< sqrt( ((s-1)gD50) ) (m/s)
- double precision, allocatable     :: Accr(:)       !  save time
- double precision, allocatable     :: Awcr(:)       !  save time, see below
- double precision, allocatable     :: Bwcr(:)       !  save time, see below
- double precision, allocatable     :: D50ca(:), D50cb(:), D50wa(:), D50wb(:), D50wc(:) !< SvR definitions + user defined for < 0.000062 (m)
- double precision, allocatable     :: Uniformerodablethickness(:) !< Uniform erodable thickness per fraction (m)
+ double precision, allocatable     :: ustcre2(:)    !< ustar critic erosion **2  ( m2/s2)
+ double precision, allocatable     :: sqsgd50(:)    !< sqrt( ((s-1)gd50) ) (m/s)
+ double precision, allocatable     :: accr(:)       !  save time
+ double precision, allocatable     :: awcr(:)       !  save time, see below
+ double precision, allocatable     :: bwcr(:)       !  save time, see below
+ double precision, allocatable     :: d50ca(:), d50cb(:), d50wa(:), d50wb(:), d50wc(:) !< SvR definitions + user defined for < 0.000062 (m)
+ double precision, allocatable     :: uniformerodablethickness(:) !< Uniform erodable thickness per fraction (m)
  double precision, allocatable     :: sedini(:)            !< uniform initial sedcon     (kg/m3)
 
 
@@ -166,7 +166,7 @@ module m_sediment
  alfabed             = 1d0
  alfasus             = 1d0
  jamorf              = 0
- jaBndTreatment      = 0
+ jabndtreatment      = 0
  jamorcfl            = 1
  dzbdtmax            = 0.1d0
  jamormergedtuser    = 0
@@ -178,32 +178,46 @@ module m_sediment
  subroutine allocgrains() ! for all fractions:
  use MessageHandling
  use m_physcoef
+ use m_turbulence, only: sigsed
  implicit none
+ 
  integer :: m
- double precision :: Taucre
- if (allocated (D50) ) then
-    deallocate (D50, rhosed, erosionpar, Ustcre2, Ws, sedini, Uniformerodablethickness,  &
-                D50ca, D50cb, D50wa, D50wb, D50wc, Bwcr  )
- endif
+ double precision :: taucre
+ 
+ call deallocgrains()
  if (mxgr == 0) return
  m = mxgr
- allocate (D50(m), rhosed(m), erosionpar(m), Ustcre2(m), Ws(m), sedini(m), Uniformerodablethickness(m),  &
-           D50ca(m), D50cb(m), D50wa(m), D50wb(m), D50wc(m), Bwcr(m)  )
- D50           = 0.2d-3   ! 1d-3
+ allocate (d50(m), rhosed(m), erosionpar(m), ustcre2(m), ws(m), sedini(m), uniformerodablethickness(m),  &
+           d50ca(m), d50cb(m), d50wa(m), d50wb(m), d50wc(m), bwcr(m)  )
+ allocate (sigsed(m))
+ d50           = 0.2d-3   ! 1d-3
  rhosed        = 2650.0
  erosionpar    = 1d-4                  ! krone
- Taucre        = 0.3d0
- Ustcre2       = Taucre/rhomean       ! krone, i.e. taucre = 0.3
+ taucre        = 0.3d0
+ ustcre2       = taucre/rhomean       ! krone, i.e. taucre = 0.3
  ws            = 3d-4
  sedini        = 0d0
- Uniformerodablethickness = 1d0
- D50ca         = 0.19d0
- D50cb         = 0.1d0
- D50wa         = 0.24d0
- D50wb         = 0.66d0
- D50wc         = 0.33d0
- Bwcr          = 0.33d0
+ uniformerodablethickness = 1d0
+ d50ca         = 0.19d0
+ d50cb         = 0.1d0
+ d50wa         = 0.24d0
+ d50wb         = 0.66d0
+ d50wc         = 0.33d0
+ bwcr          = 0.33d0
+ sigsed        = 1.0d0
 
  end subroutine allocgrains
 
+ subroutine deallocgrains() ! for all fractions:
+ use m_turbulence, only: sigsed
+
+ if (allocated (d50) ) then
+    deallocate (d50, rhosed, erosionpar, ustcre2, ws, sedini, uniformerodablethickness,  &
+                d50ca, d50cb, d50wa, d50wb, d50wc, bwcr  )
+ endif
+ if (allocated (sigsed) ) then
+    deallocate (sigsed)
+ endif
+ end subroutine deallocgrains
+ 
 end module m_sediment

@@ -13,8 +13,17 @@ class ILogger(ABC):
     """Interface for a logger"""
 
     @abstractmethod
-    def error(self, message: str):
+    def error(self, message: str, exc_info: bool = False):
         """Logs a error message
+
+        Args:
+            message (str): message to log
+            exc_info (bool): log stacktrace if available (`False` by default).
+        """
+
+    @abstractmethod
+    def exception(self, message: str):
+        """Logs an error message, with stacktrace if available.
 
         Args:
             message (str): message to log
@@ -45,10 +54,11 @@ class ILogger(ABC):
         """
 
     @abstractmethod
-    def log(self, message: str, log_level: LogLevel):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         """Logs a message with the provided log level
 
         Args:
             message (str): message to log
             log_level (LogLevel): log level.
+            exc_info (bool): log stacktrace if available (`False` by default).
         """

@@ -31,7 +31,7 @@ contains
     SUBROUTINE MACROP     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_monsys
+        use m_logger
         use m_evaluate_waq_attribute
 
         !
@@ -323,7 +323,7 @@ contains
 
                     IF (SURF < 1E-20) THEN
                         NR_MSG = NR_MSG + 1
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         IF (NR_MSG <= 25) THEN
                             WRITE(LUNREP, *) 'MACROP: WARNING - surface zero or negative'
                             WRITE(LUNREP, *) '   Segment:', ISEG
@@ -335,7 +335,7 @@ contains
                     ENDIF
                     IF (DEPTH < 1E-20) THEN
                         NR_MSG = NR_MSG + 1
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         IF (NR_MSG <= 25) THEN
                             WRITE(LUNREP, *) 'MACROP: WARNING - depth zero or negative'
                             WRITE(LUNREP, *) '   Segment:', ISEG
@@ -351,7 +351,7 @@ contains
                     SUMFR = FrPOC1EM01 + FrPOC2EM01 + FrPOC3EM01
                     IF (ABS(SUMFR - 1.0) > 0.01) THEN
                         NR_MSG = NR_MSG + 1
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         IF (NR_MSG <= 25) THEN
                             WRITE(LUNREP, *) 'MACROP: WARNING - sum of fractions for POC (emerged) not close to 1'
                             WRITE(LUNREP, *) '   Segment:', ISEG
@@ -368,7 +368,7 @@ contains
                     SUMFR = FrPOC1SM01 + FrPOC2SM01 + FrPOC3SM01
                     IF (ABS(SUMFR - 1.0) > 0.01) THEN
                         NR_MSG = NR_MSG + 1
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         IF (NR_MSG <= 25) THEN
                             WRITE(LUNREP, *) 'MACROP: WARNING - sum of fractions for POC (submerged) not close to 1'
                             WRITE(LUNREP, *) '   Segment:', ISEG

@@ -28,7 +28,7 @@ module grid_utils
     use m_error_status
     use timers
     use rd_token
-    use m_srstop
+    use m_logger, only : terminate_execution
 
     implicit none
 
@@ -137,14 +137,14 @@ contains
 
             if (itype == 2) then                    ! integer
                 if (.not. read_input) then             ! no multigrid, integer
-                    write (lunut, 2000)                ! is meant for print-out
+                    write (file_unit, 2000)                ! is meant for print-out
                     push = .true.                         ! grid, so push on the
                     exit                                  ! stack again
                 else
                     if (.not. newinput) then            ! old way of dealing with
                         if (nogrid == 1) then          ! multiple grids expects
                             nogrid = itoken + 1             ! the number of added grids
-                            write (lunut, 2010) nogrid   ! after the multigrid keyword
+                            write (file_unit, 2010) nogrid   ! after the multigrid keyword
                             if (nogrid == 1) exit       ! no additional grids
                         else
                             if (nogrid == gridps%current_size) then
@@ -171,16 +171,16 @@ contains
                 select case (ctoken)                   ! NOLAY necessary here
                 case ('NOLAY')                      ! Deal with number of layers
                     if (gettoken(nolay, ierr2) > 0) goto 1000
-                    write (lunut, 2020) nolay
+                    write (file_unit, 2020) nolay
                 case ('MULTIGRID')                  ! Deal with multiple grids
                     multigrid = .true.                ! Allow an integer to give
                     read_input = .true.                ! number of additional grids
                     if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
                     push = .true.
                     if (itype == 1) newinput = .true.
-                    write (lunut, 2040)
+                    write (file_unit, 2040)
                 case default
-                    write (lunut, 2030) trim(ctoken)
+                    write (file_unit, 2030) trim(ctoken)
                     goto 1000
                 end select
                 cycle
@@ -194,11 +194,11 @@ contains
             case ('NOLAY')
                 ! nolay must precede grid definitions
                 if (GridPs%current_size > 1) then
-                    write(lunut, 2050)
+                    write(file_unit, 2050)
                     goto 1000
                 endif
                 if (gettoken(nolay_tmp, ierr2) > 0) goto 1000
-                write (lunut, 2020) nolay_tmp
+                write (file_unit, 2020) nolay_tmp
 
                 ! z model temp do not do this here but at the end of the routine
                 nosegl_bottom = noseg / nolay_tmp
@@ -206,7 +206,7 @@ contains
                     nolay = nolay_tmp
                     nosegl = noseg / nolay
                     if (nosegl * nolay /= noseg) then
-                        write (lunut, 2060)
+                        write (file_unit, 2060)
                         goto 1000
                     endif
                     GridPs%Pointers(i_base_grid)%noseg_lay = nosegl
@@ -220,7 +220,7 @@ contains
                 igrid = GridPs%add(aGrid)
 
                 if (GridPs%bottom_grid /= 0) then
-                    write (lunut, 2070)
+                    write (file_unit, 2070)
                     call status%increase_warning_count()
                 else
                     GridPs%bottom_grid = igrid
@@ -259,7 +259,7 @@ contains
                     igrid = GridPs%add(aGrid)
                     exit
                 else
-                    write (lunut, 2030) trim(ctoken)
+                    write (file_unit, 2030) trim(ctoken)
                     goto 1000
                 endif
 
@@ -288,7 +288,7 @@ contains
                 noseg2 = noseg2 * nolay
                 GridPs%Pointers(igrid)%noseg = noseg2
             endif
-            if (igrid /= 1) write(lunut, 2080) igrid, GridPs%Pointers(igrid)%noseg
+            if (igrid /= 1) write(file_unit, 2080) igrid, GridPs%Pointers(igrid)%noseg
 
         enddo
 
@@ -356,18 +356,18 @@ contains
         ! Read per substance grid and time
 
         if (.not. newinput .and. read_input) then
-            write(lunut, 2090)
+            write(file_unit, 2090)
             do isys = 1, notot - nototp
                 if (gettoken(isysg(isys), ierr2) > 0) goto 1000
                 if (gettoken(isyst(isys), ierr2) > 0) goto 1000
-                write(lunut, 2100) isys, isysg(isys), isyst(isys)
+                write(file_unit, 2100) isys, isysg(isys), isyst(isys)
                 if (isysg(isys) < 1      .or. &
                         isysg(isys) > nogrid) then
-                    write(lunut, 2110) isysg(isys)
+                    write(file_unit, 2110) isysg(isys)
                     call status%increase_error_count()
                 endif
                 if (isyst(isys) < 1) then
-                    write(lunut, 2120) isyst(isys)
+                    write(file_unit, 2120) isyst(isys)
                     call status%increase_error_count()
                 endif
             enddo
@@ -386,7 +386,7 @@ contains
         return
 
         1000 continue
-        write(lunut, 2130)
+        write(file_unit, 2130)
         call status%increase_error_count()
 
         if (timon) call timstop(ithndl)
@@ -442,7 +442,7 @@ contains
         if (timon) call timstrt("read_sub_procgrid", ithndl)
 
         sysused = 0
-        write (lunut, 2000)
+        write (file_unit, 2000)
 
         ! read input
         do
@@ -452,21 +452,21 @@ contains
             case ('ALL')
                 ! use all substances
                 sysused = 1
-                write (lunut, 2030)
+                write (file_unit, 2030)
 
             case default
                 ! use this substance
                 isys = index_in_array(ctoken(:20), syname)
                 if (isys > 0) then
                     sysused(isys) = 1
-                    write (lunut, 2040) syname(isys)
+                    write (file_unit, 2040) syname(isys)
                 else
                     i_grid = GridPs%find_column(ctoken)
                     if (i_grid > 0) then                       ! use this grid, input is ready
-                        write (lunut, 2050) trim(ctoken)
+                        write (file_unit, 2050) trim(ctoken)
                         exit
                     else                                            ! unrecognised token
-                        write (lunut, 2020) trim(ctoken)
+                        write (file_unit, 2020) trim(ctoken)
                         goto 1000
                     endif
                 endif
@@ -483,7 +483,7 @@ contains
         if (timon) call timstop(ithndl)
         return
 
-        1000 write (lunut, 2010)
+        1000 write (file_unit, 2010)
         call status%increase_error_count()
 
         if (timon) call timstop(ithndl)
@@ -566,7 +566,7 @@ contains
         aGrid%nolay_var => null()
         if (gettoken(ctoken, ierr2) > 0) goto 1000    ! get name
         aGrid%name = ctoken
-        write (lunut, 2000) aGrid%name
+        write (file_unit, 2000) aGrid%name
         if (oldproc) then
             if (gettoken(agrid%iref, ierr2) > 0) goto 1000
             agrid%name_ref = gridps%pointers(agrid%iref)%name
@@ -580,7 +580,7 @@ contains
 
                 case ('NOLAY')
                     if (gettoken(aGrid%nolay, ierr2) > 0) goto 1000
-                    write (lunut, 2010) aGrid%nolay
+                    write (file_unit, 2010) aGrid%nolay
 
                 case ('NOAGGREGATION')
                     allocate (aGrid%iarray(noseg))
@@ -594,9 +594,9 @@ contains
                     call open_waq_files (file_unit_list(33), ctoken, 33, 1, ierr2)
                     if (ierr2 /= 0) goto 1000
                     read  (file_unit_list(33), *) nmax, mmax, noseg_fil, idummy, idummy
-                    write (lunut, 2020) ctoken, nmax, mmax, noseg_fil
+                    write (file_unit, 2020) ctoken, nmax, mmax, noseg_fil
                     if (noseg_fil /= noseg_lay) then
-                        write (lunut, 2030) noseg_fil, noseg_lay
+                        write (file_unit, 2030) noseg_fil, noseg_lay
                         goto 1000
                     endif
                     allocate (aGrid%iarray(noseg))
@@ -606,24 +606,24 @@ contains
 
                 case ('BOTTOMGRID_FROM_ATTRIBUTES')       ! it is the filename keyword
                     allocate (aGrid%iarray(noseg))
-                    call read_attributes_for_bottomgrid(lunut, aGrid%iarray, nosegl_bottom, status)
+                    call read_attributes_for_bottomgrid(file_unit, aGrid%iarray, nosegl_bottom, status)
                     exit
 
                 case ('REFERENCEGRID')
                     if (gettoken(ctoken, ierr2) > 0) goto 1000
                     aGrid%name_ref = ctoken
-                    write (lunut, 2040) aGrid%name_ref
+                    write (file_unit, 2040) aGrid%name_ref
                     i_grid = GridPs%find_column(aGrid%name_ref)
                     if (i_grid > 0) then
                         aGrid%iref = i_grid
                     else
-                        write (lunut, 2050)
+                        write (file_unit, 2050)
                         call status%increase_error_count()
                     endif
                     noseg_lay = GridPs%pointers(aGrid%iref)%noseg_lay
 
                 case default
-                    write (lunut, 2060) trim(ctoken)          ! ERROR, token not recognised
+                    write (file_unit, 2060) trim(ctoken)          ! ERROR, token not recognised
                     goto 1000
 
                 end select
@@ -633,7 +633,7 @@ contains
                 do iseg = 2, noseg_lay
                     if (gettoken(aGrid%iarray(iseg), ierr2) > 0) goto 1000
                     if (aGrid%iarray(iseg) > noseg_lay) then
-                        write (lunut, 2070) aGrid%iarray(iseg)
+                        write (file_unit, 2070) aGrid%iarray(iseg)
                         call status%increase_error_count()
                     endif
                 enddo
@@ -655,7 +655,7 @@ contains
         enddo
         do iseg2 = 1, noseg2
             if (iwork(iseg2) == 0) then
-                write (lunut, 2080) iseg2
+                write (file_unit, 2080) iseg2
                 call status%increase_error_count()
             endif
         enddo
@@ -666,7 +666,7 @@ contains
         return
 
         1000 continue
-        write(lunut, 2090)
+        write(file_unit, 2090)
         call status%increase_error_count()
         return
 
@@ -684,10 +684,10 @@ contains
         2090 format (/' ERROR, reading GRID information.')
     end subroutine read_grid
 
-    subroutine read_attributes_for_bottomgrid(lunut, iarray, nosegl, status)
+    subroutine read_attributes_for_bottomgrid(file_unit, iarray, nosegl, status)
         use m_evaluate_waq_attribute
 
-        integer(kind = int_wp) :: lunut, nosegl
+        integer(kind = int_wp) :: file_unit, nosegl
         integer(kind = int_wp), dimension(:) :: iarray
 
         type(error_status), intent(inout) :: status !< current error status
@@ -728,10 +728,10 @@ contains
                     read  (lunbin, iostat = ierr2) (iread(j), j = 1, noseg)
                     close (lunbin)
                     if (ierr2 /= 0) then
-                        write (lunut, 2010) trim(filename)
+                        write (file_unit, 2010) trim(filename)
                     endif
                 else
-                    write (lunut, 2020) trim(filename)
+                    write (file_unit, 2020) trim(filename)
                 endif
             else
                 if (gettoken(ikopt2, ierr2) > 0) goto 900   !   second option
@@ -754,7 +754,7 @@ contains
                             if (gettoken(iover, ierr2) > 0) goto 900
                             if (gettoken(idummy, ierr2) > 0) goto 900
                             if (iover < 1 .or. iover > noseg) then
-                                write (lunut, 2030) j, iover
+                                write (file_unit, 2030) j, iover
                                 call status%increase_error_count()
                             else
                                 iread(iover) = idummy
@@ -763,7 +763,7 @@ contains
                     endif
 
                 case default
-                    write (lunut, 2040) ikopt2
+                    write (file_unit, 2040) ikopt2
                     call status%increase_error_count()
 
                 end select
@@ -775,7 +775,7 @@ contains
 
                 ! see if merged already
                 if (ikmerge(iknm1) /= 0) then
-                    write (lunut, 2260) iknm2, iknm1
+                    write (file_unit, 2260) iknm2, iknm1
                     call status%increase_error_count()
                     exit
                 endif
@@ -783,11 +783,11 @@ contains
                 ! see if valid
                 if (iknm1 <= 0 .or. iknm1 > 10) then
                     if (iknm1 == 0) then
-                        write (lunut, 2270) iknm2
+                        write (file_unit, 2270) iknm2
                         call status%increase_error_count()
                         exit
                     else
-                        write (lunut, 2280) iknm1, iknm2
+                        write (file_unit, 2280) iknm1, iknm2
                         call status%increase_error_count()
                         exit
                     endif
@@ -816,7 +816,7 @@ contains
         ! We read the number of time-dependent attributes - there should be none
         if (gettoken(nopt, ierr2) > 0) goto 900   !   second option
         if (nopt /= 0) then
-            write(lunut, 2050)
+            write(file_unit, 2050)
             goto 900
         endif
 
@@ -828,16 +828,16 @@ contains
             call status%increase_error_count()
         end if
 
-        if (ierr2 == 3) call srstop(1)
-        write(lunut, 2000)
+        if (ierr2 == 3) call terminate_execution(1)
+        write(file_unit, 2000)
         return
 
         910 continue
         if (ierr2 > 0) then
             call status%increase_error_count()
         end if
-        if (ierr2 == 3) call srstop(1)
-        write(lunut, 2001)
+        if (ierr2 == 3) call terminate_execution(1)
+        write(file_unit, 2001)
 
         return
 
@@ -879,7 +879,7 @@ contains
         if (timon) call timstrt("read_proc_time", ithndl)
 
         sysused = 0
-        write (lunut, 2000)
+        write (file_unit, 2000)
 
         ! read input
         do
@@ -889,22 +889,22 @@ contains
                 case ('ALL')
                     ! use all substances
                     sysused = 1
-                    write (lunut, 2030)
+                    write (file_unit, 2030)
 
                 case default
                     isys = index_in_array(ctoken(1:20), syname(:notot))
                     if (isys > 0) then                      ! use this substance
                         sysused(isys) = 1
-                        write (lunut, 2040) syname(isys)
+                        write (file_unit, 2040) syname(isys)
                     else                                         ! unrecognised token
-                        write (lunut, 2020) trim(ctoken)
+                        write (file_unit, 2020) trim(ctoken)
                         goto 1000
                     endif
                 end select
 
             else
                 ! time multiplier read
-                write (lunut, 2050) idtmult
+                write (file_unit, 2050) idtmult
                 exit
 
             endif
@@ -920,7 +920,7 @@ contains
         return
 
         1000 continue
-        write(lunut, 2010)
+        write(file_unit, 2010)
         call status%increase_error_count()
 
         if (timon) call timstop(ithndl)
@@ -1010,16 +1010,16 @@ contains
             case ('DEFAULT')
                 if (gettoken(nolay, ierr2) > 0) goto 1000
                 GridPs%Pointers(input_grid)%nolay = nolay
-                write (lunut, 2050) nolay
+                write (file_unit, 2050) nolay
                 GridPs%Pointers(input_grid)%noseg = nolay * GridPs%Pointers(input_grid)%noseg_lay
                 exit
 
             case ('INPUTGRID')
                 if (gettoken(ctoken, ierr2) > 0) goto 1000
-                write (lunut, 2010) trim(ctoken)
+                write (file_unit, 2010) trim(ctoken)
                 input_grid = GridPs%find_column(ctoken)
                 if (input_grid == 0) then
-                    write (lunut, 2020)                       ! ERROR, input grid not defined
+                    write (file_unit, 2020)                       ! ERROR, input grid not defined
                     goto 1000
                 endif
                 noseg_input = GridPs%Pointers(input_grid)%noseg_lay
@@ -1035,7 +1035,7 @@ contains
                 exit
 
             case ('ALL')
-                write (lunut, 2060)
+                write (file_unit, 2060)
                 noseg_input = GridPs%Pointers(input_grid)%noseg_lay
                 GridPs%Pointers(input_grid)%space_var_nolay = .TRUE.
                 allocate(GridPs%Pointers(input_grid)%nolay_var(noseg_input))
@@ -1049,7 +1049,7 @@ contains
                 exit
 
             case default
-                write (lunut, 2030) trim(ctoken)             ! ERROR, token not recognised
+                write (file_unit, 2030) trim(ctoken)             ! ERROR, token not recognised
                 goto 1000
 
             end select
@@ -1063,7 +1063,7 @@ contains
             do ! loop till the bottom grid is reached
                 iref = GridPs%Pointers(input_grid)%iref
                 if(iref <= 1) then
-                    write (lunut, 2040)                          ! ERROR, input grid has no refrence to the bottom grid
+                    write (file_unit, 2040)                          ! ERROR, input grid has no refrence to the bottom grid
                     goto 1000
                 endif
                 noseg_lay = GridPs%Pointers(iref)%noseg_lay
@@ -1122,7 +1122,7 @@ contains
         return
 
         1000 continue
-        write(lunut, 2000)
+        write(file_unit, 2000)
         call status%increase_error_count()
         if (timon) call timstop(ithndl)
         return

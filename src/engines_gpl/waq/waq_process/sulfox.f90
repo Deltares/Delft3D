@@ -31,7 +31,7 @@ contains
     subroutine sulfox (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
+        use m_logger
 
         !>\file
         !>       Oxidation of dissolved sulphide (0 and 2nd order) (new, generic !)
@@ -86,7 +86,7 @@ contains
         SAVE     FIRST
         DATA     FIRST /.TRUE./
         !
-        CALL GETMLU(ILUMON)
+        CALL get_log_unit_number(ILUMON)
         !
         IN1 = INCREM(1)
         IN2 = INCREM(2)

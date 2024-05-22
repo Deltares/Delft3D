@@ -33,6 +33,7 @@ program test_dflowfm_kernel
     use test_1d_grid
     use test_read_property
     use test_airdensity
+    use test_lateral
     use test_temporal_statistics
     use test_read_statistical_output
     
@@ -41,6 +42,7 @@ program test_dflowfm_kernel
     call prepareTests()
     call runtests_init()
 
+    call tests_lateral()
     call tests_roughness()
     call tests_cross_sections()
     call tests_observations()

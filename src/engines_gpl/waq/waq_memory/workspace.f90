@@ -24,7 +24,7 @@
 module workspace
 
     use m_waq_precision
-    use m_srstop
+    use m_logger, only : terminate_execution
     USE memory_allocation, only : set_admin_array_indices, allocate_real_arrays, allocate_integer_arrays, &
             set_character_array_indices
 
@@ -131,7 +131,7 @@ CONTAINS
         if (ieflag ==    1) then
             write (logical_unit, 2040)
 
-            call srstop(1)
+            call terminate_execution(1)
         endif
         max_real_arr_size = itota
         max_int_arr_size = itoti

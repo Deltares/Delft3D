@@ -23,7 +23,7 @@
 module m_rd_stt
     use m_waq_precision
     use m_delwaq_statistical_process, only : setup_statistical
-    use m_srstop
+    use m_logger, only : terminate_execution
 
     implicit none
 
@@ -55,7 +55,7 @@ contains
         open (newunit = ilun(1), file = lch(1), status = 'old', iostat = iostat)
         if(iostat /= 0) then
             write(*, *) 'Error reading file: ', trim(lch(1))
-            call srstop(1)
+            call terminate_execution(1)
         endif
         npos = 1000
         cchar = ';'

@@ -27,7 +27,7 @@ class Program:
     """Process runner that runs a program (part of a test case)"""
 
     # global variables
-    __error = None
+    __error: Optional[Exception] = None
 
     # constructor
     def __init__(self, program_config: ProgramConfig, settings: TestBenchSettings):
@@ -166,7 +166,8 @@ class Program:
                         -1, self.__program_config.path, error_message
                     )
         except Exception as e:
-            self.__error = str(e)
+            logger.exception(f"Could not execute program: {repr(e)}")
+            self.__error = e
 
     def __handle_process_output(
         self, logger: ILogger, completed_process: subprocess.CompletedProcess
@@ -222,7 +223,6 @@ class Program:
         completed_process = subprocess.run(
             execmd,
             capture_output=True,
-            check=True,
             env=program_env,
             cwd=self.__program_config.working_directory,
             timeout=timeout,

@@ -31,10 +31,10 @@ contains
     subroutine check_error(cdummy, iwidth, iblock, ierr2, status)
 
         !< Handles delimiter lines and errors during read of the DELWAQ input file
-        !< Logical units     : LUNUT = unitnumber output log-file
+        !< Logical units     : file_unit = unitnumber output log-file
         !<                     ILUN  = array with input unit nr's stack
 
-        use m_srstop
+        use m_logger, only : terminate_execution
         use rd_token
         use timers       !   performance timers
 
@@ -45,7 +45,7 @@ contains
         integer(kind = int_wp), intent(in) :: iwidth !< width of the output file
         type(error_status), intent(inout) :: status !< current error status
 
-        character(1) :: charachter_output ! to convert block number to character
+        character(1) :: character_output ! to convert block number to character
 
         integer(kind = int_wp) :: idummy ! argument for token reading
         integer(kind = int_wp) :: int_output  ! return value gettoken
@@ -61,50 +61,50 @@ contains
         case (0)               !   look for end of block
             int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
         case (1)               !   with error
-            write (lunut, 2030) iblock
+            write (file_unit, 2030) iblock
             call status%increase_error_count()
             ierr2 = 0
         case (2)               !   normal end of block found
         case (3)               !   fatal
-            write (lunut, 2030) iblock
-            write (lunut, 2040) status%ierr
-            call srstop (1)
+            write (file_unit, 2030) iblock
+            write (file_unit, 2040) status%ierr
+            call terminate_execution (1)
         end select
 
         ! Second round of dealing with ierr2
         select case (ierr2)
         case (0)               !   look for end of block
             call status%increase_error_count()
-            write (lunut, 2010) iblock
+            write (file_unit, 2010) iblock
             do while (ierr2 == 0)
                 int_output = gettoken (cdummy, idummy, rdummy, itype, ierr2)
             enddo
         case (3)               !   fatal
-            write (lunut, 2020) iblock
-            write (lunut, 2040) status%ierr
-            call srstop (1)
+            write (file_unit, 2020) iblock
+            write (file_unit, 2040) status%ierr
+            call terminate_execution (1)
         end select
 
         if (ierr2 == 2) then          !   end block found check number
-            write (charachter_output, '(i1)') iblock
-            if (charachter_output /= cdummy(2:2)) then
-                write (lunut, 2020) iblock
+            write (character_output, '(i1)') iblock
+            if (character_output /= cdummy(2:2)) then
+                write (file_unit, 2020) iblock
                 call status%increase_error_count()
-                write (lunut, 2040) status%ierr
-                call srstop (1)
+                write (file_unit, 2040) status%ierr
+                call terminate_execution (1)
             endif
         ELSE                              !   error reading
             call status%increase_error_count()
-            write (lunut, 2030) iblock
-            write (lunut, 2040) status%ierr
-            call srstop (1)
+            write (file_unit, 2030) iblock
+            write (file_unit, 2040) status%ierr
+            call terminate_execution (1)
         endif
 
         ! normal end (can be with error)
         if (iwidth == 5) then
-            write (lunut, 2050) iblock
+            write (file_unit, 2050) iblock
         else
-            write (lunut, 2060) iblock
+            write (file_unit, 2060) iblock
         endif
         ierr2 = 0
         if (timon) call timstop(ithndl)

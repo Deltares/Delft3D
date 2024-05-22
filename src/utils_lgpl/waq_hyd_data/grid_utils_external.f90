@@ -35,7 +35,7 @@ module m_grid_utils_external
     !!      GridPointerCollFind    ! to search a Grid in the GridPointerColl ; returns the index or zero if not found
     !!      GridPointerCollAdd     ! to add a t_grid to the collection ; returns the current size
 
-    use m_srstop
+    use m_logger, only : terminate_execution
 
     integer, parameter :: NAME_SIZE = 20                ! size of descriptive names
     integer, parameter :: MAX_NUM = 5                ! allocated per bunch
@@ -171,7 +171,7 @@ contains
         allocate (self%finalpointer(noseg), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write(*, *) 'ERROR : allocating array in read_grid'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         read(file_unit, err = 100) self%finalpointer
         read(file_unit, err = 100) self%space_var_nolay
@@ -180,7 +180,7 @@ contains
             allocate (self%nolay_var(self%noseg_lay), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : allocating array in read_grid'
-                call srstop(1)
+                call terminate_execution(1)
             endif
             read(file_unit, err = 100) self%nolay_var
         endif

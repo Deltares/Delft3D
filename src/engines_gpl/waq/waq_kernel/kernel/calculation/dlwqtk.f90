@@ -40,7 +40,7 @@ contains
         !     LOGICAL UNITNUMBERS : file_unit_list(IS) - input unit intermediate file
         !                           file_unit_list(19) - job-log output file
         !
-        !     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !     SUBROUTINES CALLED  : terminate_execution, stops execution
         !
         !     PARAMETERS          :
         !
@@ -62,7 +62,7 @@ contains
         use m_dlwqkv
         use m_dlwqkb
         use m_chknmr
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_open_waq_files
         use m_evaluate_waq_attribute
         use m_array_manipulation, only : copy_integer_array_elements
@@ -127,7 +127,7 @@ contains
                 !           Wrong option
                 !
                 WRITE(LUNOUT, 2000)
-                CALL SRSTOP(1)
+                CALL terminate_execution(1)
                 !
             ENDIF
             !

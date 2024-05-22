@@ -70,6 +70,7 @@ contains
         use timers
         use m_array_manipulation, only : resize_integer_array, resize_character_array
         use date_time_utils, only : convert_string_to_time_offset, convert_relative_time
+        use rd_token, only : rdtok1
 
         implicit none
 

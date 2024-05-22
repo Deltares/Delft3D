@@ -167,27 +167,27 @@ contains
             if (gettoken(ctoken, ierr2) /= 0) exit
 
             if (ctoken == 'ABSOLUTE') then
-                write (lunut, 1900)
+                write (file_unit, 1900)
                 if (data_block%function_type == 0) data_block%function_type = FUNCTYPE_BLOCK
                 cycle
             endif
             if (ctoken == 'BLOCK') then
-                write (lunut, 2000)
+                write (file_unit, 2000)
                 data_block%function_type = FUNCTYPE_BLOCK
                 cycle
             endif
             if (ctoken == 'LINEAR') then
-                write (lunut, 2000)
+                write (file_unit, 2000)
                 data_block%function_type = FUNCTYPE_LINEAR
                 cycle
             endif
             if (ctoken == 'HARMONICS') then
-                write (lunut, 2005)
+                write (file_unit, 2005)
                 data_block%function_type = FUNCTYPE_HARMONIC
                 cycle
             endif
             if (ctoken == 'FOURIERS') then
-                write (lunut, 2010)
+                write (file_unit, 2010)
                 data_block%function_type = FUNCTYPE_FOURIER
                 cycle
             endif
@@ -198,7 +198,7 @@ contains
             endif
             if (ctoken == 'ODS_FILE') then
                 if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
-                    write (lunut, 2100)
+                    write (file_unit, 2100)
                     ierr = 1
                     exit
                 endif
@@ -208,7 +208,7 @@ contains
             endif
             if (ctoken == 'BINARY_FILE') then
                 if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
-                    write (lunut, 2110)
+                    write (file_unit, 2110)
                     ierr = 1
                     exit
                 endif
@@ -218,7 +218,7 @@ contains
             endif
             if (ctoken == 'UNFORMATTED') then
                 if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
-                    write (lunut, 2110)
+                    write (file_unit, 2110)
                     ierr = 1
                     exit
                 endif
@@ -228,7 +228,7 @@ contains
             endif
             if (ctoken == 'BIG_ENDIAN') then
                 if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
-                    write (lunut, 2110)
+                    write (file_unit, 2110)
                     ierr = 1
                     exit
                 endif
@@ -238,17 +238,17 @@ contains
             endif
             if (ctoken == 'MULTIPLEHYD_FILE') then
                 if (data_block%function_type == FUNCTYPE_HARMONIC .or. data_block%function_type == FUNCTYPE_FOURIER) then
-                    write (lunut, 2110)
+                    write (file_unit, 2110)
                     ierr = 1
                     exit
                 endif
                 if (.not. (data_block%subject == SUBJECT_FUNCTION .or. data_block%subject == SUBJECT_SEGFUNC)) then
-                    write (lunut, 2270)
+                    write (file_unit, 2270)
                     ierr = 1
                     exit
                 endif
                 if (data_param%no_item /= 1) then
-                    write (lunut, 2280)
+                    write (file_unit, 2280)
                     ierr = 1
                     exit
                 endif
@@ -271,12 +271,12 @@ contains
                 data_block%subject = SUBJECT_INITIAL
                 data_block%function_type = FUNCTYPE_CONSTANT
                 chkflg = 1
-                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
+                call read_items(file_unit, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, substances, types, noits, &
                         ierr2, status)
 
                 if (ierr2 /= 0) then
-                    write (lunut, 2120)
+                    write (file_unit, 2120)
                     goto 100
                 endif
                 cycle
@@ -294,12 +294,12 @@ contains
 
                 chkflg = 0
 
-                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
+                call read_items(file_unit, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, constants, types, noits, &
                         ierr2, status)
 
                 if (ierr2 /= 0) then
-                    write (lunut, 2120)
+                    write (file_unit, 2120)
                     ierr = 1
                     exit
                 endif
@@ -313,7 +313,7 @@ contains
                 if (data_block%function_type == FUNCTYPE_CONSTANT) data_block%function_type = FUNCTYPE_BLOCK
                 data_block%num_locations = 1
                 data_block%iorder = ORDER_PARAM_LOC
-                write (lunut, *) ' '
+                write (file_unit, *) ' '
                 ierr2 = waq_loc%resize(1)
                 waq_loc%no_item = 1
                 waq_loc%name(1) = 'constant'
@@ -321,12 +321,12 @@ contains
 
                 chkflg = 0
 
-                call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
+                call read_items(file_unit, inpfil, output_verbose_level, chkflg, callr, &
                         waq_param, data_param, functions, types, noits, &
                         ierr2, status)
 
                 if (ierr2 /= 0) then
-                    write (lunut, 2120)
+                    write (file_unit, 2120)
                     goto 100
                 endif
                 cycle
@@ -337,14 +337,14 @@ contains
                 chkflg = -1
                 data_block%subject = SUBJECT_PARAMETER
                 data_block%function_type = 0
-                write (lunut, *) ' '
+                write (file_unit, *) ' '
 
-                call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
+                call read_items(file_unit, inpfil, output_verbose_level, chkflg, strng1, &
                         waq_param, data_param, parameters, types, noits, &
                         ierr2, status)
 
                 if (ierr2 /= 0) then
-                    write (lunut, 2150)
+                    write (file_unit, 2150)
                     goto 100
                 endif
                 if (data_param%no_item /= 0 .and. data_block%iorder == ORDER_UNKNOWN) data_block%iorder = ORDER_PARAM_LOC
@@ -356,14 +356,14 @@ contains
                 chkflg = 0
                 data_block%subject = SUBJECT_SEGFUNC
                 if (data_block%function_type == 0) data_block%function_type = 1
-                write (lunut, *) ' '
+                write (file_unit, *) ' '
 
-                call read_items(lunut, inpfil, output_verbose_level, chkflg, strng1, &
+                call read_items(file_unit, inpfil, output_verbose_level, chkflg, strng1, &
                         waq_param, data_param, segfuncs, types, noits, &
                         ierr2, status)
 
                 if (ierr2 /= 0) then
-                    write (lunut, 2150)
+                    write (file_unit, 2150)
                     goto 100
                 endif
                 if (data_param%no_item /= 0 .and. data_block%iorder == ORDER_UNKNOWN) data_block%iorder = ORDER_LOC_PARAM
@@ -372,13 +372,13 @@ contains
 
             if (ctoken  == 'SEGMENTS' .or. ctoken == 'ALL' .or. ctoken == 'INPUTGRID') then
                 if (waq_loc%no_item  == -1) then
-                    write (lunut, 2170)
+                    write (file_unit, 2170)
                     ierr = 1
                     goto 100
                 endif
                 if (ctoken == 'ALL') then
                     waq_loc%no_item = noseg
-                    write (lunut, 2020) waq_loc%no_item
+                    write (file_unit, 2020) waq_loc%no_item
                     ierr2 = waq_loc%resize(waq_loc%no_item)
                     do i = 1, waq_loc%no_item
                         waq_loc%ipnt(i) = i
@@ -389,16 +389,16 @@ contains
                     igrid = gridps%find_column(ctoken)
                     if (igrid >= 1) then
                         data_block%igrid = igrid
-                        write (lunut, 2290), trim(ctoken)
+                        write (file_unit, 2290), trim(ctoken)
                         waq_loc%no_item = gridps%pointers(igrid)%noseg
-                        write (lunut, 2300) waq_loc%no_item
+                        write (file_unit, 2300) waq_loc%no_item
                         ierr2 = waq_loc%resize(waq_loc%no_item)
                         do i = 1, waq_loc%no_item
                             waq_loc%ipnt(i) = i
                             write(waq_loc%name(i), '(''segment '',i8)') i
                         enddo
                     else
-                        write (lunut, 2310), trim(ctoken)
+                        write (file_unit, 2310), trim(ctoken)
                         ierr = 1
                         goto 100
                     endif
@@ -407,23 +407,23 @@ contains
                     chkflg = 1
                     data_block%are_locations_pointered = .true.
 
-                    call read_items(lunut, inpfil, output_verbose_level, chkflg, callr, &
+                    call read_items(file_unit, inpfil, output_verbose_level, chkflg, callr, &
                             waq_loc, data_loc, segments, types, noits_loc, &
                             ierr2, status)
 
                     if (ierr2 /= 0) then
-                        write (lunut, 2180)
+                        write (file_unit, 2180)
                         goto 100
                     endif
                 endif
                 if (data_param%no_item == 0) then
-                    write (lunut, 2030) strng1, strng1
+                    write (file_unit, 2030) strng1, strng1
                     data_block%iorder = ORDER_LOC_PARAM
                     if (data_block%subject == SUBJECT_PARAMETER) ierr2 = puttoken('PARAMETERS')
                     if (data_block%subject == SUBJECT_SEGFUNC) ierr2 = puttoken('SEG_FUNCTIONS')
                     if (data_block%subject == SUBJECT_INITIAL) ierr2 = puttoken('INITIALS')
                 else
-                    write (lunut, 2040) strng1, strng1
+                    write (file_unit, 2040) strng1, strng1
                     data_block%iorder = ORDER_PARAM_LOC
                 endif
                 cycle
@@ -450,7 +450,7 @@ contains
                     waq_loc%ipnt(1) = 0
                     cycle
                 else
-                    write (lunut, 2190)
+                    write (file_unit, 2190)
                     ierr = 1
                     goto 100
                 endif
@@ -465,7 +465,7 @@ contains
                     strng1 = 'parameters'
                     strng2 = 'segments'
                     if (waq_loc%no_item == 0) then
-                        write (lunut, 2260)
+                        write (file_unit, 2260)
                         goto 100
                     endif
                 endif
@@ -477,7 +477,7 @@ contains
                     strng1 = 'seg-functs'
                     strng2 = 'segments'
                     if (waq_loc%no_item == 0) then
-                        write (lunut, 2260)
+                        write (file_unit, 2260)
                         goto 100
                     endif
                 endif
@@ -501,10 +501,10 @@ contains
                     data_block%num_parameters = waq_param%no_item
                     data_block%num_locations = waq_loc%no_item
 
-                    call read_data_ods(lunut, ctoken, data_param, data_loc, missing_value, &
+                    call read_data_ods(file_unit, ctoken, data_param, data_loc, missing_value, &
                             data_buffer, ierr2)
                     if (ierr2 /= 0) goto 100
-                    call compute_matrix (lunut, data_param, data_loc, waq_param, waq_loc, &
+                    call compute_matrix (file_unit, data_param, data_loc, waq_param, waq_loc, &
                             missing_value, data_buffer, data_block)
                     data_block%is_external = .false.
                     deallocate(data_buffer%times, data_buffer%values)
@@ -512,7 +512,7 @@ contains
                 elseif (mod(data_block%filetype, 10) == FILE_BINARY .or. &
                         mod(data_block%filetype, 10) == FILE_UNFORMATTED) then
                     if (data_block%subject == SUBJECT_SEGFUNC) data_block%iorder = ORDER_LOC_PARAM
-                    write (lunut, 2220) ctoken
+                    write (file_unit, 2220) ctoken
                     data_block%filename = ctoken
 
                     if (lsegfuncheck) then
@@ -520,12 +520,12 @@ contains
                         call check_file_size(ctoken, noits * noseg_org, mod(data_block%filetype, 10), filesize, ierr2)
                         if (ierr2 < 0) then
                             ierr2 = 1
-                            write(lunut, 2320) ctoken
+                            write(file_unit, 2320) ctoken
                         elseif (ierr2 > 0) then
                             ierr2 = 0        ! It is a warning, proceed at your own peril
                             call status%increase_warning_count()
-                            write(lunut, 2330) ctoken, filesize, 4 * (1 + noits * noseg_org), noits, noseg
-                            write(lunut, 2340)
+                            write(file_unit, 2330) ctoken, filesize, 4 * (1 + noits * noseg_org), noits, noseg
+                            write(file_unit, 2340)
                         endif
                     end if
 
@@ -562,17 +562,17 @@ contains
                     call read_time_dependant_data_matrix(data_buffer, itfact, is_date_format, is_yyddhh_format, ierr2)
                     if (ierr2 /= 0) goto 100
 
-                    call validate_time_series_strictly_increasing(lunut, data_buffer, ierr2)
+                    call validate_time_series_strictly_increasing(file_unit, data_buffer, ierr2)
 
-                    call compute_matrix (lunut, data_param, data_loc, waq_param, waq_loc, &
+                    call compute_matrix (file_unit, data_param, data_loc, waq_param, waq_loc, &
                             missing_value, data_buffer, data_block)
                     deallocate(data_buffer%times, data_buffer%values)
                 endif
                 if (ierr2 == 1 .or. ierr2 == 4) then
-                    write (lunut, 2200)
+                    write (file_unit, 2200)
                     goto 100
                 endif
-                if (waq_loc%no_item == -1) write (lunut, 1910)
+                if (waq_loc%no_item == -1) write (file_unit, 1910)
                 data_block%num_parameters = waq_param%no_item
                 data_block%is_parameter_named = .true.
                 data_block%param_name => waq_param%name
@@ -588,27 +588,27 @@ contains
                     data_block%location_pointers => waq_loc%ipnt
                     waq_loc%ipnt => null()
                 endif
-                call print_matrix(lunut, iwidth, data_block, strng1, strng2, &
+                call print_matrix(file_unit, iwidth, data_block, strng1, strng2, &
                         strng3, output_verbose_level)
                 if (ierr2 == 3) goto 50
                 exit
             endif
 
             ! unknown keyword
-            write (lunut, 2210) trim(ctoken)
+            write (file_unit, 2210) trim(ctoken)
             ierr = 1
             exit
 
         enddo ! end loop over the input
 
-        write (lunut, 1140)
+        write (file_unit, 1140)
 
         50 continue
         goto 110
 
         100 continue
         if (ierr2 /= 0) then
-            write (lunut, 2090)
+            write (file_unit, 2090)
             ierr = ierr2
         endif
 
@@ -813,7 +813,7 @@ contains
                         first = .false.
                         data_param%sequence = 0
                         nocol = 0
-                        write (lunut, *)
+                        write (file_unit, *)
                     endif
                     nocol = nocol + 1
                     strng = 'not used'
@@ -823,7 +823,7 @@ contains
                             data_param%sequence(i) = nocol
                         endif
                     enddo
-                    write (lunut, 1000) nocol, ctoken, strng
+                    write (file_unit, 1000) nocol, ctoken, strng
                 else
                     ! end of the list, push token back, conversion of time removed
                     push = .true.
@@ -841,7 +841,7 @@ contains
                 k = i - icnt
                 if (data_param%name(k) == '&$&$SYSTEM_NAME&$&$!') cycle
                 if (data_param%sequence(k) > 0) cycle
-                call compact_usefor(lunut, waq_param, data_param, k, icnt)
+                call compact_usefor(file_unit, waq_param, data_param, k, icnt)
                 call status%increase_warning_count()
                 if (i + icnt >= nitm) exit
             enddo
@@ -952,7 +952,7 @@ contains
                         ctoken(1:9) == 'INPUTGRID'    .or. &
                         ctoken(1:13) == 'SEG_FUNCTIONS')) then
             if (usefor) then
-                write (lunut, 1035) ctoken
+                write (file_unit, 1035) ctoken
                 goto 40
             else
                 push = .true.
@@ -966,11 +966,11 @@ contains
                         ctoken ==  '+'  .or. ctoken ==  '-'  .or. &
                         ctoken == 'MIN' .or. ctoken == 'MAX')) then
             if (.not. comput) then
-                write (lunut, 1070)
+                write (file_unit, 1070)
                 goto 40
             endif
             if (signon) then
-                write (lunut, 1080)
+                write (file_unit, 1080)
                 goto 40
             endif
             noitm = noitm + 1
@@ -996,12 +996,12 @@ contains
                 if (string_equals(ctoken(1:20), waq_item%name(i))) then
                     noits = noits - 1
                     i2 = data_item%ipnt(noitm)
-                    if (i2 == -1000000)    write(lunut, 1120)i, ctoken
-                    if (i2 == -10000000)   write(lunut, 1110)i, ctoken
-                    if (i2 == -100000000)  write(lunut, 1100)i, ctoken
-                    if (i2 == -1000000000) write(lunut, 1090)i, ctoken
-                    if (i2 == -1100000000) write(lunut, 1092)i, ctoken
-                    if (i2 == -1200000000) write(lunut, 1094)i, ctoken
+                    if (i2 == -1000000)    write(file_unit, 1120)i, ctoken
+                    if (i2 == -10000000)   write(file_unit, 1110)i, ctoken
+                    if (i2 == -100000000)  write(file_unit, 1100)i, ctoken
+                    if (i2 == -1000000000) write(file_unit, 1090)i, ctoken
+                    if (i2 == -1100000000) write(file_unit, 1092)i, ctoken
+                    if (i2 == -1200000000) write(file_unit, 1094)i, ctoken
                     data_item%ipnt(noitm) = i2 + i
                     data_item%name(noitm) = '&$&$SYSTEM_NAME&$&$!'
                     signon = .false.
@@ -1010,12 +1010,12 @@ contains
             enddo
 
             i2 = data_item%ipnt(noitm)
-            if (i2 == -1000000)    write(lunut, 1130)ctoken
-            if (i2 == -10000000)   write(lunut, 1140)ctoken
-            if (i2 == -100000000)  write(lunut, 1150)ctoken
-            if (i2 == -1000000000) write(lunut, 1160)ctoken
-            if (i2 == -1100000000) write(lunut, 1162)ctoken
-            if (i2 == -1200000000) write(lunut, 1164)ctoken
+            if (i2 == -1000000)    write(file_unit, 1130)ctoken
+            if (i2 == -10000000)   write(file_unit, 1140)ctoken
+            if (i2 == -100000000)  write(file_unit, 1150)ctoken
+            if (i2 == -1000000000) write(file_unit, 1160)ctoken
+            if (i2 == -1100000000) write(file_unit, 1162)ctoken
+            if (i2 == -1200000000) write(file_unit, 1164)ctoken
             data_item%sequence(noitm) = noits
             data_item%name(noitm) = ctoken
             signon = .false.
@@ -1031,28 +1031,28 @@ contains
                 data_item%name(noitm) = '&$&$SYSTEM_NAME&$&$!'
                 data_item%constant(noitm) = rtoken
                 if (signon) then
-                    if (i2 == -1000000)    write(lunut, 1170)rtoken
-                    if (i2 == -10000000)   write(lunut, 1180)rtoken
-                    if (i2 == -100000000)  write(lunut, 1190)rtoken
-                    if (i2 == -1000000000) write(lunut, 1200)rtoken
-                    if (i2 == -1100000000) write(lunut, 1210)rtoken
-                    if (i2 == -1200000000) write(lunut, 1220)rtoken
+                    if (i2 == -1000000)    write(file_unit, 1170)rtoken
+                    if (i2 == -10000000)   write(file_unit, 1180)rtoken
+                    if (i2 == -100000000)  write(file_unit, 1190)rtoken
+                    if (i2 == -1000000000) write(file_unit, 1200)rtoken
+                    if (i2 == -1100000000) write(file_unit, 1210)rtoken
+                    if (i2 == -1200000000) write(file_unit, 1220)rtoken
                     data_item%ipnt(noitm) = i2 - nconst
                     signon = .false.
                 endif
                 if (setnam) then
                     namset = waq_item%ipnt(itmnr)
                     if (namset > 0 .and. output_verbose_level >= 3) then
-                        write (lunut, 1001) callr, itmnr, callr, namset, &
+                        write (file_unit, 1001) callr, itmnr, callr, namset, &
                                 name_item%name(namset), rtoken
                     elseif (namset == 0 .and. output_verbose_level >= 3) then
-                        write (lunut, 1001) callr, itmnr, callr, namset, &
+                        write (file_unit, 1001) callr, itmnr, callr, namset, &
                                 'flow', rtoken
                     elseif (namset == -1300000000 .and. output_verbose_level >= 3) then
-                        write (lunut, 1001) callr, itmnr, callr, namset, &
+                        write (file_unit, 1001) callr, itmnr, callr, namset, &
                                 'Ignored', rtoken
                     elseif (output_verbose_level >= 3) then
-                        write (lunut, 1011) callr, itmnr, callr, -namset, &
+                        write (file_unit, 1011) callr, itmnr, callr, -namset, &
                                 type_item%name(-namset), rtoken
                     endif
                     data_item%ipnt(noitm) = -nconst
@@ -1068,7 +1068,7 @@ contains
         ! A local redirection of the name of an item or substance
         if (abs(itype) == 1 .and. ctoken == 'USEFOR') then
             if (usefor) then
-                write (lunut, 1035) ctoken
+                write (file_unit, 1035) ctoken
                 goto 40
             else
                 usefor = .true.
@@ -1086,16 +1086,16 @@ contains
             if (usefor .and. setnam) then
                 namset = waq_item%ipnt(itmnr)
                 if (namset > 0 .and. output_verbose_level >= 3) then
-                    write (lunut, 1000) callr, itmnr, callr, namset, &
+                    write (file_unit, 1000) callr, itmnr, callr, namset, &
                             name_item%name(namset), ctoken
                 elseif (namset == 0 .and. output_verbose_level >= 3) then
-                    write (lunut, 1000) callr, itmnr, callr, namset, &
+                    write (file_unit, 1000) callr, itmnr, callr, namset, &
                             'FLOW', ctoken
                 elseif (namset == -1300000000 .and. output_verbose_level >= 3) then
-                    write (lunut, 1000) callr, itmnr, callr, namset, &
+                    write (file_unit, 1000) callr, itmnr, callr, namset, &
                             'Ignored', ctoken
                 elseif (output_verbose_level >= 3) then
-                    write (lunut, 1010) callr, itmnr, callr, -namset, &
+                    write (file_unit, 1010) callr, itmnr, callr, -namset, &
                             type_item%name(-namset), ctoken
                 endif
                 data_item%sequence(noitm) = noits
@@ -1134,7 +1134,7 @@ contains
                 data_item%name(noitm) = ctoken
                 if (usefor) setnam = .true.
                 if (output_verbose_level >= 3 .and. .not. usefor) &
-                        write (lunut, 1020) callr, itmnr, callr, 0, 'FLOW'
+                        write (file_unit, 1020) callr, itmnr, callr, 0, 'FLOW'
                 goto 10
             endif
 
@@ -1158,7 +1158,7 @@ contains
                 data_item%name(noitm) = ctoken
                 if (usefor) setnam = .true.
                 if (output_verbose_level >= 3 .and. .not. usefor) &
-                        write (lunut, 1020) callr, itmnr, callr, i2, name_item%name(i2)
+                        write (file_unit, 1020) callr, itmnr, callr, i2, name_item%name(i2)
                 goto 10
             endif
 
@@ -1183,7 +1183,7 @@ contains
 
                 if (usefor) setnam = .true.
                 if (output_verbose_level >= 3 .and. .not. usefor) &
-                        write (lunut, 1030) callr, itmnr, callr, i2, type_item%name(i2)
+                        write (file_unit, 1030) callr, itmnr, callr, i2, type_item%name(i2)
                 goto 10
             endif
 
@@ -1208,7 +1208,7 @@ contains
                 data_item%name(noitm) = ctoken
 
                 if (usefor) setnam = .true.
-                write (lunut, 1040) callr, itmnr, trim(ctoken)
+                write (file_unit, 1040) callr, itmnr, trim(ctoken)
                 call status%increase_warning_count()
                 goto 10
             else
@@ -1238,7 +1238,7 @@ contains
 
                 if (usefor) setnam = .true.
                 if (output_verbose_level >= 3 .and. .not. usefor) &
-                        write (lunut, 1020) callr, itmnr, callr, &
+                        write (file_unit, 1020) callr, itmnr, callr, &
                                 ntitm, name_item%name(ntitm)
                 goto 10
             endif
@@ -1263,28 +1263,28 @@ contains
                 data_item%sequence(noitm) = noits
                 if (callr == 'segment') then
                     if (itoken <= 0) then
-                        write (lunut, 1060) itoken
+                        write (file_unit, 1060) itoken
                         goto 40
                     endif
                     if (output_verbose_level >= 3 .and. .not. usefor) &
-                            write (lunut, 1015) callr, itmnr, callr, itoken
+                            write (file_unit, 1015) callr, itmnr, callr, itoken
                     write (ctoken, '(''Segment '',i8)') itoken
                 elseif (itoken == 0 .and. callr /= 'CONCENTR. ') then
-                    write (lunut, 1060) itoken
+                    write (file_unit, 1060) itoken
                     goto 40
                 elseif (itoken > 0) then
                     if (output_verbose_level >= 3 .and. .not. usefor) &
-                            write (lunut, 1020) callr, itmnr, callr, itoken, &
+                            write (file_unit, 1020) callr, itmnr, callr, itoken, &
                                     name_item%name(itoken)
                     ctoken = name_item%name(itoken)
                 elseif (itoken == 0 .and. callr == 'CONCENTR. ') then
                     if (output_verbose_level >= 3 .and. .not. usefor) &
-                            write (lunut, 1020) callr, itmnr, callr, itoken, &
+                            write (file_unit, 1020) callr, itmnr, callr, itoken, &
                                     'FLOW'
                     ctoken = 'FLOW'
                 else
                     if (output_verbose_level >= 3 .and. .not. usefor) &
-                            write (lunut, 1030) callr, itmnr, callr, -itoken, &
+                            write (file_unit, 1030) callr, itmnr, callr, -itoken, &
                                     type_item%name(-itoken)
                     ctoken = type_item%name(-itoken)
                 endif
@@ -1293,7 +1293,7 @@ contains
                 if (usefor) setnam = .true.
                 goto 10
             else
-                write (lunut, 1060) itoken
+                write (file_unit, 1060) itoken
                 goto 40
             endif
         endif

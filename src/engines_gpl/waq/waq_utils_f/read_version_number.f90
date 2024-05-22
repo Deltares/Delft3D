@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_read_version_number
     use m_waq_precision
-    use m_srstop
+    use m_logger, only : terminate_execution
 
     implicit none
 
@@ -85,7 +85,7 @@ contains
             return
         else                         !        errors during read
             write (lunut, 2000) input_file, lfile
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         ! output formats
@@ -110,7 +110,7 @@ contains
 
         if (input_version_number < lower_limit_version) then
             write (lunut, 2010) input_version_number, lower_limit_version
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         ! output formats

@@ -29,8 +29,8 @@
 
       ! global declarations
 
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution
+      use m_logger
       use m_cli_utils, only : retrieve_command_argument
       use m_hydmod
       use MessageHandling
@@ -77,7 +77,7 @@
 
       ! some init
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       ! if expand or forced just take over the length
 
@@ -218,7 +218,7 @@
          enddo
       enddo
       deallocate(len1,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
 
       ! length per new segments first direction
 
@@ -244,7 +244,7 @@
          enddo
       enddo
       deallocate(len2,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
 
       ! length for the pointers
 
@@ -277,7 +277,7 @@
          output_hyd%displen(2,iq) = 1.0
       enddo
       deallocate(len1_n,len2_n,stat=ierr_alloc)
-      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call srstop(1) ; endif
+      if ( ierr_alloc .ne. 0 ) then ; write(*,*) ' error deallocating memory' ; call terminate_execution(1) ; endif
 
       ! length for boundaries equal to length within the grid
 
@@ -305,11 +305,11 @@
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'input_hyd%nmax:',input_hyd%nmax
       write(lunrep,*) 'input_hyd%mmax:',input_hyd%mmax
-      call srstop(1)
+      call terminate_execution(1)
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'input_hyd%nosegl',input_hyd%nosegl
-      call srstop(1)
+      call terminate_execution(1)
   995 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'output_hyd%noq',output_hyd%noq
-      call srstop(1)
+      call terminate_execution(1)
       end

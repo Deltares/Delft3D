@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_dhgvar
     use m_waq_precision
-    use m_monsys
+    use m_logger
 
     implicit none
 
@@ -356,7 +356,7 @@ contains
         RETURN
         !
         900 CONTINUE
-        CALL GETMLU(LUNREP)
+        CALL get_log_unit_number(LUNREP)
         WRITE(LUNREP, 2000) IAR_NR, INDX
         RETURN
         2000 FORMAT (' WARNING in DHGVAR, array or index out of range', I10, I10)

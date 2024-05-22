@@ -32,8 +32,7 @@
       subroutine harves     ( pmsa   , fl     , ipoint , increm, noseg , & 
                              noflux , iexpnt , iknmrk , noq1  , noq2  , & 
                              noq3   , noq4   )
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_dhnoseg
       use m_dhnolay
 
@@ -86,14 +85,14 @@
 
       ! initialisation
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
       call dhnoseg(nosegw)
       call dhnolay(nolay)
       nosegl = nosegw/nolay
       if ( nosegl*nolay /= nosegw ) then
          write(lunrep,*) ' ERROR: unstructured 3d application'
          write(lunrep,*) ' harvesting module not possible'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       ! check if unit switch global, consbl allows it to be variable
@@ -101,7 +100,7 @@
       if ( increm(5) /= 0 ) then
          write(lunrep,*) ' ERROR: unit switch not a constant'
          write(lunrep,*) ' harvesting module not possible'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       grunitsw   = nint(pmsa(ipoint(5)))

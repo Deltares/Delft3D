@@ -43,7 +43,7 @@
 !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
 !                           LUNOUT - monitor file
 !
-!     SUBROUTINES CALLED  : SRSTOP, stops execution
+!     SUBROUTINES CALLED  : terminate_execution, stops execution
 !
 !     PARAMETERS          :
 !
@@ -64,7 +64,7 @@
 !
 !     DECLARATIONS        :
 !
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_array_manipulation, only : copy_integer_array_elements
       use timers
       INTEGER(kind=int_wp) ::input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
@@ -146,7 +146,7 @@
            GOTO 10
       ENDIF
       IF ( MESSGE == 2 ) goto 9999
-      CALL SRSTOP ( 1 )
+      CALL terminate_execution ( 1 )
  9999 if ( timon ) call timstop ( ithandl )
 
 !

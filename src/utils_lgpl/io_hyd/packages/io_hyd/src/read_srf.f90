@@ -29,12 +29,8 @@
 
       subroutine read_srf(file_srf, mmax  , nmax  , nosegl, surf )
 
-      ! function : read a srf file and check dimensions
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      ! read a srf file and check dimensions
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -56,30 +52,30 @@
       integer                                :: lunrep                 ! unit number report file
       logical                                :: exists                 ! file should exist
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       inquire( file = file_srf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_srf%name)
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       call file_srf%open()
       read(file_srf%unit,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       if ( mmax*nmax .ne. mmaxd*nmaxd ) then
          write(lunrep,*) ' dimensions file ', trim(file_srf%name), ' differ from input hydrodynamics'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       read(file_srf%unit,iostat=ioerr) (surf(i),i=1,nosegl)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       close(file_srf%unit)
@@ -90,12 +86,8 @@
 
       subroutine read_hsrf(file_hsrf, noseg, surf )
 
-      ! function : read a horizontal srf file
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
+      ! read a horizontal srf file
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -113,19 +105,19 @@
       integer                                :: ioerr                  ! error on file
       logical                                :: exists                 ! file should exist
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       inquire( file = file_hsrf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_hsrf%name)
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       call file_hsrf%open()
       read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,noseg)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading horizontal srf file'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       close(file_hsrf%unit)

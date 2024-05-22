@@ -31,7 +31,7 @@ contains
     subroutine dissi  (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_monsys
+        use m_logger
 
         !>\file
         !>       Dissolution of Si in opal
@@ -116,10 +116,10 @@ contains
                     FSOL = 0.0
                     NOWARN = NOWARN + 1
                     IF (NOWARN <= 25) THEN
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         write (LUNREP, *) 'warning: poros < 0.05 in process DisSi, ISEG=', ISEG, ' POROS=', POROS
                     ELSEIF (NOWARN == 26) THEN
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         write (LUNREP, *) 'number of warnings poros < 0.05 in process DisSi >25 firther messages surpressed'
                     ENDIF
                 ENDIF

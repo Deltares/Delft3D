@@ -43,10 +43,9 @@ contains
         !!                     file_unit_list( 3) = unit intermediate file (harmonics)
         !!                     file_unit_list( 4) = unit intermediate file (pointers)
 
-        use m_srstop
-        use m_monsys
+        use m_logger, only : terminate_execution, set_log_unit_number
         use m_cli_utils, only : retrieve_command_argument, get_input_filename
-        use m_get_filepath_and_pathlen
+        use waq_file_utils_external, only : get_filepath_and_pathlen
         use m_open_waq_files
         use timers
         use data_processing, only : delete_file
@@ -125,12 +124,12 @@ contains
         ! create the lst file
         call open_waq_files(file_unit_list(29), file_name_list(29), 29, 1, ioerr)
         !
-        call setmlu(file_unit_list(29))
+        call set_log_unit_number(file_unit_list(29))
         ! open the input file (.inp)
         call open_waq_files(file_unit_list(26), file_name_list(26), 26, 1, ioerr)
         if (ioerr > 0) then
             write (file_unit_list(29), 1000) file_unit_list(26), file_name_list(26)
-            call srstop (1)
+            call terminate_execution (1)
         endif
         ! create the delwaq04.wrk binary file
         call open_waq_files(file_unit_list(2), file_name_list(2), 2, 1, ioerr)
@@ -171,11 +170,11 @@ contains
         !!                          processes in appropriate order.
         !!     LOGICAL UNITNUMBERS : IIN     - system intermediate file
         !!                           LUREP   - monitoring output file
-        !!     SUBROUTINES CALLED  : SRSTOP, stops execution
+        !!     SUBROUTINES CALLED  : terminate_execution, stops execution
 
         use m_grid_utils_external
         use timers       !   performance timers
-        use m_srstop
+        use m_logger, only : terminate_execution
 
         integer(kind = int_wp), intent(in) :: iin                !< system intermediate file
         integer(kind = int_wp), intent(in) :: lurep              !< unit number report file
@@ -318,7 +317,7 @@ contains
 
         ! unsuccessful read
         20 write (lurep, 2010)
-        call srstop(1)
+        call terminate_execution(1)
 
         ! output formats
         2010 format ('1  ERROR reading binary system file !!'/ &

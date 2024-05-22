@@ -43,7 +43,7 @@
 !
 !     FUNCTION            : Sets io list for statistical routine STADAY
 !
-!     SUBROUTINES CALLED  : SRSTOP, stops execution
+!     SUBROUTINES CALLED  : terminate_execution, stops execution
 !                           ZOEK  , finds string in character array
 !                           convert_string_to_time_offset, converts absolute time to system time (seconds)
 !
@@ -59,7 +59,7 @@
 !     aProcesProp               OUTPUT  properties for this proces
 !     AllItems                  INPUT   all items known to the proces system
 !
-      use m_srstop
+      use m_logger, only : terminate_execution
       use m_string_manipulation, only : get_trimmed_length
 
       use timers       !   performance timers
@@ -96,7 +96,7 @@
          WRITE(LUNREP,*) 'ERROR allocating buffer array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_3, buffer length:',NOKEY
          WRITE(*,*) 'ERROR allocating buffer array:',IERR_ALLOC
-         CALL SRSTOP(1)
+         CALL terminate_execution(1)
       ENDIF
       ISUSED = 0
 
@@ -126,7 +126,7 @@
          WRITE(LUNREP,*) 'ERROR allocating IOitem array:',IERR_ALLOC
          WRITE(LUNREP,*) 'in routine SETDAY_1, array length:',aProcesProp%no_input,aProcesProp%no_output
          WRITE(*,*) 'ERROR allocating array:',IERR_ALLOC
-         CALL SRSTOP(1)
+         CALL terminate_execution(1)
       ENDIF
 !
       IKEY = index_in_array('SUBSTANCE',KEYNAM)

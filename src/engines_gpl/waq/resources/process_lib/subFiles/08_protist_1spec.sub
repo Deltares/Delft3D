@@ -1,0 +1,883 @@
+substance 'Continuity' active
+   description        'Continuity'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'OXY' active
+   description        'Dissolved Oxygen'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'NH4' active
+   description        'Ammonium (NH4)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'NO3' active
+   description        'Nitrate (NO3)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'PO4' active
+   description        'Ortho-Phosphate (PO4)'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'Si' active
+   description        'dissolved Silica (Si)'
+   concentration-unit '(gSi/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'Opal' active
+   description        'Opal-Si'
+   concentration-unit '(gSi/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'POC1' active
+   description        'POC1 (fast decomposing fraction)'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'PON1' active
+   description        'PON1 (fast decomposing fraction)'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'POP1' active
+   description        'POP1 (fast decomposing fraction)'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'diatC_1' active
+   description        'diatom C species 1'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'diatN_1' active
+   description        'diatom N species 1'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'diatP_1' active
+   description        'diatom P species 1'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'diatSi_1' active
+   description        'diatom Si species 1'
+   concentration-unit '(gSi/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'diatChl_1' active
+   description        'diatom Chl species 1'
+   concentration-unit '(gChl/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'greenC_1' active
+   description        'green C species 1'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'greenN_1' active
+   description        'green N species 1'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'greenP_1' active
+   description        'green P species 1'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'greenChl_1' active
+   description        'green Chl species 1'
+   concentration-unit '(gChl/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'cmC_1' active
+   description        'CM C species 1'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'cmN_1' active
+   description        'CM N species 1'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'cmP_1' active
+   description        'CM P species 1'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'cmChl_1' active
+   description        'CM Chl species 1'
+   concentration-unit '(gChl/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'zooC_1' active
+   description        'zoo C species 1'
+   concentration-unit '(gC/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'zooN_1' active
+   description        'zoo N species 1'
+   concentration-unit '(gN/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'zooP_1' active
+   description        'zoo P species 1'
+   concentration-unit '(gP/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'DetCS1' inactive
+   description        'DetC in layer S1'
+   concentration-unit '(gC/m2)'
+   waste-load-unit    '-'
+end-substance
+substance 'DetNS1' inactive
+   description        'DetN in layer S1'
+   concentration-unit '(gN/m2)'
+   waste-load-unit    '-'
+end-substance
+substance 'DetPS1' inactive
+   description        'DetP in layer S1'
+   concentration-unit '(gP/m2)'
+   waste-load-unit    '-'
+end-substance
+substance 'DetSiS1' inactive
+   description        'DetSi in layer S1'
+   concentration-unit '(gSi/m2)'
+   waste-load-unit    '-'
+end-substance
+parameter 'VertDisper'
+   description   'vertical dispersion'
+   unit          '(m2/s)'
+   value         0.0
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          '(oC)'
+   value          0.1500E+02
+end-parameter
+parameter 'TcNit'
+   description   'temperature coefficient for nitrification'
+   unit          '(-)'
+   value          0.1110E+01
+end-parameter
+parameter 'CTNit'
+   description   'critical temperature for nitrification'
+   unit          '(oC)'
+   value          -1.0000E+00
+end-parameter
+parameter 'COXNIT'
+   description   'critical oxygen concentration for nitrification'
+   unit          '(g/m3)'
+   value          -1.0000E+00
+end-parameter
+parameter 'RcNit'
+   description   'first-order nitrification rate'
+   unit          '(1/d)'
+   value          0.0700E+00
+end-parameter
+parameter 'OOXNIT'
+   description   'optimum oxygen concentration for nitrification'
+   unit          '(gO2/m3)'
+   value          0.0000E+00
+end-parameter
+parameter 'Salinity'
+   description   'Salinity'
+   unit          '(g/kg)'
+   value          0.3500E+02
+end-parameter
+parameter 'Velocity'
+   description   'horizontal flow velocity'
+   unit          '(m/s)'
+   value          0.5000E+00
+end-parameter
+parameter 'Tau'
+   description   'bottom shear stress'
+   unit          '(Pa)'
+   value          0.000E+00
+end-parameter
+parameter 'VWind'
+   description   'wind speed'
+   unit          '(m/s)'
+   value          0.3000E+01
+end-parameter
+parameter 'SWRear'
+   description   'switch for oxygen reaeration formulation (1-13)'
+   unit          '(-)'
+   value          0.9000E+01
+end-parameter
+parameter 'KLRear'
+   description   'reaeration transfer coefficient'
+   unit          '(m/d)'
+   value          0.4000E+01
+end-parameter
+parameter 'SWRearCO2'
+   description   'switch for oxygen reaeration formulation (1-13)'
+   unit          '(-)'
+   value          1.1000E+01
+end-parameter
+parameter 'RcDetCS1'
+   description   'first-order mineralisation rate DetC in layer S1'
+   unit          '(1/d)'
+   value          0.1500E-01
+end-parameter
+parameter 'TcBMDetC'
+   description   'temperature coeff. mineralisation DetC in sediment'
+   unit          '(-)'
+   value          0.1110E+01
+end-parameter
+parameter 'IM1'
+   description   'inorganic matter(IM1)'
+   unit          '(gDM/m3)'
+   value          0.0000E+00
+end-parameter
+parameter 'RcDetNS1'
+   description   'first-order mineralisation rate DetN in layer S1'
+   unit          '(1/d)'
+   value          0.2500E-01
+end-parameter
+parameter 'TcBMDetN'
+   description   'temperature coeff. mineralisation DetN in sediment'
+   unit          '(-)'
+   value          0.1110E+01
+end-parameter
+parameter 'ku_dFdcC20'
+   description   'upper limit mineralization rate fast detr-C'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcC20'
+   description   'lower limit mineralization rate fast detr-C'
+   unit          '(1/d)'
+   value          0.1200E+00
+end-parameter
+parameter 'ku_dFdcN20'
+   description   'upper limit mineralization rate fast detr-N'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcN20'
+   description   'lower limit mineralization rate fast detr-N'
+   unit          '(1/d)'
+   value          0.1200E+00
+end-parameter
+parameter 'ku_dFdcP20'
+   description   'upper limit mineralization rate fast detr-P'
+   unit          '(1/d)'
+   value          0.1800E+00
+end-parameter
+parameter 'kl_dFdcP20'
+   description   'lower limit mineralization rate fast detr-P'
+   unit          '(1/d)'
+   value          0.0800E+00
+end-parameter
+parameter 'kT_dec'
+   description   'temperature coefficient for decomposition'
+   unit          '(-)'
+   value          0.1110E+01
+end-parameter
+parameter 'b_poc1poc2'
+   description   'fraction POC1 converted to POC2'
+   unit          '(-)'
+   value          0.0
+end-parameter
+parameter 'SWOMDec'
+   description   'option: 0.0 for stripping, 1.0 for different rates'
+   unit          '(-)'
+   value          0.0000E+00
+end-parameter
+parameter 'fAtmDepNH4'
+   description   'atmospheric deposition flux NH4'
+   unit          '(gN/m2/d)'
+   value         0.0
+end-parameter
+parameter 'RcDenSed'
+   description   'first-order denitrification rate in the sediment'
+   unit          '(m/d)'
+   value          0.0150E+00
+end-parameter
+parameter 'fAtmDepNO3'
+   description   'atmospheric deposition flux NO3'
+   unit          '(gN/m2/d)'
+   value         0.0
+end-parameter
+parameter 'RcDetPS1'
+   description   'first-order mineralisation rate DetP in layer S1'
+   unit          '(1/d)'
+   value          0.4000E-01
+end-parameter
+parameter 'TcBMDetP'
+   description   'temperature coeff. mineralisation DetP in sediment'
+   unit          '(-)'
+   value          0.1150E+01
+end-parameter
+parameter 'fAtmDepPO4'
+   description   'atmospheric deposition flux PO4'
+   unit          '(gP/m2/d)'
+   value         0.0
+end-parameter
+parameter 'RcDetSiS1'
+   description   'first-order mineralisation rate DetSi in layer S1'
+   unit          '(1/d)'
+   value          0.1000E-01
+end-parameter
+parameter 'TcBMDetSi'
+   description   'temp. coeff. mineralisation DetSi in sediment'
+   unit          '(-)'
+   value          0.1047E+01
+end-parameter
+parameter 'RCdisSi20'
+   description   '2nd order dissolution rate SiO2 at 20 oC'
+   unit          '(m3/gSi/d)'
+   value          8.0000E-02
+end-parameter
+parameter 'TCdisSi'
+   description   'temperature dependency dissolution Si'
+   unit          '(-)'
+   value          0.1047E+01
+end-parameter
+parameter 'SWDisSi'
+   description   'option: 0.0 2nd order diss., 1.0 1st order diss.'
+   unit          '{no unit}'
+   value          1.0000E+00
+end-parameter
+parameter 'VSedOpal'
+   description   'sedimentation velocity Opal'
+   unit          '(m/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'TaucSOpal'
+   description   'critical shear stress for sedimentation Opal'
+   unit          '(N/m2)'
+   value          0.1500E+00
+end-parameter
+parameter 'TaucSPOC1'
+   description   'critical shear stress for sedimentation POC1'
+   unit          '(N/m2)'
+   value          0.1500E+00
+end-parameter
+parameter 'IM1S1'
+   description   'IM1 in layer S1'
+   unit          '(gDM/m2)'
+   value          1.0000E+07
+end-parameter
+parameter 'TaucS'
+   description   'critical shear stress for sedimentation algae'
+   unit          '(N/m2)'
+   value          0.1500E+00
+end-parameter
+parameter 'ExtVlIM1'
+   description   'VL specific extinction coefficient IM1'
+   unit          '(m2/gDM)'
+   value          2.5000E-02
+end-parameter
+parameter 'ExtVlPOC1'
+   description   'VL specific extinction coefficient POC1'
+   unit          '(m2/gC)'
+   value          0.1000E+00
+end-parameter
+parameter 'ExtVlBak'
+   description   'background extinction visible light'
+   unit          '(1/m)'
+   value          0.8000E-01
+end-parameter
+parameter 'ExtVLSal0'
+   description   'extra VL extinction at Salinity = 0'
+   unit          '(1/m)'
+   value          0.9700E+00
+end-parameter
+parameter 'SWDepAve'
+   description   'switch for module DepAve (0=off, 1=on)'
+   unit          '(-)'
+   value          1.0000E+00
+end-parameter
+parameter 'Latitude'
+   description   'latitude of study area'
+   unit          '(degrees)'
+   value          0.5210E+02
+end-parameter
+parameter 'RefDay'
+   description   'daynumber of reference day simulation'
+   unit          '(d)'
+   value          0.0000E+00
+end-parameter
+parameter 'SWSediment'
+   description   'switch for sediment (0=fixed, 1=variable)'
+   unit          '(-)'
+   value          1.0000E+00
+end-parameter
+parameter 'V0SedPOC1'
+   description   'sedimentation velocity POC1'
+   unit          '(m/d)'
+   value         1.5000E+00
+end-parameter
+parameter 'ZResDM'
+   description   'zeroth-order resuspension flux'
+   unit          '(gDM/m2/d)'
+   value          0.0
+end-parameter
+parameter 'TaucRS1DM'
+   description   'critical shear stress for resuspension DM layer S1'
+   unit          '(N/m2)'
+   value          0.2000E+00
+end-parameter
+parameter 'V0SedIM1'
+   description   'sedimentation velocity IM1'
+   unit          '(m/d)'
+   value          0.0000E+00
+end-parameter
+parameter 'CTMin'
+   description   'critical temperature for mineralisation'
+   unit          '(oC)'
+   value         -1.0000E+00
+end-parameter
+parameter 'CTDEN'
+   description   'critical temperature for denitrification'
+   unit          '(oC)'
+   value         -1.0000E+00
+end-parameter
+parameter 'Kp'
+   description   'mass of phosphorus reserves per gram phosphorus'
+   unit          '(gDM/gP)'
+   value          2.72
+end-parameter
+parameter 'nrSp_D'
+   description   'nr of species user wants to model'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'UmRT_D1'
+   description   'maximum growth rate at reference T'
+   unit          '(d-1)'
+   value          0.69
+end-parameter
+parameter 'rDiat_D1'
+   description   'radius of nutrient repleted protist cell'
+   unit          '(um)'
+   value          12.0
+end-parameter
+parameter 'Ccell_D1'
+   description   'C content of protist cell'
+   unit          '(pgC cell-1)'
+   value          909.19
+end-parameter
+parameter 'RT_D1'
+   description   'reference temperature for UmRT'
+   unit          '(deg C)'
+   value          18.0
+end-parameter
+parameter 'alpha_D1'
+   description   'alpha for photosynthesis in protist'
+   unit          '()'
+   value          9.5e-06
+end-parameter
+parameter 'ChlCm_D1'
+   description   'maximum cellular Chl:C ratio'
+   unit          '(gChl gC-1)'
+   value          0.058
+end-parameter
+parameter 'VSedDia_1'
+   description   'sedimentation velocity Diatoms'
+   unit          '(m/d)'
+   value          0.76
+end-parameter
+parameter 'MrtRT_D1'
+   description   'mortality at reference temperature'
+   unit          '(dl)'
+   value          0.07
+end-parameter
+parameter 'relPS_D1'
+   description   'relative PSmax:Umax on phototrophy'
+   unit          '(dl)'
+   value          2.0
+end-parameter
+parameter 'NCopt_D1'
+   description   'N:C for growth under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.15
+end-parameter
+parameter 'NCmax_D1'
+   description   'N:C that totally represses NH4 transport'
+   unit          '(gN gC-1)'
+   value          0.2
+end-parameter
+parameter 'PCoNCm_D1'
+   description   'maximum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.12
+end-parameter
+parameter 'PCoNCop_D1'
+   description   'optimum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.08
+end-parameter
+parameter 'NO3Copt_D1'
+   description   'N:C for growth on NO3 under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.14
+end-parameter
+parameter 'NO3Cm_D1'
+   description   'N:C that totally represses NO3 transport'
+   unit          '(gN gC-1)'
+   value          0.16
+end-parameter
+parameter 'PCopt_D1'
+   description   'PC optimum quota'
+   unit          '(gP gC-1)'
+   value          0.014
+end-parameter
+parameter 'PCmax_D1'
+   description   'PC maximum quota'
+   unit          '(gP gC-1)'
+   value          0.029
+end-parameter
+parameter 'nrSp_G'
+   description   'nr of species user wants to model'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'UmRT_G1'
+   description   'maximum growth rate at reference T'
+   unit          '(d-1)'
+   value          0.69
+end-parameter
+parameter 'rGreen_G1'
+   description   'radius of nutrient repleted protist cell'
+   unit          '(um)'
+   value          5.0
+end-parameter
+parameter 'Ccell_G1'
+   description   'C content of protist cell'
+   unit          '(pgC cell-1)'
+   value          77.20
+end-parameter
+parameter 'RT_G1'
+   description   'reference temperature for UmRT'
+   unit          '(deg C)'
+   value          18.0
+end-parameter
+parameter 'alpha_G1'
+   description   'alpha for photosynthesis in protist'
+   unit          '()'
+   value          7.0e-06
+end-parameter
+parameter 'ChlCm_G1'
+   description   'maximum cellular Chl:C ratio'
+   unit          '(gChl gC-1)'
+   value          0.033
+end-parameter
+parameter 'MrtRT_G1'
+   description   'mortality at reference temperature'
+   unit          '(dl)'
+   value          0.07
+end-parameter
+parameter 'relPS_G1'
+   description   'relative PSmax:Umax on phototrophy'
+   unit          '(dl)'
+   value          2.0
+end-parameter
+parameter 'NCopt_G1'
+   description   'N:C for growth under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.17
+end-parameter
+parameter 'NCmax_G1'
+   description   'N:C that totally represses NH4 transport'
+   unit          '(gN gC-1)'
+   value          0.2
+end-parameter
+parameter 'PCoNCm_G1'
+   description   'maximum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.14
+end-parameter
+parameter 'PCoNCop_G1'
+   description   'optimum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.09
+end-parameter
+parameter 'NO3Copt_G1'
+   description   'N:C for growth on NO3 under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.16
+end-parameter
+parameter 'NO3Cm_G1'
+   description   'N:C that totally represses NO3 transport'
+   unit          '(gN gC-1)'
+   value          0.18
+end-parameter
+parameter 'PCopt_G1'
+   description   'PC optimum quota'
+   unit          '(gP gC-1)'
+   value          0.028
+end-parameter
+parameter 'PCmax_G1'
+   description   'PC maximum quota'
+   unit          '(gP gC-1)'
+   value          0.036
+end-parameter
+parameter 'nrSp_C'
+   description   'nr of species user wants to model'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'UmRT_C1'
+   description   'maximum growth rate at reference T'
+   unit          '(d-1)'
+   value          0.69
+end-parameter
+parameter 'rCM_C1'
+   description   'radius of nutrient repleted protist cell'
+   unit          '(um)'
+   value          9.0
+end-parameter
+parameter 'Ccell_C1'
+   description   'C content of protist cell'
+   unit          '(pgC cell-1)'
+   value          404.29
+end-parameter
+parameter 'RT_C1'
+   description   'reference temperature for UmRT'
+   unit          '(deg C)'
+   value          18.0
+end-parameter
+parameter 'alpha_C1'
+   description   'alpha for photosynthesis in protist'
+   unit          '()'
+   value          7.0e-06
+end-parameter
+parameter 'ChlCm_C1'
+   description   'maximum cellular Chl:C ratio'
+   unit          '(gChl gC-1)'
+   value          0.021
+end-parameter
+parameter 'MrtRT_C1'
+   description   'mortality at reference temperature'
+   unit          '(dl)'
+   value          0.07
+end-parameter
+parameter 'relPS_C1'
+   description   'relative PSmax:Umax on phototrophy'
+   unit          '(dl)'
+   value          2.0
+end-parameter
+parameter 'NCopt_C1'
+   description   'N:C for growth under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.12
+end-parameter
+parameter 'NCmax_C1'
+   description   'N:C that totally represses NH4 transport'
+   unit          '(gN gC-1)'
+   value          0.2
+end-parameter
+parameter 'PCoNCm_C1'
+   description   'maximum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.1
+end-parameter
+parameter 'PCoNCop_C1'
+   description   'optimum NC when PC is minimum (PCu = 0)'
+   unit          '(gN gC-1)'
+   value          0.07
+end-parameter
+parameter 'NO3Copt_C1'
+   description   'N:C for growth on NO3 under optimal conditions'
+   unit          '(gN gC-1)'
+   value          0.11
+end-parameter
+parameter 'NO3Cm_C1'
+   description   'N:C that totally represses NO3 transport'
+   unit          '(gN gC-1)'
+   value          0.13
+end-parameter
+parameter 'PCopt_C1'
+   description   'PC optimum quota'
+   unit          '(gP gC-1)'
+   value          0.012
+end-parameter
+parameter 'PCmax_C1'
+   description   'PC maximum quota'
+   unit          '(gP gC-1)'
+   value          0.028
+end-parameter
+parameter 'PRG1_C1'
+   description   'handling index of green 1 by cm 1'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'PRD1_C1'
+   description   'handling index of diat 1 by cm 1'
+   unit          '(dl)'
+   value          0.0
+end-parameter
+parameter 'relPhag_C1'
+   description   'relative phagotrophy in night:day'
+   unit          '(dl)'
+   value          0.1
+end-parameter
+parameter 'optCR_C1'
+   description   'proportion of prey captured by starved Zoo'
+   unit          '(dl)'
+   value          0.1
+end-parameter
+parameter 'nrSp_Z'
+   description   'nr of species user wants to model'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'UmRT_Z1'
+   description   'maximum growth rate at reference T'
+   unit          '(d-1)'
+   value          0.69
+end-parameter
+parameter 'rCM_Z1'
+   description   'radius of nutrient repleted protist cell'
+   unit          '(um)'
+   value          20.0
+end-parameter
+parameter 'Ccell_Z1'
+   description   'C content of protist cell'
+   unit          '(pgC cell-1)'
+   value          3833.51
+end-parameter
+parameter 'RT_Z1'
+   description   'reference temperature for UmRT'
+   unit          '(deg C)'
+   value          18.0
+end-parameter
+parameter 'MrtRT_Z1'
+   description   'mortality at reference temperature'
+   unit          '(dl)'
+   value          0.007
+end-parameter
+parameter 'PRG1_Z1'
+   description   'handling index of green 1 by zoo 1'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'PRD1_Z1'
+   description   'handling index of diat 1 by zoo 1'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'PRC1_Z1'
+   description   'handling index of cm 1 by zoo 1'
+   unit          '(dl)'
+   value          1.0
+end-parameter
+parameter 'optCR_Z1'
+   description   'proportion of prey captured by starved Zoo'
+   unit          '(dl)'
+   value          0.1
+end-parameter
+parameter 'abcoChl_D1'
+   description   'Light absorbance coefficient for chlorophyll'
+   unit          '(m2 (g Chl)-1)'
+   value          10
+end-parameter
+parameter 'abcoChl_G1'
+   description   'Light absorbance coefficient for chlorophyll'
+   unit          '(m2 (g Chl)-1)'
+   value          10
+end-parameter
+parameter 'abcoChl_C1'
+   description   'Light absorbance coefficient for chlorophyll'
+   unit          '(m2 (g Chl)-1)'
+   value          10
+end-parameter
+parameter 'ncmC_1'
+   description    'NCM C species 1'
+   unit           '(gC/m3)'
+   value          1.0e-12
+end-parameter
+parameter 'ncmN_1'
+   description    'NCM N species 1'
+   unit           '(gN/m3)'
+   value          0.0
+end-parameter
+parameter 'ncmP_1'
+   description    'NCM P species 1'
+   unit           '(gP/m3)'
+   value          0.0
+end-parameter
+parameter 'ncmChl_1'
+   description    'NCM Chl species 1'
+   unit           '(gChl/m3)'
+   value          0.0
+end-parameter
+parameter 'mot_N1'
+   description    'motility ncm_1'
+   unit           '(m/s)'
+   value          0.0
+end-parameter
+output 'ExtVl'
+   description   'total extinction coefficient visible light'
+end-output
+output 'SatPercOXY'
+   description   'Actual saturation percentage O2'
+end-output
+output 'SS'
+   description   'suspended solids'
+end-output
+output 'DIN'
+   description   'dissolved inorganic nitrogen'
+end-output
+output 'TotN'
+   description   'total nitrogen (including algae)'
+end-output
+output 'TotP'
+   description   'total phosphorus (including algae)'
+end-output
+output 'Tau'
+   description   'total bottom shear stress'
+end-output
+output 'IM1'
+   description   'IM1'
+end-output
+active-processes
+   name  'Salinchlor' 'Conversion of salinity into chloride or vv'
+   name  'VertDisp' 'Vertical dispersion (segment -> exchange)'
+   name  'Nitrif_NH4' 'Nitrification of ammonium'
+   name  'RearOXY' 'Reaeration of oxygen'
+   name  'BMS1_DetC' 'Mineralisation detritus carbon in sediment S1'
+   name  'CONSELAC' 'Consumption oxygen/other electron acceptors'
+   name  'Compos' 'Composition'
+   name  'Secchi' 'Secchi depth for visible-light (370-680nm)'
+   name  'BMS1_DetN' 'Mineralisation detritus nitrogen in sediment S1'
+   name  'DecFast' 'Mineralization fast decomp. detritus POC1'
+   name  'AtmDep_NH4' 'Atmospheric deposition NH4'
+   name  'DenSed_NO3' 'Denitrification in sediment'
+   name  'AtmDep_NO3' 'Atmospheric deposition NO3'
+   name  'BMS1_DetP' 'Mineralisation detritus phosphorus in sediment S1'
+   name  'AtmDep_PO4' 'Atmospheric deposition PO4'
+   name  'BMS1_DetSi' 'Mineralisation detritus silica in sediment S1'
+   name  'DisSi' 'Dissolution of Si in opal (SWITCH defaults)'
+   name  'Sed_Opal' 'Sedimentation Opal 3d'
+   name  'S12TraDetS' 'Resuspension, transport in S1-S2 DetSi'
+   name  'Sed_POC1' 'Sedimentation POC1 3d'
+   name  'S12TraDetC' 'Resuspension, transport in S1-S2 DetC'
+   name  'SedNPOC1' 'Sedim. nutrients in POC1'
+   name  'S12TraDetN' 'Resuspension, transport in S1-S2 DetN'
+   name  'S12TraDetP' 'Resuspension, transport in S1-S2 DetP'
+   name  'S1_Comp' 'Composition sediment layer S1'
+   name  'Extinc_VLG' 'Extinction of visible-light (370-680nm) DLWQ-G'
+   name  'CalcRad' 'Radiation at segment upper and lower boundaries'
+   name  'DynDepth' 'dynamic calculation of the depth'
+   name  'Daylength' 'Daylength calculation'
+   name  'SaturOXY' 'Saturation concentration oxygen'
+   name  'TotDepth' 'depth water column'
+   name  'Res_DM' 'Resuspension total bottom material (dry mass)'
+   name  'Bur_DM' 'Burial total bottom mass (dry matter)'
+   name  'CalVS_POC1' 'Sedimentation velocity POC1 = f (Temp SS Sal)'
+   name  'Sum_Sedim' 'Total of all sedimenting substances'
+   name  'Prot_Dia' 'Growth/mortality of diatoms'
+   name  'Prot_Gre' 'Growth/mortality of greens'
+   name  'Prot_CM' 'Growth/mortality of constitutive mixoplankton'
+   name  'Prot_Zoo' 'Growth/mortality of protozooplankton'
+   name  'ProSedD' 'Sedimentation diatoms'
+   name  'Prot_PFD' 'attenuation of light by protist'
+   name  'EXTINAPRO' 'extinction of light by algae'
+end-active-processes

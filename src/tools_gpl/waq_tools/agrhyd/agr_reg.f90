@@ -23,8 +23,7 @@
 
       subroutine agr_reg(input_hyd, output_hyd, m_fact, n_fact, m_offset, n_offset, ipnt   )
 
-      use m_srstop
-      use m_monsys
+      use m_logger, only : terminate_execution, get_log_unit_number
       use m_hydmod
       implicit none
 
@@ -76,7 +75,7 @@
       real   , allocatable :: x_tmp(:,:)    ! temporary x depth coordinate
       real   , allocatable :: y_tmp(:,:)    ! temporary y depth coordinate
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       mmax = input_hyd%mmax
       nmax = input_hyd%nmax
@@ -94,7 +93,7 @@
       if ( m_offset .lt. 1 .or. m_offset .gt. mmax ) then
          write(*,*) ' error m_offset out of range'
          write(*,*) ' m_offset =',m_offset
-         call srstop(1)
+         call terminate_execution(1)
       endif
       m_offset2 = mod(m_offset-2,m_fact)
 
@@ -107,7 +106,7 @@
       if ( n_offset .lt. 1 .or. n_offset .gt. nmax ) then
          write(*,*) ' error n_offset out of range'
          write(*,*) ' n_offset =',n_offset
-         call srstop(1)
+         call terminate_execution(1)
       endif
       n_offset2 = mod(n_offset-2,n_fact)
 
@@ -227,41 +226,6 @@
          enddo
       enddo
 
-!     ! extra sweep back for missing cco values
-!
-!     do m = 2 , mmax
-!        do n = 2 , nmax
-!           if ( m .eq. 1 ) then
-!              m_new = 1
-!           elseif ( m .eq. mmax ) then
-!              m_new = mmax_new
-!           else
-!              m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
-!           endif
-!           if ( n .eq. 1 ) then
-!              n_new = 1
-!           elseif ( n .eq. nmax ) then
-!              n_new = nmax_new
-!           else
-!              n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
-!           endif
-!
-!           ! prik cco over
-!
-!           if ( abs(input_hyd%xdepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!           endif
-!           if ( abs(input_hyd%ydepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!           endif
-!
-!        enddo
-!     enddo
-
       do m = 2 , mmax
          do n = 2 , nmax
             if ( m .eq. 1 ) then
@@ -305,53 +269,7 @@
       deallocate(x_tmp)
       deallocate(y_tmp)
 
-!     do m = 2 , mmax
-!        do n = 2 , nmax
-!           if ( m .eq. 1 ) then
-!              m_new = 1
-!           elseif ( m .eq. mmax ) then
-!              m_new = mmax_new
-!           else
-!              m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
-!           endif
-!           if ( n .eq. 1 ) then
-!              n_new = 1
-!           elseif ( n .eq. nmax ) then
-!              n_new = nmax_new
-!           else
-!              n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
-!           endif
-!
-!           ! prik cco over
-!
-!           if ( abs(input_hyd%xdepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!              if ( abs(output_hyd%xdepth(n_new,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new,m_new-1) = input_hyd%xdepth(n,m)
-!              endif
-!              if ( abs(output_hyd%xdepth(n_new-1,m_new)) .lt. 1.e-20 ) then
-!                 output_hyd%xdepth(n_new-1,m_new) = input_hyd%xdepth(n,m)
-!              endif
-!           endif
-!           if ( abs(input_hyd%ydepth(n,m)) .gt. 1.e-20 ) then
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!              if ( abs(output_hyd%ydepth(n_new,m_new-1)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new,m_new-1) = input_hyd%ydepth(n,m)
-!              endif
-!              if ( abs(output_hyd%ydepth(n_new-1,m_new)) .lt. 1.e-20 ) then
-!                 output_hyd%ydepth(n_new-1,m_new) = input_hyd%ydepth(n,m)
-!              endif
-!           endif
-!
-!        enddo
-!     enddo
-
       ! boundaries
-
       nobnd_new = 0
       ierr      = 0
       do m = 1 , mmax
@@ -458,17 +376,9 @@
 
       ! write lga table on old grid
 
-!      write(lunrep,'(''     m->'',<mmax>(i4,1x))') (m,m=1,mmax)
-!      write(lunrep,'('' n  *** '',<mmax>(''****'',1x),'' ***  n'')')
-!      do n = nmax , 1 , -1
-!          write(lunrep,'(i3,'' *** '',<mmax>(i4,1x),'' *** '',i3)') n,(ipnt(n,m),m=1,mmax),n
-!      enddo
-!      write(lunrep,'('' n  *** '',<mmax>(''****'',1x))')
-!      write(lunrep,'(''     m->'',<mmax>(i4,1x))') (m,m=1,mmax)
-
       if ( ierr .ne. 0 ) then
          write(lunrep,*) 'stopped because of errors'
-         call srstop(1)
+         call terminate_execution(1)
       endif
 
       return

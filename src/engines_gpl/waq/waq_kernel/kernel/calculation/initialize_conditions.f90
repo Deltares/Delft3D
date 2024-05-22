@@ -32,7 +32,6 @@ module initialize_conditions
     use m_delpar00
     use m_chknmr
     use m_array_manipulation, only : initialize_real_array, copy_real_array_elements, create_pointer_table
-    use m_srstop
     use m_open_waq_files
 
     private
@@ -157,7 +156,7 @@ contains
                     IF (IOERR /= 0) THEN
                         WRITE (file_unit_list(19), '(A,I3,A,A)') &
                                 ' ERROR opening file on unit: ', 800 + I, ' filename: ', FINAM
-                        CALL SRSTOP(1)
+                        CALL terminate_execution(1)
                     ENDIF
                     ICLEN = LEN(FINAM)
                     DO IC = 1, MIN(ICLEN, 200)
@@ -283,7 +282,7 @@ contains
                     write (file_unit_list(19), '(a,a,/,a,i10)') &
                             ' ERROR reading initial conditions - filename: ', file_name_list(18), &
                             ' Number of substances does not match : ', idummy
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
                 ! should be nr. of comp. volumes
                 read (file_unit_list(18)) idummy
@@ -291,7 +290,7 @@ contains
                     write (file_unit_list(19), '(a,a,/,a,i10)') &
                             ' ERROR reading initial conditions - filename: ', file_name_list(18), &
                             ' Number of computational volumes does not match : ', idummy
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
                 do i = 1, notot
                     read (file_unit_list(18)) finam(1:20)
@@ -305,7 +304,7 @@ contains
                         file_name_list(18), &
                         ' Too few data - file contents does not match current ' // &
                                 'model'
-                call srstop(1)
+                call terminate_execution(1)
             else
                 read  (file_unit_list(18), iostat = ierrio) idummy
                 if (ierrio == 0) then
@@ -314,7 +313,7 @@ contains
                             file_name_list(18), &
                             ' Too many data - file contents does not match ' // &
                                     'current model'
-                    call srstop(1)
+                    call terminate_execution(1)
                 endif
             endif
             close (file_unit_list(18))
@@ -397,7 +396,7 @@ contains
                         write (file_unit_list(19), '(a,a)')               & !   not found
                                 ' Error reading initial conditions: ', &
                                 ' horizontal surface area not found! '
-                        call srstop(1)
+                        call terminate_execution(1)
                     endif
                 endif
             endif
@@ -495,7 +494,6 @@ contains
         !     LOGICAL UNITNUMBERS : file_unit_list( 2) - system intermediate file
         !                           file_unit_list(19) - monitoring output file
 
-        use m_srstop
         use timers
         use m_grid_utils_external
         use delwaq2_data
@@ -715,7 +713,7 @@ contains
         !         unsuccessful read
         !
         40 WRITE (file_unit_list(19), 2010)
-        CALL SRSTOP(1)
+        CALL terminate_execution(1)
         !
         !         output formats
         !
@@ -1085,7 +1083,6 @@ contains
         !
         !     Declaration of arguments
         !
-        use m_srstop
         use m_open_waq_files
         use timers
         use results

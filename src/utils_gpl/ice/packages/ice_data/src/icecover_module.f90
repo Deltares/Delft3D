@@ -56,6 +56,7 @@ integer, parameter, public :: ICE_WINDDRAG_RAYS    = 5 !< Based on ADCIRC (Chapm
 !
 ! public routines
 !
+public freezing_temperature
 public null_icecover
 public select_icecover_model
 public late_activation_ext_force_icecover
@@ -110,6 +111,26 @@ type icecover_type
 end type icecover_type
 
 contains
+
+!> Compute the freezing temperature based on NEMO (2022), Fofonoff and Millard (1983)
+!! Parameter names consistent with the latter publication.
+pure function freezing_temperature(salinity, pressure) result (t_freeze)
+    real(fp)          , intent(in)    :: salinity            !< salinity (ppt)
+    real(fp), optional, intent(in)    :: pressure            !< pressure (Pa)
+    real(fp)                          :: t_freeze            !< freezing temperature of water (degC)
+
+    real(fp), parameter  :: a0 = -0.0575_fp      !< coefficient a0
+    real(fp), parameter  :: a1 =  1.710523e-3_fp !< coefficient a1
+    real(fp), parameter  :: a2 = -2.154996e-4_fp !< coefficient a2
+    real(fp), parameter  :: b  = -7.53e-8_fp     !< coefficient b. Note Fofonoff & Millard define pressure in decibar, we use Pascal.
+
+    t_freeze = ( a0 + a1*sqrt(salinity) + a2*salinity )*salinity
+    if (present(pressure)) then
+        ! pressure can often be ignored since the typical atmospheric pressure of 1 bar
+        ! makes only a difference of 0.007 degC
+        t_freeze = t_freeze + b * pressure
+    end if
+end function freezing_temperature
 
 !> Nullify/initialize an icecover data structure.
 function null_icecover(icecover) result(istat)

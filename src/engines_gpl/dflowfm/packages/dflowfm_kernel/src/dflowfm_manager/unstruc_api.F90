@@ -413,27 +413,29 @@ integer                   :: ndraw
 !> Finishes a run of the current model (timings/statistics).
 !! For a restart, subsequently call a flowinit and flow/flowstep again.
 subroutine flowfinalize()
-use unstruc_files
-use unstruc_netcdf
-use MessageHandling, only: FinalizeMessageHandling
-use m_ec_module
-use m_meteo, only: ecInstancePtr
-use m_nearfield
-use m_lateral
-    call dealloc_nfarrays()
-    call dealloc_lateraldata()
+   use unstruc_files
+   use unstruc_netcdf
+   use MessageHandling, only: FinalizeMessageHandling
+   use m_ec_module
+   use m_meteo, only: ecInstancePtr
+   use m_nearfield
+   use m_lateral
+   use fm_statistical_output, only: close_fm_statistical_output
 
-    if (.not.ecFreeInstance(ecInstancePtr)) then
-       continue     
-    end if
-    call close_all_files()
-    call unc_closeall()
-    mapids%ncid = 0    !< Reset global map-file ncid
-    ihisfile = 0       !< Reset global his-file ncid
-    call FinalizeMessageHandling()
-    close(mdia)
-    mdia = 0
-    
+   call dealloc_nfarrays()
+   call dealloc_lateraldata()
+   call close_fm_statistical_output()
+
+   if (.not.ecFreeInstance(ecInstancePtr)) then
+      continue
+   end if
+   call close_all_files()
+   call unc_closeall()
+   mapids%ncid = 0    !< Reset global map-file ncid
+   ihisfile = 0       !< Reset global his-file ncid
+   call FinalizeMessageHandling()
+   close(mdia)
+   mdia = 0
 end subroutine flowfinalize
 
 end module unstruc_api

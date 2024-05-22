@@ -30,7 +30,7 @@ contains
     subroutine delwaq1_write_messages(status)
         use m_open_waq_files
         use m_delwaq1_data
-        use m_dattim
+        use m_date_time_utils_external, only : write_date_time
 
         type(error_status) :: status !< current error status
 
@@ -61,7 +61,7 @@ contains
             call open_waq_files(file_unit_list(1), file_name_list(1), 1, 3, ioerr)
         end if
 
-        call dattim(rundat)
+        call write_date_time(rundat)
         write (lunrep, '(2A)') ' Execution stop : ', rundat
         close (lunrep)
 

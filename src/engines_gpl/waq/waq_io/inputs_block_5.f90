@@ -54,9 +54,10 @@ contains
         !                  file_unit_list(14) = unit intermediate file (boundaries)
 
         use error_handling, only : check_error
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_cli_utils, only : retrieve_command_argument
-        use rd_token     !   for the reading of tokens
+        ! for the reading of tokens
+        use rd_token, only : lstack, file_unit, iposr, gettoken, ilun, cchar, lch, npos, rdtok1
         use timers       !   performance timers
         use date_time_utils, only : convert_relative_time, convert_time_format
 
@@ -87,8 +88,9 @@ contains
         type(error_status) :: status !< current error status
 
         character(len=1)   cdummy
-        character(len=255) charachter_output
-        logical       disper
+        character(len=255) character_output
+        logical :: disper
+
         character(len = 20), allocatable :: bndid(:)             ! boundary id's 20 character
         character(len = 40), allocatable :: bndname(:)           ! boundary names
         character(len = 20), allocatable :: bndtype(:)           ! boundary types
@@ -104,29 +106,30 @@ contains
         integer(kind = int_wp) :: k, i, ierr_alloc
         integer(kind = int_wp) :: ifact, binary_work_file, ierr2, iwar2, ifound, ityp2
         integer(kind = int_wp) :: iaropt, nover, mxover, ibnd, it, nosubs
-        integer(kind = int_wp) :: ierrh, int_output, real_output, ifound2, l, itype
+        integer(kind = int_wp) :: ierrh, int_output, ifound2, l, itype
+        real(kind = real_wp) :: real_output
         if (timon) call timstrt("read_block_5_boundary_conditions", ithndl)
 
         ! init
         disper = .false.
         volume = 0
         ifact = 1
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
         binary_work_file = file_unit_list(2)
         iposr = 0
         ierr2 = 0
         iwar2 = 0
 
         if (nobnd == 0) then
-            write (lunut, 2000)
-            ifound = gettoken (charachter_output, idummy, rdummy, itype, ierr2)
+            write (file_unit, 2000)
+            ifound = gettoken (character_output, idummy, rdummy, itype, ierr2)
             if (ierr2 == 2) then
                 goto 175
             else if (itype==2 .and. idummy==0) then
-                write (lunut, 2120)
+                write (file_unit, 2120)
                 goto 170
             endif
-            write (lunut, 2001)
+            write (file_unit, 2001)
             call status%increase_error_count()
             goto 175
         endif
@@ -136,18 +139,18 @@ contains
         allocate(bndid(nobnd), bndname(nobnd), bndtype(nobnd), bndid_long(nobnd), bndtype_long(nobnd), &
                 ibndtype(nobnd), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2300) ierr_alloc
-            write (lunut, 2310) nobnd
-            call srstop(1)
+            write (file_unit, 2300) ierr_alloc
+            write (file_unit, 2310) nobnd
+            call terminate_execution(1)
         endif
         nobtyp = 0
         if (output_verbose_level < 3) then
-            write (lunut, 2005)
+            write (file_unit, 2005)
         else
             if (iwidth == 5) then
-                write (lunut, 2010)
+                write (file_unit, 2010)
             else
-                write (lunut, 2020)
+                write (file_unit, 2020)
             endif
         endif
         ierr2 = 0
@@ -160,7 +163,9 @@ contains
 
             ! read id, do not truncate yet
             itype = 1
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            !write(*, *) real_output
+            !write(*, *) int_output
+            call rdtok1(file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, bndid_long(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
@@ -168,12 +173,12 @@ contains
 
             ! read also name and type
             itype = 1
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, bndname(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             itype = 1
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, bndtype_long(i), int_output, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
@@ -187,9 +192,9 @@ contains
 
             if (output_verbose_level >= 3) then
                 if (iwidth == 5) then
-                    write (lunut, 2030) bndid(i), bndname(i), bndtype(i)
+                    write (file_unit, 2030) bndid(i), bndname(i), bndtype(i)
                 else
-                    write (lunut, 2040) i, bndid(i), bndname(i), bndtype(i)
+                    write (file_unit, 2040) i, bndid(i), bndname(i), bndtype(i)
                 endif
             endif
 
@@ -200,10 +205,10 @@ contains
                 if (ifound >= 0) then
                     ifound2 = index_in_array(bndid_long(i), bndid_long(:i - 1))
                     if (ifound == ifound2) then
-                        write(lunut, 2270) bndid(i)
+                        write(file_unit, 2270) bndid(i)
                         call status%increase_warning_count()
                     else
-                        write(lunut, 2280) bndid(i)
+                        write(file_unit, 2280) bndid(i)
                         call status%increase_error_count()
                     endif
                 endif
@@ -213,7 +218,7 @@ contains
             itype = index_in_array(bndtype(i), bndtype(:nobtyp))
             ityp2 = index_in_array(bndtype_long(i), bndtype_long(:nobtyp))
             if (itype /= ityp2) then
-                write(lunut, 2290) trim(bndtype_long(i))
+                write(file_unit, 2290) trim(bndtype_long(i))
                 call status%increase_error_count()
             endif
 
@@ -232,16 +237,16 @@ contains
 
         end do
 
-        write (lunut, *)
-        write (lunut, 2060) nobtyp
+        write (file_unit, *)
+        write (file_unit, 2060) nobtyp
         if (output_verbose_level < 2) then
-            write (lunut, 2065)
+            write (file_unit, 2065)
         else
-            write (lunut, 2066)
+            write (file_unit, 2066)
             do i = 1, nobtyp
-                write (lunut, 2070) i, bndtype(i)
+                write (file_unit, 2070) i, bndtype(i)
             end do
-            write (lunut, *)
+            write (file_unit, *)
         endif
         write (binary_work_file)  (bndtype(i), i = 1, nobtyp)
         write (binary_work_file)  (ibndtype(i), i = 1, nobnd)
@@ -250,7 +255,7 @@ contains
         ! dummy time lags
         if (nosys == 0) then
             write (binary_work_file) (0, i = 1, nobnd)
-            write (lunut, 2090)
+            write (file_unit, 2090)
             goto 170
         endif
         !
@@ -259,14 +264,14 @@ contains
         ! we may encounter strings instead, in that case skip
         ! until we find an integer
         itype = 2
-        call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+        call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                 iposr, npos, cdummy, iaropt, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) then
-            write (lunut, 2101)
+            write (file_unit, 2101)
             itype = 1
             do
-                call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+                call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                         iposr, npos, cdummy, iaropt, real_output, &
                         itype, ierr2)
                 read(cdummy, *, iostat = ierr2) iaropt
@@ -276,24 +281,24 @@ contains
             enddo
         endif
 
-        write (lunut, 2100) iaropt
+        write (file_unit, 2100) iaropt
         goto (60, 70, 110) iaropt + 1
-        write (lunut, 2110)
+        write (file_unit, 2110)
         call status%increase_error_count()
         goto 160
 
         ! no time lags
-        60 write (lunut, 2120)
+        60 write (file_unit, 2120)
         write (binary_work_file) (0, i = 1, nobnd)
         goto 160
 
         ! time lags constant without defaults
-        70 write (lunut, 2130)
+        70 write (file_unit, 2130)
         if (max_int_size < nobnd) then
-            write (lunut, 2140) nobnd, max_int_size, nobnd - max_int_size
+            write (file_unit, 2140) nobnd, max_int_size, nobnd - max_int_size
             do k = 1, nobnd
                 itype = 2
-                call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+                call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                         iposr, npos, cdummy, idummy, real_output, &
                         itype, ierr2)
                 if (ierr2 > 0) goto 170
@@ -303,29 +308,29 @@ contains
         endif
         do k = 1, nobnd
             itype = 2
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(k), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
         if (output_verbose_level < 3) then
-            write (lunut, 2145)
+            write (file_unit, 2145)
         else
-            write (lunut, 2150)
+            write (file_unit, 2150)
         endif
         if (is_date_format) then
             call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
-            if (output_verbose_level >= 3) write (lunut, 2160) &
+            if (output_verbose_level >= 3) write (file_unit, 2160) &
                     (int_array(k) / 31536000, mod(int_array(k), 31536000) / 86400, &
                     mod(int_array(k), 86400) / 3600, mod(int_array(k), 3600) / 60, &
                     mod(int_array(k), 60), k = 1, nobnd)
         else
-            if (output_verbose_level >= 3) write (lunut, 2170) &
+            if (output_verbose_level >= 3) write (file_unit, 2170) &
                     (int_array(k), k = 1, nobnd)
         endif
         do i = 1, nobnd
             if (int_array(i) < 0) then
-                write (lunut, 2180) int_array(i)
+                write (file_unit, 2180) int_array(i)
                 call status%increase_error_count()
             endif
         end do
@@ -333,14 +338,14 @@ contains
         goto 160
 
         ! time lags constant with defaults
-        110 write (lunut, 2190)
+        110 write (file_unit, 2190)
         itype = 2
-        call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+        call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                 iposr, npos, cdummy, idef, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) goto 170
         if (idef < 0) then
-            write (lunut, 2180) idef
+            write (file_unit, 2180) idef
             call status%increase_error_count()
         endif
         ! fill the array with the default
@@ -349,30 +354,30 @@ contains
         end do
         ! nr of overridings
         itype = 2
-        call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+        call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                 iposr, npos, cdummy, nover, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) goto 170
         if (is_date_format) then
             call convert_relative_time (idef, ifact, is_date_format, is_yyddhh_format)
-            write (lunut, 2210) &
+            write (file_unit, 2210) &
                     idef / 31536000, mod(idef, 31536000) / 86400, &
                     mod(idef, 86400) / 3600, mod(idef, 3600) / 60, &
                     mod(idef, 60), nover
         else
-            write (lunut, 2220) idef, nover
+            write (file_unit, 2220) idef, nover
         endif
         mxover = max_int_size - nobnd
         ! overridings
         do k = 1, min(nover, mxover)
             itype = 2
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(k + nobnd), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             ibnd = max(1, min(abs(int_array(k + nobnd)), nobnd))
             itype = 2
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(ibnd), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
@@ -380,38 +385,38 @@ contains
 
         do k = 1, nover - mxover
             itype = 2
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, idummy, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
             itype = 2
-            call rdtok1 (lunut, ilun, lch, lstack, cchar, &
+            call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, idummy, real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
         end do
         if (nover > mxover) then
-            write (lunut, 2200) nobnd, nover, max_int_size, nobnd + nover - max_int_size
+            write (file_unit, 2200) nobnd, nover, max_int_size, nobnd + nover - max_int_size
             call status%increase_error_count()
             goto 160
         endif
         if (is_date_format) &
                 call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
-        if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2230)
+        if (nover > 0 .and. output_verbose_level >= 3) write (file_unit, 2230)
         do i = 1, nover
             ibnd = abs(int_array(i + nobnd))
             if (ibnd > nobnd .or. ibnd == 0) then
-                write (lunut, 2180) int_array(i + nobnd)
+                write (file_unit, 2180) int_array(i + nobnd)
                 call status%increase_error_count()
             elseif (output_verbose_level >= 3) then
                 it = int_array (ibnd)
                 if (is_date_format) then
-                    write (lunut, 2240) ibnd, &
+                    write (file_unit, 2240) ibnd, &
                             it / 31536000, mod(it, 31536000) / 86400, &
                             mod(it, 86400) / 3600, mod(it, 3600) / 60, &
                             mod(it, 60)
                 else
-                    write (lunut, 2250)  ibnd, it
+                    write (file_unit, 2250)  ibnd, it
                 endif
             endif
         end do
@@ -419,7 +424,7 @@ contains
 
         ! read boundary concentrations
         ! this if block stands for the new input processing
-        160 write (lunut, 2260)
+        160 write (file_unit, 2260)
         k = nobnd + 1
         l = nobnd + nobtyp + 1
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
@@ -457,8 +462,8 @@ contains
         IF (ALLOCATED(BNDID)) DEALLOCATE(BNDID)
         IF (ALLOCATED(BNDTYPE)) DEALLOCATE(BNDTYPE)
         IF (IERR2 > 0) call status%increase_error_count()
-        IF (IERR2 == 3) CALL SRSTOP(1)
-        175 call check_error(charachter_output, iwidth, 5, ierr2, status)
+        IF (IERR2 == 3) CALL terminate_execution(1)
+        175 call check_error(character_output, iwidth, 5, ierr2, status)
         180 if (timon) call timstop(ithndl)
         RETURN
 

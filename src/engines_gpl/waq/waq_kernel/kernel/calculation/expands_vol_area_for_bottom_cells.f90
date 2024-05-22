@@ -7,7 +7,7 @@
 !!  This program is distributed in the hope that it will be useful,
 !!  but WITHOUT ANY WARRANTY; without even the implied warranty of
 !!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-!!  GNU General Public License for more details.
+!!  GNU General Public License for more details.5
 !!
 !!  You should have received a copy of the GNU General Public License
 !!  along with this program. If not, see <http://www.gnu.org/licenses/>.
@@ -35,9 +35,9 @@ contains
             PARAM, PANAME, FUNCS, FUNAME, SFUNCS, &
             SFNAME, IPOINT, VOLUME, AREA, FLOW, &
             ALENG)
-        ! Expands volume, area etc. for bottom cells
-        !
-        !     LOGICAL UNITS       : file_unit_list(19), error messages
+        !! Expands volume, area etc. for bottom cells
+        !!
+        !!     LOGICAL UNITS       : file_unit_list(19), error messages
         !
         !     PARAMETERS          :
         !
@@ -68,7 +68,7 @@ contains
         !     AREA    REAL    NOQ+NOQ4    IN/OUT  Exchange surfaces
         !     FLOW    REAL    NOQ+NOQ4    IN/OUT  Exchange flows
         !     ALENG   REAL   2,NOQ+NOQ4   IN/OUT  Diffusion lengthes
-        use m_srstop
+        use m_logger, only : terminate_execution
         use m_grid_utils_external
         use timers
 
@@ -106,7 +106,7 @@ contains
                 LGET, IERR)
         IF (IERR /= 0) THEN
             write (file_unit_list(19), *) ' ERROR: Variabele SURF not found !'
-            call srstop(1)
+            call terminate_execution(1)
         endif
 
         ! set surface of the first layer of sediment bed
@@ -160,7 +160,7 @@ contains
                 LGET, IERR)
         IF (IERR /= 0) THEN
             write (file_unit_list(19), *) ' ERROR: Variabele FIXTH not found !'
-            call srstop(1)
+            call terminate_execution(1)
         endif
         do iseg = noseg + 1, noseg + nseg2
             volume(iseg) = Horsurf(iseg) * Thickn(iseg)

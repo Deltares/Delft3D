@@ -100,4 +100,5 @@ active-processes
    name  'DynDepth' 'dynamic calculation of the depth'
    name  'SaturOXY' 'Saturation concentration oxygen'
    name  'TotDepth' 'depth water column'
+   name  'Veloc' 'Horizontal flow velocity'
 end-active-processes

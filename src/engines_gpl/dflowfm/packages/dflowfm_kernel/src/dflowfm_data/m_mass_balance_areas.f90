@@ -70,6 +70,7 @@ module m_mass_balance_areas
    integer                                   :: ncid_bal_area                !< netCDF id of the surface area of the balance areas
 
    integer                                   :: ncid_bal_water_balance_error !< netCDF id of the water balance error
+   integer                                   :: ncid_bal_water_balance_cumerror !< netCDF id of the water balance cumulative error
    integer                                   :: ncid_bal_water_volume        !< netCDF id of the water volume
    integer                                   :: ncid_bal_water_depth         !< netCDF id of the average water depth
 
@@ -81,6 +82,7 @@ module m_mass_balance_areas
    integer, dimension(:), allocatable        :: ncid_bal_water_flow_values   !< netCDF id of the water flow values
    
    integer, dimension(:), allocatable        :: ncid_bal_const_balance_error !< netCDF id of the constituent balance error
+   integer, dimension(:), allocatable        :: ncid_bal_const_balance_cumerror !< netCDF id of the constituent balance cumulative error
    integer, dimension(:), allocatable        :: ncid_bal_const_mass          !< netCDF id of the constituent mass in water column
    integer, dimension(:), allocatable        :: ncid_bal_const_fluff_mass    !< netCDF id of the constituent mass in fluff layer
    integer, dimension(:), allocatable        :: ncid_bal_const_bed_mass      !< netCDF id of the constituent mass in bed stratigraphy
@@ -158,19 +160,20 @@ module m_mass_balance_areas
    double precision, allocatable             :: mbafluxsorsinreduce(:,:,:,:) !< periodical fluxes from source sinks
    double precision, allocatable             :: mbafluxheatreduce(:,:)       !< temperature heat flux
    
-   type bal_area_type
+   type balance_type
        integer                                               :: n_entries    !< number of flow/flux entries
        character(len=NAMMBALEN), dimension(:)  , allocatable :: group        !< group to which balance flow/flux belongs
        character(len=NAMMBALEN), dimension(:)  , allocatable :: name         !< name of balance flow/flux
        double precision        , dimension(:,:), allocatable :: values       !< value of balance flow/flux (1,:) = from, (2,:) = to
-   end type bal_area_type
-   
-   type balance_type
-       type (bal_area_type), dimension(:), allocatable       :: bal_area      !< balance information: names and flows/fluxes per area
-       double precision, dimension(:), allocatable           :: bal_error     !< balance error per area
    end type balance_type
+   
+   type bal_group_type
+       type (balance_type), dimension(:), allocatable        :: bal_area      !< balance information: names and flows/fluxes per area
+       double precision, dimension(:), allocatable           :: bal_error     !< balance error per area
+       double precision, dimension(:), allocatable           :: bal_cumerror  !< balance cumulative error per area
+   end type bal_group_type
 
-   type (balance_type), target                               :: water_flow    !< water balance
-   type (balance_type), dimension(:), allocatable, target    :: const_flux    !< constituent balances
+   type (bal_group_type), target                             :: water_flow    !< water balance
+   type (bal_group_type), dimension(:), allocatable, target  :: const_flux    !< constituent balances
 
 end module m_mass_balance_areas

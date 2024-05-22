@@ -25,11 +25,7 @@
 
       ! function : initialise aggregation, time independent data
 
-      ! (c) DELFT HYDRAULICS
-
-      ! global declarations
-
-      use m_monsys
+      use m_logger
       use m_hydmod
       implicit none
 
@@ -88,7 +84,7 @@
                output_hyd%attributes(iseg2) = input_hyd%attributes(iseg1)
             else
                if ( output_hyd%attributes(iseg2) .ne. input_hyd%attributes(iseg1) ) then
-                  call getmlu(lunrep)
+                  call get_log_unit_number(lunrep)
                   write(lunrep,1000) iseg1,input_hyd%attributes(iseg1),iseg2,output_hyd%attributes(iseg2)
                endif
 

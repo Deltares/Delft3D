@@ -27,8 +27,7 @@
 
 module m_waq_file
     !! module contains everything for the files
-    use m_srstop
-    use m_monsys
+    use m_logger, only : terminate_execution, get_log_unit_number
 
     implicit none
 
@@ -99,20 +98,20 @@ contains
                 open(newunit = self%unit, file = self%name, status = 'unknown', form = 'unformatted', &
                         iostat = io_error, iomsg = message)
             else
-                call getmlu(file_unit)
+                call get_log_unit_number(file_unit)
                 write(*, *) 'ERROR opening file:', trim(self%name)
                 write(file_unit, *) 'ERROR opening file:', trim(self%name)
                 write(*, *) 'unknown filetype:', self%type
                 write(file_unit, *) 'unknown filetype:', self%type
-                call srstop(1)
+                call terminate_execution(1)
             endif
             if (io_error /= 0) then
-                call getmlu(file_unit)
+                call get_log_unit_number(file_unit)
                 write(*, *) 'ERROR opening file:', trim(self%name)
                 write(file_unit, *) 'ERROR opening file:', trim(self%name)
                 write(*, *) 'ERROR message: ', trim(message)
                 write(file_unit, *) 'ERROR message: ', trim(message)
-                call srstop(1)
+                call terminate_execution(1)
             endif
             self%status = 1
         endif
