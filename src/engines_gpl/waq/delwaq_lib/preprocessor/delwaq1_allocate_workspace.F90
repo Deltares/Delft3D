@@ -32,56 +32,20 @@ contains
     !>\file
     !>                    delwaq1_allocate_workspace
 
-    subroutine delwaq1_allocate_workspace(argv, status)
-        use m_cli_utils, only : retrieve_command_argument
+    subroutine delwaq1_allocate_workspace(status)
         use m_delwaq1_data
 
         implicit none
 
-        character(len = *), dimension(:), intent(in) :: argv
+        logical :: parsing_error
 
         type(error_status), intent(inout) :: status !< current error status
 
         !  allocate workspace
-        call retrieve_command_argument('-imax', 1, lfound, imax, rdummy, cdummy, status%ierr)
-        if (lfound) then
-            if (status%ierr == 0) then
-                write (lunrep, '(A,I12)') " Command line argument -IMAX, size of integer work array:", imax
-            else
-                write (lunrep, '(A)') " ERROR: interpreting command line argument -IMAX, size of integer work array:"
-                status%ierr = 1
-                call delwaq1_write_messages(status)
-                return
-            end if
-        else
-            imax = max_int_size
-        end if
-        call retrieve_command_argument('-rmax', 1, lfound, rmax, rdummy, cdummy, status%ierr)
-        if (lfound) then
-            if (status%ierr == 0) then
-                write (lunrep, '(A,I12)') " Command line argument -RMAX, size of real work array:", rmax
-            else
-                write (lunrep, '(A)') " ERROR: interpreting command line argument -RMAX, size of real work array:"
-                status%ierr = 1
-                call delwaq1_write_messages(status)
-                return
-            end if
-        else
-            rmax = MAX_REAL_SIZE
-        end if
-        call retrieve_command_argument('-cmax', 1, lfound, cmax, rdummy, cdummy, status%ierr)
-        if (lfound) then
-            if (status%ierr == 0) then
-                write (lunrep, '(A,I12)') " Command line argument -CMAX, size of character work array:", cmax
-            else
-                write (lunrep, '(A)') " ERROR: interpreting command line argument -CMAX, size of character work array:"
-                status%ierr = 1
-                call delwaq1_write_messages(status)
-                return
-            end if
-        else
-            cmax = max_char_size
-        end if
+        imax = max_int_size
+        rmax = max_real_size
+        cmax = max_char_size
+
         allocate (iar(imax), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (lunrep, '(A,I6,A,I12)') " ERROR: allocating integer work array:", ierr_alloc, " with length:", imax

@@ -56,7 +56,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
 
@@ -134,7 +134,7 @@ contains
                 WRITE(*, *) ' ERROR in SATCO2'
                 WRITE(*, *) ' Illegal option for CO2 saturation formula'
                 WRITE(*, *) ' Option in input:', SWITCH
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
 
             !     Output of calculated saturation

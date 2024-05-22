@@ -54,7 +54,7 @@ contains
         !                     process_simulation_input_options    get & open ( include ) file
         !                     open_waq_files  open file
         !                     evaluate_waq_attribute  get an attribute from an attribute integer
-        !                     terminate_execution  stop with error code
+        !                     stop_with_error  stop with error code
         !                     check   end of block
 
         ! Logical units     : file_unit_list(40) = unit number to read attributes from binary file
@@ -63,7 +63,7 @@ contains
         !                     file_unit_list( 7) = unit intermediate file (volumes)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use m_evaluate_waq_attribute
         use m_grid_utils_external !   for the storage of contraction grids
@@ -554,7 +554,7 @@ contains
         local_status%ierr = 0
         240 continue
         if (local_status%ierr > 0) call status%increase_error_count()
-        if (local_status%ierr == 3) call terminate_execution(1)
+        if (local_status%ierr == 3) call stop_with_error()
         goto 270
 
         ! error processing

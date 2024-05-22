@@ -608,8 +608,9 @@ class TestSetRunner(ABC):
         location_description: str,
         logger: ILogger,
     ):
-        if self.__settings.only_post:
+        if self.__settings.only_post and location_description == "input of case":
             logger.info("Skipping testcase download (postprocess only)")
+            return
         else:
             logger.debug(
                 f"Downloading {location_description}, {local_path} from {remote_path}"

@@ -1,8 +1,8 @@
-set(executable_name delwaq1)
+set(executable_name delwaq)
 
 set(waq_root_path ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set(waq_version_path ${waq_root_path}/resources/version)
-set(rc_version_file ${waq_version_path}/version_number_delwaq1.rc)
+set(rc_version_file ${waq_version_path}/version_number_delwaq.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 # Set icon file
@@ -16,7 +16,15 @@ create_target(
 )
 
 # Add dependencies
-set(oss_dependencies delwaq_lib)
+set(oss_dependencies delwaq_lib
+                     waq_logging)
+
+if (UNIX)
+    target_link_libraries(${executable_name}
+            ${oss_dependencies}
+            uuid)
+endif (UNIX)
+
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 # Set additional compilation properties

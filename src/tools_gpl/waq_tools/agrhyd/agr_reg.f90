@@ -23,7 +23,7 @@
 
       subroutine agr_reg(input_hyd, output_hyd, m_fact, n_fact, m_offset, n_offset, ipnt   )
 
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_hydmod
       implicit none
 
@@ -93,7 +93,7 @@
       if ( m_offset .lt. 1 .or. m_offset .gt. mmax ) then
          write(*,*) ' error m_offset out of range'
          write(*,*) ' m_offset =',m_offset
-         call terminate_execution(1)
+         call stop_with_error()
       endif
       m_offset2 = mod(m_offset-2,m_fact)
 
@@ -106,7 +106,7 @@
       if ( n_offset .lt. 1 .or. n_offset .gt. nmax ) then
          write(*,*) ' error n_offset out of range'
          write(*,*) ' n_offset =',n_offset
-         call terminate_execution(1)
+         call stop_with_error()
       endif
       n_offset2 = mod(n_offset-2,n_fact)
 
@@ -378,7 +378,7 @@
 
       if ( ierr .ne. 0 ) then
          write(lunrep,*) 'stopped because of errors'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       return

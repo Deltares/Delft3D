@@ -37,7 +37,7 @@ contains
             paname, funame, sfname, dename, syname, &
             locnam, varnam)
         ! Set variable atributes
-        use m_logger, only : terminate_execution, write_log_message
+        use m_logger_helper, only : stop_with_error, write_log_message
         use timers       !   performance timers
 
         integer(kind = int_wp) :: lurep, nocons, nopa, nofun, nosfun, &
@@ -462,7 +462,7 @@ contains
                     LINE = 'ERROR : local dimension overflow in SETVAT'
                     CALL write_log_message(line)
                     WRITE(*, *) LINE
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 ENDIF
                 READ(file_unit, *, IOSTAT = IERR) VATNAM(NOVAT), VATTAG(NOVAT), VATNAG(NOVAT), &
                         VATTDA(NOVAT), VATNDA(NOVAT)

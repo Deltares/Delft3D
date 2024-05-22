@@ -34,7 +34,7 @@ contains
 
         ! report on the use of the delwaq input
 
-        use m_logger
+        use m_logger_helper
         use processet
         use timers       !   performance timers
         use string_module

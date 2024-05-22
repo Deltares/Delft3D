@@ -23,6 +23,7 @@
 module inputs_block_5
     use m_waq_precision
     use m_string_utils
+    use m_logger_helper, only: stop_with_error
     use simulation_input_options, only : read_constants_time_variables
     use boundary_conditions, only : read_boundary_concentrations
     use m_error_status
@@ -54,8 +55,7 @@ contains
         !                  file_unit_list(14) = unit intermediate file (boundaries)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         ! for the reading of tokens
         use rd_token, only : lstack, file_unit, iposr, gettoken, ilun, cchar, lch, npos, rdtok1
         use timers       !   performance timers
@@ -141,7 +141,7 @@ contains
         if (ierr_alloc /= 0) then
             write (file_unit, 2300) ierr_alloc
             write (file_unit, 2310) nobnd
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         nobtyp = 0
         if (output_verbose_level < 3) then
@@ -199,8 +199,7 @@ contains
             endif
 
             ! check for unique ID, error if non-truncated ID is unique otherwise warning, can be skipped if input is generated
-            call retrieve_command_argument ('-no_id_check', 0, no_id_check, idummy, rdummy, cdummy, ierr2)
-            if (.not. no_id_check) then
+            if (.not. is_command_arg_specified('-no_id_check')) then
                 ifound = index_in_array(bndid(i), bndid(:i - 1))
                 if (ifound >= 0) then
                     ifound2 = index_in_array(bndid_long(i), bndid_long(:i - 1))
@@ -462,7 +461,7 @@ contains
         IF (ALLOCATED(BNDID)) DEALLOCATE(BNDID)
         IF (ALLOCATED(BNDTYPE)) DEALLOCATE(BNDTYPE)
         IF (IERR2 > 0) call status%increase_error_count()
-        IF (IERR2 == 3) CALL terminate_execution(1)
+        IF (IERR2 == 3) CALL stop_with_error()
         175 call check_error(character_output, iwidth, 5, ierr2, status)
         180 if (timon) call timstop(ithndl)
         RETURN

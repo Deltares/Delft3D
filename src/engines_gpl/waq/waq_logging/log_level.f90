@@ -21,37 +21,16 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-program dlwq1
+!> enumeration for logging levels
+module m_log_level
 
-    use m_delwaq1
-    use delwaq1_version_module
+    !> enum specifing the supported logging levels
+    enum, bind(c)
+        enumerator :: NO_LOGGING = 0
+        enumerator :: ERROR_LEVEL = 1
+        enumerator :: WARNING_LEVEL = 2
+        enumerator :: INFO_LEVEL = 3
+        enumerator :: DEBUG_LEVEL = 4
+    end enum
 
-    implicit none
-
-    integer :: argc
-    character(len = 256), allocatable :: argv(:)
-    character(len = 120) :: idstr
-    integer(4) :: i
-    integer(4) :: lunfil
-
-    call getfullversionstring_delwaq1(idstr)
-
-    argc = command_argument_count() + 1
-
-    allocate (argv (argc))
-    do i = 1, argc
-        call get_command_argument(i - 1, argv(i))
-    end do
-
-    if (delwaq1(argv)) then
-        write (*, *) ' Normal end'
-    else
-        open  (newunit = lunfil, file = 'delwaq.rtn')
-        write (lunfil, *) 'Error running delwaq 1'
-        close (lunfil)
-
-        write (*, *) ' Error code:', 1
-        stop 1
-    end if
-
-end program
+end module m_log_level

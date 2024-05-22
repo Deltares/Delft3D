@@ -31,15 +31,15 @@ module m_dlwqtr
 
     !> reads SURFACE from coupling
     !! Sets dispersion length in vertical
-    subroutine dlwqtr(   notot  , nosys  , noseg  , noq    , noq1   , & 
-                         noq2   , noq3   , nopa   , nosfun , nodisp , & 
-                         novelo , ipoint , volume , area   , flow   , & 
-                         aleng  , conc   , disp   , cons   , param  , & 
-                         func   , segfun , disper , velo   , itime  , & 
-                         idt    , syname , nocons , nofun  , coname , & 
+    subroutine dlwqtr(   notot  , nosys  , noseg  , noq    , noq1   , &
+                         noq2   , noq3   , nopa   , nosfun , nodisp , &
+                         novelo , ipoint , volume , area   , flow   , &
+                         aleng  , conc   , disp   , cons   , param  , &
+                         func   , segfun , disper , velo   , itime  , &
+                         idt    , syname , nocons , nofun  , coname , &
                          paname , funame , sfname , updatr , ilflag )
-        
-        use m_logger, only : terminate_execution, get_log_unit_number
+
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         SAVE
         integer(kind=int_wp), intent(in) :: notot           !< Total number of substances
@@ -88,8 +88,8 @@ module m_dlwqtr
         integer(kind=int_wp), intent(in) :: ILFLAG !< if 0 then 3 length values
 
         ! Local variables
-        INTEGER(kind=int_wp) ::LCCCO, ier, ierr, ier2, lunrep, isurf, & 
-                nmaxa, mmaxa, nma, idummy, nmt, k, iseg, & 
+        INTEGER(kind=int_wp) ::LCCCO, ier, ierr, ier2, lunrep, isurf, &
+                nmaxa, mmaxa, nma, idummy, nmt, k, iseg, &
                 ilay, iq, ipos, ifrom, ito, layt
         LOGICAL    FIRST ,  LINIT , LEXI
         DATA       FIRST / .TRUE. /
@@ -125,7 +125,7 @@ module m_dlwqtr
                 if ( .not. lexi ) then
                     ! it is assumed the surf parameter has been set in the input
                 else
-                    open ( newunit = lccco, file='areachar.dat', form  ='UNFORMATTED', & 
+                    open ( newunit = lccco, file='areachar.dat', form  ='UNFORMATTED', &
                                       status='OLD'       , iostat=IER2         )
                     if ( ier2 /= 0 ) then
                         write (lunrep,2010)
@@ -154,7 +154,7 @@ module m_dlwqtr
                     end if
                 end if
                 if ( ier /= 0 ) then
-                    call terminate_execution(1)
+                    call stop_with_error()
                 end if
             end if
             write(lunrep,2070)
@@ -183,7 +183,7 @@ module m_dlwqtr
 2010 format (' ERROR: opening file <areachar.dat> !')
 2030 format (' Surface area''s will be read from file <areachar.dat>')
 2040 format (' Dispersion length in third dir. will be calculated')
-2050 format (' ERROR: File areachar.dat does not match.', & 
+2050 format (' ERROR: File areachar.dat does not match.', &
              ' NMA = ',I8,' LAYT= ',I8,' NMT = ',I8,' NOSEG=',I8)
 2070 format (' End extra functionality DLWQTR')
 

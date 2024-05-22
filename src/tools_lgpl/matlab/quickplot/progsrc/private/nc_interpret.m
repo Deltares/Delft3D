@@ -197,7 +197,7 @@ for ivar = 1:nvars
     end
     %
     % 1=BYTE, 2=CHAR, 3=SHORT, 4=INT, 5=FLOAT, 6=DOUBLE, 7=UBYTE, 8=USHORT,
-    % 9=UINT, 10=INT64, 11=UINT64, ... 12=STRING?
+    % 9=UINT, 10=INT64, 11=UINT64, 12=STRING
     if Info.Nctype==2 || Info.Nctype>11
         for cattrib = {'_FillValue','missing_value','valid_min','valid_max','valid_range'}
             attrib = cattrib{1};
@@ -264,9 +264,10 @@ for ivar = 1:nvars
         end
     end
     if ~isempty(j) 
-        if strcmp(Info.Attribute(j).Value,'mesh_topology') || strcmp(Info.Attribute(j).Value,'grid_topology')
+        cf_role = Info.Attribute(j).Value;
+        if strcmp(cf_role,'mesh_topology') || strcmp(cf_role,'grid_topology')
             [nc,Info] = parse_ugrid_or_sgrid_mesh(nc,varNames,dimNames,ivar,Info,Attribs);
-        elseif strcmp(Info.Attribute(j).Value,'mesh_topology_contact')
+        elseif strcmp(cf_role,'mesh_topology_contact')
             [nc,Info] = parse_ugrid_contact(nc,varNames,dimNames,ivar,Info,Attribs);
         end
     end
@@ -358,7 +359,10 @@ for ivar = 1:nvars
     %
     % character variables are labels
     %
-    if Info.Nctype == 2 && length(Info.Dimension)==2 && ~isempty(idim)
+    if Info.Nctype == 12 && length(Info.Dimension)==1
+        nc = setType(nc,ivar,idim,'label');
+        continue
+    elseif Info.Nctype == 2 && length(Info.Dimension)==2 && ~isempty(idim)
         nc = setType(nc,ivar,idim(3-CHARDIM),'label');
         continue
     end
@@ -751,9 +755,23 @@ for ivar = 1:nvars
                 case 'aux-time'
                     Info.AuxTime = [Info.AuxTime sicvar];
                 case 'label'
+                    if isempty(Info.Attribute)
+                        cf_role = '';
+                    else
+                        Attribs = {Info.Attribute.Name};
+                        cf_role_attrib = strcmpi('cf_role',Attribs);
+                        if any(cf_role_attrib)
+                            cf_role = Info.Attribute(cf_role_attrib).Value;
+                        else
+                            cf_role = '';
+                        end
+                    end
+                    cfLocationIds = {'timeseries_id','profile_id','trajectory_id'};
                     AcceptedStationNames = {'cross_section_name','cross_section_id','station_name','station_id','dredge_area_name','dump_area_name','area_id'};
                     if sicvar>0 % don't use auto detect label dimensions as station ... this will trigger sediment names to be used as station name for map-files
                         Info.Station = [Info.Station sicvar];
+                    elseif ismember(cf_role,cfLocationIds)
+                        Info.Station = [Info.Station -sicvar];
                     elseif ismember(nc.Dataset(-sicvar).Name,AcceptedStationNames)
                         Info.Station = [Info.Station sicvar];
                     else

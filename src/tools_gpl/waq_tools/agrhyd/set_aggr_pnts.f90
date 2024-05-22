@@ -21,8 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine set_aggr_pnts(input_hyd, ipnt_h , ipnt_v    , ipnt     , ipnt_vdf, & 
-                              ipnt_b   , nosegbt, output_hyd, l_regular, ipnt_tau, & 
+      subroutine set_aggr_pnts(input_hyd, ipnt_h , ipnt_v    , ipnt     , ipnt_vdf, &
+                              ipnt_b   , nosegbt, output_hyd, l_regular, ipnt_tau, &
                               l_expand , lunrep)
 
       ! function : set the aggregation pointer
@@ -31,7 +31,7 @@
 
       ! global declarations
 
-      use m_logger, only : terminate_execution
+      use m_logger_helper, only : stop_with_error
       use m_hydmod
       implicit none
 
@@ -92,7 +92,7 @@
               enddo
           enddo
       endif
-      
+
       do m = 1 , input_hyd%mmax
          do n = 1 , input_hyd%nmax
             iseg = input_hyd%lgrid(n,m)
@@ -117,7 +117,7 @@
                      write(*,*) 'segment number before aggregation                 = ',iseg
                      write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
                      write(*,*) 'the same segment number was already aggregated to = ',ipnt(iseg)
-                     call terminate_execution(1)
+                     call stop_with_error()
                   endif
                else
                   if ( ipnt_h(n,m) .eq. 0 ) then
@@ -162,7 +162,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call terminate_execution(1)
+                  call stop_with_error()
                endif
             else
                if ( ipnt_h(n,m) .eq. 0 ) then
@@ -181,8 +181,8 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call terminate_execution(1)
-               end if      
+                  call stop_with_error()
+               end if
             endif
          enddo
       enddo

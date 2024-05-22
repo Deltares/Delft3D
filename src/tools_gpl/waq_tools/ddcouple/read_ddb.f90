@@ -25,7 +25,7 @@
 
       ! function : read the ddb file from the overall hydrodynamics
 
-      use m_logger, only : write_error_message
+      use m_logger_helper, only : write_error_message
       use m_hydmod
       use m_file_path_utils, only : extract_file_extension
       use rd_token       ! tokenized reading

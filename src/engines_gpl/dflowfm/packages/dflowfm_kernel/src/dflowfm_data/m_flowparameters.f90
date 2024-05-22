@@ -313,7 +313,7 @@
  double precision, parameter       :: eps6   = 1d-6     !<
  double precision, parameter       :: eps8   = 1d-8     !< implicit diffusion
  double precision, parameter       :: eps10  = 1d-10    !<
- double precision, parameter       :: eps20  = 1d-20    !< faxlac
+ double precision, parameter       :: eps20  = 1d-20    !< faclax
  double precision                  :: epshsdif=1d-2     !< hs < epshsdif: no vertical diffusion if hs < epshsdif
  double precision                  :: s01max            !< water level threshold (m) between s0 and s1 in validation routine
  double precision                  :: u01max            !< velocity threshold (m/s) between u0 and u1 in validation routine

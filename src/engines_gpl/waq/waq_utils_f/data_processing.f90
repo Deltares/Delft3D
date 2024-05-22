@@ -351,7 +351,7 @@ contains
             num_outputs, substance_names, substance_units, constant_names, constant_values, output_names, &
             output_descriptions, error_status, error_message)
 
-        use m_logger
+        use m_logger_helper
         use rd_token, only : ilun, lch, lstack, gettoken, file_unit, npos, cchar
 
         implicit none

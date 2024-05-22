@@ -43,8 +43,8 @@ contains
         !!                     file_unit_list( 3) = unit intermediate file (harmonics)
         !!                     file_unit_list( 4) = unit intermediate file (pointers)
 
-        use m_logger, only : terminate_execution, set_log_unit_number
-        use m_cli_utils, only : retrieve_command_argument, get_input_filename
+        use m_logger_helper, only : set_log_unit_number, stop_with_error
+        use m_cli_utils, only : get_command_argument_by_name, get_input_filename
         use waq_file_utils_external, only : get_filepath_and_pathlen
         use m_open_waq_files
         use timers
@@ -52,10 +52,10 @@ contains
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: num_file_units           !< Amount of unit numbers
-        integer(kind = int_wp), intent(inout) :: file_unit_list(num_file_units)      !< Unit numbers
-        character(*), intent(inout) :: file_name_list(num_file_units)    !< File names
-        character(*), intent(inout) :: runid           !< Runid
+        integer(kind = int_wp), intent(in) :: num_file_units                     !< Amount of unit numbers
+        integer(kind = int_wp), intent(inout) :: file_unit_list(num_file_units)  !< Unit numbers
+        character(*), intent(inout) :: file_name_list(num_file_units)            !< File names
+        character(:), allocatable, intent(inout) :: runid                        !< Runid
 
         ! Local
 
@@ -65,12 +65,13 @@ contains
         logical :: specout
         integer(kind = int_wp) :: idummy
         real (kind = real_wp) :: rdummy
-        character(len=256) :: outputpath
-        character(len=256) :: outputpath2
+        character(:), allocatable :: outputpath
+        character(len=256):: outputpath2
         character(len=256) :: runidpath
         integer(kind = int_wp) :: pathlen
         integer(kind = int_wp) :: outpathlen
         character(len=256) :: outid
+        logical :: parsing_error
         integer(kind = int_wp) :: ierr2
 
         integer(kind = int_wp) :: ithndl = 0
@@ -82,9 +83,12 @@ contains
         call get_input_filename(runid, check)
 
         ! Specific output dir?
-        call retrieve_command_argument ('-output', 3, specout, idummy, rdummy, outputpath, ierr2)
+        specout = get_command_argument_by_name('-output', outputpath, parsing_error)
         if (specout) then
-            if (ierr2==0) then
+            if (parsing_error) then
+                write (*, '(A/)') 'Found -output switch but not path specified. This will be ignored.'
+                specout = .false.
+            else
                 write (*, '(A)') 'Found -output switch with the following path:'
                 write (*, '(/A)') trim(outputpath)
                 write (*, '(/A/)') 'Make sure this path exists, or DELWAQ will not run!'
@@ -99,9 +103,6 @@ contains
                 else
                     outid = trim(outputpath) // '/' // trim(runid(pathlen + 1:))
                 endif
-            else
-                write (*, '(A/)') 'Found -output switch but not path specified. This will be ignored.'
-                specout = .false.
             endif
         endif
 
@@ -129,7 +130,7 @@ contains
         call open_waq_files(file_unit_list(26), file_name_list(26), 26, 1, ioerr)
         if (ioerr > 0) then
             write (file_unit_list(29), 1000) file_unit_list(26), file_name_list(26)
-            call terminate_execution (1)
+            call stop_with_error()
         endif
         ! create the delwaq04.wrk binary file
         call open_waq_files(file_unit_list(2), file_name_list(2), 2, 1, ioerr)
@@ -170,11 +171,11 @@ contains
         !!                          processes in appropriate order.
         !!     LOGICAL UNITNUMBERS : IIN     - system intermediate file
         !!                           LUREP   - monitoring output file
-        !!     SUBROUTINES CALLED  : terminate_execution, stops execution
+        !!     SUBROUTINES CALLED  : stop_with_error, stops execution
 
         use m_grid_utils_external
         use timers       !   performance timers
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
 
         integer(kind = int_wp), intent(in) :: iin                !< system intermediate file
         integer(kind = int_wp), intent(in) :: lurep              !< unit number report file
@@ -317,7 +318,7 @@ contains
 
         ! unsuccessful read
         20 write (lurep, 2010)
-        call terminate_execution(1)
+        call stop_with_error()
 
         ! output formats
         2010 format ('1  ERROR reading binary system file !!'/ &

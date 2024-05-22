@@ -25,22 +25,28 @@
 !
 !-------------------------------------------------------------------------------
 
-module delwaq1_version_module
+module delwaq_exe_version_module
     use waq_static_version_info
 
     implicit none
 
-    character(*), private, parameter :: component_name = 'DELWAQ1'
+    character(*), private, parameter :: component_name = 'DELWAQ'
 
-    character(*), public, parameter :: delwaq1_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*), public, parameter :: delwaq1_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+    character(*), public, parameter :: delwaq_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*), public, parameter :: delwaq_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 
-    subroutine getfullversionstring_delwaq1(stringout)
-        character(*), intent(out) :: stringout
+    subroutine get_fullversionstring_delwaq(stringout)
+        character(:), allocatable, intent(out) :: stringout
 
-        stringout = delwaq1_version_id(offset:)
-    end subroutine getfullversionstring_delwaq1
+        stringout = delwaq_version_id(offset:)
+    end subroutine get_fullversionstring_delwaq
 
-end module delwaq1_version_module
+    subroutine get_versionstring_delwaq(stringout)
+        character(:), allocatable, intent(out) :: stringout
+
+        stringout = company // ', ' // component_name // ' ' // major_minor_buildnr
+    end subroutine get_versionstring_delwaq
+
+end module delwaq_exe_version_module

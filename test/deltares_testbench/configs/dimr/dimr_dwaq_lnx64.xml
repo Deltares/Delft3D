@@ -22,10 +22,6 @@
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
-            <location name="engines_to_compare">
-                <credential ref="commandline"/>
-                <root>{server_base_url}/references</root>
-            </location>
             <location name="local">
                 <root>./data/engines</root>
             </location>
@@ -35,23 +31,11 @@
     Programs
     -->
     <programs>
-        <!--
-        The order is important. Start with the following programs:
-            command_prompt
-            svn
-            mpi
-        -->
         <program name="command_prompt">
             <path>/bin/bash</path>
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
@@ -72,6 +56,14 @@
             <environments>
                 <environment name="PAGER" type="raw">more</environment>
             </environments>
+        </program>
+
+        <!-- Meant for the test cases where WAQ and PART are combined -->
+        <program name="WAQ-PART" logOutputToFile="true"     addSearchPaths="true">
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from>
+            </location>
+            <path>bin/run_delwaq.sh</path>
         </program>
     </programs>
     <!--

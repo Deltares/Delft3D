@@ -115,12 +115,12 @@ if nargin==2
                 else
                     iq1 = find_quantity(infileStruct2,iq2,infileStruct);
                     if iq1 > 0
-                        % new quantity found, merge with iq1
+                        % matching quantity found, merge with iq1
                         infileStruct(iq1).iPart = [infileStruct(iq1).iPart ipart];
                         infileStruct(iq1).Partitions{ipart} = infileStruct2(iq2).Partitions{ipart};
                         iq = iq1+1;
                     else
-                        % new quantity not found.
+                        % no matching quantity not found.
                         infileStruct = insert_quantity(infileStruct,iq,infileStruct2(iq2));
                         iq = iq+1;
                     end
@@ -757,6 +757,17 @@ if XYRead || XYneeded || ZRead
     elseif strcmp(Info.Type,'ugrid_mesh_contact')
         meshes = Info.Mesh{2};
         Contacts = qp_netcdf_get(FI,FI.Dataset(Info.Mesh{3}));
+        if isempty(FI.Dataset(Info.Mesh{3}).Attribute)
+            istart = [];
+        else
+            istart = strmatch('start_index',{FI.Dataset(Info.Mesh{3}).Attribute.Name},'exact');
+        end
+        if isempty(istart)
+            start = 0;
+        else
+            start = FI.Dataset(Info.Mesh{3}).Attribute(istart).Value;
+        end
+        Contacts = Contacts - start + 1;
         Contacts = Contacts(idx{M_},:);
         for imesh = 2:-1:1
             % get X,Y coordinates of NODE/EDGE/FACE [see: meshes{imesh,2}] locations
@@ -803,6 +814,9 @@ if XYRead || XYneeded || ZRead
     elseif strcmp(Info.Type,'simple_geometry')
         simpleType = Info.Mesh{2};
         switch simpleType
+            case {'point'}
+                Ans.X = qp_netcdf_get(FI,FI.Dataset(Info.X));
+                Ans.Y = qp_netcdf_get(FI,FI.Dataset(Info.Y));
             case {'line'}
                 Ans.X = qp_netcdf_get(FI,FI.Dataset(Info.X));
                 Ans.Y = qp_netcdf_get(FI,FI.Dataset(Info.Y));
@@ -1987,13 +2001,14 @@ else
                 streamfunc = true;
                 prefix = '';
             else
-                ireg = regexp(Insert.Name,'discharge through flow link');
+                ireg = regexp(Insert.Name,'discharge through flow link','once');
+                ireg2 = regexp(Insert.Name,'time of','once');
                 try
                     convFac = qp_unitconversion(Insert.Units,'m3 s-1');
                 catch
                     convFac = 'error';
                 end
-                if ~isempty(ireg) && isnumeric(convFac)
+                if ~isempty(ireg) && isempty(ireg2) && isnumeric(convFac)
                     streamfunc = true;
                     prefix = Insert.Name(1:ireg-1);
                 end
@@ -2570,7 +2585,11 @@ else
     [Stations, status] = qp_netcdf_get(FI,stcrd-1,FI.Dataset(stcrd).Dimension);
 end
 if t~=0
-    Stations = Stations(t,:);
+    if isa(Station,'string')
+        Stations = Stations(t);
+    else
+        Stations = Stations(t,:);
+    end
 end
 S=cellstr(Stations);
 % -----------------------------------------------------------------------------
@@ -3070,6 +3089,7 @@ if isempty(iq2)
         end
     end
 elseif length(iq2) > 1
+    iq2
     iq2 = 0;
     fprintf('MULTIPLE matches found\n');
 else
@@ -3356,6 +3376,21 @@ if isfield(Attributes,'Name')
     end
 end
 
+function map = get_colors(n)
+n_hues = 6;
+n1 = ceil(n/n_hues);
+hsv = repmat([0:(n_hues-1)]'/n_hues,n1,1);
+n2 = ceil(sqrt(n1));
+offset = 0;
+for s = n2:-1:1
+    hsv(offset + (1:n_hues*n2),2) = s/n2;
+    for v = n2:-1:1
+        hsv(offset + (1:n_hues),3) = v/n2;
+        offset = offset + n_hues;
+    end
+end
+map = hsv2rgb(hsv(1:n,:));
+
 function hNew = plotthis(FI,Props,Parent,Ops,hOld,varargin)
 hNew = [];
 % balance plot
@@ -3370,8 +3405,13 @@ switch Props.varid{1}
         hold(Parent,'on')
         hNew1 = area(Parent, T, Fluxes(:,:,1));
         hNew2 = area(Parent, T, -Fluxes(:,:,2));
+        colours = get_colors(size(Fluxes,2));
+        for i = 1:size(Fluxes,2)
+            set(hNew1(i),'facecolor', colours(i,:))
+            set(hNew2(i),'facecolor', colours(i,:))
+        end
         hNew = [hNew1, hNew2];
-        legend(Props.varid{3})
+        legend(protectstring(Props.varid{3}))
         %
         setappdata(Parent,'AxesType','Time-<blocking>')
         setappdata(Parent,'BasicAxesType','Time-<blocking>')

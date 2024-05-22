@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_open_waq_files
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
 
     implicit none
     private
@@ -242,7 +242,7 @@ contains
         endif
 
         write (*, 2000) file_id, file_unit, trim(file_name), trim(wd_path)
-        call terminate_execution(1)
+        call stop_with_error()
 
 
         2000 format (' ERROR opening file number:', I3, ' on unit:', I3, &

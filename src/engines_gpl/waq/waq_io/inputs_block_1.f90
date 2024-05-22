@@ -23,7 +23,7 @@
 module m_block_1_input_reader
     use m_waq_precision
     use error_handling, only : check_error
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
     use m_read_version_number
     use time_module
     use m_error_status
@@ -321,18 +321,18 @@ contains
 
         100 continue
         if (ierr2 /= 0 .and. ierr2 /= 2) call status%increase_error_count()
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error  (cdummy, iwidth, 1, ierr2, status)
         call status%increase_warning_count_with(iwar2)
         if (timon) call timstop(ithndl)
         return
 
         110 write (file_unit, 2150) ilun(1), lch(1)
-        call terminate_execution (1)
+        call stop_with_error()
         return
 
         120 write (file_unit, 2160) ilun(1), lch(1)
-        call terminate_execution (1)
+        call stop_with_error()
         return
 
         !        Output formats

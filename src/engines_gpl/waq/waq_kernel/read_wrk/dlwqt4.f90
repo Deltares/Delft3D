@@ -282,8 +282,8 @@ contains
 
     subroutine messag (lunout, messge, isflag, llun, sfile, itime, itime1)
 
-        use m_logger, only : terminate_execution
         use timers
+        use m_logger_helper, only: stop_with_error
         integer(kind = int_wp) :: lunout, isflag, llun, itime, itime1, messge
 
         character(len = 24)  MSGTXT(6)
@@ -322,7 +322,7 @@ contains
         endif
         if (messge == 1) goto 9999
         if (messge == 2) goto 9999
-        call terminate_execution (1)
+        call stop_with_error()
         9999 if (timon) call timstop (ithandl)
         return
 

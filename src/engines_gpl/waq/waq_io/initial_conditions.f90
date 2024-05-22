@@ -40,7 +40,7 @@ contains
 
         use m_read_block
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
@@ -152,7 +152,7 @@ contains
             ierr3 = initials%data_block(idata)%evaluate(gridps, itime, notot, noseg, conc)
             if (ierr3 /= 0) then
                 write(file_unit, 2060)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         enddo
 
@@ -165,7 +165,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error(ctoken, iwidth, 8, ierr2, status)
         if (timon) call timstop(ithndl)
         return

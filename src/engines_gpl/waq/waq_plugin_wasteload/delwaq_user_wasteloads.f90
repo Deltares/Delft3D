@@ -23,7 +23,7 @@
 
 module delwaq_user_wasteloads
 
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
     use m_open_waq_files
     use m_string_utils
     use delwaq_loads, wsl => wasteloads   ! This will be available via the argument list
@@ -50,7 +50,7 @@ contains
         real, intent(in) :: conc(:, :)              ! concentration array
         character(len = *), intent(in) :: syname(:)              ! substance names
 
-        character(len = 120) :: idstr                  ! waq_plugin_wasteload version number
+        character(len = 120) :: identification_text                  ! waq_plugin_wasteload version number
 
         ! local declarations
 
@@ -68,12 +68,12 @@ contains
             call open_waq_files (lunrep, 'delwaq_user_wasteloads.mon', 19, 1, ierr)
             if (ierr /= 0) then
                 write(*, '(A)') 'Could not open delwaq_user_wasteloads.mon for writing.'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
 
             ! waq_plugin_wasteload version number
-            call getfullversionstring_waq_plugin_wasteload(idstr)
-            write (lunrep, *) idstr
+            call getfullversionstring_waq_plugin_wasteload(identification_text)
+            write (lunrep, *) identification_text
         endif
         ! inlet/outlet pairs - match waste loads by name
 
@@ -659,7 +659,7 @@ contains
                     read(lunwlk, *, iostat = ierr) dummy, dummy, dummy, dummy
                     if (ierr /= 0) then
                         write(lunrep, 2004) next_time
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 enddo
 

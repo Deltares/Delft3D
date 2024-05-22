@@ -31,7 +31,7 @@ contains
     SUBROUTINE MACDIS     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_evaluate_waq_attribute
 
         !
@@ -162,7 +162,7 @@ contains
                         write (lunrep, *) '   Input error (linear biomass distribution)'
                         write (lunrep, *) 'Input error in process MACDIS'
                         write (*, *) 'Input error in process MACDIS'
-                        call terminate_execution(1)
+                        call stop_with_error()
                     Endif
 
                     A = (SM / Hact) * (2 - (2 * Ffac)) / Hact
@@ -193,7 +193,7 @@ contains
                         write (lunrep, *) '   Input error (exponential biomass distribution)'
                         write (lunrep, *) 'Input error in process MACDIS'
                         write (*, *) 'Input error in process MACDIS'
-                        call terminate_execution(1)
+                        call stop_with_error()
                     Endif
 
                     A = SM / Hactd / ((exp(Ffac * Hactd) - 1.0) / Ffac - Hactd)

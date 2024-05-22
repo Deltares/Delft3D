@@ -11,8 +11,8 @@ function print_usage_info {
     echo "Usage: ${0##*/} <delpar.inp> [OPTION]..."
     echo "Run a Delpar model on Linux."
     echo
-    echo "<delpar.inp>"
-    echo "       Delpar input file"
+    echo "<*.inp>/runid.par"
+    echo "       Delpar input file/Delpar configuration file, containing name of *.inp and *.mdu file"
     echo
     echo "Options:"
     echo "-h, --help"
@@ -27,7 +27,7 @@ function print_usage_info {
 
 #
 ## Defaults
-configfile=
+inputfile=
 D3D_HOME=
 ulimit -s unlimited
 
@@ -35,8 +35,8 @@ ulimit -s unlimited
 #
 ## Start processing command line options:
 
-configfile=$1
-case $configfile in
+inputfile=$1
+case $inputfile in
     -h|--help)
     print_usage_info
     ;;
@@ -56,20 +56,22 @@ case $key in
     D3D_HOME="$1"
     shift
     ;;
-    --NNODES)
-    NNODES="$1"
-    shift
-    ;;
 esac
 done
 
 
-if [ ! -f $configfile ]; then
-    if [ ! -f $configfile.inp ]; then
-    echo "ERROR: configfile $configfile does not exist"
-    print_usage_info
+if [ ! -f $inputfile ]; then
+    if [ ! -f $inputfile.inp ]; then
+        echo "ERROR: inputfile $inputfile does not exist"
+        print_usage_info
+    fi
 fi
+if [ "$inputfile" = "runid.par" ]; then
+    echo "input file is set to 'runid.par'."
+    inputfile=""
+    # inputfile is made empty on purpose, to maintain backwards compatibility with Delft3d4
 fi
+
 
 
 workdir=`pwd`
@@ -90,7 +92,7 @@ if [ ! -d $D3D_HOME ]; then
 fi
 export D3D_HOME
 
-echo "    Configfile       : $configfile"
+echo "    inputfile        : $inputfile"
 echo "    D3D_HOME         : $D3D_HOME"
 echo "    Working directory: $workdir"
 echo 
@@ -110,14 +112,11 @@ libdir=$D3D_HOME/lib
     # Run
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 
-module load intelmpi/21.2.0 &>/dev/null
-export FI_PROVIDER=tcp
-
 
     echo "executing:"
-    echo "$bindir/delpar $configfile"
-    echo 
-$bindir/delpar $configfile
+    echo "$bindir/delpar" $inputfile
+    echo
+$bindir/delpar $inputfile
 
 
     # Wait until all child processes are finished
