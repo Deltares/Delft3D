@@ -2953,14 +2953,20 @@ private
 
    end subroutine process_output_quantity_configs
 
-   !> Deactivate 3D dimension IDs for 2D variables
+   !> Deactivate invalid dimension IDs depending on model parameters
    subroutine process_nc_dim_ids(nc_dim_ids)
+      use m_sediment, only: stm_included
+      
       type(t_station_nc_dimensions), intent(inout) :: nc_dim_ids !< The NetCDF dimension IDs for a possible output variable config
 
       if (.not. model_is_3D()) then ! Turn off layer dimensions in 2D
          nc_dim_ids%laydim = .false.
          nc_dim_ids%laydim_interface_center = .false.
          nc_dim_ids%laydim_interface_edge = .false.
+      end if
+      if (.not. stm_included) then ! No sediment dimensions if stm not included
+         nc_dim_ids%sedsusdim = .false.
+         nc_dim_ids%sedtotdim = .false.
       end if
    end subroutine process_nc_dim_ids
 

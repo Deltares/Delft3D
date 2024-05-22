@@ -273,8 +273,6 @@ subroutine unc_write_his(tim)            ! wrihis
            end if
         end if
 
-
-        !if (jased > 0 .and. stm_included .and. jahissed > 0) then
         ! Time
         !
         call ncu_set_att(attributes(1), 'standard_name', 'time')
