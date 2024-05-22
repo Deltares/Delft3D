@@ -117,7 +117,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    use dfm_error
    use m_alloc
    use m_flowgeom
-   use m_find_flownode, only: find_flownode
+   use m_find_flownode, only: find_nearest_flownodes
    
    implicit none
    
@@ -220,7 +220,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
    ! find flow nodes
    jakdtree = 1
    if (nloctypeAll > 0) then
-      call find_flownode(nloctypeAll, xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), namobs_tmp0(1:nloctypeAll), kobs_tmp0(1:nloctypeAll), jakdtree, 1, INDTP_ALL)
+      call find_nearest_flownodes(nloctypeAll, xobs_tmp0(1:nloctypeAll), yobs_tmp0(1:nloctypeAll), namobs_tmp0(1:nloctypeAll), kobs_tmp0(1:nloctypeAll), jakdtree, 1, INDTP_ALL)
       do i = 1, nloctypeAll
          kobs(ixy2obs0(i)) = kobs_tmp0(i)
       end do
@@ -228,7 +228,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
 
    jakdtree = 1
    if (nloctype1D > 0) then
-      call find_flownode(nloctype1D, xobs_tmp1(1:nloctype1D), yobs_tmp1(1:nloctype1D), namobs_tmp1(1:nloctype1D), kobs_tmp1(1:nloctype1D), jakdtree, 0, INDTP_1D)
+      call find_nearest_flownodes(nloctype1D, xobs_tmp1(1:nloctype1D), yobs_tmp1(1:nloctype1D), namobs_tmp1(1:nloctype1D), kobs_tmp1(1:nloctype1D), jakdtree, 0, INDTP_1D)
       do i = 1, nloctype1D
          kobs(ixy2obs1(i)) = kobs_tmp1(i)
       end do
@@ -236,7 +236,7 @@ subroutine find_flownodes_for_all_observation_stations(nstart, nend)
 
    jakdtree = 1
    if (nloctype2D > 0) then
-      call find_flownode(nloctype2D, xobs_tmp2(1:nloctype2D), yobs_tmp2(1:nloctype2D), namobs_tmp2(1:nloctype2D), kobs_tmp2(1:nloctype2D), jakdtree, 0, INDTP_2D)
+      call find_nearest_flownodes(nloctype2D, xobs_tmp2(1:nloctype2D), yobs_tmp2(1:nloctype2D), namobs_tmp2(1:nloctype2D), kobs_tmp2(1:nloctype2D), jakdtree, 0, INDTP_2D)
        do i = 1, nloctype2D
          kobs(ixy2obs2(i)) = kobs_tmp2(i)
       end do

@@ -847,7 +847,7 @@ contains
    use m_partitioninfo
    use kdtree2Factory
    use unstruc_messages
-   use m_find_flownode, only: find_flowcells_kdtree
+   use m_find_flownode, only: find_nearest_flownodes_kdtree
    
    implicit none
    
@@ -892,7 +892,7 @@ contains
                yy(i-i1+1,j-j1+1) = dble(j)
             end do
          end do
-         call find_flowcells_kdtree(treeglob,Ni*Nj,xx,yy,kk,jakdtree,INDTP_2D, ierror)
+         call find_nearest_flownodes_kdtree(treeglob, Ni*Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
          if ( ierror.ne.0 ) then
             jakdtree = 0
          end if

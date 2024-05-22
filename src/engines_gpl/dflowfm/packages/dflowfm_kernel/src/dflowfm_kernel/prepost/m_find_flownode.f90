@@ -33,12 +33,12 @@ module m_find_flownode
    
    private
    
-   public :: find_flownode, find_flowcells_kdtree
+   public :: find_nearest_flownodes, find_nearest_flownodes_kdtree
    
    contains
 
 !> Find the flownodes nearest to the set of points [xx,yy]
-subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocTp)
+subroutine find_nearest_flownodes(n, xx, yy, names, node_ids_nearest, jakdtree, jaoutside, iLocTp)
    use unstruc_messages
    use m_partitioninfo
    use m_flowgeom
@@ -50,14 +50,14 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
 
    implicit none
 
-   integer,                            intent(in   )  :: n           !< number of points
-   double precision,     dimension(n), intent(in   )  :: xobs, yobs  !< points coordinates
-   character(len=IdLen), dimension(n), intent(in   )  :: namobs      !< names of points
-   integer,              dimension(n), intent(inout)  :: kobs        !< associated flow nodes, if found.
-   integer,                            intent(inout)  :: jakdtree    !< use kdtree (1) or not (other)
-   integer,                            intent(in   )  :: jaoutside   !< allow outside cells (for 1D) (1) or not (0)
-   integer,                            intent(in   )  :: iLocTp      !< Node type, one of INDTP_1D/2D/ALL.
-   integer                                            :: ierror      !< error (1) or not (0)
+   integer,                            intent(in   )  :: n                !< number of points
+   double precision,     dimension(n), intent(in   )  :: xx, yy           !< points coordinates
+   character(len=IdLen), dimension(n), intent(in   )  :: names            !< names of points
+   integer,              dimension(n), intent(inout)  :: node_ids_nearest !< associated flow nodes, if found.
+   integer,                            intent(inout)  :: jakdtree         !< use kdtree (1) or not (other)
+   integer,                            intent(in   )  :: jaoutside        !< allow outside cells (for 1D) (1) or not (0)
+   integer,                            intent(in   )  :: iLocTp           !< Node type, one of INDTP_1D/2D/ALL.
+   integer                                            :: ierror           !< error (1) or not (0)
    integer                                            :: i, k, k1b
    integer,           dimension(1)                    :: idum
    double precision                                   :: d1, d2
@@ -65,7 +65,7 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
    ierror = 1
 
    if (jakdtree == 1) then
-      call find_flowcells_kdtree(treeglob, n, xobs, yobs, kobs, jaoutside, iLocTp, ierror)
+      call find_nearest_flownodes_kdtree(treeglob, n, xx, yy, node_ids_nearest, jaoutside, iLocTp, ierror)
 
       if (jampi == 1) then
          ! globally reduce ierror
@@ -80,10 +80,10 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
 
       ! disable observation stations without attached flowlinks
       do i = 1, n
-         k = kobs(i)
+         k = node_ids_nearest(i)
          if (k > 0) then
             if (nd(k)%lnx < 1) then
-               kobs(i) = 0
+               node_ids_nearest(i) = 0
             end if
          end if
       end do
@@ -91,12 +91,12 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
    else
       
       do i = 1, n
-         call inflowcell(xobs(i), yobs(i), k, jaoutside, iLocTp)
+         call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp)
          if (jaoutside == 1 .and. (iLocTp == INDTP_1D .or. iLocTp == INDTP_ALL)) then
-            call find_nearest_1D_or_boundary_flownode_bruteforce(xobs(i), yobs(i), k1b)
+            call find_nearest_1D_or_boundary_flownode_bruteforce(xx(i), yy(i), k1b)
             if (k /= 0 .and. k1b /= 0) then
-                d1 = dbdistance(xz(k1b), yz(k1b), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
-                d2 = dbdistance(xz(k  ), yz(k  ), xobs(i), yobs(i), jsferic, jasfer3D, dmiss)
+                d1 = dbdistance(xz(k1b), yz(k1b), xx(i), yy(i), jsferic, jasfer3D, dmiss)
+                d2 = dbdistance(xz(k  ), yz(k  ), xx(i), yy(i), jsferic, jasfer3D, dmiss)
                 if (d1 < d2) then
                    k = k1b
                 end if
@@ -104,23 +104,23 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
                 k = k1b
             end if
          end if
-         kobs(i) = 0
+         node_ids_nearest(i) = 0
          if (k /= 0) then
             if ( nd(k)%lnx > 0 ) then
-               kobs(i) = k
+               node_ids_nearest(i) = k
             end if
          end if
       end do
    end if
 
    if (jampi == 1 .and. n > 0) then
-      ! check if this subdomain owns the observation station
-      call reduce_kobs(n, kobs, xobs, yobs, jaoutside)
+      ! check which subdomains own which points
+      call reduce_kobs(n, node_ids_nearest, xx, yy, jaoutside)
    end if
 
    do i = 1, n
-      if (kobs(i) == 0) then
-          write(msgbuf, '(a,i0,a,a,a)') 'Could not find flowcell for point #', i, ' (', trim(namobs(i)), '). Discarding.'
+      if (node_ids_nearest(i) == 0) then
+          write(msgbuf, '(a,i0,a,a,a)') 'Could not find flowcell for point #', i, ' (', trim(names(i)), '). Discarding.'
           call msg_flush()
       end if
    end do
@@ -128,11 +128,11 @@ subroutine find_flownode(n, xobs, yobs, namobs, kobs, jakdtree, jaoutside, iLocT
    ierror = 0
 1234 continue
 
-end subroutine find_flownode
+end subroutine find_nearest_flownodes
 
 !> Find the flownodes nearest to the set of points [xx,yy]
 !! Uses the k-d tree routines
-subroutine find_flowcells_kdtree(treeinst, Ns, xs, ys, inod, jaoutside, iLocTp, ierror)
+subroutine find_nearest_flownodes_kdtree(treeinst, Ns, xs, ys, inod, jaoutside, iLocTp, ierror)
 
    use m_missing
    use m_flowgeom
@@ -255,7 +255,7 @@ subroutine find_flowcells_kdtree(treeinst, Ns, xs, ys, inod, jaoutside, iLocTp, 
          end if
          if (in == 1) then
             if (inod(isam) /= 0) then            ! should not happen, but it can: for example in case of overlapping 1D branches
-               write(mesg, "('find_flowcells_kdtree: sample/point ', I0, ' in cells ', I0, ' and ', I0)") isam, inod(isam), k
+               write(mesg, "('find_nearest_flownodes_kdtree: sample/point ', I0, ' in cells ', I0, ' and ', I0)") isam, inod(isam), k
                call mess(LEVEL_INFO, mesg  )
                ! goto 1234
                if (k > ndx2D .and. k < ndxi+1 .and. jaoutside == 1) then  ! ONLY in case of a 1D node, consider replacing, if the 1D node is closer
@@ -285,7 +285,7 @@ subroutine find_flowcells_kdtree(treeinst, Ns, xs, ys, inod, jaoutside, iLocTp, 
    ! deallocate
    if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
 
-end subroutine find_flowcells_kdtree
+end subroutine find_nearest_flownodes_kdtree
 
 !> Find the 1-D or boundary flownode with the shortest distance to the point [x,y]
 !! Brute-force approach: simply check all flowlinks in the entire grid

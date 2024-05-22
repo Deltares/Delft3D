@@ -240,7 +240,7 @@ implicit none
      use m_flowgeom, only: xz, yz
      use m_GlobalParameters, only: INDTP_ALL
      use MessageHandling, only: IdLen
-     use m_find_flownode, only: find_flownode
+     use m_find_flownode, only: find_nearest_flownodes
       
      implicit none
 
@@ -276,7 +276,7 @@ implicit none
         kobs(i)   = 0
      end do
 
-     call find_flownode(Nin, xin, yin, namobs, kobs, jakdtree, 1, INDTP_ALL)
+     call find_nearest_flownodes(Nin, xin, yin, namobs, kobs, jakdtree, 1, INDTP_ALL)
 
 !    copy to output
      Nout = Nin
