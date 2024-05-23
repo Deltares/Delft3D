@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use m_file_unit_number
+      use waq_file_utils_external, only: create_new_file_unit_number
       use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 

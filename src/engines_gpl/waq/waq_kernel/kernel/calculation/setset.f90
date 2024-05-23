@@ -27,27 +27,14 @@ module m_setset
 
 contains
 
-
+    !> Initialisation of Variables structure
     subroutine setset (lurep, nocons, nopa, nofun, nosfun, &
             nosys, notot, nodisp, novelo, nodef, &
             noloc, ndspx, nvelx, nlocx, nflux, &
             nopred, novar, nogrid, vgrset)
 
-        !     Deltares Software Centre
-
-        !>\File
-        !>      Initialisation of Variables structure
-        !>
-        !>      Meaning is not documented by author
-
-        !     Created:    unknown date by Jan van Beek
-
         use timers
         implicit none
-
-        !     Parameters          :
-
-        !     kind           function         name                    description
 
         integer(kind = int_wp), intent(in) :: lurep                 !< Unit number monitoring file (not used)
         integer(kind = int_wp), intent(in) :: nocons                !< Number of constants
@@ -86,39 +73,39 @@ contains
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! flow
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 1
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 2
-            ivar = ivar + nocons                             ! constants
-            ivar = ivar + nopa                               ! parameters
-            do i = 1, nofun                                 ! functions
+            ivar = ivar + nocons                              ! constants
+            ivar = ivar + nopa                                ! parameters
+            do i = 1, nofun                                   ! functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nosfun                                ! segment functions
+            do i = 1, nosfun                                  ! segment functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                 ! concentrations
+            do i = 1, notot                                   ! concentrations
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                 ! masses
+            do i = 1, notot                                   ! masses
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                 ! derivatives
+            do i = 1, notot                                   ! derivatives
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nodisp                                ! dispersions
+            do i = 1, nodisp                                  ! dispersions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, novelo                                ! velocities
+            do i = 1, novelo                                  ! velocities
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nodef                                 ! default values
+            do i = 1, nodef                                   ! default values
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, noloc                                 ! local values
+            do i = 1, noloc                                   ! local values
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            ivar = ivar + ndspx                           ! dspx
-            ivar = ivar + nvelx                           ! velx
-            ivar = ivar + nlocx                           ! locx
-            ivar = ivar + nflux                           ! flux
+            ivar = ivar + ndspx                               ! dspx
+            ivar = ivar + nvelx                               ! velx
+            ivar = ivar + nlocx                               ! locx
+            ivar = ivar + nflux                               ! flux
         enddo
 
         if (timon) call timstop (ithandl)

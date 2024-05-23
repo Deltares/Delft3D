@@ -27,7 +27,7 @@ program test_dlwq13
 
     use ftnunit, only : runtests_init, runtests, runtests_final, assert_true, assert_files_comparable, test, &
             prepare_tests
-    use m_dlwq13, only : dlwq13
+    use m_dlwq13, only : write_restart_file
 
     implicit none
     character(len = 200) :: cmd_arg
@@ -120,7 +120,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 
@@ -162,7 +162,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call dlwq13(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
 
         close (lun(19))
 

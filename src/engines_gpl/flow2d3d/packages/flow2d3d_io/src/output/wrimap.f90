@@ -6,7 +6,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
                   & zmodel    ,namsrc    ,namcon    ,namsed    , &
                   & kcu       ,kcv       ,kcs       ,irocol    , &
                   & xcor      ,ycor      ,xz        ,yz        ,alfas     , &
-                  & dp        ,thick     ,zk        ,sig       , &
+                  & dpd       ,thick     ,zk        ,sig       , &
                   & dps       ,dpu       ,dpv       ,gsqs      ,wrifou    , &
                   & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
                   & nf        ,nl        ,nostatto  ,nostatgl  ,order_sta , &
@@ -116,7 +116,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     real(fp)                                                                          , intent(in)  :: tunit       !  Description and declaration in exttim.igs
     real(fp)                                                                          , intent(in)  :: tzone       !  Description and declaration in exttim.igs
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: alfas       !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dp          !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpd         !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                   , intent(in)  :: dps         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpu         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpv         !  Description and declaration in esm_alloc_real.f90
@@ -694,7 +694,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        else
           call wrtarray_nm(fds, filename, filetype, grnam2, 1, &
                         & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, dp, 'DP0')    
+                        & ierror, lundia, dpd, 'DP0')    
        endif
        if (ierror/=0) goto 9999
        !

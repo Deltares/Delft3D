@@ -116,13 +116,7 @@ switch NVal
                 Yp = data.Y(ip);
                 if FirstFrame
                     hNew=line(1,1, ...
-                        'color',Ops.colour, ...
-                        'linewidth',Ops.linewidth, ...
-                        'linestyle',Ops.linestyle, ...
-                        'marker',Ops.marker, ...
-                        'markersize',Ops.markersize, ...
-                        'markeredgecolor',Ops.markercolour, ...
-                        'markerfacecolor',Ops.markerfillcolour, ...
+                        Ops.LineParams{:}, ...
                         'parent',Parent);
                     pMarker = Ops.marker;
                     if strcmp(pMarker,'none')
@@ -636,48 +630,6 @@ switch NVal
                     qp_title(Parent,Str,'quantity',Quant,'unit',Units,'time',TStr)
                 end
                 
-            case {'Time-Val','Time-Z'}
-                if multiple(T_)
-                    if FirstFrame
-                        hNew=line(data.Time,data.Val, ...
-                            'parent',Parent, ...
-                            Ops.LineParams{:});
-                        if Props.DimFlag(T_)~=5
-                            tick(Parent,'x','autodate')
-                        end
-                    else
-                        set(hNew,'xdata',data.Time,'ydata',data.Val);
-                    end
-                    if ~isempty(stn)
-                        Str=stn;
-                    else
-                        Str='';
-                    end
-                    qp_title(Parent,Str,'quantity',Quant,'unit',Units,'time',TStr)
-                else
-                    strval=sprintf(Ops.numformat,data.Val);
-                    if isfield(Ops,'axestype') && ...
-                            (isequal(strtok(Ops.axestype),'Time-Val') || ...
-                            isequal(strtok(Ops.axestype),'Time-Z'))
-                        ylim = get(Parent,'ylim');
-                        yval = min(ylim(2),max(ylim(1),data.Val));
-                        if isempty(hNew)
-                            hNew(2)=line(data.Time*[1 1],ylim,'parent',Parent,'color',Ops.colour);
-                            hNew(1)=text('position',[data.Time yval 0],'string',strval,'parent',Parent,Ops.FontParams{:});
-                        else
-                            i1 = strmatch('text',get(hNew,'type')); % 1 or 2
-                            i2 = 3-i1; % consequently, 2 or 1
-                            set(hNew(i2),'xdata',data.Time*[1 1],'ydata',ylim);
-                            set(hNew(i1),'position',[data.Time yval 0],'string',strval);
-                        end
-                    else
-                        unit = '';
-                        if ~isempty(Ops.units)
-                            unit = [' ' Ops.units];
-                        end
-                        hNew=gentext(hNew,Ops,Parent,['Val = ',strval,unit]);
-                    end
-                end
             otherwise % Text
                 strval = sprintf(Ops.numformat,data.Val);
                 hNew=gentext(hNew,Ops,Parent,['Val=',strval]);

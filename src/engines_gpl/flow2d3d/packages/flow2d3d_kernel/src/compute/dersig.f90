@@ -1,5 +1,5 @@
 subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                & kfu       ,kfv       ,dp        ,s1        ,dddksi    , &
+                & kfu       ,kfv       ,dpd       ,s1        ,dddksi    , &
                 & dddeta    ,dzdksi    ,dzdeta    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -60,7 +60,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfv !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dddeta !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dddksi !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dp !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dpd !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dzdeta !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dzdksi !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: s1 !  Description and declaration in esm_alloc_real.f90
@@ -96,7 +96,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
        !
        ! DDEPTH/DETA IN U-POINTS
        !
-       dddeta(nm) = dp(nm) - dp(ndm)
+       dddeta(nm) = dpd(nm) - dpd(ndm)
        !
        ! DZETA/DETA IN V-POINTS
        !
@@ -108,7 +108,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
        !
        ! DDEPTH/DKSI IN V-POINTS
        !
-       dddksi(nm) = dp(nm) - dp(nmd)
+       dddksi(nm) = dpd(nm) - dpd(nmd)
     enddo
     !
     ! exchange transformation coefficients with neighbours for parallel runs

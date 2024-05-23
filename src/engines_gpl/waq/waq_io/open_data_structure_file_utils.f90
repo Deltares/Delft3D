@@ -625,7 +625,7 @@ contains
 
     end subroutine get_dimension
 
-    subroutine read_data_ods(lunut, file_name, data_param, data_loc, missing_value, data_block, ierr)
+    subroutine read_data_ods(file_unit, file_name, data_param, data_loc, missing_value, data_block, ierr)
         !! read a block of data from ODS file
 
         use m_waq_data_structure   ! for definition and storage of data
@@ -634,7 +634,7 @@ contains
         use time_module
         use m_string_utils
 
-        integer(kind = int_wp), intent(in) :: lunut         ! report file
+        integer(kind = int_wp), intent(in) :: file_unit         ! report file
         character(len = *), intent(in) :: file_name        ! filename ODS file
         type(t_waq_item), intent(inout) :: data_param   ! list of param items in the data
         type(t_waq_item), intent(inout) :: data_loc     ! list of loc items in the data
@@ -692,7 +692,7 @@ contains
 
         ! write the ods file name
 
-        write (lunut, 1000) file_name
+        write (file_unit, 1000) file_name
 
         ! get the dimensions of the ods file
 
@@ -727,14 +727,14 @@ contains
                     ! location not found, warning
 
                     iloc_ods(iloc) = 0
-                    write (lunut, 1070) data_loc%ipnt(iloc), data_loc%name(iloc)
+                    write (file_unit, 1070) data_loc%ipnt(iloc), data_loc%name(iloc)
 
                     ! check if location in calculation, then error, but is this check sufficient
 
                     calculation = data_loc%ipnt(iloc) < 0
                     if (iloc /= data_loc%no_item) calculation = calculation .or. data_loc%ipnt(iloc + 1) < 0
                     if (calculation) then
-                        write (lunut, 1080)
+                        write (file_unit, 1080)
                         ierr = 2
                         goto 510
                     endif
@@ -785,7 +785,7 @@ contains
         afact = isfact / 864.0d+02
         if (isfact < 0) afact = -1.0d+00 / isfact / 864.0d+02
         if (num_records >= 1) then
-            write (lunut, 1020)
+            write (file_unit, 1020)
             a1 = deltim + itstrt * afact
             a2 = deltim + itstop * afact
             i1 = 1
@@ -802,19 +802,19 @@ contains
             if (times(1) > a1) then
                 call gregor (times(1), iy1, im1, id1, ih1, in1, is1, dummy)
                 call gregor (a1, iy2, im2, id2, ih2, in2, is2, dummy)
-                write (lunut, 1030)  iy1, im1, id1, ih1, in1, is1, &
+                write (file_unit, 1030)  iy1, im1, id1, ih1, in1, is1, &
                         iy2, im2, id2, ih2, in2, is2
             endif
             if (times(num_records) < a2) then
                 call gregor (times(num_records), iy1, im1, id1, ih1, in1, is1, dummy)
                 call gregor (a2, iy2, im2, id2, ih2, in2, is2, dummy)
-                write (lunut, 1040)  iy1, im1, id1, ih1, in1, is1, &
+                write (file_unit, 1040)  iy1, im1, id1, ih1, in1, is1, &
                         iy2, im2, id2, ih2, in2, is2
             endif
             num_records = i2 - i1 + 1
         endif
-        write (lunut, 1050) num_records
-        if (num_records == 1)    write (lunut, 1060)
+        write (file_unit, 1050) num_records
+        if (num_records == 1)    write (file_unit, 1060)
 
         ! times are converted to delwaq times
         data_block%num_breakpoints = num_records

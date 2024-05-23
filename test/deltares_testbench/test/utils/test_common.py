@@ -1,7 +1,9 @@
+import pytest
+import textwrap
 import numpy as np
 from unittest.mock import Mock, patch, call
 from src.utils.logging.log_level import LogLevel
-from src.utils.common import log_header, log_separator, log_table
+from src.utils.common import log_header, log_separator, log_table, escape_teamcity
 
 
 class TestCommon:
@@ -94,3 +96,46 @@ class TestCommon:
         ]
 
         logger_instance.log.assert_has_calls(expected_calls)
+
+    @pytest.mark.parametrize(
+        "input,expected",
+        [
+            pytest.param("\n", "|n", id="line-feed"),
+            pytest.param("\r", "|r", id="cariage-return"),
+            pytest.param("[", "|[", id="open-bracket"),
+            pytest.param("]", "|]", id="close-bracket"),
+            pytest.param("'", "|'", id="single-quote"),
+            pytest.param("|", "||", id="vertical-bar"),
+            pytest.param("\u265e", "|0x265E", id="unicode"),
+            pytest.param("\u00e9", "|0x00E9", id="zero-padded-unicode"),
+        ],
+    )
+    def test_escape_teamcity__single_characters(self, input: str, expected: str) -> None:
+        assert escape_teamcity(input) == expected
+
+    def test_escape_teamcity__replace_in_long_string(self) -> None:
+        # Arrange
+        text = textwrap.dedent(
+            f"""
+            In this text, there are newlines (
+            ), cariage-returns (\r), single quotes ('), brackets ([]), vertical bars (|).
+            Finally there are some unicode characters: ({"".join(chr(c) for c in range(0x2654, 0x2660))}).
+            Watch out for those unicode characters with codes in the lower range. The code must be
+            exactly four characters long. So remember to pad the code with zeroes. Sincerely, Ren\u00e9.
+            """,
+        ).strip()  # Strip off leading and trailing line feeds from multi-line string.
+        expected = textwrap.dedent(
+           f"""
+            In this text, there are newlines (
+            ), cariage-returns (|r), single quotes (|'), brackets (|[|]), vertical bars (||).
+            Finally there are some unicode characters: ({"".join("|0x{:04X}".format(c) for c in range(0x2654, 0x2660))}).
+            Watch out for those unicode characters with codes in the lower range. The code must be
+            exactly four characters long. So remember to pad the code with zeroes. Sincerely, Ren|0x00E9.
+            """,
+        ).strip().replace("\n", "|n")
+
+        # Act
+        result = escape_teamcity(text)
+
+        # Assert
+        assert result == expected

@@ -97,7 +97,7 @@ contains
         ibflag = (mod(intopt, 16) > 7)
         NOQTT = NOQ + NOQ4
         NOSSS = NOSEG + NSEG2 ! with or without bottom
-        LUNUT = file_unit_list(29)
+        file_unit = file_unit_list(29)
         IF (IMSTRT <= ITSTOP .AND. IMSTRT <= IMSTOP .AND. IMSTEP > 0) THEN
             LMOUTP = .TRUE.
         ELSE
@@ -143,20 +143,20 @@ contains
         ierr2 = gettoken(lchloc, iopt1, itype, ierr2)          !  < -1 not
         ! -1 external placed on the stack by process_simulation_input_options
         if (itype == 2) then
-            write (lunut, 2000) iopt1                          !     0 not
+            write(file_unit, 2000) iopt1                          !     0 not
             infile = .true.                                    !     1 this file, no action
         else       !        "old" file no block 9              !     2 added here for "no file"
             infile = .false.                                   !  >  2 not
             iopt1 = 2
         endif
         if (iopt1 < -1 .or. iopt1 == 0 .or. iopt1 > 2) then
-            write (lunut, 2010)        !        option out of range
+            write (file_unit, 2010)        !        option out of range
             ierr2 = 1
             goto 100
         endif
         if (iopt1 == 2) then
             infile = .false.
-            write (lunut, 2020)
+            write (file_unit, 2020)
         else                             !        Handle option -1 and 1
             call process_simulation_input_options   (iopt1, file_unit_list, 18, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
@@ -183,7 +183,7 @@ contains
 
                 ! Read part of delwaq file
                 call open_waq_files(file_unit_list(2), file_name_list(2), 2, 2, ierr2)
-                call read_working_file_4(file_unit_list(2), lunut, modid, sysid, notot, &
+                call read_working_file_4(file_unit_list(2), file_unit, modid, sysid, notot, &
                         nodump, nosys, nobnd, nowst, nocons, &
                         nopa, noseg, nseg2, coname, paname, &
                         funame, nofun, sfname, nosfun, nodisp, &
@@ -195,15 +195,15 @@ contains
 
                 ! Get output pointers
                 call get_output_pointers(noutp, nrvar, nrvarm, char_arr, int_array, nmis, notot, sysid, nocons, &
-                        coname, nopa, paname, nofun, funame, nosfun, sfname, lunut)
+                        coname, nopa, paname, nofun, funame, nosfun, sfname, file_unit)
 
                 ! If not all vars found, set error
                 if (nmis > 0) then
-                    write(lunut, *) ' Not all variables available.'
-                    write(lunut, *) ' Number off missing variables :', nmis
+                    write(file_unit, *) ' Not all variables available.'
+                    write(file_unit, *) ' Number off missing variables :', nmis
                 endif
             else
-                write (lunut, 2040)
+                write (file_unit, 2040)
                 call status%increase_warning_count()
             endif
         endif
@@ -239,9 +239,9 @@ contains
             call check_error(lchloc, iwidth, 9, ierr2, status)
         else
             if (iwidth == 5) then
-                write (lunut, 2060) 9
+                write (file_unit, 2060) 9
             else
-                write (lunut, 2070) 9
+                write (file_unit, 2070) 9
             endif
         endif
         if (timon) call timstop(ithndl)
@@ -311,13 +311,13 @@ contains
             do io = 1, 4
                 select case (io)
                 case (1)
-                    write (lunut, 2000)         ! monitor file
+                    write (file_unit, 2000)         ! monitor file
                 case (2)
-                    write (lunut, 2010)         ! grid file
+                    write (file_unit, 2010)         ! grid file
                 case (3)
-                    write (lunut, 2020)         ! his file
+                    write (file_unit, 2020)         ! his file
                 case (4)
-                    write (lunut, 2030)         ! map file
+                    write (file_unit, 2030)         ! map file
                 end select
 
                 ! Read output specification option
@@ -326,18 +326,18 @@ contains
                 select case (ioopt)
 
                 case (0)               !   No output
-                    write (lunut, 2060)
+                    write (file_unit, 2060)
                     isrtou(io) = 0
                     nrvar(io) = 0
 
                 case (1)               !   Default action
-                    write (lunut, 2070)
+                    write (file_unit, 2070)
 
                 case (2, 3)            !   Extra output variables
                     if (ioopt == 2) then
-                        write (lunut, 2080)
+                        write (file_unit, 2080)
                     else
-                        write (lunut, 2090)
+                        write (file_unit, 2090)
                         isrtou(io) = isrtou(io) + 1
                     endif
                     if (igrdou(io) == igsub) then
@@ -352,19 +352,19 @@ contains
                             if (gettoken(cdummy, ierr2) > 0) goto 100
                         enddo
                         if (nrv < 0) then
-                            write (lunut, 2100)
+                            write (file_unit, 2100)
                             call status%increase_error_count()
                             nrvar(io) = 0
                         else if (nrv > max2) then
-                            write (lunut, 2110) nrv, max2, (nrv - max2) * noutp * 2
+                            write (file_unit, 2110) nrv, max2, (nrv - max2) * noutp * 2
                             call status%increase_error_count()
                             nrvar(io) = max2
                         else
                             nrvar(io) = nrv
                         endif
-                        write (lunut, 2120) nrvar(io)
-                        write (lunut, 3020)
-                        write (lunut, 3030) (ivar, ounam(ivar, io), ounam(nrvar(io) + ivar, io), ivar = 1, nrvar(io))
+                        write (file_unit, 2120) nrvar(io)
+                        write (file_unit, 3020)
+                        write (file_unit, 3030) (ivar, ounam(ivar, io), ounam(nrvar(io) + ivar, io), ivar = 1, nrvar(io))
                         nrvar(io) = nrvar(io) * 2
                     else
                         if (gettoken(nrv, ierr2) > 0) goto 100
@@ -375,23 +375,23 @@ contains
                             if (gettoken(cdummy, ierr2) > 0) goto 100
                         enddo
                         if (nrv < 0) then
-                            write (lunut, 2100)
+                            write (file_unit, 2100)
                             call status%increase_error_count()
                             nrvar(io) = 0
                         else if (nrv > nrvarm + 1) then
-                            write (lunut, 2110) nrv, max2, (nrv - max2) * noutp * 2
+                            write (file_unit, 2110) nrv, max2, (nrv - max2) * noutp * 2
                             call status%increase_error_count()
                             nrvar(io) = nrvarm
                         else
                             nrvar(io) = nrv
                         endif
-                        write (lunut, 2120) nrvar(io)
-                        write (lunut, 2130)
-                        write (lunut, 2140) (ivar, ounam(ivar, io), ivar = 1, nrvar(io))
+                        write (file_unit, 2120) nrvar(io)
+                        write (file_unit, 2130)
+                        write (file_unit, 2140) (ivar, ounam(ivar, io), ivar = 1, nrvar(io))
                     endif
 
                 case default    !   Option not implemented
-                    write (lunut, 2150) ioopt
+                    write (file_unit, 2150) ioopt
                     call status%increase_error_count()
                 end select
             end do
@@ -412,14 +412,14 @@ contains
             if (gettoken(ioptf, ierr2) > 0) goto 100
             select case (ioptf)
             case (0)
-                write (lunut, 3000) ' Binary history file switched off'
+                write (file_unit, 3000) ' Binary history file switched off'
                 isrtou(3) = 0
                 nrvar (3) = 0
             case (1)
-                write (lunut, 3000) ' Binary history file switched on'
+                write (file_unit, 3000) ' Binary history file switched on'
             case default
-                write (lunut, 3010) ' Binary history file option =', ioptf
-                write (lunut, 3000) ' ERROR option out of range!'
+                write (file_unit, 3010) ' Binary history file option =', ioptf
+                write (file_unit, 3000) ' ERROR option out of range!'
                 isrtou(3) = 0
                 nrvar (3) = 0
                 call status%increase_error_count()
@@ -429,14 +429,14 @@ contains
             if (gettoken(ioptf, ierr2) > 0) goto 100
             select case (ioptf)
             case (0)
-                write (lunut, 3000) ' Binary map file switched off'
+                write (file_unit, 3000) ' Binary map file switched off'
                 isrtou(4) = 0
                 nrvar (4) = 0
             case (1)
-                write (lunut, 3000) ' Binary map file switched on'
+                write (file_unit, 3000) ' Binary map file switched on'
             case default
-                write (lunut, 3010) ' Binary map file option =', ioptf
-                write (lunut, 3000) ' ERROR option out of range!'
+                write (file_unit, 3010) ' Binary map file option =', ioptf
+                write (file_unit, 3000) ' ERROR option out of range!'
                 isrtou(4) = 0
                 nrvar (4) = 0
                 call status%increase_error_count()
@@ -447,19 +447,19 @@ contains
             select case (ioptf)
             case (0)
                 if (.not. lncout) then
-                    write (lunut, 3000) ' NEFIS history file switched off'
+                    write (file_unit, 3000) ' NEFIS history file switched off'
                 else
-                    write (lunut, 3000) ' NetCDF history file switched off'
+                    write (file_unit, 3000) ' NetCDF history file switched off'
                 endif
             case (1)
                 if (.not. lncout) then
-                    write (lunut, 3000) ' NEFIS history file switched on'
+                    write (file_unit, 3000) ' NEFIS history file switched on'
                     if (hissrt == ihis) isrtou(6) = ihnf
                     if (hissrt == ihi2) isrtou(6) = ihn2
                     if (hissrt == ihi3) isrtou(6) = ihn3
                     if (hissrt == ihi4) isrtou(6) = ihn4
                 else
-                    write (lunut, 3000) ' NEFIS history file switched on'
+                    write (file_unit, 3000) ' NEFIS history file switched on'
                     if (hissrt == ihis) isrtou(6) = ihnc
                     if (hissrt == ihi2) isrtou(6) = ihnc2
                     if (hissrt == ihi3) isrtou(6) = ihnc3
@@ -470,8 +470,8 @@ contains
                     ounam(ivar, 6) = ounam(ivar, 3)
                 enddo
             case default
-                write (lunut, 3010) ' NEFIS/NetCDF history file option =', ioptf
-                write (lunut, 3000) ' ERROR option out of range!'
+                write (file_unit, 3010) ' NEFIS/NetCDF history file option =', ioptf
+                write (file_unit, 3000) ' ERROR option out of range!'
                 call status%increase_error_count()
             end select
 
@@ -480,17 +480,17 @@ contains
             select case (ioptf)
             case (0)
                 if (.not. lncout) then
-                    write (lunut, 3000) ' NEFIS map file switched off'
+                    write (file_unit, 3000) ' NEFIS map file switched off'
                 else
-                    write (lunut, 3000) ' NetCDF map file switched off'
+                    write (file_unit, 3000) ' NetCDF map file switched off'
                 end if
             case (1)
                 if (.not. lncout) then
-                    write (lunut, 3000) ' NEFIS map file switched on'
+                    write (file_unit, 3000) ' NEFIS map file switched on'
                     if (mapsrt == imap) isrtou(7) = imnf
                     if (mapsrt == ima2) isrtou(7) = imn2
                 else
-                    write (lunut, 3000) ' NetCDF map file switched on'
+                    write (file_unit, 3000) ' NetCDF map file switched on'
                     if (mapsrt == imap) isrtou(7) = imnc
                     if (mapsrt == ima2) isrtou(7) = imnc2
                 end if
@@ -499,8 +499,8 @@ contains
                     ounam(ivar, 7) = ounam(ivar, 4)
                 enddo
             case default
-                write (lunut, 3010) ' NEFIS/NetCDF map file option =', ioptf
-                write (lunut, 3000) ' ERROR option out of range!'
+                write (file_unit, 3010) ' NEFIS/NetCDF map file option =', ioptf
+                write (file_unit, 3000) ' ERROR option out of range!'
                 call status%increase_error_count()
             end select
 
@@ -525,7 +525,7 @@ contains
                     if (gettoken(keyword, ierr2) > 0) exit
                     ncopt(4) = merge(1, 0, keyword == 'YES')
                 case default
-                    write (lunut, 4010) ' ERROR: unknown option - ', trim(keyword), ' - ignored'
+                    write (file_unit, 4010) ' ERROR: unknown option - ', trim(keyword), ' - ignored'
                 end select
             enddo
 
@@ -534,7 +534,7 @@ contains
             endif
 
             if (lncout) then
-                write (lunut, 4020) ncopt(1:3), merge('ON ', 'OFF', ncopt(4) == 1)
+                write (file_unit, 4020) ncopt(1:3), merge('ON ', 'OFF', ncopt(4) == 1)
             endif
 
             infile = .false. ! We have already encountered the end-block marker
@@ -549,7 +549,7 @@ contains
                 ounam(3, 5) = ' '
                 ounam(4, 5) = ' '
             else
-                write (lunut, 2110) 4, nrvarm, (4 - nrvarm) * noutp
+                write (file_unit, 2110) 4, nrvarm, (4 - nrvarm) * noutp
                 call status%increase_error_count()
             endif
         endif
@@ -561,84 +561,84 @@ contains
                 if (nx * ny  == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2160)
+                    write (file_unit, 2160)
                 endif
                 if (.not. ldoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2170)
+                    write (file_unit, 2170)
                 endif
             elseif (isrtou(io) == ihis .or. isrtou(io) == ihi2 .or.  &
                     isrtou(io) == ihnf .or. isrtou(io) == ihn2) then
                 if (nodump == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2180)
+                    write (file_unit, 2180)
                 endif
                 if (.not. lhoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2190)
+                    write (file_unit, 2190)
                 endif
             elseif (isrtou(io) == ihi3 .or. isrtou(io) == ihi4 .or. &
                     isrtou(io) == ihn3 .or. isrtou(io) == ihn4) then
                 if (ndmpar == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2180)
+                    write (file_unit, 2180)
                 endif
                 if (.not. lhoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2190)
+                    write (file_unit, 2190)
                 endif
             elseif (isrtou(io) == imap .or. isrtou(io) == ima2 .or. &
                     isrtou(io) == imnf .or. isrtou(io) == imn2) then
                 if (.not. ldoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2200)
+                    write (file_unit, 2200)
                 endif
             elseif (isrtou(io) == ibal .or. isrtou(io) == iba2) then
                 if (.not. ibflag)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2210)
+                    write (file_unit, 2210)
                 endif
                 if (ndmpar == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2220)
+                    write (file_unit, 2220)
                 endif
                 if (.not. lmoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2230)
+                    write (file_unit, 2230)
                 endif
                 if (isrtou(io) == ibal) then
-                    write(lunut, 3040)
+                    write(file_unit, 3040)
                 elseif (isrtou(io) == iba2) then
-                    write(lunut, 3050)
+                    write(file_unit, 3050)
                 endif
             elseif (isrtou(io) == imon .or. isrtou(io) == imo2) then
                 if (nodump == 0)  then
                     nrvar (io) = 0
-                    write (lunut, 2240)
+                    write (file_unit, 2240)
                 endif
                 if (.not. lmoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2250)
+                    write (file_unit, 2250)
                 endif
             elseif (isrtou(io) == imo3 .or. isrtou(io) == imo4) then
                 if (ndmpar == 0)  then
                     nrvar (io) = 0
-                    write (lunut, 2240)
+                    write (file_unit, 2240)
                 endif
                 if (.not. lmoutp) then
                     isrtou(io) = 0
                     nrvar (io) = 0
-                    write (lunut, 2250)
+                    write (file_unit, 2250)
                 endif
             endif
 

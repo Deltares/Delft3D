@@ -54,7 +54,7 @@ contains
 
     end subroutine scale_array
 
-    subroutine assign_matrix(lunut, int_array, noitm, itmnr, nodim, &
+    subroutine assign_matrix(file_unit, int_array, noitm, itmnr, nodim, &
             idmnr, iorder, real_array, integration_id, rmat, &
             nocol, num_records, missing_value, iarp, rmatu)
 
@@ -80,7 +80,7 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         integer(kind = int_wp) :: ioff1, noitm, itmnr, idmnr, nodim, iorder, ioff0
         integer(kind = int_wp) :: locbas, iloc, itel, itels, ifrst, ibrk, ioff, integration_id
-        integer(kind = int_wp) :: ip, ip2, lunut, iloco, nocol, num_records, ioff2
+        integer(kind = int_wp) :: ip, ip2, file_unit, iloco, nocol, num_records, ioff2
         integer :: int_array(:), i, iarp(:)
         real :: accum, rmatu(:), amaxv, missing_value, aminv
         real :: real_array(:), rmat(:)
@@ -138,16 +138,16 @@ contains
                 if (maxiem) then
                     if (rmatu(itel) > amaxv .and. &
                             rmatu(itel) /= missing_value) then
-                        write (lunut, 1000) ibrk, iloco, ifrst + 1
-                        write (lunut, 1010) rmatu(itel), amaxv
+                        write (file_unit, 1000) ibrk, iloco, ifrst + 1
+                        write (file_unit, 1010) rmatu(itel), amaxv
                         rmatu(itel) = amaxv
                     endif
                 endif
                 if (miniem) then
                     if (rmatu(itel) < aminv .and. &
                             rmatu(itel) /= missing_value) then
-                        write (lunut, 1000) ibrk, iloco, ifrst + 1
-                        write (lunut, 1020) rmatu(itel), aminv
+                        write (file_unit, 1000) ibrk, iloco, ifrst + 1
+                        write (file_unit, 1020) rmatu(itel), aminv
                         rmatu(itel) = aminv
                     endif
                 endif
@@ -291,16 +291,16 @@ contains
             if (maxiem) then
                 if (rmatu(itel) > amaxv .and. &
                         rmatu(itel) /= missing_value) then
-                    write (lunut, 1000) ibrk, iloco, ifrst + 1
-                    write (lunut, 1010) rmatu(itel), amaxv
+                    write (file_unit, 1000) ibrk, iloco, ifrst + 1
+                    write (file_unit, 1010) rmatu(itel), amaxv
                     rmatu(itel) = amaxv
                 endif
             endif
             if (miniem) then
                 if (rmatu(itel) < aminv .and. &
                         rmatu(itel) /= missing_value) then
-                    write (lunut, 1000) ibrk, iloco, ifrst + 1
-                    write (lunut, 1020) rmatu(itel), aminv
+                    write (file_unit, 1000) ibrk, iloco, ifrst + 1
+                    write (file_unit, 1020) rmatu(itel), aminv
                     rmatu(itel) = aminv
                 endif
             endif
@@ -572,13 +572,13 @@ contains
         return
     end subroutine compute_matrix_size
 
-    subroutine compute_matrix(lunut, data_param, data_loc, waq_param, waq_loc, &
+    subroutine compute_matrix(file_unit, data_param, data_loc, waq_param, waq_loc, &
             missing_value, fdata, wdata)
         !! assign matrix according to computational rules
 
         use m_waq_data_structure  ! for definition and storage of data
 
-        integer(kind = int_wp), intent(in) :: lunut         ! report file
+        integer(kind = int_wp), intent(in) :: file_unit         ! report file
         type(t_waq_item), intent(in) :: data_param   ! list of param items in the data
         type(t_waq_item), intent(in) :: data_loc     ! list of loc items in the data
         type(t_waq_item), intent(in) :: waq_param    ! list of waq param items to be set
@@ -791,16 +791,16 @@ contains
                         if (maxiem) then
                             if (wdata%values(ipar_out, iloc, ibrk) > amaxv .and. &
                                     wdata%values(ipar_out, iloc, ibrk) /= missing_value) then
-                                write (lunut, 1000) ibrk, iparo, iloc
-                                write (lunut, 1010) wdata%values(ipar_out, iloc, ibrk), amaxv
+                                write (file_unit, 1000) ibrk, iparo, iloc
+                                write (file_unit, 1010) wdata%values(ipar_out, iloc, ibrk), amaxv
                                 wdata%values(ipar_out, iloc, ibrk) = amaxv
                             endif
                         endif
                         if (miniem) then
                             if (wdata%values(ipar_out, iloc, ibrk) < aminv .and. &
                                     wdata%values(ipar_out, iloc, ibrk) /= missing_value) then
-                                write (lunut, 1000) ibrk, iparo, iloc
-                                write (lunut, 1020) wdata%values(ipar_out, iloc, ibrk), aminv
+                                write (file_unit, 1000) ibrk, iparo, iloc
+                                write (file_unit, 1020) wdata%values(ipar_out, iloc, ibrk), aminv
                                 wdata%values(ipar_out, iloc, ibrk) = aminv
                             endif
                         endif
@@ -827,13 +827,13 @@ contains
                 ' of ', e15.6, ' !')
     end subroutine compute_matrix
 
-    subroutine print_matrix(lunut, iwidth, dlwqdata, strng1, strng2, &
+    subroutine print_matrix(file_unit, iwidth, dlwqdata, strng1, strng2, &
             strng3, output_verbose_level)
 
         !! prints blocks of data, also scale and convert
         use m_waq_data_structure ! for definition and storage of data
 
-        integer(kind = int_wp), intent(in) :: lunut         ! report file
+        integer(kind = int_wp), intent(in) :: file_unit         ! report file
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
         type(t_data_block), intent(inout) :: dlwqdata     ! data block to be filled
         character(len = *), intent(in) :: strng1       ! write string 1 (items)
@@ -859,9 +859,9 @@ contains
 
         if (dlwqdata%is_external) then
             if (dlwqdata%filetype == FILE_BINARY) then
-                write (lunut, 1130) trim(dlwqdata%filename)
+                write (file_unit, 1130) trim(dlwqdata%filename)
             else
-                write (lunut, 1135) trim(dlwqdata%filename)
+                write (file_unit, 1135) trim(dlwqdata%filename)
             endif
             goto 70
         endif
@@ -879,24 +879,24 @@ contains
 
             ! print scale factors
             if (output_verbose_level >= 4) then
-                write (lunut, 1010)
+                write (file_unit, 1010)
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
                     if (dlwqdata%is_parameter_pointered) then
-                        write (lunut, 1020) (dlwqdata%param_pointers(k), k = ipar, ie)
+                        write (file_unit, 1020) (dlwqdata%param_pointers(k), k = ipar, ie)
                     else
-                        write (lunut, 1020) (k, k = ipar, ie)
+                        write (file_unit, 1020) (k, k = ipar, ie)
                     endif
                     if (dlwqdata%is_parameter_named) then
-                        write (lunut, 1025) (dlwqdata%param_name(k), k = ipar, ie)
+                        write (file_unit, 1025) (dlwqdata%param_name(k), k = ipar, ie)
                     else
                         if (dlwqdata%is_parameter_pointered) then
-                            write (lunut, 1025) (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
+                            write (file_unit, 1025) (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
                         else
-                            write (lunut, 1025) (car_used(k), k = ipar, ie)
+                            write (file_unit, 1025) (car_used(k), k = ipar, ie)
                         endif
                     endif
-                    write (lunut, 1030) (dlwqdata%parameter_scale_factor(k), k = ipar, ie)
+                    write (file_unit, 1030) (dlwqdata%parameter_scale_factor(k), k = ipar, ie)
                 enddo
             endif
 
@@ -920,13 +920,13 @@ contains
 
         ! convert breakpoints, no more, already been done directly after the read
         if (num_records > 1) then
-            if (output_verbose_level >= 4) write (lunut, 1040) strng3, num_records
-            if (deflts .and. output_verbose_level >= 4) write (lunut, 1050)
+            if (output_verbose_level >= 4) write (file_unit, 1040) strng3, num_records
+            if (deflts .and. output_verbose_level >= 4) write (file_unit, 1050)
         else
             if (deflts) then
-                if (output_verbose_level >= 4) write (lunut, 1050)
+                if (output_verbose_level >= 4) write (file_unit, 1050)
             else
-                if (output_verbose_level >= 4) write (lunut, 1060)
+                if (output_verbose_level >= 4) write (file_unit, 1060)
             endif
         endif
 
@@ -934,26 +934,26 @@ contains
         if (output_verbose_level >= 4) then
             do ibrk = 1, num_records
                 if (num_records > 1) then
-                    if (ftype == 1) write (lunut, 1070) strng3, ibrk, dlwqdata%times(ibrk)
-                    if (ftype == 2) write (lunut, 1070) strng3, ibrk, dlwqdata%times(ibrk)
-                    if (ftype == 3) write (lunut, 1080) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
-                    if (ftype == 4) write (lunut, 1090) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
+                    if (ftype == 1) write (file_unit, 1070) strng3, ibrk, dlwqdata%times(ibrk)
+                    if (ftype == 2) write (file_unit, 1070) strng3, ibrk, dlwqdata%times(ibrk)
+                    if (ftype == 3) write (file_unit, 1080) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
+                    if (ftype == 4) write (file_unit, 1090) ibrk, dlwqdata%times(ibrk), dlwqdata%phase(ibrk)
                 endif
 
                 do ipar = 1, nopar, iwidth
                     ie = min(ipar + iwidth - 1, nopar)
                     if (dlwqdata%is_parameter_pointered) then
-                        write (lunut, 1100) strng2, (dlwqdata%param_pointers(k), k = ipar, ie)
+                        write (file_unit, 1100) strng2, (dlwqdata%param_pointers(k), k = ipar, ie)
                     else
-                        write (lunut, 1100) strng2, (k, k = ipar, ie)
+                        write (file_unit, 1100) strng2, (k, k = ipar, ie)
                     endif
                     if (dlwqdata%is_parameter_named) then
-                        write (lunut, 1150) strng1, (dlwqdata%param_name(k), k = ipar, ie)
+                        write (file_unit, 1150) strng1, (dlwqdata%param_name(k), k = ipar, ie)
                     else
                         if (dlwqdata%is_parameter_pointered) then
-                            write (lunut, 1150) strng1, (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
+                            write (file_unit, 1150) strng1, (car_used(dlwqdata%param_pointers(k)), k = ipar, ie)
                         else
-                            write (lunut, 1150) strng1, (car_used(k), k = ipar, ie)
+                            write (file_unit, 1150) strng1, (car_used(k), k = ipar, ie)
                         endif
                     endif
                     do iloc = 1, noloc
@@ -963,9 +963,9 @@ contains
                             iploc = iloc
                         endif
                         if (iorder == ORDER_PARAM_LOC) then
-                            write (lunut, 1120) iploc, (dlwqdata%values(k, iloc, ibrk), k = ipar, ie)
+                            write (file_unit, 1120) iploc, (dlwqdata%values(k, iloc, ibrk), k = ipar, ie)
                         else
-                            write (lunut, 1120) iploc, (dlwqdata%values(iloc, k, ibrk), k = ipar, ie)
+                            write (file_unit, 1120) iploc, (dlwqdata%values(iloc, k, ibrk), k = ipar, ie)
                         endif
                     enddo
                 enddo

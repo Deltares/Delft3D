@@ -165,13 +165,13 @@ contains
             lch (ifil) =  fnam(1)
             exit
          enddo
-         write  ( lunut , '(/'' including file: '',a )' ) fnam(1)
+         write  ( file_unit , '(/'' including file: '',a )' ) fnam(1)
          cchar_save = cchar
-         lunut_save = lunut
+         lunut_save = file_unit
          npos_save  = npos
       endif
       cchar   = ';'
-      lunut   = lun(2)
+      file_unit = lun(2)
       push    = .false.
       npos    = 200
       iposr   =   0
@@ -198,19 +198,19 @@ contains
          open (newunit = lun(iout), file = fnam(iout), form='formatted')
       else
          write (lun(iout), *)  ' Filenames :'
-         do 200 i = 1, 18
+         do i = 1, 18
            write (lun(iout), 99001) i, lun(i), fnam(i)
-  200    continue
+         end do
       endif
 
       if ( .not. alone ) then        ! reset Delwaq settings
          if ( ifil .ne. 1 ) then
-            write ( lunut , '(/'' Closing file: '',A )' ) fnam(1)
+            write ( file_unit , '(/'' Closing file: '',A )' ) fnam(1)
             close ( ilun(ifil) )
             ilun(ifil) = 0
-            write ( lunut , '(/'' Continuing on file: '',A )' ) lch(ifil-1)
+            write ( file_unit , '(/'' Continuing on file: '',A )' ) lch(ifil-1)
             cchar = cchar_save
-            lunut = lunut_save
+            file_unit = lunut_save
             npos  = npos_save
          endif
       endif

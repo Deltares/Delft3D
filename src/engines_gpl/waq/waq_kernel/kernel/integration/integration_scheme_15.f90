@@ -238,9 +238,9 @@ contains
                 !        of system of equations [0 = no, 1 =yes], KLAT = number of
                 !        layers in preconditioner [1,KMAX]
                 !
-                call dlwqf5 (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
+                call initialize_gmres (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
                         iter, tol, iscale, litrep, noseg, &
-                        noq3, noq, nobnd, novec, nomat, &
+                        noq3, noq, novec, nomat, &
                         nolay, intsrt, intopt)
 
                 ithandl = 0
@@ -367,7 +367,7 @@ contains
                         enddo
                     enddo
                 endif
-                call dlwq17 (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
 
@@ -400,29 +400,25 @@ contains
             !        zero cumulative arrays
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif
 
             !        simulation done ?
-
             if (itime < 0) goto 9999
             if (itime >= itstop) goto 50
 
             !        restore conc-array from mass array
-
             call dlwqb8 (nosys, notot, nototp, noseg, a(ivol:), &
                     surface, a(imass:), a(iconc:))
 
             !        add processes
-
-            call dlwq14 (a(iderv:), notot, noseg, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances (a(iderv:), notot, noseg, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
             !        get new volumes
-
             itimel = itime
             itime = itime + idt
             select case (ivflag)
@@ -452,14 +448,13 @@ contains
                         lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
-            !        Update the info on dry volumes with the new volumes       ( dryfle )
-            !        Compute new from-topointer on the basis of non-zeroflows  ( zflows )
-            !        Initialize pointer matices for fast solvers               ( dlwqf1 )
-
+            ! Update the info on dry volumes with the new volumes ( dryfle )
             call dryfle (noseg, nosss, a(ivol2:), nolay, nocons, &
                     c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
+            ! Compute new 'from-to' pointer based on non-zeroflows  ( zflows )
             call zflows (noq, noqt, nolay, nocons, c(icnam:), &
                     a(iflow:), j(ixpnt:))
+            ! Initialize pointer matices for fast solvers ( dlwqf1 )
             call dlwqf1 (noseg, nobnd, noq, noq1, noq2, &
                     nomat, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
                     fmat, tmat)
@@ -502,8 +497,8 @@ contains
 
             !$OMP PARALLEL
             !$OMP DO PRIVATE(ith) SCHEDULE(DYNAMIC)
-            ! start of loop over substances
 
+            ! loop over substances
             do isys = 1, nosys
 
                 ith = OMP_GET_THREAD_NUM() + 1
@@ -537,9 +532,6 @@ contains
                         gm_sol (1, ith), nobnd, a(iboun:), noq, j(ixpnt:), &
                         flowtot(1, ith), disptot(1, ith), a(imas2:), ndmpq, j(iqdmp:), &
                         a(idmpq:), iknmkv, idt)
-
-                !        end loop over the substances
-
             end do
 
             !$OMP ENDDO
@@ -591,11 +583,11 @@ contains
                     action == ACTION_FULLCOMPUTATION) then
 
                 !     close files, except monitor file
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
                 !     write restart file
-                call dlwq13 (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                call write_restart_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
 

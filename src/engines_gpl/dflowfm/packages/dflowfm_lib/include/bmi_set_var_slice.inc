@@ -196,15 +196,15 @@
      continue
   case("qplat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qplat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1)/))
+     qplat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
   case("qqlat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qqlat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+     qqlat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
   case("balat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1), c_count(2)/))
      balat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("qplatCum")
 

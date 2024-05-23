@@ -32,7 +32,7 @@ contains
     subroutine blmeff (lunrep, lunblm, verspe, lunfrm, grname, nuecog, typnam, noalg)
         !
         use m_bleffpro
-        use m_srstop
+        use m_logger_helper, only : stop_with_error
         use timers        !   performance timers
 
         implicit none
@@ -91,7 +91,7 @@ contains
                 ifnd (i) = nfnd
             else
                 write(lunrep, '(3A)') 'ERROR: Could not find species ', trim(grname(i)), ' in the efficicy tables of the bloom.spe file'
-                call srstop(1)
+                call stop_with_error()
             end if
         end do
         !

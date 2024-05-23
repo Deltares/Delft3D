@@ -29,8 +29,9 @@ module m_read_hydfile
 contains
 
 
+
     subroutine read_hydfile(lunout, hydfile, file_name_list, noseg, nexch, status)
-        use m_get_filepath_and_pathlen
+        use waq_file_utils_external, only : get_filepath_and_pathlen
 
         !> Reads the hyd-file and extracts relevant information
 

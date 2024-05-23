@@ -252,7 +252,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: discum
     integer(pntrsize)                    , pointer :: dldeta
     integer(pntrsize)                    , pointer :: dldksi
-    integer(pntrsize)                    , pointer :: dp
+    integer(pntrsize)                    , pointer :: dpd
     integer(pntrsize)                    , pointer :: dpdeta
     integer(pntrsize)                    , pointer :: dpdksi
     integer(pntrsize)                    , pointer :: dps
@@ -800,7 +800,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     discum              => gdp%gdr_i_ch%discum
     dldeta              => gdp%gdr_i_ch%dldeta
     dldksi              => gdp%gdr_i_ch%dldksi
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dpdeta              => gdp%gdr_i_ch%dpdeta
     dpdksi              => gdp%gdr_i_ch%dpdksi
     dps                 => gdp%gdr_i_ch%dps
@@ -1345,7 +1345,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icx       ,icy       ,i(kfsmin) ,i(kfsmax) , &
                  & ch(disint),ch(dismmt),i(itdis)  ,i(kcu)    ,i(kcv)    , &
                  & i(kfs)    ,i(ibuff)  ,i(mnksrc) ,r(alfas)  ,r(xcor)   , &
-                 & r(ycor)   ,r(dp)     ,r(disch)  ,r(voldis) , &
+                 & r(ycor)   ,r(dpd)    ,r(disch)  ,r(voldis) , &
                  & r(disch0) ,r(disch1) ,r(rint)   ,r(rint0)  ,r(rint1)  , &
                  & r(umdis)  ,r(umdis0) ,r(umdis1) ,r(vmdis)  ,r(vmdis0) , &                 
                  & r(vmdis1) ,bubble    ,r(r0)     ,r(thick)  ,r(zwork)  , &
@@ -2081,7 +2081,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_tur2d, gdp)
           call tur2d(dischy    ,jstart    ,nmmaxj    ,nmmax     ,nmax      , &
                    & mmax      ,kmax      ,icx       ,icy       ,i(kfs)    , &
-                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dp)     , &
+                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dpd)    , &
                    & d(dps)    ,r(s1)     ,r(umean)  ,r(vmean)  ,r(rtu2d0) , &
                    & r(rtu2d1) ,r(rtubnd) ,r(thick)  ,r(guu)    ,r(gvv)    , &
                    & r(guv)    ,r(gvu)    ,r(vicww)  ,r(dicww)  ,r(vicuv)  , &
@@ -2151,7 +2151,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        icy = 1
        call timer_start(timer_dersig, gdp)
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
        call timer_stop(timer_dersig, gdp)
        !
@@ -2206,7 +2206,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
+                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
@@ -2223,7 +2223,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                         &  zmodel    , &
                         &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                         &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                        &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                        &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
                         &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
                         &  r(thick)  ,gdp       )
           endif
@@ -2429,7 +2429,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icx       ,icy       ,i(kfsmin) ,i(kfsmax) , &
                  & ch(disint),ch(dismmt),i(itdis)  ,i(kcu)    ,i(kcv)    , &
                  & i(kfs)    ,i(ibuff)  ,i(mnksrc) ,r(alfas)  ,r(xcor)   , &
-                 & r(ycor)   ,r(dp)     ,r(disch)  ,r(voldis) , &
+                 & r(ycor)   ,r(dpd)    ,r(disch)  ,r(voldis) , &
                  & r(disch0) ,r(disch1) ,r(rint)   ,r(rint0)  ,r(rint1)  , &
                  & r(umdis)  ,r(umdis0) ,r(umdis1) ,r(vmdis)  ,r(vmdis0) , &                 
                  & r(vmdis1) ,bubble    ,r(r0)     ,r(thick)  ,r(zwork)  , &
@@ -3154,7 +3154,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_tur2d, gdp)
           call tur2d(dischy    ,jstart    ,nmmaxj    ,nmmax     ,nmax      , &
                    & mmax      ,kmax      ,icx       ,icy       ,i(kfs)    , &
-                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dp)     , &
+                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dpd)    , &
                    & d(dps)    ,r(s1)     ,r(umean)  ,r(vmean)  ,r(rtu2d0) , &
                    & r(rtu2d1) ,r(rtubnd) ,r(thick)  ,r(guu)    ,r(gvv)    , &
                    & r(guv)    ,r(gvu)    ,r(vicww)  ,r(dicww)  ,r(vicuv)  , &
@@ -3224,7 +3224,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        icy = 1
        call timer_start(timer_dersig, gdp)
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
        call timer_stop(timer_dersig, gdp)
        !
@@ -3280,7 +3280,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
                     & d(dps)    ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
+                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
@@ -3305,7 +3305,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                   &  zmodel    , &
                   &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                   &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                  &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                  &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
                   &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
                   &  r(thick)  ,gdp       )
        endif

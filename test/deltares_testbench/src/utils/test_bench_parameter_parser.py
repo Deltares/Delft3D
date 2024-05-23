@@ -17,6 +17,7 @@ from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
 from src.utils.xml_config_parser import XmlConfigParser
+from src.utils.handlers.credential_handler import CredentialHandler
 
 
 class TestBenchParameterParser:
@@ -45,14 +46,17 @@ class TestBenchParameterParser:
         new_settings.test_bench_root = script_path
         new_settings.test_bench_script_name = script_name
         new_settings.test_bench_startup_dir = os.getcwd()
-
-        credentials = cls.__get_credentials(args)
+        credentials = cls.__get_credentials(args, new_settings.teamcity)
 
         # Additionally, extra TeamCity messages will be produced.
         server_base_url = cls.__get_argument_value("server_base_url", args) or ""
 
         # Parse the xml file.
         xml_config_parser = XmlConfigParser()
+
+        # If option is used, all logging is decorated with TeamCity messages.
+        # Additionally, extra TeamCity messages will be produced.
+        new_settings.teamcity = cls.__get_argument_value("teamcity", args) or False
 
         config_file = cls.__get_argument_value("config", args) or "config.xml"
         (
@@ -83,10 +87,6 @@ class TestBenchParameterParser:
 
         # Enables running the tests in parallel (multi-process)
         new_settings.parallel = cls.__get_argument_value("parallel", args) or False
-
-        # If option is used, all logging is decorated with TeamCity messages.
-        # Additionally, extra TeamCity messages will be produced.
-        new_settings.teamcity = cls.__get_argument_value("teamcity", args) or False
 
         new_settings.filter = args.filter
         new_settings.config_file = config_file
@@ -121,27 +121,23 @@ class TestBenchParameterParser:
         return return_value
 
     @classmethod
-    def __get_credentials(cls, args: Namespace) -> Credentials:
+    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool) -> Credentials:
         credentials = Credentials()
+        credential_handler = CredentialHandler(credentials)
         credentials.name = "commandline"
 
         is_interactive = cls.__get_argument_value("interactive", args) or False
+        make_interactive = not credential_handler.credential_file_exists() and is_interactive
         credentials.username = (
-            cls.__get_argument_value("username", args, is_interactive) or ""
+            cls.__get_argument_value("username", args, make_interactive) or ""
         )
-        if credentials.username == "":
-            print(
-                'No username on commandline. add "-i True" to enable interactive input'
-            )
 
         credentials.password = (
-            cls.__get_argument_value("password", args, is_interactive, True) or ""
+            cls.__get_argument_value("password", args, make_interactive, True) or ""
         )
-        if credentials.password == "":
-            print(
-                'No password on commandline. add "-i True" to enable interactive input'
-            )
 
+        if not is_active_directory_user:
+            credential_handler.setup_credentials(is_interactive)
         return credentials
 
     @classmethod

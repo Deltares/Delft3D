@@ -6,6 +6,9 @@ class TestLogger(ILogger):
     def error(self, message: str):
         print(f"Error: {message}")
 
+    def exception(self, message: str):
+        print(f"exception: {message}")
+
     def warning(self, message: str):
         print(f"warning: {message}")
 
@@ -15,5 +18,5 @@ class TestLogger(ILogger):
     def debug(self, message: str):
         print(f"debug: {message}")
 
-    def log(self, message: str, log_level: LogLevel):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         print(f"{log_level}: {message}")

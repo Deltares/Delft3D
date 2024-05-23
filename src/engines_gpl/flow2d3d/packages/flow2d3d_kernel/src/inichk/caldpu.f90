@@ -2,7 +2,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
                 & zmodel    , &
                 & kcs       ,kcu       ,kcv       , &
                 & kspu      ,kspv      ,hkru      ,hkrv      , &
-                & umean     ,vmean     ,dp        ,dpu       ,dpv       , &
+                & umean     ,vmean     ,dpd       ,dpu       ,dpv       , &
                 & dps       ,dzs1      ,u1        ,v1        ,s1        , &
                 & thick     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -72,7 +72,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(in)  :: kspu   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(in)  :: kspv   !  Description and declaration in esm_alloc_int.f90
     logical                                                                , intent(in)  :: zmodel !  Description and declaration in procs.igs
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                      :: dpu    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                      :: dpv    !  Description and declaration in esm_alloc_real.f90
@@ -294,7 +294,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
        !        DPU already filled with Crest height (see call STRFIL in RDSTRU)
        !        hence now only limit DPU if crest depth > bottom depth
        !     ELSE
-       !         Compute DPU from averaged DP at velocity point
+       !         Compute DPU from averaged DPD at velocity point
        !         IF KSPU(n,m,0) = 9
        !               HKRU already filled with Crest height (see call STRFIL in RDSTRU)
        !               hence now only limit HKRU if crest height > bottom depth
@@ -307,7 +307,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
              write (errms1(9:14), '(i6)') n
              errms2(:14) = errms1(:14)
              if (kcu(n, m)==1) then
-                dpuw = .5*(dp(n, m) + dp(nd, m))
+                dpuw = .5*(dpd(n, m) + dpd(nd, m))
                 if (abs(kspu(n, m, 0))==3) then
                    if (dpu(n, m) > dpuw) then
                       hkru(n, m) = dpuw
@@ -326,7 +326,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
              endif
              !
              if (kcv(n, m)==1) then
-                dpvw = .5*(dp(n, m) + dp(n, md))
+                dpvw = .5*(dpd(n, m) + dpd(n, md))
                 if (abs(kspv(n, m, 0))==3) then
                    if (dpv(n, m) > dpvw) then
                       hkrv(n, m) = dpvw
@@ -348,7 +348,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
     else
     endif
     call caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
-                 & umean  ,vmean  ,dp     ,dps    ,dpu    , &
+                 & umean  ,vmean  ,dpd    ,dps    ,dpu    , &
                  & dpv    ,gdp    ) 
     !
     ! exchange depths and heights with neighbours for parallel runs

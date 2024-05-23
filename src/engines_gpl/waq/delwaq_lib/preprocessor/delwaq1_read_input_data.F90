@@ -54,7 +54,7 @@ contains
         ilun = 0
         ilun(1) = file_unit_list(26)
         lch(1) = file_name_list(26)
-        lunut = file_unit_list(29)
+        file_unit = file_unit_list(29)
 
         call read_block_1_from_input(file_unit_list, psynam, nosys, notot, nomult, &
                 multp, iwidth, otime, isfact, refday, &

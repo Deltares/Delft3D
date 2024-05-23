@@ -727,7 +727,8 @@ subroutine readMDUFile(filename, istat)
     use m_sedtrails_data, only: sedtrails_analysis
     use unstruc_display,  only: jaGUI 
     use m_output_config, only: scan_input_tree
-    use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
+    use m_read_statistical_output, only: read_output_parameter_toggle
     
     use m_map_his_precision
 
@@ -1160,8 +1161,9 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel' , Iturbulencemodel)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
-    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
-    call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
+    call prop_get_double (md_ptr, 'numerics', 'FacLaxTurb'    , turbulence_lax_factor)
+    call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbVer' , turbulence_lax_vertical)
+    call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbHor' , turbulence_lax_horizontal)
     call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
     call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
  
@@ -1413,6 +1415,12 @@ subroutine readMDUFile(filename, istat)
     endif
     call prop_get_string (md_ptr, 'sediment', 'SedFile',              md_sedfile,    success)
     call prop_get_string (md_ptr, 'sediment', 'MorFile',              md_morfile,    success)
+    
+    stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
+    if (jased == 4 .and. .not. stm_included) then
+       call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
+    endif
+
     call prop_get_string (md_ptr, 'sediment', 'DredgeFile',           md_dredgefile, success)
     call prop_get_integer(md_ptr, 'sediment', 'BndTreatment',         jabndtreatment, success)           ! separate treatment boundary links in upwinding transports
     call prop_get_integer(md_ptr, 'sediment', 'SourSink',             jasourcesink, success)             ! switch off source or sink terms for sed advection
@@ -1426,17 +1434,26 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser',       jamormergedtuser, success)         ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
     call prop_get_double (md_ptr, 'sediment', 'UpperLimitSSC',        upperlimitssc, success)            ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
     
-    call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
-    call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
+    if (jased > 0 .and. .not. stm_included) then
+       call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions' ,  Mxgr)
+       MxgrKrone = -1
+       call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone'          ,  MxgrKrone)
+       if (Mxgr <= 0) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of sediment fractions (Nr_of_sedfractions) should be larger than 0.')
+       elseif (MxgrKrone < 0) then
+          if (jased == 1) then
+              MxgrKrone = Mxgr
+          else
+              MxgrKrone = 0
+          endif
+       elseif (MxgrKrone == 0 .and. jased == 1) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for Sedimentmodelnr = 1.')
+       elseif (MxgrKrone > Mxgr) then
+          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be larger than total number of fractions (Nr_of_sedfractions).')
+       endif
+    endif
     call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling'    ,  jaseddenscoupling)
     call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
-
-
-    stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased .eq. 4)
-
-    if (jased .eq. 4 .and. .not. stm_included) then
-       call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
-    endif
 
     if (jased*mxgr > 0 .and. .not. stm_included) then
 
@@ -1445,7 +1462,6 @@ subroutine readMDUFile(filename, istat)
       call prop_get_doubles(md_ptr, 'sediment', 'D50'                ,  D50, Mxgr)
       call prop_get_doubles(md_ptr, 'sediment', 'Rhosed'             ,  rhosed, Mxgr)
       call setgrainsizes()
-
 
       if (mxgrKrone > 0) then
          call prop_get_doubles(md_ptr, 'sediment', 'Ws'              ,  Ws,        MxgrKrone)
@@ -1846,59 +1862,55 @@ subroutine readMDUFile(filename, istat)
 
     call prop_get_integer(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_balance', jahisbal, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_sourcesink', jahissourcesink, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_gen', jahiscgen, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_dam', jahiscdam, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_pump', jahispump, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_gate', jahisgate, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_weir', jahisweir, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_orifice', jahisorif, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_bridge', jahisbridge, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_culvert', jahisculv,  success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_damBreak', jahisdambreak,  success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_uniWeir', jahisuniweir,  success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_compound', jahiscmpstru,  success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_structure_longculvert', jahislongculv,  success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_turbulence', jahistur, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wind', jahiswind, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_rain', jahisrain, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_infiltration', jahisinfilt, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_airdensity', jahis_airdensity, success) 
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_density', jahisrho, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waterlevel_s1', jahiswatlev, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_bedlevel', jahisbedlev, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waterdepth', jahiswatdep, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_waves', jahiswav, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity_vector', jahisvelvec, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_upward_velocity_component', jahisww, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_sediment', jahissed, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_zcor', jahiszcor, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_lateral', jahislateral, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_taucurrent', jahistaucurrent, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_runupgauge'          , jahisrunupgauge      , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_wqbot'               , jahiswaqbot           , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_constituents'        , jahistracers, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_flow'            , jahiscrs_flow        , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_constituents'    , jahiscrs_constituents, success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_crs_sediment'        , jahiscrs_sediment    , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_dred'                , jahisdred            , success)
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq             , success)
-    
-    if (.not. success) then
-      call prop_get_set_integer(md_ptr, 'output', 'Wrihis_heatflux', jahisheatflux, success)
-    endif
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance'                    , jahisbal              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink'                 , jahissourcesink       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen'              , jahiscgen             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam'              , jahiscdam             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump'             , jahispump             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate'             , jahisgate             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir'             , jahisweir             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice'          , jahisorif             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge'           , jahisbridge           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert'          , jahisculv             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak'         , jahisdambreak         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir'          , jahisuniweir          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound'         , jahiscmpstru          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert'      , jahislongculv         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence'                 , jahistur              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind'                       , jahiswind             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain'                       , jahisrain             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration'               , jahisinfilt           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity'                 , jahis_airdensity      , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density'                    , jahisrho              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1'              , jahiswatlev           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel'                   , jahisbedlev           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth'                 , jahiswatdep           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves'                      , jahiswav              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector'            , jahisvelvec           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component'  , jahisww               , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment'                   , jahissed              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor'                       , jahiszcor             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral'                    , jahislateral          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent'                 , jahistaucurrent       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity'                   , jahisvelocity         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge'                  , jahisdischarge        , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes'                , jahisheatflux         , success, alternative_key = 'Wrihis_heatflux')
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge'                 , jahisrunupgauge       , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot'                      , jahiswaqbot           , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents'               , jahistracers          , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow'                   , jahiscrs_flow         , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents'           , jahiscrs_constituents , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment'               , jahiscrs_sediment     , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred'                       , jahisdred             , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output'       , jahiswaq              , success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
     if (success .and. jahistem == 1 .and. jatem < 1) then
       write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
          //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" '&
          //' and do not write temperature to his file.'
       call warn_flush()
     end if
-    call prop_get_set_integer(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
     if (success .and. jahissal == 1 .and. jasal < 1) then
       write (msgbuf, '(a)') 'MDU setting "Wrihis_salinity = 1" asks to write salinity to the output his file, ' &
          //'but no salinity is involved due to MDU setting "Salinity = 0". So we set "Wrihis_salinity = 0" '&
@@ -2029,9 +2041,9 @@ subroutine readMDUFile(filename, istat)
     
     ! Output
     ! [output] OutputDir was read earlier already.
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_his)
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_map)
-    call scan_input_tree(md_ptr, 'Output', out_quan_conf_clm)
+    call scan_input_tree(md_ptr, 'Output', config_set_his)
+    call scan_input_tree(md_ptr, 'Output', config_set_map)
+    call scan_input_tree(md_ptr, 'Output', config_set_clm)
     !if (md_mapformat /= 4 .and. jamapwindstress /= 0) then
      !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
     !endif
@@ -2052,7 +2064,7 @@ subroutine readMDUFile(filename, istat)
         ice_mapout = .true.
     endif     
 
-    call prop_get_set_integer(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
+    call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
 
     call prop_get_integer(md_ptr, 'output', 'Wrishp_crs', jashp_crs, success)
     call prop_get_integer(md_ptr, 'output', 'Wrishp_obs', jashp_obs, success)
@@ -2727,7 +2739,7 @@ subroutine writeMDUFilepointer(mout, writeall, istat)
     use unstruc_channel_flow
     use m_sedtrails_data
     use m_output_config, only: set_properties
-    use fm_statistical_output, only: out_quan_conf_his, out_quan_conf_map, out_quan_conf_clm
+    use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
     use m_map_his_precision
 
     integer, intent(in)  :: mout  !< File pointer where to write to.
@@ -3251,13 +3263,11 @@ endif
        call prop_set(prop_ptr, 'numerics', 'Jadrhodz' , jadrhodz, '(1:central org, 2:centralnew, 3:upw cell, 4:most stratf. cell, 5:least stratf. cell)')
     endif
 
-    if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'FacLaxturb' , FacLaxturb, '(Default: 0=TurKin0 from links, 1.0=from nodes. 0.5=fityfifty)')
-    endif
-
-    if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
-    endif
+    if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurb' , turbulence_lax_factor, 'LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)')
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurbVer' , turbulence_lax_vertical, 'Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)')
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurbHor' , turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
+   endif
 
     if (writeall .or. (epstke > 1d-32 .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'EpsTKE' , epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')
@@ -3940,13 +3950,13 @@ endif
        call prop_set(prop_ptr, 'output', 'GenerateUUID', unc_uuidgen, 'Generate UUID as unique dataset identifier and include in output NetCDF files.')
     end if
     
-    call set_properties(prop_ptr, 'Output', out_quan_conf_his)
+    call set_properties(prop_ptr, 'Output', config_set_his)
     
     if (writeall .or. jahiszcor /= 1) then
        call prop_set(prop_ptr, 'output', 'Wrihis_zcor', jahiszcor, 'Write vertical coordinates to his file (1: yes, 0: no)' )
     endif
 
-    call set_properties(prop_ptr, 'Output', out_quan_conf_map)
+    call set_properties(prop_ptr, 'Output', config_set_map)
     
     if (jamapbnd > 0 .or. writeall) then
        call prop_set(prop_ptr, 'output', 'Wrimap_bnd', jamapbnd, 'Write boundary points to map file (1: yes, 0: no)')
@@ -4018,7 +4028,7 @@ endif
     if(writeall .or. jatekcd /= 0) then
        call prop_set(prop_ptr, 'output', 'Writek_CdWind', jatekcd, 'Write wind friction coeffs to tek file (1: yes, 0: no)')
     endif
-    call set_properties(prop_ptr, 'Output', out_quan_conf_clm)
+    call set_properties(prop_ptr, 'Output', config_set_clm)
 
 
 !  processes (WAQ)

@@ -1,5 +1,5 @@
 subroutine caldps(nmmax     ,nfltyp    ,icx       , &
-                & icy       ,kcs       ,dp        ,dps       ,gdp       )
+                & icy       ,kcs       ,dpd       ,dps       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -35,22 +35,22 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
 !                procedure (In UI only NO and MAX procedure
 !                allowed)
 !              - Initializes nfltyp (used by MOR-transport)
-! Method used: DPSOPT = MEAN-> .25 * (  dp(nm  ) + dp(nmd )
-!                                     + dp(ndmd) + dp(ndm ) )
+! Method used: DPSOPT = MEAN-> .25 * (  dpd(nm  ) + dpd(nmd )
+!                                     + dpd(ndmd) + dpd(ndm ) )
 !                              nfltyp = 1
 !
-!              DPSOPT = MAX -> MAX   ( dp(nm  ) , dp(nmd ),
-!                                      dp(ndmd) , dp(ndm ) )
+!              DPSOPT = MAX -> MAX   ( dpd(nm  ) , dpd(nmd ),
+!                                      dpd(ndmd) , dpd(ndm ) )
 !                              nfltyp = 2
 !
-!              DPSOPT = MIN -> .5  * (  MIN (dp(nm  ), dp(ndmd))
-!                                     + MIN (dp(nmd ), dp(ndm )) )
+!              DPSOPT = MIN -> .5  * (  MIN (dpd(nm  ), dpd(ndmd))
+!                                     + MIN (dpd(nmd ), dpd(ndm )) )
 !                              nfltyp = 3
 !
-!              DPSOPT = DP  -> dp (nm)
+!              DPSOPT = DP  -> dpd(nm)
 !                              nfltyp = 4
-!                              dp = .25 * (  dps(numu) + dps(num)
-!                                          + dps(nmu ) + dps(nm ) )
+!                              dpd = .25 * (  dps(numu) + dps(num)
+!                                           + dps(nmu ) + dps(nm ) )
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
@@ -75,7 +75,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
     integer                                     , intent(out) :: nfltyp !  Description and declaration in esm_alloc_int.f90
     integer                                     , intent(in)  :: nmmax  !  Description and declaration in dimens.igs
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)              :: kcs    !  Description and declaration in esm_alloc_int.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dps    !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
@@ -121,7 +121,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(0.25*(dp(nm) + dp(nmd) + dp(ndmd) + dp(ndm)),prec)
+             dps(nm) = real(0.25*(dpd(nm) + dpd(nmd) + dpd(ndmd) + dpd(ndm)),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
@@ -134,8 +134,8 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
              kcddu = 0
              if (kcs(ndm)==1 .or. kcs(nmu)==1) kcddu = 1
              fact = 1.0_fp/real(kcduu + kcdud + kcddd + kcddu,fp)
-             dps(nm) = real(fact*(kcduu*dp(nm) + kcdud*dp(nmd) + kcddd*dp(ndmd)      &
-                     & + kcddu*dp(ndm)),prec)
+             dps(nm) = real(fact*(kcduu*dpd(nm) + kcdud*dpd(nmd) + kcddd*dpd(ndmd)      &
+                     & + kcddu*dpd(ndm)),prec)
           else
           endif
        enddo
@@ -152,15 +152,15 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(max(dp(nm), dp(nmd), dp(ndmd), dp(ndm)),prec)
+             dps(nm) = real(max(dpd(nm), dpd(nmd), dpd(ndmd), dpd(ndm)),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
              dep = -1.0e+32
-             if (kcs(nmu)==1) dep = max(dep, dp(ndm), dp(nm))
-             if (kcs(num)==1) dep = max(dep, dp(nmd), dp(nm))
-             if (kcs(nmd)==1) dep = max(dep, dp(nmd), dp(ndmd))
-             if (kcs(ndm)==1) dep = max(dep, dp(ndm), dp(ndmd))
+             if (kcs(nmu)==1) dep = max(dep, dpd(ndm), dpd(nm))
+             if (kcs(num)==1) dep = max(dep, dpd(nmd), dpd(nm))
+             if (kcs(nmd)==1) dep = max(dep, dpd(nmd), dpd(ndmd))
+             if (kcs(ndm)==1) dep = max(dep, dpd(ndm), dpd(ndmd))
              dps(nm) = real(dep,prec)
           else
           endif
@@ -179,15 +179,15 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(0.5*(min(dp(nm), dp(ndmd)) + min(dp(nmd), dp(ndm))),prec)
+             dps(nm) = real(0.5*(min(dpd(nm), dpd(ndmd)) + min(dpd(nmd), dpd(ndm))),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
              dep = 1.0e+32
-             if (kcs(nmu)==1) dep = min(dep, dp(ndm), dp(nm))
-             if (kcs(num)==1) dep = min(dep, dp(nmd), dp(nm))
-             if (kcs(nmd)==1) dep = min(dep, dp(nmd), dp(ndmd))
-             if (kcs(ndm)==1) dep = min(dep, dp(ndm), dp(ndmd))
+             if (kcs(nmu)==1) dep = min(dep, dpd(ndm), dpd(nm))
+             if (kcs(num)==1) dep = min(dep, dpd(nmd), dpd(nm))
+             if (kcs(nmd)==1) dep = min(dep, dpd(nmd), dpd(ndmd))
+             if (kcs(ndm)==1) dep = min(dep, dpd(ndm), dpd(ndmd))
              dps(nm) = real(dep,prec)
           else
           endif
@@ -199,7 +199,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
        !
        nfltyp = 4
        !
-       ! Set DPS depth in zeta point = DP  (INDIA)
+       ! Set DPS depth in zeta point = DPD (INDIA)
        ! NOTE: that the contents of KFS are here identical to KCS
        !       (except for boundary points)
        ! -ICX := -1 in M-direction, -ICY := -1 in N-direction
@@ -208,21 +208,21 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           nmd  = nm - icx
           ndm  = nm - icy
           ndmd = ndm - icx
-          if (kcs(nm)==1 .or. rst_dp .or. comparereal(real(dp(nm),fp),rmissval)/=0) then
-             dps(nm) = real(dp(nm),prec)
+          if (kcs(nm)==1 .or. rst_dp .or. comparereal(real(dpd(nm),fp),rmissval)/=0) then
+             dps(nm) = real(dpd(nm),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
-             if (kcs(nmu)==1) dep = dp(nmu)
-             if (kcs(num)==1) dep = dp(num)
-             if (kcs(nmd)==1) dep = dp(nmd)
-             if (kcs(ndm)==1) dep = dp(ndm)
+             if (kcs(nmu)==1) dep = dpd(nmu)
+             if (kcs(num)==1) dep = dpd(num)
+             if (kcs(nmd)==1) dep = dpd(nmd)
+             if (kcs(ndm)==1) dep = dpd(ndm)
              dps(nm) = real(dep,prec)
           else
           endif
        enddo
        !
-       ! Compute DP from DPS
+       ! Compute DPD from DPS
        !
        do nm = 1, nmmax
           nmu  = nm  + icx
@@ -238,10 +238,10 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           if (kcs(num) ==1 .and. comparereal(real(dps(num ),fp),rmissval)/=0) fac4=1.0_fp
           fact = fac1 + fac2 + fac3 + fac4
           if (comparereal(real(fact,fp),0.0_fp) == 1) then
-             dp(nm) = (  fac1*real(dps(numu),fp) &
-                       + fac2*real(dps(nmu ),fp) &
-                       + fac3*real(dps(nm  ),fp) &
-                       + fac4*real(dps(num ),fp)  ) / fact
+             dpd(nm) = (  fac1*real(dps(numu),fp) &
+                        + fac2*real(dps(nmu ),fp) &
+                        + fac3*real(dps(nm  ),fp) &
+                        + fac4*real(dps(num ),fp)  ) / fact
           endif
        enddo
     else
@@ -249,7 +249,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
     !
     ! exchange depths with neighbours for parallel runs
     !
-    call dfexchg (  dp, 1, 1, dfloat, nm_pos, gdp )
+    call dfexchg ( dpd, 1, 1, dfloat, nm_pos, gdp )
     call dfexchg ( dps, 1, 1, dfprec, nm_pos, gdp )
     !
     ! Adapt kcs: if dps = missval, kcs = 0

@@ -47,6 +47,7 @@
  double precision :: aufu, auru, tetau
  double precision :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc
  logical :: isGhost
+ integer :: nlayer, num_layers
 
  bb = 0d0 ; ccr = 0d0 ; dd = 0d0
 
@@ -162,15 +163,20 @@
     if (numlatsg > 0) then
 
        ! First accumulate all lateral discharges per grid cell
-       QQLat(1:ndx) = 0d0
+       num_layers = max(1,kmx)
+       QQLat(1:num_layers,1:ndx) = 0d0
        do n = 1,numlatsg
-          do k1=n1latsg(n),n2latsg(n)
-             k = nnlat(k1)
-             if (k > 0) then
-                QQLat(k) = QQLat(k) + QPlat(n)*ba(k)/baLat(n)
-             end if
+             do k1=n1latsg(n),n2latsg(n)
+                k = nnlat(k1)
+                if (k > 0) then
+                   do nlayer = 1, num_layers
+                      QQLat(nlayer,k) = QQLat(nlayer,k) + QPlat(nlayer,n)*ba(k)/baLat(n)
+                   end do
+                end if
+             end do
           end do
-       end do
+ 
+
 
        ! Now, handle the total lateral discharge for each grid cell
        do k = 1,ndxi
@@ -182,20 +188,21 @@
 
           !DIR$ FORCEINLINE
           isGhost = is_ghost_node(k)
-
-          if (QQLat(k) > 0) then
-             if (.not. isGhost) then ! Do not count ghosts in mass balances
-                qinlat(idim) = qinlat(idim) + QQLat(k)                        ! Qlat can be pos or neg
-             end if
-          else if (hs(k) > epshu) then
-             QQlat(k) = - min(0.5d0*vol1(k)/dts , -QQlat(k))
-             if (.not. isGhost) then
-                qoutlat(idim) = qoutlat(idim) - QQlat(k)
-             end if
-          else
-             QQlat(k) = 0d0
-          endif
-          qin(k) = qin(k) + QQlat(k)
+          do nlayer = 1, num_layers
+             if (QQLat(nlayer,k) > 0) then
+                if (.not. isGhost) then ! Do not count ghosts in mass balances
+                   qinlat(idim) = qinlat(idim) + QQLat(nlayer,k)                        ! Qlat can be pos or neg
+                end if
+             else if (hs(k) > epshu) then
+                QQlat(nlayer,k) = - min(0.5d0*vol1(k)/dts , -QQlat(nlayer,k))
+                if (.not. isGhost) then
+                   qoutlat(idim) = qoutlat(idim) - QQlat(nlayer,k)
+                end if
+             else
+                QQlat(nlayer,k) = 0d0
+             endif
+             qin(k) = qin(k) + QQlat(nlayer,k)
+          end do
        enddo
     endif
 

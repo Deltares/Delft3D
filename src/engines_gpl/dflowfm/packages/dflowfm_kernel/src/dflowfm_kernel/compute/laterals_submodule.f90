@@ -45,12 +45,13 @@ implicit none
 
    !> allocate the arrays for laterals on 3d/BMI
    module subroutine initialize_lateraldata(numconst)
-   
+      use m_flow, only: kmx
       use m_alloc
    
       integer, intent(in) :: numconst        !< number of constitiuents
       
       integer :: i
+      integer :: num_layers !< Number of layers
 
       apply_transport_is_used = .false.
       if (allocated(apply_transport)) then
@@ -62,8 +63,10 @@ implicit none
             end if
          end do
       end if
-      call realloc(incoming_lat_concentration, (/1, numconst, numlatsg/))
-      call realloc(outgoing_lat_concentration, (/1, numconst, numlatsg/))
+
+      num_layers = max(1, kmx)
+      call realloc(incoming_lat_concentration, (/num_layers, numconst, numlatsg/))
+      call realloc(outgoing_lat_concentration, (/num_layers, numconst, numlatsg/))
 
    end subroutine initialize_lateraldata
 
@@ -111,6 +114,31 @@ implicit none
       enddo
 
    end subroutine average_concentrations_for_laterals
+
+   !> Compute water volume per layer in each lateral
+   module subroutine get_lateral_volume_per_layer(lateral_volume_per_layer)
+   
+      use m_flow, only: vol1, kmx, kmxn
+      
+      real(kind=dp), dimension(:,:), intent(out)   :: lateral_volume_per_layer                !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
+      
+      integer :: i_node, i_lateral, i_layer, i_nnlat, i_vol1, index_vol1_bottom_layer, index_vol1_top_layer, index_active_bottom_layer
+      
+      lateral_volume_per_layer = 0d0
+      do i_lateral = 1, numlatsg
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
+            index_active_bottom_layer = kmx - kmxn(i_node) + 1
+            i_layer = index_active_bottom_layer
+            do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
+               lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
+               i_layer = i_layer + 1
+            enddo
+         enddo
+      enddo
+      
+   end subroutine get_lateral_volume_per_layer
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.

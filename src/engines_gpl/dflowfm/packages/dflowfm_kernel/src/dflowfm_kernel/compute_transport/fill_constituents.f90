@@ -193,8 +193,8 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          end if
 
 !        terms due to non-conservative formulation
-         do j=1,NUMCONST
-            const_sour(j,k) = const_sour(j,k) - constituents(j,k) * sq(k) * dvoli
+         do iconst = 1,NUMCONST
+            const_sour(iconst,k) = const_sour(iconst,k) - constituents(iconst,k) * sq(k) * dvoli
          end do
       end do
 
@@ -297,19 +297,9 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                endif
             endif
             if (qsrck > 0) then              ! FROM k to k2
-               do L = 1,numconst
-                  const_sour(L,k) = const_sour(L,k) - qsrck*constituents(L,k)*dvoli
-                  if (jamba_src > 0) then
-                     mbafluxsorsin(2,1,L,n) = mbafluxsorsin(2,1,L,n) + qsrck*constituents(L,k)*dts
-                  endif
-               enddo
+               call set_sorsin(2,1,n,k,-qsrck,dvoli)
             else if  (qsrck  < 0) then       ! FROM k2 to k
-               do L = 1,numconst
-                  const_sour(L,k) = const_sour(L,k) - qsrck*ccsrc(L,n)*dvoli
-                  if (jamba_src > 0) then
-                     mbafluxsorsin(1,1,L,n) = mbafluxsorsin(1,1,L,n) - qsrck*ccsrc(L,n)*dts
-                  endif
-               enddo
+               call set_sorsin(1,1,n,k,-qsrck,dvoli)
             endif
          enddo
       endif
@@ -326,19 +316,9 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                endif
             endif
             if (qsrck > 0) then
-               do L = 1,numconst
-                  const_sour(L,k) = const_sour(L,k) + qsrck*ccsrc(L,n)*dvoli
-                  if (jamba_src > 0) then
-                     mbafluxsorsin(2,2,L,n) = mbafluxsorsin(2,2,L,n) + qsrck*ccsrc(L,n)*dts
-                  endif
-               enddo
+               call set_sorsin(2,2,n,k,qsrck,dvoli)
             else if  (qsrck  < 0) then
-               do L = 1,numconst
-                  const_sour(L,k) = const_sour(L,k) + qsrck*constituents(L,k)*dvoli
-                  if (jamba_src > 0) then
-                     mbafluxsorsin(1,2,L,n) = mbafluxsorsin(1,2,L,n) -  qsrck*constituents(L,k)*dts
-                  endif
-               enddo
+               call set_sorsin(1,2,n,k,qsrck,dvoli)
             endif
          enddo
       endif
@@ -348,5 +328,45 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 1234 continue
 
    if (timon) call timstop( ithndl )
-   return
+   
+    contains
+
+    subroutine set_sorsin(i1, i2, n, k, qsrck, dvoli)
+    use m_mass_balance_areas, only : imbs2sed
+    use m_fm_erosed, only : morfac
+   
+    integer         , intent(in)    :: i1     !< flow direction 1=from TO to FROM, 2=from FROM to TO
+    integer         , intent(in)    :: i2     !< 1=FROM-point, 2=TO-point
+    integer         , intent(in)    :: n      !< source/sink number
+    integer         , intent(in)    :: k      !< layer number
+    double precision, intent(in)    :: qsrck  !< flow
+    double precision, intent(in)    :: dvoli  !<
+    
+    integer                         :: iconst !< constituent index, equal to imbs
+    double precision                :: flux   !< flux
+    double precision                :: dt     !< applicable time step
+    
+    do iconst = 1,numconst
+        if (i1 == i2) then ! on outflow side
+            const_sour(iconst,k) = const_sour(iconst,k) + qsrck * ccsrc(iconst,n) * dvoli
+            flux = qsrck * ccsrc(iconst,n)
+        else ! on inflow side
+            const_sour(iconst,k) = const_sour(iconst,k) + qsrck * constituents(iconst,k) * dvoli
+            flux = qsrck * constituents(iconst,k)
+        endif
+        if (jamba_src > 0) then
+            if (imbs2sed(iconst) > 0) then
+                dt = dts * morfac
+            else
+                dt = dts
+            end if
+            if (i1 == i2) then ! on outflow side
+                mbafluxsorsin(i1,i2,iconst,n) = mbafluxsorsin(i1,i2,iconst,n) + flux * dt
+            else ! on inflow side
+                mbafluxsorsin(i1,i2,iconst,n) = mbafluxsorsin(i1,i2,iconst,n) - flux * dt
+            endif
+        endif
+    enddo
+    end subroutine set_sorsin
+
 end subroutine fill_constituents

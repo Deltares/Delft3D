@@ -858,6 +858,9 @@ end
 
 if Props.NVal==6
     if isfield(data,'ClassVal')
+        for d = 1:length(data)
+            [~,data(d).Val] = ismember(data(d).Val,data(d).ClassVal);
+        end
         Ops.Thresholds = data(1).ClassVal;
     else
         Ops.Thresholds = 1:length(data(1).Classes);

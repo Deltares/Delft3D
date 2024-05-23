@@ -230,14 +230,18 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
- logical, protected :: model_has_weirs_across_partitions              = .false.
- logical, protected :: model_has_general_structures_across_partitions = .false.
- logical, protected :: model_has_orifices_across_partitions           = .false.
- logical, protected :: model_has_universal_weirs_across_partitions    = .false.
- logical, protected :: model_has_culverts_across_partitions           = .false.
- logical, protected :: model_has_pumps_across_partitions              = .false.
- logical, protected :: model_has_bridges_across_partitions            = .false. 
- logical, protected :: model_has_long_culverts_across_partitions      = .false.
+ logical, protected :: model_has_weirs_across_partitions               = .false.
+ logical, protected :: model_has_general_structures_across_partitions  = .false.
+ logical, protected :: model_has_orifices_across_partitions            = .false.
+ logical, protected :: model_has_universal_weirs_across_partitions     = .false.
+ logical, protected :: model_has_culverts_across_partitions            = .false.
+ logical, protected :: model_has_pumps_across_partitions               = .false.
+ logical, protected :: model_has_bridges_across_partitions             = .false. 
+ logical, protected :: model_has_long_culverts_across_partitions       = .false.
+ logical, protected :: model_has_dams_across_partitions                = .false.
+ logical, protected :: model_has_dambreaks_across_partitions           = .false.
+ logical, protected :: model_has_gates_across_partitions               = .false.
+ logical, protected :: model_has_compound_structures_across_partitions = .false.
  
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
@@ -972,6 +976,27 @@ integer function get_total_number_of_geom_nodes(istrtypein, nstru)
 
 end function get_total_number_of_geom_nodes
 
+!> Get the total number of structures of a certain type
+function get_number_of_structures(struc_type_id) result(number_of_structures)
+   use m_GlobalParameters
+   use m_flowexternalforcings, only: ncdamsg, ndambreaksignals, ngatesg, npumpsg
+   use unstruc_channel_flow, only: network
+   
+   integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
+   integer             :: number_of_structures
+   
+   select case (struc_type_id)
+   case (ST_DAM)
+      number_of_structures = ncdamsg
+   case (ST_DAMBREAK)
+      number_of_structures = ndambreaksignals
+   case (ST_GATE)
+      number_of_structures = ngatesg
+   case (ST_COMPOUND)
+      number_of_structures = network%cmps%count
+   end select
+end function get_number_of_structures
+
 !> Gets geometry coordinates of a structure.
 !! Geometry coordinates can be used in a (multi-) polyline representation of the placement
 !! of structures on flow links.
@@ -1439,6 +1464,60 @@ subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, node
    end if
 end subroutine fill_geometry_arrays_structure
 
+!> Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
+!! (needed to disable possibly invalid statistical output items)
+subroutine check_model_has_structures_across_partitions
+   use m_partitioninfo, only: jampi, any_structures_lie_across_multiple_partitions
+   use m_GlobalParameters
+   
+   integer, dimension(4)              :: struc_type_ids
+   integer                            :: i_struc_type_id, struc_type_id, number_of_structures, i_struc
+   integer, dimension(:), allocatable :: links, nlinks_per_struc
+   logical                            :: res
+  
+   if (jampi == 0) then
+      model_has_dams_across_partitions                = .false.
+      model_has_dambreaks_across_partitions           = .false.
+      model_has_gates_across_partitions               = .false.
+      model_has_compound_structures_across_partitions = .false.
+      return
+   end if
+   
+   struc_type_ids = [ST_DAM, ST_DAMBREAK, ST_GATE, ST_COMPOUND]
+   
+   do i_struc_type_id = 1, size(struc_type_ids)
+      struc_type_id = struc_type_ids(i_struc_type_id)
+      number_of_structures = get_number_of_structures(struc_type_id)
+      
+      if (number_of_structures == 0) then
+         res = .false.
+      else
+         allocate(nlinks_per_struc(number_of_structures), source = 0)
+      
+         do i_struc = 1, number_of_structures
+            call retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
+            nlinks_per_struc(i_struc) = size(links)
+            deallocate(links)
+         end do
+      
+         res = any_structures_lie_across_multiple_partitions(nlinks_per_struc)
+      end if
+   
+      select case (struc_type_id)
+      case (ST_DAM)
+         model_has_dams_across_partitions = res
+      case (ST_DAMBREAK)
+         model_has_dambreaks_across_partitions = res
+      case (ST_GATE)
+         model_has_gates_across_partitions = res
+      case (ST_COMPOUND)
+         model_has_compound_structures_across_partitions = res
+      end select
+      
+   end do
+      
+end subroutine check_model_has_structures_across_partitions
+
 !> Fill in array valstruct for a givin general structure, weir or orifice.
 subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
    use m_missing, only: dmiss
@@ -1647,28 +1726,42 @@ integer function number_of_pump_nodes
 end function number_of_pump_nodes
 
 !> Retrieve the set of snapped flowlinks for a polyline-based structure
-subroutine retrieve_set_of_flowlinks_for_polyline_structure(struct_type, i_struc, links)
+subroutine retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
    use MessageHandling, only: mess, LEVEL_ERROR
+   use m_GlobalParameters
    
-   character(len=*),                   intent(in   ) :: struct_type !< Name of this structure type, e.g., 'uniweir'
-   integer,                            intent(in   ) :: i_struc     !< Index of the structure of this type
-   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this structure has been snapped to
+   integer,                            intent(in   ) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
+   integer,                            intent(in   ) :: i_struc       !< Index of the structure of this type
+   integer, dimension(:), allocatable, intent(  out) :: links         !< The set of flowlinks that this structure has been snapped to
    
-   select case (struct_type)
+   select case (struc_type_id)
    case default
-      call mess(LEVEL_ERROR, 'Programming error, please report: retrieve_set_of_flowlinks_for_polyline_structure does not recognise struct_type "'//trim(struct_type)//'"')
-   case ('pump')
+      call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in unstruc_structures/retrieve_set_of_flowlinks_for_polyline_structure')
+   case (ST_UNSET)
+      call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in unstruc_structures/retrieve_set_of_flowlinks_for_polyline_structure')
+   case (ST_PUMP)
       call retrieve_set_of_flowlinks_pump(i_struc, links)
-   case ('cross_section', &
-      'source_sink', &
-      'general_structure', &
-      'gategen', &
-      'weirgen', &
-      'orifice', &
-      'bridge', &
-      'culvert', &
-      'uniweir', &
-      'longculvert')
+   case (ST_DAM)
+      call retrieve_set_of_flowlinks_dam(i_struc, links)
+   case (ST_DAMBREAK)
+      call retrieve_set_of_flowlinks_dambreak(i_struc, links)
+   case (ST_GATE)
+      call retrieve_set_of_flowlinks_gate(i_struc, links)
+   case (ST_COMPOUND)
+      call retrieve_set_of_flowlinks_compound_structure(i_struc, links)
+   case (ST_WEIR         , &
+         ST_ORIFICE      , &
+         ST_GENERAL_ST   , &
+         ST_UNI_WEIR     , &
+         ST_CULVERT      , &
+         ST_BRIDGE       , &
+         ST_LONGCULVERT  , &
+         ST_OBS_STATION  , &
+         ST_CROSS_SECTION, &
+         ST_RUNUP_GAUGE  , &
+         ST_SOURCE_SINK  , &
+         ST_GATEGEN      , &
+         ST_LATERAL)
       ! TODO: implement these! (UNST-7919)
       allocate(links(0))
       return
@@ -1696,6 +1789,85 @@ subroutine retrieve_set_of_flowlinks_pump(i_pump, links)
    end do
    
 end subroutine retrieve_set_of_flowlinks_pump
+
+!> Retrieve the set of snapped flowlinks for a dam
+subroutine retrieve_set_of_flowlinks_dam(i_dam, links)
+   use m_flowexternalforcings, only: L1cdamsg, L2cdamsg, kcdam
+   
+   integer,                            intent(in   ) :: i_dam       !< Index of the dam
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dam has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2cdamsg(i_dam) + 1 - L1cdamsg(i_dam)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1cdamsg(i_dam), L2cdamsg(i_dam)
+      i = i+1
+      links(i) = kcdam(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_dam
+
+!> Retrieve the set of snapped flowlinks for a dambreak
+subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
+   use m_flowexternalforcings, only: L1dambreaksg, L2dambreaksg, kdambreak
+   
+   integer,                            intent(in   ) :: i_dambreak  !< Index of the dambreak
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dambreak has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2dambreaksg(i_dambreak) + 1 - L1dambreaksg(i_dambreak)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1dambreaksg(i_dambreak), L2dambreaksg(i_dambreak)
+      i = i+1
+      links(i) = kdambreak(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_dambreak
+
+!> Retrieve the set of snapped flowlinks for a gate
+subroutine retrieve_set_of_flowlinks_gate(i_gate, links)
+   use m_flowexternalforcings, only: L1gatesg, L2gatesg, kgate
+   
+   integer,                            intent(in   ) :: i_gate      !< Index of the gate
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this gate has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2gatesg(i_gate) + 1 - L1gatesg(i_gate)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1gatesg(i_gate), L2gatesg(i_gate)
+      i = i+1
+      links(i) = kgate(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_gate
+
+!> Retrieve the set of snapped flowlinks for a compound structure
+subroutine retrieve_set_of_flowlinks_compound_structure(i_cmpnd, links)
+   use unstruc_channel_flow, only: network
+   
+   integer,                            intent(in   ) :: i_cmpnd     !< Index of the compound structure
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this compound structure has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: i
+   
+   n_links = network%cmps%compound(i_cmpnd)%numlinks
+   allocate(links(n_links), source = -999)
+   links  = network%cmps%compound(i_cmpnd)%linknumbers
+      
+end subroutine retrieve_set_of_flowlinks_compound_structure
 
 !> Calculate the x,y-coordinates of the midpoint of a set of flowlinks
 !! (presumably those that a polyline has been snapped to)

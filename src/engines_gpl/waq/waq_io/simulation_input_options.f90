@@ -95,18 +95,18 @@ contains
                 if (ilun(ifil) /= 0) ifl = ifil
             enddo
             if (ifl == lstack) then   !    No space on the stack
-                write (lunut, 2010) lstack
+                write (file_unit, 2010) lstack
                 ierr2 = 1
                 goto 30
             endif
             if (gettoken(cdummy, ierr2) > 0) goto 30     !   Get file name
-            write (lunut, 2020)  cdummy
+            write (file_unit, 2020)  cdummy
             ifl = ifl + 1
             input_file = 800 + ifl
             call open_waq_files  (input_file, cdummy, 33, 1, ierr2)    !   Open the file
             if (ierr2 > 0) then
                 ifl = ifl - 1
-                write (lunut, 2030)
+                write (file_unit, 2030)
             else
                 lch (ifl) = cdummy
                 ilun(ifl) = input_file
@@ -119,17 +119,17 @@ contains
                 10          if (gettoken(cdummy, ierr2) > 0) goto 30     !   Get file name
                 if (cdummy == 'UNFORMATTED') then
                     filtype(is) = filtype(is) + 10
-                    write (lunut, *) 'UNFORMATTED file detected'
+                    write (file_unit, *) 'UNFORMATTED file detected'
                     goto 10
                 endif
                 if (cdummy == 'BIG_ENDIAN') then
                     filtype(is) = filtype(is) + 20
-                    write (lunut, *) 'BIG_ENDIAN  file detected'
+                    write (file_unit, *) 'BIG_ENDIAN  file detected'
                     goto 10
                 endif
             endif
             file_name_list(is) = cdummy
-            write (lunut, 2040) cdummy
+            write (file_unit, 2040) cdummy
             !                   Check if file exists
             call open_waq_files  (file_unit_list(33), cdummy, 33, 2, ierr2)
             if (ierr2 > 0) then
@@ -140,7 +140,7 @@ contains
 
         case (-4)                      !    ASCII steering file taylored to read .hyd files
             if (nitem == 0) then
-                write (lunut, 2000)
+                write (file_unit, 2000)
                 ierr2 = 1
                 goto 30
             endif
@@ -150,12 +150,12 @@ contains
                 if (itype == 1) then
                     if (cdummy == 'UNFORMATTED') then
                         filtype(is) = filtype(is) + 10
-                        write (lunut, *) 'UNFORMATTED file detected'
+                        write (file_unit, *) 'UNFORMATTED file detected'
                     else if (cdummy == 'BIG_ENDIAN') then
                         filtype(is) = filtype(is) + 20
-                        write (lunut, *) 'BIG_ENDIAN  file detected'
+                        write (file_unit, *) 'BIG_ENDIAN  file detected'
                     else
-                        write (lunut, 2150) cdummy
+                        write (file_unit, 2150) cdummy
                         ierr2 = 1
                         goto 30
                     endif
@@ -173,21 +173,21 @@ contains
                 ierr2 = -2
                 goto 30
             endif
-            write(lunut, 2120)  file_name_list(is), intopt
+            write(file_unit, 2120)  file_name_list(is), intopt
             write(file_unit_list(is))  'Steering file '
             write(file_unit_list(is))   nfil, intopt
-            write (lunut, 2080)
+            write (file_unit, 2080)
             do  ifil = 1, nfil
                 if (gettoken(fact, ierr2) > 0) goto 30  !   Get multiplication factor
                 if (gettoken(cdummy, it1, itype, ierr2) > 0) goto 30    ! 'from' time
                 if (itype == 1) then
                     call convert_string_to_time_offset(cdummy, it1, .false., .false., ierr2)
                     if (ierr2 > 0) then
-                        write (lunut, 2130) trim(cdummy)
+                        write (file_unit, 2130) trim(cdummy)
                         goto 30
                     endif
                     if (it1   == -999) then
-                        write (lunut, 2140) trim(cdummy)
+                        write (file_unit, 2140) trim(cdummy)
                         ierr2 = 1
                         goto 30
                     endif
@@ -198,11 +198,11 @@ contains
                 if (itype == 1) then
                     call convert_string_to_time_offset(cdummy, it2, .false., .false., ierr2)
                     if (ierr2 > 0) then
-                        write (lunut, 2130) trim(cdummy)
+                        write (file_unit, 2130) trim(cdummy)
                         goto 30
                     endif
                     if (it2   == -999) then
-                        write (lunut, 2140) trim(cdummy)
+                        write (file_unit, 2140) trim(cdummy)
                         ierr2 = 1
                         goto 30
                     endif
@@ -213,11 +213,11 @@ contains
                 if (itype == 1) then
                     call convert_string_to_time_offset(cdummy, it3, .false., .false., ierr2)
                     if (ierr2 > 0) then
-                        write (lunut, 2130) trim(cdummy)
+                        write (file_unit, 2130) trim(cdummy)
                         goto 30
                     endif
                     if (it3   == -999) then
-                        write (lunut, 2140) trim(cdummy)
+                        write (file_unit, 2140) trim(cdummy)
                         ierr2 = 1
                         goto 30
                     endif
@@ -230,7 +230,7 @@ contains
                 endif
                 call extract_file_extension(sfile, filext, extpos, extlen)
                 if (string_equals('hyd ', filext)) then                            !     hyd file processing
-                    call validate_simulation_time_steps (lunut, sstring, sfile, cdummy, it3, &
+                    call validate_simulation_time_steps (file_unit, sstring, sfile, cdummy, it3, &
                             it1a, it2a, it3a, nitem, ierr)
                 else                                               !     other file processing
                     cdummy = sfile
@@ -246,7 +246,7 @@ contains
                     close (file_unit_list(33))
                 endif
                 write (file_unit_list(is)) fact, it1, it2, it3, cdummy, it1a, it2a, it3a
-                write (lunut, 2090) ifil, fact, &
+                write (file_unit, 2090) ifil, fact, &
                         it1 / 31536000, mod(it1, 31536000) / 86400, &
                         mod(it1, 86400) / 3600, mod(it1, 3600) / 60, &
                         mod(it1, 60), &
@@ -264,11 +264,11 @@ contains
             close (file_unit_list(is))
 
         case (1)            !   continue reading from current file
-            write (lunut, 2050)
+            write (file_unit, 2050)
             ierr2 = 0
 
         case default
-            write (lunut, 2000)
+            write (file_unit, 2000)
             ierr2 = 1
 
         30 end select
@@ -276,19 +276,19 @@ contains
         select case (ierr2)
 
         case (-2)
-            write (lunut, 2060) cdummy
+            write (file_unit, 2060) cdummy
             call status%increase_warning_count()
             ierr = 0
 
         case (-1)
-            write (lunut, 2100) cdummy
+            write (file_unit, 2100) cdummy
             ierr = 1
 
         case (0)
             ierr = 0
 
         case (1:)
-            write (lunut, 2070)
+            write (file_unit, 2070)
             ierr = 1
 
         end select
@@ -322,10 +322,10 @@ contains
 
     end subroutine process_simulation_input_options
 
-    subroutine validate_simulation_time_steps(lunut, sget, afile, bfile, istep, &
+    subroutine validate_simulation_time_steps(file_unit, sget, afile, bfile, istep, &
             it2, it3, it4, numbr, ierr)
 
-        use m_get_filepath_and_pathlen
+        use waq_file_utils_external, only : get_filepath_and_pathlen
         use m_open_waq_files
         use m_sysi          ! timer characteristics
         use m_waq_precision
@@ -336,7 +336,7 @@ contains
         integer(kind = int_wp) :: iyear2, imonth2, iday2, ihour2, imin2, isec2
         integer(kind = int_wp) :: iyear3, imonth3, iday3, ihour3, imin3, isec3
         integer(kind = int_wp) :: iyear4, imonth4, iday4, ihour4, imin4, isec4
-        integer(kind = int_wp) :: idate, itime, itim, itim2, istep, idtf, lunut
+        integer(kind = int_wp) :: idate, itime, itim, itim2, istep, idtf, file_unit
         integer(kind = int_wp) :: numbr
 
         character(len=25)  sget, s1
@@ -350,7 +350,7 @@ contains
         ilun = 148
         call open_waq_files  (ilun, afile, 33, 1, ierr)
         if (ierr > 0) then
-            write (lunut, 1000) afile
+            write (file_unit, 1000) afile
             return
         endif
         call get_filepath_and_pathlen(afile, filpath, pathlen)
@@ -372,7 +372,7 @@ contains
                             iyear4, imonth4, iday4, ihour4, imin4, isec4
             if (s1 == sget) goto 30
         end do
-        20 write (lunut, 1010) sget
+        20 write (file_unit, 1010) sget
         ierr = 1
         return
         30 continue
@@ -399,21 +399,21 @@ contains
         ! open the binary file for this item
         call open_waq_files  (ilun, bfile, 33, 2, ierr)
         if (ierr > 0) then
-            write (lunut, 1020) bfile
+            write (file_unit, 1020) bfile
             return
         endif
 
         ! find the time step in the file where to start
         read (ilun, end = 50) itim, (a, k = 1, abs(numbr))
         if (itim /= it2) then
-            write (lunut, 1030) it2, itim, bfile
+            write (file_unit, 1030) it2, itim, bfile
             ierr = 1
             return
         endif
         read (ilun, end = 50) itim2, (a, k = 1, abs(numbr))
         idtf = itim2 - itim
         if (idtf /= it4) then
-            write (lunut, 1040) it4, idtf, bfile
+            write (file_unit, 1040) it4, idtf, bfile
             ierr = 1
             return
         endif
@@ -422,7 +422,7 @@ contains
             return
         endif
 
-        50 write (lunut, 1050) istep, bfile
+        50 write (file_unit, 1050) istep, bfile
         ierr = 1
         return
 
@@ -455,7 +455,7 @@ contains
 
         !!     Subroutines called : scale  : to scale the matrix with the sacle factors
         !!     Logical units      : input_file = unit input file
-        !!                          LUNUT = unit formatted output file
+        !!                          file_unit = unit formatted output file
         !!                          LUN1  = unit intermediate file ( system )
         use timers       !   performance timers
         use rd_token
@@ -487,7 +487,7 @@ contains
 
         allocate (factor(nvals), stat = ierr2)
         if (ierr2 /= 0) then
-            write (lunut, 2000) nvals
+            write (file_unit, 2000) nvals
             goto 100
         endif
 
@@ -498,40 +498,40 @@ contains
         select case (iopt2)
 
         case (1)                    !   read constant items without defaults
-            write (lunut, 2010)
+            write (file_unit, 2010)
             do item = 1, nitem
                 do ival = 1, nvals
                     if (gettoken(array(ival, item), ierr2) > 0) goto 100
                 enddo
             enddo
-            if (output_verbose_level < 4) write (lunut, 2020)
+            if (output_verbose_level < 4) write (file_unit, 2020)
             do iw = 1, nvals, iwidth
                 ie1 = min(iw + iwidth - 1, nscale)
                 ie2 = min(iw + iwidth - 1, nvals)
                 if (output_verbose_level >= 4) then
-                    write (lunut, 2030)          (ival, ival = iw, ie1)
-                    write (lunut, 2040)          (factor(ival), ival = iw, ie1)
-                    write (lunut, 2050)
+                    write (file_unit, 2030)          (ival, ival = iw, ie1)
+                    write (file_unit, 2040)          (factor(ival), ival = iw, ie1)
+                    write (file_unit, 2050)
                     do item = 1, nitem
-                        write (lunut, 2060) item, (array (ival, item), ival = iw, ie2)
+                        write (file_unit, 2060) item, (array (ival, item), ival = iw, ie2)
                     enddo
                 endif
             enddo
 
         case (2)                    !   Read constant items with defaults
-            write (lunut, 2070)
+            write (file_unit, 2070)
             do ival = 1, nvals
                 if (gettoken(array(ival, 1), ierr2) > 0) goto 100
             enddo
-            if (output_verbose_level < 3) write (lunut, 2080)
+            if (output_verbose_level < 3) write (file_unit, 2080)
             do iw = 1, nvals, iwidth
                 ie1 = min(iw + iwidth - 1, nscale)
                 ie2 = min(iw + iwidth - 1, nvals)
                 if (output_verbose_level >= 3) then
-                    write (lunut, 2030) (ival, ival = iw, ie1)
-                    write (lunut, 2040) (factor(ival), ival = iw, ie1)
-                    write (lunut, 2090)
-                    write (lunut, 2040) (array (ival, 1), ival = iw, ie2)
+                    write (file_unit, 2030) (ival, ival = iw, ie1)
+                    write (file_unit, 2040) (factor(ival), ival = iw, ie1)
+                    write (file_unit, 2090)
+                    write (file_unit, 2040) (array (ival, 1), ival = iw, ie2)
                 endif
             enddo
             do ival = 1, nvals
@@ -544,12 +544,12 @@ contains
             !           Read overridings of the constant values
 
             if (gettoken(nover, ierr2) > 0) goto 100
-            write (lunut, 2100) nover
-            if (nover > 0 .and. output_verbose_level >= 3) write (lunut, 2110)
+            write (file_unit, 2100) nover
+            if (nover > 0 .and. output_verbose_level >= 3) write (file_unit, 2110)
             do iover = 1, nover
                 if (gettoken(item, ierr2) > 0) goto 100
                 if (item < 1 .or. item > nitem) then
-                    if (output_verbose_level >= 3) write (lunut, 2120) item, 1, nitem
+                    if (output_verbose_level >= 3) write (file_unit, 2120) item, 1, nitem
                     ierr = ierr + 1
                     do ival = 1, nvals
                         if (gettoken(value, ierr2) > 0) goto 100
@@ -559,7 +559,7 @@ contains
                         if (gettoken(array(ival, item), ierr2) > 0) goto 100
                     enddo
                     if (output_verbose_level >= 3) &
-                            write (lunut, 2130) item, (array(ival, item), ival = 1, nvals)
+                            write (file_unit, 2130) item, (array(ival, item), ival = 1, nvals)
                 endif
             enddo
 
@@ -582,7 +582,7 @@ contains
         !     Errors and ends
 
         100 ierr = ierr + 1
-        write (lunut, 2140)
+        write (file_unit, 2140)
         if (timon) call timstop(ithndl)
         return
 
@@ -647,7 +647,7 @@ contains
         !>          problem at the moment any more.
 
         !! Logical units:
-        !!      lunut   = unit formatted output file
+        !!      file_unit   = unit formatted output file
         !!      file_unit_list( 3) = unit binary intermediate file for harmonics
         !!      file_unit_list( 4) = unit binary intermediate file for pointers
         !!      file_unit_list(is) = unit binary intermediate file for function
@@ -728,7 +728,7 @@ contains
         nrec = 0
 
         ! write headers for new style time series files
-        write (lunut, 2000)
+        write (file_unit, 2000)
         !        open the output work file
         !        write nr of items and nr of substances
         !        write default values ( IORDER = 1 , NPNT = 0 )
@@ -756,9 +756,9 @@ contains
 
             ! read the type of block that comes
             if (gettoken(iopt3, ierr2) > 0) goto 100
-            write (lunut, 2010) iopt3
+            write (file_unit, 2010) iopt3
             if (iopt3 < 1 .or. iopt3 > 4) then
-                write (lunut, 2020)
+                write (file_unit, 2020)
                 goto 100
             endif
 
@@ -779,7 +779,7 @@ contains
 
             case (1, 2)             !         Read time-dependent items on breakpoints
                 if (gettoken(nobrk2, ierr2) > 0) goto 100
-                write (lunut, 2030) nobrk2
+                write (file_unit, 2030) nobrk2
                 allocate (break2(nobrk2), value2(nvarnw * nval1, nobrk2))
                 do iscal = 1, nscal
                     if (gettoken(factor(iscal), ierr2) > 0) goto 100
@@ -814,7 +814,7 @@ contains
                 deallocate (break2, value2)
 
             case (3, 4)            !         Read items as functions
-                write (lunut, 2050)
+                write (file_unit, 2050)
                 nrec2 = 0                                        ! these function blocks are
                 if (bound .or. funcs) then                     ! are written in the
                     ierr2 = -1                                    ! lunuit = file_unit_list(is) file
@@ -840,7 +840,7 @@ contains
         enddo
 
         if (ntotal - 1 > nitem) then
-            write (lunut, 2060) ntotal - 1, nitem
+            write (file_unit, 2060) ntotal - 1, nitem
             ierr = ierr + 1
         endif
 
@@ -850,7 +850,7 @@ contains
             do i2 = 1, nitem
                 if (abs(itemid(i2)) == i1) then
                     if (found) then
-                        write (lunut, 2070) i1
+                        write (file_unit, 2070) i1
                         ierr = ierr + 1
                     else
                         found = .true.
@@ -858,7 +858,7 @@ contains
                 endif
             enddo
             if (.not. found) then
-                write (lunut, 2080) i1
+                write (file_unit, 2080) i1
                 ierr = ierr + 1
             endif
         enddo
@@ -1009,16 +1009,16 @@ contains
             if (gettoken(cdummy, iopt1, itype, ierr2) > 0) goto 50
             if (itype == 1) then
                 if (volume /= 1) then
-                    write (lunut, 2070) cdummy
+                    write (file_unit, 2070) cdummy
                     ierr2 = 1
                     goto 50
                 else
                     if (cdummy == 'FRAUD') then
                         volume = -1
-                        write (lunut, 2080)
+                        write (file_unit, 2080)
                         if (gettoken(iopt1, ierr2) > 0) goto 50
                     else
-                        write (lunut, 2090) cdummy
+                        write (file_unit, 2090) cdummy
                         ierr2 = 1
                         goto 50
                     endif
@@ -1026,8 +1026,8 @@ contains
             endif
         endif
 
-        write (lunut, 2000) iopt1
-        call process_simulation_input_options   (iopt1, file_unit_list, is, file_name_list, filtype, &
+        write (file_unit, 2000) iopt1
+        call process_simulation_input_options(iopt1, file_unit_list, is, file_name_list, filtype, &
                 is_date_format, is_yyddhh_format, ndtot, ierr2, status, &
                 dont_read)
         if (ierr2 > 0) goto 50
@@ -1065,7 +1065,7 @@ contains
 
         ! Read second option, set volume flag if OPT2 > 3 AND VOLUME
         10 if (gettoken(iopt2, ierr2) > 0) goto 50
-        write (lunut, 2010) iopt2
+        write (file_unit, 2010) iopt2
         ! Computed volumes
         if (volume == 1 .and. iopt2 > 3) then
             volume = 0
@@ -1078,17 +1078,17 @@ contains
             allocate (values(ndim2, max(noql1, noql2, noql3)))
             call open_waq_files (file_unit_list(is), file_name_list(is), is, 1, ierr2)
             write (file_unit_list(is)) idummy
-            if (noql1 > 0) write (lunut, 2030)
+            if (noql1 > 0) write (file_unit, 2030)
             call read_constant_data (iopt2, values, noql1, ndim2, ndim3, &
                     iwidth, file_unit_list(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
-            if (noql2 > 0) write (lunut, 2040)
+            if (noql2 > 0) write (file_unit, 2040)
             call read_constant_data (iopt2, values, noql2, ndim2, ndim3, &
                     iwidth, file_unit_list(is), output_verbose_level, ierr2)
             if (ierr2 > 0) goto 50
 
-            if (noql3 > 0 .and. noql3 /= ndim1) write (lunut, 2050)
+            if (noql3 > 0 .and. noql3 /= ndim1) write (file_unit, 2050)
             call read_constant_data (iopt2, values, noql3, ndim2, ndim3, &
                     iwidth, file_unit_list(is), output_verbose_level, ierr2)
             close (file_unit_list(is))
@@ -1105,7 +1105,7 @@ contains
             if (ierr2 > 0) goto 50
 
         case default
-            write (lunut, 2020)
+            write (file_unit, 2020)
             goto 50
 
         end select
@@ -1155,7 +1155,7 @@ contains
         !!
         !!     Functions called   : gettok tokenized input data file reading
         !!
-        !!     Logical units      : lunut  = unit formatted output file
+        !!     Logical units      : file_unit  = unit formatted output file
         !!                          lununf = unit unformatted output file
 
         use date_time_utils, only : convert_time_format, convert_relative_time
@@ -1237,34 +1237,34 @@ contains
 
         ! control writing
         if (output_verbose_level < 4) then
-            write (lunut, 2070)
+            write (file_unit, 2070)
         else
             if (integration_id == 3) then
-                write (lunut, 2000) nhar
+                write (file_unit, 2000) nhar
             else
-                write (lunut, 2010) nhar, ibase
+                write (file_unit, 2010) nhar, ibase
             endif
-            write (lunut, 2020)
+            write (file_unit, 2020)
             do i1 = 1, nvals, iwidth
-                write (lunut, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
+                write (file_unit, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
                 do i2 = 1, nitem
                     ib = (i2 - 1) * nvals + 1 + i1
                     ie = (i2 - 1) * nvals + 1 + min(i1 + iwidth - 1, nvals)
-                    write (lunut, 2040) item(i2), (value(k, 1), k = ib, ie)
+                    write (file_unit, 2040) item(i2), (value(k, 1), k = ib, ie)
                 enddo
             enddo
             do i = 2, nhar + 1
-                write (lunut, 2050) iperio(i), value(1, i)
+                write (file_unit, 2050) iperio(i), value(1, i)
                 if (iperio(i) <= 0) then
-                    write (lunut, 2060)
+                    write (file_unit, 2060)
                     ierr = ierr + 1
                 endif
                 do i1 = 1, nvals, iwidth
-                    write (lunut, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
+                    write (file_unit, 2030) (k, k = i1, min(i1 + iwidth - 1, nvals))
                     do i2 = 1, nitem
                         ib = (i2 - 1) * nvals + 1 + i1
                         ie = (i2 - 1) * nvals + 1 + min(i1 + iwidth - 1, nvals)
-                        write (lunut, 2040) item(i2), (value(k, i), k = ib, ie)
+                        write (file_unit, 2040) item(i2), (value(k, i), k = ib, ie)
                     enddo
                 enddo
             enddo
@@ -1308,7 +1308,7 @@ contains
         !!      The values are scaled with nvals scale factors/n
         !!      If one scale factor exist, it is expanded to nvals factors
         !!
-        !! Logical units : lunut = unit formatted output file
+        !! Logical units : file_unit = unit formatted output file
 
         use timers       !   performance timers
         use rd_token       ! for the reading of tokens
@@ -1340,24 +1340,24 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_scale_block", ithndl)
 
-        if (output_verbose_level < 4) write (lunut, 2000)
+        if (output_verbose_level < 4) write (file_unit, 2000)
 
         do i1 = 1, num_records
 
             if (gettoken(ctoken, ibrk(i1), itype, ierr2) > 0) goto 10
             if (itype == 1) then                                    !  a time string
-                if (output_verbose_level >= 4) write (lunut, 2010) i1, ctoken
+                if (output_verbose_level >= 4) write (file_unit, 2010) i1, ctoken
                 call convert_string_to_time_offset (ctoken, ibrk(i1), .false., .false., ierr2)
                 if (ibrk(i1) == -999) then
-                    write (lunut, 2020) trim(ctoken)
+                    write (file_unit, 2020) trim(ctoken)
                     goto 10
                 endif
                 if (ierr2 > 0) then
-                    write (lunut, 2030) trim(ctoken)
+                    write (file_unit, 2030) trim(ctoken)
                     goto 10
                 endif
             else                                                        !  an integer for stop time
-                if (output_verbose_level >= 4) write (lunut, 2040) i1, ibrk(i1)
+                if (output_verbose_level >= 4) write (file_unit, 2040) i1, ibrk(i1)
                 call convert_relative_time(ibrk(i1), ifact, is_date_format, is_yyddhh_format)
             endif
 
@@ -1372,11 +1372,11 @@ contains
                 do i2 = 1, nvals, iwidth
                     ie1 = min(i2 + iwidth - 1, num_factors)
                     ie2 = min(i2 + iwidth - 1, nvals)
-                    write (lunut, 2050)        (k, k = i2, ie2)
-                    write (lunut, 2060) (factor(k), k = i2, ie1)
-                    write (lunut, 2070)
+                    write (file_unit, 2050)        (k, k = i2, ie2)
+                    write (file_unit, 2060) (factor(k), k = i2, ie1)
+                    write (file_unit, 2070)
                     do i3 = 1, num_items
-                        write (lunut, 2080)  abs(item(i3)), (arrin(k, i3, i1), k = i2, ie2)
+                        write (file_unit, 2080)  abs(item(i3)), (arrin(k, i3, i1), k = i2, ie2)
                     enddo
                 enddo
 
@@ -1448,17 +1448,17 @@ contains
             if (gettoken(ipnt(i), ierr2) > 0) goto 10
             ipnt(i) = abs(ipnt(i))
             if (ipnt(i) > nmax) then
-                write (lunut, 2000) ipnt(i), nmax
+                write (file_unit, 2000) ipnt(i), nmax
                 ierr = ierr + 1
             endif
         enddo
 
         ! write them if needed
-        write(lunut, 2010) npnt
+        write(file_unit, 2010) npnt
         if (output_verbose_level >= 3) then
-            write(lunut, 2020) (ipnt(i), i = 1, npnt)
+            write(file_unit, 2020) (ipnt(i), i = 1, npnt)
         else
-            write(lunut, 2030)
+            write(file_unit, 2030)
         endif
 
         ! Set negative values if integration_id = 1 ( block function )

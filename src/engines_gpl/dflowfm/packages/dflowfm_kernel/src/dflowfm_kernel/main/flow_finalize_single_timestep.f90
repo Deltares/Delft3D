@@ -47,7 +47,7 @@ use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, update
 use unstruc_channel_flow, only : network
 use m_sedtrails_stats, st_is_numndvals=>is_numndvals
 use fm_statistical_output
-use m_statistical_output, only: update_statistical_output, update_source_data
+use m_statistical_output, only: update_statistical_output, update_source_input
 use m_update_fourier, only : update_fourier
 use mass_balance_areas_routines, only : comp_horflowmba
 use m_lateral, only : numlatsg
@@ -102,7 +102,7 @@ integer, intent(out) :: iresult
       endif
       call timstop(handle_extra(75))
 
-   call update_values_on_cross_sections(.false.)
+   call update_values_on_cross_sections
    call updateValuesOnRunupGauges()
    if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
       if (numsrc > 0) then
@@ -142,9 +142,9 @@ integer, intent(out) :: iresult
     call TEXTFLOW()
  end if
  
- call update_source_data(out_variable_set_his)
- call update_source_data(out_variable_set_map)
- call update_source_data(out_variable_set_clm)
+ call update_source_input(out_variable_set_his)
+ call update_source_input(out_variable_set_map)
+ call update_source_input(out_variable_set_clm)
 
  if (out_variable_set_his%count > 0) then
     call update_statistical_output(out_variable_set_his%statout,dts)

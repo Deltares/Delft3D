@@ -148,6 +148,8 @@ subroutine update_constituents(jarhoonly)
       fluxhortot = 0d0
       sinksetot  = 0d0
       sinkftot   = 0d0
+      u1sed      = 0d0
+      q1sed      = 0d0
    endif
 
    do istep=0,nsubsteps-1
