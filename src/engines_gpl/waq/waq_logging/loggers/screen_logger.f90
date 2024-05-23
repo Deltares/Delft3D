@@ -21,40 +21,32 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-program dlwq2
-
-    use m_delwaq2
-    use delwaq2_version_module
+!> module containing logic related to the screen_logger class
+module m_screen_logger
+    use m_waq_precision
+    use m_log_level
+    use m_base_logger
+    use m_logger
 
     implicit none
 
-    integer :: argc
-    character(len = 256), allocatable :: argv(:)
-    character(len = 120) :: idstr
-    integer(4) :: errorcode
-    integer(4) :: i
-    integer(4) :: lunfil
+    private
+    public :: screen_logger
 
-    call getfullversionstring_delwaq2(idstr)
+    !> Type to handle logging to the screen
+    type, extends(base_logger) :: screen_logger
+    contains
+        procedure :: write_message
+    end type screen_logger
 
-    argc = command_argument_count() + 1
+contains
 
-    allocate (argv (argc))
-    do i = 1, argc
-        call get_command_argument(i - 1, argv(i))
-    end do
+    !> writes the message to screen
+    subroutine write_message(this, message)
+        class(screen_logger), intent(in) :: this  !< instance of this logger
+        character(len=*), intent(in) :: message   !< message to log
 
-    call delwaq2(argc, argv, errorcode)
+        write (*, FMT='(A)') message
+    end subroutine write_message
 
-    open  (newunit = lunfil, file = 'delwaq.rtn')
-    write (lunfil, *) errorcode
-    close (lunfil)
-
-    if (errorcode == 0) then
-        write (*, *) ' Normal end'
-    else
-        write (*, *) ' Error code:', errorcode
-        stop 1
-    end if
-
-end program
+end module m_screen_logger

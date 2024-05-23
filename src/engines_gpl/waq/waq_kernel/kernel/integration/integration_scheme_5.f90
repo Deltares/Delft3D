@@ -146,38 +146,38 @@ contains
                 !          some initialisation
                 !
                 ithandl = 0
-                ITIME = ITSTRT
-                NSTEP = (ITSTOP - ITSTRT) / IDT
-                IFFLAG = 0
-                IAFLAG = 0
+                itime = itstrt
+                nstep = (itstop - itstrt) / idt
+                ifflag = 0
+                iaflag = 0
                 ibflag = 0
 
                 !     Dummy variables - used in DLWQD
-                ITIMEL = ITIME
+                itimel = itime
                 lleng = 0
                 ioptzb = 0
                 nopred = 6
                 NOWARN = 0
                 tol = 0.0D0
-                forester = .FALSE.
-                updatr = .FALSE.
-                NOQT = NOQ + NOQ4
+                forester = .false.
+                updatr = .false.
+                noqt = noq + noq4
 
                 if (btest(intopt, 3)) ibflag = 1
-                LDUMMY = .FALSE.
-                IF (NDSPN == 0) THEN
-                    NDDIM = NODISP
-                ELSE
-                    NDDIM = NDSPN
-                ENDIF
-                IF (NVELN == 0) THEN
-                    NVDIM = NOVELO
-                ELSE
-                    NVDIM = NVELN
-                ENDIF
-                LSTREC = ICFLAG == 1
+                ldummy = .false.
+                if (ndspn == 0) then
+                    nddim = nodisp
+                else
+                    nddim = ndspn
+                end if
+                if (nveln == 0) then
+                    nvdim = novelo
+                else
+                    nvdim = nveln
+                end if
+                lstrec = icflag == 1
                 nosss = noseg + nseg2
-                NOQTT = NOQ + NOQ4
+                noqtt = noq + noq4
                 inwtyp = intyp + nobnd
                 !
                 !          initialize second volume array with the first one
@@ -276,12 +276,11 @@ contains
                         enddo
                     enddo
                 endif
-                call dlwq17 (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
             !
             !     Call OUTPUT system
-            !
             CALL DLWQO2 (NOTOT, nosss, NOPA, NOSFUN, ITIME, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
@@ -310,35 +309,32 @@ contains
             !          zero cummulative array's
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
             endif
 
             !          simulation done ?
-
             if (itime < 0) goto 9999
             if (itime >= itstop) goto 20
 
-            !          add processes
-
-            call dlwq14 (a(iderv:), notot, nosss, itfact, a(imas2:), &
+            ! add processes
+            call scale_processes_derivs_and_update_balances(a(iderv:), notot, nosss, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
-            !     get new volumes
-
+            ! get new volumes
             itimel = itime
             itime = itime + idt
             select case (ivflag)
-            case (1)                 !     computation of volumes for computed volumes only
-                call copy_real_array_elements   (a(ivol:), a(ivol2:), noseg)
+            case (1)                 ! computation of volumes for computed volumes only
+                call copy_real_array_elements(a(ivol:), a(ivol2:), noseg)
                 call dlwqb3 (a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot, &
                         noq, nvdim, j(ivpnw:), a(ivol2:), intopt, &
                         a(imas2:), idt, iaflag, nosys, a(idmpq:), &
                         ndmpq, j(iqdmp:))
                 updatr = .true.
-            case (2)                 !     the fraudulent computation option
+            case (2)                 ! the fraudulent computation option
                 call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
@@ -350,7 +346,7 @@ contains
                 updatr = .true.
                 lrewin = .true.
                 lstrec = .true.
-            case default               !     read new volumes from files
+            case default               ! read new volumes from files
                 call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                         j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
@@ -358,13 +354,11 @@ contains
                         lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
-            !        update the info on dry volumes with the new volumes
-
+            ! update the info on dry volumes with the new volumes
             call dryfle (noseg, nosss, a(ivol2:), nolay, nocons, &
                     c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
 
-            !          add the waste loads
-
+            ! add the waste loads
             call dlwq15 (nosys, notot, noseg, noq, nowst, &
                     nowtyp, ndmps, intopt, idt, itime, &
                     iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
@@ -374,21 +368,18 @@ contains
                     c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
                     a(iwdmp:), 1, notot)
 
-            !          do the transport itself
-
-            call dlwq50 (nosys, notot, nosss, noqtt, nvdim, &
+            ! do the transport itself
+            call first_step_fct (nosys, notot, nosss, noqtt, nvdim, &
                     a(ivnew:), a(iarea:), a(iflow:), j(ixpnt:), j(ivpnw:), &
                     a(iconc:), a(iboun:), idt, a(iderv:), iaflag, &
                     a(imas2:))
 
-            !          set the first guess in array CONC2 == ITIMR
-
-            call dlwq18 (nosys, notot, nototp, nosss, a(ivol2:), &
+            ! set the first guess in array CONC2 == ITIMR
+            call update_concs_explicit_time_step (nosys, notot, nototp, nosss, a(ivol2:), &
                     surface, a(imass:), a(itimr:), a(iderv:), idt, &
                     ivflag, file_unit_list(19))
 
-            !             perform the flux correction on conc2 == a(itimr:)
-
+            ! perform the flux correction on conc2 == a(itimr:)
             call dlwq51 (nosys, notot, nosss, noq1, noq2, &
                     noq3, noqtt, nddim, nvdim, a(idisp:), &
                     a(idnew:), a(ivnew:), a(ivol2:), a(iarea:), a(iflow:), &
@@ -399,7 +390,7 @@ contains
             call dlwq52 (nosys, notot, nosss, a(ivol2:), a(imass:), &
                     a(itimr:), a(iconc:))
 
-            !          new time values, volumes excluded
+            ! new time values, volumes excluded
             call initialize_time_dependent_variables (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
                     j(inrha:), j(inrh2:), j(inrft:), idt, a(ivol:), &
                     a(idiff:), a(iarea:), a(iflow:), a(ivelo:), a(ileng:), &
@@ -410,26 +401,23 @@ contains
                     j(intyp:), j(iwork:), .false., ldummy, rdummy, &
                     .false., gridps, dlwqd)
 
-
             !    calculate closure error
             if (lrewin .and. lstrec) then
                 call dlwqce (a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
                         noseg, file_unit_list(19))
-                call copy_real_array_elements   (a(ivoll:), a(ivol:), noseg)
+                call copy_real_array_elements(a(ivoll:), a(ivol:), noseg)
             else
                 !     replace old by new volumes
-                call copy_real_array_elements   (a(ivol2:), a(ivol:), noseg)
+                call copy_real_array_elements(a(ivol2:), a(ivol:), noseg)
             endif
 
-            !          integrate the fluxes at dump segments fill ASMASS with mass
-
+            ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
                 call proint (nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
-            !          end of loop
-
+            ! end of loop
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
 
             20 continue
@@ -438,12 +426,12 @@ contains
                     ACTION == ACTION_FULLCOMPUTATION) then
                 !         close files, except monitor file
 
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
                 !         write restart file
 
-                CALL DLWQ13 (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, nosss)
 
             endif

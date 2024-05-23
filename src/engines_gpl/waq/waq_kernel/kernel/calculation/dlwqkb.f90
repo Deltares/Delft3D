@@ -30,7 +30,7 @@
 
 
       SUBROUTINE DLWQKB ( input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
-                         ITIME2 , IARRA1 , IARRA2 , NFTOT  , LUNTXT , & 
+                         ITIME2 , IARRA1 , IARRA2 , NFTOT  , LUNTXT , &
                          ISFLAG , IFFLAG )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -43,7 +43,7 @@
 !     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
 !                           LUNOUT - monitor file
 !
-!     SUBROUTINES CALLED  : terminate_execution, stops execution
+!     SUBROUTINES CALLED  : stop_with_error, stops execution
 !
 !     PARAMETERS          :
 !
@@ -64,7 +64,7 @@
 !
 !     DECLARATIONS        :
 !
-      use m_logger, only : terminate_execution
+      use m_logger_helper, only : stop_with_error
       use m_array_manipulation, only : copy_integer_array_elements
       use timers
       INTEGER(kind=int_wp) ::input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
@@ -77,7 +77,7 @@
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
       character(len=16)  MSGTXT(3)
-      DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' , & 
+      DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' , &
                             ' REWIND ERROR   ' /
       integer(kind=int_wp) ::messge, k, ierr
 
@@ -136,9 +136,9 @@
                              ITIME, ITIME1
       ELSE
            WRITE(LUNOUT,2010) MSGTXT(MESSGE), input_file, LUNTXT, &
-                             ITIME /86400, MOD(ITIME ,86400)/3600 , & 
-                             MOD(ITIME ,3600)/60, MOD(ITIME ,60)  , & 
-                             ITIME1/86400, MOD(ITIME1,86400)/3600 , & 
+                             ITIME /86400, MOD(ITIME ,86400)/3600 , &
+                             MOD(ITIME ,3600)/60, MOD(ITIME ,60)  , &
+                             ITIME1/86400, MOD(ITIME1,86400)/3600 , &
                              MOD(ITIME1,3600)/60, MOD(ITIME1,60)
       ENDIF
       IF ( MESSGE == 1 ) THEN
@@ -146,15 +146,15 @@
            GOTO 10
       ENDIF
       IF ( MESSGE == 2 ) goto 9999
-      CALL terminate_execution ( 1 )
+      CALL stop_with_error()
  9999 if ( timon ) call timstop ( ithandl )
 
 !
- 2000 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ & 
-              ' AT SIMULATION TIME:',I12,' !',/, & 
+ 2000 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ &
+              ' AT SIMULATION TIME:',I12,' !',/, &
               ' TIME IN FILE:      ',I12,' !')
- 2010 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ & 
-              ' AT SIMULATION TIME:',I5,'D ',I2,'H ',I2,'M ',I2,'S !',/ & 
+ 2010 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ &
+              ' AT SIMULATION TIME:',I5,'D ',I2,'H ',I2,'M ',I2,'S !',/ &
               ' TIME IN FILE:      ',I5,'D ',I2,'H ',I2,'M ',I2,'S !')
 !
       END

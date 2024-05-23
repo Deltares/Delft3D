@@ -183,7 +183,7 @@ class Rewinder:
                 version_id=object_info.version_id,
             )
         except Exception as exception:
-            self._logger.error(f"Exception: {exception}.", exc_info=True)
+            self._logger.exception(f"Could not download object from MinIO: {repr(exception)}.")
 
     def build_plan(
         self,

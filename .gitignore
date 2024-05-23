@@ -8,8 +8,12 @@ install_*/**
 .idea/*
 .vs/**
 
-# python virtual environment
+# python virtual environment and caches
 .venv
+__pycache__
+.mypy_cache
+.pytest_cache
+
 
 # files extensions to exclude
 *.i90

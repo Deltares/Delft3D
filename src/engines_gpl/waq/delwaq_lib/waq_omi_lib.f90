@@ -102,7 +102,7 @@ contains
 
     !> Write a one-dimensional, constant array to a work file
     subroutine write_array_const(name, suffix, value, size)
-        character(len = *) :: name                         !< Name of the work files
+        character(len = *), intent(in) :: name                         !< Name of the work files
         character(len = *) :: suffix                       !< Suffix for this particular file
         real(kind = real_wp) :: value                         !< Constant value to be written
         integer(kind = int_wp) :: size                          !< Number of times the value must be repeated
@@ -1422,9 +1422,7 @@ contains
         use m_delwaq2_main
         use m_actions
 
-        character(len = 20), dimension(0) :: argv_dummy
-
-        call dlwqmain(ACTION_SINGLESTEP, 0, argv_dummy, dlwqd)
+        call dlwqmain(ACTION_SINGLESTEP, dlwqd)
 
         ModelPerformTimeStep = 0
 
@@ -1507,6 +1505,7 @@ contains
         type(t_waq_item) :: constants    !< delwaq constants list
         integer(kind = int_wp) :: lunrep, lunwrk
         integer(kind = int_wp) :: ierr
+        character(len = 256) :: name
 
         !
         ! Arguments have already been initialised
@@ -1565,10 +1564,12 @@ contains
             nufil = 1
         end if
 
-        call write_delwaq04(argv(2))
-        call write_array_2d(argv(2), 'initials', substance_conc)
+        name = argv(2)
+
+        call write_delwaq04(name)
+        call write_array_2d(name, 'initials', substance_conc)
         if (nopa > 0) then
-            call write_array_2d(argv(2), 'params', procparam_param_value)
+            call write_array_2d(name, 'params', procparam_param_value)
             open (newunit = lunwrk, file = file_name_list(41))
             write (lunwrk, '(i5,a1,a256)') 0, ' ', trim(argv(2)) // '-params.wrk'
             close (lunwrk)
@@ -1576,31 +1577,31 @@ contains
 
         !
         ! Require SetInitialVolume instead
-        call write_array_const(argv(2), 'flows', 0.0, noq)
-        call write_array_const(argv(2), 'areas', 1.0, noq)
-        call write_array_const(argv(2), 'wastload', 0.0, nowst * (notot + 1))
-        call write_array_const(argv(2), 'boundary', 0.0, nobnd * nosys)
-        call write_functions(argv(2))
+        call write_array_const(name, 'flows', 0.0, noq)
+        call write_array_const(name, 'areas', 1.0, noq)
+        call write_array_const(name, 'wastload', 0.0, nowst * (notot + 1))
+        call write_array_const(name, 'boundary', 0.0, nobnd * nosys)
+        call write_functions(name)
 
-        call handle_output_requests(argv(2))
-        call handle_processes(argv(2))
+        call handle_output_requests(name)
+        call handle_processes(name)
 
         !
         ! Now write the size information
         !
-        call write_delwaq03(argv(2))
+        call write_delwaq03(name)
 
         !
         ! Echo the input (also during the computation)
         !
         reporting = .true.
         lunlst = 2
-        open (lunlst, file = trim(argv(2)) // '.lst')
+        open (lunlst, file = trim(name) // '.lst')
         call report_model_data(lunlst)
         !
         ! Everything has been prepared
         !
-        call dlwqmain(ACTION_INITIALISATION, 2, argv, dlwqd)
+        call dlwqmain(ACTION_INITIALISATION, dlwqd)
 
         ! openDA buffer
         call openda_buffer_initialize
@@ -1615,7 +1616,8 @@ contains
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
 
-            character(len = *) :: name
+
+            character(len = *), intent(in) :: name
 
             integer(kind = int_wp) :: imaxa, imaxi, imaxc
             type(waq_data_buffer) :: buffer
@@ -1649,7 +1651,7 @@ contains
             use m_sysn          ! System characteristics
             use m_sysi          ! Timer characteristics
 
-            character(len = *) :: name
+            character(len = *), intent(in) :: name
 
             integer(kind = int_wp) :: i
             integer(kind = int_wp) :: idummy
@@ -1847,7 +1849,7 @@ contains
             use rd_token
             use m_sysn          ! System characteristics
 
-            character(len = *) :: name
+            character(len = *), intent(in) :: name
 
             type(procespropcoll) :: statprocesdef   ! the statistical proces definition
             type(itempropcoll) :: allitems        ! all items of the proces system
@@ -1918,7 +1920,7 @@ contains
 
         subroutine write_array_2d(name, suffix, array)
 
-            character(len = *) :: name
+            character(len = *), intent(in) :: name
             character(len = *) :: suffix
             real(kind = real_wp), dimension(:, :) :: array
 
@@ -2080,10 +2082,11 @@ contains
         use m_delwaq2_main
         use m_actions
 
-        character(len = 20), dimension(0) :: argv_dummy
+        implicit none
+
         integer(kind = int_wp) :: ierr
 
-        call dlwqmain(ACTION_FINALISATION, 0, argv_dummy, dlwqd)
+        call dlwqmain(ACTION_FINALISATION, dlwqd)
 
         write (*, *) 'Model has been finalized'
 
@@ -2124,7 +2127,7 @@ contains
         call delwaq2_global_data_initialize(runid_given)
 
         ! Leave everything to DELWAQ itself
-        call dlwqmain(ACTION_INITIALISATION, 2, argv, dlwqd)
+        call dlwqmain(ACTION_INITIALISATION, dlwqd)
 
         ! Extract some data (mostly names) from the DLWQD data structure
         ! for later use

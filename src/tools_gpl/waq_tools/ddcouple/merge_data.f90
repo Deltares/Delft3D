@@ -25,9 +25,9 @@
 
       ! function : merge data_2 into data_1 not fully implemeted but ok for the discharges in ddcouple
 
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_data_structure             ! module contains everything for the data
-      
+
       implicit none
 
       ! declaration of the arguments
@@ -72,7 +72,7 @@
             write(lunrep,*) ' number of parameters :',data_1%num_parameters
             write(lunrep,*) ' number of brakpoints :',data_1%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_1%num_locations
-            call terminate_execution(1)
+            call stop_with_error()
          endif
          data_1%times  = data_2%times
          data_1%values = data_2%values
@@ -121,7 +121,7 @@
             write(lunrep,*) ' number of parameters :',data_tmp%num_parameters
             write(lunrep,*) ' number of brakpoints :',data_tmp%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_tmp%num_locations
-            call terminate_execution(1)
+            call stop_with_error()
          endif
 
          ! set new timeseries

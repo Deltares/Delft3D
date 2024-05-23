@@ -69,13 +69,13 @@ module m_delwaq1_data
 
     ! files, unit numbers, include file stack, input file settings
     integer :: filtype(NUM_FILES)
-    character(len = FILE_NAME_LEN) :: runid                  !< runid
+    character(:), allocatable :: runid        !< runid
     logical :: is_date_format                 !< first flag concerning time formats
-    logical :: is_ddhhmmss_format                 !< second flag concerning time formats
-    logical :: is_yyddhh_format                 !< third flag concerning time formats
-    logical :: has_hydfile            !< does the input file refer to a hyd file?
-    integer, dimension(3) :: nexch                  !< number of exchanges in each direction from hyd file
-    type(t_input_file) :: inpfil                 !< input file structure with include stack and flags
+    logical :: is_ddhhmmss_format             !< second flag concerning time formats
+    logical :: is_yyddhh_format               !< third flag concerning time formats
+    logical :: has_hydfile                    !< does the input file refer to a hyd file?
+    integer, dimension(3) :: nexch            !< number of exchanges in each direction from hyd file
+    type(t_input_file) :: inpfil              !< input file structure with include stack and flags
 
     ! various input-output structures
     integer :: nrftot(noitm)          !< number of function per item

@@ -30,7 +30,7 @@
       subroutine read_hyd(hyd)
       ! read a hydrodynamic description file
 
-      use m_logger, only : get_log_unit_number, write_error_message
+      use m_logger_helper, only : get_log_unit_number, write_error_message
       use time_module
       use waq_file_utils_external, only : get_filepath_and_pathlen
       use m_hydmod

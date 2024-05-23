@@ -33,7 +33,7 @@ contains
     subroutine blinpu (ntyp_m, ntyp_a, ngro_a, algtyp, lmixo, lfixn, lcarb, nunucom, nutcon, flxcon, con2out, &
             swblsolint, swblobject, bltemlim, blbasmor, swblgrochk, blbiobas, swblmorchk, bltoplev)
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_readfrm
         use m_getidentification
         use bloom_data_dim
@@ -72,14 +72,14 @@ contains
         real(kind = real_wp) :: bltoplev             ! Top level of mortality constraints
 
         !     Local variables
-        character(120) idstr
+        character(120) identification_text
         integer(kind = int_wp) :: lparam, i, i1, i2
         real(kind = real_wp) :: autofr
         character(8)   cpmax
 
         !  From now on BLOOM won't read the D09-file any more. Some settings will be made available through the inp-file later on
-        call getidentification(idstr)
-        write(outdbg, '(1x,a/)') trim(idstr)
+        call getidentification(identification_text)
+        write(outdbg, '(1x,a/)') trim(identification_text)
         write(outdbg, '(a/)') ' BLOOM debug file'
 
         write(outdbg, '(a)')  ' Since August 2019, revision 64400, BLOOM will not read the bloominp.d09 file any more.'
@@ -209,7 +209,7 @@ contains
         if (nunuco>nunucom) then
             write(outdbg, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
             write(*, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
 
         !  Establish various column and row indicators for A-matrix and output
@@ -345,13 +345,13 @@ contains
         if (nuspec > mt)  then
             write(outdbg, *) 'ERROR: Number of types if greater than the maximum number of types in BLOOM'
             write(*, *) 'ERROR: Number of types if greater than the maximum number of types in BLOOM'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
 
         if (nunuco > mn)  then
             write(outdbg, *) 'ERROR: Number of nutrients if greater than the maximum number of nutrients in BLOOM'
             write(*, *) 'ERROR: Number of nutrients if greater than the maximum number of nutrients in BLOOM'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
 
         !     Pass actual number of groups and species to main program

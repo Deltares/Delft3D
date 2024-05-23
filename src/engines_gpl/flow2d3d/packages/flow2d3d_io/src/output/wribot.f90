@@ -1,5 +1,5 @@
 subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
-                & nmaxus    ,dp        ,dps       ,rbuff     ,gdp       )
+                & nmaxus    ,dpd       ,dps       ,rbuff     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -57,7 +57,7 @@ subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
     integer                                                                        :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                                        :: nmaxus !  Description and declaration in esm_alloc_int.f90
     logical                                                          , intent(out) :: error  !!  Flag=TRUE if an error is encountered
-    real(fp)    , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(nmaxus, mmax)                                          :: rbuff  !  Description and declaration in r-i-ch.igs
     character(*)                                                                   :: comfil !!  Name for communication file
@@ -119,7 +119,7 @@ subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
     do m = 1, mmax
        do n = 1, nmaxus
           i = i+1
-          sbuff(i) = real(dp(n, m),sp)
+          sbuff(i) = real(dpd(n, m),sp)
        enddo
     enddo
     ierror = putelt(fds, grpnam, 'DP0', uindex, 1, sbuff)

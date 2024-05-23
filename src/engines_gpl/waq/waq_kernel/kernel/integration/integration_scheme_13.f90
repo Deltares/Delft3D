@@ -142,9 +142,7 @@ contains
             IF (ACTION == ACTION_INITIALISATION  .OR. &
                     ACTION == ACTION_FULLCOMPUTATION) THEN
 
-                !
-                !          some initialisation
-                !
+                ! some initialisation
                 ithandl = 0
                 ITIME = ITSTRT
                 NSTEP = (ITSTOP - ITSTRT) / IDT
@@ -194,7 +192,6 @@ contains
             ENDIF
 
             !          adaptations for layered bottom 08-03-2007  lp
-
             nosss = noseg + nseg2
             NOQTT = NOQ + NOQ4
             inwtyp = intyp + nobnd
@@ -287,7 +284,7 @@ contains
                         enddo
                     enddo
                 endif
-                call dlwq17 (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
             !
@@ -321,7 +318,7 @@ contains
             !        zero cumulative arrays
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
@@ -334,7 +331,7 @@ contains
 
             !        add processes
 
-            call dlwq14 (a(iderv:), notot, noseg, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances (a(iderv:), notot, noseg, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
             !        get new volumes
@@ -384,8 +381,7 @@ contains
                     c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
                     a(iwdmp:), 1, notot)
 
-            !          explicit part of the transport step, derivative
-
+            ! explicit part of the transport step, derivative
             call dlwq16 (nosys, notot, nosss, noq1, noq2, &
                     noq3, noqt, nddim, nvdim, a(idisp:), &
                     a(idnew:), a(ivnew:), a(iarea:), a(iflow:), a(ileng:), &
@@ -393,15 +389,13 @@ contains
                     a(iboun:), intopt, ilflag, idt, a(iderv:), &
                     iaflag, a(imas2:), ndmpq, j(iqdmp:), a(idmpq:))
 
-            !          explicit part of transport done, volumes on diagonal
-
+            ! explicit part of transport done, volumes on diagonal
             call dlwq42 (nosys, notot, nototp, nosss, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idt, &
                     ivflag, file_unit_list(19))
 
 
-            !          performs the implicit part of the transport step
-
+            ! performs the implicit part of the transport step
             call dlwqe1 (nosys, notot, nosss, noq3, lnoq, &
                     nddim, nvdim, a(ldisp:), a(ldiff:), a(lvelo:), &
                     a(larea:), a(lflow:), a(lleng:), j(lxpnt:), iknmkv, &
@@ -455,12 +449,12 @@ contains
 
                 !         close files, except monitor file
 
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
                 !         write restart file
 
-                call dlwq13 (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                call write_restart_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
 

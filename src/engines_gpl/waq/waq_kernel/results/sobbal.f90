@@ -102,9 +102,9 @@ contains
         use m_outhis
         use m_dmpval
         use m_dmpsurf
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use data_processing, only : extract_value_from_group
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use m_open_waq_files
         use timers
         INTEGER(kind = int_wp) :: NOTOT, ITIME, NOSYS, NOSEG, LUNOUT, &
@@ -179,8 +179,8 @@ contains
                 DANAMP(:), &
                 SYNAMP(:)
         logical, allocatable :: IWDMP(:, :)
-
-        LOGICAL       LUMPEM, LUMPPR, IFIRST, SUPPFT, ONLYSM, &
+        logical :: parsing_error
+        LOGICAL LUMPEM, LUMPPR, IFIRST, SUPPFT, ONLYSM, &
                 INCLUD, BOUNDA, LUMPTR, B_AREA, B_VOLU
         REAL(kind = real_wp) :: RDUM(1)
         REAL(kind = real_wp) :: ST, TFACTO(NOSUM)
@@ -188,11 +188,8 @@ contains
         character(len=40)  CDUM
         character(len=255) FILNAM
         character(len=2)   c2
-        character(len=255) inifil
-        logical       lfound
-        integer(kind = int_wp) :: idummy, ierr2
+        character(:), allocatable :: inifil
         integer(kind = int_wp) :: lunini
-        real(kind = real_wp) :: rdummy
         integer(kind = int_wp) :: iseg, iw, idum, ivan, ibal_off, idump_out
         integer(kind = int_wp) :: ndmpar_out, ntrans, indx
         integer(kind = int_wp) :: inaar, itstrt
@@ -236,10 +233,8 @@ contains
 
             !         from ini file
 
-            call retrieve_command_argument ('-i', 3, lfound, idummy, rdummy, &
-                    inifil, ierr2)
-            if (lfound) then
-                if (ierr2/= 0) then
+            if (get_command_argument_by_name('-i', inifil, parsing_error)) then
+                if (parsing_error) then
                     inifil = ' '
                 endif
             else
@@ -961,7 +956,7 @@ contains
         return
         9000 write (lunrep, *) 'Error allocating memory'
         write (*, *) 'Error allocating memory'
-        call terminate_execution(1)
+        call stop_with_error()
     end
     SUBROUTINE OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT, &
             NOTOT, NDMPAR, DANAMP, OUNAME, SYNAME, &
@@ -1132,7 +1127,7 @@ contains
 
     subroutine comsum (nosum, tfacto, notot, syname, sfacto, nocons, coname, cons)
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use timers
         use bloom_data_mass_balance
 
@@ -1213,7 +1208,7 @@ contains
             call get_log_unit_number(lunrep)
             write (lunrep, *) 'BUG IN COMSUM!'
             write (*, *) 'BUG IN COMSUM!'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
 
         !     Initialise substance shares in sum parameters as well as totals

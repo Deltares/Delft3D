@@ -6,7 +6,7 @@ rem See README.md there for more information
 
 set build_configuration=build_all
 set script_path=..\..\%build_configuration%\x64\dpart\scripts
-call %script_path%\run_dpart.bat fti_tracer.inp
+call %script_path%\run_delpar.bat fti_tracer.inp
 
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line

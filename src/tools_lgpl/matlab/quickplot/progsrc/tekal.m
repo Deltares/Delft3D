@@ -176,7 +176,7 @@ end
 variable=0;
 fid=fopen(filename,'r','n','US-ASCII');
 if fid<0
-    error('Cannot open file ...')
+    error('Cannot open file %s.', filename)
 end
 %
 FileInfo.FileName=filename;

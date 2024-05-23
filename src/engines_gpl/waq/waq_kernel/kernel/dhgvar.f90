@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_dhgvar
     use m_waq_precision
-    use m_logger
+    use m_logger_helper
 
     implicit none
 

@@ -44,7 +44,6 @@ module integration_schemes
     use m_integration_scheme_1
     use m_integration_scheme_0
     use m_startup_screen
-    use m_cli_utils, only : retrieve_command_argument
     use m_open_waq_files
 
     implicit none
@@ -73,7 +72,7 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
         use m_cli_utils, only : get_input_filename
-        use m_logger, only : set_log_unit_number
+        use m_logger_helper, only : set_log_unit_number
 
         type(waq_data_buffer), target :: buffer
         integer(kind = int_wp) :: max_real_arr_size, max_int_arr_size, max_char_arr_size
@@ -88,8 +87,7 @@ contains
         integer(kind = int_wp), save :: file_unit_list(NUM_FILES)
         character*(FILE_NAME_LEN), save :: file_name_list(NUM_FILES)
         integer(kind = int_wp), save :: filtype(NUM_FILES)
-        character*(FILE_NAME_LEN), save :: runid
-        logical, save :: init2 = .true. ! to suppress the start-up screen
+        character(:), allocatable, save :: runid
 
         logical :: lfound
         integer(kind = int_wp) :: idummy, ierr2
@@ -127,7 +125,7 @@ contains
                 write(*, '(a)') 'integration_schemes cannot run - the system work file is missing'
                 write(*, '(2a)') '    File name: ', trim(file_name_list(1))
                 write(*, '(2a)') '    Please check if DELWAQ1 ran correctly'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
 
             ! the file does exist, so continue processing
@@ -146,12 +144,6 @@ contains
 
             CALL open_waq_files(file_unit_list(19), file_name_list(19), 19, 1, IERRD)
             CALL set_log_unit_number(file_unit_list(19))
-
-            ! Show startup screen
-            IF (INIT2) THEN
-                INIT2 = .FALSE.
-                CALL startup_screen(file_unit_list(19))
-            ENDIF
 
             IF (ACTION == ACTION_FULLCOMPUTATION) THEN
                 WRITE(*, *)
@@ -243,28 +235,26 @@ contains
 
         end select
 
-        IF (ACTION == ACTION_FINALISATION    .OR. &
-                ACTION == ACTION_FULLCOMPUTATION) THEN
-
+        if (action == action_finalisation    .or. &
+                action == action_fullcomputation) then
             ! print timer-results
             if (timon) then
                 call timstop (ithndl)
                 call timdump (TRIM(RUNID) // '-timers.out')
                 call timfinalize()
             endif
-
         endif
 
         return
 
         990 WRITE (*, *) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         991 WRITE (*, *) ' ERROR: INTEGRATION OPTION DEPRECATED'
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         992 WRITE (*, *) ' ERROR : INITIALISATION FAILED'
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         999 WRITE (*, *) ' ERROR: NO VALID SET OF MODEL-INTERMEDIATE-FILES'
-        CALL terminate_execution(1)
+        CALL stop_with_error()
     END SUBROUTINE run_integration_schemes
 
 END MODULE integration_schemes

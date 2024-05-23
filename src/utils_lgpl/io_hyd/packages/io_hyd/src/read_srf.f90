@@ -30,7 +30,7 @@
       subroutine read_srf(file_srf, mmax  , nmax  , nosegl, surf )
 
       ! read a srf file and check dimensions
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -57,25 +57,25 @@
       inquire( file = file_srf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_srf%name)
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       call file_srf%open()
       read(file_srf%unit,iostat=ioerr) nmaxd, mmaxd, i3, i4, i5, i6
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       if ( mmax*nmax .ne. mmaxd*nmaxd ) then
          write(lunrep,*) ' dimensions file ', trim(file_srf%name), ' differ from input hydrodynamics'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       read(file_srf%unit,iostat=ioerr) (surf(i),i=1,nosegl)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading file: ', trim(file_srf%name)
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       close(file_srf%unit)
@@ -87,7 +87,7 @@
       subroutine read_hsrf(file_hsrf, noseg, surf )
 
       ! read a horizontal srf file
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       implicit none
 
@@ -110,14 +110,14 @@
       inquire( file = file_hsrf%name, exist = exists )
       if ( .not. exists ) then
          write(lunrep,*) ' file does not exist: ', trim(file_hsrf%name)
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       call file_hsrf%open()
       read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,noseg)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading horizontal srf file'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       close(file_hsrf%unit)

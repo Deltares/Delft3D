@@ -25,7 +25,7 @@
 
       ! function : initialise aggregation, time independent data
 
-      use m_logger
+      use m_logger_helper
       use m_hydmod
       implicit none
 

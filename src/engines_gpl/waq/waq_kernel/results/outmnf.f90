@@ -46,7 +46,7 @@
       !                          manage_nefis_data_character, handles i/o to nefis file for char's
       !                          putget, handles i/o to nefis file for int/real(kind=real_wp) ::!
 
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use nefis_data, only : manage_nefis_data_character
       use m_array_manipulation, only : fill_element_dimensions
       use timers
@@ -143,7 +143,7 @@
          if ( ierr_alloc /= 0 ) then
             write(lunout,*) 'ERROR : allocating nefis output structure'
             write(*,*) 'ERROR : allocating nefis output structure'
-            call terminate_execution(1)
+            call stop_with_error()
          endif
 
          ! initialize independent element names

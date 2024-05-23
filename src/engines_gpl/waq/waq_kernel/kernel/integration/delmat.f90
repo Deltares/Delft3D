@@ -44,7 +44,7 @@ contains
         !         HOWEVER THE ROWS AND COLLUMNS MUST BE INTERCHANGED.
         !         THE SAME HOLDS FOR THE FULL MATRIX OF KNOWN VECTORS "B".
         !
-        !     SUBROUTINES CALLED  : terminate_execution, stops execution
+        !     SUBROUTINES CALLED  : stop_with_error, stops execution
         !
         !         NOTATION:                               CHANGED DURING
         !                                                  CALCULATION
@@ -69,7 +69,7 @@ contains
         !                       IT NEEDS A PROPER DECOMPOSED AND STORED MATRIX
         !                       A AS AN INPUT
         !
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers
 
         REAL(kind = real_wp) :: A(*), B(*)
@@ -104,7 +104,7 @@ contains
         IF (ABS(P) < 1.0E-35) THEN
             WRITE(6, '('' Matrix for DELMAT singular at element:'',I5)') &
                     K1 / ND + 1
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
         !
         !           K2 IS THE MIDDLE LOOP VARIABLE COUNTING THE NUMBER OF
@@ -150,7 +150,7 @@ contains
         IF (ABS(P) < 1.0E-35) THEN
             WRITE(6, '('' Matrix for DELMAT singular at element:'',I5)') &
                     K1 / ND + 1
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
         K2 = K1
         L2 = K1 + N1 * NDM1

@@ -2644,7 +2644,7 @@ module geometry_module
       double precision :: dis
       integer          :: m,k,k1,k2
       double precision :: xz2, yz2                        ! only for help 4 corners
-      double precision :: xe3,ye3,xe1,ye1,xe2,ye2,tex,tey,dp, &
+      double precision :: xe3,ye3,xe1,ye1,xe2,ye2,tex,tey,ds, &
          xccf,yccf,xccc,yccc,xcccf,ycccf,xccfo,yccfo,alf
 
       integer, parameter :: MMAX=10
@@ -2739,16 +2739,16 @@ module geometry_module
                      call normalin(xe1,ye1,xe2,ye2,tex,tey,xe3,ye3, jsferic, jasfer3D, dxymis)
                      xcc3 =  getdx(xe3,ye3,xccf,yccf,jsferic)
                      ycc3 =  getdy(xe3,ye3,xccf,yccf,jsferic)
-                     dp   = -alf*dotp(xcc3,ycc3,tex,tey)  ! - sign not present in given formula
+                     ds   = -alf*dotp(xcc3,ycc3,tex,tey)  ! - sign not present in given formula
                      if (jsferic == 1) then
-                        dp   = raddeg_hp*dp/earth_radius
-                        xccf = xccf + tex*dp*xf           ! even erbijblijven voor beste resultaat
-                        yccf = yccf + tey*dp
+                        ds   = raddeg_hp*ds/earth_radius
+                        xccf = xccf + tex*ds*xf           ! sign present for best result
+                        yccf = yccf + tey*ds
                      else
-                        xccf = xccf + tex*dp
-                        yccf = yccf + tey*dp
+                        xccf = xccf + tex*ds
+                        yccf = yccf + tey*ds
                      endif
-                     ! dp   = -alf*dotp(xccf - xe3,yccf - ye3, tex, tey)  ! - sign not present in given formula
+                     ! ds   = -alf*dotp(xccf - xe3,yccf - ye3, tex, tey)  ! - sign not present in given formula
                      ! call cirr(xccf,yccf,31)
                      ! call waitesc()
                   endif

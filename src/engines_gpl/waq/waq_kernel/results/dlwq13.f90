@@ -28,84 +28,70 @@ module m_dlwq13
 contains
 
 
-    SUBROUTINE DLWQ13 (file_unit_list, file_name_list, CONC, ITIME, MNAME, SNAME, NOTOT, NOSEG)
-        ! gives a complete system dump
-        !
-        !     LOGICAL UNITS      : IOUT = number of dump file
-        !
-        !     NAME    KIND     LENGTH      FUNCT.  DESCRIPTION
-        !     ---------------------------------------------------------
-        !     file_unit_list     INTEGER  *           INPUT   unit numbers output files
-        !     file_name_list   CHAR*(*) *           INPUT   names of output files
-        !     CONC    REAL     NOTOT*?     INPUT   concentration values
-        !     ITIME   INTEGER  1           INPUT   present time in clock units
-        !     MNAME   CHAR*40  4           INPUT   model identhification
-        !     SNAME   CHAR*20  NOTOT       INPUT   names of substances
-        !     NOTOT   INTEGER  1           INPUT   total number of systems
-        !     NOSEG   INTEGER  1           INPUT   total number of segments
-        !
-        !
+    !> Writes a restart file (complete system dump) after making all NaN values
+    !! in the concentration array equal to 0
+    subroutine write_restart_file(file_unit_list, lchar, conc, itime, mname, &
+            sname, notot, noseg)
+
         use m_open_waq_files
         use timers
 
-        real(kind = real_wp) :: CONC  (NOTOT, NOSEG)
-        character(len = 20)  SNAME (*)
-        character(len = 40)  MNAME (*)
-        character(len = *) file_name_list(*)
-        character(len = 255) LCHARMAP
-        integer(kind = int_wp) :: file_unit_list(*)
+        integer(kind = int_wp), intent(inout) :: file_unit_list(*)                !< logical unit numbers of output files
+        character(len=*),       intent(in)    :: lchar(*)                         !< names of output files
+        real(kind = real_wp),   intent(inout) :: conc(notot, noseg) !< concentration values
+        integer(kind=int_wp),   intent(in)    :: itime                            !< present time in clock units
+        character(len=40),      intent(in)    :: mname(*)                         !< model identification
+        character(len=20),      intent(in)    :: sname(*)                         !< names of substances
+        integer(kind=int_wp),   intent(in)    :: notot                    !< total number of systems
+        integer(kind=int_wp),   intent(in)    :: noseg                      !< total number of segments or cells
 
-        integer(kind = int_wp) :: i, j, k, itime
-        integer(kind = int_wp) :: noseg, notot, nonan, ierr
+
+        character(len=255) restart_file_name
+        integer(kind = int_wp) :: i, j
+        integer(kind = int_wp) :: nan_count, ierr
         integer(kind = int_wp) :: ithandl = 0
 
         if (timon) call timstrt ("dlwq13", ithandl)
-        !
-        !      check for NaNs
-        !
-        nonan = 0
+
+        ! check for NaNs
+        nan_count = 0
         do j = 1, noseg
             do i = 1, notot
                 if (conc(i, j) /= conc(i, j)) then
                     conc(i, j) = 0.0
-                    nonan = nonan + 1
+                    nan_count = nan_count + 1
                 endif
             enddo
         enddo
-
-        if (nonan /= 0) then
+        if (nan_count /= 0) then
             write (file_unit_list(19), *) ' Corrected concentrations as written to the restart file:'
-            write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nonan
+            write (file_unit_list(19), *) ' Number of values reset from NaN to zero: ', nan_count
             write (file_unit_list(19), *) ' Total amount of numbers in the array: ', notot * noseg
             write (file_unit_list(19), *) ' This may indicate that the computation was unstable'
         endif
 
-        !
-        !     write restart file in .map format
-        !
-        LCHARMAP = ' '
-        LCHARMAP(1:248) = file_name_list(23)(1:248)
-        DO I = 248, 1, -1
-            IF (LCHARMAP(I:I) == '.') THEN
-                LCHARMAP(I:I + 7) = "_res.map"
-                GOTO 20
-            ENDIF
-        end do
-        WRITE (*, *) ' Invalid name of restart MAP file !'
-        write (*, *) ' Restart file written to restart_temporary.map !'
-        WRITE (file_unit_list(19), *) ' Invalid name of restart MAP file !'
-        write (file_unit_list(19), *) ' Restart file written to restart_temporary.map !'
-        lcharmap = 'restart_temporary.map'
+        ! Set name for restart file
+        restart_file_name = ' '
+        restart_file_name(1:248) = lchar(23)(1:248)
+        i = index(restart_file_name, '.', back = .true.)
+        if (i == 0) then
+            write (*, *) ' Invalid name of restart MAP file !'
+            write (*, *) ' Restart file written to restart_temporary.map !'
+            write (file_unit_list(19), *) ' Invalid name of restart MAP file !'
+            write (file_unit_list(19), *) ' Restart file written to restart_temporary.map !'
+            restart_file_name = 'restart_temporary.map'
+        else
+            restart_file_name(i:i + 7) = "_res.map"
+        end if
 
-        20 CALL open_waq_files (file_unit_list(23), LCHARMAP, 23, 1, IERR)
-        WRITE (file_unit_list(23)) (MNAME(K), K = 1, 4)
-        WRITE (file_unit_list(23))   NOTOT, NOSEG
-        WRITE (file_unit_list(23)) (SNAME(K), K = 1, NOTOT)
-        WRITE (file_unit_list(23)) ITIME, CONC
-        CLOSE (file_unit_list(23))
-        !
+        ! write restart file in .map format
+        call open_waq_files (file_unit_list(23), restart_file_name, 23, 1, ierr)
+        write (file_unit_list(23)) (mname(i), i = 1, 4)
+        write (file_unit_list(23))   notot, noseg
+        write (file_unit_list(23)) (sname(i), i = 1, notot)
+        write (file_unit_list(23)) itime, conc
+        close (file_unit_list(23))
+
         if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+    end subroutine write_restart_file
 end module m_dlwq13

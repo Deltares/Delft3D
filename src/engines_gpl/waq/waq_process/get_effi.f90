@@ -208,7 +208,7 @@ contains
 
     subroutine lookupeffi(rad, effi, numgr)
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use bloom_data_dim
         use bloom_data_arran
 
@@ -230,7 +230,7 @@ contains
                 write(*, *) &
                         'ERROR: the highest power in the light curve is 0.0.', &
                         'Check if your bloom.spe file contains light curves!'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             first = .false.
         endif

@@ -30,7 +30,7 @@
       subroutine write_hyd(hyd, version_full)
 
       ! function : write a hydrodynamic description file
-      use m_logger, only: get_log_unit_number
+      use m_logger_helper, only: get_log_unit_number
       use m_hydmod
       use system_utils
       use m_hyd_keys, only: key, nokey     ! keywords in hydfile

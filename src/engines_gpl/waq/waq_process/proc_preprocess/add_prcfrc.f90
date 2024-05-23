@@ -34,7 +34,7 @@ contains
 
         ! add processes per fractions
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use processet
         use timers       !   performance timers
 
@@ -156,7 +156,7 @@ contains
                                     write(lunrep, *) 'procn%no_dispstochi:', procn%no_dispstochi
                                     write(lunrep, *) 'procn%no_velostochi:', procn%no_velostochi
                                     write(*, *) 'error allocating array:', ierr_alloc
-                                    call terminate_execution(1)
+                                    call stop_with_error()
                                 endif
 
                                 ! copy input

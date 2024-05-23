@@ -23,7 +23,7 @@
 
 module HydroSet
     use m_waq_precision
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
 
     !
     !          module contains everything for composition of hydrodynamics from multiple files
@@ -199,7 +199,7 @@ contains
             write(*, *) 'Error: times in two consecutive records are equal!'
             write(*, *) 'File in question: ', trim(aPropPnt%name)
             write(*, *) 'Stopping the program'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         return
@@ -540,7 +540,7 @@ contains
     !
     !          subroutine to close all open hydrodynamic files
     !
-    subroutine CloseHydroFiles(collection)
+    subroutine close_hydro_files(collection)
         type(FileUseDefCollColl) :: collection
 
         type(FileUseDefColl), pointer :: files
@@ -553,7 +553,6 @@ contains
                 close(files%FileUseDefs(j)%aFilePnt%pnt%ilun)
             enddo
         enddo
-
-    end subroutine CloseHydroFiles
+    end subroutine close_hydro_files
 
 end module HydroSet

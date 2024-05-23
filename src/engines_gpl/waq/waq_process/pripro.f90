@@ -31,7 +31,7 @@ contains
     subroutine pripro (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger
+        use m_logger_helper
 
         !>\file
         !>       Nett primary production and mortality DYNAMO algae

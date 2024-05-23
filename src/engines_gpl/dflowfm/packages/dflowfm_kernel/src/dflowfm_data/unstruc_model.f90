@@ -1156,8 +1156,9 @@ subroutine readMDUFile(filename, istat)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel' , Iturbulencemodel)
     call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection' , javakeps)
     call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz'   , jadrhodz)
-    call prop_get_double (md_ptr, 'numerics', 'FacLaxturb' , FacLaxturb)
-    call prop_get_integer(md_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp)
+    call prop_get_double (md_ptr, 'numerics', 'FacLaxTurb'    , turbulence_lax_factor)
+    call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbVer' , turbulence_lax_vertical)
+    call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbHor' , turbulence_lax_horizontal)
     call prop_get_double (md_ptr, 'numerics', 'EpsTKE' , epstke)
     call prop_get_double (md_ptr, 'numerics', 'EpsEPS' , epseps)
  
@@ -3247,13 +3248,11 @@ endif
        call prop_set(prop_ptr, 'numerics', 'Jadrhodz' , jadrhodz, '(1:central org, 2:centralnew, 3:upw cell, 4:most stratf. cell, 5:least stratf. cell)')
     endif
 
-    if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'FacLaxturb' , FacLaxturb, '(Default: 0=TurKin0 from links, 1.0=from nodes. 0.5=fityfifty)')
-    endif
-
-    if (writeall .or. (FacLaxturb > 0 .and. kmx > 0) ) then
-       call prop_set(prop_ptr, 'numerics', 'jaFacLaxturbtyp' , jaFacLaxturbtyp, '(Vertical distr of facLaxturb, 1=: (sigm<0.5=0.0 sigm>0.75=1.0 linear in between), 2:=1.0 for whole column)')
-    endif
+    if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0) ) then
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurb' , turbulence_lax_factor, 'LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)')
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurbVer' , turbulence_lax_vertical, 'Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)')
+       call prop_set(prop_ptr, 'numerics', 'FacLaxTurbHor' , turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
+   endif
 
     if (writeall .or. (epstke > 1d-32 .and. kmx > 0) ) then
        call prop_set(prop_ptr, 'numerics', 'EpsTKE' , epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')

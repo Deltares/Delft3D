@@ -227,9 +227,8 @@ contains
                 !        of system of equations [0 = no, 1 =yes], KLAT = number of
                 !        layers in preconditioner [1,KMAX]
                 !
-                call dlwqf5 (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
-                        iter, tol, iscale, litrep, noseg, &
-                        noq3, noq, nobnd, novec, nomat, &
+                call initialize_gmres (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
+                        iter, tol, iscale, litrep, noseg, noq3, noq, novec, nomat, &
                         nolay, intsrt, intopt)
 
                 ithandl = 0
@@ -359,7 +358,7 @@ contains
                         enddo
                     enddo
                 endif
-                call dlwq17 (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
             !
@@ -393,7 +392,7 @@ contains
             !        zero cumulative arrays
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call zercum (notot, nosys, nflux, ndmpar, ndmpq, &
+                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
                         ndmps, a(ismas:), a(iflxi:), a(imas2:), &
                         a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
                         a(itrra:), ibflag, nowst, a(iwdmp:))
@@ -411,7 +410,7 @@ contains
 
             !        add processes
 
-            call dlwq14 (a(iderv:), notot, noseg, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances (a(iderv:), notot, noseg, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
             !        get new volumes
@@ -596,11 +595,11 @@ contains
                     action == ACTION_FULLCOMPUTATION) then
 
                 !     close files, except monitor file
-                call CloseHydroFiles(dlwqd%collcoll)
+                call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
                 !     write restart file
-                call dlwq13 (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                call write_restart_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
         end associate

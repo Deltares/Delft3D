@@ -1,18 +1,70 @@
-import pytest
+import glob
 import os
 import pathlib as pl
-import glob
+from unittest.mock import MagicMock, call
 
+import pytest
+from src.config.local_paths import LocalPaths
+from src.config.location import Location
+from src.config.test_case_config import TestCaseConfig
+from src.config.test_case_path import TestCasePath
+from src.config.types.path_type import PathType
 from src.suite.comparison_runner import ComparisonRunner
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_default_logging_folder_path
-from src.utils.logging.log_level import LogLevel
 from src.utils.logging.console_logger import ConsoleLogger
-from src.config.test_case_config import TestCaseConfig
-from src.config.location import Location
+from src.utils.logging.log_level import LogLevel
+from src.utils.paths import Paths
 
 
 class TestComparisonRunner:
+    @staticmethod
+    def test_run_tests_and_debug_log_downloaded_file():
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.only_post = True
+        config = TestComparisonRunner.create_test_case_config("Name_1", False)
+        config.path = TestCasePath("abc/prefix", "v1")
+        settings.configs = [config]
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+
+        runner = ComparisonRunner(settings, logger)
+
+        # Act
+        runner.run_tests_sequentially()
+
+        # Assert
+        path = Paths().rebuildToLocalPath(
+                            Paths().mergeFullPath('references', 'Name_1', 'Name_1')
+                            )
+        expected_log_message = f"Downloading reference result, {path} from https://deltares.nl/Name_1/abc/prefix"
+        assert call(expected_log_message) in testcase_logger.debug.call_args_list
+
+    @staticmethod
+    def test_run_tests_and_info_log_downloaded_file():
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.only_post = True
+        config = TestComparisonRunner.create_test_case_config("Name_1", False, PathType.INPUT)
+        config.path = TestCasePath("abc/prefix", "v1")
+        settings.configs = [config]
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+
+        runner = ComparisonRunner(settings, logger)
+
+        # Act
+        runner.run_tests_sequentially()
+
+        # Assert
+        expected_log_message = 'Skipping testcase download (postprocess only)'
+        assert call(expected_log_message) in testcase_logger.info.call_args_list
+
     @staticmethod
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error():
         # Arrange
@@ -48,22 +100,23 @@ class TestComparisonRunner:
         TestComparisonRunner.assertIsFile(log_file_2)
 
     @staticmethod
-    def create_test_case_config(name: str, ignore: bool) -> TestCaseConfig:
+    def create_test_case_config(name: str, ignore: bool, type=PathType.REFERENCE) -> TestCaseConfig:
         config = TestCaseConfig()
         config.name = name
         config.ignore = ignore
 
-        location1 = TestComparisonRunner.create_location(name)
-        location2 = TestComparisonRunner.create_location(name)
+        location1 = TestComparisonRunner.create_location(name, type)
+        location2 = TestComparisonRunner.create_location(name, type)
 
         config.locations = [location1, location2]
         return config
 
     @staticmethod
-    def create_location(name):
+    def create_location(name, type):
         location1 = Location()
         location1.root = "https://deltares.nl/"
         location1.from_path = name.replace(' ', '')
+        location1.type = type
         return location1
 
     @staticmethod

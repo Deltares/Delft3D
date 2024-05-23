@@ -31,10 +31,10 @@ function hNew = qp_plot_line(hNew, Parent, x, y, z, val, Ops)
 %   $HeadURL$
 %   $Id$
 
-if ~isempty(val)
-    hNew = plotline_color(hNew, Parent, x, y, z, val, Ops);
-else
+if isempty(val)
     hNew = plotline_uniform(hNew, Parent, x, y, z, Ops);
+else
+    hNew = plotline_color(hNew, Parent, x, y, z, val, Ops);
 end
 
 function hNew = plotline_uniform(hNew, Parent, x, y, z, Ops)
