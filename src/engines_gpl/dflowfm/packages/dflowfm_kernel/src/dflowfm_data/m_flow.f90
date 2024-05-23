@@ -504,7 +504,7 @@
  integer, parameter :: MAX_IDX        = 40
  double precision, dimension(MAX_IDX)    :: volcur !< Volume totals in *current* timestep only (only needed for MPI reduction)
  double precision, dimension(MAX_IDX)    :: cumvolcur =0d0 !< Cumulative volume totals starting from the previous His output time, cumulate with volcur (only needed for MPI reduction)
- double precision, dimension(MAX_IDX)    :: voltot
+ double precision, dimension(MAX_IDX), target    :: voltot
  character(len=100), dimension(MAX_IDX)  :: voltotname
  integer, parameter :: IDX_VOLTOT     = 1
  integer, parameter :: IDX_STOR       = 2

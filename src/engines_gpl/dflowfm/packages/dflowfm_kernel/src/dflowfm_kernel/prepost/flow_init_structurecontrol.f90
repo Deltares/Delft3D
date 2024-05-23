@@ -154,8 +154,8 @@ allocate(dambreakPolygons(nstr))
 !initialize the index
 dambridx = -1
 
-! UNST-3308: early counting of ndambreak is needed here, because of lftopol array
-ndambreak = 0
+! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
+ndambreaklinks = 0
 
 ! NOTE: readStructures(network, md_structurefile) has already been called.
 do i=1,network%sts%count
@@ -175,8 +175,8 @@ do i=1,network%sts%count
                                        loc_spec_type, nump = pstru%numCoordinates, xpin = pstru%xCoordinates, ypin = pstru%yCoordinates, &
                                        branchindex = pstru%ibran, chainage = pstru%chainage, &
                                        xps = dambreakPolygons(i)%xp, yps = dambreakPolygons(i)%yp, nps = dambreakPolygons(i)%np, &
-                                       lftopol = lftopol(ndambreak+1:numl), sortLinks = 1)
-      ndambreak = ndambreak + numgen ! UNST-3308: early counting of ndambreak is needed here, because of lftopol array
+                                       lftopol = lftopol(ndambreaklinks+1:numl), sortLinks = 1)
+      ndambreaklinks = ndambreaklinks + numgen ! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
    case default
       call selectelset_internal_links( xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
                                        loc_spec_type, nump = pstru%numCoordinates, xpin = pstru%xCoordinates, ypin = pstru%yCoordinates, &
@@ -200,8 +200,8 @@ end do
 
 call update_lin2str_admin(network)
 
-! UNST-3308: early counting of ndambreak was needed here, because of lftopol array, but must be redone later below as well.
-ndambreak = 0
+! UNST-3308: early counting of ndambreaklinks was needed here, because of lftopol array, but must be redone later below as well.
+ndambreaklinks = 0
 
 if (network%cmps%Count > 0) then
     istat = max(istat, initialize_compounds(network%cmps, network%sts))
@@ -353,23 +353,23 @@ do i=1,nstr
       if (loc_spec_type /= LOCTP_POLYLINE_FILE) then
          ndambr = pstru%numlinks
          if (pstru%numlinks > 0) then
-            kedb(ndambreak+1:ndambreak+ndambr) = pstru%linknumbers(1:ndambr)
+            kedb(ndambreaklinks+1:ndambreaklinks+ndambr) = pstru%linknumbers(1:ndambr)
          end if
       else
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreak+1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
+         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreaklinks+1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
                                          xps = dambreakPolygons(i)%xp, yps = dambreakPolygons(i)%yp, nps = dambreakPolygons(i)%np, &
-                                         lftopol = lftopol(ndambreak+1:numl), sortLinks = 1)
+                                         lftopol = lftopol(ndambreaklinks+1:numl), sortLinks = 1)
       end if
 
       success = .true.
       write(msgbuf,'(2a,i8,a)') trim(qid), trim(plifile) , ndambr, ' nr of dambreak links' ; call msg_flush()
 
-      ndambreaksg = ndambreaksg + 1
-      dambridx(ndambreaksg) = i
-      call realloc(L1dambreaksg,ndambreaksg) ; L1dambreaksg(ndambreaksg) = ndambreak + 1
-      call realloc(L2dambreaksg,ndambreaksg) ; L2dambreaksg(ndambreaksg) = ndambreak + ndambr
+      ndambreaksignals = ndambreaksignals + 1
+      dambridx(ndambreaksignals) = i
+      call realloc(L1dambreaksg,ndambreaksignals) ; L1dambreaksg(ndambreaksignals) = ndambreaklinks + 1
+      call realloc(L2dambreaksg,ndambreaksignals) ; L2dambreaksg(ndambreaksignals) = ndambreaklinks + ndambr
 
-      ndambreak   = ndambreak   + ndambr
+      ndambreaklinks = ndambreaklinks + ndambr
 
 
    case ('gate', 'weir', 'generalstructure') !< The various generalstructure-based structures
@@ -1144,82 +1144,82 @@ endif
 !
 ! dambreak
 !
-if (ndambreaksg > 0) then
+if (ndambreaksignals > 0) then
 
    if (allocated(maximumDambreakWidths)) deallocate(maximumDambreakWidths)
-   allocate(maximumDambreakWidths(ndambreaksg))
+   allocate(maximumDambreakWidths(ndambreaksignals))
    maximumDambreakWidths = 0d0;
 
    if (allocated(kdambreak)) deallocate(kdambreak)
-   allocate(kdambreak(3,ndambreak), stat=ierr) ! the last row stores the actual
+   allocate(kdambreak(3,ndambreaklinks), stat=ierr) ! the last row stores the actual
    kdambreak = 0d0;
 
    if (allocated(dambreaks)) deallocate(dambreaks)
-   allocate(dambreaks(ndambreaksg))
+   allocate(dambreaks(ndambreaksignals))
    dambreaks = 0
 
    if (allocated(LStartBreach)) deallocate(LStartBreach)
-   allocate(LStartBreach(ndambreaksg))
+   allocate(LStartBreach(ndambreaksignals))
    LStartBreach     = - 1
 
    if (allocated(waterLevelsDambreakDownStream)) deallocate(waterLevelsDambreakDownStream)
-   allocate(waterLevelsDambreakDownStream(ndambreaksg))
+   allocate(waterLevelsDambreakDownStream(ndambreaksignals))
    waterLevelsDambreakDownStream = 0.0d0
 
    if (allocated(waterLevelsDambreakUpStream)) deallocate(waterLevelsDambreakUpStream)
-   allocate(waterLevelsDambreakUpStream(ndambreaksg))
+   allocate(waterLevelsDambreakUpStream(ndambreaksignals))
    waterLevelsDambreakUpStream   = 0.0d0
 
    if (allocated(breachDepthDambreak)) deallocate(breachDepthDambreak)
-   allocate(breachDepthDambreak(ndambreaksg))
+   allocate(breachDepthDambreak(ndambreaksignals))
    breachDepthDambreak           = 0.0d0
 
    if (allocated(breachWidthDambreak)) deallocate(breachWidthDambreak)
-   allocate(breachWidthDambreak(ndambreaksg))
+   allocate(breachWidthDambreak(ndambreaksignals))
    breachWidthDambreak           = 0.0d0
 
    if (allocated(dambreak_ids)) deallocate(dambreak_ids)
-   allocate(dambreak_ids(ndambreaksg))
+   allocate(dambreak_ids(ndambreaksignals))
 
    if(allocated(activeDambreakLinks)) deallocate(activeDambreakLinks)
-   allocate(activeDambreakLinks(ndambreak))
+   allocate(activeDambreakLinks(ndambreaklinks))
    activeDambreakLinks = 0
 
    if(allocated(normalVelocityDambreak)) deallocate(normalVelocityDambreak)
-   allocate(normalVelocityDambreak(ndambreaksg))
+   allocate(normalVelocityDambreak(ndambreaksignals))
    normalVelocityDambreak = 0.0d0
 
    if(allocated(dambreakAveraging)) deallocate(dambreakAveraging)
-   allocate(dambreakAveraging(2,ndambreaksg))
+   allocate(dambreakAveraging(2,ndambreaksignals))
    dambreakAveraging = 0.0d0
 
    if(allocated(dambreakLevelsAndWidthsFromTable)) deallocate(dambreakLevelsAndWidthsFromTable)
-   allocate(dambreakLevelsAndWidthsFromTable(ndambreaksg*2))
+   allocate(dambreakLevelsAndWidthsFromTable(ndambreaksignals*2))
    dambreakLevelsAndWidthsFromTable = 0.0d0
 
    if(allocated(breachWidthDerivativeDambreak)) deallocate(breachWidthDerivativeDambreak)
-   allocate(breachWidthDerivativeDambreak(ndambreaksg))
+   allocate(breachWidthDerivativeDambreak(ndambreaksignals))
    breachWidthDerivativeDambreak = 0.0d0
 
    if(allocated(waterLevelJumpDambreak)) deallocate(waterLevelJumpDambreak)
-   allocate(waterLevelJumpDambreak(ndambreaksg))
+   allocate(waterLevelJumpDambreak(ndambreaksignals))
    waterLevelJumpDambreak = 0.0d0
 
    if(allocated(waterLevelJumpDambreak)) deallocate(waterLevelJumpDambreak)
-   allocate(waterLevelJumpDambreak(ndambreaksg))
+   allocate(waterLevelJumpDambreak(ndambreaksignals))
    waterLevelJumpDambreak = 0.0d0
 
    ! dambreak upstream
    if(allocated(dambreakLocationsUpstreamMapping)) deallocate(dambreakLocationsUpstreamMapping)
-   allocate(dambreakLocationsUpstreamMapping(ndambreaksg))
+   allocate(dambreakLocationsUpstreamMapping(ndambreaksignals))
    dambreakLocationsUpstreamMapping = 0.0d0
 
    if(allocated(dambreakLocationsUpstream)) deallocate(dambreakLocationsUpstream)
-   allocate(dambreakLocationsUpstream(ndambreaksg))
+   allocate(dambreakLocationsUpstream(ndambreaksignals))
    dambreakLocationsUpstream = 0.0d0
 
    if(allocated(dambreakAverigingUpstreamMapping)) deallocate(dambreakAverigingUpstreamMapping)
-   allocate(dambreakAverigingUpstreamMapping(ndambreaksg))
+   allocate(dambreakAverigingUpstreamMapping(ndambreaksignals))
    dambreakAverigingUpstreamMapping = 0.0d0
 
    nDambreakLocationsUpstream = 0
@@ -1227,21 +1227,21 @@ if (ndambreaksg > 0) then
 
    ! dambreak downstream
    if(allocated(dambreakLocationsDownstreamMapping)) deallocate(dambreakLocationsDownstreamMapping)
-   allocate(dambreakLocationsDownstreamMapping(ndambreaksg))
+   allocate(dambreakLocationsDownstreamMapping(ndambreaksignals))
    dambreakLocationsDownstreamMapping = 0.0d0
 
    if(allocated(dambreakLocationsDownstream)) deallocate(dambreakLocationsDownstream)
-   allocate(dambreakLocationsDownstream(ndambreaksg))
+   allocate(dambreakLocationsDownstream(ndambreaksignals))
    dambreakLocationsDownstream = 0.0d0
 
    if(allocated(dambreakAverigingDownstreamMapping)) deallocate(dambreakAverigingDownstreamMapping)
-   allocate(dambreakAverigingDownstreamMapping(ndambreaksg))
+   allocate(dambreakAverigingDownstreamMapping(ndambreaksignals))
    dambreakAverigingDownstreamMapping = 0.0d0
 
    nDambreakLocationsDownstream = 0
    nDambreakAveragingDownstream = 0
 
-   do n = 1, ndambreaksg
+   do n = 1, ndambreaksignals
       do k = L1dambreaksg(n), L2dambreaksg(n)
          L               = kedb(k)
          Lf              = iabs(L)
@@ -1261,7 +1261,7 @@ if (ndambreaksg > 0) then
 
    ! number of columns in the dambreak hights and widths tim file
    kx = 2
-   do n = 1, ndambreaksg
+   do n = 1, ndambreaksignals
 
       !The index of the structure
       indexInStructure = dambridx(n)

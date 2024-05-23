@@ -67,7 +67,7 @@
     endif
     
     ! set correct flow areas for dambreaks, using the actual flow width
-    do n = 1, ndambreaksg
+    do n = 1, ndambreaksignals
        do k = L1dambreaksg(n), L2dambreaksg(n)
           L = abs(kdambreak(3,k))
           au(L) = hu(L) * dambreakLinksActualLength(k)

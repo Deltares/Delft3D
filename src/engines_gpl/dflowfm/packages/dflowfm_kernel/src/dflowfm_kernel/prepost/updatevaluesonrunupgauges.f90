@@ -44,14 +44,14 @@ subroutine updateValuesOnRunupGauges()
     integer                                       :: irug
     integer                                       :: k1, k2, k
     integer                                       :: L, il
-    double precision                              :: maxx, maxy, maxz, maxk
+    double precision                              :: max_x, max_y, maxz, maxk
 
 !   update runup on gauge locations
     hs = max(s1-bl,0d0)
-    do irug = 1, nrug
+    do irug = 1, num_rugs
        maxz = -huge(0d0)
-       maxx = dmiss
-       maxy = dmiss
+       max_x = dmiss
+       max_y = dmiss
        maxk = 0
        ! determine runup value
        if (rug(irug)%path%lnx==0) cycle
@@ -63,21 +63,21 @@ subroutine updateValuesOnRunupGauges()
           if (hs(k1)>epshu .and. hs(k2)<=epshu) then
              if (s1(k1)>=maxz) then
                 maxz = s1(k1)
-                maxx = xz(k1)
-                maxy = yz(k1)
+                max_x = xz(k1)
+                max_y = yz(k1)
              endif
           elseif (hs(k2)>epshu .and. hs(k1)<=epshu) then
              if (s1(k2)>=maxz) then
                 maxz = s1(k2)
-                maxx = xz(k2)
-                maxy = yz(k2)
+                max_x = xz(k2)
+                max_y = yz(k2)
              endif
           endif
        enddo
-       if (rug(irug)%maxruh<=maxz) then
-          rug(irug)%maxruh = maxz     ! collected at dts, written at dt_user (or longer). Reset after writing
-          rug(irug)%maxx   = maxx
-          rug(irug)%maxy   = maxy
+       if (rug(irug)%max_rug_height<=maxz) then
+          rug(irug)%max_rug_height = maxz     ! collected at dts, written at dt_user (or longer). Reset after writing
+          rug(irug)%max_x   = max_x
+          rug(irug)%max_y   = max_y
        endif
     enddo
 

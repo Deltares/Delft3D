@@ -2812,6 +2812,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    NUMCONST_MDU = NUMCONST
    
    call initialize_lateraldata(numconst)
+   
+   ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
+   ! (needed to disable possibly invalid statistical output items)
+   call check_model_has_structures_across_partitions
 
 end function flow_initexternalforcings
 

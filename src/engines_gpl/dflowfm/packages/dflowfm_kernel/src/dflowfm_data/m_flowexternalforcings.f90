@@ -199,8 +199,8 @@
  double precision, allocatable     :: thtbndsd(:)       !< sediment Thatcher-Harleman outflow times
  double precision, allocatable     :: thzbndsd(:)       !< sediment Thatcher-Harleman outflow concentrations
 
- integer,          allocatable     :: nbndtr(:)           !< tracer boundary points dimension
- integer                           :: nbndtr_all          !< all tracer boundary points dimension (max(nbndtr))
+ integer,          allocatable     :: nbndtr(:)         !< tracer boundary points dimension
+ integer                           :: nbndtr_all        !< all tracer boundary points dimension (max(nbndtr))
  integer                           :: numtracers        !< number of tracers with boundary conditions
  integer,          parameter       :: NAMTRACLEN = 128
  character(len=NAMTRACLEN), allocatable :: trnames(:)   !< tracer names (boundary conditions only, used for look-up)
@@ -372,8 +372,8 @@
  integer        , parameter              :: DBW_SYMM_ASYMM = 3                    !< symmetrical dambreak widening until left/right runs out of space then continues one sided
  integer                                 :: dambreakWidening = DBW_SYMM_ASYMM     !< method for dambreak widening
  character(len=128)                      :: dambreakWideningString = 'symmetric-asymmetric'  !< method for dambreak widening (string for input processing)
- integer                                 :: ndambreak                             !< nr of dambreak links
- integer                                 :: ndambreaksg                           !< nr of dambreak signals
+ integer                                 :: ndambreaklinks                        !< nr of dambreak links
+ integer                                 :: ndambreaksignals                      !< nr of dambreak signals
  integer         , allocatable           :: L1dambreaksg(:)                       !< first dambreak link for each signal
  integer         , allocatable           :: L2dambreaksg(:)                       !< second dambreak link for each signal
  integer         , allocatable           :: activeDambreakLinks(:)                !< activeDambreakLinks, open dambreak links
@@ -445,7 +445,7 @@
  integer                           :: numsrc_nf         !< nr of sources/sinks added for nearfield
  integer                           :: msrc = 0          !< maximal number of points that polylines contains for all sources/sinks
  integer, allocatable              :: ksrc(:,:)         !< index array, 1=nodenr sink, 2 =kbsin , 3=ktsin, 4 = nodenr source, 5 =kbsor , 6=ktsor
- double precision, allocatable     :: qsrc(:)           !< cell influx (m3/s) if negative: outflux
+ double precision, target, allocatable     :: qsrc(:)           !< cell influx (m3/s) if negative: outflux
  double precision, allocatable     :: sasrc(:)          !< q*salinity    (ppt) (m3/s)  if ksrc 3,4 == 0, else delta salinity
  double precision, allocatable     :: tmsrc(:)          !< q*temperature (degC) (m3/s) if ksrc 3,4 == 0, else delta temperature
  double precision, allocatable     :: ccsrc(:,:)        !< dimension (numvalssrc,numsrc), keeps sasrc, tmsrc etc
@@ -460,9 +460,9 @@
  integer, allocatable              :: jamess(:)         !< issue message mess for from or to point, 0, 1, 2
  double precision, allocatable, target :: qstss(:)      !< array to catch multiple_uni_discharge_salinity_temperature
  character(len=255), allocatable   :: srcname(:)        !< sources/sinks name (numsrc)
- double precision, allocatable     :: vsrccum(:)        !< cumulative volume at each source/sink from Tstart to now
+ double precision, target, allocatable     :: vsrccum(:)        !< cumulative volume at each source/sink from Tstart to now
  double precision, allocatable     :: vsrccum_pre(:)    !< cumulative volume at each source/sink from Tstart to the previous His-output time
- double precision, allocatable     :: qsrcavg(:)        !< average discharge in the past his-interval at each source/sink
+ double precision, target, allocatable     :: qsrcavg(:)        !< average discharge in the past his-interval at each source/sink
  double precision, allocatable     :: xsrc(:,:)         !< x-coordinates of source/sink
  double precision, allocatable     :: ysrc(:,:)         !< y-coordinates of source/sink
  integer, allocatable              :: nxsrc(:)          !< mx nr of points in xsrc, ysrc
@@ -500,24 +500,24 @@ subroutine default_flowexternalforcings()
     nbnduxy = 0       ! uxuy adv vel bnd
     nbndn  = 0        ! norm.velocity boundary points dimension
 
-    ngate   = 0       ! gates links dimension, to specify gate lower edge level
-    ngatesg = 0       ! nr of gate control signals
-    ncdam   = 0       ! controllable dams nodes dimension, to specify local bottom level
-    ncdamsg = 0       ! nr of controllable dam signals
-    ncgen   = 0       ! general structure nodes dimension, to apply gen struc defs
-    ncgensg = 0       ! nr of general structure signals
-    ncgen   = 0       ! general structure nodes dimension, to apply gen struc defs
-    ncgensg = 0       ! nr of general structure signals
-    nweirgen = 0      ! nr of weirs in the generalstructure set
-    ngategen = 0      ! nr of gates in the generalstructure set
-    ngenstru = 0      ! nr of real general structures in the generalstructure set
-    npump   = 0       ! npump dimension
-    npumpsg = 0       ! nr of pump signals
-    ndambreak = 0     ! nr of dambreak links
-    ndambreaksg = 0   ! nr of dambreak signals
-    nklep   = 0       ! nr of kleps
-    nvalv   = 0       ! nr of valves
-    nqbnd   = 0       ! nr of q bnd's
+    ngate   = 0            ! gates links dimension, to specify gate lower edge level
+    ngatesg = 0            ! nr of gate control signals
+    ncdam   = 0            ! controllable dams nodes dimension, to specify local bottom level
+    ncdamsg = 0            ! nr of controllable dam signals
+    ncgen   = 0            ! general structure nodes dimension, to apply gen struc defs
+    ncgensg = 0            ! nr of general structure signals
+    ncgen   = 0            ! general structure nodes dimension, to apply gen struc defs
+    ncgensg = 0            ! nr of general structure signals
+    nweirgen = 0           ! nr of weirs in the generalstructure set
+    ngategen = 0           ! nr of gates in the generalstructure set
+    ngenstru = 0           ! nr of real general structures in the generalstructure set
+    npump   = 0            ! npump dimension
+    npumpsg = 0            ! nr of pump signals
+    ndambreaklinks = 0     ! nr of dambreak links
+    ndambreaksignals = 0   ! nr of dambreak signals
+    nklep   = 0            ! nr of kleps
+    nvalv   = 0            ! nr of valves
+    nqbnd   = 0            ! nr of q bnd's
     ! JRE
     nzbnd = 0
     nubnd = 0
