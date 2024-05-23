@@ -2478,7 +2478,7 @@ private
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_EPS),temp_pointer)
             end if
             if (iturbulencemodel > 1) then
-               temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWW:IPNT_VICWW+kmx)
+               temp_pointer(1:(kmx+1)*ntot) => valobs(1:ntot,IPNT_VICWWS:IPNT_VICWWS+kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VICWW),temp_pointer)
             end if
             if (iturbulencemodel == 4 .and. jahistur > 0) then

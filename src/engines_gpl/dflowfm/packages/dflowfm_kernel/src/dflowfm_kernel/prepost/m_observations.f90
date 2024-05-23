@@ -150,7 +150,7 @@ implicit none
     integer                           :: IVAL_BRUV
     integer                           :: IVAL_TKIN
     integer                           :: IVAL_TEPS
-    integer                           :: IVAL_VICWW
+    integer                           :: IVAL_VICWWS
     integer                           :: IVAL_WS1
     integer                           :: IVAL_WSN
     integer                           :: IVAL_SEDDIF1
@@ -253,7 +253,7 @@ implicit none
     integer                           :: IPNT_BRUV
     integer                           :: IPNT_TKIN
     integer                           :: IPNT_TEPS
-    integer                           :: IPNT_VICWW
+    integer                           :: IPNT_VICWWS
     integer                           :: IPNT_WS1
     integer                           :: IPNT_SEDDIF1
     integer                           :: IPNT_RICH
@@ -389,7 +389,7 @@ subroutine init_valobs_pointers()
    IVAL_BRUV       = 0
    IVAL_TKIN       = 0
    IVAL_TEPS       = 0
-   IVAL_VICWW      = 0
+   IVAL_VICWWS     = 0
    IVAL_RICH       = 0
    IVAL_WS1        = 0
    IVAL_WSN        = 0
@@ -625,7 +625,7 @@ subroutine init_valobs_pointers()
       if ( iturbulencemodel.gt.0 ) then
          i=i+1;         IVAL_TKIN       = i
          i=i+1;         IVAL_TEPS       = i
-         i=i+1;         IVAL_VICWW      = i
+         i=i+1;         IVAL_VICWWS     = i
       end if
       if ( idensform.gt.0 ) then
          i=i+1;         IVAL_RICH       = i
@@ -696,7 +696,7 @@ subroutine init_valobs_pointers()
    IPNT_BRUV  = ivalpoint(IVAL_BRUV,  kmx, nlyrs)
    IPNT_TKIN  = ivalpoint(IVAL_TKIN,  kmx, nlyrs)
    IPNT_TEPS  = ivalpoint(IVAL_TEPS,  kmx, nlyrs)
-   IPNT_VICWW = ivalpoint(IVAL_VICWW, kmx, nlyrs)
+   IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
    IPNT_RICH  = ivalpoint(IVAL_RICH,  kmx, nlyrs)
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)

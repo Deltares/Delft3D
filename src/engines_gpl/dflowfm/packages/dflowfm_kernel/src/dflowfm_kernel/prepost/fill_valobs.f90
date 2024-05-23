@@ -414,7 +414,7 @@ subroutine fill_valobs()
                klay = kk - kb + nlayb + 1
                valobs(i, IPNT_ZWS+klay-1) = zws(kk)
                if (iturbulencemodel >= 2) then
-                   valobs(i, IPNT_VICWW + klay - 1) = vicwws(kk)
+                   valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                end if
                if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                   if (zws(kt) - zws(kb-1) > epshu .and. kk > kb-1 .and. kk < kt ) then
@@ -480,7 +480,7 @@ subroutine fill_valobs()
             enddo
 
             if (iturbulencemodel >= 2) then
-               call reorder_valobs_array(kmx+1,valobs(i,IPNT_VICWW:IPNT_VICWW+kmx), kb, kt, nlayb, dmiss)
+               call reorder_valobs_array(kmx+1,valobs(i,IPNT_VICWWS:IPNT_VICWWS+kmx), kb, kt, nlayb, dmiss)
             endif
             if (iturbulencemodel >= 3) then
                call reorder_valobs_array(kmx+1,valobs(i,IPNT_TKIN:IPNT_TKIN+kmx), kb, kt, nlayb, dmiss)
