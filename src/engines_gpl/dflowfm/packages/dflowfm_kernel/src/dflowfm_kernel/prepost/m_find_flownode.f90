@@ -88,7 +88,9 @@ subroutine find_nearest_flownodes(n, xx, yy, names, node_ids_nearest, jakdtree, 
          end if
       end do
    
-   else
+   end if
+   
+   if (jakdtree == 0) then
       
       do i = 1, n
          call inflowcell(xx(i), yy(i), k, jaoutside, iLocTp)
