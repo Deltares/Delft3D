@@ -118,66 +118,72 @@ implicit none
    end subroutine average_concentrations_for_laterals
    
    !> Calculate lateral discharges at each of the active grid cells, both source (lateral_discharge_in) and sink (lateral_discharge_out). 
-   module subroutine get_lateral_discharge(lateral_discharge_in,lateral_discharge_out)
-      use m_cell_geometry, only: ba
-      use m_flow, only: vol1, hs
+   module subroutine get_lateral_discharge(lateral_discharge_in,lateral_discharge_out, cell_volume)
+      use m_flow, only: hs
       use m_flowparameters, only: epshu
       use m_flowtimes, only: dts
       use m_partitioninfo, only: is_ghost_node
 
       real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_in   !< Lateral discharge flowing into the model (source)
       real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_out  !< Lateral discharge extracted out of the model (sink)
-   
+      real(kind=dp), dimension(:),   intent(in)    :: cell_volume            !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+      
       integer :: k1, i_cell, i_lateral
       real(kind=dp) :: qlat
-
+      real(kind=dp) :: total_lateral_volume
+      
       if (numlatsg > 0) then
-         lateral_discharge_in = 0._dp
-         lateral_discharge_out = 0._dp
+         lateral_discharge_in=0._dp
+         lateral_discharge_out=0._dp
          do i_lateral = 1,numlatsg
-            do k1=n1latsg(i_lateral),n2latsg(i_lateral)
-               ! loop over all elements of the lateral that are inside the current domain
-               i_cell = nnlat(k1)
-               ! apply_transport can only have values 0 or 1, only add lateral discharge if apply_transport == 1               
-               qlat = (real(apply_transport(i_lateral),kind=dp) * qplat(1,i_lateral) * ba(i_cell)) / balat(i_lateral)
-               if (qlat > 0) then
-                  if (.not. is_ghost_node(i_cell)) then 
-                     lateral_discharge_in(i_lateral,i_cell) = lateral_discharge_in(i_lateral,i_cell) + qlat
+            total_lateral_volume=0._dp
+            if (apply_transport(i_lateral) ==1) then 
+               do k1=n1latsg(i_lateral),n2latsg(i_lateral)
+                  ! loop over all elements of the lateral that are inside the current domain
+                  i_cell = nnlat(k1)
+                  qlat = qplat(1,i_lateral) * cell_volume(i_cell)
+                  total_lateral_volume = total_lateral_volume + cell_volume(i_cell)
+                  if (qlat > 0) then
+                     if (.not. is_ghost_node(i_cell)) then 
+                        lateral_discharge_in(i_lateral,i_cell) = lateral_discharge_in(i_lateral,i_cell) + qlat
+                     end if
+                  else if (hs(i_cell) > epshu) then
+                     qlat = - min(0.5_dp*cell_volume(i_cell)/dts , -qlat) ! this is required to conserve mass
+                     if (.not. is_ghost_node(i_cell)) then
+                        lateral_discharge_out(i_lateral,i_cell) = lateral_discharge_out(i_lateral,i_cell) - qlat
+                     end if
                   end if
-               else if (hs(i_cell) > epshu) then
-                  qlat = - min(0.5_dp*vol1(i_cell)/dts , -qlat) ! this is required to conserve mass
-                  if (.not. is_ghost_node(i_cell)) then
-                     lateral_discharge_out(i_lateral,i_cell) = lateral_discharge_out(i_lateral,i_cell) - qlat
-                  end if
-               end if
-            end do
+               end do
+               lateral_discharge_in(i_lateral,:) = lateral_discharge_in(i_lateral,:) / total_lateral_volume 
+               lateral_discharge_out(i_lateral,:) = lateral_discharge_out(i_lateral,:) / total_lateral_volume
+            end if
          end do
       end if
    end subroutine get_lateral_discharge
    
    
    ! Add lateral input contribution to the load being transported
-   module subroutine add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,dtol)
+   module subroutine add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,cell_volume,dtol)
       use m_transportdata, only: numconst
       real(kind=dp), dimension(:,:), intent(inout) :: transport_load  !< Load being transported into domain
       real(kind=dp), dimension(:,:), intent(inout) :: transport_sink  !< Load being transported out
       real(kind=dp), dimension(:,:), intent(in   ) :: discharge_in    !< Lateral discharge going into domain (source)
       real(kind=dp), dimension(:,:), intent(in   ) :: discharge_out   !< Lateral discharge going out (sink)
-      real(kind=dp), dimension(:),   intent(in)    :: vol1            !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-      real(kind=dp), intent(in)                    :: dtol            !< cut off value for vol1, to prevent division by zero
+      real(kind=dp), dimension(:),   intent(in)    :: cell_volume     !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+      real(kind=dp), intent(in)                    :: dtol            !< cut off value for cell_volume, to prevent division by zero
 
-      real(kind=dp) :: dvoli
+      real(kind=dp) :: delta_cell_volume
       integer :: i_const, i_lateral, i_cell, k1
       
       do i_const = 1,numconst   
          do i_lateral = 1,numlatsg
             do k1=n1latsg(i_lateral),n2latsg(i_lateral)
                i_cell = nnlat(k1)
-               dvoli = 1._dp/max(vol1(i_cell),dtol)
+               delta_cell_volume = 1._dp/max(cell_volume(i_cell),dtol)
                ! transport_load is added to RHS of transport equation, sink is added to diagonal:
                ! only multiply transport_load with concentration
-               transport_load(i_const,i_cell) = transport_load(i_const,i_cell) + dvoli * discharge_in(i_lateral,i_cell) * incoming_lat_concentration(1,i_const,i_lateral)
-               transport_sink(i_const,i_cell) = transport_sink(i_const,i_cell) + dvoli * discharge_out(i_lateral,i_cell)
+               transport_load(i_const,i_cell) = transport_load(i_const,i_cell) + delta_cell_volume* discharge_in(i_lateral,i_cell) * incoming_lat_concentration(1,i_const,i_lateral)
+               transport_sink(i_const,i_cell) = transport_sink(i_const,i_cell) + delta_cell_volume * discharge_out(i_lateral,i_cell)
             end do
          end do
       end do   

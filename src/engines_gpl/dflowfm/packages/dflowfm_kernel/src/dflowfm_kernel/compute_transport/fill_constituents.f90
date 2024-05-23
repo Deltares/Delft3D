@@ -157,8 +157,8 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       allocate(qin_over_laterals(numlatsg,ndxi),stat=ierr)
       allocate(qout_over_laterals(numlatsg,ndxi),stat=ierr)
 
-      call get_lateral_discharge(qin_over_laterals,qout_over_laterals)
-      call add_lateral_load_and_sink(const_sour, const_sink, qin_over_laterals, qout_over_laterals, vol1, dtol)
+      call get_lateral_discharge(qin_over_laterals,qout_over_laterals,vol1)
+      call add_lateral_load_and_sink(const_sour, const_sink,qin_over_laterals,qout_over_laterals,vol1,dtol)
 
       deallocate(qin_over_laterals,stat=ierr)
       deallocate(qout_over_laterals,stat=ierr)

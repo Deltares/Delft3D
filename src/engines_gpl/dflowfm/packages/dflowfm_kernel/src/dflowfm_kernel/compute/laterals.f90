@@ -140,21 +140,22 @@ module m_lateral
 
       !> Add lateral input contribution to the load being transported
       interface add_lateral_load_and_sink
-         module subroutine add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,dtol)
+         module subroutine add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,cell_volume,dtol)
             real(kind=dp), dimension(:,:), intent(inout) :: transport_load  !< Load being transported into domain
             real(kind=dp), dimension(:,:), intent(inout) :: transport_sink  !< Load being transported out
             real(kind=dp), dimension(:,:), intent(in)    :: discharge_in    !< Lateral discharge going into domain (source)
             real(kind=dp), dimension(:,:), intent(in)    :: discharge_out   !< Lateral discharge going out (sink)
-            real(kind=dp), dimension(:),   intent(in)    :: vol1            !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
+            real(kind=dp), dimension(:),   intent(in)    :: cell_volume     !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
             real(kind=dp), intent(in)                    :: dtol            !< cut off value for vol1, to prevent division by zero
          end subroutine add_lateral_load_and_sink
       end interface add_lateral_load_and_sink
 
       !> Calculate lateral discharges at each of the active grid cells, both source (lateral_discharge_in) and sink (lateral_discharge_out). 
       interface get_lateral_discharge
-         module subroutine get_lateral_discharge(lateral_discharge_in,lateral_discharge_out)
+         module subroutine get_lateral_discharge(lateral_discharge_in,lateral_discharge_out,cell_volume)
             real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_in   !< Lateral discharge flowing into the model (source)
             real(kind=dp), dimension(:,:), intent(inout) :: lateral_discharge_out  !< Lateral discharge extracted out of the model (sink)
+            real(kind=dp), dimension(:),   intent(in)    :: cell_volume            !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
          end subroutine get_lateral_discharge
       end interface get_lateral_discharge
   

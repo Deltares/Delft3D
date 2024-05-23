@@ -79,14 +79,14 @@ subroutine test_get_lateral_discharge()
    reference_lateral_discharge_out(2,nnlat(4)) = 5._dp
    reference_lateral_discharge_out(2,nnlat(5)) = 5._dp
    
-   call get_lateral_discharge(lateral_discharge_in,lateral_discharge_out)
+   call get_lateral_discharge(lateral_discharge_in,lateral_discharge_out,vol1)
    
    do i_lateral = 1,numlatsg
       do i_cell=1,ndxi
          call assert_comparable(lateral_discharge_in(i_lateral,i_cell), reference_lateral_discharge_in(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_in is not correct" )
          call assert_comparable(lateral_discharge_out(i_lateral,i_cell), reference_lateral_discharge_out(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_out is not correct" )         
-      enddo
-   enddo
+      end do
+   end do
       
    deallocate(lateral_discharge_in)
    deallocate(lateral_discharge_out)
@@ -144,8 +144,8 @@ subroutine test_add_lateral_load_and_sink()
          dvoli = 1/(vol1(i_cell))
          refval = dvoli*incoming_lat_concentration(1,i_const,i_lateral)*discharge_in(i_lateral,i_cell)
          call assert_comparable(transport_load(i_const,i_cell),refval,tolerance,"lateral_load value is not correct" )
-      enddo
-   enddo
+      end do
+   end do
    call assert_comparable(sum(transport_sink), 0._dp, tolerance, "todo")
 
    ! check transport out of the domain
@@ -163,8 +163,8 @@ subroutine test_add_lateral_load_and_sink()
          dvoli = 1/(vol1(i_cell))
          refval = dvoli*discharge_out(i_lateral,i_cell)
          call assert_comparable(transport_sink(i_const,i_cell), refval, tolerance, "lateral_sink value is not correct" )
-      enddo
-   enddo
+      end do
+   end do
       
    deallocate(discharge_in)
    deallocate(discharge_out)
@@ -222,8 +222,8 @@ subroutine setup_testcase()
       do k1=n1latsg(i_lateral),n2latsg(i_lateral)
          k = nnlat(k1)
          balat(i_lateral) = balat(i_lateral) + ba(k)
-      enddo
-   enddo
+      end do
+   end do
    ! positive qplat is considered inflow (source), negative value outflow (sink) 
    qplat(1,:) = (/9_dp,-10_dp/)
    ! top layer, per constituent, lateral 1, 
@@ -293,7 +293,7 @@ subroutine test_get_lateral_volume_per_layer
    do i_cell = 2,ndx
       kbot(i_cell) = ktop(i_cell-1) + 1
       ktop(i_cell) = kbot(i_cell) + kmxn(i_cell) - 1
-   enddo
+   end do
    
    ! initialize laterals administration
    numlatsg = 2
