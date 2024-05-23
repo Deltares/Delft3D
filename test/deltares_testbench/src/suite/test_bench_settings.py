@@ -7,6 +7,7 @@ Copyright (C)  Stichting Deltares, 2023
 import sys
 from typing import List, Optional
 
+from src.config.credentials import Credentials
 from src.config.local_paths import LocalPaths
 from src.config.program_config import ProgramConfig
 from src.config.test_case_config import TestCaseConfig
@@ -24,9 +25,9 @@ class TestBenchSettings:
     programs: List[ProgramConfig] = []
     configs: List[TestCaseConfig] = []
     run_mode: ModeType = ModeType.COMPARE
-    config_file: str
-    user_name: str
-    filter: str
+    config_file: str = ""
+    credentials: Credentials = Credentials()
+    filter: str = ""
     autocommit: bool = False
     only_post: bool = False
     teamcity: bool = False
@@ -34,6 +35,8 @@ class TestBenchSettings:
     test_bench_root: Optional[str] = None
     test_bench_script_name: Optional[str] = None
     test_bench_startup_dir: Optional[str] = None
+    server_base_url: str = ""
+    override_paths: str = ""
 
     def log_overview(self, logger: Logger):
         """Logs overview of the parameters
@@ -48,6 +51,6 @@ class TestBenchSettings:
         logger.info(f"Config   : {self.config_file}")
         logger.info(f"Filter   : {self.filter}")
         logger.info(f"LogLevel : {str(self.log_level)}")
-        logger.info(f"Username : {self.user_name}")
+        logger.info(f"Username : {self.credentials.username}")
 
         log_separator(logger, char="-", with_new_line=True)

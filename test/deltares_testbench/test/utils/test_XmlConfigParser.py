@@ -2,10 +2,17 @@ import io
 import textwrap
 from datetime import datetime, timezone
 from typing import Optional
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.config.credentials import Credentials
 from src.config.dependency import Dependency
 from src.config.test_case_path import TestCasePath
+from src.suite.test_bench_settings import TestBenchSettings
+from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.log_level import LogLevel
+from src.utils.logging.test_loggers.test_result_type import TestResultType
 from src.utils.xml_config_parser import XmlConfigParser
 
 
@@ -14,11 +21,15 @@ def test_load__config_with_testcase__path_not_versioned() -> None:
     # Arrange
     content = make_test_case_config(test_case_path=TestCasePath("test/case/path"))
     parser = XmlConfigParser()
-    credentials = Credentials()
-    credentials.name = "commandline"
+    settings = TestBenchSettings()
+    settings.config_file = content
+    settings.server_base_url = "s3://dsc-testbench"
+    settings.credentials = Credentials()
+    settings.credentials.name = "commandline"
+    logger = ConsoleLogger(LogLevel.DEBUG)
 
     # Act
-    _, _, (config, *other_configs) = parser.load(content, "", credentials, "s3://dsc-testbench")  # type: ignore
+    _, _, (config, *other_configs) = parser.load(settings, logger)  # type: ignore
 
     # Assert
     assert not other_configs
@@ -36,11 +47,15 @@ def test_load__config_with_testcase__path_versioned() -> None:
         test_case_path=TestCasePath("test/case/path", version),
     )
     parser = XmlConfigParser()
-    credentials = Credentials()
-    credentials.name = "commandline"
+    settings = TestBenchSettings()
+    settings.config_file = content
+    settings.server_base_url = "s3://dsc-testbench"
+    settings.credentials = Credentials()
+    settings.credentials.name = "commandline"
+    logger = ConsoleLogger(LogLevel.DEBUG)
 
     # Act
-    _, _, (config, *other_configs) = parser.load(content, "", credentials, "s3://dsc-testbench")  # type: ignore
+    _, _, (config, *other_configs) = parser.load(settings, logger)  # type: ignore
 
     # Assert
     assert not other_configs
@@ -57,11 +72,15 @@ def test_load__config_with_testcase_depencency__dependency_not_versioned() -> No
         dependency=Dependency(local_dir="local/dir", case_path="case/dir"),
     )
     parser = XmlConfigParser()
-    credentials = Credentials()
-    credentials.name = "commandline"
+    settings = TestBenchSettings()
+    settings.config_file = content
+    settings.server_base_url = "s3://dsc-testbench"
+    settings.credentials = Credentials()
+    settings.credentials.name = "commandline"
+    logger = ConsoleLogger(LogLevel.DEBUG)
 
     # Act
-    _, _, (config, *other_configs) = parser.load(content, "", credentials, "s3://dsc-testbench")  # type: ignore
+    _, _, (config, *other_configs) = parser.load(settings, logger)  # type: ignore
 
     # Assert
     assert not other_configs
@@ -80,11 +99,15 @@ def test_load__config_with_testcase_dependency__dependency_versioned() -> None:
         dependency=Dependency(local_dir="local/dir", case_path="case/dir", version=version),
     )
     parser = XmlConfigParser()
-    credentials = Credentials()
-    credentials.name = "commandline"
+    settings = TestBenchSettings()
+    settings.config_file = content
+    settings.server_base_url = "s3://dsc-testbench"
+    settings.credentials = Credentials()
+    settings.credentials.name = "commandline"
+    logger = ConsoleLogger(LogLevel.DEBUG)
 
     # Act
-    _, _, (config, *other_configs) = parser.load(content, "", credentials, "s3://dsc-testbench")  # type: ignore
+    _, _, (config, *other_configs) = parser.load(settings, logger)  # type: ignore
 
     # Assert
     assert not other_configs
@@ -95,9 +118,37 @@ def test_load__config_with_testcase_dependency__dependency_versioned() -> None:
     assert datetime.fromisoformat(config.dependency.version).replace(tzinfo=timezone.utc) == now
 
 
+def test_load__config_with_11e__throws_error_and_logs() -> None:
+    """Throw and log value error in xml parsing."""
+    # Arrange
+    content = make_test_case_config(reference_value="11.0e")
+    parser = XmlConfigParser()
+    settings = TestBenchSettings()
+    settings.config_file = content
+    settings.credentials = Credentials()
+    settings.credentials.name = "commandline"
+
+    # Mock the logger
+    logger = MagicMock(spec=ConsoleLogger)
+    testcase_logger = MagicMock()
+    logger.create_test_case_logger.return_value = testcase_logger
+
+    # Act
+    with patch('src.utils.logging.test_loggers.file_test_logger.FileTestLogger', return_value=testcase_logger):
+        with pytest.raises(Exception) as excinfo:
+            _, _, _ = parser.load(settings, logger)
+
+    # Assert
+    assert excinfo.typename == 'ValueError'
+    logger.create_test_case_logger.assert_called_once()
+    testcase_logger.test_started.assert_called_once()
+    testcase_logger.test_Result.assert_called_once_with(TestResultType.Exception, "could not convert string to float: '11.0e'")
+
+
 def make_test_case_config(
     test_case_path: Optional[TestCasePath] = None,
     dependency: Optional[Dependency] = None,
+    reference_value: Optional[str] = "0.0",
 ) -> io.BytesIO:
     """Make config xml with some default values."""
     # Build `path` element.
@@ -172,7 +223,7 @@ def make_test_case_config(
                     <checks>
                         <file name="foo.out" type=".out">
                             <parameters>
-                                <parameter name="foo" toleranceRelative="0.00" />
+                                <parameter name="foo" toleranceRelative="{reference_value}" />
                             </parameters>
                         </file>
                     </checks>
