@@ -62,12 +62,13 @@
  use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
  use unstruc_netcdf_map_class
  use unstruc_caching
- use m_monitoring_crosssections, only: ncrs, fill_geometry_arrays_crs
+ use m_monitoring_crosssections, only: ncrs
  use m_setucxcuy_leastsquare, only: reconst2ndini
  use m_flowexternalforcings, only: nwbnd
  use m_sedtrails_network
  use m_sedtrails_netcdf, only: sedtrails_loadNetwork
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
+ use fm_statistical_output
  use unstruc_display, only : ntek, jaGUI
  use m_debug
  use m_flow_flowinit
@@ -434,6 +435,9 @@
  call timstrt('Structure parameters', handle_extra(29)) ! structure parameters
  call structure_parameters()                         ! initialize structure values, after flow_flowinit() so that initial water levels and discharges are already set.
  call timstop(handle_extra(29)) ! end structure parameters
+
+ ! Prepare for his/map/clm output via statistical_output module
+ call flow_init_statistical_output_his(config_set_his, out_variable_set_his)
 
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then

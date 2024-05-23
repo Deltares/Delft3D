@@ -27,9 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
 subroutine flow_finalize_single_timestep(iresult)
 use m_flow
@@ -49,9 +46,12 @@ use m_oned_functions, only: updateTimeWetOnGround, updateTotalInflow1d2d, update
                             updateFreeboard, updateDepthOnGround, updateVolOnGround
 use unstruc_channel_flow, only : network
 use m_sedtrails_stats, st_is_numndvals=>is_numndvals
+use fm_statistical_output
+use m_statistical_output, only: update_statistical_output, update_source_input
 use m_update_fourier, only : update_fourier
 use mass_balance_areas_routines, only : comp_horflowmba
 use m_lateral, only : numlatsg
+use m_update_values_on_cross_sections, only: update_values_on_cross_sections
 
 implicit none
 integer, intent(out) :: iresult
@@ -71,40 +71,48 @@ integer, intent(out) :: iresult
  call flow_f0isf1()                                  ! mass balance and vol0 = vol1
 
  ! Update water depth at pressure points (for output).
- ! TODO: UNST-3415: investigate if this statement can be moved to step_reduce.
  hs = s1 - bl
-
- ! The subroutine below is called in every time step.
- ! TODO: consider to treat it as the cross section, that the mpi reduction is made at his-output time step.
  call structure_parameters()
-
- dnt    = dnt + 1
- time0  = time1                                      ! idem
- dtprev = dts                                        ! save previous timestep
-
- if ( jatimer.eq.1 ) then ! TODO: AvD: consider moving timers to flow_perform_*
-   call stoptimer(ITIMESTEP)
-   numtsteps = numtsteps + 1
- end if
-
- ! call wriinc(time1)
 
   if (jaQext > 0) then
      call updateCumulativeInflow(dts)
   end if
 
-  call updateValuesOnCrossSections(time1)             ! Compute sum values across cross sections.
-  call updateValuesOnRunupGauges()
- if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
-    if (numsrc > 0) then
-       call updateValuesonSourceSinks(time1)         ! Compute discharge and volume on sources and sinks
-    endif
- endif
+!       only update values at the observation stations when necessary
+!          alternative: move this to flow_externaloutput
+   call timstrt('update HIS data DtUser', handle_extra(75))
+   if (ti_his > 0) then
+
+      call updateValuesOnObservationStations()
+
+      if (comparereal(time1, time_his, eps10)>=0) then
+         !do_fourier = do_fourier .or. (md_fou_step == 2)
+         if (jampi == 1) then
+            call updateValuesOnRunupGauges_mpi()
+            !call reduce_particles()
+         endif
+         if (jahisbal > 0) then ! Update WaterBalances etc.
+            call updateBalance()
+         endif
+         if ( jacheckmonitor == 1 ) then
+           !compute "checkerboard" monitor
+            call comp_checkmonitor()
+         endif
+      endif
+      endif
+      call timstop(handle_extra(75))
+
+   call update_values_on_cross_sections
+   call updateValuesOnRunupGauges()
+   if (jampi == 0 .or. (jampi == 1 .and. my_rank==0)) then
+      if (numsrc > 0) then
+         call updateValuesonSourceSinks(time1)         ! Compute discharge and volume on sources and sinks
+      end if
+   end if
 
  if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
     call updateValuesOnLaterals(time1, dts)
  end if
-
 
  ! for 1D only
  if (network%loaded .and. ndxi-ndx2d > 0) then
@@ -118,7 +126,6 @@ integer, intent(out) :: iresult
        call updateTotalInflowLat(dts)
     end if
  end if
- ! note updateValuesOnObservationStations() in flow_usertimestep
 
  ! Time-integral statistics on all flow nodes.
  if (is_is_numndvals > 0) then
@@ -133,6 +140,26 @@ integer, intent(out) :: iresult
 
  if ( jaGUI.eq.1 ) then
     call TEXTFLOW()
+ end if
+ 
+ call update_source_input(out_variable_set_his)
+ call update_source_input(out_variable_set_map)
+ call update_source_input(out_variable_set_clm)
+
+ if (out_variable_set_his%count > 0) then
+    call update_statistical_output(out_variable_set_his%statout,dts)
+ endif
+ 
+!call update_statistical_output(out_variable_set_map%configs,dts)
+!call update_statistical_output(out_variable_set_clm%configs,dts)
+ 
+ dnt    = dnt + 1
+ time0  = time1                                      ! idem
+ dtprev = dts                                        ! save previous timestep
+
+ if ( jatimer.eq.1 ) then ! TODO: AvD: consider moving timers to flow_perform_*
+   call stoptimer(ITIMESTEP)
+   numtsteps = numtsteps + 1
  end if
 
  call timstop(handle_steps)

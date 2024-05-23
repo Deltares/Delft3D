@@ -272,7 +272,9 @@ end subroutine api_loadmodel
    use dfm_error
    use m_partitioninfo, only: jampi
    use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
-
+   use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
+   use m_update_values_on_cross_sections, only: update_values_on_cross_sections
+   use m_statistical_output, only: update_source_input, update_statistical_output
    integer, external :: flow_modelinit
    integer          :: timerHandle, inner_timerhandle
 
@@ -306,22 +308,31 @@ end subroutine api_loadmodel
     inner_timerhandle = 0
     call timstrt('Update various', inner_timerhandle)
     
-    call updateValuesOnCrossSections(time1)             ! Initial statistics, copied from flow_usertimestep
-    call updateValuesOnRunupGauges()
-    if (jahisbal > 0) then                              ! Update WaterBalances etc.
+   call update_values_on_cross_sections
+   call updateValuesOnRunupGauges()
+   if (jahisbal > 0) then                              ! Update WaterBalances etc.
       call updateBalance()
-   endif
+   end if
    call updateValuesonSourceSinks(time1)
    
-    if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
-       call updateValuesOnLaterals(time1, dts)
-    end if
+   if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      call updateValuesOnLaterals(time1, dts)
+   end if
 
    if (jampi == 1) then
-      call updateValuesOnCrossSections_mpi(time1)
       call updateValuesOnRunupGauges_mpi()
-   endif
+   end if
    call timstop(inner_timerhandle)
+   
+   call update_source_input(out_variable_set_his)
+   call update_source_input(out_variable_set_map)
+   call update_source_input(out_variable_set_clm)
+
+   if (out_variable_set_his%count > 0) then
+      call update_statistical_output(out_variable_set_his%statout,dts)
+   endif
+   !call update_statistical_output(out_variable_set_map%configs,dts)
+   !call update_statistical_output(out_variable_set_clm%configs,dts)
     
     call mess(LEVEL_INFO,'Writing initial output to file(s)...')
     inner_timerhandle = 0
@@ -402,27 +413,29 @@ integer                   :: ndraw
 !> Finishes a run of the current model (timings/statistics).
 !! For a restart, subsequently call a flowinit and flow/flowstep again.
 subroutine flowfinalize()
-use unstruc_files
-use unstruc_netcdf
-use MessageHandling, only: FinalizeMessageHandling
-use m_ec_module
-use m_meteo, only: ecInstancePtr
-use m_nearfield
-use m_lateral
-    call dealloc_nfarrays()
-    call dealloc_lateraldata()
+   use unstruc_files
+   use unstruc_netcdf
+   use MessageHandling, only: FinalizeMessageHandling
+   use m_ec_module
+   use m_meteo, only: ecInstancePtr
+   use m_nearfield
+   use m_lateral
+   use fm_statistical_output, only: close_fm_statistical_output
 
-    if (.not.ecFreeInstance(ecInstancePtr)) then
-       continue     
-    end if
-    call close_all_files()
-    call unc_closeall()
-    mapids%ncid = 0    !< Reset global map-file ncid
-    ihisfile = 0       !< Reset global his-file ncid
-    call FinalizeMessageHandling()
-    close(mdia)
-    mdia = 0
-    
+   call dealloc_nfarrays()
+   call dealloc_lateraldata()
+   call close_fm_statistical_output()
+
+   if (.not.ecFreeInstance(ecInstancePtr)) then
+      continue
+   end if
+   call close_all_files()
+   call unc_closeall()
+   mapids%ncid = 0    !< Reset global map-file ncid
+   ihisfile = 0       !< Reset global his-file ncid
+   call FinalizeMessageHandling()
+   close(mdia)
+   mdia = 0
 end subroutine flowfinalize
 
 end module unstruc_api

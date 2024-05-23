@@ -70,6 +70,7 @@ module m_lateral
       integer,       allocatable, target, public :: nodeCountLat(:) !< [-] Count of nodes per lateral.
       real(kind=dp), allocatable, target, public :: geomXLat(:)     !< [m] x coordinates of laterals.
       real(kind=dp), allocatable, target, public :: geomYLat(:)     !< [m] y coordinates of laterals.
+      logical,                            public :: model_has_laterals_across_partitions = .false.
 
       private
       real(kind=dp), allocatable, target, dimension(:,:,:), public :: outgoing_lat_concentration !< Average concentration per lateral discharge location.

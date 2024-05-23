@@ -249,7 +249,7 @@
 !! The resulting link administration in the crspath structures is later
 !! used when computing cumulative data across the cross sections.
 !!
-!! \see updateValuesOnCrossSections, fixedweirs_on_flowgeom, thindams_on_netgeom
+!! \see update_values_on_cross_sections, fixedweirs_on_flowgeom, thindams_on_netgeom
 subroutine crosssections_on_flowgeom()
     use m_monitoring_crosssections
     use m_flowgeom, only: Lnx

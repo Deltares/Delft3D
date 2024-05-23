@@ -579,7 +579,7 @@ static int SBNSearchDiskInternal( SearchStruct* psSearch,
                 /* Caution : we count shape id starting from 0, and not 1 */
                 nShapeId --;
 
-                /*printf("shape=%d, minx=%d, miny=%d, maxx=%d, maxy=%d\n",
+                /*printf("shape=%d, minx=%d, miny=%d, max_x=%d, max_y=%d\n",
                        nShapeId, bMinX, bMinY, bMaxX, bMaxY);*/
 
                 if( !SBNAddShapeId( psSearch, nShapeId ) )
@@ -736,7 +736,7 @@ static int SBNSearchDiskInternal( SearchStruct* psSearch,
                     /* Caution : we count shape id starting from 0, and not 1 */
                     nShapeId --;
 
-                    /*printf("shape=%d, minx=%d, miny=%d, maxx=%d, maxy=%d\n",
+                    /*printf("shape=%d, minx=%d, miny=%d, max_x=%d, max_y=%d\n",
                         nShapeId, bMinX, bMinY, bMaxX, bMaxY);*/
 
                     if( !SBNAddShapeId( psSearch, nShapeId ) )

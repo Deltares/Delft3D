@@ -3769,7 +3769,9 @@ end subroutine partition_make_globalnumbers
    end subroutine reduce_kobs
    
 !> reduce outputted values at observation stations
-   subroutine reduce_valobs(numvals, numobs, valobs, valobs_all)
+!! NOTE: It seems that, now that we reduce the statistical output before writing, this routine is
+!!       only needed to maintain functionality in unstruc_bmi/get_compound_field
+   subroutine reduce_valobs(numvals, numobs, valobs)
       use m_missing
 #ifdef HAVE_MPI
       use mpi
@@ -3779,16 +3781,10 @@ end subroutine partition_make_globalnumbers
       
       integer,                                     intent(in)    :: numvals      !< number of values
       integer,                                     intent(in)    :: numobs       !< number of observation stations
-      double precision, dimension(numvals,numobs), intent(inout) :: valobs       !< values at obervations stations to be outputted
-      double precision, dimension(numvals,numobs), intent(inout) :: valobs_all   !< work array
-      
-      
-!      double precision, dimension(:,:), allocatable              :: valobs_all
+      double precision, dimension(numobs,numvals), intent(inout) :: valobs       !< values at obervations stations to be output.
       
       double precision, parameter                                :: dsmall = -huge(1d0)
-      
       integer                                                    :: iobs, ival
-      
       integer                                                    :: ierror
       
 #ifdef HAVE_MPI
@@ -3797,28 +3793,72 @@ end subroutine partition_make_globalnumbers
 !     disable observation stations with missing values in this domain
       do iobs=1,numobs
          do ival=1,numvals
-            if ( valobs(ival,iobs).eq.DMISS ) then
-                valobs(ival,iobs) = dsmall
+            if ( valobs(iobs,ival).eq.DMISS ) then
+                valobs(iobs,ival) = dsmall
             end if
          end do
       end do
       
-      call MPI_allreduce(valobs,valobs_all,numobs*numvals,mpi_double_precision,mpi_max,DFM_COMM_DFMWORLD,ierror)
-      valobs = valobs_all
+      call MPI_allreduce(MPI_in_place,valobs,numobs*numvals,mpi_double_precision,mpi_max,DFM_COMM_DFMWORLD,ierror)
       
 !     set values of observation stations that were not found in any subdomain
       do iobs=1,numobs
          do ival=1,numvals
-            if ( valobs(ival,iobs).eq.dsmall ) then   ! safety, check all vals until not found (not necessary)
-               valobs(ival,iobs) = DMISS
+            if ( valobs(iobs,ival).eq.dsmall ) then   ! safety, check all vals until not found (not necessary)
+               valobs(iobs,ival) = DMISS
             end if
          end do
       end do
-!      write(6,"(I4, ':', E12.5)") my_rank, valobs(1,10)
+!      write(6,"(I4, ':', E12.5)") my_rank, valobs(10,1)
       
 #endif
       return
    end subroutine reduce_valobs
+   
+   !> Reduce the statistical output values to MPI root process #0.
+   subroutine reduce_statistical_output(output_set)
+      use m_statistical_output_types, only: t_output_variable_set
+      use m_missing
+      use m_alloc, only: realloc
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
+
+      double precision, parameter    :: dsmall = -huge(1d0)
+      integer                        :: i_stat, i_loc
+      double precision, pointer      :: stat_output(:)          !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
+      double precision, allocatable  :: send_buffer(:)          !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
+      integer                        :: ierr
+      
+#ifdef HAVE_MPI
+      do i_stat = 1,output_set%count
+         
+         stat_output => output_set%statout(i_stat)%stat_output
+         
+         ! Set values for locations outside this partition to -huge so mpi_max will work
+         send_buffer = stat_output ! initial copy of local output data into the send buffer
+         do i_loc = 1,size(stat_output)
+            if (stat_output(i_loc) == dmiss) then
+               send_buffer(i_loc) = dsmall ! set missing values to dsmall to enable mpi_max
+            end if
+         end do
+      
+         ! reduce with stat_output as receive buffer
+         call MPI_reduce(send_buffer, stat_output,  size(stat_output), mpi_double_precision, mpi_max, 0, DFM_COMM_DFMWORLD, ierr)
+         
+         ! Set values for locations outside this partition back to DMISS
+         do i_loc = 1,size(stat_output)
+            if (stat_output(i_loc) == dsmall) then
+               stat_output(i_loc) = dmiss
+            end if
+         end do
+         
+      end do
+#endif
+
+   end subroutine reduce_statistical_output
    
    
 !> reduce source-sinks
@@ -3840,34 +3880,8 @@ end subroutine partition_make_globalnumbers
       integer                                                    :: ierror
       
 #ifdef HAVE_MPI
-
-      if ( my_rank.eq.0 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.1 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.2 ) then
-         continue
-      end if
-      
       call MPI_allreduce(srsn,srsn_all,numsrc*NUMVALS,mpi_double_precision,mpi_sum,DFM_COMM_DFMWORLD,ierror)
       srsn = srsn_all
-      
-      if ( my_rank.eq.0 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.1 ) then
-         continue
-      end if
-      
-      if ( my_rank.eq.2 ) then
-         continue
-      end if
-      
 #endif
       return
    end subroutine reduce_srsn
@@ -3966,24 +3980,24 @@ end subroutine partition_make_globalnumbers
    
 !> Reduce runup for each runup gauge across all MPI partitions.
 !> Returns max across domains (1,:), and domain number of max (2,:)   
-   subroutine reduce_rug(resu,nrug)
+   subroutine reduce_rug(resu,num_rugs)
 #ifdef HAVE_MPI
       use mpi
 #endif
       implicit none
       
-      integer,                             intent(in)    :: nrug                !< number of gauges
-      double precision, dimension(2,nrug), intent(inout) :: resu                !< runup data
+      integer,                             intent(in)    :: num_rugs                !< number of gauges
+      double precision, dimension(2,num_rugs), intent(inout) :: resu                !< runup data
       double precision, dimension(:,:),    allocatable   :: resu_all
       
       integer                                            :: ierror
       
 #ifdef HAVE_MPI
 !     allocate
-      allocate(resu_all(2,nrug))
+      allocate(resu_all(2,num_rugs))
       resu_all = 0d0
       
-      call mpi_allreduce(resu,resu_all,nrug,mpi_2double_precision,mpi_maxloc,DFM_COMM_DFMWORLD,ierror)
+      call mpi_allreduce(resu,resu_all,num_rugs,mpi_2double_precision,mpi_maxloc,DFM_COMM_DFMWORLD,ierror)
       if (ierror .ne. 0) then
          goto 1234
       endif   
@@ -5291,6 +5305,397 @@ else
 endif
  
 end function  get_list_size
+
+!> Check if any structures lie across multiple partitions
+!! This is currently used for statistical output, to disable output items that
+!! would in this case produce incorrect results (as integrated values on structures
+!! are only reduced every user time step, so min/max in time would not be valid)
+function any_structures_lie_across_multiple_partitions(node_count_per_structure) result(res)
+#ifdef HAVE_MPI
+   use mpi
+#endif
+   use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
+  
+   integer,    intent(in) :: node_count_per_structure(:)    !< Total number of nodes for each instance of a type of structure
+   logical                :: res                            !< True if any instance of this type of structure lies across multiple partitions, false otherwise
+   
+   integer :: number_of_structures, i_struc, n_partitions_with_nodes, ierr
+   logical :: has_nodes_in_current_partition, structure_lies_across_partitions, any_structures_lie_across_partitions
+   
+   res = .false. !Default return value
+   
+   if (jampi == 0) then
+      return
+   end if
+   
+   number_of_structures = size(node_count_per_structure)
+   
+   if (number_of_structures == 0) then
+      return
+   end if
+   
+#ifdef HAVE_MPI
+   loop_over_structures: do i_struc = 1, number_of_structures
+   
+      ! The number of nodes for each structure that is provided as input, is different for each process. If none of the structure's
+      ! geometry nodes lie in the partition of the current process, then nodeCountStru(i_struc) will be zero on this process.
+      has_nodes_in_current_partition = node_count_per_structure(i_struc) > 0
+   
+      n_partitions_with_nodes = 0
+      if (has_nodes_in_current_partition) then
+         n_partitions_with_nodes = 1
+      end if
+      call mpi_allreduce(mpi_in_place, n_partitions_with_nodes, 1, mpi_integer, mpi_sum, DFM_COMM_DFMWORLD, ierr)
+      if (ierr /= MPI_SUCCESS) then
+         call mess(LEVEL_ERROR,'Programming error, please report: mpi_allreduce failed in any_structures_lie_across_multiple_partitions')
+      end if
+      
+      ! If more than one process lists >0 geometry nodes for a structure, then that structure lies across multiple partitions.
+      structure_lies_across_partitions = .false.
+      if (n_partitions_with_nodes == 0) then
+         call mess(LEVEL_WARN,'Programming error, please report: any_structures_lie_across_multiple_partitions found no partitions with nodes!')
+      elseif (n_partitions_with_nodes > 1) then
+         structure_lies_across_partitions = .true.
+      end if
+      
+      if (structure_lies_across_partitions) then
+         res = .true.
+         exit loop_over_structures
+      end if
+   
+   end do loop_over_structures
+#endif
+  
+end function any_structures_lie_across_multiple_partitions
+
+!> Check if any cross-sections lie across multiple partitions
+!! This is currently used for statistical output, to disable output items that
+!! would in this case produce incorrect results (as integrated values on cross-sections
+!! are only reduced every user time step, so min/max in time would not be valid)
+function model_has_crosssections_across_partitions result(res)
+   use m_monitoring_crosssections, only: ncrs, crs
+  
+   logical :: res !< True if the crs array contains any cross-sections that lie across multiple partitions, false otherwise
+   
+   integer :: icrs
+   
+   res = .false.
+   
+   do icrs = 1, ncrs
+      if (flowlinks_are_across_multiple_partitions(crs(icrs)%path%ln)) then
+         res = .true.
+      end if
+   end do
+  
+end function model_has_crosssections_across_partitions
+
+!> Check if a set of flowlinks lies across multiple partitions
+function flowlinks_are_across_multiple_partitions(flowlinks) result(res)
+   use mpi
+   use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_WARN
+
+   integer, dimension(:), intent(in) :: flowlinks !< Array of flowlink indices to check
+   logical                           :: res       !< True if the flowlinks lie across multiple partitions, false otherwise
+
+   logical :: has_flowlinks_in_current_partition
+   integer :: n_partitions_with_flowlinks
+   integer :: ierr
+   
+   res = .false. !Default return value
+   
+   if (jampi == 0) then
+      return
+   end if
+
+   ! The array of flowlinks that is provided as input, is different for each process. For example, if we are checking if a cross-section
+   ! lies across multiple partitions, we look at the flowlinks that are listed for that cross-section on each process. As each process
+   ! "knows" only the grid of its own partition, it lists only the flowlinks crossing the cross-section in its own partition.
+   ! If the cross-section lies entirely outside a process' partition, it will not list any flowlinks, so the size of crs%path%ln will
+   ! be zero (note: as can be seen in crspath_on_flowgeom, ghost links are not listed!).
+   has_flowlinks_in_current_partition = size( flowlinks) > 0
+   
+   n_partitions_with_flowlinks = 0
+   if (has_flowlinks_in_current_partition) then
+      n_partitions_with_flowlinks = 1
+   end if
+   call mpi_allreduce(mpi_in_place, n_partitions_with_flowlinks, 1, mpi_integer, mpi_sum, DFM_COMM_DFMWORLD, ierr)
+   if (ierr /= MPI_SUCCESS) then
+      call mess(LEVEL_ERROR,'Programming error, please report: mpi_allreduce failed in flowlinks_are_across_multiple_partitions')
+   end if
+   
+   if (n_partitions_with_flowlinks == 0) then
+      call mess(LEVEL_WARN,'Programming error, please report: flowlinks_are_across_multiple_partitions found no partitions with flowlinks!')
+   elseif (n_partitions_with_flowlinks > 1) then
+      res = .true.
+   end if
+   
+end function flowlinks_are_across_multiple_partitions
+
+!> Fill in the geometry arrays of cross sections for history output
+!! Two special situations are also treated:
+!! 1. The flowlinks of one cross section are not successive on one subdomain, which can happen in both sequential and parallel simulations.
+!! 2. In parallel simulations, a cross section lies on multiple subdomains.
+subroutine fill_geometry_arrays_crs()
+   use m_alloc
+   use m_GlobalParameters
+   use m_flowparameters, only: eps6
+   use precision_basics
+   use m_monitoring_crosssections, only: nodecountcrs, ncrs, crs, nnodescrs, geomxcrs, geomycrs
+   use stdlib_kinds, only: dp
+   implicit none
+
+   real(dp),         allocatable :: xGat(:), yGat(:)    ! Coordinates that are gathered data from all subdomains
+   integer,          allocatable :: nodeCountCrsMPI(:)  ! Count of nodes per cross section after mpi communication.
+   real(dp),         allocatable :: geomXCrsMPI(:)      ! [m] x coordinates of cross sections after mpi communication.
+   real(dp),         allocatable :: geomYCrsMPI(:)      ! [m] y coordinates of cross sections after mpi communication.
+   integer,          allocatable :: nodeCountCrsGat(:), nNodesCrsGat(:), displs(:)
+   real(dp),         allocatable :: geomX(:), geomY(:)
+   integer                       :: nlinks, i, j, j1, k, k1, ierror, is, ie, n, ii, nNodes, nNodesCrsMPI, L, L0, ks, ke, nPar, nNodesAdd, nn, jaexist, nb, nbLast, kk
+   real(dp)                      :: xNew, yNew, xOld, yOld
+   integer,          allocatable :: maskBnd(:), maskBndAll(:), maskBndGat(:), indBndMPI(:), jaCoincide(:)  ! Arrays for boundary nodes, only used in parallel run
+
+   ! Allocate and construct geometry variable arrays (on one subdomain)
+   call realloc(nodeCountCrs, ncrs, keepExisting = .false., fill = 0)
+
+   do i = 1, ncrs
+      nlinks = crs(i)%path%lnx
+      if (nlinks > 0 ) then
+         nodeCountCrs(i) = nlinks + 1 ! Here assumes that the flowlinks of the cross section are successive.
+                                      ! The situation when they are not successive will be handled later in this subroutine.
+      end if
+   end do
+   nNodesCrs = sum(nodeCountCrs)
+   call realloc(geomXCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
+   call realloc(geomYCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
+   if (jampi > 0) then
+      ! In parallel runs, one cross section might lie on multiple subdomains. To handle this situation,
+      ! we will need to know which nodes are on boundaries of a cross section on each subdomain, and the boundary nodes will be handled separately.
+      ! This will avoid having duplicated (boundary) nodes in the arrays of coordinates of a cross section among all subdomains.
+       call realloc(maskBndAll, nNodesCrs, keepExisting = .false., fill = 0) ! If the node is a boundary node then the value will be 1
+   end if
+   is = 0
+   ie = 0
+   do i = 1, ncrs
+      nNodes = nodeCountCrs(i)
+      nlinks = crs(i)%path%lnx
+      if (nNodes > 0) then
+         call realloc(geomX, max(allocSize(geomX), nNodes), keepExisting=.false.)
+         call realloc(geomY, max(allocSize(geomY), nNodes), keepExisting=.false.)
+         L = crs(i)%path%iperm(1)
+         geomX(1) = crs(i)%path%xk(1,L)
+         geomX(2) = crs(i)%path%xk(2,L)
+         geomY(1) = crs(i)%path%yk(1,L)
+         geomY(2) = crs(i)%path%yk(2,L)
+
+         if (jampi > 0) then
+            ! Determine the 1st boundary node (Boundary nodes are only useful for parallel simulations).
+            call realloc(maskBnd, nNodes, keepExisting = .false., fill = 0)
+            if (nlinks == 1) then
+               ! If there is only one link, then the two nodes are the boundary nodes.
+               maskBnd(1) = 1
+               maskBnd(2) = 1
+            else
+               ! If there are more than one link, then (geomX(1),geomY(1)) is a boundary node.
+               maskBnd(1) = 1
+            end if
+         end if
+
+         if (nlinks > 1) then
+            ! If there is more than one link, adding more nodes to coordinates arrays.
+            k = 3
+            nNodesAdd = 0
+            do L0 = 2, nlinks
+               L = crs(i)%path%iperm(L0)
+
+               if (comparereal(crs(i)%path%xk(1,L), geomX(k-1), eps6)/=0 .or. comparereal(crs(i)%path%yk(1,L), geomY(k-1), eps6)/=0) then
+                  ! If the 1st node of link L is not the ending node of the previous link,
+                  ! then this means that the flowlinks for this cross section are not successive, and
+                  ! they have a break between Link L and the previous link.
+                  ! In this situation, one more node, i.e. the 1st node of link L, should be included.
+                  nNodes = nNodes + 1
+                  nodeCountCrs(i) = nNodes
+                  call realloc(geomX, max(allocSize(geomX), nNodes), keepExisting=.true.)
+                  call realloc(geomY, max(allocSize(geomY), nNodes), keepExisting=.true.)
+                  geomX(k) = crs(i)%path%xk(1,L)
+                  geomY(k) = crs(i)%path%yk(1,L)
+
+                  if (jampi > 0) then ! Mark this node and the previous node as boundary nodes.
+                     call realloc(maskBnd, nNodes, keepExisting=.true.)
+                     maskBnd(k-1) = 1
+                     maskBnd(k) = 1
+                  end if
+
+                  k = k+1
+                  nNodesAdd = nNodesAdd + 1
+               end if
+
+               ! We take the 2nd node of link L, because the orientation of all links has been
+               ! guaranteed in subroutine crspath_on_singlelink.
+               geomX(k) = crs(i)%path%xk(2,L)
+               geomY(k) = crs(i)%path%yk(2,L)
+
+               if (jampi > 0 .and. L0 == nlinks) then ! The 2nd node of the last link is a boundary node.
+                  maskBnd(k) = 1
+               end if
+
+               k = k+1
+            end do
+
+            if (nNodesAdd > 0) then
+               nNodesCrs = nNodesCrs + nNodesAdd
+               call realloc(geomXCrs, nNodesCrs, keepExisting = .true.)
+               call realloc(geomYCrs, nNodesCrs, keepExisting = .true.)
+               call realloc(maskBndAll, nNodesCrs, keepExisting = .true.)
+            end if
+
+            is = ie + 1
+            ie = is + nNodes - 1
+            geomXCrs(is:ie) = geomX(1:nNodes)
+            geomYCrs(is:ie) = geomY(1:nNodes)
+            if (jampi > 0) then
+               maskBndAll(is:ie) = maskBnd(1:nNodes)
+            end if
+         end if
+      end if
+   end do
+
+   !! The codes below are similar to subroutine "fill_geometry_arrays_lateral".
+   !! They work for cross sections, including the situation that a cross section lies on multiple subdomains.
+   ! For parallel simulation: since only process 0000 writes the history output, the related arrays
+   ! are only made on 0000.
+   if (jampi > 0) then
+      call reduce_int_sum(nNodesCrs, nNodesCrsMPI) ! Get total number of nodes among all subdomains
+
+      if (my_rank == 0) then
+         ! Allocate arrays
+         call realloc(nodeCountCrsMPI, ncrs,         keepExisting = .false., fill = 0  )
+         call realloc(geomXCrsMPI,     nNodesCrsMPI, keepExisting = .false., fill = 0d0)
+         call realloc(geomYCrsMPI,     nNodesCrsMPI, keepExisting = .false., fill = 0d0)
+
+         ! Allocate arrays that gather information from all subdomains
+         ! Data on all subdomains will be gathered in a contiguous way
+         call realloc(nodeCountCrsGat, ncrs*ndomains, keepExisting = .false., fill = 0  )
+         call realloc(xGat,            nNodesCrsMPI,  keepExisting = .false., fill = 0d0)
+         call realloc(yGat,            nNodesCrsMPI,  keepExisting = .false., fill = 0d0)
+         call realloc(displs,          ndomains,      keepExisting = .false., fill = 0  )
+         call realloc(nNodesCrsGat,    ndomains,      keepExisting = .false., fill = 0  )
+         call realloc(maskBndGat,      nNodesCrsMPI,  keepExisting = .false., fill = 0  )
+      else
+         ! NOTE: dummy allocate to prevent crash in Debug-model on Intel MPI, even though receive buffers are officially not needed on non-root.
+         allocate(nodeCountCrsGat(0), xGat(0), yGat(0), displs(0), nNodesCrsGat(0), maskBndGat(0))
+      end if
+
+      ! Gather integer data, where the same number of data, i.e. ncrs, are gathered from each subdomain to process 0000
+      call gather_int_data_mpi_same(ncrs, nodeCountCrs, ncrs*ndomains, nodeCountCrsGat, ncrs, 0, ierror)
+
+      if (my_rank == 0) then
+         ! To use mpi gather call, construct displs, and nNodesCrsGat (used as receive count for mpi gather call)
+         displs(1) = 0
+         do i = 1, ndomains
+            is = (i-1)*ncrs+1 ! Starting index in nodeCountCrsGat
+            ie = is+ncrs-1    ! Ending   index in nodeCountCrsGat
+            nNodesCrsGat(i) = sum(nodeCountCrsGat(is:ie)) ! Total number of nodes on subdomain i
+            if (i > 1) then
+               displs(i) = displs(i-1) + nNodesCrsGat(i-1)
+            end if
+         end do
+      end if
+
+      ! Gather double precision data, here, different number of data can be gatherd from different subdomains to process 0000
+      call gatherv_double_data_mpi_dif(nNodesCrs, geomXCrs, nNodesCrsMPI, xGat, ndomains, nNodesCrsGat, displs, 0, ierror)
+      call gatherv_double_data_mpi_dif(nNodesCrs, geomYCrs, nNodesCrsMPI, yGat, ndomains, nNodesCrsGat, displs, 0, ierror)
+      call gatherv_int_data_mpi_dif(nNodesCrs,maskBndAll, nNodesCrsMPI, maskBndGat, ndomains, nNodesCrsGat, displs, 0, ierror)
+      if (my_rank == 0) then
+         ! Construct nodeCountCrsMPI for history output
+         do i = 1, ncrs
+            do n = 1, ndomains
+               k = (n-1)*ncrs+i
+               nodeCountCrsMPI(i) = nodeCountCrsMPI(i) + nodeCountCrsGat(k) ! Total number of nodes for cross section i among all subdomains
+            end do
+         end do
+
+         ! Construct geomXCrsMPI and geomYCrsMPI for history output
+         j = 0
+         do i = 1, ncrs                     ! for each cross section
+            nPar = 0                        ! Number of subdomains that contain this cross section
+            nb = 0                          ! Number of boundary nodes for this cross section
+            nbLast = 0                      ! Number of boundary nodes for this cross section in the previous subdomains
+            call realloc(indBndMPI, nodeCountCrsMPI(i), keepExisting = .false., fill = 0)
+            call Realloc(jaCoincide,nodeCountCrsMPI(i), keepExisting = .false., fill = 0)
+            do n = 1, ndomains              ! on each sudomain
+               k = (n-1)*ncrs+i             ! index in nodeCountCrsGat
+               nNodes = nodeCountCrsGat(k)  ! cross section i on sumdomain n has nNodes nodes
+               if (nNodes > 0) then
+                  nPar = nPar + 1
+                  ii = (n-1)*ncrs
+                  is = sum(nNodesCrsGat(1:n-1)) + sum(nodeCountCrsGat(ii+1:ii+i-1))! starting index in xGat
+                  ks = 1
+                  ke = nNodes
+                  if (nPar > 1) then ! This cross section lies on multiple subdomains.
+                     ! Select and add the nodes of this cross section on the current subdomain
+                     do k1 = ks, ke
+                        kk = is+k1
+                        if (maskBndGat(kk) == 1) then ! If it is a boundary node, need to check if it already exists in the coordinate arrays, i.e. GeomXCrsMPI and GeomYCrsMPI
+                           xNew = xGat(kk)
+                           yNew = yGat(kk)
+                           jaexist = 0
+                           do j1 = 1, nbLast ! Loop over all the boundary nodes of the previous subdomains that have been added in the coordinate arrays
+                              if (jaCoincide(j1) == 0) then
+                                 ! If the j1 boundary node is not coincide with any boundary node, then check if node (xNew,yNew) is coincide with it or not.
+                                 ! If jaCoincide(j1) == 1, then no need to check this node because one boundary node can be
+                                 ! coincide with another boundary node maximal ONCE.
+                                 xOld = geomXCrsMPI(indBndMPI(j1))
+                                 yOld = geomYCrsMPI(indBndMPI(j1))
+                                 if (comparereal(xNew, xOld, eps6)==0 .and. comparereal(xNew, xOld, eps6)==0) then
+                                    jaexist = 1
+                                    jaCoincide(j1) = 1
+                                    exit
+                                 end if
+                              end if
+                           end do
+                           if (jaexist == 0) then ! If the new candidate node does not exist in the coordinate arrays, then add it
+                              j = j + 1
+                              geomXCrsMPI(j) = xNew
+                              geomYCrsMPI(j) = yNew
+                              nb = nb + 1         ! add one boundary node
+                              indBndMPI(nb) = j   ! store its index in geomXCrsMPI (and geomYCrsMPI)
+                           else
+                              nodeCountCrsMPI(i) = nodeCountCrsMPI(i) - 1 ! adjust the node counter
+                              nNodesCrsMPI = nNodesCrsMPI - 1
+                           end if
+                        else ! If it is not a boundary node, then add it directly
+                           j = j + 1
+                           geomXCrsMPI(j) = xGat(kk)
+                           geomYCrsMPI(j) = yGat(kk)
+                        end if
+                     end do
+                  else
+                     do k1 = ks, ke
+                     j = j + 1
+                        kk = is + k1
+                        geomXCrsMPI(j) = xGat(kk)
+                        geomYCrsMPI(j) = yGat(kk)
+                        if (maskBndGat(kk) == 1) then
+                           nb = nb + 1
+                           indBndMPI(nb) = j ! store the index in geomXCrsMPI for the boundary nodes
+                        end if
+                     end do
+                  end if
+                  nbLast = nb ! update nbLast when the current subdomain is finished.
+               end if
+            end do
+         end do
+   
+         ! Copy the MPI-arrays to nodeCountCrs, geomXCrs and geomYCrs for the his-output
+         nNodesCrs = nNodesCrsMPI
+         nodeCountCrs(1:ncrs) = nodeCountCrsMPI(1:ncrs)
+         call realloc(geomXCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
+         call realloc(geomYCrs, nNodesCrs, keepExisting = .false., fill = 0d0)
+         geomXCrs(1:nNodesCrs) = geomXCrsMPI(1:nNodesCrs)
+         geomYCrs(1:nNodesCrs) = geomYCrsMPI(1:nNodesCrs)
+      end if
+   end if
+end subroutine fill_geometry_arrays_crs
 
 end module m_partitioninfo
    

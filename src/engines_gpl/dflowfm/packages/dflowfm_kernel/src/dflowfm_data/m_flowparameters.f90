@@ -477,14 +477,34 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jahisvelvec               !< Write velocity vectors to his file, 0: no, 1: yes
  integer                           :: jahisww                   !< Write upward velocity to his file, 0: no, 1: yes
  integer                           :: jahissed                  !< Write sediment transport to his file, 0: no, 1: yes
- integer                           :: jahisconst                !< Write tracers to his file, 0: no, 1: yes
  integer                           :: jahiszcor                 !< Write the vertical coordinate to his file, 0: no, 1: yes
  integer                           :: jahiswav                  !< Write wave data to his file, 0: no, 1: yes
  integer                           :: jahislateral              !< Write lateral data to his file, 0: no, 1: yes
  integer                           :: jahistaucurrent           !< Write bed shear stress to his file, 0: no, 1: yes
  integer                           :: jahisvelocity             !< Write velocity magnitude to his file, 0: no, 1: yes
  integer                           :: jahisdischarge            !< Write discharge magnitude to his file, 0: no, 1: yes
-
+ integer                           :: jahisrunupgauge           !< Write runupgauge       to his file, 0: no, 1: yes
+ integer                           :: jahiswaqbot               !< Write wqbot            to his file, 0: no, 1: yes
+ integer                           :: jahistracers              !< Write tracers          to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_flow             !< Write crs_flow         to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_constituents     !< Write crs_constituents to his file, 0: no, 1: yes
+ integer                           :: jahiscrs_sediment         !< Write crs_sediment     to his file, 0: no, 1: yes
+ integer                           :: jahisdred                 !< Write dred             to his file, 0: no, 1: yes
+ integer                           :: jahiswaq                  !< Write Water Quality    to his file, 0: no, 1: yes
+ ! His output structure keywords
+ integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
+ integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisgate               !< Write gate      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahiscdam               !< Write dam       parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisweir               !< Write weir      parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisdambreak           !< Write dambreak  parameters to his file, 0: n0, 1: yes
+ integer                           :: jahisorif               !< Write orifice   parameters to his file, 0: no, 1: yes
+ integer                           :: jahisbridge             !< Write bridge    parameters to his file, 0: no, 1: yes
+ integer                           :: jahisculv               !< Write culvert   parameters to his file, 0: no, 1: yes
+ integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
+ integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
+ integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
+ 
  ! written to map file yes or no
  integer                           :: jamaps0                   !< previous step water levels to map file, 0: no, 1: yes
  integer                           :: jamaps1                   !< water levels to map file, 0: no, 1: yes
@@ -962,14 +982,20 @@ subroutine default_flowparameters()
     jahisvelvec = 1
     jahisww = 0
     jahissed = 1
-    jahisconst = 1
     jahiszcor  = 1
     jahiswav = 1
     jahislateral = 1
     jahistaucurrent = 1
     jahisvelocity = 1
     jahisdischarge = 1
-
+    jahisrunupgauge        = 1
+    jahiswaqbot             = 1
+    jahistracers           = 1 
+    jahiscrs_flow          = 1
+    jahiscrs_constituents  = 1
+    jahiscrs_sediment      = 1
+    jahisdred              = 1
+    jahiswaq               = 1
     jamaps0 = 1
     jamaps1 = 1
     jamapevap = 0
