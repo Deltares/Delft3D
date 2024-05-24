@@ -33,6 +33,7 @@ module m_write_output
     use m_fill_output_arrays, only: writes_concentrations_in_grid_layout
     use m_fioutv
     use m_fiosub
+    use timers, only: evaluate_timers
 
 
     implicit none
@@ -810,7 +811,7 @@ contains
 
     end subroutine fill_dump_areas_balances
 
-    SUBROUTINE fill_transect_output_buffer (OUTVAL, NRVAR, TRRAAI, NORAAI, NOSYS)
+    subroutine fill_transect_output_buffer (OUTVAL, NRVAR, TRRAAI, NORAAI, NOSYS)
 
         !  Fills output buffer OUTVAL for raaien
 
@@ -847,7 +848,7 @@ contains
 
     END SUBROUTINE fill_transect_output_buffer
 
-    SUBROUTINE update_base_grid_local_array(IOPOIN, NRVAR, NOCONS, NOPA, NOFUN, &
+    subroutine update_base_grid_local_array(IOPOIN, NRVAR, NOCONS, NOPA, NOFUN, &
             NOSFUN, NOTOT, NOSEG, NOLOC, NOGRID, &
             NOVAR, VARARR, VARIDX, VARTDA, VARDAG, &
             ARRKND, ARRPOI, ARRDM1, ARRDM2, VGRSET, &
@@ -1072,54 +1073,7 @@ contains
 
     END SUBROUTINE update_base_grid_local_array
 
-    SUBROUTINE evaluate_timers (ITIME, IDT, ISTRT, ISTOP, ISTEP, LFLAG, LFIRST)
-        !  Evaluates if action is necessary according to timers
-
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     ITIME   INTEGER       1     INPUT   Time in system clock units
-        !     IDT     INTEGER       1     INPUT   Simulation timestep
-        !     IMSTRT  INTEGER       1     INPUT   start time of timer
-        !     IMSTOP  INTEGER       1     INPUT   stop time of timer
-        !     IMSTEP  INTEGER       1     INPUT   time step of timer
-        !     LFLAG   LOGICAL       1     OUTPUT  If .T. then action else not
-        !     LFIRST  LOGICAL       1     OUTPUT  If .T. then first step
-
-        use timers
-
-        INTEGER(kind = int_wp) :: ITIME, IDT, ISTRT, ISTOP, ISTEP
-        LOGICAL :: LFLAG, LFIRST
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("evaluate_timers", ithandl)
-
-        ! Evaluate timer
-        LFLAG = .TRUE.
-        LFIRST = .FALSE.
-        IF (ISTEP <= 0 .AND. ISTRT /= ISTOP) THEN
-            LFLAG = .FALSE.
-            GOTO 100
-        ENDIF
-        IF (ISTRT > ITIME) THEN
-            LFLAG = .FALSE.
-            GOTO 100
-        ENDIF
-        IF (ISTOP <= ITIME - IDT) THEN
-            LFLAG = .FALSE.
-            GOTO 100
-        ENDIF
-        IF (MOD(ITIME - ISTRT, ISTEP) >= IDT) LFLAG = .FALSE.
-        IF (LFLAG) THEN
-            IF (ITIME - ISTRT < ISTEP) LFIRST = .TRUE.
-        ENDIF
-
-        100 CONTINUE
-
-        if (timon) call timstop (ithandl)
-
-    END SUBROUTINE evaluate_timers
-
-    SUBROUTINE FLXBAL (NOTOT, NOFLUX, NDMPAR, NOBALT, STOCHI, &
+    subroutine calculate_balance_terms(NOTOT, NOFLUX, NDMPAR, NOBALT, STOCHI, &
             FLXINT, ASMASS, BALINT)
 
         ! Makes BALINT from FLXINT and STOCHI
