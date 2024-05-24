@@ -25,8 +25,7 @@ module m_write_nefis_output
 
     implicit none
     private
-    public :: write_nefis_map_output
-    ! TODO: merge here the write_nefis_history_ouput
+    public :: write_nefis_map_output, write_nefis_history_output
 contains
 
 
