@@ -26,7 +26,7 @@ module m_fill_output_arrays
     implicit none
 
     private
-    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid
+    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid, raatra
 
 contains
 
@@ -121,7 +121,7 @@ contains
                 write (iout, 2040) (mname(k), k = 1, 4)
             endif
             ip(4) = ip(4) + 1
-            call report_time (iout, itime, isflag, -999.)
+            call report_time(iout, itime, isflag, -999.)
             write(iout, 2000) sname(itot), iscale
 
             ! put concentration values in grid layout
@@ -132,12 +132,13 @@ contains
                     do k = i, nend
                         cgrid (k - i + 1, j) = point
                         i3 = lgrid ((j - 1) * nx + k)
+
                         if (i3 > 0) then
                             write (padder, '(f6.3)')   conc (itot, i3) / factor
                             cgrid(k - i + 1, j) = padder
                         endif
-                        if (i3 < 0 .and. itot <= nosys) then
 
+                        if (i3 < 0 .and. itot <= nosys) then
                             write (padder, '(f6.3)')   bound(itot, -i3) / factor
                             cgrid(k - i + 1, j) = padder
                         endif
@@ -353,5 +354,73 @@ contains
         if (timon) call timstop (ithandl)
 
     end subroutine store_variables_in_output_grid
+
+    subroutine raatra(nosys, ndmpq, noraai, ntraaq, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
+        !! Fills transport terms for raaien
+
+
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     NOSYS   INTEGER       1     INPUT   Total number of active substances
+        !     NDMPQ   INTEGER       1     INPUT   Number of dump exchanges
+        !     NORAAI  INTEGER       1     INPUT   Number of raaien
+        !     NTRAAQ  INTEGER       1     INPUT   Total number of exch. in raaien
+        !     IORAAI  INTEGER       *     INPUT   Output option for raai
+        !     NQRAAI  INTEGER       *     INPUT   Number of exchanges in raai
+        !     IQRAAI  INTEGER       *     INPUT   Exchanges in raai
+        !     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
+        !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
+        !     TRRAAI  REAL NOTOT*NDMPAR*6 IN/OUT  Cummulative transport over raai
+
+        use timers
+
+        integer(kind = int_wp) :: nosys, ndmpq, noraai, ntraaq
+        integer(kind = int_wp) :: ioraai(*), nqraai(*), iqraai(*), iqdmp(*)
+        real(kind = real_wp) :: dmpq(nosys, ndmpq, *), trraai(nosys, *)
+
+        ! local
+        integer(kind = int_wp) :: itel1, isys, iraai, nqc, integration_id, iqc, iq, ipq
+
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("raatra", ithandl)
+
+        ! loop over the raaien
+        itel1 = 0
+        do iraai = 1, noraai
+
+            ! the exchange contributes
+            nqc = nqraai(iraai)
+            integration_id = ioraai(iraai)
+            do iqc = 1, nqc
+                itel1 = itel1 + 1
+                iq = iqraai(itel1)
+                if (iq > 0) then
+                    ipq = iqdmp(iq)
+                    do isys = 1, nosys
+                        if (integration_id == 1) then
+                            trraai(isys, iraai) = trraai(isys, iraai) + dmpq(isys, ipq, 1) - dmpq(isys, ipq, 2)
+                        elseif (integration_id == 2) then
+                            trraai(isys, iraai) = trraai(isys, iraai) + dmpq(isys, ipq, 1)
+                        elseif (integration_id == 3) then
+                            trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 2)
+                        endif
+                    end do
+                else
+                    ipq = iqdmp(-iq)
+                    do isys = 1, nosys
+                        if (integration_id == 1) then
+                            trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 1) + dmpq(isys, ipq, 2)
+                        elseif (integration_id == 2) then
+                            trraai(isys, iraai) = trraai(isys, iraai) + dmpq(isys, ipq, 2)
+                        elseif (integration_id == 3) then
+                            trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 1)
+                        endif
+                    end do
+                endif
+            end do
+        end do
+
+        if (timon) call timstop (ithandl)
+    end subroutine raatra
 
 end module m_fill_output_arrays

@@ -24,13 +24,12 @@ module m_write_output
     use m_waq_precision
     use m_values
     use m_sobbal
-    use m_raatra
     use m_write_monitoring_output
     use m_write_nefis_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output
     use m_write_netcdf_output
-    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid
+    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid, raatra
     use m_fiosub
     use timers, only: evaluate_timers
 
