@@ -24,212 +24,211 @@
 ! Stichting Deltares. All rights reserved.
 !
 !------------------------------------------------------------------------------
-c
-c   ods.inc  -  ODS Fortran interface
-c
-c   Marc Kool
-c
-c
-c   $Author: Markus $
-c   $Date: 19-11-03 11:33 $
-c   $Source: /u/cvsroot/gpp/include/ods.inc,v $
-C
-C     Flags for PUTxxx routines Open Data Structure
-C
-C     version 1.00  1993.08.31  Andre Hendriks */
-C
-C     IFADDL  keep item in new file, if not in argument list
-C     IFADDP  (items are Location, Parameter, Time and Values)
-C     IFADDT
-C     IFADDV
-C     IFSAML  generate error if item is in file but not in
-C     IFSAMP  argument list or vice versa (and IFADDx flag
-C     IFSAMT  not set)
-C     IFSAMV
-C     IFFNEW  return with error if not new file
-C     IFSAMR  force that runid must be equal
-C
-      INTEGER  IFADDL, IFADDP, IFADDT, IFADDV,
-     1         IFSAML, IFSAMP, IFSAMT, IFSAMV, IFSAMR,
-     2         IFFNEW
+!
+!   ods.inc  -  ODS Fortran interface
+!
+!   Marc Kool
+!
+!
+!   $Author: Markus $
+!   $Date: 19-11-03 11:33 $
+!   $Source: /u/cvsroot/gpp/include/ods.inc,v $
+!
+!     Flags for PUTxxx routines Open Data Structure
+!
+!     version 1.00  1993.08.31  Andre Hendriks */
+!
+!     IFADDL  keep item in new file, if not in argument list
+!     IFADDP  (items are Location, Parameter, Time and Values)
+!     IFADDT
+!     IFADDV
+!     IFSAML  generate error if item is in file but not in
+!     IFSAMP  argument list or vice versa (and IFADDx flag
+!     IFSAMT  not set)
+!     IFSAMV
+!     IFFNEW  return with error if not new file
+!     IFSAMR  force that runid must be equal
+!
+      INTEGER  IFADDL, IFADDP, IFADDT, IFADDV, &
+               IFSAML, IFSAMP, IFSAMT, IFSAMV, IFSAMR, &
+               IFFNEW
 
-      PARAMETER ( IFADDL =    1,
-     1            IFADDP =    2,
-     2            IFADDT =    4,
-     3            IFADDV =    8,
-     4            IFSAML =   16,
-     5            IFSAMP =   32,
-     6            IFSAMT =   64,
-     7            IFSAMV =  128,
-     8            IFFNEW =  256,
-     9            IFSAMR =  512)
+      PARAMETER ( IFADDL =    1, &
+                  IFADDP =    2, &
+                  IFADDT =    4, &
+                  IFADDV =    8, &
+                  IFSAML =   16, &
+                  IFSAMP =   32, &
+                  IFSAMT =   64, &
+                  IFSAMV =  128, &
+                  IFFNEW =  256, &
+                  IFSAMR =  512)
 
-C     Date:       3 Mrt 1994
-C     Time:       10:55
-C     Program:    TYPES.INC
-C     Version:    1.00
-C     Programmer: Andre Hendriks
-C     Copyright (C)  Stichting Deltares, 2011-2024.
-C     Previous version(s):
-C     0.01 -- 10 Jun 1993 -- 15:11 -- Operating System: DOS
-C     0.00 -- 10 Jun 1993 -- 15:05 -- Operating System: DOS
-C     Project:    Open data-structuur
-C     Module:     Types.inc
-C     Function:   Include file with defined types
-C     Comment:    1.00:added WAS and WS1 files
-C     Reference:
-C     Review:
-C
-C***********************************************************************
-C
-C     Defined types:
-C
-C     Name    Filetype
-C     ------  ----------------------------------------------------------
-C     ITDBF3  DBASE 3 dbf file
-C     ITDBF4  DBASE 4 dbf file
-C     ITDLWH  Delwaq 3.xx his file
-C     ITDLWM  Delwaq 3.xx map file
-C     ITDLWG  Delwaq 3.xx grid file
-C     ITJSP   JsPost file
-C     ITMPX   Mappix file
-C     ITNFS   Nefis file
-C     ITNFTH  Nefis Trisula his file
-C     ITNFTM  Nefis Trisula map file
-C     ITUNDE  Not defined, uses extension to get type
-C     ITWAS   WASPRO .WAS file
-C     ITWS1   WASPRO .WS1 file
-C     ITDATH  default ASCII Tekal his file
-C     ITDATHE default ASCII Tekal his file equidistant
-C     ITDBTH  default binary Tekal his file
-C     ITDATM  default ASCII Tekal map file
-C     ITDBTM  default binary Tekal map file
-C
-      INTEGER  ITDBF3, ITDBF4, ITDLWH, ITDLWM, ITJSP ,
-     1         ITMPX , ITNFS , ITUNDE, ITWAS , ITWS1 ,
-     2         ITNFTH, ITNFTM, ITDATH, ITDBTH, ITDATM,
-     3         ITDBTM, ITDLWG, IGCURV, IGFEM3, IGLAND, ITDATHE
+!     Date:       3 Mrt 1994
+!     Time:       10:55
+!     Program:    TYPES.INC
+!     Version:    1.00
+!     Programmer: Andre Hendriks
+!     Copyright (C)  Stichting Deltares, 2011-2024.
+!     Previous version(s):
+!     0.01 -- 10 Jun 1993 -- 15:11 -- Operating System: DOS
+!     0.00 -- 10 Jun 1993 -- 15:05 -- Operating System: DOS
+!     Project:    Open data-structuur
+!     Module:     Types.inc
+!     Function:   Include file with defined types
+!     Comment:    1.00:added WAS and WS1 files
+!     Reference:
+!     Review:
+!
+!***********************************************************************
+!
+!     Defined types:
+!
+!     Name    Filetype
+!     ------  ----------------------------------------------------------
+!     ITDBF3  DBASE 3 dbf file
+!     ITDBF4  DBASE 4 dbf file
+!     ITDLWH  Delwaq 3.xx his file
+!     ITDLWM  Delwaq 3.xx map file
+!     ITDLWG  Delwaq 3.xx grid file
+!     ITJSP   JsPost file
+!     ITMPX   Mappix file
+!     ITNFS   Nefis file
+!     ITNFTH  Nefis Trisula his file
+!     ITNFTM  Nefis Trisula map file
+!     ITUNDE  Not defined, uses extension to get type
+!     ITWAS   WASPRO .WAS file
+!     ITWS1   WASPRO .WS1 file
+!     ITDATH  default ASCII Tekal his file
+!     ITDATHE default ASCII Tekal his file equidistant
+!     ITDBTH  default binary Tekal his file
+!     ITDATM  default ASCII Tekal map file
+!     ITDBTM  default binary Tekal map file
+!
+      INTEGER  ITDBF3, ITDBF4, ITDLWH, ITDLWM, ITJSP , &
+               ITMPX , ITNFS , ITUNDE, ITWAS , ITWS1 , &
+               ITNFTH, ITNFTM, ITDATH, ITDBTH, ITDATM, &
+               ITDBTM, ITDLWG, IGCURV, IGFEM3, IGLAND, ITDATHE
 
-      PARAMETER ( ITUNDE =  0,
-     1            ITDBF3 =  1,
-     2            ITDBF4 =  2,
-     3            ITDLWM =  3,
-     4            ITDLWH =  4,
-     4            ITDLWG = 14,
-     5            ITMPX  =  5,
-     6            ITJSP  =  6,
-     7            ITNFS  =  7,
-     8            ITNFTH =  1001,
-     9            ITNFTM =  1003,
-     A            ITDATH =  3101,
-     A            ITDATHE=  3111,
-     B            ITDBTH =  3102,
-     C            ITDATM =  3103,
-     D            ITDBTM =  3104,
-     E            ITWAS  = 71,
-     F            ITWS1  = 70)
-      PARAMETER ( IGCURV = 10001,
-     1            IGFEM3 = 10002,
-     2            IGLAND = 10003)
+      PARAMETER ( ITUNDE =  0, &
+                  ITDBF3 =  1, &
+                  ITDBF4 =  2, &
+                  ITDLWM =  3, &
+                  ITDLWH =  4, &
+                  ITDLWG = 14, &
+                  ITMPX  =  5, &
+                  ITJSP  =  6, &
+                  ITNFS  =  7, &
+                  ITNFTH =  1001, &
+                  ITNFTM =  1003, &
+                  ITDATH =  3101, &
+                  ITDATHE=  3111, &
+                  ITDBTH =  3102, &
+                  ITDATM =  3103, &
+                  ITDBTM =  3104, &
+                  ITWAS  = 71, &
+                  ITWS1  = 70)
+      PARAMETER ( IGCURV = 10001, &
+                  IGFEM3 = 10002, &
+                  IGLAND = 10003)
 
-C     Date:       10 Jun 1993
-C     Time:       15:11
-C     Program:    ERRORS.INC
-C     Version:    0.00
-C     Programmer: Andre Hendriks
-C     Copyright (C)  Stichting Deltares, 2011-2024.
-C     Previous version(s):
-C     0.0 -- 10 Jun 1993 -- 15:35 -- Operating System: DOS
-C     Project:    Open data-structuur
-C     Module:     Errors.inc
-C     Function:   Include file with defined error codes
-C     Comment:
-C     Reference:
-C     Review:
-C
-C***********************************************************************
-C
-C     Defined types:
-C
-C     Name    Error code
-C     ------  ----------------------------------------------------------
-C     IEOK    Okay
-C     IEUNDE  Unable to determine filetype
-C     IEUNKN  File type not implemented in this version
-C     IETYPE  File is not of indicated type
-C     IENOFI  File does not exist
-C     IEFIAO  File already open
-C     IEFLCK  File locked by other program
-C     IEFIRO  Access denied/file is read-only
-C     IENOHA  No free handle (unit)
-C     IERLCK  Record locked by other program
-C     IENLCK  Cannot lock file/record/share not installed
-C     IEINFO  File does not contain wanted information
-C     IEUEOF  Unexpected end of file
-C     IEPLOW  Nr. of parameters < 1
-C     IELLOW  Nr. of locations < 1
-C     IETLOW  Nr. of times < 1
-C     IEPMNY  Too many parameters found for array space
-C     IELMNY  Too many locations found for array space
-C     IETMNY  Too many times found for array space
-C     IETIME  Bad date/time format
-C     IEBUFF  Buffer space too small (warn WL technical support)
-C     IEDISK  No space left on device
-C     IEFNNW  File exists already
-C     IERUNI  RunId not equal
-C     IEPARI  Par.  not equal
-C     IELOCI  Loc.  not equal
-C     IETIMI  Time  not equal
-C     IESTEP  Timestep too small (time can not be represented accurately)
-C     IEOTHR  Other error
-C
-      INTEGER     IEBUFF, IEDISK, IEFIAO, IEFIRO, IEFLCK,
-     1            IEINFO, IELMNY, IENLCK, IENOFI, IENOHA,
-     2            IEOK  , IEOTHR, IEPMNY, IERLCK, IETIME,
-     3            IETMNY, IETYPE, IEUEOF, IEUNDE, IEUNKN,
-     4            IEPLOW, IELLOW, IETLOW, IEFNNW, IERUNI,
-     5            IEPARI, IELOCI, IETIMI, IESTEP
+!     Date:       10 Jun 1993
+!     Time:       15:11
+!     Program:    ERRORS.INC
+!     Version:    0.00
+!     Programmer: Andre Hendriks
+!     Copyright (C)  Stichting Deltares, 2011-2024.
+!     Previous version(s):
+!     0.0 -- 10 Jun 1993 -- 15:35 -- Operating System: DOS
+!     Project:    Open data-structuur
+!     Module:     Errors.inc
+!     Function:   Include file with defined error codes
+!     Comment:
+!     Reference:
+!     Review:
+!
+!***********************************************************************
+!
+!     Defined types:
+!
+!     Name    Error code
+!     ------  ----------------------------------------------------------
+!     IEOK    Okay
+!     IEUNDE  Unable to determine filetype
+!     IEUNKN  File type not implemented in this version
+!     IETYPE  File is not of indicated type
+!     IENOFI  File does not exist
+!     IEFIAO  File already open
+!     IEFLCK  File locked by other program
+!     IEFIRO  Access denied/file is read-only
+!     IENOHA  No free handle (unit)
+!     IERLCK  Record locked by other program
+!     IENLCK  Cannot lock file/record/share not installed
+!     IEINFO  File does not contain wanted information
+!     IEUEOF  Unexpected end of file
+!     IEPLOW  Nr. of parameters < 1
+!     IELLOW  Nr. of locations < 1
+!     IETLOW  Nr. of times < 1
+!     IEPMNY  Too many parameters found for array space
+!     IELMNY  Too many locations found for array space
+!     IETMNY  Too many times found for array space
+!     IETIME  Bad date/time format
+!     IEBUFF  Buffer space too small (warn WL technical support)
+!     IEDISK  No space left on device
+!     IEFNNW  File exists already
+!     IERUNI  RunId not equal
+!     IEPARI  Par.  not equal
+!     IELOCI  Loc.  not equal
+!     IETIMI  Time  not equal
+!     IESTEP  Timestep too small (time can not be represented accurately)
+!     IEOTHR  Other error
+!
+      INTEGER     IEBUFF, IEDISK, IEFIAO, IEFIRO, IEFLCK, &
+                  IEINFO, IELMNY, IENLCK, IENOFI, IENOHA, &
+                  IEOK  , IEOTHR, IEPMNY, IERLCK, IETIME, &
+                  IETMNY, IETYPE, IEUEOF, IEUNDE, IEUNKN, &
+                  IEPLOW, IELLOW, IETLOW, IEFNNW, IERUNI, &
+                  IEPARI, IELOCI, IETIMI, IESTEP
 
-      PARAMETER ( IEOK   =  0,
-     1            IEUNDE =  1,
-     2            IEUNKN =  2,
-     3            IETYPE =  3,
-     4            IENOFI = 10,
-     5            IENOHA = 11,
-     6            IEFIAO = 12,
-     7            IEFLCK = 13,
-     8            IEFIRO = 14,
-     9            IERLCK = 15)
+      PARAMETER ( IEOK   =  0, &
+                  IEUNDE =  1, &
+                  IEUNKN =  2, &
+                  IETYPE =  3, &
+                  IENOFI = 10, &
+                  IENOHA = 11, &
+                  IEFIAO = 12, &
+                  IEFLCK = 13, &
+                  IEFIRO = 14, &
+                  IERLCK = 15)
 
-      PARAMETER ( IENLCK = 16,
-     1            IEFNNW = 17,
-     2            IEINFO = 20,
-     3            IEUEOF = 21,
-     4            IEPMNY = 30,
-     5            IELMNY = 31,
-     6            IETMNY = 32,
-     7            IEPLOW = 35,
-     8            IELLOW = 36,
-     9            IETLOW = 37,
-     A            IETIME = 40,
-     B            IERUNI = 41,
-     C            IEPARI = 42,
-     D            IELOCI = 43,
-     E            IETIMI = 44,
-     F            IESTEP = 45,
-     G            IEBUFF = 91,
-     H            IEDISK = 92,
-     I            IEOTHR = 99)
+      PARAMETER ( IENLCK = 16, &
+                  IEFNNW = 17, &
+                  IEINFO = 20, &
+                  IEUEOF = 21, &
+                  IEPMNY = 30, &
+                  IELMNY = 31, &
+                  IETMNY = 32, &
+                  IEPLOW = 35, &
+                  IELLOW = 36, &
+                  IETLOW = 37, &
+                  IETIME = 40, &
+                  IERUNI = 41, &
+                  IEPARI = 42, &
+                  IELOCI = 43, &
+                  IETIMI = 44, &
+                  IESTEP = 45, &
+                  IEBUFF = 91, &
+                  IEDISK = 92, &
+                  IEOTHR = 99)
 
 
-      INTEGER     IPHIER, IPLDEP, IPLLST, IPLMNK, IPLMET, IPLFEM,
-     1            IPTDEP
+      INTEGER     IPHIER, IPLDEP, IPLLST, IPLMNK, IPLMET, IPLFEM, &
+                  IPTDEP
 
-      PARAMETER ( IPHIER = 1,
-     1            IPLDEP = 2,
-     2            IPLLST = 4,
-     3            IPLMNK = 8,
-     4            IPLMET = 16,
-     5            IPLFEM = 32,
-     6            IPTDEP = 512 )
-
+      PARAMETER ( IPHIER = 1, &
+                  IPLDEP = 2, &
+                  IPLLST = 4, &
+                  IPLMNK = 8, &
+                  IPLMET = 16, &
+                  IPLFEM = 32, &
+                  IPTDEP = 512 )
