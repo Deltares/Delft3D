@@ -24,7 +24,7 @@ module m_string_manipulation
     use m_waq_precision
     implicit none
     private
-    public :: upper_case, shift_char_subarray, get_trimmed_length
+    public :: upper_case, shift_char_subarray, get_trimmed_length, replace_space_by_underscore
 contains
 
     subroutine upper_case(input_string, output_string, string_length)
@@ -84,5 +84,22 @@ contains
         end do
 
     end subroutine get_trimmed_length
+
+    ! Replace embedded spaces by underscores (and remove leading spaces)
+    function replace_space_by_underscore(input_string) result(ouput_string)
+
+        character(len = *), intent(in) :: input_string
+        character(len = len(input_string)) :: ouput_string
+
+        integer(kind = int_wp) :: i
+
+        ouput_string = adjustl(input_string)
+        do i = 1, len_trim(ouput_string)
+            if (ouput_string(i:i) == ' ') then
+                ouput_string(i:i) = '_'
+            endif
+        enddo
+
+    end function replace_space_by_underscore
 
 end module m_string_manipulation

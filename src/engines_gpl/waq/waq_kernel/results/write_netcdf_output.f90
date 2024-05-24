@@ -23,8 +23,9 @@
 
 module m_write_netcdf_output
     use m_waq_precision
-    use m_logger_helper, only : stop_with_error
+    use m_logger_helper, only: stop_with_error
     use m_universally_unique_id_generator, only: generate_uuid
+    use m_string_manipulation, only: replace_space_by_underscore
 
     implicit none
 
@@ -794,7 +795,7 @@ contains
 
     end subroutine write_netcdf_map_output
 
-
+    !TODO: take out to a separate module
     subroutine write_netcdf_history_output(ncidhis, hncnam, ugridf, timeid, bndtimeid, &
             hncrec, itime, moname, idump, duname, &
             nodump, notot1, conc1, synam1, sysnm1, &
@@ -1228,21 +1229,5 @@ contains
 
     end subroutine write_netcdf_history_output
 
-    ! Replace embedded spaces by underscores (and remove leading spaces)
-    function replace_space_by_underscore(input_string) result(ouput_string)
-
-        character(len = *), intent(in) :: input_string
-        character(len = len(input_string)) :: ouput_string
-
-        integer(kind = int_wp) :: i
-
-        ouput_string = adjustl(input_string)
-        do i = 1, len_trim(ouput_string)
-            if (ouput_string(i:i) == ' ') then
-                ouput_string(i:i) = '_'
-            endif
-        enddo
-
-    end function replace_space_by_underscore
 
 end module m_write_netcdf_output
