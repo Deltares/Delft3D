@@ -70,9 +70,8 @@ subroutine detnst (x     , y     , icom  , xbnd  , ybnd  ,&
 !-----------find surrounding depth points overall model
 !
          call findmn (xbsp  , ybsp  , x     , y     , mmax  , nmax  ,&
-         &mc    , nc    , mnst  , nnst  , rmnst , rnnst ,&
-         &inside, spher                                 )&
-            )
+            mc    , nc    , mnst  , nnst  , rmnst , rnnst ,&
+            inside, spher)
 
          if (inside) then
 !
