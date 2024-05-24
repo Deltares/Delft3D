@@ -265,13 +265,7 @@ contains
             NDMPAR, DANAM)
 
         ! Writes monitoring results to IOUT in blocks of 10 systems.
-        !
-        !     LOGICAL UNITNUMBERS : IOUT = number of monitoring output file
-        !
-        !     SUBROUTINES CALLED  : OUTMO1, print routine
-        !                           OUTMO2, print routine
-        !                           report_time, writes time in specific formats
-        !
+
         !     PARAMETERS          :
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
