@@ -25,10 +25,13 @@ module m_fill_output_arrays
 
     implicit none
 
+    private
+    public :: writes_concentrations_in_grid_layout, store_variables_in_output_grid
+
 contains
 
 
-    SUBROUTINE writes_concentrations_in_grid_layout(iout, lchout, itime, mname, nx, &
+    subroutine writes_concentrations_in_grid_layout(iout, lchout, itime, mname, nx, &
             ny, lgrid, cgrid, notot, nosys, &
             sname, conc, bound, notot2, synam2, &
             conc2, ip, isflag, iniout)
@@ -202,5 +205,153 @@ contains
         2040 FORMAT (45X, A40)
 
     end subroutine writes_concentrations_in_grid_layout
+
+    subroutine store_variables_in_output_grid(outval, iopoin, nrvar, nocons, nopa, &
+            nofun, nosfun, notot, conc, segfun, &
+            func, param, cons, idt, itime, &
+            volume, noseg, nosys, nodump, idump, &
+            nx, ny, lgrid, igrid, bound, &
+            noloc, proloc, nodef, defaul)
+
+        ! Fills output buffer OUTVAL.
+        !
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
+        !     IOPOIN  INTEGER       *     INPUT   Pointers to arrays for vars
+        !     NRVAR   INTEGER       1     INPUT   Number of output vars
+        !     NOCONS  INTEGER       1     INPUT   Number of constants used
+        !     NOPA    INTEGER       1     INPUT   Number of parameters
+        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
+        !     NOSFUN  INTEGER       1     INPUT   Number of segment functions
+        !     NOTOT   INTEGER       1     INPUT   Total number of substances
+        !     CONC    REAL   NOTOT,NOSEG  INPUT   Model concentrations
+        !     SEGFUN  REAL   NOSEG,NOSFUN IN/OUT  Segment functions at ITIME
+        !     FUNC    REAL          *     IN/OUT  Model functions at ITIME
+        !     PARAM   REAL    NOPA,NOSEG  IN/OUT  Model parameters
+        !     CONS    REAL          *     IN/OUT  Model constants
+        !     IDT     INTEGER       1     INPUT   Simulation timestep
+        !     ITIME   INTEGER       1     INPUT   Time in system clock units
+        !     VOLUME  REAL      NOSEG     INPUT   Segment volumes
+        !     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
+        !     NOSYS   INTEGER       1     INPUT   Number of active substances
+        !     NODUMP  INTEGER       1     INPUT   number of dump locations
+        !     IDUMP   INTEGER    NODUMP   INPUT   dump segment numbers
+        !     NX      INTEGER       1     INPUT   Width of output grid
+        !     NY      INTEGER       1     INPUT   Depth of output grid
+        !     LGRID   INTEGER     NX*NY   INPUT   grid-layout
+        !     IGRID   INTEGER       1     INPUT   Output grid indication
+        !     BOUND   REAL     NOTOT*?    INPUT   boundary      values
+        !     NOLOC   INTEGER       1     INPUT   Number of variables in PROLOC
+        !     PARAM   REAL   NOLOC,NOSEG  INPUT   Parameters local in PROCES system
+        !     NODEF   INTEGER       1     INPUT   Number of used defaults
+        !     DEFAUL  REAL          *     INPUT   Default proces parameters
+
+        use timers
+
+        integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
+                notot, idt, itime, noseg, nosys, &
+                nodump, nx, ny, igrid, noloc, &
+                nodef
+        integer(kind = int_wp) :: iopoin(*), idump(*), &
+                lgrid(*)
+        real(kind = real_wp) :: outval(*), conc(notot, *), &
+                segfun(noseg, *), func(*), &
+                param(*), cons(*), &
+                volume(*), bound(*), &
+                proloc(*), defaul(*)
+        !
+        !     local
+        !
+        integer(kind = int_wp), parameter :: igseg = 1, igmon = 2, iggrd = 3, igsub = 4
+        real(kind = real_wp), parameter :: rmiss = -999.
+        integer(kind = int_wp), parameter :: nopred = 6
+        integer(kind = int_wp) :: iopa, iofunc, iosfun, ioconc, ioloc, &
+                iodef, ip, icel, iseg, iocons, nocel, i, iicel, iip
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("store_variables_in_output_grid", ithandl)
+        !
+        !     pointer offsets
+        !
+        iocons = nopred + 1
+        iopa = iocons + nocons
+        iofunc = iopa + nopa
+        iosfun = iofunc + nofun
+        ioconc = iosfun + nosfun
+        ioloc = ioconc + notot
+        iodef = ioloc + noloc
+        !
+        !     grid
+        !
+        if (igrid == igseg) then
+            nocel = noseg
+        elseif (igrid == igmon) then
+            nocel = nodump
+        elseif (igrid == iggrd) then
+            nocel = nx * ny
+        endif
+        !
+        !     fill outval
+        !
+        do icel = 1, nocel
+            !
+            !        what segment ?
+            !
+            if (igrid == igseg) then
+                iseg = icel
+            elseif (igrid == igmon) then
+                iseg = idump(icel)
+            elseif (igrid == iggrd) then
+                iseg = lgrid(icel)
+            endif
+
+            do i = 1, nrvar
+                iicel = (icel - 1) * nrvar + i
+                ip = iopoin(i)
+                !
+                !           what value
+                !
+                if (iseg < 0) then
+                    if (ip >= ioconc .and. ip < ioconc + nosys) then
+                        iip = (-iseg - 1) * nosys + ip - ioconc + 1
+                        outval(iicel) = bound(iip)
+                    else
+                        outval(iicel) = rmiss
+                    endif
+                elseif (iseg == 0) then
+                    outval(iicel) = rmiss
+                else
+                    if (ip >= iodef) then
+                        outval(iicel) = defaul(ip - iodef + 1)
+                    elseif (ip >= ioloc) then
+                        iip = (iseg - 1) * noloc + ip - ioloc + 1
+                        outval(iicel) = proloc(iip)
+                    elseif (ip >= ioconc) then
+                        outval(iicel) = conc(ip - ioconc + 1, iseg)
+                    elseif (ip >= iosfun) then
+                        outval(iicel) = segfun(iseg, ip - iosfun + 1)
+                    elseif (ip >= iofunc) then
+                        outval(iicel) = func(ip - iofunc + 1)
+                    elseif (ip >= iopa) then
+                        iip = (iseg - 1) * nopa + ip - iopa + 1
+                        outval(iicel) = param(iip)
+                    elseif (ip >= iocons) then
+                        outval(iicel) = cons(ip - iocons + 1)
+                    elseif (ip == 3) then
+                        outval(iicel) = real(idt)
+                    elseif (ip == 2) then
+                        outval(iicel) = real(itime)
+                    elseif (ip == 1) then
+                        outval(iicel) = volume(iseg)
+                    elseif (ip <= 0) then
+                        outval(iicel) = rmiss
+                    endif
+                endif
+            end do
+        end do
+
+        if (timon) call timstop (ithandl)
+
+    end subroutine store_variables_in_output_grid
 
 end module m_fill_output_arrays

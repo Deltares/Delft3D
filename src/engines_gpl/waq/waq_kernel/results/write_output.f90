@@ -30,8 +30,7 @@ module m_write_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output
     use m_write_netcdf_output
-    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout
-    use m_fioutv
+    use m_fill_output_arrays, only: writes_concentrations_in_grid_layout, store_variables_in_output_grid
     use m_fiosub
     use timers, only: evaluate_timers
 
@@ -423,7 +422,7 @@ contains
                 endif
             else
                 nrvar2 = nrvar
-                call fioutv (riobuf, iopoin(k1), nrvar, nocons, nopa, &
+                call store_variables_in_output_grid (riobuf, iopoin(k1), nrvar, nocons, nopa, &
                         nofun, nosfun, notot, conc, segfun, &
                         func, param, cons, idt, itime, &
                         volume, noseg, nosys, nodump, idump, &
