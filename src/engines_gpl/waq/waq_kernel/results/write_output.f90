@@ -28,7 +28,7 @@ module m_write_output
     use m_write_monitoring_output
     use m_write_nefis_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
-    use m_write_nefis_history_ouput
+    use m_write_nefis_output, only: write_nefis_history_output
     use m_write_netcdf_output
     use m_outdmp
     use m_fioutv
