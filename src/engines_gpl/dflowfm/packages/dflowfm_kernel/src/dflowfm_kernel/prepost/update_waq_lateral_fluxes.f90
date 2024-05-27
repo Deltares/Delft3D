@@ -47,17 +47,20 @@ use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, qqlat
 implicit none
 
 integer :: k, k1, ilat
-integer :: ilatwaq
+integer :: ilatwaq, nlayer, num_layers
 
 ! Accumulate lateral discharges for waq
 ilatwaq = 0
+num_layers = max(1,kmx)
 do ilat = 1,numlatsg
    do k1=n1latsg(ilat),n2latsg(ilat)
       k = nnlat(k1)
       if (k > 0) then
          if (.not. is_ghost_node(k)) then
             ilatwaq = ilatwaq + 1
-            qlatwaq(ilatwaq) = qlatwaq(ilatwaq) + dts*qqLat(k)
+            do nlayer = 1, num_layers
+               qlatwaq(ilatwaq) = qlatwaq(ilatwaq) + dts*qqLat(nlayer,k)
+            end do
          end if
       end if
    end do

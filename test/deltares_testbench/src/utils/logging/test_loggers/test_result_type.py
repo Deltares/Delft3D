@@ -8,6 +8,7 @@ from enum import IntEnum
 
 
 class TestResultType(IntEnum):
+    __test__ = False
     """Type of result for test case"""
 
     Empty = (1,)

@@ -1,5 +1,5 @@
 subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
-                   & umean  ,vmean  ,dp     ,dps    ,dpu    , &
+                   & umean  ,vmean  ,dpd    ,dps    ,dpu    , &
                    & dpv    ,gdp    ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -69,7 +69,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcu    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcv    !  Description and declaration in esm_alloc_int.f90
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: dpu    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: dpv    !  Description and declaration in esm_alloc_real.f90
@@ -115,7 +115,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
                 elseif (dpuopt=='MIN') then
                    dpu(n, m) = min(real(dps(n, mu),fp), real(dps(n, m),fp))
                 elseif (dpuopt=='MEAN') then
-                   dpu(n, m) = 0.5_fp*(dp(n, m) + dp(nd, m))
+                   dpu(n, m) = 0.5_fp*(dpd(n, m) + dpd(nd, m))
                 elseif (dpuopt=='MEAN_DPS') then
                    dpu(n, m) = 0.5_fp*(real(dps(n, mu) + dps(n, m),fp))
                 else
@@ -151,7 +151,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
                 elseif (dpuopt=='MIN') then
                    dpv(n, m) = min(real(dps(nu, m),fp), real(dps(n, m),fp))
                 elseif (dpuopt=='MEAN') then
-                   dpv(n, m) = 0.5_fp*(dp(n, m) + dp(n, md))
+                   dpv(n, m) = 0.5_fp*(dpd(n, m) + dpd(n, md))
                 elseif (dpuopt=='MEAN_DPS') then
                    dpv(n, m) = 0.5_fp*(real(dps(nu, m) + dps(n, m),fp))
                 else

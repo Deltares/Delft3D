@@ -39,8 +39,8 @@ module delwaq2_data
     type delwaq_data
         type(waq_data_buffer) :: buffer
         integer(kind = int_wp), dimension(:), pointer :: iwstkind   ! steers flow-concentration processing
-        integer(kind = int_wp), dimension(:, :), pointer :: iexseg     ! zero if volume is explicit
-        integer(kind = int_wp), dimension(:, :), pointer :: iknmkv     ! time variable feature array (for drying/flooding)
+        integer(kind = int_wp), dimension(:, :), pointer :: iexseg  ! zero if volume is explicit
+        integer(kind = int_wp), dimension(:, :), pointer :: iknmkv  ! time variable feature array (for drying/flooding)
 
         integer(kind = int_wp), dimension(insize) :: in
         integer(kind = int_wp), dimension(iisize) :: ii
@@ -74,9 +74,7 @@ module delwaq2_data
         logical :: set_timer = .false.
         logical :: inopenda = .false.
 
-        !
         ! Components from syst.inc
-        !
         logical :: bndset
         logical :: wstset
         logical :: funset
@@ -85,25 +83,18 @@ module delwaq2_data
         integer(kind = int_wp) :: iwstmx
         integer(kind = int_wp) :: ifunmx
 
-        !
         ! Components for dealing with the time-dependent data from files
-        !
         type(FilePropColl) :: PropColl
         type(FileUseDefColl) :: UseDefColl
         type(FileUseDefCollColl) :: CollColl
 
-        !
         ! Temporary component for dealing with OpenDA multiple instances
-        !
         type(FilePropColl), pointer, dimension(:) :: PropCollArray => null()
-        !
+
         ! All the process parameters data from file
-        !
         type(t_data_column) :: proc_pars
 
-        !
         ! Collection of all grid definitions
-        !
         type(GridPointerColl) :: GridPs
     end type delwaq_data
 

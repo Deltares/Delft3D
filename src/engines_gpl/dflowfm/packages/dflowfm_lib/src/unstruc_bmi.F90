@@ -1920,6 +1920,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    use unstruc_channel_flow, only: network
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, const_names, ISALT, ITEMP, ITRA1
+   use m_update_values_on_cross_sections, only: update_values_on_cross_sections
   
    character(kind=c_char), intent(in) :: c_var_name(*)   !< Name of the set variable, e.g., 'pumps'
    character(kind=c_char), intent(in) :: c_item_name(*)  !< Name of a single item's index/location, e.g., 'Pump01'
@@ -2206,22 +2207,22 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
       select case(field_name)
       case("water_level")
-         x = c_loc(valobs(IPNT_S1, item_index))
+         x = c_loc(valobs( item_index,IPNT_S1))
          return
       case("water_depth")
-         x = c_loc(valobs(IPNT_HS, item_index))
+         x = c_loc(valobs( item_index,IPNT_HS))
          return
       case("salinity")
-         x = c_loc(valobs(IPNT_SA1, item_index))
+         x = c_loc(valobs( item_index,IPNT_SA1))
          return
       case("temperature")
-         x = c_loc(valobs(IPNT_TEM1, item_index))
+         x = c_loc(valobs( item_index,IPNT_TEM1))
          return
       case("velocity")
-         x = c_loc(valobs(IPNT_UMAG, item_index))
+         x = c_loc(valobs( item_index,IPNT_UMAG))
          return
       case("discharge")
-         x = c_loc(valobs(IPNT_QMAG, item_index))
+         x = c_loc(valobs( item_index,IPNT_QMAG))
          return
       case default
    !       assume this is a tracer
@@ -2237,7 +2238,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             else
    !             find tracer number
                itrac = iconst-ITRA1+1
-               x = c_loc(VALOBS(IPNT_TRA1+(itrac-1), item_index))
+               x = c_loc(VALOBS( item_index,IPNT_TRA1+(itrac-1)))
             end if
          end if
          return
@@ -2249,10 +2250,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
          return
       end if
 
-      call updateValuesOnCrossSections(time1)
-      if (jampi == 1) then
-         call updateValuesOnCrossSections_mpi(time1)
-      endif
+      call update_values_on_cross_sections
 
       select case(field_name)
       case("discharge")
@@ -2337,8 +2335,9 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       end if
 
       select case(field_name)
-         case("water_discharge")
-            get_lateral_pointer = c_loc(qplat(item_index))
+      case("water_discharge")
+            ! Here using max(1,kmx) is a temporary solution for now.
+            get_lateral_pointer = c_loc(qplat(max(1,kmx),item_index))
             return
          case("water_level")
             ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
@@ -2620,7 +2619,8 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       select case(field_name)
       case("water_discharge")
          call c_f_pointer(xptr, x_0d_double_ptr)
-         qplat(item_index) = x_0d_double_ptr
+         ! Using max(1,kmx) is a temporary solution for now.
+         qplat(max(1,kmx),item_index) = x_0d_double_ptr
          return
       end select
 	 

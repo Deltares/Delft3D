@@ -32,21 +32,18 @@ contains
             noq3, noq, nodisp, novelo, disp, &
             disper, velo, area, flow, aleng, &
             ipoint, iknmrk, idpnt, ivpnt, conc, &
-            bound, iopt, ilflag, idt, deriv, &
+            bound, integration_id, ilflag, idt, deriv, &
             iaflag, amass2, ndmpq, iqdmp, dmpq)
 
-        !     Deltares Software Centre
-
-        !>\file
-        !>         Makes explicit upwind derivatives for the advection diffusion equation.
-        !>         Special version of dlwq16 for first order upwind in space and time for emission module (25)
+        !> Makes explicit upwind derivatives for the advection diffusion equation.
+        !> Special version of dlwq16 for first order upwind in space and time for emission module (25)
         !>
-        !>         This routine makes for the nosys transported substaces the contribution of the advection and
-        !>         the diffusion to the DERIV(notot,noseg) array. Notot is the total number of substances,
-        !>         noseg is the number of computational volumes.\n
-        !>         This process is steered with options for:\n
-        !>         1) no dispersion at zero flow (typical for thin dams and drying flats) (bit 0 of iopt is 1)\n
-        !>         2) no dispersion accross open boundaries (bit 1 of iopt is 1)\n
+        !> This routine makes for the nosys transported substaces the contribution of the advection and
+        !> the diffusion to the DERIV(notot,noseg) array. Notot is the total number of substances,
+        !> noseg is the number of computational volumes.\n
+        !> This process is steered with options for:\n
+        !>      1) no dispersion at zero flow (typical for thin dams and drying flats) (bit 0 of integration_id is 1)\n
+        !>      2) no dispersion accross open boundaries (bit 1 of integration_id is 1)\n
         !>         Besides the water flow in the array FLOW(noq), there are optional additional velocities.
         !>         These options are often used in the vertical for settling velocities of particulates or
         !>         floating velocities of blue-green algae. The array IVPNT tells which additional velocity applies
@@ -65,16 +62,7 @@ contains
         !     Function            : Makes explicit derivatives according to
         !                           upwind differencing in space
 
-        !     Files               : lun: the monitoring file
-
-        !     Routines            : none
-
         use timers
-        implicit none
-
-        !     Parameters          :
-
-        !     kind           function         name                   description
 
         integer(kind = int_wp), intent(in) :: nosys                !< number of transported substances
         integer(kind = int_wp), intent(in) :: notot                !< total number of substances
@@ -97,7 +85,7 @@ contains
         integer(kind = int_wp), intent(in) :: ivpnt (nosys)        !< additional velocity number per substance
         real(kind = real_wp), intent(in) :: conc  (notot, noseg)  !< concentrations at previous time level
         real(kind = real_wp), intent(in) :: bound (nosys, *)  !< open boundary concentrations
-        integer(kind = int_wp), intent(in) :: iopt                 !< bit 0: 1 if no dispersion at zero flow
+        integer(kind = int_wp), intent(in) :: integration_id                 !< bit 0: 1 if no dispersion at zero flow
         !< bit 1: 1 if no dispersion across boundaries
         !< bit 3: 1 if mass balance output
         integer(kind = int_wp), intent(in) :: ilflag               !< if 0 then only 3 constant lenght values
@@ -142,12 +130,12 @@ contains
 
             a = area(iq)
             q = flow(iq)
-            if (btest(iopt, 0) .and. abs(q) < 1.0e-25)  cycle ! thin dam option, no dispersion at zero flow
+            if (btest(integration_id, 0) .and. abs(q) < 1.0e-25)  cycle ! thin dam option, no dispersion at zero flow
 
             !     Check if exchange is dump exchange, set IPB
 
             ipb = 0
-            if (btest(iopt, 3)) then
+            if (btest(integration_id, 3)) then
                 if (iqdmp(iq) > 0) ipb = iqdmp(iq)
             endif
 
@@ -207,7 +195,7 @@ contains
             20    do isys = 1, nosys
                 v = q
                 d = 0.0
-                if (.not. btest(iopt, 1)) then
+                if (.not. btest(integration_id, 1)) then
                     d = e
                     if (idpnt(isys) > 0) d = d + disper(idpnt(isys), iq) * dl
                 endif
@@ -242,7 +230,7 @@ contains
             40    do isys = 1, nosys
                 v = q
                 d = 0.0
-                if (.not. btest(iopt, 1)) then
+                if (.not. btest(integration_id, 1)) then
                     d = e
                     if (idpnt(isys) > 0) d = d + disper(idpnt(isys), iq) * dl
                 endif

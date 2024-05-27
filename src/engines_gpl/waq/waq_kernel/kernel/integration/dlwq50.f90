@@ -25,75 +25,59 @@ module m_dlwq50
 
     implicit none
 
-contains
+    contains
 
 
-    subroutine dlwq50 (nosys, notot, noseg, noq, novelo, &
+    !> Calculates first step of Flux Corrected Transport (FCT) scheme
+    !! Makes derivatives, upwind in space, advection only, for first step of FCT
+    !! First step of FCT consists of first order, upwind, monotonous, advection
+    !! step, with numerical diffusion. In the correction step an anti diffusion
+    !! is computed, to arrive at 2nd order Lax Wendroff, if no artificial minima
+    !! and maxima are generated, otherwise the flux limiter will become active.
+    !! The desired diffusion is subtracted from the anti diffusion in the correction
+    !! step if a positive diffusion remains, then no correction takes place, if a
+    !! negative diffusion remains, it is applied to the degree possible.
+    subroutine first_step_fct(nosys, notot, noseg, noq, novelo, &
             velo, area, flow, ipoint, ivpnt, &
             conc, bound, idt, deriv, iaflag, &
             amass2)
 
-        !     Deltares Software Centre
-
-        !>\file
-        !>        Makes derivatives, upwind in space, advection only, for first step of FCT
-        !>
-        !>        First step of FCT consists of first order, upwind, monotoneous, advection
-        !>        step, with numerical diffusion. In the correction step an anti diffusion
-        !>        is computed, to arrive at 2nd order Lax Wendroff, if no artificial minima
-        !>        and maxima are generated, otherwise the flux limiter will become active.
-        !>        The desired diffusion is subtracted from the anti diffusion in the correction
-        !>        step if a positive diffusion remains, then no correction takes place, if a
-        !>        negative diffusion remains, it is applied to the degree possible.
-
-
-        !     Files               : none
-
-        !     Routines            : none
 
         use timers
         implicit none
 
-        !     Parameters          :
-
-        !     kind           function         name                   description
-
-        integer(kind = int_wp), intent(in) :: nosys                !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: noq                  !< total number of interfaces
-        integer(kind = int_wp), intent(in) :: novelo               !< number additional velocities
-        real(kind = real_wp), intent(in) :: velo  (novelo, noq)   !< array with additional velocities
-        real(kind = real_wp), intent(in) :: area  (noq)          !< exchange areas in m2
-        real(kind = real_wp), intent(in) :: flow  (noq)          !< flows through the exchange areas in m3/s
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq)   !< from, to, from-1, to+1 volume numbers
-        integer(kind = int_wp), intent(in) :: ivpnt (nosys)        !< additional velocity number per substance
-        real(kind = real_wp), intent(in) :: conc  (notot, noseg)  !< concentrations at previous time level
-        real(kind = real_wp), intent(in) :: bound (nosys, *)  !< open boundary concentrations
-        integer(kind = int_wp), intent(in) :: idt                  !< time step in seconds
-        real(kind = real_wp), intent(inout) :: deriv (notot, noseg)  !< derivatives of the concentraions
-        integer(kind = int_wp), intent(in) :: iaflag               !< if 1 then accumulate mass in report array
-        real(kind = real_wp), intent(inout) :: amass2(notot, 5)  !< report array for monitoring file
+        integer(kind = int_wp), intent(in)    :: nosys                !< number of transported substances
+        integer(kind = int_wp), intent(in)    :: notot                !< total number of substances
+        integer(kind = int_wp), intent(in)    :: noseg                !< number of computational volumes
+        integer(kind = int_wp), intent(in)    :: noq                  !< total number of interfaces
+        integer(kind = int_wp), intent(in)    :: novelo               !< number additional velocities
+        real(kind = real_wp),   intent(in)    :: velo(novelo, noq)    !< array with additional velocities
+        real(kind = real_wp),   intent(in)    :: area(noq)            !< exchange areas in m2
+        real(kind = real_wp),   intent(in)    :: flow(noq)            !< flows through the exchange areas in m3/s
+        integer(kind = int_wp), intent(in)    :: ipoint(4, noq)       !< from, to, from-1, to+1 volume numbers
+        integer(kind = int_wp), intent(in)    :: ivpnt(nosys)         !< additional velocity number per substance
+        real(kind = real_wp),   intent(in)    :: conc(notot, noseg)   !< concentrations at previous time level
+        real(kind = real_wp),   intent(in)    :: bound(nosys, *)      !< open boundary concentrations
+        integer(kind = int_wp), intent(in)    :: idt                  !< time step in seconds
+        real(kind = real_wp),   intent(inout) :: deriv(notot, noseg)  !< derivatives of the concentraions
+        integer(kind = int_wp), intent(in)    :: iaflag               !< if 1 then accumulate mass in report array
+        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)     !< report array for monitoring file
 
         !     Local variables     :
-
         integer(kind = int_wp) :: iq              ! loop counter exchanges
         integer(kind = int_wp) :: isys            ! loop counter substance
-        integer(kind = int_wp) :: ifrom, ito    ! from and to volume numbers
-        real(kind = real_wp) :: a               ! this area
-        real(kind = real_wp) :: q               ! flow for this exchange
-        real(kind = real_wp) :: v               ! flow for this substance
-        real(kind = real_wp) :: dq              ! total flux from and to
+        integer(kind = int_wp) :: ifrom, ito      ! from and to volume numbers
+        real(kind = real_wp)   :: a               ! this area
+        real(kind = real_wp)   :: q               ! flow for this exchange
+        real(kind = real_wp)   :: v               ! flow for this substance
+        real(kind = real_wp)   :: dq              ! total flux from and to
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq50", ithandl)
 
-        !         loop accross the number of exchanges
-
+        ! loop along number of exchanges
         do iq = 1, noq
-
-            !         initialisations , check for transport anyhow
-
+            ! initialisations , check for transport anyhow
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or.  ito == 0) cycle
@@ -104,8 +88,7 @@ contains
             if (ifrom < 0) goto 20
             if (ito   < 0) goto 40
 
-            !         the regular case
-
+            ! the regular case
             do isys = 1, nosys
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo(ivpnt(isys), iq) * a
@@ -115,12 +98,11 @@ contains
                     dq = v * conc(isys, ito)
                 endif
                 deriv(isys, ifrom) = deriv(isys, ifrom) - dq
-                deriv(isys, ito) = deriv(isys, ito) + dq
-            enddo
+                deriv(isys, ito)   = deriv(isys, ito)   + dq
+            end do
             cycle
 
-            !        The 'from' element was a boundary.
-
+            ! The 'from' element was a boundary.
             20    do isys = 1, nosys
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo(ivpnt(isys), iq) * a
@@ -132,11 +114,10 @@ contains
                     if (iaflag == 1) amass2(isys, 5) = amass2(isys, 5) - dq * idt
                 endif
                 deriv(isys, ito) = deriv(isys, ito) + dq
-            enddo
+            end do
             cycle
 
-            !        The 'to' element was a boundary.
-
+            ! The 'to' element was a boundary.
             40    do isys = 1, nosys
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo(ivpnt(isys), iq) * a
@@ -148,14 +129,11 @@ contains
                     if (iaflag == 1) amass2(isys, 4) = amass2(isys, 4) - dq * idt
                 endif
                 deriv(isys, ifrom) = deriv(isys, ifrom) - dq
-            enddo
+            end do
 
-            !        end of the loop over exchanges
-
+            ! end of the loop over exchanges
         end do
 
         if (timon) call timstop (ithandl)
-        return
-    end
-
+    end subroutine first_step_fct
 end module m_dlwq50

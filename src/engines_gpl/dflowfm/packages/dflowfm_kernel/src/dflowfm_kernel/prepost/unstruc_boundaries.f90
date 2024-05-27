@@ -909,6 +909,7 @@ logical function initboundaryblocksforcings(filename)
  use m_ec_parameters, only: provFile_uniform
  use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
  use m_lateral, only : apply_transport
+ use m_flow, only: kmx
 
  implicit none
 
@@ -1005,7 +1006,7 @@ logical function initboundaryblocksforcings(filename)
  maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
  if (maxlatsg > 0) then
     call realloc(balat, maxlatsg, keepExisting = .false., fill = 0d0)
-    call realloc(qplat, maxlatsg, keepExisting = .false., fill = 0d0)
+    call realloc(qplat, (/max(1,kmx),maxlatsg/), keepExisting = .false., fill = 0d0)
     call realloc(lat_ids, maxlatsg, keepExisting = .false.)
     call realloc(n1latsg, maxlatsg, keepExisting = .false., fill = 0)
     call realloc(n2latsg, maxlatsg, keepExisting = .false., fill = 0)
@@ -1285,7 +1286,7 @@ logical function initboundaryblocksforcings(filename)
        end if
 
        qid = 'lateral_discharge' ! New quantity name in .bc files
-       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(locid), 'discharge', trim(rec), numlatsg, kx, qplat)
+       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(locid), 'discharge', trim(rec), numlatsg, kx, qplat(1,:))
        if (success) then
           jaqin = 1
           lat_ids(numlatsg) = locid
@@ -1464,12 +1465,13 @@ subroutine ini_alloc_laterals()
    use m_lateral, only : qqlat, kclat, nnlat
    use m_flowgeom, only: ndx2d, ndxi, ndx
    use m_alloc
+   use m_flow, only: kmx
    integer :: ierr
    integer :: nlatndguess
 
    if (.not. allocated(QQlat) ) then                      ! just once
       nlatndguess = ndx2d+2*(ndxi-ndx2d)  ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
-      allocate ( QQLat(ndx) , stat=ierr)
+      allocate ( QQLat(max(1,kmx),ndx) , stat=ierr)
       call aerr('QQLAT(ndx)', ierr, ndx)
       QQLat = 0d0
       allocate ( nnLat(nlatndguess) , stat=ierr)

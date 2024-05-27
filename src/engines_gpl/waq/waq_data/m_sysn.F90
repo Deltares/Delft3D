@@ -47,7 +47,7 @@ module m_sysn
     integer :: niharm   !  total number of harmonics
     integer :: nlines   !  cumulative record space
     integer :: npoins   !  cumulative pointer space
-    integer :: nolun    !  number of unit numbers
+    integer :: num_file_units    !  number of unit numbers
     integer :: nx       !  width of grid
     integer :: ny       !  depth of grid
     integer :: noitem   !  number of items with time-functions
@@ -99,7 +99,7 @@ module m_sysn
             nodisp, novelo, noq1, noq2, noq3, &
             noq4, noq, nodump, nobnd, nowst, &
             nocons, nopa, nofun, nosfun, nharms, &
-            niharm, nlines, npoins, nolun, nx, &
+            niharm, nlines, npoins, num_file_units, nx, &
             ny, noitem, jtrack, nipmsa, nproc, &
             noloc, nflux, nodef, noutp, nrvart, &
             nbufmx, ifiopk, ipbloo, ioffbl, &

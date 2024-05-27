@@ -106,8 +106,10 @@
     if (itpbn < 6 .or. itpbn == 7) then
        if (n01 == 0) then
           s0(kb) = max(zb, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
+          hs(kb) = s0(kb)- bl(kb)
        else
           s1(kb) = max(zb, bl(kb))
+          hs(kb) = s1(kb)- bl(kb)
        endif
     endif
 

@@ -46,7 +46,7 @@ contains
 !>            The price paid is that:
 !>            - the series need to be equidistant
 !>            - the last record before rewind should contain only zeros
-!>            probably an additional array and use of dlwqtd would be simpler
+!>            probably an additional array and use of expands_vol_area_for_bottom_cells would be simpler
 
 !     system administration : Antoon Koster
 

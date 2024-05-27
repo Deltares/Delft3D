@@ -44,7 +44,7 @@ contains
         !                            4 April   2013 by Leo Postma
         !                                           take presence of particle-substances into account
 
-        !     Logical unitnumbers : LUN     = number of monitoring file
+        !     Logical unitnumbers : file_unit_list     = number of monitoring file
 
         !     Subroutines called  : none
 

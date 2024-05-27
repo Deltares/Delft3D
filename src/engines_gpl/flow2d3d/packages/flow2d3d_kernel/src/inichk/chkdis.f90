@@ -80,7 +80,7 @@ subroutine chkdis(lundia    ,error     ,nsrc      ,zmodel    ,nmax      , &
     integer            :: m       ! Current M-index of the active point in the current computational ROW 
     integer            :: n       ! Current N-index of the active point in the current computational COLUMN 
     integer            :: nr      ! Sequence number of open boundary points 
-    real(fp)           :: h0      ! Actual Water-height (DP+S1) 
+    real(fp)           :: h0      ! Water depth (DPS+S1) 
     character(40)      :: errmsg  ! Character var. containing the error message to be written to file. The message depend on the error. 
 !
 !! executable statements -------------------------------------------------------

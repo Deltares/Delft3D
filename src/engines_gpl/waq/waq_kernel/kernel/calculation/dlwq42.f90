@@ -30,7 +30,7 @@ contains
 
     subroutine dlwq42 (nosys, notot, nototp, noseg, volume, &
             surface, amass, conc, deriv, idt, &
-            ivflag, lun)
+            ivflag, file_unit_list)
 
         !     Deltares Software Centre
 
@@ -54,7 +54,7 @@ contains
         !                            4 April   2013 by Leo Postma
         !                                           take presence of particle-substances into account
 
-        !     Logical unitnumbers : LUN     = number of monitoring file
+        !     Logical unitnumbers : file_unit_list     = number of monitoring file
 
         !     Subroutines called  : none
 
@@ -76,7 +76,7 @@ contains
         real(kind = real_wp), intent(inout) :: deriv (notot, noseg)    !< derivatives per substance per volume
         integer(kind = int_wp), intent(in) :: idt                     !< integration time step size
         integer(kind = int_wp), intent(in) :: ivflag                  !< if 1 computational volumes
-        integer(kind = int_wp), intent(in) :: lun                     !< unit number of the monitoring file
+        integer(kind = int_wp), intent(in) :: file_unit_list                     !< unit number of the monitoring file
 
         !     local variables
 
@@ -101,10 +101,10 @@ contains
             if (abs(vol) < 1.0e-25) then
                 if (ivmess < 25) then
                     ivmess = ivmess + 1
-                    write (lun, 1000) iseg, vol
+                    write (file_unit_list, 1000) iseg, vol
                 elseif (ivmess == 25) then
                     ivmess = ivmess + 1
-                    write (lun, 1001)
+                    write (file_unit_list, 1001)
                 endif
                 volume (iseg) = 1.0
                 vol = 1.0

@@ -30,7 +30,7 @@
 
 
       subroutine dlwqp0 ( conc   , amass  , deriv  , volume , idt    , & 
-                         nosys  , notot  , noseg  , lun     ,ivflag , & 
+                         nosys  , notot  , noseg  , file_unit_list     ,ivflag , &
                          surfac )
 
 !     Deltares Software Centre
@@ -44,7 +44,7 @@
 !                                           2D arrays, fortran 90 look and feel
 !                                           conc of passive substances in mass/m2
 
-!     Logical unitnumbers : lun     = number of monitoring file
+!     Logical unitnumbers : file_unit_list     = number of monitoring file
 
 !     Subroutines called  : none
 
@@ -62,7 +62,7 @@
       real(kind=real_wp), intent(inout)  ::deriv (notot ,noseg)    !< derivatives per substance per volume
       real(kind=real_wp), intent(inout)  ::volume(noseg )          !< volumes of the segments
       integer(kind=int_wp), intent(in   )  ::idt                     !< integration time step size
-      integer(kind=int_wp), intent(in   )  ::lun                     !< unit number of the monitoring file
+      integer(kind=int_wp), intent(in   )  ::file_unit_list                     !< unit number of the monitoring file
       integer(kind=int_wp), intent(in   )  ::ivflag                  !< if 1 computational volumes
       real(kind=real_wp), intent(in   )  ::surfac(noseg)           !< horizontal surface
 
@@ -87,10 +87,10 @@
          if ( abs(v1)<1.0e-25 ) then
             if ( ivmess < 25 ) then
                ivmess = ivmess + 1
-               write ( lun, 1000 ) iseg  , v1
+               write ( file_unit_list, 1000 ) iseg  , v1
             elseif ( ivmess == 25 ) then
                ivmess = ivmess + 1
-               write ( lun, 1001 )
+               write ( file_unit_list, 1001 )
             endif
             volume (iseg) = 1.0
             v1            = 1.0

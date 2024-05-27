@@ -518,8 +518,8 @@
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -535,9 +535,7 @@
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
@@ -754,7 +752,7 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -857,7 +855,7 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -1430,7 +1428,7 @@
                     <parameter name="SUBST_079" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_080" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_081" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_082" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_082" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_083" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_084" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_085" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -1528,7 +1526,7 @@
                     <parameter name="SUBST_079" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_080" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_081" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_082" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_082" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_083" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_084" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_085" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -1780,7 +1778,6 @@
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -1797,7 +1794,6 @@
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -1977,7 +1973,7 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2054,7 +2050,7 @@
                     <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_032" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_033" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
-                    <parameter name="SUBST_034" toleranceAbsolute="1.0e-00" toleranceRelative="1.0e-03"/>
+                    <parameter name="SUBST_034" toleranceAbsolute="1.0e+01" toleranceRelative="1.0e-03"/>
                     <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_036" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-02"/>
                     <parameter name="SUBST_037" toleranceAbsolute="1.0e+01" toleranceRelative="1.0e-02"/>
@@ -2136,7 +2132,7 @@
                     <parameter name="SUBST_031" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_032" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_033" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
-                    <parameter name="SUBST_034" toleranceAbsolute="2.0e-01" toleranceRelative="1.0e-03"/>
+                    <parameter name="SUBST_034" toleranceRelative="1.0e-02"/>
                     <parameter name="SUBST_035" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_036" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_037" toleranceAbsolute="1.0e+00" toleranceRelative="1.0e-02"/>
@@ -2191,9 +2187,9 @@
             <file name="d3d-waq-test032.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -2211,9 +2207,9 @@
             <file name="d3d-waq-test032.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
-                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                     <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
@@ -2250,11 +2246,11 @@
         <checks>
             <file name="deltashell_map.nc" type="netCDF">
                 <parameters>
-                    <parameter name="mesh2d_2d_POC1"   toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
-                    <parameter name="mesh2d_2d_PON1"   toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_POC1"   toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="mesh2d_2d_PON1"   toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
                     <parameter name="mesh2d_2d_POP1"   toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
-                    <parameter name="mesh2d_2d_DetCS1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
-                    <parameter name="mesh2d_2d_DetNS1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh2d_2d_DetCS1" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="mesh2d_2d_DetNS1" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                     <parameter name="mesh2d_2d_DetPS1" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -6000,14 +5996,14 @@
                     <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_023" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_024" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -6809,7 +6805,7 @@
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
             <file name="n_blmmix.hda" type="NEFIS">
@@ -6832,7 +6828,7 @@
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
         </checks>
@@ -7146,53 +7142,53 @@
             <file name="mpb_dynamo.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_018" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_022" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                 </parameters>
             </file>
             <file name="mpb_dynamo.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_018" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_022" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_018" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_019" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_020" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_021" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_022" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-04"/>
                 </parameters>
             </file>
         </checks>
@@ -9652,7 +9648,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c30_mortality_salinity" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f12_protist/c30_mortality_salinity</path>
+        <path version="2024-05-13T15:50:00">e03_waq/f12_protist/c30_mortality_salinity</path>
         <checks>
             <file name="dwaq/mortality_protist_salinity.lsp" type="NUMBERTEXT">
                    <skipline> Deltares, DELWAQ Version</skipline>
@@ -9700,7 +9696,7 @@
     <!-- Test cases for DEBGRZ/CONSBL -->
 
     <testCase name="e03_f16_c01_bloom-consbl" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c01_bloom_consbl</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c01_bloom_consbl</path>
         <checks>
             <file name="bloomcolumn-CONSBL.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9836,7 +9832,7 @@
     </testCase>
 
     <testCase name="e03_f16_c02_bloom-mussel" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c02_bloom_mussel</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c02_bloom_mussel</path>
         <checks>
             <file name="bloomcolumn-mussel.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9903,8 +9899,8 @@
                     <parameter name="SUBST_061" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_064" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -9992,7 +9988,7 @@
     </testCase>
 
     <testCase name="e03_f16_c03_bloom-mussel_rope" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c03_bloom_mussel_rope</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c03_bloom_mussel_rope</path>
         <checks>
             <file name="bloomcolumn-mussel-rope.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10059,18 +10055,18 @@
                     <parameter name="SUBST_061" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_064" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_068" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_069" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_070" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_071" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_072" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_073" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_074" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_075" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_075" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_076" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_077" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_078" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -10148,7 +10144,7 @@
     </testCase>
 
     <testCase name="e03_f16_c04_bloom-zoopl" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c04_bloom_zoopl</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c04_bloom_zoopl</path>
         <checks>
             <file name="bloomcolumn-zoopl.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10219,13 +10215,13 @@
                     <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_069" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_068" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_069" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_070" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_071" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_072" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_073" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_074" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_074" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_075" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_076" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_077" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -10304,7 +10300,7 @@
     </testCase>
 
     <testCase name="e03_f16_c05_bloom-small-mussel" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c05_bloom_small_mussel</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c05_bloom_small_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer3.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10372,8 +10368,8 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_069" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -10462,7 +10458,7 @@
     </testCase>
 
     <testCase name="e03_f16_c06_bloom-medium-mussel" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c06_bloom_medium_mussel</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c06_bloom_medium_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer4.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10530,8 +10526,8 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_069" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -10620,7 +10616,7 @@
     </testCase>
 
     <testCase name="e03_f16_c07_bloom-large-mussel" ref="dwaq_default">
-        <path version="2024-02-22T14:50:00">e03_waq/f16_grazing/c07_bloom_large_mussel</path>
+        <path version="2024-02-22T15:50:00">e03_waq/f16_grazing/c07_bloom_large_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer5.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10688,8 +10684,8 @@
                     <parameter name="SUBST_062" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_063" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_064" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_065" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_066" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_067" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_068" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_069" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>

@@ -5526,15 +5526,6 @@
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
-				</file>
-				<file name="trim-t01.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-dad-const">
 						<parameter name="LINK_DEF" toleranceAbsolute="0.0001"/>
 						<parameter name="LINK_PERCENTAGES" toleranceAbsolute="0.0001"/>
@@ -5544,6 +5535,13 @@
 						<parameter name="LINK_SUM" toleranceAbsolute="0.0001"/>
 						<parameter name="DREDGE_VOLUME" toleranceAbsolute="0.0001"/>
 						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 			</checks>
@@ -5558,15 +5556,6 @@
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
-				</file>
-				<file name="trim-t01.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-dad-const">
 						<parameter name="LINK_DEF" toleranceAbsolute="0.0001"/>
 						<parameter name="LINK_PERCENTAGES" toleranceAbsolute="0.0001"/>
@@ -5576,6 +5565,13 @@
 						<parameter name="LINK_SUM" toleranceAbsolute="0.0001"/>
 						<parameter name="DREDGE_VOLUME" toleranceAbsolute="0.0001"/>
 						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 			</checks>
@@ -5590,15 +5586,6 @@
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
-				</file>
-				<file name="trim-t01.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-dad-const">
 						<parameter name="LINK_DEF" toleranceAbsolute="0.0001"/>
 						<parameter name="LINK_PERCENTAGES" toleranceAbsolute="0.0001"/>
@@ -5610,10 +5597,17 @@
 						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
 			</checks>
 		</testCase>
 		<testCase name="e01_f17_c04-dump_is_dred" ref="flow2d3d_default">
-			<path version="2024-01-08T09:50:00">e01_d3dflow/f17_dred_dump/c04-dump_is_dred</path>
+			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c04-dump_is_dred</path>
 			<maxRunTime>98.861000061</maxRunTime>
 			<checks>
 				<file name="trih-t01.dat" type="NEFIS">
@@ -5622,15 +5616,6 @@
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
-				</file>
-				<file name="trim-t01.dat" type="NEFIS">
-					<parameters name="map-series">
-						<parameter name="S1" toleranceAbsolute="0.0001"/>
-						<parameter name="U1" toleranceAbsolute="0.0001"/>
-						<parameter name="V1" toleranceAbsolute="0.0001"/>
-					</parameters>
-				</file>
-				<file name="trih-t01.dat" type="NEFIS">
 					<parameters name="his-dad-const">
 						<parameter name="LINK_DEF" toleranceAbsolute="0.0001"/>
 						<parameter name="LINK_PERCENTAGES" toleranceAbsolute="0.0001"/>
@@ -5642,10 +5627,17 @@
 						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
+				<file name="trim-t01.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1" toleranceAbsolute="0.0001"/>
+						<parameter name="U1" toleranceAbsolute="0.0001"/>
+						<parameter name="V1" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
 			</checks>
 		</testCase>
 		<testCase name="e01_f17_c05-dad_dd" ref="flow2d3d_default">
-			<path version="2024-03-22T19:30:00">e01_d3dflow/f17_dred_dump/c05-dad_dd</path>
+			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c05-dad_dd</path>
 			<maxRunTime>8.93799996376</maxRunTime>
 			<checks>
 				<file name="trih-qq1.dat" type="NEFIS">
@@ -5653,6 +5645,12 @@
 						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-dad-series">
+						<parameter name="DATE_TIME" toleranceAbsolute="0.0001"/>
+						<parameter name="LINK_SUM" toleranceAbsolute="0.0001"/>
+						<parameter name="DREDGE_VOLUME" toleranceAbsolute="0.0001"/>
+						<parameter name="DUMP_VOLUME" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 				<file name="trim-qq1.dat" type="NEFIS">
@@ -5688,6 +5686,12 @@
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
 					</parameters>
+					<parameters name="his-dad-series">
+						<parameter name="DATE_TIME" toleranceAbsolute="0.0001"/>
+						<parameter name="LINK_SUM" toleranceAbsolute="3.0"/>
+						<parameter name="DREDGE_VOLUME" toleranceAbsolute="3.0"/>
+						<parameter name="DUMP_VOLUME" toleranceAbsolute="3.0"/>
+					</parameters>
 				</file>
 				<file name="trim-da3.dat" type="NEFIS">
 					<parameters name="map-series">
@@ -5699,7 +5703,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f17_c07-layered_bed" ref="flow2d3d_default">
-			<path version="2024-01-08T09:50:00">e01_d3dflow/f17_dred_dump/c07-layered_bed</path>
+			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c07-layered_bed</path>
 			<maxRunTime>51.8910000324</maxRunTime>
 			<checks>
 				<file name="trih-drd1.dat" type="NEFIS">
@@ -5707,6 +5711,12 @@
 						<parameter name="ZWL"   toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURU" toleranceAbsolute="0.0001"/>
 						<parameter name="ZCURV" toleranceAbsolute="0.0001"/>
+					</parameters>
+					<parameters name="his-dad-series">
+						<parameter name="DATE_TIME" toleranceAbsolute="0.0001"/>
+						<parameter name="LINK_SUM" toleranceAbsolute="300"/>
+						<parameter name="DREDGE_VOLUME" toleranceAbsolute="3000"/>
+						<parameter name="DUMP_VOLUME" toleranceAbsolute="1000"/>
 					</parameters>
 				</file>
 				<file name="trim-drd1.dat" type="NEFIS">
@@ -5719,7 +5729,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f17_c08-poly_across_dd" ref="flow2d3d_default">
-			<path version="2024-01-08T09:50:00">e01_d3dflow/f17_dred_dump/c08-poly_across_dd</path>
+			<path version="2024-05-06T17:36:00">e01_d3dflow/f17_dred_dump/c08-poly_across_dd</path>
 			<maxRunTime>0.828999996185</maxRunTime>
 			<checks>
 				<file name="trih-drd1.dat" type="NEFIS">

@@ -159,7 +159,7 @@ else if (jatem == 5) then
        presn = 1d-2*patm(n)
    endif
                              ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
-   if (jasol == 1) then      ! Solar radiation provided by user (in .tem or .nc file)
+   if (solrad_available) then
       if (ja_solar_radiation_factor > 0) then
          if (comparereal(solar_radiation_factor(n), dmiss) /= 0) then
             qrad(n) = qrad(n) * solar_radiation_factor(n) ! qrad is adjusted (and not qsun) as it is used in fm_wq_processes 
@@ -278,7 +278,7 @@ else if (jatem == 5) then
    Qcon   = -ch*rcpa*windn*(tsurf-tairn)                          ! heat loss of water by convection eq.(A.23); Stanton number is ch:
 
    twatK  =  tsurf + tkelvn
-   if (jalongwave > 0) then
+   if (longwave_available) then
       Qlong = em * (longwave(n) - stf*(twatK**4))                   ! difference between prescribed long wave downward flux and calculated upward flux
    else
       Qlong  = -em*stf*(twatK**4)*(0.39d0-0.05d0*sqrt(pvtahu))       ! heat loss by effective infrared back radiation hl, restricted by

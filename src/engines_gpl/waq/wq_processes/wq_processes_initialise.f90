@@ -66,16 +66,14 @@ contains
         use m_blmeff
         use m_algrep
         use m_actrep
-        use m_dattim
-        use m_srstop
+        use m_date_time_utils_external, only : write_date_time
+        use m_logger_helper, only : stop_with_error, write_log_message
         use m_rd_stt
-        use m_monsys
         use m_getidentification
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use processes_input
         use processes_pointers
         use process_registration
-
         use m_waq_data_structure
         use date_time_utils, only : simulation_start_time_scu, simulation_stop_time_scu, system_time_factor_seconds, &
                 base_julian_time
@@ -157,10 +155,6 @@ contains
         integer(kind = int_wp) :: iret             ! return value
         integer(kind = int_wp) :: ierr2            ! error count
 
-        integer(kind = int_wp) :: idummy           ! dummy variable
-        real(kind = real_wp) :: rdummy           ! dummy variable
-        character :: cdummy          ! dummy variable
-
         character(len=20), allocatable :: ainame(:)       ! all item names names in the proc_def
         character(len=20) :: subname         ! substance name
         character(len=100), allocatable :: substdname(:)   ! substance standard name
@@ -191,10 +185,10 @@ contains
         character(len=80)   swinam
         character(len=80)   blmnam
         character(len=80)   line
-        character(len=80)   idstr
+        character(len=80)   identification_text
         character(len=20)   rundat
-        character(len=10)   config
-        logical        lfound, laswi, swi_nopro
+        character(:), allocatable :: config
+        logical :: parsing_error, laswi, swi_nopro
         integer(kind = int_wp) :: blm_act                        ! index of ACTIVE_BLOOM_P
 
         ! information
@@ -268,9 +262,9 @@ contains
         ! open report file
 
         ! Header for lsp
-        call getidentification(idstr)
-        write(lunlsp, '(XA/)') idstr
-        call dattim(rundat)
+        call getidentification(identification_text)
+        write(lunlsp, '(XA/)') identification_text
+        call write_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
         ! Active/inactive substance list
@@ -284,9 +278,6 @@ contains
         end do
         write(lunlsp, '(/)')
         ! command line settingen , commands
-
-        ! monitoring level
-        call setmmo (10)
 
         ! active processes only switch
         ! only activated processes are switched on
@@ -365,18 +356,17 @@ contains
         ! old serial definitions
         swi_nopro = .false.
         if (.not. swi_nopro) then
-            call retrieve_command_argument ('-target_serial', 1, lfound, target_serial, rdummy, cdummy, ierr2)
-            if (lfound) then
+            if (get_command_argument_by_name('-target_serial', target_serial, parsing_error)) then
                 write(line, '(a)') ' found -target_serial command line switch'
-                call monsys(line, 1)
-                if (ierr2/= 0) then
+                call write_log_message(line)
+                if (parsing_error) then
                     old_items%target_serial = target_serial
                     write(line, '(a)')' no serial number given, using current'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = serial
                 else
                     write(line, '(a,i13)') ' using target serial number: ', target_serial
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     old_items%target_serial = target_serial
                 endif
             else
@@ -386,17 +376,16 @@ contains
 
         ! configuration
 
-        call retrieve_command_argument ('-conf', 3, lfound, idummy, rdummy, config, ierr2)
-        if (lfound) then
+        if (get_command_argument_by_name('-conf', config, parsing_error)) then
             write(line, '(a)') ' found -conf command line switch'
-            call monsys(line, 1)
-            if (ierr2/= 0) then
+            call write_log_message(line)
+            if (parsing_error) then
                 write(line, '(a)')' no configuration id given, using default'
-                call monsys(line, 1)
+                call write_log_message(line)
                 config = ' '
             else
                 write(line, '(a25,a10)') ' using configuration id: ', config
-                call monsys(line, 1)
+                call write_log_message(line)
             endif
         else
             config = ' '
@@ -414,11 +403,11 @@ contains
                 inquire(file = blmfil, exist = l_eco)
                 if (l_eco) then
                     line = ' '
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' found constant ACTIVE_BLOOM_P without -eco command line switch'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                     write(line, '(a)') ' and found default file bloom.spe. Will using default BLOOM file.'
-                    call monsys(line, 1)
+                    call write_log_message(line)
                 else
                     l_eco = .false.
                     noprot = 0
@@ -487,7 +476,7 @@ contains
             ! when no algae were found, turn of eco mode
             if (noalg == 0) then
                 write(line, '(a)') ' no BLOOM algae were found, switching off eco mode.'
-                call monsys(line, 1)
+                call write_log_message(line)
                 l_eco = .false.
             else
                 ! set algal group list
@@ -514,9 +503,9 @@ contains
         ix_act = constants%find(swinam)
         if (ix_act > 0) then
             write(line, '(a)') ' found only_active constant'
-            call monsys(line, 1)
+            call write_log_message(line)
             write(line, '(a)') ' only activated processes are switched on'
-            call monsys(line, 1)
+            call write_log_message(line)
             laswi = .true.
         endif
 
@@ -537,7 +526,7 @@ contains
                     config = 'waq'
                 endif
                 write(line, '(a,a10)') ' using default configuration: ', config
-                call monsys(line, 1)
+                call write_log_message(line)
             endif
         endif
 
@@ -743,7 +732,7 @@ contains
             write(lunlsp, *) ' not all input available.'
             write(lunlsp, *) ' number off missing variables :', nmis
             write(lunlsp, *) ' simulation impossible.'
-            call srstop(1)
+            call stop_with_error()
         endif
 
         ! set new pointer for dispersion and velocity

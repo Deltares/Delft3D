@@ -42,7 +42,7 @@ contains
         !                                           2D arrays, fortran 90 look and feel
         !                                           conc of passive substances in mass/m2
 
-        !     Logical unitnumbers : LUN     = number of monitoring file
+        !     Logical unitnumbers : file_unit_list     = number of monitoring file
 
         !     Subroutines called  : none
 

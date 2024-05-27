@@ -5,7 +5,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
               & nmax      ,nmaxus    ,kmax      ,lstsci    ,ltur      , &
               & namcon    ,s1        ,u1        ,v1        ,r1        , &
               & rtur1     ,decay     ,umnldf    ,vmnldf    ,kfu       , &
-              & kfv       ,dp        ,lsed      ,gdp       )
+              & kfv       ,dpd       ,lsed      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -92,7 +92,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     logical                                                       , intent(in)  :: secflo !  Description and declaration in procs.igs
     logical                                                       , intent(in)  :: temp   !  Description and declaration in procs.igs
     real(fp)                                                                    :: zini   !!  Initial water elevation in the model
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               :: umnldf !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               :: vmnldf !  Description and declaration in esm_alloc_real.f90
@@ -278,7 +278,7 @@ subroutine rdic(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                  & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                  & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                  & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                 & dp        ,namcon    ,coninit   ,gdp       )
+                 & dpd       ,namcon    ,coninit   ,gdp       )
     endif
     !
     ! locate 'Filic' record for initial cond. in extra input file

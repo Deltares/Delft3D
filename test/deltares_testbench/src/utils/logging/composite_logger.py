@@ -23,8 +23,11 @@ class CompositeLogger(IMainLogger):
         """Loggers of this composite logger"""
         return self.__loggers
 
-    def error(self, message: str):
-        self.log(message, LogLevel.ERROR)
+    def error(self, message: str, exc_info: bool = False):
+        self.log(message, LogLevel.ERROR, exc_info=exc_info)
+
+    def exception(self, message: str):
+        self.log(message, LogLevel.ERROR, exc_info=True)
 
     def warning(self, message: str):
         self.log(message, LogLevel.WARNING)
@@ -35,9 +38,9 @@ class CompositeLogger(IMainLogger):
     def debug(self, message: str):
         self.log(message, LogLevel.DEBUG)
 
-    def log(self, message: str, log_level: LogLevel):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         for logger in self.__loggers:
-            logger.log(message, log_level)
+            logger.log(message, log_level, exc_info=exc_info)
 
     def create_test_case_logger(self, test_case_id: str) -> ITestLogger:
         for logger in self.loggers:

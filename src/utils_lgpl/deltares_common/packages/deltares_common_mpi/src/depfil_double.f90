@@ -70,7 +70,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
-    real(hp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing dp of entire domain 
+    real(hp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing values of entire domain 
     character(300)                        :: errmsg ! Character string containing the errormessage to be written to file. The message depends on the error.  
     !
     integer                               :: i

@@ -29,11 +29,10 @@
       contains
 
 
-      subroutine varoxy ( pmsa   , fl     , ipoint , increm , noseg  , & 
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , & 
+      subroutine varoxy ( pmsa   , fl     , ipoint , increm , noseg  , &
+                         noflux , iexpnt , iknmrk , noq1   , noq2   , &
                          noq3   , noq4   )
-      use m_srstop
-      use m_monsys
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
 
 !>\file
 !>       Variation of oxygen due to variation in primary production within day
@@ -52,15 +51,15 @@
 !     ------   -----  ------------
 
       REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, & 
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, &
               IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
 
       INTEGER(kind=int_wp) ::LUNREP
 
-      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 , & 
+      INTEGER(kind=int_wp) ::IP1 , IP2 , IP3 , IP4 , IP5 , IP6 , IP7 , IP8 , IP9 , &
               IP10, IP11, IP12, I, IFLUX, ISEG
-      REAL(kind=real_wp) ::TIMSIM, DELTAT, TIMNUL, T1MXPP, T2MXPP, DAYLEN, FPPTOT, & 
-              FRESPI, DEPTHW, T1    , T2    , PPMAX , TRISE , & 
+      REAL(kind=real_wp) ::TIMSIM, DELTAT, TIMNUL, T1MXPP, T2MXPP, DAYLEN, FPPTOT, &
+              FRESPI, DEPTHW, T1    , T2    , PPMAX , TRISE , &
               TSET  , TOTAL , V1    , V2
       REAL(kind=real_wp) ::INTEGR(0:12*24), PPLAST, RELAST, DAYLLAST
       SAVE     PPLAST, RELAST, DAYLLAST, INTEGR
@@ -91,12 +90,12 @@
           (INCREM(5) > 0) .OR. &
           (INCREM(6) > 0) ) THEN
 
-          CALL GETMLU(LUNREP)
-          WRITE (LUNREP,*) & 
+          CALL get_log_unit_number(LUNREP)
+          WRITE (LUNREP,*) &
          ' VAROXY: Time parameters function(x) not ALLOWED'
-          WRITE (*,*) & 
+          WRITE (*,*) &
          ' VAROXY: Time parameters function(x) not ALLOWED'
-          CALL SRSTOP(1)
+          CALL stop_with_error()
       ENDIF
 
       IFLUX = 1
@@ -191,9 +190,9 @@
 !               Compute flux for interval [T1:T2] by subtracting integrals
 !               for both times and dividing by time interval
 
-                FL(IFLUX)  = (( INTEGR(NINT(T2*12.0)) & 
-                              -INTEGR(NINT(T1*12.0)) ) & 
-                            / (T2-T1)* (FPPTOT+FRESPI) & 
+                FL(IFLUX)  = (( INTEGR(NINT(T2*12.0)) &
+                              -INTEGR(NINT(T1*12.0)) ) &
+                            / (T2-T1)* (FPPTOT+FRESPI) &
                             - FRESPI ) / DEPTHW
 
              ELSE

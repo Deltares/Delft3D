@@ -26,18 +26,13 @@
 !-------------------------------------------------------------------------------
 !  $Id$
 !  $HeadURL$
-C
-C     #pars/#locs in TEST
-C
-C     logical function to check differences
-C
+!
+!     #pars/#locs in TEST
+!
+!     logical function to check differences
+!
+      integer, parameter :: NPARS = 3
+      integer, parameter ::  NLOCS = 2
+      integer, parameter ::  NTIMES = 300000
 
-      integer NPARS
-      integer NLOCS
-      integer NTIMES
-      parameter (NPARS  = 3      )
-      parameter (NLOCS  = 2      )
-      parameter (NTIMES = 300000 )
-
-      logical diffInValues
-
+      logical :: diffInValues

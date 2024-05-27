@@ -264,6 +264,9 @@ class ComparisonRunner(TestSetRunner):
                     result_worst = comparison_result.result
                     i_worst = i
 
+            if i_worst == -1 and tc_results and len(tc_results) > 0:
+                i_worst = len(tc_results) - 1
+
             # Local variables now contain the 'worst' scores for that test case. This one will be written in the summary
             worst_result = tc_results[i_worst]
             _, w_filename, w_parameter, w_cr = worst_result

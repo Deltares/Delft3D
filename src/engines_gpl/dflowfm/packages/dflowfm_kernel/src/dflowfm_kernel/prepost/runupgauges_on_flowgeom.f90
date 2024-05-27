@@ -60,12 +60,12 @@ subroutine runupgauges_on_flowgeom()
     logical                                       :: success
 
 
-    if ( nrug.lt.1 ) return
+    if ( num_rugs.lt.1 ) return
 
     numcrossedlinks = 0
 
 !   allocate
-    allocate(istartcrs(nrug+1))
+    allocate(istartcrs(num_rugs+1))
     istartcrs = 1
 
     allocate(idum(1))
@@ -83,7 +83,7 @@ subroutine runupgauges_on_flowgeom()
         !else
             num = 0
 !           determine polyline size
-            do ic=1,nrug
+            do ic=1,num_rugs
                num = num+rug(ic)%path%np+1 ! add space for missing value
                istartcrs(ic+1) = num+1
             end do
@@ -93,7 +93,7 @@ subroutine runupgauges_on_flowgeom()
 
 !           determine paths to single polyline map
             num = 0
-            do ic=1,nrug
+            do ic=1,num_rugs
                do i=1,rug(ic)%path%np
                   num = num+1
                   xx(num) = rug(ic)%path%xp(i)
@@ -121,13 +121,13 @@ subroutine runupgauges_on_flowgeom()
         if ( ierror.eq.0 .and. numcrossedlinks.gt.0 ) then
 
 !          determine crossed links per cross-section
-           allocate(numlist(nrug))
+           allocate(numlist(num_rugs))
            numlist = 0
-           allocate(linklist(numcrossedlinks,nrug))
+           allocate(linklist(numcrossedlinks,num_rugs))
            linklist = 0
 
            do i=1,numcrossedlinks
-              do ic=1,nrug
+              do ic=1,num_rugs
                  istart  = istartcrs(ic)
                  iend    = istartcrs(ic+1)-1
                  if ( ipol(i).ge.istart .and. ipol(i).le.iend ) then
@@ -156,18 +156,18 @@ subroutine runupgauges_on_flowgeom()
         call mess(LEVEL_INFO, trim(mesg))
     end if
 
-    icMOD = MAX(1,nrug/100)
+    icMOD = MAX(1,num_rugs/100)
 
-    call realloc(numlist, nrug, keepExisting = .true., fill = 0) ! In case pli-based cross sections have not allocated this yet.
-    call realloc(linklist, (/ max(numcrossedlinks, 1), nrug /), keepExisting = .true., fill = 0)  ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+    call realloc(numlist, num_rugs, keepExisting = .true., fill = 0) ! In case pli-based cross sections have not allocated this yet.
+    call realloc(linklist, (/ max(numcrossedlinks, 1), num_rugs /), keepExisting = .true., fill = 0)  ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
     ! todo: caching
     !call copyCachedCrossSections( iLink, ipol, success )
 
     CALL READYY('Enabling runup gauges on grid', 0d0)
-    do ic=1,nrug
+    do ic=1,num_rugs
         if (mod(ic,icMOD) == 0) then
-            CALL READYY('Enabling runup gauges on grid', dble(ic)/dble(nrug))
+            CALL READYY('Enabling runup gauges on grid', dble(ic)/dble(num_rugs))
         end if
         !
         !if ( .not. success ) then   to do: caching

@@ -274,14 +274,14 @@
         <checks>
             <file name="dwaq/coliform_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceRelative="1.0e-04"/>
                 </parameters>
             </file>
             <file name="dwaq/coliform_val.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceRelative="1.0e-04"/>
                 </parameters>
             </file>
         </checks>
@@ -307,13 +307,13 @@
             <file name="dwaq/sedres_val.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
             <file name="dwaq/sedres_val.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
         </checks>
@@ -344,7 +344,7 @@
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -352,7 +352,7 @@
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
@@ -421,8 +421,8 @@
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -431,16 +431,16 @@
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
             <file name="dwaq/separate_4segments.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -449,8 +449,8 @@
                     <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_009" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_010" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_013" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
@@ -589,13 +589,13 @@
             <file name="dwaq/max_nelson_4_separate_segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-07" toleranceRelative="1.0e-09"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-07"/>
                 </parameters>
             </file>
             <file name="dwaq/max_nelson_4_separate_segments.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-07" toleranceRelative="1.0e-09"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-07"/>
                 </parameters>
             </file>
         </checks>

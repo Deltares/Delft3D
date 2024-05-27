@@ -43,12 +43,9 @@ contains
 !     local scalars
 !
       integer(kind=4) ::   lun
-
-      character(len=120) idstr
       integer (4)   i
-
       character(len=75)  startup_screen_text(7)
-      
+
       data   startup_screen_text  / &
         '+-----------------------------------------------------------------------+', &
         '|                        D e l f t 3 D - P A R T                        |', &
@@ -57,7 +54,7 @@ contains
         '|                                                                       |', &
         '| Version xx.xxxx  xx-xx-xxxx                                           |', &
         '+-----------------------------------------------------------------------+'/
-      
+
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "write_version", ithndl )

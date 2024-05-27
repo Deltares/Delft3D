@@ -91,7 +91,7 @@ type gd_r_i_ch
        integer(pntrsize) :: disnf      !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: dldeta     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: dldksi     !  Description and declaration in esm_alloc_real.f90
-       integer(pntrsize) :: dp         !  Description and declaration in esm_alloc_real.f90
+       integer(pntrsize) :: dpd        !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: dpc        !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: dpdeta     !  Description and declaration in esm_alloc_real.f90
        integer(pntrsize) :: dpdksi     !  Description and declaration in esm_alloc_real.f90

@@ -80,6 +80,7 @@ install (DIRECTORY ${redist_path}/ DESTINATION lib
 FILES_MATCHING
 PATTERN "libi*.dll"
 PATTERN "libm*.dll"
+PATTERN "svml_dispmd.dll"
 PATTERN "1033" EXCLUDE
 PATTERN "compiler" EXCLUDE
 )

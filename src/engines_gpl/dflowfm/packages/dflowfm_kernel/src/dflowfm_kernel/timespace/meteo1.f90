@@ -7475,7 +7475,7 @@ module m_meteo
       integer :: converterId    !< Unique Converter id.
       integer :: connectionId   !< Unique Connection id.
       integer :: sourceItemId   !< Unique source item id.
-      integer :: sourceItemId_2 !< Unique additional source item id.
+      integer :: sourceItemId_2 !< Unique additional second source item id.
       integer :: sourceItemId_3 !< Unique additional third source item id.
       integer :: sourceItemId_4 !< Unique additional fourth source item id.
       integer :: ndx
@@ -7764,7 +7764,7 @@ module m_meteo
          end if
       end if
       if (associated(targetItemPtr4)) then
-         ! third field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
+         ! fourth field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
          fieldId_4 = ecCreateField(ecInstancePtr)
          if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_4, dataPtr4)
          if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_4, dmiss)
@@ -8398,7 +8398,11 @@ module m_meteo
                sourceItemName = 'air_temperature'
             end if
          case ('cloudiness')
-            sourceItemName = 'cloud_area_fraction'
+            if (ec_filetype == provFile_netcdf) then
+               sourceItemName = 'cloud_area_fraction'
+            else
+               sourceItemName = 'cloudiness'
+            end if
          case ('airdensity')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')

@@ -1,8 +1,0 @@
-Source:
-http://directory.fsf.org/wiki/Sed
-
-
-Licensing:
-License Verified by Verified on Notes 
-GPLv3orlater
-GPLv3 Kelly Hopkins 4 May 2009 

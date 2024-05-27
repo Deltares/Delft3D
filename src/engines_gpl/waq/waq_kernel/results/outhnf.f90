@@ -29,9 +29,9 @@
       contains
 
 
-      subroutine outhnf ( iout  , lchout, itime , moname, noseg , & 
-                         notot1, conc1 , syname, notot2, conc2 , & 
-                         iostrt, iostop, iostep, nodump, idump , & 
+      subroutine outhnf ( iout  , lchout, itime , moname, noseg , &
+                         notot1, conc1 , syname, notot2, conc2 , &
+                         iostrt, iostop, iostep, nodump, idump , &
                          duname, rbuffr, init  )
 
 !     Deltares        sector waterresources and environment
@@ -51,9 +51,8 @@
 !                          putget, handles i/o to nefis file for int/real
 !
 
-      use m_srstop
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use timers
-      use m_monsys
       use nefis_data, only : manage_nefis_data_character
       use m_array_manipulation, only : fill_element_dimensions
       use data_processing, only : delete_file
@@ -129,7 +128,7 @@
       notot  = notot1 + notot2
       noelm2 = notot  + 1
       ierrem = 0
-      call getmlu(lunout)
+      call get_log_unit_number(lunout)
 
 !     initialize file
 
@@ -148,7 +147,7 @@
          if ( ierr_alloc /= 0 ) then
             write(lunout,*) 'ERROR : allocating nefis output structure'
             write(*,*) 'ERROR : allocating nefis output structure'
-            call srstop(1)
+            call stop_with_error()
          endif
 
          ! initialize independent element names
@@ -248,38 +247,38 @@
          ! write all elements to file; all definition and creation of files,
          ! data groups, cells and elements is handled by putget.
 
-         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(1), celid1, & 
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(1), celid1, &
                     lwrite, ierr  , type  , fd_nef)
          if (ierr /= 0) go to 110
 
-         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(2), celid1, & 
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(2), celid1, &
                     lwrite, ierr  , moname, fd_nef)
          if (ierr /= 0) go to 110
 
-         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(3), celid1, & 
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(3), celid1, &
                     lwrite, ierr  , syname, fd_nef)
          if (ierr /= 0) go to 110
 
-         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(4), celid1, & 
+         call manage_nefis_data_character(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(4), celid1, &
                     lwrite, ierr  , duname, fd_nef)
          if (ierr /= 0) go to 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(5), celid1, & 
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(5), celid1, &
                     lwrite, ierr  , nosize, fd_nef)
          if (ierr /= 0) go to 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(6), celid1, & 
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(6), celid1, &
                     lwrite, ierr  , window, fd_nef)
          if (ierr /= 0) go to 110
 
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(7), celid1, & 
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(7), celid1, &
                     lwrite, ierr  , itoff , fd_nef)
 
   110    continue
@@ -294,19 +293,19 @@
          ! update number of cells (records) written
 
          itoff(7) = celid2
-         call putget(defnam, datnam, grnam1, noelm1   , elmnms, & 
-                    elmdms, elmpts, nbytsg, elmnms(7), celid1, & 
+         call putget(defnam, datnam, grnam1, noelm1   , elmnms, &
+                    elmdms, elmpts, nbytsg, elmnms(7), celid1, &
                     lwrite, ierr  , itoff , fd_nef)
          if (ierr /= 0) go to 310
 
          ! write actual time to cell
 
-         call putget (defnam        , datnam          , & 
-                     grnam2        , noelm2          , & 
-                     elmnms(noparm), elmdms(1,noparm), & 
-                     elmpts(noparm), nbytsg(noparm)  , & 
-                     elmnms(noparm), celid2          , & 
-                     lwrite        , ierr            , & 
+         call putget (defnam        , datnam          , &
+                     grnam2        , noelm2          , &
+                     elmnms(noparm), elmdms(1,noparm), &
+                     elmpts(noparm), nbytsg(noparm)  , &
+                     elmnms(noparm), celid2          , &
+                     lwrite        , ierr            , &
                      itime         , fd_nef)
          if  (ierr /= 0) go to 310
 
@@ -331,12 +330,12 @@
 
             ! write buffer
 
-            call putget (defnam             , datnam          , & 
-                        grnam2             , noelm2          , & 
-                        elmnms(noparm)     , elmdms(1,noparm), & 
-                        elmpts(noparm)     , nbytsg(noparm)  , & 
-                        elmnms(noparm+isys), celid2          , & 
-                        lwrite             , ierr            , & 
+            call putget (defnam             , datnam          , &
+                        grnam2             , noelm2          , &
+                        elmnms(noparm)     , elmdms(1,noparm), &
+                        elmpts(noparm)     , nbytsg(noparm)  , &
+                        elmnms(noparm+isys), celid2          , &
+                        lwrite             , ierr            , &
                         rbuffr             , fd_nef)
             if  (ierr /= 0) go to 310
          enddo

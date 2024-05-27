@@ -1,41 +1,37 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
       subroutine write_ddp(hyd)
 
       ! function : write a ddp file, dd boundary administration for part
-
-      ! global declarations
-
-      use m_srstop
-      use m_monsys
-      use m_hydmod                   ! module contains everything for the hydrodynamics
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
+      use m_hydmod        ! module contains everything for the hydrodynamics
       implicit none
 
       ! declaration of the arguments
@@ -74,8 +70,9 @@
 
       ! some init
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
       n_domain = hyd%domain_coll%current_size
+
       nddb = 0
       nddb_max = 500
       allocate(iadmddb(22,nddb_max))
@@ -104,13 +101,13 @@
          i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name1)
-            call srstop(1)
+            call stop_with_error()
          endif
          dd_bound%i_domain1 = i_domain1
          i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain .le. 0 ) then
             write(lunrep,*) 'ERROR domain in dd-boundary not found:',trim(dd_bound%name2)
-            call srstop(1)
+            call stop_with_error()
          endif
          dd_bound%i_domain2 = i_domain2
 

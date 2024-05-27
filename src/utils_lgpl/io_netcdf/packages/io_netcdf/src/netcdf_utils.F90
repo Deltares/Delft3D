@@ -32,10 +32,14 @@
 module netcdf_utils
 use netcdf
 use ionc_constants
+use m_ug_nc_attribute
 implicit none
 
 private
 
+public :: nc_att_set
+public :: realloc
+public :: dealloc
 public :: ncu_format_to_cmode
 public :: ncu_ensure_define_mode
 public :: ncu_ensure_data_mode
@@ -49,6 +53,16 @@ public :: ncu_put_var_attset
 public :: ncu_att_to_varid
 public :: ncu_att_to_dimid
 public :: ncu_apply_to_att
+public :: ncu_set_att
+public :: ncu_sanitize_name
+public :: check_netcdf_error
+
+interface realloc
+   module procedure realloc_nc_att_set
+end interface
+interface dealloc
+   module procedure dealloc_nc_att_set
+end interface
 
 integer, parameter :: maxMessageLen = 1024  ! copy taken from io_ugrid
 character(len=maxMessageLen) :: ncu_messagestr !< Placeholder string for storing diagnostic messages. /see{ug_get_message}
@@ -68,6 +82,26 @@ interface ncu_inq_var_fill
    module procedure ncu_inq_var_fill_real8
 end interface ncu_inq_var_fill
 
+!> Data type to store some NetCDF attributes in memory.
+!! Most subroutines in this module operate directly on an open NetCDF dataset on disk,
+!! but this nc_att_set type is not connected to any dataset, it is merely a container.
+type nc_att_set
+   integer                                   :: size = 0      !< Actual size of attribute set
+   integer                                   :: growsby = 1   !< Increment for attribute set
+   integer                                   :: count = 0     !< Actual number of attributes in set
+   type(ug_nc_attribute), pointer, dimension(:) :: atts          !< Buffered array with the nc_attribute elements
+end type nc_att_set
+
+interface ncu_set_att
+   module procedure ncu_set_att_string
+   module procedure ncu_set_att_int
+   module procedure ncu_set_att_ints
+   module procedure ncu_set_att_double
+   module procedure ncu_set_att_doubles
+   module procedure ncu_set_att_real
+   module procedure ncu_set_att_reals
+end interface
+
 abstract interface
    function ncu_apply_to_att(attname, attvalue) result(ierr)
       character(len=*),              intent(in   ) :: attname  !< Name of the attribute, cannot be changed.
@@ -78,6 +112,69 @@ end interface
 
    contains
 
+
+   !> Reallocate an nc_att_set to a new size, optionally keeping the original data.
+   !! Note: only supports growing, not shrinking.
+   subroutine realloc_nc_att_set(attset, newsize, keepExisting)
+      use m_alloc
+      implicit none
+      ! Input/output parameters
+      type(nc_att_set),  intent(inout) :: attset       !< NetCDF attributes set.
+      integer, optional, intent(in   ) :: newsize      !< (optional) The desired new size. Default: nc_att_set%count + nc_att_set%growsBy
+      logical, optional, intent(in   ) :: keepExisting !< (optional) Whether or not to keep the existing data in the resized set. Default: .true.
+   
+      ! Local variables
+      integer :: ierr
+      type(ug_nc_attribute), pointer, dimension(:) :: oldvalues => null()
+      integer :: newsize_
+      logical :: keepExisting_
+
+      if (present(newsize)) then
+         newsize_ = newsize
+      else
+         newsize_ = attset%count + max(1, attset%growsBy)
+      end if
+
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      else
+         keepExisting_ = .true.
+      end if
+
+
+      ! Program code
+
+      if (keepExisting_) then
+         oldvalues => attset%atts
+      endif
+
+      allocate(attset%atts(newsize_), stat=ierr)
+      call aerr('attset%attset(newsize_)', ierr, newsize_)
+
+      if (keepExisting_ .and. attset%count > 0) then
+         attset%atts(1:attset%count) = oldvalues(1:attset%count)
+      endif
+      if (associated(oldvalues)) then
+         deallocate(oldvalues)
+      end if
+
+      attset%size = newsize_
+   end subroutine realloc_nc_att_set
+
+   !> Deallocate an nc_att_set.
+   subroutine dealloc_nc_att_set(attset)
+      implicit none
+      ! Input/output parameters
+      type(nc_att_set), intent(inout) :: attset !<  NetCDF attributes set.
+   
+      if (associated(attset%atts)) then
+         deallocate(attset%atts)
+      endif
+      attset%size  = 0
+      attset%count = 0
+   end subroutine dealloc_nc_att_set
+
+   !> Define an output configuration quantity. And set the IDX variable to the current entry
 
 !> Returns the NetCDF creation mode flag value, given the colloquial
 !! format number (3 or 4).
@@ -750,5 +847,131 @@ function ncu_copy_var_atts( ncidin, ncidout, varidin, varidout ) result(ierr)
 
 end function ncu_copy_var_atts
 
+!> Define a NETCDF attribute, using a single string value.
+subroutine ncu_set_att_string(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   character(len=*),             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   integer :: j
+
+   att%attname = attname
+   att%xtype = NF90_CHAR
+   att%len = len_trim(attvalue)
+   
+   allocate(att%strvalue(att%len))
+   do j=1,att%len
+      att%strvalue(j) = attvalue(j:j)
+   end do
+end subroutine ncu_set_att_string
+
+!> Define a NETCDF attribute, using a single integer value
+subroutine ncu_set_att_int(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   integer,                      intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_INT
+   allocate(att%intvalue(1))
+   att%intvalue(1) = attvalue
+end subroutine ncu_set_att_int
+
+!> Define a NETCDF attribute, using a array of integer values
+subroutine ncu_set_att_ints(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   integer, dimension(:),        intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_INT
+   att%len = size(attvalue)
+   allocate(att%intvalue(att%len))
+   att%intvalue = attvalue
+end subroutine ncu_set_att_ints
+
+!> Define a NETCDF attribute, using a single double precision value
+subroutine ncu_set_att_double(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   double precision,             intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_DOUBLE
+   allocate(att%dblvalue(1))
+   att%dblvalue(1) = attvalue
+end subroutine ncu_set_att_double
+
+!> Define a NETCDF attribute, using a array of double precision values
+subroutine ncu_set_att_doubles(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),              intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),                intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   double precision, dimension(:),  intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_DOUBLE
+   att%len = size(attvalue)
+   allocate(att%dblvalue(att%len))
+   att%dblvalue = attvalue
+end subroutine ncu_set_att_doubles
+
+!> Define a NETCDF attribute, using a single real value
+subroutine ncu_set_att_real(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   real,                         intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_FLOAT
+   allocate(att%fltvalue(1))
+   att%fltvalue(1) = attvalue
+end subroutine ncu_set_att_real
+
+!> Define a NETCDF attribute, using a array of real values
+subroutine ncu_set_att_reals(att, attname, attvalue)
+   use coordinate_reference_system
+
+   type(ug_nc_attribute),           intent(  out) :: att             !< NETCDF attribute item.
+   character(len=*),             intent(in   ) :: attname         !< Name of the NETCDF attribute.
+   real, dimension(:),           intent(in   ) :: attvalue        !< Value of the NETCDF attribute.
+
+   att%attname = attname
+   att%xtype = NF90_FLOAT
+   att%len = size(attvalue)
+   allocate(att%fltvalue(att%len))
+   att%fltvalue = attvalue
+end subroutine ncu_set_att_reals
+
+!> Replace forbidden chars in NetCDF names by _.
+subroutine ncu_sanitize_name(name_string)
+   use string_module, only: replace_char
+   character(len=*), intent(inout) :: name_string !< Name to be used in NetCDF (variable, dimension etc.)
+   call replace_char(name_string, 32, 95) ! ' ' -> '_'
+   call replace_char(name_string, 47, 95) ! '/' -> '_'
+end subroutine ncu_sanitize_name
+
+!> Check the error code returned by the NetCDF API and print the error message in case of an error.
+subroutine check_netcdf_error( nerr)
+   use MessageHandling, only: mess, LEVEL_WARN
+   
+   integer, intent(in) :: nerr !< NetCDF error code
+   
+   if (nerr /= nf90_noerr) then
+      call mess(LEVEL_WARN, trim(nf90_strerror(nerr)))
+   end if
+   
+end subroutine check_netcdf_error
 
 end module netcdf_utils

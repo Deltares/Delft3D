@@ -32,15 +32,12 @@ contains
             conc, concvt, volnew, nobnd, bound, &
             noq, noq1, noq2, noq3, ipoint, &
             iknmrk, area, aleng, theta, flowtot, &
-            disptot, iopt, amass2, ndmpq, iqdmp, &
+            disptot, amass2, ndmpq, iqdmp, &
             dmpq, flux, lim, maxi, mini, &
             l1, l2, m1, m2, n1, &
             n2)
 
-        !     Deltares Software Centre
-
-        !>/File
-        !>            This is the Zalezac flux correction procedure
+        !> This is the Zalezac flux correction procedure
         !>
         !>            Procedure:
         !>            - all wanted corrections are summed per computational volume
@@ -49,19 +46,7 @@ contains
         !>            - then those corrections are applied pro-rato
         !>            - flux correction accross open boundaries is removed !
 
-        !     Created   :      2007 by Pauline van Slingerland
-
-        !     Function  : fills the right hand side and the initial guess
-
-        !     Modified  : July 2009 by Leo Postma : double precission version
-
-        use timers                         ! WAQ performance timers
-
-        implicit none
-
-        !     Arguments           :
-
-        !     Kind        Function         Name                    Description
+        use timers
 
         integer(kind = int_wp), intent(in) :: idt                !< time step in scu's
         integer(kind = int_wp), intent(in) :: isys               !< current active substance
@@ -84,7 +69,6 @@ contains
         real(kind = real_wp), intent(in) :: theta(noq)         !< local theta coefficients
         real(kind = real_wp), intent(in) :: flowtot(noq)       !< flows plus additional velos.
         real(kind = real_wp), intent(in) :: disptot(noq)       !< dispersion plus additional dipers.
-        integer(kind = int_wp), intent(in) :: iopt               !< options for special treatment of boundaries etc.
         real(kind = real_wp), intent(inout) :: amass2(notot, 5)    !< areawide mass balance arrays
         integer(kind = int_wp), intent(in) :: ndmpq              !< number of dumped discharges
         integer(kind = int_wp), intent(in) :: iqdmp(noq)         !< pointer dumped exchages

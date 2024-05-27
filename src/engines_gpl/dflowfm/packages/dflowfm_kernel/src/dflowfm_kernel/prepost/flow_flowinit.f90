@@ -1542,7 +1542,7 @@ end subroutine fill_constituents_with_temperature
 !> initialise_density_at_cell_centres
 subroutine initialise_density_at_cell_centres()
    use m_flowparameters,       only : jainirho
-   use m_flow,                 only : kmxn
+   use m_flow,                 only : kmxn, rho_read_rst
    use m_cell_geometry,        only : ndx
    use m_sediment,             only : stm_included
    use m_turbulence,           only : rhowat
@@ -1556,7 +1556,9 @@ subroutine initialise_density_at_cell_centres()
 
    if (jainirho == INITIALIZE) then
        do cell = 1, ndx
-          call setrhokk(cell)
+          if (.not. rho_read_rst) then
+             call setrhokk(cell)
+          endif
           if (stm_included) then
              call getkbotktop(cell, bottom_cell, top_cell)
              do cell3D = top_cell + 1, bottom_cell + kmxn(cell) - 1

@@ -578,14 +578,29 @@
     </testCase>
 
     <testCase name="e02_f020_c001_htc_read_uniform" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
+      <path version="2024-05-07T21:17:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_ucx" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_ucy" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Patm" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windx" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windy" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windxu" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windyu" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Tair" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Rhum" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Clou" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qsun" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qeva" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qcon" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qlong" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qfreva" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qfrcon" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qtot" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>
@@ -840,7 +855,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
-      <path version="2024-03-22T19:50:00">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2024-04-19T13:27:00">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -853,7 +868,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2024-01-11T14:40:00">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2024-04-17T08:05:51">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">

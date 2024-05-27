@@ -29,42 +29,33 @@ contains
 
 
     subroutine dlwqm7 (noq, noq1, noq2, area, flow, &
-            aleng, ilflag, iopt, ipoint, mixlen, &
+            aleng, ilflag, integration_id, ipoint, mixlen, &
             iknmrk)
 
-        !     Deltares Software Centre
-
-        !>/File
-        !>              prepares a mixing length array (area/length) once for all substances
+        !>  prepares a mixing length array (area/length) once for all substances
         !>
         !>              This subroutine does once and for all the logics of
-        !>              either variable from and to lengthes or fixed lengthes.
+        !>              either variable from and to lengths or fixed lengths.
         !>              It also does the logics (if corresponding options are set)
         !>              - no dispersion at zero flow
         !>              - no dispersion accross open boundaries
         !>              - no dispersion to dry compuational volumes
 
-        !     Created   : November 2009 by Leo Postma
-
-        !     Modified  :
-
         use timers
-        implicit none
 
-        integer(kind = int_wp), intent(in) :: noq                 !< number of exchanges
-        integer(kind = int_wp), intent(in) :: noq1                !< number of exchanges in first direction
-        integer(kind = int_wp), intent(in) :: noq2                !< number of exchanges in second direction
-        real(kind = real_wp), intent(in) :: area(noq)           !< exchange surface areas (dim: noq)
-        real(kind = real_wp), intent(in) :: flow(noq)           !< flows accross exchange surfs (dim: noq)
-        real(kind = real_wp), intent(in) :: aleng(2, noq)        !< from- and to lengths (dim: 2*noq)
-        integer(kind = int_wp), intent(in) :: ilflag              !< if 0 then 3 length values (equidistant grid)
-        integer(kind = int_wp), intent(in) :: iopt                !< optoons for e.g. treatment of boundaries
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq)       !< exchange pointers (dim: 4 x noq)
-        real(kind = real_wp), intent(out) :: mixlen(noq)         !< exchange surface areas (dim: noq)
-        integer(kind = int_wp), intent(in) :: iknmrk(*)         !< feature array, bit zero indicates wet or not
+        integer(kind = int_wp), intent(in   ) :: noq                 !< number of exchanges
+        integer(kind = int_wp), intent(in   ) :: noq1                !< number of exchanges in first direction
+        integer(kind = int_wp), intent(in   ) :: noq2                !< number of exchanges in second direction
+        real(kind = real_wp),   intent(in   ) :: area(noq)           !< exchange surface areas (dim: noq)
+        real(kind = real_wp),   intent(in   ) :: flow(noq)           !< flows accross exchange surfs (dim: noq)
+        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)       !< from- and to lengths (dim: 2*noq)
+        integer(kind = int_wp), intent(in   ) :: ilflag              !< if 0 then 3 length values (equidistant grid)
+        integer(kind = int_wp), intent(in   ) :: integration_id      !< optoons for e.g. treatment of boundaries
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)      !< exchange pointers (dim: 4 x noq)
+        real(kind = real_wp),   intent(  out) :: mixlen(noq)         !< exchange surface areas (dim: noq)
+        integer(kind = int_wp), intent(in   ) :: iknmrk(*)           !< feature array, bit zero indicates wet or not
 
-        !     Local declarations
-
+        ! Local variables
         integer(kind = int_wp) :: ifrom, ito          ! from- and to segments
         integer(kind = int_wp) :: iq                  ! current edge
 
@@ -72,7 +63,7 @@ contains
         if (timon) call timstrt ("dlwqm7", ithandl)
 
         mixlen = 0.0
-        if (ilflag == 0) then     ! deals with spatially constant lengthes
+        if (ilflag == 0) then ! => spatially constant lengths
             do iq = 1, noq1
                 mixlen(iq) = area(iq) / aleng(1, 1)
             enddo
@@ -82,7 +73,7 @@ contains
             do iq = noq1 + noq2 + 1, noq
                 mixlen(iq) = area(iq) / aleng(1, 2)
             enddo
-        else                               ! deals with spatially varying  lengthes
+        else                  ! => spatially varying lengths
             do iq = 1, noq
                 if (aleng(1, iq) + aleng(2, iq) > 1.0E-25) then
                     mixlen(iq) = area(iq) / (aleng(1, iq) + aleng(2, iq))
@@ -90,21 +81,21 @@ contains
             enddo
         endif
 
-        if (btest(iopt, 0) .and.            & ! deals with no horizontal dispersion through the boundary
-                btest(iopt, 1)) then    ! thin dam option, no dispersion at zero flow
+        if (btest(integration_id, 0) .and.            & ! deals with no horizontal dispersion through the boundary
+                btest(integration_id, 1)) then    ! thin dam option, no dispersion at zero flow
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 if (ifrom <= 0 .or. ito <= 0) mixlen(iq) = 0.0
                 if (abs(flow(iq)) < 10.0e-25)  mixlen(iq) = 0.0
             enddo
-        else if (btest(iopt, 1)) then
+        else if (btest(integration_id, 1)) then
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 if (ifrom <= 0 .or. ito <= 0) mixlen(iq) = 0.0
             enddo
-        else if (btest(iopt, 0)) then
+        else if (btest(integration_id, 0)) then
             do iq = 1, noq1 + noq2
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
@@ -118,7 +109,7 @@ contains
             if (ifrom > 0) then
                 if (.not. btest(iknmrk(ifrom), 0)) mixlen(iq) = 0.0   ! identified dry at start and end of timestep
             endif                                                     ! aggregated time step can be wet in between
-            if (ito   > 0) then                                  ! start and end, that is why a check on 1 cm3/s
+            if (ito   > 0) then                                     ! start and end, that is why a check on 1 cm3/s
                 if (.not. btest(iknmrk(ito), 0)) mixlen(iq) = 0.0   ! life is not easy
             endif
         enddo

@@ -6,9 +6,10 @@ Copyright (C)  Stichting Deltares, 2023
 
 import datetime
 import sys
+import traceback
 from typing import List, Optional
 
-from src.utils.common import stripEscapeCharacters
+from src.utils.common import escape_teamcity
 from src.utils.logging.log_level import LogLevel
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
 from src.utils.logging.test_loggers.test_result_type import TestResultType
@@ -21,8 +22,11 @@ class TeamcityTestLogger(ITestLogger):
         self.__test_name = test_name
         self.__flow_id = test_name
 
-    def error(self, message: str):
-        self.log(message, LogLevel.ERROR)
+    def error(self, message: str, exc_info=False):
+        self.log(message, LogLevel.ERROR, exc_info=exc_info)
+
+    def exception(self, message: str):
+        self.log(message, LogLevel.ERROR, exc_info=True)
 
     def warning(self, message: str):
         self.log(message, LogLevel.WARNING)
@@ -33,13 +37,17 @@ class TeamcityTestLogger(ITestLogger):
     def debug(self, message: str):
         self.log(message, LogLevel.DEBUG)
 
-    def log(self, message: str, log_level: LogLevel):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         status = self.__get_status(log_level)
 
+        extra_tags = [f"status='{status}'"]
+        if exc_info:
+            stack_trace = traceback.format_exc()
+            extra_tags.append(f"errorDetails='{escape_teamcity(stack_trace)}'")
         self.write_tc_message(
             "message",
             f"{str(log_level)} : {message}",
-            extra_tags=[f"status='{status}'"],
+            extra_tags=extra_tags,
         )
 
     def test_started(self):
@@ -68,7 +76,7 @@ class TeamcityTestLogger(ITestLogger):
                 "testFailed", "Comparison: differences above tolerance"
             )
         elif result_type == TestResultType.Exception:
-            escaped_message = stripEscapeCharacters(error_message)
+            escaped_message = escape_teamcity(error_message or "")
             self.write_tc_message(
                 "testFailed",
                 "Exception occurred",
@@ -95,11 +103,11 @@ class TeamcityTestLogger(ITestLogger):
             tc_message += " ".join(extra_tags) + " "
 
         if message:
-            escaped_message = stripEscapeCharacters(message)
+            escaped_message = escape_teamcity(message)
             tc_message += f"text='{escaped_message}' "
 
         if command == "testFailed" and message:
-            escaped_message = stripEscapeCharacters(message)
+            escaped_message = escape_teamcity(message)
             tc_message += f"message='{escaped_message}' "
 
         tc_message += "]"
@@ -115,3 +123,4 @@ class TeamcityTestLogger(ITestLogger):
             return "WARNING"
 
         return "NORMAL"
+    

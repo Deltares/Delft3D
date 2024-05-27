@@ -2,7 +2,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
                            & nmaxus    ,kmax      ,lstsci    ,ltur      , &
                            & s1        ,u1        ,v1        ,r1        ,rtur1     , &
                            & umnldf    ,vmnldf    ,kfu       ,kfv       , &
-                           & dp        ,ex_nfs    ,namcon    ,coninit   ,rdum      , &
+                           & dpd       ,ex_nfs    ,namcon    ,coninit   ,rdum      , &
                            & idum      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -97,7 +97,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     logical                                                                                  :: error
     logical                                                                                  :: ex_nfs  ! Flag indicating whether Nefis restart files exist
     real(fp)                                                                   , intent(in)  :: rdum    !< value used for initialization of real arrays
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: dp
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: dpd
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: s1
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: umnldf
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              , intent(out) :: vmnldf
@@ -433,8 +433,8 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
                endif
                !
                ! The flag rst_dp is used to set DPSOPT=DP.
-               ! This ensures that the DP values are copied into DPS in subroutine caldps
-               ! Differences may occur when DPU/DPV depend on (the original) DP
+               ! This ensures that the DPD values are copied into DPS in subroutine caldps
+               ! Differences may occur when DPU/DPV depend on (the original) DPD
                ! The flag rst_dp is also used to check whether 
                !
                rst_dp = dp_from_map_file
@@ -496,8 +496,8 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
                endif
                !
                ! The flag rst_dp is used to set DPSOPT=DP.
-               ! This ensures that the DP values are copied into DPS in subroutine caldps
-               ! Differences may occur when DPU/DPV depend on (the original) DP
+               ! This ensures that the DPD values are copied into DPS in subroutine caldps
+               ! Differences may occur when DPU/DPV depend on (the original) DPD
                ! The flag rst_dp is also used to check whether 
                !
                rst_dp = dp_from_map_file
@@ -589,7 +589,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     if (dp_from_map_file) then
        call rdarray_nm(fds, filename, filetype, grnam4, i_restart, &
                     & nf, nl, mf, ml, iarrc, gdp, &
-                    & ierror, lundia, dp, 'DPS', rdum)
+                    & ierror, lundia, dpd, 'DPS', rdum)
        if (ierror /= 0) goto 9999
     endif
     !
@@ -685,7 +685,7 @@ subroutine restart_trim_flow(lundia    ,error     ,restid1   ,lturi     ,mmax   
     !
     if (.not. nan_check(s1    , 'S1 (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb)) ierror = 1
     if (dp_from_map_file) then
-       if (.not. nan_check(dp    , 'DPS (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb)) ierror = 1
+       if (.not. nan_check(dpd   , 'DPS (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb)) ierror = 1
     endif
     if (.not. nan_check(u1    , 'U1 (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb, 1)) ierror = 1
     if (.not. nan_check(v1    , 'V1 (restart-file)', lundia, gdp%d%nlb, gdp%d%mlb, 1)) ierror = 1

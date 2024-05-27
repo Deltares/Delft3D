@@ -209,7 +209,7 @@ subroutine tricom_init(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: dis
     integer(pntrsize)                   , pointer :: disch
     integer(pntrsize)                   , pointer :: discom
-    integer(pntrsize)                   , pointer :: dp
+    integer(pntrsize)                   , pointer :: dpd
     integer(pntrsize)                   , pointer :: dpc
     integer(pntrsize)                   , pointer :: dps
     integer(pntrsize)                   , pointer :: dpu
@@ -595,7 +595,7 @@ subroutine tricom_init(olv_handle, gdp)
     dis                 => gdp%gdr_i_ch%dis
     disch               => gdp%gdr_i_ch%disch
     discom              => gdp%gdr_i_ch%discom
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dpc                 => gdp%gdr_i_ch%dpc
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
@@ -1168,7 +1168,7 @@ subroutine tricom_init(olv_handle, gdp)
               & itnfli    ,itnfll    ,error     ,gdp       )
     if (error) goto 9996
     !
-    ! Write DP to comm. file for ITCOMI > 0
+    ! Write DPD to comm. file for ITCOMI > 0
     !
     ! Calculate DPS depending on DPSOPT
     ! NFLTYP must be set in CALDPS because it is being used by
@@ -1177,10 +1177,10 @@ subroutine tricom_init(olv_handle, gdp)
     icx = nmaxddb
     icy = 1
     call caldps(nmmax     ,nfltyp    ,icx       , &
-              & icy       ,i(kcs)    ,r(dp)     ,d(dps)    ,gdp       )
+              & icy       ,i(kcs)    ,r(dpd)    ,d(dps)    ,gdp       )
     if (waveol>0) then
        !
-       ! In case of wave online: write DPS to comm-file instead of DP
+       ! In case of wave online: write DPS to comm-file instead of DPD
        !
        if (prec == hp) then
           call rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
@@ -1193,7 +1193,7 @@ subroutine tricom_init(olv_handle, gdp)
        endif
     else
        call rwbotc(comfil    ,lundia    ,error     ,itima     , &
-                 & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dp)     , &
+                 & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dpd)    , &
                  & r(rbuff)  ,gdp       )
     endif
     if (error) goto 9996
@@ -1263,7 +1263,7 @@ subroutine tricom_init(olv_handle, gdp)
               & zmodel    , &
               & i(kcs)    ,i(kcu)    ,i(kcv)    , &
               & i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-              & r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)    , &
+              & r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)    , &
               & d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)     , &
               & r(thick)  ,gdp       )
     !
@@ -1459,7 +1459,7 @@ subroutine tricom_init(olv_handle, gdp)
     ! Re-define default values in depth array for online visualisation
     ! Hence all 999.999 will be set to 0.0
     !
-    call dp999(r(dp)     ,nmax      ,mmax      ,gdp       )
+    call dp999(r(dpd)    ,nmax      ,mmax      ,gdp       )
     !
     ! DD code added:
     !

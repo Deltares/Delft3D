@@ -29,37 +29,26 @@ module m_delwaq1_init
 
 contains
 
-    subroutine delwaq1_init(argv)
+    subroutine delwaq1_init()
         !< initializes timer and values
 
         use m_delwaq1_data
-        use m_cli_utils, only : get_argument_from_list, store_command_arguments, get_number_of_arguments
-
-        character(len = *), dimension(:), intent(in) :: argv
+        use m_cli_utils, only : is_command_arg_specified
 
         integer(kind = int_wp) :: arg_index
 
         !     Special system init
 
-        call timini()                          ! initializes timer
+        call timini() ! initializes timer
 
-        call store_command_arguments(argv)
+        timon = is_command_arg_specified("-timer")
 
-        narg = get_number_of_arguments()            ! but timer is switched 'off' by default
-        if (narg == 0) narg = command_argument_count() + 1
-        do arg_index = 1, narg
-            call get_argument_from_list(arg_index, arg)
-            if (arg == "timer" .or. arg == "TIMER") then
-                timon = .true.                     ! optionally switch it 'on'
-                exit
-            end if
-        end do
         if (timon) call timstrt("delwaq1", ithndl)
 
         !        initialise values
 
-        lunrep = lun(29)
-        nolun = nlun
+        lunrep = file_unit_list(29)
+        num_file_units = num_files
         filtype = 0
         noitem = noitm
         noutp = nooutp
@@ -86,7 +75,7 @@ contains
         GridPs%current_size = 0
         GridPs%maxsize = 0
 
-        call create_work_file_one(lun, lchar, nolun, runid)
+        call create_work_file_one(file_unit_list, file_name_list, num_file_units, runid)
 
     end subroutine delwaq1_init
 end module m_delwaq1_init

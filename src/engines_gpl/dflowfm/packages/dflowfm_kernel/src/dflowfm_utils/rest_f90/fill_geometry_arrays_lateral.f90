@@ -33,7 +33,7 @@
 !> Fills in the geometry arrays of laterals for history output.
 !! In parallel models, only process with rank 0 will have the complete geometry arrays filled.
 subroutine fill_geometry_arrays_lateral()
-   use m_lateral, only : numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat
+   use m_lateral, only : numlatsg, nodecountlat, geomXLat, geomYLat, nlatnd, n1latsg, n2latsg, nnlat, nNodesLat, model_has_laterals_across_partitions
    use m_alloc
    use m_partitioninfo
    use m_cell_geometry, only: xz, yz
@@ -70,6 +70,10 @@ subroutine fill_geometry_arrays_lateral()
       jprev = j
    end do
    nlatnd_noghosts = j
+   
+   ! Check if any laterals lie across multiple partitions
+   ! (needed to disable possibly invalid statistical output items)
+   model_has_laterals_across_partitions = any_structures_lie_across_multiple_partitions(nodeCountLat)
 
    ! For parallel simulation: since only process 0000 writes the history output, the related arrays
    ! are only made on 0000.

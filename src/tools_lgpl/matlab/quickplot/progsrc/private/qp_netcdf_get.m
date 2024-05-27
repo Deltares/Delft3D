@@ -191,7 +191,7 @@ else
     Data = Data(RS_netcdf{:});
 end
 %
-if ~isa(Data,'double') && ~isa(Data,'char')
+if ~isa(Data,'double') && ~isa(Data,'char') && ~isa(Data,'string')
     Data = double(Data);
 end
 %
