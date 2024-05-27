@@ -29,6 +29,12 @@
 
 module m_unc_write_his
 
+   use MessageHandling, only: mess, LEVEL_ERROR
+   use fm_statistical_output, only: model_is_3D
+   use unstruc_netcdf, only: ihisfile, definencvar
+   use m_flowtimes, only: it_his, ti_hise
+   use netcdf_utils, only: ncu_set_att, check_netcdf_error
+
    implicit none
    
    private
@@ -91,14 +97,12 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_observations
     use m_monitoring_crosssections
     use m_monitoring_runupgauges
-    use m_missing
+    use m_missing, only: dmiss
     use netcdf
     use netcdf_utils
-    use coordinate_reference_system, only: transform_and_put_latlon_coordinates
     use unstruc_files, only: defaultFilename
     use unstruc_netcdf, only: unc_create, unc_close, unc_addcoordatts, unc_addcoordmapping, unc_def_var_nonspatial, definencvar, unc_meta_add_user_defined
-    use unstruc_netcdf, only: ihisfile
-    use unstruc_netcdf, only: unc_writeopts, unc_noforcedflush, UG_WRITE_LATLON, nccrs => crs
+    use unstruc_netcdf, only: unc_writeopts, unc_noforcedflush, UG_WRITE_LATLON
     use unstruc_netcdf, only: unc_add_time_coverage
     use unstruc_netcdf, only: unc_write_struc_input_coordinates
     use unstruc_messages
@@ -110,7 +114,6 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_flowexternalforcings, only: numtracers, trnames
     use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
     use m_structures
-    use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
     use string_module
     use m_dad
     use m_filter, only: checkmonitor
@@ -128,6 +131,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_output_config
     use MessageHandling, only: err
     use m_ug_nc_attribute, only: ug_nc_attribute
+    use m_fm_wq_processes, only: jawaqproc
 
     implicit none
 
@@ -266,7 +270,7 @@ subroutine unc_write_his(tim)            ! wrihis
         strlen_netcdf = idlen  !< Max string length of Ids.
         call check_netcdf_error( nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
 
-        if (kmx > 0) then
+        if (model_is_3D()) then
            call check_netcdf_error( nf90_def_dim(ihisfile, 'laydim', kmx, id_laydim))
            call check_netcdf_error( nf90_def_dim(ihisfile, 'laydimw', kmx+1, id_laydimw))
         end if
@@ -299,7 +303,7 @@ subroutine unc_write_his(tim)            ! wrihis
             ierr = unc_addcoordmapping(ihisfile, jsferic)
 
             nNodeTot = numobs+nummovobs
-            ierr = unc_def_his_structure_static_vars(ihisfile, ST_OBS_STATION, 1, numobs+nummovobs, 'point', nNodeTot, id_strlendim, &
+            ierr = unc_def_his_structure_static_vars(ihisfile, ST_OBS_STATION, 1, nNodeTot, 'point', nNodeTot, id_strlendim, nc_precision, &
                                                      id_statdim, id_statname, id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
                                                      add_latlon, id_statgeom_node_lon, id_statgeom_node_lat)
 
@@ -308,20 +312,20 @@ subroutine unc_write_his(tim)            ! wrihis
             call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', extra_attributes=attributes(1:1))
             
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
-            ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                                  add_latlon, jawrizc, jawrizw, &
+            ierr = unc_def_his_station_coord_vars(id_laydim, id_laydimw, id_statdim, id_timedim, &
+                                                  add_latlon, jawrizc, jawrizw, nc_precision, &
                                                   id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
                                                   id_zcs, id_zws, id_zwu)
 
         end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_CROSS_SECTION, 1, ncrs, 'line', nNodesCrs, id_strlendim, nc_precision, &
                                                    id_crsdim, id_crs_id, id_crsgeom_node_count, id_crsgeom_node_coordx, id_crsgeom_node_coordy, &
                                                    id_poly_xmid = id_crs_xmid, id_poly_ymid = id_crs_ymid)
 
 
         ! Runup gauges
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_RUNUP_GAUGE, 1, num_rugs, 'none', 0, id_strlendim, nc_precision, &
                                                  id_rugdim, id_rugid) ! No geometry
 
         ! Source-sinks
@@ -342,7 +346,7 @@ subroutine unc_write_his(tim)            ! wrihis
             end do
         end if
 
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, jahissourcesink, numsrc, 'line', nNodeTot, id_strlendim, nc_precision, &
                                                  id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                  id_poly_xmid = id_src_xmid, id_poly_ymid = id_src_ymid)
         if (jahissourcesink > 0 .and. numsrc > 0) then
@@ -377,7 +381,7 @@ subroutine unc_write_his(tim)            ! wrihis
                end do
             end if
         end if
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GENERAL_ST, jahiscgen, ngenstru_, 'line', nNodeTot, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GENERAL_ST, jahiscgen, ngenstru_, 'line', nNodeTot, id_strlendim, nc_precision, &
                                                  id_genstrudim, id_genstru_id, id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, &
                                                  id_poly_xmid = id_genstru_xmid, id_poly_ymid = id_genstru_ymid)
 
@@ -387,12 +391,12 @@ subroutine unc_write_his(tim)            ! wrihis
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
             call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
         end if
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, nc_precision, &
                                                  id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                                  id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
 
         ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, nc_precision, &
                                                  id_gatedim, id_gate_id)
 
         if(jahisgate > 0 .and. ngategen > 0 ) then
@@ -409,12 +413,12 @@ subroutine unc_write_his(tim)            ! wrihis
                nNodeTot = nNodeTot + nNodes
             end do
         end if
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, nc_precision, &
                                                  id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
                                                  id_poly_xmid = id_gategen_xmid, id_poly_ymid = id_gategen_ymid)
 
         ! Controllable dam (Old .ext file QUANTITY='damlevel')
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAM, jahiscdam, ncdamsg, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAM, jahiscdam, ncdamsg, 'none', 0, id_strlendim, nc_precision, &
                                                  id_cdamdim, id_cdam_id)
 
         ! Weir
@@ -436,46 +440,46 @@ subroutine unc_write_his(tim)            ! wrihis
                end do
             end if
         end if
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_WEIR, jahisweir, nweirgen, 'line', nNodeTot, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_WEIR, jahisweir, nweirgen, 'line', nNodeTot, id_strlendim, nc_precision, &
                                                  id_weirgendim, id_weirgen_id, id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, &
                                                  id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
 
         ! Orifice
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_ORIFICE, jahisorif, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_ORIFICE, jahisorif, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, nc_precision, &
                                                  id_orifgendim, id_orifgen_id, id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
                                                  id_poly_xmid = id_weirgen_xmid, id_poly_ymid = id_weirgen_ymid)
 
         ! Bridge
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_BRIDGE, jahisbridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_BRIDGE, jahisbridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, nc_precision, &
                                                  id_bridgedim, id_bridge_id, id_bridgegeom_node_count, id_bridgegeom_node_coordx, id_bridgegeom_node_coordy, &
                                                  id_poly_xmid = id_bridge_xmid, id_poly_ymid = id_bridge_ymid)
 
         ! Culvert
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_CULVERT,  jahisculv, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_CULVERT,  jahisculv, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, nc_precision, &
                                                  id_culvertdim, id_culvert_id, id_culvertgeom_node_count, id_culvertgeom_node_coordx, id_culvertgeom_node_coordy, &
                                                  id_poly_xmid = id_culvert_xmid, id_poly_ymid = id_culvert_ymid)
 
         ! Dambreak
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, ndambreaksignals, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, ndambreaksignals, 'none', 0, id_strlendim, nc_precision, &
                                                  id_dambreakdim, id_dambreak_id)
 
         ! Universal weir
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_UNI_WEIR, jahisuniweir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_UNI_WEIR, jahisuniweir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, nc_precision, &
                                                  id_uniweirdim, id_uniweir_id, id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, &
                                                  id_poly_xmid = id_uniweir_xmid, id_poly_ymid = id_uniweir_ymid)
 
 
         ! compound structure
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_COMPOUND, jahiscmpstru, network%cmps%count, 'none', 0, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_COMPOUND, jahiscmpstru, network%cmps%count, 'none', 0, id_strlendim, nc_precision, &
                                                  id_cmpstrudim, id_cmpstru_id)
 
         ! Long culvert
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_LONGCULVERT, jahislongculv, nlongculverts, 'line', nNodesLongCulv, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_LONGCULVERT, jahislongculv, nlongculverts, 'line', nNodesLongCulv, id_strlendim, nc_precision, &
                                                  id_longculvertdim, id_longculvert_id, id_longculvertgeom_node_count, id_longculvertgeom_node_coordx, id_longculvertgeom_node_coordy, &
                                                  id_poly_xmid = id_longculvert_xmid, id_poly_ymid = id_longculvert_ymid)
 
         ! Lateral
-        ierr = unc_def_his_structure_static_vars(ihisfile, ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, &
+        ierr = unc_def_his_structure_static_vars(ihisfile, ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, nc_precision, &
                                                  id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
         ! TODO: UNST-7239: remove separate average IDX?
         if (timon) call timstop (handle_extra(60))
@@ -511,7 +515,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
         ! WAQ statistic outputs are kept outside of the statistical output framework
         if (jawaqproc <= 0) then
-          ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
+          ierr = unc_def_his_station_waq_statistic_outputs(statcoordstring, nc_precision, id_hwq)
         end if
 
         if ( jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
@@ -661,7 +665,7 @@ subroutine unc_write_his(tim)            ! wrihis
         if (timon) call timstrt ('unc_write_his timeindep data', handle_extra(63))
         if (it_his == 0) then
            ! Observation stations
-           do i = 1,numobs+nummovobs
+           do i = 1, numobs+nummovobs
               call check_netcdf_error( nf90_put_var(ihisfile, id_stat_id,  trimexact(namobs(i), strlen_netcdf), (/ 1, i /))) ! Extra for OpenDA-wrapper
               call check_netcdf_error( nf90_put_var(ihisfile, id_statname, trimexact(namobs(i), strlen_netcdf), (/ 1, i /)))
            end do
@@ -879,7 +883,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
    if (ntot <= 0 .or. jawaqproc <= 0) then
-      ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
+      ierr = unc_put_his_station_waq_statistic_outputs(tim, id_hwq)
    end if
 
    do ivar = 1,out_variable_set_his%count
@@ -948,7 +952,7 @@ subroutine unc_write_his(tim)            ! wrihis
    end do
 
     ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)
-    ierr = unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
+    ierr = unc_put_his_station_coord_vars(add_latlon, jawrizc, jawrizw, &
                                           id_statx, id_staty, id_statlat, id_statlon, &
                                           id_zcs, id_zws, id_zwu, it_his, &
                                           id_statgeom_node_count, id_statgeom_node_coordx, id_statgeom_node_coordy, &
@@ -978,13 +982,16 @@ end subroutine unc_write_his
 !> Define the static variables for a single structure type.
 !! This includes: NetCDF dimension ids, character Id variable and simple geometry container variables.
 !! Note: the writing ('putting') of data is done by another subroutine: unc_put_his_structure_static_vars.
-function unc_def_his_structure_static_vars(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, id_strlendim, &
+function unc_def_his_structure_static_vars(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, id_strlendim, nc_precision, &
                                           id_strdim, id_strid, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
                                           add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid) result(ierr)
    use string_module, only: strcmpi
    use MessageHandling, only: mess, LEVEL_WARN
    use unstruc_netcdf, only: unc_addcoordatts
    use dfm_error, only: DFM_NOERR
+   use netcdf, only: nf90_def_dim, nf90_def_var, nf90_char, nf90_put_att
+   use simple_geometry, only: sgeom_def_geometry_variables
+   use m_sferic, only: jsferic
 
    integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
    integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -993,6 +1000,7 @@ function unc_def_his_structure_static_vars(ncid, struc_type_id, output_enabled, 
    character(len=*),  intent(in   ) :: geom_type            !< Geometry type, one of: 'point', 'line', 'polygon' (or 'none')
    integer,           intent(in   ) :: ngeom_node           !< Total number of geometry nodes for this structure_type
    integer,           intent(in   ) :: id_strlendim         !< Already created NetCDF dimension id for max string length of the character Ids.
+   integer,           intent(in   ) :: nc_precision         !< Precision of NetCDF variables (e.g. nf90_int, nf90_double, etc.)
    integer,           intent(  out) :: id_strdim            !< NetCDF dimension id created for this structure type
    integer,           intent(  out) :: id_strid             !< NetCDF variable id created for the character Ids of the structures of this type
    integer, optional, intent(  out) :: id_geom_node_count   !< NetCDF variable id created for the node count of the structures of this type
@@ -1019,14 +1027,14 @@ function unc_def_his_structure_static_vars(ncid, struc_type_id, output_enabled, 
 
    call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
 
-   call check_netcdf_error( nf90_def_dim(ihisfile, trim(prefix), count, id_strdim))
-   call check_netcdf_error( nf90_def_var(ihisfile, trim(prefix)//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
-   call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id'))
-   call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'long_name', 'name of '//trim(name)))
+   call check_netcdf_error( nf90_def_dim(ncid, trim(prefix), count, id_strdim))
+   call check_netcdf_error( nf90_def_var(ncid, trim(prefix)//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
+   call check_netcdf_error( nf90_put_att(ncid, id_strid,  'cf_role',   'timeseries_id'))
+   call check_netcdf_error( nf90_put_att(ncid, id_strid,  'long_name', 'name of '//trim(name)))
 
    if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
       ! Define geometry related variables
-      ierr = sgeom_def_geometry_variables(ihisfile, trim(prefix)//'_geom', trim(name), geom_type, ngeom_node, id_strdim, &
+      ierr = sgeom_def_geometry_variables(ncid, trim(prefix)//'_geom', trim(name), geom_type, ngeom_node, id_strdim, &
                                           id_geom_node_count, id_geom_coordx, id_geom_coordy, add_latlon, id_geom_coordlon, id_geom_coordlat)
    end if
 
@@ -1035,18 +1043,22 @@ function unc_def_his_structure_static_vars(ncid, struc_type_id, output_enabled, 
       if (.not. (present(id_poly_xmid) .and. present(id_poly_ymid))) then
          call mess(LEVEL_WARN, 'unc_def_his_structure_static_vars should return id_poly_xmid and id_poly_ymid for polyline structures')
       end if
-      call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
-      call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
+      call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
+      call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
       ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
-      ierr = unc_addcoordatts(ihisfile, id_poly_xmid, id_poly_ymid, jsferic)
-      call check_netcdf_error(nf90_put_att(ihisfile, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
-      call check_netcdf_error(nf90_put_att(ihisfile, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
+      ierr = unc_addcoordatts(ncid, id_poly_xmid, id_poly_ymid, jsferic)
+      call check_netcdf_error(nf90_put_att(ncid, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
+      call check_netcdf_error(nf90_put_att(ncid, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
    end if
 
 end function unc_def_his_structure_static_vars
 
 !> Get the NetCDF variable prefix and human-readable name of a structure type from its type id
 subroutine get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
+   use m_globalparameters, only: &
+      ST_UNSET, ST_WEIR, ST_ORIFICE, ST_PUMP, ST_GATE, ST_GENERAL_ST, ST_UNI_WEIR, &
+      ST_DAMBREAK, ST_CULVERT, ST_BRIDGE, ST_COMPOUND, ST_LONGCULVERT, ST_DAM, &
+      ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, ST_GATEGEN, ST_LATERAL       
    integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
    character(len=*),  intent(  out) :: prefix               !< Base name of this structure type, e.g., 'uniweir'
    character(len=*),  intent(  out) :: name                 !< Human readable name of this structure type, e.g., 'universal weir'
@@ -1117,7 +1129,9 @@ end subroutine get_prefix_and_name_from_struc_type_id
 function unc_put_his_structure_static_vars(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, id_strlendim, &
                                           id_strdim, id_strid, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
                                           add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid) result(ierr)
-
+   use netcdf, only: nf90_noerr
+   use string_module, only: strcmpi
+   
    integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
    integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
    integer,           intent(in   ) :: output_enabled       !< Whether or not (1/0) this structure's output must be written.
@@ -1162,6 +1176,9 @@ end function unc_put_his_structure_static_vars
 !! (so, it lies on an edge, not per se on the input polyline)).
 function unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid) result(ierr)
    use stdlib_kinds, only: dp
+   use netcdf, only: nf90_noerr, nf90_put_var
+   use m_structures, only: retrieve_set_of_flowlinks_for_polyline_structure, &
+                           calc_midpoint_coords_of_set_of_flowlinks
 
    integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
    integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -1187,13 +1204,12 @@ function unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_i
 end function unc_put_his_structure_static_vars_polyline_midpoints
 
 !> Define the x/y, lat/lon, and z coordinate variables for the station type.
-function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                          add_latlon, jawrizc, jawrizw, &
-                                          id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
-                                          id_zcs, id_zws, id_zwu) result(ierr)
+function unc_def_his_station_coord_vars(id_laydim, id_laydimw, id_statdim, id_timedim, &
+                                        add_latlon, jawrizc, jawrizw, nc_precision, &
+                                        id_statx, id_staty, id_statlat, id_statlon, statcoordstring, &
+                                        id_zcs, id_zws, id_zwu) result(ierr)
    use dfm_error, only: DFM_NOERR
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
    integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
    integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
    integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
@@ -1201,6 +1217,7 @@ function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_stat
    logical,             intent(in   ) :: add_latlon      !< Whether or not to include station lat/lon coordinates in the his file
    integer,             intent(in   ) :: jawrizc         !< Whether or not to write observation station zcoordinate_c to the his file
    integer,             intent(in   ) :: jawrizw         !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
+   integer,             intent(in   ) :: nc_precision    !< Precision of NetCDF variables (e.g. nf90_int, nf90_double, etc.)
    integer,             intent(  out) :: id_statx        !< NetCDF variable id created for the station x-coordinate
    integer,             intent(  out) :: id_staty        !< NetCDF variable id created for the station y-coordinate
    integer,             intent(  out) :: id_statlat      !< NetCDF variable id created for the station lat-coordinate
@@ -1215,7 +1232,7 @@ function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_stat
    ierr = DFM_NOERR
 
    ! Define the x,y-coordinate variables
-   ierr = unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, id_statx, id_staty)
+   ierr = unc_def_his_station_coord_vars_xy(id_statdim, id_timedim, id_statx, id_staty)
    if (ierr /= DFM_NOERR) then
       call mess( LEVEL_ERROR,'Programming error, please report: unc_def_his_station_coord_vars_xy returned non-zero error code')
    end if
@@ -1224,7 +1241,7 @@ function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_stat
 
    ! If so specified, add lat/lon-coordinates
    if (add_latlon) then
-      ierr = unc_def_his_station_coord_vars_latlon(ihisfile, id_statx, id_statlat, id_statlon)
+      ierr = unc_def_his_station_coord_vars_latlon(id_statx, id_statlat, id_statlon)
       if (ierr /= DFM_NOERR) then
          call mess( LEVEL_ERROR,'Programming error, please report: unc_def_his_station_coord_vars_latlon returned non-zero error code')
       end if
@@ -1232,8 +1249,8 @@ function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_stat
    end if
 
    ! If so specified, add the z coordinates
-   ierr = unc_def_his_station_coord_vars_z(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                             jawrizc, jawrizw, id_zcs, id_zws, id_zwu)
+   ierr = unc_def_his_station_coord_vars_z(id_laydim, id_laydimw, id_statdim, id_timedim, &
+                                             jawrizc, jawrizw, nc_precision, statcoordstring, id_zcs, id_zws, id_zwu)
    if (ierr /= DFM_NOERR) then
       call mess( LEVEL_ERROR,'Programming error, please report: unc_def_his_station_coord_vars_z returned non-zero error code')
    end if
@@ -1241,11 +1258,14 @@ function unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_stat
 end function unc_def_his_station_coord_vars
 
 !> Define the x/y-coordinate variables for the station type.
-function unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, &
-                                             id_statx, id_staty) result(ierr)
+function unc_def_his_station_coord_vars_xy(id_statdim, id_timedim, &
+                                           id_statx, id_staty) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use m_sferic, only: jsferic
+   use fm_statistical_output, only: model_has_moving_obs_stations
+   use netcdf, only: nf90_double
+   use unstruc_netcdf, only: unc_addcoordatts
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
    integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
    integer,             intent(in   ) :: id_timedim      !< NetCDF dimension id for the time dimension
    integer,             intent(  out) :: id_statx        !< NetCDF variable id created for the station x-coordinate
@@ -1275,10 +1295,10 @@ function unc_def_his_station_coord_vars_xy(ihisfile, id_statdim, id_timedim, &
 end function unc_def_his_station_coord_vars_xy
 
 !> Define the lat/lon-coordinate variables for the station type.
-function unc_def_his_station_coord_vars_latlon(ihisfile, id_statx, id_statlat, id_statlon) result(ierr)
+function unc_def_his_station_coord_vars_latlon(id_statx, id_statlat, id_statlon) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use netcdf_utils, only: ncu_clone_vardef
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
    integer,             intent(in   ) :: id_statx        !< NetCDF variable id for the station x-coordinate
    integer,             intent(  out) :: id_statlat      !< NetCDF variable id created for the station lat-coordinate
    integer,             intent(  out) :: id_statlon      !< NetCDF variable id created for the station lon-coordinate
@@ -1296,17 +1316,20 @@ function unc_def_his_station_coord_vars_latlon(ihisfile, id_statx, id_statlat, i
 end function unc_def_his_station_coord_vars_latlon
 
 !> Define the z-coordinate variables for the station type.
-function unc_def_his_station_coord_vars_z(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
-                                          jawrizc, jawrizw, id_zcs, id_zws, id_zwu) result(ierr)
+function unc_def_his_station_coord_vars_z(id_laydim, id_laydimw, id_statdim, id_timedim, &
+                                          jawrizc, jawrizw, nc_precision, statcoordstring, id_zcs, id_zws, id_zwu) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use m_ug_nc_attribute, only: ug_nc_attribute
+   use m_missing, only: dmiss
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
    integer,             intent(in   ) :: id_laydim       !< NetCDF dimension id for the vertical layers
    integer,             intent(in   ) :: id_laydimw      !< NetCDF dimension id for the staggered vertical layers
    integer,             intent(in   ) :: id_statdim      !< NetCDF dimension id for the station type
    integer,             intent(in   ) :: id_timedim      !< NetCDF dimension id for the time dimension
    integer,             intent(in   ) :: jawrizc         !< Whether or not to write observation station zcoordinate_c to the his file
    integer,             intent(in   ) :: jawrizw         !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
+   integer,             intent(in   ) :: nc_precision    !< Precision of NetCDF variables (e.g. nf90_int, nf90_double, etc.)
+   character(len=1024), intent(in   ) :: statcoordstring !< String listing the coordinate variables associated with the stations
    integer,             intent(  out) :: id_zcs          !< NetCDF variable id created for the station zcoordinate_c
    integer,             intent(  out) :: id_zws          !< NetCDF variable id created for the station zcoordinate_w
    integer,             intent(  out) :: id_zwu          !< NetCDF variable id created for the station zcoordinate_wu
@@ -1339,16 +1362,15 @@ function unc_def_his_station_coord_vars_z(ihisfile, id_laydim, id_laydimw, id_st
 end function unc_def_his_station_coord_vars_z
 
 !> Write (put) the x/y-, lat/lon- and z-coordinate variables for the station type.
-function unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon, jawrizc, jawrizw, &
-                                          id_statx, id_staty, id_statlat, id_statlon, &
-                                          id_zcs, id_zws, id_zwu, it_his, &
-                                          id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
-                                          id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
+function unc_put_his_station_coord_vars(add_latlon, jawrizc, jawrizw, &
+                                        id_statx, id_staty, id_statlat, id_statlon, &
+                                        id_zcs, id_zws, id_zwu, it_his, &
+                                        id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+                                        id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use fm_statistical_output, only: model_has_obs_stations
+   use m_observations, only: numobs, nummovobs
 
-   integer,             intent(in   ) :: ihisfile                 !< NetCDF id of already open dataset
-   integer,             intent(in   ) :: numobs                   !< Number of fixed observation stations
-   integer,             intent(in   ) :: nummovobs                !< Number of moving observation stations
    logical,             intent(in   ) :: add_latlon               !< Whether or not to include station lat/lon coordinates in the his file
    integer,             intent(in   ) :: jawrizc                  !< Whether or not to write observation station zcoordinate_c to the his file
    integer,             intent(in   ) :: jawrizw                  !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
@@ -1374,28 +1396,28 @@ function unc_put_his_station_coord_vars(ihisfile, numobs, nummovobs, add_latlon,
       return
    end if
 
-   ierr = unc_put_his_station_coord_vars_xy(ihisfile, numobs, nummovobs, id_statx, id_staty, it_his)
+   ierr = unc_put_his_station_coord_vars_xy(id_statx, id_staty, it_his)
 
 #ifdef HAVE_PROJ
    if (add_latlon) then
-      ierr = unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his)
+      ierr = unc_put_his_station_coord_vars_latlon(id_statlat, id_statlon, it_his)
    end if
 #endif
 
-   ierr = unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his)
+   ierr = unc_put_his_station_coord_vars_z(jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his)
 
-   ierr = unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
-                                                   add_latlon, id_geom_node_coordlon, id_geom_node_coordlat)
+   ierr = unc_put_his_station_geom_coord_vars_xy(it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+                                                 add_latlon, id_geom_node_coordlon, id_geom_node_coordlat)
 
 end function unc_put_his_station_coord_vars
 
 !> Write (put) the x/y-coordinate variables for the station type.
-function unc_put_his_station_coord_vars_xy(ihisfile, numobs, nummovobs, id_statx, id_staty, it_his) result(ierr)
+function unc_put_his_station_coord_vars_xy(id_statx, id_staty, it_his) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use fm_statistical_output, only: model_has_moving_obs_stations
+   use netcdf, only: nf90_put_var
+   use m_observations, only: xobs, yobs, numobs, nummovobs
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-   integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
-   integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
    integer,             intent(in   ) :: id_statx        !< NetCDF variable id created for the station x-coordinate
    integer,             intent(in   ) :: id_staty        !< NetCDF variable id created for the station y-coordinate
    integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
@@ -1424,13 +1446,13 @@ function unc_put_his_station_coord_vars_xy(ihisfile, numobs, nummovobs, id_statx
 end function unc_put_his_station_coord_vars_xy
 
 !> Write (put) the lat/lon-coordinate variables for the station type.
-function unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_statlat, id_statlon, it_his) result(ierr)
-   use m_observations, only: xobs, yobs
+function unc_put_his_station_coord_vars_latlon(id_statlat, id_statlon, it_his) result(ierr)
+   use m_observations, only: xobs, yobs, numobs, nummovobs
    use dfm_error, only: DFM_NOERR
+   use fm_statistical_output, only: model_has_moving_obs_stations
+   use coordinate_reference_system, only: transform_and_put_latlon_coordinates
+   use unstruc_netcdf, only: nccrs => crs
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-   integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
-   integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
    integer,             intent(in   ) :: id_statlat      !< NetCDF variable id created for the station lat-coordinate
    integer,             intent(in   ) :: id_statlon      !< NetCDF variable id created for the station lon-coordinate
    integer,             intent(in   ) :: it_his          !< Timeframe to write to in the his file
@@ -1455,12 +1477,12 @@ function unc_put_his_station_coord_vars_latlon(ihisfile, numobs, nummovobs, id_s
 end function unc_put_his_station_coord_vars_latlon
 
 !> Write (put) the z-coordinate variables for the station type.
-function unc_put_his_station_coord_vars_z(ihisfile, numobs, nummovobs, jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his) result(ierr)
+function unc_put_his_station_coord_vars_z(jawrizc, jawrizw, id_zcs, id_zws, id_zwu, it_his) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use m_flow, only: kmx
+   use netcdf, only: nf90_put_var
+   use m_observations, only: valobs, IPNT_ZCS, IPNT_ZWS, IPNT_ZWU, numobs, nummovobs
 
-   integer,             intent(in   ) :: ihisfile        !< NetCDF id of already open dataset
-   integer,             intent(in   ) :: numobs          !< Number of fixed observation stations
-   integer,             intent(in   ) :: nummovobs       !< Number of moving observation stations
    integer,             intent(in   ) :: jawrizc         !< Whether or not to write observation station zcoordinate_c to the his file
    integer,             intent(in   ) :: jawrizw         !< Whether or not to write observation station zcoordinate_w + zcoordinate_wu to the his file
    integer,             intent(in   ) :: id_zcs          !< NetCDF variable id for the station zcoordinate_c
@@ -1497,9 +1519,15 @@ end function unc_put_his_station_coord_vars_z
 !! They are not part of the statistical output framework, because it is useless to allow statistics about statistics,
 !! because writing output only in the final time step is currently not supported in statistical output,
 !! and because statistic outputs may be redundant in the future when the statistical output framework is feature complete.
-function unc_def_his_station_waq_statistic_outputs(waq_statistics_ids) result(ierr)
+function unc_def_his_station_waq_statistic_outputs(statcoordstring, nc_precision, waq_statistics_ids) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use m_missing, only: dmiss
+   use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user
+   use netcdf, only: nf90_put_att
+   use string_module, only: replace_multiple_spaces_by_single_spaces
 
+   character(len=1024),  intent(in   ) :: statcoordstring       !< String listing the coordinate variables associated with the stations
+   integer,              intent(in   ) :: nc_precision          !< Precision of NetCDF variables (e.g. nf90_int, nf90_double, etc.)
    integer, allocatable, intent(  out) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
    integer                             :: ierr                  !< D-Flow FM error code
 
@@ -1538,18 +1566,27 @@ function unc_def_his_station_waq_statistic_outputs(waq_statistics_ids) result(ie
 end function unc_def_his_station_waq_statistic_outputs
 
 !> Write data to WAQ statistic output variables (not to be confused with the general statistical output framework).
-function unc_put_his_station_waq_statistic_outputs(waq_statistics_ids) result(ierr)
+function unc_put_his_station_waq_statistic_outputs(tim, waq_statistics_ids) result(ierr)
    use dfm_error, only: DFM_NOERR
+   use m_observations, only: numobs, nummovobs, IPNT_HWQ1, valobs
+   use m_flow, only: kmx
+   use m_fm_wq_processes, only: noout_statt, noout_state, noout_user
+   use precision_basics, only: comparereal
+   use m_flowparameters, only: eps10
+   use netcdf, only: nf90_put_var
 
-   integer, intent(in) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
-   integer             :: ierr                  !< D-Flow FM error code
+   double precision, intent(in) :: tim                   !< Current time
+   integer,          intent(in) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
+   integer                      :: ierr                  !< D-Flow FM error code
 
+   integer               :: ntot
    integer, allocatable  :: nc_start(:), nc_count(:)
-   integer :: start_index_valobs, statistics_index, num_layers
+   integer               :: start_index_valobs, statistics_index, num_layers
 
    ierr = DFM_NOERR
 
    ! Default start and count for stat-t variables
+   ntot = numobs + nummovobs
    if (model_is_3D()) then
       nc_start = [1, 1, it_his]
       nc_count = [kmx, ntot, 1]
@@ -1576,19 +1613,20 @@ function unc_put_his_station_waq_statistic_outputs(waq_statistics_ids) result(ie
 
       start_index_valobs = IPNT_HWQ1 - 1 + (noout_user + statistics_index - 1) * num_layers + 1
       call check_netcdf_error(nf90_put_var(ihisfile, waq_statistics_ids(statistics_index), &
-                                             transpose(valobs(:, start_index_valobs : start_index_valobs + num_layers - 1)), &
-                                             start = nc_start, count = nc_count))
+                                           transpose(valobs(:, start_index_valobs : start_index_valobs + num_layers - 1)), &
+                                           start = nc_start, count = nc_count))
    end do
 end function unc_put_his_station_waq_statistic_outputs
 
 !> Write (put) the geometry x/y-coordinate variables for the station type.
-function unc_put_his_station_geom_coord_vars_xy(ihisfile, numobs, it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
+function unc_put_his_station_geom_coord_vars_xy(it_his, id_geom_node_count, id_geom_node_coordx, id_geom_node_coordy, &
                                                 add_latlon, id_geom_node_coordlon, id_geom_node_coordlat) result(ierr)
-   use m_observations, only: xobs, yobs
+   use m_observations, only: xobs, yobs, numobs
    use dfm_error, only: DFM_NOERR
+   use coordinate_reference_system, only: transform_and_put_latlon_coordinates
+   use unstruc_netcdf, only: nccrs => crs
+   use netcdf, only: nf90_put_var
 
-   integer,             intent(in   ) :: ihisfile                 !< NetCDF id of already open dataset
-   integer,             intent(in   ) :: numobs                   !< Number of fixed observation stations
    integer,             intent(in   ) :: it_his                   !< Timeframe to write to in the his file
    integer,             intent(in   ) :: id_geom_node_count       !< NetCDF variable id created for the node count of the structures of this type
    integer,             intent(in   ) :: id_geom_node_coordx      !< NetCDF variable id created for the station geometry node x-coordinate
@@ -1627,6 +1665,7 @@ end function unc_put_his_station_geom_coord_vars_xy
 
 !> Convert t_station_nc_dimensions to integer array of NetCDF dimension ids
 function build_nc_dimension_id_list(nc_dim_ids) result(res)
+   use m_output_config, only: t_station_nc_dimensions
    type(t_station_nc_dimensions), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable                      :: res(:)     !< Array of NetCDF dimension ids
 
@@ -1639,6 +1678,7 @@ end function build_nc_dimension_id_list
 
 !> Return array of NetCDF dimension start indices corresponding to NetCDF dimensions
 function build_nc_dimension_id_start_array(nc_dim_ids) result(starts)
+   use m_output_config, only: t_station_nc_dimensions
    type(t_station_nc_dimensions), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable                      :: starts(:)  !< Array of start indices for each NetCDF dimension
 
@@ -1647,14 +1687,16 @@ function build_nc_dimension_id_start_array(nc_dim_ids) result(starts)
 end function build_nc_dimension_id_start_array
 
 !> Return array of NetCDF dimension counts corresponding to NetCDF dimensions
-function build_nc_dimension_id_count_array(nc_dim_ids) result(counts)
+function build_nc_dimension_id_count_array(ncid, nc_dim_ids) result(counts)
+   use m_output_config, only: t_station_nc_dimensions
+   integer,                       intent(in) :: ncid       !< NetCDF id of already open dataset
    type(t_station_nc_dimensions), intent(in) :: nc_dim_ids !< The active NetCDF dimensions for this variable
    integer, allocatable                      :: counts(:)  !< NetCDF dimension counts
 
    integer, allocatable           :: dim_ids(:)
 
    dim_ids = build_nc_dimension_id_list(nc_dim_ids)
-   counts = [(get_dimid_len(dim_ids(i)), integer :: i = 1, size(dim_ids))]
+   counts = [(get_dimid_len(ncid, dim_ids(i)), integer :: i = 1, size(dim_ids))]
    if (nc_dim_ids%timedim) then
       counts(size(counts)) = 1 ! Only write one element for time dimension, which comes last
    end if
@@ -1662,6 +1704,7 @@ end function build_nc_dimension_id_count_array
 
 !> Build mask of which dimensions to include in netcdf variable, based on nc_dim_ids
 pure function make_mask_from_dim_ids(nc_dim_ids) result(mask)
+   use m_output_config, only: t_station_nc_dimensions
    type(t_station_nc_dimensions), intent(in) :: nc_dim_ids  !< The active NetCDF dimensions for this variable
    logical                                   :: mask(7)     !< The same but as a 1-D array of logicals
 
@@ -1675,23 +1718,28 @@ pure function make_mask_from_dim_ids(nc_dim_ids) result(mask)
 end function make_mask_from_dim_ids
 
 !> Gets dimension length from NetCDF dimension id
-integer function get_dimid_len(id)
-   integer, intent(in) :: id !< NetCDF id obtained from nf90_def_dim
+integer function get_dimid_len(ncid, id)
+   use netcdf, only: nf90_inquire_dimension
+   integer, intent(in) :: ncid !< NetCDF id of already open dataset
+   integer, intent(in) :: id   !< NetCDF id obtained from nf90_def_dim
 
-   call check_netcdf_error( nf90_inquire_dimension(ihisfile, id, len = get_dimid_len))
+   call check_netcdf_error( nf90_inquire_dimension(ncid, id, len = get_dimid_len))
 end function get_dimid_len
 
-subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
+subroutine write_station_netcdf_variable(ncid, output_variable_item)
    use m_reshape, only: reshape_implicit
    use MessageHandling, only: err
    use m_statistical_output_types, only: t_output_variable_item
-   integer, intent(in) :: i_his_file
+   use m_output_config, only: t_output_quantity_config
+   use netcdf, only: nf90_put_var
+   
+   integer,                      intent(in) :: ncid
    type(t_output_variable_item), intent(in) :: output_variable_item
 
-   type(t_output_quantity_config), pointer:: local_config
-   integer :: local_id_var, station_id_index
-   integer, allocatable :: counts(:), starts(:), positions(:)
-   double precision, allocatable :: transformed_data(:)
+   type(t_output_quantity_config), pointer :: local_config
+   integer                                 :: local_id_var, station_id_index
+   integer, allocatable                    :: counts(:), starts(:), positions(:)
+   double precision, allocatable           :: transformed_data(:)
 
    local_config => output_variable_item%output_config
    local_id_var = output_variable_item%id_var
@@ -1700,7 +1748,7 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
       call err('Programming error, please report: Station NetCDF variable must have the station dimension')
    end if
 
-   counts = build_nc_dimension_id_count_array(local_config%nc_dim_ids)
+   counts = build_nc_dimension_id_count_array(ncid, local_config%nc_dim_ids)
    starts = build_nc_dimension_id_start_array(local_config%nc_dim_ids)
 
    positions = [(i, integer :: i = 1, size(counts))]
@@ -1711,7 +1759,7 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    ! Unflatten the array to its proper dimensions (counts), reorder the dimensions to place stations to the front, and flatten it back
    transformed_data = reshape_implicit(output_variable_item%stat_output, counts, positions)
 
-   call check_netcdf_error( nf90_put_var(ihisfile, local_id_var, transformed_data, count = counts, start = starts))
+   call check_netcdf_error( nf90_put_var(ncid, local_id_var, transformed_data, count = counts, start = starts))
 end subroutine write_station_netcdf_variable
 
 end module m_unc_write_his
