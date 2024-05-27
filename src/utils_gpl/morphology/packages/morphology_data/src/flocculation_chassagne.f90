@@ -104,7 +104,7 @@ subroutine micro_floc_settling_chassagne( tshear, tdiss, grav, viskin, rho_water
     !
     ! Compute dimensionless terms
     !
-    factor1  = (tdiss * d_1 ** 4 / viskin ** 3) ** 0.166_fp
+    factor1  = (tdiss * d_1 ** 4 / viskin ** 3) ** 0.39_fp
     factor3  = sqrt(viskin / max(tdiss, 1.0e-12_fp))
     factor4  = sqrt(rho_water * ustar_micro ** 2 / max(tshear, 1.0e-12_fp))
 
