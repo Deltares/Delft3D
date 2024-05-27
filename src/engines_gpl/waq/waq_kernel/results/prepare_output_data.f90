@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_fill_output_arrays
+module m_prepare_output_data
     use m_waq_precision
     use timers
 
@@ -1284,4 +1284,4 @@ contains
 
     end subroutine fill_output_buffer_base_grid
 
-end module m_fill_output_arrays
+end module m_prepare_output_data

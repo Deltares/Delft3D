@@ -28,7 +28,7 @@ module m_write_output
     use m_write_map_output, only: write_binary_history_output, write_binary_map_output
     use m_write_nefis_output, only: write_nefis_history_output, write_nefis_map_output
     use m_write_netcdf_output
-    use m_fill_output_arrays, only: write_concentrations_in_grid_layout, store_variables_in_output_grid, &
+    use m_prepare_output_data, only: write_concentrations_in_grid_layout, store_variables_in_output_grid, &
             fill_transport_terms_transects, fill_output_buffer_sub_grid, fill_transect_output_buffer, &
             fill_dump_areas_balances, update_base_grid_local_array, calculate_balance_terms, &
             fill_output_buffer_base_grid
