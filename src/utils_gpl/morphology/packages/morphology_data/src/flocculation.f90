@@ -47,6 +47,7 @@ module flocculation
     public get_tshear_tdiss
 
     public FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
+    public DiaMicro, UstarMacro
 
     integer(kind=INT32), parameter :: FLOC_NONE                 = 0      !< no flocculation
     integer(kind=INT32), parameter :: FLOC_MANNING_DYER         = 1      !< flocculation based on Manning and Dyer (2007)

@@ -41,6 +41,11 @@ module flocculation_chassagne
     public micro_floc_settling_chassagne
     public macro_floc_frac_chassagne
     public floc_chassagne
+    
+    public DiaMicro, UstarMacro
+
+    real(fp)                       :: DiaMicro    !< Characteristic diameter of micro flocs
+    real(fp)                       :: UstarMacro  !< Characteristic shear velocity of macro flocs
 
 contains
     
@@ -62,17 +67,19 @@ subroutine macro_floc_settling_chassagne( spm, tshear, tdiss, grav, viskin, rho_
 !
     real(fp)              :: factor1, factor2, factor3, factor4
     
-    real(fp), parameter   :: d_micro     = 1.0e-4_fp ! Characteristic diameter of micro flocs [m]
-    real(fp), parameter   :: ustar_macro = 0.067_fp  ! Characteristic shear velocity of macro flocs [m/s]
+    real(fp)              :: d_micro              ! Characteristic diameter of micro flocs [m]
+    real(fp)              :: ustar_macro          ! Characteristic shear velocity of macro flocs [m/s]
 
     !
     ! Compute dimensionless terms
+    !
+    d_micro = DiaMicro
+    ustar_macro = UstarMacro
     !
     factor1  = (tdiss * d_micro ** 4 / viskin ** 3) ** 0.166_fp
     factor2  = (spm / rho_water) ** 0.22044_fp
     factor3  = sqrt(viskin / max(tdiss, 1.0e-12_fp))
     factor4  = sqrt(rho_water * ustar_macro ** 2 / max(tshear, 1.0e-12_fp))
-
     !
     ! Settling velocity of macro flocs [m/s]
     !

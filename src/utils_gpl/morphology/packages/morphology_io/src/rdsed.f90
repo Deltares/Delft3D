@@ -60,7 +60,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     use message_module
     use morphology_data_module
     use sediment_basics_module
-    use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
+    use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL, DiaMicro, UstarMacro
     use system_utils, only:SHARED_LIB_PREFIX, SHARED_LIB_EXTENSION
     use grid_dimens_module, only: griddimtype
     !
@@ -471,6 +471,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           call prop_get(sed_ptr, 'SedimentOverall', 'TFloc', sedpar%tfloc)
           sedpar%tbreakup = sedpar%tfloc
           call prop_get(sed_ptr, 'SedimentOverall', 'TBreakUp', sedpar%tbreakup)
+          !
+          call prop_get(sed_ptr, 'SedimentOverall', 'DiaMicro', DiaMicro)
+          call prop_get(sed_ptr, 'SedimentOverall', 'UstarMacro', UstarMacro)
        endif
        !
        sedpar%flnrd(0) = ' '
@@ -1221,7 +1224,7 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     use message_module
     use morphology_data_module
     use sediment_basics_module
-    use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL
+    use flocculation, only: FLOC_NONE, FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR, FLOC_VERNEY_ETAL, DiaMicro, UstarMacro
     use m_rdtrafrm, only:echotrafrm
     !
     implicit none
@@ -1411,6 +1414,10 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tfloc
        txtput1 = 'Floc break-up time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tbreakup
+       txtput1 = 'Characteristic diameter of micro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', DiaMicro
+       txtput1 = 'Characteristic shear velocity of macro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', UstarMacro
     endif
     if (bsskin) then
        txtput1 = 'Skin friction Soulsby 2004'
