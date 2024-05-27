@@ -55,6 +55,7 @@
  use system_utils, only: makedir
  use fm_statistical_output, only: out_variable_set_his
  use m_statistical_output, only: reset_statistical_output, finalize_average
+ use m_unc_write_his, only: unc_write_his
  
 #ifdef _OPENMP
  use omp_lib

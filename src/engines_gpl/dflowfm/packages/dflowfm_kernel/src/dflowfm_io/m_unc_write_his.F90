@@ -27,8 +27,15 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+module m_unc_write_his
+
+   implicit none
+   
+   private
+   
+   public :: unc_write_his
+   
+contains
 
 !> Write history data in NetCDF format.
 subroutine unc_write_his(tim)            ! wrihis
@@ -1704,3 +1711,5 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
 end subroutine write_station_netcdf_variable
 
 end subroutine unc_write_his
+
+end module m_unc_write_his
