@@ -31,7 +31,7 @@ module m_setup_structures_and_weirs_list
    implicit none
    contains
    !> Find flow links that contain structures or weirs
-   function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
+   pure function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
       use m_flowexternalforcings, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
