@@ -215,54 +215,9 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       
       ! Define all the variables and dimensions
       call unc_write_map_def(mapids, jabndnd_)
-
-      if ( janudge.gt.0 .and. jamapnudge.gt.0 ) then
-!        output static nudging time
-         workx = 0d0
-         do k=1,Ndx
-            if ( nudge_rate(k).gt.0d0 ) then
-               workx(k) = 1d0/nudge_rate(k)
-            endif
-         enddo
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nudge_time, UNC_LOC_S, workx, jabndnd=jabndnd_)
-      endif
-
-      if (nomba > 0) then
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mba(:), UNC_LOC_S, mbadef, jabndnd=jabndnd_)
-      endif
-
-      if (jased==4 .and. stm_included) then
-         do j=1,stmpar%lsedtot
-            ierr = nf90_put_var(mapids%ncid,mapids%id_frac_name,trim(stmpar%sedpar%namsed(j)),(/ 1, j /),(/ len(trim(stmpar%sedpar%namsed(j))), 1 /))  ! only write once
-         enddo
-         if (stmpar%lsedsus > 0) then
-            do j=1,stmpar%lsedsus
-               ierr = nf90_put_var(mapids%ncid,mapids%id_susfrac_name,trim(stmpar%sedpar%namsed(j)),(/ 1, j /),(/ len(trim(stmpar%sedpar%namsed(j))), 1 /))  ! only write once
-            enddo
-         endif
-      endif
-      !
-      ! 1D cross sections
-      if (ndx1d > 0 .and. stm_included) then
-         if (stmpar%morpar%bedupd) then
-            do i = 1,nCrs
-               ierr = nf90_put_var(mapids%ncid, mapids%id_tsp%id_morCrsName,trim(network%crs%cross(i)%CSID),(/ 1, i /),(/ len(trim(network%crs%cross(i)%CSID)), 1 /))  ! only write once
-            enddo
-         endif
-      endif
-
-      ! Enable the following when needed:
-      ! if (jawritedebug) then
-      !    ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_dbg1d  , nf90_double, UNC_LOC_U, 'debug1d', 'debug1d', 'debug1d', '-', dimids = (/ -2, -1 /), jabndnd=jabndnd_)
-      !    !
-      !    if (allocated(debugarr2d)) then
-      !       ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg2d, nf90_double, UNC_LOC_S, 'debug2d', 'debug2d', 'debug2d', '-', dimids = (/ -2, mapids%id_tsp%id_sedtotdim,-1 /), jabndnd=jabndnd_) ! not CF
-      !    endif
-      !    !
-      !    if (allocated(debugarr3d)) then
-      !       !ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg3d, nf90_double, UNC_LOC_S, 'debug3d', 'debug3d', 'debug3d', '-', dimids = (/ -2, -1 /), jabndnd=jabndnd_) ! not CF
-      !    endif
-      ! endif
+      
+      ! Write to all the time-independent variables in a new map file
+      call unc_write_map_write_time_independent(mapids, jabndnd_)
 
    endif
    ! End of writing time-independent flow geometry data.
@@ -2868,5 +2823,59 @@ subroutine unc_write_map_def(mapids, jabndnd_)
    end if
    
 end subroutine unc_write_map_def
+
+!> Write to all the time-independent variables in a new map file
+subroutine unc_write_map_write_time_independent(mapids, jabndnd_)
+   use unstruc_netcdf, only: t_unc_mapids
+   use m_flow
+   use m_flowgeom, only: ndx!, ndx2d, ntheta, lnx1d, lnx, blup, bl, wu_mor, bl_ave, ba_mor, bare, ba, ln, wcx1, wcx2, wcy1, wcy2
+   use unstruc_netcdf, only: unc_put_var_map
+   use m_output_config, only: UNC_LOC_S
+   use m_mass_balance_areas, only: nomba, mbadef
+   use m_sediment, only: stm_included, stmpar
+   use netcdf, only: nf90_put_var
+   use unstruc_channel_flow, only: network
+
+   type(t_unc_mapids), intent(inout) :: mapids    !< Set of file and variable ids for this map-type file.
+   integer,            intent(in   ) :: jabndnd_  !< Flag specifying whether boundary nodes are to be written.
+   
+   integer :: ierr, i, j, k
+
+   if (janudge > 0 .and. jamapnudge > 0) then
+      ! output static nudging time
+      workx = 0d0
+      do k = 1, Ndx
+         if (nudge_rate(k) > 0d0) then
+            workx(k) = 1d0 / nudge_rate(k)
+         end if
+      end do
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nudge_time, UNC_LOC_S, workx, jabndnd=jabndnd_)
+   end if
+
+   if (nomba > 0) then
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mba(:), UNC_LOC_S, mbadef, jabndnd=jabndnd_)
+   end if
+
+   if (jased == 4 .and. stm_included) then
+      do j = 1, stmpar%lsedtot
+         ierr = nf90_put_var(mapids%ncid,mapids%id_frac_name,trim(stmpar%sedpar%namsed(j)),(/ 1, j /),(/ len(trim(stmpar%sedpar%namsed(j))), 1 /))  ! only write once
+      end do
+      if (stmpar%lsedsus > 0) then
+         do j = 1, stmpar%lsedsus
+            ierr = nf90_put_var(mapids%ncid,mapids%id_susfrac_name,trim(stmpar%sedpar%namsed(j)),(/ 1, j /),(/ len(trim(stmpar%sedpar%namsed(j))), 1 /))  ! only write once
+         end do
+      end if
+   end if
+      
+   ! 1D cross sections
+   if (ndx1d > 0 .and. stm_included) then
+      if (stmpar%morpar%bedupd) then
+         do i = 1, nCrs
+            ierr = nf90_put_var(mapids%ncid, mapids%id_tsp%id_morCrsName,trim(network%crs%cross(i)%CSID),(/ 1, i /),(/ len(trim(network%crs%cross(i)%CSID)), 1 /))  ! only write once
+         end do
+      end if
+   end if
+      
+end subroutine unc_write_map_write_time_independent
 
 end module m_unc_write_map
