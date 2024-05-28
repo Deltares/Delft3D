@@ -32,21 +32,19 @@ module precision_basics
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-use, intrinsic :: iso_fortran_env, only: REAL32, REAL64, INT32, INT64
+use, intrinsic :: iso_fortran_env, only: INT32, INT64
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
+
 implicit none
-private
-public :: sp, hp, long, INT32
-public :: comparereal
 !
 ! parameters, used in conversions: sp=single precision, hp=high (double) precision
 !
-integer, parameter :: sp = REAL32
-integer, parameter :: hp = REAL64
+integer, parameter :: sp=kind(1.0e00)
+integer, parameter :: hp=kind(1.0d00)
 !
 ! double precision integers:
 !
-integer, parameter :: long = INT64
+integer, parameter :: long = selected_int_kind(16)
 !
 ! interfaces
 !
@@ -56,6 +54,8 @@ integer, parameter :: long = INT64
      module procedure comparerealdouble_finite_check
      module procedure comparerealsingle_finite_check
   end interface
+!
+  private :: ieee_is_nan, ieee_is_finite
 
 contains
 
