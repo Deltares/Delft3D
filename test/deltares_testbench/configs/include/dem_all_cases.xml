@@ -5,11 +5,13 @@
         <programs>
             <program ref="dimr">
                 <arguments>
+                    <argument>-m</argument>
                     <argument>dimr_config_EM.xml</argument>
                 </arguments>
             </program>
             <program ref="dimr">
                 <arguments>
+                    <argument>-m</argument>
                     <argument>dimr_config_WQ.xml</argument>
                 </arguments>
             </program>
