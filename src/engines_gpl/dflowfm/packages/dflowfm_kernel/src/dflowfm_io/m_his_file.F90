@@ -75,6 +75,7 @@ subroutine def_and_put_his_file(time)
    use m_monitoring_runupgauges, only: num_rugs
    use m_flowparameters, only: jahiscgen, jahisbal
    use m_sferic, only: jsferic
+   use m_his_file_statistical, only: def_his_file_statoutput, put_his_file_statoutput
 
    double precision, intent(in) :: time !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
@@ -120,8 +121,11 @@ subroutine def_and_put_his_file(time)
 
    if (ihisfile == 0) then
        
-      ! Create the his file and define all its dimensions and variables
-      call def_his_file()
+      ! Create the his file and define all its basic time-independent dimensions and variables
+      call def_his_file_time_independent_basic()
+   
+      ! Define all user-requested statistical output variables
+      call def_his_file_statoutput(statcoordstring)
        
       ! Write all time-independent data to the his file
       if (it_his == 0) then
@@ -138,7 +142,10 @@ subroutine def_and_put_his_file(time)
    it_his   = it_his + 1
     
    ! Write all time-independent data to the his file
-   call put_his_file_time_dependent()
+   call put_his_file_time_dependent_basic()
+   
+   ! Write all user-requested statistical output variables
+   call put_his_file_statoutput()
 
    if (unc_noforcedflush == 0) then
       call check_netcdf_error( nf90_sync(ihisfile)) ! Flush file
@@ -150,8 +157,8 @@ subroutine def_and_put_his_file(time)
 
 end subroutine def_and_put_his_file
 
-!> Create the his file and define all its dimensions and variables
-subroutine def_his_file()
+!> Create the his file and define all its basic time-independent dimensions and variables
+subroutine def_his_file_time_independent_basic()
    use netcdf, only: nf90_noerr, nf90_def_dim, nf90_unlimited, nf90_char, nf90_double, nf90_int, nf90_enddef
    use unstruc_netcdf, only: unc_create, unc_meta_add_user_defined, unc_add_time_coverage, definencvar, &
                              unc_def_var_nonspatial, unc_addcoordmapping, unc_addcoordatts
@@ -184,7 +191,6 @@ subroutine def_his_file()
    use m_lateral, only: numlatsg, nNodesLat
    use m_dad, only: dad_included, dadpar
    use m_fm_wq_processes, only: jawaqproc
-   use m_his_file_statistical, only: def_his_file_statoutput
    
    character(len=255)            :: filename
    integer                       :: ierr
@@ -470,9 +476,6 @@ subroutine def_his_file()
    if (jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
       call definencvar(ihisfile, id_varb, nc_precision, [id_statdim], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
    end if
-   
-   ! Define all user-requested statistical output variables
-   call def_his_file_statoutput(statcoordstring)
 
    ! Switch from define mode to data mode
    call check_netcdf_error(nf90_enddef(ihisfile))
@@ -481,7 +484,7 @@ subroutine def_his_file()
       call timstop(handle_extra(61))
    end if
         
-end subroutine def_his_file
+end subroutine def_his_file_time_independent_basic
 
 !> Write all time-independent data to the his file
 subroutine put_his_file_time_independent()
@@ -712,7 +715,7 @@ subroutine put_his_file_time_independent()
 end subroutine put_his_file_time_independent
 
 !> Write all time-dependent data to the his file
-subroutine put_his_file_time_dependent()
+subroutine put_his_file_time_dependent_basic()
    use netcdf, only: nf90_put_var
    use m_flowtimes, only: dts, dnt, handle_steps
    use m_flowexternalforcings, only: numsrc, qsrc, qstss
@@ -726,7 +729,6 @@ subroutine put_his_file_time_dependent()
    use unstruc_netcdf, only: unc_write_struc_input_coordinates
    use m_filter, only: checkmonitor
    use timers, only: tim_get_wallclock
-   use m_his_file_statistical, only: put_his_file_statoutput
    
    integer :: i, ierr, n
 
@@ -759,9 +761,6 @@ subroutine put_his_file_time_dependent()
    if (.not. model_has_obs_stations() .or. jawaqproc <= 0) then
       ierr = put_his_file_station_waq_statistic_outputs(id_hwq)
    end if
-   
-   ! Write all user-requested statistical output variables
-   call put_his_file_statoutput()
 
    ! Write x/y-, lat/lon- and z-coordinates for the observation stations every time (needed for moving observation stations)
    ierr = put_his_file_station_coord_vars(add_latlon, jawrizc, jawrizw, &
@@ -782,7 +781,7 @@ subroutine put_his_file_time_dependent()
       call check_netcdf_error( nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start = [it_his]))
    end if
     
-end subroutine put_his_file_time_dependent
+end subroutine put_his_file_time_dependent_basic
 
 !> Define the static variables for a single structure type.
 !! This includes: NetCDF dimension ids, character Id variable and simple geometry container variables.
