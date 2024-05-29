@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_unc_write_his_statistical
+module m_his_file_statistical
 
    use MessageHandling, only: mess, LEVEL_DEBUG, LEVEL_ERROR, err
    use unstruc_netcdf, only: ihisfile, definencvar
@@ -35,7 +35,7 @@ module m_unc_write_his_statistical
    use netcdf_utils, only: check_netcdf_error
    use timers, only: timon, timstrt, timstop
    use m_missing, only: dmiss
-   use m_unc_write_his_ids
+   use m_his_file_netcdf_ids
 
    implicit none
    
@@ -406,4 +406,4 @@ subroutine write_station_netcdf_variable(output_variable_item)
    call check_netcdf_error( nf90_put_var(ihisfile, local_id_var, transformed_data, count = counts, start = starts))
 end subroutine write_station_netcdf_variable
 
-end module m_unc_write_his_statistical
+end module m_his_file_statistical

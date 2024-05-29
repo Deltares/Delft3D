@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_unc_write_his_ids
+module m_his_file_netcdf_ids
 
    implicit none
    
@@ -74,5 +74,5 @@ module m_unc_write_his_ids
       id_srcgeom_node_count,           id_srcgeom_node_coordx,           id_srcgeom_node_coordy,           id_src_xmid,         id_src_ymid, &
       id_longculvertgeom_node_count,   id_longculvertgeom_node_coordx,   id_longculvertgeom_node_coordy,   id_longculvert_xmid, id_longculvert_ymid
 
-   end module m_unc_write_his_ids
+   end module m_his_file_netcdf_ids
    

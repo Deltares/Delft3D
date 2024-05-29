@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_unc_write_his
+module m_his_file
 
    use stdlib_kinds, only: dp
    use MessageHandling, only: mess, err, LEVEL_ERROR, LEVEL_DEBUG, LEVEL_WARN
@@ -38,7 +38,7 @@ module m_unc_write_his
    use netcdf_utils, only: ncu_set_att, check_netcdf_error
    use timers, only: timon, timstrt, timstop
    use m_missing, only: dmiss
-   use m_unc_write_his_ids
+   use m_his_file_netcdf_ids
 
    implicit none
    
@@ -184,7 +184,7 @@ subroutine unc_write_his_def()
    use m_lateral, only: numlatsg, nNodesLat
    use m_dad, only: dad_included, dadpar
    use m_fm_wq_processes, only: jawaqproc
-   use m_unc_write_his_statistical, only: unc_write_his_def_statoutput
+   use m_his_file_statistical, only: unc_write_his_def_statoutput
    
    character(len=255)            :: filename
    integer                       :: ierr
@@ -726,7 +726,7 @@ subroutine unc_write_his_write_time_dependent()
    use unstruc_netcdf, only: unc_write_struc_input_coordinates
    use m_filter, only: checkmonitor
    use timers, only: tim_get_wallclock
-   use m_unc_write_his_statistical, only: unc_write_his_write_statoutput
+   use m_his_file_statistical, only: unc_write_his_write_statoutput
    
    integer :: i, ierr, n
 
@@ -1450,4 +1450,4 @@ function unc_put_his_station_geom_coord_vars_xy(it_his, id_geom_node_count, id_g
 
 end function unc_put_his_station_geom_coord_vars_xy
 
-end module m_unc_write_his
+end module m_his_file
