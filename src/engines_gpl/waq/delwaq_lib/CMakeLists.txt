@@ -78,4 +78,3 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/s
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/d-emissions/em_proc_def.dat DESTINATION share/d-emissions)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/d-emissions/em_proc_def.def DESTINATION share/d-emissions)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/d-emissions)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/d-emissions)
