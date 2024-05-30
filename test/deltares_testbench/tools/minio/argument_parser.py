@@ -121,7 +121,7 @@ def push_tool(args: argparse.Namespace) -> None:
     local_path = Path(args.local_path) if args.local_path else None
 
     try:
-        tool.push(args.test_case_name, path_type, local_path, not args.allow_create_and_delete)
+        tool.push(args.test_case_name, path_type, local_path, args.allow_create_and_delete)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:

@@ -76,7 +76,7 @@ class Plan:
     minio_prefix: S3Path
     items: List[PlanItem] = field(default_factory=list)
     tags: Optional[Tags] = None
-    update_only: bool = False
+    allow_create_and_delete: bool = False
     multipart_upload_part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE
 
     def __str__(self) -> str:
@@ -190,7 +190,7 @@ class Rewinder:
         src_dir: Path,
         dst_prefix: S3Path,
         tags: Optional[Tags] = None,
-        update_only: bool = False,
+        allow_create_and_delete: bool = False,
         part_size: Optional[int] = None,
     ) -> Plan:
         """Build plan to synchronize a set of objects in MinIO with the contents of a local directory.
@@ -203,7 +203,7 @@ class Rewinder:
             S3 Prefix of a set of objects in MinIO.
         tags: Optional[tags], optional
             Key-value pairs to add to all of the MinIO objects.
-        update_only: bool, optional
+        allow_create_and_delete: bool, optional
             By default: `False`. If set to `True`, only include 'updates' in the plan. Exclude 'create's and 'remove's.
         part_size : Optional[int], optional
             Size in bytes of multipart uploads. If not set use the `multipart_upload_part_size` instance
@@ -232,7 +232,7 @@ class Rewinder:
             minio_path = dst_prefix / minio_key
             if local_key < minio_key:
                 # New local file: Upload local file to MinIO.
-                if not update_only:
+                if allow_create_and_delete:
                     steps.append(PlanItem.create(local_path, dst_prefix / local_key))
                 minio_sorted.append((minio_key, minio_hash))  # Push back minio object.
             elif local_key == minio_key and local_hash != minio_hash:
@@ -240,11 +240,11 @@ class Rewinder:
                 steps.append(PlanItem.update(local_path, minio_path))
             elif local_key > minio_key:
                 # Local file missing corresponding object in MinIO. Remove object from MinIO.
-                if not update_only:
+                if allow_create_and_delete:
                     steps.append(PlanItem.remove(minio_path))
                 local_sorted.append((local_key, local_hash))  # Push back local file.
 
-        if not update_only:
+        if allow_create_and_delete:
             for local_key, _ in local_sorted:
                 # New local file: Upload local file to MinIO.
                 steps.append(PlanItem.create(src_dir / local_key, dst_prefix / local_key))
@@ -258,7 +258,7 @@ class Rewinder:
             minio_prefix=dst_prefix,
             items=steps,
             tags=tags,
-            update_only=update_only,
+            allow_create_and_delete=allow_create_and_delete,
             multipart_upload_part_size=part_size,
         )
 
