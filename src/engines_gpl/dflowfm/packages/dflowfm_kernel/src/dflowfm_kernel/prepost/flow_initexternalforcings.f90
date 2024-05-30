@@ -2811,7 +2811,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    ! Copy NUMCONST to NUMCONST_MDU, before the user (optionally) adds tracers interactively
    NUMCONST_MDU = NUMCONST
    
-   call initialize_lateraldata(numconst, ierr)
+   call initialize_lateraldata(numconst)
    
    ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
    ! (needed to disable possibly invalid statistical output items)

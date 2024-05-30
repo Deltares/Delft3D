@@ -44,12 +44,11 @@ implicit none
    end subroutine reset_lateral
 
    !> allocate the arrays for laterals on 3d/BMI
-   module subroutine initialize_lateraldata(numconst, ierr)
+   module subroutine initialize_lateraldata(numconst)
       use m_flow, only: kmx
       use m_alloc
    
       integer, intent(in)    :: numconst  !< number of constitiuents
-      integer, intent(inout) :: ierr      !< error flag
       
       integer :: i           ! loop counter
       integer :: num_layers  ! Number of layers

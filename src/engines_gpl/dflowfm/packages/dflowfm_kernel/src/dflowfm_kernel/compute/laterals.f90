@@ -95,9 +95,8 @@ module m_lateral
    
       !> allocate the arrays for laterals on 3d/BMI
       interface initialize_lateraldata
-         module subroutine initialize_lateraldata(numconst, ierr)
+         module subroutine initialize_lateraldata(numconst)
             integer, intent(in)    :: numconst  !< number of constitiuents
-            integer, intent(inout) :: ierr      !< error flag
          end subroutine initialize_lateraldata
       end interface initialize_lateraldata
    
