@@ -131,7 +131,7 @@ subroutine def_and_put_his_file(time)
       if (timon) then
          call timstrt ( "def_and_put_his_file DEF structures", handle_extra(60))
       end if
-      call def_his_file_time_independent_structures(nc_precision, add_latlon, jawrizc, jawrizw, statcoordstring)
+      call def_his_file_time_independent_structures(nc_precision, add_latlon, jawrizc, jawrizw, statcoordstring, id_hwq)
       if (timon) then
          call timstop (handle_extra(60))
       end if
@@ -267,16 +267,6 @@ subroutine def_his_file_time_independent_basic()
       call definencvar(ihisfile, id_num_timesteps, nf90_int, (/ id_timedim /), 'num_timesteps')
       call definencvar(ihisfile, id_comp_time, nc_precision, (/ id_timedim /), 'comp_time')
    end if
-
-   ! WAQ statistic outputs are kept outside of the statistical output framework
-   if (jawaqproc <= 0) then
-      ierr = def_his_file_station_waq_statistic_outputs(statcoordstring, nc_precision, id_hwq)
-   end if
-
-   ! Bottom level is written separately from statout if it is static
-   if (jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
-      call definencvar(ihisfile, id_varb, nc_precision, [id_statdim], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
-   end if
        
 end subroutine def_his_file_time_independent_basic
 
@@ -295,7 +285,7 @@ subroutine put_his_file_time_dependent_basic()
    use unstruc_netcdf, only: unc_write_struc_input_coordinates
    use m_filter, only: checkmonitor
    use timers, only: tim_get_wallclock
-   use m_his_file_structures, only: put_his_file_station_coord_vars
+   use m_his_file_structures, only: put_his_file_station_coord_vars, put_his_file_station_waq_statistic_outputs
    
    integer :: i, ierr, n
    
@@ -341,104 +331,5 @@ subroutine put_his_file_time_dependent_basic()
    end if
     
 end subroutine put_his_file_time_dependent_basic
-
-!> Define variables for WAQ statistic outputs (not to be confused with the general statistical output framework).
-!! They are not part of the statistical output framework, because it is useless to allow statistics about statistics,
-!! because writing output only in the final time step is currently not supported in statistical output,
-!! and because statistic outputs may be redundant in the future when the statistical output framework is feature complete.
-function def_his_file_station_waq_statistic_outputs(statcoordstring, nc_precision, waq_statistics_ids) result(ierr)
-   use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user
-   use netcdf, only: nf90_put_att
-   use string_module, only: replace_multiple_spaces_by_single_spaces
-
-   character(len=1024),  intent(in   ) :: statcoordstring       !< String listing the coordinate variables associated with the stations
-   integer,              intent(in   ) :: nc_precision          !< Precision of NetCDF variables (e.g. nf90_int, nf90_double, etc.)
-   integer, allocatable, intent(  out) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
-   integer                             :: ierr                  !< D-Flow FM error code
-
-   character(len = 255)  :: variable_name, description
-   character(len = 1024) :: station_coordinate_string
-   integer               :: statistics_index
-   integer, allocatable  :: nc_dimensions(:), specific_nc_dimensions(:)
-
-   ierr = DFM_NOERR
-
-   allocate(waq_statistics_ids(noout_statt + noout_state))
-
-   if (model_is_3D()) then
-      nc_dimensions = [id_laydim, id_statdim, id_timedim]
-      station_coordinate_string = trim(statcoordstring) // ' zcoordinate_c'
-   else
-      nc_dimensions = [id_statdim, id_timedim]
-      station_coordinate_string = statcoordstring
-   end if
-
-   do statistics_index = 1, noout_statt + noout_state
-      if (statistics_index > noout_statt) then
-         specific_nc_dimensions = nc_dimensions(1 : size(nc_dimensions) - 1) ! Drop time dimension for end statistics (stat-e) variables
-      else
-         specific_nc_dimensions = nc_dimensions
-      end if
-      variable_name = ' '
-      write (variable_name, "('water_quality_stat_',I0)") statistics_index
-      call definencvar(ihisfile, waq_statistics_ids(statistics_index), nc_precision, specific_nc_dimensions, &
-                        trim(variable_name), trim(wq_user_outputs%names(statistics_index)), &
-                        trim(wq_user_outputs%units(statistics_index)), trim(station_coordinate_string), 'station_geom', fillVal = dmiss)
-      description = trim(wq_user_outputs%names(statistics_index))//' - '//trim(wq_user_outputs%description(statistics_index))//' in flow element'
-      call replace_multiple_spaces_by_single_spaces(description)
-      call check_netcdf_error(nf90_put_att(ihisfile, waq_statistics_ids(statistics_index), 'description', description))
-   end do
-end function def_his_file_station_waq_statistic_outputs
-
-!> Write data to WAQ statistic output variables (not to be confused with the general statistical output framework).
-function put_his_file_station_waq_statistic_outputs(waq_statistics_ids) result(ierr)
-   use m_observations, only: numobs, nummovobs, IPNT_HWQ1, valobs
-   use m_flow, only: kmx
-   use m_fm_wq_processes, only: noout_statt, noout_state, noout_user
-   use precision_basics, only: comparereal
-   use m_flowparameters, only: eps10
-   use netcdf, only: nf90_put_var
-
-   integer,          intent(in) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
-   integer                      :: ierr                  !< D-Flow FM error code
-
-   integer               :: ntot
-   integer, allocatable  :: nc_start(:), nc_count(:)
-   integer               :: start_index_valobs, statistics_index, num_layers
-
-   ierr = DFM_NOERR
-
-   ! Default start and count for stat-t variables
-   ntot = numobs + nummovobs
-   if (model_is_3D()) then
-      nc_start = [1, 1, it_his]
-      nc_count = [kmx, ntot, 1]
-   else
-      nc_start = [1, it_his]
-      nc_count = [ntot, 1]
-   end if
-
-   do statistics_index = 1, noout_statt + noout_state
-      if (statistics_index == noout_statt + 1 ) then
-         if (comparereal(time_his, ti_hise, eps10) < 0) then
-            return ! The end statistic outputs (stat-e) are only written in the last his time step
-         end if
-         if (model_is_3D()) then
-            nc_start = [1, 1]
-            nc_count = [kmx, ntot]
-         else
-            nc_start = [1]
-            nc_count = [ntot]
-         end if
-      end if
-
-      num_layers = max(kmx, 1)
-
-      start_index_valobs = IPNT_HWQ1 - 1 + (noout_user + statistics_index - 1) * num_layers + 1
-      call check_netcdf_error(nf90_put_var(ihisfile, waq_statistics_ids(statistics_index), &
-                                           transpose(valobs(:, start_index_valobs : start_index_valobs + num_layers - 1)), &
-                                           start = nc_start, count = nc_count))
-   end do
-end function put_his_file_station_waq_statistic_outputs
 
 end module m_his_file
