@@ -104,16 +104,16 @@ module m_lateral
       end interface dealloc_lateraldata
    
    
-      !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-      !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+      !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
+      !> In  average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface average_concentrations_for_laterals
-         module subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents, dt)
-            integer,                       intent(in) :: numconst       !< Number or constituents.
-            integer,                       intent(in) :: kmx            !< Number of layers (0 means 2d computation).
-            real(kind=dp), dimension(:)  , intent(in) :: bottom_area    !< Cell area.
-            real(kind=dp), dimension(:,:), intent(in) :: constituents   !< concentrations.
-            real(kind=dp),                 intent(in) :: dt             !< timestep in seconds
+         module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
+            integer,                       intent(in) :: numconst     !< Number or constituents.
+            integer,                       intent(in) :: kmx          !< Number of layers (0 means 2D computation).
+            real(kind=dp), dimension(:)  , intent(in) :: cell_volume  !< Volume of water in computational cells.
+            real(kind=dp), dimension(:,:), intent(in) :: constituents !< Concentrations of constituents.
+            real(kind=dp),                 intent(in) :: dt           !< Timestep in seconds
          end subroutine average_concentrations_for_laterals
       end interface average_concentrations_for_laterals
    

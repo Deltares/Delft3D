@@ -80,21 +80,23 @@ implicit none
 
    end subroutine dealloc_lateraldata
 
-   !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
+   !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
-   module subroutine average_concentrations_for_laterals(numconst, kmx, bottom_area, constituents, dt)
+   module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
 
       integer,                       intent(in) :: numconst       !< Number or constituents.
-      integer,                       intent(in) :: kmx            !< Number of layers (0 means 2d computation).
-      real(kind=dp), dimension(:),   intent(in) :: bottom_area    !< Cell area.
-      real(kind=dp), dimension(:,:), intent(in) :: constituents   !< concentrations.
-      real(kind=dp),                 intent(in) :: dt             !< timestep in seconds
+      integer,                       intent(in) :: kmx            !< Number of layers (0 means 2D computation).
+      real(kind=dp), dimension(:),   intent(in) :: cell_volume    !< Volume of water in computational cells. 
+      real(kind=dp), dimension(:,:), intent(in) :: constituents   !< Concentrations of constituents.
+      real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds
 
-      integer :: ilat
-      integer :: n, iconst, k, k1, kt, kb
+      integer :: ilat, n, iconst, k, k1, kt, kb
+      
+      real(kind=dp) :: total_volume
 
       do ilat = 1, numlatsg
+         total_volume = 0_dp
          do iconst = 1, numconst
             do k1 = n1latsg(ilat), n2latsg(ilat)
                n = nnlat(k1)
@@ -106,11 +108,13 @@ implicit none
                      call getkbotktop(n, kb, kt)
                      k = kt
                   endif
+                  total_volume = total_volume + cell_volume(k)
                   outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
-                                                                 dt * bottom_area(n) * constituents(iconst, k)/balat(ilat)
+                                                                 dt * cell_volume(k) * constituents(iconst, k)
                endif
             enddo
          enddo
+         outgoing_lat_concentration(:,:, ilat) = outgoing_lat_concentration(:,:, ilat) / total_volume
       enddo
 
    end subroutine average_concentrations_for_laterals
