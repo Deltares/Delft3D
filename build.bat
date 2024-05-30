@@ -15,6 +15,8 @@ set coverage=
 set -coverage=
 set build_type=
 set -build_type=
+set keep_build=
+set -keep_build=
 set cmake=cmake
 
 rem # Jump to the directory where this build.bat script is
@@ -78,7 +80,7 @@ rem =================================
     echo Get command line arguments ...
 
     rem Read arguments
-    set "options=-config:all -help: -vs:0 -ifort:0 -coverage: -build: -build_type:Debug"
+    set "options=-config:all -help: -vs:0 -ifort:0 -coverage: -build: -build_type:Debug -keep_build:"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
@@ -120,6 +122,12 @@ rem =================================
         set build=1
     ) else (
         set build=0
+    )
+
+    if !-keep_build! == 1 (
+        set keep_build=1
+    ) else (
+        set keep_build=0
     )
 
     set build_types="Debug Release RelWithDebInfo"
@@ -364,12 +372,14 @@ rem =======================
 rem === Create CMake dir ==
 rem =======================
 :create_cmake_dir
-    echo Cleaning directories %root%\build_%config% and %root%\install_%config% ...
     cd /d %root%
-    if exist "%root%\build_%config%\" rmdir /s/q "%root%\build_%config%\" > del.log 2>&1
-    if exist "%root%\install_%config%\" rmdir /s/q "%root%\install_%config%\" > del.log 2>&1
-    mkdir    "%root%\build_%config%\" > del.log 2>&1
-    del /f/q del.log
+    if %keep_build% == 0 (
+        echo Cleaning directories %root%\build_%config% and %root%\install_%config% ...
+        if exist "%root%\build_%config%\" rmdir /s/q "%root%\build_%config%\" > del.log 2>&1
+        if exist "%root%\install_%config%\" rmdir /s/q "%root%\install_%config%\" > del.log 2>&1
+    )
+    if NOT exist "%root%\build_%config%\" mkdir "%root%\build_%config%\" > del.log 2>&1
+    if exist "del.log" del /f/q del.log
     goto :eof
 
 rem =======================
@@ -391,36 +401,38 @@ rem =======================
 :usage
     echo.
     echo Usage:
-    echo build.bat
-    echo build.bat ^<CONFIG^> [OPTIONS]
+    echo build.bat [OPTIONS]
     echo     The following actions will be executed:
-    echo     - Create directory 'build_^<CONFIG^>'
-    echo       Delete it first when it already exists
+    echo     - Create directory 'build_^<CONFIG^>', where ^<CONFIG^> can be specified by the -config option.
+    echo       Delete it first when it already exists, unless -keep_build is specified
     echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln' inside 'build_^<CONFIG^>'
     echo.
-    echo ^<CONFIG^>:
-    echo - all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo - delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves
-    echo - delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo - dflowfm           : D-Flow FM
-    echo - dflowfm_interacter: D-Flow FM with Interacter
-    echo - dimr              : DIMR
-    echo - drr               : D-RR
-    echo - dwaq              : D-WAQ
-    echo - dwaves            : D-Waves
-    echo - flow2d3d          : Delft3D-FLOW
-    echo - swan              : SWAN
-    echo - tests
-    echo - tools
-    echo - tools_gpl
+    echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.
-    echo [OPTIONS]: usage [OPTION], sometimes followed by a value, space separated, in any order
-    echo -help: Show this help page.                                          Example: -help
-    echo -coverage: Instrument object files for code-coverage tool (codecov). Example: -coverage
-    echo -build: Run build and install steps after running cmake.             Example: -build
-    echo -vs: desired visual studio version. Overrides default.               Example: -vs 2019
-    echo -ifort: desired intel fortran compiler version. Overrides default.   Example: -ifort 21
-    echo -build_type: build optimization level.                               Example: -build_type Release
+    echo -config ^<CONFIG^>:
+    echo   all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR
+    echo   delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves
+    echo   delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR
+    echo   dflowfm           : D-Flow FM
+    echo   dflowfm_interacter: D-Flow FM with Interacter
+    echo   dimr              : DIMR
+    echo   drr               : D-RR
+    echo   dwaq              : D-WAQ
+    echo   dwaves            : D-Waves
+    echo   flow2d3d          : Delft3D-FLOW
+    echo   swan              : SWAN
+    echo   tests
+    echo   tools
+    echo   tools_gpl
+    echo.
+    echo -help: Show this help page.                                                           Example: -help
+    echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
+    echo -build: Run build and install steps after running cmake.                              Example: -build
+    echo -vs: desired visual studio version. Overrides default.                                Example: -vs 2019
+    echo -ifort: desired intel fortran compiler version. Overrides default.                    Example: -ifort 21
+    echo -build_type: build optimization level.                                                Example: -build_type Release
+rem extra four spaces required for aligning Example:
+    echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
     echo More info  : https://oss.deltares.nl/web/delft3d/source-code
     echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
