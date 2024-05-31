@@ -48,13 +48,13 @@ module unstruc_opengl
    integer, public :: currentWidth, currentHeight
    integer         :: lastNCol = -1
    integer         :: lastWidth, lastHeight
-   logical, public :: InOpenGLRendering = .false.
-   integer, parameter, public :: FontSize = 28
    integer, public :: jaOpenGL = 1   !< use OpenGL (1) or not (0)
 ! curvigrid is not being displayed with OpenGl
 #else
    integer, public :: jaOpenGL = 0   !< use OpenGL (1) or not (0)
 #endif
+   logical, public :: InOpenGLRendering = .false.
+   integer, parameter, public :: FontSize = 28
    real(kind=sp), public :: xlast, ylast
 
    public :: BeginRender, EndRender, RenderText, SetLineWidth, LineTo, MoveTo, FillPolygon, DrawPoint, SetColorFromColorNR, SetTextHeight
