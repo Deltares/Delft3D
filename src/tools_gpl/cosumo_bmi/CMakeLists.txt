@@ -9,7 +9,7 @@ set(library_name cosumo_bmi)
 add_library(${library_name} SHARED  ${source_files})
 
 # Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
+target_compile_options(${library_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
 
 # Set dependencies on windows
 if (WIN32)
@@ -48,8 +48,6 @@ if(UNIX)
     oss_include_libraries(${library_name} library_dependencies)
     target_link_libraries(${library_name} ${library_dependencies})
 
-
-    #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 
 endif(UNIX)

@@ -11,7 +11,7 @@ add_executable(${executable_name}   ${executable_files}
                                     ${icon_file})
 
 # Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE "${extend_source132_flag}")
+target_compile_options(${executable_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
 
 # Set dependencies
 if (WIN32)
@@ -97,8 +97,7 @@ if (UNIX)
     # Set linker properties
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
-    #target_link_options(${executable_name} PRIVATE ${openmp_flag})
+
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 

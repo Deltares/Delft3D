@@ -8,7 +8,7 @@ add_library(${library_name} SHARED  ${library_files}
                                     ${rc_version_file})
 
 # Set additional compilation properties
-target_compile_options(${library_name} PRIVATE "${extend_source132_flag}")
+target_compile_options(${library_name} PRIVATE "${extend_source132_flag}" "${openmp_flag}")
 
 # Set dependencies on windows
 if (WIN32)
@@ -87,8 +87,7 @@ if(UNIX)
 
     message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
     target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
-    #target_link_options(${library_name} PRIVATE ${openmp_flag})
+
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 
 endif(UNIX)

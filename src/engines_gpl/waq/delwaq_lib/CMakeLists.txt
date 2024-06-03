@@ -57,7 +57,6 @@ endif (WIN32)
 if (UNIX)
     target_link_libraries(${library_name} ${oss_dependencies}
             uuid)
-    target_link_options(${library_name} PRIVATE ${openmp_flag})
 endif (UNIX)
 
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")

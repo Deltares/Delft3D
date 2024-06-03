@@ -50,7 +50,6 @@ if (WIN32)
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
 endif(WIN32)
 
 if(UNIX)
@@ -69,8 +68,6 @@ if(UNIX)
                         ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
     add_definitions(-DHAVE_CONFIG_H=1)
-    set_target_properties(${executable_name} PROPERTIES COMPILE_FLAGS "${openmp_flag}")
-    target_link_options(${executable_name} PRIVATE ${openmp_flag})
 endif(UNIX)
 
 # Define additional compilation flags
@@ -82,7 +79,7 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
-target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>")
+target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${check_nopointers_flag}>" "${openmp_flag}")
 
 # Define preprocessor definitions
 if (WIN32)

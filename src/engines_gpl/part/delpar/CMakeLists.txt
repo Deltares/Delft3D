@@ -21,11 +21,7 @@ target_link_libraries(${executable_name} ${oss_dependencies})
 target_include_directories(${executable_name} PRIVATE ${waq_data_path} ${version_include_dir})
 
 # Set additional compilation properties
-target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
-
-if(UNIX)
-    target_link_options(${executable_name} PRIVATE ${openmp_flag})
-endif(UNIX)
+target_compile_options(${executable_name} PRIVATE ${waq_default_flags} ${openmp_flag})
 
 if(WIN32)
     # Set linker properties
@@ -41,7 +37,6 @@ if(WIN32)
 endif(WIN32)
 
 # Define how the files should be structured within Visual Studio
-target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/part)
 
 if(WIN32)

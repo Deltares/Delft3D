@@ -130,7 +130,7 @@ if (WIN32)
 endif(WIN32)
 
 if (WIN32)
-    set_target_properties(${library_name} PROPERTIES LINK_FLAGS ${openmp_flag})
+    target_compile_options(${library_name} PRIVATE ${openmp_flag})
 endif(WIN32)
 
 if(UNIX)
