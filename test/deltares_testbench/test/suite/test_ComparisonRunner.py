@@ -2,6 +2,7 @@ import glob
 import os
 import pathlib as pl
 from unittest.mock import MagicMock, call
+from pytest_mock import MockerFixture
 
 import pytest
 from src.config.local_paths import LocalPaths
@@ -23,7 +24,7 @@ class TestComparisonRunner:
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
-        settings.only_post = True
+        settings.skip_run = True
         config = TestComparisonRunner.create_test_case_config("Name_1", False)
         config.path = TestCasePath("abc/prefix", "v1")
         settings.configs = [config]
@@ -44,17 +45,19 @@ class TestComparisonRunner:
         assert call(expected_log_message) in testcase_logger.debug.call_args_list
 
     @staticmethod
-    def test_run_tests_and_info_log_downloaded_file():
+    def test_log_and_skip_with_argument_skip_run(mocker: MockerFixture):
         # Arrange
         settings = TestBenchSettings()
         settings.local_paths = LocalPaths()
-        settings.only_post = True
+        settings.skip_run = True
         config = TestComparisonRunner.create_test_case_config("Name_1", False, PathType.INPUT)
         config.path = TestCasePath("abc/prefix", "v1")
         settings.configs = [config]
         logger = MagicMock(spec=ConsoleLogger)
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
+        prepare_mock = mocker.patch("src.suite.test_set_runner.TestSetRunner._TestSetRunner__prepare_test_case")
+        run_mock = mocker.patch("src.suite.test_case.TestCase.run")
 
         runner = ComparisonRunner(settings, logger)
 
@@ -62,8 +65,36 @@ class TestComparisonRunner:
         runner.run_tests_sequentially()
 
         # Assert
-        expected_log_message = 'Skipping testcase download (postprocess only)'
+        expected_log_message = "Skipping execution of testcase (postprocess only)...\n"
         assert call(expected_log_message) in testcase_logger.info.call_args_list
+        prepare_mock.assert_called()
+        run_mock.assert_not_called()
+
+    @staticmethod
+    def test_skip_download_for_parameter_no_download(mocker: MockerFixture):
+        # Arrange
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths()
+        settings.skip_download = [PathType.INPUT]
+        config = TestComparisonRunner.create_test_case_config("Name_1", False, PathType.INPUT)
+        config.path = TestCasePath("abc/prefix", "v1")
+        settings.configs = [config]
+        logger = MagicMock(spec=ConsoleLogger)
+        testcase_logger = MagicMock()
+        logger.create_test_case_logger.return_value = testcase_logger
+        download_mock = mocker.patch("src.suite.test_set_runner.HandlerFactory.download")
+        run_mock = mocker.patch("src.suite.test_case.TestCase.run")
+
+        runner = ComparisonRunner(settings, logger)
+
+        # Act
+        runner.run_tests_sequentially()
+
+        # Assert
+        expected_log_message = 'Skipping input of case download (skip download argument)'
+        assert call(expected_log_message) in testcase_logger.info.call_args_list
+        download_mock.assert_not_called()
+        run_mock.assert_called()
 
     @staticmethod
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error():

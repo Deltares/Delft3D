@@ -14,3 +14,4 @@ class PathType(Enum):
     CHECK = 1
     REFERENCE = 2
     INPUT = 3
+    DEPENDENCY = 4

@@ -45,7 +45,7 @@ def make_object(
 
 
 class TestMinioRewinder:
-    def test_rewind_download_delete_marker(self, mocker: MockerFixture):
+    def test_rewind_download_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem):
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -104,7 +104,41 @@ class TestMinioRewinder:
 
         mock_minio_client.fget_object.assert_not_called()
 
-    def test_rewind_download_after_rewind(self, mocker: MockerFixture):
+    def test_rewind_remove_file_not_in_download(self, mocker: MockerFixture, fs: FakeFilesystem):
+        # Create a Mock for the Minio client
+        mock_minio_client = mocker.Mock(spec=Minio)
+
+        object1 = make_object(
+            object_name="object1_name",
+            version_id="version1",
+            last_modified=datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
+        )
+        object2 = make_object(
+            object_name="object2_name",
+            version_id="version1",
+            last_modified=datetime(2023, 10, 20, 10, 0, tzinfo=timezone.utc),
+        )
+
+        # Create a list of mock objects to be returned by the list_objects method
+        object_list = [object1, object2]
+
+        mock_minio_client.list_objects.return_value = object_list
+        logger = mocker.Mock(spec=ILogger)
+
+        # Create a file not in objects for removal
+        file = "result.txt"
+        fs.create_file(file)
+
+        # Act
+        rewinder_instance = Rewinder(mock_minio_client, logger)
+        timestamp = datetime(2023, 10, 20, 12, tzinfo=timezone.utc)
+        rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
+
+        # Assert
+        assert mocker.call(f"Removing local file that is not present in MinIO bucket: {file}") in logger.info.call_args_list
+        assert not fs.exists(file)
+
+    def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem):
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -250,6 +284,7 @@ class TestMinioRewinder:
             [make_object("source/path/foo", bucket_name="my-bucket", version_id="v1")]
         )
         fs.create_file("destination/path/bar")
+        minio_client.fget_object.side_effect = fs.create_file("destination/path/foo")
 
         # Act
         rewinder.download("my-bucket", "source/path", Path("destination/path"))
@@ -419,9 +454,9 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        warnings = [call.args[0] for call in logger.warning.call_args_list]
+        info = [call.args[0] for call in logger.info.call_args_list]
         assert all(
-            f"Skipping download: {dest_path / name}, it already exists." in warnings
+            f"Skipping download: {dest_path / name}, local and online are the same version." in info
             for name in ["empty-file", "bar", "qux"]
         )
         assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.kwargs["version_id"]) == [
@@ -437,7 +472,7 @@ class TestMinioRewinder:
     def test_download__object_already_exists_and_content_is_different__download_object(
         self, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
-        """It should downloading objects that already exist in the destination directory but have chagned."""
+        """It should download objects that already exist in the destination directory but have chagned."""
         # Arrange
         logger = mocker.Mock(spec=ILogger)
         minio_client = mocker.Mock(spec=Minio)
@@ -499,8 +534,8 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        warning = f'Skipping download: {Path("destination/path/foo")}, it already exists.'
-        assert mocker.call(warning) in logger.warning.call_args_list
+        info = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
+        assert mocker.call(info) in logger.info.call_args_list
         minio_client.fget_object.assert_not_called()
 
     @pytest.mark.parametrize("update_only", [False, True])
