@@ -41,4 +41,11 @@
         </location>
         <path>bin/run_delpar.sh</path>
     </program>
+
+    <program name="DEM" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/lnx64</from>
+        </location>
+        <path>bin/run_d-emissions.sh</path>
+    </program>
 </programs>

@@ -38,6 +38,17 @@
             <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
         </testCase>
 
+        <testCase name="dem_default">
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
         <testCase name="dummy">
             <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro, which are just input for actual tests -->
             <location ref="reference_results" type="reference">
