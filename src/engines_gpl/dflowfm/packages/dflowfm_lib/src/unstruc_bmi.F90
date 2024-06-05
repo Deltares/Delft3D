@@ -2352,8 +2352,22 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             c_lateral_pointer = c_null_ptr
          end if
          return
+      case("water_volume")
+         if (apply_transport(item_index)==1) then
+            c_lateral_pointer = c_loc(qplat(:,item_index))
+         else
+            ! Not defined for apply__transport == 0
+            c_lateral_pointer = c_null_ptr
+         end if
+         return
       end select
-
+      
+      if (apply_transport(item_index)==0) then
+         ! No constituent support for non "apply_transport" items
+         c_lateral_pointer = c_null_ptr
+         return
+      end if
+         
       constituent_name = field_name
       call str_token(constituent_name, direction_string, DELIMS='/')
       constituent_name = constituent_name(2:)

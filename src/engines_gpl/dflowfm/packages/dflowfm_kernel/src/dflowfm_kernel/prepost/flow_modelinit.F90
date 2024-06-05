@@ -83,7 +83,8 @@
  use system_utils, only: makedir
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
- use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used
+ use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
+                      get_lateral_volume_per_layer, lateral_volume_per_layer
  use m_cell_geometry, only : ba
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -507,8 +508,11 @@
  call timstop(handle_extra(33)) ! end Fourier init
 
  if (numconst > 0.and. apply_transport_is_used) then
+   ! During initialisation, the lateral data must be initialized correctly
     call reset_outgoing_lat_concentration()
+    ! Use for timestep 1 s, because in that case the result is averaged concentrations at each lateral location.
     call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+    call get_lateral_volume_per_layer(lateral_volume_per_layer)
  endif
  
  ! Initialise sedtrails statistics
