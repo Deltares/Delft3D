@@ -10,12 +10,12 @@ from typing import Optional
 from minio import Minio
 from minio.commonconfig import Tags
 from minio.error import MinioException, S3Error
-from tools.minio import config, prompt
-from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
 from src.config.types.path_type import PathType
-from src.utils.minio_rewinder import Rewinder
 from src.utils.handlers.credential_handler import CredentialHandler
+from src.utils.minio_rewinder import Rewinder
+from tools.minio import config, prompt
+from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
 HELP_CONFIG = "Path to test bench config file"
 HELP_TEST_CASE_NAME = (
@@ -27,7 +27,7 @@ HELP_INTERACTIVE = "Use the interactive prompt to allow users to make decisions"
 HELP_BATCH = "Turn on (non-interactive) batch mode. Makes the default decision"
 HELP_FORCE = "Only in combination with batch mode: Ignore conflicts and always proceed"
 HELP_LOCAL_PATH = "Path to local directory"
-HELP_UPDATE_ONLY = "Don't create new files or remove files from MinIO. Only upload new versions of existing files."
+HELP_ALLOW_CREATE_AND_DELETE = "Create new files or remove files from MinIO."
 HELP_ISSUE_ID = "Identifier for the JIRA issue related to this change. Format: '[A-Z]+-[0-9]+'"
 HELP_TIMESTAMP = "Get past version of the objects in MinIO"
 HELP_LATEST = "Get the latest version of the objects in MinIO"
@@ -59,7 +59,7 @@ def make_argument_parser() -> argparse.ArgumentParser:
     push_path_type_group = push_parser.add_mutually_exclusive_group(required=True)
     push_path_type_group.add_argument("--case", dest="path_type", action="store_const", const=PathType.INPUT)
     push_path_type_group.add_argument("--reference", dest="path_type", action="store_const", const=PathType.REFERENCE)
-    push_parser.add_argument("-u", "--update-only", action="store_true", default=False, help=HELP_UPDATE_ONLY)
+    push_parser.add_argument("--allow-create-and-delete", action="store_true", default=False, help=HELP_ALLOW_CREATE_AND_DELETE)
     push_parser.add_argument("--issue-id", required=True, help=HELP_ISSUE_ID)
     push_parser.set_defaults(tool=push_tool)
 
@@ -121,7 +121,7 @@ def push_tool(args: argparse.Namespace) -> None:
     local_path = Path(args.local_path) if args.local_path else None
 
     try:
-        tool.push(args.test_case_name, path_type, local_path, args.update_only)
+        tool.push(args.test_case_name, path_type, local_path, args.allow_create_and_delete)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:

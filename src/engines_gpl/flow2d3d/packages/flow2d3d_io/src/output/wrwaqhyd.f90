@@ -93,7 +93,7 @@
       real(fp) , dimension(nlb:nub,mlb:mub) , intent(in) :: xz     !  Description and declaration in esm_alloc_real.f90
       real(fp) , dimension(nlb:nub,mlb:mub) , intent(in) :: yz     !  Description and declaration in esm_alloc_real.f90
       real(fp)      zbot               !<  Maximum depth in the model (relative to the reference level; unit: metres; positive upwards).
-      real(fp)      ztop               !<  The ‘imaginary’ maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
+      real(fp)      ztop               !<  The "imaginary" maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
 !
 !           Local  variables
 !

@@ -538,9 +538,9 @@ class TestMinioRewinder:
         assert mocker.call(info) in logger.info.call_args_list
         minio_client.fget_object.assert_not_called()
 
-    @pytest.mark.parametrize("update_only", [False, True])
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
     def test_build_plan__no_objects_in_minio__create_objects(
-        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+        self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should create new objects in MinIO if there's files in the current directory."""
         # Arrange
@@ -555,13 +555,13 @@ class TestMinioRewinder:
         minio_client.list_objects.return_value = iter([])  # List objects returns no objects.
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         expected_items = (
             []
-            if update_only
+            if not allow_create_and_delete
             else [
                 PlanItem.create(local_dir / path, minio_prefix / path)
                 for path in ("bar/baz.txt", "foo.txt", "qux/quux/quuux.txt")
@@ -569,9 +569,9 @@ class TestMinioRewinder:
         )
         assert sorted(plan.items, key=lambda op: str(op.minio_path)) == expected_items
 
-    @pytest.mark.parametrize("update_only", [False, True])
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
     def test_build_plan__empty_directory__remove_objects(
-        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+        self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should remove objects in MinIO if the local directory does not contain them."""
         # Arrange
@@ -591,13 +591,13 @@ class TestMinioRewinder:
         )
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         expected_items = (
             []
-            if update_only
+            if not allow_create_and_delete
             else [
                 PlanItem.remove(minio_prefix / path)
                 for path in (
@@ -609,10 +609,10 @@ class TestMinioRewinder:
         )
         assert sorted(plan.items, key=lambda op: str(op.minio_path)) == expected_items
 
-    @pytest.mark.parametrize("update_only", [False, True])
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
     def test_build_plan__local_files_exists_in_minio_with_no_changes__empty_plan(
         self,
-        update_only: bool,
+        allow_create_and_delete: bool,
         mocker: MockerFixture,
         fs: FakeFilesystem,
     ) -> None:
@@ -638,16 +638,16 @@ class TestMinioRewinder:
             fs.create_file(local_dir / path, contents=path)
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         assert not plan.items
 
-    @pytest.mark.parametrize("update_only", [False, True])
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
     def test_build_plan__local_files_exists_in_minio_with_changes__upload_files(
         self,
-        update_only: bool,
+        allow_create_and_delete: bool,
         mocker: MockerFixture,
         fs: FakeFilesystem,
     ) -> None:
@@ -674,7 +674,7 @@ class TestMinioRewinder:
             fs.create_file(local_dir / path, contents=f"{path} changed!")
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
@@ -687,8 +687,8 @@ class TestMinioRewinder:
             )
         ]
 
-    @pytest.mark.parametrize("update_only", [False, True])
-    def test_build_plan__mixed_operations(self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
+    def test_build_plan__mixed_operations(self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         """It should include all different kind of operations in the computed plan.
 
         This test covers all of the branches in the big `if` statement in the `build_plan`
@@ -726,20 +726,20 @@ class TestMinioRewinder:
         ]
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         items = [
             PlanItem.update(local_dir / "changed-file", minio_prefix / "changed-file"),
-            None if update_only else PlanItem.create(local_dir / "new-file", minio_prefix / "new-file"),
-            None if update_only else PlanItem.remove(minio_prefix / "removed-file"),
+            None if not allow_create_and_delete else PlanItem.create(local_dir / "new-file", minio_prefix / "new-file"),
+            None if not allow_create_and_delete else PlanItem.remove(minio_prefix / "removed-file"),
         ]
         assert plan.items == list(filter(None, items))
 
-    @pytest.mark.parametrize("update_only", [False, True])
+    @pytest.mark.parametrize("allow_create_and_delete", [False, True])
     def test_build_plan__randomized_mixed_operations(
-        self, update_only: bool, mocker: MockerFixture, fs: FakeFilesystem
+        self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
         """It should include all different kind of operations in the computed plan.
 
@@ -787,10 +787,10 @@ class TestMinioRewinder:
         minio_client.list_objects.return_value = minio_objects
 
         # Act
-        plan = rewinder.build_plan(local_dir, minio_prefix, update_only=update_only)
+        plan = rewinder.build_plan(local_dir, minio_prefix, allow_create_and_delete=allow_create_and_delete)
 
         # Assert
-        if update_only:
+        if not allow_create_and_delete:
             create_count = remove_count = 0
         assert plan.multipart_upload_part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         assert sum(1 for op in plan.items if op.operation == Operation.CREATE) == create_count

@@ -385,7 +385,7 @@ function dfm_init_computational_timestep(timetarget, dtpredict) result(iresult) 
 
    if (time0+dts > tstop_user) then
       dts = tstop_user - time0
-   endif
+   end if
 
    call flow_init_single_timestep(iresult)
    dtpredict = dts
@@ -786,7 +786,7 @@ subroutine get_var_type(c_var_name, c_type)  bind(C, name="get_var_type")
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       type_name = "double"
    end if
@@ -868,7 +868,7 @@ subroutine get_var_rank(c_var_name, rank) bind(C, name="get_var_rank")
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       rank = 1
       return
@@ -1000,7 +1000,7 @@ subroutine get_var_shape(c_var_name, shape) bind(C, name="get_var_shape")
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       shape(1) = ndkx
       return
@@ -1195,7 +1195,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       xd=0.d0 ! Set this to nan?
       do i=1,ndx
          xd(1:size(nd(i)%x), i) = nd(i)%x
-      enddo
+      end do
       x = c_loc(xd)
 
    case("flowelemcontour_y")
@@ -1203,7 +1203,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
       xd=0.d0 ! I would like to set nans here. but how?
       do i=1,ndx
          xd(1:size(nd(i)%x), i) = nd(i)%y
-      enddo
+      end do
       x = c_loc(xd)
      
    case("kn")
@@ -1229,39 +1229,39 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
    case("tem1Surf")
       if (.not. allocated(tem1Surf)) then
          allocate (tem1Surf(ndx))
-      endif
+      end if
 	    do k = 1,ndx
 		     call getkbotktop(k, kb, kt)
 		     tem1Surf(k) = tem1(kt)
-      enddo
+      end do
       x = c_loc(tem1Surf)
       
    case("TcrEro")
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrEro)) then
          allocate (TcrEro(ndx,k))
-      endif
+      end if
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
             call get_one_transport_parameter(TcrEro(:,i), stmpar%trapar, i, 13)
          else ! Other transport formula than Parteniades-Krone
             TcrEro(:,i) = -999
-         endif
-      enddo
+         end if
+      end do
       x = c_loc(TcrEro)
       
    case("TcrSed")
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrSed)) then
          allocate (TcrSed(ndx,k))
-      endif
+      end if
       do i = 1,k
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
             call get_one_transport_parameter(TcrSed(:,i), stmpar%trapar, i, 12)
          else ! Other transport formula than Parteniades-Krone
             TcrSed(:,i) = -999
-         endif
-      enddo
+         end if
+      end do
       x = c_loc(TcrSed)
    case('vltb')
       x = c_loc(vltb)
@@ -1314,7 +1314,7 @@ subroutine get_var(c_var_name, x) bind(C, name="get_var")
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       call realloc(const_t, (/ ndkx, numconst /), keepExisting = .true.)
       do k=1,ndkx
@@ -1378,18 +1378,18 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
          do i=1,min(len(threadsString), MAXSTRLEN)
             if (c_value(i) == c_null_char) exit
             threadsString(i:i) = c_value(i)
-         enddo
+         end do
          read(threadsString,'(I)', iostat = ierr) md_numthreads
          if (ierr == 0) then
             ! Activate the new OpenMP threads setting
             ierr = init_openmp(md_numthreads, jampi)
          end if
-      endif
+      end if
       return
    case("zk")
       do i = 1, numk
             call update_land_nodes(i, x_1d_double_ptr(i))
-      enddo
+      end do
       call land_change_callback()
 
       return
@@ -1400,8 +1400,8 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
          do i=1,MAXSTRLEN
             if (c_value(i) == c_null_char) exit
             md_pdffile(i:i) = c_value(i)
-         enddo
-      endif
+         end do
+      end if
       return
    case("openprocessdllso")
       call c_f_pointer(xptr, c_value,[MAXSTRLEN])
@@ -1410,8 +1410,8 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
          do i=1,MAXSTRLEN
             if (c_value(i) == c_null_char) exit
             md_oplfile(i:i) = c_value(i)
-         enddo
-      endif
+         end do
+      end if
       return
    case("bloomspecies")
       call c_f_pointer(xptr, c_value,[MAXSTRLEN])
@@ -1420,8 +1420,8 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
          do i=1,MAXSTRLEN
             if (c_value(i) == c_null_char) exit
             md_blmfile(i:i) = c_value(i)
-         enddo
-      endif
+         end do
+      end if
       return
    case("verbose")
       call c_f_pointer(xptr, c_value,[MAXSTRLEN])
@@ -1429,7 +1429,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       do i = 1, MAXSTRLEN
          if (c_value(i) == c_null_char) exit
          levels = levels // c_value(i)
-      enddo
+      end do
       ipos = index(levels, ':')
       if (ipos > 0) then
          loglevel_StdOut = stringtolevel(levels(:ipos-1))
@@ -1437,14 +1437,14 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
       else
          loglevel_StdOut = stringtolevel(levels)
          loglevel_file   = stringtolevel(levels)
-      endif
+      end if
       call initMessaging(mdia)
       return
    case("TcrEro")
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrEro)) then
          allocate (TcrEro(ndx,k))
-      endif
+      end if
       call c_f_pointer(xptr, x_2d_double_ptr, shape(TcrEro))
       TcrEro(:,:) = x_2d_double_ptr
       do i = 1,size(TcrEro,2)
@@ -1455,24 +1455,24 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                   stmpar%trapar%parfile(n)%parfld(:) = TcrEro(:,i)
                else
                   call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
-               endif
+               end if
             else                                ! if not spatially varying
                if (minval(TcrEro(:,i)) == maxval(TcrEro(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(13,i) = TcrEro(1,i)
                else
                   call mess(LEVEL_ERROR, 'TcrEro isn''t defined as spatially varying, therefore set_var must be called with a constant field.')
-               endif 
-            endif
+               end if 
+            end if
          else
             call mess(LEVEL_WARN, 'TcrEro values ignored for fractions not governed by the Parteniades-Krone transport formula.')
-         endif
-      enddo
+         end if
+      end do
       return
    case("TcrSed")
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrSed)) then
          allocate (TcrSed(ndx,k))
-      endif
+      end if
       call c_f_pointer(xptr, x_2d_double_ptr, shape(TcrSed))
       TcrSed(:,:) = x_2d_double_ptr
       do i = 1,size(TcrSed,2)
@@ -1483,18 +1483,18 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
                   stmpar%trapar%parfile(n)%parfld(:) = TcrSed(:,i)
                else
                   call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
-               endif
+               end if
             else                                ! if not spatially varying
                if (minval(TcrSed(:,i)) == maxval(TcrSed(:,i))) then    ! if provided data is uniform
                   stmpar%trapar%par(12,i) = TcrSed(1,i)
                else
                   call mess(LEVEL_ERROR, 'TcrSed isn''t defined as spatially varying, therefore set_var must be called with a constant field.')
-               endif 
-            endif
+               end if 
+            end if
          else
             call mess(LEVEL_WARN, 'TcrSed values ignored for fractions not governed by the Parteniades-Krone transport formula.')
-         endif
-      enddo
+         end if
+      end do
       return
    case ("sourcesinks/COSUMO/nf_q_source_shape")
        call c_f_pointer(xptr, x_1d_int_ptr, (/ 6 /))
@@ -1534,7 +1534,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
        i            = x_1d_int_ptr(3)
        if (i /= 3) then
            call mess(LEVEL_ERROR, 'set_var::nf_intake_shape: third dimension is not equal to 3')
-       endif
+       end if
        return
    case ("sourcesinks/COSUMO/nf_intake")
        call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numintake, 3 /))
@@ -1549,7 +1549,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
        i            = x_1d_int_ptr(3)
        if (i /= 6) then
            call mess(LEVEL_ERROR, 'set_var::nf_sink_shape: third dimension is not equal to 6')
-       endif
+       end if
        return
    case ("sourcesinks/COSUMO/nf_sink")
        call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numsink, 6 /))
@@ -1564,7 +1564,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
        i            = x_1d_int_ptr(3)
        if (i /= 8) then
            call mess(LEVEL_ERROR, 'set_var::nf_sink_shape: third dimension is not equal to 8')
-       endif
+       end if
        return
    case ("sourcesinks/COSUMO/nf_sour")
        call c_f_pointer(xptr, x_3d_double_ptr, (/ nf_num_dif, nf_numsour, 8 /))
@@ -1598,7 +1598,7 @@ subroutine set_var(c_var_name, xptr) bind(C, name="set_var")
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       call c_f_pointer(xptr, x_1d_double_ptr, (/ ndkx /))
       do i=1,ndkx
@@ -1668,7 +1668,7 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       !
       !    u0(cell%lin(edgeIndex)) = value * cos(angle)
       !    u1(cell%lin(edgeIndex)) = value * cos(angle)
-      !enddo
+      !end do
 
       ! convert it to the velocity increment on cell interfaces
 
@@ -1695,7 +1695,7 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
    case("zk")
       do i = 1, c_count(1)
             call update_land_nodes(c_start(1) + i-1, x_1d_double_ptr(i))
-      enddo
+      end do
       call land_change_callback()
 
       !zkdropstep = value - zk(index + 1)
@@ -1707,7 +1707,7 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrEro)) then
          allocate (TcrEro(ndx,k))
-      endif
+      end if
       TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
@@ -1717,14 +1717,14 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
                   stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrEro(c_start(1)+1:(c_start(1)+c_count(1)),i)
                else
                   call mess(LEVEL_ERROR, 'TcrEro is forced using a time-series file and can''t be set using BMI.')
-               endif
+               end if
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrEro isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
-            endif
+            end if
          else
             call mess(LEVEL_ERROR, 'TcrEro can only be set for fractions governed by the Parteniades-Krone transport formula.')
-         endif
-      enddo
+         end if
+      end do
       return
      
    case("TcrSed")
@@ -1732,7 +1732,7 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
       k = size(stmpar%trapar%par, 2) ! equivalent to stmpar%lsedtot
       if (.not. allocated(TcrSed)) then
          allocate (TcrSed(ndx,k))
-      endif
+      end if
       TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
       do i = c_start(2)+1,(c_start(2)+c_count(2))
          if (stmpar%trapar%iform(i) == -3) then ! if transport formula is Parteniades-Krone
@@ -1742,20 +1742,20 @@ subroutine set_var_slice(c_var_name, c_start, c_count, xptr) bind(C, name="set_v
                   stmpar%trapar%parfile(n)%parfld(c_start(1)+1:(c_start(1)+c_count(1))) = TcrSed(c_start(1)+1:(c_start(1)+c_count(1)),i)
                else
                   call mess(LEVEL_ERROR, 'TcrSed is forced using a time-series file and can''t be set using BMI.')
-               endif
+               end if
             else                                ! if not spatially varying: the user is not allowed to change it partially by a different value
                call mess(LEVEL_ERROR, 'TcrSed isn''t defined as spatially varying, therefore the set_var_slice call is disabled.')
-            endif
+            end if
          else
             call mess(LEVEL_ERROR, 'TcrSed can only be set for fractions governed by the Parteniades-Krone transport formula.')
-         endif
-      enddo
+         end if
+      end do
       return
    end select
 
    if (numconst > 0) then
       iconst = findname(numconst, const_names, var_name)
-   endif
+   end if
    if (iconst /= 0) then
       call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
       do i=1,c_count(1)
@@ -1872,11 +1872,11 @@ function dfm_add_features(c_feat_name, xpli_ptr, ypli_ptr, zpli_ptr, npli_ptr, n
       call find_crossed_links_kdtree2(treeglob, npl, xpl, ypl, 2, Lnx, 0, nxln, iLnx, ipol, dSL, iresult)
       if(iresult/=DFM_NOERR) then
          goto 888
-      endif
+      end if
       do i=1,nxln
          bob(1, iLnx(i)) = thdh
          bob(2, iLnx(i)) = thdh
-      enddo
+      end do
       deallocate(iLnx,ipol,dSL)
       ! TODO: AvD: also somehow disable the existing thin dams
 
@@ -1948,7 +1948,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('pumps', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("capacity")
          if (is_in_network) then
@@ -1964,7 +1964,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('weirs', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
 
       select case(field_name)
       case("crest_level", "CrestLevel", "crestLevel")
@@ -1984,7 +1984,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('orifices', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
 
       select case(field_name)
       case("gateLowerEdgeLevel")
@@ -2004,7 +2004,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('gates', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("sill_level", "CrestLevel")
          x = c_loc(zcgen((item_index-1)*3+1))
@@ -2028,7 +2028,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('generalstructures', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       
       select case(field_name)
       case("CrestLevel", "crestLevel")
@@ -2070,7 +2070,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
          call getStructureIndex('culverts', item_name, item_index, is_in_network)
          if (item_index <= 0) then
             return
-         endif
+         end if
       
          select case(field_name)
          case("valveOpeningHeight")
@@ -2085,7 +2085,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
          call getStructureIndex('longculverts', item_name, item_index, is_in_network)
          if (item_index <= 0) then
             return
-         endif
+         end if
       
          select case(field_name)
          case("valveRelativeOpening")
@@ -2100,58 +2100,58 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
           case("nf_q_source")
              if (.not.associated(nf_q_source)) then
                 return
-             endif
+             end if
              x = c_loc(nf_q_source)
              return
           case("nf_q_intake")
              if (.not.associated(nf_q_intake)) then
                 return
-             endif
+             end if
              x = c_loc(nf_q_intake)
              return
           case("nf_const")
              if (.not.associated(nf_const)) then
                 return
-             endif
+             end if
              x = c_loc(nf_const)
              return
           case("nf_intake")
              if (.not.associated(nf_intake)) then
                 return
-             endif
+             end if
              x = c_loc(nf_intake)
              return
           case("nf_sink")
              if (.not.associated(nf_sink)) then
                 return
-             endif
+             end if
              x = c_loc(nf_sink)
              return
           case("nf_sour")
              if (.not.associated(nf_sour)) then
                 return
-             endif
+             end if
              x = c_loc(nf_sour)
              return
           case("nf_const_operator")
              if (.not.associated(nf_const_operator)) then
                 return
-             endif
+             end if
              x = c_loc(nf_const_operator)
              return
           case("nf_src_mom")
              if (.not.associated(nf_src_mom)) then
                 return
-             endif
+             end if
              x = c_loc(nf_src_mom)
              return
           end select
           return
-      endif
+      end if
       call getStructureIndex('sourcesinks', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("discharge")
          x = c_loc(qstss((item_index-1)*(NUMCONST+1)+1))
@@ -2159,13 +2159,13 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       case("change_in_salinity")
          if (ISALT == 0) then
              return
-         endif
+         end if
          x = c_loc(qstss((item_index-1)*(NUMCONST+1)+ISALT+1))
          return
       case("change_in_temperature")
          if (ITEMP == 0) then
              return
-         endif
+         end if
          x = c_loc(qstss((item_index-1)*(NUMCONST+1)+ITEMP+1))
          return
       end select
@@ -2174,7 +2174,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       call getStructureIndex('dambreak', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("dambreak_s1up")
          x = c_loc(waterLevelsDambreakUpStream(item_index))
@@ -2271,7 +2271,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       end select
    ! LATERAL DISCHARGES
    case("laterals")   
-      x = get_lateral_pointer(item_name, field_name)
+      x = get_pointer_to_lateral_variable(item_name, field_name)
    ! GEOMETRY
    case("geometry")   
       select case(item_name)
@@ -2318,14 +2318,15 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    end subroutine get_compound_field
 
    !> Returns the c_ptr for a variable on a lateral location 
-   type(c_ptr) function get_lateral_pointer(item_name, field_name)
-      use m_lateral, only : qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration
+   function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
+      use m_lateral, only : qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport
       use m_flow, only : s1
       use string_module, only : str_token
-
+      
       implicit none
-      character(len=MAXSTRLEN), intent(in   ) :: item_name
-      character(len=MAXSTRLEN), intent(in   ) :: field_name
+      character(len=MAXSTRLEN), intent(in) :: item_name
+      character(len=MAXSTRLEN), intent(in) :: field_name
+      type(c_ptr)                          :: c_lateral_pointer
       
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN)   :: constituent_name, direction_string
@@ -2336,20 +2337,37 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
 
       select case(field_name)
       case("water_discharge")
-            ! Here using max(1,kmx) is a temporary solution for now.
-            get_lateral_pointer = c_loc(qplat(max(1,kmx),item_index))
-            return
-         case("water_level")
-            ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-            k1 = nnlat(n1latsg(item_index))
-            if (k1 > 0) then
-               get_lateral_pointer = c_loc(s1(k1))
-            else
-               get_lateral_pointer = c_null_ptr
-            endif
-            return
+         if (apply_transport(item_index)==1 .or. kmx ==0) then
+            c_lateral_pointer = c_loc(qplat(:,item_index))
+         else
+            c_lateral_pointer = c_loc(qplat(kmx, item_index))
+         end if
+         return
+      case("water_level")
+         ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
+         k1 = nnlat(n1latsg(item_index))
+         if (k1 > 0) then
+            c_lateral_pointer = c_loc(s1(k1))
+         else
+            c_lateral_pointer = c_null_ptr
+         end if
+         return
+      case("water_volume")
+         if (apply_transport(item_index)==1) then
+            c_lateral_pointer = c_loc(qplat(:,item_index))
+         else
+            ! Not defined for apply__transport == 0
+            c_lateral_pointer = c_null_ptr
+         end if
+         return
       end select
-
+      
+      if (apply_transport(item_index)==0) then
+         ! No constituent support for non "apply_transport" items
+         c_lateral_pointer = c_null_ptr
+         return
+      end if
+         
       constituent_name = field_name
       call str_token(constituent_name, direction_string, DELIMS='/')
       constituent_name = constituent_name(2:)
@@ -2363,7 +2381,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
             constituent_index = findname(NUMCONST, const_names, constituent_name)
             if ( iconst==0 ) then
       !        tracer not found
-               get_lateral_pointer = c_null_ptr
+               c_lateral_pointer = c_null_ptr
                return
             end if
       end select
@@ -2371,14 +2389,14 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       ! Use the correct array (outgoing or incoming)
       select case (direction_string)
          case('outgoing')
-            get_lateral_pointer = c_loc(outgoing_lat_concentration(:, constituent_index, item_index))
+            c_lateral_pointer = c_loc(outgoing_lat_concentration(:, constituent_index, item_index))
          case('incoming')
-            get_lateral_pointer = c_loc(incoming_lat_concentration(:, constituent_index, item_index))
+            c_lateral_pointer = c_loc(incoming_lat_concentration(:, constituent_index, item_index))
          case default
-            get_lateral_pointer = c_null_ptr
+            c_lateral_pointer = c_null_ptr
       end select
       return
-   end function get_lateral_pointer
+   end function get_pointer_to_lateral_variable
 
 !> Sets the value for a specific field for a specific item in a set-variable of compound values.
 !!
@@ -2432,7 +2450,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('pumps', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       
       if (network%sts%struct(item_index)%pump%nrstages > 0) then
          call mess(LEVEL_ERROR, 'set_compound_field for '''//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name)//''' : a staged pump cannot be controlled by RTC.')
@@ -2455,7 +2473,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('weirs', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("crest_level", "CrestLevel", "crestLevel")
          if (is_in_network) then
@@ -2477,7 +2495,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('orifices', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("gateLowerEdgeLevel")
          if (is_in_network) then
@@ -2493,7 +2511,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('gates', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("sill_level", "CrestLevel")
          call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2522,7 +2540,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('generalstructures', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       
       select case(field_name)
       case("CrestLevel", "crestLevel")
@@ -2573,7 +2591,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('culverts', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("valveOpeningHeight")
          if (is_in_network) then
@@ -2588,7 +2606,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getStructureIndex('sourcesinks', item_name, item_index, is_in_network)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("discharge")
          call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2597,14 +2615,14 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       case("change_in_salinity")
          if (ISALT == 0) then
              return
-         endif
+         end if
          call c_f_pointer(xptr, x_0d_double_ptr)
          qstss((item_index-1)*(NUMCONST+1)+ISALT+1) = x_0d_double_ptr
          return
       case("change_in_temperature")
          if (ITEMP == 0) then
              return
-         endif
+         end if
          call c_f_pointer(xptr, x_0d_double_ptr)
          qstss((item_index-1)*(NUMCONST+1)+ITEMP+1) = x_0d_double_ptr
          return
@@ -2615,7 +2633,7 @@ subroutine set_compound_field(c_var_name, c_item_name, c_field_name, xptr) bind(
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
-      endif
+      end if
       select case(field_name)
       case("water_discharge")
          call c_f_pointer(xptr, x_0d_double_ptr)
@@ -2912,14 +2930,14 @@ subroutine get_2d_double(c_var_name, xptr) bind(C, name="get_2d_double")
       x=0 ! Set this to nan?
       do i=1,ndx
          x(i,1:size(nd(i)%x)) = nd(i)%x
-      enddo
+      end do
       xptr = c_loc(x)
    case("flowelemcontour_y")
       allocate(x(ndx, get_flow_elem_max_contour()))
       x=0 ! I would like to set nans here. but how?
       do i=1,ndx
          x(i,1:size(nd(i)%x)) = nd(i)%y
-      enddo
+      end do
       xptr = c_loc(x)
    end select
 end subroutine get_2d_double
@@ -2966,7 +2984,7 @@ subroutine set_1d_double_at_index(c_var_name, index, value)  bind(C, name="set_1
 
          u0(cell%lin(edgeIndex)) = value * cos(angle)
          u1(cell%lin(edgeIndex)) = value * cos(angle)
-      enddo
+      end do
 
       ! convert it to the velocity increment on cell interfaces
 
@@ -3119,7 +3137,7 @@ pure function char_array_to_string(char_array, length)
    integer :: i
    do i = 1, length
       char_array_to_string(i:i) = char_array(i)
-   enddo
+   end do
 end function char_array_to_string
 
 pure function string_to_char_array(string, length)
@@ -3129,7 +3147,7 @@ pure function string_to_char_array(string, length)
    integer :: i
    do i = 1, length
       string_to_char_array(i) = string(i:i)
-   enddo
+   end do
    string_to_char_array(length+1) = C_NULL_CHAR
 end function string_to_char_array
 
@@ -3340,26 +3358,26 @@ end function get_flow_elem_max_nbs
 !          cxx(j, i) = cxtmp(k)
 !          cyy(j, i) = cytmp(k)
 !          k = k + 1
-!       enddo
-!    enddo
+!       end do
+!    end do
 !
 !    if(meth > 0 .and. meth < 8) then
 !       IAV = meth
 !    else
 !       goto 1234
-!    endif
+!    end if
 !
 !    if(nmin > 0) then
 !       NUMMIN = nmin
 !    else
 !       goto 1234
-!    endif
+!    end if
 !
 !    if(csize > 0 .and. csize < 10) then
 !       RCEL = csize
 !    else
 !       goto 1234
-!    endif
+!    end if
 !
 !    INTERPOLATIONTYPE = 2
 !
@@ -3433,7 +3451,7 @@ subroutine find_cells(c_net_file, c_numCells, c_maxPerCell, cptr_netElemNode) bi
             netElemNode(i) = netcell(ci)%nod(ni)
          else
             netElemNode(i) = -1
-         endif
+         end if
          i=i+1
       end do
    end do
@@ -3545,12 +3563,12 @@ subroutine get_snapped_feature(c_feature_type, c_Nin, cptr_xin, cptr_yin, c_Nout
             end if
             ! the next start index
             startIndex =  i + 1
-      endif
+      end if
       i = i + 1
-   enddo
+   end do
    if (ntemp > 0) then
       call snappnt(ntemp, xintemp, yintemp, DMISS, c_Nout, xout, yout, feature_ids, c_ierror)
-   endif
+   end if
    ! re-map feature_ids array
    ntemp = 1 ! first feature Index
    do i = 1, size(xout)
@@ -3566,9 +3584,9 @@ subroutine get_snapped_feature(c_feature_type, c_Nin, cptr_xin, cptr_yin, c_Nout
          else
             ! Input was snapped to a grid cell.
             feature_ids(i) = ntemp ! ntemp is: current feature Index
-         endif
+         end if
       end if
-   enddo
+   end do
    case("dambreak")
       ! Extract polygon and the breach point coordinates
       startIndex = 1
@@ -3623,9 +3641,9 @@ subroutine get_snapped_feature(c_feature_type, c_Nin, cptr_xin, cptr_yin, c_Nout
             feature_ids(oldSize + noutSnapped + 2) = 0
             startIndex =  i  +  2
             i = startIndex
-         endif
+         end if
          i = i + 1
-      enddo
+      end do
    case default
       call snapbnd(feature_type, c_Nin, xin, yin, dmiss, c_Nout, xout, yout, feature_ids, c_ierror)
    end select
@@ -3701,13 +3719,13 @@ subroutine write_partition_metis(c_netfile_in, c_netfile_out, c_npart, c_jaconti
       return
    else
       npart=c_npart
-   endif
+   end if
 
    if(c_jacontiguous < 1) then
       jacontiguous = 0
    else
       jacontiguous = 1
-   endif
+   end if
 
    call cosphiunetcheck(1)
 
@@ -3721,7 +3739,7 @@ subroutine write_partition_metis(c_netfile_in, c_netfile_out, c_npart, c_jaconti
 
    if(ndomains > 1) then
       call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
-   endif
+   end if
 
 end subroutine write_partition_metis
 
@@ -3774,7 +3792,7 @@ subroutine write_partition_pol(c_netfile_in, c_netfile_out, c_polfile) bind(C, n
 
    if(ndomains > 1) then
       call partition_write_domains(netfile_out, 6, 1, 0, md_partugrid)
-   endif
+   end if
 
 end subroutine write_partition_pol
 
@@ -3814,7 +3832,7 @@ function get_snapped_flow_links_indexes( numberOfInputVertices, c_xVerticesCoord
 
    if (allocated(indexes)) then
       deallocate(indexes)
-   endif
+   end if
 
    allocate(indexes(lnx))
 
@@ -3828,7 +3846,7 @@ function get_snapped_flow_links_indexes( numberOfInputVertices, c_xVerticesCoord
          numberOfOutputIndexes = numberOfOutputIndexes + 1
          indexes(numberOfOutputIndexes) = l
       end if
-   enddo
+   end do
 
 
    ierr = convert_start_index(indexes, imiss, 1, startIndex)

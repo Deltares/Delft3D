@@ -3876,7 +3876,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c097_running_mean" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c097_running_mean</path>
+      <path version="2024-05-31T12:46:29">e02_dflowfm/f012_inout/c097_running_mean</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
