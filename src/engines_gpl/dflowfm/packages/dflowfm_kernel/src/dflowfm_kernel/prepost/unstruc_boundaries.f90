@@ -1193,6 +1193,11 @@ logical function initboundaryblocksforcings(filename)
        
        call reserve_sufficient_space(apply_transport, numlatsg+1, 0)
        call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg+1), success)
+       if (apply_transport(numlatsg+1) > 1) then
+          write(msgbuf, '(a,a,a)') 'Unexpected value for ''applyTranosrt'', keyword ignored for lateral ''', trim(locid), '''.'
+          call warn_flush()
+          apply_transport(numlatsg+1) = 0
+       endif
 
        ! [lateral]
        ! fileVersion >= 2: nodeId                  => location_specifier = LOCTP_NODEID
