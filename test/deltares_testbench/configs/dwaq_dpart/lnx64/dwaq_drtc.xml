@@ -6,7 +6,7 @@
 
     <!-- general setup -->
     <xi:include href="../include/configuration.xml"/>
-    <xi:include href="../include/programs_x64.xml"/>
+    <xi:include href="../include/programs_lnx64.xml"/>
     <xi:include href="../include/default_testcases.xml"/>
 
     <!-- testCases -->
