@@ -8108,10 +8108,10 @@ module m_meteo
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
             if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_x)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_x)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_y)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_x, connectionId)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_y, connectionId)
         case ('charnock')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
