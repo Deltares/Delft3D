@@ -26,12 +26,12 @@ module m_integration_scheme_15
     use m_zercum
     use m_sgmres
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
     use time_dependent_variables, only : initialize_time_dependent_variables
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -73,7 +73,7 @@ contains
         !      |                   setset: not so clear what this does, probably process related
         !      |                   hsurf : set the surface array from the proces parameters
         !      |                   proces: DELWAQ water quality process system
-        !      |                   dlwqo2: DELWAQ output system, provides all output to files
+        !      |                   write_output: DELWAQ output system, provides all output to files
         !    time  ===> jump out   zercum: zero's the cummulative array's of balances and monitoring areas
         !    loop        point     dlwqb8: restores conc array (in case other routines did distroy ?!?)
         !      |                   dlwq14: scales waterquality derivative according to right time step size
@@ -89,10 +89,10 @@ contains
         !      |            V      dlwqf7: copies solution in the conc. array updates mass balance arrays
         !      |                   dlwqb4: update mass arrays, set explicit step for all passive substances
         !      |                   dlwqce: computes closure error correction at rewind of volume file
-        !      |                   proint: integration of fluxes for mass balances per monitoring area
+        !      |                   integrate_fluxes_for_dump_areas : integration of fluxes for mass balances per monitoring area
         !     VVV                  srwshl: call to the standaard-raamwerk-water interface if switched 'on'
         !      V                   initialize_time_dependent_variables: updates all time dependent items (in this case exclusive of volumes)
-        !                          dlwq13: system dump routine of restart files at the end
+        !                          write_restart_map_file: system dump routine of restart files at the end
         !   Not mentioned are the routines: to start and stop the performance timers
         !                                   the routines used for stepwise execution within a
         !                                   stepwise executing user interface
@@ -113,7 +113,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -372,7 +372,7 @@ contains
             endif
 
             !     call output system
-            call dlwqo2 (notot, noseg, nopa, nosfun, itime, &
+            call write_output (notot, noseg, nopa, nosfun, itime, &
                     c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
                     a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
                     a(ivol:), nocons, nofun, idt, noutp, &
@@ -556,7 +556,7 @@ contains
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -586,8 +586,8 @@ contains
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
-                !     write restart file
-                call write_restart_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                ! write restart file
+                call write_restart_map_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
 

@@ -209,7 +209,7 @@ class TestMinioTool:
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
-            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, update_only=False
+            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=False
         )
         rewinder.execute_plan.assert_not_called()
         out_lines = capsys.readouterr().out.splitlines()
@@ -241,14 +241,14 @@ class TestMinioTool:
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
         # Act
-        minio_tool.push("foo", PathType.INPUT, local_dir, update_only=True)
+        minio_tool.push("foo", PathType.INPUT, local_dir, allow_create_and_delete=True)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
             src_dir=local_dir,
             dst_prefix=bucket / "cases",
             tags={"foo": "bar"},  # type: ignore
-            update_only=True,
+            allow_create_and_delete=True,
         )
         rewinder.execute_plan.assert_not_called()
         cap = capsys.readouterr()
@@ -283,14 +283,14 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir, update_only=False)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir, allow_create_and_delete=False)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
             src_dir=local_dir,
             dst_prefix=bucket / "references",
             tags=None,
-            update_only=False,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
         test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
@@ -790,7 +790,7 @@ class TestMinioTool:
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
-            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, update_only=True
+            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=True
         )
         rewinder.execute_plan.assert_not_called()
         out_lines = capsys.readouterr().out.splitlines()
@@ -828,7 +828,7 @@ class TestMinioTool:
             src_dir=test_case.case_dir,
             dst_prefix=test_case.reference_prefix,
             tags={"foo": "bar"},  # type: ignore
-            update_only=True,
+            allow_create_and_delete=True,
         )
         rewinder.execute_plan.assert_not_called()
         cap = capsys.readouterr()
@@ -870,7 +870,7 @@ class TestMinioTool:
             src_dir=local_dir,
             dst_prefix=bucket / "references",
             tags=None,
-            update_only=True,
+            allow_create_and_delete=True,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
         test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})

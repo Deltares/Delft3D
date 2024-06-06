@@ -110,14 +110,14 @@ contains
 
         do iseg = 1, nosegw
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1 == 1) then
                 depth = pmsa(ip1)
                 zthreshold = pmsa(ip2)
 
                 ! look if segment has water surface
 
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==1 .or. ikmrk2==0) .and. depth <= zthreshold) then
 
                     ! set this segment to inactive
@@ -130,7 +130,7 @@ contains
 
                         ! give the underlying segment the attribure with water surface
 
-                        call evaluate_waq_attribute(2, iknmrk(iseg_down), ikmrk2)
+                        call extract_waq_attribute(2, iknmrk(iseg_down), ikmrk2)
                         if (ikmrk2==2) then
                             iknmrk(iseg_down) = iknmrk(iseg_down) - 10 ! sets second attribute to 1
                         elseif (ikmrk2==3) then

@@ -70,7 +70,7 @@ contains
         !     Routines            : zoek  - to search the DRY_TRESH constant
         !                                     and SURF parameter/segfunction
         !                           set_feature  - to set features
-        !                           evaluate_waq_attribute  - to get features
+        !                           extract_waq_attribute  - to get features
 
         use waq_attribute_utils, only : set_feature
         use m_evaluate_waq_attribute
@@ -142,14 +142,14 @@ contains
 
         if (isurf > 0) then
             do iseg = 1, nosegl
-                call evaluate_waq_attribute(1, iknmrk(iseg), ikm)
+                call extract_waq_attribute(1, iknmrk(iseg), ikm)
                 if (ikm == 0) cycle                                    ! whole collumn is inactive
                 do ilay = nolay, 1, -1                                     ! from bottom to top
                     ivol = iseg + (ilay - 1) * nosegl
                     if (volume(ivol) < param(isurf, ivol) * threshold) then
                         if (ilay > 1) then
                             iknmrk(ivol) = 0                                  ! inactive cell below the bed
-                            call evaluate_waq_attribute(2, iknmrk(ivol - nosegl), ikm)         ! get second one of cell above
+                            call extract_waq_attribute(2, iknmrk(ivol - nosegl), ikm)         ! get second one of cell above
                             select case (ikm)
                             case (1)                                     ! the cell above is surface cell
                                 call set_feature(2, iknmrk(ivol - nosegl), 0)     ! now it also has a bed
@@ -175,14 +175,14 @@ contains
 
             if (isurf > 0) then
                 do iseg = 1, nosegl
-                    call evaluate_waq_attribute(1, iknmrk(iseg), ikm)
+                    call extract_waq_attribute(1, iknmrk(iseg), ikm)
                     if (ikm == 0) cycle
                     do ilay = nolay, 1, -1                                  ! from bottom to top
                         ivol = iseg + (ilay - 1) * nosegl
                         if (volume(ivol) < segfun(ivol, isurf) * threshold) then
                             if (ilay > 1) then
                                 iknmrk(ivol) = 0                               ! inactive cell below the bed
-                                call evaluate_waq_attribute(2, iknmrk(ivol - nosegl), ikm)
+                                call extract_waq_attribute(2, iknmrk(ivol - nosegl), ikm)
                                 select case (ikm)
                                 case (1)                                  ! the cell on top is surface cell
                                     call set_feature(2, iknmrk(ivol - nosegl), 0)  ! now it also has a bed
@@ -206,14 +206,14 @@ contains
                 !        SURF is not found, so the default value of 1 m2 is used
 
                 do iseg = 1, nosegl
-                    call evaluate_waq_attribute(1, iknmrk(iseg), ikm)
+                    call extract_waq_attribute(1, iknmrk(iseg), ikm)
                     if (ikm == 0) cycle
                     do ilay = nolay, 1, -1                               ! from bottom to top
                         ivol = iseg + (ilay - 1) * nosegl
                         if (volume(ivol) < threshold) then
                             if (ilay > 1) then
                                 iknmrk(ivol) = 0                            ! inactive cell below the bed
-                                call evaluate_waq_attribute(2, iknmrk(ivol - nosegl), ikm)
+                                call extract_waq_attribute(2, iknmrk(ivol - nosegl), ikm)
                                 select case (ikm)
                                 case (1)                                  ! the cell on top is surface cell
                                     call set_feature(2, iknmrk(ivol - nosegl), 0)  ! now it also has a bed

@@ -281,8 +281,7 @@ double precision, allocatable      :: thindam(:,:)
 ! Debug parameter
  integer                                     :: cmd_icgsolver = 4  !< save commandline icgsolver
 
- integer, allocatable, target      :: structuresAndWeirsList(:)    !< List containing flow links on which a structure or fixed weir is located.
- integer                           :: numberOfStructuresAndWeirs   !< Length of structuresAndWeirsList
+ integer, allocatable                        :: structuresAndWeirsList(:)    !< List containing flow links on which a structure or fixed weir is located.
 
 contains
 !> Sets ALL (scalar) variables in this module to their default values.

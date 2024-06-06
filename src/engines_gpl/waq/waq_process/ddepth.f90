@@ -71,7 +71,7 @@ contains
         !
         IFLUX = 0
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
+            CALL extract_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
             IF (IKMRK3==1 .OR. IKMRK3==3) THEN
                 !
                 VOLUME = PMSA(IP1)

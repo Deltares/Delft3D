@@ -7,13 +7,14 @@ Copyright (C)  Stichting Deltares, 2023
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
+from src.config.types.path_type import PathType
 
 
 class TestBenchParameterParser:
@@ -51,8 +52,14 @@ class TestBenchParameterParser:
         if args.__dict__["loglevel"] != "":
             settings.log_level = get_log_level(args.__dict__["loglevel"])
 
-        # Do not run the model, only run the post-processing (comparison).
-        settings.only_post = cls.__get_argument_value("only_post", args) or False
+        # Do not run the programs associated with the testcase.
+        settings.skip_run = cls.__get_argument_value("skip_run", args) or False
+
+        # Skip specified downloads for the testcase xml.
+        skip_download = cls.__get_argument_value("skip_download", args) or []
+        for skip_string in skip_download:
+            path_type = cls.get_path_type(skip_string)
+            settings.skip_download.extend(path_type)
 
         # automatically commit reference run if succesfull
         settings.autocommit = cls.__get_argument_value("autocommit", args) or False
@@ -93,7 +100,7 @@ class TestBenchParameterParser:
             if secret_value:
                 return getpass.getpass(f"{name} : ")
 
-            return input(f"{name}")
+            return input(f"{name} : ")
 
         return return_value
 
@@ -116,6 +123,19 @@ class TestBenchParameterParser:
         if not is_active_directory_user:
             credential_handler.setup_credentials(is_interactive)
         return credentials
+
+    @classmethod
+    def get_path_type(cls, skip_string) -> List[PathType]:
+        if skip_string == "cases":
+            return [PathType.INPUT]
+        elif skip_string == "references":
+            return [PathType.REFERENCE]
+        elif skip_string == "dependency":
+            return [PathType.DEPENDENCY]
+        elif skip_string == "all":
+            return [PathType.INPUT, PathType.REFERENCE, PathType.DEPENDENCY]
+        else:
+            return []
 
     @classmethod
     def __create_argument_parser(cls) -> ArgumentParser:
@@ -185,10 +205,19 @@ class TestBenchParameterParser:
             dest="or_paths",
         )
         parser.add_argument(
-            "--only-post-process",
-            help="Skip running",
+            "--skip-run",
+            help="Skips running of programs defined in xml configuration referenced by the testcases.",
             action="store_true",
-            dest="only_post",
+            dest="skip_run",
+        )
+        parser.add_argument(
+            "--skip-download",
+            help="Skip downloads of [references,cases,dependency,all]",
+            default="",
+            choices=["cases", "references", "dependency", "all"],
+            nargs="+",
+            type=str,
+            dest="skip_download",
         )
         parser.add_argument(
             "--parallel",

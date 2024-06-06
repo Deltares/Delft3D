@@ -167,7 +167,7 @@ contains
 
             !     Zero output quantities on segment level
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==3) THEN
                 PMSA (IPCFLX) = 0.0
                 PMSA (IPRFLX) = 0.0
@@ -847,9 +847,9 @@ contains
             !        Zoek eerste kenmerk van- en naar-segmenten
 
             IKMRKV = -1
-            IF (IVAN  > 0) CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+            IF (IVAN  > 0) CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             IKMRKN = -1
-            IF (INAAR > 0) CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+            IF (INAAR > 0) CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
 
             !        Bottom-water exchange, the collumn starts
 

@@ -78,7 +78,7 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call evaluate_waq_attribute( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
+                 call extract_waq_attribute( 1, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk1 )
                  if (ikmrk1 == 0) then
                     kenout(is) = ' 0'
                  else if (ikmrk1 == 1) then
@@ -100,7 +100,7 @@
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
-                 call evaluate_waq_attribute( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
+                 call extract_waq_attribute( 2, hyd%attributes(is + (il - 1) * hyd%nosegl), ikmrk2 )
                  if (ikmrk2 == 0) then
                     kenout(is) = ' 0'
                  else if (ikmrk2 == 1) then
@@ -119,7 +119,7 @@
          enddo
          write ( lunatr , '(a)' )  '    0    ; no time dependent attributes'
 
-!         call evaluate_waq_attribute( 2, iknmrk(i1), ikmrk2 )
+!         call extract_waq_attribute( 2, iknmrk(i1), ikmrk2 )
       else
          write(lunatr,'(a)') '    1    ; Input option without defaults'
          if ( hyd%nolay .gt. 1 ) then

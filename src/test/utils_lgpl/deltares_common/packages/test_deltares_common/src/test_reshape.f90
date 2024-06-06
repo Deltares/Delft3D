@@ -48,8 +48,9 @@ module test_reshape
 
    subroutine test_reshape_rank_one()
       double precision :: original(6), result(size(original))
+      integer :: i 
 
-      original = [(0.1618 * i, integer :: i = 1, size(original))]
+      original = [(0.1618 * i, i = 1, size(original))]
 
       result = reshape_implicit(original, shape(original), [1])
       call assert_comparable(original, result, epsilon, 'rank one array was not preserved')
@@ -60,8 +61,9 @@ module test_reshape
       double precision   :: original(product(dims)), result(product(dims))
       double precision   :: explicit(dims(1), dims(2)), expected(dims(2), dims(1))
       integer, parameter :: new_positions(2) = [2, 1]
-
-      original = [(0.1618 * i, integer :: i = 1, size(original))]
+      integer :: i 
+      
+      original = [(0.1618 * i, i = 1, size(original))]
 
       result = reshape_implicit(original, dims(new_positions), new_positions)
 
@@ -75,8 +77,9 @@ module test_reshape
       integer, parameter :: dims(2) = [3, 7]
       double precision   :: original(product(dims)), result(product(dims))
       integer, parameter :: new_positions(2) = [1, 2]
-
-      original = [(0.1618 * i, integer :: i = 1, size(original))]
+      integer :: i
+      
+      original = [(0.1618 * i, i = 1, size(original))]
 
       result = reshape_implicit(original, dims(new_positions), new_positions)
 
@@ -87,11 +90,12 @@ module test_reshape
       integer, parameter :: dims(2) = [3, 7]
       double precision   :: original(product(dims)), result(product(dims))
       integer, parameter :: new_positions(2) = [1, 2]
-
-      original = [(0.1618 * i, integer :: i = 1, size(original))]
+      integer i  
+      
+      original = [(0.1618 * i, i = 1, size(original))]
 
       result = reshape_implicit(original, dims + 1, new_positions)
 
-      call assert_comparable([(error_value, integer :: i = 1, size(original))], result, epsilon, 'no error value for wrong dimensions')
+      call assert_comparable([(error_value, i = 1, size(original))], result, epsilon, 'no error value for wrong dimensions')
    end subroutine test_reshape_wrong_rank
 end module test_reshape

@@ -135,7 +135,7 @@ contains
 
             DO ISEG = 1, NOSEG
 
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 !........Segment is inactief
                 IF      (IKMRK1 == 0) THEN
@@ -198,10 +198,10 @@ contains
                 INAAR = IEXPNT(2, IQ)
 
                 IF (IVAN > 0 .AND. INAAR > 0) THEN
-                    CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IK1VN)
-                    CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IK1NR)
-                    CALL evaluate_waq_attribute(2, IKNMRK(IVAN), IK2VN)
-                    CALL evaluate_waq_attribute(2, IKNMRK(INAAR), IK2NR)
+                    CALL extract_waq_attribute(1, IKNMRK(IVAN), IK1VN)
+                    CALL extract_waq_attribute(1, IKNMRK(INAAR), IK1NR)
+                    CALL extract_waq_attribute(2, IKNMRK(IVAN), IK2VN)
+                    CALL extract_waq_attribute(2, IKNMRK(INAAR), IK2NR)
 
                     !...........Van segment = inactief
                     IF (IK1VN == 0) THEN

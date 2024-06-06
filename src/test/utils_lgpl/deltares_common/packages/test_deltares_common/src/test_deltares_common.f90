@@ -35,33 +35,35 @@ program test_deltares_common
     use test_running_mean
     use test_m_alloc
     use test_reshape
+    use test_array_module
 
     implicit none
 
-    call prepareTests
-    call runtests_init
+    call prepareTests()
+    call runtests_init()
 
     !
     ! Tests for the various modules and standalone routines
     !
-    call tests_combinepaths
-    call tests_precision_basics
-    call tests_hash_search
-    call tests_bilin5
-    call tests_distance
-    call tests_string_module
-    call tests_time_module
+    call tests_combinepaths()
+    call tests_precision_basics()
+    call tests_hash_search()
+    call tests_bilin5()
+    call tests_distance()
+    call tests_string_module()
+    call tests_time_module()
     !
-    call tests_properties
-    call tests_geometry_module
-    call tests_running_mean
-    call tests_alloc
-    call tests_reshape
+    call tests_properties()
+    call tests_geometry_module()
+    call tests_running_mean()
+    call tests_alloc()
+    call tests_reshape()
+    call tests_array_module()
     !
     ! Done - properly finalize
     !
-    call runtests_final
-    call showResult
+    call runtests_final()
+    call showResult()
 
 contains
 

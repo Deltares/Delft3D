@@ -24,12 +24,12 @@ module m_integration_scheme_1
     use m_waq_precision
     use m_zercum
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
     use time_dependent_variables, only : initialize_time_dependent_variables
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -57,9 +57,9 @@ contains
 
         !     SUBROUTINES CALLED : DLWQTR          , user transport routine
         !                          PROCES          , DELWAQ proces system
-        !                          DLWQO2          , DELWAQ output system
+        !                          write_output          , DELWAQ output system
         !                          initialize_time_dependent_variables          , sets time functions
-        !                          DLWQ13          , system postpro-dump routine
+        !                          write_restart_map_file          , system postpro-dump routine
         !                          DLWQ14          , scales waterquality
         !                          DLWQ15          , wasteload routine
         !                          DLWQ16          , transport routine
@@ -70,7 +70,7 @@ contains
         !                          dryfld          , detect drying and flooding from volumes
         !                          dryfle          , detect drying and flooding from flows
         !                          MOVE            , moves one array to another
-        !                          PROINT          , integration of fluxes
+        !                          integrate_fluxes_for_dump_areas           , integration of fluxes
         !                          SETSET          , variable grid settings
         !                          ZERCUM          , zero's the cummulative array's
         !                          BOUNDIO         , hand to external boundary resolve
@@ -89,7 +89,7 @@ contains
         use m_dlwq16
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -292,7 +292,7 @@ contains
 
             !     Call OUTPUT system
 
-            CALL DLWQO2 (NOTOT, NOSSS, NOPA, NOSFUN, ITIME, &
+            CALL write_output (NOTOT, NOSSS, NOPA, NOSFUN, ITIME, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
@@ -424,7 +424,7 @@ contains
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idtold, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idtold, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -440,7 +440,7 @@ contains
                 call close_files(file_unit_list)
 
                 ! write restart file
-                call write_restart_file(file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                CALL write_restart_map_file(file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, nosss)
             endif
 

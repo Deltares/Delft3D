@@ -94,5 +94,5 @@
     <!--
     testCases
     -->
-    <xi:include href="../include/dwaq_validation_all_cases.xml"/>
+    <xi:include href="../dwaq_dpart/include/test_configs/dwaq_validation.xml"/>
 </deltaresTestbench_v3>

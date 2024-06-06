@@ -421,7 +421,7 @@ contains
           ! SEWER SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_sew-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           leakage = pmsa(ipnt(ip_leakage))
@@ -445,7 +445,7 @@ contains
           ! PAVED SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_pav-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           ropaved = pmsa(ipnt(ip_ropaved))
@@ -476,7 +476,7 @@ contains
           ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_unp-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           rounpaved = pmsa(ipnt(ip_rounpaved))
@@ -524,7 +524,7 @@ contains
           ! SOIL SYSTEM ------------------------------------------------------------------------------------
 
           iseg = isegl + (rec_soi-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           gwbaseflow = pmsa(ipnt(ip_gwbflow))
@@ -557,7 +557,7 @@ contains
           ! ENDPOINT STORM WATER
 
           iseg = isegl + (rec_stw-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           boun = 0.0
@@ -578,7 +578,7 @@ contains
           ! ENDPOINT SURFACE WATER
 
           iseg = isegl + (rec_sfw-1)*nosegl
-          call evaluate_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
+          call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
           do isubs = 1,nsubs

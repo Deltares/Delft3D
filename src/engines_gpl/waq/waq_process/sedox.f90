@@ -211,7 +211,7 @@ contains
             PMSA (IP33) = 0.0
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
                 !           Alleen bij vaktype met een bodem...
                 BODEM = .FALSE.

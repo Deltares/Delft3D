@@ -57,7 +57,7 @@
         </program>
 
         <!-- Meant for the test cases where WAQ and PART are combined -->
-        <program name="WAQ-PART" logOutputToFile="true"     addSearchPaths="true">
+        <program name="WAQ" logOutputToFile="true"     addSearchPaths="true">
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from>
             </location>
@@ -102,6 +102,6 @@
     <!--
     testCases
     -->
-    <xi:include href="../include/dwaq_all_cases.xml"/>
-    <xi:include href="../include/dwaq_dpart_combination.xml"/>
+    <xi:include href="../dwaq_dpart/include/test_configs/dwaq.xml"/>
+    <xi:include href="../dwaq_dpart/include/test_configs/dwaq_dpart_combination.xml"/>
 </deltaresTestbench_v3>

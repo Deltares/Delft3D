@@ -120,7 +120,7 @@ contains
             ! only for active water segments
 
             active = btest(iknmrk(iseg), 0)
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             bottom = ikmrk1==3
             if (active .and. .not. bottom) then
                 tke = tau / param_soulsby ! Very coarse estimate!

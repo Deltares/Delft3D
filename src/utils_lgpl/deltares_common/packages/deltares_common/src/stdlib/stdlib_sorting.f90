@@ -57,8 +57,8 @@
 !! in the Fortran Standard Library under the MIT license provided
 !! we cite:
 !!
-!!   Musser, D.R., “Introspective Sorting and Selection Algorithms,�
-!!   Software—Practice and Experience, Vol. 27(8), 983–993 (August 1997).
+!!   Musser, D.R., "Introspective Sorting and Selection Algorithms,
+!!   Software—Practice and Experience", Vol. 27(8), 983–993 (August 1997).
 !!
 !! as the official source of the algorithm.
 

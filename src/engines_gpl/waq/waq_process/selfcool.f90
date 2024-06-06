@@ -102,7 +102,7 @@
 
 !     Calculate Self-Cooling only for top layer segments
 !
-          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
+          CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==1) THEN
                    SelfCool = -1. * (HtTot2 - HtTot) 
                     

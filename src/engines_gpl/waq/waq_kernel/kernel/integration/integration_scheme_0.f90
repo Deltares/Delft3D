@@ -24,11 +24,11 @@ module m_integration_scheme_0
     use m_waq_precision
     use m_zercum
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -36,12 +36,11 @@ contains
 
     !> No tranport scheme (0)
     !! Performs only calculation of new concentrations due processes
-    subroutine integration_scheme_0(buffer, file_unit_list, lchar, &
-                                    action, dlwqd, gridps)
+    subroutine integration_scheme_0(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         use m_dlwq18
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only: copy_real_array_elements
         use data_processing, only: close_files
@@ -62,7 +61,7 @@ contains
 
         type(waq_data_buffer), target :: buffer                  !< System total array space
         integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< array with logocal unit numbers
-        character(len=*), intent(in) :: lchar(*)                 !< array with file names
+        character(len=*), intent(in) :: file_name_list(*)                 !< array with file names
         integer(kind=int_wp), intent(in) :: action               !< span of the run or type of action to perform
                                                                  !< (run_span = {initialise, time_step, finalise, whole_computation} )
         type(delwaq_data), target :: dlwqd                       !< delwaq data structure
@@ -216,30 +215,30 @@ contains
                     surface, file_unit_list(19))
 
             ! Call OUTPUT system
-            call dlwqo2(notot, nosss, nopa, nosfun, itime, &
-                        c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
-                        a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
-                        a(ivol:), nocons, nofun, idt, noutp, &
-                        lchar, file_unit_list, j(iiout:), j(iiopo:), a(iriob:), &
-                        c(iosnm:), c(iouni:), c(iodsc:), c(issnm:), c(isuni:), c(isdsc:), &
-                        c(ionam:), nx, ny, j(igrid:), c(iedit:), &
-                        nosys, a(iboun:), j(ilp:), a(imass:), a(imas2:), &
-                        a(ismas:), nflux, a(iflxi:), isflag, iaflag, &
-                        ibflag, imstrt, imstop, imstep, idstrt, &
-                        idstop, idstep, ihstrt, ihstop, ihstep, &
-                        imflag, idflag, ihflag, noloc, a(iploc:), &
-                        nodef, a(idefa:), itstrt, itstop, ndmpar, &
-                        c(idana:), ndmpq, ndmps, j(iqdmp:), j(isdmp:), &
-                        j(ipdmp:), a(idmpq:), a(idmps:), a(iflxd:), ntdmpq, &
-                        c(icbuf:), noraai, ntraaq, j(ioraa:), j(nqraa:), &
-                        j(iqraa:), a(itrra:), c(irnam:), a(istoc:), nogrid, &
-                        novar, j(ivarr:), j(ividx:), j(ivtda:), j(ivdag:), &
-                        j(iaknd:), j(iapoi:), j(iadm1:), j(iadm2:), j(ivset:), &
-                        j(ignos:), j(igseg:), a, nobnd, nobtyp, &
-                        c(ibtyp:), j(intyp:), c(icnam:), noqtt, j(ixpnt:), &
-                        intopt, c(ipnam:), c(ifnam:), c(isfna:), j(idmpb:), &
-                        nowst, nowtyp, c(iwtyp:), j(iwast:), j(inwtyp:), &
-                        a(iwdmp:), iknmkv, isegcol)
+            call write_output (notot, nosss, nopa, nosfun, itime, &
+                    c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
+                    a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
+                    a(ivol:), nocons, nofun, idt, noutp, &
+                    file_name_list, file_unit_list, j(iiout:), j(iiopo:), a(iriob:), &
+                    c(iosnm:), c(iouni:), c(iodsc:), c(issnm:), c(isuni:), c(isdsc:), &
+                    c(ionam:), nx, ny, j(igrid:), c(iedit:), &
+                    nosys, a(iboun:), j(ilp:), a(imass:), a(imas2:), &
+                    a(ismas:), nflux, a(iflxi:), isflag, iaflag, &
+                    ibflag, imstrt, imstop, imstep, idstrt, &
+                    idstop, idstep, ihstrt, ihstop, ihstep, &
+                    imflag, idflag, ihflag, noloc, a(iploc:), &
+                    nodef, a(idefa:), itstrt, itstop, ndmpar, &
+                    c(idana:), ndmpq, ndmps, j(iqdmp:), j(isdmp:), &
+                    j(ipdmp:), a(idmpq:), a(idmps:), a(iflxd:), ntdmpq, &
+                    c(icbuf:), noraai, ntraaq, j(ioraa:), j(nqraa:), &
+                    j(iqraa:), a(itrra:), c(irnam:), a(istoc:), nogrid, &
+                    novar, j(ivarr:), j(ividx:), j(ivtda:), j(ivdag:), &
+                    j(iaknd:), j(iapoi:), j(iadm1:), j(iadm2:), j(ivset:), &
+                    j(ignos:), j(igseg:), a, nobnd, nobtyp, &
+                    c(ibtyp:), j(intyp:), c(icnam:), noqtt, j(ixpnt:), &
+                    intopt, c(ipnam:), c(ifnam:), c(isfna:), j(idmpb:), &
+                    nowst, nowtyp, c(iwtyp:), j(iwast:), j(inwtyp:), &
+                    a(iwdmp:), iknmkv, isegcol)
 
             if (imflag .or. (ihflag .and. noraai > 0)) then
             ! zero cummulative array's
@@ -267,9 +266,9 @@ contains
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
-                call proint(nflux, ndmpar, idtold, itfact, a(iflxd:), &
-                            a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
-            end if
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idtold, itfact, a(iflxd:), &
+                        a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
+            endif
             ! end of loop
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
 20          continue
@@ -281,8 +280,8 @@ contains
                 call close_files(file_unit_list)
 
                 ! write restart file
-                call write_restart_file(file_unit_list, LCHAR, A(ICONC:), ITIME, C(IMNAM:), &
-                            C(ISNAM:), NOTOT, NOSSS)
+                call write_restart_map_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                        c(isnam:), notot, nosss)
             end if
 
         end associate

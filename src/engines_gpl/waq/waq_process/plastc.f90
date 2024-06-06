@@ -245,7 +245,7 @@ contains
             ! PAVED SYSTEM -------- ----------------------------------------------
 
             iseg = isegl + (rec_pav - 1) * nosegl
-            call evaluate_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
+            call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
             if (iatt1>0) then
 
                 ropaved = max(pmsa(ipnt(ip_ropaved)), 0.0)
@@ -283,7 +283,7 @@ contains
             ! UNPAVED SYSTEM ------------------------------------------------------------------------------------
 
             iseg = isegl + (rec_unp - 1) * nosegl
-            call evaluate_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
+            call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
             if (iatt1>0) then
 
                 ! rounpaved = max(pmsa(ipnt(ip_rounpaved)),0.0)  THIS IS THE RIGHT STATEMENT AFTER CORRECTION OF BIN FILE
@@ -322,7 +322,7 @@ contains
             ! ENDPOINT SURFACE WATER
 
             iseg = isegl + (rec_sfw - 1) * nosegl
-            call evaluate_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
+            call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
             if (iatt1>0) then
 
                 ! fluxes

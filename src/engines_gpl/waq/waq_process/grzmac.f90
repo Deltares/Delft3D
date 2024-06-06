@@ -101,7 +101,7 @@ contains
         !
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 !

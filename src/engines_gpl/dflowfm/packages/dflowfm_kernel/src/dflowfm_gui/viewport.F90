@@ -32,6 +32,9 @@
 
       subroutine viewport(xs1, ys1, xs2, ys2)
       use unstruc_opengl
+#ifdef HAVE_OPENGL
+      use IFOPNGL, only: fglViewPort
+#endif
       implicit none
       real xs1, ys1, xs2, ys2
       IF (InOpenGLRendering) THEN

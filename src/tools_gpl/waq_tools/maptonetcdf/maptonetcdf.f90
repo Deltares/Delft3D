@@ -28,7 +28,7 @@
 !      Program to convert a traditional binary map file into a NetCDF map file
 
 program maptonetcdf
-    use m_outmnc
+    use m_write_netcdf_output
 
     implicit none
 
@@ -151,7 +151,7 @@ program maptonetcdf
 
         mncrec = mncrec + 1
 
-        call outmnc ( ncidmap, mncfile, ugridfile, timeid, bndtimeid, mncrec, time, title,  &
+        call write_netcdf_map_output( ncidmap, mncfile, ugridfile, timeid, bndtimeid, mncrec, time, title,  &
                       noseg, 0, conc, syname, systd, syunit, sydesc, wqid1, nosys, &
                       conc, syname, systd, syunit, sydesc, wqid2, volume, iknmrk, lunut)
 

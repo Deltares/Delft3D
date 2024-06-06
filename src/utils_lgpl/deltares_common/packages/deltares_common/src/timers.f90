@@ -533,4 +533,50 @@ contains
         tim_get_label = tmsubnm(handle)
     end function tim_get_label
 
+    subroutine evaluate_timers(itime, idt, istrt, istop, istep, lflag, lfirst)
+        !  evaluates if action is necessary according to timers
+        ! only used in waq/waq_kernel/results/write_output.F90::write_output
+        !
+        !     name    kind     length     funct.  description
+        !     ----    -----    ------     ------- -----------
+        !     itime   integer       1     input   time in system clock units
+        !     idt     integer       1     input   simulation timestep
+        !     imstrt  integer       1     input   start time of timer
+        !     imstop  integer       1     input   stop time of timer
+        !     imstep  integer       1     input   time step of timer
+        !     lflag   logical       1     output  if .t. then action else not
+        !     lfirst  logical       1     output  if .t. then first step
+
+
+        integer :: itime, idt, istrt, istop, istep
+        logical :: lflag, lfirst
+        integer :: ithandl = 0
+        if (timon) call timstrt ("evaluate_timers", ithandl)
+
+        ! evaluate timer
+        lflag = .true.
+        lfirst = .false.
+        if (istep <= 0 .and. istrt /= istop) then
+            lflag = .false.
+            goto 100
+        endif
+        if (istrt > itime) then
+            lflag = .false.
+            goto 100
+        endif
+        if (istop <= itime - idt) then
+            lflag = .false.
+            goto 100
+        endif
+        if (mod(itime - istrt, istep) >= idt) lflag = .false.
+        if (lflag) then
+            if (itime - istrt < istep) lfirst = .true.
+        endif
+
+        100 continue
+
+        if (timon) call timstop (ithandl)
+
+    end subroutine evaluate_timers
+
 end module Timers

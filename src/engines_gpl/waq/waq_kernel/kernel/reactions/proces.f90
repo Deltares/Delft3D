@@ -23,7 +23,7 @@
 module m_proces
     use m_waq_precision
     use m_provel
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_profld
     use m_prodr2
 
@@ -69,7 +69,7 @@ contains
         !                           resample_v2, De-aggregation of a variable
         !                           DLWQ14, set deriv array
         !                           DLWQP0, set a step
-        !                           PROINT, integrate fluxes at dump segments
+        !                           integrate_fluxes_for_dump_areas , integrate fluxes at dump segments
         !                           PROVEL, calculate new velocities/dispersions
         !                           aggregate_extended, aggrgation of a variable
         !                           get_log_unit_number, get unit number monitor file
@@ -438,7 +438,7 @@ contains
                 !           Integrate the fluxes at dump segments
 
                 if (ibflag > 0) then
-                    call proint (noflux, ndmpar, idt, itfact, flxdmp, &
+                    call integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, itfact, flxdmp, &
                             flxint, isdmp, ipdmp, ntdmpq)
                     flxdmp = 0.0
                 endif
@@ -617,7 +617,7 @@ contains
                 !           Integrate the fluxes at dump segments
 
                 if (ibflag > 0) then
-                    call proint (noflux, ndmpar, idt, itfact, flxdmp, &
+                    call integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, itfact, flxdmp, &
                             flxint, isdmp, ipdmp, ntdmpq)
                     flxdmp = 0.0
                 endif

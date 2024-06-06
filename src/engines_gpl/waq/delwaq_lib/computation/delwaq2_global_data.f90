@@ -261,7 +261,7 @@ contains
         monitor_name = transfer(dlwqd%buffer%chbuf(idana:idana + 20 * ndmpar - 1), dlwqname)
 
         ! Copy the segment numbers - but only the first in case of "dump areas"
-        ! See fiosub.f for the background, calculations copied from there
+        ! See fill_output_buffer_sub_grid.f for the background, calculations copied from there
         ip1 = ndmpar + ntdmpq
         itel2 = ndmpar + ntdmpq + ndmpar
         do i = 1, ndmpar !nodump?

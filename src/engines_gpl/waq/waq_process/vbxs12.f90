@@ -380,8 +380,8 @@ contains
             ! set botseg equal to iseg for the segments which have a bottom
 
             do iseg = 1, noseg
-                call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
                 if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
                     botseg(iseg) = iseg
@@ -474,8 +474,8 @@ contains
         do iseg = 1, noseg
 
             !         lowest water and 2d segments only, also dry, ikmrk1 = 0
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
 
                 !*** VBSTAT ************************
@@ -1070,8 +1070,8 @@ contains
             VegHeVB = pmsa(ipnt(ip_VegHeVB))
             FFacVB = pmsa(ipnt(ip_FFacVB))
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3) then ! also when dry!
                 if (VegHeVB > 0.0) then
 
@@ -1141,8 +1141,8 @@ contains
             dS1VBups = 0.0
             dS2VBups = 0.0
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
             depth = pmsa(ipnt(ip_depth))
             totaldepth = pmsa(ipnt(ip_totaldepth))

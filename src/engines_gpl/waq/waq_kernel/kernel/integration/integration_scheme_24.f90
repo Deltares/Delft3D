@@ -24,7 +24,7 @@ module m_integration_scheme_24
     use m_waq_precision
     use m_zercum
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
@@ -44,7 +44,7 @@ contains
         !>                         Method has the option to treat additional velocities, like
         !>                         settling of suspended matter, upwind to avoid wiggles.\n
 
-        use m_dlwqo2
+        use m_write_output
         use m_dlwqf8
         use m_dlwqce
         use m_dlwqb3
@@ -53,7 +53,7 @@ contains
         use m_dlwq17
         use m_dlwq15a
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -259,7 +259,7 @@ contains
             !
             !          Call OUTPUT system
             !
-            CALL DLWQO2 (NOTOT, nosss, NOPA, NOSFUN, ITIME, &
+            CALL write_output (NOTOT, nosss, NOPA, NOSFUN, ITIME, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
@@ -390,7 +390,7 @@ contains
             !          integrate the fluxes at dump segments fill ASMASS with mass
 
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -408,9 +408,8 @@ contains
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
-                !            write restart file
-
-                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                ! write restart file
+                CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, NOSSS)
             endif
 

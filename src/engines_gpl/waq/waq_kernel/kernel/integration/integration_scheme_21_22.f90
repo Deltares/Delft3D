@@ -26,13 +26,13 @@ module m_integration_scheme_21_22
     use m_zercum
     use m_sgmres
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwq_output_theta
     use m_dlwqtr
     use time_dependent_variables, only : initialize_time_dependent_variables
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -59,8 +59,8 @@ contains
         !
         !     subroutines called : dlwqtr, user transport routine
         !                          proces, delwaq proces system
-        !                          dlwqo2, delwaq output system
-        !                          dlwq13, system postpro-dump routine
+        !                          write_output, delwaq output system
+        !                          write_restart_map_file, system postpro-dump routine
         !                          dlwq14, scales waterquality
         !                          dlwq15, wasteload routine
         !                          dlwq17, boundary routine
@@ -78,7 +78,7 @@ contains
         !                          dlwql2, fills matrix
         !                          dlwql3, sets (scaled) rhs of system of equations
         !                          move,   copies one array to another
-        !                          proint, integration of fluxes
+        !                          integrate_fluxes_for_dump_areas , integration of fluxes
         !                          open_waq_files, opens files
         !                          sgmres, solves (iteratively) system of equations
         !                          zercum, zero's the cummulative array's
@@ -102,7 +102,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -357,7 +357,7 @@ contains
             endif
 
             !     call output system
-            call dlwqo2 (notot, nosss, nopa, nosfun, itime, &
+            call write_output (notot, nosss, nopa, nosfun, itime, &
                     c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
                     a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
                     a(ivol:), nocons, nofun, idt, noutp, &
@@ -565,7 +565,7 @@ contains
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -597,7 +597,7 @@ contains
                 call close_files(file_unit_list)
 
                 ! write restart file
-                call write_restart_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
+                call write_restart_map_file (file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
                         c(isnam:), notot, noseg)
             endif
 

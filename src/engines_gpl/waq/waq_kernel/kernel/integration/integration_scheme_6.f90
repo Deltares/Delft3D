@@ -24,7 +24,7 @@ module m_integration_scheme_6
     use m_waq_precision
     use m_hsurf
     use m_dlwqtr
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -52,7 +52,7 @@ contains
         !                          file_unit_list(23) , output, unformatted restart file
         !
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
-        !                          DLWQ13, system postpro-dump routine
+        !                          write_restart_map_file, system postpro-dump routine
         !                          DLWQ15, wasteload routine
         !                          DLWQ60, scales water quality
         !                          DLWQ61, clears the matrix
@@ -87,7 +87,7 @@ contains
         use m_dlwq60
         use m_dlwq41
         use m_dlwq15
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delmat
         use m_array_manipulation, only : initialize_real_array
         use data_processing, only : close_files
@@ -254,7 +254,7 @@ contains
             !
             !     Call OUTPUT system
             !
-            CALL DLWQO2 (NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
+            CALL write_output (NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
@@ -283,16 +283,13 @@ contains
             !
             call close_hydro_files(dlwqd%collcoll)
             call close_files(file_unit_list)
-            !
-            !          write restart file
-            !
-            CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
-                    C(ISNAM:), NOTOT, NOSEG)
-            !
-            !          output formats
-            !
+
+            ! write restart file
+            call write_restart_map_file(file_unit_list, file_name_list, a(iconc:), itstrt, c(imnam:), &
+                    c(isnam:), notot, noseg)
+
             1000 FORMAT ('No closure error corrections !')
-            !
+
         end associate
         if (timon) call timstop (ithandl)
         RETURN

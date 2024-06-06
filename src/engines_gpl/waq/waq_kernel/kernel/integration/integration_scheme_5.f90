@@ -24,12 +24,12 @@ module m_integration_scheme_5
     use m_waq_precision
     use m_zercum
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
     use time_dependent_variables, only : initialize_time_dependent_variables
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -58,8 +58,8 @@ contains
 
         !     SUBROUTINES CALLED : DLWQTR, user transport routine
         !                          PROCES, DELWAQ proces system
-        !                          DLWQO2, DELWAQ output system
-        !                          DLWQ13, system postpro-dump routine
+        !                          write_output, DELWAQ output system
+        !                          write_restart_map_file, system postpro-dump routine
         !                          DLWQ14, scales waterquality
         !                          DLWQ15, wasteload routine
         !                          DLWQ17, boundary routine
@@ -69,7 +69,7 @@ contains
         !                          DLWQ50, transport
         !                          DLWQ51, flux correction
         !                          DLWQ52, makes masses and concentrations
-        !                          PROINT, integration of fluxes
+        !                          integrate_fluxes_for_dump_areas , integration of fluxes
         !                          open_waq_files, opens files
         !                          ZERCUM, zero's the cummulative array's
         !
@@ -84,7 +84,7 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_delpar01
         use m_array_manipulation, only : copy_real_array_elements
         use data_processing, only : close_files
@@ -116,9 +116,9 @@ contains
 
         !     Local declarations
 
-        logical   imflag     !  true if monitoring took place, set in dlwqo2, used in zercum
-        logical   ihflag     !  true if history    took place, set in dlwqo2, used in zercum
-        logical   idflag     !  true if dump       took place, set in dlwqo2, not used
+        logical   imflag     !  true if monitoring took place, set in write_output, used in zercum
+        logical   ihflag     !  true if history    took place, set in write_output, used in zercum
+        logical   idflag     !  true if dump       took place, set in write_output, not used
         logical   lrewin     !  true if rewind     took place, set in dlwq41, used for closure error corr.
         logical   ldumm2     !  dummy logical, parameter in initialize_time_dependent_variables
         real(kind = real_wp) :: rdummy(1)  !  dummy real in initialize_time_dependent_variables
@@ -279,9 +279,9 @@ contains
                 call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
                         notot, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
-            !
-            !     Call OUTPUT system
-            CALL DLWQO2 (NOTOT, nosss, NOPA, NOSFUN, ITIME, &
+
+            ! Call OUTPUT system
+            CALL write_output (NOTOT, nosss, NOPA, NOSFUN, ITIME, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
@@ -413,7 +413,7 @@ contains
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -429,9 +429,8 @@ contains
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
-                !         write restart file
-
-                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                ! write restart file
+                CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
                         C(ISNAM:), NOTOT, nosss)
 
             endif

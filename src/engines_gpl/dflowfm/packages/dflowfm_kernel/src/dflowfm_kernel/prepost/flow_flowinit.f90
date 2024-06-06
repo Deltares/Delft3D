@@ -74,6 +74,7 @@ contains
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
    use m_fixedweirs, only: weirdte, nfxw
+   use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
    
    implicit none
 
@@ -178,7 +179,7 @@ contains
    call initialize_structures_actual_params(network%sts)          ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
 
    call adjust_bobs_for_dams_and_structs()
-   call setup_structures_and_weirs_list()
+   structuresAndWeirsList = build_structures_and_weirs_list()
    call set_floodfill_water_levels_based_on_sample_file()
 
    if (allocated(ibot)) then

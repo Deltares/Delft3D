@@ -27,7 +27,7 @@ module m_integration_scheme_18
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use m_dlwqo2
+    use m_write_output
 
     implicit none
 
@@ -81,7 +81,7 @@ module m_integration_scheme_18
         use m_dlwq60
         use m_dlwq41
         use m_dlwq15
-        use m_dlwq13
+        use m_write_restart_map_file
         use m_array_manipulation, only : initialize_real_array
         use data_processing, only : close_files
         use m_grid_utils_external
@@ -301,10 +301,11 @@ module m_integration_scheme_18
                     NOTOT, NOQ1, NOQ2, NOQ, NDDIM, &
                     NVDIM, J(IDPNW:), J(IVPNW:), INTOPT, A(IMAS2:), &
                     ILFLAG, A(IDMPQ:), NDMPQ, J(IQDMP:))
-            CALL DLWQ66(A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
-
-            ! Call OUTPUT system ( note that mass is in A(IDERV:) )
-            CALL DLWQO2(NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
+            CALL DLWQ66 (A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
+            !
+            !     Call OUTPUT system ( note that mass is in A(IDERV:) )
+            !
+            CALL write_output (NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
                     C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
                     A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
@@ -333,9 +334,8 @@ module m_integration_scheme_18
 
             call close_hydro_files(dlwqd%collcoll)
             call close_files(file_unit_list)
-
             ! write restart file
-            CALL write_restart_file(file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
+            CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
                     C(ISNAM:), NOTOT, NOSEG)
         end associate
         if (timon) call timstop (ithandl)

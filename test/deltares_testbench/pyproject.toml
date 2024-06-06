@@ -1,0 +1,125 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deltares-testbench"
+version = "4.0.0"
+description = """\
+    The Testbench is aimed at supporting quality assurance of the Deltares \
+    software products, by giving an accessible means of structured, repeatable \
+    testing. Specifically, the Testbench software is designed to test the \
+    output of the software products, rather than testing the software \
+    functionality.\
+"""
+authors = [
+    {name = "Team Black Ops", email = "blackops@deltares.nl"},  # Main point of contact.
+    {name = "Hidde Elzinga"},
+    {name = "Adri Mourits"},
+    {name = "Jan Mooiman"},
+    # Among others.
+]
+
+requires-python = ">= 3.9"
+dependencies = [
+    "netCDF4 ~= 1.6",
+    "lxml ~= 5.1",
+    "pyarrow ~= 16.1", # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)
+    "pandas ~= 2.0",
+    "matplotlib >=3.7,<3.9",
+    "numpy ~= 1.24",
+    "minio ~= 7.2",
+    "s3-path-wrangler ~= 0.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy ~= 1.9",
+    "pyfakefs ~= 5.3",
+    "pytest ~= 8.0",
+    "pytest-mock ~= 3.12",
+    "ruff ~= 0.4",
+    "tomli ~= 2.0",
+]
+
+# Ruff settings (linting and formatting).
+# https://docs.astral.sh/ruff/settings/
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py39"
+exclude = [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "build",
+    "dist",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.ruff.lint]
+# Error codes: https://docs.astral.sh/ruff/rules/#legend
+# List of error codes, or prefixes of error codes. For instance `E1` matches codes E100-E199.
+select = [
+    "I",  # import ordering
+    "E",  # pycodestyle errors
+    "F",  # pyflakes errors
+    "D",  # pydocstyle errors
+    "B",  # flake8-bugbear common bugs
+    "A",  # flake8-builtins warns against shadowing builtins
+    "N",  # pep8-naming conventions
+    "ANN", # flake8-annotations
+    "DTZ", # flake8-datetimez, for datetime and timezone bugs.
+    "PT", # flake8-pytest-style
+]
+ignore = [
+    "ANN1",  # These type annotation violations are deprecated.
+    "D100",  # Ignore missing docstrings for modules.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**/*.py" = [
+    "D1",  # Don't care about docstrings in unit tests.
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"  # https://numpydoc.readthedocs.io/en/latest/format.html
+
+# Mypy settings (type checking)
+# https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+warn_unused_configs = true
+warn_return_any = true
+pretty = true
+show_error_context = true
+
+# Gets rid of complaints that type stubs are not installed for selected modules.
+[[tool.mypy.overrides]]
+module = [
+    "s3_path_wrangler.*"
+]
+ignore_missing_imports = true
+
+# Pytest settings
+# https://docs.pytest.org/en/stable/reference/customize.html
+[tool.pytest.ini_options]
+addopts = """\
+    --doctest-modules \
+    --verbose \
+    --junitxml=logs/pytest_results.xml \
+    -W error\
+"""
+testpaths = ["test", "tools/minio/utils.py"]
+junit_family = "xunit2"
+junit_log_passing_tests = true
+junit_logging = "log"
+log_cli = true
+log_level = "INFO"
+log_cli_format = "%(levelname)s - %(asctime)s - %(message)s"
+log_cli_date_format = "%Y-%m-%dT%H:%M:%S%z"

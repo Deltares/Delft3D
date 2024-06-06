@@ -606,7 +606,7 @@ module m_fourier_analysis
             call warn_flush()
              
          case('last')
-            rstart_last = rstop - fnumcy(ifou) * ti_fou
+            rstart_last = rstop - (fnumcy(ifou)-1) * ti_fou
             if (rstart_last < rstart) then
                write(msgbuf, '(a,i0)') "Not enough steps between tstart and tstop for 'last' in line ", linenumber
                call warn_flush()
@@ -614,6 +614,7 @@ module m_fourier_analysis
             else
                rstart = rstart_last
             end if
+            ftmstr(ifou) = rstart
             fnumcy(ifou) = 0
             foufas(ifou) = 0.0_fp
             foutyp_new = 'l'
