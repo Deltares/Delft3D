@@ -33,6 +33,7 @@ we have decided to strip down this part of the library and include it:
 * Remove all references to the stdlib xp and qp floating point types, since they are not portable
 * Remove the stdlib specific references to documentation
 * Change int_size (stdlib_sorting.f90) from int64 to int32, such that the interface of sort_index is similar the old sort algorithms
+* Remove non-UTF-8 characters
 
 ---HOW TO UPDATE LIBRARY---
 Retrieve the latest Fortran stdlib sources from https://github.com/fortran-lang/stdlib,

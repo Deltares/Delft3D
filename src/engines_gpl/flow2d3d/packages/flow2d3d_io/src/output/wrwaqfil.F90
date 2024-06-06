@@ -171,7 +171,7 @@
       logical  zmodel                  !!  true if z-model feature is used
       real(fp) zbot                    !!  Maximum depth in the model (relative to the reference level; unit: metres; positive upwards).
                                        !!  It marks the lower boundary of the grid.
-      real(fp) ztop                    !!  The ‘imaginary’ maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
+      real(fp) ztop                    !!  The "imaginary" maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
                                        !!  This imaginary level is used only to determine the grid distribution. It does not mark the maximum surface level.
 !
 !           Local variables

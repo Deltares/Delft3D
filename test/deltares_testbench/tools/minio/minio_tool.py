@@ -79,15 +79,13 @@ class MinioTool:
         name_filter: str,
         path_type: PathType,
         local_dir: Optional[Path] = None,
-        update_only: bool = False,
+        allow_create_and_delete: bool = False,
     ) -> None:
         """Upload local files to MinIO and update the timestamp in the testbench config.
 
         By default `push` uses case/reference data in the local
         directories configured in the test bench config file. If some other
         directory is required, it can be passed through the `local_dir` parameter.
-        The `update_only` parameter can be used to only plan 'update's to the objects
-        in MinIO. No 'create' and 'remove' operations will be performed.
 
         Parameters
         ----------
@@ -101,6 +99,9 @@ class MinioTool:
         local_dir : Optional[Path], optional
             Path to the local directory containing files to upload to MinIO.
             If not set, use the local path from the test bench config.
+        allow_create_and_delete
+            This parameter can be used to not only update, but also allow the
+            creation and removal of files in the MinIO object repository.
 
         Raises
         ------
@@ -115,7 +116,7 @@ class MinioTool:
         if test_case.version and not self.__ignore_conflicts(minio_prefix, test_case.version):
             return  # There's conflicts and the user decided to abort.
 
-        if not self.__build_and_execute_plan(local_dir, minio_prefix, update_only):
+        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete):
             return  # No changes were made.
 
         self.__update_config(test_case.name)
@@ -156,7 +157,7 @@ class MinioTool:
         if test_case.version and not self.__ignore_conflicts(minio_prefix, test_case.version):
             return  # There's conflicts and the user decided to abort.
 
-        if not self.__build_and_execute_plan(local_dir, minio_prefix, update_only=True):
+        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete=True):
             return  # No changes were made.
 
         self.__update_config(test_case.name)
@@ -222,14 +223,14 @@ class MinioTool:
         self,
         local_dir: Path,
         minio_prefix: S3Path,
-        update_only: bool,
+        allow_create_and_delete: bool,
     ) -> bool:
         """Compare local directory to objects in MinIO, build a plan and let user decide to execute it."""
         plan = self._rewinder.build_plan(
             src_dir=local_dir,
             dst_prefix=minio_prefix,
             tags=self._tags,
-            update_only=update_only,
+            allow_create_and_delete=allow_create_and_delete,
         )
         if not plan.items:
             print(f"Local directory `{plan.local_dir}` is already up to date with `{plan.minio_prefix}`.")

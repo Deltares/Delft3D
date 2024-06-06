@@ -82,9 +82,11 @@ class ComparisonRunner(TestSetRunner):
         log_file = os.path.join(test_case_config.absolute_test_case_path, "result.txt")
         logger.info(f"Detailed comparison results will be written to: {log_file}")
 
-        composite_logger = CompositeLogger(
-            [logger, FileLogger(LogLevel.DEBUG, test_case_config.name, log_file)]
-        )
+        logger_list = [FileLogger(LogLevel.DEBUG, test_case_config.name, log_file)]
+        if self.settings.teamcity:
+            logger_list.append(logger)
+
+        composite_logger = CompositeLogger(logger_list)
 
         composite_logger.debug("RESULTS of the comparison run")
 

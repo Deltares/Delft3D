@@ -15,7 +15,7 @@ RUN python3 -m pip install --upgrade pip \
     && pip3 install -r requirements.txt
 
 # Copy pytest configuration file
-COPY pytest.ini /data/
+COPY pyproject.toml /data/
 
 # Set the default command to run pytest
 CMD python -m pytest
