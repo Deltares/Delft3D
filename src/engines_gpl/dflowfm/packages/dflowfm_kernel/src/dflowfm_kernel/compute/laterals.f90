@@ -108,12 +108,13 @@ module m_lateral
       !> In  average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface average_concentrations_for_laterals
-         module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
+         module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
             integer,                       intent(in) :: numconst     !< Number or constituents.
             integer,                       intent(in) :: kmx          !< Number of layers (0 means 2D computation).
+            integer, dimension(:),         intent(in) :: kmxn         !< Maximum number of vertical cells per base node n.
             real(kind=dp), dimension(:)  , intent(in) :: cell_volume  !< Volume of water in computational cells.
             real(kind=dp), dimension(:,:), intent(in) :: constituents !< Concentrations of constituents.
-            real(kind=dp),                 intent(in) :: dt           !< Timestep in seconds
+            real(kind=dp),                 intent(in) :: dt           !< Timestep in seconds.
          end subroutine average_concentrations_for_laterals
       end interface average_concentrations_for_laterals
    

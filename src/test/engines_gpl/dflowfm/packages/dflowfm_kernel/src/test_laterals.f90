@@ -75,7 +75,7 @@ subroutine test_get_lateral_volume_per_layer
    do i_cell = 2,ndx
       kbot(i_cell) = ktop(i_cell-1) + 1
       ktop(i_cell) = kbot(i_cell) + kmxn(i_cell) - 1
-   enddo
+   end do
    
    ! initialize laterals administration
    numlatsg = 2

@@ -75,7 +75,7 @@ implicit none
    
       if (allocated(incoming_lat_concentration)) then
          deallocate(incoming_lat_concentration, outgoing_lat_concentration)
-      endif
+      end if
    
 
    end subroutine dealloc_lateraldata
@@ -83,39 +83,46 @@ implicit none
    !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
-   module subroutine average_concentrations_for_laterals(numconst, kmx, cell_volume, constituents, dt)
+   module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
 
       integer,                       intent(in) :: numconst       !< Number or constituents.
       integer,                       intent(in) :: kmx            !< Number of layers (0 means 2D computation).
+      integer, dimension(:),         intent(in) :: kmxn           !< Maximum number of vertical cells per base node n.
       real(kind=dp), dimension(:),   intent(in) :: cell_volume    !< Volume of water in computational cells. 
       real(kind=dp), dimension(:,:), intent(in) :: constituents   !< Concentrations of constituents.
-      real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds
+      real(kind=dp),                 intent(in) :: dt             !< Timestep in seconds.
 
-      integer :: ilat, n, iconst, k, k1, kt, kb
+      integer :: ilat, i_node, iconst, k, k1, kt, kb
+      integer :: num_layers, i_layer
       
       real(kind=dp) :: total_volume
 
+      num_layers = max(1, kmx)
       do ilat = 1, numlatsg
          total_volume = 0_dp
          do iconst = 1, numconst
             do k1 = n1latsg(ilat), n2latsg(ilat)
-               n = nnlat(k1)
-               if (n > 0) then
+               i_node = nnlat(k1)
+               if (i_node > 0) then
                   if (kmx < 1) then 
-                     k = n
+                     total_volume = total_volume + cell_volume(k)
+                     outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
+                                                                    dt * cell_volume(i_node) * constituents(iconst, i_node)
                   else
-                     ! For now we only use the top layer
-                     call getkbotktop(n, kb, kt)
-                     k = kt
-                  endif
-                  total_volume = total_volume + cell_volume(k)
-                  outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
-                                                                 dt * cell_volume(k) * constituents(iconst, k)
-               endif
-            enddo
-         enddo
+                     i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer wtih the first active bottom layer of base node(i_node)
+                     call getkbotktop(i_node, kb, kt)
+                     do k = kb, kt
+                        total_volume = total_volume + cell_volume(k)
+                        outgoing_lat_concentration(i_layer, iconst, ilat) =  outgoing_lat_concentration(i_layer, iconst, ilat) + &
+                                                                             dt * cell_volume(k) * constituents(iconst, k)
+                        i_layer = i_layer + 1
+                     end do
+                  end if
+               end if
+            end do
+         end do
          outgoing_lat_concentration(:,:, ilat) = outgoing_lat_concentration(:,:, ilat) / total_volume
-      enddo
+      end do
 
    end subroutine average_concentrations_for_laterals
 
@@ -138,9 +145,9 @@ implicit none
             do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
                lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
                i_layer = i_layer + 1
-            enddo
-         enddo
-      enddo
+            end do
+         end do
+      end do
       
    end subroutine get_lateral_volume_per_layer
 

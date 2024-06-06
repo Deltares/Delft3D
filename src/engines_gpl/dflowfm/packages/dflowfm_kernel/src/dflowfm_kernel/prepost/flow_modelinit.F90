@@ -36,7 +36,7 @@
  use timers
  use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
  use waq,           only: reset_waq
- use m_flow,        only: kmx, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
+ use m_flow,        only: kmx, kmxn, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
  use m_flowtimes
  use m_lateral, only: numlatsg
  use network_data,  only: NETSTAT_CELLS_DIRTY
@@ -508,7 +508,7 @@
 
  if (numconst > 0.and. apply_transport_is_used) then
     call reset_outgoing_lat_concentration()
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+    call average_concentrations_for_laterals(numconst, kmx, kmxn, ba, constituents, 1d0)
  endif
  
  ! Initialise sedtrails statistics
