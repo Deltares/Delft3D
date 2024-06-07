@@ -43,7 +43,6 @@ contains
  use m_flowgeom
  use timespace_data, only: weightfactors, poly_tim, uniform, spaceandtime, getmeteoerror
  use m_lateral, only : balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
- use m_alloc
  use m_meteo, only: ec_addtimespacerelation
  use timespace
  use string_module, only: str_tolower, strcmpi
@@ -56,47 +55,45 @@ contains
  use m_lateral, only : apply_transport
  use m_flow, only: kmx
 
- character(len=*), intent(in) :: external_force_file_name   !< file name for new external forcing boundary blocks
- logical                      :: res
+ character(len=*), intent(in)  :: external_force_file_name   !< file name for new external forcing boundary blocks
+ logical                       :: res
  
- type(tree_data), pointer     :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
- type(tree_data), pointer     :: node_ptr            !
- integer                      :: istat               !
+ type(tree_data), pointer      :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
+ type(tree_data), pointer      :: node_ptr            !
+ integer                       :: istat               !
  integer, parameter           :: INI_KEY_LEN   = 32  !
  integer, parameter           :: INI_VALUE_LEN = 256 !
- character(len=INI_KEY_LEN)   :: group_name          !
- character(len=INI_VALUE_LEN) :: property_name
- character(len=INI_VALUE_LEN) :: property_value
- character(len=INI_VALUE_LEN) :: quantity
- character(len=INI_VALUE_LEN) :: location_file       !
- character(len=INI_VALUE_LEN) :: forcing_file        !
- character(len=INI_VALUE_LEN) :: forcing_file_type   !
- character(len=INI_VALUE_LEN) :: target_mask_file    !
- integer                      :: i,j                 !
- integer                      :: num_items_in_file   !
- integer                      :: num_items_in_block
- logical                      :: return_value
- character(len=1)             :: oper                !
- character (len=300)          :: rec
-
- character(len=INI_VALUE_LEN) :: nodeid
- character(len=INI_VALUE_LEN) :: branchid
-
- character(len=INI_VALUE_LEN) :: locid
- character(len=INI_VALUE_LEN) :: itemtype
- character(len=INI_VALUE_LEN) :: fnam
- character(len=INI_VALUE_LEN) :: basedir
- double precision             :: chainage
- integer                      :: ierr
- integer                      :: ilattype, nlat
- integer                      :: k, n, k1, nini
- integer                      :: fmmethod
- integer, dimension(1)        :: targetindex
- integer                      :: ib, ibqh, ibt
- integer                      :: maxlatsg
- integer                      :: major, minor
- integer                      :: loc_spec_type
- integer                      :: numcoordinates
+ character(len=:), allocatable :: group_name          !
+ character(len=INI_VALUE_LEN)  :: property_name
+ character(len=INI_VALUE_LEN)  :: property_value
+ character(len=INI_VALUE_LEN)  :: quantity
+ character(len=INI_VALUE_LEN)  :: location_file       !
+ character(len=INI_VALUE_LEN)  :: forcing_file        !
+ character(len=INI_VALUE_LEN)  :: forcing_file_type   !
+ character(len=INI_VALUE_LEN)  :: target_mask_file    !
+ integer                       :: i,j                 !
+ integer                       :: num_items_in_file   !
+ integer                       :: num_items_in_block
+ logical                       :: return_value
+ character(len=1)              :: oper                !
+ character (len=300)           :: rec
+ character(len=INI_VALUE_LEN)  :: nodeid
+ character(len=INI_VALUE_LEN)  :: branchid
+ character(len=INI_VALUE_LEN)  :: loc_id
+ character(len=INI_VALUE_LEN)  :: item_type
+ character(len=INI_VALUE_LEN)  :: fnam
+ character(len=INI_VALUE_LEN)  :: base_dir
+ double precision              :: chainage
+ integer                       :: ierr
+ integer                       :: ilattype, nlat
+ integer                       :: k, n, k1, nini
+ integer                       :: fmmethod
+ integer, dimension(1)         :: target_index
+ integer                       :: ib, ibqh, ibt
+ integer                       :: maxlatsg
+ integer                       :: major, minor
+ integer                       :: loc_spec_type
+ integer                       :: numcoordinates
  double precision, allocatable :: xcoordinates(:), ycoordinates(:)
  character(len=:), allocatable :: file_name
  integer, allocatable          :: itpenzr(:), itpenur(:)
@@ -113,8 +110,8 @@ contains
  minor = 0
  call prop_get_version_number(bnd_ptr, major = major, minor = minor, success = return_value)
  if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-    write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//file_name//''': v', major, &
-        minor, '. Current format: v',ExtfileNewMajorVersion,ExtfileNewMinorVersion,'. Ignoring this file.'
+    write (msgbuf,'(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//file_name//''': v', major, &
+        minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
     call err_flush()
     res = .false.
     return
@@ -122,21 +119,22 @@ contains
 
  call init_registered_items()
 
- call split_filename(file_name, basedir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+ call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
 
  num_items_in_file = tree_num_nodes(bnd_ptr)
 
  ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
- allocate(itpenzr(num_items_in_file)); itpenzr = 0
- allocate(itpenur(num_items_in_file)); itpenur = 0
- do ibt=1,nbndz
-    ib = itpenz(ibt)
+ allocate(itpenzr(num_items_in_file), itpenur(num_items_in_file))
+ itpenzr(:) = 0
+ itpenur(:) = 0
+ do ibt = 1, nbndz
+    ib  = itpenz(ibt)
     if (ib > 0) then
        itpenzr(ib) = ibt
     end if
  end do
- do ibt=1,nbndu
-    ib = itpenu(ibt)
+ do ibt = 1, nbndu
+    ib  = itpenu(ibt)
     if (ib > 0) then
        itpenur(ib) = ibt
     end if
@@ -152,12 +150,12 @@ contains
     call realloc(n2latsg, maxlatsg, keepExisting = .false., fill = 0)
  end if
 
- ib = 0
+ ib   = 0
  ibqh = 0
- do i=1,num_items_in_file
-
+ do i = 1, num_items_in_file
     node_ptr => bnd_ptr%child_nodes(i)%node_ptr
     group_name = trim(tree_get_name(node_ptr))
+    
     select case (str_tolower(group_name))
     case ('general')
        ! General block, was already read.
@@ -182,10 +180,10 @@ contains
  if (allocated(itpenzr)) deallocate(itpenzr)
  if (allocated(itpenur)) deallocate(itpenur)
  if (numlatsg > 0) then
-    do n = 1,numlatsg
+    do n = 1, numlatsg
        balat(n) = 0d0
-       do k1=n1latsg(n),n2latsg(n)
-          k = nnlat(k1)
+       do k1 = n1latsg(n), n2latsg(n)
+          k  = nnlat(k1)
           if (k > 0) then
              if (.not. is_ghost_node(k)) then
              balat(n) = balat(n) + ba(k)
@@ -217,7 +215,7 @@ contains
  
  res = .false.
  ! First check for required input:
-       call prop_get_string(node_ptr, '', 'quantity', quantity, return_value)
+       call prop_get(node_ptr, '', 'quantity', quantity, return_value)
        if (.not. return_value) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
           call warn_flush()
@@ -225,27 +223,27 @@ contains
        end if
        ib = ib + 1
 
-       call prop_get_string(node_ptr, '', 'nodeId', location_file, return_value)
+       call prop_get(node_ptr, '', 'nodeId', location_file, return_value)
        if (return_value) then
           filetype = node_id
-          fmmethod  = spaceandtime
+          fmmethod = spaceandtime
        else
           filetype = poly_tim
-          fmmethod  = weightfactors
-          call prop_get_string(node_ptr, '', 'locationfile', location_file, return_value)
+          fmmethod = weightfactors
+          call prop_get(node_ptr, '', 'locationfile', location_file, return_value)
        endif
 
        if (return_value) then
-          call resolvePath(location_file, basedir)
+          call resolvePath(location_file, base_dir)
        else
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationfile'' is missing.'
           call warn_flush()
           return
        end if
 
-       call prop_get_string(node_ptr, '', 'forcingFile ', forcing_file , return_value)
+       call prop_get(node_ptr, '', 'forcingFile ', forcing_file , return_value)
        if (return_value) then
-          call resolvePath(forcing_file, basedir)
+          call resolvePath(forcing_file, base_dir)
        else
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
           call warn_flush()
@@ -253,7 +251,7 @@ contains
        end if
 
        oper = '-'
-       call prop_get_string(node_ptr, '', 'operand ', oper , return_value)
+       call prop_get(node_ptr, '', 'operand ', oper, return_value)
 
        num_items_in_block = 0
        if (associated(node_ptr%child_nodes)) then
@@ -261,20 +259,20 @@ contains
        endif
 
        ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingfile=...
-       do j=1,num_items_in_block
+       do j = 1, num_items_in_block
           block_ptr => node_ptr%child_nodes(j)%node_ptr
           ! todo: read multiple quantities
-          property_name = tree_get_name(block_ptr)
+          property_name = trim(tree_get_name(block_ptr))
           call tree_get_data_string(block_ptr, property_value, return_value)
           if (return_value) then
              if (property_name == 'quantity') then
                 quantity = property_value ! We already knew this
              else if (property_name == 'locationfile') then
                 location_file = property_value ! We already knew this
-                call resolvePath(location_file, basedir)
+                call resolvePath(location_file, base_dir)
              else if (property_name == 'forcingfile') then
                 forcing_file = property_value
-                call resolvePath(forcing_file, basedir)
+                call resolvePath(forcing_file, base_dir)
                 if ( oper /= 'O' .and. oper /= '+' ) then
 	               oper = 'O'
                    if (quantity_pli_combination_is_registered(quantity, location_file)) then
@@ -285,29 +283,32 @@ contains
                 if (filetype == node_id .or. quantity == 'qhbnd') then
                    select case(quantity)
                    case ('waterlevelbnd')
-                     targetIndex = itpenzr(ib)
+                     target_index = itpenzr(ib)
+                     
                    case ('qhbnd')
                       ibqh = ibqh + 1
-                      targetindex = (/ibqh/)
+                      target_index = (/ibqh/)
                       if (filetype/=node_id) then
                           location_file = qhpliname(ibqh)
                       end if
+                      
                    case ('dischargebnd')
-                      targetIndex = itpenur(ib)
+                      target_index = itpenur(ib)
+                      
                    case default
-                      targetindex = (/-1/)
+                      target_index = (/-1/)
                    end select
 
-                   if (targetindex(1) <= 0) then
+                   if (target_index(1) <= 0) then
                       ! This boundary has been skipped in an earlier phase (findexternalboundarypoints),
                       ! so, also do *not* connect it as a spacetimerelation here.
                       return_value = .true. ! No failure: boundaries are allowed to remain disconnected.
                    else if (forcing_file == '-') then
                       return_value = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=fmmethod, &
-                             operand=oper, targetindex=targetindex(1))
+                             operand=oper, targetindex=target_index(1))
                    else
                       return_value = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=fmmethod, &
-                             operand=oper, forcingfile = forcing_file, targetindex=targetindex(1))
+                             operand=oper, forcingfile = forcing_file, targetindex=target_index(1))
                    endif
                 else
                    if (forcing_file == '-') then
@@ -334,7 +335,8 @@ contains
                 continue
              else
                 ! res remains unchanged: support ignored lines in ext file.
-                write(msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
+                write(msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', trim(property_name), ' = ', &
+                    trim(property_value), '. Ignoring this line.'
                 call warn_flush()
                 cycle
              endif
@@ -359,11 +361,10 @@ contains
  logical  :: res
  
  res = .false.
- ! [Lateral]
-       ! Id = ...
-       locid = ' '
-       call prop_get(node_ptr, '', 'Id', locid, success)
-       if (.not. success .or. len_trim(locid) == 0) then
+
+ loc_id = ' '
+       call prop_get(node_ptr, '', 'Id', loc_id, success)
+       if (.not. success .or. len_trim(loc_id) == 0) then
           write(msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', i, ').'
           call warn_flush()
           return
@@ -372,13 +373,13 @@ contains
        ! locationType = optional for lateral
        ! fileVersion >= 2: locationType = 1d | 2d | all
        ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
-       itemtype = ' '
+       item_type = ' '
        if (major >= 2) then
-          call prop_get(node_ptr, '', 'locationType', itemtype, success)
+          call prop_get(node_ptr, '', 'locationType', item_type, success)
        else
-          call prop_get(node_ptr, '', 'Type',         itemtype, success)
+          call prop_get(node_ptr, '', 'Type',         item_type, success)
        end if
-       select case (str_tolower(trim(itemtype)))
+       select case (str_tolower(trim(item_type)))
        case ('1d')
           ilattype = ILATTP_1D
        case ('2d')
@@ -404,14 +405,14 @@ contains
        numcoordinates     = imiss
        !
        if (major >= 2) then
-          call prop_get_string(node_ptr, '', 'nodeId', nodeId, success)
+          call prop_get(node_ptr, '', 'nodeId', nodeId, success)
           if (success) then
              loc_spec_type = LOCTP_NODEID
              ilattype = ILATTP_1D
           else
-             call prop_get(node_ptr, '', 'branchId',         branchid, success)
+             call prop_get(node_ptr, '', 'branchId', branchid, success)
              if (success) then
-                call prop_get(node_ptr, '', 'chainage',         chainage, success)
+                call prop_get(node_ptr, '', 'chainage', chainage, success)
              end if
              if (success) then
                 if (len_trim(branchid)>0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
@@ -437,15 +438,15 @@ contains
           location_file = ''
           call prop_get(node_ptr, '', 'LocationFile', location_file, success)
           if (.not. success .or. len_trim(location_file) == 0) then
-             write(msgbuf, '(a,a,a)') 'Required field ''LocationFile'' missing in lateral ''', trim(locid), '''.'
+             write(msgbuf, '(a,a,a)') 'Required field ''LocationFile'' missing in lateral ''', trim(loc_id), '''.'
              call warn_flush()
              return
           else
-             call resolvePath(location_file, basedir)
+             call resolvePath(location_file, base_dir)
           end if
        end if
        if (loc_spec_type == imiss) then
-          write(msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(locid), '''.'
+          write(msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
           call warn_flush()
           return
        end if
@@ -457,7 +458,7 @@ contains
        numlatsg = numlatsg + 1
        call realloc(nnlat, max(2*ndxi, nlatnd+ndxi), keepExisting = .true., fill = 0)
        call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd+1:), nlat, &
-                                       loc_spec_type, location_file, numcoordinates, xcoordinates, ycoordinates, branchid, chainage, nodeId)
+                        loc_spec_type, location_file, numcoordinates, xcoordinates, ycoordinates, branchid, chainage, nodeId)
 
        n1latsg(numlatsg) = nlatnd + 1
        n2latsg(numlatsg) = nlatnd + nlat
@@ -476,18 +477,18 @@ contains
           call prop_get(node_ptr, '', 'flow', rec, success)
        end if
        if (len_trim(rec) > 0) then
-          call resolvePath(rec, basedir)
+          call resolvePath(rec, base_dir)
        else
-          write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(locid), '''.'
+          write(msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(loc_id), '''.'
           call warn_flush()
           return
        end if
 
        qid = 'lateral_discharge' ! New quantity name in .bc files
-       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(locid), 'discharge', trim(rec), numlatsg, kx, qplat(1,:))
+       success = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, kx, qplat(1,:))
        if (success) then
           jaqin = 1
-          lat_ids(numlatsg) = locid
+          lat_ids(numlatsg) = loc_id
        end if
        
        res = .true.
@@ -503,34 +504,34 @@ contains
  logical              :: invert_mask
  
  res = .false.
- ! First check for required input:
-       call prop_get_string(node_ptr, '', 'quantity', quantity, return_value)
+
+ call prop_get(node_ptr, '', 'quantity', quantity, return_value)
        if (.not. return_value) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
           call warn_flush()
           return
        end if
 
-       call prop_get_string(node_ptr, '', 'forcingFileType', forcing_file_type, return_value)
+       call prop_get(node_ptr, '', 'forcingFileType', forcing_file_type, return_value)
        if (.not. return_value) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFileType'' is missing.'
           call warn_flush()
           return
        end if
 
-       call prop_get_string(node_ptr, '', 'forcingFile', forcing_file , return_value)
+       call prop_get(node_ptr, '', 'forcingFile', forcing_file , return_value)
        if (.not. return_value) then
           write(msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
           call warn_flush()
           return
        else
-          call resolvePath(forcing_file, basedir)
+          call resolvePath(forcing_file, base_dir)
        end if
        oper = 'O'
-       call prop_get_string(node_ptr, '', 'operand', oper , return_value)
+       call prop_get(node_ptr, '', 'operand', oper , return_value)
 
        target_mask_file = ''
-       call prop_get_string(node_ptr, '', 'targetMaskFile', target_mask_file, return_value)
+       call prop_get(node_ptr, '', 'targetMaskFile', target_mask_file, return_value)
        invert_mask = .false.
        call prop_get_logical(node_ptr, '', 'targetMaskInvert', invert_mask , return_value)
 
@@ -572,15 +573,14 @@ contains
              if (strcmpi(forcing_file_type, 'sample')) then
                 filetype = triangulation
                 fmmethod = 5 ! triangulation
-!                transformcoef(4) = 2 ! Nearest-neighbour
              else
                 write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcing_file_type) //' in file ''', file_name, &
                     ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
                 call warn_flush()
                 return
              end if
-             call prop_get(node_ptr, '', 'locationType', itemtype, success)
-             select case (str_tolower(trim(itemtype)))
+             call prop_get(node_ptr, '', 'locationType', item_type, success)
+             select case (str_tolower(trim(item_type)))
              case ('1d')
                 ilattype = ILATTP_1D
              case ('2d')
@@ -591,10 +591,8 @@ contains
                 ilattype = ILATTP_ALL
              end select
 
-
              call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
              call prepare_lateral_mask(kcsini, ilattype)
-             !kcsini(ndx2d+1:ndxi) = 1 ! Only 1D for now
 
              res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, fmmethod, oper, transformcoef, 2, kcsini) ! zie meteo module
              return ! This was a special case, don't continue with timespace processing below.
