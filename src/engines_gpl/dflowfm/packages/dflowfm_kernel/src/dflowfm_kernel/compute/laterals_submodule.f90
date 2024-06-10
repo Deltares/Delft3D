@@ -86,6 +86,8 @@ implicit none
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
 
+      use m_alloc
+
       integer,                       intent(in) :: numconst       !< Number or constituents.
       integer,                       intent(in) :: kmx            !< Number of layers (0 means 2D computation).
       integer, dimension(:),         intent(in) :: kmxn           !< Maximum number of vertical cells per base node n.
@@ -95,35 +97,50 @@ implicit none
 
       integer :: ilat, i_node, iconst, k, k1, kt, kb
       integer :: num_layers, i_layer
+      integer :: iostat
       
-      real(kind=dp) :: total_volume
+      real(kind=dp), dimension(:), allocatable :: total_volume
 
       num_layers = max(1, kmx)
+      
+      allocate(total_volume(num_layers), stat=iostat)
+      call aerr('total_volume',iostat,num_layers,'average_concentrations_for_laterals')
+      
       do ilat = 1, numlatsg
-         total_volume = 0_dp
-         do iconst = 1, numconst
-            do k1 = n1latsg(ilat), n2latsg(ilat)
-               i_node = nnlat(k1)
-               if (i_node > 0) then
-                  if (kmx < 1) then 
-                     total_volume = total_volume + cell_volume(i_node)
-                     outgoing_lat_concentration(1, iconst, ilat) =  outgoing_lat_concentration(1, iconst, ilat) + &
-                                                                    dt * cell_volume(i_node) * constituents(iconst, i_node)
-                  else
-                     i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
-                     call getkbotktop(i_node, kb, kt)
-                     do k = kb, kt
-                        total_volume = total_volume + cell_volume(k)
-                        outgoing_lat_concentration(i_layer, iconst, ilat) =  outgoing_lat_concentration(i_layer, iconst, ilat) + &
-                                                                             dt * cell_volume(k) * constituents(iconst, k)
-                        i_layer = i_layer + 1
+         total_volume = 0.0_dp
+         do k1 = n1latsg(ilat), n2latsg(ilat)
+            i_node = nnlat(k1)
+            if (i_node > 0) then
+               if (kmx < 1) then
+                  total_volume = total_volume + cell_volume(i_node)
+                  do iconst = 1, numconst
+                     outgoing_lat_concentration(1, iconst, ilat) = outgoing_lat_concentration(1, iconst, ilat) + &
+                                                                   dt * cell_volume(i_node) * constituents(iconst, i_node)
+                  end do
+               else
+                  i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
+                  call getkbotktop(i_node, kb, kt)
+                  do k = kb, kt ! loop over active layers under base node(i_node)
+                     total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
+                     do iconst = 1, numconst
+                        outgoing_lat_concentration(i_layer, iconst, ilat) = outgoing_lat_concentration(i_layer, iconst, ilat) + &
+                                                                            dt * cell_volume(k) * constituents(iconst, k)
                      end do
-                  end if
+                     i_layer = i_layer + 1
+                  end do
                end if
-            end do
+            end if
          end do
-         outgoing_lat_concentration(:,:, ilat) = outgoing_lat_concentration(:,:, ilat) / total_volume
+         do i_layer = 1, num_layers
+            if total_volume(i_layer) > 0
+               outgoing_lat_concentration(i_layer, :, ilat) = outgoing_lat_concentration(i_layer, :, ilat) / total_volume(i_layer)
+            else
+               outgoing_lat_concentration(i_layer, :, ilat) = 0.0_dp
+            end if
+         end do
       end do
+      
+      deallocate(total_volume)
 
    end subroutine average_concentrations_for_laterals
    

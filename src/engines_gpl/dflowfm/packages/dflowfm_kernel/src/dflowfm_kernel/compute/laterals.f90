@@ -107,7 +107,7 @@ module m_lateral
       end interface dealloc_lateraldata
    
       !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-      !> In  average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
+      !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface average_concentrations_for_laterals
          module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
@@ -121,7 +121,7 @@ module m_lateral
       end interface average_concentrations_for_laterals
    
       !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-      !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+      !> In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface reset_outgoing_lat_concentration
          module subroutine reset_outgoing_lat_concentration()
@@ -129,7 +129,7 @@ module m_lateral
       end interface reset_outgoing_lat_concentration
          
       !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-      !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+      !> In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
       !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
       interface finish_outgoing_lat_concentration
          module subroutine finish_outgoing_lat_concentration(time_interval)
