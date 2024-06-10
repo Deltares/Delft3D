@@ -132,7 +132,7 @@ implicit none
             end if
          end do
          do i_layer = 1, num_layers
-            if total_volume(i_layer) > 0
+            if (total_volume(i_layer) > 0) then
                outgoing_lat_concentration(i_layer, :, ilat) = outgoing_lat_concentration(i_layer, :, ilat) / total_volume(i_layer)
             else
                outgoing_lat_concentration(i_layer, :, ilat) = 0.0_dp
