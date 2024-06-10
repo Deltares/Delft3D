@@ -84,7 +84,9 @@ contains
         real(kind = real_wp) :: dflocim2    ! f  flocculation or break-up flux im2                  (g/m3/d)
         real(kind = real_wp) :: d_micro     ! i  characteristic diameter of micro flocs             (m)
         real(kind = real_wp) :: ustar_macro ! i  characteristic shear velocity of macro flocs       (m/s)
+        integer(kind = int_wp) :: ikmrk1    !    first segment attribute
         logical active      !    active segment
+        logical bottom      !    sediment bed segment
         real(kind = real_wp) :: macro       !    concentration macro flocs                            (g/m3)
         real(kind = real_wp) :: micro       !    concentration micro flocs                            (g/m3)
         real(kind = real_wp) :: tim         !    total concentration flocs                            (g/m3)
