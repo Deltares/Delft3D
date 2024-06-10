@@ -58,7 +58,7 @@ contains
         !          311003  Jan van Beek    process two types at once and a lot more
         !     ***********************************************************************
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_logger_helper, only : write_error_message_with_values
 
         IMPLICIT NONE

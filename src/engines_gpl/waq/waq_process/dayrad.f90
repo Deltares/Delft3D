@@ -31,7 +31,7 @@ contains
     SUBROUTINE DAYRAD (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         !***********************************************************************

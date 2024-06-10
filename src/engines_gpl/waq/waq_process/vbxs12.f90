@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_logger_helper, only : write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VBXS12' :: VBXS12
         !

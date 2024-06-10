@@ -33,7 +33,7 @@ contains
             noq3, noq4)
         use m_zerome
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Reaeration of carbon dioxide and oxygen

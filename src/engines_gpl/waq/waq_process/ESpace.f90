@@ -11,7 +11,7 @@ contains
                               noq3   , noq4   )
       use data_processing, only : extract_value_from_group
       use m_logger_helper, only : write_error_message
-      use m_evaluate_waq_attribute
+      use m_extract_waq_attribute
 
 !!!!!!!DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'ESPACE' :: ESPACE
 !

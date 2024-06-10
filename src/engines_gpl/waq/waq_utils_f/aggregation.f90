@@ -561,7 +561,7 @@ contains
 
     subroutine aggregate_attributes (num_segments, num_attributes, num_grids, attribute_array, grid_cell_counts, &
             segment_pointers)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         !! Aggregates attribute array across different grids and segments
 
         INTEGER(kind = int_wp), intent(in) :: num_segments        !!Number of segments

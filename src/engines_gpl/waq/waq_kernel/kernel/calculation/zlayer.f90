@@ -73,7 +73,7 @@ contains
         !                           extract_waq_attribute  - to get features
 
         use waq_attribute_utils, only : set_feature
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use timers
         implicit none
 

@@ -31,7 +31,7 @@ subroutine read_atr(file_atr, atr_type, not_atr, noseg, attributes)
     !! read a atr file
 
     use m_logger_helper, only : stop_with_error, get_log_unit_number
-    use m_evaluate_waq_attribute, only : extract_waq_attribute
+    use m_extract_waq_attribute
     use m_waq_file                 ! module contains everything for the files
     use m_hydmod                   ! module contains everything for the hydrodynamic description
     use rd_token       ! tokenized reading

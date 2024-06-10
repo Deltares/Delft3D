@@ -43,7 +43,7 @@ contains
         use m_advtra
         use m_dhnoseg
         use m_dhnolay
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use bottomset     !  module with definition of the waterbottom segments
 
         implicit none

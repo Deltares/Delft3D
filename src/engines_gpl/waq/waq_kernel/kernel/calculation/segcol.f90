@@ -33,7 +33,7 @@ contains
 
         ! function : sets the top of the column for every segment
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use timers
         implicit none
 

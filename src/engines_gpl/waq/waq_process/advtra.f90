@@ -60,7 +60,7 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -803,7 +803,7 @@ contains
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module

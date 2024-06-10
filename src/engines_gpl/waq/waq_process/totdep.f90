@@ -52,7 +52,7 @@ contains
         !     ------   -----  ------------
 
         use m_advtra
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT NONE

@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_evaluate_waq_attribute
+module m_extract_waq_attribute
 
     implicit none
 
@@ -42,4 +42,4 @@ contains
             value_digit = mod(attribute / 10**(position_digit - 1), 10)
         end if
     end subroutine extract_waq_attribute
-end module m_evaluate_waq_attribute
+end module m_extract_waq_attribute

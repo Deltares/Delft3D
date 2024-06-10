@@ -31,7 +31,7 @@ contains
     subroutine botmin (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Mineralisation of organic substances and desorption of AAP in the bed (S1,S2) for C, N, P and Si.

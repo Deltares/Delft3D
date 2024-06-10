@@ -33,7 +33,7 @@
 
       ! global declarations
 
-      use m_evaluate_waq_attribute
+      use m_extract_waq_attribute
       use m_hydmod                   ! module contains everything for the hydrodynamics
       implicit none
 

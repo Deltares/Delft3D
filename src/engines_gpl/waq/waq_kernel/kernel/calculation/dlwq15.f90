@@ -80,7 +80,7 @@ contains
         !     Subroutines called  : wascal : the user specified wasteload dll
 
         use m_logger_helper, only : stop_with_error
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use timers
         implicit none
 

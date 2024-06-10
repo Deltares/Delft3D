@@ -63,7 +63,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT REAL    (A-H, J-Z)

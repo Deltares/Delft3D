@@ -36,7 +36,7 @@ contains
         !
         !*******************************************************************************
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use protist_math_functions
         use protist_cell_functions
         use protist_phagotrophy_functions

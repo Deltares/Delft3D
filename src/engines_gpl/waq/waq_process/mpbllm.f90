@@ -59,7 +59,7 @@ contains
         !          111103  Jan van Beek    2003 implementation
         !     ***********************************************************************
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_logger_helper, only : get_log_unit_number, write_error_message_with_values
 
         IMPLICIT NONE

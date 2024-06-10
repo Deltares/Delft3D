@@ -37,7 +37,7 @@ contains
         !*******************************************************************************
         !
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use protist_constants
         IMPLICIT NONE
         !

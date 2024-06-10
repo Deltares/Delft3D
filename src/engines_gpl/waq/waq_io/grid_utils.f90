@@ -685,7 +685,7 @@ contains
     end subroutine read_grid
 
     subroutine read_attributes_for_bottomgrid(file_unit, iarray, nosegl, status)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         integer(kind = int_wp) :: file_unit, nosegl
         integer(kind = int_wp), dimension(:) :: iarray

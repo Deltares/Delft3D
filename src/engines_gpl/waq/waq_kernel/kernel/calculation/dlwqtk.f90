@@ -64,7 +64,7 @@ contains
         use m_chknmr
         use m_logger_helper, only : stop_with_error
         use m_open_waq_files
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_array_manipulation, only : copy_integer_array_elements
         use timers
         INTEGER(kind = int_wp) :: ITIME, NOSEG, IS, ISFLAG, IFFLAG, &

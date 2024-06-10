@@ -33,7 +33,7 @@ contains
             noq3, noq4)
         use m_dhnoseg
         use m_dhnolay
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Fixation of BLOOM algae at the water bed (e.g. for Ulvae)

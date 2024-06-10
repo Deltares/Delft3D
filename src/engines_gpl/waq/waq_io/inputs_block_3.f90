@@ -52,7 +52,7 @@ contains
         use error_handling, only : check_error
         use m_logger_helper, only : stop_with_error
         use m_open_waq_files
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_grid_utils_external !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking

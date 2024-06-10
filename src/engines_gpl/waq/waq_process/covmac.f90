@@ -34,7 +34,7 @@ contains
         !
         !*******************************************************************************
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_logger_helper, only : write_error_message_with_values
         IMPLICIT NONE
         !

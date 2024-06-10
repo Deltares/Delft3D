@@ -93,7 +93,7 @@ contains
         !     ------   -----  ------------
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
         REAL(kind = real_wp) :: PMSA  (*), FL  (*)

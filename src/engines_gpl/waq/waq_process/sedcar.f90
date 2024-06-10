@@ -65,7 +65,7 @@ contains
 
         use m_logger_helper, only: get_log_unit_number
         use m_cli_utils, only : get_command_argument_by_name
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT REAL    (A-H, J-Z)

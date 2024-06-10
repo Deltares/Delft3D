@@ -47,7 +47,7 @@ contains
         use m_dhnoseg
         use m_dhnolay
         use m_dhltim
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use bloom_data_vtrans
 
         implicit none

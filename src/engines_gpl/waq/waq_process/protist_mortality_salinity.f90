@@ -149,7 +149,7 @@ module m_protist_mortality_salinity
     logical function must_calculate_segment(segment_attribute)
         !< Boolean indicating whether the calculation for current cell (segment) should be carried out or not.
         !< If false, then the cell is skipped.
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         integer, intent(in) :: segment_attribute
 
