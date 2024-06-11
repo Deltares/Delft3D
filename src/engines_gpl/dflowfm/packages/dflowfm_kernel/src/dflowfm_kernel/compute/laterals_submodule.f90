@@ -65,9 +65,10 @@ implicit none
       end if
 
       num_layers = max(1, kmx)
-      call realloc(incoming_lat_concentration, (/num_layers, numconst, numlatsg/))
+      call realloc(incoming_lat_concentration, [num_layers, numconst, numlatsg])
       incoming_lat_concentration = 0._dp
-      call realloc(outgoing_lat_concentration, (/num_layers, numconst, numlatsg/))
+      call realloc(outgoing_lat_concentration, [num_layers, numconst, numlatsg])
+      call realloc(lateral_volume_per_layer,[num_layers,numlatsg])
 
    end subroutine initialize_lateraldata
 
@@ -202,13 +203,17 @@ implicit none
       do i_lateral = 1, numlatsg
          do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_nnlat)
-            call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
-            index_active_bottom_layer = kmx - kmxn(i_node) + 1
-            i_layer = index_active_bottom_layer
-            do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
-               lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
-               i_layer = i_layer + 1
-            end do
+            if (kmx > 0) then
+               call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
+               index_active_bottom_layer = kmx - kmxn(i_node) + 1
+               i_layer = index_active_bottom_layer
+               do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
+                  lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
+                  i_layer = i_layer + 1
+               end do
+            else
+               lateral_volume_per_layer(1, i_lateral) = lateral_volume_per_layer(1, i_lateral) + vol1(i_node)
+            end if
          end do
       end do
       
