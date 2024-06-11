@@ -41,12 +41,12 @@ contains
         !
         !     type    name         i/o description
         !
-        integer(kind = int_wp), parameter :: nopmsa = 20
+        integer(kind = int_wp), parameter :: NOPMSA = 20
 
         real(kind = real_wp) :: pmsa(*)        !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)          ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(nopmsa) ! i  array of pointers in pmsa to get and store the data
-        integer(kind = int_wp) :: increm(nopmsa) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: ipoint(NOPMSA) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: increm(NOPMSA) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
         integer(kind = int_wp) :: noseg          ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux         ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *)    ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
@@ -55,7 +55,7 @@ contains
         integer(kind = int_wp) :: noq2           ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
         integer(kind = int_wp) :: noq3           ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
         integer(kind = int_wp) :: noq4           ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-        integer(kind = int_wp) :: ipnt(nopmsa)   ! local work array for the pointering
+        integer(kind = int_wp) :: ipnt(NOPMSA)   ! local work array for the pointering
         integer(kind = int_wp) :: iseg           ! local loop counter for computational element loop
         !
         !*******************************************************************************

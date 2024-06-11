@@ -134,7 +134,7 @@ subroutine get_tshear_tdiss( tshear, tdiss, rho_water, tke, tlength, timtur, tau
     real(fp), intent(out)           :: tshear     !< Turbulent shear stress [N/m2]
     real(fp), intent(inout)         :: tdiss      !< Turbulent dissipation epsilon [m2/s3]
     real(fp), intent(in)            :: rho_water  !< Water density [kg/m3]
-    real(fp), optional, intent(in)  :: tke        !< Turbulent kinetic energy lk [m2/s2]
+    real(fp), optional, intent(in)  :: tke        !< Turbulent kinetic energy k [m2/s2]
     real(fp), optional, intent(in)  :: tlength    !< Turbulent length scale L [m]
     real(fp), optional, intent(in)  :: timtur     !< Turbulent time scale tau [1/s]
     real(fp), optional, intent(in)  :: taub       !< Bed shear stress [N/m2]

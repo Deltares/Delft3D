@@ -123,17 +123,22 @@ subroutine macro_floc_frac_manning( spm, macro_frac )
 !
     real(fp), intent(in)  :: spm                  !< (Total) concentration of suspended particulate matter (not including organic matter) [g/m3]
     real(fp), intent(out) :: macro_frac           !< Fraction of macro flocs mass of total spm mass [-]
-    
+
+!
+! parameters
+!
+    real(fp), parameter   :: SPM1_LIM = 100000.0_fp !< Upper limit for spm concentration [g/m3] or equivalently [mg/l]
+
 !
 ! Local variables
 !
     real(fp)              :: floc_ratio           !< Mass ratio of macro flocs versus micro flocs [-]
-    real(fp)              :: spm1                 !< Concentration clipped to value below 10000 [mg/l]
+    real(fp)              :: spm1                 !< Concentration clipped to value below SPM1_LIM [mg/l]
 
     !
     ! Distribution of macro and micro flocs
     !
-    spm1 = min(spm, 100000.0_fp)
+    spm1 = min(spm, SPM1_LIM)
     floc_ratio = 0.815_fp + 0.00318_fp * spm1 - 1.4e-7_fp * spm1 ** 2
     macro_frac = floc_ratio / (1.0_fp + floc_ratio)
 

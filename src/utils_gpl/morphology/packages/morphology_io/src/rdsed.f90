@@ -1458,6 +1458,12 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
            txtput3 = 'Verney et al'
        end select
        write (lundia, '(3a)') txtput1, ':  ', trim(txtput3)
+       if (flocmod == FLOC_VERNEY_ETAL) then
+          errmsg = 'Verney flocculation model not yet implemented.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
        !
        txtput1 = 'Flocculation time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tfloc
