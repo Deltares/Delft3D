@@ -161,7 +161,7 @@ contains
         !            write(logical_unit, 2010)
         !            write(logical_unit, 2020) arrnam
         !            write(logical_unit, 2030) noarr * 20
-        !            call stop_with_error(1)
+        !            call stop_with_error()
         !        endif
         !        ianam = ianam + 1
 

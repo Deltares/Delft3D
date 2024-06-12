@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         implicit none
 
@@ -302,7 +302,7 @@ contains
         iflux = 0
         do iseg = 1, noseg
             if (btest(iknmrk(iseg), 0)) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     basin_no = nint(pmsa(ip_basin_no))
                     if (basin_no > 0) then

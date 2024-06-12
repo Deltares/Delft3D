@@ -31,7 +31,7 @@ contains
     subroutine stadpt (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Depth-averaged, max and min value per timestep
@@ -122,7 +122,7 @@ contains
 
         !     default output is the value from the segment itself
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk)
             if (ikmrk /= 0) then
                 cdepsum(iseg) = pmsa(ip1) * pmsa(ip2)
                 vdepsum(iseg) = pmsa(ip2)
@@ -139,8 +139,8 @@ contains
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom > 0 .and. ito > 0) then
-                call evaluate_waq_attribute(1, iknmrk(ifrom), ik1from)
-                call evaluate_waq_attribute(1, iknmrk(ito), ik1to)
+                call extract_waq_attribute(1, iknmrk(ifrom), ik1from)
+                call extract_waq_attribute(1, iknmrk(ito), ik1to)
                 if (ik1from == 1 .and. ik1to == 1) then
                     cdepsum(ito) = cdepsum(ito) + cdepsum(ifrom)
                     vdepsum(ito) = vdepsum(ito) + vdepsum(ifrom)
@@ -158,8 +158,8 @@ contains
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom > 0 .and. ito > 0) then
-                call evaluate_waq_attribute(1, iknmrk(ifrom), ik1from)
-                call evaluate_waq_attribute(1, iknmrk(ito), ik1to)
+                call extract_waq_attribute(1, iknmrk(ifrom), ik1from)
+                call extract_waq_attribute(1, iknmrk(ito), ik1to)
                 if (ik1from == 1 .and. ik1to == 1) then
                     cdepavg(ifrom) = cdepavg(ito)
                     cdepmax(ifrom) = cdepmax(ito)
@@ -170,7 +170,7 @@ contains
 
         !     copy final result back into pmsa array
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk)
             if (ikmrk /= 0) then
                 pmsa(ip3) = cdepavg(iseg)
                 pmsa(ip4) = cdepmax(iseg)

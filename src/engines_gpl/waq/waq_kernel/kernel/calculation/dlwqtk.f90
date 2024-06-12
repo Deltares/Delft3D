@@ -64,7 +64,7 @@ contains
         use m_chknmr
         use m_logger_helper, only : stop_with_error
         use m_open_waq_files
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_array_manipulation, only : copy_integer_array_elements
         use timers
         INTEGER(kind = int_wp) :: ITIME, NOSEG, IS, ISFLAG, IFFLAG, &
@@ -134,7 +134,7 @@ contains
             !        (column 2)
             !
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
+                CALL extract_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
             end do
             !
             !        Change the time-variable kenmerk-array (column 3) such that it

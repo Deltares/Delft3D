@@ -28,76 +28,57 @@ module m_dlwq61
 contains
 
 
-    SUBROUTINE DLWQ61 (CONC, DERIV, AMASS, AMAT, NOSEG, &
-            NOTOT, ISYS, NSYS, JTRACK)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED: june 1988 by L.Postma
-        !
-        !     FUNCTION            : zeros the matrix,
-        !                           updates first order term on the diagonal
-        !                           compresses DERIV for use in DELMAT
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
-        !     ----    -----      ------       ------- -----------
-        !     CONC    REAL     NOTOT*NOSEG    INPUT   first order term
-        !     DERIV   REAL     NOTOT*NOSEG    IN/OUT  right hand side matrix
-        !     AMASS   REAL        NOSEG       INPUT   closure error correction
-        !     AMAT    REAL (JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
-        !     NOSEG   INTEGER       1         INPUT   number of segments
-        !     NOTOT   INTEGER       1         INPUT   total number of systems
-        !     ISYS    INTEGER       1         INPUT   system considered
-        !     NSYS    INTEGER       1         INPUT   number of systems to take
-        !     JTRACK  INTEGER       1         INPUT   number of codiagonals
-        !
+    !> Zeroes the matrix, updates first-order term on the diagonal
+    !! and compresses DERIV for use in DELMAT
+    subroutine dlwq61(conc, deriv, amass, amat, noseg, &
+            notot, isys, nsys, jtrack)
+
         use timers
 
-        real(kind = real_wp) :: CONC (NOTOT, *), DERIV(*), AMAT(*), &
-                AMASS(*)
+        real(kind = real_wp), intent(in   ) :: conc(notot, *) !< First order term
+        real(kind = real_wp), intent(inout) :: deriv(*)       !< Right hand side matrix
+        real(kind = real_wp), intent(in   ) :: amass(*)       !< Closure error correction
+        real(kind = real_wp), intent(inout) :: amat(*)        !< Matrix to invert
 
-        integer(kind = int_wp) :: ntot, nsys, notot, noseg
-        integer(kind = int_wp) :: i, isys, istep, iset, iseg, ioff, jtrack
+        integer(kind = int_wp), intent(in   ) :: noseg  !< Number of cells (or segments)
+        integer(kind = int_wp), intent(in   ) :: notot  !< Total number of systems
+        integer(kind = int_wp), intent(in   ) :: isys   !< System considered
+        integer(kind = int_wp), intent(in   ) :: nsys   !< Number of systems to take
+        integer(kind = int_wp), intent(in   ) :: jtrack !< Number of codiagonals
 
+
+        ! Local variables
+        integer(kind = int_wp) :: ntot, i, istep, iset, iseg, ioff
         integer(kind = int_wp) :: ithandl = 0
+
         if (timon) call timstrt ("dlwq61", ithandl)
-        !
-        !         zero the matrix
-        !
-        ISTEP = JTRACK * 2 + 1
-        NTOT = NOSEG * ISTEP
-        DO I = 1, NTOT
-            AMAT(I) = 0.0
+
+        ! zero the matrix
+        istep = jtrack * 2 + 1
+        ntot = noseg * istep
+        do i = 1, ntot
+            amat(i) = 0.0
         end do
-        !
-        !         set the diagonal
-        !
-        ISET = JTRACK + 1
-        DO ISEG = 1, NOSEG
-            AMAT(ISET) = -CONC(ISYS, ISEG) + AMASS(ISEG)
-            ISET = ISET + ISTEP
+
+        ! set the diagonal
+        iset = jtrack + 1
+        do iseg = 1, noseg
+            amat(iset) = -conc(isys, iseg) + amass(iseg)
+            iset = iset + istep
         end do
-        !
-        !         set the right hand side
-        !
-        ISET = 1
-        IOFF = 0
-        DO ISEG = 1, NOSEG
-            DO I = ISYS, ISYS + NSYS - 1
-                DERIV(ISET) = DERIV(IOFF + I)
-                ISET = ISET + 1
+
+        ! set the right hand side
+        iset = 1
+        ioff = 0
+        do iseg = 1, noseg
+            do i = isys, isys + nsys - 1
+                deriv(iset) = deriv(ioff + i)
+                iset = iset + 1
             end do
-            IOFF = IOFF + NOTOT
+            ioff = ioff + notot
         end do
         !
         if (timon) call timstop (ithandl)
-        RETURN
-    END
+    end
 
 end module m_dlwq61

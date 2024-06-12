@@ -62,7 +62,7 @@ class ReferenceRunner(TestSetRunner):
             if os.path.isfile(fl):
                 shutil.copyfile(fl, fr)
             if os.path.isdir(fl):
-                shutil.copytree(fl, fr)
+                shutil.copytree(fl, fr, dirs_exist_ok=True)
         shutil.copyfile(
             os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run"),
             os.path.join(

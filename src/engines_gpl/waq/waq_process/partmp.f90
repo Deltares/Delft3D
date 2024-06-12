@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_logger_helper, only : stop_with_error, write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Partitioning of micropollutants
@@ -406,7 +406,7 @@ contains
         DO ISEG = 1, NOSEG
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
 
                     MP = PMSA(IP1)

@@ -33,7 +33,7 @@
                          noflux , iexpnt , iknmrk , noq1   , noq2   , &
                          noq3   , noq4   )
       use m_logger_helper, only : stop_with_error, get_log_unit_number
-      use m_evaluate_waq_attribute
+      use m_extract_waq_attribute
 
 !>\file
 !>       Grazing module
@@ -260,7 +260,7 @@
       DO ISEG = 1 , NOSEG
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
-      CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
+      CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
 
 !     RESET FLUXES
       DO I=1,5*NTONUT+NTOALG
@@ -286,7 +286,7 @@
           GRZNEW(IFILSP) = GRZNEW(IFILSP)/DEPTH
           GRZOLD(IFILSP) = GRZOLD(IFILSP)/DEPTH
 !         FRDBOT(IFILSP) = FRDBOT_SAVE(IFILSP)
-          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
+          CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
           IF ((IKMRK2==1).OR.(IKMRK2==2)) THEN
              GRZNEW(IFILSP) = 0.0
              FRDBOT(IFILSP) = 0.0

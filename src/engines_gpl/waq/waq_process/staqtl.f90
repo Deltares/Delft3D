@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Quantiles for a given substance during a given period
@@ -257,7 +257,7 @@ contains
                     PMSA(IP11) = BMIN
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)')    'Quantile could not be determined for segment ', ISEG

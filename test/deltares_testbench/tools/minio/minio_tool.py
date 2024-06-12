@@ -14,6 +14,9 @@ from typing import (
 
 from minio.commonconfig import Tags
 from s3_path_wrangler.paths import S3Path
+
+from src.config.types.path_type import PathType
+from src.utils.minio_rewinder import Operation, Plan, Rewinder, VersionPair
 from tools.minio import utils
 from tools.minio.config import (
     TestCaseData,
@@ -21,9 +24,6 @@ from tools.minio.config import (
     TestCaseWriter,
 )
 from tools.minio.prompt import Prompt
-
-from src.config.types.path_type import PathType
-from src.utils.minio_rewinder import Operation, Plan, Rewinder, VersionPair
 
 
 class ErrorCode(str, Enum):
@@ -79,15 +79,13 @@ class MinioTool:
         name_filter: str,
         path_type: PathType,
         local_dir: Optional[Path] = None,
-        update_only: bool = False,
+        allow_create_and_delete: bool = False,
     ) -> None:
         """Upload local files to MinIO and update the timestamp in the testbench config.
 
         By default `push` uses case/reference data in the local
         directories configured in the test bench config file. If some other
         directory is required, it can be passed through the `local_dir` parameter.
-        The `update_only` parameter can be used to only plan 'update's to the objects
-        in MinIO. No 'create' and 'remove' operations will be performed.
 
         Parameters
         ----------
@@ -101,6 +99,9 @@ class MinioTool:
         local_dir : Optional[Path], optional
             Path to the local directory containing files to upload to MinIO.
             If not set, use the local path from the test bench config.
+        allow_create_and_delete
+            This parameter can be used to not only update, but also allow the
+            creation and removal of files in the MinIO object repository.
 
         Raises
         ------
@@ -111,11 +112,12 @@ class MinioTool:
         test_case = self.__get_test_case(name_filter)
         default_dir, minio_prefix = test_case.get_default_dir_and_prefix(path_type)
         local_dir = local_dir or default_dir
+        self.__print_locations(test_case, local_dir, minio_prefix)
 
         if test_case.version and not self.__ignore_conflicts(minio_prefix, test_case.version):
             return  # There's conflicts and the user decided to abort.
 
-        if not self.__build_and_execute_plan(local_dir, minio_prefix, update_only):
+        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete):
             return  # No changes were made.
 
         self.__update_config(test_case.name)
@@ -152,11 +154,12 @@ class MinioTool:
         test_case = self.__get_test_case(name_filter)
         local_dir = local_dir or test_case.case_dir
         minio_prefix = test_case.reference_prefix
+        self.__print_locations(test_case, local_dir, minio_prefix)
 
         if test_case.version and not self.__ignore_conflicts(minio_prefix, test_case.version):
             return  # There's conflicts and the user decided to abort.
 
-        if not self.__build_and_execute_plan(local_dir, minio_prefix, update_only=True):
+        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete=True):
             return  # No changes were made.
 
         self.__update_config(test_case.name)
@@ -208,6 +211,7 @@ class MinioTool:
         test_case = self.__get_test_case(name_filter)
         default_dir, minio_prefix = test_case.get_default_dir_and_prefix(path_type)
         local_dir = local_dir or default_dir
+        self.__print_locations(test_case, local_dir, minio_prefix)
 
         if latest:
             timestamp = None
@@ -218,18 +222,28 @@ class MinioTool:
 
         self.__download(minio_prefix, local_dir, timestamp)
 
+    def __print_locations(self, test_case: TestCaseData, local_dir: Path, minio_prefix: S3Path) -> None:
+        """Print some details from the config and the used locations."""
+        label_value_pairs = (
+            ("Test case name:", test_case.name),
+            ("Config data version:", test_case.version),
+            ("Local directory:", local_dir),
+            ("MinIO path:", minio_prefix),
+        )
+        print("".join(f"{label:24s}{value}\n" for label, value in label_value_pairs))
+
     def __build_and_execute_plan(
         self,
         local_dir: Path,
         minio_prefix: S3Path,
-        update_only: bool,
+        allow_create_and_delete: bool,
     ) -> bool:
         """Compare local directory to objects in MinIO, build a plan and let user decide to execute it."""
         plan = self._rewinder.build_plan(
             src_dir=local_dir,
             dst_prefix=minio_prefix,
             tags=self._tags,
-            update_only=update_only,
+            allow_create_and_delete=allow_create_and_delete,
         )
         if not plan.items:
             print(f"Local directory `{plan.local_dir}` is already up to date with `{plan.minio_prefix}`.")
@@ -250,7 +264,7 @@ class MinioTool:
             seconds = (timestamp - now).total_seconds()
             raise MinioToolError(f"Test case path has version timestamp {seconds:.2f}s in the future")
 
-        conflicts = self._rewinder.detect_conflicts(minio_prefix, timestamp)
+        conflicts = self._rewinder.detect_conflicts(minio_prefix, timestamp, add_tags_to_latest=True)
         if conflicts:
             self.__print_conflicts(conflicts, minio_prefix, timestamp)
             if not self._prompt.yes_no("Continue anyway?", default_yes=False):
@@ -309,14 +323,17 @@ class MinioTool:
         symbols = self.COLOR_SYMBOL_MAP if self._color else self.SYMBOL_MAP
 
         print(f"Conflicts detected. The following changes have occurred since {timestamp}:")
+
+        print(f"\n  {'File name':40s} {'Size    ':>15s} {'Last modified':30s} {'JIRA issue':20s}")
         for conflict in conflicts:
             latest = conflict.latest_version
             symbol = symbols[conflict.update_type]
             rel_key = latest.object_name[len(prefix.key) + 1 :]  # type: ignore
             size = utils.format_size(latest.size) if latest.size else ""
             modified = str((latest.last_modified + timedelta(microseconds=5e5)).replace(microsecond=0))  # type: ignore
+            issue_id = latest.tags.get("jira-issue-id", "") if latest.tags else ""
 
-            print(f"{symbol:{len(symbol)}s} {rel_key:40s} {size:>10s} {modified:40s}")
+            print(f"{symbol:{len(symbol)}s} {rel_key:40s} {size:>15s} {modified:30s} {issue_id:20s}")
         print()
 
     def __print_plan(self, plan: Plan) -> None:

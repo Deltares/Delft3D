@@ -27,67 +27,42 @@ module m_dlwqh3
 
 contains
 
-
-    subroutine dlwqh3 (noseg, nosys, notot, nobnd, isys, &
-            deriv, bound, rhs, diag, sol)
-
-        !     Deltares Software Center
-
-        !     Created    : February 1997 by RJVos (like dlwqf4 from scheme 15)
-
-        !     Function   : put boundaries and derivatives in right hand side
-
-        !     Modified   : July 2008, Leo Postma  : WAQ performance timers
-        !                  June 2010, Leo Postma  : double precission version
-
-        !     File I/O   : none
-
-        !     Subroutines: none
-
-        use timers                         ! WAQ performance timers
+    !> Move terms for boundaries and derivatives to right hand side
+    subroutine dlwqh3(noseg, nosys, notot, nobnd, isys, &
+                      deriv, bound, rhs, diag, sol)
+        use timers
 
         implicit none
 
-        !     Arguments           :
-
-        !     Kind        Function         Name                  Description
-
-        integer(kind = int_wp), intent(in) :: noseg               ! Number of computational volumes
-        integer(kind = int_wp), intent(in) :: nosys               ! Number of transported substances
-        integer(kind = int_wp), intent(in) :: notot               ! Total number of substances
-        integer(kind = int_wp), intent(in) :: nobnd               ! Number of boundaries
-        integer(kind = int_wp), intent(in) :: isys                ! This substance
-        real(kind = real_wp), intent(in) :: deriv(notot, noseg)  ! Derivatives
-        real(kind = real_wp), intent(in) :: bound(nosys, nobnd)  ! Open boundary values
-        real(kind = dp), intent(inout) :: rhs  (noseg + nobnd)  ! Right hand side of the equation
-        real(kind = dp), intent(in) :: diag (noseg + nobnd)  ! diagonal for scaling
-        real(kind = dp), intent(out) :: sol  (noseg + nobnd)  ! initial guess for solution
+        integer(kind=int_wp), intent(in   ) :: noseg               !< Number of computational volumes
+        integer(kind=int_wp), intent(in   ) :: nosys               !< Number of transported substances
+        integer(kind=int_wp), intent(in   ) :: notot               !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: nobnd               !< Number of boundaries
+        integer(kind=int_wp), intent(in   ) :: isys                !< This substance
+        real(kind=real_wp),   intent(in   ) :: deriv(notot, noseg) !< Derivatives
+        real(kind=real_wp),   intent(in   ) :: bound(nosys, nobnd) !< Open boundary values
+        real(kind=dp),        intent(inout) :: rhs(noseg + nobnd)  !< Right hand side of the equation
+        real(kind=dp),        intent(in   ) :: diag(noseg + nobnd) !< diagonal for scaling
+        real(kind=dp),        intent(inout) :: sol(noseg + nobnd)  !< initial guess for solution
 
         !     Local variables
+        integer(kind=int_wp) :: iseg       !< loop counter
 
-        integer(kind = int_wp) :: iseg       ! loop counter
+        integer(kind=int_wp) :: ithandl = 0
 
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqh3", ithandl)
-
-        !        initialize the rhs and apply row scaling
-
+        if (timon) call timstrt("dlwqh3", ithandl)
+        ! initialize the rhs and apply row scaling
         do iseg = 1, noseg
-            rhs(iseg) = deriv(isys, iseg) / diag(iseg)
-        enddo
+            rhs(iseg) = deriv(isys, iseg)/diag(iseg)
+        end do
         do iseg = 1, nobnd
             rhs(iseg + noseg) = bound(isys, iseg)
-        enddo
-
-        !        zero initial guess, try rhs plus small value
-
+        end do
+        ! zero initial guess, try rhs plus small value
         sol = 0.0
         do iseg = 1, noseg
             sol(iseg) = rhs(iseg) + 0.01
-        enddo
-
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+        end do
+        if (timon) call timstop(ithandl)
+    end subroutine dlwqh3
 end module m_dlwqh3

@@ -15,6 +15,7 @@ from src.config.types.mode_type import ModeType
 from src.utils.common import log_separator, log_sub_header
 from src.utils.logging.log_level import LogLevel
 from src.utils.logging.logger import Logger
+from src.config.types.path_type import PathType
 
 
 class TestBenchSettings:
@@ -29,7 +30,8 @@ class TestBenchSettings:
     credentials: Credentials = Credentials()
     filter: str = ""
     autocommit: bool = False
-    only_post: bool = False
+    skip_run: bool = False
+    skip_download: List[PathType] = []
     teamcity: bool = False
     parallel: bool = False
     test_bench_root: Optional[str] = None
@@ -46,11 +48,21 @@ class TestBenchSettings:
         """
         log_sub_header("Parsed arguments", logger)
 
+        name_map = {
+            PathType.DEPENDENCY: "dependency",
+            PathType.INPUT: "input of cases",
+            PathType.REFERENCE: "references",
+        }
+        download = ", ".join(val for key, val in name_map.items() if key not in self.skip_download)
+
         logger.info(f"Version  : {sys.version}")
         logger.info(f"Mode     : {self.run_mode}")
         logger.info(f"Config   : {self.config_file}")
         logger.info(f"Filter   : {self.filter}")
         logger.info(f"LogLevel : {str(self.log_level)}")
+        logger.info(f"Download : [{download}]")
+        if self.skip_run:
+            logger.info("Execute  : skip")
         logger.info(f"Username : {self.credentials.username}")
 
         log_separator(logger, char="-", with_new_line=True)

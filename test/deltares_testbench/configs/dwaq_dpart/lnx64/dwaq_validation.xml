@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
+
+    <!-- general setup -->
+    <xi:include href="../include/configuration.xml"/>
+    <xi:include href="../include/programs_lnx64.xml"/>
+    <!--xi:include href="../include/default_testcases.xml"/-->
+
+    <!-- MDK 22-05-2024: testcase definition below is needed since validation tests use dimr.xml as input file, instead of dimr_config.xml
+    needs to be changed in minio, then lines below can be removed, and include statement of default_testcases can be activated. Separate issue-->
+    <defaultTestCases>
+        <testCase name="dwaq_default">
+            <programs>
+                <program ref="dimr">
+                    <arguments>
+                        <argument>-m dimr.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+    </defaultTestCases>
+
+    <!-- testCases -->
+    <xi:include href="../include/test_configs/dwaq_validation.xml"/>
+</deltaresTestbench_v3>

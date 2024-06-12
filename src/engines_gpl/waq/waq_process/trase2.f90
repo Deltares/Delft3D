@@ -31,7 +31,7 @@ contains
     subroutine trase2 (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Total of transport in sediment for 66 substances
@@ -124,12 +124,12 @@ contains
 
             !        Zoek eerste kenmerk van- en naar-segmenten
             IF (IVAN > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             ELSE
                 IKMRKV = -1
             ENDIF
             IF (INAAR > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
             ELSE
                 IKMRKN = -1
             ENDIF

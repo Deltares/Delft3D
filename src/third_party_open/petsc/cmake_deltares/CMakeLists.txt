@@ -3,7 +3,7 @@ set(library_path ${petsc_path}/..)
 
 # Include directories that are necessary references
 include_directories(${library_path}/include)
-include_directories(${mpi_include_path})
+include_directories(${mpi_module_path})
 
 set(source_path "${library_path}/src")
 if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")

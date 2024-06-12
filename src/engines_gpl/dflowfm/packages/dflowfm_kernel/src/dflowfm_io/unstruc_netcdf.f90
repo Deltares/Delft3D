@@ -12861,7 +12861,7 @@ subroutine md5_net_file(numlstart, numlcount)
 end subroutine md5_net_file
 
 !> Assigns the information, that has been read from a restart file and stored in array1, to a 2D array2.
-subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, jaWaqbot, wqbot3D_output)
+subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, jaWaqbot, wqbot3D_output, target_shift)
    double precision, allocatable, intent(in   ) :: array1(:)      !< Array that contains information read from a restart file
    double precision, allocatable, intent(inout) :: array2(:,:)    !< Target 2D array
    integer,                       intent(in   ) :: iloc           !< Index of one dimension of the 2D array
@@ -12871,10 +12871,15 @@ subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccoun
    integer,                       intent(in   ) :: iloc_own(:)    !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the actual ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
    integer,                       intent(in   ) :: jaWaqbot       !< It is a waq bottom variable (1) or not(0)
    integer,                       intent(in   ) :: wqbot3D_output !< Read 3D waq bottom variable (1) or not(0)
+   integer, optional,             intent(in   ) :: target_shift   !< shift of the index where the array is to be written (1:ndx), default = 0
+   integer :: kk, kloc, k, kb, kt, nlayb, nrlay, target_shift_
 
-   integer :: kk, kloc, k, kb, kt
-
-   do kk = 1, loccount
+   target_shift_ = 0
+   if (present(target_shift)) then
+      target_shift_ = target_shift
+   endif
+   
+   do kk = target_shift_ + 1, target_shift_ + loccount
       if (jamergedmap == 1) then
          kloc = iloc_own(kk)
       else
@@ -12908,7 +12913,7 @@ end subroutine assign_restart_data_to_local_array
 !! and that will yield only 'own' nodes, not ghostnodes. All these values need to be 'spread' into the current
 !! s1/u1, etc. arrays, with some empty ghost values in between here and there.
 !! The calling routine should later call update_ghosts, such that ghost locations are filled as well.
-function get_var_and_shift(ncid, varname, targetarr, tmparr, loctype, kmx, locstart, loccount, it_read, jamergedmap, iloc_own, iloc_merge) result(ierr)
+function get_var_and_shift(ncid, varname, targetarr, tmparr, loctype, kmx, locstart, loccount, it_read, jamergedmap, iloc_own, iloc_merge, target_shift) result(ierr)
 use dfm_error
 use m_output_config
    integer, intent(in)             :: ncid !< Open NetCDF data set
@@ -12923,15 +12928,22 @@ use m_output_config
    integer,          intent(in)    :: jamergedmap   !< Whether input is from a merged map file (i.e. needs shifting or not) (1/0)
    integer,          intent(in)    :: iloc_own(:)   !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the actual ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
    integer,          intent(in)    :: iloc_merge(:) !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the global/merged ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
+   integer,          intent(in), optional  :: target_shift      !< shift of the index where the array is to be written (1:ndx), default = 0
    integer                         :: ierr         !< Result, DFM_NOERR if successful
    integer                         :: id_var
    integer                         :: i, ib, it, is, imap, numDims, d1, d2,nlayb, nrlay
    double precision, allocatable   :: tmparray1D(:), tmparray2D(:,:)
    integer, dimension(nf90_max_var_dims):: rhdims, tmpdims
    integer :: jamerged_dif
+   integer :: target_shift_
 
    ierr = DFM_NOERR
 
+   target_shift_ = 0
+   if (present(target_shift)) then
+      target_shift_ = target_shift
+   endif
+   
    if (size(iloc_merge) ==1 .and. iloc_merge(1) == -999) then
       jamerged_dif = 0 !the partition is the same, iloc_merge does not function
    else
@@ -12942,7 +12954,7 @@ use m_output_config
    if (ierr /=0) goto 999
    if (kmx == 0 .or. loctype == UNC_LOC_S .or. loctype == UNC_LOC_U) then
       if (jamergedmap /= 1) then
-         ierr = nf90_get_var(ncid, id_var, targetarr(1:loccount), start = (/ locstart, it_read/), count = (/ loccount, 1 /))
+         ierr = nf90_get_var(ncid, id_var, targetarr(target_shift_+1:target_shift_+loccount), start = (/ locstart, it_read/), count = (/ loccount, 1 /))
       else
          if (jamerged_dif == 1) then
             ! Firstly read all the data from the file to tmparray1D, this avoinds calling nf90 subroutine in the loop
@@ -12964,14 +12976,14 @@ use m_output_config
                goto 999
             endif
             ! Then assign the data based on the mapping
-            do i = 1, loccount
+            do i = target_shift_+1, target_shift_+loccount
                imap  = iloc_merge(i)
                targetarr(iloc_own(i)) = tmparray1D(imap)
             enddo
          else
-            ierr = nf90_get_var(ncid, id_var, tmparr(1:loccount), start = (/ locstart, it_read/), count = (/ loccount, 1 /))
+            ierr = nf90_get_var(ncid, id_var, tmparr(target_shift_+1:target_shift_+loccount), start = (/ locstart, it_read/), count = (/ loccount, 1 /))
             if (ierr /= nf90_noerr) goto 999
-            do i=1,loccount
+            do i=target_shift_+1,target_shift_+loccount
                targetarr(iloc_own(i)) = tmparr(i)
             enddo
          endif
@@ -12998,7 +13010,7 @@ use m_output_config
          goto 999
       endif
 
-      do i=1,loccount
+      do i=target_shift_+1,target_shift_+loccount
          if (jamergedmap /= 1) then
             is = i
          else
@@ -13011,11 +13023,11 @@ use m_output_config
          endif
 
          if (loctype == UNC_LOC_S3D .or. loctype == UNC_LOC_W) then
-            call getkbotktop(is, ib, it)  ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
-            call getlayerindices(is, nlayb, nrlay)
+            call getkbotktop(target_shift_ + is, ib, it)  ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
+            call getlayerindices(target_shift_ + is, nlayb, nrlay)
          else if (loctype == UNC_LOC_U3D .or. loctype == UNC_LOC_WU) then
-            call getLbotLtopmax(is, ib, it)
-            call getlayerindicesLmax(is, nlayb, nrlay)
+            call getLbotLtopmax(target_shift_ + is, ib, it)
+            call getlayerindicesLmax(target_shift_ + is, nlayb, nrlay)
             !call getlayerindices(is, nlayb, nrlay)
             ! UNST-976: TODO: does NOT work for links yet. We need some setlbotltop call up in read_map, similar to sethu behavior.
             !if (layertype .ne. 1 .and. jawarn < 100)  then
@@ -13151,6 +13163,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     integer :: jamergedmap_same_bu
     integer :: tmp_loc
     integer :: numl1d
+    integer :: nlayb, nrlay
 
     character(len=8)::numformat
     character(len=2)::numtrastr, numsedfracstr
@@ -13918,22 +13931,12 @@ subroutine unc_read_map_or_rst(filename, ierr)
        if (stmpar%lsedsus .gt. 0 .and. sedsus_read == stmpar%lsedsus) then
 
           !internal cells
-          call read_sediment(constituents,'',imapfile,kstart,um%ndxi_own,it_read,um)  
+          call read_sediment(constituents,'',imapfile,kstart,um%ndxi_own,it_read,um, 0)  
           !boundary cells
           if (um%nbnd_read > 0) then
-             if (allocated(tmpvar)) then 
-                deallocate(tmpvar)
-             endif
-             allocate(tmpvar(ISEDN-ISED1+1,um%nbnd_read))
-             call read_sediment(tmpvar,'_bnd',imapfile,kstart,um%nbnd_read,it_read,um)
-             constituents(:,ndxi+1:ndx)=tmpvar
+             call read_sediment(constituents,'_bnd',imapfile,1,um%nbnd_read,it_read,um, um%ndxi_own)
           endif !um%nbnd_read > 0
           sed=constituents(ISED1:ISEDN,:)
-          !!copy from constituents to sed
-          !do i = ISED1,ISEDN
-          !   j = i - ISED1 + 1
-          !   sed(j,:)=constituents(i,:)
-          !end
        endif !lsedsus
 
        ! morbl
@@ -18363,7 +18366,7 @@ end subroutine add_att_sediment
 
 !> Read sediment data to `constituents` (the indexing prevents passing 
 !  another variable). 
-subroutine read_sediment(var,stradd,imapfile,kstart,ndx_own,it_read,um)
+subroutine read_sediment(var,stradd,imapfile,kstart,ndx_own,it_read,um, target_shift)
 
 use m_flow, only: kmx, ndkx
 use m_transport, only: ISED1, ISEDN, const_names
@@ -18373,7 +18376,7 @@ use m_partitioninfo, only: um
 use m_output_config, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
-integer, intent(in) :: imapfile, kstart, ndx_own, it_read
+integer, intent(in) :: imapfile, kstart, ndx_own, it_read, target_shift
 double precision, allocatable, dimension(:,:), intent(inout) :: var
 type(t_unc_merged), intent(in)                  :: um        !< struct holding all data for ugrid merged map/rst files
 
@@ -18399,12 +18402,12 @@ do i = ISED1,ISEDN
    call replace_char(tmpstr,32,95)
    call replace_char(tmpstr,47,95)
    ! concentrations exists in restart file
-   ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, ndx_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge)
+   ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, ndx_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
    if (ierr /= nf90_noerr) then
       call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
       call check_error(ierr, const_names(i),LEVEL_WARN)
    else
-      call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, ndx_own, um%jamergedmap, um%inode_own, 0, 0)
+      call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, ndx_own, um%jamergedmap, um%inode_own, 0, 0, target_shift)
    endif
 enddo 
 

@@ -6,6 +6,7 @@ set(oss_dependencies waq_definition
         deltares_common
         deltares_common_c
         nefis
+        morphology_data
         solvesaphe
         waq_data
         waq_hyd_data

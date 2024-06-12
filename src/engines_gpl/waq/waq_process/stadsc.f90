@@ -31,7 +31,7 @@ contains
     subroutine stadsc (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Mean, min, max, stdev of a variable during a certain time
@@ -193,7 +193,7 @@ contains
                     PMSA(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Average could not be determined for segment ', ISEG
@@ -222,7 +222,7 @@ contains
                     PMSA(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Standard deviation could not be determined for segment ', ISEG

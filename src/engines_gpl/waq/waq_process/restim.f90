@@ -31,7 +31,7 @@ contains
     subroutine restim (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Residence time per volume, for advective transport only
@@ -119,7 +119,7 @@ contains
         DO ISEG = 1, NOSEG
 
             !........Niet-actieve segmenten afhandelen
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK)
             IF (IKMRK == 0) THEN
                 PMSA(IP4) = -999.999
                 GOTO 100

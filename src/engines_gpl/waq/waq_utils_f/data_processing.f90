@@ -32,13 +32,14 @@ module data_processing
 
 contains
 
+    !> Closes all files except the monitoring file (the one at 19th position).
+    !! The subroutine assumes that the monitoring file is at the 19th position in the logical_units array
+    !! and that the array has a length of 22
     subroutine close_files(logical_units)
-        !! Close all files except the monitoring file (except for the one at 19th position)
-        !! the subroutine assumes that the monitoring file is at the 19th position in the logical_units array
-        !! and that the array has a length of 22
 
-        integer(kind = int_wp), dimension(*), intent(in) :: logical_units !! Array of logical unit numbers
+        integer(kind = int_wp), dimension(*), intent(in) :: logical_units !< Array of logical unit numbers
 
+        ! local variables
         logical :: is_file_open
         integer(kind = int_wp) :: exclude_index = 19 ! the monotoring file at the 19th position in the logical_units
         integer(kind = int_wp) :: i

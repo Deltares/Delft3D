@@ -7,7 +7,7 @@ Copyright (C)  Stichting Deltares, 2013
 import copy
 import os
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, ClassVar
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
@@ -18,6 +18,7 @@ from src.utils.paths import Paths
 # Test case handler (compare or reference)
 class TestCase(object):
     __errors = []
+    __test__: ClassVar[bool] = False
 
     # constructor
     # input: test case configuration

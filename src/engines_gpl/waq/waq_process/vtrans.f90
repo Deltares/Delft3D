@@ -47,7 +47,7 @@ contains
         use m_dhnoseg
         use m_dhnolay
         use m_dhltim
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use bloom_data_vtrans
 
         implicit none
@@ -248,7 +248,7 @@ contains
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom > 0 .and. ito > 0) then
-                    call evaluate_waq_attribute(1, iknmrk(ito), ikmrk1)
+                    call extract_waq_attribute(1, iknmrk(ito), ikmrk1)
                     if (ikmrk1==1) then
                         disp = pmsa(ip9) + pmsa(ip13)
                     else

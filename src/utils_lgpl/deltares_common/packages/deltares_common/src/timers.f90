@@ -227,17 +227,16 @@ contains
     end subroutine timinc
 
 
+    !> Starts timing for this subroutine or program part.
     subroutine timstrt(subrou, ihandl, handle_)
-        !> Starts timing for this subroutine or program part.
-        !! 'subrou' is a max. 40 character ID-string.
-        !! If ihandl==0, a new timer with name 'subrou' will be created.
-        !! 'ihandl' must afterwards be saved by the caller
-
-        character*(*), intent(in) :: subrou    !<  name of (part of) subroutine to monitor
-        integer(4), intent(inout) :: ihandl    !<  handle of the section
+        character*(*), intent(in) :: subrou          !< Name of (part of) subroutine to monitor; max. 40 character ID-string.
+        integer(4), intent(inout) :: ihandl          !< Handle of the section; If ihandl==0, a new timer with name 'subrou' will be created.
+                                                     !< 'ihandl' must afterwards be saved by the caller
         integer(4), optional, intent(out) :: handle_ !< Handle of the unique timer that has now been started.
-        !< Either retrieved from a context of ihandl that was called before.
-        !< Or newly created when this start of ihandle is from a new place in the call tree.
+                                                     !< Either retrieved from a context of ihandl that was called before.
+                                                     !< Or newly created when this start of ihandle is from a new place in the call tree.
+
+        ! Local variables
         integer(4)                      handle    !  handle of the timer
         integer(4)                      i         !  loop counter
         integer(4)                      ival(8)
@@ -288,9 +287,11 @@ contains
         if (present(handle_)) handle_ = handle
     end subroutine timstrt
 
+    !> stops timing for this handle and accumulates the result
     subroutine timstop(ihandl)
-        !> stops timing for this handle and accumulates the result
         integer(4), intent(in) :: ihandl    !<  handle of the section
+
+        !Local variables
         integer(4)                      handle    !  handle of the timer
         integer(4)                      i         !  loop counter
         real   (8)                      stopt
@@ -323,8 +324,8 @@ contains
 
     end subroutine timstop
 
+    !> Writes the timer results to the report file 'afile'.
     subroutine timdump(afile, write_total_time)
-        !> Writes the timer results to the report file 'afile'.
         character*(*), intent(in) :: afile             !< Name of the output file
         logical, intent(in), optional :: write_total_time  !< Flag for writing totals of the timers of the children. Default: .false.
 
@@ -363,9 +364,9 @@ contains
 
     end subroutine timdump
 
+    !> Writes the timer results for a specific handle and its children.
     recursive subroutine timline(ihandl, lun, perc_cpu, perc_wc, write_total_time)
-        !> Writes the timer results for a specific handle and its children.
-        integer(4), intent(in) :: ihandl               !< Timer handle
+         integer(4), intent(in) :: ihandl               !< Timer handle
         integer(4), intent(in) :: lun                  !< unit number of the output file
         real(8), intent(out) :: perc_cpu             !< percentage (of overall total) of the cpu time used
         real(8), intent(out) :: perc_wc              !< percentage (of the overall total) of the wall clock time used
@@ -464,9 +465,9 @@ contains
 
     end function tim_get_cpu
 
+    !>  Get the incremental cpu time for 'ihandl' (= latest interval
+    !!  between start and stop), summed for all its contexts.
     real(8) function tim_get_cpu_inc(ihandl)
-        !>  Get the incremental cpu time for 'ihandl' (= latest interval
-        !!  between start and stop), summed for all its contexts.
         integer, intent(in) :: ihandl          !<  handle of the section
         integer :: handle          !<  handle of the timer
         integer :: i
@@ -484,9 +485,9 @@ contains
 
     end function tim_get_cpu_inc
 
+    !> Get the incremental wall clock time for 'ihandl' (= latest
+    !! interval between start and stop), summed for all its contexts.
     real(8) function tim_get_wallclock_inc(ihandl)
-        !> Get the incremental wall clock time for 'ihandl' (= latest
-        !! interval between start and stop), summed for all its contexts.
         integer, intent(in) :: ihandl          !<  handle of the section
         integer :: handle          !<  handle of the timer
         integer :: i
@@ -505,8 +506,8 @@ contains
     end function tim_get_wallclock_inc
 
 
+    !> Get the wall clock time for 'ihandl', summed for all its contexts.
     real(8) function tim_get_wallclock(ihandl)
-        !> Get the wall clock time for 'ihandl', summed for all its contexts.
 
         integer, intent(in) :: ihandl          !<  handle of the section
         integer :: handle          !<  handle of the timer
@@ -524,13 +525,59 @@ contains
         endif
     end function tim_get_wallclock
 
+    !> Get the label (name) for 'ihandl'
     character(len = 40) function tim_get_label(ihandl)
-        !> Get the label (name) for 'ihandl'
         integer, intent(in) :: ihandl          !<  handle of the section
         integer :: handle          !<  handle of the timer
 
         handle = context(1, 2, ihandl)
         tim_get_label = tmsubnm(handle)
     end function tim_get_label
+
+    subroutine evaluate_timers(itime, idt, istrt, istop, istep, lflag, lfirst)
+        !  evaluates if action is necessary according to timers
+        ! only used in waq/waq_kernel/results/write_output.F90::write_output
+        !
+        !     name    kind     length     funct.  description
+        !     ----    -----    ------     ------- -----------
+        !     itime   integer       1     input   time in system clock units
+        !     idt     integer       1     input   simulation timestep
+        !     imstrt  integer       1     input   start time of timer
+        !     imstop  integer       1     input   stop time of timer
+        !     imstep  integer       1     input   time step of timer
+        !     lflag   logical       1     output  if .t. then action else not
+        !     lfirst  logical       1     output  if .t. then first step
+
+
+        integer :: itime, idt, istrt, istop, istep
+        logical :: lflag, lfirst
+        integer :: ithandl = 0
+        if (timon) call timstrt ("evaluate_timers", ithandl)
+
+        ! evaluate timer
+        lflag = .true.
+        lfirst = .false.
+        if (istep <= 0 .and. istrt /= istop) then
+            lflag = .false.
+            goto 100
+        endif
+        if (istrt > itime) then
+            lflag = .false.
+            goto 100
+        endif
+        if (istop <= itime - idt) then
+            lflag = .false.
+            goto 100
+        endif
+        if (mod(itime - istrt, istep) >= idt) lflag = .false.
+        if (lflag) then
+            if (itime - istrt < istep) lfirst = .true.
+        endif
+
+        100 continue
+
+        if (timon) call timstop (ithandl)
+
+    end subroutine evaluate_timers
 
 end module Timers

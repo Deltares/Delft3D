@@ -38,7 +38,7 @@ contains
         real(kind = real_wp),   intent(inout) :: deriv (notot, noseg)  !< Derivatives to be scaled
         integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
         integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: itfact                !< Factor between process and transport clock
+        integer(kind = int_wp), intent(in   ) :: itfact                !< Ratio delta-t process to delta-t transport
         real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Mass balance array
         integer(kind = int_wp), intent(in   ) :: idt                   !< Integration time step size
         integer(kind = int_wp), intent(in   ) :: iaflag                !< if 1 then accumulation

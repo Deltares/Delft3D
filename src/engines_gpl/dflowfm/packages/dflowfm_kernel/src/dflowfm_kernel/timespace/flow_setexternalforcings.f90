@@ -713,6 +713,9 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
       ! Retrieve wind's x- and y-component for ext-file quantity 'windxy'.
       if (ec_item_id == item_windxy_x .and. item_windxy_y /= ec_undef_int) then
          call get_timespace_value_by_item(item_windxy_x)
+      ! Retrieve stress's x- and y-component for ext-file quantity 'stressxy'.
+      elseif (ec_item_id == item_stressxy_x .and. item_stressxy_y /= ec_undef_int) then
+         call get_timespace_value_by_item(item_stressxy_x)
       ! Retrieve wind's p-, x- and y-component for ext-file quantity 'airpressure_windx_windy'.
       else if (ec_item_id == item_apwxwy_p .and. item_apwxwy_x /= ec_undef_int .and. item_apwxwy_y /= ec_undef_int) then
          if (item_apwxwy_c /= ec_undef_int) then
@@ -729,7 +732,13 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
       ! Retrieve wind's y-component for ext-file quantity 'windy'.
       else if (ec_item_id == item_windy) then
          call get_timespace_value_by_item(item_windy)
-       ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
+      ! Retrieve stress's x-component for ext-file quantity 'stressx'.
+      else if (ec_item_id == item_stressx) then
+         call get_timespace_value_by_item(item_stressx)
+      ! Retrieve stress's y-component for ext-file quantity 'stressy'.
+      else if (ec_item_id == item_stressy) then
+         call get_timespace_value_by_item(item_stressy)
+      ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
       else if (ec_item_id == item_atmosphericpressure) then
          call get_timespace_value_by_item(item_atmosphericpressure)
       else
@@ -747,8 +756,13 @@ subroutine prepare_wind_model_data(time_in_seconds, iresult)
    end do
 
    if (jawindstressgiven > 0) then 
-      call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
-      call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
+      if (item_stressx /= ec_undef_int .and. item_stressy /= ec_undef_int) then
+         call get_timespace_value_by_item_and_array(item_stressx, wdsu_x)
+         call get_timespace_value_by_item_and_array(item_stressy, wdsu_y)
+      else if (item_stressxy_x /= ec_undef_int .and. item_stressxy_y /= ec_undef_int) then
+         call get_timespace_value_by_item_and_array(item_stressxy_x, wdsu_x)
+         call get_timespace_value_by_item_and_array(item_stressxy_y, wdsu_y)
+      end if
    end if
 
    if (allocated(ec_pwxwy_x) .and. allocated( ec_pwxwy_y)) then

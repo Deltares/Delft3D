@@ -153,7 +153,7 @@ module m_caltau
                                             veloc, tauwin, rl, t, tauvel, iswtau, iswtaumax, iswtauveloc, &
                                             iswhrms, tau, tausch)
         !< Carry out all process-specific calculations.
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         real, intent(in)    :: rl, depth, max_nelson, t, tausch, totdep, veloc
         integer, intent(in) :: segment_attribute, iswtau, iswtaumax, iswtauveloc, iswhrms
@@ -166,7 +166,7 @@ module m_caltau
                            gravity = 9.811, & !< Acceleration of gravity  [m/s2]
                            rhow = 1000.0      !< Density of water        [kg/m3]
 
-        call evaluate_waq_attribute(2, segment_attribute, ikmrk2)
+        call extract_waq_attribute(2, segment_attribute, ikmrk2)
         karmc1 = sqrt(gravity)/karman
         karmc2 = karman/sqrt(gravity)
 
@@ -234,13 +234,13 @@ module m_caltau
 
     logical function must_calculate_segment(segment_attribute)
         !< Boolean indicating whether the calculation for current cell (segment) should be carried out or not. If false, then the cell is skipped.
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         integer, intent(in) :: segment_attribute
         integer :: ikmrk2
 
-        call evaluate_waq_attribute(2, segment_attribute, ikmrk2)
+        call extract_waq_attribute(2, segment_attribute, ikmrk2)
 
         must_calculate_segment = ((btest(segment_attribute, 0)) .and. (ikmrk2 == 0 .or. ikmrk2 == 3))
     end function must_calculate_segment

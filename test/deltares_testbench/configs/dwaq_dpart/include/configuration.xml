@@ -1,0 +1,20 @@
+<config>
+    <localPaths>
+        <testCasesDir>./data/cases</testCasesDir>
+        <enginesDir>./data/engines</enginesDir>
+        <referenceDir>./data/reference_results</referenceDir>
+    </localPaths>
+    <locations>
+        <location name="reference_results">
+            <credential ref="commandline"/>
+            <root>{server_base_url}/references</root>
+        </location>
+        <location name="cases">
+            <credential ref="commandline"/>
+            <root>{server_base_url}/cases</root>
+        </location>
+        <location name="engines">
+            <root>./data/engines</root>
+        </location>
+    </locations>
+</config>

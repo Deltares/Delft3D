@@ -32,7 +32,7 @@ contains
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
         use m_logger_helper, only : write_error_message
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         !
@@ -179,7 +179,7 @@ contains
             !
             !       In all active dry or wet segments
             !
-            CALL evaluate_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
+            CALL extract_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
 
             IF (IKMRK3==1 .OR. IKMRK3==3) THEN
                 !

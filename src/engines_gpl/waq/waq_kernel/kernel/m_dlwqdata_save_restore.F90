@@ -60,6 +60,7 @@ module m_dlwqdata_save_restore
 
 contains
 
+    !> Saves data from the (global) individual separate variables into the DELWAQ data structure
     subroutine dlwqdata_save(dlwqd)
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
@@ -107,6 +108,7 @@ contains
     end subroutine dlwqdata_save
 
 
+    !> Restores the data from the DELWAQ data structure into the (global) individual separate variables
     subroutine dlwqdata_restore(dlwqd)
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage

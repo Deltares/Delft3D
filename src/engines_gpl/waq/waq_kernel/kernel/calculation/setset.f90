@@ -28,7 +28,7 @@ module m_setset
 contains
 
     !> Initialisation of Variables structure
-    subroutine setset (lurep, nocons, nopa, nofun, nosfun, &
+    subroutine setset(lurep, nocons, nopa, nofun, nosfun, &
             nosys, notot, nodisp, novelo, nodef, &
             noloc, ndspx, nvelx, nlocx, nflux, &
             nopred, novar, nogrid, vgrset)
@@ -36,30 +36,29 @@ contains
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in) :: lurep                 !< Unit number monitoring file (not used)
-        integer(kind = int_wp), intent(in) :: nocons                !< Number of constants
-        integer(kind = int_wp), intent(in) :: nopa                  !< Number of parameters
-        integer(kind = int_wp), intent(in) :: nofun                 !< Number of functions
-        integer(kind = int_wp), intent(in) :: nosfun                !< Number of segment functions
-        integer(kind = int_wp), intent(in) :: nosys                 !< Number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in) :: nodisp                !< Number of user-dispersions
-        integer(kind = int_wp), intent(in) :: novelo                !< Number of user-flows
-        integer(kind = int_wp), intent(in) :: nodef                 !< Number of default values
-        integer(kind = int_wp), intent(in) :: noloc                 !< Number of local values
-        integer(kind = int_wp), intent(in) :: ndspx                 !< Number of dspx
-        integer(kind = int_wp), intent(in) :: nvelx                 !< Number of velx
-        integer(kind = int_wp), intent(in) :: nlocx                 !< Number of locx
-        integer(kind = int_wp), intent(in) :: nflux                 !< Number of flux
-        integer(kind = int_wp), intent(in) :: nopred                !< Not used
-        integer(kind = int_wp), intent(in) :: novar                 !< Number of variables on the grids
-        integer(kind = int_wp), intent(in) :: nogrid                !< Number of grids
-        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid)  !< Number of grids
+        integer(kind = int_wp), intent(in   ) :: lurep                 !< Unit number monitoring file (not used)
+        integer(kind = int_wp), intent(in   ) :: nocons                !< Number of constants
+        integer(kind = int_wp), intent(in   ) :: nopa                  !< Number of parameters
+        integer(kind = int_wp), intent(in   ) :: nofun                 !< Number of functions
+        integer(kind = int_wp), intent(in   ) :: nosfun                !< Number of segment functions
+        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: nodisp                !< Number of user-dispersions
+        integer(kind = int_wp), intent(in   ) :: novelo                !< Number of user-flows
+        integer(kind = int_wp), intent(in   ) :: nodef                 !< Number of default values
+        integer(kind = int_wp), intent(in   ) :: noloc                 !< Number of local values
+        integer(kind = int_wp), intent(in   ) :: ndspx                 !< Number of dspx
+        integer(kind = int_wp), intent(in   ) :: nvelx                 !< Number of velx
+        integer(kind = int_wp), intent(in   ) :: nlocx                 !< Number of locx
+        integer(kind = int_wp), intent(in   ) :: nflux                 !< Number of flux
+        integer(kind = int_wp), intent(in   ) :: nopred                !< Not used
+        integer(kind = int_wp), intent(in   ) :: novar                 !< Number of variables on the grids
+        integer(kind = int_wp), intent(in   ) :: nogrid                !< Number of grids
+        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid) !< Number of grids
 
-        !     Local declarations
-
-        integer(kind = int_wp) :: i, ivar, igrid      ! help variables for loop and index counting
-        integer(kind = int_wp) :: iset                ! help variable 1 for igrid = 1, 0 for igrid > 1
+        ! Local declarations
+        integer(kind = int_wp) :: i, ivar, igrid      !< Auxiliary variables for loop and index counting
+        integer(kind = int_wp) :: iset                !< Auxiliary variable 1 for igrid = 1, 0 for igrid > 1
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("setset", ithandl)
@@ -107,9 +106,6 @@ contains
             ivar = ivar + nlocx                               ! locx
             ivar = ivar + nflux                               ! flux
         enddo
-
         if (timon) call timstop (ithandl)
-        return
-    end
-
+    end subroutine setset
 end module m_setset

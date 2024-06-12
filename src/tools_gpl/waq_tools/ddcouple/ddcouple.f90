@@ -162,6 +162,7 @@ program ddcouple
       call getfullversionstring_ddcouple(version)
       write(*,*)
       write(*,'(a)') ' ', trim(version)
+      call write_date_time(rundat)
       write(*,*)
 
       ! some init
@@ -183,7 +184,10 @@ program ddcouple
          file_rep%status = 0
          call file_rep%open()
          lunrep = file_rep%unit
-         call ddc_version(lunrep)
+
+         write(lunrep,'(a)') ' ', trim(version)
+         write(lunrep,'(2a)') ' execution start: ',rundat
+
          write(lunrep,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
          write(*,'(a)') ' ERROR no command line argument or interactive input with name of hyd/ddb file'
 
@@ -197,7 +201,8 @@ program ddcouple
       file_rep%status = 0
       call file_rep%open()
       lunrep = file_rep%unit
-      call ddc_version(lunrep)
+      write(lunrep,'(a)') ' ', trim(version)
+      write(lunrep,'(2a)') ' execution start: ',rundat
       call set_log_unit_number(lunrep)
 
       ! check if input comes from hyd or ddb

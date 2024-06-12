@@ -36,7 +36,7 @@
  use timers
  use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
  use waq,           only: reset_waq
- use m_flow,        only: kmx, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
+ use m_flow,        only: kmx, kmxn, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
  use m_flowtimes
  use m_lateral, only: numlatsg
  use network_data,  only: NETSTAT_CELLS_DIRTY
@@ -83,7 +83,8 @@
  use system_utils, only: makedir
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
- use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used
+ use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
+                      get_lateral_volume_per_layer, lateral_volume_per_layer
  use m_cell_geometry, only : ba
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -507,8 +508,11 @@
  call timstop(handle_extra(33)) ! end Fourier init
 
  if (numconst > 0.and. apply_transport_is_used) then
+    ! During initialisation, the lateral data must be initialized correctly
     call reset_outgoing_lat_concentration()
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+    ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
+    call average_concentrations_for_laterals(numconst, kmx, kmxn, ba, constituents, 1._dp)
+    call get_lateral_volume_per_layer(lateral_volume_per_layer)
  endif
  
  ! Initialise sedtrails statistics

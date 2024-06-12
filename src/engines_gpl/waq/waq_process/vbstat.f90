@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
         use m_logger_helper
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -109,9 +109,9 @@ contains
             ! set botseg equal to iseg for the segments which have a bottom
 
             do iseg = 1, noseg
-                call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+                call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
                 if (ikmrk1<3) then
-                    call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                    call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                     if ((ikmrk2==0).or.(ikmrk2==3)) then
                         pmsa(ip + inc * (iseg - 1)) = real(iseg)
                     endif
@@ -151,8 +151,8 @@ contains
             !   *****     Insert your code here  *****
             !
             !        lowest water and 2d segments only
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
 
                 SwEmersion = pmsa(ipnt(1))

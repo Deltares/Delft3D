@@ -34,7 +34,7 @@ contains
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
      use m_logger_helper, only : write_error_message, get_log_unit_number
-     use m_evaluate_waq_attribute
+     use m_extract_waq_attribute
 
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
 !
@@ -809,8 +809,8 @@ contains
           ! Determine 2D structure, first find dimension and next fill a mapping array
           noseg2d = 0
           do iseg = 1,noseg
-              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
+              CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
               if (iatt2==0.or.iatt2==3) then
                   noseg2d = noseg2d+1
               endif
@@ -819,8 +819,8 @@ contains
           bottomsegments = 0
           itel = 0
           do iseg = 1,noseg
-              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
+              CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
 
               if (iatt2==0.or.iatt2==3) then
                   itel = itel+1
@@ -2040,7 +2040,7 @@ contains
                           !
                           ! For the exchange with the overlying water we need the water segment to be active
                           !
-                          CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+                          CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
                           if ( iatt1 == 1 ) then
                               term = dble(td(ilay)/(diflen/2.+dl(ilay)/2.))
                               bv(ilay)    = bv(ilay) + term*dble(cwater*poros)

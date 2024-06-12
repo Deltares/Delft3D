@@ -85,5 +85,5 @@
         <!--
         testCases
         -->
-        <xi:include href="../include/dpart_all_cases_fm.xml"/>
+        <xi:include href="../dwaq_dpart/include/test_configs/dpart_unstructured.xml"/>
 </deltaresTestbench_v3>

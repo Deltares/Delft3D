@@ -1,15 +1,16 @@
 #!/bin/bash
 
+# This script executes a command inside an Apptainer container.
+# Note: Apptainer is the replacement for Singularity.
+
 # Usage:
 # This script is called by the script "submit_singularity_snellius.sh".
-# This script executes a command inside a Singularity container.
-
-# This script "execute_singularity_snellius.sh" must be located in the same folder
-# as the Singularity sif-file to be used.
+# This script, "execute_singularity_snellius.sh", must be located in the same folder
+# as the Apptainer sif-file to be used.
 
 # This is a SNELLIUS specific script.
 
-# This script assumes that the command "singularity" can be found.
+# This script assumes that the command "apptainer" can be found.
 
 # The following parameters are passed to the container via --env.
 
@@ -19,7 +20,7 @@ function execute_singularity_edited {
     executable=
     executable_opts=
     container_bindir=/opt/delft3dfm_latest/lnx64/bin # The directory WITHIN the container that contains all the executables
-    container_libdir=/opt/delft3dfm_latest/lnx64/lib # The directory WITHIN the container that contains all the executables
+    container_libdir=/opt/delft3dfm_latest/lnx64/lib # The directory WITHIN the container that contains all the libraries
     # MPI_DIR: the path to your own installation of IntelMPI
     export MPI_DIR=${I_MPI_ROOT}
     export container_PATH=$MPI_DIR/bin:$PWD:$container_bindir:$PATH:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin 
@@ -54,10 +55,10 @@ function execute_singularity_edited {
     done
 
     # Retrieve the script directory
-	# Get the full path for the file that is read into $0.  
+    # Get the full path for the file that is read into $0.  
     scriptdirname=`readlink \-f \$0`
-	
-	# Get directory path from the filepath (i.e. path including filename)
+    
+    # Get directory path from the filepath (i.e. path including filename)
     scriptdir=`dirname $scriptdirname`
 
     # Scan script directory for sif containers
@@ -81,7 +82,7 @@ function execute_singularity_edited {
     export containerWorkingFolder=$containerMountFolder${currentFolder:${#modelFolder}}
     full_cmd_call="$container_bindir/$executable $executable_opts"
 
-    echo "Executing Singularity container with:"
+    echo "Executing Apptainer container with:"
     echo "    containerName                             : $containerName"
     echo "    Current   working folder                  : $currentFolder"
     echo "    Mounting  source  folder                  : $modelFolder"
@@ -102,7 +103,7 @@ function execute_singularity_edited {
         echo "host fi_info:"
         fi_info
         echo "container fi_info:"
-        singularity exec \
+        apptainer exec \
             --bind $modelFolder:$containerMountFolder,/usr:/host,/sw:/sw \
             --pwd $containerWorkingFolder \
             --env PATH=$container_PATH \
@@ -115,7 +116,7 @@ function execute_singularity_edited {
            -ppn $SLURM_TASKS_PER_NODE \
            -f hosts_uniq.txt \
            -genv I_MPI_DEBUG=$I_MPI_DEBUG_LEVEL \
-           singularity exec \
+           apptainer exec \
                --bind $modelFolder:$containerMountFolder,/usr:/host,/usr/lib64:/host/lib64 \
                --pwd $containerWorkingFolder \
                --env HDF5_USE_FILE_LOCKING=$HDF5_USE_FILE_LOCKING \
@@ -243,7 +244,7 @@ echo "    currentFolder             : $currentFolder"
 echo "    modelFolder               : $modelFolder"
 echo "    dimrconfigFolder          : $dimrconfigFolder"
 echo "    mdufileFolder             : $mdufileFolder"
-echo "    singularityFolder         : $singularityFolder"
+echo "    apptainerFolder           : $singularityFolder"
 echo "    debugLevel                : $debugLevel"
 echo "    I_MPI_ROOT                : $I_MPI_ROOT"
 echo "    I_MPI_PIN_MODE            : $I_MPI_PIN_MODE"

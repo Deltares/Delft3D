@@ -32,6 +32,7 @@ module precision_basics
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+use, intrinsic :: iso_fortran_env, only: INT32, INT64
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
 use stdlib_kinds, only: sp, dp, xdp, qp
 

@@ -32,7 +32,7 @@ contains
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -101,7 +101,7 @@ contains
         DO ISEG = 1, NOSEG
 
             !        Check on active segments
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 Surf = PMSA(IPNT(1))
@@ -217,7 +217,7 @@ contains
                 ! if we start at the top
                 !
                 If (Hmax < 0.0) Then
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     If (IKMRK2 == 0 .OR. IKMRK2 == 1) Then
                         PMSA(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
                     Endif

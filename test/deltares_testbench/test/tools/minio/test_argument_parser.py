@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 from typing import List, Union
 
 import pytest
-from tools.minio.argument_parser import make_argument_parser
 
 from src.config.types.path_type import PathType
+from tools.minio.argument_parser import make_argument_parser
 
 
 @pytest.fixture(scope="session")
@@ -18,7 +18,7 @@ def assert_push_defaults(args: argparse.Namespace) -> None:
     assert args.interactive
     assert not args.force
     assert args.local_path is None
-    assert not args.update_only
+    assert not args.allow_create_and_delete
 
 
 def assert_pull_defaults(args: argparse.Namespace) -> None:
@@ -119,15 +119,14 @@ def test_push__only_required_long_opts(
 
 @pytest.mark.parametrize(
     "flag, attr_name, attr_value",
-    ids=["no-color", "batch", "force", "local-path", "short-local-path", "update-only", "update-only-short"],
+    ids=["no-color", "batch", "force", "local-path", "short-local-path", "allow-create-and-delete"],
     argvalues=[
         ("--no-color", "color_output", False),
         ("--batch", "interactive", False),
         ("--force", "force", True),
         ("--local-path=foo/bar", "local_path", "foo/bar"),
         ("-p=foo/bar", "local_path", "foo/bar"),
-        ("--update-only", "update_only", True),
-        ("-u", "update_only", True),
+        ("--allow-create-and-delete", "allow_create_and_delete", True),
     ],
 )
 def test_push__optional_arguments(

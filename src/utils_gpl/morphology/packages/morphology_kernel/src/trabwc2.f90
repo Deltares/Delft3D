@@ -52,7 +52,7 @@ subroutine trabwc2(utot      ,di        ,taub      ,npar      ,par       , &
 ! Arguments
 !
     integer                  , intent(in)    :: npar
-    real(fp)                 , intent(in)    :: chezy  ! local Chézy value [m1/2/s]
+    real(fp)                 , intent(in)    :: chezy  ! local ChÃ©zy value [m1/2/s]
     real(fp)                 , intent(in)    :: dg     ! geometric mean surface grain size [m]
     real(fp)                 , intent(in)    :: dgsd   ! geometric standard deviation of particle size mix [m]
     real(fp)                 , intent(in)    :: di     ! Grain size specified as d50

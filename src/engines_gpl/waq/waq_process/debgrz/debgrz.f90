@@ -145,7 +145,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !! be carried out or not. If false, then the cell is skipped.
     logical function must_calculate_cell(segment_attribute, pmsa, iparray) result(must_calculate)
 
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         real(kind=real_wp), intent(in)   :: pmsa(*)           !< Process Manager System Array, window of routine to process library
         integer(kind=int_wp), intent(in) :: segment_attribute !< The attributes value of this segment (from iknmrk)
@@ -157,7 +157,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         integer(kind=int_wp) :: atrribute_active
 
         must_calculate = .false.
-        call evaluate_waq_attribute(1,segment_attribute,atrribute_active)
+        call extract_waq_attribute(1,segment_attribute,atrribute_active)
         if (atrribute_active==1) then
             benthic_species_index = nint(pmsa(iparray(10)))
             ! pelagics can occur everywhere, but benthic grazers can only exist in bottom layer
@@ -172,7 +172,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !> Boolean indicating if the species is benthic and the calculation is being done for a cell not in the bottom.
     !! Benthic species, by definition, may only be located in the bottom. So a floating bethic species is nonsensical.
     logical function is_floating_benthic_species(cell_attributes, is_benthic) result(res)
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         integer(kind=int_wp), intent(in) ::   cell_attributes !< Attributes of the currernt cell
         integer(kind=int_wp), intent(in) ::   is_benthic      !< Indicates if a species is benthic (1) or not (0 = pelagic)
@@ -180,7 +180,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         ! locals
         integer(kind=int_wp) :: attribute_location
 
-        call evaluate_waq_attribute(2, cell_attributes, attribute_location)
+        call extract_waq_attribute(2, cell_attributes, attribute_location)
         res = ( (attribute_location == 1 .OR. attribute_location == 2 ) .AND. is_benthic.eq.1 )
     end function is_floating_benthic_species
 
@@ -221,7 +221,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !! by setting the (out)flow exactly equal to the current amount.
     !! In the next time iteration, once the flux has been applied, they will be exactly equal to zero.
     subroutine remove_floating_benthic_species(pmsa, ip, cell_count, iknmrk, fl, iflux, noflux)
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         real(kind=real_wp), dimension(*), intent(in) :: pmsa(*)    !< Process Manager System Array, window of routine to process library
 

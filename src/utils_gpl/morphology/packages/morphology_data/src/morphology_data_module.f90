@@ -573,6 +573,8 @@ type sedpar_type
     real(fp) :: sc_flcf   !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
     real(fp) :: tbreakup  !  relaxation time scale for break-up of flocs [s]
     real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
+    real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
+    real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -1233,6 +1235,8 @@ subroutine nullsedpar(sedpar)
     sedpar%version  = 2.0_fp
     sedpar%tbreakup = 1e-10_fp
     sedpar%tfloc    = 1e-10_fp
+    sedpar%d_micro  = 1e-4_fp
+    sedpar%ustar_macro = 0.067_fp
     !
     sedpar%flocmod        = FLOC_NONE
     sedpar%nflocpop       = 1

@@ -29,63 +29,63 @@ module m_dlwqtr
     contains
 
 
-    !> reads SURFACE from coupling
+    !> Reads SURFACE from coupling
     !! Sets dispersion length in vertical
-    subroutine dlwqtr(   notot  , nosys  , noseg  , noq    , noq1   , &
-                         noq2   , noq3   , nopa   , nosfun , nodisp , &
-                         novelo , ipoint , volume , area   , flow   , &
-                         aleng  , conc   , disp   , cons   , param  , &
-                         func   , segfun , disper , velo   , itime  , &
-                         idt    , syname , nocons , nofun  , coname , &
-                         paname , funame , sfname , updatr , ilflag )
+    subroutine dlwqtr(notot , nosys , noseg , noq   , noq1  , &
+                      noq2  , noq3  , nopa  , nosfun, nodisp, &
+                      novelo, ipoint, volume, area  , flow  , &
+                      aleng , conc  , disp  , cons  , param , &
+                      func  , segfun, disper, velo  , itime , &
+                      idt   , syname, nocons, nofun , coname, &
+                      paname, funame, sfname, updatr, ilflag)
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         SAVE
-        integer(kind=int_wp), intent(in) :: notot           !< Total number of substances
-        integer(kind=int_wp), intent(in) :: nosys           !< number of active substances
-        integer(kind=int_wp), intent(in) :: noseg           !< Nr. of computational elements
-        integer(kind=int_wp), intent(in) :: noq             !< Total number of exchanges
-        integer(kind=int_wp), intent(in) :: noq1            !< Nr. of exchanges direction 1
-        integer(kind=int_wp), intent(in) :: noq2            !< Nr. of exchanges direction 2
-        integer(kind=int_wp), intent(in) :: noq3            !< Nr. of exchanges direction 3
-        integer(kind=int_wp), intent(in) :: nopa            !< Number of parameters
-        integer(kind=int_wp), intent(in) :: nosfun          !< Number of segment functions
-        integer(kind=int_wp), intent(in) :: nodisp          !< Number of user-dispersions
-        integer(kind=int_wp), intent(in) :: novelo          !< Number of user-flows
-        integer(kind=int_wp), intent(in) :: ipoint(4, noq)   !< 1= "From"   segment pointers
-                                                            !< 2= "To"     segment pointers
-                                                            !< 3= "From-1" segment pointers
-                                                            !< 4= "To+1"   segment pointers
-        real(kind=real_wp), intent(in) :: VOLUME(NOSEG) !< Segment volumes
-        real(kind=real_wp), intent(in) :: AREA(NOQ) !< Exchange surfaces
-        real(kind=real_wp), intent(in) :: FLOW(NOQ) !< Flows
-        real(kind=real_wp), intent(inout) :: ALENG(2, NOQ) !< 1= Length to "From" surface
-                                                        !< 2= Length to "To"   surface
-                                                        !< 3 lengths in the grid
-        real(kind=real_wp), intent(in) :: CONC(NOTOT, NOSEG) !< Model concentrations
-        real(kind=real_wp), intent(inout) :: DISP(3) !< Dispersion in 3 directions
-        real(kind=real_wp), intent(inout) :: CONS(*) !< Model constants
+        integer(kind=int_wp), intent(in) :: notot               !< Total number of substances
+        integer(kind=int_wp), intent(in) :: nosys               !< number of active substances
+        integer(kind=int_wp), intent(in) :: noseg               !< Nr. of computational elements
+        integer(kind=int_wp), intent(in) :: noq                 !< Total number of exchanges
+        integer(kind=int_wp), intent(in) :: noq1                !< Nr. of exchanges direction 1
+        integer(kind=int_wp), intent(in) :: noq2                !< Nr. of exchanges direction 2
+        integer(kind=int_wp), intent(in) :: noq3                !< Nr. of exchanges direction 3
+        integer(kind=int_wp), intent(in) :: nopa                !< Number of parameters
+        integer(kind=int_wp), intent(in) :: nosfun              !< Number of segment functions
+        integer(kind=int_wp), intent(in) :: nodisp              !< Number of user-dispersions
+        integer(kind=int_wp), intent(in) :: novelo              !< Number of user-flows
+        integer(kind=int_wp), intent(in) :: ipoint(4, noq)      !< 1= "From"   segment pointers
+                                                                !< 2= "To"     segment pointers
+                                                                !< 3= "From-1" segment pointers
+                                                                !< 4= "To+1"   segment pointers
+        real(kind=real_wp), intent(in) :: VOLUME(NOSEG)         !< Segment volumes
+        real(kind=real_wp), intent(in) :: AREA(NOQ)             !< Exchange surfaces
+        real(kind=real_wp), intent(in) :: FLOW(NOQ)             !< Flows
+        real(kind=real_wp), intent(inout) :: ALENG(2, NOQ)      !< 1= Length to "From" surface
+                                                                !< 2= Length to "To"   surface
+                                                                !< 3 lengths in the grid
+        real(kind=real_wp), intent(in) :: CONC(NOTOT, NOSEG)    !< Model concentrations
+        real(kind=real_wp), intent(inout) :: DISP(3)            !< Dispersion in 3 directions
+        real(kind=real_wp), intent(inout) :: CONS(*)            !< Model constants
         real(kind=real_wp), intent(inout) :: PARAM(nopa, noseg) !< Model parameters
-        real(kind=real_wp), intent(inout) :: FUNC(*) !< Model functions at ITIME
-        real(kind=real_wp), intent(inout) :: SEGFUN(noseg, *) !< Segment functions at ITIME
-        real(kind=real_wp), intent(out)   :: DISPER(*) !< User defined dispersion
-        real(kind=real_wp), intent(out)   :: VELO(*) !< User defined flows
-        integer(kind=int_wp), intent(in) :: ITIME !< Time in system clock units
-        integer(kind=int_wp), intent(in) :: IDT   !< Time step system clock units
-        character(len=20), intent(in) :: SYNAME(NOTOT) !< names of systems
-        integer(kind=int_wp), intent(in) :: NOCONS !< Number of constants used
-        integer(kind=int_wp), intent(in) :: NOFUN !< Number of functions ( user )
-        character(len=20), intent(in) :: CONAME(*) !< Constant names
-        character(len=20), intent(in) :: PANAME(*) !< Parameter names
-        character(len=20), intent(in) :: FUNAME(*) !< Function names
-        character(len=20), intent(in) :: SFNAME(*) !< Segment function names
-        logical, intent(inout) :: UPDATR   !< Flag indicating if the transport
-                                           !< matrix is changed. The user should
-                                           !< set this flag to .T. if he alters
-                                           !< part of the matrix and uses integratio
-                                           !< option 10.xx .
-        integer(kind=int_wp), intent(in) :: ILFLAG !< if 0 then 3 length values
+        real(kind=real_wp), intent(inout) :: FUNC(*)            !< Model functions at ITIME
+        real(kind=real_wp), intent(inout) :: SEGFUN(noseg, *)   !< Segment functions at ITIME
+        real(kind=real_wp), intent(out)   :: DISPER(*)          !< User defined dispersion
+        real(kind=real_wp), intent(out)   :: VELO(*)            !< User defined flows
+        integer(kind=int_wp), intent(in) :: ITIME               !< Time in system clock units
+        integer(kind=int_wp), intent(in) :: IDT                 !< Time step system clock units
+        character(len=20), intent(in) :: SYNAME(NOTOT)          !< names of systems
+        integer(kind=int_wp), intent(in) :: NOCONS              !< Number of constants used
+        integer(kind=int_wp), intent(in) :: NOFUN               !< Number of functions ( user )
+        character(len=20), intent(in) :: CONAME(*)              !< Constant names
+        character(len=20), intent(in) :: PANAME(*)              !< Parameter names
+        character(len=20), intent(in) :: FUNAME(*)              !< Function names
+        character(len=20), intent(in) :: SFNAME(*)              !< Segment function names
+        logical, intent(inout) :: UPDATR                        !< Flag indicating if the transport
+                                                                !< matrix is changed. The user should
+                                                                !< set this flag to .T. if he alters
+                                                                !< part of the matrix and uses integratio
+                                                                !< option 10.xx .
+        integer(kind=int_wp), intent(in) :: ILFLAG              !< if 0 then 3 length values
 
         ! Local variables
         INTEGER(kind=int_wp) ::LCCCO, ier, ierr, ier2, lunrep, isurf, &
@@ -94,19 +94,16 @@ module m_dlwqtr
         LOGICAL    FIRST ,  LINIT , LEXI
         DATA       FIRST / .TRUE. /
         DATA       LINIT / .FALSE. /
-        !
-        !          check usage w.r.t. parallel computing
-        !
-        !          AM:
-        !          I removed this check, as all the computations set up using
-        !          the Delft3D user-interface have the SURF parameter.
-        !          Even if not, then the file should be available on all
-        !          nodes, as they share the directory.
-        !
-        !          check number of parameters
 
-        !
-!     Initialisation set index pointers, read surface areas
+        ! check usage w.r.t. parallel computing
+        ! AM:
+        ! I removed this check, as all the computations set up using
+        ! the Delft3D user-interface have the SURF parameter.
+        ! Even if not, then the file should be available on all
+        ! nodes, as they share the directory.
+        ! check number of parameters
+
+        ! Initialisation set index pointers, read surface areas
         if ( first ) then
             first = .false.
             ier   = 0
@@ -186,7 +183,5 @@ module m_dlwqtr
 2050 format (' ERROR: File areachar.dat does not match.', &
              ' NMA = ',I8,' LAYT= ',I8,' NMT = ',I8,' NOSEG=',I8)
 2070 format (' End extra functionality DLWQTR')
-
-    end subroutine
-
+    end subroutine dlwqtr
 end module m_dlwqtr

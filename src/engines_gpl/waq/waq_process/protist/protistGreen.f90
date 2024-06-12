@@ -36,7 +36,7 @@ contains
         !
         !*******************************************************************************
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use protist_math_functions
         use protist_cell_functions
         use protist_uptake_functions
@@ -148,7 +148,7 @@ contains
 
         ! segment loop
         segmentLoop : do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 ! species independent items

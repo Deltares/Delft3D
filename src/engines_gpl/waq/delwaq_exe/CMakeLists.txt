@@ -38,7 +38,7 @@ if (UNIX)
 endif (UNIX)
 
 if (WIN32)
-    target_include_directories(${executable_name} PRIVATE ${version_include_dir} ${mpi_include_path})
+    target_include_directories(${executable_name} PRIVATE ${version_include_dir})
 
     # Set linker properties
     target_link_directories(${executable_name}

@@ -901,7 +901,7 @@ end subroutine fm_wq_processes_ini_proc
 
 !! @return Integer result status (0 if successful)
 subroutine dfm_waq_initexternalforcings(iresult)
-    use unstruc_boundaries
+    use m_init_ext_forcings
     use m_alloc
     use m_flowexternalforcings
     use m_flowparameters
@@ -1767,8 +1767,8 @@ subroutine copy_data_from_wq_processes_to_fm(dt, tim)
                 iv_idx = varidx(ivar)         ! which index within the array
                 iarknd = arrknd(iarr)         ! which type of array (increm is 0, dim1 or 1)
                 ip_arr = arrpoi(iarr)         ! start point of the array in pmsa
-                idim1 = arrdm1(iarr)         ! dimension in the 1e direction
-                idim2 = arrdm2(iarr)         ! dimension in the 2e direction
+                idim1 = arrdm1(iarr)         ! dimension in the 1st direction
+                idim2 = arrdm2(iarr)         ! dimension in the 2nd direction
                 if (iarknd  ==  1) then
                     ip = ip_arr + iv_idx - 1
                     incr = 0

@@ -24,62 +24,26 @@ module m_integration_scheme_23
     use m_waq_precision
     use m_zercum
     use m_setset
-    use m_proint
+    use m_integrate_areas_fluxes
     use m_proces
     use m_hsurf
     use m_dlwqtr
-    use time_dependent_variables, only : initialize_time_dependent_variables
-    use m_dlwqo2
+    use time_dependent_variables, only: initialize_time_dependent_variables
+    use m_write_output
 
     implicit none
 
 contains
 
+    !>  Leonard's QUICKEST method as in DHI - software
+    !!  Performs time dependent integration according to the
+    !!  limited second order QUICKEST method. The method is explict
+    !!  and thus has a time step stability constraint. The method
+    !!  is monotonous. It has a continuous limiter like the
+    !!  van Leer limiters and performes thus sligthly worse than
+    !!  our FCT schemes with discrete limiters.
+    subroutine integration_scheme_23(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-    subroutine integration_scheme_23 (buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        !>  Leonard's QUICKEST method as in DHI - software
-        !>
-        !>                         Performs time dependent integration according to the
-        !>                         limited second order QUICKEST method. The method is explict
-        !>                         and thus has a time step stability constraint. The method
-        !>                         is monotonous. It has a continuous limiter like the
-        !>                         van Leer limiters and performes thus sligthly worse than
-        !>                         our FCT schemes with discrete limiters.
-
-        !     CREATED            : june 1988 by L. Postma
-        !
-        !     LOGICAL UNITS      : file_unit_list(19) , output, monitoring file
-        !                          file_unit_list(20) , output, formatted dump file
-        !                          file_unit_list(21) , output, unformatted hist. file
-        !                          file_unit_list(22) , output, unformatted dump file
-        !                          file_unit_list(23) , output, unformatted dump file
-        !
-        !     SUBROUTINES CALLED : DLWQTR, user transport routine
-        !                          PROCES, DELWAQ proces system
-        !                          DLWQO2, DELWAQ output system
-        !                          initialize_time_dependent_variables, sets time functions
-        !                          DLWQ13, system postpro-dump routine
-        !                          DLWQ14, scales waterquality
-        !                          DLWQ15, wasteload routine
-        !                          DLWQ17, boundary routine
-        !                          DLWQ18, integration step
-        !                          DLWQ30, transport routine
-        !                          PROINT, integration of fluxes
-        !                          open_waq_files, opens files
-        !                          ZERCUM, zero's the cummulative array's
-        !
-        !     PARAMETERS    :
-        !
-        !     NAME    KIND     LENGTH   FUNC.  DESCRIPTION
-        !     ---------------------------------------------------------
-        !     A       REAL       *      LOCAL  real      workspace array
-        !     J       INTEGER    *      LOCAL  integer   workspace array
-        !     C       CHARACTER  *      LOCAL  character workspace array
-        !     file_unit_list     INTEGER    *      INPUT  array with unit numbers
-        !     file_name_list   CHARACTER  *      INPUT  filenames
-        !
-        !     Declaration of arguments
-        !
         use m_dlwqo0
         use m_dlwqf8
         use m_dlwqd2
@@ -90,15 +54,16 @@ contains
         use m_dlwq17
         use m_dlwq15
         use m_dlwq14
-        use m_dlwq13
+        use dryfld_mod
+        use m_write_restart_map_file
         use m_delpar01
-        use m_array_manipulation, only : copy_real_array_elements
-        use data_processing, only : close_files
+        use m_array_manipulation, only: copy_real_array_elements
+        use data_processing, only: close_files
         use m_grid_utils_external
         use timers
         use variable_declaration          ! module with the more recently added arrays
         use delwaq2_data
-        use m_waq_openda_exchange_items, only : get_openda_buffer
+        use m_waq_openda_exchange_items, only: get_openda_buffer
         use m_actions
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
@@ -107,35 +72,37 @@ contains
         use m_sysc          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
 
-        type(waq_data_buffer), target :: buffer      !< System total array space
-        INTEGER(kind = int_wp), DIMENSION(*) :: file_unit_list
-        CHARACTER*(*), DIMENSION(*) :: file_name_list
-        INTEGER(kind = int_wp) :: ACTION
-        TYPE(DELWAQ_DATA), TARGET :: DLWQD
-        type(GridPointerColl) :: GridPs               ! collection of all grid definitions
+        type(waq_data_buffer), target :: buffer                  !< System total array space
+        integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< Array with logical unit numbers
+        character(len=*), intent(in) :: file_name_list(*)        !< Array with file names
+        integer(kind=int_wp), intent(in) :: action               !< Span of the run or type of action to perform
+                                                                 !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data), target :: dlwqd                       !< DELWAQ data structure
+        type(GridPointerColl) :: gridps                          !< Collection of all grid definitions
 
-        LOGICAL         IMFLAG, IDFLAG, IHFLAG
-        LOGICAL         OPFLAG, LREWIN
+        ! Local variables
+        logical imflag, idflag, ihflag
+        logical opflag, lrewin
 
-        INTEGER(kind = int_wp) :: ISYS
-        INTEGER(kind = int_wp) :: ICSYS
-        INTEGER(kind = int_wp) :: NSYS
-        INTEGER(kind = int_wp) :: INTOP2
-        INTEGER(kind = int_wp) :: ISTEP
-        INTEGER(kind = int_wp) :: ITH
-        INTEGER(kind = int_wp) :: I
-        INTEGER(kind = int_wp) :: ISCALE
-        INTEGER(kind = int_wp) :: ITER
-        INTEGER(kind = int_wp) :: IOPTPC
+        integer(kind=int_wp) :: isys
+        integer(kind=int_wp) :: icsys
+        integer(kind=int_wp) :: nsys
+        integer(kind=int_wp) :: intop2
+        integer(kind=int_wp) :: istep
+        integer(kind=int_wp) :: ith
+        integer(kind=int_wp) :: i
+        integer(kind=int_wp) :: iscale
+        integer(kind=int_wp) :: iter
+        integer(kind=int_wp) :: ioptpc
 
-        INTEGER(kind = int_wp) :: IBND
+        integer(kind=int_wp) :: ibnd
 
-        INTEGER(kind = int_wp) :: NSTEP
-        INTEGER(kind = int_wp) :: IDTOLD
-        REAL(kind = real_wp) :: SECPREV
+        integer(kind=int_wp) :: nstep
+        integer(kind=int_wp) :: idtold
+        real(kind=real_wp) :: secprev
 
-        integer(kind = int_wp), save :: ithand1 = 0 ! Leave local
-        
+        integer(kind=int_wp), save :: ithand1 = 0 ! Leave local
+
         integer(kind=int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
@@ -143,318 +110,291 @@ contains
 
             if (action == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt ("integration_scheme_23", ithandl)
+                if (timon) call timstrt("integration_scheme_23", ithandl)
                 goto 20
-            endif
+            end if
 
-            IF (ACTION == ACTION_INITIALISATION  .OR. &
-                    ACTION == ACTION_FULLCOMPUTATION) THEN
+            if (ACTION == ACTION_INITIALISATION .or. &
+                ACTION == ACTION_FULLCOMPUTATION) then
 
                 ithandl = 0
 
-                !
-                !          some initialisation
-                !
-                ITIME = ITSTRT
-                ISTEP = -1
-                NSTEP = (ITSTOP - ITSTRT) / IDT
-                IFFLAG = 0
-                IAFLAG = 0
-                IBFLAG = 0
-                IF (MOD(INTOPT, 16) >= 8) IBFLAG = 1
-                LDUMMY = .FALSE.
-                IF (NDSPN == 0) THEN
-                    NDDIM = NODISP
-                ELSE
-                    NDDIM = NDSPN
-                ENDIF
-                IF (NVELN == 0) THEN
-                    NVDIM = NOVELO
-                ELSE
-                    NVDIM = NVELN
-                ENDIF
-                LSTREC = ICFLAG == 1
+                ! some initialisation
+                itime = itstrt
+                istep = -1
+                nstep = (itstop - itstrt)/idt
+                ifflag = 0
+                iaflag = 0
+                ibflag = 0
+                if (mod(intopt, 16) >= 8) ibflag = 1
+                ldummy = .false.
+                if (ndspn == 0) then
+                    nddim = nodisp
+                else
+                    nddim = ndspn
+                end if
+                if (nveln == 0) then
+                    nvdim = novelo
+                else
+                    nvdim = nveln
+                end if
+                lstrec = icflag == 1
                 nosss = noseg + nseg2
                 noqtt = noq + noq4
                 inwtyp = intyp + nobnd
-                NOQT = NOQ1 + NOQ2
-                LLENG = ILENG + NOQT * 2
-                FORESTER = BTEST(INTOPT, 6)
-                NOWARN = 0
+                noqt = noq1 + noq2
+                lleng = ileng + noqt*2
+                forester = btest(intopt, 6)
+                nowarn = 0
 
+                ! initialize second volume array with the first one
+                call copy_real_array_elements(A(IVOL:), A(IVOL2:), NOSEG)
                 !
-                !          initialize second volume array with the first one
-                !
-                call copy_real_array_elements   (A(IVOL:), A(IVOL2:), NOSEG)
-                !
-            ENDIF
+            end if
 
-            !
-            !     Save/restore the local persistent variables,
-            !     if the computation is split up in steps
-            !
-            !     Note: the handle to the timer (ithandl) needs to be
-            !     properly initialised and restored
-            !
-            IF (ACTION == ACTION_INITIALISATION) THEN
-                if (timon) call timstrt ("integration_scheme_23", ithandl)
+            ! Save/restore the local persistent variables,
+            ! if the computation is split up in steps
+            ! Note: the handle to the timer (ithandl) needs to be
+            ! properly initialised and restored
+            if (ACTION == ACTION_INITIALISATION) then
+                if (timon) call timstrt("integration_scheme_23", ithandl)
                 call dlwqdata_save(dlwqd)
-                if (timon) call timstop (ithandl)
-                RETURN
-            ENDIF
+                if (timon) call timstop(ithandl)
+                return
+            end if
 
-            IF (ACTION == ACTION_SINGLESTEP) THEN
+            if (ACTION == ACTION_SINGLESTEP) then
                 call dlwqdata_restore(dlwqd)
-            ENDIF
+            end if
 
-            if (timon) call timstrt ("integration_scheme_23", ithandl)
+            if (timon) call timstrt("integration_scheme_23", ithandl)
 
             !======================= simulation loop ============================
-
             10 continue
 
-            !        Determine the volumes and areas that ran dry at start of time step
-
-            call hsurf  (noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld (noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                    a(iarea:), nocons, c(icnam:), a(icons:), surface, &
-                    j(iknmr:), iknmkv)
+            ! Determine the volumes and areas that ran dry at start of time step
+            call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
+                       c(isfna:), a(isfun:), surface, file_unit_list(19))
+            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
+                        a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+                        j(iknmr:), iknmkv)
 
             !        user transport processes
+            call dlwqtr(notot, nosys, nosss, noq, noq1, &
+                        noq2, noq3, nopa, nosfun, nodisp, &
+                        novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
+                        a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
+                        a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
+                        idt, c(isnam:), nocons, nofun, c(icnam:), &
+                        c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
 
-            call dlwqtr (notot, nosys, nosss, noq, noq1, &
-                    noq2, noq3, nopa, nosfun, nodisp, &
-                    novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                    a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                    a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                    idt, c(isnam:), nocons, nofun, c(icnam:), &
-                    c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
+            ! Temporary ? set the variables grid-setting for the DELWAQ variables
+            call setset(file_unit_list(19), nocons, nopa, nofun, nosfun, &
+                        nosys, notot, nodisp, novelo, nodef, &
+                        noloc, ndspx, nvelx, nlocx, nflux, &
+                        nopred, novar, nogrid, j(ivset:))
 
-            !jvb  Temporary ? set the variables grid-setting for the DELWAQ variables
-
-            call setset (file_unit_list(19), nocons, nopa, nofun, nosfun, &
-                    nosys, notot, nodisp, novelo, nodef, &
-                    noloc, ndspx, nvelx, nlocx, nflux, &
-                    nopred, novar, nogrid, j(ivset:))
-
-            !        return conc and take-over from previous step or initial condition,
-            !        and do particle tracking of this step (will be back-coupled next call)
-
+            ! Return conc and take-over from previous step or initial condition,
+            ! and do particle tracking of this step (will be back-coupled next call)
             call delpar01(itime, noseg, nolay, noq, nosys, &
-                    notot, a(ivol:), surface, a(iflow:), c(isnam:), &
-                    nosfun, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
-                    iaflag, intopt, ndmps, j(isdmp:), a(idmps:), &
-                    a(imas2:))
+                          notot, a(ivol:), surface, a(iflow:), c(isnam:), &
+                          nosfun, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
+                          iaflag, intopt, ndmps, j(isdmp:), a(idmps:), &
+                          a(imas2:))
 
-            !        call PROCES subsystem
+            ! call PROCES subsystem
+            call proces(notot, nosss, a(iconc:), a(ivol:), itime, &
+                        idt, a(iderv:), ndmpar, nproc, nflux, &
+                        j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
+                        a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
+                        ioffbl, a(imass:), nosys, &
+                        itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
+                        j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
+                        noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
+                        j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
+                        nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
+                        a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
+                        j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
+                        j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
+                        j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
+                        j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
+                        j(igseg:), novar, a, nogrid, ndmps, &
+                        c(iprna:), intsrt, &
+                        j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
+                        surface, file_unit_list(19))
 
-            call proces (notot, nosss, a(iconc:), a(ivol:), itime, &
-                    idt, a(iderv:), ndmpar, nproc, nflux, &
-                    j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
-                    a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
-                    ioffbl, a(imass:), nosys, &
-                    itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
-                    noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
-                    j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
-                    nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
-                    a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
-                    j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
-                    j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
-                    j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
-                    j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
-                    j(igseg:), novar, a, nogrid, ndmps, &
-                    c(iprna:), intsrt, &
-                    j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
-                    surface, file_unit_list(19))
-
-            !        set new boundaries
-
+            ! set new boundaries
             if (itime >= 0) then
                 ! first: adjust boundaries by OpenDA
                 if (dlwqd%inopenda) then
                     do ibnd = 1, nobnd
                         do isys = 1, nosys
                             call get_openda_buffer(isys, ibnd, 1, 1, &
-                                    A(ibset:+(ibnd - 1) * nosys + isys - 1))
-                        enddo
-                    enddo
-                endif
-                call thatcher_harleman_bc (a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
-                        notot, idt, a(iconc:), a(iflow:), a(iboun:))
-            endif
-            !
-            !     Call OUTPUT system
-            !
-            CALL DLWQO2 (NOTOT, NOSEG, NOPA, NOSFUN, ITIME, &
-                    C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
-                    A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
-                    A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
-                    file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
-                    C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
-                    C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
-                    NOSYS, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
-                    A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
-                    IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
-                    IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
-                    IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
-                    NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
-                    C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
-                    J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
-                    C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
-                    J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
-                    NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
-                    J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
-                    J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
-                    C(IBTYP:), J(INTYP:), C(ICNAM:), NOQ, J(IXPNT:), &
-                    INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
-                    NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
-                    A(IWDMP:), iknmkv, isegcol)
+                                                   A(ibset:+(ibnd - 1)*nosys + isys - 1))
+                        end do
+                    end do
+                end if
+                call thatcher_harleman_bc(a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
+                                          notot, idt, a(iconc:), a(iflow:), a(iboun:))
+            end if
 
-            !          zero cummulative array's
+            ! Call OUTPUT system
+            call write_output(NOTOT, NOSEG, NOPA, NOSFUN, ITIME, &
+                              C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
+                              A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
+                              A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
+                              file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
+                              C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
+                              C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
+                              NOSYS, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
+                              A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
+                              IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
+                              IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
+                              IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
+                              NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
+                              C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
+                              J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
+                              C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
+                              J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
+                              NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
+                              J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
+                              J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
+                              C(IBTYP:), J(INTYP:), C(ICNAM:), NOQ, J(IXPNT:), &
+                              INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
+                              NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
+                              A(IWDMP:), iknmkv, isegcol)
 
+            ! zero cummulative array's
             if (imflag .or. (ihflag .and. noraai > 0)) then
-                call set_cumulative_arrays_zero (notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
-                        a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
-                        a(itrra:), ibflag, nowst, a(iwdmp:))
-            endif
+                call set_cumulative_arrays_zero(notot, nosys, nflux, ndmpar, ndmpq, &
+                                                ndmps, a(ismas:), a(iflxi:), a(imas2:), &
+                                                a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
+                                                a(itrra:), ibflag, nowst, a(iwdmp:))
+            end if
 
-            !          simulation done ?
+            ! simulation done ?
 
             if (itime < 0) goto 9999
             if (itime >= itstop) goto 20
 
             !     add processes
-            call scale_processes_derivs_and_update_balances (a(iderv:), notot, noseg, itfact, a(imas2:), &
-                    idt, iaflag, a(idmps:), intopt, j(isdmp:))
+            call scale_processes_derivs_and_update_balances(a(iderv:), notot, noseg, itfact, a(imas2:), &
+                                                            idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
-            !     get new volumes
+            ! get new volumes
             itimel = itime
             itime = itime + idt
             select case (ivflag)
-            case (1)                 !     computation of volumes for computed volumes only
-                call copy_real_array_elements   (a(ivol:), a(ivol2:), noseg)
-                call dlwqb3 (a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot, &
-                        noq, nvdim, j(ivpnw:), a(ivol2:), intopt, &
-                        a(imas2:), idt, iaflag, nosys, a(idmpq:), &
-                        ndmpq, j(iqdmp:))
+            case (1) ! computation of volumes for computed volumes only
+                call copy_real_array_elements(a(ivol:), a(ivol2:), noseg)
+                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot, &
+                            noq, nvdim, j(ivpnw:), a(ivol2:), intopt, &
+                            a(imas2:), idt, iaflag, nosys, a(idmpq:), &
+                            ndmpq, j(iqdmp:))
                 updatr = .true.
-            case (2)                 !     the fraudulent computation option
-                call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
-                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
-                        updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
-                        lstrec, lrewin, a(ivol2:), dlwqd)
-                call dlwqf8 (noseg, noq, j(ixpnt:), idt, iknmkv, &
-                        a(ivol:), a(iflow:), a(ivoll:), a(ivol2:))
+            case (2) ! the fraudulent computation option
+                call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+                            j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
+                            j(ibulk:), file_name_list, ftype, isflag, ivflag, &
+                            updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
+                            lstrec, lrewin, a(ivol2:), dlwqd)
+                call dlwqf8(noseg, noq, j(ixpnt:), idt, iknmkv, &
+                            a(ivol:), a(iflow:), a(ivoll:), a(ivol2:))
                 updatr = .true.
                 lrewin = .true.
                 lstrec = .true.
-            case default               !     read new volumes from files
-                call dlwq41 (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
-                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
-                        updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
-                        lstrec, lrewin, a(ivoll:), dlwqd)
+            case default ! read new volumes from files
+                call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+                            j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
+                            j(ibulk:), file_name_list, ftype, isflag, ivflag, &
+                            updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
+                            lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
-            !        update the info on dry volumes with the new volumes
+            ! update the info on dry volumes with the new volumes
+            call dryfle(noseg, nosss, a(ivol2:), nolay, nocons, &
+                        c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
 
-            call dryfle (noseg, nosss, a(ivol2:), nolay, nocons, &
-                    c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
+            ! add the waste loads
 
-            !          add the waste loads
+            call dlwq15(nosys, notot, noseg, noq, nowst, &
+                        nowtyp, ndmps, intopt, idt, itime, &
+                        iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
+                        a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
+                        j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
+                        iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
+                        c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
+                        a(iwdmp:), 1, notot)
 
-            call dlwq15 (nosys, notot, noseg, noq, nowst, &
-                    nowtyp, ndmps, intopt, idt, itime, &
-                    iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
-                    a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
-                    j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                    iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
-                    a(iwdmp:), 1, notot)
+            ! do the transport itself
+            call dlwqo0(nosys, notot, noseg, noq1, noq2, &
+                        noq3, noq, nddim, nvdim, a(idisp:), &
+                        a(idnew:), a(ivnew:), a(iarea:), a(iflow:), a(ileng:), &
+                        j(ixpnt:), iknmkv, j(idpnw:), j(ivpnw:), a(iconc:), &
+                        a(iboun:), intopt, ilflag, idt, a(iderv:), &
+                        iaflag, a(imas2:), ndmpq, j(iqdmp:), a(idmpq:))
 
-            !          do the transport itself
-
-            call dlwqo0 (nosys, notot, noseg, noq1, noq2, &
-                    noq3, noq, nddim, nvdim, a(idisp:), &
-                    a(idnew:), a(ivnew:), a(iarea:), a(iflow:), a(ileng:), &
-                    j(ixpnt:), iknmkv, j(idpnw:), j(ivpnw:), a(iconc:), &
-                    a(iboun:), intopt, ilflag, idt, a(iderv:), &
-                    iaflag, a(imas2:), ndmpq, j(iqdmp:), a(idmpq:))
-
-            !          new time values, except the volumes
-
+            ! new time values, except the volumes
             idtold = idt
-            call initialize_time_dependent_variables (file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                    j(inrha:), j(inrh2:), j(inrft:), idt, a(ivol:), &
-                    a(idiff:), a(iarea:), a(iflow:), a(ivelo:), a(ileng:), &
-                    a(iwste:), a(ibset:), a(icons:), a(iparm:), a(ifunc:), &
-                    a(isfun:), j(ibulk:), file_name_list, c(ilunt:), ftype, &
-                    intsrt, isflag, ifflag, ivflag, ilflag, &
-                    updatr, j(iktim:), j(iknmr:), j(inisp:), a(inrsp:), &
-                    j(intyp:), j(iwork:), .false., lrewin, a(ivoll:), &
-                    .false., gridps, dlwqd)
+            call initialize_time_dependent_variables(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
+                                                     j(inrha:), j(inrh2:), j(inrft:), idt, a(ivol:), &
+                                                     a(idiff:), a(iarea:), a(iflow:), a(ivelo:), a(ileng:), &
+                                                     a(iwste:), a(ibset:), a(icons:), a(iparm:), a(ifunc:), &
+                                                     a(isfun:), j(ibulk:), file_name_list, c(ilunt:), ftype, &
+                                                     intsrt, isflag, ifflag, ivflag, ilflag, &
+                                                     updatr, j(iktim:), j(iknmr:), j(inisp:), a(inrsp:), &
+                                                     j(intyp:), j(iwork:), .false., lrewin, a(ivoll:), &
+                                                     .false., gridps, dlwqd)
 
-            !          set a time step
+            ! set a time step
+            call update_concs_explicit_time_step(nosys, notot, nototp, nosss, a(ivol2:), &
+                                                 surface, a(imass:), a(iconc:), a(iderv:), idtold, &
+                                                 ivflag, file_unit_list(19))
 
-            call update_concs_explicit_time_step (nosys, notot, nototp, nosss, a(ivol2:), &
-                    surface, a(imass:), a(iconc:), a(iderv:), idtold, &
-                    ivflag, file_unit_list(19))
-            !
-            !       Forester filter on the vertical
-            !
-            IF (FORESTER) THEN
-                CALL DLWQD2 (file_unit_list(19), NOSYS, NOTOT, NOSEG, NOQ3, &
-                        KMAX, A(ICONC:), A(LLENG:), NOWARN)
-            ENDIF
+            ! Forester filter on the vertical
+            if (FORESTER) then
+                call DLWQD2(file_unit_list(19), NOSYS, NOTOT, NOSEG, NOQ3, &
+                            KMAX, A(ICONC:), A(LLENG:), NOWARN)
+            end if
 
-            !     calculate closure error
+            ! calculate closure error
             if (lrewin .and. lstrec) then
-                call dlwqce (a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
-                        noseg, file_unit_list(19))
-                call copy_real_array_elements   (a(ivoll:), a(ivol:), noseg)
+                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
+                            noseg, file_unit_list(19))
+                call copy_real_array_elements(a(ivoll:), a(ivol:), noseg)
             else
-                !     replace old by new volumes
-                call copy_real_array_elements   (a(ivol2:), a(ivol:), noseg)
-            endif
+                ! replace old by new volumes
+                call copy_real_array_elements(a(ivol2:), a(ivol:), noseg)
+            end if
 
-            !     integrate the fluxes at dump segments fill asmass with mass
+            ! integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call proint (nflux, ndmpar, idtold, itfact, a(iflxd:), &
-                        a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
-            endif
+                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idtold, itfact, a(iflxd:), &
+                                                     a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
+            end if
 
-            !          end of loop
+            ! end of loop
 
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
 
             20 continue
 
-            if (ACTION == ACTION_FINALISATION    .or. &
-                    ACTION == ACTION_FULLCOMPUTATION) then
+            if (ACTION == ACTION_FINALISATION .or. &
+                ACTION == ACTION_FULLCOMPUTATION) then
 
-                !         close files, except monitor file
-
+                ! close files, except monitor file
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
 
-                !         write restart file
-
-                CALL write_restart_file (file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
-                        C(ISNAM:), NOTOT, nosss)
-            endif
+                ! write restart file
+                call write_restart_map_file(file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
+                                            C(ISNAM:), NOTOT, nosss)
+            end if
 
         end associate
-        9999 if (timon) call timstop (ithandl)
+        9999    if (timon) call timstop(ithandl)
 
         dlwqd%iaflag = iaflag
         dlwqd%itime = itime
-
-        RETURN
-
-    END
-
+    end subroutine integration_scheme_23
 end module m_integration_scheme_23

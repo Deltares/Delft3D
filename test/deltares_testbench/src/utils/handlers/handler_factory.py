@@ -139,10 +139,7 @@ class HandlerFactory(ABC):
             e: _description_
         """
         rtp = Paths().rebuildToLocalPath(to_path)
-        if os.path.exists(rtp):
-            delete_directory(rtp, logger)
-
-        os.makedirs(rtp)
+        os.makedirs(rtp, exist_ok=True)
 
         handler = cls.__get_handler(
             from_path, programs, logger, credentials, autocommit

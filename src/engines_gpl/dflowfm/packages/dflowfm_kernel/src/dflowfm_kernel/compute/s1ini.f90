@@ -40,7 +40,8 @@
  use m_hydrology_data, only : jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
  use m_mass_balance_areas
  use m_partitioninfo
- use m_lateral, only : numlatsg, qqlat, n1latsg, n2latsg, nnlat, balat, qplat
+ use m_lateral, only : numlatsg, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
+                       apply_transport
  implicit none
 
  integer          :: L, k1, k2, k, n, LL, kt, idim, imba
@@ -166,6 +167,8 @@
        num_layers = max(1,kmx)
        QQLat(1:num_layers,1:ndx) = 0d0
        do n = 1,numlatsg
+          if (apply_transport(n) == 0) then ! When apply_transport is positive, qqlat has been 
+                                            ! computed in flow_run_sometimesteps already
              do k1=n1latsg(n),n2latsg(n)
                 k = nnlat(k1)
                 if (k > 0) then
@@ -174,7 +177,8 @@
                    end do
                 end if
              end do
-          end do
+          end if
+       end do
  
 
 

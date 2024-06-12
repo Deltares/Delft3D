@@ -57,20 +57,26 @@ class FileLogger(ILogger):
     def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         self.__logger.log(self.__get_internal_log_level(log_level), message, exc_info=exc_info)
 
+    def close(self):
+        """Close all handlers of the logger."""
+        for handler in self.__logger.handlers:
+            handler.close()
+            self.__logger.removeHandler(handler)
+
     def __get_internal_log_level(self, log_level: LogLevel) -> int:
         return log_level
 
     def __create_file_logger(self, log_level: int):
         log_folder = os.path.dirname(self.__path)
+        os.makedirs(log_folder, exist_ok=True)
 
-        if not os.path.exists(log_folder):
-            os.mkdir(log_folder)
+        if os.path.isfile(self.__path):
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler.doRollover()
+        else:
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
 
-        handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
-        handler.doRollover()
         handler.setLevel(log_level)
-
         format_str = "%(asctime)s [%(levelname)-7s] : %(message)s"
-
         handler.setFormatter(logging.Formatter(format_str))
         return handler
