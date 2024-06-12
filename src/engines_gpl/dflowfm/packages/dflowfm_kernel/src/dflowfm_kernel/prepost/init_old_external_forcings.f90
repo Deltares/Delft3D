@@ -104,6 +104,19 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    integer                       :: tmp_nbndt
    integer                       :: num_layers
 
+   call initialize_setup()
+   
+   call initialize_new_wrapper()
+   
+   call initialize_old()
+   
+   call initialize_misc()
+   
+   call initialize_cleanup()
+   
+   contains
+   
+   subroutine initialize_setup()
 
    iresult = DFM_NOERR
 
@@ -155,7 +168,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    ! First initialize new-style StructureFile quantities.
    if (.not.flow_init_structurecontrol()) then
       iresult = DFM_EXTFORCERROR
-      goto 888
+      return
    endif
 
    ! First initialize new-style IniFieldFile quantities.
@@ -166,7 +179,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          iresult = initInitialFields(md_inifieldfile)
          if (iresult /= DFM_NOERR) then
             call timstop(handle_extra(49)) ! initInitialFields
-            goto 888
+            return
          end if
       else
          call qnerror( 'Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
@@ -174,12 +187,12 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          call warn_flush()
          iresult = DFM_EXTFORCERROR
          call timstop(handle_extra(49)) ! initInitialFields
-         goto 888
+         return
       endif
       call timstop(handle_extra(49)) ! initInitialFields
    end if
 
-   if (jatimespace == 0) goto 888                      ! Just cleanup and close ext file.
+   if (jatimespace == 0) return                      ! Just cleanup and close ext file.
 
    if (allocated(ec_pwxwy_x))   deallocate(ec_pwxwy_x)
    if (allocated(ec_pwxwy_y))   deallocate(ec_pwxwy_y)
@@ -382,7 +395,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
             write (rec, '(a,i6,a)') '(', numnos, ' points)'
             call qnerror('Salinity boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
             iresult = DFM_WRONGINPUT
-            goto 888
+            return
          end if
       endif
    endif
@@ -428,7 +441,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
             write (rec, '(a,i6,a)') '(', numnos, ' points)'
             call qnerror('Temperature boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
             iresult = DFM_WRONGINPUT
-            goto 888
+            return
          end if
       endif
    endif
@@ -470,7 +483,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
          call qnerror('Wave energy boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
          iresult = DFM_WRONGINPUT
-         goto 888
+         return
       end if
 
    endif
@@ -515,7 +528,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
          call qnerror('Sediment boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
          iresult = DFM_WRONGINPUT
-         goto 888
+         return
       end if
    endif
 
@@ -553,7 +566,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
                write (rec, '(a,i6,a)') '(', numnos, ' points)'
                call qnerror('Tracer boundary for '''//trim(bndtr(itrac)%name)//''' (partially) unassociated. ', trim(rec), ' Open boundary required.')
                iresult = DFM_WRONGINPUT
-               goto 888
+               return
             end if
          enddo
          ! also allocate 3D-sigma bnd distribution for EC
@@ -597,7 +610,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
                   write (rec, '(a,i6,a)') '(', numnos, ' points)'
                   call qnerror('Sediment fraction boundary for '''//trim(bndsf(isf)%name)//''' (partially) unassociated. ', trim(rec), ' Open boundary required.')
                   iresult = DFM_WRONGINPUT
-                  goto 888
+                  return
                end if
             enddo ! nbndsf(isf)
             ! also allocate 3D-sigma bnd distribution for EC
@@ -641,7 +654,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
          call qnerror('Tangential boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
          iresult = DFM_WRONGINPUT
-         goto 888
+         return
       end if
    endif
 
@@ -684,7 +697,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
          call qnerror('UxUy velocity boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
          iresult = DFM_WRONGINPUT
-         goto 888
+         return
       end if
    endif
 
@@ -720,7 +733,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          write (rec, '(a,i6,a)') '(', numnos, ' points)'
          call qnerror('Normal boundary (partially) unassociated. ', trim(rec), ' Open boundary required.')
          iresult = DFM_WRONGINPUT
-         goto 888
+         return
       end if
    endif
 
@@ -752,22 +765,6 @@ module function flow_initexternalforcings() result(iresult)              ! This 
 
    ! Start processing ext files, start with success.
    success = .true.
-
-   ! First initialize new-style ExtForceFileNew quantities.
-   num_lat_ini_blocks = 0
-   if (len_trim(md_extfile_new) > 0) then
-      success = init_external_forcings(md_extfile_new)
-      if (.not. success) then
-         iresult = DFM_WRONGINPUT
-         call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
-         call qnerror('Error occurred while running, please inspect your diagnostic output.',' ', ' ')
-         goto 888
-      end if
-      num_lat_ini_blocks = numlatsg ! nr of [Lateral] providers in new extforce file
-      if (.false.) then ! DEBUG
-         call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
-      end if
-   endif
  
    if (kmx > 0) then 
       if (jastructurelayersactive > 0) then 
@@ -775,9 +772,35 @@ module function flow_initexternalforcings() result(iresult)              ! This 
          allocate (ff3(3,0:kmxd)) ! and wait till similar lines appear in the %environment
       endif
    endif
+   
+   end subroutine
+   
+   subroutine initialize_new_wrapper()
+      ! First initialize new-style ExtForceFileNew quantities.
+   num_lat_ini_blocks = 0
+   if (len_trim(md_extfile_new) > 0) then
+      success = init_external_forcings(md_extfile_new)
+      if (.not. success) then
+         iresult = DFM_WRONGINPUT
+         call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
+         call qnerror('Error occurred while running, please inspect your diagnostic output.',' ', ' ')
+         return
+      end if
+      num_lat_ini_blocks = numlatsg ! nr of [Lateral] providers in new extforce file
+      if (.false.) then ! DEBUG
+         call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
+      end if
+   endif
+   
+   end subroutine initialize_new_wrapper
+   
+   subroutine initialize_old()
 
    ! Finish with all remaining old-style ExtForceFile quantities.
-   if (mext /= 0) then
+   if (mext == 0) then
+      return
+   endif
+   
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
 
@@ -2031,11 +2054,11 @@ module function flow_initexternalforcings() result(iresult)              ! This 
                   if (len_trim(rec) > 0) then
                      call mess(LEVEL_WARN, rec)
                   end if
-                  ! We do a direct goto 888 end, so qnerror for GUI is allowed here.
+                  ! We do a direct return end, so qnerror for GUI is allowed here.
                   call qnerror('flow_initexternalforcings: Error while initializing quantity: ', qid, '. Check preceding log lines for details.')
                   iresult = DFM_EXTFORCERROR
                   call timstop(handle_extra(50)) ! extforcefile old
-                  goto 888
+                  return
             endif
 
          endif
@@ -2043,6 +2066,10 @@ module function flow_initexternalforcings() result(iresult)              ! This 
       enddo
       call timstop(handle_extra(50)) ! extforcefile old
 
+   end subroutine
+   
+   subroutine initialize_misc()
+   
       ! If no source/sink exists, then do not write related statistics to His-file
       if (numsrc < 0) then
          jahissourcesink = 0
@@ -2415,11 +2442,9 @@ module function flow_initexternalforcings() result(iresult)              ! This 
             msgbuf = 'One or more source/sinks entries resulted in a fatal error.'
             call warn_flush()
             iresult = DFM_EXTFORCERROR
-            goto 888
+            return
          endif
       endif
-   endif ! read mext file
-
 
    if (loglevel_StdOut == LEVEL_DEBUG) then
       call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
@@ -2427,11 +2452,14 @@ module function flow_initexternalforcings() result(iresult)              ! This 
 
    if (.not. success) then
       iresult = DFM_EXTFORCERROR
-      goto 888
+      return
    end if
+   
+   end subroutine initialize_misc
+   
+   subroutine initialize_cleanup()
 
    ! Cleanup:
-888 continue
    if (jafrculin == 0 .and. allocated(frculin) ) then
       deallocate(frculin)
    endif
@@ -2793,6 +2821,8 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
    ! (needed to disable possibly invalid statistical output items)
    call check_model_has_structures_across_partitions
+   
+   end subroutine initialize_cleanup
 
 end function flow_initexternalforcings
    
