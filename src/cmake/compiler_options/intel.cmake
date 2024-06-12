@@ -26,16 +26,16 @@ if (WIN32)
     set(check_pointers_flag                   /check:pointers)
     set(check_nopointers_flag                 /check:nopointers)
     set(check_uninit_flag                     /check:uninit)
-    set(check_stack_flag                      /check:stack)	
+    set(check_stack_flag                      /check:stack)
     set(openmp_flag                           /Qopenmp)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
     set(floating_point_exception_flag         /fpe:0)
     set(traceback_flag                        /traceback)
-    
+
     set(codecov_flag                          /Qcov-gen)
     set(profiling_flag                        /Qprof-gen:srcpos)
     set(srcrootdir_code_cov                   /Qprof-src-root ${src_root_dir})
-    
+
     # Set debug flags:
     set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
 
@@ -73,12 +73,12 @@ if (UNIX)
     set(check_pointers_flag                      -check pointers)
     set(check_nopointers_flag                    -check nopointers)
     set(check_uninit_flag                        "-check uninit")
-    set(check_stack_flag                         "-check stack")	
+    set(check_stack_flag                         "-check stack")
     set(openmp_flag                              "-qopenmp")
     set(generate_reentrancy_threaded_flag        -reentrancy threaded)
     set(floating_point_exception_flag            -fpe0)
     set(traceback_flag                           -traceback)
-    
+
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:

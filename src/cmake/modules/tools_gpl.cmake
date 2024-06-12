@@ -23,10 +23,6 @@ set(waqmerge_module ${tools_gpl_path}/waq_tools/waqmerge)
 # Ddcouple
 set(ddcouple_module ${tools_gpl_path}/waq_tools/ddcouple)
 
-
-# Duprol2delwaq
-set(duprol2delwaq_module ${tools_gpl_path}/duprol2delwaq/packages/parse)
-
 # Datsel
 set(datsel_module_path "${tools_gpl_path}/datsel/packages")
 set(datsel_version_number_module ${datsel_module_path}/datsel_version_number)
