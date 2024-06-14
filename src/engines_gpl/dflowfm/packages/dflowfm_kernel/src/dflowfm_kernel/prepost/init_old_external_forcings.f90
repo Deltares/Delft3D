@@ -1,12 +1,4 @@
 submodule (m_external_forcings) old_initialisation
-
-implicit none
-
-contains
-   
-   !> Initializes boundaries and meteo for the current model.
-!! @return Integer result status (0 if successful)
-module function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
    use m_external_forcings, only: init_external_forcings, addtimespacerelation_boundaries, adduniformtimerelation_objects
    use m_alloc
    use m_flowparameters
@@ -51,73 +43,49 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids
    use m_lateral, only : initialize_lateraldata, apply_transport
    
-   integer                       :: iresult
-   
-   character(len=256)            :: filename, sourcemask
-   integer                       :: L, Lf, mout, kb, LL, Lb, Lt, ierr, k, k1, k2, ja, method, n1, n2, kbi, Le, n, j, mx, n4, kk, kt, ktmax, layer, lenqidnam
-   character (len=256)           :: fnam, rec, filename0
-   character (len=64)            :: varname
-   character (len=NAMTRACLEN)    :: tracnam, qidnam
-   character (len=NAMWAQLEN)     :: wqbotnam
-   character (len=NAMSFLEN)      :: sfnam, qidsfnam
-   integer                       :: minp0, npli, inside, filetype0, iad
-   integer, allocatable          :: ihu(:)             ! temp
-   double precision, allocatable :: viuh(:)            ! temp
-   double precision, allocatable :: tt(:)
-   logical                       :: exist
-   logical                       :: patm_available, tair_available, dewpoint_available
-   integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
-   integer                       :: numnos, numnot, numnon ! < Nr. of unassociated flow links (not opened due to missing z- or u-boundary)
-
-   double precision, allocatable :: xdum(:), ydum(:), xy2dum(:,:)
-   integer, allocatable          :: kdum(:)
-   integer, dimension(:), pointer:: pkbot, pktop
-
-   double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
+implicit none
 
    double precision, allocatable :: sah(:)  ! temp
-   double precision, allocatable :: hulp(:,:) ! hulp
-   double precision, allocatable :: widths(:) ! hulp
-
+   double precision, allocatable :: grainlayerthickness(:,:) ! help array grain layer thickness
+   integer :: itrac, num_lat_ini_blocks
+   logical                       :: patm_available, tair_available, dewpoint_available
+   double precision, allocatable :: xdum(:), ydum(:), xy2dum(:,:)
+   integer, allocatable          :: kdum(:)
+   double precision, allocatable  :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer                       :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
-   double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
 
-   integer                       :: iconst, itrac, iwqbot, idum, isf, isednum, itp
-   real(kind=hp)                 :: maxSearchRadius
-
-   integer, external             :: findname
-   double precision,  external   :: ran0
-   logical, external             :: flow_init_structurecontrol
-
-   integer                       :: L1, L2
-   integer                       :: ilattype
-   character(len=20)             :: wqinput
-   character(len=NAMMBALEN)      :: mbainputname
-   integer                       :: imba, needextramba, needextrambar
-   logical                       :: hyst_dummy(2)
-   double precision              :: area, width, hdx, factor
-   type(t_storage), pointer      :: stors(:)
-   integer                       :: i, nstor, ec_item
-   integer                       :: num_lat_ini_blocks !< Number of [Lateral] providers read from new extforce file.
-   integer                       :: tmp_nbndu
-   integer                       :: tmp_nbndn
-   integer                       :: tmp_nbndt
-   integer                       :: num_layers
-
-   call initialize_setup()
+contains
    
-   call initialize_new_wrapper()
+   !> Initializes boundaries and meteo for the current model.
+!! @return Integer result status (0 if successful)
+function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
    
-   call initialize_old()
+   integer :: iresult
+   logical :: success
+
+   call initialize_setup(iresult)
    
-   call initialize_misc()
+   success = init_external_forcings(md_extfile_new)
+   
+   call initialize_old(iresult)
+   
+   call initialize_misc(iresult)
    
    call initialize_cleanup()
    
-   contains
+end function flow_initexternalforcings
    
-   subroutine initialize_setup()
+subroutine initialize_setup(iresult)
+   integer, intent(out) :: iresult
 
+   integer :: ierr
+   logical                       :: exist
+   integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx
+   integer :: n4 = 6
+   character (len=256)           :: fnam, rec
+   logical, external             :: flow_init_structurecontrol
+   integer                       :: tmp_nbndu, tmp_nbndt, tmp_nbndn
+   
    iresult = DFM_NOERR
 
    success = .true.    ! default if no valid providers are present in *.ext file (fm_external_forcings_data::success)
@@ -166,7 +134,7 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    call initialize_ec_module()
 
    ! First initialize new-style StructureFile quantities.
-   if (.not.flow_init_structurecontrol()) then
+   if (.not. flow_init_structurecontrol()) then
       iresult = DFM_EXTFORCERROR
       return
    endif
@@ -775,27 +743,44 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    
    end subroutine
    
-   subroutine initialize_new_wrapper()
-      ! First initialize new-style ExtForceFileNew quantities.
-   num_lat_ini_blocks = 0
-   if (len_trim(md_extfile_new) > 0) then
-      success = init_external_forcings(md_extfile_new)
-      if (.not. success) then
-         iresult = DFM_WRONGINPUT
-         call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
-         call qnerror('Error occurred while running, please inspect your diagnostic output.',' ', ' ')
-         return
-      end if
-      num_lat_ini_blocks = numlatsg ! nr of [Lateral] providers in new extforce file
-      if (.false.) then ! DEBUG
-         call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
-      end if
-   endif
+   !subroutine initialize_new_wrapper()
+   !   ! First initialize new-style ExtForceFileNew quantities.
+   !num_lat_ini_blocks = 0
+   !if (len_trim(md_extfile_new) > 0) then
+   !   success = init_external_forcings(md_extfile_new)
+   !   if (.not. success) then
+   !      iresult = DFM_WRONGINPUT
+   !      call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
+   !      call qnerror('Error occurred while running, please inspect your diagnostic output.',' ', ' ')
+   !      return
+   !   end if
+   !   num_lat_ini_blocks = numlatsg ! nr of [Lateral] providers in new extforce file
+   !   if (.false.) then ! DEBUG
+   !      call ecInstancePrintState(ecInstancePtr,callback_msg,LEVEL_DEBUG)
+   !   end if
+   !endif
    
-   end subroutine initialize_new_wrapper
+   !end subroutine initialize_new_wrapper
    
-   subroutine initialize_old()
-
+   subroutine initialize_old(iresult)
+   integer, intent(out) :: iresult
+   integer :: ja, method, lenqidnam, ierr, ilattype, inivelx, inively, isednum, kk, k, kb, kt, iconst
+   integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba
+    integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
+   real(kind=dp)                  :: maxSearchRadius
+   character(len=256)             :: filename, sourcemask
+   character (len=64)             :: varname
+   character (len=NAMTRACLEN)     :: tracnam, qidnam
+   character (len=NAMSFLEN)       :: sfnam, qidsfnam
+   character(len=20)              :: wqinput
+   character(len=NAMMBALEN)       :: mbainputname
+   integer, external              :: findname
+   double precision, allocatable  :: viuh(:), tt(:)
+   integer, dimension(:), pointer :: pkbot, pktop
+   double precision               :: factor
+   double precision,  external   :: ran0
+   character (len=256)           :: rec
+   
    ! Finish with all remaining old-style ExtForceFile quantities.
    if (mext == 0) then
       return
@@ -2068,8 +2053,17 @@ module function flow_initexternalforcings() result(iresult)              ! This 
 
    end subroutine
    
-   subroutine initialize_misc()
-   
+   subroutine initialize_misc(iresult)
+      integer, intent(out) :: iresult
+      integer :: ierr
+      integer :: k, L, LF, KB, KBI, N, K2, ja, method, filetype0, num_layers
+      integer :: k1, l1, l2
+      character(len=256)             :: filename, sourcemask, filename0
+      character (len=64)             :: varname
+      logical :: exist
+      double precision, allocatable :: hulp(:,:) 
+      double precision, allocatable :: widths(:) 
+
       ! If no source/sink exists, then do not write related statistics to His-file
       if (numsrc < 0) then
          jahissourcesink = 0
@@ -2458,6 +2452,11 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    end subroutine initialize_misc
    
    subroutine initialize_cleanup()
+   integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstpr, nstor, i, ja
+   integer                       :: imba, needextramba, needextrambar
+   logical :: hyst_dummy(2)
+   double precision              :: area, width, hdx, factor
+   type(t_storage), pointer      :: stors(:)
 
    ! Cleanup:
    if (jafrculin == 0 .and. allocated(frculin) ) then
@@ -2823,7 +2822,5 @@ module function flow_initexternalforcings() result(iresult)              ! This 
    call check_model_has_structures_across_partitions
    
    end subroutine initialize_cleanup
-
-end function flow_initexternalforcings
    
 end submodule old_initialisation
