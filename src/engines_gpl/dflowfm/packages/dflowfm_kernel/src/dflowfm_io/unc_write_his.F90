@@ -372,11 +372,6 @@ subroutine unc_write_his(tim)            ! wrihis
                                                  id_poly_xmid = id_genstru_xmid, id_poly_ymid = id_genstru_ymid)
 
         ! Pump
-        if (jahispump > 0 .and. npumpsg > 0) then
-            call check_netcdf_error( nf90_def_dim(ihisfile, 'pumps', npumpsg, id_pumpdim))
-            call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_pump_id, nf90_char, (/ id_strlendim, id_pumpdim /), 'pump_id','Id of pump',extra_attributes=attributes(1:1))
-        end if
         ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                  id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                                  id_poly_xmid = id_pump_xmid, id_poly_ymid = id_pump_ymid)
