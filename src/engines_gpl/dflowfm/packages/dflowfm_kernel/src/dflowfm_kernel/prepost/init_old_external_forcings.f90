@@ -48,6 +48,9 @@ use m_sediment, only: jaceneqtr, grainlay, mxgr, sedh
 use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
 use dfm_error, only: dfm_extforcerror, dfm_wronginput, dfm_noerr
 use unstruc_inifields, only: initInitialFields
+use m_sobekdfm, only: init_1d2d
+use timespace_data, only: settimespacerefdat
+use timers, only: timstop, timstrt
 
    integer, intent(out) :: iresult
 
@@ -722,17 +725,22 @@ use unstruc_inifields, only: initInitialFields
    use m_inquire_flowgeom, only: IFLTP_1D, IFLTP_ALL
    use m_netw, only: xk, yk, zk, numk, numl
    use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
-   use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, getmeteoerror
+   use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
    use m_structures, only: jaoldstr, network
    use m_meteo
    use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
    use m_transport, only: ised1, numconst, const_names, constituents, itrac2const
    use m_mass_balance_areas, only: mbaname, nomba, mbadef, nammbalen
+   use mass_balance_areas_routines, only: get_mbainputname
    use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbot
    use dfm_error, only: dfm_noerr, dfm_extforcerror
    use m_sferic, only: jsferic
-   use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+   use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
    use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+   use unstruc_files, only: basename, resolvepath
+   use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
+   use unstruc_inifields, only: set_friction_type_values
+   use timers, only: timstop, timstrt
    
    integer, intent(out) :: iresult
    integer :: ja, method, lenqidnam, ierr, ilattype, inivelx, inively, isednum, kk, k, kb, kt, iconst
@@ -2027,15 +2035,17 @@ use unstruc_inifields, only: initInitialFields
    subroutine initialize_misc(iresult)
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, ndx, lnx, csu, ndx, lnx
       use unstruc_model, only: md_extfile_dir
-      use timespace, only: uniform, spaceandtime
+      use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr, network
       use m_meteo
       use m_transport, only: numconst
       use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
       use dfm_error, only: dfm_extforcerror
       use m_sobekdfm, only: nbnd1d2d
-      use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank
+      use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
       use m_lateral, only : numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use m_sobekdfm, only: init_1d2d_boundary_points 
+      use unstruc_files, only: resolvepath
       
       integer, intent(out) :: iresult
       integer :: ierr
@@ -2443,9 +2453,11 @@ use unstruc_inifields, only: initInitialFields
    use m_sediment, only: mxgr, grainlay, uniformerodablethickness, jagrainlayerthicknessspecified
    use m_transport, only: numconst_mdu, numconst
    use m_mass_balance_areas, only: mbaname, nomba, mbadef, mbadefdomain
-   use m_partitioninfo, only: jampi, idomain, my_rank
-   use m_crosssections, only: cs_type_normal
+   use m_partitioninfo, only: jampi, idomain, my_rank, reduce_int_sum
+   use m_crosssections, only: cs_type_normal, getcsparstotal
    use m_trachy, only: trachy_resistance
+   use m_structures, only: check_model_has_structures_across_partitions
+   use m_lateral, only: initialize_lateraldata
    
    integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstpr, nstor, i, ja
    integer                       :: imba, needextramba, needextrambar
