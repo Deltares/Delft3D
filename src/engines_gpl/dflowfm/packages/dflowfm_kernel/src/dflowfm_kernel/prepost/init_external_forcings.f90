@@ -100,10 +100,12 @@ contains
 
  file_name = trim(external_force_file_name)
 
- res = .true.
-
- call tree_create(file_name, bnd_ptr)
- call prop_file('ini', file_name, bnd_ptr, istat)
+ if (len_trim(file_name) == 0) then
+   res = .false.
+   return
+ else
+   res = .true.
+ endif
 
  ! check FileVersion
  major = 1
