@@ -245,6 +245,7 @@ implicit none
     integer                           :: IPNT_WQB1
     integer                           :: IPNT_WQB3D1
     integer                           :: IPNT_SF1
+    integer                           :: IPNT_SFN
     integer                           :: IPNT_SED
     integer                           :: IPNT_ZCS
     integer                           :: IPNT_ZWS
@@ -254,6 +255,7 @@ implicit none
     integer                           :: IPNT_TEPS
     integer                           :: IPNT_VICWW
     integer                           :: IPNT_WS1
+    integer                           :: IPNT_WSN
     integer                           :: IPNT_SEDDIF1
     integer                           :: IPNT_RICH
     integer                           :: IPNT_TAIR
@@ -677,6 +679,7 @@ subroutine init_valobs_pointers()
    IPNT_HWQ1  = ivalpoint(IVAL_HWQ1,  kmx, nlyrs)
    IPNT_WQB3D1= ivalpoint(IVAL_WQB3D1,kmx, nlyrs)
    IPNT_SF1   = ivalpoint(IVAL_SF1,   kmx, nlyrs)
+   IPNT_SFN   = ivalpoint(IVAL_SFN,   kmx, nlyrs)
    IPNT_SED   = ivalpoint(IVAL_SED,   kmx, nlyrs)
    IPNT_WX    = ivalpoint(IVAL_WX ,   kmx, nlyrs)
    IPNT_WY    = ivalpoint(IVAL_WY ,   kmx, nlyrs)
@@ -700,6 +703,7 @@ subroutine init_valobs_pointers()
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
    IPNT_WS1   = ivalpoint(IVAL_WS1,   kmx, nlyrs)
+   IPNT_WSN   = ivalpoint(IVAL_WSN,   kmx, nlyrs)
    IPNT_SEDDIF1 = ivalpoint(IVAL_SEDDIF1,   kmx, nlyrs)
    IPNT_SBCX1 = ivalpoint(IVAL_SBCX1,   kmx, nlyrs)
    IPNT_SBCY1 = ivalpoint(IVAL_SBCY1,   kmx, nlyrs)

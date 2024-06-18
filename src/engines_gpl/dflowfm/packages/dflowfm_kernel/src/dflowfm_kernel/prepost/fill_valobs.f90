@@ -428,7 +428,19 @@ subroutine fill_valobs()
                      valobs(i,IPNT_BRUV+klay-1) = -ag*drhodz/rhomea
                   endif
                end if
-            enddo
+               if ( IVAL_WS1 > 0 ) then
+                  do j=IVAL_WS1,IVAL_WSN
+                     ii = j-IVAL_WS1+1
+                     valobs(i,IPNT_WS1+(ii-1)*(kmx+1)+klay-1) =mtd%ws(kb+klay-2, ii)
+                  end do
+               end if
+               if ( IVAL_SEDDIF1 > 0 ) then
+                  do j=IVAL_SEDDIF1,IVAL_SEDDIFN
+                     ii = j-IVAL_SEDDIF1+1
+                     valobs(i,IPNT_SEDDIF1+(ii-1)*(kmx+1)+klay-1) =mtd%seddif(ii, kb+klay-2)
+                  end do
+               end if
+            end do
 
             call getlink1(k,LL)
             call getLbotLtop(LL,Lb,Lt)
@@ -439,20 +451,6 @@ subroutine fill_valobs()
                   valobs(i,IPNT_ZWU+klay-1) = min(bob(1,LL),bob(2,LL)) + hu(L)
                else
                   valobs(i,IPNT_ZWU+klay-1) = min(bob(1,LL),bob(2,LL)) + hu(L)
-               end if
-
-               if ( IVAL_WS1 > 0 ) then
-                  do j=IVAL_WS1,IVAL_WSN
-                     ii = j-IVAL_WS1+1
-                     valobs(i,IPNT_WS1+(ii-1)*(kmx+1)+klay-1) =mtd%ws(kb+klay-2, ii)
-                  end do
-               end if
-
-               if ( IVAL_SEDDIF1 > 0 ) then
-                  do j=IVAL_SEDDIF1,IVAL_SEDDIFN
-                     ii = j-IVAL_SEDDIF1+1
-                     valobs(i,IPNT_SEDDIF1+(ii-1)*(kmx+1)+klay-1) =mtd%seddif(ii, kb+klay-2)
-                  end do
                end if
             enddo
             if ( iturbulencemodel >= 3 ) then

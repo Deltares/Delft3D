@@ -1360,19 +1360,19 @@ private
                      'N m-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description = 'Write wind velocities to his-file', &
                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDX,                                                               &
-                     'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'eastward_wind', &
+                     'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'x_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1), &
                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDX_SFERIC,                                                 &
-                     'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'x_wind', &
+                     'Wrihis_wind', 'windx', 'velocity of air on flow element center, x-component', 'eastward_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                           &
                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDY,                                                                &
-                     'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'northward_wind', &
+                     'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'y_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                                   &
                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_WINDY_SFERIC,                                                 &
-                     'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'y_wind', &
+                     'Wrihis_wind', 'windy', 'velocity of air on flow element center, y-component', 'northward_wind', &
                      'm s-1', UNC_LOC_STATION, nc_attributes = atts(1:1),                                           &
                      nc_dim_ids = station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_RAIN,                                                                 &
@@ -2158,6 +2158,7 @@ private
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_lateral, only : numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
+      use m_sferic, only: jsferic
       USE, INTRINSIC :: ISO_C_BINDING
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2561,10 +2562,13 @@ private
          end if
 
          if (jawind > 0 .and. jahiswind > 0) then
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDX         ),valobs(:,IPNT_wx)                )
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDX_SFERIC  ),valobs(:,IPNT_wx)                )
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDY         ),valobs(:,IPNT_wy)                )
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDY_SFERIC  ),valobs(:,IPNT_wy)                )
+            if (jsferic == 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDX       ),valobs(:,IPNT_wx))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDY       ),valobs(:,IPNT_wy))
+            else
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDX_SFERIC),valobs(:,IPNT_wx))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDY_SFERIC),valobs(:,IPNT_wy))
+            end if
          end if
 
          if (jarain > 0 .and. jahisrain > 0) then
@@ -2605,27 +2609,29 @@ private
                temp_pointer(1:kmx*ntot) => valobs(1:ntot,IPNT_SED:IPNT_SED+kmx)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED),temp_pointer)
             else
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED),valobs(:,IPNT_SED)                                  )
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED),valobs(:,IPNT_SED))
             end if
          else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*kmx*ntot) => valobs(1:ntot,IVAL_SF1:IVAL_SFN+(IVAL_SFN-IVAL_SF1*kmx))
+               temp_pointer(1:(IVAL_SFN-IVAL_SF1+1)*kmx*ntot) => valobs(1:ntot,IPNT_SF1:IPNT_SF1-1+(IVAL_SFN-IVAL_SF1+1)*kmx)
             else
-               temp_pointer(1:(IVAL_SFN-IPNT_SF1+1)*ntot) => valobs(:,IPNT_SF1:IVAL_SFN)
+               temp_pointer(1:(IVAL_SFN-IVAL_SF1+1)*ntot) => valobs(:,IPNT_SF1:IPNT_SFN)
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED), temp_pointer)
          end if
          if (IVAL_WS1 > 0) then
             if (model_is_3D()) then
-               temp_pointer(1:(IVAL_WSN-IPNT_WS1+1)*kmx*ntot) => valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))
+               temp_pointer(1:(IVAL_WSN-IVAL_WS1+1)*(kmx+1)*ntot) => valobs(1:ntot,IPNT_WS1:IPNT_WS1-1+(IVAL_WSN-IVAL_WS1+1)*(kmx+1))
             else
-               temp_pointer(1:(IVAL_WSN-IPNT_WS1+1)*ntot) => valobs(1:ntot,IPNT_WS1:IVAL_WSN)
+               temp_pointer(1:(IVAL_WSN-IVAL_WS1+1)*ntot) => valobs(1:ntot,IPNT_WS1:IPNT_WSN)
             end if
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WS),temp_pointer                                                        )
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WS),temp_pointer)
          end if
          if (IVAL_SEDDIF1 > 0) then
-            temp_pointer(1:(IVAL_WSN-IPNT_WS1+1)*kmx*ntot) => valobs(1:ntot,IPNT_WS1:IPNT_WS1+(IVAL_WSN-IVAL_WS1*kmx))
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SEDDIF),temp_pointer                                          )
+            if (model_is_3D()) then
+               temp_pointer(1:(IVAL_SEDDIFN-IVAL_SEDDIF1+1)*(kmx+1)*ntot) => valobs(1:ntot,IPNT_SEDDIF1:IPNT_SEDDIF1-1+(IVAL_SEDDIFN-IVAL_SEDDIF1+1)*(kmx+1))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SEDDIF),temp_pointer)
+            end if
          end if
 
          if (jahissed>0 .and. jased>0 .and. stm_included) then
@@ -2638,15 +2644,15 @@ private
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCX),null(),function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCY),SBCY)
                end if
-               if (stmpar%morpar%moroutput%sbwuv) then
-                  function_pointer => calculate_sediment_SBW
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX),null(),function_pointer)
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY),SBWY)
-               end if
-               if (stmpar%morpar%moroutput%sscuv .and. jawave>0 .and. .not. flowWithoutWaves) then
+               if (stmpar%morpar%moroutput%sscuv) then
                   function_pointer => calculate_sediment_SSC
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX),null(),function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY),SSCY)
+               end if
+               if (stmpar%morpar%moroutput%sbwuv .and. jawave>0 .and. .not. flowWithoutWaves) then
+                  function_pointer => calculate_sediment_SBW
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX),null(),function_pointer)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY),SBWY)
                end if
                if (stmpar%morpar%moroutput%sswuv .and. jawave>0 .and. .not. flowWithoutWaves) then
                   function_pointer => calculate_sediment_SSW
