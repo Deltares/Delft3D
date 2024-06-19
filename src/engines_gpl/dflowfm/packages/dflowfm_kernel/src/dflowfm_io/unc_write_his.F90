@@ -769,6 +769,12 @@ subroutine unc_write_his(tim)            ! wrihis
               call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat))
            end if
 
+           if (jahispump > 0 .and. npumpsg > 0) then
+              do i=1,npumpsg
+                 ierr = nf90_put_var(ihisfile, id_pump_id,  trimexact(pump_ids(i), strlen_netcdf),      (/ 1, i /))
+              end do
+           end if
+           
            if (jahisgate > 0 .and. ngatesg > 0) then
               do i = 1, ngatesg
                  call check_netcdf_error( nf90_put_var(ihisfile, id_gate_id,  trimexact(gate_ids(i), strlen_netcdf),      (/ 1, i /)))
@@ -1131,7 +1137,7 @@ contains
       end if
 
       ! TODO (UNST-7900): actually write structure geometry data here!
-
+      
       ! Polyline midpoint coordinates
       if (strcmpi(geom_type,'line')) then
          ierr = unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid)
