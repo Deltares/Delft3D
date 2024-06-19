@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 !
-submodule(m_init_ext_forcings) initialisation
+submodule(m_external_forcings) initialisation
 
    implicit none
 
@@ -39,7 +39,7 @@ contains
       use tree_data_types
       use tree_structures
       use messageHandling
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_flowgeom
       use timespace_data, only: weightfactors, poly_tim, uniform, spaceandtime, getmeteoerror
       use m_lateral, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
@@ -673,21 +673,5 @@ contains
       end function init_meteo_forcings
 
    end function init_external_forcings
-
-!> Allocate and initialized atmosperic pressure variable(s)
-   module function allocate_patm() result(status)
-      use m_wind, only: patm
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr
-
-      integer                    :: status
-
-      status = 0
-      if (.not. allocated(patm)) then
-         allocate (patm(ndx), stat=status, source=0.d0)
-         call aerr('patm(ndx)', status, ndx)
-      end if
-
-   end function allocate_patm
 
 end submodule initialisation

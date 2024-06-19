@@ -3094,5 +3094,21 @@ use unstruc_inifields, only: initinitialfields
    call check_model_has_structures_across_partitions
    
    end subroutine initialize_ext_finalize
+   
+   !> Allocate and initialized atmosperic pressure variable(s)
+   function allocate_patm() result(status)
+      use m_wind, only: patm
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: aerr
+
+      integer                    :: status
+
+      status = 0
+      if (.not. allocated(patm)) then
+         allocate (patm(ndx), stat=status, source=0.d0)
+         call aerr('patm(ndx)', status, ndx)
+      end if
+
+   end function allocate_patm
     
 end module m_external_forcings
