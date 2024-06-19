@@ -266,7 +266,7 @@ subroutine unc_write_his(tim)            ! wrihis
               ! New implementation, sedsus fraction is additional dimension
               call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim))
               call check_netcdf_error( nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim))
-              call definencvar(ihisfile, id_frac_name, nf90_char, (/ id_strlendim, id_sedtotdim /), 'sedfrac_name', 'sediment fraction identifier')
+              call definencvar(ihisfile, id_frac_name, nf90_char, [ id_strlendim, id_sedtotdim ], 'sedfrac_name', 'sediment fraction identifier')
            end if
            if (jased > 0 .and. stmpar%morlyr%settings%iunderlyr==2) then
               call check_netcdf_error( nf90_def_dim(ihisfile, 'nBedLayers', stmpar%morlyr%settings%nlyr, id_nlyrdim))
@@ -277,11 +277,11 @@ subroutine unc_write_his(tim)            ! wrihis
         !
         call ncu_set_att(attributes(1), 'standard_name', 'time')
         call ncu_set_att(attributes(2), 'bounds', 'time_bds')
-        call definencvar(ihisfile, id_time, nf90_double, (/ id_timedim /), 'time', unit=trim(Tudunitstr),extra_attributes=attributes(1:2))
-        call definencvar(ihisfile, id_timebds, nf90_double,(/ id_twodim, id_timedim /), 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
+        call definencvar(ihisfile, id_time, nf90_double, [ id_timedim ], 'time', unit=trim(Tudunitstr),extra_attributes=attributes(1:2))
+        call definencvar(ihisfile, id_timebds, nf90_double,[ id_twodim, id_timedim ], 'time_bds', 'Time interval for each point in time.', unit=trim(Tudunitstr),extra_attributes=attributes(1:1))
 
         ! Size of latest timestep
-        ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, (/ id_timedim /), 'timestep', '',     'latest computational timestep size in each output interval', 's')
+        ierr = unc_def_var_nonspatial(ihisfile, id_timestep, nf90_double, [ id_timedim ], 'timestep', '',     'latest computational timestep size in each output interval', 's')
         !
         ! Observation stations
         !
@@ -295,7 +295,7 @@ subroutine unc_write_his(tim)            ! wrihis
 
             ! Special definition of station_id for backwards compatibility reasons..
             call ncu_set_att(attributes(1), 'cf_role', 'timeseries_id')
-            call definencvar(ihisfile, id_stat_id, nf90_char,(/ id_strlendim, id_statdim /), 'station_id', 'id of station', extra_attributes=attributes(1:1))
+            call definencvar(ihisfile, id_stat_id, nf90_char,[ id_strlendim, id_statdim ], 'station_id', 'id of station', extra_attributes=attributes(1:1))
             
             ! Define the x/y, lat/lon, and z coordinate variables for the station type.
             ierr = unc_def_his_station_coord_vars(ihisfile, id_laydim, id_laydimw, id_statdim, id_timedim, &
@@ -337,8 +337,8 @@ subroutine unc_write_his(tim)            ! wrihis
                                                  id_poly_xmid = id_src_xmid, id_poly_ymid = id_src_ymid)
         if (jahissourcesink > 0 .and. numsrc > 0) then
            call check_netcdf_error( nf90_def_dim(ihisfile, 'source_sink_points', msrc, id_srcptsdim))
-           call definencvar(ihisfile,  id_srcx, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_x_coordinate')
-           call definencvar(ihisfile,  id_srcy, nf90_double,(/ id_srcdim, id_srcptsdim /), 'source_sink_y_coordinate')
+           call definencvar(ihisfile,  id_srcx, nf90_double,[ id_srcdim, id_srcptsdim ], 'source_sink_x_coordinate')
+           call definencvar(ihisfile,  id_srcy, nf90_double,[ id_srcdim, id_srcptsdim ], 'source_sink_y_coordinate')
            ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
         end if
 
@@ -469,14 +469,14 @@ subroutine unc_write_his(tim)            ! wrihis
             call check_netcdf_error( nf90_def_dim(ihisfile, 'ndredlink', dadpar%nalink, id_dredlinkdim))
             call check_netcdf_error( nf90_def_dim(ihisfile, 'ndred', dadpar%dredge_dimension_length, id_dreddim))
             call check_netcdf_error( nf90_def_dim(ihisfile, 'ndump', dadpar%nadump, id_dumpdim))
-            call definencvar(ihisfile, id_dred_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dredge_area_name', 'dredge area identifier')
-            call definencvar(ihisfile, id_dump_name, nf90_char, (/ id_strlendim, id_dreddim /), 'dump_area_name'  , 'dump area identifier'  )
+            call definencvar(ihisfile, id_dred_name, nf90_char, [ id_strlendim, id_dreddim ], 'dredge_area_name', 'dredge area identifier')
+            call definencvar(ihisfile, id_dump_name, nf90_char, [ id_strlendim, id_dreddim ], 'dump_area_name'  , 'dump area identifier'  )
         end if
 
         if ( jacheckmonitor.eq.1 ) then
-           call definencvar(ihisfile, id_checkmon, nc_precision, (/ id_laydim, id_timedim /), 'checkerboard_monitor','Checkerboard mode monitor', unit='m s-1')
-           call definencvar(ihisfile, id_num_timesteps, nf90_int, (/ id_timedim /), 'num_timesteps')
-           call definencvar(ihisfile, id_comp_time, nc_precision, (/ id_timedim /), 'comp_time')
+           call definencvar(ihisfile, id_checkmon, nc_precision, [ id_laydim, id_timedim ], 'checkerboard_monitor','Checkerboard mode monitor', unit='m s-1')
+           call definencvar(ihisfile, id_num_timesteps, nf90_int, [ id_timedim ], 'num_timesteps')
+           call definencvar(ihisfile, id_comp_time, nc_precision, [ id_timedim ], 'comp_time')
         end if
 
         ! set sediment transport unit after modelinit
@@ -500,7 +500,7 @@ subroutine unc_write_his(tim)            ! wrihis
         end if
 
         if ( jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included ) then
-            call definencvar(ihisfile, id_varb, nc_precision,(/ id_statdim /), 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
+            call definencvar(ihisfile, id_varb, nc_precision,[ id_statdim ], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
         end if
 
          do ivar = 1,out_variable_set_his%count
@@ -570,43 +570,43 @@ subroutine unc_write_his(tim)            ! wrihis
 
             select case(config%location_specifier)
             case (UNC_LOC_SOSI)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_srcdim,         id_timedim /), var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_srcdim,         id_timedim ], var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_RUG)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_rugdim,         id_timedim /), var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_rugdim,         id_timedim ], var_name, var_long_name, config%unit, 'rug_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GENSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_genstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_genstrudim,     id_timedim ], var_name, var_long_name, config%unit, 'general_structure_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DAM)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cdamdim,        id_timedim /), var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_cdamdim,        id_timedim ], var_name, var_long_name, config%unit, 'cdam_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_PUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_pumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_pumpdim,        id_timedim ], var_name, var_long_name, config%unit, 'pump_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GATE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gatedim,        id_timedim /), var_name, var_long_name, config%unit, 'gate_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_gatedim,        id_timedim ], var_name, var_long_name, config%unit, 'gate_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GATEGEN)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_gategendim,     id_timedim /), var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_gategendim,     id_timedim ], var_name, var_long_name, config%unit, 'gategen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_WEIRGEN)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_weirgendim,     id_timedim /), var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_weirgendim,     id_timedim ], var_name, var_long_name, config%unit, 'weirgen_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_ORIFICE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_orifgendim,     id_timedim /), var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_orifgendim,     id_timedim ], var_name, var_long_name, config%unit, 'orif_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_BRIDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_bridgedim,      id_timedim /), var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_bridgedim,      id_timedim ], var_name, var_long_name, config%unit, 'bridge_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_CULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_culvertdim,     id_timedim /), var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_culvertdim,     id_timedim ], var_name, var_long_name, config%unit, 'culvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DAMBREAK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dambreakdim,    id_timedim /), var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_dambreakdim,    id_timedim ], var_name, var_long_name, config%unit, 'dambreak_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_UNIWEIR)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_uniweirdim,     id_timedim /), var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_uniweirdim,     id_timedim ], var_name, var_long_name, config%unit, 'uniweir_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_CMPSTRU)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_cmpstrudim,     id_timedim /), var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_cmpstrudim,     id_timedim ], var_name, var_long_name, config%unit, 'cmpstru_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_LONGCULVERT)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_longculvertdim, id_timedim /), var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_longculvertdim, id_timedim ], var_name, var_long_name, config%unit, 'longculvert_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_LATERAL)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_latdim,         id_timedim /), var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_latdim,         id_timedim ], var_name, var_long_name, config%unit, 'lat_id', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_DREDGE)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dreddim,        id_timedim /), var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_dreddim,        id_timedim ], var_name, var_long_name, config%unit, 'dredge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
              case (UNC_LOC_DUMP)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dumpdim,        id_timedim /), var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_dumpdim,        id_timedim ], var_name, var_long_name, config%unit, 'dump_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
              case (UNC_LOC_DRED_LINK)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_dredlinkdim, id_sedtotdim, id_timedim /), var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_dredlinkdim, id_sedtotdim, id_timedim ], var_name, var_long_name, config%unit, 'dredge_link_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_STATION)
                if (allocated(config%nc_dim_ids)) then
                   if (config%nc_dim_ids%laydim) then
@@ -624,10 +624,10 @@ subroutine unc_write_his(tim)            ! wrihis
                   call err('Internal error, please report: UNC_LOC_STATION variable '//trim(config%name)//' does not have nc_dim_ids set.')
                end if
             case (UNC_LOC_OBSCRS)
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_crsdim, id_timedim /), var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_crsdim, id_timedim ], var_name, var_long_name, config%unit, 'cross_section_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
             case (UNC_LOC_GLOBAL)
                if (timon) call timstrt ( "unc_write_his DEF bal", handle_extra(59))
-               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), (/ id_timedim /), var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [ id_timedim ], var_name, var_long_name, config%unit, "", fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                if (timon) call timstop (handle_extra(59))
             end select
 
@@ -647,17 +647,17 @@ subroutine unc_write_his(tim)            ! wrihis
         if (it_his == 0) then
            ! Observation stations
            do i = 1,numobs+nummovobs
-              call check_netcdf_error( nf90_put_var(ihisfile, id_stat_id,  trimexact(namobs(i), strlen_netcdf), (/ 1, i /))) ! Extra for OpenDA-wrapper
-              call check_netcdf_error( nf90_put_var(ihisfile, id_statname, trimexact(namobs(i), strlen_netcdf), (/ 1, i /)))
+              call check_netcdf_error( nf90_put_var(ihisfile, id_stat_id,  trimexact(namobs(i), strlen_netcdf), [ 1, i ])) ! Extra for OpenDA-wrapper
+              call check_netcdf_error( nf90_put_var(ihisfile, id_statname, trimexact(namobs(i), strlen_netcdf), [ 1, i ]))
            end do
            !
            ! Observation cross sections
            if (ncrs > 0) then
               do i=1,ncrs
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_crs_id,  trimexact(crs(i)%name, strlen_netcdf),      (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_crs_id,  trimexact(crs(i)%name, strlen_netcdf),      [ 1, i ]))
               end do
-              call check_netcdf_error( nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs,     start = (/ 1 /), count = (/ nNodesCrs /)))
-              call check_netcdf_error( nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs,     start = (/ 1 /), count = (/ nNodesCrs /)))
+              call check_netcdf_error( nf90_put_var(ihisfile, id_crsgeom_node_coordx, geomXCrs,     start = [ 1 ], count = [ nNodesCrs ]))
+              call check_netcdf_error( nf90_put_var(ihisfile, id_crsgeom_node_coordy, geomYCrs,     start = [ 1 ], count = [ nNodesCrs ]))
               call check_netcdf_error( nf90_put_var(ihisfile, id_crsgeom_node_count,  nodeCountCrs))
               if (allocated(geomXCrs))     deallocate(geomXCrs)
               if (allocated(geomYCrs))     deallocate(geomYCrs)
@@ -667,15 +667,15 @@ subroutine unc_write_his(tim)            ! wrihis
            ! Run-up gauges
            if (num_rugs>0) then
               do i=1,num_rugs
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_rugname,  trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /)))
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_rugid,    trimexact(rug(i)%name, strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_rugname,  trimexact(rug(i)%name, strlen_netcdf), [ 1, i ]))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_rugid,    trimexact(rug(i)%name, strlen_netcdf), [ 1, i ]))
               end do
            end if
 
            ! Source-sinks
            if (jahissourcesink > 0 .and. numsrc > 0) then
               do i = 1, numsrc
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_srcname, trimexact(srcname(i), strlen_netcdf), (/ 1, i/) ))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_srcname, trimexact(srcname(i), strlen_netcdf), [ 1, i] ))
               end do
               call check_netcdf_error( nf90_put_var(ihisfile, id_srcx, xsrc))
               call check_netcdf_error( nf90_put_var(ihisfile, id_srcy, ysrc))
@@ -699,8 +699,8 @@ subroutine unc_write_his(tim)            ! wrihis
                  end if
                  node_count(i) = nNodes
                  if (nNodes > 0) then
-                    call check_netcdf_error( nf90_put_var(ihisfile, id_srcgeom_node_coordx,  geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-                    call check_netcdf_error( nf90_put_var(ihisfile, id_srcgeom_node_coordy,  geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+                    call check_netcdf_error( nf90_put_var(ihisfile, id_srcgeom_node_coordx,  geom_x(1:nNodes), start = [ j ], count = [ nNodes ]))
+                    call check_netcdf_error( nf90_put_var(ihisfile, id_srcgeom_node_coordy,  geom_y(1:nNodes), start = [ j ], count = [ nNodes ]))
                  end if
                  j = j + nNodes
               end do
@@ -715,121 +715,121 @@ subroutine unc_write_his(tim)            ! wrihis
                  else
                     if (network%sts%numGeneralStructures > 0) then
                        istru = network%sts%generalStructureIndices(i)
-                       call check_netcdf_error( nf90_put_var(ihisfile, id_genstru_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /)))
+                       call check_netcdf_error( nf90_put_var(ihisfile, id_genstru_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  [ 1, i ]))
                        cycle
                     else
                        igen = genstru2cgen(i)
                     end if
                  end if
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_genstru_id,  trimexact(cgen_ids(igen), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_genstru_id,  trimexact(cgen_ids(igen), strlen_netcdf), [ 1, i ]))
               end do
            end if
 
            if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
               do i = 1, network%sts%numOrifices
                  istru = network%sts%orificeIndices(i)
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_orifgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_orifgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
               do i = 1, network%sts%numBridges
                  istru = network%sts%bridgeIndices(i)
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_bridge_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_bridge_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
               do i = 1, network%sts%numCulverts
                  istru = network%sts%culvertIndices(i)
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_culvert_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_culvert_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
               do i = 1, network%sts%numuniweirs
                  istru = network%sts%uniweirIndices(i)
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_uniweir_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_uniweir_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
               do i = 1, network%cmps%count
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_cmpstru_id,  trimexact(network%cmps%compound(i)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_cmpstru_id,  trimexact(network%cmps%compound(i)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            ! Lateral discharges
            if (jahislateral > 0 .and. numlatsg > 0) then
               do i = 1, numlatsg
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_lat_id,  trimexact(lat_ids(i), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_lat_id,  trimexact(lat_ids(i), strlen_netcdf), [ 1, i ]))
               end do
-              call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
-              call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
+              call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = [ 1 ], count = [ nlatnd ]))
+              call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = [ 1 ], count = [ nlatnd ]))
               call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat))
            end if
 
            if (jahispump > 0 .and. npumpsg > 0) then
               do i=1,npumpsg
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_pump_id,  trimexact(pump_ids(i), strlen_netcdf),      (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_pump_id,  trimexact(pump_ids(i), strlen_netcdf),      [ 1, i ]))
               end do
            end if
            
            if (jahisgate > 0 .and. ngatesg > 0) then
               do i = 1, ngatesg
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_gate_id,  trimexact(gate_ids(i), strlen_netcdf),      (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_gate_id,  trimexact(gate_ids(i), strlen_netcdf),      [ 1, i ]))
               end do
            end if
            if (jahisgate > 0 .and. ngategen > 0) then
               do i = 1, ngategen
                  igen = gate2cgen(i)
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_gategen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_gategen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      [ 1, i ]))
               end do
            end if
            if (jahiscdam > 0 .and. ncdamsg > 0) then
               do i = 1, ncdamsg
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_cdam_id,  trimexact(cdam_ids(i), strlen_netcdf),      (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_cdam_id,  trimexact(cdam_ids(i), strlen_netcdf),      [ 1, i ]))
               end do
            end if
            if (jahisweir > 0 .and. nweirgen > 0 ) then
               if (allocated(weir2cgen)) then
                  do i = 1, nweirgen
                     igen = weir2cgen(i)
-                    call check_netcdf_error( nf90_put_var(ihisfile, id_weirgen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      (/ 1, i /)))
+                    call check_netcdf_error( nf90_put_var(ihisfile, id_weirgen_id,  trimexact(cgen_ids(igen), strlen_netcdf),      [ 1, i ]))
                  end do
               else if (network%sts%numWeirs > 0) then
                  do i = 1, nweirgen
                     istru = network%sts%weirIndices(i)
-                    call check_netcdf_error( nf90_put_var(ihisfile, id_weirgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),      (/ 1, i /)))
+                    call check_netcdf_error( nf90_put_var(ihisfile, id_weirgen_id,  trimexact(network%sts%struct(istru)%id, strlen_netcdf),      [ 1, i ]))
                  end do
               end if
            end if
 
            if (jahisdambreak > 0 .and. ndambreaklinks > 0) then
               do i = 1, ndambreaksignals
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_dambreak_id, trimexact(dambreak_ids(i), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_dambreak_id, trimexact(dambreak_ids(i), strlen_netcdf), [ 1, i ]))
               end do
            end if
 
            if (jahislongculv > 0 .and. nlongculverts > 0) then
               do i = 1, nlongculverts
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_longculvert_id,  trimexact(longculverts(i)%id, strlen_netcdf),  (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_longculvert_id,  trimexact(longculverts(i)%id, strlen_netcdf),  [ 1, i ]))
               end do
            end if
 
            if (jased>0 .and. stm_included .and. jahissed>0 .and. ISED1 > 0) then
               do i = 1, stmpar%lsedtot
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), [ 1, i ]))
               end do
            end if
 
            if (dad_included) then
               do i = 1, dadpar%dredge_dimension_length
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_dred_name, trimexact(dadpar%dredge_areas(i), strlen_netcdf), [ 1, i ]))
               end do
               !
               do i = 1, dadpar%nadump
-                 call check_netcdf_error( nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), (/ 1, i /)))
+                 call check_netcdf_error( nf90_put_var(ihisfile, id_dump_name, trimexact(dadpar%dump_areas(i), strlen_netcdf), [ 1, i ]))
               end do
            end if
             ! Write time-independent geometry variables for different structure types
@@ -847,13 +847,13 @@ subroutine unc_write_his(tim)            ! wrihis
     it_his   = it_his + 1
 
     if (timon) call timstrt ('unc_write_his time data', handle_extra(64))
-
-    call write_old_structure_static_vars()
-      
-    call check_netcdf_error( nf90_put_var(ihisfile, id_time, time_his, (/ it_his /)))
-    call check_netcdf_error( nf90_put_var(ihisfile, id_timebds, (/ time_his_prev, time_his /), (/ 1, it_his /)))
+    if (it_his == 1) then
+      call write_structure_static_variables()
+    end if
+    call check_netcdf_error( nf90_put_var(ihisfile, id_time, time_his, [ it_his ]))
+    call check_netcdf_error( nf90_put_var(ihisfile, id_timebds, [ time_his_prev, time_his ], [ 1, it_his ]))
     time_his_prev = time_his
-    call check_netcdf_error( nf90_put_var(ihisfile, id_timestep, dts, (/ it_his /)))
+    call check_netcdf_error( nf90_put_var(ihisfile, id_timestep, dts, [ it_his ]))
     if (timon) call timstop ( handle_extra(64))
 
 !   Observation points (fixed+moving)
@@ -867,7 +867,7 @@ subroutine unc_write_his(tim)            ! wrihis
     end if
    !Bottom level is written separately from statout if it is static
    if (ntot > 0 .and. .not. stm_included .and. jahisbedlev > 0) then
-      call check_netcdf_error( nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = (/ 1 /) ))
+      call check_netcdf_error( nf90_put_var(ihisfile,    id_varb,   valobs(:,IPNT_BL),    start = [ 1 ] ))
    end if
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
@@ -927,14 +927,14 @@ subroutine unc_write_his(tim)            ! wrihis
          UNC_LOC_DREDGE, &
          UNC_LOC_DUMP &
          )
-         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, it_his /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = [ 1, it_his ]))
       case (UNC_LOC_STATION)
          call write_station_netcdf_variable(ihisfile, out_variable_set_his%statout(ivar))
       case (UNC_LOC_DRED_LINK)
-         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = (/ 1, 1, it_his /), count = (/ dadpar%nalink, stmpar%lsedtot, 1 /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start = [ 1, 1, it_his ], count = [ dadpar%nalink, stmpar%lsedtot, 1 ]))
       case (UNC_LOC_GLOBAL)
          if (timon) call timstrt('unc_write_his IDX data', handle_extra(67))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=(/ it_his /)))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output,  start=[ it_his ]))
          if (timon) call timstop(handle_extra(67))
       end select
       end associate
@@ -954,10 +954,10 @@ subroutine unc_write_his(tim)            ! wrihis
     end if
 
     if ( jacheckmonitor.eq.1 ) then
-       call check_netcdf_error( nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=(/ 1, it_his /)))
+       call check_netcdf_error( nf90_put_var(ihisfile, id_checkmon, checkmonitor, start=[ 1, it_his ]))
 
-       call check_netcdf_error( nf90_put_var(ihisfile, id_num_timesteps, int(dnt), start=(/ it_his /)))
-       call check_netcdf_error( nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start=(/ it_his /)))
+       call check_netcdf_error( nf90_put_var(ihisfile, id_num_timesteps, int(dnt), start=[ it_his ]))
+       call check_netcdf_error( nf90_put_var(ihisfile, id_comp_time, tim_get_wallclock(handle_steps), start=[ it_his ]))
     end if
 
     if (unc_noforcedflush == 0) then
@@ -1012,7 +1012,7 @@ contains
       call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
 
       call check_netcdf_error( nf90_def_dim(ihisfile, trim(prefix), count, id_strdim))
-      call check_netcdf_error( nf90_def_var(ihisfile, trim(prefix)//'_name',  nf90_char,   (/ id_strlendim, id_strdim /), id_strid))
+      call check_netcdf_error( nf90_def_var(ihisfile, trim(prefix)//'_name',  nf90_char,   [ id_strlendim, id_strdim ], id_strid))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'cf_role',   'timeseries_id'))
       call check_netcdf_error( nf90_put_att(ihisfile, id_strid,  'long_name', 'name of '//trim(name)))
 
@@ -1704,174 +1704,23 @@ subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
    call check_netcdf_error( nf90_put_var(ihisfile, local_id_var, transformed_data, count = counts, start = starts))
 end subroutine write_station_netcdf_variable
 
-subroutine write_old_structure_static_vars()
+!> "Old" way of writing the structure static vars at the first time of history output.
+!! To be removed as soon as it is replaced by a properly implemented unc_put_his_structure_static_vars_polyline_midpoints
+subroutine write_structure_static_variables()
 
 if (ngenstru > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      if (network%sts%numGeneralStructures > 0) then ! new general structure
-         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geomXGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geomYGenstru,     start = (/ 1 /), count = (/ nNodesGenstru /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count,  nodeCountGenstru, start = (/ 1 /), count = (/ network%sts%numGeneralStructures /)))
-         if (allocated(geomXGenstru))     deallocate(geomXGenstru) ! Deallocate the geometry arrays after writing them to his-file.
-         if (allocated(geomYGenstru))     deallocate(geomYGenstru)
-         if (allocated(nodeCountGenstru)) deallocate(nodeCountGenstru)
-      else ! old general structure
-         j = 1
-         call realloc(node_count, ngenstru, fill = 0)
-         do n = 1, ngenstru
-            i = genstru2cgen(n)
-            nlinks = L2cgensg(i) - L1cgensg(i) + 1
-            if (nlinks > 0) then
-               nNodes = nlinks + 1
-            else if (nlinks == 0) then
-               nNodes = 0
-            end if
-            node_count(n) = nNodes
-            if (nNodes > 0) then
-               call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-               call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               j = j + nNodes
-            end if
-         end do
-         call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count, node_count, start = (/ 1 /), count = (/ ngenstru /)))
-      end if
-   end if
-endif
-
-if (jahispump > 0 .and. npumpsg > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      if (network%sts%numPumps > 0) then ! new pump
-         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geomXPump,     start = (/ 1 /), count = (/ nNodesPump /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geomYPump,     start = (/ 1 /), count = (/ nNodesPump /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count,  nodeCountPump, start = (/ 1 /), count = (/ network%sts%numPumps /)))
-         if (allocated(geomXPump))     deallocate(geomXPump)
-         if (allocated(geomYPump))     deallocate(geomYPump)
-         if (allocated(nodeCountPump)) deallocate(nodeCountPump)
-      else
-         j = 1
-         call realloc(node_count, npumpsg, fill = 0)
-         do i = 1, npumpsg
-            nlinks = L2pumpsg(i) - L1pumpsg(i) + 1
-            if (nlinks > 0) then
-               nNodes = nlinks + 1
-            else if (nlinks == 0) then
-               nNodes = 0
-            end if
-            node_count(i) = nNodes
-            if (nNodes > 0) then
-               call realloc(geom_x, nNodes)
-               call realloc(geom_y, nNodes)
-               L0 = L1pumpsg(i)
-               L = abs(kpump(3,L0))
-               k1 = lncn(1,L)
-               k2 = lncn(2,L)
-               geom_x(1) = xk(k1)
-               geom_x(2) = xk(k2)
-               geom_y(1) = yk(k1)
-               geom_y(2) = yk(k2)
-               if (nlinks > 1) then
-                  k = 3
-                  do L0 = L1pumpsg(i)+1, L2pumpsg(i)
-                     L = abs(kpump(3,L0))
-                     k3 = lncn(2,L)
-                     geom_x(k) = xk(k3)
-                     geom_y(k) = yk(k3)
-                     k = k+1
-                  end do
-               end if
-               call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               j = j + nNodes
-            end if
-         end do
-         call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count, node_count, start = (/ 1 /), count = (/ npumpsg /)))
-      end if
-   end if
-end if
-
-if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordx, geomXOrif,     start = (/ 1 /), count = (/ nNodesOrif /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordy, geomYOrif,     start = (/ 1 /), count = (/ nNodesOrif /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_count,  nodeCountOrif, start = (/ 1 /), count = (/ network%sts%numOrifices /)))
-      if (allocated(geomXOrif))     deallocate(geomXOrif)
-      if (allocated(geomYOrif))     deallocate(geomYOrif)
-      if (allocated(nodeCountOrif)) deallocate(nodeCountOrif)
-   end if
-end if
-
-if (timon) call timstrt('unc_write_his bridge data', handle_extra(58))
-if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      if (timon) call timstrt('Bridge geom', handle_extra(74))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordx, geomXBridge,     start = (/ 1 /), count = (/ nNodesBridge /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordy, geomYBridge,     start = (/ 1 /), count = (/ nNodesBridge /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_count,  nodeCountBridge, start = (/ 1 /), count = (/ network%sts%numBridges /)))
-      if (allocated(geomXBridge))     deallocate(geomXBridge)
-      if (allocated(geomYBridge))     deallocate(geomYBridge)
-      if (allocated(nodeCountBridge)) deallocate(nodeCountBridge)
-      if (timon) call timstop(handle_extra(74))
-   end if
-end if
-if (timon) call timstop(handle_extra(58))
-
-if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordx, geomXCulv,     start = (/ 1 /), count = (/ nNodesCulv /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordy, geomYCulv,     start = (/ 1 /), count = (/ nNodesCulv /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_count,  nodeCountCulv, start = (/ 1 /), count = (/ network%sts%numCulverts /)))
-      if (allocated(geomXCulv))     deallocate(geomXCulv)
-      if (allocated(geomYCulv))     deallocate(geomYCulv)
-      if (allocated(nodeCountCulv)) deallocate(nodeCountCulv)
-   end if
-end if
-
-if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = (/ 1 /), count = (/ nNodesUniweir /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = (/ 1 /), count = (/ network%sts%numuniweirs /)))
-      if (allocated(geomXUniweir))     deallocate(geomXUniweir)
-      if (allocated(geomYUniweir))     deallocate(geomYUniweir)
-      if (allocated(nodeCountUniweir)) deallocate(nodeCountUniweir)
-   end if
-end if
-
-if (jahislongculv > 0 .and. nlongculverts > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordx, geomXLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordy, geomYLongCulv,     start = (/ 1 /), count = (/ nNodesLongCulv /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_count,  nodeCountLongCulv, start = (/ 1 /), count = (/ nlongculverts /)))
-      if (allocated(geomXLongCulv))     deallocate(geomXLongCulv)
-      if (allocated(geomYLongCulv))     deallocate(geomYLongCulv)
-      if (allocated(nodeCountLongCulv)) deallocate(nodeCountLongCulv)
-   end if
-end if
-
-if (jahislateral > 0 .and. numlatsg > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = (/ 1 /), count = (/ nlatnd /)))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat))
-   end if
-end if
-
-if (jahisgate > 0 .and. ngategen > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
+   if (network%sts%numGeneralStructures > 0) then
+      call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geomXGenstru,     start = [ 1 ], count = [ nNodesGenstru ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geomYGenstru,     start = [ 1 ], count = [ nNodesGenstru ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count,  nodeCountGenstru, start = [ 1 ], count = [ network%sts%numGeneralStructures ]))
+      call dealloc(geomXGenstru)
+      call dealloc(geomYGenstru)
+      call dealloc(nodeCountGenstru)
+   else
       j = 1
-      call realloc(node_count, ngategen, fill = 0)
-      do n = 1, ngategen
-         i = gate2cgen(n)
+      call realloc(node_count, ngenstru, fill = 0)
+      do n = 1, ngenstru
+         i = genstru2cgen(n)
          nlinks = L2cgensg(i) - L1cgensg(i) + 1
          if (nlinks > 0) then
             nNodes = nlinks + 1
@@ -1881,49 +1730,174 @@ if (jahisgate > 0 .and. ngategen > 0) then
          node_count(n) = nNodes
          if (nNodes > 0) then
             call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-            call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-            call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordx, geom_x(1:nNodes), start = [ j ], count = [ nNodes ]))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_coordy, geom_y(1:nNodes), start = [ j ], count = [ nNodes ]))
             j = j + nNodes
          end if
       end do
-      call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_count, node_count, start = (/ 1 /), count = (/ ngategen /)))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_genstrugeom_node_count, node_count, start = [ 1 ], count = [ ngenstru ]))
    end if
+end if
+
+if (jahispump > 0 .and. npumpsg > 0) then
+   if (network%sts%numPumps > 0) then
+      call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geomXPump,     start = [ 1 ], count = [ nNodesPump ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geomYPump,     start = [ 1 ], count = [ nNodesPump ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count,  nodeCountPump, start = [ 1 ], count = [ network%sts%numPumps ]))
+      call dealloc(geomXPump)
+      call dealloc(geomYPump)
+      call dealloc(nodeCountPump)
+   else
+      j = 1
+      call realloc(node_count, npumpsg, fill = 0)
+      do i = 1, npumpsg
+         nlinks = L2pumpsg(i) - L1pumpsg(i) + 1
+         if (nlinks > 0) then
+            nNodes = nlinks + 1
+         else if (nlinks == 0) then
+            nNodes = 0
+         end if
+         node_count(i) = nNodes
+         if (nNodes > 0) then
+            call realloc(geom_x, nNodes)
+            call realloc(geom_y, nNodes)
+            L0 = L1pumpsg(i)
+            L = abs(kpump(3,L0))
+            k1 = lncn(1,L)
+            k2 = lncn(2,L)
+            geom_x(1) = xk(k1)
+            geom_x(2) = xk(k2)
+            geom_y(1) = yk(k1)
+            geom_y(2) = yk(k2)
+            if (nlinks > 1) then
+               k = 3
+               do L0 = L1pumpsg(i)+1, L2pumpsg(i)
+                  L = abs(kpump(3,L0))
+                  k3 = lncn(2,L)
+                  geom_x(k) = xk(k3)
+                  geom_y(k) = yk(k3)
+                  k = k+1
+               end do
+            end if
+            call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordx, geom_x(1:nNodes), start = [ j ], count = [ nNodes ]))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_coordy, geom_y(1:nNodes), start = [ j ], count = [ nNodes ]))
+            j = j + nNodes
+         end if
+      end do
+      call check_netcdf_error( nf90_put_var(ihisfile, id_pumpgeom_node_count, node_count, start = [ 1 ], count = [ npumpsg ]))
+   end if
+end if
+
+if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+   call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordx, geomXOrif,     start = [ 1 ], count = [ nNodesOrif ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_coordy, geomYOrif,     start = [ 1 ], count = [ nNodesOrif ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_orifgengeom_node_count,  nodeCountOrif, start = [ 1 ], count = [ network%sts%numOrifices ]))
+   call dealloc(geomXOrif)
+   call dealloc(geomYOrif)
+   call dealloc(nodeCountOrif)
+end if
+
+if (timon) call timstrt('unc_write_his bridge data', handle_extra(58))
+if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+   if (timon) call timstrt('Bridge geom', handle_extra(74))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordx, geomXBridge,     start = [ 1 ], count = [ nNodesBridge ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_coordy, geomYBridge,     start = [ 1 ], count = [ nNodesBridge ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_bridgegeom_node_count,  nodeCountBridge, start = [ 1 ], count = [ network%sts%numBridges ]))
+   call dealloc(geomXBridge)
+   call dealloc(geomYBridge)
+   call dealloc(nodeCountBridge)
+   if (timon) call timstop(handle_extra(74))
+end if
+if (timon) call timstop(handle_extra(58))
+
+if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
+   call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordx, geomXCulv,     start = [ 1 ], count = [ nNodesCulv ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_coordy, geomYCulv,     start = [ 1 ], count = [ nNodesCulv ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_culvertgeom_node_count,  nodeCountCulv, start = [ 1 ], count = [ network%sts%numCulverts ]))
+   call dealloc(geomXCulv)
+   call dealloc(geomYCulv)
+   call dealloc(nodeCountCulv)
+end if
+
+if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
+   if (it_his == 1) then
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = [ 1 ], count = [ network%sts%numuniweirs ]))
+      call dealloc(geomXUniweir)
+      call dealloc(geomYUniweir)
+      call dealloc(nodeCountUniweir)
+   end if
+end if
+
+if (jahislongculv > 0 .and. nlongculverts > 0) then
+   call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordx, geomXLongCulv,     start = [ 1 ], count = [ nNodesLongCulv ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_coordy, geomYLongCulv,     start = [ 1 ], count = [ nNodesLongCulv ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_longculvertgeom_node_count,  nodeCountLongCulv, start = [ 1 ], count = [ nlongculverts ]))
+   call dealloc(geomXLongCulv)
+   call dealloc(geomYLongCulv)
+   call dealloc(nodeCountLongCulv)
+end if
+
+if (jahislateral > 0 .and. numlatsg > 0) then
+   call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start = [ 1 ], count = [ nlatnd ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start = [ 1 ], count = [ nlatnd ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_latgeom_node_count,  nodeCountLat))
+end if
+
+if (jahisgate > 0 .and. ngategen > 0) then
+   j = 1
+   call realloc(node_count, ngategen, fill = 0)
+   do n = 1, ngategen
+      i = gate2cgen(n)
+      nlinks = L2cgensg(i) - L1cgensg(i) + 1
+      if (nlinks > 0) then
+         nNodes = nlinks + 1
+      else if (nlinks == 0) then
+         nNodes = 0
+      end if
+      node_count(n) = nNodes
+      if (nNodes > 0) then
+         call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
+         call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordx, geom_x(1:nNodes), start = [ j ], count = [ nNodes ]))
+         call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_coordy, geom_y(1:nNodes), start = [ j ], count = [ nNodes ]))
+         j = j + nNodes
+      end if
+   end do
+   call check_netcdf_error( nf90_put_var(ihisfile, id_gategengeom_node_count, node_count, start = [ 1 ], count = [ ngategen ]))
 end if
 
 if (jahisweir > 0 .and. nweirgen > 0) then
-   ! write geometry variables at the first time of history output
-   if (it_his == 1) then
-      if (network%sts%numWeirs > 0) then ! new weir
-         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geomXWeir,     start = (/ 1 /), count = (/ nNodesWeir /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geomYWeir,     start = (/ 1 /), count = (/ nNodesWeir /)))
-         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count,  nodeCountWeir, start = (/ 1 /), count = (/ network%sts%numWeirs /)))
-         if (allocated(geomXWeir))     deallocate(geomXWeir)
-         if (allocated(geomYWeir))     deallocate(geomYWeir)
-         if (allocated(nodeCountWeir)) deallocate(nodeCountWeir)
-      else
-         j = 1
-         call realloc(node_count, nweirgen, fill = 0)
-         do n = 1, nweirgen
-            i = weir2cgen(n)
-            nlinks = L2cgensg(i) - L1cgensg(i) + 1
-            if (nlinks > 0) then
-               nNodes = nlinks + 1
-            else if (nlinks == 0) then
-               nNodes = 0
-            end if
-            node_count(n) = nNodes
-            if (nNodes > 0) then
-               call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
-               call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geom_x(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geom_y(1:nNodes), start = (/ j /), count = (/ nNodes /)))
-               j = j + nNodes
-            end if
-         end do
-         call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count, node_count, start = (/ 1 /), count = (/ nweirgen /)))
-      end if
+   if (network%sts%numWeirs > 0) then
+      call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geomXWeir,     start = [ 1 ], count = [ nNodesWeir ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geomYWeir,     start = [ 1 ], count = [ nNodesWeir ]))
+      call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count,  nodeCountWeir, start = [ 1 ], count = [ network%sts%numWeirs ]))
+      call dealloc(geomXWeir)
+      call dealloc(geomYWeir)
+      call dealloc(nodeCountWeir)
+   else
+      j = 1
+      call realloc(node_count, nweirgen, fill = 0)
+      do n = 1, nweirgen
+         i = weir2cgen(n)
+         nlinks = L2cgensg(i) - L1cgensg(i) + 1
+         if (nlinks > 0) then
+            nNodes = nlinks + 1
+         else if (nlinks == 0) then
+            nNodes = 0
+         end if
+         node_count(n) = nNodes
+         if (nNodes > 0) then
+            call get_geom_coordinates_of_generalstructure_oldext(i, nNodes, geom_x, geom_y)
+            call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordx, geom_x(1:nNodes), start = [ j ], count = [ nNodes ]))
+            call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_coordy, geom_y(1:nNodes), start = [ j ], count = [ nNodes ]))
+            j = j + nNodes
+         end if
+      end do
+      call check_netcdf_error( nf90_put_var(ihisfile, id_weirgengeom_node_count, node_count, start = [ 1 ], count = [ nweirgen ]))
    end if
 end if
 
-end subroutine write_old_structure_static_vars
+end subroutine write_structure_static_variables
    
 end subroutine unc_write_his

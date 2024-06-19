@@ -31,7 +31,7 @@ module m_alloc
 implicit none
 private
 
-public realloc, reallocP, aerr, allocSize, reserve_sufficient_space
+public realloc, reallocP, aerr, allocSize, reserve_sufficient_space, dealloc
 
 
 ! TODO: Handle nondefault kinds properly? [AvD]
@@ -164,7 +164,26 @@ interface allocSize
    module procedure allocSizeDouble
 end interface
 
+interface dealloc
+   module procedure deallocate_double_array
+   module procedure deallocate_integer_array
+end interface
+
 contains
+
+subroutine deallocate_double_array(array)
+double precision, dimension(:), allocatable :: array
+if (allocated(array)) then
+   deallocate(array)
+endif
+end subroutine deallocate_double_array
+
+subroutine deallocate_integer_array(array)
+integer, dimension(:), allocatable :: array
+if (allocated(array)) then
+   deallocate(array)
+endif
+end subroutine deallocate_integer_array
 !
 !
 !
