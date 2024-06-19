@@ -76,7 +76,7 @@
     </checks>
   </testCase>
   <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk_win64">    <!-- dflowfm + drr -->
-    <path version="2024-01-12T07:40:00">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
+    <path version="2024-04-12T16:05:53">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
     <checks>
       <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
         <parameters>

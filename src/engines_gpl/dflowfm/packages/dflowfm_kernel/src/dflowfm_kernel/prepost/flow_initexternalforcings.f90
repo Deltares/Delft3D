@@ -88,7 +88,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    double precision, allocatable :: viuh(:)            ! temp
    double precision, allocatable :: tt(:)
    logical                       :: exist
-   logical                       :: patm_available, tair_available, dewpoint_available
+   logical                       :: tair_available, dewpoint_available
    integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
    integer                       :: numnos, numnot, numnon ! < Nr. of unassociated flow links (not opened due to missing z- or u-boundary)
 
@@ -131,7 +131,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    iresult = DFM_NOERR
 
    success = .true.    ! default if no valid providers are present in *.ext file (m_flowexternalforcings::success)
-   patm_available = .false.
+
    tair_available = .false.
    dewpoint_available = .false.
    
@@ -1492,7 +1492,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                if (success) then
                   jawind = 1
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'charnock') then
@@ -1597,7 +1596,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'air_temperature') then
@@ -2519,8 +2517,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    endif
 
    if (ja_computed_airdensity == 1) then
-      if (.not. (patm_available .and. tair_available .and. dewpoint_available)) then
-         call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
+      if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
+         call mess(LEVEL_ERROR, &
+             'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
       else
          if (ja_airdensity == 1) then
             call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')

@@ -43,7 +43,7 @@ contains
                           wsettl , depth  , ldiffz , ldiffh , &
                           acomp  , accur  , xcor   , ycor   , &
                           tcktot , lun2   , alpha  , mapsub , nfract ,      &
-                          taucs  , tauce  , chezy  , rhow   , lsettl ,      &
+                          taucs  , tauce  , chezy  , rhow   , use_settling ,      &
                           mstick , nstick , ioptdv , cdisp  , dminim ,      &
                           fstick , defang , floil  , xpart0 , ypart0 ,      &
                           xa0    , ya0    , xa     , ya     , npart0 ,      &
@@ -129,7 +129,7 @@ contains
       logical    , intent(in)    :: acomp               ! use an analytical function for umagi
       logical    , intent(in)    :: ldiffh              ! horizontal diffusion is on/off
       logical    , intent(in)    :: ldiffz              ! vertical diffusion is on/off
-      logical    , intent(in)    :: lsettl              ! if on deposition/erosion may occur at the bed
+      logical    , intent(in)    :: use_settling              ! if on deposition/erosion may occur at the bed
 !
       real   (sp), pointer    :: abuoy ( : )         ! dispersion coefficient buoyancy
       real   (sp), intent(in)    :: accur               ! accuracy limit taylor expansion
@@ -729,7 +729,7 @@ contains
             ubstar = sqrt(c2g*(vxr*vxr + vyr*vyr))  ! ubstar this is requiered for dispersion
          endif
 
-         if ( lsettl .and. kp .eq. layt+1 ) then
+         if ( use_settling .and. kp == layt+1 ) then
             if ( ubstar_b .ge. uecrit ) then
                kp = kbotp
                zp = 0.05
@@ -834,8 +834,8 @@ contains
                   depthl = volume(n03d)/area(n0)
                   znew   = znew / depthl
                else                                   ! either twolay or kp .eq. layt
-                  if ( lsettl .and. ubstar_b .lt. uscrit   &
-                              .and. wsettl(ipart) .gt. 0.0 ) then
+                  if ( use_settling .and. ubstar_b < uscrit   &
+                              .and. wsettl(ipart) > 0.0 ) then
                      kpart(ipart) = layt + 1          !  at high vert disp everything settles !!!
                      zpart(ipart) = 0.0
                      nopart_sed = nopart_sed + 1
@@ -1667,7 +1667,7 @@ contains
 !$OMP END PARALLEL DO
        timon = timon_org
 
-      if (lsettl) then
+      if (use_settling) then
          write(lun2,'(4x,a,i12,a,i4,a)') '  No. of particles settled into bed layer  : ', &
                                           nopart_sed,' (layer ',layt+1,')'
          write(lun2,'(4x,a,i12,a,i4,a)') '  No. of particles eroded from  bed layer  : ', &

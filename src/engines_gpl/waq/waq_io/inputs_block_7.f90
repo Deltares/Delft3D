@@ -45,7 +45,7 @@ contains
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token       ! tokenized reading
-        use partmem, only : alone, lsettl, layt        ! for the interface with Delpar (Tau and VertDisp)
+        use partmem, only : alone, use_settling, layt        ! for the interface with Delpar (Tau and VertDisp)
         use timers       !   performance timers
         use m_sysn
         use omp_lib
@@ -182,7 +182,7 @@ contains
 
         enddo
         if (.not. alone) then              ! Delwaq runs with Delpar
-            if (lsettl .or. layt > 1) then
+            if (use_settling .or. layt > 1) then
                 if (taupart) then
                     write (file_unit, 2330)
                 else

@@ -53,7 +53,7 @@ contains
                         chispl   , nosta    , nmstat   , xstat    , ystat    ,  &
                         nstat    , mstat    , nplsta   , mplsta   , ihstrt   ,  &
                         ihstop   , ihstep   , ihplot   , finam    , kpart    ,  &
-                        mnmax2   , noseglp  , nfract   , lsettl   , mstick   ,  &
+                        mnmax2   , noseglp  , nfract   , use_settling   , mstick   ,  &
                         elt_names, elt_types, elt_dims , elt_bytes, rbuffr   ,  &
                         zpart    , za       , locdep   , dps      , tcktot   ,  &
                         lgrid3   )
@@ -102,7 +102,7 @@ contains
 !     lgrid2  integer  nmax*mmax  input   model grid layout (total)
 !     lun1    integer     1       input   unit number 1 (history)
 !     lun2    integer     1       input   unit number 2 (logging)
-!     lsettl  logical     1       input   if .true. then settling substances
+!     use_settling  logical     1       input   if .true. then settling substances
 !                                         in an extra bed layer
 !     mapsub  integer   nosubs    input   map of substances on numbers
 !     modtyp  integer     1       input   model type
@@ -171,7 +171,7 @@ contains
       real     ( sp)                :: window(4)              !  plot window
       character(len=256)                      :: finam
       logical                                 :: ihflag, hisfil
-      logical                                 :: lsettl
+      logical                                 :: use_settling
 !
 !     declare putget help var's
 !
@@ -217,9 +217,7 @@ contains
       real   (sp) :: depthl    ,fvolum    ,pblay     ,surf      ,windw1
       real   (sp) :: windw3    ,xmloc     ,xnloc     ,xpf
       real   (sp) :: ymloc     ,ynloc     ,ypf
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "parths", ithndl )
+      integer(kind=int_wp), save :: ithndl = 0            ! handle to time this subroutine
 
 !     For the time being
 
@@ -235,236 +233,229 @@ contains
 !     determine if history file must be produced
 !
       hisfil = .true.
-      if (nosta                      <=  0     ) hisfil = .false.
-      if (ihstep                     < 1       ) hisfil = .false.
-      if (itime                      < ihstrt  ) hisfil = .false.
-      if (itime - idelt              >=  ihstop) hisfil = .false.
-      if (mod(itime-ihstrt, ihstep)  >=  idelt ) hisfil = .false.
+      if ( nosta                      <=  0      .or. &
+           ihstep                     < 1        .or. &
+           itime                      < ihstrt   .or. &
+           itime - idelt              >=  ihstop .or. &
+           mod(itime-ihstrt, ihstep)  >=  idelt ) then
+          hisfil = .false.
+      endif
 !
-      if ( .not. hisfil ) goto 9999     !       exit
+      if ( .not. hisfil ) then
+          return
+      endif
+
+      if ( timon ) then
+          call timstrt( "parths", ithndl )
+      endif
 
 !     start of creation of history file
 
       if (first) then
-         first = .false.
-         windw1    = window(1)
-         windw3    = window(3)
-         xpf       = (window(2) - windw1) / mmap
-         ypf       = (window(4) - windw3) / nmap
-         thickn(1) = 1.0 - pblay
-         thickn(2) = pblay
-         nosubt    = (nosubs + 1) * nolay
-         write ( lun2, * ) ' Writing to new history file:', finam(1:len_trim(finam))
-         call openfl ( lun1, finam, 1 )
+          first = .false.
+          windw1    = window(1)
+          windw3    = window(3)
+          xpf       = (window(2) - windw1) / mmap
+          ypf       = (window(4) - windw3) / nmap
+          thickn(1) = 1.0 - pblay
+          thickn(2) = pblay
+          nosubt    = (nosubs + 1) * nolay
+          write ( lun2, * ) ' Writing to new history file:', finam(1:len_trim(finam))
+          call openfl ( lun1, finam, 1 )
 
-!        map file stations:
+!         map file stations:
 
-         noerr = 0
-         nstat = 0
-         do 10 istat = 1, nosta
-            xnloc = xstat(istat)
-            ynloc = ystat(istat)
-            call part07 ( lgrid  , lgrid2 , nmax   , mmax   , xb     , &
-                          yb     , xnloc  , ynloc  , nmloc  , mmloc  , &
-                          xmloc  , ymloc  , ierror )
+          noerr = 0
+          nstat = 0
+          do istat = 1, nosta
+              xnloc = xstat(istat)
+              ynloc = ystat(istat)
+              call part07 ( lgrid  , lgrid2 , nmax   , mmax   , xb     , &
+                            yb     , xnloc  , ynloc  , nmloc  , mmloc  , &
+                            xmloc  , ymloc  , ierror )
 
-!          write some statistics and update output arrays
+!             write some statistics and update output arrays
 
-            if ( ierror == 0 ) then
-               nstat(istat) = nmloc
-               mstat(istat) = mmloc
-            else                       !   location invalid
-               noerr = noerr + 1
-               nstat(istat)      = -1
-               mstat(istat)      = -1
-               chismp(:,:,istat) = -999.0
-               nplsta(istat)     = -1
-               mplsta(istat)     = -1
-               chispl(:,:,istat) = -999.0
-            endif
-   10    continue
-         if ( noerr /= 0 ) write (lun2, 99005) noerr
-
-!        plo file stations:
-
-         do 30 istat = 1, nosta
-            if ( nstat(istat) .eq. -1 ) cycle
-            xnloc = xstat(istat)
-            ynloc = ystat(istat)
-            ix = int((xnloc - windw1) / xpf) + 1
-            iy = int((ynloc - windw3) / ypf) + 1
-            if ( ix  >  0 .and. ix  <=  mmap .and.                 &
-                 iy  >  0 .and. iy  <=  nmap        ) then
-               i2 = lgrid( nstat(istat), mstat(istat) )
-               if (i2  < 2) then        !    location invalid
-                  write (lun2, 99004) istat, xnloc, ynloc
+              if ( ierror == 0 ) then
+                  nstat(istat) = nmloc
+                  mstat(istat) = mmloc
+              else                       !   location invalid
+                  noerr = noerr + 1
+                  nstat(istat)      = -1
+                  mstat(istat)      = -1
+                  chismp(:,:,istat) = -999.0
                   nplsta(istat)     = -1
                   mplsta(istat)     = -1
                   chispl(:,:,istat) = -999.0
-               else
-                  nplsta(istat) = ix
-                  mplsta(istat) = iy
-                  lplgr = .true.
-                  do ist2 = 1, istat - 1
-                     if ( ix == nplsta(ist2) .and.                 &
-                          iy == mplsta(ist2)        ) then
-                        write(lun2, 99002)    ! two observation points in one cell
-                     endif
-                  enddo
-               endif
-            else             !            initialize missing values
-               nplsta(istat)     = -1
-               mplsta(istat)     = -1
-               chispl(:,:,istat) = -999.0
-            endif
-   30    continue
+              endif
+          enddo
+          if ( noerr /= 0 ) then
+              write (lun2, 99005) noerr
+          endif
+
+!         plo file stations:
+
+          do istat = 1, nosta
+              if ( nstat(istat) .eq. -1 ) cycle
+              xnloc = xstat(istat)
+              ynloc = ystat(istat)
+              ix = int((xnloc - windw1) / xpf) + 1
+              iy = int((ynloc - windw3) / ypf) + 1
+              if ( ix  >  0 .and. ix  <=  mmap .and.                 &
+                   iy  >  0 .and. iy  <=  nmap        ) then
+                  i2 = lgrid( nstat(istat), mstat(istat) )
+                  if (i2  < 2) then        !    location invalid
+                      write (lun2, 99004) istat, xnloc, ynloc
+                      nplsta(istat)     = -1
+                      mplsta(istat)     = -1
+                      chispl(:,:,istat) = -999.0
+                  else
+                      nplsta(istat) = ix
+                      mplsta(istat) = iy
+                      lplgr = .true.
+                      do ist2 = 1, istat - 1
+                          if ( ix == nplsta(ist2) .and.                 &
+                               iy == mplsta(ist2)        ) then
+                              write(lun2, 99002)    ! two observation points in one cell
+                          endif
+                      enddo
+                  endif
+              else             !            initialize missing values
+                  nplsta(istat)     = -1
+                  mplsta(istat)     = -1
+                  chispl(:,:,istat) = -999.0
+              endif
+          enddo
       endif
 !
 !     initialize chismp with concentration
 !
-      do 50 istat = 1, nosta
-        if ( nstat(istat) .eq. -1 ) cycle
-        i2   = lgrid3(nstat(istat), mstat(istat))
-        do 45 ilay = 1, nolay
-           iseg = i2 + (ilay - 1)*noseglp
-           do 40 isub = 1, nosubs
-             if (modtyp /= model_two_layer_temp) then
-                chismp(isub , ilay , istat) = conc(isub  , iseg)
-             else
-                ipos = (isub-1)*nolay  + ilay
-                chismp(isub , ilay , istat) = conc(ipos  , i2  )
-             endif
-   40     continue
-          chismp(nosubs + 1 , ilay , istat) = conc(nosubs + 2  , iseg)
-   45   continue
-   50 continue
+      do istat = 1, nosta
+          if ( nstat(istat) .eq. -1 ) then
+              cycle
+          endif
+          i2   = lgrid3(nstat(istat), mstat(istat))
+          do ilay = 1, nolay
+              iseg = i2 + (ilay - 1)*noseglp
+              do isub = 1, nosubs
+                  if (modtyp /= model_two_layer_temp) then
+                      chismp(isub , ilay , istat) = conc(isub  , iseg)
+                  else
+                      ipos = (isub-1)*nolay  + ilay
+                      chismp(isub , ilay , istat) = conc(ipos  , i2  )
+                  endif
+              enddo
+              chismp(nosubs + 1 , ilay , istat) = conc(nosubs + 2  , iseg)
+          enddo
+      enddo
 !
-      if (lplgr) then
+      if ( lplgr ) then
 !
 !       compute particle coordinate
 !
-        call part11(lgrid , xb    , yb    , nmax  , npart , mpart , &
-                    xpart , ypart , xa    , ya    , nopart, npwndw, &
-                    lgrid2, kpart , zpart , za    , locdep, dps   , &
-                    nolay , mmax  , tcktot)
+          call part11(lgrid , xb    , yb    , nmax  , npart , mpart , &
+                      xpart , ypart , xa    , ya    , nopart, npwndw, &
+                      lgrid2, kpart , zpart , za    , locdep, dps   , &
+                      nolay , mmax  , tcktot)
 
 !
 !   zero plot grid for all substances   (which ones after part13 ????)
 !
-        amap =  0.0   ! whole array assignment
+          amap =  0.0   ! whole array assignment
 !
 !       initialize some variables for within the loop
 !
-        do 80 i1 = npwndw, nopart
+          do i1 = npwndw, nopart
 !
 !         determine if pointers fit in the grid
 !
-          ix = int((xa(i1) - windw1) / xpf) + 1
-          if (ix  >  0 .and. ix  <=  mmap) then
-            iy = int((ya(i1) - windw3) / ypf) + 1
-            if (iy  >  0 .and. iy  <=  nmap) then
-              i2 = lgrid(npart(i1), mpart(i1))
-              if (i2  >  1) then
-                if (area(i2)  /=  0.0) then
+              ix = int((xa(i1) - windw1) / xpf) + 1
+              if (ix  >  0 .and. ix  <=  mmap) then
+                  iy = int((ya(i1) - windw3) / ypf) + 1
+                  if (iy  >  0 .and. iy  <=  nmap) then
+                      i2 = lgrid(npart(i1), mpart(i1))
+                      if (i2  >  1) then
+                          if (area(i2)  /=  0.0) then
 !
-!                 determine the appropriate layer
+!                             determine the appropriate layer
 !
-                  ilay = kpart(i1)
+                              ilay = kpart(i1)
 !
-                  if(modtyp == model_two_layer_temp) then
-                     depthl = volume(i2)/area(i2)
-                     fvolum = surf * thickn(ilay) * depthl
-                  else
-                     iseg   = (ilay-1)*mnmax2 + i2
-                     if(lsettl.and.ilay==nolay) then
-                        fvolum = surf
-                     else
-                        depthl = volume(iseg)/area(i2)
-                        fvolum = surf * depthl
-                     endif
-                  endif
+                              if(modtyp == model_two_layer_temp) then
+                                  depthl = volume(i2)/area(i2)
+                                  fvolum = surf * thickn(ilay) * depthl
+                              else
+                                  iseg   = (ilay-1)*mnmax2 + i2
+                                  if ( use_settling .and. ilay == nolay ) then
+                                      fvolum = surf
+                                  else
+                                      depthl = volume(iseg)/area(i2)
+                                      fvolum = surf * depthl
+                                  endif
+                              endif
 
-                  if (fvolum  /=  0.0) then
+                              if (fvolum  /=  0.0) then
 !
-!                   put concentration in it's appropriate layer
+!                                 put concentration in it's appropriate layer
 !
-                    do 70, isub = 1, nosubs
+                                  do isub = 1, nosubs
 !
 !.. for floating oil or for deposited substances surf is required (per m2)
 !.. also for sticking substances
 !
-                      if(modtyp == model_oil .and. isub <(3*nfract)) then
+                                      if (modtyp == model_oil .and. isub <(3*nfract)) then
 !.. oil module
-                        jsub = mod(isub,3)
-                        if((2*(jsub)/2) /= jsub) then
-                           fvolum = surf
-                        elseif(mstick(isub) <0) then
-                           fvolum = surf
-                        endif
-                      elseif(lsettl.and.ilay==nolay) then
-                         fvolum = surf
-                      elseif(mstick(isub) <0) then
-                         fvolum = surf
-                      endif
-                      amap(isub , ilay , iy, ix) = amap(isub , ilay , iy, ix) +  &
-                                                   wpart(isub, i1)/fvolum
-70                  continue
+                                          jsub = mod(isub,3)
+                                          if ((2*(jsub)/2) /= jsub) then
+                                              fvolum = surf
+                                          elseif ( mstick(isub) < 0 ) then
+                                              fvolum = surf
+                                          endif
+                                      elseif ( use_settling .and. ilay == nolay ) then
+                                          fvolum = surf
+                                      elseif( mstick(isub) < 0 ) then
+                                          fvolum = surf
+                                      endif
+                                      amap(isub , ilay , iy, ix) = amap(isub , ilay , iy, ix) +  &
+                                                                   wpart(isub, i1)/fvolum
+                                  enddo
 ! also count number of particles
-                    amap(nosubs + 1, ilay, iy, ix) = amap(nosubs + 1, ilay, iy, ix) + 1
-                    
+                                  amap(nosubs + 1, ilay, iy, ix) = amap(nosubs + 1, ilay, iy, ix) + 1
+
+                              endif
+                          endif
+                      endif
                   endif
-                endif
               endif
-            endif
-          endif
-   80   continue
-
-!       ** test data **
-!       write(lun2,'(a)') ' from PartHS : amap array'
-!       do isub=1,nosubs
-!       do ilay=1,nolay
-!          do iy=1,nmap
-!              write(lun2,'(2i6,20e12.4)') isub,ilay,(amap(isub , ilay , iy, ix),ix=1,min(20,mmap))
-!          enddo
-!       enddo
-!       enddo
-
+          enddo
       endif
 !
-      do 130 istat = 1, nosta
-        if ( nplsta(istat)  < 1 .or. mplsta(istat)  < 1     &
-                 .or. .not. lplgr) then
+      do istat = 1, nosta
+          if ( nplsta(istat)  < 1 .or. mplsta(istat) < 1  .or. .not. lplgr) then
 !
 !         initialize chispl(1, istat) with missing values
 !
-          chispl(:,:,istat) = -999.0  ! whole array assignment
+              chispl(:,:,istat) = -999.0  ! whole array assignment
 !
 !         this version: overwrite chispl with chismp if loc. outside
 !                       plot window
 !
-          ihplot(istat) = 0
-          do 100, isub = 1, nosubs+1
-             do 105 ilay = 1, nolay
-                chispl(isub, ilay, istat) = chismp(isub, ilay, istat)
-  105        continue
-  100     continue
-        else
-          ihplot(istat) = 1
-!          write(lun2,'(a)') ' From PARTHS '
-          do 120  isub = 1, nosubs+1
-            do 110 ilay = 1, nolay
-               chispl(isub, ilay ,istat) =   &
-                          amap(isub, ilay, mplsta(istat), nplsta(istat))
+              ihplot(istat) = 0
+              do isub = 1, nosubs+1
+                  do ilay = 1, nolay
+                     chispl(isub, ilay, istat) = chismp(isub, ilay, istat)
+                  enddo
+              enddo
+          else
+              ihplot(istat) = 1
+              do isub = 1, nosubs+1
+                  do ilay = 1, nolay
+                      chispl(isub, ilay ,istat) = amap(isub, ilay, mplsta(istat), nplsta(istat))
 
-
-!               ** test data **
-!               write(lun2,'(4x,a,4x,a,2x,i6,1pe20.5)') &
-!                          nmstat(istat),subst(isub),ilay,chispl(isub,ilay,istat)
-
-  110       continue
-  120     continue
-        endif
-  130 continue
+                  enddo
+              enddo
+          endif
+      enddo
 !
 !     write history file, use delwaq facilities for this
 !
@@ -474,17 +465,19 @@ contains
                     ihflag , elt_names , elt_types , elt_dims  , elt_bytes , &
                     rbuffr)
 !
-      if (.not. ihflag) then
+      if ( .not. ihflag ) then
 !
 !       time-step not written ??  : error
 !
-        write (lun2, 99006)
-        call stop_exit(1)
+          write (lun2, 99006)
+          call stop_exit(1)
       endif
 !
 !     end of subroutine
 !
- 9999 if ( timon ) call timstop ( ithndl )
+      if ( timon ) then
+          call timstop ( ithndl )
+      endif
       return
 !
 !     error formats

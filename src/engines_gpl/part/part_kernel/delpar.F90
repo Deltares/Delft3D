@@ -186,7 +186,7 @@ contains
 !     lgrid3  integer  nmax *mmax                        original active grid matrix
 !     linear  integer  nocont                           0 = block interpolated loads
 !                                                       1= linear interpolated loads
-!     lsettl  logical     1                             when true settling occurs in extra bed layer
+!     use_settling  logical     1                             when true settling occurs in extra bed layer
 !                                                       then there is one extra layer(noslay) on output
 !     lun     integer  nfiles                           array with unit numbers
 !     kwaste  integer  nwmax                            k-values wasteloads in model
@@ -220,7 +220,7 @@ contains
 !     nopam   integer     1                             adapted total number of parameters
 !     nopart  integer     1                             adapted total number of particles
 !     noslay  real        1                             number of layers for water phase and bed
-!                                                       for lsettl = .true. noslay = nolay + 1
+!                                                       for use_settling = .true. noslay = nolay + 1
 !     nosubs  integer     1                             total number of substances
 !     nosubc  integer     1                             leading dimension conc. array
 !     nosud   integer  numax                            number of subst. on file for ud release
@@ -579,7 +579,7 @@ contains
                        iptime  , npmax   , nrowsmax, lunpr   )
       endif
       if ( idp_file .ne. ' ' .and. modtyp .ne. model_abm ) then
-         if (modtyp .ne. model_prob_dens_settling) then
+         if (modtyp /= model_prob_dens_settling) then
             write ( lunpr, * ) ' Opening initial particles file:', idp_file(1:len_trim(idp_file))
             call openfl ( lunini, idp_file, 0 )
             read ( lunini ) ilp, nopart, nosubs
@@ -599,7 +599,7 @@ contains
             enddo
             do ilp = 1, nopart
                do isp = 1, nosubs
-                  if (modtyp .eq. model_prob_dens_settling) then
+                  if (modtyp == model_prob_dens_settling) then
                      rhopart(isp, ilp) = pldensity(isp)
                   endif
                enddo
@@ -609,7 +609,7 @@ contains
       endif
 
 !     Draw random log normal distributed particle sizes for non-restart particles
-      if (modtyp .eq. model_prob_dens_settling) then
+      if (modtyp == model_prob_dens_settling) then
          do ilp = 1, npmax
             rnorm = normal(rseed)
             if (ilp .gt. nopart_res) then
@@ -689,7 +689,7 @@ contains
                        iptime   , npwndn   , modtyp   , nosubs   , noslay   ,    &
                        iyear    , imonth   , iofset   , pg(1)    , rbuffr   ,    &
                        nosta    , mnmax2   , noseglp  , isfile   , mapsub   ,    &
-                       layt     , area     , nfract   , lsettl   , mstick   ,    &
+                       layt     , area     , nfract   , use_settling   , mstick   ,    &
                        elt_names, elt_types, elt_dims , elt_bytes, locdep   ,    &
                        nosub_max, bufsize  )
 
@@ -704,7 +704,7 @@ contains
                        lgrid    , pblay    , modtyp   , apeak    , adepth   ,    &
                        noslay   , nosubs   , rbuffr   , kpart    , itrack   ,    &
                        nplot    , mapsub   , ntrack   , isfile   , mmaxp    ,    &
-                       nfract   , lsettl   , mstick   , elt_names, elt_types,    &
+                       nfract   , use_settling   , mstick   , elt_names, elt_types,    &
                        elt_dims , elt_bytes, locdep   , zpart    , za       ,    &
                        dpsp     , tcktot   , nosub_max, bufsize  )
 
@@ -719,7 +719,7 @@ contains
                        chispl   , nosta    , nmstat   , xstat    , ystat    ,    &
                        nstat    , mstat    , nplsta   , mplsta   , ihstrtp  ,    &
                        ihstopp  , ihstepp  , ihplot   , fname(13), kpart    ,    &
-                       mnmax2   , noseglp  , nfract   , lsettl   , mstick   ,    &
+                       mnmax2   , noseglp  , nfract   , use_settling   , mstick   ,    &
                        elt_names, elt_types, elt_dims , elt_bytes, rbuffr   ,    &
                        zpart    , za       , locdep   , dpsp     , tcktot   ,    &
                        lgrid3   )
@@ -767,7 +767,7 @@ contains
                              lgrid3   ,                                                &
                              mmaxp    , xb       , yb       , kpart    , mapsub   ,    &
                              isfile   , nfract   , mstick   , nstick   , fstick   ,    &
-                             xa       , ya       , pg(1)    , lsettl   , xpart    ,    &
+                             xa       , ya       , pg(1)    , use_settling   , xpart    ,    &
                              ypart    , zpart    , za       , locdep   , dpsp     ,    &
                              tcktot   , substi   ,            npmax    , rhow     ,    &
                              amassd   , ioptrad  , ndisapp  , idisset  , tydisp   ,    &
@@ -859,7 +859,7 @@ contains
                           xpart    , ypart    , zpart    , wpart    , npwndw   ,    &
                           pg(1)    , amapsett , xa       , ya       , za       ,    &
                           atotal   , apeak    , adepth   , imap     , nplay    ,    &
-                          wsettl   , irfac    , anfac    , lsettl   , locdep   ,    &
+                          wsettl   , irfac    , anfac    , use_settling   , locdep   ,    &
                           tcktot   , dpsp     )
          else
             wsettl = 1.0  ! whole array assignment
@@ -891,7 +891,7 @@ contains
                        wsettl   , depth    , ldiffz   , ldiffh   , &
                        acomp    , accrjv   , xb       , yb       ,    &
                        tcktot   , lun(2)   , alpha    , mapsub   , nfract   ,    &
-                       taucs    , tauce    , chezy    , rhow     , lsettl   ,    &
+                       taucs    , tauce    , chezy    , rhow     , use_settling   ,    &
                        mstick   , nstick   , ioptdv   , cdisp    , dminim   ,    &
                        fstick   , defang   , floil    , xpart0   , ypart0   ,    &
                        xa0      , ya0      , xa       , ya       , npart0   ,    &
@@ -927,7 +927,7 @@ contains
          iext = len_trim(res_file) - 3
          if (max_restart_age .lt. 0) then
 !           Write the restart file with all active paritcles
-            if (modtyp.eq.model_prob_dens_settling)then
+            if (modtyp == model_prob_dens_settling)then
                res_file(iext+1:iext+4) = 'ses'    !limited number of particles (for 'plastics' modeltype 6 restart, as 'ras' but including settling values)
                write ( lunpr, * ) ' Including particle dependent settling velocity'
             else
@@ -954,7 +954,7 @@ contains
             close ( lunfil )
          else
 !        Write the restart file with all active paritcles below a certain age
-            if (modtyp.eq.model_prob_dens_settling)then
+            if (modtyp == model_prob_dens_settling)then
                res_file(iext+1:iext+4) = 'sas'    !limited number of particles (for 'plastics' modeltype 6 restart, as 'ras' but including settling values)
                write ( lunpr, * ) ' Including particle dependent settling velocity'
             else
@@ -968,7 +968,7 @@ contains
             do ilp = 1, nopart
                if (npart(ilp)>1.and.mpart(ilp)>1) then
                   if (lgrid( npart(ilp), mpart(ilp)).ge.1 .and. (iptime(ilp).lt.max_restart_age)) then   !only when the particles' age less than max_restart_age, time in seconds
-                     if (modtyp.ne.model_prob_dens_settling) then
+                     if (modtyp /= model_prob_dens_settling) then
                         write ( lunfil ) npart(ilp), mpart(ilp), kpart(ilp), xpart(ilp), ypart(ilp), zpart(ilp), &
                                      wpart(1:nosubs,ilp),iptime(ilp),track(1:7,ilp)
                      else

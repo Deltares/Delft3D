@@ -27,11 +27,15 @@ from tools.minio.prompt import Prompt
 
 
 class ErrorCode(str, Enum):
+    """Error code used in the `MinioToolError` base exception class."""
+
     AUTH = "auth"
     UNKNOWN = "unknown"
 
 
 class MinioToolError(Exception):
+    """Base class for errors in the `MinioTool`."""
+
     def __init__(self, message: str, code: ErrorCode = ErrorCode.UNKNOWN) -> None:
         super().__init__(message)
         self.code = code
@@ -39,6 +43,8 @@ class MinioToolError(Exception):
 
 
 class MinioAuthError(MinioToolError):
+    """Authentication or authorization error."""
+
     def __init__(self, message: str) -> None:
         super().__init__(message, ErrorCode.AUTH)
 
@@ -159,7 +165,7 @@ class MinioTool:
         if test_case.version and not self.__ignore_conflicts(minio_prefix, test_case.version):
             return  # There's conflicts and the user decided to abort.
 
-        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete=True):
+        if not self.__build_and_execute_plan(local_dir, minio_prefix, allow_create_and_delete=False):
             return  # No changes were made.
 
         self.__update_config(test_case.name)

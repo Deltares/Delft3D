@@ -4,12 +4,14 @@ from typing import Iterator, List
 
 
 class Color(enum.Enum):
+    """Use to map color to ANSI terminal color code."""
+
     RED = 31
     GREEN = 32
     YELLOW = 33
 
 
-def color(s: str, color: Color):
+def color(s: str, color: Color) -> str:
     """Use ANSI escape codes to color text."""
     return f"\x1b[{color.value}m{s}\x1b[0m"
 
@@ -52,20 +54,20 @@ def ceil_dt(dt: datetime, delta: timedelta) -> datetime:
     >>> ceil_dt(datetime(2023, 12, 31, 23, 59, 59, tzinfo=timezone.utc), timedelta(minutes=1))
     datetime.datetime(2024, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     """
-    min = datetime.min.replace(tzinfo=timezone.utc)
-    quo, rem = divmod(dt - min, delta)
-    return min + (quo + 1) * delta if rem else dt
+    zero = datetime.min.replace(tzinfo=timezone.utc)
+    quo, rem = divmod(dt - zero, delta)
+    return zero + (quo + 1) * delta if rem else dt
 
 
 def to_unix_path(path: str) -> str:
-    """Convert Windows path separators with Unix path separators.
+    r"""Convert Windows path separators with Unix path separators.
 
     Both kind of path separators work on Windows, on Unix only the
     unix path separators are valid.
 
     Examples
     --------
-    >>> to_unix_path(r'\\foo\\bar/qux\\quux')
+    >>> to_unix_path(r'\foo\bar/qux\quux')
     '/foo/bar/qux/quux'
     """
     return path.replace("\\", "/")

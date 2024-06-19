@@ -144,7 +144,7 @@ contains
         else
             ifflag = 0
         endif
-        if (lsettl .or. layt > 1) then
+        if (use_settling .or. layt > 1) then
             indx = index_in_array('TAU       ', sfname)
             if (indx > 0) then
                 do i = 1, noseg
@@ -261,7 +261,7 @@ contains
                 iptime, npwndn, modtyp, nosubs, noslay, &
                 iyear, imonth, iofset, pg(1), rbuffr, &
                 nosta, mnmax2, noseglp, isfile, mapsub, &
-                layt, area, nfract, lsettl, mstick, &
+                layt, area, nfract, use_settling, mstick, &
                 elt_names, elt_types, elt_dims, elt_bytes, locdep, &
                 nosub_max, bufsize)
         ioff = notot - nosubs
@@ -283,7 +283,7 @@ contains
                 lgrid, pblay, modtyp, apeak, adepth, &
                 noslay, nosubs, rbuffr, kpart, itrack, &
                 nplot, mapsub, ntrack, isfile, mmaxp, &
-                nfract, lsettl, mstick, elt_names, elt_types, &
+                nfract, use_settling, mstick, elt_names, elt_types, &
                 elt_dims, elt_bytes, locdep, zpart, za, &
                 dpsp, tcktot, nosub_max, bufsize)
 
@@ -298,7 +298,7 @@ contains
                 chispl, nosta, nmstat, xstat, ystat, &
                 nstat, mstat, nplsta, mplsta, ihstrtp, &
                 ihstopp, ihstepp, ihplot, fnamep(13), kpart, &
-                mnmax2, noseglp, nfract, lsettl, mstick, &
+                mnmax2, noseglp, nfract, use_settling, mstick, &
                 elt_names, elt_types, elt_dims, elt_bytes, rbuffr, &
                 zpart, za, locdep, dpsp, tcktot, &
                 lgrid3)
@@ -348,7 +348,7 @@ contains
                     lgrid3, &
                     mmaxp, xb, yb, kpart, mapsub, &
                     isfile, nfract, mstick, nstick, fstick, &
-                    xa, ya, pg(1), lsettl, xpart, &
+                    xa, ya, pg(1), use_settling, xpart, &
                     ypart, zpart, za, locdep, dpsp, &
                     tcktot, substi, npmax, rhow, &
                     amassd, ioptrad, ndisapp, idisset, tydisp, &
@@ -461,7 +461,7 @@ contains
                     xpart, ypart, zpart, wpart, npwndw, &
                     pg(1), amapsett, xa, ya, za, &
                     atotal, apeak, adepth, imap, nplay, &
-                    wsettl, irfac, anfac, lsettl, locdep, &
+                    wsettl, irfac, anfac, use_settling, locdep, &
                     tcktot, dpsp)
         else
             ! jvb removed this line (commented, so execute if not modtyp=model_abm?

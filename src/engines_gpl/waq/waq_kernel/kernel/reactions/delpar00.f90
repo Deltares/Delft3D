@@ -110,7 +110,7 @@ contains
 
             !           this replaces the call to rdhydr
 
-            if (lsettl .or. layt > 1) then
+            if (use_settling .or. layt > 1) then
                 indx = index_in_array('TAU       ', sfname)
                 if (indx > 0) then
                     do i = 1, nosegp

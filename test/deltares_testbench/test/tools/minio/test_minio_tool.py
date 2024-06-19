@@ -9,7 +9,6 @@ import pytest
 from minio.commonconfig import Tags
 from minio.datatypes import Object as MinioObject
 from pyfakefs.fake_filesystem import FakeFilesystem
-from pytest import CaptureFixture, FixtureRequest
 from pytest_mock import MockerFixture
 from s3_path_wrangler.paths import S3Path
 
@@ -20,29 +19,29 @@ from tools.minio.minio_tool import MinioTool, MinioToolError
 from tools.minio.prompt import Prompt
 
 
-@pytest.fixture
+@pytest.fixture()
 def rewinder(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=Rewinder)
+    return mocker.Mock(spec=Rewinder)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_case_loader(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=TestCaseLoader)
+    return mocker.Mock(spec=TestCaseLoader)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_case_writer(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=TestCaseWriter)
+    return mocker.Mock(spec=TestCaseWriter)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def prompt(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=Prompt)
+    return mocker.Mock(spec=Prompt)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def minio_tool(
-    request: FixtureRequest,
+    request: pytest.FixtureRequest,
     rewinder: Mock,
     test_case_loader: Mock,
     test_case_writer: Mock,
@@ -69,7 +68,7 @@ def make_object(
     object_name: str,
     bucket_name: str = "my-bucket",
     version_id: Optional[str] = None,
-    last_modified: datetime = datetime.min.replace(tzinfo=timezone.utc),
+    last_modified: Optional[datetime] = None,
     is_delete_marker: bool = False,
     etag: Optional[str] = None,
     size: Optional[int] = None,
@@ -80,6 +79,7 @@ def make_object(
     if tags is not None:
         minio_tags = Tags()
         minio_tags.update(tags)
+    last_modified = last_modified or datetime.min.replace(tzinfo=timezone.utc)
 
     return MinioObject(
         bucket_name=bucket_name,
@@ -169,7 +169,7 @@ class TestMinioTool:
 
     def test_push__no_changes__print_up_to_date_message(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -192,7 +192,7 @@ class TestMinioTool:
 
     def test_push__dont_apply_changes(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -230,7 +230,7 @@ class TestMinioTool:
     @pytest.mark.parametrize("minio_tool", [{"tags": {"foo": "bar"}}], indirect=["minio_tool"])
     def test_push__add_tags_but_dont_apply_changes__print_tags(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -267,7 +267,7 @@ class TestMinioTool:
 
     def test_push__apply_changes_dont_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -314,7 +314,7 @@ class TestMinioTool:
 
     def test_push__apply_changes_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -349,7 +349,7 @@ class TestMinioTool:
 
     def test_push__conflicts_detected_dont_continue__return_before_build_plan(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -387,7 +387,7 @@ class TestMinioTool:
 
     def test_push__conflicts_detected_and_apply_changes_and_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -457,7 +457,7 @@ class TestMinioTool:
             minio_tool.pull("foo", PathType.INPUT)
 
     @pytest.mark.parametrize(
-        "path_type,prefix",
+        ("path_type", "prefix"),
         [
             (PathType.INPUT, "cases"),
             (PathType.REFERENCE, "references"),
@@ -486,7 +486,7 @@ class TestMinioTool:
         rewinder.download.assert_called_once_with("my-bucket", prefix, local_dir, None)
 
     @pytest.mark.parametrize(
-        "path_type,prefix,rewind",
+        ("path_type", "prefix", "rewind"),
         [
             (PathType.INPUT, "cases", None),
             (PathType.REFERENCE, "references", datetime.now(timezone.utc)),
@@ -596,7 +596,7 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
     ) -> None:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -632,7 +632,7 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
     ) -> None:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -779,7 +779,7 @@ class TestMinioTool:
 
     def test_update_references__no_changes__print_up_to_date_message(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -802,7 +802,7 @@ class TestMinioTool:
 
     def test_update_references__dont_apply_changes(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -817,7 +817,7 @@ class TestMinioTool:
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
-            items=[PlanItem.create(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
+            items=[PlanItem.update(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
         )
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
@@ -826,7 +826,7 @@ class TestMinioTool:
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
-            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=True
+            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=False
         )
         rewinder.execute_plan.assert_not_called()
         out_lines: List[str] = capsys.readouterr().out.splitlines()
@@ -840,7 +840,7 @@ class TestMinioTool:
     @pytest.mark.parametrize("minio_tool", [{"tags": {"foo": "bar"}}], indirect=["minio_tool"])
     def test_update_references__add_tags_but_dont_apply_changes__print_tags(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -867,7 +867,7 @@ class TestMinioTool:
             src_dir=test_case.case_dir,
             dst_prefix=test_case.reference_prefix,
             tags={"foo": "bar"},  # type: ignore
-            allow_create_and_delete=True,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_not_called()
         cap = capsys.readouterr()
@@ -876,7 +876,7 @@ class TestMinioTool:
 
     def test_update_references__apply_changes_dont_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -895,7 +895,7 @@ class TestMinioTool:
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
-            items=[PlanItem.create(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
+            items=[PlanItem.update(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.side_effect = [True, False]  # Yes, apply changes. No, don't save the configs.
@@ -909,7 +909,7 @@ class TestMinioTool:
             src_dir=local_dir,
             dst_prefix=bucket / "references",
             tags=None,
-            allow_create_and_delete=True,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
         test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
@@ -922,7 +922,7 @@ class TestMinioTool:
 
     def test_update_references__apply_changes_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -957,7 +957,7 @@ class TestMinioTool:
 
     def test_update_references__conflicts_detected_dont_continue__return_before_build_plan(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -995,7 +995,7 @@ class TestMinioTool:
 
     def test_update_references__conflicts_detected_and_apply_changes_and_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,

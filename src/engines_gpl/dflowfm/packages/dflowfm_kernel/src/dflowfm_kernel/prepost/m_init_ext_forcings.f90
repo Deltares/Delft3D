@@ -40,6 +40,11 @@ interface
       character(len=*), intent(in) :: external_force_file_name  !< file name for new external forcing boundary blocks
       logical                      :: res
    end function init_external_forcings
+
+  module function allocate_patm() result(status)
+     integer                    :: status
+  end function allocate_patm
+
 end interface
  
 contains

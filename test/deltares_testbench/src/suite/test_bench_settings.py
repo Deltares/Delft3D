@@ -12,10 +12,10 @@ from src.config.local_paths import LocalPaths
 from src.config.program_config import ProgramConfig
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
+from src.config.types.path_type import PathType
 from src.utils.common import log_separator, log_sub_header
 from src.utils.logging.log_level import LogLevel
 from src.utils.logging.logger import Logger
-from src.config.types.path_type import PathType
 
 
 class TestBenchSettings:
@@ -24,7 +24,8 @@ class TestBenchSettings:
     log_level: LogLevel = LogLevel.INFO
     local_paths: Optional[LocalPaths] = None
     programs: List[ProgramConfig] = []
-    configs: List[TestCaseConfig] = []
+    configs_from_xml: List[TestCaseConfig] = []
+    configs_to_run: List[TestCaseConfig] = []
     run_mode: ModeType = ModeType.COMPARE
     config_file: str = ""
     credentials: Credentials = Credentials()
