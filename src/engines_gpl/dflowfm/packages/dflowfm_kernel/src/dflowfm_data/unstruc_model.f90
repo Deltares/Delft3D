@@ -41,6 +41,7 @@ use time_module, only : ymd2modified_jul, datetimestring_to_seconds
 use dflowfm_version_module, only: getbranch_dflowfm
 use m_fm_icecover, only: ice_mapout
 use netcdf, only: nf90_double
+use m_deprecation
 implicit none
 
     !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
@@ -729,6 +730,8 @@ subroutine readMDUFile(filename, istat)
     use m_output_config, only: scan_input_tree
     use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
     use m_read_statistical_output, only: read_output_parameter_toggle
+    use fm_deprecated_keywords, only: deprecated_mdu_keywords
+    use m_deprecation, only: check_file_tree_for_deprecated_keywords
     
     use m_map_his_precision
 
@@ -2462,7 +2465,7 @@ subroutine readMDUFile(filename, istat)
    
    if (jagui == 0) then 
       ! If obsolete entries are used in the mdu-file, return with that error code.
-      call final_check_of_mdu_keywords (md_ptr, ierror, prefix='While reading '''//trim(filename)//'''')
+      call check_file_tree_for_deprecated_keywords (md_ptr, deprecated_mdu_keywords, ierror, prefix='While reading '''//trim(filename)//'''', excluded_chapters=['model'])
       if (ierror /= DFM_NOERR) then
          istat = ierror
       endif
@@ -2530,164 +2533,6 @@ subroutine createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
       map_classes_ucdir(i) = dble(i) * map_classes_ucdirstep
    enddo
 end subroutine createDirectionClasses
-
-!> Check if a keyword is deprecated (but still supported).
-logical function isdeprecated(chap, key)
-   character(len=*)                           :: chap  !< chapter name
-   character(len=*)                           :: key   !< keyword name
-   
-   isdeprecated = .false.
-
-   ! NOTE: make sure to have all chapter names and key names all in lowercase below:
-   select case (trim(chap))
-   case ('processes')
-      select case (trim(key))
-      case ('dtmassbalance')
-         isdeprecated = .true.
-      end select
-   end select
-end function isdeprecated
-
-!> Check if a keyword is obsolete (removed and hence no longer supported).
-logical function isobsolete(chap, key)
-   character(len=*)                           :: chap  !< chapter name
-   character(len=*)                           :: key   !< keyword name
-   
-   isobsolete = .false.
-   
-   ! NOTE: make sure to have all chapter names and key names all in lowercase below:
-   select case (trim(chap))
-   case ('geometry')
-      select case (trim(key))
-      case ('bathymetryfile','bedlevelfile','botlevuni','botlevtype','ithindykescheme','manholefile','nooptimizedpolygon')
-         isobsolete = .true.
-      end select
-   case ('numerics')
-      select case (trim(key))
-      case ('hkad','ithindykescheme','thindykecontraction', 'transportmethod', 'transporttimestepping')
-         isobsolete = .true.
-      end select
-   case ('output')
-      select case (trim(key))
-      case ('writebalancefile')
-         isobsolete = .true.
-      end select
-   end select
-end function isobsolete
-    
-!> Present a list of all MDU entries (tree struct) that were not read D-Flow FM or read more than once.
-!> Show errors if obsolete (removed) keywords are used and stop.
-!> Show warnings if deprecated (but not yet removed) keywords are used.
-subroutine final_check_of_mdu_keywords(md_tree, istat, prefix)
-   use MessageHandling
-   use dfm_error
-   
-   implicit none
-   type (TREE_DATA), pointer      :: md_tree           !< MDU-tree
-   integer, intent(out)           :: istat             !< Results status (DFM_NOERR if no ignored entries)
-   character(len=*), optional     :: prefix            !< Optional message string prefix, default empty
-
-   type (TREE_DATA), pointer                      :: achapter                !< tree data pointer for chapter level
-   type (TREE_DATA), pointer                      :: anode                   !< tree data pointer for keyword level
-   integer                                        :: inode                   !< index of the keyword being processed
-   integer                                        :: nnode                   !< number of keywords in the chapter
-   integer                                        :: ichapter                !< index of the chapter being processed
-   integer                                        :: nchapter                !< number of chapters in the file
-   integer                                        :: i                       !< loop variable
-   integer, parameter                             :: strlen = 30             !< maximum length of chapter and keyword/node names
-   character(len=strlen)                          :: nodename                !< name of the keyword
-   character(len=strlen)                          :: chaptername             !< name of the chapter
-   character(len=5)                               :: node_visit_str          !< temporary string containing the number of times a keyword was accessed
-   character(len=100)                             :: nodestring              !< string containing the keyword value
-   integer                                        :: threshold_abort_current !< backup variable for default abort threshold level (temporarily overruled)
-   logical                                        :: success                 !< flag indicating successful completion of a call
-   integer                                        :: num_obsolete            !< count the number of obsolete (removed) keywords
-   integer                                        :: num_deprecated          !< count the number of deprecated keywords
-   integer                                        :: num_doubleaccess        !< count the number of keywords accessed multiple times
-   integer                                        :: num_notaccessed         !< count the number of keywords not accessed at all (not being obsolete keywords)
-   integer, parameter                             :: numignore = 1           !< number of ignored chapters
-   character(len=strlen), dimension(numignore)    :: ignorechaps             !< which chapters to skip while checking
-
-   istat = DFM_NOERR
-   ignorechaps(:) = ' '
-   ignorechaps(1) = 'model'
-
-   num_obsolete = 0     ! support for these keywords has been removed from the code
-   num_deprecated = 0   ! keywords still supported, but may be removed in upcoming release
-   num_doubleaccess = 0 ! supported keywords, read multiple times (possibly inefficient code)
-   num_notaccessed = 0  ! keywords not recognized by this version, possible typo by the user
-
-   threshold_abort_current = threshold_abort
-   threshold_abort = LEVEL_FATAL
-
-   nchapter = size(md_tree%child_nodes)
-ch:do ichapter = 1, nchapter
-      achapter => md_tree%child_nodes(ichapter)%node_ptr
-      chaptername = tree_get_name(achapter)
-      do i = 1,numignore
-         if (trim(ignorechaps(i)) == trim(chaptername)) then
-            cycle ch
-         end if
-      end do
-
-      if (associated(achapter%child_nodes)) then
-         nnode = size(achapter%child_nodes)
-      else
-         nnode = 0
-      endif
-
-      do inode = 1, nnode
-         anode => achapter%child_nodes(inode)%node_ptr
-         call tree_get_data_string(anode,nodestring,success)
-         nodename = tree_get_name(anode)
-         if (success) then
-            if (size(anode%node_data) > 0) then
-               if (anode%node_visit < 1) then
-                  ! report any unused keywords
-                  if (isobsolete(trim(chaptername), trim(nodename))) then
-                      ! keyword is known, but no longer supported
-                      num_obsolete = num_obsolete + 1
-                      call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chaptername)//'] '//trim(nodename)//' is no longer supported.')
-                  else
-                      ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
-                      num_notaccessed = num_notaccessed + 1
-                      call mess(LEVEL_WARN, prefix//': keyword ['//trim(chaptername)//'] '//trim(nodename)//'='//trim(nodestring)//' was in file, but not used. Check possible typo.')
-                  endif
-               else
-                   ! keyword is known and used (node_visit >= 1)
-                  
-                  if (isdeprecated(trim(chaptername), trim(nodename))) then
-                      ! keyword is used, but deprecated
-                      num_deprecated = num_deprecated + 1
-                      call mess(LEVEL_WARN, prefix//': keyword ['//trim(chaptername)//'] '//trim(nodename)//' is deprecated and may be removed in a future release.')
-                  endif
-                  if (anode%node_visit > 1) then
-                     write(node_visit_str,'(i0)') anode%node_visit
-                     num_doubleaccess = num_doubleaccess + 1
-!                    call mess(LEVEL_WARN, prefix//': ['//trim(chaptername)//'] '//trim(nodename)//'='//trim(nodestring)//' was accessed more than once ('//trim(node_visit_str)//' times). Please contact support.')
-                  endif
-               endif
-            endif
-         endif
-      enddo
-   enddo ch
-
-   if (num_deprecated > 0) then
-      ! to bring this message to the attention of the user, we write an error but continue ..
-      ! but set it to warning because it leads to a stop futher on in loadModel when the highest message level is checked...
-      call mess(LEVEL_WARN, prefix//': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.')
-   end if
-
-   threshold_abort = threshold_abort_current
-
-   if (num_obsolete > 0) then
-      ! this is a fatal error that we want to stop at. 
-      call mess(LEVEL_ERROR, prefix//': Old unsupported keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.')
-      istat = DFM_WRONGINPUT
-   end if
-
-end subroutine final_check_of_mdu_keywords
-
 
 !> Write a model definition to a file.
 subroutine writeMDUFile(filename, istat)

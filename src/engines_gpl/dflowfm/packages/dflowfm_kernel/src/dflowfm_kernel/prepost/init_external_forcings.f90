@@ -54,7 +54,9 @@ contains
       use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
       use m_lateral, only: apply_transport
       use m_flow, only: kmx
-
+      use m_deprecation, only: check_file_tree_for_deprecated_keywords
+      use fm_deprecated_keywords, only: deprecated_ext_keywords
+      
       character(len=*), intent(in)  :: external_force_file_name   !< file name for new external forcing boundary blocks
       logical                       :: res
       
@@ -199,6 +201,8 @@ contains
             deallocate (kclat)
          end if
       end if
+
+      call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
 
       call tree_destroy(bnd_ptr)
       if (allocated(thrtt)) then

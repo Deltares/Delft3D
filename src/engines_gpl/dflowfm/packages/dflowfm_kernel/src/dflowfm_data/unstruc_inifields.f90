@@ -543,8 +543,7 @@ subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filenam
       if (.not. retVal) then
          ilocType = ILATTP_ALL
       else
-         call str_lower(locationType)
-         select case (trim(locationType))
+         select case (trim(str_tolower(locationType)))
             case ('1d')
                ilocType = ILATTP_1D
             case ('2d')
@@ -884,8 +883,7 @@ subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
    character(len=*), intent(in   ) :: sAveragingType        ! averaging type string
    integer,          intent(  out) :: iAveragingType        ! averaging type integer
 
-   call str_lower(sAveragingType)
-   select case (trim(sAveragingType))
+   select case (trim(str_tolower(sAveragingType)))
    case ('mean')
       iAveragingType = AVGTP_MEAN
    case ('nearestnb')

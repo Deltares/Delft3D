@@ -202,13 +202,12 @@ end subroutine deallocRoughness
    !> Converts a friction type as text string into the integer parameter constant.
    !! E.g. R_Manning, etc. If input string is invalid, -1 is returned.
    subroutine frictionTypeStringToInteger(sfricType, ifricType)
-      use string_module, only:str_lower
+      use string_module, only:str_tolower
       implicit none
       character(len=*), intent(in   ) :: sfricType !< Friction type string.
       integer,          intent(  out) :: ifricType !< Friction type integer. When string is invalid, -1 is returned.
       
-      call str_lower(sfricType)
-      select case (trim(sfricType))
+      select case (trim(str_tolower(sfricType)))
          case ('chezy')
             ifricType = R_Chezy
          case ('manning')
@@ -268,8 +267,10 @@ end subroutine deallocRoughness
       character(len=*), intent(in   ) :: sfuncType !< Function type string.
       integer,          intent(  out) :: ifuncType !< Function type integer. When string is invalid, -1 is returned.
       
-      call str_lower(sfuncType)
-      select case (trim(sfuncType))
+      character(len=:), allocatable :: sfuncType_ 
+      sfuncType_ = sfuncType
+      call str_lower(sfuncType_)
+      select case (trim(sfuncType_))
          case ('constant')
             ifuncType = R_FunctionConstant
          case ('absdischarge')

@@ -73,11 +73,12 @@
  use m_lateral, only : default_lateral
  use m_sediment, only : deallocgrains, default_sediment
  use fm_statistical_output
+ use fm_deprecated_keywords, only: default_fm_deprecated_keywords
  implicit none
 
     ! Only reset counters and other scalars, allocatables should be
     ! automatically reset elsewhere (e.g., allocateandset*, flow_geominit)
-
+    call default_fm_deprecated_keywords()
 
     call init_unstruc_netcdf()
 
