@@ -146,7 +146,7 @@ class TestComparisonRunner:
         runner.run()
 
         # Assert
-        assert call("No test results to summarize.") in logger.error.call_args_list
+        assert call("No testcases were loaded from the xml.") in logger.warning.call_args_list
 
     def test_run_without_test_cases_due_to_filter_logs_no_results_with_filter_suggestion(
         self, mocker: MockerFixture
@@ -172,8 +172,7 @@ class TestComparisonRunner:
         runner.run()
 
         # Assert
-        assert call("No test results to summarize.") in logger.error.call_args_list
-        assert call(f"Perhaps the filter argument {settings.filter} is not correct?") in logger.warning.call_args_list
+        assert call(f"No testcases where found to run after applying the filter: {settings.filter}.") in logger.warning.call_args_list
 
     @staticmethod
     def create_test_case_config(name: str, ignore: bool, type=PathType.REFERENCE) -> TestCaseConfig:

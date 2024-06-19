@@ -82,12 +82,14 @@ class TestSetRunner(ABC):
         results = self.run_tests_in_parallel() if self.__settings.parallel else self.run_tests_sequentially()
 
         log_separator(self.__logger, char="-", with_new_line=True)
+
         if results:
             self.show_summary(results, self.__logger)
-        else:
-            self.__logger.error("No test results to summarize.")
-            if self.settings.filter and len(self.settings.configs_from_xml) != len(self.settings.configs_to_run):
-                self.__logger.warning(f"Perhaps the filter argument {self.settings.filter} is not correct?")
+        elif len(self.settings.configs_from_xml) == 0:
+            self.__logger.warning("No testcases were loaded from the xml.")
+        elif len(self.settings.configs_to_run) == 0 and self.settings.filter:
+            self.__logger.warning(f"No testcases where found to run after applying the filter: {self.settings.filter}.")
+
         self.__duration = datetime.now() - start_time
 
     def run_tests_sequentially(self) -> List[TestCaseResult]:
