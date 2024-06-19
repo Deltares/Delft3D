@@ -71,5 +71,5 @@ class TestBench:
             self.logger.error(line)
 
     def __print_test_case_list(self):
-        for testcase_config in self.settings.configs:
+        for testcase_config in self.settings.configs_to_run:
             self.logger.info(testcase_config.name + "\n")
