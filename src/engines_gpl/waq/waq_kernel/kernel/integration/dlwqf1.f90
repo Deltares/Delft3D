@@ -28,42 +28,39 @@ module m_dlwqf1
 contains
 
 
-    subroutine dlwqf1 (noseg, nobnd, noq, noq1, noq2, &
+    !> Create a zero based row pointer and direct mapping 
+    !! from iq to the matrix with fmat and tmat for from and to
+    subroutine dlwqf1(noseg, nobnd, noq, noq1, noq2, &
             nomat, ipoint, iwrk, imat, rowpnt, &
             fmat, tmat)
-
-        !     Deltares - Delft Software Department
-
-        !     Function  : modified version of dlwqf1 to create a zero based row pointer and also
-        !                 create direct mapping from iq to the matrix with fmat and tmat for from and to
-
-        !     Modified  :
 
         use m_logger_helper, only : stop_with_error
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in) :: noseg                 ! number of volumes
-        integer(kind = int_wp), intent(in) :: nobnd               ! number of volumes
-        integer(kind = int_wp), intent(in) :: noq                   ! number of exchanges
-        integer(kind = int_wp), intent(in) :: noq1                  ! number of exchanges in first direction
-        integer(kind = int_wp), intent(in) :: noq2                  ! number of exchanges in second direction
-        integer(kind = int_wp), intent(in) :: nomat                 ! dimension of sparse matrix
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq)       ! exchange pointers (dim: 4 x noq)
-        integer(kind = int_wp), intent(inout) :: iwrk  (noseg + nobnd) ! workspace
-        integer(kind = int_wp), intent(out) :: imat  (nomat)       ! collumn pointers per row of sparse matrix
-        integer(kind = int_wp), intent(out) :: rowpnt(0:noseg + nobnd) ! row pointer, contains row lengths of mat (elsewhere: itrac)
-        integer(kind = int_wp), intent(out) :: fmat  (noq)         ! location from(iq) in matrix
-        integer(kind = int_wp), intent(out) :: tmat  (noq)         ! location to  (iq) in matrix
+        integer(kind = int_wp), intent(in   ) :: noseg                   !< Number of volumes
+        integer(kind = int_wp), intent(in   ) :: nobnd                   !< Number of volumes
+        integer(kind = int_wp), intent(in   ) :: noq                     !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: noq1                    !< Number of exchanges in first direction
+        integer(kind = int_wp), intent(in   ) :: noq2                    !< Number of exchanges in second direction
+        integer(kind = int_wp), intent(in   ) :: nomat                   !< Dimension of sparse matrix
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)          !< Exchange pointers (dim: 4 x noq)
+        integer(kind = int_wp), intent(inout) :: iwrk(noseg + nobnd)     !< Workspace
+        integer(kind = int_wp), intent(out  ) :: imat(nomat)             !< Column indeces per row of sparse matrix
+        integer(kind = int_wp), intent(out  ) :: rowpnt(0:noseg + nobnd) !< Row index, contains row lengths of mat (elsewhere: itrac)
+        integer(kind = int_wp), intent(out  ) :: fmat(noq)               !< Location from(iq) in matrix
+        integer(kind = int_wp), intent(out  ) :: tmat(noq)               !< Location to  (iq) in matrix
 
-        !     Local declarations
-
-        integer(kind = int_wp) :: i, j                 ! from- and to segments
-        integer(kind = int_wp) :: i2, j2                ! from- and to segments
-        integer(kind = int_wp) :: ip, jp                ! from- and to segment pointers
-        integer(kind = int_wp) :: iseg                  ! current volume
-        integer(kind = int_wp) :: iq                    ! current edge
-        integer(kind = int_wp) :: iadd                  ! help variable
+        ! Local declarations
+        integer(kind = int_wp) :: i    !< Index from cells
+        integer(kind = int_wp) :: j    !< Index to cells
+        integer(kind = int_wp) :: i2   !< Index from cell
+        integer(kind = int_wp) :: j2   !< Index to cell
+        integer(kind = int_wp) :: ip   !< Index cell from exchanges
+        integer(kind = int_wp) :: jp   !< Indeces cell to exchanges
+        integer(kind = int_wp) :: iseg !< Current volume
+        integer(kind = int_wp) :: iq   !< Current edge
+        integer(kind = int_wp) :: iadd !< Auxiliary variable
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqf1", ithandl)
@@ -74,8 +71,7 @@ contains
         fmat = 0
         tmat = 0
 
-        !         compute number of off-diagonals per row for first 2 directions
-
+        ! compute number of off-diagonals per row for first 2 directions
         do iq = 1, noq1 + noq2
             i = ipoint(1, iq)
             j = ipoint(2, iq)
@@ -84,13 +80,11 @@ contains
             if (j > 0) rowpnt(j) = rowpnt(j) + 1
         enddo
 
-        !         see if there is a third direction
-
+        ! see if there is a third direction
         iadd = 0
         if (noq /= noq1 + noq2) iadd = 2  !  in 3D first 2 co diagonals are the vertical
 
-        !         accumulate to pointer start of rows
-
+        ! accumulate to pointer start of rows
         rowpnt(0) = 0
         do iseg = 1, noseg
             rowpnt(iseg) = rowpnt(iseg) + rowpnt(iseg - 1) + iadd
@@ -104,8 +98,7 @@ contains
             call stop_with_error()
         endif
 
-        !         fill the (pointers in) matrix for the first 2 directions
-
+        ! fill the (pointers in) matrix for the first 2 directions
         do iq = 1, noq1 + noq2
             i = ipoint(1, iq)
             j = ipoint(2, iq)
@@ -130,8 +123,7 @@ contains
             endif
         enddo
 
-        !         fill the matrix for the last direction
-
+        ! fill the matrix for the last direction
         do iq = noq1 + noq2 + 1, noq
             i = ipoint(1, iq)
             j = ipoint(2, iq)
@@ -143,7 +135,7 @@ contains
             if (i > 0) then
                 if (j < i) then        ! first  off-diagonal element -> previous layer
                     ip = 1
-                else                        ! second off-diagonal element -> next layer
+                else                   ! second off-diagonal element -> next layer
                     ip = 2
                 endif
                 if (i > 1) ip = ip + rowpnt(I - 1)
@@ -153,7 +145,7 @@ contains
             if (j > 0) then
                 if (j < i) then        ! first  off-diagonal element -> previous layer
                     jp = 2
-                else                        ! second off-diagonal element -> next layer
+                else                    ! second off-diagonal element -> next layer
                     jp = 1
                 endif
                 if (j > 1) jp = jp + rowpnt(J - 1)
@@ -161,11 +153,7 @@ contains
                 tmat(iq) = jp
             endif
         enddo
-
-        !         filling of the administration arrays completed
-
+        ! filling the administration of arrays has been completed
         if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+    end subroutine dlwqf1
 end module m_dlwqf1

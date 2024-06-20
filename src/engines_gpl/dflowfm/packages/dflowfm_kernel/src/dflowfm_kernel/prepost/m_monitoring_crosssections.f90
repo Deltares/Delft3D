@@ -38,7 +38,7 @@ module m_monitoring_crosssections
 use m_crspath
 use m_missing
 use MessageHandling, only: IdLen
-use stdlib_kinds, only: dp
+use precision, only: dp
 implicit none
 
 type tcrs

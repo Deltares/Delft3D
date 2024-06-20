@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 Module fm_manhole_losses
-   use stdlib_kinds, only: dp
+   use precision, only: dp
 
    implicit none
    public calculate_manhole_losses, init_manhole_losses

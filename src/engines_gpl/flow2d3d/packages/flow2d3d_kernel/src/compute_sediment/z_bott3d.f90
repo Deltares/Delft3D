@@ -471,7 +471,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                       ! a case, the suspended sediment transport vector must
                       ! also be reduced.
                       !
-                      if ((sucor(nm,l)>0.0_fp .and. kcs(nm)==1) .or. kcs(nmu)/=1) then
+                      if ((sucor(nm,l)>0.0_fp .and. abs(kcs(nm))==1) .or. abs(kcs(nmu))/=1) then
                          sucor(nm,l) = sucor(nm,l) * fixfac(nm,l)
                       else
                          sucor(nm,l) = sucor(nm,l) * fixfac(nmu,l)

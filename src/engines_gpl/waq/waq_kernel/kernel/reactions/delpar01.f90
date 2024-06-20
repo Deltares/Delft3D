@@ -37,6 +37,7 @@ module m_delpar01
 
 contains
 
+    !> Carries out a Particle tracking step.
     subroutine delpar01 (itime, noseg, nolay, noq, nosys, &
             notot, dwqvol, surface, dwqflo, syname, &
             nosfun, sfname, segfun, amass, conc, &
@@ -66,36 +67,31 @@ contains
 
         implicit none
 
-        !     Arguments
-
-        !     kind           function         name                      description
-
-        integer(kind = int_wp), intent(in) :: itime                   !< actual time
-        integer(kind = int_wp), intent(in) :: noseg                   !< delwaq noseg
-        integer(kind = int_wp), intent(in) :: nolay                   !< delwaq layers
-        integer(kind = int_wp), intent(in) :: noq                     !< delwaq noq
-        integer(kind = int_wp), intent(in) :: nosys                   !< delwaq transported subs
-        integer(kind = int_wp), intent(in) :: notot                   !< delwaq total subs, part subs included
-        real(kind = real_wp), intent(in) :: dwqvol (noseg)         !< delwaq volumes
-        real(kind = real_wp), intent(in) :: surface(noseg)         !< horizontal surfaces
-        real(kind = real_wp), intent(in) :: dwqflo (noq)         !< delwaq flows
-        character(20), intent(in) :: syname (notot)         !< names of sumstances
-        integer(kind = int_wp), intent(in) :: nosfun                  !< number of segment functions
-        character(20), intent(in) :: sfname (nosfun)         !< names of segment functions
-        real(kind = real_wp), intent(in) :: segfun (noseg, nosfun)  !< segment function values
-        real(kind = real_wp), intent(inout) :: amass  (notot, noseg)  !< delwaq mass array
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)  !< delwaq conc array
-        integer(kind = int_wp), intent(in) :: iaflag                  !< if 1 then accumulation of balances
-        integer(kind = int_wp), intent(in) :: intopt                  !< integration suboptions
-        integer(kind = int_wp), intent(in) :: ndmps                   !< number of dumped volumes for balances
-        integer(kind = int_wp), intent(in) :: isdmp  (noseg)         !< volume to dump-location pointer
-        real(kind = real_wp), intent(inout) :: dmps   (notot, ndmps, *) !< dumped segment fluxes if INTOPT > 7
-        real(kind = real_wp), intent(inout) :: amass2 (notot, 5)     !< mass balance array
+        integer(kind = int_wp), intent(in   ) :: itime                    !< Actual time
+        integer(kind = int_wp), intent(in   ) :: noseg                    !< Delwaq noseg
+        integer(kind = int_wp), intent(in   ) :: nolay                    !< Delwaq layers
+        integer(kind = int_wp), intent(in   ) :: noq                      !< Delwaq noq
+        integer(kind = int_wp), intent(in   ) :: nosys                    !< Delwaq transported subs
+        integer(kind = int_wp), intent(in   ) :: notot                    !< Delwaq total subs, part subs included
+        real(kind = real_wp),   intent(in   ) :: dwqvol (noseg)           !< Delwaq volumes
+        real(kind = real_wp),   intent(in   ) :: surface(noseg)           !< Horizontal surfaces
+        real(kind = real_wp),   intent(in   ) :: dwqflo (noq)             !< Delwaq flows
+        character(20),          intent(in   ) :: syname (notot)           !< Names of substances
+        integer(kind = int_wp), intent(in   ) :: nosfun                   !< Number of segment functions
+        character(20),          intent(in   ) :: sfname (nosfun)          !< Names of segment functions
+        real(kind = real_wp),   intent(in   ) :: segfun (noseg, nosfun)   !< Segment function values
+        real(kind = real_wp),   intent(inout) :: amass  (notot, noseg)    !< Delwaq mass array
+        real(kind = real_wp),   intent(inout) :: conc   (notot, noseg)    !< Delwaq conc array
+        integer(kind = int_wp), intent(in   ) :: iaflag                   !< If 1 then accumulation of balances
+        integer(kind = int_wp), intent(in   ) :: intopt                   !< Integration suboptions
+        integer(kind = int_wp), intent(in   ) :: ndmps                    !< Number of dumped volumes for balances
+        integer(kind = int_wp), intent(in   ) :: isdmp  (noseg)           !< Volume to dump-location pointer
+        real(kind = real_wp),   intent(inout) :: dmps   (notot, ndmps, *) !< Dumped segment fluxes if INTOPT > 7
+        real(kind = real_wp),   intent(inout) :: amass2 (notot, 5)        !< Mass balance array
 
 
         !     Locals
-
-        integer(kind = int_wp) lunut             !  output unit number
+        integer(kind = int_wp) :: lunut             !  output unit number
         integer(kind = int_wp) :: lunpr
         integer(kind = int_wp) :: indx              !  index in segment names
         integer(kind = int_wp) :: ioff              !  offset in substances array

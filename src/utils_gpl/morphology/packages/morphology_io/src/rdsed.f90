@@ -75,6 +75,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: sc_cmf1
     real(fp)                           , pointer :: sc_cmf2
     real(fp)                           , pointer :: sc_flcf
+    real(fp)                           , pointer :: d_micro
+    real(fp)                           , pointer :: ustar_macro
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
@@ -196,6 +198,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     sc_cmf1              => sedpar%sc_cmf1
     sc_cmf2              => sedpar%sc_cmf2
     sc_flcf              => sedpar%sc_flcf
+    d_micro              => sedpar%d_micro
+    ustar_macro          => sedpar%ustar_macro
     flocmod              => sedpar%flocmod
     nflocpop             => sedpar%nflocpop
     nflocsizes           => sedpar%nflocsizes
@@ -445,18 +449,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        case ('verney_etal')
           flocmod = FLOC_VERNEY_ETAL
           nflocsizes = -999
-          call prop_get_integer(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
-          if (nflocsizes == -999) then
-             errmsg = 'NFlocSizes must be specified when using the population balance model.'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
-          elseif (nflocsizes <= 1) then
-             errmsg = 'Invalid value specified for NFlocSizes.'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
-          endif
        case default
            errmsg = 'Unknown flocculation model "'//trim(floc_str)//'" specified.'
            call write_error(errmsg, unit=lundia)
@@ -464,8 +456,36 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
            return
        end select
        !
+       call prop_get_integer(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
+       select case (flocmod)
+       case (FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR)
+          if (nflocsizes /= 1 .and. nflocsizes /= 2) then
+             errmsg = 'NFlocSizes must be 1 or 2 for the selected flocculation model.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
+       case (FLOC_VERNEY_ETAL)
+          if (nflocsizes == -999) then
+             errmsg = 'NFlocSizes must be specified when using the population balance model.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          elseif (nflocsizes < 1) then
+             errmsg = 'Invalid value specified for NFlocSizes.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
+       end select
+       !
        if (flocmod /= FLOC_NONE) then
           nflocpop = nclayfrac / nflocsizes
+          !
+          if (istat==0) allocate (sedpar%namflocpop(nflocpop), stat = istat)
+          namflocpop    => sedpar%namflocpop
+          namflocpop = ' '
+          !
           if (nflocpop * nflocsizes /= nclayfrac) then
              write(errmsg,'(a,i0,a,i0,a)') 'The number of clay fractions (',nclayfrac,') is not a multiple of the number of floc sizes (',nflocsizes,').'
              call write_error(errmsg, unit=lundia)
@@ -476,6 +496,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           call prop_get(sed_ptr, 'SedimentOverall', 'TFloc', sedpar%tfloc)
           sedpar%tbreakup = sedpar%tfloc
           call prop_get(sed_ptr, 'SedimentOverall', 'TBreakUp', sedpar%tbreakup)
+          !
+          call prop_get(sed_ptr, 'SedimentOverall', 'DiaMicro', d_micro)
+          call prop_get(sed_ptr, 'SedimentOverall', 'UstarMacro', ustar_macro)
        endif
        !
        sedpar%flnrd(0) = ' '
@@ -631,8 +654,18 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           sedpar%sedblock(l) = sedblock_ptr
           !
           if (flocmod /= FLOC_NONE .and. sedtyp(l) == SEDTYP_CLAY) then
+             if (nflocsizes == 1) then ! in case of a single floc size per clay population, set sensible defaults
+                 namclay(l) = namsed(l)
+                 flocsize(l) = 1
+             endif
              call prop_get(sedblock_ptr, '*', 'ClayLabel', namclay(l))
              call prop_get(sedblock_ptr, '*', 'FlocSize' , flocsize(l))
+             if (namclay(l) == ' ') then
+                errmsg = 'The ClayLabel string should not be empty for '//trim(namsed(l))
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
           endif
           !
           rhosol(l) = rmissval
@@ -748,13 +781,17 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              if (flocmod /= FLOC_NONE .and. sedtyp(l) == SEDTYP_CLAY) then
                  select case (flocmod)
                  case (FLOC_MANNING_DYER)
-                     if (flocsize(l) == 1) then
+                     if (nflocsizes == 1) then
+                        iform_settle(l) = WS_FORM_MANNING_DYER
+                     elseif (flocsize(l) == 1) then
                         iform_settle(l) = WS_FORM_MANNING_DYER_MICRO
                      else
                         iform_settle(l) = WS_FORM_MANNING_DYER_MACRO
                      endif
                  case (FLOC_CHASSAGNE_SAFAR)
-                     if (flocsize(l) == 1) then
+                     if (nflocsizes == 1) then
+                        iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR
+                     elseif (flocsize(l) == 1) then
                         iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR_MICRO
                      else
                         iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR_MACRO
@@ -829,6 +866,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 call prop_get(sedblock_ptr, '*', 'SalMax', par_settle(1,l))
                 par_settle(2,l) = 1.0_fp
                 call prop_get(sedblock_ptr, '*', 'GamFloc', par_settle(2,l))
+             case (WS_FORM_CHASSAGNE_SAFAR, WS_FORM_CHASSAGNE_SAFAR_MACRO)
+                par_settle(1,l) = d_micro
+                par_settle(2,l) = ustar_macro
              end select
              !
              ! Tracer calibration factor
@@ -969,7 +1009,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        if (.not. associated(sedpar%floclist)) then
           !
           if (istat==0) allocate (sedpar%floclist  (nflocpop, nflocsizes ), stat = istat)
-          if (istat==0) allocate (sedpar%namflocpop(nflocpop             ), stat = istat)
           !
           if (istat/=0) then
              errmsg = 'RDSED: memory alloc error - floclist'
@@ -981,17 +1020,22 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! update local pointers
           !
           floclist      => sedpar%floclist
-          namflocpop    => sedpar%namflocpop
        endif
        !
        floclist = 0
-       namflocpop = ' '
        !
        do l = 1, lsed
           if (sedtyp(l) /= SEDTYP_CLAY) cycle
           !
           do i = 1, nflocpop
-             if (namclay(l) == namflocpop(i) .or. namflocpop(i) == ' ') exit
+             ! check if population name has already been encountered before
+             if (namclay(l) == namflocpop(i)) exit
+
+             ! if not, then insert it in the first empty slot
+             if (namflocpop(i) == ' ') then
+                namflocpop(i) = namclay(l)
+                exit
+             endif
           enddo
           if (i > nflocpop) then
              errmsg = 'Too many different clay labels.'
@@ -1414,11 +1458,21 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
            txtput3 = 'Verney et al'
        end select
        write (lundia, '(3a)') txtput1, ':  ', trim(txtput3)
+       if (flocmod == FLOC_VERNEY_ETAL) then
+          errmsg = 'Verney flocculation model not yet implemented.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
        !
        txtput1 = 'Flocculation time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tfloc
        txtput1 = 'Floc break-up time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tbreakup
+       txtput1 = 'Characteristic diameter of micro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%d_micro
+       txtput1 = 'Characteristic shear velocity of macro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%ustar_macro
     endif
     if (bsskin) then
        txtput1 = 'Skin friction Soulsby 2004'

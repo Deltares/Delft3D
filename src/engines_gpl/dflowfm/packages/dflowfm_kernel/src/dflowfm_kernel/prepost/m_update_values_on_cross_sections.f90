@@ -29,7 +29,7 @@
 
 module m_update_values_on_cross_sections
 
-   use stdlib_kinds, only: dp
+   use precision, only: dp
 
    implicit none
    

@@ -5441,7 +5441,6 @@ subroutine fill_geometry_arrays_crs()
    use m_flowparameters, only: eps6
    use precision_basics
    use m_monitoring_crosssections, only: nodecountcrs, ncrs, crs, nnodescrs, geomxcrs, geomycrs
-   use stdlib_kinds, only: dp
    implicit none
 
    real(dp),         allocatable :: xGat(:), yGat(:)    ! Coordinates that are gathered data from all subdomains

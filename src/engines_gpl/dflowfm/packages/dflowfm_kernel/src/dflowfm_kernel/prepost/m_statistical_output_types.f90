@@ -22,7 +22,7 @@
 !!  rights reserved.
 
 module m_statistical_output_types
-   use stdlib_kinds, only: dp
+   use precision, only: dp
    use m_output_config, only: t_output_quantity_config
    use m_temporal_statistics, only: t_moving_average_data
    implicit none

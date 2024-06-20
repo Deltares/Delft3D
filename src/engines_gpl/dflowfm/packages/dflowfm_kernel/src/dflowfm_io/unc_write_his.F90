@@ -1150,8 +1150,6 @@ contains
    !! Computed at half the total length of the snapped flow links
    !! (so, it lies on an edge, not per se on the input polyline)).
    function unc_put_his_structure_static_vars_polyline_midpoints(ncid, struc_type_id, count, id_poly_xmid, id_poly_ymid) result(ierr)
-      use stdlib_kinds, only: dp
-
       integer,           intent(in   ) :: ncid                 !< NetCDF id of already open dataset
       integer,           intent(in   ) :: struc_type_id        !< The id of the type of the structure (e.g. ST_CULVERT)
       integer,           intent(in   ) :: count                !< Number of structures for this structure_type

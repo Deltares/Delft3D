@@ -34,10 +34,8 @@ module m_sgmres
     contains
 
 
-    !> Generalized Minimal Residual solver (GMRES)
-    !!
-    !! The solver:
-    !! preconditions with the psolve routine either:
+    !> Solver for Generalized Minimal Residual (GMRES)
+    !! The solver preconditions with the psolve routine either:
     !!  - none
     !!  - upper triangular matrix
     !!  - lower triangular matrix

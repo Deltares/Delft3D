@@ -4,7 +4,7 @@ module fm_statistical_output
    use m_statistical_output
    use messagehandling
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set
-   use stdlib_kinds, only: dp
+   use precision, only: dp
 
    implicit none
 

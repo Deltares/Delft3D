@@ -22,9 +22,9 @@
 !!  rights reserved.
 
 module integration_schemes
-    !!     Module integration_schemes:
+    !>     Module integration_schemes:
     !!     - Encapsulate the interface of run_integration_schemes and initialize_all_conditions:
-    !!       A, J and C are now pointers to arrays
+    !!       A, J and C are now pointers to real, integer and character arrays, respectively.
     use m_waq_precision
     use m_integration_scheme_25
     use m_integration_scheme_24
@@ -48,9 +48,9 @@ module integration_schemes
 
     implicit none
 
-    integer(kind = int_wp), parameter :: PAGE_LENGTH = 64         !! pagelength for output in lines
-    integer(kind = int_wp), parameter :: NUM_FILES = 50          !! number of files to be opened
-    integer(kind = int_wp), parameter :: FILE_NAME_LEN = 255       !! length file names
+    integer(kind = int_wp), parameter :: PAGE_LENGTH = 64        !< Page length for output in lines
+    integer(kind = int_wp), parameter :: NUM_FILES = 50          !< Number of files to be opened
+    integer(kind = int_wp), parameter :: FILE_NAME_LEN = 255     !< Length file names
 
     private
     public :: run_integration_schemes
@@ -61,8 +61,8 @@ contains
             action, dlwqd)
 
         use m_grid_utils_external
-        USE initialize_conditions, only : initialize_all_conditions
-        USE Timers
+        use initialize_conditions, only : initialize_all_conditions
+        use Timers
         use delwaq2_data
         use m_waq_data_buffer
         use m_actions
@@ -74,14 +74,19 @@ contains
         use m_cli_utils, only : get_input_filename
         use m_logger_helper, only : set_log_unit_number
 
-        type(waq_data_buffer), target :: buffer
-        integer(kind = int_wp) :: max_real_arr_size, max_int_arr_size, max_char_arr_size
-        logical :: init             !!  if T boot the system if F no initialisation
+        type(waq_data_buffer), target :: buffer        !< System total array space
+        integer(kind = int_wp)    :: max_real_arr_size !< Maximum size of the real array
+        integer(kind = int_wp)    :: max_int_arr_size  !< Maximum size of the integer array
+        integer(kind = int_wp)    :: max_char_arr_size !< Maximum size of the character array
+        logical                   :: init              !< Sould the system be started up?, otherwise no initialisation
+        integer(kind = int_wp)    :: action            !< Span of the run or type of action to perform
+                                                       !< (run_span = {initialise, time_step, finalise, whole_computation} )
+        type(delwaq_data), target :: dlwqd             !< DELWAQ data structure
+        
+        ! Local variables
+        type(gridpointercoll), pointer, save :: gridps          !< Collection of all grid definitions
+        integer(kind = int_wp) :: input_file                    !< Unit nummer of the common boot-file
         logical :: exists
-        integer(kind = int_wp) :: action    !! indication of the action to be performed
-        type(delwaq_data), target :: dlwqd
-        type(gridpointercoll), pointer, save :: gridps          !! collection of all grid definitions
-        integer(kind = int_wp) :: input_file                    !! unit nummer of the common boot-file
 
         ! input structure for boot-file
         integer(kind = int_wp), save :: file_unit_list(NUM_FILES)
@@ -215,10 +220,10 @@ contains
         case(19, 20) ! deprecated
             goto 991
 
-        case(21)     ! Self adjusting teta method (limiter Salezac)
+        case(21)     ! Self adjusting theta method (limiter Salezac)
             call integration_scheme_21_22(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
-        case(22)     ! Self adjusting teta method (limiter Boris and Book)
+        case(22)     ! Self adjusting theta method (limiter Boris and Book)
             call integration_scheme_21_22(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case(23)     ! Leonards QUICKEST
@@ -239,8 +244,8 @@ contains
                 action == action_fullcomputation) then
             ! print timer-results
             if (timon) then
-                call timstop (ithndl)
-                call timdump (TRIM(RUNID) // '-timers.out')
+                call timstop(ithndl)
+                call timdump(TRIM(RUNID) // '-timers.out')
                 call timfinalize()
             endif
         endif
@@ -255,6 +260,5 @@ contains
         CALL stop_with_error()
         999 WRITE (*, *) ' ERROR: NO VALID SET OF MODEL-INTERMEDIATE-FILES'
         CALL stop_with_error()
-    END SUBROUTINE run_integration_schemes
-
-END MODULE integration_schemes
+    end subroutine run_integration_schemes
+end module integration_schemes

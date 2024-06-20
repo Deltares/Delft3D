@@ -107,5 +107,5 @@
     <!--
     testCases
     -->
-    <xi:include href="../../include/dwaq_all_cases.xml"/>
+    <xi:include href="../../dwaq_dpart/include/test_configs/dwaq.xml"/>
 </deltaresTestbench_v3>

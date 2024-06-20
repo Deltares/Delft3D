@@ -29,7 +29,7 @@ module m_zlayer
 contains
 
 
-    subroutine zlayer (nosegw, noseg, nosys, notot, nolay, &
+    subroutine zlayer(nosegw, noseg, nosys, notot, nolay, &
             volume, noq12, noq, area, nocons, &
             coname, cons, nopa, paname, param, &
             nosfun, sfname, segfun, conc, mass, &
@@ -131,7 +131,7 @@ contains
             if (idryfld > 0) minarea = cons(idryfld)                 ! or the given value
             area = max(area, minarea)                                   ! set minimum area
             return                                                        ! and return
-        endif
+        end if
         threshold = cons(idryfld)                                        ! apply the given value
         ! and proceed with z-layer
         if (timon) call timstrt ("zlayer", ithandl)                  ! correction
@@ -161,13 +161,13 @@ contains
                                 mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                 conc(isub, ivol) = 0.0
                                 mass(isub, ivol) = 0.0
-                            enddo
-                        endif
+                            end do
+                        end if
                     else
                         exit
-                    endif
-                enddo
-            enddo
+                    end if
+                end do
+            end do
         else
             isurf = index_in_array('SURF      ', sfname)
 
@@ -194,13 +194,13 @@ contains
                                     mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                     conc(isub, ivol) = 0.0
                                     mass(isub, ivol) = 0.0
-                                enddo
-                            endif
+                                end do
+                            end if
                         else
                             exit
-                        endif
-                    enddo
-                enddo
+                        end if
+                    end do
+                end do
             else
 
                 !        SURF is not found, so the default value of 1 m2 is used
@@ -225,15 +225,15 @@ contains
                                     mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                     conc(isub, ivol) = 0.0
                                     mass(isub, ivol) = 0.0
-                                enddo
-                            endif
+                                end do
+                            end if
                         else
                             exit
-                        endif
-                    enddo
-                enddo
-            endif
-        endif
+                        end if
+                    end do
+                end do
+            end if
+        end if
 
         iknmkv = iknmrk
 
@@ -251,58 +251,40 @@ contains
                 j = ifrmto(i, iq)
                 if (j > 0) then
                     if (.not. btest(iknmkv(j), 0)) ifrmto(i, iq) = 0
-                endif
-            enddo
-        enddo
-
+                end if
+            end do
+        end do
         if (timon) call timstop (ithandl)
+    end subroutine zlayer
 
-        return
-    end
-
-    subroutine zflows (noq, noq12, nolay, nocons, coname, &
+    !> Adjusts the flow pointer to cross layers where needed for a Z-layer model
+    !! If the bed crosses layer interfaces then the average bed level of a node
+    !! may be in a higher layer than the actual bed level for an exchange.\n
+    !! Some flow models then nevertheless give a flow to the level of the node
+    !! below the bed and also create a vertical flux from below the bed to above.
+    !! This routine adjusts the horizontal flow pointer to point to 1 or 2 layers
+    !! higher. In the above zlayer routine the vertical flow was already masked
+    !! out.
+    subroutine zflows(noq, noq12, nolay, nocons, coname, &
             flow, ifrmto)
-
-        !     Deltares Software Centre
-
-        !>\File
-        !>      Adjusts the flow pointer to cross layers where needed for a Z-layer model
-        !>
-        !>      If the bed crosses layer interfaces then the average bed level of a node
-        !>      may be in a higher layer than the actual bed level for an exchange.\n
-        !>      Some flow models then nevertheless give a flow to the level of the node
-        !>      below the bed and also create a vertical flux from below the bed to above.
-        !>      This routine adjusts the horizontal flow pointer to point to 1 or 2 layers
-        !>      higher. In the above zlayer routine the vertical flow was already masked
-        !>      out.
-
-        !     Created             : February  2013 by Leo Postma for EDF
-
-        !     Files               : none
-
-        !     Routines            : zoek  - to search the DRY_TRESH constant
 
         use timers
         implicit none
 
-        !     Parameters          :
+        integer(kind = int_wp), intent(in   ) :: noq            !< Number of exchanges between cells
+        integer(kind = int_wp), intent(in   ) :: noq12          !< Number of horizontal exchanges
+        integer(kind = int_wp), intent(in   ) :: nolay          !< Number of Z-layers
+        integer(kind = int_wp), intent(in   ) :: nocons         !< Number of constants
+        character(20),          intent(in   ) :: coname(nocons) !< Names of the constants
+        real(kind = real_wp),   intent(in   ) :: flow(noq)      !< Flows between cells
+        integer(kind = int_wp), intent(inout) :: ifrmto(4, noq) !< Exchange index array
 
-        !     kind           function         name                   description
-
-        integer(kind = int_wp), intent(in) :: noq                  !< number of exchanges between cells
-        integer(kind = int_wp), intent(in) :: noq12                !< number of horizontal exchanges
-        integer(kind = int_wp), intent(in) :: nolay                !< number of Z-layers
-        integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-        character(20), intent(in) :: coname(nocons)       !< names of the constants
-        real(kind = real_wp), intent(in) :: flow  (noq)        !< flows between cells
-        integer(kind = int_wp), intent(inout) :: ifrmto(4, noq)       !< exchange pointer array
-
-        !     Locals
-
-        integer(kind = int_wp) :: iq              ! loop variable exchanges
-        integer(kind = int_wp) :: ifrom, ito      ! from and to cell number
-        integer(kind = int_wp) :: iql             ! help variable to find lowest active cell
-        integer(kind = int_wp) :: noqhl           ! number of horizontal exchanges per layer
+        ! Local variables
+        integer(kind = int_wp) :: iq    !< Loop variable exchanges
+        integer(kind = int_wp) :: ifrom !< From cell number
+        integer(kind = int_wp) :: ito   !< To cell number
+        integer(kind = int_wp) :: iql   !< Auxiliary variable to find lowest active cell
+        integer(kind = int_wp) :: noqhl !< Number of horizontal exchanges per layer
 
         integer(kind = int_wp) :: ithandl = 0
 
@@ -324,25 +306,21 @@ contains
                     if (ifrmto(1, iql) > 0) then      ! if that is real
                         ifrmto(1, iq) = ifrmto(1, iql)       ! take that cell for this flux also
                         exit
-                    endif
+                    end if
                     iql = iql - noqhl
-                enddo
-            endif
+                end do
+            end if
             if (ito   == 0) then
                 iql = iq - noqhl
                 do while (iql > 0)
                     if (ifrmto(2, iql) > 0) then
                         ifrmto(2, iq) = ifrmto(2, iql)
                         exit
-                    endif
+                    end if
                     iql = iql - noqhl
-                enddo
-            endif
-        enddo
-
+                end do
+            end if
+        end do
         if (timon) call timstop (ithandl)
-
-        return
-    end
-
+    end subroutine zflows
 end module m_zlayer

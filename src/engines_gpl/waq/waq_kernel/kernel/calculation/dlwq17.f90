@@ -29,12 +29,12 @@ module m_dlwq17
 
 
         !> Implements the Thatcher-Harleman boundary conditions
-        !> For each open boundary condition:
-        !> - at outflow, updates last saved outflow concentration bsave
-        !> - at outflow, sets open boundary condition to this outflow value
-        !> - at inflow, set open boundary condition to:
-        !>       - prescribed value if inflow time larger than the time-lag
-        !>       - evaluates Tatcher-Harleman boundary if inflow time is less than time-lag
+        !! For each open boundary condition:
+        !! - at outflow, updates last saved outflow concentration bsave
+        !! - at outflow, sets open boundary condition to this outflow value
+        !! - at inflow, set open boundary condition to:
+        !!       - prescribed value if inflow time larger than the time-lag
+        !!       - evaluates Tatcher-Harleman boundary if inflow time is less than time-lag
     subroutine thatcher_harleman_bc(bset, bsave, ibpnt, nobnd, nosys, &
             notot, idt, conc, flow, bound)
 
@@ -42,34 +42,30 @@ module m_dlwq17
         use timers
         implicit none
 
-        !     Arguments
-
-        !     kind        function         name                    description
         integer(kind = int_wp), intent(in) :: nosys                 !< number of transported substances
         integer(kind = int_wp), intent(in) :: notot                 !< total number of substances
         integer(kind = int_wp), intent(in) :: nobnd                 !< number of open boundary conditions
-        real(kind = real_wp), intent(in) :: bset (nosys, nobnd)    !< prescribed open boundary conditions
-        real(kind = real_wp), intent(inout) :: bsave(nosys, nobnd)    !< saved open boundaries at outflow
+        real(kind = real_wp), intent(in) :: bset (nosys, nobnd)     !< prescribed open boundary conditions
+        real(kind = real_wp), intent(inout) :: bsave(nosys, nobnd)  !< saved open boundaries at outflow
         integer(kind = int_wp), intent(inout) :: ibpnt(4, nobnd)    !< 1 = timelags /n
-        !  2 = flow pointer (can be negative) /n
-        !  3 = segment pointer /n
-        !  4 = time on the cosine /n
+                                                                    !< 2 = flow pointer (can be negative) /n
+                                                                    !< 3 = segment pointer /n
+                                                                    !< 4 = time on the cosine /n
         integer(kind = int_wp), intent(in) :: idt                   !< time step size in system clock units
-        real(kind = real_wp), intent(in) :: conc (notot, *)    !< model concentrations
-        real(kind = real_wp), intent(in) :: flow (*)          !< model flows
+        real(kind = real_wp), intent(in) :: conc (notot, *)         !< model concentrations
+        real(kind = real_wp), intent(in) :: flow (*)                !< model flows
         real(kind = real_wp), intent(out) :: bound(nosys, nobnd)    !< model open boundary conditions
 
-        !     Locals
-
+        ! Local variables
         real(kind = real_wp), parameter :: pi = 3.141593
-        integer(kind = int_wp) :: ibnd             !  loop variable boundaries
-        integer(kind = int_wp) :: isub             !  loop variable (transported) substances
-        integer(kind = int_wp) :: itlag            !  time lag for this boundary
-        integer(kind = int_wp) :: iflow            !  flow number of this boundary (positive if towards boundary)
-        real(kind = real_wp) :: aflow            !  flow accross boundary, positive is 'out'
-        real(kind = real_wp) :: at               !  Tatcher Harleman half cosine value
-        integer(kind = int_wp) :: iseg             !  active volume number associated with the boundary
-        integer(kind = int_wp) :: ibtime           !  time since last outflow at this boundary
+        integer(kind = int_wp) :: ibnd   !<  loop variable boundaries
+        integer(kind = int_wp) :: isub   !<  loop variable (transported) substances
+        integer(kind = int_wp) :: itlag  !<  time lag for this boundary
+        integer(kind = int_wp) :: iflow  !<  flow number of this boundary (positive if towards boundary)
+        real(kind = real_wp)   :: aflow  !<  flow accross boundary, positive is 'out'
+        real(kind = real_wp)   :: at     !<  Tatcher Harleman half cosine value
+        integer(kind = int_wp) :: iseg   !<  active volume number associated with the boundary
+        integer(kind = int_wp) :: ibtime !<  time since last outflow at this boundary
 
         logical, save :: init = .true.
         logical, save :: bndmirror = .false.

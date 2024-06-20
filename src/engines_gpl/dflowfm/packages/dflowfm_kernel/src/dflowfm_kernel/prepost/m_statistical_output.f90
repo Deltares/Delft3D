@@ -29,7 +29,7 @@ module m_statistical_output
    use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use m_read_statistical_output
    use m_temporal_statistics
-   use stdlib_kinds, only: dp
+   use precision, only: dp
 
    implicit none
 

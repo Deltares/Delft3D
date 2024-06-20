@@ -28,6 +28,13 @@ module m_dlwqm5
 contains
 
 
+    !> Zalezac flux correction procedure
+    !! Procedure:
+    !! - all wanted corrections are summed per computational volume
+    !! - all room for change of concentrations without generating
+    !!   new maxima or minima are evaluted per volume
+    !! - then those corrections are applied pro-rato
+    !! - flux correction accross open boundaries is removed !
     subroutine dlwqm5(idt, isys, nosys, notot, noseg, &
             conc, concvt, volnew, nobnd, bound, &
             noq, noq1, noq2, noq3, ipoint, &
@@ -37,60 +44,54 @@ contains
             l1, l2, m1, m2, n1, &
             n2)
 
-        !> This is the Zalezac flux correction procedure
-        !>
-        !>            Procedure:
-        !>            - all wanted corrections are summed per computational volume
-        !>            - all room for change of concentrations without generating
-        !>              new maxima or minima are evaluted per volume
-        !>            - then those corrections are applied pro-rato
-        !>            - flux correction accross open boundaries is removed !
-
         use timers
 
-        integer(kind = int_wp), intent(in) :: idt                !< time step in scu's
-        integer(kind = int_wp), intent(in) :: isys               !< current active substance
-        integer(kind = int_wp), intent(in) :: nosys              !< number of active substances
-        integer(kind = int_wp), intent(in) :: notot              !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg              !< number of segments
-        real(kind = real_wp), intent(inout) :: conc(notot, noseg)  !< concentrations
-        real(kind = dp), intent(inout) :: concvt(noseg)      !< first solution estimation by means of local theta method
-        real(kind = real_wp), intent(in) :: volnew(noseg)      !< segment volumes at the new time
-        integer(kind = int_wp), intent(in) :: nobnd              !< number of boundary segments
-        real(kind = real_wp), intent(in) :: bound(nosys, nobnd) !< boundary concentrations
-        integer(kind = int_wp), intent(in) :: noq                !< number of exchanges
-        integer(kind = int_wp), intent(in) :: noq1               !< number of exchanges in the first direction
-        integer(kind = int_wp), intent(in) :: noq2               !< number of exchanges in the second direction
-        integer(kind = int_wp), intent(in) :: noq3               !< number of exchanges in the third direction
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq)      !< exchange pointers
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)      !< feature array
-        real(kind = real_wp), intent(in) :: area(noq)          !< surface areas
-        real(kind = real_wp), intent(in) :: aleng(2, noq)       !< from- and to lengths (dim: 2*noq)
-        real(kind = real_wp), intent(in) :: theta(noq)         !< local theta coefficients
-        real(kind = real_wp), intent(in) :: flowtot(noq)       !< flows plus additional velos.
-        real(kind = real_wp), intent(in) :: disptot(noq)       !< dispersion plus additional dipers.
-        real(kind = real_wp), intent(inout) :: amass2(notot, 5)    !< areawide mass balance arrays
-        integer(kind = int_wp), intent(in) :: ndmpq              !< number of dumped discharges
-        integer(kind = int_wp), intent(in) :: iqdmp(noq)         !< pointer dumped exchages
-        real(kind = real_wp), intent(inout) :: dmpq(nosys, ndmpq, 2)!< mass balance array per monitoring area
-        real(kind = real_wp) :: flux(noq)        !< flux corrections
-        real(kind = real_wp) :: lim (noq)        !< limiter
-        real(kind = real_wp) :: maxi(noseg)        !< workspace
-        real(kind = real_wp) :: mini(noseg)        !< workspace
-        real(kind = real_wp) :: l1  (noseg)        !< workspace
-        real(kind = real_wp) :: l2  (noseg)        !< workspace
-        real(kind = real_wp) :: m1  (noseg)        !< workspace
-        real(kind = real_wp) :: m2  (noseg)        !< workspace
-        real(kind = real_wp) :: n1  (noseg)        !< workspace
-        real(kind = real_wp) :: n2  (noseg)        !< workspace
+        integer(kind = int_wp), intent(in   ) :: idt                   !< Time step
+        integer(kind = int_wp), intent(in   ) :: isys                  !< Current active substance
+        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of active substances
+        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of segments
+        real(kind = real_wp),   intent(inout) :: conc(notot, noseg)    !< Concentrations
+        real(kind = dp),        intent(inout) :: concvt(noseg)         !< First solution estimation by means of local theta method
+        real(kind = real_wp),   intent(in   ) :: volnew(noseg)         !< Segment volumes at the new time
+        integer(kind = int_wp), intent(in   ) :: nobnd                 !< Number of boundary segments
+        real(kind = real_wp),   intent(in   ) :: bound(nosys, nobnd)   !< Boundary concentrations
+        integer(kind = int_wp), intent(in   ) :: noq                   !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: noq1                  !< Number of exchanges in the first direction
+        integer(kind = int_wp), intent(in   ) :: noq2                  !< Number of exchanges in the second direction
+        integer(kind = int_wp), intent(in   ) :: noq3                  !< Number of exchanges in the third direction
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)        !< Exchange pointers
+        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)         !< Feature array
+        real(kind = real_wp),   intent(in   ) :: area(noq)             !< Surface areas
+        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)         !< From- and to lengths (dim: 2*noq)
+        real(kind = real_wp),   intent(in   ) :: theta(noq)            !< Local theta coefficients
+        real(kind = real_wp),   intent(in   ) :: flowtot(noq)          !< Flows plus additional velos.
+        real(kind = real_wp),   intent(in   ) :: disptot(noq)          !< Dispersion plus additional dipers.
+        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Areawide mass balance arrays
+        integer(kind = int_wp), intent(in   ) :: ndmpq                 !< Number of dumped discharges
+        integer(kind = int_wp), intent(in   ) :: iqdmp(noq)            !< Pointer dumped exchages
+        real(kind = real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< Mass balance array per monitoring area
+        real(kind = real_wp),   intent(inout) :: flux(noq)             !< Flux corrections
+        real(kind = real_wp),   intent(inout) :: lim(noq)              !< Limiter
+        real(kind = real_wp),   intent(inout) :: maxi(noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: mini(noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: l1  (noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: l2  (noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: m1  (noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: m2  (noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: n1  (noseg)           !< Workspace
+        real(kind = real_wp),   intent(inout) :: n2  (noseg)           !< Workspace
 
-        !    Local variables
-
-        real(kind = real_wp) :: length
-        real(kind = real_wp) :: cio, cjo, cin, cjn ! old and local-theta from- and to concentrations
-        integer(kind = int_wp) :: ifrom, ito         ! from- and to segement indices
-        integer(kind = int_wp) :: iseg               ! current segment
-        integer(kind = int_wp) :: iq                 ! current edge
+        ! Local variables
+        real(kind = real_wp)   :: length
+        real(kind = real_wp)   :: cio   !< Old concentration from cell
+        real(kind = real_wp)   :: cjo   !< Old concentration to cell
+        real(kind = real_wp)   :: cin   !< New (local theta) concentration from cell
+        real(kind = real_wp)   :: cjn   !< New (local theta) concentration to cell
+        integer(kind = int_wp) :: ifrom !< From- and to cell indices
+        integer(kind = int_wp) :: ito   !< From- and to cell indices
+        integer(kind = int_wp) :: iseg  !< Current segment
+        integer(kind = int_wp) :: iq    !< Current edge
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqm5", ithandl)
@@ -99,7 +100,7 @@ contains
         do iq = 1, noq
             flux(iq) = 0.0
             lim (iq) = 1.0
-        enddo
+        end do
 
         do iseg = 1, noseg
             maxi(iseg) = concvt(iseg)
@@ -110,7 +111,7 @@ contains
             m2(iseg) = 0.0
             n1(iseg) = 0.0
             n2(iseg) = 0.0
-        enddo
+        end do
 
         ! compute flux corrections
         do iq = 1, noq
@@ -120,10 +121,10 @@ contains
             if (ifrom == 0 .or.  ito == 0) cycle
             if (ifrom > 0) then
                 if (.not. btest(iknmrk(ifrom), 0)) cycle       ! identified dry at start and end of timestep
-            endif                                              ! aggregated time step can be wet in between
+            end if                                              ! aggregated time step can be wet in between
             if (ito   > 0) then                           ! start and end, that is why a check on 1 cm3/s
                 if (.not. btest(iknmrk(ito), 0)) cycle       ! life is not easy
-            endif
+            end if
 
             if (ifrom > 0) then
                 cio = conc  (isys, ifrom)
@@ -131,7 +132,7 @@ contains
             else
                 cio = bound (isys, -ifrom)
                 cin = bound (isys, -ifrom)
-            endif
+            end if
 
             if (ito   > 0) then
                 cjo = conc  (isys, ito)
@@ -139,7 +140,7 @@ contains
             else
                 cjo = bound (isys, -ito)
                 cjn = bound (isys, -ito)
-            endif
+            end if
 
             if (theta(iq) < 1.0E-25) then ! Lax-Wendroff flux correction at `explicit' edges (theta = 0)
                 length = aleng(1, iq) + aleng(2, iq)
@@ -148,8 +149,8 @@ contains
                         flux(iq) = (aleng(1, iq) / length - (flowtot(iq) * real(idt)) / (2 * area(iq) * length)) * flowtot(iq) * (cjo - cio)
                     else                                    ! flow from j to i
                         flux(iq) = (-aleng(2, iq) / length - (flowtot(iq) * real(idt)) / (2 * area(iq) * length)) * flowtot(iq) * (cjo - cio)
-                    endif
-                endif
+                    end if
+                end if
             else                          ! central flux correction at implicit edges (theta > 0)
                 if (flowtot(iq) > 0) then ! flow from i to j
                     flux(iq) = (1.0 - theta(iq)) * (flowtot(iq) * (cio + cjo) / 2.0 - flowtot(iq) * cio) &
@@ -157,15 +158,12 @@ contains
                 else ! flow from j to i
                     flux(iq) = (1.0 - theta(iq)) * (flowtot(iq) * (cio + cjo) / 2.0 - flowtot(iq) * cjo) &
                             + theta(iq) * (flowtot(iq) * (cin + cjn) / 2.0 - flowtot(iq) * cjn)
-                endif
-            endif
-
+                end if
+            end if
             if (flux(iq) * (cin - cjn)>0)  flux(iq) = 0.0 ! antidiffusion should not behave as diffusion.
+        end do
 
-        enddo
-
-        ! compute limiter a la Zalesak
-
+        ! compute limiter following Zalesak
         do iq = 1, noq
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
@@ -173,10 +171,10 @@ contains
             if (ifrom == 0 .or.  ito == 0) cycle
             if (ifrom > 0) then
                 if (.not. btest(iknmrk(ifrom), 0)) cycle       ! identified dry at start and end of timestep
-            endif                                              ! aggregated time step can be wet in between
+            end if                                              ! aggregated time step can be wet in between
             if (ito   > 0) then                           ! start and end, that is why a check on 1 cm3/s
                 if (.not. btest(iknmrk(ito), 0)) cycle       ! life is not easy
-            endif
+            end if
 
             if (ifrom > 0) then
                 if (ito  > 0) then
@@ -185,11 +183,11 @@ contains
                 else
                     maxi(ifrom) = max(maxi(ifrom), bound(isys, -ito))
                     mini(ifrom) = min(mini(ifrom), bound(isys, -ito))
-                endif
+                end if
 
                 l1(ifrom) = l1(ifrom) + real(idt) * max(0.0, -flux(iq))
                 l2(ifrom) = l2(ifrom) + real(idt) * max(0.0, flux(iq))
-            endif
+            end if
 
             if (ito   > 0) then
                 if (ifrom > 0) then
@@ -198,19 +196,19 @@ contains
                 else
                     maxi(ito) = max(maxi(ito), bound(isys, -ifrom))
                     mini(ito) = min(mini(ito), bound(isys, -ifrom))
-                endif
+                end if
 
                 l1(ito) = l1(ito) + real(idt) * max(0.0, flux(iq))
                 l2(ito) = l2(ito) + real(idt) * max(0.0, -flux(iq))
-            endif
-        enddo
+            end if
+        end do
 
         do iseg = 1, noseg
             m1(iseg) = volnew(iseg) * (maxi(iseg) - concvt(iseg))
             m2(iseg) = volnew(iseg) * (concvt(iseg) - mini(iseg))
             if (l1(iseg) > 1.0E-25) n1(iseg) = min(1.0, m1(iseg) / l1(iseg))
             if (l2(iseg) > 1.0E-25) n2(iseg) = min(1.0, m2(iseg) / l2(iseg))
-        enddo
+        end do
 
         do iq = 1, noq
             ifrom = ipoint(1, iq)
@@ -220,33 +218,31 @@ contains
                     lim(iq) = min(n1(ifrom), n2(ito))
                 else
                     lim(iq) = min(n1(ito), n2(ifrom))
-                endif
-            endif
-        enddo
+                end if
+            end if
+        end do
 
         ! store the result
-
         do iseg = 1, noseg
             if (btest(iknmrk(iseg), 0)) then
                 conc(isys, iseg) = concvt(iseg)
             else
                 conc(isys, iseg) = 0.0
-            endif
-        enddo
+            end if
+        end do
 
         ! solution estimation 2: local theta FCT solution estimation
         ! apply limited flux correction
-
         do iq = 1, noq
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .and.  ito <= 0) cycle
             if (ifrom > 0) then
                 if (.not. btest(iknmrk(ifrom), 0)) cycle       ! identified dry at start and end of timestep
-            endif                                              ! aggregated time step can be wet in between
+            end if                                              ! aggregated time step can be wet in between
             if (ito   > 0) then                           ! start and end. Life is not easy
                 if (.not. btest(iknmrk(ito), 0)) cycle
-            endif
+            end if
             if (ifrom > 0 .and.  ito > 0) then
                 if (volnew(ifrom) > 1.0e-25 .and. volnew(ito) > 1.0e-25) then
                     conc(isys, ifrom) = conc(isys, ifrom) - lim(iq) * real(idt) * flux(iq) / volnew(ifrom)
@@ -256,13 +252,11 @@ contains
                             dmpq(isys, iqdmp(iq), 1) = dmpq(isys, iqdmp(iq), 1) + real(idt) * lim(iq) * flux(iq)
                         else
                             dmpq(isys, iqdmp(iq), 2) = dmpq(isys, iqdmp(iq), 2) - real(idt) * lim(iq) * flux(iq)
-                        endif
-                    endif
-                endif
-            endif
-        enddo
-
+                        end if
+                    end if
+                end if
+            end if
+        end do
         if (timon) call timstop (ithandl)
     end subroutine dlwqm5
-
 end module m_dlwqm5

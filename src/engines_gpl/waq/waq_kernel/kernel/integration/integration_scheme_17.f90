@@ -33,58 +33,14 @@ module m_integration_scheme_17
 
 contains
 
-
-    subroutine integration_scheme_17 (buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        !> Iterative stationary upwind method (17)
-        !>
-        !>                         Performs substance by substance a stationairy solution.\n
-        !>                         Uses the GMRES method with Krilov sub-spaces.\n
-        !>                         Horizontal fluxes are discretized upwind.\n
-        !>                         Vertical fluxes are discretized upwind.\n
-
-        !     CREATED            : june 1988 by L. Postma
-        !
-        !     MODIFIED           : feb 1997, by RJ Vos; like 6 but steady state solver
-        !                          is GMRES and compact storage from option 15
-        !
-        !     LOGICAL UNITS      : file_unit_list(19) , output, monitoring file
-        !                          file_unit_list(20) , output, formatted dump file
-        !                          file_unit_list(21) , output, unformatted hist. file
-        !                          file_unit_list(22) , output, unformatted dump file
-        !                          file_unit_list(23) , output, unformatted restart file
-        !
-        !     SUBROUTINES CALLED : DLWQTR, user transport routine
-        !                          write_output, DELWAQ4 output routine
-        !                          write_restart_map_file, system postpro-dump routine
-        !                          DLWQ15, wasteload routine
-        !                          DLWQ60, scales water quality
-        !                          DLWQH1, set diagonal and deriv in deriv(1)
-        !                          DLWQF3, fills the matrix (except diagonal)
-        !                          DLWQ63, stores the results
-        !                          DLWQ64, performs mass balance computation
-        !                          DLWQ65, computes closure error
-        !                          DLWQ66, makes masses
-        !                          DLWQH3, check diagonal on zero's
-        !                          SGMRES, fast solver
-        !                          open_waq_files, opens files
-        !                          MOVE  , copy an array
-        !
-        !      NOTE             :   " DELWAQ FASTSOLVERS 2 " (R.J.Vos, M.Borsboom and K.
-        !       Newton-Krylov methods for solving linear and non-linear equations
-        !       report T1596, January 1996, Deltares
-        !
-        !     PARAMETERS    :
-        !
-        !     NAME    KIND     LENGTH   FUNC.  DESCRIPTION
-        !     ---------------------------------------------------------
-        !     A       REAL       *      LOCAL  real      workspace array
-        !     J       INTEGER    *      LOCAL  integer   workspace array
-        !     C       CHARACTER  *      LOCAL  character workspace array
-        !     file_unit_list     INTEGER    *      INPUT  array with unit numbers
-        !     file_name_list   CHARACTER  *      INPUT  filenames
-        !
-        !     Declaration of arguments
-        !
+    !> Iterative stationary upwind method (17)
+    !! Performs substance by substance a stationairy solution.
+    !! Uses the GMRES method with Krilov sub-spaces.
+    !! Horizontal fluxes are discretized upwind.
+    !! Vertical fluxes are discretized upwind.
+    !! like 6 but steady state solver
+    !! is GMRES and compact storage from option 15
+    subroutine integration_scheme_17(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         use m_dlwqm7
         use m_dlwqh6
         use m_dlwqh3
@@ -98,14 +54,15 @@ contains
         use m_dlwq60
         use m_dlwq41
         use m_dlwq15
+        use dryfld_mod
         use m_write_restart_map_file
-        use m_array_manipulation, only : initialize_real_array
-        use data_processing, only : close_files
+        use m_array_manipulation, only: initialize_real_array
+        use data_processing, only: close_files
         use m_grid_utils_external
         use timers
         use variable_declaration
         use delwaq2_data
-        use m_waq_openda_exchange_items, only : get_openda_buffer
+        use m_waq_openda_exchange_items, only: get_openda_buffer
         use m_actions
         use m_sysn          ! System characteristics
         use m_sysi          ! Timer characteristics
@@ -113,69 +70,64 @@ contains
         use m_sysj          ! Pointers in integer array workspace
         use m_sysc          ! Pointers in character array workspace
 
-        type(waq_data_buffer), target :: buffer      !< System total array space
-        INTEGER(kind = int_wp), DIMENSION(*) :: file_unit_list
-        CHARACTER*(*), DIMENSION(*) :: file_name_list
-        INTEGER(kind = int_wp) :: ACTION
-        TYPE(DELWAQ_DATA) :: DLWQD
-        type(GridPointerColl) :: GridPs               ! collection off all grid definitions
+        type(waq_data_buffer), target :: buffer                  !< System total array space
+        integer(kind=int_wp), intent(inout) :: file_unit_list(*) !< Array with logical unit numbers
+        character(len=*),     intent(in) :: file_name_list(*)    !< Array with file names
+        integer(kind=int_wp), intent(in) :: action               !< Span of the run or type of action to perform
+                                                                 !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data), target :: dlwqd                       !< DELWAQ data structure
+        type(GridPointerColl) :: gridps                          !< Collection of all grid definitions
 
-        LOGICAL          IMFLAG, IDFLAG, IHFLAG
-        LOGICAL          LDUMMY, LSTREC, LREWIN
+        ! Local variables
+        logical imflag, idflag, ihflag
+        logical ldummy, lstrec, lrewin
         logical, save :: litrep
-        logical          update
+        logical update
 
-        real(kind = dp) :: tol
+        real(kind=dp) :: tol !< relative tolerance [10^-3, 10^-10]
 
-        INTEGER(kind = int_wp) :: ITIME
-        INTEGER(kind = int_wp) :: ITIMEL
-        INTEGER(kind = int_wp) :: IFFLAG
-        INTEGER(kind = int_wp) :: IAFLAG
-        INTEGER(kind = int_wp) :: IBFLAG
-        INTEGER(kind = int_wp) :: NDDIM
-        INTEGER(kind = int_wp) :: NVDIM
-        INTEGER(kind = int_wp) :: ISYS
-        INTEGER(kind = int_wp) :: ICSYS
-        INTEGER(kind = int_wp) :: INWTYP
-        INTEGER(kind = int_wp) :: ISTEP
-        INTEGER(kind = int_wp) :: ITH
-        INTEGER(kind = int_wp) :: I
-        INTEGER(kind = int_wp) :: ISCALE
-        INTEGER(kind = int_wp) :: NOPRED
-        INTEGER(kind = int_wp) :: ITER
-        INTEGER(kind = int_wp) :: IOPTPC
-        INTEGER(kind = int_wp) :: NOSSS
-        INTEGER(kind = int_wp) :: NOQTT
-        INTEGER(kind = int_wp) :: sindex
+        integer(kind=int_wp) :: itime
+        integer(kind=int_wp) :: itimel
+        integer(kind=int_wp) :: ifflag
+        integer(kind=int_wp) :: iaflag
+        integer(kind=int_wp) :: ibflag
+        integer(kind=int_wp) :: nddim
+        integer(kind=int_wp) :: nvdim
+        integer(kind=int_wp) :: isys
+        integer(kind=int_wp) :: icsys
+        integer(kind=int_wp) :: inwtyp
+        integer(kind=int_wp) :: istep
+        integer(kind=int_wp) :: ith
+        integer(kind=int_wp) :: i
+        integer(kind=int_wp) :: iscale !< row scaling of system of equations [0 = no, 1 =yes]
+        integer(kind=int_wp) :: nopred
+        integer(kind=int_wp) :: iter   !< maximum number of iterations [ > 0]
+        integer(kind=int_wp) :: ioptpc !< preconditioner switch 
+                                       !< [0 = none, 1 = GS (L), 2 = GS (U), 3 = SSOR]
+        integer(kind=int_wp) :: nosss
+        integer(kind=int_wp) :: noqtt
 
-        integer(kind = int_wp) :: ithandl
-        integer(kind = int_wp), save :: ithand1 = 0 ! Leave local
-        
+        integer(kind=int_wp) :: ithandl
+        integer(kind=int_wp), save :: ithand1 = 0 ! Leave local
+
         integer(kind=int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
-            if (action == ACTION_INITIALISATION  .or. &
-                    action == ACTION_FINALISATION) then
+            if (action == ACTION_INITIALISATION .or. &
+                action == ACTION_FINALISATION) then
                 return
-            endif
-            !
-            !          some initialisation for fast solver
-            !
-            !       IOPTPC = preconditioner switch [0 = none, 1 = GS (L), 2 = GS (U),
-            !       3 = SSOR], ITER = maximum number of iterations [ > 0],
-            !       TOL = relative tolerance [10^-3, 10^-10], ISCALE = row scaling
-            !       of system of equations [0 = no, 1 =yes], KLAT = number of
-            !       layers in preconditioner [1,KMAX]
-            !
-            ithandl = 0
-            if (timon) call timstrt ("integration_scheme_17", ithandl)
+            end if
 
-            call initialize_gmres (file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
-                    iter, tol, iscale, litrep, noseg, &
-                    noq3, noq, novec, nomat, &
-                    nolay, intsrt, intopt)
+            ithandl = 0
+            if (timon) call timstrt("integration_scheme_17", ithandl)
+
+            ! some initialisation for fast solver
+            call initialize_gmres(file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
+                                  iter, tol, iscale, litrep, noseg, &
+                                  noq3, noq, novec, nomat, &
+                                  nolay, intsrt, intopt)
 
             itime = itstrt + idt
             ifflag = 0
@@ -186,203 +138,177 @@ contains
                 nddim = nodisp
             else
                 nddim = ndspn
-            endif
+            end if
             if (nveln == 0) then
                 nvdim = novelo
             else
                 nvdim = nveln
-            endif
+            end if
             lstrec = icflag == 1
             nosss = noseg + nseg2
             noqtt = noq + noq4
             inwtyp = intyp + nobnd
 
-            !      Initialize pointer matrices for fast solvers
-
-            call dlwqf1 (noseg, nobnd, noq, noq1, noq2, &
-                    nomat, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
-                    fmat, tmat)
+            ! Initialize pointer matrices for fast solvers
+            call dlwqf1(noseg, nobnd, noq, noq1, noq2, &
+                        nomat, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
+                        fmat, tmat)
             iexseg = 1     !  There is nothing to mask. This array is meant for method 21
 
             !======================= simulation loop ============================
 
-            !          make closure error correction
-
+            ! make closure error correction
             if (j(inrh2 + 1) >= 0 .and. ivflag == 0 .and. &
-                    idt       > 0 .and. lstrec) then
-                call dlwq41 (file_unit_list, itstrt + idt, itstrt, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
-                        j(ibulk:), file_name_list, ftype, isflag, ivflag, &
-                        update, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
-                        lstrec, lrewin, a(ivoll:), dlwqd)
-                call dlwq65 (a(ivol2:), a(ivol:), idt, noseg)
+                idt > 0 .and. lstrec) then
+                call dlwq41(file_unit_list, itstrt + idt, itstrt, a(iharm:), a(ifarr:), &
+                            j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
+                            j(ibulk:), file_name_list, ftype, isflag, ivflag, &
+                            update, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
+                            lstrec, lrewin, a(ivoll:), dlwqd)
+                call dlwq65(a(ivol2:), a(ivol:), idt, noseg)
             else
-                call initialize_real_array   (a(ivol2:), noseg)
-            endif
+                call initialize_real_array(a(ivol2:), noseg)
+            end if
 
-            !        Determine the volumes and areas that ran dry at start of time step
-
-            call hsurf  (noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call dryfld (noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
-                    a(iarea:), nocons, c(icnam:), a(icons:), surface, &
-                    j(iknmr:), iknmkv)
+            ! Determine the volumes and areas that ran dry at start of time step
+            call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
+                       c(isfna:), a(isfun:), surface, file_unit_list(19))
+            call dryfld(noseg, nosss, nolay, a(ivol:), noq1 + noq2, &
+                        a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+                        j(iknmr:), iknmkv)
 
             !          user transport processes
 
-            call dlwqtr (notot, nosys, nosss, noq, noq1, &
-                    noq2, noq3, nopa, nosfun, nodisp, &
-                    novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                    a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                    a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                    idt, c(isnam:), nocons, nofun, c(icnam:), &
-                    c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
+            call dlwqtr(notot, nosys, nosss, noq, noq1, &
+                        noq2, noq3, nopa, nosfun, nodisp, &
+                        novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
+                        a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
+                        a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
+                        idt, c(isnam:), nocons, nofun, c(icnam:), &
+                        c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
 
-            !jvb  Temporary ? set the variables grid-setting for the DELWAQ variables
+            ! Temporary ? set the variables grid-setting for the DELWAQ variables
+            call setset(file_unit_list(19), nocons, nopa, nofun, nosfun, &
+                        nosys, notot, nodisp, novelo, nodef, &
+                        noloc, ndspx, nvelx, nlocx, nflux, &
+                        nopred, novar, nogrid, j(ivset:))
 
-            call setset (file_unit_list(19), nocons, nopa, nofun, nosfun, &
-                    nosys, notot, nodisp, novelo, nodef, &
-                    noloc, ndspx, nvelx, nlocx, nflux, &
-                    nopred, novar, nogrid, j(ivset:))
+            ! call PROCES subsystem
+            call proces(notot, nosss, a(iconc:), a(ivol:), itime, &
+                        idt, a(iderv:), ndmpar, nproc, nflux, &
+                        j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
+                        a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
+                        ioffbl, a(imass:), nosys, &
+                        itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
+                        j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
+                        noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
+                        j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
+                        nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
+                        a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
+                        j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
+                        j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
+                        j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
+                        j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
+                        j(igseg:), novar, a, nogrid, ndmps, &
+                        c(iprna:), intsrt, &
+                        j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
+                        surface, file_unit_list(19))
 
-            !          call PROCES subsystem
+            ! save computation time
+            call dlwqm7(noq, noq1, noq2, a(iarea:), a(iflow:), &
+                        a(ileng:), ilflag, intopt, j(ixpnt:), mixlen, &
+                        iknmkv)
 
-            call proces (notot, nosss, a(iconc:), a(ivol:), itime, &
-                    idt, a(iderv:), ndmpar, nproc, nflux, &
-                    j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
-                    a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
-                    ioffbl, a(imass:), nosys, &
-                    itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
-                    noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
-                    j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
-                    nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
-                    a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
-                    j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
-                    j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
-                    j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
-                    j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
-                    j(igseg:), novar, a, nogrid, ndmps, &
-                    c(iprna:), intsrt, &
-                    j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
-                    surface, file_unit_list(19))
-
-            !          save computation time
-
-            call dlwqm7 (noq, noq1, noq2, a(iarea:), a(iflow:), &
-                    a(ileng:), ilflag, intopt, j(ixpnt:), mixlen, &
-                    iknmkv)
-
-            !          loop over the systems
-
+            ! loop over the systems
             ith = 1
-            IAFLAG = 1
-            DO ISYS = 1, NOSYS
+            iaflag = 1
+            do isys = 1, nosys
+                ! do the user water quality processes
+                icsys = isys
+                call dlwq60(a(iderv:), a(iconc:), notot, noseg, itfact, &
+                            a(imas2:), isys, 1, a(idmps:), intopt, &
+                            j(isdmp:))
 
-                !          do the user water quality processes
+                ! add the waste loads
+                call dlwq15(nosys, notot, noseg, noq, nowst, &
+                            nowtyp, ndmps, intopt, 1, itime, &
+                            iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
+                            a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
+                            j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
+                            iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
+                            c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
+                            a(iwdmp:), isys, 1)
 
-                ICSYS = ISYS
-                call dlwq60 (a(iderv:), a(iconc:), notot, noseg, itfact, &
-                        a(imas2:), isys, 1, a(idmps:), intopt, &
-                        j(isdmp:))
+                ! fill the diagonal of the matrix, with conc-array and closure error
+                call dlwqh1(noseg, notot, nobnd, isys, gm_diag(1, ith), &
+                            a(ivol2:), a(iconc:))
 
-                !          add the waste loads
+                ! build rest of matrix
+                call dlwqh2(noseg, nobnd, noq1, noq2, noq, &
+                            j(ixpnt:), nddim, nvdim, j(idpnw:), j(ivpnw:), &
+                            a(iarea:), a(iflow:), a(idisp:), a(idnew:), a(ivnew:), &
+                            isys, nomat, gm_amat(1, ith), j(imat:), rowpnt, &
+                            gm_diag(1, ith), gm_diac(1:, ith), iscale, fmat, tmat, &
+                            mixlen, iknmkv)
 
-                call dlwq15 (nosys, notot, noseg, noq, nowst, &
-                        nowtyp, ndmps, intopt, 1, itime, &
-                        iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
-                        a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
-                        j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                        iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
-                        c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
-                        a(iwdmp:), isys, 1)
+                ! initial guess : take rhs / diagonal
+                call dlwqh3(noseg, nosys, notot, nobnd, isys, &
+                            a(iderv:), a(iboun:), gm_rhs(1, ith), gm_diac(1:, ith), gm_sol(1, ith))
 
-                !          fill the diagonal of the matrix, with conc-array and closure error
+                ! solve linear system of equations
+                ! note that RHS is in A(IDERV:) for steady state otpions
+                call sgmres(noseg + nobnd, gm_rhs(1, ith), gm_sol(1, ith), novec, gm_work(1, ith), &
+                            noseg + nobnd, gm_hess(1, ith), novec + 1, iter, tol, &
+                            nomat, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
+                            nolay, ioptpc, nobnd, gm_trid(1, ith), iexseg(:, ith), &
+                            file_unit_list(19), litrep)
 
-                call dlwqh1 (noseg, notot, nobnd, isys, gm_diag(1, ith), &
-                        a(ivol2:), a(iconc:))
-
-                !          build rest of matrix
-
-                call dlwqh2 (noseg, nobnd, noq1, noq2, noq, &
-                        j(ixpnt:), nddim, nvdim, j(idpnw:), j(ivpnw:), &
-                        a(iarea:), a(iflow:), a(idisp:), a(idnew:), a(ivnew:), &
-                        isys, nomat, gm_amat(1, ith), j(imat:), rowpnt, &
-                        gm_diag(1, ith), gm_diac(1:, ith), iscale, fmat, tmat, &
-                        mixlen, iknmkv)
-
-                !          initial guess : take rhs / diagonal
-
-                call dlwqh3 (noseg, nosys, notot, nobnd, isys, &
-                        a(iderv:), a(iboun:), gm_rhs(1, ith), gm_diac(1:, ith), gm_sol (1, ith))
-
-                !          solve linear system of equations
-                !          note that RHS is in A(IDERV:) for steady state otpions
-
-                call sgmres (noseg + nobnd, gm_rhs (1, ith), gm_sol (1, ith), novec, gm_work(1, ith), &
-                        noseg + nobnd, gm_hess(1, ith), novec + 1, iter, tol, &
-                        nomat, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
-                        nolay, ioptpc, nobnd, gm_trid(1, ith), iexseg (:, ith), &
-                        file_unit_list(19), litrep)
-
-                !           copy solution for this substance into concentration array, note that the array for
-                !                                                                      segment dumps is not filled yet
-
-                call dlwqh6 (noseg, notot, isys, 1, a(iconc:), &
-                        gm_sol(1, ith), a(imas2:), a(idmps:), intopt, j(isdmp:))
-
+                ! copy solution for this substance into concentration array, 
+                ! note that the array for cell dumps is not filled yet
+                call dlwqh6(noseg, notot, isys, 1, a(iconc:), &
+                            gm_sol(1, ith), a(imas2:), a(idmps:), intopt, j(isdmp:))
             end do
-
-            !          mass balance
-
+            ! mass balance
             IAFLAG = 1
-            CALL DLWQ64 (A(IDISP:), A(IDNEW:), A(IAREA:), A(IFLOW:), A(ILENG:), &
-                    A(IVNEW:), A(ICONC:), A(IBOUN:), J(IXPNT:), NOSYS, &
-                    NOTOT, NOQ1, NOQ2, NOQ, NDDIM, &
-                    NVDIM, J(IDPNW:), J(IVPNW:), INTOPT, A(IMAS2:), &
-                    ILFLAG, A(IDMPQ:), NDMPQ, J(IQDMP:))
-            CALL DLWQ66 (A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
-            !
-            !     Call OUTPUT system ( note that mass is in A(IDERV:) )
-            !
-            CALL write_output (NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
-                    C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
-                    A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
-                    A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
-                    file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
-                    C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
-                    C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
-                    NOSYS, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
-                    A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
-                    IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
-                    IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
-                    IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
-                    NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
-                    C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
-                    J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
-                    C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
-                    J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
-                    NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
-                    J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
-                    J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
-                    C(IBTYP:), J(INTYP:), C(ICNAM:), NOQ, J(IXPNT:), &
-                    INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
-                    NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
-                    A(IWDMP:), iknmkv, isegcol)
+            call dlwq64(a(idisp:), a(idnew:), a(iarea:), a(iflow:), a(ileng:), &
+                        a(ivnew:), a(iconc:), a(iboun:), j(ixpnt:), nosys, &
+                        notot, noq1, noq2, noq, nddim, &
+                        nvdim, j(idpnw:), j(ivpnw:), intopt, a(imas2:), &
+                        ilflag, a(idmpq:), ndmpq, j(iqdmp:))
+            call dlwq66(a(iderv:), a(ivol:), a(iconc:), notot, noseg)
 
-            !
-            !          close files, except monitor file
-            !
+            call write_output(NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
+                              C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
+                              A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
+                              A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
+                              file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
+                              C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
+                              C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
+                              NOSYS, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
+                              A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
+                              IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
+                              IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
+                              IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
+                              NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
+                              C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
+                              J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
+                              C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
+                              J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
+                              NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
+                              J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
+                              J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
+                              C(IBTYP:), J(INTYP:), C(ICNAM:), NOQ, J(IXPNT:), &
+                              INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
+                              NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
+                              A(IWDMP:), iknmkv, isegcol)
+
             call close_hydro_files(dlwqd%collcoll)
             call close_files(file_unit_list)
 
-            ! write restart file
-            CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
-                    C(ISNAM:), NOTOT, NOSEG)
+            call write_restart_map_file(file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
+                                        C(ISNAM:), NOTOT, NOSEG)
 
         end associate
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+        if (timon) call timstop(ithandl)
+    end subroutine integration_scheme_17
 end module m_integration_scheme_17

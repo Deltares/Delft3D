@@ -35,33 +35,31 @@ module m_hsurf
 contains
 
     !> Sets values of horizontal surface array.
-    subroutine hsurf    (noseg, nopa, paname, param, nosfun, &
+    subroutine hsurf(noseg, nopa, paname, param, nosfun, &
             sfname, segfun, surface, file_unit_list)
 
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noseg                 !< number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: nopa                  !< number of parameters
-        character(20),          intent(in   ) :: paname(nopa)          !< names of the parameters
-        real(kind = real_wp),   intent(in   ) :: param (nopa, noseg)   !< parameter values
-        integer(kind = int_wp), intent(in   ) :: nosfun                !< number of segment functions
-        character(20),          intent(in   ) :: sfname(nosfun)        !< names of the segment functions
-        real(kind = real_wp),   intent(in   ) :: segfun(noseg, nosfun) !< segment function values
-        real(kind = real_wp),   intent(inout) :: surface(noseg)        !< horizontal surface
-        integer(kind = int_wp), intent(in   ) :: file_unit_list        !< logical unit number monitoring file
+        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: nopa                  !< Number of parameters
+        character(20),          intent(in   ) :: paname(nopa)          !< Names of the parameters
+        real(kind = real_wp),   intent(in   ) :: param (nopa, noseg)   !< Parameter values
+        integer(kind = int_wp), intent(in   ) :: nosfun                !< Number of segment functions
+        character(20),          intent(in   ) :: sfname(nosfun)        !< Names of the segment functions
+        real(kind = real_wp),   intent(in   ) :: segfun(noseg, nosfun) !< Segment function values
+        real(kind = real_wp),   intent(inout) :: surface(noseg)        !< Horizontal surface
+        integer(kind = int_wp), intent(in   ) :: file_unit_list        !< Logical unit number monitoring file
 
-
-        !     local variables
-        logical, save :: first = .true.          !< true if first time step
-        integer(kind = int_wp), save :: indx     !< index of the surf variable in the array
+        ! Local variables
+        logical, save :: first = .true.          !< True if first time step
+        integer(kind = int_wp), save :: indx     !< Index of the surf variable in the array
         integer(kind = int_wp), save :: mode     !< -1 segment functions, +1 parameters, 0 none
-        integer(kind = int_wp), save :: ithandl  !< timer handle
+        integer(kind = int_wp), save :: ithandl  !< Timer handle
         data       ithandl  /0/
         if (timon) call timstrt ("hsurf", ithandl)
 
-        !         see if the surface is available
-
+        ! See if the surface is available
         if (first) then
             first = .false.
             indx = index_in_array('SURF      ', paname)
@@ -85,6 +83,5 @@ contains
         if (timon) call timstop (ithandl)
         return
         2000 format (' WARNING  : could not find horizontal surface; using value of 1.0 m.')
-    end
-
+    end subroutine hsurf
 end module m_hsurf

@@ -29,7 +29,7 @@
 
 !> Calculate statistics through time for an array of variables
 module m_temporal_statistics
-   use stdlib_kinds, only: dp
+   use precision, only: dp
    implicit none
    private
 

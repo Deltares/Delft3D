@@ -29,10 +29,14 @@ module m_proces
 
     implicit none
 
-contains
+    contains
 
-
-    subroutine proces (notot, noseg, conc, volume, itime, &
+    !> Process sub-system of DELWAQ water-quality modelling system.
+    !! Routine deals with:
+    !! - Processes that act on different spatial grids (important application is layered bed)
+    !! - Processes that act with coarser time steps (notably the Bloom algal growth model).
+    !! - Paralellisation of the different processes on shared memory multi core machines.
+    subroutine proces(notot, noseg, conc, volume, itime, &
             idt, deriv, ndmpar, nproc, noflux, &
             ipmsa, prvnio, promnr, iflux, increm, &
             flux, flxdmp, stochi, ibflag, ipbloo, &
@@ -52,31 +56,6 @@ contains
             prvpnt, done, nrref, proref, nodef, &
             surfac, lunrep)
 
-        !     Deltares Software Centre
-
-        !>\File
-        !>         Control routine of PROCES system. Process sub-system of DELWAQ waterquality modelling system.
-        !>
-        !>         Routine deals with:
-        !>         - processes that act on different spatial grids (important application is layered bed)
-        !>         - processes that act with coarser time steps (notably the Bloom algal growth model and the
-        !>         - Paralellism of the different processes on shared memory multi core machines.
-
-        !     Created:            : november 1992 by Jos van Gils and Jan van Beek
-
-        !     Subroutines called  : PROCAL, Compute fluxes with call to a module
-        !                           PRODER, Make derivatives, store fluxes
-        !                           resample_v2, De-aggregation of a variable
-        !                           DLWQ14, set deriv array
-        !                           DLWQP0, set a step
-        !                           integrate_fluxes_for_dump_areas , integrate fluxes at dump segments
-        !                           PROVEL, calculate new velocities/dispersions
-        !                           aggregate_extended, aggrgation of a variable
-        !                           get_log_unit_number, get unit number monitor file
-        !                           stop_with_error, stops execution with an error indication
-
-        !     Files               : Monitoring file if needed for messages
-
         use m_dlwqp0
         use m_dlwq14
         use m_cli_utils, only : get_command_argument_by_name
@@ -89,100 +68,95 @@ contains
 
         implicit none
 
-        !     Arguments           :
+        integer(kind = int_wp), intent(in)    :: nogrid                        !< Number of computational grids
+        integer(kind = int_wp), intent(in)    :: notot                         !< Total number of substances
+        integer(kind = int_wp), intent(in)    :: noseg                         !< Nr. of computational volumes
+        integer(kind = int_wp), intent(in)    :: nodef                         !< Number of values in the deafult array
+        integer(kind = int_wp), intent(in)    :: novar                         !< Total number of variables
+        real(kind = real_wp),   intent(inout) :: conc(notot, noseg, nogrid)    !< Model concentrations
+        real(kind = real_wp),   intent(inout) :: volume(noseg, nogrid)         !< Segment volumes
+        integer(kind = int_wp), intent(in)    :: itime                         !< Time in system clock units
+        integer(kind = int_wp), intent(in)    :: idt                           !< Time step system clock units
+        real(kind = real_wp),   intent(out)   :: deriv(notot, noseg, nogrid)   !< Model derivatives
+        integer(kind = int_wp), intent(in)    :: ndmpar                        !< Number of dump areas
+        integer(kind = int_wp), intent(in)    :: nproc                         !< Number of processes
+        integer(kind = int_wp), intent(in)    :: noflux                        !< Number of fluxes
+        integer(kind = int_wp), intent(in)    :: ipmsa (:)                     !< Direct pointer in DELWAQ arrays
+        integer(kind = int_wp), intent(in)    :: prvnio(nproc)                 !< Nr. of state variables per proces
+        integer(kind = int_wp), intent(in)    :: promnr(nproc)                 !< Proces module number per proces
+        integer(kind = int_wp), intent(in)    :: iflux (nproc)                 !< Offset in flux array per process
+        integer(kind = int_wp), intent(in)    :: increm(:)                     !< Direct increment in DELWAQ arrays
+        real(kind = real_wp),   intent(inout) :: flux  (noflux, noseg, nogrid) !< Proces fluxes
+        real(kind = real_wp),   intent(inout) :: flxdmp(ndmps, noflux)         !< Fluxes at dump segments
+        real(kind = real_wp),   intent(in)    :: stochi(notot, noflux)         !< Proces stochiometry
+        integer(kind = int_wp), intent(in)    :: ibflag                        !< if 1 then mass balance output
+        integer(kind = int_wp), intent(in)    :: ipbloo                        !< Number of Bloom module  (if >0)
+        integer(kind = int_wp), intent(in)    :: ioffbl                        !< Offset in IPMSA for Bloom
+        real(kind = real_wp),   intent(inout) :: amass(notot, noseg, nogrid)   !< mass array to be updated
+        integer(kind = int_wp), intent(in)    :: nosys                         !< number of active substances
+        integer(kind = int_wp), intent(in)    :: itfact                        !< time scale factor processes
+        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)              !< mass balance array
+        integer(kind = int_wp), intent(in)    :: iaflag                        !< if 1 then accumulation
+        integer(kind = int_wp), intent(in)    :: intopt                        !< Integration suboptions
+        real(kind = real_wp),   intent(inout) :: flxint(ndmpar, noflux)        !< Integrated fluxes at dump areas
+        integer(kind = int_wp), intent(in)    :: iexpnt(:)                     !< Exchange pointer
+        integer(kind = int_wp), intent(inout) :: iknmrk(:)                     !< Integration suboptions
+        integer(kind = int_wp), intent(in)    :: noq1                          !< Number of exchanges first direction
+        integer(kind = int_wp), intent(in)    :: noq2                          !< Number of exchanges second direction
+        integer(kind = int_wp), intent(in)    :: noq3                          !< Number of exchanges vertical
+        integer(kind = int_wp), intent(in)    :: noq4                          !< Number of exchanges in the bed
+        integer(kind = int_wp), intent(in)    :: ndspn                         !< Number of new dispersion arrays
+        integer(kind = int_wp), intent(in)    :: idpnew(nosys)                 !< Pointer to new disp array
+        real(kind = real_wp),   intent(out)   :: dispnw(ndspn, *)              !< New dispersion array
+        integer(kind = int_wp), intent(in)    :: nodisp                        !< Nr. of original dispersions
+        integer(kind = int_wp), intent(in)    :: idpnt (nosys)                 !< Pointer to original dispersion
+        real(kind = real_wp),   intent(in)    :: disper(nodisp, *)             !< Original dispersions
+        integer(kind = int_wp), intent(in)    :: ndspx                         !< Nr. of calculated dispersions
+        real(kind = real_wp),   intent(in   ) :: dspx  (:)                     !< Calculated dispersions
+        real(kind = real_wp),   intent(in)    :: dsto  (nosys, ndspx)          !< Factor for calc. dispersions
+        integer(kind = int_wp), intent(in)    :: nveln                         !< Nr. of new velocity array's
+        integer(kind = int_wp), intent(in)    :: ivpnew(nosys)                 !< Pointer to new velo array
+        real(kind = real_wp),   intent(out)   :: velonw(nveln, *)              !< New velocity array
+        integer(kind = int_wp), intent(in)    :: novelo                        !< Nr. of original velocities
+        integer(kind = int_wp), intent(in)    :: ivpnt (nosys)                 !< pointer to original velo
+        real(kind = real_wp),   intent(in)    :: velo  (novelo, *)             !< Original velocities
+        integer(kind = int_wp), intent(in)    :: nvelx                         !< Nr. of calculated velocities
+        real(kind = real_wp), intent(in   )   :: velx  (nvelx, *)              !< Calculated velocities
+        real(kind = real_wp),   intent(in)    :: vsto  (nosys, nvelx)          !< Factor for velocitie
+        real(kind = real_wp),   intent(inout) :: dmps  (notot, ndmps)          !< dumped segment fluxes
+        integer(kind = int_wp), intent(in)    :: isdmp (noseg)                 !< pointer dumped segments
+        integer(kind = int_wp), intent(in)    :: ipdmp (*)                     !< pointer structure dump area's
+        integer(kind = int_wp), intent(in)    :: ntdmpq                        !< total number exchanges in dump area
+        real(kind = real_wp),   intent(inout) :: defaul(nodef)                 !< Default proces parameters
+        integer(kind = int_wp), intent(inout) :: prondt(nproc)                 !< Time-step for each process wrt global time-step
+        integer(kind = int_wp), intent(in)    :: progrd(nproc)                 !< Grid per process
+        integer(kind = int_wp), intent(in)    :: prvvar(*)                     !< Index of variable
+        integer(kind = int_wp), intent(in)    :: prvtyp(*)                     !< Type of variable
+        integer(kind = int_wp), intent(in)    :: vararr(novar)                 !< Variable array number
+        integer(kind = int_wp), intent(in)    :: varidx(novar)                 !< Variable index in array
+        integer(kind = int_wp), intent(in)    :: vartda(novar)                 !< Type of disaggregation
+        integer(kind = int_wp), intent(in)    :: vardag(novar)                 !< Variable disaggr. weight var.
+        integer(kind = int_wp), intent(in)    :: vartag(novar)                 !< Variable type of aggregation
+        integer(kind = int_wp), intent(in)    :: varagg(novar)                 !< Variable aggregation variable
+        integer(kind = int_wp), intent(in)    :: arrpoi(*)                     !< Pointer (=index) to the start of the array
+        integer(kind = int_wp), intent(in)    :: arrknd(*)                     !< Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR), switch which type of increment should be used
+        integer(kind = int_wp), intent(in)    :: arrdm1(*)                     !< Dimension in the 1st direction
+        integer(kind = int_wp), intent(in)    :: arrdm2(*)                     !< Dimension in the 2nd direction
+        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid)         !< Local flag for variables and grid
+        integer(kind = int_wp), intent(in)    :: grdnos(nogrid)                !< Number of segments per grid
+        integer(kind = int_wp), intent(in)    :: grdseg(noseg, nogrid)         !< Aggregation pointer per grid
+        real(kind = real_wp),   intent(in)    :: a     (:)                     !< Real workspace variable
+        integer(kind = int_wp), intent(in)    :: ndmps                         !< Number of segments dumped
+        character(20),          intent(in   ) :: pronam(*)                     !< Name of called module
+        integer(kind = int_wp), intent(in)    :: intsrt                        !< Number of integration routine used
+        integer(kind = int_wp), intent(in)    :: prvpnt(nproc)                 !< entry in process pointers OMP
+        integer(kind = int_wp), intent(inout) :: done  (nproc)                 !< flag whether a process has ran
+        integer(kind = int_wp), intent(in)    :: nrref                         !< maximum nr of back references
+        integer(kind = int_wp), intent(in)    :: proref(nrref, nproc)          !< the back references
+        real(kind = real_wp),   intent(in)    :: surfac(noseg)                 !< horizontal surface
+        integer(kind = int_wp), intent(in)    :: lunrep                        !< Logical unit number of report-file
 
-        !     Kind         Function         Name                          Description
-
-        integer(kind = int_wp), intent(in) :: nogrid                      !< Number of computational grids
-        integer(kind = int_wp), intent(in) :: notot                       !< Total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                       !< Nr. of computational volumes
-        integer(kind = int_wp), intent(in) :: nodef                       !< Number of values in the deafult array
-        integer(kind = int_wp), intent(in) :: novar                       !<
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg, nogrid)  !< Model concentrations
-        real(kind = real_wp), intent(inout) :: volume(noseg, nogrid)  !< Segment volumes
-        integer(kind = int_wp), intent(in) :: itime                       !< Time in system clock units
-        integer(kind = int_wp), intent(in) :: idt                         !< Time step system clock units
-        real(kind = real_wp), intent(out) :: deriv (notot, noseg, nogrid)  !< Model derivatives
-        integer(kind = int_wp), intent(in) :: ndmpar                      !< Number of dump areas
-        integer(kind = int_wp), intent(in) :: nproc                       !< Number of processes
-        integer(kind = int_wp), intent(in) :: noflux                      !< Number of fluxes
-        integer(kind = int_wp), intent(in) :: ipmsa (:)                   !< Direct pointer in DELWAQ arrays
-        integer(kind = int_wp), intent(in) :: prvnio(nproc)               !< Nr. of state variables per proces
-        integer(kind = int_wp), intent(in) :: promnr(nproc)               !< Proces module number per proces
-        integer(kind = int_wp), intent(in) :: iflux (nproc)               !< Offset in flux array per process
-        integer(kind = int_wp), intent(in) :: increm(:)                   !< Direct increment in DELWAQ arrays
-        real(kind = real_wp) :: flux  (noflux, noseg, nogrid) !< Proces fluxes
-        real(kind = real_wp) :: flxdmp(ndmps, noflux)       !< Fluxes at dump segments
-        real(kind = real_wp), intent(in) :: stochi(notot, noflux)       !< Proces stochiometry
-        integer(kind = int_wp), intent(in) :: ibflag                      !< if 1 then mass balance output
-        integer(kind = int_wp), intent(in) :: ipbloo                      !< Number of Bloom module  (if >0)
-        integer(kind = int_wp), intent(in) :: ioffbl                      !< Offset in IPMSA for Bloom
-        real(kind = real_wp), intent(inout) :: amass (notot, noseg, nogrid)  !< mass array to be updated
-        integer(kind = int_wp), intent(in) :: nosys                       !< number of active substances
-        integer(kind = int_wp), intent(in) :: itfact                      !< time scale factor processes
-        real(kind = real_wp), intent(inout) :: amass2(notot, 5)         !< mass balance array
-        integer(kind = int_wp), intent(in) :: iaflag                      !< if 1 then accumulation
-        integer(kind = int_wp), intent(in) :: intopt                      !< Integration suboptions
-        real(kind = real_wp), intent(inout) :: flxint(ndmpar, noflux)       !< Integrated fluxes at dump areas
-        integer(kind = int_wp), intent(in) :: iexpnt(:)                 !< Exchange pointer
-        integer(kind = int_wp), intent(inout) :: iknmrk(:)        !< Integration suboptions
-        integer(kind = int_wp), intent(in) :: noq1                        !< Number of exchanges first direction
-        integer(kind = int_wp), intent(in) :: noq2                        !< Number of exchanges second direction
-        integer(kind = int_wp), intent(in) :: noq3                        !< Number of exchanges vertical
-        integer(kind = int_wp), intent(in) :: noq4                        !< Number of exchanges in the bed
-        integer(kind = int_wp), intent(in) :: ndspn                       !< Number of new dispersion arrays
-        integer(kind = int_wp), intent(in) :: idpnew(nosys)              !< Pointer to new disp array
-        real(kind = real_wp), intent(out) :: dispnw(ndspn, *)            !< New dispersion array
-        integer(kind = int_wp), intent(in) :: nodisp                      !< Nr. of original dispersions
-        integer(kind = int_wp), intent(in) :: idpnt (nosys)              !< Pointer to original dispersion
-        real(kind = real_wp), intent(in) :: disper(nodisp, *)            !< Original dispersions
-        integer(kind = int_wp), intent(in) :: ndspx                       !< Nr. of calculated dispersions
-        real(kind = real_wp) :: dspx  (:)            !< Calculated dispersions
-        real(kind = real_wp), intent(in) :: dsto  (nosys, ndspx)         !< Factor for calc. dispersions
-        integer(kind = int_wp), intent(in) :: nveln                       !< Nr. of new velocity array's
-        integer(kind = int_wp), intent(in) :: ivpnew(nosys)              !< Pointer to new velo array
-        real(kind = real_wp), intent(out) :: velonw(nveln, *)            !< New velocity array
-        integer(kind = int_wp), intent(in) :: novelo                      !< Nr. of original velocities
-        integer(kind = int_wp), intent(in) :: ivpnt (nosys)              !< pointer to original velo
-        real(kind = real_wp), intent(in) :: velo  (novelo, *)            !< Original velocities
-        integer(kind = int_wp), intent(in) :: nvelx                       !< Nr. of calculated velocities
-        real(kind = real_wp) :: velx  (nvelx, *)            !< Calculated velocities
-        real(kind = real_wp), intent(in) :: vsto  (nosys, nvelx)         !< Factor for velocitie
-        real(kind = real_wp), intent(inout) :: dmps  (notot, ndmps)         !< dumped segment fluxes
-        integer(kind = int_wp), intent(in) :: isdmp (noseg)               !< pointer dumped segments
-        integer(kind = int_wp), intent(in) :: ipdmp (*)                   !< pointer structure dump area's
-        integer(kind = int_wp), intent(in) :: ntdmpq                      !< total number exchanges in dump area
-        real(kind = real_wp), intent(inout) :: defaul(nodef)               !< Default proces parameters
-        integer(kind = int_wp), intent(inout) :: prondt(nproc)               !<
-        integer(kind = int_wp), intent(in) :: progrd(nproc)               !< Grid per process
-        integer(kind = int_wp), intent(in) :: prvvar(*)                   !<
-        integer(kind = int_wp), intent(in) :: prvtyp(*)                   !<
-        integer(kind = int_wp), intent(in) :: vararr(novar)               !<
-        integer(kind = int_wp), intent(in) :: varidx(novar)               !<
-        integer(kind = int_wp), intent(in) :: vartda(novar)               !<
-        integer(kind = int_wp), intent(in) :: vardag(novar)               !<
-        integer(kind = int_wp), intent(in) :: vartag(novar)               !<
-        integer(kind = int_wp), intent(in) :: varagg(novar)               !<
-        integer(kind = int_wp), intent(in) :: arrpoi(*)                   !<
-        integer(kind = int_wp), intent(in) :: arrknd(*)                   !<
-        integer(kind = int_wp), intent(in) :: arrdm1(*)                   !<
-        integer(kind = int_wp), intent(in) :: arrdm2(*)                   !<
-        integer(kind = int_wp) :: vgrset(novar, nogrid)        !< Local flag for variables and grid
-        integer(kind = int_wp), intent(in) :: grdnos(nogrid)              !< Number of segments per grid
-        integer(kind = int_wp), intent(in) :: grdseg(noseg, nogrid)        !< Aggregation pointer per grid
-        real(kind = real_wp), intent(in)   :: a     (:)                   !<
-        integer(kind = int_wp), intent(in) :: ndmps                       !<
-        character(20) :: pronam(*)                   !< Name of called module
-        integer(kind = int_wp), intent(in) :: intsrt                      !< Number of integration routine used
-        integer(kind = int_wp), intent(in) :: prvpnt(nproc)               !< entry in process pointers OMP
-        integer(kind = int_wp) :: done  (nproc)               !< flag whether a process has ran
-        integer(kind = int_wp), intent(in) :: nrref                       !< maximum nr of back references
-        integer(kind = int_wp), intent(in) :: proref(nrref, nproc)         !< the back references
-        real(kind = real_wp), intent(in) :: surfac(noseg)               !< horizontal surface
-        integer(kind = int_wp), intent(in) :: lunrep                      !< Logical unit number of report-file
-
-        !     Local declarations
-
+        ! Local variables
         integer(kind = int_wp) :: maxgrid    ! Highest grid number in progrd array
         integer(kind = int_wp) :: iiknmr     ! Pointer somewhere into the array tree
         integer(kind = int_wp) :: ix_hlp, ia_hlp, iv_hlp, ik_hlp, ip_hlp, & !  array pointers
@@ -215,25 +189,22 @@ contains
         SAVE    ISTEP
         DATA    ISTEP  / 0 /
         !     DATA    PROFLG / .TRUE. /
-        !
-        !jvb  Store fractional step flag in common CFRACS
-        !
+
+        ! jvb  Store fractional step flag in common CFRACS
         COMMON /CFRACS/ IFRACS
-        logical                 run              ! lp for OMP
-        integer(kind = int_wp) :: aproc            ! lp for OMP
+        logical                 run                !< lp for OMP
+        integer(kind = int_wp) :: aproc            !< lp for OMP
 
         logical timon_old
         integer(kind = int_wp) :: ithandl = 0
         integer(kind = int_wp) :: ithand2 = 0
         if (timon) call timstrt ("proces", ithandl)
         !jvb
-        !
-        !     If no processes, get out of here
-        !
+
+        ! If no processes, get out of here
         IF (NPROC == 0) goto 9999
 
         ! open openpb dll
-
         if (ifirst == 1) then
             call get_log_unit_number(lunrep)
             if (get_command_argument_by_name('-openpb', shared_dll, parsing_error)) then
@@ -264,16 +235,14 @@ contains
             endif
             ifirst = 0
         endif
-        !
-        !     Count calls of this module
-        !
+
+        ! Count calls of this module
         ISTEP = ISTEP + 1
-        done = 0                                           ! this zeros the whole array
-        !
-        !     Start timings
-        !
-        !     allocate velndt, dspndt
-        !
+        done = 0 ! this zeroes the whole array
+
+        ! Start timings
+
+        ! allocate velndt, dspndt
         if (.not. allocated(velndt)) then
             allocate(velndt(nvelx))
             velndt = 1
@@ -286,9 +255,8 @@ contains
         !
         !JVB
         !     TEMPORARY HERE ?
-        !
-        !     aggregate kenmerk array
-        !
+
+        ! aggregate kenmerk array
         !grd  only if there is a process on a higher grid
         maxgrid = maxval(progrd(1:nproc))
         iiknmr = 78 + 30                 !   = iasize + 30
@@ -297,8 +265,7 @@ contains
                     grdseg)
         endif
 
-        !     Get the general local work array, first index of LOCAL array
-
+        ! Get the general local work array, first index of LOCAL array
         ix_hlp = 1
         ia_hlp = 33
         call dhgvar(ia_hlp, ix_hlp, iv_hlp)
@@ -307,14 +274,12 @@ contains
         id1hlp = arrdm1(ia_hlp)
         id2hlp = arrdm2(ia_hlp)
 
-        !     Fill some specific variables absolute in the real array
-
+        ! Fill some specific variables absolute in the real array
         defaul(2) = real(itime)
         noq = noq1 + noq2 + noq3 + noq4
 
-        !     BLOOM fractional step (derivs assumed zero at entry)
-
-        if (ipbloo > 0) then         !     Check presence of BLOOM module for this run
+        ! BLOOM fractional step (derivs assumed zero at entry)
+        if (ipbloo > 0) then         ! Check presence of BLOOM module for this run
             ivar = prvvar(ioffbl)
             iarr = vararr(ivar)
             iv_idx = varidx(ivar)
@@ -323,12 +288,10 @@ contains
             ndtblo = nint(a(ipndt))
             prondt(ipbloo) = ndtblo
 
-            !        This timestep fractional step ?
-
+            ! This timestep fractional step ?
             if (mod(istep - 1, ndtblo) == 0) then
 
-                !           Set CONC on the Bloom grid if that is not the first grid
-
+                ! Set CONC on the Bloom grid if that is not the first grid
                 igrblo = progrd(ipbloo)
                 if (igrblo > 1) then
                     noseg2 = grdnos(igrblo)
@@ -339,8 +302,7 @@ contains
                             id2hlp, ip_hlp, igrblo, isysh, nototh, &
                             ip_arh)
 
-                    !              actives and inactives if applicable
-
+                    ! actives and inactives if applicable
                     call aggregate(noseg, noseg2, notot, 1, nototh, &
                             notot, 1, 1, isysh, 1, &
                             nosys, grdseg(1, igrblo), 3, conc, volume, &
@@ -359,14 +321,14 @@ contains
                 flux = 0.0
                 if (ibflag > 0) flxdmp = 0
 
-                !           set idt and delt, bloom itself will multiply with prondt
+                ! set idt and delt, bloom itself will multiply with prondt
                 idtpro = prondt(ipbloo) * idt
                 ipp_idt = nodef - 2 * nproc + ipbloo
                 ipp_delt = nodef - nproc + ipbloo
                 defaul(ipp_idt) = real(idt)
                 defaul(ipp_delt) = real(idt) / real(itfact)
                 if (timon) call timstrt ("onepro", ithand2)
-                call onepro (ipbloo, ioffbl, idt, itfact, progrd, &
+                call onepro(ipbloo, ioffbl, idt, itfact, progrd, &
                         grdnos, prvnio, prvtyp, prvvar, vararr, &
                         varidx, arrknd, arrpoi, arrdm1, arrdm2, &
                         vgrset, nogrid, vartda, vardag, noseg, &
@@ -378,7 +340,7 @@ contains
                         vartag, iiknmr, pronam, &
                         dspndt, velndt, dll_opb)
                 done(ipbloo) = 1
-                if (timon) call timstop (ithand2)
+                if (timon) call timstop(ithand2)
                 igrid = progrd(ipbloo)
                 noseg2 = grdnos(igrid)
                 if (ipbloo /= nproc) then
@@ -388,7 +350,7 @@ contains
                 endif
                 if (nfluxp > 0) then
 
-                    !              If necessary set volume for this grid. Volume is always variable 1
+                    ! If necessary set volume for this grid. Volume is always variable 1
 
                     if (vgrset(1, igrid) /= 1) then
                         call aggregate_extended(noseg, noseg2, 1, 1, 1, &
@@ -398,15 +360,13 @@ contains
                         vgrset(1, igrid) = 1
                     endif
 
-                    !              Construct derivatives for these fluxes on this grid
-
-                    call prodr2 (deriv(1, 1, igrid), notot, noflux, stochi, iflux (ipbloo), &
+                    ! Construct derivatives for these fluxes on this grid
+                    call prodr2(deriv(1, 1, igrid), notot, noflux, stochi, iflux (ipbloo), &
                             nfluxp, flux(1, 1, igrid), noseg2, volume(1, igrid), prondt(ipbloo))
 
-                    !              For balances store FLXDMP
-
+                    ! For balances store FLXDMP
                     if (ibflag > 0) then
-                        call profld (noflux, iflux (ipbloo), nfluxp, igrid, noseg2, &
+                        call profld(noflux, iflux (ipbloo), nfluxp, igrid, noseg2, &
                                 noseg, prondt(ipbloo), isdmp, grdseg, flux(1, 1, igrid), &
                                 volume, flxdmp)
                     endif
@@ -425,26 +385,23 @@ contains
                     deriv(:, :, igrblo) = 0.0   !     Zero derivs higher grids
                 endif
 
-                !           Scale fluxes and update "processes" accumulation arrays
+                ! Scale fluxes and update "processes" accumulation arrays
                 call scale_processes_derivs_and_update_balances (deriv, notot, noseg, itfact, amass2, &
                      idt, iaflag, dmps, intopt, isdmp)
 
-                !           Integration (derivs are zeroed)
-
+                ! Integration (derivs are zeroed)
                 call dlwqp0 (conc, amass, deriv, volume, idt, &
                         nosys, notot, noseg, 0, 0, &
                         surfac)
 
-                !           Integrate the fluxes at dump segments
-
+                ! Integrate the fluxes at dump segments
                 if (ibflag > 0) then
                     call integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, itfact, flxdmp, &
                             flxint, isdmp, ipdmp, ntdmpq)
                     flxdmp = 0.0
                 endif
 
-                !           Set CONC not actual for higer grids
-
+                ! Set CONC not actual for higer grids
                 ix_cnc = 1
                 ia_cnc = 6
                 call dhgvar(ia_cnc, ix_cnc, iv_cnc)
@@ -459,9 +416,7 @@ contains
             endif
         endif
 
-
-        !     See if converting CONC in one step speeds up. Only in case of no fractional step
-
+        ! See if converting CONC in one step speeds up. Only in case of no fractional step
         if (ifracs == 0 .and. maxgrid > 1) then
             ix_cnc = 1
             ia_cnc = 6
@@ -472,17 +427,18 @@ contains
                         id2hlp, ip_hlp, igrid, isysh, nototh, &
                         ip_arh)
 
-                !           actives and inactives if applicable
-
+                ! actives
                 call aggregate(noseg, noseg2, notot, 1, nototh, &
                         notot, 1, 1, isysh, 1, &
                         nosys, grdseg(1, igrid), 3, conc, volume, &
                         a(ip_arh:), conc(1, 1, igrid))
-                if (notot - nosys > 0)      & !   inactives
-                        call aggregate(noseg, noseg2, notot, 1, nototh, &
-                                notot, nosys + 1, 1, isysh, nosys + 1, &
-                                notot - nosys, grdseg(1, igrid), 3, conc, surfac, &
-                                a(ip_arh:), conc(1, 1, igrid))
+                ! inactives, if applicable
+                if (notot - nosys > 0) then
+                    call aggregate(noseg, noseg2, notot, 1, nototh, &
+                                   notot, nosys + 1, 1, isysh, nosys + 1, &
+                                   notot - nosys, grdseg(1, igrid), 3, conc, surfac, &
+                                   a(ip_arh:), conc(1, 1, igrid))
+                end if
                 do isys = 1, notot
                     ivar = iv_cnc + isys - 1
                     vgrset(ivar, igrid) = 1
@@ -490,8 +446,7 @@ contains
             enddo
         endif
 
-        !     The processes fractional step
-
+        ! The processes fractional step
         flux = 0.0
         if (ibflag > 0) flxdmp = 0
 
@@ -502,18 +457,16 @@ contains
         !$OMP DO  PRIVATE(run,idtpro,k,nfluxp,ipp_idt,ipp_delt)  SCHEDULE(DYNAMIC)
         do iproc = 1, nproc
 
-            !        NOT bloom
-
+            ! NOT bloom
             if (iproc /= ipbloo) then
 
-                !           Check fractional step
-
+                ! Check fractional step
                 if (mod(istep - 1, prondt(iproc)) == 0) then
                     run = .false.                             ! to get the loop running
-                    do while (.not. run)                    ! wait untill all input is resolved
-                        run = .true.                           ! we are optimistic
-                        do k = 1, nrref                        ! maximum number of references / proc
-                            if (proref(k, iproc) == 0) exit        ! no references left
+                    do while (.not. run)                      ! wait untill all input is resolved
+                        run = .true.                          ! we are optimistic
+                        do k = 1, nrref                       ! maximum number of references / proc
+                            if (proref(k, iproc) == 0) exit   ! no references left
 
                             !
                             ! Flush the array done:
@@ -525,10 +478,10 @@ contains
                             !$omp flush(done)
 
                             if (done(proref(k, iproc)) == 0) then  ! an unresolved one found
-                                run = .false.                          ! so no run yet
+                                run = .false.                      ! so no run yet
                                 exit
-                            endif                                     ! everything is resolved
-                        enddo                                        ! for this processs
+                            endif                                  ! everything is resolved
+                        enddo                                      ! for this processs
                     enddo
 
                     ! set idt and delt for this process in the default array
@@ -538,7 +491,7 @@ contains
                     DEFAUL(ipp_idt) = real(IDTPRO)
                     DEFAUL(ipp_delt) = real(IDTPRO) / real(ITFACT)
 
-                    call onepro (iproc, prvpnt(iproc), idt, itfact, progrd, &
+                    call onepro(iproc, prvpnt(iproc), idt, itfact, progrd, &
                             grdnos, prvnio, prvtyp, prvvar, vararr, &
                             varidx, arrknd, arrpoi, arrdm1, arrdm2, &
                             vgrset, nogrid, vartda, vardag, noseg, &
@@ -562,23 +515,20 @@ contains
         timon = timon_old
         if (timon) call timstop (ithand2)
 
-        !           Now update the derivatives and the dumps of the fluxes from
-        !              all processes together outside of the parallel region
-
-        call twopro (nproc, nogrid, noflux, novar, noseg, &
+        ! Now update the derivatives and the dumps of the fluxes from
+        ! all processes together outside of the parallel region
+        call twopro(nproc, nogrid, noflux, novar, noseg, &
                 notot, progrd, grdnos, iflux, vgrset, &
                 grdseg, volume, deriv, stochi, flux, &
                 prondt, ibflag, isdmp, flxdmp, &
                 ipbloo, istep)
 
-        !     Store fluxes and elaborate mass balances set fractional step
-        !     Vraag , doen we nu altijd fractional step? of moeten we als we geen
-        !     processen hebben met een grotere tijdstap de integratie samen met het
-        !     transport doen.
-
+        ! Store fluxes and elaborate mass balances set fractional step
+        ! Vraag , doen we nu altijd fractional step? of moeten we als we geen
+        ! processen hebben met een grotere tijdstap de integratie samen met het
+        ! transport doen.
         if (noflux > 0 .and. maxgrid > 1) then
             do igrd = 2, nogrid
-
                 iswcum = 1
                 noseg2 = grdnos(igrd)
                 call resample(noseg, noseg2, notot, notot, notot, &
@@ -588,34 +538,28 @@ contains
             enddo
 
             !        Zero derivs higher grids
-
             deriv(:, :, 2:nogrid) = 0.0
         endif
 
         !     Set fractional step
-
         if (noflux > 0 .and. ifracs == 1) then
 
             ! no fluxes at first step of fractional step
-
             if (istep == 1) then
                 deriv(:, :, 1) = 0.0
                 if (ibflag > 0) flxdmp = 0.0
             else
 
-                !           Scale fluxes and update "processes" accumulation arrays
-
+                ! Scale fluxes and update "processes" accumulation arrays
                 call scale_processes_derivs_and_update_balances(deriv, notot, noseg, itfact, amass2, &
                      idt, iaflag, dmps, intopt, isdmp)
 
-                !           Integration (derivs are zeroed)
-
+                ! Integration (derivs are zeroed)
                 call dlwqp0 (conc, amass, deriv, volume, idt, &
                         nosys, notot, noseg, 0, 0, &
                         surfac)
 
-                !           Integrate the fluxes at dump segments
-
+                ! Integrate the fluxes at dump segments
                 if (ibflag > 0) then
                     call integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, itfact, flxdmp, &
                             flxint, isdmp, ipdmp, ntdmpq)
@@ -624,16 +568,14 @@ contains
             endif
         endif
 
-        !     Calculate new dispersions
-
+        ! Calculate new dispersions
         if (ndspn  > 0) then
             call provel (dispnw, ndspn, idpnew, disper, nodisp, &
                     idpnt, dspx, ndspx, dsto, nosys, &
                     noq, dspndt, istep)
         endif
 
-        !     Calculate new velocities
-
+        ! Calculate new velocities
         if (nveln  > 0) then
             call provel (velonw, nveln, ivpnew, velo, novelo, &
                     ivpnt, velx, nvelx, vsto, nosys, &
@@ -642,19 +584,19 @@ contains
 
         9999 if (timon) call timstop (ithandl)
         return
-    end
+    end subroutine proces
 
-    SUBROUTINE ONEPRO (IPROC, K, IDT, ITFACT, PROGRD, &
-            GRDNOS, PRVNIO, PRVTYP, PRVVAR, VARARR, &
-            VARIDX, ARRKND, ARRPOI, ARRDM1, ARRDM2, &
-            VGRSET, NOGRID, VARTDA, VARDAG, NOSEG, &
-            GRDSEG, A, VARAGG, IPMSA, INCREM, &
-            NOFLUX, IFLUX, PROMNR, FLUX, IEXPNT, &
-            IKNMRK, NOQ1, NOQ2, NOQ3, NOQ4, &
-            NPROC, NOTOT, DERIV, STOCHI, VOLUME, &
-            PRONDT, IBFLAG, ISDMP, FLXDMP, NOVAR, &
-            VARTAG, IIKNMR, PRONAM, &
-            DSPNDT, VELNDT, dll_opb)
+    subroutine onepro(iproc, k, idt, itfact, progrd, &
+            grdnos, prvnio, prvtyp, prvvar, vararr, &
+            varidx, arrknd, arrpoi, arrdm1, arrdm2, &
+            vgrset, nogrid, vartda, vardag, noseg, &
+            grdseg, a, varagg, ipmsa, increm, &
+            noflux, iflux, promnr, flux, iexpnt, &
+            iknmrk, noq1, noq2, noq3, noq4, &
+            nproc, notot, deriv, stochi, volume, &
+            prondt, ibflag, isdmp, flxdmp, novar, &
+            vartag, iiknmr, pronam, &
+            dspndt, velndt, dll_opb)
         !
         use timers
         use process_registration
@@ -662,44 +604,55 @@ contains
         use m_array_manipulation, only : set_array_parameters
         use m_dhgvar
         !
-        INTEGER(kind = int_wp) :: IPROC, K, IDT, ITFACT, NOGRID, &
-                NOSEG, NOFLUX, NOQ1, NOQ2, NOQ3, &
-                NOQ4, NPROC, NOTOT, IBFLAG, NOVAR, &
-                IIKNMR
-        INTEGER(kind = int_wp) :: PROGRD(*), GRDNOS(*), &
-                PRVNIO(*), PRVTYP(*), &
-                PRVVAR(*), VARARR(*), &
-                VARIDX(*), ARRKND(*), &
-                ARRPOI(*), ARRDM1(*), &
-                ARRDM2(*), VGRSET(NOVAR, *), &
-                VARTDA(*), VARDAG(*), &
-                GRDSEG(NOSEG, *), VARAGG(*), &
-                IPMSA (:), INCREM(:), &
-                IFLUX (*), PROMNR(*), &
-                IEXPNT(:), IKNMRK(:), &
-                PRONDT(*), ISDMP (*), &
-                VARTAG(*), &
-                DSPNDT(*), VELNDT(*)
-        REAL(kind = real_wp) :: A(:), FLUX(*), &
-                DERIV(*), STOCHI(*), &
-                VOLUME(*), FLXDMP(*)
-        character(len=10)        PRONAM(*)
+        integer(kind = int_wp) :: iproc
+        integer(kind = int_wp) :: k
+        integer(kind = int_wp) :: idt
+        integer(kind = int_wp) :: itfact
+        integer(kind = int_wp) :: nogrid
+        integer(kind = int_wp) :: noseg
+        integer(kind = int_wp) :: noflux
+        integer(kind = int_wp) :: noq1
+        integer(kind = int_wp) :: noq2
+        integer(kind = int_wp) :: noq3
+        integer(kind = int_wp) :: noq4
+        integer(kind = int_wp) :: nproc
+        integer(kind = int_wp) :: notot
+        integer(kind = int_wp) :: ibflag
+        integer(kind = int_wp) :: novar
+        integer(kind = int_wp) :: iiknmr
+        
+        integer(kind = int_wp) :: progrd(*), grdnos(*), &
+                prvnio(*), prvtyp(*), &
+                prvvar(*), vararr(*), &
+                varidx(*), arrknd(*), &
+                arrpoi(*), arrdm1(*), &
+                arrdm2(*), vgrset(novar, *), &
+                vartda(*), vardag(*), &
+                grdseg(noseg, *), varagg(*), &
+                ipmsa (:), increm(:), &
+                iflux (*), promnr(*), &
+                iexpnt(:), iknmrk(:), &
+                prondt(*), isdmp (*), &
+                vartag(*), &
+                dspndt(*), velndt(*)
+        real(kind = real_wp) :: a(:), flux(*), &
+                deriv(*), stochi(*), &
+                volume(*), flxdmp(*)
+        character(len=10)        pronam(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
-        !
-        !     Local
-        !
-        INTEGER(kind = int_wp) :: IDTPRO, ITYP, IX_HLP, IA_HLP, IV_HLP, IK_HLP, IP_HLP, ID1HLP, ID2HLP
-        integer(kind = int_wp) :: NOSEG2, IVARIO, IGRID, IGR3, NOSEG3, ISYSI, NOTOTI
-        integer(kind = int_wp) :: IVAR, IARR, IV_IDX, IARKND, IP_ARR, IDIM1, IDIM2
-        integer(kind = int_wp) :: IV_AG, IA_AG, IX_AG, IK_AG, IP_AG, ID1_AG, ID2_AG
-        integer(kind = int_wp) :: IP_ARI, NOTOTO, ISYSO, IP_ARO, IDATYP, IV_DA, IA_DA, IK_DA
-        integer(kind = int_wp) :: IX_DA, IP_DA, ID1_DA, ID2_DA, NOTOTW, ISYSW, IP_ARW
-        integer(kind = int_wp) :: NOTOTH, ISYSH, IP_ARH, ISWCUM, IAGTYP, IPFLUX, IPKNMR, IGR2
+
+        ! Local
+        integer(kind = int_wp) :: idtpro, ityp, ix_hlp, ia_hlp, iv_hlp, ik_hlp, ip_hlp, id1hlp, id2hlp
+        integer(kind = int_wp) :: noseg2, ivario, igrid, igr3, noseg3, isysi, nototi
+        integer(kind = int_wp) :: ivar, iarr, iv_idx, iarknd, ip_arr, idim1, idim2
+        integer(kind = int_wp) :: iv_ag, ia_ag, ix_ag, ik_ag, ip_ag, id1_ag, id2_ag
+        integer(kind = int_wp) :: ip_ari, nototo, isyso, ip_aro, idatyp, iv_da, ia_da, ik_da
+        integer(kind = int_wp) :: ix_da, ip_da, id1_da, id2_da, nototw, isysw, ip_arw
+        integer(kind = int_wp) :: nototh, isysh, ip_arh, iswcum, iagtyp, ipflux, ipknmr, igr2
 
 
-        !
-        !     get the general local work array, first index of LOCAL array
-        !
+
+        ! get the general local work array, first index of LOCAL array
         IX_HLP = 1
         IA_HLP = 33
         CALL DHGVAR(IA_HLP, IX_HLP, IV_HLP)
@@ -707,15 +660,12 @@ contains
         IP_HLP = ARRPOI(IA_HLP)
         ID1HLP = ARRDM1(IA_HLP)
         ID2HLP = ARRDM2(IA_HLP)
-        !
-        !     Which grid
-        !
+
+        ! Which grid
         IGRID = PROGRD(IPROC)
         NOSEG2 = GRDNOS(IGRID)
-        !
-        !     Set the variable for this grid
-        !
 
+        ! Set the variable for this grid
         DO IVARIO = 1, PRVNIO(IPROC)
             ITYP = PRVTYP(K + IVARIO - 1)
             IVAR = PRVVAR(K + IVARIO - 1)
@@ -726,24 +676,20 @@ contains
             IDIM1 = ARRDM1(IARR)
             IDIM2 = ARRDM2(IARR)
             IF (ITYP == 1) THEN
-                !
-                !           Only for space varying array's
-                !
+
+                ! Only for space varying array's
                 IF (IARKND >= 2) THEN
-                    !
-                    !              Only if variable isn't actual set for this grid
-                    !
+
+                    ! Only if variable isn't actual set for this grid
                     IF (VGRSET(IVAR, IGRID) == 0) THEN
-                        !
-                        !                 Set variable for base grid
-                        !
+
+                        ! Set variable for base grid
                         IF (VGRSET(IVAR, 1) == 0) THEN
                             DO IGR3 = 2, NOGRID
                                 IF (VGRSET(IVAR, IGR3) == 1) THEN
                                     NOSEG3 = GRDNOS(IGR3)
-                                    !
-                                    !                          Determine characteristics of variable
-                                    !
+
+                                    ! Determine characteristics of variable
                                     CALL set_array_parameters(IVAR, IARR, &
                                             IARKND, IV_IDX, &
                                             IDIM1, IDIM2, &
@@ -756,19 +702,16 @@ contains
                                             IP_ARR, 1, &
                                             ISYSO, NOTOTO, &
                                             IP_ARO)
-                                    !
-                                    !                          Determine characteristics of WEIGHT variable
-                                    !                          ( Don't mind if this one is actual ? )
-                                    !
+                                    ! Determine characteristics of WEIGHT variable
+                                    ! (Don't mind if this one is actual ?)
                                     IDATYP = VARTDA(IVAR)
                                     IF (IDATYP == 2) THEN
                                         IV_DA = VARDAG(IVAR)
                                         IA_DA = VARARR(IV_DA)
                                         IK_DA = ARRKND(IA_DA)
                                         IF (IK_DA == 1) THEN
-                                            !
-                                            !                                Not variable in space use help var
-                                            !
+
+                                            ! Not variable in space use help var
                                             IDATYP = 3
                                             IV_DA = IV_HLP
                                             IA_DA = VARARR(IV_DA)
@@ -811,19 +754,15 @@ contains
                                                 ISYSH, NOTOTH, &
                                                 IP_ARH)
                                     ELSE
-                                        !
-                                        !                             Weight and help array's dummy's
-                                        !                             so set to the variable itself
-                                        !
+                                        ! Weight and help arrays dummies
+                                        ! so set to the variable itself
                                         ISYSW = ISYSO
                                         ISYSH = ISYSI
                                         NOTOTW = NOTOTO
                                         NOTOTH = NOTOTI
                                         IP_ARW = IP_ARO
                                         IP_ARH = IP_ARI
-                                        !
                                     ENDIF
-                                    !
                                     ISWCUM = 0
                                     CALL resample_v2(NOSEG, NOSEG3, &
                                             NOTOTI, NOTOTW, &
@@ -838,13 +777,11 @@ contains
                                 ENDIF
                             ENDDO
                         ENDIF
-                        !
-                        !                 Set the variable for this grid
-                        !
+
+                        ! Set the variable for this grid
                         IF (IGRID /= 1) THEN
-                            !
-                            !                    Determine characteristics of variable
-                            !
+
+                            ! Determine characteristics of variable
                             CALL set_array_parameters(IVAR, IARR, &
                                     IARKND, IV_IDX, &
                                     IDIM1, IDIM2, &
@@ -857,9 +794,8 @@ contains
                                     IP_ARR, IGRID, &
                                     ISYSO, NOTOTO, &
                                     IP_ARO)
-                            !
-                            !                    Determine characteristics of WEIGHT variable
-                            !
+
+                            ! Determine characteristics of WEIGHT variable
                             IAGTYP = VARTAG(IVAR)
                             IF (IAGTYP == 2 .OR. IAGTYP == 3) THEN
                                 IV_AG = VARAGG(IVAR)
@@ -909,9 +845,8 @@ contains
                     ENDIF
                 ENDIF
             ENDIF
-            !
-            !        Zet pointer structuur voor procesmodule, dit hoeft eigenlijk maar 1 keer
-            !
+
+            ! Zet pointer structuur voor procesmodule, dit hoeft eigenlijk maar 1 keer
             IF (IARKND == 1) THEN
                 IPMSA (K + IVARIO - 1) = IP_ARR + IV_IDX - 1
                 INCREM(K + IVARIO - 1) = 0
@@ -926,27 +861,24 @@ contains
             ENDIF
             !
         ENDDO
-        !
-        !     compute fluxes
-        !
+
+        ! compute fluxes
         IPFLUX = (IGRID - 1) * NOFLUX * NOSEG + IFLUX(IPROC)
         IPKNMR = (IGRID - 1) * ARRDM1(IIKNMR) * ARRDM2(IIKNMR) + 1
         CALL PROCAL (A, PROMNR(IPROC), FLUX(IPFLUX:(noflux*noseg*nogrid)), IPMSA(K:), INCREM(K:), &
                 NOSEG2, NOFLUX, IEXPNT, IKNMRK(IPKNMR:), NOQ1, &
                 NOQ2, NOQ3, NOQ4, PRONAM(IPROC), &
                 iproc, dll_opb)
-        !
-        !     the used grid is now the only actual value for the output
-        !
+
+        ! the used grid is now the only actual value for the output
         DO IVARIO = 1, PRVNIO(IPROC)
             ITYP = PRVTYP(K + IVARIO - 1)
             IF (ITYP == 3 .OR. ITYP == 4 .OR. ITYP == 5) THEN
                 IVAR = PRVVAR(K + IVARIO - 1)
                 IARR = VARARR(IVAR)
                 IARKND = ARRKND(IARR)
-                !
-                !           Only for space varying array's
-                !
+
+                ! Only for space varying array's
                 IF (IARKND >= 2) THEN
                     DO IGR2 = 1, NOGRID
                         VGRSET(IVAR, IGR2) = 0
@@ -974,9 +906,8 @@ contains
             ENDIF
 
         ENDDO
-        !
-        !     Scale fluxes with fractional step
-        !
+
+        ! Scale fluxes with fractional step
         !
         !     Dis-aggregate fluxes to base grid
         !     Dit is niet volgens ontwerp, flux zou op stof moeten werken
@@ -1008,9 +939,9 @@ contains
         !
 
         RETURN
-    END
+    end subroutine onepro
 
-    subroutine twopro (nproc, nogrid, noflux, novar, noseg, &
+    subroutine twopro(nproc, nogrid, noflux, novar, noseg, &
             notot, progrd, grdnos, iflux, vgrset, &
             grdseg, volume, deriv, stochi, flux, &
             prondt, ibflag, isdmp, flxdmp, &
@@ -1020,8 +951,7 @@ contains
 
         !     Created   : Dec. 2009 by Leo Postma
 
-        !     Function  : This routine has been split off from the 'onepro' routine and in that sense
-        !                 Jan van Beek is the author of this code since somewhere 1992.
+        !     Function  : This routine has been split off from the 'onepro' routine.
         !                 Onepro is used in a parallel setting in such a way that previous processes
         !                 always have completed the generation of input for the following processes.
         !                 Conflicts nevertheless arose because more parallel instances of 'onepro'
@@ -1040,38 +970,33 @@ contains
 
         implicit none
 
-        !     Arguments           :
+        integer(kind = int_wp), intent(in)    :: nproc                         !< Total number of processes
+        integer(kind = int_wp), intent(in)    :: nogrid                        !< Total number of grids
+        integer(kind = int_wp), intent(in)    :: noflux                        !< Total number of fluxes
+        integer(kind = int_wp), intent(in)    :: novar                         !< Total number of variables
+        integer(kind = int_wp), intent(in)    :: noseg                         !< Total number of computational volumes
+        integer(kind = int_wp), intent(in)    :: notot                         !< Total number of substances
+        integer(kind = int_wp), intent(in)    :: progrd(nproc)                 !< The grid number of each process
+        integer(kind = int_wp), intent(in)    :: grdnos(nogrid)                !< The nummber of volumes in each grid
+        integer(kind = int_wp), intent(in)    :: iflux (nproc)                 !< Offset in the flux array per process
+        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid)         !< Indicates whether a variable for a grid is set
+        integer(kind = int_wp), intent(in)    :: grdseg(noseg, nogrid)         !< Probably the aggregation pointer of the grids
+        real(kind = real_wp),   intent(inout) :: volume(noseg, nogrid)         !< Computational volumes
+        real(kind = real_wp),   intent(inout) :: deriv (notot, noseg, nogrid)  !< Array with derivatives
+        real(kind = real_wp),   intent(in)    :: stochi(notot, noflux)         !< Stoichiometric factors per flux
+        real(kind = real_wp),   intent(in)    :: flux  (noflux, noseg, nogrid) !< Process fluxes
+        integer(kind = int_wp), intent(in)    :: prondt(nproc)                 !< Time step size of the process
+        integer(kind = int_wp), intent(in)    :: ibflag                        !< If > 0 then balances are required
+        integer(kind = int_wp), intent(in)    :: isdmp (noseg)                 !< Segment to dumped segment pointer
+        real(kind = real_wp),   intent(inout) :: flxdmp(noflux, *)             !< Dumped fluxes
+        integer(kind = int_wp), intent(in)    :: ipbloo                        !< The BLOOM  process if any
+        integer(kind = int_wp), intent(in)    :: istep                         !< Time step nr.
 
-        !     Kind        Function         Name   Dimensions                 Description
-
-        integer(kind = int_wp), intent(in) :: nproc                           ! Total number of processes
-        integer(kind = int_wp), intent(in) :: nogrid                          ! Total number of grids
-        integer(kind = int_wp), intent(in) :: noflux                          ! Total number of fluxes
-        integer(kind = int_wp), intent(in) :: novar                           ! Total number of variables
-        integer(kind = int_wp), intent(in) :: noseg                           ! Total number of computational volumes
-        integer(kind = int_wp), intent(in) :: notot                           ! Total number of substances
-        integer(kind = int_wp), intent(in) :: progrd(nproc)                  ! The grid number of each process
-        integer(kind = int_wp), intent(in) :: grdnos(nogrid)                  ! The nummber of volumes in each grid
-        integer(kind = int_wp), intent(in) :: iflux (nproc)                  ! Offset in the flux array per process
-        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid)  ! Indicates whether a variable for a grid is set
-        integer(kind = int_wp), intent(in) :: grdseg(noseg, nogrid)  ! Probably the aggregation pointer of the grids
-        real(kind = real_wp), intent(inout) :: volume(noseg, nogrid)  ! Computational volumes
-        real(kind = real_wp), intent(inout) :: deriv (notot, noseg, nogrid)  ! Array with derivatives
-        real(kind = real_wp), intent(in) :: stochi(notot, noflux)          ! Stoichiometric factors per flux
-        real(kind = real_wp), intent(in) :: flux  (noflux, noseg, nogrid)  ! Process fluxes
-        integer(kind = int_wp), intent(in) :: prondt(nproc)                  ! Time step size of the process
-        integer(kind = int_wp), intent(in) :: ibflag                          ! If > 0 then balances are required
-        integer(kind = int_wp), intent(in) :: isdmp (noseg)                  ! Segment to dumped segment pointer
-        real(kind = real_wp), intent(inout) :: flxdmp(noflux, *)          ! Dumped fluxes
-        integer(kind = int_wp), intent(in) :: ipbloo                          ! The BLOOM  process if any
-        integer(kind = int_wp), intent(in) :: istep                           ! Time step nr.
-
-        !     Local
-
-        integer(kind = int_wp) :: iproc                           ! Loop counter over processes
-        integer(kind = int_wp) :: igrid                           ! Grid nr of this process
-        integer(kind = int_wp) :: noseg2                          ! Number of computational volumes in this grid
-        integer(kind = int_wp) :: nfluxp                          ! Number of fluxes in this process
+        ! Local variables
+        integer(kind = int_wp) :: iproc              !< Index (loop counter) over processes
+        integer(kind = int_wp) :: igrid              !< Grid nr of this process
+        integer(kind = int_wp) :: noseg2             !< Number of computational volumes in this grid
+        integer(kind = int_wp) :: nfluxp             !< Number of fluxes in this process
         integer(kind = int_wp), save :: ithandl = 0
         if (timon) call timstrt ("twopro", ithandl)
 
@@ -1079,8 +1004,7 @@ contains
             if (iproc == ipbloo) cycle
             if (mod(istep - 1, prondt(iproc)) /= 0) cycle
 
-            !        See if this process produces fluxes
-
+            ! See if this process produces fluxes
             if (iproc /= nproc) then
                 nfluxp = iflux(iproc + 1) - iflux(iproc)
             else
@@ -1088,8 +1012,7 @@ contains
             endif
             if (nfluxp == 0) cycle
 
-            !        If necessary set volume for this grid.
-
+            ! If necessary set volume for this grid.
             igrid = progrd(iproc)
             noseg2 = grdnos(igrid)
             if (vgrset(1, igrid) /= 1) then  !
@@ -1100,15 +1023,13 @@ contains
                 vgrset(1, igrid) = 1              !  Volume is always variable 1
             endif
 
-            !        Construct derivatives from these fluxes on this grid
-
-            call prodr2 (deriv(1, 1, igrid), notot, noflux, stochi, iflux (iproc), &
+            ! Construct derivatives from these fluxes on this grid
+            call prodr2(deriv(1, 1, igrid), notot, noflux, stochi, iflux (iproc), &
                     nfluxp, flux(1, 1, igrid), noseg2, volume(1, igrid), prondt(iproc))
 
-            !        For the use in balances, store fluxes in 'flxdmp' using aggregation pointer 'isdmp'
-
+            ! For the use in balances, store fluxes in 'flxdmp' using aggregation pointer 'isdmp'
             if (ibflag > 0) then
-                call profld (noflux, iflux (iproc), nfluxp, igrid, noseg2, &
+                call profld(noflux, iflux (iproc), nfluxp, igrid, noseg2, &
                         noseg, prondt(iproc), isdmp, grdseg, flux(1, 1, igrid), &
                         volume, flxdmp)
             endif
@@ -1117,6 +1038,6 @@ contains
 
         if (timon) call timstop (ithandl)
         return
-    end
+    end subroutine twopro
 
 end module m_proces
