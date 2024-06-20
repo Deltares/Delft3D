@@ -1706,6 +1706,7 @@ end subroutine write_station_netcdf_variable
 
 !> "Old" way of writing the structure static vars at the first time of history output.
 !! To be removed as soon as it is replaced by a properly implemented unc_put_his_structure_static_vars_polyline_midpoints
+!! See issue: UNST-8094
 subroutine write_structure_static_variables()
 
 if (ngenstru > 0) then
@@ -1820,14 +1821,12 @@ if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
 end if
 
 if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
-   if (it_his == 1) then
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
-      call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = [ 1 ], count = [ network%sts%numuniweirs ]))
-      call dealloc(geomXUniweir)
-      call dealloc(geomYUniweir)
-      call dealloc(nodeCountUniweir)
-   end if
+   call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordx, geomXUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_coordy, geomYUniweir,     start = [ 1 ], count = [ nNodesUniweir ]))
+   call check_netcdf_error( nf90_put_var(ihisfile, id_uniweirgeom_node_count,  nodeCountUniweir, start = [ 1 ], count = [ network%sts%numuniweirs ]))
+   call dealloc(geomXUniweir)
+   call dealloc(geomYUniweir)
+   call dealloc(nodeCountUniweir)
 end if
 
 if (jahislongculv > 0 .and. nlongculverts > 0) then
