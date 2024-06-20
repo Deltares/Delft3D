@@ -164,6 +164,7 @@ interface allocSize
    module procedure allocSizeDouble
 end interface
 
+!> deallocate an allocatable variable if it is allocated, otherwise do nothing.
 interface dealloc
    module procedure deallocate_double_array
    module procedure deallocate_integer_array
