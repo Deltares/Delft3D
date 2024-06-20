@@ -4,7 +4,8 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
                  & npar     ,par       ,numintpar ,numrealpar, &
                  & numstrpar,dllfunc  ,dllhandle ,intpar    , &
                  & realpar  ,strpar   ,iflufflyr ,mflufftot , &
-                 & fracf    ,maxslope ,wetslope  , & ! output:
+                 & fracf    ,maxslope ,wetslope  , &
+! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
 !----- GPL ---------------------------------------------------------------------
