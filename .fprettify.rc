@@ -1,4 +1,4 @@
-indent = 3
+indent = 4
 line-length = 0 # fprettify will not format lines that exceed the limit, so do not enforce it here
 whitespace = 4
 whitespace-comma =
