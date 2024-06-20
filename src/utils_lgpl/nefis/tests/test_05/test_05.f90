@@ -26,10 +26,10 @@
 !-------------------------------------------------------------------------------
 !
 !
-program test5
-   integer start, stop, incr
-   parameter(start=1, stop=2, incr=3)
-   integer clsdat,&
+PROGRAM test5
+   INTEGER start, stop, incr
+   PARAMETER (start=1, stop=2, incr=3)
+   INTEGER clsdat,&
    &clsdef,&
    &credat,&
    &defcel,&
@@ -39,155 +39,155 @@ program test5
    &flsdef,&
    &getnfv,&
    &getelt
-   integer neferr,&
+   INTEGER neferr,&
    &opndat,&
    &opndef,&
    &putelt
-   integer error,&
+   INTEGER error,&
    &idum,&
    &i, j,&
    &elmdms(5),&
-   &UINDEX(3, 1),&
+   &UINDEX(3,1),&
    &fds
-   real buffer(748)
-   character names(3) * 14, coding * 1
-   character ERRSTR * 1024
-   character * 255 version
+   REAL buffer(748)
+   CHARACTER names(3)*14, coding*1
+   CHARACTER ERRSTR*1024
+   CHARACTER*255  version
 !
    error = getnfv(version)
-   write (*, *)
-   write (*, *) trim(version(5:))
-   write (*, *)
+   write(*,*)
+   write(*,*) trim(version(5:))
+   write(*,*)
 
-   coding = ' '
-   error = Opndef(fds, 'nefis_ex.def', coding)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   coding=' '
+   error= Opndef( fds, 'nefis_ex.def', coding)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Opndat(fds, 'nefis_ex.dat', coding)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Opndat( fds, 'nefis_ex.dat', coding)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Defelm(fds, 'ELEM_R_4_DIM_1', 'REAL', 4,&
-   &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
+   error= Defelm( fds, 'ELEM_R_4_DIM_1', 'REAL', 4,&
+   &'GROOTHEID 2', 'eenheid 2','Beschrijving 2',&
    &1, 3)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   elmdms(1) = 5
-   elmdms(2) = 5
-   error = Defelm(fds, 'ELEM_R_4_DIM_2', 'REAL', 4,&
-   &'GROOTHEID 3', 'eenheid 3', 'Beschrijving 3',&
+   elmdms(1)= 5
+   elmdms(2)= 5
+   error= Defelm( fds, 'ELEM_R_4_DIM_2', 'REAL', 4,&
+   &'GROOTHEID 3', 'eenheid 3','Beschrijving 3',&
    &2, elmdms)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   elmdms(1) = 2
-   elmdms(2) = 3
-   elmdms(3) = 4
-   elmdms(4) = 5
-   elmdms(5) = 6
-   error = Defelm(fds, 'ELEM_R_4_DIM_5', 'REAL', 4,&
-   &'GROOTHEID 4', 'eenheid 4', 'Beschrijving 4',&
+   elmdms(1)= 2
+   elmdms(2)= 3
+   elmdms(3)= 4
+   elmdms(4)= 5
+   elmdms(5)= 6
+   error= Defelm( fds, 'ELEM_R_4_DIM_5', 'REAL', 4,&
+   &'GROOTHEID 4', 'eenheid 4','Beschrijving 4',&
    &5, elmdms)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   names(1) = 'ELEM_R_4_DIM_1'
-   names(2) = 'ELEM_R_4_DIM_2'
-   names(3) = 'ELEM_R_4_DIM_5'
-   error = Defcel(fds, 'CEL_TEST_2', 3, names)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   names(1)= 'ELEM_R_4_DIM_1'
+   names(2)= 'ELEM_R_4_DIM_2'
+   names(3)= 'ELEM_R_4_DIM_5'
+   error= Defcel( fds, 'CEL_TEST_2', 3, names)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Defgrp(fds, 'GRP_TEST_2A', 'CEL_TEST_2', 0, idum, idum)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Defgrp( fds, 'GRP_TEST_2A', 'CEL_TEST_2', 0, idum, idum)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Defgrp(fds, 'GRP_TEST_2B', 'CEL_TEST_2', 1, 100, 1)
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Defgrp( fds, 'GRP_TEST_2B', 'CEL_TEST_2', 1, 100, 1)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Credat(fds, 'DATAGRP_TEST_2A', 'GRP_TEST_2A')
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Credat( fds, 'DATAGRP_TEST_2A', 'GRP_TEST_2A')
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   error = Credat(fds, 'DATAGRP_TEST_2B', 'GRP_TEST_2B')
-   if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Credat( fds, 'DATAGRP_TEST_2B', 'GRP_TEST_2B')
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-   do 10 i = 1, 748
-      buffer(i) = i
-10    continue
+   DO 10 i= 1, 748
+      buffer(i)= i
+10 CONTINUE
 !
-      write (*, '(''schrijf DATAGRP_TEST_2A'')')
-      UINDEX(start, 1) = 1
-      UINDEX(stop, 1) = 1
-      UINDEX(incr, 1) = 1
-      error = Putelt(fds, 'DATAGRP_TEST_2A', '*',&
+   write(*,'(''schrijf DATAGRP_TEST_2A'')')
+   UINDEX(start ,1) = 1
+   UINDEX(stop  ,1) = 1
+   UINDEX(incr  ,1) = 1
+   error = Putelt( fds, 'DATAGRP_TEST_2A', '*',&
+   &UINDEX, 1, buffer)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+!
+   write(*,'(''schrijf DATAGRP_TEST_2B'')')
+   DO 30 i= 1, 100
+      UINDEX(start,1) = i
+      UINDEX(stop ,1) = i
+      UINDEX(incr ,1) = 1
+      DO 20 j= 1, 748
+         buffer(j)= REAL(i)* REAL(j)
+20    CONTINUE
+      error = Putelt( fds, 'DATAGRP_TEST_2B', '*',&
       &UINDEX, 1, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+30 CONTINUE
+   error = flsdat ( fds )
+   error = flsdef ( fds )
 !
-      write (*, '(''schrijf DATAGRP_TEST_2B'')')
-      do 30 i = 1, 100
-         UINDEX(start, 1) = i
-         UINDEX(stop, 1) = i
-         UINDEX(incr, 1) = 1
-         do 20 j = 1, 748
-            buffer(j) = real(i) * real(j)
-20          continue
-            error = Putelt(fds, 'DATAGRP_TEST_2B', '*',&
-            &UINDEX, 1, buffer)
-            if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-30          continue
-            error = flsdat(fds)
-            error = flsdef(fds)
+   write(*,'(''lees DATAGRP_TEST_2B'')')
+   DO 50 i= 100, 1, -1
+      UINDEX(start,1) = i
+      UINDEX(stop ,1) = i
+      error= Getelt( fds, 'DATAGRP_TEST_2B', '*',&
+      &UINDEX, 1, 748*4, buffer)
+      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      DO 40 j= 1, 748
+         IF (INT( buffer(j)/ REAL(i)-j).NE.0)&
+         &write(*,'(''error, i='',i3)') i
+40    CONTINUE
+50 CONTINUE
 !
-            write (*, '(''lees DATAGRP_TEST_2B'')')
-            do 50 i = 100, 1, -1
-               UINDEX(start, 1) = i
-               UINDEX(stop, 1) = i
-               error = Getelt(fds, 'DATAGRP_TEST_2B', '*',&
-               &UINDEX, 1, 748 * 4, buffer)
-               if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-               do 40 j = 1, 748
-                  if (int(buffer(j) / real(i) - j) /= 0)&
-                  &write (*, '(''error, i='',i3)') i
-40                continue
-50                continue
-!
-                  write (*, '(''lees DATAGRP_TEST_2A'')')
-                  UINDEX(start, 1) = 1
-                  UINDEX(stop, 1) = 1
-                  error = Getelt(fds, 'DATAGRP_TEST_2A', '*',&
-                  &UINDEX, 1, 748 * 4, buffer)
-                  if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-                  do 60 j = 1, 748
+   write(*,'(''lees DATAGRP_TEST_2A'')')
+   UINDEX(start,1) = 1
+   UINDEX(stop ,1) = 1
+   error= Getelt( fds, 'DATAGRP_TEST_2A', '*',&
+   &UINDEX, 1, 748*4, buffer)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+   DO 60 j= 1, 748
 !      PRINT *, buffer(j),j, INT(buffer(j)-j)
-                     if (int(buffer(j) - j) /= 0) print *, 'error, i= ', i
-60                   continue
+      IF (INT( buffer(j)-j).NE. 0) PRINT *,'error, i= ', i
+60 CONTINUE
 
-                     write (*, '(''lees DATAGRP_TEST_1A'')')
-                     do 70 i = 1000, 1, -1
-                        UINDEX(start, 1) = i
-                        UINDEX(stop, 1) = i
-                        error = Getelt(fds, 'DATAGRP_TEST_1A', '*',&
-                        &UINDEX, 1, 4, buffer(1))
-                        if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   write(*,'(''lees DATAGRP_TEST_1A'')')
+   DO 70 i= 1000, 1, -1
+      UINDEX(start,1) = i
+      UINDEX(stop ,1) = i
+      error= Getelt( fds, 'DATAGRP_TEST_1A', '*' ,&
+      &UINDEX, 1, 4, buffer(1))
+      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !     write(*,'(1x', buffer(1), i, int(buffer(1)-i),error
-                        if (int(buffer(1) - i) /= 0)&
-                        &write (*, '(''error, i= '',i3)') i
-70                      continue
+      IF (INT( buffer(1)-i).NE. 0)&
+      &write(*,'(''error, i= '',i3)') i
+70 CONTINUE
 !
-                        write (*, '(''lees DATAGRP_TEST_1B'')')
-                        do 80 i = 1, 1000
-                           UINDEX(start, 1) = i
-                           UINDEX(stop, 1) = i
-                           error = Getelt(fds, 'DATAGRP_TEST_1B', '*',&
-                           &UINDEX, 1, 4, buffer(1))
-                           if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-                           if (int(buffer(1) + 1 * i) /= 0)&
-                           &write (*, '(''error, i= '',i3)') i
-80                         continue
+   write(*,'(''lees DATAGRP_TEST_1B'')')
+   DO 80 i= 1, 1000
+      UINDEX(start,1) = i
+      UINDEX(stop ,1) = i
+      error= Getelt( fds, 'DATAGRP_TEST_1B', '*',&
+      &UINDEX, 1, 4, buffer(1))
+      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      IF (INT( buffer(1)+1*i).NE. 0)&
+      &write(*,'(''error, i= '',i3)') i
+80 CONTINUE
 !
-                           write (*, *)
-                           error = Clsdat(fds)
-                           if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   write(*,*)
+   error= Clsdat( fds)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-                           error = Clsdef(fds)
-                           if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+   error= Clsdef( fds)
+   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
 !
-                           ERROR = NEFERR(0, ERRSTR)
-                           write (*, '(a)') trim(errstr)
+   ERROR = NEFERR( 0, ERRSTR)
+   write(*,'(a)') trim(errstr)
 !
-                        end
+END

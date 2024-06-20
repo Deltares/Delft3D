@@ -35,18 +35,18 @@ program observ
    open (newunit=obsfil, file='observ.inp')
 
    do 10 i = 1, 10
-      write (obsfil, '(''location: '',i3)') i
+      write(obsfil,'(''location: '',i3)') i
       do 20 j = 1, 100
 !           velocities(1-3) and waterdepth(4) at time j, location i
-         write (obsfil, *)&
-         &1000 * i + 10 * j + 1,&
-         &1000 * i + 10 * j + 2,&
-         &1000 * i + 10 * j + 3,&
-         &1000 * i + 10 * j + 4
-20       continue
-10       continue
+         write(obsfil,*)&
+         &1000*i + 10 * j + 1,&
+         &1000*i + 10 * j + 2,&
+         &1000*i + 10 * j + 3,&
+         &1000*i + 10 * j + 4
+20    continue
+10 continue
 
-         close (obsfil)
+   close (obsfil)
 
-         stop
-      end
+   stop
+end

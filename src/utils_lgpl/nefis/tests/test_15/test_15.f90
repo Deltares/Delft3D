@@ -27,15 +27,15 @@
 !
 !
 program test15
-   integer ntimes, mmax, nmax, kmax, nsrc
-   parameter(ntimes=3,&
-   &mmax=9,&
-   &nmax=7,&
-   &kmax=5,&
-   &nsrc=6&
+   INTEGER ntimes, mmax, nmax, kmax, nsrc
+   parameter (ntimes = 3,&
+   &mmax = 9,&
+   &nmax = 7,&
+   &kmax = 5,&
+   &nsrc = 6&
    &)
 
-   integer * 4 fds
+   INTEGER*4 fds
    INTEGER&
    &Clsnef,&
    &Credat,&
@@ -46,31 +46,31 @@ program test15
    &Crenef,&
    &Putelt,&
    &Neferr
-   integer Getelt
-   integer error,&
+   INTEGER Getelt
+   INTEGER error,&
    &idum,&
    &i, m, n, k, nt,&
-   &UINDEX(3, 1),&
+   &UINDEX(3,1),&
    &usrord(5)
-   real rbuff3(mmax, nmax, kmax)
-   real rbuff2(mmax, nmax)
-   real rbuff1(mmax)
+   real    rbuff3(mmax, nmax, kmax)
+   real    rbuff2(mmax, nmax)
+   real    rbuff1(mmax)
    integer ibuff2(7, nsrc)
    integer ibuff1(nsrc)
 
-   character * 8 elmtps(8)
-   character * 16 elmnms(8), elmunt(8), elmqty(8)
-   integer elmsiz(8), elmndm(8), elmdms(3, 8)
-   character * 64 elmdes(8)
-   integer grpdms(5), grpord(5)
+   character*8  elmtps(8)
+   character*16 elmnms(8), elmunt(8), elmqty(8)
+   integer      elmsiz(8), elmndm(8), elmdms(3,8)
+   character*64 elmdes(8)
+   integer      grpdms(5), grpord(5)
 
-   character * 1024 errstr
-   character * 255 version
+   CHARACTER*1024 errstr
+   CHARACTER*255  version
 
    error = getnfv(version)
-   write (*, *)
-   write (*, *) trim(version(5:))
-   write (*, *)
+   write(*,*)
+   write(*,*) trim(version(5:))
+   write(*,*)
 !
 ! Test to check cells with different element types
 ! (cell according dwqtim on comm. file)
@@ -144,39 +144,39 @@ program test15
 !
 !     fill dimension of element
 !
-   elmndm(1) = 1
-   elmdms(1, 1) = 1
+   elmndm(1)   = 1
+   elmdms(1,1) = 1
 
-   elmndm(2) = 3
-   elmdms(1, 2) = mmax
-   elmdms(2, 2) = nmax
-   elmdms(3, 2) = kmax
+   elmndm(2)   = 3
+   elmdms(1,2) = mmax
+   elmdms(2,2) = nmax
+   elmdms(3,2) = kmax
 
-   elmndm(3) = 3
-   elmdms(1, 3) = mmax
-   elmdms(2, 3) = nmax
-   elmdms(3, 3) = kmax
+   elmndm(3)   = 3
+   elmdms(1,3) = mmax
+   elmdms(2,3) = nmax
+   elmdms(3,3) = kmax
 
-   elmndm(4) = 3
-   elmdms(1, 4) = mmax
-   elmdms(2, 4) = nmax
-   elmdms(3, 4) = kmax
+   elmndm(4)   = 3
+   elmdms(1,4) = mmax
+   elmdms(2,4) = nmax
+   elmdms(3,4) = kmax
 
-   elmndm(5) = 3
-   elmdms(1, 5) = mmax
-   elmdms(2, 5) = nmax
-   elmdms(3, 5) = kmax
+   elmndm(5)   = 3
+   elmdms(1,5) = mmax
+   elmdms(2,5) = nmax
+   elmdms(3,5) = kmax
 
-   elmndm(6) = 1
-   elmdms(1, 6) = nsrc
+   elmndm(6)   = 1
+   elmdms(1,6) = nsrc
 
-   elmndm(7) = 2
-   elmdms(1, 7) = 7
-   elmdms(2, 7) = nsrc
+   elmndm(7)   = 2
+   elmdms(1,7) = 7
+   elmdms(2,7) = nsrc
 
-   elmndm(8) = 2
-   elmdms(1, 8) = mmax
-   elmdms(2, 8) = nmax
+   elmndm(8)= 2
+   elmdms(1,8) = mmax
+   elmdms(2,8) = nmax
 !
 !     group dimensions
 !
@@ -206,175 +206,175 @@ program test15
 !------------------------------------------------------------------
 !     openen nefis files
 !
-   error = crenef(fds, 'data_c15.dat', 'data_c15.def', 'B', 'C')
+   error = crenef( fds, 'data_c15.dat', 'data_c15.def', 'B', 'C' )
 !
 !     define elements on definition file
 !
-   do i = 1, 8
-      error = Defelm(fds, elmnms(i), elmtps(i), elmsiz(i),&
+   do i=1,8
+      error= Defelm( fds, elmnms(i), elmtps(i), elmsiz(i),&
       &elmqty(i), elmunt(i), elmdes(i),&
-      &elmndm(i), elmdms(1, i))
-      if (error /= 0) goto 9999
-   end do
+      &elmndm(i), elmdms(1,i))
+      if (error .ne. 0) goto 9999
+   enddo
 !
-   error = Defcel(fds, 'cel_1', 7, elmnms(1))
-   if (error /= 0) goto 9999
+   error= Defcel( fds, 'cel_1', 7, elmnms(1))
+   if (error .ne. 0) goto 9999
 !
-   error = Defcel(fds, 'cel_2', 1, elmnms(8))
-   if (error /= 0) goto 9999
+   error= Defcel( fds, 'cel_2', 1, elmnms(8))
+   if (error .ne. 0) goto 9999
 !
-   error = Defgrp(fds, 'grp_1', 'cel_1', 1, grpdms, grpord)
-   if (error /= 0) goto 9999
+   error= Defgrp( fds, 'grp_1', 'cel_1', 1, grpdms, grpord)
+   if (error .ne. 0) goto 9999
 !
-   error = Defgrp(fds, 'grp_2', 'cel_2', 1, grpdms, grpord)
-   if (error /= 0) goto 9999
+   error= Defgrp( fds, 'grp_2', 'cel_2', 1, grpdms, grpord)
+   if (error .ne. 0) goto 9999
 !
-   error = Credat(fds, 'dat_grp_1', 'grp_1')
-   if (error /= 0) goto 9999
+   error= Credat( fds, 'dat_grp_1', 'grp_1')
+   if (error .ne. 0) goto 9999
 !
-   error = Credat(fds, 'dat_grp_2', 'grp_2')
-   if (error /= 0) goto 9999
+   error= Credat( fds, 'dat_grp_2', 'grp_2')
+   if (error .ne. 0) goto 9999
 
-   error = Clsnef(fds)
+   error = Clsnef( fds )
 !------------------------------------------------------------------
 !     write data
 !
-   UINDEX(3, 1) = 1
-   do nt = 1, ntimes
-      UINDEX(1, 1) = nt
-      UINDEX(2, 1) = nt
+   UINDEX (3,1) = 1
+   DO nt= 1, ntimes
+      UINDEX (1,1) = nt
+      UINDEX (2,1) = nt
 !
-      error = crenef(fds, 'data_c15.dat', 'data_c15.def', ' ', 'u')
-      if (error /= 0) goto 9999
+      error = crenef( fds, 'data_c15.dat', 'data_c15.def', ' ', 'u')
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(1)
+      write(*,*) elmnms(1)
 !      'TIMCUR'
-      ibuff1(1) = 10 * nt + 1.
-      error = Putelt(fds, 'dat_grp_1', elmnms(1),&
+      ibuff1(1) = 10*nt+1.
+      error= Putelt( fds, 'dat_grp_1', elmnms(1),&
       &UINDEX, usrord, ibuff1)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(1)
+      write(*,*) elmnms(1)
 !      'TIMCUR'
-      ibuff1(1) = 10 * nt + 2.
-      error = Putelt(fds, 'dat_grp_1', elmnms(1),&
+      ibuff1(1) = 10*nt+2.
+      error= Putelt( fds, 'dat_grp_1', elmnms(1),&
       &UINDEX, usrord, ibuff1)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(2)
+      write(*,*) elmnms(2)
 !     'RSAL'
       do m = 1, mmax
          do n = 1, nmax
             do k = 1, kmax
-               rbuff3(m, n, k) =&
-               &1000.*real(m) + 100.*real(n) + 10.*real(k) + real(nt)
-            end do
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_1', elmnms(2),&
+               rbuff3(m,n,k) =&
+               &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
+            enddo
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_1', elmnms(2),&
       &UINDEX, usrord, rbuff3)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(3)
+      write(*,*) elmnms(3)
 !     elmnms(3) =
       do m = 1, mmax
          do n = 1, nmax
             do k = 1, kmax
-               rbuff3(m, n, k) =&
-               &1000.*real(m) + 100.*real(n) + 10.*real(k) + real(nt)
-            end do
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_1', elmnms(3),&
+               rbuff3(m,n,k) =&
+               &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
+            enddo
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_1', elmnms(3),&
       &UINDEX, usrord, rbuff3)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(4)
+      write(*,*) elmnms(4)
 !     'DICUV'
       do m = 1, mmax
          do n = 1, nmax
             do k = 1, kmax
-               rbuff3(m, n, k) =&
-               &1000.*real(m) + 100.*real(n) + 10.*real(k) + real(nt)
-            end do
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_1', elmnms(4),&
+               rbuff3(m,n,k) =&
+               &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
+            enddo
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_1', elmnms(4),&
       &UINDEX, usrord, rbuff3)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(5)
+      write(*,*) elmnms(5)
 !     'DICWW'
       do m = 1, mmax
          do n = 1, nmax
             do k = 1, kmax
-               rbuff3(m, n, k) =&
-               &1000.*real(m) + 100.*real(n) + 10.*real(k) + real(nt)
-            end do
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_1', elmnms(5),&
+               rbuff3(m,n,k) =&
+               &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
+            enddo
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_1', elmnms(5),&
       &UINDEX, usrord, rbuff3)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(6)
+      write(*,*) elmnms(6)
       do m = 1, nsrc
-         rbuff1(m) = 10.*real(m) + real(nt)
-      end do
+         rbuff1(m) = 10.*real(m)+real(nt)
+      enddo
 !     'DISCUM'
-      error = Putelt(fds, 'dat_grp_1', elmnms(6),&
+      error= Putelt( fds, 'dat_grp_1', elmnms(6),&
       &UINDEX, usrord, rbuff1)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(7)
+      write(*,*) elmnms(7)
 !     'MNKSRC'
       do m = 1, 7
          do n = 1, nsrc
-            ibuff2(m, n) = 100 * m + 10 * n + nt
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_1', elmnms(7),&
+            ibuff2(m,n) = 100*m+10*n+nt
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_1', elmnms(7),&
       &UINDEX, usrord, ibuff2)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 
 !------------------------------------------------------------------
-      write (*, *) elmnms(8)
+      write(*,*) elmnms(8)
 !     'TAUMAX'
       do m = 1, mmax
          do n = 1, nmax
-            rbuff2(m, n) = 0.0
-            rbuff2(m, n) =&
-            &1000.*real(m) + 100.*real(n) + real(nt)
-         end do
-      end do
-      error = Putelt(fds, 'dat_grp_2', elmnms(8),&
+            rbuff2(m,n) = 0.0
+            rbuff2(m,n) =&
+            &1000.*real(m)+ 100.*real(n)+real(nt)
+         enddo
+      enddo
+      error= Putelt( fds, 'dat_grp_2', elmnms(8),&
       &UINDEX, usrord, rbuff2)
-      if (error /= 0) goto 9999
+      if (error .ne. 0) goto 9999
 !------------------------------------------------------------------
-      error = Clsnef(fds)
-   end do
+      error = Clsnef( fds )
+   enddo
 
 !====================================================================
 9999 continue
 !
-   error = Neferr(0, errstr)
-   write (*, '(a)') trim(errstr)
+   error = Neferr( 0, errstr)
+   write(*,'(a)') trim(errstr)
 
-   error = Clsnef(fds)
+   error = Clsnef( fds )
 !
-end
+END
 !====================================================================
 !     Convert clock time to seconds
 !
-subroutine clock(cpu)
+subroutine clock( cpu )
 
    integer ihr, imin, isec, i100th
    real cpu

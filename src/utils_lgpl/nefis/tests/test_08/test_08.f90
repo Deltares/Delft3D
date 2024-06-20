@@ -26,37 +26,37 @@
 !-------------------------------------------------------------------------------
 !
 !
-program TEST8
-   integer START, stop, INCR
+PROGRAM TEST8
+   INTEGER   START, STOP, INCR
 
-   character CODING * 1, ELMTYP * 16, ELMQTY * 16, ELMUNT * 16,&
-   &ELMDES * 64, ELMNMS(5) * 16, CELNAM * 16,&
-   &GRPNAM * 16, GRPDEF * 16
+   CHARACTER CODING*1, ELMTYP*16, ELMQTY*16, ELMUNT*16,&
+   &ELMDES*64, ELMNMS(5)*16, CELNAM*16,&
+   &GRPNAM*16, GRPDEF*16
 
-   integer NBYTSG, I, NELEMS, J, K
-   integer ERROR, ELMNDM, ELMDMS(5), GRPNDM, UINDEX(3, 1),&
+   INTEGER   NBYTSG, I, NELEMS, J, K
+   INTEGER   ERROR, ELMNDM, ELMDMS(5), GRPNDM, UINDEX(3,1),&
    &GRPDMS(142), GRPORD(5), IARRIN(142), IARROU(142)
 
-   real ARRAY(142, 65), ARROUT(142, 65)
-   character ERRSTR * 1024
+   REAL      ARRAY(142,65), ARROUT(142,65)
+   CHARACTER ERRSTR*1024
 
-   integer FDS
+   INTEGER   FDS
 
-   integer OPNDAT, OPNDEF, DEFELM, CLSDEF, CLSDAT, DEFCEL,&
+   INTEGER OPNDAT, OPNDEF, DEFELM, CLSDEF, CLSDAT, DEFCEL,&
    &DEFGRP, INQELM, INQCEL, INQGRP, FLSDAT, FLSDEF,&
    &CREDAT, PUTIAT, PUTSAT, PUTELT, GETELT, PUTRAT,&
    &INQFST, INQNXT, NEFERR, GETNFV
 
-   character * 255 version
+   CHARACTER*255  version
 
    error = getnfv(version)
-   write (*, *)
-   write (*, *) trim(version(5:))
-   write (*, *)
+   write(*,*)
+   write(*,*) trim(version(5:))
+   write(*,*)
 
    start = 1
-   stop = 2
-   incr = 3
+   stop  = 2
+   incr  = 3
    CODING = 'N'
    ELMNDM = 5
    NELEMS = 5
@@ -64,83 +64,83 @@ program TEST8
    NBYTSG = 0
    errstr = ' '
 
-   write (*, '(''TEST8: Open files'')')
-   ERROR = OPNDAT(FDS, 'data_c08.dat', CODING)
-   if (error /= 0) write (*, *) ' OPNDAT:', error
-   if (error /= 0) goto 9999
+   write(*,'(''TEST8: Open files'')')
+   ERROR = OPNDAT (FDS, 'data_c08.dat', CODING)
+   if (error .ne. 0) write (*,*) ' OPNDAT:', error
+   if (error .ne. 0) goto 9999
 
-   ERROR = OPNDEF(FDS, 'data_c08.def', CODING)
-   if (error /= 0) write (*, *) ' OPNDEF:', error
-   if (error /= 0) goto 9999
+   ERROR = OPNDEF (FDS, 'data_c08.def', CODING)
+   if (error .ne. 0) write (*,*) ' OPNDEF:', error
+   if (error .ne. 0) goto 9999
 
    ELMDMS(1) = 142
    ELMDMS(2) = 65
 
-   write (*, '(''TEST8: Define elements'')')
-   ERROR = DEFELM(FDS, 'Elmnam', 'ReaL', 4, 'Elmqty',&
+   write(*,'(''TEST8: Define elements'')')
+   ERROR = DEFELM (FDS, 'Elmnam', 'ReaL', 4, 'Elmqty',&
    &'Elmunt', 'Elmdes', 2, ELMDMS)
-   if (error /= 0) write (*, *) ' DEFELM: Elmnam'
-   if (error /= 0) goto 9999
+   if (error .ne. 0) write (*,*) ' DEFELM: Elmnam'
+   if (error .ne. 0) goto 9999
 
-   ERROR = DEFELM(FDS, 'ElmInt', 'IntEgeR', 4, 'Elmqty',&
+   ERROR = DEFELM (FDS, 'ElmInt', 'IntEgeR', 4, 'Elmqty',&
    &'Elmunt', 'Elmdes', 1, 142)
-   if (error /= 0) write (*, *) ' DEFELM: ElmInt'
-   if (error /= 0) goto 9999
+   if (error .ne. 0) write (*,*) ' DEFELM: ElmInt'
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Define cells'')')
+   write(*,'(''TEST8: Define cells'')')
    ELMNMS(1) = 'Elmnam'
    ELMNMS(2) = 'ElmInt'
-   ERROR = DEFCEL(FDS, 'Celnam', 2, ELMNMS)
-   if (error /= 0) write (*, *) ' DEFCEL: Celnam'
-   if (error /= 0) goto 9999
+   ERROR = DEFCEL (FDS, 'Celnam', 2, ELMNMS)
+   if (error .ne. 0) write (*,*) ' DEFCEL: Celnam'
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Define groups'')')
+   write(*,'(''TEST8: Define groups'')')
 !     ** Variable dimensie **
-   ERROR = DEFGRP(FDS, 'Grpdef', 'Celnam', 1, 0, 1)
-   if (error /= 0) write (*, *) ' DEFGRP: Grpdef'
-   if (error /= 0) goto 9999
+   ERROR = DEFGRP (FDS, 'Grpdef', 'Celnam', 1, 0, 1)
+   if (error .ne. 0) write (*,*) ' DEFGRP: Grpdef'
+   if (error .ne. 0) goto 9999
 
-   ERROR = FLSDEF(FDS)
-   if (error /= 0) write (*, *) ' FLSDEF'
-   if (error /= 0) goto 9999
+   ERROR = FLSDEF (FDS)
+   if (error .ne. 0) write (*,*) ' FLSDEF'
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Inquire element'')')
-   ERROR = INQELM(FDS, 'Elmnam', ELMTYP, NBYTSG, ELMQTY,&
+   write(*,'(''TEST8: Inquire element'')')
+   ERROR = INQELM (FDS, 'Elmnam', ELMTYP, NBYTSG, ELMQTY,&
    &ELMUNT, ELMDES, ELMNDM, ELMDMS)
-   if (error /= 0)&
-   &write (*, *) ' INQELM:', error, elmtyp, nbytsg, elmqty, elmunt&
-   &, elmdes, elmndm, (elmdms(i), i=1, elmndm)
-   if (error /= 0) goto 9999
+   if (error .ne. 0)&
+   &write (*,*) ' INQELM:', error, elmtyp, nbytsg, elmqty, elmunt&
+   &, elmdes, elmndm, (elmdms(i),i=1,elmndm)
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Inquire cell'')')
+   write(*,'(''TEST8: Inquire cell'')')
    NELEMS = 2
-   ERROR = INQCEL(FDS, 'Celnam', NELEMS, ELMNMS)
-   if (error /= 0)&
-   &write (*, *) ' INQCEL:', error, nelems, (elmnms(i), i=1, nelems)
-   if (error /= 0) goto 9999
+   ERROR = INQCEL (FDS, 'Celnam', NELEMS, ELMNMS)
+   if (error .ne. 0)&
+   &write (*,*) ' INQCEL:', error, nelems, (elmnms(i),i=1,nelems)
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Inquire group'')')
-   ERROR = INQGRP(FDS, 'Grpdef', CELNAM, GRPNDM, GRPDMS, GRPORD)
-   if (error /= 0) write (*, *) ' INQGRP:', error, celnam, grpndm,&
-   &(grpdms(i), i=1, grpndm), (grpord(i), i=1, grpndm)
-   if (error /= 0) goto 9999
+   write(*,'(''TEST8: Inquire group'')')
+   ERROR = INQGRP (FDS, 'Grpdef', CELNAM, GRPNDM, GRPDMS, GRPORD)
+   if (error .ne. 0) write (*,*) ' INQGRP:', error, celnam, grpndm,&
+   &(grpdms(i),i=1,grpndm), (grpord(i),i=1,grpndm)
+   if (error .ne. 0) goto 9999
 
-   write (*, '(''TEST8: Create group on data file'')')
-   ERROR = CREDAT(FDS, 'Grpnam', 'Grpdef')
-   if (error /= 0) write (*, *) ' Credat: Grpnam'
-   if (error /= 0) goto 9999
-   ERROR = CREDAT(FDS, 'aaaabbbb', 'Grpdef')
-   if (error /= 0) write (*, *) ' Credat: aaaabbbb'
-   if (error /= 0) goto 9999
-   ERROR = CREDAT(FDS, 'bbbbaaaa', 'Grpdef')
-   if (error /= 0) write (*, *) ' Credat: bbbbaaaa'
-   if (error /= 0) goto 9999
-   ERROR = CREDAT(FDS, 'babaabab', 'Grpdef')
-   if (error /= 0) write (*, *) ' Credat: babaabab'
-   if (error /= 0) goto 9999
-   ERROR = CREDAT(FDS, 'Grpnam  Grpnam', 'Grpdef')
-   if (error /= 0) write (*, *) ' Credat: Grpnam  Grpnam'
-   if (error /= 0) goto 9999
+   write(*,'(''TEST8: Create group on data file'')')
+   ERROR = CREDAT (FDS, 'Grpnam', 'Grpdef')
+   if (error .ne. 0) write (*,*) ' Credat: Grpnam'
+   if (error .ne. 0) goto 9999
+   ERROR = CREDAT (FDS, 'aaaabbbb', 'Grpdef')
+   if (error .ne. 0) write (*,*) ' Credat: aaaabbbb'
+   if (error .ne. 0) goto 9999
+   ERROR = CREDAT (FDS, 'bbbbaaaa', 'Grpdef')
+   if (error .ne. 0) write (*,*) ' Credat: bbbbaaaa'
+   if (error .ne. 0) goto 9999
+   ERROR = CREDAT (FDS, 'babaabab', 'Grpdef')
+   if (error .ne. 0) write (*,*) ' Credat: babaabab'
+   if (error .ne. 0) goto 9999
+   ERROR = CREDAT (FDS, 'Grpnam  Grpnam', 'Grpdef')
+   if (error .ne. 0) write (*,*) ' Credat: Grpnam  Grpnam'
+   if (error .ne. 0) goto 9999
 
 !     ERROR = PUTIAT (FDS, 'Grpnam', 'IAttrib_1', -5432)
 !     ERROR = PUTIAT (FDS, 'Grpnam', 'IAttrib_2', 12345)
@@ -153,256 +153,256 @@ program TEST8
 !     so all attributes are the same and the value will be
 !     overwritten
 !
-   write (*, '(''TEST8: Put attributes'')')
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   write(*,'(''TEST8: Put attributes'')')
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUUT 1', 1)
-   if (error /= 0) then
-      error = neferr(0, errstr)
-      write (*, '(a)') trim(errstr)
-   end if
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUUT 2', 2)
-   if (error /= 0) then
-      error = neferr(0, errstr)
-      write (*, '(a)') trim(errstr)
-   end if
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUUT 3', 3)
-   if (error /= 0) then
-      error = neferr(0, errstr)
-      write (*, '(a)') trim(errstr)
-   end if
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUUT 4', 4)
-   if (error /= 0) then
-      error = neferr(0, errstr)
-      write (*, '(a)') trim(errstr)
-   end if
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUUT 5', 5)
-   if (error /= 0) then
-      error = neferr(0, errstr)
-      write (*, '(a)') trim(errstr)
-   end if
-   ERROR = PUTIAT(FDS, 'Grpnam',&
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
+   ERROR = PUTIAT (FDS, 'Grpnam',&
    &'INTEGER ATTRIBUU', 5)
-   if (error /= 0) write (*, *) ' PUTIAT 5:', error
-   if (error /= 0) goto 9999
+   if (error .ne. 0) write (*,*) ' PUTIAT 5:', error
+   if (error .ne. 0) goto 9999
 
-   ERROR = PUTRAT(FDS, 'Grpnam', 'RAttrib_1', 12.345)
-   if (error /= 0) goto 9999
-   ERROR = PUTRAT(FDS, 'Grpnam', 'RAttrib_2', -2.2)
-   if (error /= 0) goto 9999
-   ERROR = PUTRAT(FDS, 'Grpnam', 'RAttrib_3', 3.3)
-   if (error /= 0) goto 9999
-   ERROR = PUTRAT(FDS, 'Grpnam', 'RAttrib_4', -4.4)
-   if (error /= 0) goto 9999
-   ERROR = PUTRAT(FDS, 'Grpnam', 'RAttrib_5', 5.5)
-   if (error /= 0) goto 9999
+   ERROR = PUTRAT (FDS, 'Grpnam', 'RAttrib_1', 12.345)
+   if (error .ne. 0) goto 9999
+   ERROR = PUTRAT (FDS, 'Grpnam', 'RAttrib_2', -2.2)
+   if (error .ne. 0) goto 9999
+   ERROR = PUTRAT (FDS, 'Grpnam', 'RAttrib_3', 3.3)
+   if (error .ne. 0) goto 9999
+   ERROR = PUTRAT (FDS, 'Grpnam', 'RAttrib_4', -4.4)
+   if (error .ne. 0) goto 9999
+   ERROR = PUTRAT (FDS, 'Grpnam', 'RAttrib_5', 5.5)
+   if (error .ne. 0) goto 9999
 
-   ERROR = PUTSAT(FDS, 'Grpnam', 'SAttrib_1', 'String 1')
-   if (error /= 0) goto 9999
-   ERROR = PUTSAT(FDS, 'Grpnam', 'SAttrib_2', 'String 2')
-   if (error /= 0) goto 9999
-   ERROR = PUTSAT(FDS, 'Grpnam', 'SAttrib_3', 'String 3')
-   if (error /= 0) goto 9999
-   ERROR = PUTSAT(FDS, 'Grpnam', 'SAttrib_4', 'String 4')
-   if (error /= 0) goto 9999
-   ERROR = PUTSAT(FDS, 'Grpnam', 'SAttrib_5', 'String 5')
-   if (error /= 0) goto 9999
+   ERROR = PUTSAT (FDS, 'Grpnam', 'SAttrib_1', 'String 1')
+   if (error .ne. 0) goto 9999
+   ERROR = PUTSAT (FDS, 'Grpnam', 'SAttrib_2', 'String 2')
+   if (error .ne. 0) goto 9999
+   ERROR = PUTSAT (FDS, 'Grpnam', 'SAttrib_3', 'String 3')
+   if (error .ne. 0) goto 9999
+   ERROR = PUTSAT (FDS, 'Grpnam', 'SAttrib_4', 'String 4')
+   if (error .ne. 0) goto 9999
+   ERROR = PUTSAT (FDS, 'Grpnam', 'SAttrib_5', 'String 5')
+   if (error .ne. 0) goto 9999
 
    ERROR = PUTRAT(FDS, 'bbbbaaaa', 'RAttrib_1', 12.347)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTRAT(FDS, 'aaaabbbb', 'RAttrib_1', 12.346)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTRAT(FDS, 'babaabab', 'RAttrib_1', 12.348)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTRAT(FDS, 'Grpnam  Grpnam', 'RAttrib_1', 12.349)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTSAT(FDS, 'aaaabbbb', 'SAttrib_1', 'String 6')
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTSAT(FDS, 'bbbbaaaa', 'SAttrib_1', 'String 11')
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTSAT(FDS, 'babaabab', 'SAttrib_1', 'String 16')
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTSAT(FDS, 'Grpnam  Grpnam', 'SAttrib_1', 'String 21')
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTIAT(FDS, 'aaaabbbb', 'IAttrib_1', -6)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTIAT(FDS, 'bbbbaaaa', 'IAttrib_1', -11)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTIAT(FDS, 'babaabab', 'IAttrib_1', -16)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
    ERROR = PUTIAT(FDS, 'Grpnam  Grpnam', 'IAttrib_1', -21)
-   if (error /= 0) goto 9999
+   if (error .ne. 0) goto 9999
 
 !     *** GeT All Attributes of all Groups of the Datafile
-   write (*, '(''TEST8: Get attributes'')')
-   call GTALAT(FDS)
+   write(*,'(''TEST8: Get attributes'')')
+   CALL GTALAT (FDS)
 
-   error = neferr(0, errstr)
-   write (*, '(a)') trim(errstr)
+   error = neferr( 0, errstr)
+   write(*,'(a)') trim(errstr)
 
-   write (*, '(''TEST8: Put real and integer array'')')
-   UINDEX(INCR, 1) = 1
-   do 20 J = 1, 10
-      UINDEX(START, 1) = J
-      UINDEX(stop, 1) = J
-      do 10 I = 1, 142
-         do 5 K = 1, 65
-            ARRAY(I, K) = J * 1000.+I + K / 1000.
-5           continue
-            IARRIN(I) = J * 1000 + I
-10          continue
+   write(*,'(''TEST8: Put real and integer array'')')
+   UINDEX(INCR,1) = 1
+   DO 20 J = 1,10
+      UINDEX(START,1) = J
+      UINDEX(STOP ,1) = J
+      DO 10 I = 1,142
+         DO 5 K = 1,65
+            ARRAY(I,K) = J*1000.+I+K/1000.
+5        CONTINUE
+         IARRIN(I) = J*1000+I
+10    CONTINUE
 
-            ERROR = PUTELT(FDS, 'Grpnam',&
-            &'Elmnam', UINDEX, 1, ARRAY)
-            if (error /= 0) write (*, *) ' PUTELT:', error
-            if (error /= 0) goto 9999
+      ERROR = PUTELT (FDS, 'Grpnam',&
+      &'Elmnam', UINDEX, 1, ARRAY)
+      if (error .ne. 0) write (*,*) ' PUTELT:', error
+      if (error .ne. 0) goto 9999
 
-            ERROR = PUTELT(FDS, 'Grpnam',&
-            &'ElmInt', UINDEX, 1, IARRIN)
-            if (error /= 0) write (*, *) ' PUTELT:', error
-            if (error /= 0) goto 9999
+      ERROR = PUTELT (FDS, 'Grpnam',&
+      &'ElmInt', UINDEX, 1, IARRIN)
+      if (error .ne. 0) write (*,*) ' PUTELT:', error
+      if (error .ne. 0) goto 9999
 
-            ERROR = FLSDAT(FDS)
-            if (error /= 0) write (*, *) ' FLSDAT:', error
-            if (error /= 0) goto 9999
+      ERROR = FLSDAT (FDS)
+      if (error .ne. 0) write (*,*) ' FLSDAT:', error
+      if (error .ne. 0) goto 9999
 
-20          continue
+20 CONTINUE
 
-            write (*, '(''TEST8: Get real and integer array'')')
-            do 30 J = 1, 10
-               UINDEX(START, 1) = J
-               UINDEX(stop, 1) = J
-               ERROR = GETELT(FDS, 'Grpnam',&
-               &'Elmnam', UINDEX, 1, 142 * 65 * 4, ARROUT)
-               if (error /= 0) write (*, '('' GETELT:'',i4,1x,3(1pe14.6,1x))')&
-               &error, arrout(142, 65), arrout(142, 64), arrout(141, 65)
-               if (error /= 0) goto 9999
+   write(*,'(''TEST8: Get real and integer array'')')
+   DO 30 J = 1,10
+      UINDEX(START,1) = J
+      UINDEX(STOP ,1) = J
+      ERROR = GETELT (FDS, 'Grpnam',&
+      &'Elmnam', UINDEX, 1, 142*65*4, ARROUT)
+      if (error .ne. 0) write (*,'('' GETELT:'',i4,1x,3(1pe14.6,1x))')&
+      &error , arrout(142,65),arrout(142,64),arrout(141,65)
+      if (error .ne. 0) goto 9999
 
-               ERROR = GETELT(FDS, 'Grpnam',&
-               &'ElmInt', UINDEX, 1, 142 * 4, IARROU)
-               if (error /= 0)&
-               &write (*, *) ' GETELT:', error, iarrou(1), iarrou(142)
-               if (error /= 0) goto 9999
+      ERROR = GETELT (FDS, 'Grpnam',&
+      &'ElmInt', UINDEX, 1, 142*4, IARROU)
+      if (error .ne. 0)&
+      &write (*,*) ' GETELT:', error, iarrou(1), iarrou(142)
+      if (error .ne. 0) goto 9999
 
-30             continue
+30 CONTINUE
 
-               write (*, '(''TEST8: Flush memory to files'')')
+   write(*,'(''TEST8: Flush memory to files'')')
 
-               ERROR = FLSDAT(FDS)
-               if (error /= 0) write (*, *) ' FLSDAT:', error
-               if (error /= 0) goto 9999
+   ERROR = FLSDAT (FDS)
+   if (error .ne. 0) write (*,*) ' FLSDAT:', error
+   if (error .ne. 0) goto 9999
 
-               ERROR = FLSDEF(FDS)
-               if (error /= 0) write (*, *) ' FLSDEF:', error
-               if (error /= 0) goto 9999
+   ERROR = FLSDEF (FDS)
+   if (error .ne. 0) write (*,*) ' FLSDEF:', error
+   if (error .ne. 0) goto 9999
 
-               write (*, '(''TEST8: Loop all groups'')')
+   write(*,'(''TEST8: Loop all groups'')')
 
-               ERROR = INQFST(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) write (*, *) ' INQFST:', error, grpnam, grpdef
+   ERROR = INQFST (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) write (*,*) ' INQFST:', error, grpnam, grpdef
 
-               ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) write (*, *) ' INQNXT:', error, grpnam, grpdef
+   ERROR = INQNXT (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) write (*,*) ' INQNXT:', error, grpnam, grpdef
 
-               ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) write (*, *) ' INQNXT:', error, grpnam, grpdef
+   ERROR = INQNXT (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) write (*,*) ' INQNXT:', error, grpnam, grpdef
 
-               ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) then
-                  error = neferr(0, errstr)
-                  write (*, '(a)') trim(errstr)
-               end if
+   ERROR = INQNXT (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
 
-               ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) then
-                  error = neferr(0, errstr)
-                  write (*, '(a)') trim(errstr)
-               end if
+   ERROR = INQNXT (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
 
-               ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-               if (error /= 0) then
-                  error = neferr(0, errstr)
-                  write (*, '(a)') trim(errstr)
-               end if
+   ERROR = INQNXT (FDS, GRPNAM, GRPDEF)
+   if (error .ne. 0) then
+      error = neferr( 0, errstr)
+      write(*,'(a)') trim(errstr)
+   endif
 
 !     write(*,'('' SO FAR SO GOOD'
-               goto 8888
-9999           continue
-               error = neferr(0, errstr)
-               write (*, '(a)') trim(errstr)
-               write (*, '('' NOT SO GOOD'')')
-8888           continue
+   goto 8888
+9999 continue
+   error = neferr( 0, errstr)
+   write(*,'(a)') trim(errstr)
+   write(*,'('' NOT SO GOOD'')')
+8888 continue
 
-               ERROR = CLSDAT(FDS)
-               if (error /= 0) write (*, *) ' CLSDAT:', error
+   ERROR = CLSDAT (FDS)
+   if (error .ne. 0) write (*,*) ' CLSDAT:', error
 
-               ERROR = CLSDEF(FDS)
-               if (error /= 0) write (*, *) ' CLSDEF:', error
+   ERROR = CLSDEF (FDS)
+   if (error .ne. 0) write (*,*) ' CLSDEF:', error
 
-               error = neferr(0, errstr)
-               write (*, '(a)') trim(errstr)
+   error = neferr( 0, errstr)
+   write(*,'(a)') trim(errstr)
 
-            end
+end
 !======================================================================
-            subroutine GTALAT(FDS)
+SUBROUTINE GTALAT (FDS)
 
-               integer FDS
+   INTEGER FDS
 
-               character ATTNAM * 16&
-               &, GRPNAM * 16&
-               &, GRPDEF * 16&
-               &, SATVAL * 16
-               integer IATVAL
-               logical GRLOOP&
-               &, ALOOP
-               real RATVAL
+   CHARACTER ATTNAM*16&
+   &,GRPNAM*16&
+   &,GRPDEF*16&
+   &,SATVAL*16
+   INTEGER   IATVAL
+   LOGICAL   GRLOOP&
+   &,ALOOP
+   REAL      RATVAL
 
-               integer INQFIA&
-               &, INQFRA&
-               &, INQFSA&
-               &, INQFST&
-               &, INQNIA&
-               &, INQNRA&
-               &, INQNSA&
-               &, INQNXT
+   INTEGER   INQFIA&
+   &,INQFRA&
+   &,INQFSA&
+   &,INQFST&
+   &,INQNIA&
+   &,INQNRA&
+   &,INQNSA&
+   &,INQNXT
 
-               GRLOOP = INQFST(FDS, GRPNAM, GRPDEF) == 0
+   GRLOOP = INQFST (FDS, GRPNAM, GRPDEF) .EQ. 0
 
-10             if (GRLOOP) then
-                  write (*, '(2x,''Group Name:'',a16)') GRPNAM
-                  ALOOP = INQFIA(FDS, GRPNAM, ATTNAM, IATVAL) == 0
+10 IF (GRLOOP) THEN
+      WRITE (*,'(2x,''Group Name:'',a16)') GRPNAM
+      ALOOP = INQFIA (FDS, GRPNAM, ATTNAM, IATVAL) .EQ. 0
 
-20                if (ALOOP) then
-                     write (*, '(4x,''Integer Attr.:'',a16,'' --> '',i8)')&
-                     &ATTNAM, IATVAL
-                     ALOOP = INQNIA(FDS, GRPNAM, ATTNAM, IATVAL) == 0
-                     goto 20
-                  end if
+20    IF (ALOOP) THEN
+         WRITE (*,'(4x,''Integer Attr.:'',a16,'' --> '',i8)')&
+         &ATTNAM, IATVAL
+         ALOOP = INQNIA (FDS, GRPNAM, ATTNAM, IATVAL) .EQ. 0
+         GOTO 20
+      ENDIF
 
-                  ALOOP = INQFRA(FDS, GRPNAM, ATTNAM, RATVAL) == 0
+      ALOOP = INQFRA (FDS, GRPNAM, ATTNAM, RATVAL) .EQ. 0
 
-30                if (ALOOP) then
-                     write (*, '(4x,''   Real Attr.:'',a16,'' --> '',1PE13.5)')&
-                     &ATTNAM, RATVAL
-                     ALOOP = INQNRA(FDS, GRPNAM, ATTNAM, RATVAL) == 0
-                     goto 30
-                  end if
+30    IF (ALOOP) THEN
+         WRITE (*,'(4x,''   Real Attr.:'',a16,'' --> '',1PE13.5)')&
+         &ATTNAM, RATVAL
+         ALOOP = INQNRA (FDS, GRPNAM, ATTNAM, RATVAL) .EQ. 0
+         GOTO 30
+      ENDIF
 
-                  ALOOP = INQFSA(FDS, GRPNAM, ATTNAM, SATVAL) == 0
+      ALOOP = INQFSA (FDS, GRPNAM, ATTNAM, SATVAL) .EQ. 0
 
-40                if (ALOOP) then
-                     write (*, '(4x,'' String Attr.:'',a16,'' --> '',a)')&
-                     &ATTNAM, SATVAL
-                     ALOOP = INQNSA(FDS, GRPNAM, ATTNAM, SATVAL) == 0
-                     goto 40
-                  end if
+40    IF (ALOOP) THEN
+         WRITE (*,'(4x,'' String Attr.:'',a16,'' --> '',a)')&
+         &ATTNAM, SATVAL
+         ALOOP = INQNSA (FDS, GRPNAM, ATTNAM, SATVAL) .EQ. 0
+         GOTO 40
+      ENDIF
 
-                  GRLOOP = INQNXT(FDS, GRPNAM, GRPDEF) == 0
+      GRLOOP = INQNXT (FDS, GRPNAM, GRPDEF) .EQ. 0
 
-                  goto 10
-               end if
+      GOTO 10
+   ENDIF
 
-            end
+END

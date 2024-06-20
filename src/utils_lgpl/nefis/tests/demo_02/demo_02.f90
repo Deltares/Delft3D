@@ -26,7 +26,7 @@
 !-------------------------------------------------------------------------------
 !
 !
-program DEMO2
+PROGRAM DEMO2
 !
 !     Company name                    : Deltares
 !                                       P.O.Box 177
@@ -59,109 +59,109 @@ program DEMO2
 !--------------------------------------------------------------------------------
 !     ..
 !     .. Scalars
-   character * 1024 ERRSTR
+   CHARACTER*1024 ERRSTR
 !                 .. character string to catch the NEFIS error message
-   character CODING * 1
+   CHARACTER CODING*1
 !                 .. indicates Y/N neutral representation of data
-   integer ERROR
+   INTEGER   ERROR
 !                 .. contains return-value of NEFIS-functions
 !     ..
 !     .. Arrays
-   integer FDS
+   INTEGER   FDS
 !                 .. nefis file descriptor
 !     ..
 !     .. Declarations of NEFIS-functions
-   integer CLSDAT&
-   &, CLSDEF&
-   &, CREDAT&
-   &, FLSDAT&
-   &, OPNDAT&
-   &, OPNDEF&
-   &, NEFERR
+   INTEGER   CLSDAT&
+   &,CLSDEF&
+   &,CREDAT&
+   &,FLSDAT&
+   &,OPNDAT&
+   &,OPNDEF&
+   &,NEFERR
 !
-   external CLSDAT&
-   &, CLSDEF&
-   &, CREDAT&
-   &, FLSDAT&
-   &, OPNDAT&
-   &, OPNDEF&
-   &, NEFERR
+   EXTERNAL  CLSDAT&
+   &,CLSDEF&
+   &,CREDAT&
+   &,FLSDAT&
+   &,OPNDAT&
+   &,OPNDEF&
+   &,NEFERR
 !     ..
 !     .. Executable statements
 !
 !                 ..
 !                 .. Open a definition file
    CODING = 'N'
-   ERROR = OPNDEF(FDS, 'data_d02.def', CODING)
-   if (ERROR /= 0) goto 9999
+   ERROR = OPNDEF (FDS, 'data_d02.def', CODING)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Define element, cel, and group-definition
-   call DEFINE(FDS)
+   CALL DEFINE (FDS)
 !                 ..
 !                 .. Open a data file
    CODING = 'N'
-   ERROR = OPNDAT(FDS, 'data_d02.dat', CODING)
-   if (ERROR /= 0) goto 9999
+   ERROR = OPNDAT (FDS, 'data_d02.dat', CODING)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Create space for data
-   ERROR = CREDAT(FDS, 'GrpNaam', 'Groep')
-   if (ERROR /= 0) goto 9999
+   ERROR = CREDAT (FDS, 'GrpNaam', 'Groep')
+   IF (ERROR.NE.0) goto 9999
 !
-   ERROR = FLSDAT(FDS)
-   if (ERROR /= 0) goto 9999
+   ERROR = FLSDAT (FDS)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Write data to file
-   call PUTDAT(FDS)
+   CALL PUTDAT (FDS)
 !                 ..
 !                 .. Retrieve data, using a different view
-   call DTVIEW(FDS)
+   CALL DTVIEW (FDS)
 !                 ..
 !                 .. Retrieve a part of the data
-   call FILTER(FDS)
+   CALL FILTER (FDS)
 !                 ..
 !                 .. Close the files
 9999 continue
 
-   if (error == 0) ERROR = CLSDEF(FDS)
-   if (error == 0) ERROR = CLSDAT(FDS)
+   if (error.eq.0) ERROR = CLSDEF (FDS)
+   if (error.eq.0) ERROR = CLSDAT (FDS)
 
-   ERROR = NEFERR(1, ERRSTR)
+   ERROR = NEFERR( 1, ERRSTR)
 !
-end
+END
 !================================================================================
-subroutine DEFINE(FDS)
+SUBROUTINE DEFINE (FDS)
 !
-   integer FDS
+   INTEGER   FDS
 !
-   integer ERROR
-   character * 134 ERRSTR
+   INTEGER       ERROR
+   CHARACTER*134 ERRSTR
 
-   integer GRPDMS(5)&
-   &, GRPORD(5)
+   INTEGER   GRPDMS(5)&
+   &,GRPORD(5)
 !
-   integer DEFCEL&
-   &, DEFELM&
-   &, DEFGRP&
-   &, FLSDEF&
-   &, NEFERR
-   external DEFCEL&
-   &, DEFELM&
-   &, DEFGRP&
-   &, FLSDEF&
-   &, NEFERR
+   INTEGER   DEFCEL&
+   &,DEFELM&
+   &,DEFGRP&
+   &,FLSDEF&
+   &,NEFERR
+   EXTERNAL  DEFCEL&
+   &,DEFELM&
+   &,DEFGRP&
+   &,FLSDEF&
+   &,NEFERR
 !     ..
 !     .. Executable statements
 !
 !                 ..
 !                 .. Define a simple element, type Real*4
-   ERROR = DEFELM(FDS, 'ElmName', 'Integer', 4,&
+   ERROR = DEFELM (FDS, 'ElmName', 'Integer',  4,&
    &'ElmQuantity', 'ElmUnity', 'ElmDescription',&
    &1, 1)
-   if (ERROR /= 0) goto 9999
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Define a cel with only one real value
-   ERROR = DEFCEL(FDS, 'Cell', 1, 'ElmName')
-   if (ERROR /= 0) goto 9999
+   ERROR = DEFCEL (FDS, 'Cell', 1, 'ElmName')
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Define a 3-d group of dimension (3,5,0),
 !                 .. so a group with a variable dimension
@@ -171,226 +171,227 @@ subroutine DEFINE(FDS)
    GRPORD(1) = 1
    GRPORD(2) = 3
    GRPORD(3) = 2
-   ERROR = DEFGRP(FDS, 'Groep', 'Cell', 3, GRPDMS, GRPORD)
-   if (ERROR /= 0) goto 9999
+   ERROR = DEFGRP (FDS, 'Groep', 'Cell', 3, GRPDMS, GRPORD)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Flush buffers to file
-   ERROR = FLSDEF(FDS)
-   if (ERROR /= 0) goto 9999
+   ERROR = FLSDEF (FDS)
+   IF (ERROR.NE.0) goto 9999
 !
 9999 continue
-   ERROR = NEFERR(1, ERRSTR)
-end
+   ERROR = NEFERR( 1, ERRSTR)
+END
 !================================================================================
-subroutine PUTDAT(FDS)
+SUBROUTINE PUTDAT (FDS)
 !
-   character * 1024 ERRSTR
+   CHARACTER*1024 ERRSTR
 !
-   integer FDS
+   INTEGER   FDS
 !
-   integer START, stop, INCR
-   parameter(START=1, stop=2, INCR=3)
-   equivalence(AARRAY, ARRAY)
+   INTEGER   START, STOP, INCR
+   PARAMETER (START=1, STOP=2, INCR=3)
+   equivalence(AARRAY,ARRAY)
 !
-   character SPACE * 7
-   integer COL&
-   &, ERROR&
-   &, PLANE&
-   &, ROW
-   integer UINDEX(3, 5)&
-   &, USRORD(5)
-   integer ARRAY(3, 5, 7)
-   integer AARRAY(105)
+   CHARACTER SPACE*7
+   INTEGER   COL&
+   &,ERROR&
+   &,PLANE&
+   &,ROW
+   INTEGER   UINDEX(3,5)&
+   &,USRORD(5)
+   INTEGER   ARRAY (3,5,7)
+   INTEGER   AARRAY (105)
 !
-   integer FLSDAT&
-   &, PUTELT&
-   &, NEFERR
-   external FLSDAT&
-   &, PUTELT&
-   &, NEFERR
+   INTEGER   FLSDAT&
+   &,PUTELT&
+   &,NEFERR
+   EXTERNAL  FLSDAT&
+   &,PUTELT&
+   &,NEFERR
 !     ..
 !     .. Executable statements
 !
    SPACE = '       '
 !                 ..
 !                 .. Set view to (3,5,*)
-   USRORD(1) = 1
-   USRORD(2) = 2
-   USRORD(3) = 3
+   USRORD (1) = 1
+   USRORD (2) = 2
+   USRORD (3) = 3
 !                 ..
 !                 .. Define indices for each dimension
-   UINDEX(START, 1) = 1
-   UINDEX(stop, 1) = 3
-   UINDEX(INCR, 1) = 1
-   UINDEX(START, 2) = 1
-   UINDEX(stop, 2) = 5
-   UINDEX(INCR, 2) = 1
-   UINDEX(START, 3) = 1
-   UINDEX(stop, 3) = 7
-   UINDEX(INCR, 3) = 1
+   UINDEX (START,1) = 1
+   UINDEX (STOP ,1) = 3
+   UINDEX (INCR ,1) = 1
+   UINDEX (START,2) = 1
+   UINDEX (STOP ,2) = 5
+   UINDEX (INCR ,2) = 1
+   UINDEX (START,3) = 1
+   UINDEX (STOP ,3) = 7
+   UINDEX (INCR ,3) = 1
 !                 ..
 !                 .. Fill array with values
-   do 30 PLANE = 1, 7
-      do 20 COL = 1, 5
-         do 10 ROW = 1, 3
-            ARRAY(ROW, COL, PLANE) = ROW * 1000 + COL * 100 + PLANE
-10          continue
-20          continue
-30          continue
+   DO 30 PLANE = 1,7
+      DO 20 COL = 1,5
+         DO 10 ROW = 1,3
+            ARRAY (ROW, COL, PLANE) = ROW*1000+COL*100+PLANE
+10       CONTINUE
+20    CONTINUE
+30 CONTINUE
 !                 ..
 !                 .. Write data to file
-            ERROR = PUTELT(FDS, 'GrpNaam', '*'& !     ERROR = PUTELT (FDS, 'GrpNaam', 'ElmName'
-            &, UINDEX, USRORD, ARRAY)
-            if (ERROR /= 0) goto 9999
+   ERROR = PUTELT (FDS, 'GrpNaam', '*'&
+!     ERROR = PUTELT (FDS, 'GrpNaam', 'ElmName'
+   &,UINDEX, USRORD, ARRAY)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Flush the buffers
-            ERROR = FLSDAT(FDS)
-            if (ERROR /= 0) goto 9999
+   ERROR = FLSDAT (FDS)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Output data to screen
 !     write(*,'('' ARRAY(105) written to file:'')')
 !     DO 11 PLANE = 1,105
 !       WRITE (*,'(  I10)') AARRAY(PLANE)
 !  11 CONTINUE
-            write (*, '('' ARRAY(3,5,7) written to file:'')')
-            do 50 PLANE = 1, 7
-               do 40 COL = 1, 5
+   write(*,'('' ARRAY(3,5,7) written to file:'')')
+   DO 50 PLANE = 1,7
+      DO 40 COL = 1,5
 !           WRITE (*,'(  3F10.2)')
-                  write (*, '(  3I10)')&
-                  &(ARRAY(ROW, COL, PLANE), ROW=1, 3)
-40                continue
-                  write (*, *)
-50                continue
+         WRITE (*,'(  3I10)')&
+         &(ARRAY(ROW,COL,PLANE),ROW=1,3)
+40    CONTINUE
+      WRITE (*,*)
+50 CONTINUE
 !
-9999              continue
-                  ERROR = NEFERR(1, ERRSTR)
-               end
+9999 continue
+   ERROR = NEFERR( 1, ERRSTR)
+END
 !================================================================================
-               subroutine DTVIEW(FDS)
+SUBROUTINE DTVIEW (FDS)
 !
-                  character * 1024 ERRSTR
+   CHARACTER*1024 ERRSTR
 !
-                  integer FDS
+   INTEGER   FDS
 !
-                  integer START, stop, INCR
-                  parameter(START=1, stop=2, INCR=3)
+   INTEGER   START, STOP, INCR
+   PARAMETER (START=1, STOP=2, INCR=3)
 !
-                  character SPACE * 7
-                  integer COL&
-                  &, ERROR&
-                  &, PLANE&
-                  &, ROW
-                  integer UINDEX(3, 5)&
-                  &, USRORD(3)
-                  integer ARRAY(7, 3, 5)
+   CHARACTER SPACE*7
+   INTEGER   COL&
+   &,ERROR&
+   &,PLANE&
+   &,ROW
+   INTEGER   UINDEX(3,5)&
+   &,USRORD(3)
+   INTEGER   ARRAY (7,3,5)
 !
-                  integer GETELT&
-                  &, NEFERR
-                  external GETELT&
-                  &, NEFERR
+   INTEGER   GETELT&
+   &,NEFERR
+   EXTERNAL  GETELT&
+   &,NEFERR
 !     ..
 !     .. Executable statements
 !
-                  SPACE = '       '
+   SPACE = '       '
 !                 ..
 !                 .. Change view to (*,3,5)
-                  USRORD(1) = 3
-                  USRORD(2) = 1
-                  USRORD(3) = 2
+   USRORD (1) = 3
+   USRORD (2) = 1
+   USRORD (3) = 2
 !                 ..
 !                 .. Define indices for each dimension
-                  UINDEX(START, 1) = 1
-                  UINDEX(stop, 1) = 7
-                  UINDEX(INCR, 1) = 1
-                  UINDEX(START, 2) = 1
-                  UINDEX(stop, 2) = 3
-                  UINDEX(INCR, 2) = 1
-                  UINDEX(START, 3) = 1
-                  UINDEX(stop, 3) = 5
-                  UINDEX(INCR, 3) = 1
+   UINDEX (START,1) = 1
+   UINDEX (STOP ,1) = 7
+   UINDEX (INCR ,1) = 1
+   UINDEX (START,2) = 1
+   UINDEX (STOP ,2) = 3
+   UINDEX (INCR ,2) = 1
+   UINDEX (START,3) = 1
+   UINDEX (STOP ,3) = 5
+   UINDEX (INCR ,3) = 1
 !                 ..
 !                 .. Retrieve data
-                  ERROR = GETELT(FDS, 'GrpNaam', '*'&
-                  &, UINDEX, USRORD, 7 * 3 * 5 * 4, ARRAY)
-                  if (ERROR /= 0) goto 9999
+   ERROR = GETELT (FDS, 'GrpNaam', '*'&
+   &,UINDEX, USRORD, 7*3*5*4, ARRAY)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Output data to screen
-                  write (*, '('' Same values now retrieved in ARRAY(7,3,5)'')')
-                  do 20 PLANE = 1, 5
-                     do 10 COL = 1, 3
+   write(*,'('' Same values now retrieved in ARRAY(7,3,5)'')')
+   DO 20 PLANE = 1,5
+      DO 10 COL = 1,3
 !           WRITE (*,'(  7F10.2)')
-                        write (*, '(  7I10  )')&
-                        &(ARRAY(ROW, COL, PLANE), ROW=1, 7)
-10                      continue
-                        write (*, *)
-20                      continue
+         WRITE (*,'(  7I10  )')&
+         &(ARRAY(ROW,COL,PLANE),ROW=1,7)
+10    CONTINUE
+      WRITE (*,*)
+20 CONTINUE
 !
-9999                    continue
-                        ERROR = NEFERR(1, ERRSTR)
-                     end
+9999 continue
+   ERROR = NEFERR( 1, ERRSTR)
+END
 !================================================================================
-                     subroutine FILTER(FDS)
+SUBROUTINE FILTER (FDS)
 !
-                        character * 1024 ERRSTR
+   CHARACTER*1024 ERRSTR
 !
-                        integer FDS
+   INTEGER   FDS
 !
-                        integer START, stop, INCR
-                        parameter(START=1, stop=2, INCR=3)
+   INTEGER   START, STOP, INCR
+   PARAMETER (START=1, STOP=2, INCR=3)
 !
-                        character SPACE * 7
-                        integer COL&
-                        &, ERROR&
-                        &, PLANE&
-                        &, ROW
-                        integer UINDEX(3, 5)&
-                        &, USRORD(3)
-                        integer ARRAY(4, 2, 3)
+   CHARACTER SPACE*7
+   INTEGER   COL&
+   &,ERROR&
+   &,PLANE&
+   &,ROW
+   INTEGER   UINDEX(3,5)&
+   &,USRORD(3)
+   INTEGER   ARRAY (4,2,3)
 !
-                        integer GETELT&
-                        &, NEFERR
-                        external GETELT&
-                        &, NEFERR
+   INTEGER   GETELT&
+   &,NEFERR
+   EXTERNAL  GETELT&
+   &,NEFERR
 !     ..
 !     .. Executable statements
 !
-                        SPACE = '       '
+   SPACE = '       '
 !                 ..
 !                 .. Change view to (*,3,5)
-                        USRORD(1) = 3
-                        USRORD(2) = 1
-                        USRORD(3) = 2
+   USRORD (1) = 3
+   USRORD (2) = 1
+   USRORD (3) = 2
 !                 ..
 !                 .. Define indices and step for each dimension
 !                 .. The stepsize of 2 creates a filter
-                        UINDEX(START, 1) = 1
-                        UINDEX(stop, 1) = 7
-                        UINDEX(INCR, 1) = 2
-                        UINDEX(START, 2) = 1
-                        UINDEX(stop, 2) = 3
-                        UINDEX(INCR, 2) = 2
-                        UINDEX(START, 3) = 1
-                        UINDEX(stop, 3) = 5
-                        UINDEX(INCR, 3) = 2
+   UINDEX (START,1) = 1
+   UINDEX (STOP ,1) = 7
+   UINDEX (INCR ,1) = 2
+   UINDEX (START,2) = 1
+   UINDEX (STOP ,2) = 3
+   UINDEX (INCR ,2) = 2
+   UINDEX (START,3) = 1
+   UINDEX (STOP ,3) = 5
+   UINDEX (INCR ,3) = 2
 !                 ..
 !                 .. Retrieve data
-                        ERROR = GETELT(FDS, 'GrpNaam', '*'&
-                        &, UINDEX, USRORD, 4 * 2 * 3 * 4, ARRAY)
-                        if (ERROR /= 0) goto 9999
+   ERROR = GETELT (FDS, 'GrpNaam', '*'&
+   &,UINDEX, USRORD, 4*2*3*4, ARRAY)
+   IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Output data to screen
-                        write (*, '('' Every other value retrieved in ARRAY(4,2,3)'')')
-                        do 20 PLANE = 1, 3
-                           do 10 COL = 1, 2
+   write(*,'('' Every other value retrieved in ARRAY(4,2,3)'')')
+   DO 20 PLANE = 1,3
+      DO 10 COL = 1,2
 !           WRITE (*,'(  4F10.2)')
-                              write (*, '(  4I10  )')&
-                              &(ARRAY(ROW, COL, PLANE), ROW=1, 4)
-10                            continue
-                              write (*, *)
-20                            continue
+         WRITE (*,'(  4I10  )')&
+         &(ARRAY(ROW,COL,PLANE),ROW=1,4)
+10    CONTINUE
+      WRITE (*,*)
+20 CONTINUE
 !
-9999                          continue
-                              ERROR = NEFERR(0, ERRSTR)
-                              write (*, '(a)') trim(errstr)
-                           end
+9999 continue
+   ERROR = NEFERR( 0, ERRSTR)
+   write(*,'(a)') trim(errstr)
+END
 !

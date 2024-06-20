@@ -29,20 +29,20 @@
 ! Deze test controleert of de nefis file groter kan zijn dan 2 Gb
 !
 program test_14
-   integer NTIMES, BUFSIZ
+   INTEGER NTIMES, BUFSIZ
 !
 ! size of nefis file: 4.800 Mbyte = 4xNTIMESxBUFSIZ: NTIMES=600, BUFSIZ=2000000
 ! size of nefis file: 3.200 Mbyte = 4xNTIMESxBUFSIZ: NTIMES=400, BUFSIZ=2000000
 !
 !      PARAMETER (NTIMES=600, BUFSIZ=2000000)  ! 4.8 Gbyte
-   parameter(NTIMES=400, BUFSIZ=2000000) ! 3.2 Gbyte
+   PARAMETER (NTIMES=400, BUFSIZ=2000000) ! 3.2 Gbyte
 !      PARAMETER (NTIMES=400000, BUFSIZ=2000) ! 3.2 Gbyte
 !      PARAMETER (NTIMES=20, BUFSIZ=200)
 
-   integer START, stp, INCR
-   parameter(START=1, stp=2, INCR=3)
-   integer fds
-   integer clsdat,&
+   INTEGER START, stp, INCR
+   PARAMETER (START=1, stp=2, INCR=3)
+   INTEGER fds
+   INTEGER clsdat,&
    &clsdef,&
    &credat,&
    &defelm,&
@@ -50,205 +50,205 @@ program test_14
    &defgrp,&
    &getnfv,&
    &getelt
-   integer crenef,&
+   INTEGER crenef,&
    &putelt,&
    &clsnef,&
    &neferr
-   integer error, ierror,&
+   INTEGER error, ierror,&
    &i, j,&
    &grpdms(1),&
    &grpord(1),&
    &usrord(1),&
-   &UINDEX(3, 5)
-   integer buffer(BUFSIZ)
-   character names * 14, coding * 1
-   character ERRSTR * 1024
-   character * 16 dat_name, def_name
-   real cpu1, cpu2
-   real elap_r, elap_w
-   character * 255 version
+   &UINDEX(3,5)
+   INTEGER buffer(BUFSIZ)
+   CHARACTER names*14, coding*1
+   CHARACTER ERRSTR*1024
+   character*16 dat_name, def_name
+   REAL  cpu1, cpu2
+   real  elap_r, elap_w
+   CHARACTER*255  version
 
    error = getnfv(version)
-   write (*, *)
-   write (*, *) trim(version(5:))
-   write (*, *)
+   write(*,*)
+   write(*,*) trim(version(5:))
+   write(*,*)
 
-   elap_w = 0
-   elap_r = 0
+   elap_w=0
+   elap_r=0
    call clock(cpu1)
-   if (0 == 0) then
+   if ( 0 .eq. 0) then
       coding = 'B'
       dat_name = 'data_c14.dat'
       def_name = 'data_c14.def'
-      error = crenef(fds, dat_name, def_name, coding, 'C')
+      error= crenef( fds, dat_name, def_name, coding, 'C')
 
-      if (error /= 0) then
-         ierror = neferr(0, errstr)
-         write (*, *)
-         write (*, '(a)') trim(errstr)
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
          goto 9999
-      end if
+      endif
 
-      error = Defelm(fds, 'ELEM_R_4_DIM_1', 'INTEGER', 4,&
-      &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
+      error= Defelm( fds, 'ELEM_R_4_DIM_1', 'INTEGER', 4,&
+      &'GROOTHEID 2', 'eenheid 2','Beschrijving 2',&
       &1, BUFSIZ)
-      if (error /= 0) then
-         ierror = neferr(0, errstr)
-         write (*, *)
-         write (*, '(a)') trim(errstr)
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
          goto 9999
-      end if
+      endif
 
-      names = 'ELEM_R_4_DIM_1'
-      error = Defcel(fds, 'CEL_TEST_3', 1, names)
-      if (error /= 0) then
-         ierror = neferr(0, errstr)
-         write (*, *)
-         write (*, '(a)') trim(errstr)
+      names= 'ELEM_R_4_DIM_1'
+      error= Defcel( fds, 'CEL_TEST_3', 1, names)
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
          goto 9999
-      end if
+      endif
 
       grpdms(1) = 0
       grpord(1) = 1
-      error = Defgrp(fds, 'GRP_TEST_3D', 'CEL_TEST_3', 1,&
+      error= Defgrp( fds, 'GRP_TEST_3D', 'CEL_TEST_3', 1,&
       &grpdms, grpord)
-      if (error /= 0) then
-         ierror = neferr(0, errstr)
-         write (*, *)
-         write (*, '(a)') trim(errstr)
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
          goto 9999
-      end if
+      endif
 !---------------------------------------------------------------------
-      error = Credat(fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
-      if (error /= 0) then
-         ierror = neferr(0, errstr)
-         write (*, *)
-         write (*, '(a)') trim(errstr)
+      error= Credat( fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
          goto 9999
-      end if
+      endif
 !---------------------------------------------------------------------
       call clock(cpu2)
-      write (*, '(''Initialisation (real time) [sec]:'',1PE13.5)')&
-      &cpu2 - cpu1
-      write (*, *)
+      write(*,'(''Initialisation (real time) [sec]:'',1PE13.5)')&
+      &cpu2-cpu1
+      write(*,*)
 
-      usrord(1) = 1
-      UINDEX(incr, 1) = 1
+      usrord(1)= 1
+      UINDEX(incr,1) = 1
 
-      write (*,&
-      &'(I5,'' schrijfopdrachten van '',I9,'' bytes'')') NTIMES, BUFSIZ * 4
-      do 20 j = 1, NTIMES
-         do 10 i = 1, BUFSIZ
-            buffer(i) = 1000 * i + j
-10          continue
-            if (ntimes > 1000) then
-               if (mod(j, 100) == 1)&
-               &write (*, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-            elseif (ntimes > 100) then
-               if (mod(j, 10) == 1)&
-               &write (*, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-            elseif (ntimes > 10) then
-               write (*, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-            end if
-            UINDEX(start, 1) = j
-            UINDEX(stp, 1) = j
-            call clock(cpu1)
-            if (j == 265) then
-               write (*, *)
-            end if
+      write(*,&
+      &'(I5,'' schrijfopdrachten van '',I9,'' bytes'')')NTIMES,BUFSIZ*4
+      DO 20 j=1,NTIMES
+         DO 10 i= 1, BUFSIZ
+            buffer(i)= 1000*i+j
+10       CONTINUE
+         if (ntimes>1000) then
+            if (mod(j,100)==1)&
+            &write(*,'(''opdracht '', i3, '' van '', i3)') j,ntimes
+         elseif (ntimes>100) then
+            if (mod(j,10)==1)&
+            &write(*,'(''opdracht '', i3, '' van '', i3)') j,ntimes
+         elseif (ntimes>10) then
+            write(*,'(''opdracht '', i3, '' van '', i3)') j,ntimes
+         endif
+         UINDEX(start,1) = j
+         UINDEX(stp ,1) = j
+         call clock(cpu1)
+         if (j.eq.265) then
+            write(*,*)
+         endif
 
-            error = Putelt(fds, 'DATAGRP_TEST_3D',&
-            &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-            call clock(cpu2)
-            elap_w = elap_w + cpu2 - cpu1
-            if (error /= 0) then
-               ierror = neferr(0, errstr)
-               write (*, *)
-               write (*, '(a)') trim(errstr)
-               goto 9999
-            end if
-20          continue
-            write (*, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
-            write (*, *)
-            error = Clsnef(fds)
-            end if
+         error= Putelt( fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
+         call clock(cpu2)
+         elap_w = elap_w+cpu2-cpu1
+         if (error .ne. 0) then
+            ierror = neferr( 0, errstr)
+            write(*,*)
+            write(*,'(a)') trim(errstr)
+            goto 9999
+         endif
+20    CONTINUE
+      write(*,'(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+      write(*,*)
+      error= Clsnef( fds)
+   endif
 
-            coding = ' '
-            error = crenef(fds, dat_name, def_name, coding, 'R')
-            if (error /= 0) then
-               ierror = neferr(0, errstr)
-               write (*, *)
-               write (*, '(a)') trim(errstr)
-               goto 9999
-            end if
-            write (*,&
-            &'(''Lees '', I5, '' keer '', I9, '' bytes'')') NTIMES, BUFSIZ * 4
-            do 40 j = NTIMES - 9, NTIMES + 1
+   coding = ' '
+   error= crenef( fds, dat_name, def_name, coding, 'R')
+   if (error .ne. 0) then
+      ierror = neferr( 0, errstr)
+      write(*,*)
+      write(*,'(a)') trim(errstr)
+      goto 9999
+   endif
+   write(*,&
+   &'(''Lees '', I5, '' keer '', I9, '' bytes'')') NTIMES, BUFSIZ*4
+   DO 40 j=NTIMES-9, NTIMES+1
 !      DO 40 j=NTIMES, NTIMES+1
-               write (*, '(''opdracht '', I3)') j
-               UINDEX(start, 1) = j
-               UINDEX(stp, 1) = j
-               UINDEX(incr, 1) = 1
-               usrord(1) = 1
-               call clock(cpu1)
-               error = Getelt(fds, 'DATAGRP_TEST_3D',&
-               &'ELEM_R_4_DIM_1', UINDEX, usrord, BUFSIZ * 4,&
-               &buffer)
-               call clock(cpu2)
-               elap_r = elap_r + cpu2 - cpu1
-               if (error /= 0) then
-                  ierror = neferr(0, errstr)
-                  write (*, *)
-                  write (*, '(a)') trim(errstr)
-                  goto 9999
-               else
-                  do 30 i = 1, BUFSIZ
-                     if ((buffer(i) - (1000 * i + j)) /= 0) then
-                        print *, 'error, i= ', i, buffer(i), 1000 * i + j
-                     end if
-30                   continue
-                     end if
-40                   continue
-                     write (*, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
-                     write (*, '(''Reading (real time) [sec]:'',1PE13.5)') elap_r
+      write(*,'(''opdracht '', I3)') j
+      UINDEX(start,1) = j
+      UINDEX(stp  ,1) = j
+      UINDEX(incr ,1) = 1
+      usrord(1)= 1
+      call clock(cpu1)
+      error= Getelt( fds, 'DATAGRP_TEST_3D',&
+      &'ELEM_R_4_DIM_1', UINDEX, usrord, BUFSIZ*4,&
+      &buffer)
+      call clock(cpu2)
+      elap_r = elap_r + cpu2 - cpu1
+      if (error .ne. 0) then
+         ierror = neferr( 0, errstr)
+         write(*,*)
+         write(*,'(a)') trim(errstr)
+         goto 9999
+      else
+         do 30 i= 1, BUFSIZ
+            IF ( (buffer(i)- (1000*i+j) ).NE. 0) then
+               print *,'error, i= ', i, buffer(i), 1000*i+j
+            endif
+30       continue
+      endif
+40 continue
+   write(*,'(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+   write(*,'(''Reading (real time) [sec]:'',1PE13.5)') elap_r
 
-9999                 continue
+9999 continue
 
-                     error = Clsdat(fds)
-                     if (error /= 0) then
-                        ierror = neferr(0, errstr)
-                        write (*, *)
-                        write (*, '(a)') trim(errstr)
-                     end if
+   error= Clsdat( fds)
+   if (error .ne. 0) then
+      ierror = neferr( 0, errstr)
+      write(*,*)
+      write(*,'(a)') trim(errstr)
+   endif
 
-                     error = Clsdef(fds)
-                     if (error /= 0) then
-                        ierror = neferr(0, errstr)
-                        write (*, *)
-                        write (*, '(a)') trim(errstr)
-                     end if
+   error= Clsdef( fds)
+   if (error .ne. 0) then
+      ierror = neferr( 0, errstr)
+      write(*,*)
+      write(*,'(a)') trim(errstr)
+   endif
 
-                     ierror = neferr(0, errstr)
-                     write (*, *)
-                     write (*, '(a)') trim(errstr)
+   ierror = neferr( 0, errstr)
+   write(*,*)
+   write(*,'(a)') trim(errstr)
 
-                  end
+END
 !====================================================================
 !     Convert clock time to seconds
 !
-                  subroutine clock(cpu)
+subroutine clock( cpu )
 
-                     integer ihr, imin, isec, i100th
-                     real cpu
+   integer ihr, imin, isec, i100th
+   real cpu
 
-                     ihr = 0
-                     imin = 0
-                     isec = 0
-                     i100th = 0
-                     cpu = 0.
+   ihr = 0
+   imin = 0
+   isec = 0
+   i100th = 0
+   cpu = 0.
 !      CALL Gettim(ihr, imin, isec, i100th)
 !      cpu = ihr*3600.0 + imin*60.0 + isec + i100th/100.0
 !      call system_clock(ihr,imin)
 !      cpu = ihr/real(imin)
 
-                  end
+end
