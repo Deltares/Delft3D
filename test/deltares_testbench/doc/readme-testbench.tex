@@ -188,6 +188,16 @@ There are two ways to run the testbench.
 \item[Comparison] A comparison run as the name implies compares results to the reference, this is usefull to see if changes made to the code don't result in changes in results for models. We run these comparisons before merging code to prevent unforseen consequences of changing the code. This prevents possible faulty code to be merged into the main branch. More info here: \autoref{ssec:runcomp}
 \item[Reference] A reference run is used to create new references to compare against. If a comparison run fails it could be decided that the references are wrong or outdated due to for example new ways of compiling code or changing numeric models. Running in this way allows us to update the references easily from within the testbench and then to be rolled out as new standard to compare against.
 \end{description}
+Running the testbench will usually follow these steps, arguments to overwrite this behaviour can be provided. These arguments are listed here: \autoref{ssec:cmdparam}
+\begin{itemize}
+\item Download testcase and reference data from MinIO as specified by the xml configuration.
+\item Execute programs defined in the xml under defaulttestcases or directly in the testcase, following the order, if this is provided for execution.
+\item Post processing:
+\begin{itemize}
+\item[Comparison:] Results of the execution are compared to the downloaded references as defined by the xml and a result.txt is placed within the testcase folder. This contains results from provided parameters deviations against the reference.
+\item[Reference:] Read the \_tb3\_char.run which lists the files that are new or have changed from before running the test to after. Copy these files from the testcase folder into the reference folder.
+\end{itemize}
+\end{itemize}
 
 \newpage
 \section{Users}
@@ -210,7 +220,7 @@ Once this is successfully completed we go to visual studio code and open the com
 \Note A common issue is: "Activate.ps1 cannot be loaded because the execution of scripts is disabled on this system." For troubleshooting steps, refer to \autoref{sec:troubleshooting}
 
 Now we need to fill this virtual environment with the required python packages. If the venv is successfully activated your terminal within vscode will show (venv) in front of the terminal. If the venv is successfully activated you can run the command \command{pip install -r requirements.txt} from within the deltares\_testbench folder.
-
+\newpage
 \subsection{Run testcase}
 Once the installation steps are done you can now use the testbench. To run tests we need engines. They can be build locally or you can get them from TeamCity for windows here: \url{https://dpcbuild.deltares.nl/buildConfiguration/Dimr\_DimrCollectors\_1aDimrCollectorDailyWin64}.
 
@@ -297,9 +307,9 @@ You can run the testbench script by going into the \dir{delft3d/test/deltares\_t
 The testbench has a couple of parameters that can be supplied for a run resulting in different behaviour for the testbench script.
 This section will provide the available parameters and their function.
 \begin{guilist}
-\item[\texttt{-{}-username}] Your username to download testcases.
+\item[\texttt{-{}-username}] Your username to download testcases. More information about authentication: \autoref{sssec:credentials}
 
-\item[\texttt{-{}-password}] Your password to download testcases. It is recommended to use \command{-{}-interactive} to supply your password for running the testbench.
+\item[\texttt{-{}-password}] Your password to download testcases. It is recommended to use \command{-{}-interactive} to supply your password for running the testbench. More information about authentication: \autoref{sssec:credentials}
 
 \item[\texttt{-{}-interactive, -i}] Allows user to supply credentials to testbench by prompt.
 \newline
@@ -310,7 +320,12 @@ This section will provide the available parameters and their function.
 
 \item[\texttt{-{}-config}] Indicates which Testbench configuration file should be used. Default: \texttt{config.xml}.
 
-\item[\texttt{-{}-filter}] Offers the possibility to filter test cases from the indicated configuration file.\newline
+\item[\texttt{-{}-skip-download}] Do not sync files with content from the MinIO repository, options: all,dependency,cases,references
+
+\item[\texttt{-{}-skip-run}] Do not execute programs specified by the config xml, this does not skip downloads or post processing.
+
+\item[\texttt{-{}-filter}] Offers the possibility to filter test cases from the indicated configuration file.
+\newline
 %
 \textbf{Example:}
 %
@@ -327,6 +342,17 @@ This section will provide the available parameters and their function.
 
 \item[\texttt{-{}-teamcity}] Offers Teamcity-compatible logging.
 \end{guilist}
+
+\subsubsection{Credentials}
+\label{sssec:credentials}
+The introduction of MinIO changed the credentials that you need to supply to download cases/references to an access key system. Instructions on how to setup MinIO access keys can be found here: \autoref{sssec:miniokeys}.
+
+The testbench now uses the AWSConfigProvider to locate MinIO keys from a file under the user folder: \dir{C:/users/<user>/.aws/credentials}. This file can be automatically created and filled by running the testbench.py in interactive mode. Fill in the correct credentials to access MinIO. The testbench will then prompt you to create a credentials file if it doesn't exist on the specified location yet. It is possible to create the file at the correct location and filling it manually following this layout:
+\begin{Verbatim}
+[default]
+aws_access_key_id = <your_access_key>
+aws_secret_access_key = <your_secret_key>
+\end{Verbatim}
 
 \subsection{Testcase repository}
 The main use of the testbench is to compare results of branches to the latest references of a stable version. This comparison will either succeed or fail and helps to determine whether a change impacted the test models in an unforeseen way. A course of action for the result can then be determined.
@@ -405,6 +431,7 @@ This section focuses on updating and maintaining the testbench. These things are
 The testbench runs a case by using input data stored by MinIO. MinIO can be accessed with an interface by going to \url{https://s3-console.deltares.nl/}. The bucket for testcases and references is located under \dir{dsc-testbench}. The layout is described here: \autoref{fig:miniorepo}.
 
 \subsubsection{Creating a MinIO access key}
+\label{sssec:miniokeys}
 To download from MinIO using the testbench, you need to create an access key. The MinIO API only accepts access keys for login, your normal (AD) credentials won’t work.
 In the console, there is a tab for access keys \autoref{fig:minioaccess}, or you can directly open the page using this link: link:\url{https://s3-console.deltares.nl/access-keys}.
 \begin{figure}[H]

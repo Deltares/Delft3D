@@ -34,10 +34,8 @@ class TestDSeriesBenchmarkComparer:
         settings = TestBenchSettings()
         settings.config_file = join(self.testdata, "Unit_test.xml")
         settings.credentials.name = "commandline"
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            settings, logger
-        )
-        file = settings.configs
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
 
         # The first file that is going to be checked passed as attribute
         self.file_check = file[0].checks[0]
@@ -498,10 +496,8 @@ class TestDSeriesBenchmarkComparer:
         settings = TestBenchSettings()
         settings.config_file = join(self.testdata, "Unit_test_empty_file.xml")
         settings.credentials.name = "commandline"
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            settings, logger
-        )
-        file = settings.configs
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         # The file to be checked
         file_check = file[0]._TestCaseConfig__checks[0]
 
