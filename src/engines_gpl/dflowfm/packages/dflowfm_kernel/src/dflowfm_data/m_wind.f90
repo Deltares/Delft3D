@@ -65,8 +65,6 @@ double precision, allocatable         :: tbed(:)         !< bed temperature     
 
 double precision, allocatable         :: cdwcof(:)       !< wind stress cd coefficient () , only if jatemp ==5
 
-integer         , allocatable         :: kcw (:)         !< mask array
-
 integer                           :: jawind              !< use wind yes or no
 integer                           :: japatm              !< use patm yes or no
 integer                           :: jaspacevarcharn     !< use space and time varying Charnock coefficients yes or no

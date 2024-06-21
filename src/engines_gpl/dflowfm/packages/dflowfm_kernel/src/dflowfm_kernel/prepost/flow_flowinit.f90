@@ -1147,37 +1147,38 @@ end subroutine include_ground_water
 !> include_infiltration_model
 subroutine include_infiltration_model()
    use m_hydrology_data, only : infiltrationmodel, DFM_HYD_INFILT_CONST, DFM_HYD_INFILT_DARCY, infiltcap
-   use m_flowgeom,       only : kcsini, prof1D, lnx, ln, lnx1D
+   use m_flowgeom,       only : prof1D, lnx, ln, lnx1D
    use m_cell_geometry,  only : ndx
    use m_alloc!,        only : realloc
 
    implicit none
 
-   integer     :: link
-   integer     :: cell
-   integer     :: left_cell
-   integer     :: right_cell
+   integer               :: link
+   integer               :: cell
+   integer               :: left_cell
+   integer               :: right_cell
+   integer, allocatable  :: mask(:) 
+
 
    if (infiltrationmodel == DFM_HYD_INFILT_CONST .or. &
        infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
-       call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
+       allocate(mask(ndx), source = 0)
        do link = 1, lnx  ! only one connected open profile will open surface runoff
           left_cell  = ln(1,link)
           right_cell = ln(2,link)
           if (link <= lnx1D) then
              if (prof1D(3,link) < 0) then ! closed profile
              else
-                 kcsini(left_cell)  = 1
-                 kcsini(right_cell) = 1
+                 mask(left_cell)  = 1
+                 mask(right_cell) = 1
              end if
           else
-             kcsini(left_cell)  = 1
-             kcsini(right_cell) = 1
+             mask(left_cell)  = 1
+             mask(right_cell) = 1
           end if
        end do
-       infiltcap(:) = infiltcap(:)*kcsini(:)  ! 0 for all links closed
+       infiltcap(:) = infiltcap(:)*mask(:)  ! 0 for all links closed
 
-       deallocate(kcsini) ! GM: why is it deallocated here?
    end if
  
 end subroutine include_infiltration_model

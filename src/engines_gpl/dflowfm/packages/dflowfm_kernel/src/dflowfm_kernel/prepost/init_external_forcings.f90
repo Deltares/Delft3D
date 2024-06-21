@@ -59,12 +59,12 @@ contains
       
       character(len=*), intent(in)  :: external_force_file_name   !< file name for new external forcing boundary blocks
       logical                       :: res
-      
+
       logical                       :: is_successful
       type(tree_data), pointer      :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
       type(tree_data), pointer      :: node_ptr            !
       integer                       :: istat               !
-      integer, parameter            :: INI_KEY_LEN = 32    !
+      integer, parameter            :: INI_KEY_LEN   =  32 !
       integer, parameter            :: INI_VALUE_LEN = 256 !
       character(len=:), allocatable :: group_name          !
       character(len=INI_VALUE_LEN)  :: property_name
@@ -74,7 +74,7 @@ contains
       character(len=INI_VALUE_LEN)  :: forcing_file        !
       character(len=INI_VALUE_LEN)  :: forcing_file_type   !
       character(len=INI_VALUE_LEN)  :: target_mask_file    !
-      integer                       :: i, j                 !
+      integer                       :: i, j                !
       integer                       :: method
       integer                       :: num_items_in_file   !
       integer                       :: num_items_in_block
@@ -112,9 +112,9 @@ contains
       minor = 0
       call prop_get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
       if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-          write (msgbuf,'(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''&
-              //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
-              '. Ignoring this file.'
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          res = .false.
          return
@@ -131,13 +131,13 @@ contains
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
-         ib = itpenz(ibt)
+         ib  = itpenz(ibt)
          if (ib > 0) then
             itpenzr(ib) = ibt
          end if
       end do
       do ibt = 1, nbndu
-         ib = itpenu(ibt)
+         ib  = itpenu(ibt)
          if (ib > 0) then
             itpenur(ib) = ibt
          end if
@@ -186,7 +186,7 @@ contains
          do n = 1, numlatsg
             balat(n) = 0d0
             do k1 = n1latsg(n), n2latsg(n)
-               k = nnlat(k1)
+               k  = nnlat(k1)
                if (k > 0) then
                   if (.not. is_ghost_node(k)) then
                      balat(n) = balat(n) + ba(k)
@@ -310,7 +310,7 @@ contains
                         is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                      else if (forcing_file == '-') then
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
-                                                                  operand=oper, targetindex=target_index(1))
+                                                                        operand=oper, targetindex=target_index(1))
                      else
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
                                                                 operand=oper, forcingfile=forcing_file, targetindex=target_index(1))
@@ -318,10 +318,10 @@ contains
                   else
                      if (forcing_file == '-') then
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                  operand=oper)
+                                                                        operand=oper)
                      else
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                  operand=oper, forcingfile=forcing_file)
+                                                                        operand=oper, forcingfile=forcing_file)
                      end if
                   end if
                   res = res .and. is_successful ! Remember any previous errors.
@@ -340,8 +340,8 @@ contains
                   continue
                else
                   ! res remains unchanged: support ignored lines in ext file.
-                     write (msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', &
-                         trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
+                  write (msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', &
+                     trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
                   call warn_flush()
                   cycle
                end if
@@ -352,8 +352,8 @@ contains
             if (len_trim(rec) > 0) then
                call mess(LEVEL_WARN, trim(rec))
             end if
-            call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)//&
-                '''. Check preceding log lines for details.')
+            call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
+                      '''. Check preceding log lines for details.')
          end if
 
          res = .true.
@@ -490,7 +490,8 @@ contains
          end if
 
          qid = 'lateral_discharge' ! New quantity name in .bc files
-         is_successful = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, kx, qplat(1, :))
+         is_successful = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
+             kx, qplat(1, :))
          if (is_successful) then
             jaqin = 1
             lat_ids(numlatsg) = loc_id
@@ -506,7 +507,9 @@ contains
 
          logical :: res
 
-         integer, allocatable           :: k_mask(:)
+         integer, allocatable           :: mask(:)
+         integer, allocatable           :: selected_nodes(:)
+         integer                        :: number_of_selected_nodes, node
          logical                        :: invert_mask
          logical                        :: is_variable_name_available
          logical                        :: is_target_mask_available
@@ -526,7 +529,7 @@ contains
          call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
          if (.not. is_successful) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-                ']. Field ''forcingFileType'' is missing.'
+               ']. Field ''forcingFileType'' is missing.'
             call warn_flush()
             return
          end if
@@ -534,7 +537,7 @@ contains
          call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
          if (.not. is_successful) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
-                ']. Field ''forcingFile'' is missing.'
+               ']. Field ''forcingFile'' is missing.'
             call warn_flush()
             return
          else
@@ -547,22 +550,23 @@ contains
          invert_mask = .false.
          call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
 
-         call realloc(kcsini, ndx, keepExisting=.false., fill=0)
+         allocate (mask(ndx), source=0)
          if (len_trim(target_mask_file) > 0) then
             ! Mask flow nodes based on inside polygon(s), or outside.
-            ! in: kcs, all flow nodes, out: kcsini: all masked flow nodes.
-            call realloc(k_mask, ndx, keepExisting=.false., fill=0)
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, k_mask, nini, LOCTP_POLYGON_FILE, target_mask_file)
-            do n = 1, nini
-               kcsini(k_mask(n)) = 1
+            ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
+            allocate (selected_nodes(ndx), source=0)
+            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
+                target_mask_file)
+            do node = 1, number_of_selected_nodes
+               mask(selected_nodes(node)) = 1
             end do
             if (invert_mask) then
-               kcsini = ieor(kcsini, 1)
+               mask = ieor(mask, 1)
             end if
 
          else
             ! 100% masking: accept all flow nodes that were already active in kcs.
-            where (kcs /= 0) kcsini = 1
+            where (kcs /= 0) mask = 1
          end if
 
          is_variable_name_available = .false.
@@ -634,10 +638,10 @@ contains
                ilattype = ILATTP_ALL
             end select
 
-            call realloc(kcsini, ndx, keepExisting=.false., fill=0)
-            call prepare_lateral_mask(kcsini, ilattype)
+            mask(:) = 0
+            call prepare_lateral_mask(mask, ilattype)
 
-            res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, 2, kcsini)
+            res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, 2, mask)
             return ! This was a special case, don't continue with timespace processing below.
          case default
             write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
@@ -649,14 +653,15 @@ contains
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-            is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), kcsini, kx, 'global', filetype, &
-                                              method, oper, forcingfile=forcing_file)
+            is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, 'global', filetype, &
+                                                    method, oper, forcingfile=forcing_file)
          case default
             if (is_variable_name_available) then
-               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), kcsini, kx, forcing_file, filetype, method, oper, &
-                                                 varname=variable_name)
+               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, forcing_file, filetype, &
+                   method, oper, varname=variable_name)
             else
-               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), kcsini, kx, forcing_file, filetype, method, oper)
+               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, forcing_file, filetype, &
+                   method, oper)
             end if
          end select
 
@@ -677,7 +682,7 @@ contains
 
    end function init_external_forcings
 
-!> Allocate and initialized atmosperic pressure variable(s)
+!> Allocate and initialize atmosperic pressure
    module function allocate_patm() result(status)
       use m_wind, only: patm
       use m_cell_geometry, only: ndx

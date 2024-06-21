@@ -53,6 +53,7 @@ function flow_initwaveforcings_runtime() result(retval)              ! This is t
  integer               :: method_l
  character(len=1)      :: operand_l
  character(len=256)    :: qid_l
+ integer, allocatable  :: kcw (:)         ! mask array
 
  if (extfor_wave_initialized) then
     retval = .true.
@@ -65,9 +66,8 @@ function flow_initwaveforcings_runtime() result(retval)              ! This is t
  operand_l  = 'O' ! Override
  kx = 1           ! default vectormax = 1
  !
-call realloc(kcw, ndx, stat=ierr)
+allocate(kcw(ndx), source = 1, stat=ierr)
 call aerr('kcw(ndx)', ierr, ndx)
-kcw = 1
 
  qid_l = 'hrms'
  if (.not. allocated(hwavcom) ) then

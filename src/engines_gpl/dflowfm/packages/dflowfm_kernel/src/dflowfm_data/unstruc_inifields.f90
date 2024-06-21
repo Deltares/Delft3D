@@ -202,6 +202,8 @@ function initInitialFields(inifilename) result(ierr)
    logical(kind=c_bool), allocatable :: specified_indices(:)
    double precision                  :: global_value, water_level_global_value
    logical                           :: global_value_provided, water_level_global_value_provided
+   integer,          allocatable     :: kcsini(:)      ! node code during initialization
+
 
    logical, external :: timespaceinitialfield_mpi
 
