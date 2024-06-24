@@ -52,7 +52,7 @@ use m_fm_write_unc
    use partmem
    use m_part_mesh
    use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
-   use part10fm_mod
+   use part10fm_mod 
    use fm_oildsp_mod
    use fm_vert_disp_mod
    use m_partfm_decay
@@ -205,7 +205,10 @@ use m_fm_write_unc
       call update_part(itime)
       call part10fm()
 !      jsferic = jsfer_old ! back to what it should be
-      call oildspfm(itime)
+      if ( oil ) then
+          call oildspfm(itime)
+      end if
+      
       call fm_vert_disp(lun(2), itime)
 !     interpolation for wind speed/direction in the wind table
    end do

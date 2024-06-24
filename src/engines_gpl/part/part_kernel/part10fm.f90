@@ -34,7 +34,8 @@ subroutine part10fm()
 !
 !     system administration : frank kleissen
     use m_waq_precision
-    use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, abuoy, t0buoy, ldiffh, nosubs, mpart, lsettl, noslay
+    use partmem, only: nopart, modtyp, drand, oil, nfract, wpart, iptime, idelt, &
+        abuoy, t0buoy, ldiffh, nosubs, mpart, lsettl, noslay
     use m_part_mesh
     use m_particles, laypart => kpart
     use m_part_times
@@ -165,6 +166,7 @@ subroutine part10fm()
             tp = real(iptime(ipart), kind=kind(tp))
             abuac  = abuoy(ipart)
             dran1  = drand(1)
+            itdelt = idelt
             if ( tp .lt. 0.0 ) then           !   adaptations because of smooth loading
                 tp     = 0.0
                 itdelt = dts + iptime(ipart)
@@ -314,13 +316,14 @@ subroutine part10fm()
 !
 !   system administration : frank kleissen
     use partmem
-    use m_particles
+    use m_particles, laypart => kpart
     use m_part_times
     use m_part_recons
     use m_sferic
     use m_sferic_part,only: ptref
+    use m_part_flow, only: h0, kmx
 
-    use m_part_mesh, only: xzwcell, yzwcell, zzwcell
+    use m_part_mesh, only: xzwcell, yzwcell, zzwcell, cell2nod
     use geometry_module, only: Cart3Dtospher, sphertocart3D
     use physicalconsts, only: earth_radius
     use mathconsts, only: raddeg_hp
@@ -336,7 +339,6 @@ subroutine part10fm()
 
     integer(int_wp )      :: ierror                  ! needed to call part07
     integer(int_wp )      :: ifract                  ! loop counter for nfract
-    integer(int_wp )      :: itdelt                  ! delta-t of the particle for smooth loading
     integer(int_wp )      :: kp                      ! k of the particle
     logical               :: dstick                  ! logical that determines sticking
     logical               :: twolay                  ! = modtyp .eq. model_two_layer_temp
@@ -358,7 +360,16 @@ subroutine part10fm()
     double precision      :: xpartold, ypartold, zpartold, xnew, ynew, fangle, fanglew, difangle
     double precision, dimension(1) :: xx, yy
     double precision      :: dpxwind, dpywind, windcurratio, wvel_sf, dwx, dwy, ux0, uy0, ux0old, uy0old, xcr, ycr
+    double precision      :: vxw, vyw, vw_net      ! wind drift in x, y and net wind for drag
     double precision      :: ioptev(nfract)
+    integer(int_wp)              :: partcel, partlay, pc, pcnew
+    real(dp), dimension(noslay)  :: totdepthlay             ! total depth (below water surface) of bottom of layers
+    real(sp)      :: leeway_ang_sign
+    integer(int_wp)              :: pb                      ! lowest waterlayer at particle position
+    integer(int_wp)              :: ilay
+    real(dp)                     :: dhpart, thicknessl, depthp
+    
+
     integer(4), save      :: ithndl = 0              ! handle to time this subroutine
 
     if ( timon ) call timstrt( "part10fm_pdrag", ithndl )
@@ -393,24 +404,6 @@ subroutine part10fm()
         endif
         fstick(ifract) = const((ifract - 1)*nfcons+npadd+ 4)      ! stickiness probability [0,1], this part is taken from the delf3d oildsp code
     endif
-! TODO implement the drag for near surface particles, in part10 this is resolved by, this needs to be done for fm:
-!             if (apply_wind_drag) then
-!               if (kp==ktopp) then laytop?
-!                  zpabs = zp * locdep(n0, kp)
-!                  if (zpabs .lt. max_wind_drag_depth) then
-!                     leeway_ang_sign = float(mod(ipart, 3) - 1)
-!!                     write(*,*) 'particle nr: ',ipart, ' sign: ',  leeway_ang_sign ! to distribute negative positive and 0 angle over the particles
-!                     vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
-!                     vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
-!                     vw_net = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
-!!                    drag on the difference vector: cd * (wind - flow)
-!                     if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
-!                         xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net))/dxp) * itdelt    ! THis modifier may need to be adjusted de to the angle
-!                         ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier * cos ((vyw-vyr)/vw_net))/dyp) * itdelt    !
-!                     endif
-!                  end if
-!               end if
-!            end if
 
     wdirr    = wdir(mpart(ipart)) * twopi / 360.0d0
     dpxwind  = - wvelo(mpart(ipart)) * sin( wdirr) !TODO check the angles . for both sferical as wel as cartesian grids.
@@ -424,9 +417,44 @@ subroutine part10fm()
     uy0old = u0y(mpartold) + alphafm(mpartold)*(ypartold-yzwcell(mpartold))
     dwx = cdrag*(dpxwind - ux0) * dts
     dwy = cdrag*(dpywind - uy0) * dts  !this is for carthesian grids.
-    xpart(ipart) = xpartold  + dwx    !cartesian
-    ypart(ipart) = ypartold  + dwy    !
+! TODO implement the drag for near surface particles, in part10 this is resolved by, this needs to be done for fm:
+    if (apply_wind_drag) then  ! calculate particle deth from surface
+        partcel = abs(cell2nod(mpart(ipart)))  ! the segment number of the layer 1
+        !layer number
+        partlay = laypart(ipart)
 
+        totdepthlay(1) = h0(partcel)
+        pc             = partcel + (partlay-1) * hyd%nosegl
+        pb             = laybot(1, mpart(ipart))
+        do ilay = 2, noslay
+           if (ilay <= kmx) then
+              totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
+           end if
+        enddo
+
+        thicknessl = h0(pc)
+        ! depth of the particle from water surface
+        if ( laypart(ipart) == 1 ) then
+            depthp = thicknessl * hpart(ipart)
+        else
+            depthp = totdepthlay(laypart(ipart)-1) + thicknessl * hpart(ipart)
+        endif
+
+        if (depthp .lt. max_wind_drag_depth) then
+            leeway_ang_sign = float(mod(ipart, 3) - 1)
+            vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang )
+            vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang )
+            vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
+!           drag on the difference vector: cd * (wind - flow)
+            if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                dwx = ((cdrag*(vxw-ux0) + leeway_modifier * sin ((vxw-ux0)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
+                dwy = ((cdrag*(vyw-uy0) + leeway_modifier * cos ((vyw-uy0)/vw_net))) * dts    !
+            endif
+        end if
+    end if
+    xpart(ipart) = xpartold  + dwx    !here it is all in m.
+    ypart(ipart) = ypartold  + dwy    !
+    ! write(*,*)'Displacement x and y in fragfm routine: ', dwx, dwy
     ! the z-coordinate needs to be updated
     if ( jsferic .eq. 1 ) then
         ! if sferical then for a good conversion we need to calculate distances
@@ -434,10 +462,11 @@ subroutine part10fm()
         zpartold = zpart(ipart)
         ux0old = atan2(ux0old,earth_radius) * raddeg_hp
         uy0old = atan2(uy0old,earth_radius) * raddeg_hp
-        dpxwind  = - wvel_sf * sin( wdirr)  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-        dpywind  = - wvel_sf * cos( wdirr)
-        dwx = cdrag*(dpxwind - ux0old) * dts
-        dwy = cdrag*(dpywind - uy0old) * dts
+        dpxwind  = - wvel_sf * sin( wdirr + leeway_ang_sign * defang )  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
+        dpywind  = - wvel_sf * cos( wdirr + leeway_ang_sign * defang )
+        vw_net = sqrt((dpxwind-ux0old)**2 + (dpywind-uy0old)**2)
+        dwx = (cdrag*(dpxwind - ux0old) + leeway_modifier * sin ((dpxwind-ux0old)/vw_net)) * dts
+        dwy = (cdrag*(dpywind - uy0old) + leeway_modifier * sin ((dpywind-uy0old)/vw_net)) * dts
         call Cart3Dtospher(xpartold,ypartold,zpartold,xx(1),yy(1),ptref)
         xx(1) = xx(1) + dwx
         yy(1) = yy(1) + dwy

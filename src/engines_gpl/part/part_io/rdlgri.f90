@@ -196,7 +196,7 @@ contains
       call alloc ( "aagrid", aagrid, nmaxp, mmaxp, layt )
       laytop = 0
       laytopp = 0
-      laybot = 0
+      laybot = layt
       pagrid = 0
       aagrid = 0
       if (zmodel) then

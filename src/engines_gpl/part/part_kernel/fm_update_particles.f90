@@ -83,9 +83,9 @@ subroutine update_particles(q,h0,h1,Dt)
           return
       endif
 
-      write(*,*) 'iter=', iter, 'numremaining=', numremaining(1)
+!      write(*,*) 'iter=', iter, 'numremaining=', numremaining(1)
       if ( numremaining(1) == 0 ) then
-         write(*,*) 'iter=', iter
+!         write(*,*) 'iter=', iter
          exit
       end if
    end do

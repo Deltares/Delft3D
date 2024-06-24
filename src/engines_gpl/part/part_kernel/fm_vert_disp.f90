@@ -177,7 +177,12 @@ subroutine fm_vert_disp (lunpr, itime)
 
         totdepthlay(1) = h0(partcel)
         pc             = partcel + (partlay-1) * hyd%nosegl
-        pb             = laybot(1, mpart(ipart))
+        pb = kmx
+        ! only for zlayermodel, otherwise it is not defined in fm
+        if (zmodel) then
+            pb             = laybot(1, mpart(ipart))
+        end if
+    
         ubstar_b = sqrt( c2g * (u0x(pc)**2 + u0y(pc)) )
         do ilay = 2, noslay
            if (ilay <= kmx) then

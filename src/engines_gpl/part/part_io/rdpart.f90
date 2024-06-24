@@ -325,7 +325,7 @@ contains
 !     read substance names
 
       if ( gettoken( nosubs , ierr2 ) .ne. 0 ) goto 4009
-      nfract = 0
+      nfract = 1
       if ( oil ) then
          if ( gettoken( nfract , ierr2 ) .ne. 0 ) goto 4009
       endif
@@ -894,7 +894,6 @@ contains
                   leeway = .true.
                   apply_wind_drag = .true.
                   call get_command_argument(0, cbuffer)
-                  write(*,*)TRIM(cbuffer(:cindex))
                   leeway_csvfile = TRIM(cbuffer(:cindex)//'../share/delft3d/' // leeway_csvfile)
                   write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
                   open( newunit = lunfil, file = leeway_csvfile )
