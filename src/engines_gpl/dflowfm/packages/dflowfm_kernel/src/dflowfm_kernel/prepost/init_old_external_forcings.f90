@@ -5,8 +5,8 @@ implicit none
 
    contains
    
-   !> Initialize external forcings from an 'old' format ext file.
-   module subroutine init_external_forcings_old(iresult)
+   !> Initialize external forcings from an 'old' format ext file. Only to be called once as part of fm_initexternalforcings.
+   module subroutine init_old(iresult)
    
    use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
    use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs, ln
@@ -1315,6 +1315,6 @@ implicit none
       enddo
       call timstop(handle_extra(50)) ! extforcefile old
 
-   end subroutine init_external_forcings_old
+   end subroutine init_old
    
 end submodule old_initialisation

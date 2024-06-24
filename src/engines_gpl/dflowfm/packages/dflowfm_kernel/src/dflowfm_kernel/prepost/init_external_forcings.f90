@@ -33,8 +33,8 @@ submodule(m_external_forcings) initialisation
 
 contains
 
-!> reads new external forcings file and makes required initialisations
-   module function init_external_forcings(external_force_file_name) result(res)
+!> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
+   module function init_new(external_force_file_name) result(res)
       use properties
       use tree_data_types
       use tree_structures
@@ -687,6 +687,6 @@ contains
 
       end function init_meteo_forcings
 
-   end function init_external_forcings
+   end function init_new
 
 end submodule initialisation
