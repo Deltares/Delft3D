@@ -52,4 +52,4 @@ ML_RAFT15_NDL,Maritime life rafts with deep ballast systems and canopies,15-25 p
 ML_RAFT15_WD_H,Maritime life rafts with deep ballast systems and canopies,15-25 person capacity,with drogue,heavy loading,0.031,-0.04,9
 ML_RAFT_C,Maritime life rafts with deep ballast systems and canopies,capsized,--,--,0.009,0.00,12
 ML_RAFT_S,Maritime life rafts with deep ballast systems and canopies,swamped,--,--,0.010,-0.02,8
-TESTOBJ,Maritime life rafts with deep ballast systems and canopies,swamped,--,--,0.000, 0.00,45
+TESTOBJ,Maritime life rafts with deep ballast systems and canopies,swamped,--,--,0.020, 0.00,35
