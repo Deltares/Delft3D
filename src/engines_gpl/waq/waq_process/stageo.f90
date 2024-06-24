@@ -31,8 +31,8 @@ contains
     subroutine stageo (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
         !>\file
         !>       Geometric mean of a variable during a certian time span
@@ -138,7 +138,7 @@ contains
                     'Threshold must be a positive value'
             WRITE(LUNREP, *) &
                     'Threshold: ', THRESH
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
 
         THRLOG = LOG(THRESH) * DELT
@@ -219,7 +219,7 @@ contains
                     PMSA(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG

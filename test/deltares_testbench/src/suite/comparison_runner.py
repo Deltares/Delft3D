@@ -82,9 +82,11 @@ class ComparisonRunner(TestSetRunner):
         log_file = os.path.join(test_case_config.absolute_test_case_path, "result.txt")
         logger.info(f"Detailed comparison results will be written to: {log_file}")
 
-        composite_logger = CompositeLogger(
-            [logger, FileLogger(LogLevel.DEBUG, test_case_config.name, log_file)]
-        )
+        logger_list = [FileLogger(LogLevel.DEBUG, test_case_config.name, log_file)]
+        if self.settings.teamcity:
+            logger_list.append(logger)
+
+        composite_logger = CompositeLogger(logger_list)
 
         composite_logger.debug("RESULTS of the comparison run")
 
@@ -263,6 +265,9 @@ class ComparisonRunner(TestSetRunner):
                     maxAbsDiff_worst = comparison_result.maxAbsDiff
                     result_worst = comparison_result.result
                     i_worst = i
+
+            if i_worst == -1 and tc_results and len(tc_results) > 0:
+                i_worst = len(tc_results) - 1
 
             # Local variables now contain the 'worst' scores for that test case. This one will be written in the summary
             worst_result = tc_results[i_worst]

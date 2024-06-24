@@ -70,7 +70,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     integer(pntrsize)             , pointer :: cfvrou
     integer(pntrsize)             , pointer :: decay
     integer(pntrsize)             , pointer :: dicuv
-    integer(pntrsize)             , pointer :: dp
+    integer(pntrsize)             , pointer :: dpd
     integer(pntrsize)             , pointer :: dpu
     integer(pntrsize)             , pointer :: dpv
     integer(pntrsize)             , pointer :: drodep
@@ -479,7 +479,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     cfvrou              => gdp%gdr_i_ch%cfvrou
     decay               => gdp%gdr_i_ch%decay
     dicuv               => gdp%gdr_i_ch%dicuv
-    dp                  => gdp%gdr_i_ch%dp
+    dpd                 => gdp%gdr_i_ch%dpd
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
     drodep              => gdp%gdr_i_ch%drodep
@@ -607,7 +607,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
     !
     call rddept(lundia    ,error     , &
               & filnam    ,fmtfil    ,depuni    ,mmax      , &
-              & nmax      ,nmaxus    ,r(dp)     ,gdp       )
+              & nmax      ,nmaxus    ,r(dpd)    ,gdp       )
     if (error) goto 9999
     !
     ! Open boundary definition
@@ -648,7 +648,7 @@ subroutine readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt 
             & nmax      ,nmaxus    ,kmax      ,lstsci    ,ltur      , &
             & ch(namcon),r(s1)     ,r(u1)     ,r(v1)     ,r(r1)     , &
             & r(rtur1)  ,r(decay)  ,r(umnldf) ,r(vmnldf) ,i(kfu)    , &
-            & i(kfv)    ,r(dp)     ,lsed      ,gdp       )
+            & i(kfv)    ,r(dpd)    ,lsed      ,gdp       )
     if (error) goto 9999
     !
     ! Boundary conditions general (only if nto > 0)

@@ -99,7 +99,7 @@ use m_fm_write_unc
    ! For a model based on z-layers we need extra administration
    ! but that is not part of the current implementation yet
    !
-   allocate( laytop(0,0), laybot(0,0), laytopp(0,0) )
+   allocate( laytop(0,0), laytopp(0,0) )
 
    !
    ! Read the grid information and the actual input file
@@ -148,7 +148,7 @@ use m_fm_write_unc
    ptref = 0.0D0
 
    if ( notrak > 0 ) call unc_init_trk()
-   call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, hyd%nolay)
+   call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
 
    time0 = tstart_user
    time1 = time0

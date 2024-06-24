@@ -9,6 +9,7 @@ set(oss_dependencies deltares_common
         part_kernel_f
         part_utils_f
         waq_memory
+        waq_utils_f
         waq_plugin_wasteload
         waq_process
         waq_data

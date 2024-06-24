@@ -28,57 +28,35 @@ module m_dlwqf2
 contains
 
 
-    subroutine dlwqf2 (noseg, nobnd, idt, volnew, trace)
+    !> Initialize diagonal for fast solvers
+    subroutine dlwqf2(noseg, nobnd, idt, volnew, trace)
 
-        !     Deltares - Delft Software Department
-
-        !     Created   : Sept.1996 by Leo Postma
-
-        !     Function  : set diagonal, fast solvers version
-
-        !     Modified  : Nov. 1996, Kian Tan    : RHS moved to DLWQF4
-        !                 July 2008, Leo Postma  : WAQ perfomance timers
-        !                 July 2009, Leo Postma  : double precission version
-
-        use timers                         ! WAQ performance timers
+        use timers
 
         implicit none
 
-        !     Arguments           :
+        integer(kind = int_wp), intent(in) :: noseg !< Number of cells or computational volumes
+        integer(kind = int_wp), intent(in) :: nobnd !< Number of open boundaries
+        integer(kind = int_wp), intent(in) :: idt   !< Time step size
 
-        !     Kind        Function         Name                  Description
+        real(kind = real_wp), intent(in   ) :: volnew(noseg)        !< Volumes end of time step
+        real(kind = dp),      intent(  out) :: trace(noseg + nobnd) !< Diagonal vector
 
-        integer(kind = int_wp), intent(IN) :: noseg               ! Number of computational volumes
-        integer(kind = int_wp), intent(IN) :: nobnd               ! Number of open boundaries
-        integer(kind = int_wp), intent(IN) :: idt                 ! Time step size in scu's
-        real(kind = real_wp), intent(IN) :: volnew(noseg) ! Volumes end of time step
-        real(kind = dp), intent(OUT) :: trace (noseg + nobnd) ! Diagonal vector
-
-        !     Local declarations
-
-        real(kind = dp) :: dt                                    ! Time step in double
-        integer(kind = int_wp) :: iseg                                  ! Loop variable
-
-        !     The WAQ-timer
+        ! Local variables
+        real(kind = dp) :: dt           !< Time step in double precision
+        integer(kind = int_wp) :: iseg  !< Loop variable
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqf2", ithandl)
 
-        !         set the diagonal
-
+        ! set the diagonal
         dt = idt
-
         do iseg = 1, noseg
             trace(iseg) = volnew(iseg) / dt
-        enddo
-
+        end do
         do iseg = noseg + 1, noseg + nobnd
             trace(iseg) = 1.0
-        enddo
-
+        end do
         if (timon) call timstop (ithandl)
-
-        return
-    end
-
+    end subroutine dlwqf2
 end module m_dlwqf2

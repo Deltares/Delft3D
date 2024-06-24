@@ -39,7 +39,7 @@ use m_cell_geometry, only : ndx2d
 use unstruc_model, only : md_classmap_file
 use unstruc_files
 use unstruc_netcdf, only : check_error, t_unc_mapids, unc_close, unc_create, ug_meta_fm, unc_def_var_nonspatial, MAX_ID_VAR, &
-       UNC_LOC_S, unc_def_var_map, unc_write_flowgeom_filepointer_ugrid, unc_put_var_map_byte, unc_put_var_map_byte_timebuffer, &
+       unc_def_var_map, unc_write_flowgeom_filepointer_ugrid, unc_put_var_map_byte, unc_put_var_map_byte_timebuffer, &
        unc_nounlimited, unc_noforcedflush, unc_add_time_coverage, unc_meta_add_user_defined
 use io_ugrid, only : ug_addglobalatts
 use netcdf
@@ -96,6 +96,7 @@ end subroutine reset_unstruc_netcdf_map_class
 !! the first time this module is initialized
    subroutine write_map_classes_ugrid(incids, tim)
    use m_alloc
+   use m_output_config
    type(t_unc_mapids), intent(inout) :: incids   !< class file and other NetCDF ids.
    real(kind=hp),      intent(in)    :: tim      !< simulation time
 
@@ -357,6 +358,7 @@ end subroutine write_map_classes_ugrid
 !> helper routine to define NetCDF variables
 function def_var_classmap_ugrid(name, ncid, id_twodim, var_id_class_bnds, var_id_jumps, incids) result(ierr)
    use m_missing, only: dmiss
+   use m_output_config
    type(t_unc_mapids), intent(inout) :: incids             !< class file and other NetCDF ids.
    character(len=*), intent(in)      :: name               !< name of the variable
    integer,          intent(in)      :: ncid               !< the NetCDF file Id
@@ -462,6 +464,8 @@ end subroutine put_in_classes
 
 !> helper function to write the first class map
 function write_initial_classes(incids, classes, buffer, field, varid_jumps) result(ierr)
+   use m_output_config
+   
    integer,            intent(in)    :: varid_jumps  !< variable Id for the jumps (only type 1)
    integer(kind=int8), intent(in)    :: classes(:)   !< converted data in byte with class number
    integer(kind=int8), intent(inout) :: buffer(:,:)  !< buffered data (if mapclass_time_buffer_size is set > 1)
@@ -490,6 +494,7 @@ end function write_initial_classes
 !! pointers previous and current are updated.
 !! it can write to NetCDF or append to the buffer array
 function write_changed_classes_update_previous(incids, previous, current, buffer, field, varid_jumps) result(ierr)
+   use m_output_config
    integer,                     intent(in)    :: varid_jumps  !< variable Id for the jumps (only type 1)
    integer(kind=int8), pointer, intent(inout) :: previous(:)  !< converted data in byte with class number for previous time step
    integer(kind=int8), pointer, intent(inout) :: current(:)   !< converted data in byte with class number for current time step

@@ -27,57 +27,40 @@ module m_dlwq60
 
 contains
 
-
-    subroutine dlwq60 (deriv, conc, notot, noseg, itfact, &
-            amass2, isys, nsys, dmps, intopt, &
-            isdmp)
-
-        !     Deltares Software Centre
-
-        !>\File
-        !>           scales DERIV after the user quality processes, for steady state computation.
-
-        !     CREATED: april 3, 1988 by L.Postma
-
-        !     LOGICAL UNITNUMBERS : none
-
-        !     SUBROUTINES CALLED  : none
+    !> Scales derivatives after the user quality processes, for steady-state computation.
+    subroutine dlwq60(deriv, conc, notot, noseg, itfact, &
+                      amass2, isys, nsys, dmps, intopt, &
+                      isdmp)
 
         use timers
 
         implicit none
 
-        !     Parameters          :
+        integer(kind=int_wp), intent(in   ) :: notot               !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: noseg               !< Number of computational volumes
+        real(kind=real_wp),   intent(inout) :: deriv(notot, noseg) !< Derivatives to be scaled
+        real(kind=real_wp),   intent(inout) :: conc(notot, noseg)  !< Concentrations per substance per volume
+        integer(kind=int_wp), intent(in   ) :: itfact              !< Ratio delta-t process to delta-t transport
+        real(kind=real_wp),   intent(inout) :: amass2(notot, 5)    !< Mass balance array
+        integer(kind=int_wp), intent(in   ) :: isys                !< Index current substance
+        integer(kind=int_wp), intent(in   ) :: nsys                !< Number of substances
+        real(kind=real_wp),   intent(inout) :: dmps(notot, *)      !< Dumped fluxes is intopt > 7
+        integer(kind=int_wp), intent(in   ) :: intopt              !< Integration suboptions
+        integer(kind=int_wp), intent(in   ) :: isdmp(noseg)        !< Pointer dumped segments
 
-        !     type     kind  function         name                      description
-        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: deriv (notot, noseg)    !< derivatives to be scaled
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)    !< concentrations per substance per volume
-        integer(kind = int_wp), intent(in) :: itfact                  !< scale factor between clocks
-        real(kind = real_wp), intent(inout) :: amass2(notot, 5)    !< mass balance array
-        integer(kind = int_wp), intent(in) :: isys                    !< 'this' substance
-        integer(kind = int_wp), intent(in) :: nsys                    !< number of substances
-        real(kind = real_wp), intent(inout) :: dmps  (notot, *)         !< dumped fluxes is intopt > 7
-        integer(kind = int_wp), intent(in) :: intopt                  !< Integration suboptions
-        integer(kind = int_wp), intent(in) :: isdmp (noseg)           !< Pointer dumped segments
+        ! Local variables
+        integer(kind=int_wp) :: iseg, i, ip
+        integer(kind=int_wp) :: ithandl = 0
 
-        !     Local declarations
-
-        integer(kind = int_wp) :: iseg, i, ip   ! Loop and help variables
-
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwq60", ithandl)
-
-        !         loop accross deriv and conc
+        if (timon) call timstrt("dlwq60", ithandl)
 
         do iseg = 1, noseg
-            conc  (isys, iseg) = conc  (isys, iseg) / itfact
+            conc(isys, iseg) = conc(isys, iseg)/itfact
             do i = isys, isys + nsys - 1
-                deriv (i, iseg) = deriv (i, iseg) / itfact
+                deriv(i, iseg) = deriv(i, iseg)/itfact
                 amass2(i, 2) = amass2(i, 2) + deriv(i, iseg)
-            enddo
-        enddo
+            end do
+        end do
 
         if (mod(intopt, 16) >= 8) then
             do iseg = 1, noseg
@@ -85,14 +68,11 @@ contains
                 if (ip > 0) then
                     do i = isys, isys + nsys - 1
                         dmps(i, ip) = dmps(i, ip) + deriv(i, iseg)
-                    enddo
-                endif
-            enddo
-        endif
+                    end do
+                end if
+            end do
+        end if
 
-        if (timon) call timstop (ithandl)
-
-        return
-    end
-
+        if (timon) call timstop(ithandl)
+    end subroutine dlwq60
 end module m_dlwq60

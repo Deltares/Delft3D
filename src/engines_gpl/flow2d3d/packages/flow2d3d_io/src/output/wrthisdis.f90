@@ -97,7 +97,7 @@ subroutine wrthisdis(lundia    ,error     ,filename  ,ithisc    ,zmodel    , &
     integer                                           :: iddim_nsrc
     integer                                           :: iddim_2
     !
-    real(fp)                                          :: h0             ! Actual Water-height (DP+S1)     
+    real(fp)                                          :: h0             ! Water depth (DPS+S1)     
     real(fp)                                          :: zdown
     real(fp)                                          :: zup
     real(fp)      , dimension(nsrc)                   :: rbuff1         ! Help array to write integers

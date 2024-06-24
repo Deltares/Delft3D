@@ -59,8 +59,8 @@ contains
         !          111103  Jan van Beek    2003 implementation
         !     ***********************************************************************
 
-        use m_evaluate_waq_attribute
-        use m_logger, only : get_log_unit_number, write_error_message_with_values
+        use m_extract_waq_attribute
+        use m_logger_helper, only : get_log_unit_number, write_error_message_with_values
 
         IMPLICIT NONE
 
@@ -141,8 +141,8 @@ contains
 
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
             RADSURF = PMSA(IP(1))
             RADTOP = PMSA(IP(2))

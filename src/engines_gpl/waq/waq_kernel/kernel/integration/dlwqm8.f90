@@ -28,61 +28,66 @@ module m_dlwqm8
 contains
 
 
+    !> Flux correction according to Boris and Book
     subroutine dlwqm8(idt, isys, nosys, notot, noseg, &
             conc, concvt, volnew, nobnd, bound, &
             noq, iknmrk, ipoint, area, aleng, &
             theta, flowtot, integration_id, amass2, ndmpq, &
             iqdmp, dmpq)
 
-        !> performs flux correction according to Boris and Book
-
         use timers
 
-        integer(kind = int_wp), intent(in) :: idt                    !< time step in scu's
-        integer(kind = int_wp), intent(in) :: isys                   !< current active substance
-        integer(kind = int_wp), intent(in) :: nosys                  !< number of active substances
-        integer(kind = int_wp), intent(in) :: notot                  !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                  !< number of segments
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)   !< concentrations
-        real(kind = dp), intent(inout) :: concvt (noseg)         !< first solution estimation by means of local theta method
-        real(kind = real_wp), intent(in) :: volnew (noseg)         !< segment volumes at the new time
-        integer(kind = int_wp), intent(in) :: nobnd                  !< number of boundary segments
-        real(kind = real_wp), intent(in) :: bound  (nosys, nobnd)   !< boundary concentrations
-        integer(kind = int_wp), intent(in) :: noq                    !< number of exchanges
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)          !< feature array
-        integer(kind = int_wp), intent(in) :: ipoint (4, noq)   !< exchange pointers
-        real(kind = real_wp), intent(in) :: area   (noq)   !< surface areas
-        real(kind = real_wp), intent(in) :: aleng  (2, noq)   !< from- and to lengths (dim: 2*noq)
-        real(kind = real_wp), intent(in) :: theta  (noq)   !< local theta coefficients
-        real(kind = real_wp), intent(in) :: flowtot(noq)   !< flows plus additional velos.
-        integer(kind = int_wp), intent(in) :: integration_id                   !< option for e.g. treatment of boundaries
-        real(kind = real_wp), intent(inout) :: amass2 (notot, 5)   !< areawide mass balance array
-        integer(kind = int_wp), intent(in) :: ndmpq                  !< number of dumped discharges
-        integer(kind = int_wp), intent(in) :: iqdmp  (noq)           !< pointer dumped exchages
-        real(kind = real_wp), intent(inout) :: dmpq   (nosys, ndmpq, 2) !< mass balance array for monitoring areas
+        integer(kind = int_wp), intent(in   ) :: idt                   !< Time step
+        integer(kind = int_wp), intent(in   ) :: isys                  !< Index of current transported substance
+        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of cells or segments
+        real(kind = real_wp),   intent(inout) :: conc(notot, noseg)    !< Concentrations
+        real(kind = dp),        intent(inout) :: concvt(noseg)         !< Estimation of first solution by means of local theta method
+        real(kind = real_wp),   intent(in   ) :: volnew(noseg)         !< Cell volumes at the new time
+        integer(kind = int_wp), intent(in   ) :: nobnd                 !< Number of boundary cells
+        real(kind = real_wp),   intent(in   ) :: bound(nosys, nobnd)   !< Boundary concentrations
+        integer(kind = int_wp), intent(in   ) :: noq                   !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)         !< Feature array
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)        !< Exchange indeces
+        real(kind = real_wp),   intent(in   ) :: area(noq)             !< Surface areas
+        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)         !< From- and to lengths
+        real(kind = real_wp),   intent(in   ) :: theta(noq)            !< Local theta coefficients
+        real(kind = real_wp),   intent(in   ) :: flowtot(noq)          !< Flow plus additional velocities
+        integer(kind = int_wp), intent(in   ) :: integration_id        !< Integration option
+        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Area-wide mass balance array
+        integer(kind = int_wp), intent(in   ) :: ndmpq                 !< Number of dumped discharges
+        integer(kind = int_wp), intent(in   ) :: iqdmp(noq)            !< Indeces dumped exchages
+        real(kind = real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< Mass balance array for monitoring areas
 
-        !         auxiliary limiter variables
-
-        real(kind = real_wp) :: length                 ! length between cel midpoints
-        real(kind = real_wp) :: cio, cjo, cin, cjn     ! old and local-theta from- and to concentrations
-        integer(kind = int_wp) :: ifrom, ito            ! from- and to segement indices
-        integer(kind = int_wp) :: ifrom1, itopl1         ! from- and to segement indices
-        integer(kind = int_wp) :: iseg                   ! current volume
-        integer(kind = int_wp) :: iq                     ! current edge
-        real(kind = real_wp) :: aflux                  ! corrective flux
-        real(kind = real_wp) :: vfrom, vto             ! 'from' and 'to' new volume
-        real(kind = real_wp) :: dq, e1, e3, s          ! support variables for the limiter
-        real(kind = real_wp) :: cfrm1, ctop1           ! concentration of from-1 and to+1 cell
+        ! Local variables
+        real(kind = real_wp) :: length   !< Length between midpoints of cells
+        real(kind = real_wp)   :: cio    !< Old concentration from cell
+        real(kind = real_wp)   :: cjo    !< Old concentration to cell
+        real(kind = real_wp)   :: cin    !< New (local theta) concentration from cell
+        real(kind = real_wp)   :: cjn    !< New (local theta) concentration to cell
+        integer(kind = int_wp) :: ifrom  !< Index from-cell
+        integer(kind = int_wp) :: ito    !< Index to-cell
+        integer(kind = int_wp) :: ifrom1 !< Index from-1 cell
+        integer(kind = int_wp) :: itopl1 !< Index to+1 cell
+        integer(kind = int_wp) :: iseg   !< Index current cell
+        integer(kind = int_wp) :: iq     !< Index current edge
+        real(kind = real_wp) :: aflux    !< Corrective flux
+        real(kind = real_wp) :: vfrom    !< 'from' new volume
+        real(kind = real_wp) :: vto      !< 'to' new volume
+        real(kind = real_wp) :: dq       !< Auxiliary variable for the limiter
+        real(kind = real_wp) :: e1       !< Auxiliary variable for the limiter
+        real(kind = real_wp) :: e3       !< Auxiliary variable for the limiter
+        real(kind = real_wp) :: s        !< Auxiliary variable for the limiter
+        real(kind = real_wp) :: cfrm1    !< Concentration of from-1 cell
+        real(kind = real_wp) :: ctop1    !< Concentration of to+1 cell
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqm8", ithandl)
 
-        !         loop accross the number of exchanges
-
+        ! loop accross the number of exchanges
         do iq = 1, noq
-
-            !         initialisations , check for transport anyhow
-
+            ! initialisations , check for transport anyhow
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             ifrom1 = ipoint(3, iq)
@@ -98,8 +103,7 @@ contains
                 if (.not. btest(iknmrk(ito), 0)) cycle       ! life is not easy
             endif
 
-            !     Compute the difference flux towards 2nd order
-
+            ! Compute the difference flux towards 2nd order
             if (ifrom > 0) then
                 cio = conc  (isys, ifrom)
                 cin = concvt(ifrom)
@@ -131,7 +135,7 @@ contains
                 if (flowtot(iq) > 0) then ! flow from i to j
                     aflux = (1.0 - theta(iq)) * (flowtot(iq) * (cio + cjo) / 2.0 - flowtot(iq) * cio) &
                             + theta(iq) * (flowtot(iq) * (cin + cjn) / 2.0 - flowtot(iq) * cin)
-                else ! flow from j to i
+                else                      ! flow from j to i
                     aflux = (1.0 - theta(iq)) * (flowtot(iq) * (cio + cjo) / 2.0 - flowtot(iq) * cjo) &
                             + theta(iq) * (flowtot(iq) * (cin + cjn) / 2.0 - flowtot(iq) * cjn)
                 endif
@@ -140,8 +144,7 @@ contains
             if (aflux * (cin - cjn) > 0) aflux = 0.0 ! antidiffusion should not behave as diffusion.
             dq = aflux * real(idt)
 
-            !         Flux correction at the open boundaries
-
+            ! Flux correction at the open boundaries
             if (ifrom < 0) then
                 if (itopl1 <= 0) cycle
                 vto = volnew(ito)
@@ -154,8 +157,8 @@ contains
                 else
                     amass2(isys, 5) = amass2(isys, 5) - dq
                 endif
-                if (btest(integration_id, 3)) then             ! balances active
-                    if (iqdmp(iq) > 0) then       ! balances to be updated
+                if (btest(integration_id, 3)) then ! balances active
+                    if (iqdmp(iq) > 0) then        ! balances to be updated
                         if (dq > 0.0) then
                             dmpq(isys, iqdmp(iq), 1) = dmpq(isys, iqdmp(iq), 1) + dq
                         else
@@ -177,8 +180,8 @@ contains
                 else
                     amass2(isys, 4) = amass2(isys, 4) - dq
                 endif
-                if (btest(integration_id, 3)) then             ! balances active
-                    if (iqdmp(iq) > 0) then       ! balances to be updated
+                if (btest(integration_id, 3)) then ! balances active
+                    if (iqdmp(iq) > 0) then        ! balances to be updated
                         if (dq > 0.0) then
                             dmpq(isys, iqdmp(iq), 1) = dmpq(isys, iqdmp(iq), 1) + dq
                         else
@@ -189,8 +192,7 @@ contains
                 cycle
             endif
 
-            !         Boris and Book for the inner area
-
+            ! Boris and Book for the inner area
             vfrom = volnew(ifrom)
             vto = volnew(ito)
             if (vfrom > 1.0e-25 .and. vto > 1.0e-25) then
@@ -225,8 +227,8 @@ contains
                 concvt(ifrom) = concvt(ifrom) - dq / vfrom
                 concvt(ito) = concvt(ito) + dq / vto
 
-                if (btest(integration_id, 3)) then             ! balances active
-                    if (iqdmp(iq) > 0) then       ! balances to be updated
+                if (btest(integration_id, 3)) then ! balances active
+                    if (iqdmp(iq) > 0) then        ! balances to be updated
                         if (dq > 0.0) then
                             dmpq(isys, iqdmp(iq), 1) = dmpq(isys, iqdmp(iq), 1) + dq
                         else
@@ -235,7 +237,6 @@ contains
                     endif
                 endif
             endif
-
         end do
 
         do iseg = 1, noseg
@@ -248,5 +249,4 @@ contains
 
         if (timon) call timstop (ithandl)
     end subroutine dlwqm8
-
 end module m_dlwqm8

@@ -1,4 +1,4 @@
-subroutine wetdis(i         ,isrc      ,jsrc      ,dp        ,xcor      , &
+subroutine wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
                 & ycor      ,kcu       ,kcv       ,kfs       ,kfd       , &
                 & j         ,nmmaxj    ,icx       ,icy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -68,7 +68,7 @@ subroutine wetdis(i         ,isrc      ,jsrc      ,dp        ,xcor      , &
                                                                      !!  =0 not yet used for searching
                                                                      !!  =1 already used
     integer,  dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfs    !  Description and declaration in esm_alloc_int.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: xcor   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: ycor   !  Description and declaration in esm_alloc_real.f90
 !
@@ -139,10 +139,10 @@ subroutine wetdis(i         ,isrc      ,jsrc      ,dp        ,xcor      , &
     istep = istep + 1
     !     write(lundia,'(5x,3i5,2(1pe11.3))') istep,nisrc,njsrc,x,y
     !
-    dp1 = 0.5_fp * (dp(ndmd) + dp(nmd))
-    dp2 = 0.5_fp * (dp(ndm ) + dp(nm ))
-    dp3 = 0.5_fp * (dp(ndmd) + dp(ndm))
-    dp4 = 0.5_fp * (dp(nmd ) + dp(nm ))
+    dp1 = 0.5_fp * (dpd(ndmd) + dpd(nmd))
+    dp2 = 0.5_fp * (dpd(ndm ) + dpd(nm ))
+    dp3 = 0.5_fp * (dpd(ndmd) + dpd(ndm))
+    dp4 = 0.5_fp * (dpd(nmd ) + dpd(nm ))
     !
     ! find greatest depth
     !

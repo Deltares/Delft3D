@@ -574,8 +574,14 @@ switch cmd
                         elseif iscell(UserDatas{it}.PlotState)
                             Nms{it}=UserDatas{it}.PlotState{2}.Name;
                             prevseparator=0;
-                        else
+                        elseif isfield(UserDatas{it}.PlotState,'Props')
                             Nms{it}=UserDatas{it}.PlotState.Props.Name;
+                            prevseparator=0;
+                        elseif isfield(UserDatas{it}.PlotState,'Name')
+                            Nms{it}=UserDatas{it}.PlotState.Name;
+                            prevseparator=0;
+                        else
+                            Nms{it}='<unknown item>';
                             prevseparator=0;
                         end
                         it=it-1;
@@ -601,7 +607,11 @@ switch cmd
                                             extrastr{itloc}=UserDatas{itloc}.PlotState.FI.Name;
                                         end
                                     case 2
-                                        stat=UserDatas{itloc}.PlotState.Selected{ST_};
+                                        if isfield(UserDatas{itloc}.PlotState,'Selected')
+                                            stat=UserDatas{itloc}.PlotState.Selected{ST_};
+                                        else
+                                            stat=[];
+                                        end
                                         if ~isempty(stat)
                                             %stats=qpread(UserDatas{itloc}.PlotState.FI,UserDatas{itloc}.PlotState.Props,'stations');
                                             stats=UserDatas{itloc}.PlotState.Stations;
@@ -616,14 +626,18 @@ switch cmd
                                             end
                                         end
                                     case 3
-                                        if ~isempty(UserDatas{itloc}.PlotState.SubField)
+                                        if isfield(UserDatas{itloc}.PlotState,'SubField') && ~isempty(UserDatas{itloc}.PlotState.SubField)
                                             subflds=qpread(UserDatas{itloc}.PlotState.FI,UserDatas{itloc}.PlotState.Props,'subfields');
                                             extrastr{itloc}=subflds{UserDatas{itloc}.PlotState.SubField{1}};
                                         else
                                             extrastr{itloc}='';
                                         end
                                     case 4
-                                        m=UserDatas{itloc}.PlotState.Selected{M_};
+                                        if isfield(UserDatas{itloc}.PlotState,'Selected')
+                                            m = UserDatas{itloc}.PlotState.Selected{M_};
+                                        else
+                                            m = [];
+                                        end
                                         if iscell(m)
                                             extrastr{itloc}=[m{1} ' line'];
                                         elseif isequal(m,0)
@@ -632,14 +646,22 @@ switch cmd
                                             extrastr{itloc}=['M=' vec2str(m,'nobrackets')];
                                         end
                                     case 5
-                                        n=UserDatas{itloc}.PlotState.Selected{N_};
+                                        if isfield(UserDatas{itloc}.PlotState,'Selected')
+                                            n = UserDatas{itloc}.PlotState.Selected{N_};
+                                        else
+                                            n = [];
+                                        end
                                         if isequal(n,0)
                                             extrastr{itloc}='All N';
                                         elseif ~isempty(n)
                                             extrastr{itloc}=['N=' vec2str(n,'nobrackets')];
                                         end
                                     case 6
-                                        k=UserDatas{itloc}.PlotState.Selected{K_};
+                                        if isfield(UserDatas{itloc}.PlotState,'Selected')
+                                            k = UserDatas{itloc}.PlotState.Selected{K_};
+                                        else
+                                            k = [];
+                                        end
                                         if isequal(k,0)
                                             extrastr{itloc}='All K';
                                         elseif iscell(k)
@@ -657,18 +679,22 @@ switch cmd
                                             extrastr{itloc}=['K=' vec2str(k,'nobrackets')];
                                         end
                                     case 7
-                                        if isfield(UserDatas{itloc}.PlotState.Ops,'presentationtype')
+                                        if isfield(UserDatas{itloc}.PlotState,'Ops') && isfield(UserDatas{itloc}.PlotState.Ops,'presentationtype')
                                             extrastr{itloc}=UserDatas{itloc}.PlotState.Ops.presentationtype;
                                         end
                                     case 8
-                                        t=UserDatas{itloc}.PlotState.Selected{T_};
+                                        if isfield(UserDatas{itloc}.PlotState,'Selected')
+                                            t = UserDatas{itloc}.PlotState.Selected{T_};
+                                        else
+                                            t = [];
+                                        end
                                         if isequal(t,0)
                                             extrastr{itloc}='All TS';
                                         elseif ~isempty(t)
                                             extrastr{itloc}=['TS=' vec2str(t,'nobrackets')];
                                         end
                                     otherwise
-                                        out_of_options=1;
+                                        out_of_options = 1;
                                         break
                                 end
                             end
@@ -1918,7 +1944,11 @@ switch cmd
             Ops = [];
         else
             ItData = get(It,'UserData');
-            Ops =  ItData.PlotState.Ops;
+            if isfield(ItData.PlotState,'Ops')
+                Ops = ItData.PlotState.Ops;
+            else
+                Ops = [];
+            end
         end
         try
             qp_update_options(hOptions,UD,Ops)

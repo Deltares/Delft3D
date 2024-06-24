@@ -60,7 +60,7 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -167,7 +167,7 @@ contains
 
             !     Zero output quantities on segment level
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==3) THEN
                 PMSA (IPCFLX) = 0.0
                 PMSA (IPRFLX) = 0.0
@@ -802,8 +802,8 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module
@@ -847,9 +847,9 @@ contains
             !        Zoek eerste kenmerk van- en naar-segmenten
 
             IKMRKV = -1
-            IF (IVAN  > 0) CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+            IF (IVAN  > 0) CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             IKMRKN = -1
-            IF (INAAR > 0) CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+            IF (INAAR > 0) CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
 
             !        Bottom-water exchange, the collumn starts
 
@@ -913,7 +913,7 @@ contains
         9006 if (errorcode==0) errorcode = 9006
         write (lunrep, *)'Illegal structure of pointer table MAKKOL: ', errorcode
         write (*, *)'Illegal structure of pointer table MAKKOL: ', errorcode
-        call terminate_execution(1)
+        call stop_with_error()
         !
     END
 

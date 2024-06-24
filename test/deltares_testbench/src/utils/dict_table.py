@@ -1,5 +1,6 @@
-import numpy as np
 from typing import Dict, List
+
+import numpy as np
 
 
 class DictTable:
@@ -24,11 +25,9 @@ class DictTable:
 
     def max_column_width(self, key: str) -> int:
         default_width = len(key)
-        max_value_width = max(
-            [len(self.format_value(v)) for v in self.__values_dict[key]]
+        return max(
+            default_width, *[len(self.format_value(v)) for v in self.__values_dict[key]],
         )
-
-        return max(default_width, max_value_width)
 
     def row_values(self, row_index: int) -> List:
         return [cv[row_index] for cv in self.__column_values]

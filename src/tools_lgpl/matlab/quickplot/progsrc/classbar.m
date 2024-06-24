@@ -98,6 +98,7 @@ sTh=[];
 LabelCol=0;
 MaxValues=0;
 ClimMode='extend';
+TickLabelInterpreter='none';
 if nargin>2
     i=0;
     while i<length(varargin)
@@ -126,6 +127,9 @@ if nargin>2
                 case 'format'
                     i=i+1;
                     Format=varargin{i};
+                case 'interpreter'
+                    i=i+1;
+                    TickLabelInterpreter=varargin{i};
                 case 'max'
                     MaxValues=1;
                 otherwise
@@ -246,6 +250,12 @@ if LabelCol
     set(ax,[xx 'tick'],(1:NTh)+.5,'ticklength',[0 0])
 end
 YLim=get(ax,[yy 'lim']);
+axprops = get(ax);
+if isfield(axprops,'TickLabelInterpreter')
+    set(ax,'TickLabelInterpreter',TickLabelInterpreter)
+elseif ~strcmp(TickLabelInterpreter,'none')
+    warning('TickLabelInterpreter not supported by this MATLAB version.')
+end
 
 F=1;
 if ~isempty(PlotRange)

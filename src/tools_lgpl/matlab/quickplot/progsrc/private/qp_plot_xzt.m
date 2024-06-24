@@ -39,7 +39,8 @@ if ~isfield(Ops,'plotcoordinate')
     Ops.plotcoordinate = 'time';
     data.X = data.Time;
 end
-if ~isempty(strfind(Ops.basicaxestype,'Z')) && isfield(data,'Z')
+graph_along_slice = ismember(Ops.presentationtype,{'linear','stepwise'});
+if ~isempty(strfind(Ops.basicaxestype,'Z')) && isfield(data,'Z') && ~graph_along_slice
     if Param.multiple(K_)
         hNew = plotslice(hNew,Parent,data,Ops,Props,Ops.Thresholds);
     else

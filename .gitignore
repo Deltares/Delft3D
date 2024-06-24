@@ -8,8 +8,12 @@ install_*/**
 .idea/*
 .vs/**
 
-# python virtual environment
+# python virtual environment and caches
 .venv
+__pycache__
+.mypy_cache
+.pytest_cache
+
 
 # files extensions to exclude
 *.i90
@@ -38,6 +42,7 @@ src/**/FortranCInterface.h
 
 # ignore copied files from failed_test.py teamcity script
 /test/deltares_testbench/failed/**
+/test/deltares_testbench/.vscode/**
 
 # ignore generated doxygen documentation
 /doxy_output

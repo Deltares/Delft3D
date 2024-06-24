@@ -96,11 +96,8 @@ implicit none
     integer                           :: mxls           !< Unit nr hisdump to excel
     integer                           :: jafahrenheit=0 !< Output in Celsius, otherwise Fahrenheit
 
-
-    double precision                  :: tlastupd_valobs !< Time at which the valobs array was last updated.
-    double precision, dimension(:,:), allocatable, target :: valobs     !< work array with 2d and 3d values stored at observation stations, dim(MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1),numobs+nummovobs)
-    double precision, dimension(:,:), allocatable         :: valobs_all !< work array with 2d and 3d values stored at observation stations, dim(MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1),numobs+nummovobs)
-
+    double precision, dimension(:,:), allocatable, target :: valobs     !< work array with 2d and 3d values stored at observation stations, dim(numobs+nummovobs, MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1))
+    
     integer                           :: MAXNUMVALOBS2D   ! maximum number of outputted values at observation stations
     integer                           :: MAXNUMVALOBS3D   ! maximum number of outputted values at observation stations, 3D layer centers
     integer                           :: MAXNUMVALOBS3Dw  ! maximum number of outputted values at observation stations, 3D layer interfaces (e.g. zws)
@@ -248,6 +245,7 @@ implicit none
     integer                           :: IPNT_WQB1
     integer                           :: IPNT_WQB3D1
     integer                           :: IPNT_SF1
+    integer                           :: IPNT_SFN
     integer                           :: IPNT_SED
     integer                           :: IPNT_ZCS
     integer                           :: IPNT_ZWS
@@ -257,6 +255,7 @@ implicit none
     integer                           :: IPNT_TEPS
     integer                           :: IPNT_VICWW
     integer                           :: IPNT_WS1
+    integer                           :: IPNT_WSN
     integer                           :: IPNT_SEDDIF1
     integer                           :: IPNT_RICH
     integer                           :: IPNT_TAIR
@@ -292,6 +291,7 @@ implicit none
     integer                           :: IPNT_POROS
     integer                           :: IPNT_LYRFRAC1
     integer                           :: IPNT_FRAC1
+    integer                           :: IPNT_FRACN
     integer                           :: IPNT_MUDFRAC
     integer                           :: IPNT_SANDFRAC
     integer                           :: IPNT_FIXFAC1
@@ -303,7 +303,6 @@ contains
 subroutine init_valobs()
    implicit none
 
-   tlastupd_valobs = dmiss
    call init_valobs_pointers()
 
    call alloc_valobs()
@@ -321,15 +320,8 @@ subroutine alloc_valobs()
    end if
 
    if ( IPNT_NUM.gt.0 ) then
-      allocate(valobs(IPNT_NUM,numobs+nummovobs))
+      allocate(valobs(numobs+nummovobs,IPNT_NUM))
       valobs = 0d0   ! should not be DMISS, since DMISS is used for global reduction in parallel computations
-   end if
-
-   if ( jampi.eq.1 ) then
-      if ( allocated(valobs_all) ) then
-         deallocate(valobs_all)
-      end if
-      allocate(valobs_all(IPNT_NUM,numobs+nummovobs))
    end if
 
    return
@@ -687,6 +679,7 @@ subroutine init_valobs_pointers()
    IPNT_HWQ1  = ivalpoint(IVAL_HWQ1,  kmx, nlyrs)
    IPNT_WQB3D1= ivalpoint(IVAL_WQB3D1,kmx, nlyrs)
    IPNT_SF1   = ivalpoint(IVAL_SF1,   kmx, nlyrs)
+   IPNT_SFN   = ivalpoint(IVAL_SFN,   kmx, nlyrs)
    IPNT_SED   = ivalpoint(IVAL_SED,   kmx, nlyrs)
    IPNT_WX    = ivalpoint(IVAL_WX ,   kmx, nlyrs)
    IPNT_WY    = ivalpoint(IVAL_WY ,   kmx, nlyrs)
@@ -710,6 +703,7 @@ subroutine init_valobs_pointers()
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
    IPNT_WS1   = ivalpoint(IVAL_WS1,   kmx, nlyrs)
+   IPNT_WSN   = ivalpoint(IVAL_WSN,   kmx, nlyrs)
    IPNT_SEDDIF1 = ivalpoint(IVAL_SEDDIF1,   kmx, nlyrs)
    IPNT_SBCX1 = ivalpoint(IVAL_SBCX1,   kmx, nlyrs)
    IPNT_SBCY1 = ivalpoint(IVAL_SBCY1,   kmx, nlyrs)
@@ -748,6 +742,7 @@ subroutine init_valobs_pointers()
    IPNT_POROS    = ivalpoint(IVAL_POROS   ,kmx, nlyrs)
    IPNT_LYRFRAC1 = ivalpoint(IVAL_LYRFRAC1,kmx, nlyrs)
    IPNT_FRAC1    = ivalpoint(IVAL_FRAC1   ,kmx, nlyrs)
+   IPNT_FRACN    = ivalpoint(IVAL_FRACN   ,kmx, nlyrs)
    IPNT_MUDFRAC  = ivalpoint(IVAL_MUDFRAC ,kmx, nlyrs)
    IPNT_SANDFRAC = ivalpoint(IVAL_SANDFRAC,kmx, nlyrs)
    IPNT_FIXFAC1  = ivalpoint(IVAL_FIXFAC1 ,kmx, nlyrs)
@@ -1089,7 +1084,6 @@ use unstruc_channel_flow, only: network
 
     numobs = 0
     nummovobs = 0
-    tlastupd_valobs = dmiss
     call doclose(mxls)
 end subroutine deleteObservations
 

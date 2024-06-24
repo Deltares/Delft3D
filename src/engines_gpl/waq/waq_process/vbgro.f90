@@ -31,8 +31,8 @@ contains
     subroutine VBGRO      (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : write_error_message, get_log_unit_number
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -151,8 +151,8 @@ contains
         do  iseg = 1, noseg
 
             !        lowest water and 2d segments only (also when dry!)
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
                 !
 

@@ -31,8 +31,8 @@ contains
     subroutine calwav (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : write_error_message
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : write_error_message
+        use m_extract_waq_attribute
 
         !>\file
         !>       Wave characteristics
@@ -89,7 +89,7 @@ contains
         DO ISEG = 1, NOSEG
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==3) THEN
                     !
                     VWIND = PMSA(IP1)

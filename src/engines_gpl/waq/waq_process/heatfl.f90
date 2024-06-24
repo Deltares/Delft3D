@@ -92,8 +92,8 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
         REAL(kind = real_wp) :: PMSA  (*), FL  (*)
@@ -166,7 +166,7 @@ contains
                 !
                 !     Heat exchange only for top layer segments
                 !
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==1) THEN
                     !
                     Qsw = PMSA(IP1)
@@ -255,7 +255,7 @@ contains
                         CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) ' Illegal option for emissivity formula'
                         WRITE (*, *) ' Illegal option for emissivity formula'
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     !
                     Qan = Qa * (1 - Fa)

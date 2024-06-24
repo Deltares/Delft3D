@@ -291,7 +291,7 @@ switch Grid1.ValLocation
 end
 
 
-function [JRI1, JRI2] = determine_shared(Grid1, Grid2)
+function [JRI1, JRI2, flipped] = determine_shared(Grid1, Grid2)
 XY1 = Grid1.X + 1i * Grid1.Y;
 XY2 = Grid2.X + 1i * Grid2.Y;
 [~, JRI1_node, JRI2_node] = intersect(XY1, XY2);
@@ -300,6 +300,7 @@ switch Grid1.ValLocation
     case 'NODE'
         JRI1 = JRI1_node;
         JRI2 = JRI2_node;
+        flipped = false(size(JRI1));
         
     case 'EDGE'
         reverse_JRI1 = NaN(size(XY1));
@@ -311,28 +312,81 @@ switch Grid1.ValLocation
         ENC2 = reverse_JRI2(Grid2.EdgeNodeConnect);
         %
         [~,JRI1,JRI2] = intersect(ENC1,ENC2,'rows');
+        flipped = false(size(JRI1));
+        
+        if length(JRI1) < size(ENC1,1) && length(JRI2) < size(ENC2,1)
+            % there are non-matched edges on both sides ... maybe
+            % changing the direction in which the edge is defined helps to
+            % find some more matches. Make sure that the edges are defined
+            % from smallest node index to largest node index.
+            J1 = 1:size(ENC1,1);
+            J1(JRI1) = [];
+            J2 = 1:size(ENC2,1);
+            J2(JRI2) = [];
+
+            sENC1 = sort(ENC1(J1,:),2);
+            sENC2 = sort(ENC2(J2,:),2);
+
+            [~,jri1,jri2] = intersect(sENC1,sENC2,'rows');
+            if ~isempty(jri1)
+                JRI1 = cat(1,JRI1,J1(jri1)');
+                JRI2 = cat(1,JRI2,J2(jri2)');
+                flipped = cat(1,flipped,true(size(jri1)));
+            end
+        end
         
     case 'FACE'
         reverse_JRI1 = NaN(size(XY1));
         reverse_JRI1(JRI1_node) = 1:length(JRI1_node);
         %
         FNC1 = Grid1.FaceNodeConnect;
-        Mask = isnan(FNC1);
-        FNC1(Mask) = 1;
+        Mask1 = isnan(FNC1);
+        FNC1(Mask1) = 1;
         FNC1 = reverse_JRI1(FNC1);
-        FNC1(Mask) = 0;
+        FNC1(Mask1) = inf;
         %
         reverse_JRI2 = NaN(size(XY2));
         reverse_JRI2(JRI2_node) = 1:length(JRI2_node);
         %
         FNC2 = Grid2.FaceNodeConnect;
-        Mask = isnan(FNC2);
-        FNC2(Mask) = 1;
+        Mask2 = isnan(FNC2);
+        FNC2(Mask2) = 1;
         FNC2 = reverse_JRI2(FNC2);
-        FNC2(Mask) = 0;
+        FNC2(Mask2) = inf;
         %
         [~,JRI1,JRI2] = intersect(FNC1,FNC2,'rows');
 
+        if length(JRI1) < size(FNC1,1) && length(JRI2) < size(FNC2,1)
+            % there are non-matched faces on both sides ... maybe
+            % changing the node that we start with helps to find some more
+            % matches. Let's always start from the smallest node index.
+            % We're not yet changing the orientation of the definition
+            % since the orientation should always be in anticlockwise
+            % direction following UGRID convention.
+            J1 = 1:size(FNC1,1);
+            J1(JRI1) = [];
+            J2 = 1:size(FNC2,1);
+            J2(JRI2) = [];
+
+            sFNC1 = sortFaceNodes(FNC1(J1,:));
+            sFNC2 = sortFaceNodes(FNC2(J2,:));
+
+            [~,jri1,jri2] = intersect(sFNC1,sFNC2,'rows');
+            if ~isempty(jri1)
+                JRI1 = cat(1,JRI1,J1(jri1)');
+                JRI2 = cat(1,JRI2,J2(jri2)');
+            end
+        end
+        flipped = false(size(JRI1));
+end
+
+function FNC = sortFaceNodes(FNC)
+[~,I] = min(FNC,[],2);
+for i = 1:length(I)
+    if I(i) > 1
+        nNodes = sum(isfinite(FNC(i,:)));
+        FNC(i,1:nNodes) = FNC(i,[I(i):nNodes 1:I(i)-1]);
+    end
 end
 
 

@@ -40,7 +40,7 @@ contains
         !     LOGICAL UNITNUMBERS : file_unit_list(IS) - input unit intermediate file
         !                           file_unit_list(19) - job-log output file
         !
-        !     SUBROUTINES CALLED  : terminate_execution, stops execution
+        !     SUBROUTINES CALLED  : stop_with_error, stops execution
         !
         !     PARAMETERS          :
         !
@@ -62,9 +62,9 @@ contains
         use m_dlwqkv
         use m_dlwqkb
         use m_chknmr
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use m_array_manipulation, only : copy_integer_array_elements
         use timers
         INTEGER(kind = int_wp) :: ITIME, NOSEG, IS, ISFLAG, IFFLAG, &
@@ -127,14 +127,14 @@ contains
                 !           Wrong option
                 !
                 WRITE(LUNOUT, 2000)
-                CALL terminate_execution(1)
+                CALL stop_with_error()
                 !
             ENDIF
             !
             !        (column 2)
             !
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
+                CALL extract_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
             end do
             !
             !        Change the time-variable kenmerk-array (column 3) such that it

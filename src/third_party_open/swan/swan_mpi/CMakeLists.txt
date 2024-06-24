@@ -37,7 +37,7 @@ if (WIN32)
     target_link_libraries(${executable_name} ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
-                        ${mpi_include_path}
+                        ${mpi_module_path}
                         ${version_include_dir})
     # Set linker properties
     message(STATUS "Setting linker properties in windows")

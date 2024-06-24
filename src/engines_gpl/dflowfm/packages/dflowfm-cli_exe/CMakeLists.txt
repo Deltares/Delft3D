@@ -167,7 +167,7 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
 target_link_libraries(${executable_name} netcdf)
 
 if (WIN32)
-    include_directories(${mpi_include_path}
+    include_directories(${mpi_module_path}
                         ${petsc_libdir}
                         ${tecplot_path}
                         ${version_include_dir}

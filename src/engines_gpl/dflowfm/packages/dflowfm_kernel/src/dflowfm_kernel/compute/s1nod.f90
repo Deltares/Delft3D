@@ -105,7 +105,7 @@
     end if
 
     ! Check for zero (0d0) value on diagonal, to print a warning before a resulting Saad crash.
-    if (comparerealdouble(bbr(n),0d0)==0 .and. domainCheck) then
+    if (comparereal(bbr(n),0d0)==0 .and. domainCheck) then
        if (n <= ndx2d) then
           dim_text = '2D'
        else

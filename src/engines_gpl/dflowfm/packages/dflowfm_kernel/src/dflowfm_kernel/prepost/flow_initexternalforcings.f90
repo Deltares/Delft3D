@@ -30,7 +30,7 @@
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
 integer function flow_initexternalforcings() result(iresult)              ! This is the general hook-up to wind and boundary conditions
-   use unstruc_boundaries
+   use m_init_ext_forcings
    use m_alloc
    use m_flowexternalforcings
    use m_flowparameters
@@ -88,7 +88,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    double precision, allocatable :: viuh(:)            ! temp
    double precision, allocatable :: tt(:)
    logical                       :: exist
-   logical                       :: patm_available, tair_available, dewpoint_available
+   logical                       :: tair_available, dewpoint_available
    integer                       :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
    integer                       :: numnos, numnot, numnon ! < Nr. of unassociated flow links (not opened due to missing z- or u-boundary)
 
@@ -126,12 +126,13 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    integer                       :: tmp_nbndn
    integer                       :: tmp_nbndt
    integer                       :: num_layers
+   integer, allocatable          :: mask(:)
 
 
    iresult = DFM_NOERR
 
    success = .true.    ! default if no valid providers are present in *.ext file (m_flowexternalforcings::success)
-   patm_available = .false.
+
    tair_available = .false.
    dewpoint_available = .false.
    
@@ -206,7 +207,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    if (allocated(ec_pwxwy_x))   deallocate(ec_pwxwy_x)
    if (allocated(ec_pwxwy_y))   deallocate(ec_pwxwy_y)
-   if (allocated(kcw))          deallocate(kcw)
    if (allocated(patm))         deallocate(patm)
    if (allocated(kbndz))        deallocate(xbndz,ybndz,xy2bndz,zbndz,kbndz,zbndz0)
    if (allocated(zkbndz))       deallocate(zkbndz)
@@ -779,7 +779,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    ! First initialize new-style ExtForceFileNew quantities.
    num_lat_ini_blocks = 0
    if (len_trim(md_extfile_new) > 0) then
-      success = initboundaryblocksforcings(md_extfile_new)
+      success = init_external_forcings(md_extfile_new)
       if (.not. success) then
          iresult = DFM_WRONGINPUT
          call mess(LEVEL_WARN, 'Error in external forcings file '''//trim(md_extfile_new)//'''.')
@@ -966,19 +966,21 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   cycle
                end if
 
-               call realloc(kcsini, ndx, keepExisting=.false.)
-
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx))
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
                case ('1d')
-                  ilattype = ILATTP_1D ; call prepare_lateral_mask(kcsini, ilattype)
+                  ilattype = ILATTP_1D
+                  call prepare_lateral_mask(mask, ilattype)
                case ('2d')
-                  ilattype = ILATTP_2D ; call prepare_lateral_mask(kcsini, ilattype)
+                  ilattype = ILATTP_2D
+                  call prepare_lateral_mask(mask, ilattype)
                case default
-                  kcsini = 1
+                  mask(:) = 1
                end select
 
-               success = timespaceinitialfield(xz, yz, s1, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini) ! zie meteo module
+               success = timespaceinitialfield(xz, yz, s1, ndx, filename, filetype, method, operand, transformcoef, 2, mask)
 
             else if (qid == 'initialvelocity') then ! both ucx and ucy component from map file in one QUANTITY
 
@@ -1240,12 +1242,11 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   kx = 1
                   pkbot => kbot
                   pktop => ktop
-                  if (allocated (kcw) ) deallocate(kcw)
-                  allocate( kcw(ndx) )
-                  kcw = 1
+                  if (allocated (mask) ) deallocate(mask)
+                  allocate( mask(ndx), source = 1 )
                   ec_item = ec_undef_int
                   call setzcs()
-                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, &
+                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
                      filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname, tgt_item1=ec_item)
                   success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user, viuh)
                   if ( .not. success ) then
@@ -1257,7 +1258,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                         constituents(iconst,k) = viuh(k) * factor
                      end if
                   end do
-                  deallocate(kcw)
                else
                   ! will only fill 2D part of viuh
                   success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
@@ -1415,16 +1415,15 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                call allocatewindarrays()           
 
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(lnx) )
-               kcw = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(lnx), source = 1 )
 
                jawindstressgiven = merge(1, 0, qid(1:6) == 'stress')    ! if (index(qid,'str') > 0) jawindstressgiven = 1
        
                if (len_trim(sourcemask)>0)  then
-                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), mask, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
                else
-                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, varname=varname)
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), mask, kx, filename, filetype, method, operand, varname=varname)
                endif
 
                if (success) then 
@@ -1432,14 +1431,13 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
            
             else if (qid == 'friction_coefficient_time_dependent') then
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(lnx) )
-               kcw(:) = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(lnx), source = 1 )
        
                if (len_trim(sourcemask)>0)  then
-                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), mask, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
                else
-                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), kcw, kx, filename, filetype, method, operand, varname=varname)
+                  success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), mask, kx, filename, filetype, method, operand, varname=varname)
                end if
                if ( success) then
                   ja_friction_coefficient_time_dependent = 1
@@ -1456,9 +1454,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                call allocatewindarrays()           
 
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
 
                jawindstressgiven = merge(1, 0, qid == 'airpressure_stressx_stressy')
                jaspacevarcharn   = merge(1, 0, qid == 'airpressure_windx_windy_charnock')
@@ -1484,15 +1481,14 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
       
                if (len_trim(sourcemask)>0)  then
-                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
+                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
                else
-                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname)
+                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname)
                endif
    
                if (success) then
                   jawind = 1
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'charnock') then
@@ -1505,7 +1501,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                   allocate ( wcharnock(lnx)  , stat=ierr)
                   call aerr('wcharnock(lnx)' , ierr, lnx)
                endif
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname)
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   jaspacevarcharn = 1
                endif
@@ -1514,22 +1510,19 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                ! Meteo1
                kx = 3 ; itempforcingtyp = 1
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
-               jasol = 2 
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
 
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax=3
 
             else if (qid == 'dewpoint_airtemperature_cloudiness') then
 
                ! Meteo1
                kx = 3 ; itempforcingtyp = 3
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
 
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
                if (success) then
                   dewpoint_available = .true.
                   tair_available = .true.
@@ -1539,27 +1532,27 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
                ! Meteo1
                kx = 4 ; itempforcingtyp = 2
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
 
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
                   tair_available = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
 
                ! Meteo1
                kx = 4 ; itempforcingtyp = 4
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
 
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
                   dewpoint_available = .true.
                   tair_available = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'nudge_salinity_temperature') then
@@ -1567,10 +1560,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                pkbot => kbot
                pktop => ktop
 
-               if (allocated (kcw) ) deallocate(kcw)
-               allocate( kcw(ndx) )
-               kcw = 1
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), kcw, kx, filename, filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname)
+               if (allocated (mask) ) deallocate(mask)
+               allocate( mask(ndx), source =1 )
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, z=zcs, pkbot=pkbot, pktop=pktop, varname=varname)
 
                if ( success ) then
                   janudge = 1
@@ -1596,7 +1588,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   japatm = 1
-                  patm_available = .true.
                endif
 
             else if (qid == 'air_temperature') then
@@ -1696,7 +1687,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jasol = 1 ;  btempforcingtypS = .true.
+                  btempforcingtypS = .true.
+                  solrad_available = .true.
                endif
 
             else if (qid == 'longwaveradiation') then
@@ -1707,7 +1699,8 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                endif
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jalongwave = 1 ;  btempforcingtypL = .true.
+                  btempforcingtypL = .true.
+                  longwave_available = .true.
                endif
 
             else if (qid(1:8) == 'rainfall' ) then
@@ -1923,10 +1916,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                      success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand)
 
                   case (2)
-                     if (allocated(kcw)) deallocate(kcw)
-                     allocate(kcw(lnx), stat=ierr)
-                     call aerr('kcw(lnx)', ierr, lnx)
-                     kcw = 1
+                     if (allocated(mask)) deallocate(mask)
+                     allocate(mask(lnx), source = 1, stat=ierr)
+                     call aerr('mask(lnx)', ierr, lnx)
                      allocate ( subsupl(lnx) , stat=ierr)
                      call aerr('subsupl(lnx)', ierr, lnx)
                      subsupl = 0d0
@@ -1939,13 +1931,12 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                      allocate ( subsout(lnx) , stat=ierr)
                      call aerr('subsout(lnx)', ierr, lnx)
                      subsout = 0d0
-                     success = ec_addtimespacerelation(qid, xu, yu, kcw, kx, filename, filetype, method, operand, varname=varname)
+                     success = ec_addtimespacerelation(qid, xu, yu, mask, kx, filename, filetype, method, operand, varname=varname)
 
                   case (3,4,5,6)
-                     if (allocated(kcw)) deallocate(kcw)
-                     allocate(kcw(numk), stat=ierr)
-                     call aerr('kcw(numk)', ierr, numk)
-                     kcw = 1
+                     if (allocated(mask)) deallocate(mask)
+                     allocate(mask(numk), source =1,  stat=ierr)
+                     call aerr('mask(numk)', ierr, numk)
                      allocate ( subsupl(numk) , stat=ierr)
                      call aerr('subsupl(numk)', ierr, numk)
                      subsupl = 0d0
@@ -1958,7 +1949,7 @@ integer function flow_initexternalforcings() result(iresult)              ! This
                      allocate ( subsout(numk) , stat=ierr)
                      call aerr('subsout(numk)', ierr, numk)
                      subsout = 0d0
-                     success = ec_addtimespacerelation(qid, xk(1:numk), yk(1:numk), kcw, kx, filename, filetype, method, operand, varname=varname)
+                     success = ec_addtimespacerelation(qid, xk(1:numk), yk(1:numk), mask, kx, filename, filetype, method, operand, varname=varname)
                end select
                allocate ( sdu_blp(ndx) , stat=ierr)
                call aerr('sdu_blp(ndx)', ierr, ndx)
@@ -2487,10 +2478,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
 
    if (allocated (xdum)    ) deallocate( xdum, ydum, kdum, xy2dum)
 
-   if (jasol == 2) then
-      if (allocated (qrad) ) deallocate (qrad)
-   endif
-
    if (mxgr > 0 .and. .not.stm_included) then
       do j = 1,mxgr
          grainlay(j,:) = uniformerodablethickness(j)
@@ -2520,8 +2507,9 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    endif
 
    if (ja_computed_airdensity == 1) then
-      if (.not. (patm_available .and. tair_available .and. dewpoint_available)) then
-         call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
+      if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
+         call mess(LEVEL_ERROR, &
+             'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
       else
          if (ja_airdensity == 1) then
             call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')
@@ -2759,9 +2747,6 @@ integer function flow_initexternalforcings() result(iresult)              ! This
       a1ini = sum(bare(1:ndxi))
    endif
 
-   if (allocated(kcsini)) then
-      deallocate(kcsini)
-   end if
    deallocate (sah)
 
    !  Check if there are any cells left that are not part of a mass balance area, and if we need an extra area.
@@ -2813,6 +2798,10 @@ integer function flow_initexternalforcings() result(iresult)              ! This
    NUMCONST_MDU = NUMCONST
    
    call initialize_lateraldata(numconst)
+   
+   ! Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
+   ! (needed to disable possibly invalid statistical output items)
+   call check_model_has_structures_across_partitions
 
 end function flow_initexternalforcings
 

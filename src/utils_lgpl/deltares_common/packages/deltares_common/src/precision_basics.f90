@@ -32,18 +32,57 @@ module precision_basics
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+use, intrinsic :: iso_fortran_env, only: INT32, INT64
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
+use stdlib_kinds, only: sp, dp, xdp, qp
 
 implicit none
+
+! A few notes on the use the floating point precisions from the stdlib_kinds module.
+! This a rather arbitrary choice since there are many ways that seem to result in
+! the same floating point definitions. Arguments for the choice can be found here:
+! https://fortran-lang.discourse.group/t/real-kinds-and-interoperability/8095/24
 !
-! parameters, used in conversions: sp=single precision, hp=high (double) precision
+! Our code does not consist of only Fortran. It has significant interaction with
+! other languages: first and foremost C/C++. Therefore, using
 !
-integer, parameter :: sp=kind(1.0e00)
-integer, parameter :: hp=kind(1.0d00)
+! use iso_c_binding, only: sp=>c_float, dp=>c_double, qp=>c_float128
 !
-! double precision integers:
+! would be the most natural choice. However, we typically call C/C++ code via
+! Fortran wrappers which use their own definitions of floating point precision.
 !
+! PetSc uses:
+!   #define PetscFortranFloat real(kind=selected_real_kind(5))
+!   #define PetscFortranDouble real(kind=selected_real_kind(10))
+!   #define PetscFortranLongDouble real(kind=selected_real_kind(19))
+!
+! netCDF uses:
+!   integer, parameter ::                                          &
+!                        FourByteReal = selected_real_kind(P =  6, R =  37), &
+!                       EightByteReal = selected_real_kind(P = 13, R = 307) 
+!
+! BMI 2.0 uses:
+!    double precision
+!
+! Our DIMR API uses:
+!    c_double
+!
+! Our code will fail if any of these definitions gives something else. Since that
+! hasn't happened, and nobody has given examples of recent hardware on which these
+! choices would give different results, the choice becomes arbitrary and any choice
+! similar to these definitions will do. Therefore, we followed the names and
+! definitions introduced by stdlib_kinds.
+
+! The extendede double precision xdp and quad precision qp are included for research
+! purposes only and to claim the variable names. They may not be available on all
+! hardware types.
+
+! For backward compatibility: hp=high precision, equal to dp
+integer, parameter :: hp = dp
+
+! long integer of at least 54 bits:
 integer, parameter :: long = selected_int_kind(16)
+
 !
 ! interfaces
 !
@@ -86,14 +125,14 @@ integer :: comparerealdouble
 !
 ! Global variables
 !
-real(kind=hp), intent(in)           :: val1
-real(kind=hp), intent(in)           :: val2
-real(kind=hp), optional, intent(in) :: eps
+real(kind=dp), intent(in)           :: val1
+real(kind=dp), intent(in)           :: val2
+real(kind=dp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-real(kind=hp) :: eps0
-real(kind=hp) :: value
+real(kind=dp) :: eps0
+real(kind=dp) :: value
 !
 !! executable statements -------------------------------------------------------
 !
@@ -202,14 +241,14 @@ integer :: compare
 !
 ! Global variables
 !
-real(kind=hp), intent(in)           :: val1
-real(kind=hp), intent(in)           :: val2
+real(kind=dp), intent(in)           :: val1
+real(kind=dp), intent(in)           :: val2
 logical,       intent(in)           :: check_finite
-real(kind=hp), optional, intent(in) :: eps
+real(kind=dp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-real(kind=hp) :: value
+real(kind=dp) :: value
 !
 !! executable statements -------------------------------------------------------
 !

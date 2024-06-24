@@ -178,7 +178,7 @@ contains
 
         !The following variables/parameters are optional
         call FLOWOL_Publish( 's1'   , 'Water level'                  , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%s1)   , DOL_OUT)  
-        call FLOWOL_Publish( 'dp'   , 'Depth'                        , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%dp)   , DOL_OUT)  
+        call FLOWOL_Publish( 'dp'   , 'Depth'                        , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%dpd)  , DOL_OUT)  
         call FLOWOL_Publish( 'dps'  , 'Bedlevel'                     , '' , '', 'nm'  , DOL_DOUBLE , d(gdp%gdr_i_ch%dps)  , DOL_OUT)
         call FLOWOL_Publish( 'u1'   , 'Velocity ksi component'       , '' , '', 'nmk' , realDouble , r(gdp%gdr_i_ch%u1)   , DOL_OUT)
         call FLOWOL_Publish( 'v1'   , 'Velocity eta component'       , '' , '', 'nmk' , realDouble , r(gdp%gdr_i_ch%v1)   , DOL_OUT)  

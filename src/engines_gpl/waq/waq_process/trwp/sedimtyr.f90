@@ -29,11 +29,11 @@
       contains
 
 
-      subroutine SEDTYR    ( pmsa  , fl    , ipoint, increm, noseg , & 
-                            noflux, iexpnt, iknmrk, noq1  , noq2  , & 
+      subroutine SEDTYR    ( pmsa  , fl    , ipoint, increm, noseg , &
+                            noflux, iexpnt, iknmrk, noq1  , noq2  , &
                             noq3  , noq4  )
-      use m_logger
-      use m_evaluate_waq_attribute
+      use m_logger_helper
+      use m_extract_waq_attribute
 
 
 !>\file
@@ -71,7 +71,7 @@
       implicit none
 
       real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux, & 
+      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux, &
               iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
 !
 !     local declarations
@@ -81,7 +81,7 @@
       real(kind=real_wp) ::cwater, settling, shear_stress, critical_stress
       real(kind=real_wp) ::depth, delt, safe_factor, depfro, depto
       real(kind=real_wp) ::cbotsum, prob_settling, settling_flux
-      
+
       integer(kind=int_wp) ::ipnt(500)
       integer(kind=int_wp),parameter  ::ip_nTRWP = 1
       integer(kind=int_wp),parameter  ::ip_nIM = 2
@@ -101,27 +101,27 @@
       delt           = pmsa(ipoint(ip_Delt))
       safe_factor    = pmsa(ipoint(ip_SafeFactor))
 
-      
+
       ipnt(1:nitem) = ipoint(1:nitem)
 
       iflux = 0
       do iseg = 1 , noseg
-          call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+          call extract_waq_attribute(1,iknmrk(iseg),ikmrk1)
           if (ikmrk1==1) then
-          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
+          call extract_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if (ikmrk2==0.or.ikmrk2==3) then   ! surface water
 
               ! input independentt of fractions
               depth          = pmsa(ipnt(ip_Depth))
               shear_stress    = pmsa(ipnt(ip_Tau) )
-              
+
               ! pick up IM in sediment for all TRWP fractions
               cbotsum = 0.0
               do ispm = 1,nspm
                   cbotsp(ispm) = pmsa(ipnt(ip_lastsingle+3*ntrwp+ispm))
                   cbotsum = cbotsum + cbotsp(ispm)
               enddo
-              
+
               ! loop over active fractions, IM are inner loop
               itel = 0
               do itrwp = 1,ntrwp
@@ -133,20 +133,20 @@
               !
               ! Probability of settling
               !
-              prob_settling = & 
+              prob_settling = &
                  max( 0.0, 1.0 - shear_stress / max(critical_stress,1e-6) )
 
               !
               ! Flux to the bottom (limit to avoid instabilities)
               !
-              settling_flux = min( prob_settling * settling / depth, & 
+              settling_flux = min( prob_settling * settling / depth, &
                                   safe_factor / delt ) * cwater
-              
+
               do ispm = 1,nspm
                   fl(iflux+itel+ispm) = settling_flux * cbotsp(ispm)  / max(cbotsum,1e-6)
               enddo
               itel = itel + nspm
-              
+
               enddo
           endif
           endif
@@ -158,7 +158,7 @@
           ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
 !
       enddo
-      
+
 !.....Exchangeloop over de horizontale richting
       offset = 6+3*ntrwp+nspm
       ipnt(1:nitem) = ipoint(1:nitem)
@@ -184,7 +184,7 @@
             depto  = PMSA( ipoint(ip_depth) + (ito  -1) * increm(ip_depth) )
             do itrwp = 1,ntrwp
                 settling = pmsa(ipnt(offset+itrwp))
-                settling = min( settling , safe_factor * min(depfro,depto) / delt ) 
+                settling = min( settling , safe_factor * min(depfro,depto) / delt )
                 pmsa(ipnt(offset+ntrwp+itrwp)) = settling /86400.
             enddo
          ELSE

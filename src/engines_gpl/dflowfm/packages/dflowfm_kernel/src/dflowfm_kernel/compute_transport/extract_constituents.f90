@@ -32,7 +32,7 @@
 
 !> extract constituent array
 subroutine extract_constituents()
-   use precision, only: fp
+   use precision, only: dp
    use m_transport
    use m_flow
    use m_flowgeom
@@ -50,8 +50,6 @@ subroutine extract_constituents()
    integer :: i, iconst, k, kk, limmin, limmax,  ll, kb, k1, kt, ii   
    double precision :: dmin
    double precision :: t_freeze  !< freezing point temperature [degC]
-   integer, parameter :: dp = kind(t_freeze)
-
    integer(4) ithndl /0/
    if (timon) call timstrt ( "extract_constituents", ithndl )
    limmax = 0

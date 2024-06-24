@@ -58,10 +58,10 @@ contains
         use m_blinpu
         use m_blfile
         use m_blclmort
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_dhnoseg
         use m_dhnolay
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use      bloom_data_3dl
         use      bloom_data_vtrans
         ! END3DL
@@ -486,10 +486,10 @@ contains
         ! 3DL
         IF (.NOT.ACTIVE_EFFT) THEN
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     ISEG_3DL = ISEG
                     ILAY_3DL = (ISEG - 1) / NOSEGL_3DL + 1
                     EXTTOT = PMSA(IP2)
@@ -590,9 +590,9 @@ contains
 
         IFLUX = 0
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1 .OR. IKMRK1==3) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 !
                 ! 3DL
                 IF (.NOT.ACTIVE_EFFT) THEN
@@ -916,16 +916,16 @@ contains
         901 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
         write (*, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
-        call terminate_execution (1)
+        call stop_with_error()
         ! 902 STOP 'ERROR D40BLO: DIMENSION NGRO_M TOO SMALL'
         903 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
         write (*, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
-        call terminate_execution (1)
+        call stop_with_error()
     end subroutine d40blo
 
     subroutine blstopinit(lunrep, inputname)
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
 
         integer(kind = int_wp) :: lunrep
         character(*) inputname
@@ -933,7 +933,7 @@ contains
         write(lunrep, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
         write(*, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
 
-        call terminate_execution(1)
+        call stop_with_error()
 
         return
 
@@ -941,7 +941,7 @@ contains
 
 
     subroutine blstop(mes, i)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         character(*) mes
         integer(kind = int_wp) :: lunrep, i
@@ -953,7 +953,7 @@ contains
         write(*, *) 'ERROR in bloom: '
         write(*, *) 'Characteristic ', mes, ' for algae type ', i, ' must be a constant!'
 
-        call terminate_execution(1)
+        call stop_with_error()
 
         return
 

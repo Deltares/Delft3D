@@ -49,6 +49,7 @@ private
 
 public array_div_const
 public convert_start_index
+public convert_mask_to_indices
 
 interface array_div_const
    module procedure arraySp1_div_constSp
@@ -160,5 +161,16 @@ function convert_start_index(arr, imiss, providedIndex, requestedIndex) result(i
     ierr = 0
     
 end function convert_start_index
+
+!> Function to convert logical array to array of indices where elements are true
+pure function convert_mask_to_indices(mask) result(indices)
+   logical, dimension(:), intent(in) :: mask !< Array to be converted
+
+   integer, allocatable, dimension(:) :: indices !< Resulting indices where mask is true
+
+   integer :: i
+
+   indices = pack([(i, i = 1, size(mask))], mask)
+end function convert_mask_to_indices
 
 end module array_module

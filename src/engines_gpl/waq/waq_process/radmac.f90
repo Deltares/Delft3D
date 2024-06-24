@@ -31,8 +31,8 @@ contains
     SUBROUTINE RADMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_logger
-        use m_evaluate_waq_attribute
+        use m_logger_helper
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -73,9 +73,9 @@ contains
         !
         DO ISEG = 1, NOSEG
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
                     !         Access conditions from the cell where the top of the plant is

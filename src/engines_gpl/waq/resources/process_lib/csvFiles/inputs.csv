@@ -17916,6 +17916,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "IM_Flocdyn","TotalDepth",  11,"N","x",1
 "IM_Flocdyn","LocalDepth",  12,"N","x",1
 "IM_Flocdyn","Depth     ",  13,"N","x",1
+"IM_Flocdyn","DiaMicro  ",  14,"Y","x",1
+"IM_Flocdyn","UstarMacro",  15,"Y","x",1
 "ProtMrt_C1","Salinity  ",   1,"N","x",1
 "ProtMrt_C1","b1_C1     ",   2,"N","x",1
 "ProtMrt_C1","b2_C1     ",   3,"N","x",1

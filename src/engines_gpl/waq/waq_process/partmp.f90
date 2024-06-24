@@ -31,8 +31,8 @@ contains
     subroutine partmp (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, write_error_message, get_log_unit_number
+        use m_extract_waq_attribute
 
         !>\file
         !>       Partitioning of micropollutants
@@ -332,21 +332,21 @@ contains
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
                 WRITE(*, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN2==0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPDIS in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPDIS in dis/par modelling'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN3==0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPPAR in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPPAR in dis/par modelling'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
         ELSE
             IF (IN2>0) THEN
@@ -354,14 +354,14 @@ contains
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPDIS and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPDIS and MP!'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN3>0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPPAR and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPPAR and MP!'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
         ENDIF
         !        Compute F-values or not
@@ -406,7 +406,7 @@ contains
         DO ISEG = 1, NOSEG
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
 
                     MP = PMSA(IP1)
@@ -422,7 +422,7 @@ contains
                                     'implemented!'
                             WRITE(*, *) 'PARTMP: Kinetic sorption for Chromium not ', &
                                     'implemented!'
-                            CALL terminate_execution(1)
+                            CALL stop_with_error()
                         ENDIF
                         MP = MPDIS + MPPAR
                     ENDIF
@@ -554,7 +554,7 @@ contains
                                         'not possible!'
                                 WRITE(*, *) 'Create MP-Dis & MP-Part for kinetic sorption'
                                 WRITE(*, *) 'or set HLTAdsMP and HLTDesMP to zero'
-                                CALL terminate_execution(1)
+                                CALL stop_with_error()
                             ENDIF
                             !           Let op: PART is in dit verband POC + IMx + PHYT !!!
                             !           Actual fraction PART
@@ -812,7 +812,7 @@ contains
                         WRITE(*, *) 'SwOXIC= ', ISWOX, ' 1- oxic, 0 - anoxic'
                         WRITE(*, *) 'Group = ', IGROUP, ' 1- General, 2-Cr, 3-As/Va, 4-OMP, &
                                 5-virus'
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     !
                     !     Addition of former process MPQUAL

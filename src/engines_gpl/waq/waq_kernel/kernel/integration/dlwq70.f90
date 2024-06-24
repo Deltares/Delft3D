@@ -20,182 +20,150 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-      module m_dlwq70
-      use m_waq_precision
+module m_dlwq70
+    use m_waq_precision
+    implicit none
 
+    contains
 
-      implicit none
+    !> Fills matrix according to central differencing in space.
+    subroutine dlwq70(disp,   disper, area  , flow , aleng , & 
+                      velo,   bound, ipoint, notot, isys  , & 
+                      nsys,   noq1,  noq2  , noq  , nodisp, & 
+                      novelo, idpnt,   ivpnt , deriv, amat  , & 
+                      jtrack, integration_id, ilflag )
 
-      contains
+        use timers
 
+        real(kind=real_wp), intent(in   ) :: disp(3)   !< Dispersion in 3 directions
+        real(kind=real_wp), intent(in   ) :: disper(*) !< Additional dispersion (NODISP*NOQ)
+        real(kind=real_wp), intent(in   ) :: flow(*)   !< Flows accross exchange surfaces (noq)
+        real(kind=real_wp), intent(in   ) :: area(*)   !< Exchange surface area (noq)
+        real(kind=real_wp), intent(in   ) :: aleng(*)  !< From- and to lengths (2*NOQ)
+        real(kind=real_wp), intent(in   ) :: velo(*)   !< Additional velocity (NOVELO*NOQ)
+        real(kind=real_wp), intent(in   ) :: bound(*)  !< Boundary concentrations (NOTOT*?)
+        real(kind=real_wp), intent(inout) :: amat(*)   !< Matrix to be updated
+        real(kind=real_wp), intent(  out) :: deriv(*)  !< Derivatives (NOTOT*NOSEG)
 
-      SUBROUTINE DLWQ70 ( DISP   , DISPER , AREA   , FLOW   , ALENG  , & 
-                         VELO   , BOUND  , IPOINT , NOTOT  , ISYS   , & 
-                         NSYS   , NOQ1   , NOQ2   , NOQ    , NODISP , & 
-                         NOVELO , IDPNT  , IVPNT  , DERIV  , AMAT   , & 
-                                           JTRACK , integration_id   , ILFLAG )
-!
-!     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-!
-!     CREATED             : june 1988 by L.Postma
-!
-!     FUNCTION            : Fills matrix according to central
-!                                       differencing in space.
-!
-!     LOGICAL UNITNUMBERS : none
-!
-!     SUBROUTINES CALLED  : none
-!
-!     PARAMETERS          :
-!
-!     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-!     ----    -----    ------     ------- -----------
-!     DISP    REAL        3       INPUT   dispersion in 3 directions
-!     DISPER  REAL   NODISP*NOQ   INPUT   additional dispersion array
-!     AREA    REAL       NOQ      INPUT   exchange surface area
-!     FLOW    REAL       NOQ      INPUT   flows accross exchange surfs
-!     ALENG   REAL      2*NOQ     INPUT   from- and to lengthes
-!     VELO    REAL   NOVELO*NOQ   INPUT   additional velocity array
-!     BOUND   REAL     NOTOT*?    INPUT   boundary concentrations
-!     IPOINT  INTEGER   4*NOQ     INPUT   exchange pointers
-!     NOTOT   INTEGER     1       INPUT   number of total substances
-!     ISYS    INTEGER     1       INPUT   system number considered
-!     NSYS    INTEGER     1       INPUT   number of systems considered
-!     NOQ1    INTEGER     1       INPUT   nr of exchanges in first dir.
-!     NOQ2    INTEGER     1       INPUT   nr of exchanges in second dir.
-!     NOQ     INTEGER     1       INPUT   total number of exchanges
-!     NODISP  INTEGER     1       INPUT   number of additional dispers.
-!     NOVELO  INTEGER     1       INPUT   number of additional velos.
-!     IDPNT   INTEGER   NOSYS     INPUT   pointer systems to dispersions
-!     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
-!     DERIV   REAL   NOTOT*NOSEG  OUTPUT  derivatives
-!     AMAT    REAL      large     IN/OUT  matrix to be updated
-!     JTRACK  INTEGER     1       INPUT   number of codiagonals of AMAT
-!     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
-!                                         = 1 or 3 no DISP at zero flow
-!                                         = 0 or 1 DISP over boundary
-!                                         = 2 or 3 no DISP over boundary
-!     ILFLAG  INTEGER     1       INPUT   if 0 then 3 length values
-!
-      use timers
+        integer(kind=int_wp), intent(in   ) :: ipoint(4,*)    !< Indices ("pointers") for exchanges (4*NOQ)
+        integer(kind=int_wp), intent(in   ) :: idpnt(*)       !< Indices ("pointers") for additional dispersions (NOSYS)
+        integer(kind=int_wp), intent(in   ) :: ivpnt(*)       !< Indices ("pointers") for additional velocities (NOSYS)
+        integer(kind=int_wp), intent(in   ) :: isys           !< Index of system currently considered
+        integer(kind=int_wp), intent(in   ) :: jtrack         !< Number of codiagonals of AMAT
+        integer(kind=int_wp), intent(in   ) :: noq            !< Total number of exchanges
+        integer(kind=int_wp), intent(in   ) :: noq1           !< Number of exchanges in first direction
+        integer(kind=int_wp), intent(in   ) :: noq2           !< Number of exchanges in second direction
+        integer(kind=int_wp), intent(in   ) :: nodisp         !< Number of additional dispersions
+        integer(kind=int_wp), intent(in   ) :: novelo         !< Number of additional velocities
+        integer(kind=int_wp), intent(in   ) :: notot          !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: nsys           !< Number of systems considered
+        integer(kind=int_wp), intent(in   ) :: integration_id !< = 0, 2 DISP at zero flow
+                                                              !< = 1, 3 no DISP at zero flow
+                                                              !< = 0, 1 DISP over boundary
+                                                              !< = 2, 3 no DISP over boundary
+        integer(kind=int_wp), intent(in   ) :: ilflag         !< If 0 then 3 length values
 
-      real(kind=real_wp) ::DISP  (  3) , DISPER(*) , AREA (*) , FLOW (*) , & 
-                ALENG (  *) , VELO  (*) , BOUND(*) , AMAT (*) , & 
-                DERIV(*)
-      integer(kind=int_wp) ::IPOINT(4,*) , IDPNT(*)  , IVPNT(*)
+        ! Local variables
+        integer(kind=int_wp) ::iband, iq, i, it, i3, i4
+        integer(kind=int_wp) ::kt, k1, k2, j, jt
+        integer(kind=int_wp) ::ithandl = 0
 
-      integer(kind=int_wp) ::iband, iq, i, it, i3, i4, integration_id, ilflag, isys
-      integer(kind=int_wp) ::j, jtrack, jt
-      integer(kind=int_wp) ::noq, noq1, noq2, nodisp, novelo, notot, nsys
-      integer(kind=int_wp) ::kt, k1, k2
+        real(kind=real_wp) ::a, q, q1, q2, e, al, f1, f2, dl
 
-      real(kind=real_wp) ::a, q, q1, q2, e, al, f1, f2, dl
+        if ( timon ) call timstrt ( "dlwq70", ithandl )
 
-      integer(kind=int_wp) ::ithandl = 0
-      if ( timon ) call timstrt ( "dlwq70", ithandl )
-!
-      IBAND = 2*JTRACK + 1
-      DO IQ = 1 , NOQ
-!
-!         initialisations , check for transport anyhow
-!
-      I    = IPOINT(1,IQ)
-      J    = IPOINT(2,IQ)
-      IF ( I == 0 .OR. J == 0 ) GOTO 50
-      A    = AREA(IQ)
-      Q    = FLOW(IQ)
-      IF ( MOD(integration_id,2) == 1 .AND. ABS(Q) < 10.0E-25 ) GOTO 50
-           IF ( A < 1.0E-25 )  A = 1.0
-      E  = DISP(1)
-      AL = ALENG(1)
-      IF ( IQ > NOQ1      ) THEN
-           E  = DISP (2)
-           AL = ALENG(2)
-      ENDIF
-      IF ( IQ > NOQ1+NOQ2 ) THEN
-           E  = DISP (3)
-           AL = ALENG(3)
-      ENDIF
-      IF ( ILFLAG == 1 ) THEN
-           DL = A/(ALENG(2*IQ-1) + ALENG(2*IQ))
-           F1 = ALENG(2*IQ  )*DL/A
-           F2 = ALENG(2*IQ-1)*DL/A
-      ELSE
-           DL = A/AL
-           F1 = 0.5
-           F2 = 0.5
-      ENDIF
-      E  = E*DL
-      IF (IDPNT(ISYS)>0) E = E + DISPER((IQ-1)*NODISP+IDPNT(ISYS))*DL
-      IF (IVPNT(ISYS)>0) Q = Q + VELO  ((IQ-1)*NOVELO+IVPNT(ISYS))*A
-      Q1 = F1*Q
-      Q2 = F2*Q
-      IF ( I < 0 ) GOTO 10
-      IF ( J < 0 ) GOTO 30
-!
-!        the regular case
-!
-      JT = (I-1)*IBAND + JTRACK + 1
-      KT = JT + (J-I)
-      AMAT(JT) = AMAT(JT) + Q1 + E
-      AMAT(KT) = AMAT(KT) + Q2 - E
-      IT = (J-1)*IBAND + JTRACK + 1
-      KT = IT + (I-J)
-      AMAT(IT) = AMAT(IT) - Q2 + E
-      AMAT(KT) = AMAT(KT) - Q1 - E
-      GOTO 50
-!
-!        The 'from' segment is a boundary
-!
-   10 IF ( J    < 0 ) GOTO 50
-      IF ( MOD(integration_id,4) > 1 ) E = 0.0
-      IF ( MOD(integration_id,8) >= 4 ) THEN
-           IF ( Q > 0.0 ) THEN
-                Q1 = Q
-                Q2 = 0.0
-           ELSE
-                Q1 = 0.0
-                Q2 = Q
-           ENDIF
-      ENDIF
-      K1 = (-I-1)*NOTOT
-      I4 = ( J-1)*NSYS  + 1
-      DO I3=ISYS,ISYS+NSYS-1
-      DERIV(I4) = DERIV(I4) + ( Q1+E) * BOUND(K1+I3)
-      I4=I4+1
-      end do
-      IT = (J-1)*IBAND + JTRACK + 1
-      AMAT(IT) = AMAT(IT) - Q2 + E
-      GOTO 50
-!
-!        The 'to' element was a boundary.
-!
-   30 IF ( MOD(integration_id,4) > 1 ) E = 0.0
-      IF ( MOD(integration_id,8) >= 4 ) THEN
-           IF ( Q > 0.0 ) THEN
-                Q1 = Q
-                Q2 = 0.0
-           ELSE
-                Q1 = 0.0
-                Q2 = Q
-           ENDIF
-      ENDIF
-      K2 = (-J-1)*NOTOT
-      I4 = ( I-1)*NSYS  + 1
-      DO I3=ISYS,ISYS+NSYS-1
-      DERIV(I4) = DERIV(I4) + (-Q2+E) * BOUND(K2+I3)
-      I4=I4+1
-      end do
-      JT = (I-1)*IBAND + JTRACK + 1
-      AMAT(JT) = AMAT(JT) + Q1 + E
-!
-!        end of the loop over exchanges
-!
-   50 CONTINUE
-      end do
-!
-      if ( timon ) call timstop ( ithandl )
-      RETURN
-      END
+        iband = 2*jtrack + 1
+        do iq = 1 , noq
+            ! initialisations , check for transport anyhow
+            i    = ipoint(1,iq)
+            j    = ipoint(2,iq)
+            if ( i == 0 .or. j == 0 ) goto 50
+            a    = area(iq)
+            q    = flow(iq)
+            if ( mod(integration_id,2) == 1 .and. abs(q) < 10.0e-25 ) goto 50
+            if ( a < 1.0e-25 )  a = 1.0
+            e  = disp(1)
+            al = aleng(1)
+            if ( iq > noq1 ) then
+                e  = disp (2)
+                al = aleng(2)
+            endif
+            if ( iq > noq1+noq2 ) then
+                e  = disp (3)
+                al = aleng(3)
+            endif
+            if ( ilflag == 1 ) then
+                dl = a/(aleng(2*iq-1) + aleng(2*iq))
+                f1 = aleng(2*iq  )*dl/a
+                f2 = aleng(2*iq-1)*dl/a
+            else
+                dl = a/al
+                f1 = 0.5
+                f2 = 0.5
+            endif
+            e  = e*dl
+            if (idpnt(isys)>0) e = e + disper((iq-1)*nodisp+idpnt(isys))*dl
+            if (ivpnt(isys)>0) q = q + velo  ((iq-1)*novelo+ivpnt(isys))*a
+            q1 = f1*q
+            q2 = f2*q
+            if ( i < 0 ) goto 10
+            if ( j < 0 ) goto 30
 
-      end module m_dlwq70
+            ! the regular case
+            jt = (i-1)*iband + jtrack + 1
+            kt = jt + (j-i)
+            amat(jt) = amat(jt) + q1 + e
+            amat(kt) = amat(kt) + q2 - e
+            it = (j-1)*iband + jtrack + 1
+            kt = it + (i-j)
+            amat(it) = amat(it) - q2 + e
+            amat(kt) = amat(kt) - q1 - e
+            goto 50
+
+            ! the 'from' segment is a boundary
+            10 if ( j<0 ) goto 50
+            if ( mod(integration_id,4) > 1 ) e = 0.0
+            if ( mod(integration_id,8) >= 4 ) then
+                if ( q>0.0 ) then
+                    q1 = q
+                    q2 = 0.0
+                else
+                    q1 = 0.0
+                    q2 = q
+                endif
+            endif
+            k1 = (-i-1)*notot
+            i4 = ( j-1)*nsys  + 1
+            do i3=isys,isys+nsys-1
+            deriv(i4) = deriv(i4) + ( q1+e) * bound(k1+i3)
+            i4=i4+1
+            end do
+            it = (j-1)*iband + jtrack + 1
+            amat(it) = amat(it) - q2 + e
+            goto 50
+
+            ! the 'to' element was a boundary.
+            30 if ( mod(integration_id,4) > 1 ) e = 0.0
+            if ( mod(integration_id,8) >= 4 ) then
+                if ( q > 0.0 ) then
+                    q1 = q
+                    q2 = 0.0
+                else
+                    q1 = 0.0
+                    q2 = q
+                endif
+            endif
+            k2 = (-j-1)*notot
+            i4 = ( i-1)*nsys + 1
+            do i3=isys, isys+nsys-1
+                deriv(i4) = deriv(i4) + (-q2+e) * bound(k2+i3)
+                i4=i4+1
+            end do
+            jt = (i-1)*iband + jtrack + 1
+            amat(jt) = amat(jt) + q1 + e
+            ! end of the loop over exchanges
+            50 continue
+        end do
+        if (timon) call timstop(ithandl)
+    end subroutine dlwq70
+end module m_dlwq70

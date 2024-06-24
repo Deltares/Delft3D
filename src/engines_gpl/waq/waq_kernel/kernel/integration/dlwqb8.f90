@@ -28,78 +28,52 @@ module m_dlwqb8
 contains
 
 
-    subroutine dlwqb8 (nosys, notot, nototp, noseg, volume, &
+    !> Restores concentration array after mass has changed by process routines
+    subroutine dlwqb8(nosys, notot, nototp, noseg, volume, &
             surface, amass, conc)
-
-        !     Deltares Software Centre
-
-        !>\File
-        !>           Restores conc array after mass has changed by proces routines
-
-        !     Created             :    May     1993 by Jos van Gils
-
-        !     Modified            : 13 Januari 2011 by Leo Postma
-        !                                           2D arrays, fortran 90 look and feel
-        !                                           conc of passive substances in mass/m2
-        !                            4 April   2013 by Leo Postma
-        !                                           take presence of particle-substances into account
-
-        !     Logical unitnumbers : file_unit_list     = number of monitoring file
-
-        !     Subroutines called  : none
 
         use timers
 
         implicit none
 
-        !     Parameters          :
-        !     type     kind  function         name                      description
+        integer(kind = int_wp), intent(in) :: nosys                 !< Number of transported substances
+        integer(kind = int_wp), intent(in) :: notot                 !< Total number of substances
+        integer(kind = int_wp), intent(in) :: nototp                !< Number of particle substances
+        integer(kind = int_wp), intent(in) :: noseg                 !< Number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume(noseg)        !< Volumes of the segments
+        real(kind = real_wp), intent(in) :: surface(noseg)          !< Horizontal surface area
+        real(kind = real_wp), intent(inout) :: amass (notot, noseg) !< Masses per substance per volume
+        real(kind = real_wp), intent(inout) :: conc  (notot, noseg) !< Concentrations per substance per volume
 
-        integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
-        integer(kind = int_wp), intent(in) :: nototp                  !< number of particle substances
-        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume(noseg)          !< volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(noseg)         !< horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass (notot, noseg)    !< masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)    !< concentrations per substance per volume
+        ! Local variables
+        real(kind = real_wp) :: surf !< Horizontal surface area of the cell
+        real(kind = real_wp) :: vol  !< Auxiliary variable for this volume
 
-        !     local variables
+        integer(kind = int_wp) :: isys !< Loop index substances
+        integer(kind = int_wp) :: iseg !< Loop index computational volumes
 
-        integer(kind = int_wp) :: isys            ! loopcounter substances
-        integer(kind = int_wp) :: iseg            ! loopcounter computational volumes
-        real(kind = real_wp) :: surf            ! the horizontal surface area of the cell
-        real(kind = real_wp) :: vol             ! helpvariable for this volume
-        integer(kind = int_wp), save :: ithandl         ! timer handle
+        integer(kind = int_wp), save :: ithandl !< Timer handle
         data       ithandl  /0/
+
         if (timon) call timstrt ("dlwq18", ithandl)
 
-        !         loop accross the number of computational volumes for the concentrations
-
+        ! loop along the number of computational volumes for the concentrations
         do iseg = 1, noseg
-
-            !        check for positivity
-
+            ! check for positivity
             vol = volume(iseg)
             surf = surface(iseg)
             if (abs(vol) < 1.0e-25) vol = 1.0
 
-            !         transported substances first
-
+            ! transported substances first
             do isys = 1, nosys
                 conc (isys, iseg) = amass(isys, iseg) / vol
-            enddo
+            end do
 
-            !         then the passive substances
-
+            ! then the passive substances
             do isys = nosys + 1, notot - nototp
                 conc(isys, iseg) = amass(isys, iseg) / surf
-            enddo
-
-        enddo
-
+            end do
+        end do
         if (timon) call timstop (ithandl)
-        return
-    end
-
+    end subroutine dlwqb8
 end module m_dlwqb8

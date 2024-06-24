@@ -27,83 +27,59 @@ module m_dlwq63
 
 contains
 
-
-    SUBROUTINE DLWQ63 (CONC, DERIV, AMASS2, NOSEG, NOTOT, &
-            ISYS, NSYS, DMPS, INTOPT, ISDMP)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED: june 1988 by L.Postma
-        !
-        !     FUNCTION            : derives concentrations from deriv
-        !                           zeros DERIV
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
-        !     ----    -----      ------       ------- -----------
-        !     CONC    REAL     NOTOT*NOSEG    INPUT   first order term
-        !     DERIV   REAL     NOTOT*NOSEG    IN/OUT  right hand side matrix
-        !     AMASS2  REAL     NOTOT*5        IN/OUT  mass accumulation array
-        !     NOSEG   INTEGER       1         INPUT   number of segments
-        !     NOTOT   INTEGER       1         INPUT   total number of systems
-        !     ISYS    INTEGER       1         INPUT   system considered
-        !     NSYS    INTEGER       1         INPUT   number of systems to take
-        !     DMPS    REAL          *         IN/OUT  dumped segment fluxes
-        !                                             if INTOPT > 7
-        !     INTOPT  INTEGER     1       INPUT   Integration suboptions
-        !
-        !     ISDMP   INTEGER  NOSEG      INPUT   pointer dumped segments
-        !
+    !> Calculates concentrations from derivatives, and zeroes these derivatives
+    subroutine dlwq63(conc, deriv, amass2, noseg, notot, &
+            isys, nsys, dmps, intopt, isdmp)
         use timers
 
-        INTEGER(kind = int_wp) :: ISDMP(*)
-        real(kind = real_wp) :: CONC(NOTOT, *), DERIV(*), AMASS2(NOTOT, *), &
-                DMPS(*)
-        integer(kind = int_wp) :: notot, nsys, noseg
-        integer(kind = int_wp) :: i, ip, i4, i5, i6, ntot, iset, intopt, iseg, isys
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwq63", ithandl)
-        !
-        !         gets concentrations
-        !
-        ISET = 1
-        IF (MOD(INTOPT, 16) < 8) THEN
-            DO ISEG = 1, NOSEG
-                DO I = ISYS, ISYS + NSYS - 1
-                    AMASS2(I, 2) = AMASS2(I, 2) + CONC (I, ISEG) * DERIV(ISET)
-                    CONC  (I, ISEG) = DERIV (ISET)
-                    ISET = ISET + 1
-                end do
-            end do
-        ELSE
-            DO ISEG = 1, NOSEG
-                IP = ISDMP(ISEG)
-                I4 = (IP - 1) * NOTOT
-                DO I = ISYS, ISYS + NSYS - 1
-                    AMASS2(I, 2) = AMASS2(I, 2) + CONC(I, ISEG) * DERIV(ISET)
-                    IF (IP > 0) THEN
-                        DMPS(I4 + I) = DMPS(I4 + I) + CONC(I, ISEG) * DERIV(ISET)
-                    ENDIF
-                    CONC  (I, ISEG) = DERIV (ISET)
-                    ISET = ISET + 1
-                end do
-            end do
-        ENDIF
-        !
-        !         zero the derivative
-        !
-        NTOT = NOTOT * NOSEG
-        DO I = 1, NTOT
-            DERIV(I) = 0.0
-        end do
-        !
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
+        real(kind=real_wp), intent(inout) :: conc(notot, *)   !< First order term
+        real(kind=real_wp), intent(inout) :: deriv(*)         !< Right hand side matrix
+        real(kind=real_wp), intent(inout) :: amass2(notot, *) !< Mass accumulation array
+        real(kind=real_wp), intent(inout) :: dmps(*)          !< Dumped segment fluxes if intopt>7
 
+        integer(kind = int_wp), intent(in   ) :: noseg    !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: notot    !< Total number of systems
+        integer(kind = int_wp), intent(in   ) :: isys     !< Index of considered system
+        integer(kind = int_wp), intent(in   ) :: nsys     !< Number of systems to take
+        integer(kind = int_wp), intent(in   ) :: intopt   !< Integration suboptions
+        integer(kind = int_wp), intent(in   ) :: isdmp(*) !< Indeces dumped segments
+
+        ! Local variables
+        integer(kind = int_wp) :: i, ip, j, ntot, iset, iseg
+        integer(kind = int_wp) :: ithandl = 0
+
+        if (timon) call timstrt ("dlwq63", ithandl)
+
+        ! Calculate concentrations
+        iset = 1
+        if (mod(intopt, 16) < 8) then
+            do iseg = 1, noseg
+                do i = isys, isys + nsys - 1
+                    amass2(i, 2) = amass2(i, 2) + conc (i, iseg) * deriv(iset)
+                    conc  (i, iseg) = deriv (iset)
+                    iset = iset + 1
+                end do
+            end do
+        else
+            do iseg = 1, noseg
+                ip = isdmp(iseg)
+                j = (ip - 1) * notot
+                do i = isys, isys + nsys - 1
+                    amass2(i, 2) = amass2(i, 2) + conc(i, iseg) * deriv(iset)
+                    if (ip > 0) then
+                        dmps(j + i) = dmps(j + i) + conc(i, iseg) * deriv(iset)
+                    endif
+                    conc  (i, iseg) = deriv (iset)
+                    iset = iset + 1
+                end do
+            end do
+        endif
+        ! Zero the derivative
+        ntot = notot * noseg
+        do i = 1, ntot
+            deriv(i) = 0.0
+        end do
+
+        if (timon) call timstop (ithandl)
+    end subroutine dlwq63
 end module m_dlwq63

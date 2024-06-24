@@ -24,15 +24,13 @@ module m_delwaq2_main
     use m_waq_precision
 
     implicit none
-    
+
     private
     public :: dlwqmain
 
 contains
-
-    subroutine dlwqmain(action, argc, argv, dlwqd)
-        !! MAIN module for DELWAQ2 , dimensioning of the work array's.
-
+    !> MAIN module for DELWAQ2 , dimensioning of the work array's.
+    subroutine dlwqmain(action, dlwqd)
         !DEC$ ATTRIBUTES DLLEXPORT::dlwqmain
 
         use integration_schemes, only : run_integration_schemes
@@ -41,9 +39,7 @@ contains
         use m_sysn
         use m_sysi
 
-        integer(kind = int_wp), intent(in) :: action        !! Action to be taken
-        integer(kind = int_wp), intent(in) :: argc          !! Number of simulated command-line arguments
-        character(len = *), dimension(argc), intent(in) :: argv !! Simulated command-line arguments
+        integer(kind = int_wp), intent(in) :: action         !< Action to be taken
         type(delwaq_data) :: dlwqd
 
         character(len = 20) :: rundat
@@ -57,7 +53,7 @@ contains
         init = action == action_initialisation .or. action == action_fullcomputation
 
         if (init) then
-            call delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv)
+            call delwaq2_main_init(dlwqd, itota, itoti, itotc)
         end if
 
         call run_integration_schemes(dlwqd%buffer, itota, itoti, itotc, init, action, dlwqd)
@@ -65,30 +61,25 @@ contains
 
     end subroutine dlwqmain
 
-    subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc, argc, argv)
+    subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc)
 
         use delwaq2_data
-        use m_cli_utils, only : store_command_arguments
         use m_sysn
         use m_sysi
 
-        ! Arguments
-        integer(kind = int_wp) :: max_real_arr_size, max_int_arr_size, max_char_arr_size
+        implicit none
 
-        integer(kind = int_wp), intent(in) :: argc
-        character(len = *), dimension(argc), intent(in) :: argv
+        ! Arguments
+        integer(kind = int_wp) :: imaxa, imaxi, imaxc
         type(delwaq_data), target :: dlwqd
-        type(GridPointerColl), pointer :: GridPs               ! collection of all grid definitions
 
         integer(kind = int_wp), intent(inout) :: itota
         integer(kind = int_wp), intent(inout) :: itoti
         integer(kind = int_wp), intent(inout) :: itotc
-        
+
         itota = 0
         itoti = 0
         itotc = 0
-        
-        call store_command_arguments(argv)
 
         call dlwqd%buffer%intialize()
 
@@ -98,7 +89,7 @@ contains
 
         use m_actions
         use m_date_time_utils_external, only : write_date_time
-        use m_logger, only : get_log_unit_number
+        use m_logger_helper, only : get_log_unit_number
 
         integer(kind = int_wp), intent(in) :: action
         character(len = 20), intent(in) :: rundat

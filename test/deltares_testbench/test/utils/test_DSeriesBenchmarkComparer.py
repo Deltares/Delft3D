@@ -6,9 +6,10 @@ from test.utils.test_logger import TestLogger
 
 import pytest
 
-from src.config.credentials import Credentials
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.comparers.d_series_benchmark_comparer import DSeriesBenchmarkComparer
+from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
@@ -26,18 +27,15 @@ class TestDSeriesBenchmarkComparer:
         self.rp = join(self.testdata, "right")
         self.comp = DSeriesBenchmarkComparer()
 
-        # Start parsing
-        c = Credentials()
-        c.name = "commandline"
-
         # Parse the xml file.
         # This is done to point to a specific file
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
 
         # The first file that is going to be checked passed as attribute
         self.file_check = file[0].checks[0]
@@ -492,16 +490,14 @@ class TestDSeriesBenchmarkComparer:
         import shutil
 
         # Reading a different csv file a new xml file has to be imported
-        # Start parsing
-        c = Credentials()
-        c.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_empty_file.xml"), "", c, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test_empty_file.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         # The file to be checked
         file_check = file[0]._TestCaseConfig__checks[0]
 

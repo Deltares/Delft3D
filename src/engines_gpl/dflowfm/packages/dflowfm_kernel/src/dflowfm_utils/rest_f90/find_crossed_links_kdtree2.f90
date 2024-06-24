@@ -53,7 +53,10 @@
       double precision, dimension(NPL),    intent(in)    :: xpl, ypl           !< polyline node coordinates
       integer,                             intent(in)    :: itype              !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
       integer,                             intent(in)    :: nLinks             !< number of links ( Lnx for flowlinks, numL for netlinks)
-      integer,                             intent(in)    :: jaboundarylinks    !< include boundary links (1) or not (0), flowlinks only
+      integer,                             intent(in)    :: jaboundarylinks    !< include boundary links:
+                                                                               !< (0) do not include boundary links
+                                                                               !< (1) include all boundary links
+                                                                               !< (2) include only 2d boundary links
       integer,                             intent(out)   :: numcrossedLinks    !< number of crossed flowlinks
       integer,          dimension(nLinks), intent(inout) :: iLink              !< crossed flowlinks
       integer,          dimension(nLinks), intent(inout) :: iPol               !< polygon section
@@ -95,7 +98,7 @@
       if ( itype.eq.1 .or. itype.eq.3 ) then  ! netlinks
          LnxiORLnx = numL
       else ! if ( itype.eq.2 ) then   ! flowlinks
-         if ( jaboundarylinks.eq.1 ) then
+         if ( jaboundarylinks == 1 .or. jaboundarylinks == 2) then
             LnxiORLnx = Lnx
          else
             LnxiORLnx = Lnxi
@@ -162,9 +165,13 @@
             af = dble(L)/dble(LnxiORLnx)
             call readyy('Finding crossed links', af)
 !            write(6,"(F4.1, ' %')") af*100d0
-         endif
+         end if
 
-
+         if (jaboundarylinks == 2 .and. L > lnxi .and. L <= lnx1db) then
+            ! Skip 1d boundaries
+            cycle
+         end if
+      
          if ( itype.eq.1 ) then   ! netlinks, cross with dual links
             call get_link_neighboringcellcoords(L,isactive,xa,ya,xb,yb)
             if ( isactive.ne.1 ) then
@@ -197,8 +204,8 @@
                ya = yk(lncn(1,L))
                xb = xk(lncn(2,L))
                yb = yk(lncn(2,L))
-            endif
-         endif
+            end if
+         end if
 
 !        fill query vector
          call make_queryvector_kdtree(treeinst,xa,ya, jsferic)

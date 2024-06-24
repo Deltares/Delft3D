@@ -8,7 +8,7 @@ contains
     subroutine SUMTYR     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         !
@@ -60,7 +60,7 @@ contains
 
         ! loop to accumulate fractions and to aggregate all water layers with aquatic sediments
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 sumtrwp = 0.0 ! g/m3

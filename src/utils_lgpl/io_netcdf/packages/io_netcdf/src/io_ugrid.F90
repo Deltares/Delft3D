@@ -46,6 +46,7 @@ use m_ug_meta
 use m_ug_mesh
 use m_ug_network
 use m_ug_contacts
+use precision, only: dp
 
 implicit none
 
@@ -112,7 +113,6 @@ integer, parameter :: UG_WRITE_LATLON = 1 !< Automatically write also lat lon co
 integer, parameter :: UG_WRITE_LYRVAR = 2 !< Automatically write also layer coordinates as variables
 
 !! Basics
-integer, parameter :: dp=kind(1.0d00)
 integer, parameter :: maxMessageLen = 1024
 character(len=maxMessageLen) :: ug_messagestr !< Placeholder string for storing diagnostic messages. /see{ug_get_message}
 

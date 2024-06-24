@@ -9,7 +9,7 @@ setlocal enabledelayedexpansion
     rem
     rem Set the config file
     rem
-set argfile= 
+set argfile=
 if [%1] EQU [] (
     goto usage
 ) else (
@@ -94,36 +94,20 @@ if [%eco%] EQU [true] (
     rem No adaptions needed below
     rem
 
-if [%only2%] EQU [true] goto delwaq2
-    rem
-    rem Run delwaq 1
-    rem
-echo executing: "%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches% 
-"%waqdir%\delwaq1.exe" "%argfile%" -p "%procfile%" %switches%
+if [%only2%] EQU [true] (
+    set switches=%switches% -validation_mode
+    )
+echo executing: "%waqdir%\delwaq.exe" "%argfile%" -p "%procfile%" %switches%
+"%waqdir%\delwaq.exe" "%argfile%" -p "%procfile%" %switches%
 
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo Delwaq1 did not run correctly, ending calculation
+    echo Delwaq did not run correctly, ending calculation
     goto end
 )
-echo. 
-echo Delwaq1 did run without errors.
 echo.
-
-:delwaq2
-    rem Run delwaq 2
-    rem
-echo executing: "%waqdir%\delwaq2.exe" "%argfile%" %switches% 
-"%waqdir%\delwaq2.exe" "%argfile%" %switches% 
-
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo Delwaq2 did not run correctly
-    goto end
-)
-echo. 
-echo Delwaq2 did run without errors.
-
+echo Delwaq did run without errors.
+echo.
 
 goto end
 

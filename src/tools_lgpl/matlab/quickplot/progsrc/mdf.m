@@ -872,7 +872,7 @@ inifile('write',fullfile(path,filename),MDF.mdf);
 
 
 function Val = propget(varargin)
-Val = rmhash(inifile('geti',varargin{:})); %hgeti
+Val = inifile('hgeti',varargin{:});
 
 
 function MFile = masterread(filename)
@@ -1134,6 +1134,7 @@ for i = 1:size(attfiles,1)
     fld = attfiles{i,2};
     key = attfiles{i,3};
     %
+    refpath = md_path;
     if strcmp(key,'BedLevel')
         Missing = -999;
         bltyp = propgetval(MF.mdu,grp,'BedlevType',Missing);
@@ -1155,7 +1156,12 @@ for i = 1:size(attfiles,1)
             IniNames = {MF.IniField.Quantity.Name};
             ic = find(strcmpi('bedlevel',IniNames));
             if ~isempty(ic)
-                filename = MF.IniField.Quantity.File;
+                if length(ic) == 1
+                    filename = MF.IniField.Quantity(ic).File;
+                else
+                    filename = {MF.IniField.Quantity(ic).File};
+                end
+                refpath = fileparts(MF.IniField.FileName);
             end
         end
         if isempty(filename)
@@ -1211,22 +1217,26 @@ for i = 1:size(attfiles,1)
         filename = propget(MF.mdu,grp,fld,'');
     end
     if ~isempty(filename)
-        filenames = strsplit(filename,';');
+        if iscell(filename)
+            filenames = filename;
+        else
+            filenames = strsplit(filename,';');
+        end
         if length(filenames) == 1
-            filename1 = relpath(md_path,filenames{1});
+            filename1 = relpath(refpath,filenames{1});
             if ~exist(filename1, 'file')
                 filenames = strsplit(filename,' ');
             end
         end
         for ifile = 1:length(filenames)
-            filename1 = relpath(md_path,filenames{ifile});
+            filename1 = relpath(refpath,filenames{ifile});
             if ~exist(filename1,'file')
                 error('Unable to locate file(s) referred to by:%s',filename);
             end
         end
         Files = [];
         for ifile = length(filenames):-1:1
-            filename = relpath(md_path,filenames{ifile});
+            filename = relpath(refpath,filenames{ifile});
             switch key
                 case {'BedLevel','WaterLevIni'}
                     F = samples('read',filename);
@@ -1399,7 +1409,7 @@ for i = 1:size(attfiles,1)
                             F.Quantity(iq).Name     = inifile('hgeti', F, IndexChapter(iq), 'quantity');
                             F.Quantity(iq).FileType = inifile('hgeti', F, IndexChapter(iq), 'dataFileType');
                             F.Quantity(iq).File     = inifile('hgeti', F, IndexChapter(iq), 'dataFile');
-                            F.Quantity(iq).Interp   = inifile('hgeti', F, IndexChapter(iq), 'interpolationMethod');
+                            F.Quantity(iq).Interp   = inifile('hgeti', F, IndexChapter(iq), 'interpolationMethod','');
                         end
                     end
                 case 'Mor'

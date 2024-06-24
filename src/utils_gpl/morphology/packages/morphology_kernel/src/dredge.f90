@@ -43,8 +43,7 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
     use dredge_data_module
     use morphology_data_module
     use message_module
-    !use morstatistics, only: morstats
-    !
+
     implicit none
 
     type (dredge_type)                                   , target        :: dadpar     !< data structure for dredging and dumping settings
@@ -102,8 +101,10 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        ! Communicate dump capacity with other domains
        !
        call comm(dadpar%globaldumpcap, dadpar%nadump, error, msgstr)
-       if (msgstr /= '') call write_error(msgstr, unit=lundia)
-	   return
+       if (msgstr /= '') then
+           call write_error(msgstr, unit=lundia)
+           return
+       endif
     end if
     !
     call calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, dps, dpsign, duneheight, &
@@ -117,9 +118,11 @@ subroutine dredge(nmmax, lsedtot, spinup, cdryb, dps, dpsign, &
        !
        ! Communicate dredged volumes with other domains
        !
-       call comm(dadpar%voldred, (dadpar%nadred+dadpar%nasupl)*(lsedtot+1), error, msgstr)
-       if (msgstr /= '') call write_error(msgstr, unit=lundia)
-	   return
+       call comm(dadpar%voldred, (dadpar%dredge_dimension_length)*(lsedtot+1), error, msgstr)
+       if (msgstr /= '') then
+           call write_error(msgstr, unit=lundia)
+           return
+       endif
     end if
     !
     call distribute_sediments_over_dump_areas(lsedtot, dadpar) 
@@ -273,24 +276,24 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
     use message_module
     implicit none
       
-	real(fp)                                 , intent(in)    :: dt         !< time step
-	integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
+    real(fp)                                 , intent(in)    :: dt         !< time step
+    integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
     type (dredge_type)          , target     , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     type (morpar_type)          , target     , intent(inout) :: morpar     !< data structure for morphology settings
-	logical                                  , intent(in)    :: spinup     !< flag whether morphological spinup period is active
+    logical                                  , intent(in)    :: spinup     !< flag whether morphological spinup period is active
     integer                                  , intent(in)    :: nmlb       !< lower array bound for spatial index nm
     integer                                  , intent(in)    :: nmub       !< upper array bound for spatial index nm
-	real(prec), dimension(nmlb:nmub)         , intent(inout) :: dps        !< bed level or depth at cell faces
-	real(fp)                                 , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
-	real(fp)  , dimension(:)    , pointer    , intent(in)    :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
+    real(prec), dimension(nmlb:nmub)         , intent(inout) :: dps        !< bed level or depth at cell faces
+    real(fp)                                 , intent(in)    :: dpsign     !< +1 for dps = bed level, -1 for dps = depth
+    real(fp)  , dimension(:)    , pointer    , intent(in)    :: duneheight !< pointer since this variable doesn't have to be allocated if use_dunes = .false.
     real(fp)  , dimension(nmlb:nmub)         , intent(in)    :: s1         !< water level at faces
-	integer   , dimension(nmlb:nmub)         , intent(in)    :: kfsed      !< morphology active flag per face
-	type (bedcomp_data)         , target     , intent(in)    :: morlyr     !< data structure for bed composition settings
+    integer   , dimension(nmlb:nmub)         , intent(in)    :: kfsed      !< morphology active flag per face
+    type (bedcomp_data)         , target     , intent(in)    :: morlyr     !< data structure for bed composition settings
     real(fp)  , dimension(lsedtot)           , intent(in)    :: cdryb      !< dry bed density used for conversion between m3 and kg
     real(fp)  , dimension(lsedtot, nmlb:nmub), intent(inout) :: dbodsd     !< change in bed composition
     type (message_stack)                     , intent(inout) :: messages   !< data structure for messages
     integer                                  , intent(in)    :: lundia     !< file ID for diagnotic output
-	character(80)                            , intent(inout) :: msgstr
+    character(80)                            , intent(inout) :: msgstr
     logical                                  , intent(out)   :: error
     
     interface
@@ -308,42 +311,42 @@ subroutine calculate_dredging(dt, lsedtot, dadpar, morpar, spinup, nmlb, nmub, d
     integer                         :: imindunes
     integer                         :: irock
     integer                         :: nm_abs
-	logical , dimension(:), pointer :: triggered
-	real(fp), dimension(:), pointer :: area
-	real(fp)                        :: availvolume !< volume available for dredging
-	real(fp)                        :: avg_depth
+    logical , dimension(:), pointer :: triggered
+    real(fp), dimension(:), pointer :: area
+    real(fp)                        :: availvolume !< volume available for dredging
+    real(fp)                        :: avg_depth
     real(fp)                        :: avg_trigdepth
     real(fp)                        :: avg_alphadune
     real(fp), dimension(:), pointer :: bedlevel
-	real(fp)                        :: clr
-	real(fp)                        :: ddp
+    real(fp)                        :: clr
+    real(fp)                        :: ddp
     real(fp)                        :: div2h
     real(fp)                        :: dmax
     real(fp)                        :: dredge_area
-	logical                         :: dredged
-	real(fp), dimension(:), pointer :: dunetoplevel
+    logical                         :: dredged
+    real(fp), dimension(:), pointer :: dunetoplevel
     real(fp)                        :: dz
     real(fp)                        :: dzl        !< depth change due to one sediment fraction
-	real(fp), dimension(:), pointer :: dz_dredge
+    real(fp), dimension(:), pointer :: dz_dredge
     real(fp)                        :: extravolume
     real(fp)                        :: factor
     real(fp), dimension(:), pointer :: hdune
     real(fp)                        :: lin_dz
     real(fp)                        :: maxvol     !< maximum volume to be dredged in current time step
-	real(fp)                        :: maxdumpvol !< (maximum) volume to be dumped in current time step
-	logical                         :: ploughed
-	real(fp)                        :: plough_fac !< fraction of dune height that remains after ploughing
+    real(fp)                        :: maxdumpvol !< (maximum) volume to be dumped in current time step
+    logical                         :: ploughed
+    real(fp)                        :: plough_fac !< fraction of dune height that remains after ploughing
     real(fp), dimension(:), pointer :: reflevel
-	real(fp)                        :: requiredvolume
+    real(fp)                        :: requiredvolume
     real(fp)                        :: qua_dz
-	real(fp), dimension(:), pointer :: sedimentdepth
+    real(fp), dimension(:), pointer :: sedimentdepth
     real(fp), dimension(:), pointer :: triggerlevel
-	real(fp), dimension(:), pointer :: troughlevel
+    real(fp), dimension(:), pointer :: troughlevel
     real(fp)                        :: voltim     !< local volume variable, various meanings
     real(fp)                        :: zmax
     real(fp)                        :: zmin
-	real(fp)                        :: z_dredge
-	type(dredtype),         pointer :: pdredge  
+    real(fp)                        :: z_dredge
+    type(dredtype),         pointer :: pdredge  
 
     do ia = 1, dadpar%nadred + dadpar%nasupl
        pdredge => dadpar%dredge_prop(ia)
@@ -1202,7 +1205,7 @@ subroutine distribute_sediments_over_dump_areas(lsedtot, dadpar)
     use dredge_data_module
     implicit none
       
-	integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
+    integer                                  , intent(in)    :: lsedtot    !< total number of sediment fractions
     type (dredge_type)          , target     , intent(inout) :: dadpar     !< data structure for dredging and dumping settings
     
     integer                                  :: i, ia, i2, ib, ib2, min, lsed

@@ -94,7 +94,6 @@
  integer, target                   :: ndx1db         !< [-] Number of flow nodes incl. 1D bnds (internal 2D+1D + 1D bnd). {"rank": 0}
  type (tnode),     allocatable     :: nd(:)          !< (ndx) flow node administration
  integer,          allocatable     :: kcs(:)         !< node code permanent
- integer,          allocatable     :: kcsini(:)      !< node code during initialization, e.g., for initialwaterlevel1d/2d
  integer,          allocatable, target :: kfs(:)     !< [-] node code flooding {"shape": ["ndx"]}
  
  double precision, allocatable, target :: bare(:)         !< [m2] bottom area, for rain and evaporaton {"location": "face", "shape": ["ndx"]}
@@ -281,8 +280,7 @@ double precision, allocatable      :: thindam(:,:)
 ! Debug parameter
  integer                                     :: cmd_icgsolver = 4  !< save commandline icgsolver
 
- integer, allocatable, target      :: structuresAndWeirsList(:)    !< List containing flow links on which a structure or fixed weir is located.
- integer                           :: numberOfStructuresAndWeirs   !< Length of structuresAndWeirsList
+ integer, allocatable                        :: structuresAndWeirsList(:)    !< List containing flow links on which a structure or fixed weir is located.
 
 contains
 !> Sets ALL (scalar) variables in this module to their default values.

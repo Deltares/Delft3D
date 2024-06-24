@@ -29,7 +29,7 @@ contains
 
 
     SUBROUTINE ZEROME (NAME)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         character(len=*) NAME
         INTEGER(kind = int_wp) :: LUNREP
@@ -39,7 +39,7 @@ contains
         WRITE (LUNREP, *) ' Please supply value not equal to zero'
         WRITE (*, *) ' Coefficient ', NAME, ' = 0'
         WRITE (*, *) ' Please supply value not equal to zero'
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         RETURN
     END
 

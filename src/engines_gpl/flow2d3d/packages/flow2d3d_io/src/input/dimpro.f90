@@ -357,22 +357,25 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     !
     nflmod            = ' '
     nfl               = .false.
+    nf_timeout        = huge(nf_timeout)
     gdp%gdnfl%infile  = ' '
     call prop_get_string(gdp%mdfile_ptr, '*', 'Filnfl', gdp%gdnfl%infile)
     if (gdp%gdnfl%infile /= ' ') then
        nfl    = .true.
        nflmod = 'generic'
        write (lundia, '(2a)') '*** MESSAGE COSUMO config file: ', trim(gdp%gdnfl%infile)
+       !
+       skipuniqueid = .false.
+       call prop_get(gdp%mdfile_ptr, '*', 'SkipUniqueId', skipuniqueid)
+       !
+       call prop_get(gdp%mdfile_ptr, '*', 'NfTimeout', nf_timeout)
+       if (nf_timeout < huge(nf_timeout)) then
+          write (lundia, '(a,f8.1,a)') '*** MESSAGE NfTimeout = ', nf_timeout, ' minutes'
+       endif
+    else
+       skipuniqueid = .true.
     endif
     !
-    skipuniqueid = .false.
-    call prop_get(gdp%mdfile_ptr, '*', 'SkipUniqueId', skipuniqueid)
-    !
-    nf_timeout = huge(nf_timeout)
-    call prop_get(gdp%mdfile_ptr, '*', 'NfTimeout', nf_timeout)
-    if (nf_timeout < huge(nf_timeout)) then
-       write (lundia, '(a,f8.1,a)') '*** MESSAGE NfTimeout = ', nf_timeout, ' minutes'
-    endif
     !
     ! Fixed gates (CDW): get file name
     !

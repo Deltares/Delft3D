@@ -47,7 +47,7 @@ contains
         !!      - the wasteload concentration/mass values
         !! Subroutines called : read_constants_time_variables     : previous versions input processing (one matrix does all)
         !!                      gettoken : tokenized data input
-        !!                      terminate_execution   : stop after error with return code
+        !!                      stop_with_error   : stop after error with return code
         !!                      zoek     : search for presence of a string
         !!                      read_boundary_concentrations: modern context sensitive input data processing
         !!                      check    : check whether end of data block is encountred correctly
@@ -59,7 +59,7 @@ contains
         !!                 file_unit_list(15) = unit intermediate file (waste load)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use rd_token
         use timers       !   performance timers
 
@@ -148,7 +148,7 @@ contains
         if (ierr_alloc /= 0) then
             write (file_unit, 2160) ierr_alloc
             write (file_unit, 2040) nowst
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         write (file_unit, 2040) nowst
         if (output_verbose_level < 3) then
@@ -332,7 +332,7 @@ contains
         !     error processing
 
         20 if (ierr2 > 0) call status%increase_error_count()      !   if 2, end of block reached
-        if (ierr2 == 3) call terminate_execution(1)        !   end of file reached
+        if (ierr2 == 3) call stop_with_error()        !   end of file reached
         call check_error(cdummy, iwidth, 6, ierr2, status)
         30 if (timon) call timstop(ithndl)
         return

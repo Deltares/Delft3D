@@ -34,7 +34,7 @@ contains
 
         ! report on the use of the delwaq input
 
-        use m_logger
+        use m_logger_helper
         use processet
         use timers       !   performance timers
         use string_module
@@ -94,9 +94,9 @@ contains
         ! write header report output block
 
         write (line, '(a)') '# determining the use of the delwaq input'
-        call write_log_message(line, 4)
+        call write_log_message(line)
         line = ' '
-        call write_log_message(line, 4)
+        call write_log_message(line)
 
         nproc = procesdef%current_size
 
@@ -137,7 +137,7 @@ contains
                 noinfo = noinfo + 1
                 write(spcl_const_print, '(3a)') '[', trim(coname(icons)), ']'
                 write (line, '(3a)') ' info: constant ', spcl_const_print, ' is not used by the process system'
-                call write_log_message(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -171,7 +171,7 @@ contains
             if (.not. variable_is_used .and. string_equals('output    ', paname(ipa))) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: parameter [', paname(ipa)(1:10), '] is not used by the process system'
-                call write_log_message(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -205,7 +205,7 @@ contains
             if (.not. variable_is_used) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: function [', funame(ifun)(1:10), '] is not used by the process system'
-                call write_log_message(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
@@ -239,12 +239,12 @@ contains
             if (.not. variable_is_used) then
                 noinfo = noinfo + 1
                 write (line, '(3a)') ' info: segment function [', sfname(isfun)(1:10), '] is not used by the process system'
-                call write_log_message(line, 4)
+                call write_log_message(line)
             endif
         enddo
 
         line = ' '
-        call write_log_message(line, 4)
+        call write_log_message(line)
 
         if (timon) call timstop(ithndl)
         return

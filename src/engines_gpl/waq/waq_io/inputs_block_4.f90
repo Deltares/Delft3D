@@ -72,7 +72,7 @@ contains
         !                        file_unit_list(13) = unit intermediate file (lengths)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use m_grid_utils_external        !   for the storage of contraction grids
         use rd_token     !   for the reading of tokens
@@ -631,7 +631,7 @@ contains
         endif
 
         if (ierr2 > 0) call status%increase_error_count()
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error(cdummy, iwidth, 4, ierr2, status)
         if (timon) call timstop(ithndl)
         return

@@ -31,8 +31,8 @@ contains
     subroutine s12tim (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
 
         !>\file
@@ -79,7 +79,7 @@ contains
         iflux = 0
         do iseg = 1, noseg
             if (btest(iknmrk(iseg), 0)) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     !
                     fracs1 = pmsa(ip(1))
@@ -106,7 +106,7 @@ contains
                                 sub-file, and use the Res_Pickup process instead."
                         write(*, *) "Please remove processes S12TraIMx from your  &
                                 sub-file, and use the Res_Pickup process instead."
-                        call terminate_execution(1)
+                        call stop_with_error()
                     else
                         fracs1_res = fracs1
                         fracs2_res = fracs2

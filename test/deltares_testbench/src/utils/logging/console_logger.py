@@ -6,6 +6,7 @@ Copyright (C)  Stichting Deltares, 2023
 
 import logging
 import sys
+import traceback
 
 from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.log_level import LogLevel
@@ -17,9 +18,16 @@ class ConsoleLogger(IMainLogger):
     def __init__(self, log_level: LogLevel) -> None:
         self.__logger = self.__create_logger(log_level)
 
-    def error(self, message: str):
-        self.__base_log_message(message, logging.ERROR)
-        sys.stderr.write(message)
+    def error(self, message: str, exc_info: bool = False):
+        self.__base_log_message(message, logging.ERROR, exc_info=exc_info)
+        sys.stderr.write(message + "\n")
+        if exc_info:
+            sys.stderr.write(traceback.format_exc())
+    
+    def exception(self, message: str):
+        self.__base_log_message(message, logging.ERROR, exc_info=True)
+        sys.stderr.write(message + "\n")
+        sys.stderr.write(traceback.format_exc())
 
     def warning(self, message: str):
         self.__base_log_message(message, logging.WARNING)
@@ -30,15 +38,15 @@ class ConsoleLogger(IMainLogger):
     def debug(self, message: str):
         self.__base_log_message(message, logging.DEBUG)
 
-    def log(self, message: str, log_level: LogLevel):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
         internal_log_level = self.__get_internal_log_level(log_level)
-        self.__base_log_message(message, internal_log_level)
+        self.__base_log_message(message, internal_log_level, exc_info=exc_info)
 
     def create_test_case_logger(self, test_case_id: str) -> ITestLogger:
         return FileTestLogger(test_case_id)
 
-    def __base_log_message(self, message: str, log_level: int):
-        self.__logger.log(log_level, message)
+    def __base_log_message(self, message: str, log_level: int, exc_info: bool = False):
+        self.__logger.log(log_level, message, exc_info=exc_info)
 
     def __get_internal_log_level(self, log_level: LogLevel) -> int:
         return log_level

@@ -5,7 +5,7 @@ Copyright (C)  Stichting Deltares, 2013
 """
 
 import os
-from distutils import dir_util
+import shutil
 from typing import Optional
 
 from src.config.credentials import Credentials
@@ -38,7 +38,7 @@ class LocalNetHandler(IHandler):
             logger.debug(
                 f"copying locally from {os.path.abspath(rfp)} to {os.path.abspath(rtp)}",
             )
-            dir_util.copy_tree(os.path.abspath(rfp), os.path.abspath(rtp))
+            shutil.copytree(os.path.abspath(rfp), os.path.abspath(rtp))
         if handler == HandlerType.NET:
             server, folder, rest = Paths().splitNetworkPath(to_path)
             mp, nm = mount_network_drive(server, folder, credentials, logger)
@@ -50,7 +50,7 @@ class LocalNetHandler(IHandler):
                     f"copying to net from {os.path.abspath(rfp)}"
                     + " to {os.path.abspath(net_path)}"
                 )
-                dir_util.copy_tree(os.path.abspath(rfp), net_path)
+                shutil.copytree(os.path.abspath(rfp), net_path)
             except Exception as e:
                 exception_str = str(e).replace("'", "")
                 logger.error(f"exception during network transfer {exception_str}")
@@ -78,7 +78,7 @@ class LocalNetHandler(IHandler):
             logger.debug(
                 f"copying locally from {os.path.abspath(rfp)} to {os.path.abspath(rfp)}"
             )
-            dir_util.copy_tree(os.path.abspath(rfp), os.path.abspath(rtp))
+            shutil.copytree(os.path.abspath(rfp), os.path.abspath(rtp))
         if handler == HandlerType.NET:
             server, folder, rest = Paths().splitNetworkPath(from_path)
             mp, nm = mount_network_drive(server, folder, credentials, logger)
@@ -89,7 +89,7 @@ class LocalNetHandler(IHandler):
                 logger.debug(
                     f"copying from net from {os.path.abspath(netpath)} to {os.path.abspath(rtp)}"
                 )
-                dir_util.copy_tree(netpath, os.path.abspath(rtp))
+                shutil.copytree(netpath, os.path.abspath(rtp))
             except Exception as e:
                 error_message = str(e).replace("'", "")
                 logger.error(f"exception during network transfer {error_message}")

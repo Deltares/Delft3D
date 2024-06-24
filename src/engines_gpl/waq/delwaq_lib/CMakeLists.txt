@@ -24,7 +24,6 @@ set(oss_dependencies waq_hyd_data
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies})
-    target_include_directories(${library_name} PRIVATE ${mpi_include_path})
 
     # Set linker properties
     target_link_directories(${library_name}

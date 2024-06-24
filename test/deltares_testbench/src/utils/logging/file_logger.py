@@ -8,6 +8,7 @@ import logging
 import os
 import sys
 from logging import handlers
+import traceback
 
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.log_level import LogLevel
@@ -33,9 +34,16 @@ class FileLogger(ILogger):
         logger.handlers.append(self.__create_file_logger(level))
         self.__logger = logger
 
-    def error(self, message: str):
-        self.__logger.error(message)
-        sys.stderr.write(message)
+    def error(self, message: str, exc_info: bool = False):
+        self.__logger.error(message, exc_info=exc_info)
+        sys.stderr.write(message + "\n")
+        if exc_info:
+            sys.stderr.write(traceback.format_exc())
+
+    def exception(self, message: str):
+        self.__logger.exception(message)
+        sys.stderr.write(message + "\n")
+        sys.stderr.write(traceback.format_exc())
 
     def warning(self, message: str):
         self.__logger.warning(message)
@@ -46,23 +54,29 @@ class FileLogger(ILogger):
     def debug(self, message: str):
         self.__logger.debug(message)
 
-    def log(self, message: str, log_level: LogLevel):
-        self.__logger.log(self.__get_internal_log_level(log_level), message)
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
+        self.__logger.log(self.__get_internal_log_level(log_level), message, exc_info=exc_info)
+
+    def close(self):
+        """Close all handlers of the logger."""
+        for handler in self.__logger.handlers:
+            handler.close()
+            self.__logger.removeHandler(handler)
 
     def __get_internal_log_level(self, log_level: LogLevel) -> int:
         return log_level
 
     def __create_file_logger(self, log_level: int):
         log_folder = os.path.dirname(self.__path)
+        os.makedirs(log_folder, exist_ok=True)
 
-        if not os.path.exists(log_folder):
-            os.mkdir(log_folder)
+        if os.path.isfile(self.__path):
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
+            handler.doRollover()
+        else:
+            handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
 
-        handler = handlers.RotatingFileHandler(self.__path, backupCount=10)
-        handler.doRollover()
         handler.setLevel(log_level)
-
         format_str = "%(asctime)s [%(levelname)-7s] : %(message)s"
-
         handler.setFormatter(logging.Formatter(format_str))
         return handler

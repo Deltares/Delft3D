@@ -31,7 +31,7 @@ contains
     subroutine rfpart (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Reprofunctions for HM partition coefficients
@@ -184,7 +184,7 @@ contains
                     WRITE(*, *) ' ERROR in RFPART'
                     WRITE(*, *) ' Illegal option for repro function partition coefficient'
                     WRITE(*, *) ' Option in input:', IVERSN
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
 
                 ENDIF
                 !

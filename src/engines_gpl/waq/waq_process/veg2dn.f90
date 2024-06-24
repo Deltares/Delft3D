@@ -31,7 +31,7 @@ contains
     subroutine veg2dn     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         ! function determine nutrient availability for vegetation
@@ -162,8 +162,8 @@ contains
             s1_sud = pmsa(ipnt(24))
             hsed = pmsa(ipnt(25))
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3) then ! also when dry!
 
                 ! active water segment

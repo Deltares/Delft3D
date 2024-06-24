@@ -1,47 +1,47 @@
 import io
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional
 from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from minio.commonconfig import Tags
 from minio.datatypes import Object as MinioObject
 from pyfakefs.fake_filesystem import FakeFilesystem
-from pytest import CaptureFixture, FixtureRequest
 from pytest_mock import MockerFixture
 from s3_path_wrangler.paths import S3Path
+
+from src.config.types.path_type import PathType
+from src.utils.minio_rewinder import Plan, PlanItem, Rewinder, VersionPair
 from tools.minio.config import TestCaseData, TestCaseLoader, TestCaseWriter
 from tools.minio.minio_tool import MinioTool, MinioToolError
 from tools.minio.prompt import Prompt
 
-from src.config.types.path_type import PathType
-from src.utils.minio_rewinder import Plan, PlanItem, Rewinder, VersionPair
 
-
-@pytest.fixture
+@pytest.fixture()
 def rewinder(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=Rewinder)
+    return mocker.Mock(spec=Rewinder)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_case_loader(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=TestCaseLoader)
+    return mocker.Mock(spec=TestCaseLoader)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_case_writer(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=TestCaseWriter)
+    return mocker.Mock(spec=TestCaseWriter)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def prompt(mocker: MockerFixture) -> Mock:
-    return mocker.Mock(spec=Prompt)
+    return mocker.Mock(spec=Prompt)  # type: ignore[no-any-return]
 
 
-@pytest.fixture
+@pytest.fixture()
 def minio_tool(
-    request: FixtureRequest,
+    request: pytest.FixtureRequest,
     rewinder: Mock,
     test_case_loader: Mock,
     test_case_writer: Mock,
@@ -68,12 +68,18 @@ def make_object(
     object_name: str,
     bucket_name: str = "my-bucket",
     version_id: Optional[str] = None,
-    last_modified: datetime = datetime.min.replace(tzinfo=timezone.utc),
+    last_modified: Optional[datetime] = None,
     is_delete_marker: bool = False,
     etag: Optional[str] = None,
     size: Optional[int] = None,
+    tags: Optional[Dict[str, str]] = None,
 ) -> MinioObject:
     version_id = version_id or uuid4().hex
+    minio_tags = None
+    if tags is not None:
+        minio_tags = Tags()
+        minio_tags.update(tags)
+    last_modified = last_modified or datetime.min.replace(tzinfo=timezone.utc)
 
     return MinioObject(
         bucket_name=bucket_name,
@@ -83,6 +89,7 @@ def make_object(
         is_delete_marker=is_delete_marker,
         etag=etag,
         size=size,
+        tags=minio_tags,
     )
 
 
@@ -162,7 +169,7 @@ class TestMinioTool:
 
     def test_push__no_changes__print_up_to_date_message(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -185,7 +192,7 @@ class TestMinioTool:
 
     def test_push__dont_apply_changes(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -209,18 +216,21 @@ class TestMinioTool:
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
-            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, update_only=False
+            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=False
         )
         rewinder.execute_plan.assert_not_called()
-        out_lines = capsys.readouterr().out.splitlines()
-        assert "The following files from `local` will be uploaded to `s3://my-bucket/references`" in out_lines[0]
-        assert "foo.txt" in out_lines[1]  # File name
-        assert "3 B" in out_lines[1]  # File size
+        out_lines: List[str] = capsys.readouterr().out.splitlines()
+        message = "The following files from `local` will be uploaded to `s3://my-bucket/references`"
+        linenr = next((idx for idx, line in enumerate(out_lines) if message in line), None)
+        assert linenr is not None
+        assert linenr + 1 != len(out_lines)
+        assert "foo.txt" in out_lines[linenr + 1]  # File name
+        assert "3 B" in out_lines[linenr + 1]  # File size
 
     @pytest.mark.parametrize("minio_tool", [{"tags": {"foo": "bar"}}], indirect=["minio_tool"])
     def test_push__add_tags_but_dont_apply_changes__print_tags(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -241,14 +251,14 @@ class TestMinioTool:
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
         # Act
-        minio_tool.push("foo", PathType.INPUT, local_dir, update_only=True)
+        minio_tool.push("foo", PathType.INPUT, local_dir, allow_create_and_delete=True)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
             src_dir=local_dir,
             dst_prefix=bucket / "cases",
             tags={"foo": "bar"},  # type: ignore
-            update_only=True,
+            allow_create_and_delete=True,
         )
         rewinder.execute_plan.assert_not_called()
         cap = capsys.readouterr()
@@ -257,7 +267,7 @@ class TestMinioTool:
 
     def test_push__apply_changes_dont_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -283,14 +293,14 @@ class TestMinioTool:
         test_case_writer.config_updates.return_value = {config_path: io.StringIO("new")}
 
         # Act
-        minio_tool.push("foo", PathType.REFERENCE, local_dir, update_only=False)
+        minio_tool.push("foo", PathType.REFERENCE, local_dir, allow_create_and_delete=False)
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
             src_dir=local_dir,
             dst_prefix=bucket / "references",
             tags=None,
-            update_only=False,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
         test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
@@ -304,7 +314,7 @@ class TestMinioTool:
 
     def test_push__apply_changes_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -339,7 +349,7 @@ class TestMinioTool:
 
     def test_push__conflicts_detected_dont_continue__return_before_build_plan(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -353,7 +363,9 @@ class TestMinioTool:
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
-                latest_version=make_object("cases/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+                latest_version=make_object(
+                    "cases/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+                ),  # 42 MiB
             ),
         ]
         prompt.yes_no.return_value = False  # Don't continue after detecting conflicts
@@ -364,14 +376,18 @@ class TestMinioTool:
         # Assert
         rewinder.build_plan.assert_not_called()  # Aborted before making the plan.
         cap = capsys.readouterr()
-        out_lines = cap.out.splitlines()
-        assert "Conflicts detected." in out_lines[0]
-        assert "+ bar.txt" in out_lines[1]
-        assert "42 MiB" in out_lines[1]
+        out_lines: List[str] = cap.out.splitlines()
+        message = "Conflicts detected."
+        linenr = next((idx for idx, line in enumerate(out_lines) if message in line), None)
+        assert linenr is not None
+        remaining_lines = out_lines[linenr + 1 :]
+        assert any(line.startswith("+ bar.txt") for line in remaining_lines)
+        assert any("42 MiB" in line for line in remaining_lines)
+        assert any("FOO-123" in line for line in remaining_lines)
 
     def test_push__conflicts_detected_and_apply_changes_and_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -385,11 +401,14 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        now = datetime.now(timezone.utc)
+        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now - timedelta(days=3))]
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
-                latest_version=make_object("cases/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+                latest_version=make_object(
+                    "cases/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+                ),  # 42 MiB
             ),
         ]
         plan = Plan(
@@ -406,6 +425,7 @@ class TestMinioTool:
 
         # Assert
         cap = capsys.readouterr()
+        assert "FOO-123" in cap.out
         assert "-old+new" in cap.out  # The diff is printed to the output.
         assert config_path.read_text() == "new"  # The config file's content is still old.
 
@@ -437,7 +457,7 @@ class TestMinioTool:
             minio_tool.pull("foo", PathType.INPUT)
 
     @pytest.mark.parametrize(
-        "path_type,prefix",
+        ("path_type", "prefix"),
         [
             (PathType.INPUT, "cases"),
             (PathType.REFERENCE, "references"),
@@ -466,7 +486,7 @@ class TestMinioTool:
         rewinder.download.assert_called_once_with("my-bucket", prefix, local_dir, None)
 
     @pytest.mark.parametrize(
-        "path_type,prefix,rewind",
+        ("path_type", "prefix", "rewind"),
         [
             (PathType.INPUT, "cases", None),
             (PathType.REFERENCE, "references", datetime.now(timezone.utc)),
@@ -563,7 +583,9 @@ class TestMinioTool:
         # Assert
         bucket = test_case.reference_prefix.bucket
         key = test_case.reference_prefix.key
-        rewinder.detect_conflicts.assert_called_once_with(test_case.reference_prefix, three_days_ago)
+        rewinder.detect_conflicts.assert_called_once_with(
+            test_case.reference_prefix, three_days_ago, add_tags_to_latest=True
+        )
         rewinder.download.assert_called_once_with(bucket, key, test_case.reference_dir, three_days_ago)
         assert fs.exists(Path(test_case.reference_dir))
 
@@ -574,6 +596,7 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
+        capsys: pytest.CaptureFixture,
     ) -> None:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -581,7 +604,9 @@ class TestMinioTool:
         test_case_loader.get_test_cases.return_value = [test_case]
         conflict = VersionPair(
             rewinded_version=None,
-            latest_version=make_object("references/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+            latest_version=make_object(
+                "references/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+            ),  # 42 MiB
         )
         rewinder.detect_conflicts.return_value = [conflict]
         prompt.yes_no.return_value = True
@@ -590,9 +615,13 @@ class TestMinioTool:
         minio_tool.pull("foo", PathType.REFERENCE)
 
         # Assert
+        captured = capsys.readouterr()
+        assert "FOO-123" in captured.out
         bucket = test_case.reference_prefix.bucket
         key = test_case.reference_prefix.key
-        rewinder.detect_conflicts.assert_called_once_with(test_case.reference_prefix, three_days_ago)
+        rewinder.detect_conflicts.assert_called_once_with(
+            test_case.reference_prefix, three_days_ago, add_tags_to_latest=True
+        )
         rewinder.download.assert_called_once_with(bucket, key, test_case.reference_dir, three_days_ago)
         assert fs.exists(Path(test_case.reference_dir))
 
@@ -603,6 +632,7 @@ class TestMinioTool:
         rewinder: Mock,
         prompt: Mock,
         fs: FakeFilesystem,
+        capsys: pytest.CaptureFixture,
     ) -> None:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
@@ -610,7 +640,9 @@ class TestMinioTool:
         test_case_loader.get_test_cases.return_value = [test_case]
         conflict = VersionPair(
             rewinded_version=None,
-            latest_version=make_object("cases/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+            latest_version=make_object(
+                "cases/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+            ),  # 42 MiB
         )
         rewinder.detect_conflicts.return_value = [conflict]
         prompt.yes_no.return_value = False
@@ -619,7 +651,11 @@ class TestMinioTool:
         minio_tool.pull("foo", PathType.INPUT)
 
         # Assert
-        rewinder.detect_conflicts.assert_called_once_with(test_case.case_prefix, three_days_ago)
+        captured = capsys.readouterr()
+        assert "FOO-123" in captured.out
+        rewinder.detect_conflicts.assert_called_once_with(
+            test_case.case_prefix, three_days_ago, add_tags_to_latest=True
+        )
         rewinder.download.assert_not_called()
         assert not fs.exists(Path(test_case.case_dir))
 
@@ -743,7 +779,7 @@ class TestMinioTool:
 
     def test_update_references__no_changes__print_up_to_date_message(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -766,7 +802,7 @@ class TestMinioTool:
 
     def test_update_references__dont_apply_changes(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -781,7 +817,7 @@ class TestMinioTool:
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
-            items=[PlanItem.create(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
+            items=[PlanItem.update(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
         )
         prompt.yes_no.return_value = False  # No, don't apply these changes.
 
@@ -790,18 +826,21 @@ class TestMinioTool:
 
         # Assert
         rewinder.build_plan.assert_called_once_with(
-            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, update_only=True
+            src_dir=local_dir, dst_prefix=bucket / "references", tags=None, allow_create_and_delete=False
         )
         rewinder.execute_plan.assert_not_called()
-        out_lines = capsys.readouterr().out.splitlines()
-        assert "The following files from `local` will be uploaded to `s3://my-bucket/references`" in out_lines[0]
-        assert "foo.txt" in out_lines[1]  # File name
-        assert "3 B" in out_lines[1]  # File size
+        out_lines: List[str] = capsys.readouterr().out.splitlines()
+        message = "The following files from `local` will be uploaded to `s3://my-bucket/references`"
+        linenr = next((idx for idx, line in enumerate(out_lines) if message in line), None)
+        assert linenr is not None
+        remaining_lines = out_lines[linenr + 1 :]
+        assert "foo.txt" in remaining_lines[0]  # File name
+        assert "3 B" in remaining_lines[0]  # File size
 
     @pytest.mark.parametrize("minio_tool", [{"tags": {"foo": "bar"}}], indirect=["minio_tool"])
     def test_update_references__add_tags_but_dont_apply_changes__print_tags(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -828,7 +867,7 @@ class TestMinioTool:
             src_dir=test_case.case_dir,
             dst_prefix=test_case.reference_prefix,
             tags={"foo": "bar"},  # type: ignore
-            update_only=True,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_not_called()
         cap = capsys.readouterr()
@@ -837,7 +876,7 @@ class TestMinioTool:
 
     def test_update_references__apply_changes_dont_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -856,7 +895,7 @@ class TestMinioTool:
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
-            items=[PlanItem.create(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
+            items=[PlanItem.update(local_dir / "foo.txt", bucket / "references/foo.txt")],  # No changes.
         )
         rewinder.build_plan.return_value = plan
         prompt.yes_no.side_effect = [True, False]  # Yes, apply changes. No, don't save the configs.
@@ -870,7 +909,7 @@ class TestMinioTool:
             src_dir=local_dir,
             dst_prefix=bucket / "references",
             tags=None,
-            update_only=True,
+            allow_create_and_delete=False,
         )
         rewinder.execute_plan.assert_called_once_with(plan)
         test_case_writer.config_updates.assert_called_once_with({"foo": mocker.ANY})
@@ -883,7 +922,7 @@ class TestMinioTool:
 
     def test_update_references__apply_changes_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -918,7 +957,7 @@ class TestMinioTool:
 
     def test_update_references__conflicts_detected_dont_continue__return_before_build_plan(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         rewinder: Mock,
@@ -932,7 +971,9 @@ class TestMinioTool:
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
-                latest_version=make_object("references/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+                latest_version=make_object(
+                    "references/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+                ),  # 42 MiB
             ),
         ]
         prompt.yes_no.return_value = False  # Don't continue after detecting conflicts
@@ -943,14 +984,18 @@ class TestMinioTool:
         # Assert
         rewinder.build_plan.assert_not_called()  # Aborted before making the plan.
         cap = capsys.readouterr()
-        out_lines = cap.out.splitlines()
-        assert "Conflicts detected." in out_lines[0]
-        assert "+ bar.txt" in out_lines[1]
-        assert "42 MiB" in out_lines[1]
+        out_lines: List[str] = cap.out.splitlines()
+        message = "Conflicts detected."
+        linenr = next((idx for idx, line in enumerate(out_lines) if message in line), None)
+        assert linenr is not None
+        remaining_lines = out_lines[linenr + 1 :]
+        assert any(line.startswith("+ bar.txt") for line in remaining_lines)
+        assert any("42 MiB" in line for line in remaining_lines)
+        assert any("FOO-123" in line for line in remaining_lines)
 
     def test_update_references__conflicts_detected_and_apply_changes_and_save_configs(
         self,
-        capsys: CaptureFixture,
+        capsys: pytest.CaptureFixture,
         minio_tool: MinioTool,
         test_case_loader: Mock,
         test_case_writer: Mock,
@@ -964,11 +1009,14 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        test_case_loader.get_test_cases.return_value = [make_test_case("foo")]
+        now = datetime.now(timezone.utc)
+        test_case_loader.get_test_cases.return_value = [make_test_case("foo", version=now - timedelta(days=3))]
         rewinder.detect_conflicts.return_value = [
             VersionPair(
                 rewinded_version=None,
-                latest_version=make_object("cases/bar.txt", size=42 * 1024 * 1024),  # 42 MiB
+                latest_version=make_object(
+                    "cases/bar.txt", size=42 * 1024 * 1024, tags={"jira-issue-id": "FOO-123"}
+                ),  # 42 MiB
             ),
         ]
         plan = Plan(
@@ -985,5 +1033,6 @@ class TestMinioTool:
 
         # Assert
         cap = capsys.readouterr()
+        assert "FOO-123" in cap.out
         assert "-old+new" in cap.out  # The diff is printed to the output.
         assert config_path.read_text() == "new"  # The config file's content is still old.

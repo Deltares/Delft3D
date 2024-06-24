@@ -214,8 +214,7 @@ module m_readObservationPoints
       character(len=*), intent(in   ) :: slocType        !< Location type string.
       integer,          intent(  out) :: ilocType        !< Location type integer. When string is invalid, -1 is returned.
       
-      call str_lower(slocType)
-      select case (trim(slocType))
+      select case (trim(str_tolower(slocType)))
       case ('1d')
          ilocType = INDTP_1D
       case ('2d')

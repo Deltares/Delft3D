@@ -5,7 +5,7 @@
      &                      gvv    , gsqs   , vol1   , dtsec  , itdate , &
      &                      tstart , tstop  , dt     , thick  , lsal   , &
      &                      ltem   , lsed   , r1     , areau  , areav  , &
-     &                      tau    , vdiff  , dps    , dp     , chezu  , chezv , &
+     &                      tau    , vdiff  , dps    , dpd    , chezu  , chezv , &
      &                      chez   , mnksrc , namsrc , nto    , nambnd , mnbnd , &
      &                      zmodel , ztop   , zbot   , gdp    )
 !----- GPL ---------------------------------------------------------------------
@@ -160,7 +160,7 @@
       real(fp) tau                     !!  Tau's at the bottom
       real(fp) vdiff                   !!  vertical diffusivity
       real(hp) dps(nlb:nub,mlb:mub)    !!  depth of zeta points below ref layer
-      real(fp) dp(nlb:nub,mlb:mub)     !!  depth of corner points below ref layer
+      real(fp) dpd(nlb:nub,mlb:mub)    !!  depth of corner points below ref layer
       real(fp) chezu                   !!  chezy values in u points
       real(fp) chezv                   !!  chezy values in v points
       logical  chez                    !!  if true, there is a chezy value
@@ -171,7 +171,7 @@
       logical  zmodel                  !!  true if z-model feature is used
       real(fp) zbot                    !!  Maximum depth in the model (relative to the reference level; unit: metres; positive upwards).
                                        !!  It marks the lower boundary of the grid.
-      real(fp) ztop                    !!  The ‘imaginary’ maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
+      real(fp) ztop                    !!  The "imaginary" maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
                                        !!  This imaginary level is used only to determine the grid distribution. It does not mark the maximum surface level.
 !
 !           Local variables
@@ -417,7 +417,7 @@
          
          call wrwaqgeomcl( meta   , lundia, nmaxus , mmax  , kmax  , &
                            nlb    , nub    , mlb   , mub   ,         &
-                           xcor   , ycor  , xz     , yz    , dp    , &
+                           xcor   , ycor  , xz     , yz    , dpd   , &
                            kcs    , kcu   , kcv    , sferic, aggre , &
                            isaggrl, nto   , nambnd , mnbnd)
          deallocate ( isaggrl , stat = istat )

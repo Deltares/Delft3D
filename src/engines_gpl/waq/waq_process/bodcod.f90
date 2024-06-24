@@ -31,7 +31,7 @@ contains
     subroutine bodcod (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
 
         !>\file
@@ -292,12 +292,12 @@ contains
                     CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD: Invalid value (zero)!'
                     WRITE (*, *) 'RCBOD: Invalid value (zero)!'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 ENDIF
                 IF (RCBOD2 < 1E-10) THEN
                     CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'RCBOD-2: Invalid value (zero)!'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 ENDIF
 
 
@@ -388,7 +388,7 @@ contains
                     CALL get_log_unit_number(LUNREP)
                     WRITE (LUNREP, *) 'BODCOD: Invalid option for SwOXYDem!'
                     WRITE (*, *) 'BODCOD: Invalid option for SwOXYDem!'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 ENDIF
 
                 PMSA(IP37) = O2FBOD

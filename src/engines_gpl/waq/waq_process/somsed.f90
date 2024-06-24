@@ -31,7 +31,7 @@ contains
     subroutine somsed (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Total of all sedimenting substances
@@ -77,7 +77,7 @@ contains
         IFLUX = 0
         DO ISEG = 1, NOSEG
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
 
@@ -150,8 +150,8 @@ contains
             !        Zoek eerste kenmerk van- en naar-segmenten
 
             IF (IVAN > 0 .AND. INAAR > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
-                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
                 IF (IKMRKV==1.AND.IKMRKN==1) THEN
 
                     !            Water-water uitwisseling

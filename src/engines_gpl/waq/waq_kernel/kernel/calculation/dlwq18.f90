@@ -28,99 +28,73 @@ module m_dlwq18
 contains
 
 
-    subroutine dlwq18 (nosys, notot, nototp, noseg, volume, &
+    !> Updates concentrations after a time-step explicitly integrated
+    !! - the mass array is increased with the deriv array * idt.
+    !! - the deriv array is set to zero.
+    !! - if applicable, computed volumes are evaluated.
+    !! - the concentrations of water bound substances are mass/volume
+    !! - the concentrations of bed susbtances are mass / surface
+subroutine update_concs_explicit_time_step(nosys, notot, nototp, noseg, volume, &
             surface, amass, conc, deriv, idt, &
             ivflag, file_unit_list)
-
-        !     Deltares Software Centre
-
-        !>\File
-        !>           Sets an explicit time step from DERIV.
-        !>
-        !>           - the mass array is increased with the deriv array * idt.
-        !>           - the deriv array is set to zero.
-        !>           - if applicable, computed volumes are evaluated.
-        !>           - the concentrations of water bound substances are mass / volume
-        !>           - the concentrations of bed susbtances are mass / surface
-
-        !     Created             :    April   1988 by Leo Postma
-
-        !     Modified            : 13 Januari 2011 by Leo Postma
-        !                                           2D arrays, fortran 90 look and feel
-        !                                           conc of passive substances in mass/m2
-        !                            4 April   2013 by Leo Postma
-        !                                           take presence of particle-substances into account
-
-        !     Logical unitnumbers : file_unit_list     = number of monitoring file
-
-        !     Subroutines called  : none
 
         use timers
 
         implicit none
-
-        !     Parameters          :
-
-        !     type     kind  function         name                      description
 
         integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
         integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
         integer(kind = int_wp), intent(in) :: nototp                  !< number of particle substances
         integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
         real(kind = real_wp), intent(inout) :: volume (noseg)         !< volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(noseg)         !< horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass  (notot, noseg)   !< masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)   !< concentrations per substance per volume
-        real(kind = real_wp), intent(inout) :: deriv  (notot, noseg)   !< derivatives per substance per volume
+        real(kind = real_wp), intent(in) :: surface(noseg)            !< horizontal surface area
+        real(kind = real_wp), intent(inout) :: amass  (notot, noseg)  !< masses per substance per volume
+        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)  !< concentrations per substance per volume
+        real(kind = real_wp), intent(inout) :: deriv  (notot, noseg)  !< derivatives per substance per volume
         integer(kind = int_wp), intent(in) :: idt                     !< integration time step size
         integer(kind = int_wp), intent(in) :: ivflag                  !< if 1 computational volumes
-        integer(kind = int_wp), intent(in) :: file_unit_list                     !< unit number of the monitoring file
+        integer(kind = int_wp), intent(in) :: file_unit_list          !< unit number of the monitoring file
 
         !     local variables
 
-        integer(kind = int_wp) :: isys            ! loopcounter substances
-        integer(kind = int_wp) :: iseg            ! loopcounter computational volumes
-        real(kind = real_wp) :: surf            ! the horizontal surface area of the cell
-        real(kind = real_wp) :: vol             ! helpvariable for this volume
-        integer(kind = int_wp), save :: ivmess          ! number of messages printed
-        data       ivmess  /0/
-        integer(kind = int_wp), save :: ithandl         ! timer handle
+        integer(kind = int_wp) :: isys          !< loop counter substances
+        integer(kind = int_wp) :: iseg          !< loop counter computational volumes
+        real(kind = real_wp) :: surf            !< the horizontal surface area of the cell
+        real(kind = real_wp) :: vol             !< help variable for this volume
+        integer(kind = int_wp), save :: volume_messages_count  !< Number of messages logged about resetting zero volumes
+        data       volume_messages_count  /0/
+        integer(kind = int_wp), save :: ithandl ! timer handle
         data       ithandl  /0/
+
         if (timon) call timstrt ("dlwq18", ithandl)
 
-        !         set the time step
-
+        ! set the time step
         amass = amass + idt * deriv
         deriv = 0.0
 
-        !         loop accross the number of computational volumes for the concentrations
-
+        ! loop across cells (segments) for the concentrations
         do iseg = 1, noseg
-
-            !         compute volumes if necessary and check for positivity
-
+            ! compute volumes if necessary and check for positivity
             if (ivflag == 1) volume(iseg) = amass(1, iseg)
             vol = volume(iseg)
             if (abs(vol) < 1.0e-25) then
-                if (ivmess < 25) then
-                    ivmess = ivmess + 1
+                if (volume_messages_count < 25) then
+                    volume_messages_count = volume_messages_count + 1
                     write (file_unit_list, 1000) iseg, vol
-                elseif (ivmess == 25) then
-                    ivmess = ivmess + 1
+                elseif (volume_messages_count == 25) then
+                    volume_messages_count = volume_messages_count + 1
                     write (file_unit_list, 1001)
                 endif
                 volume (iseg) = 1.0
                 vol = 1.0
             endif
 
-            !         transported substances first
-
+            ! transported substances
             do isys = 1, nosys
-                conc (isys, iseg) = amass(isys, iseg) / vol
+                conc(isys, iseg) = amass(isys, iseg) / vol
             enddo
 
-            !         then the passive substances
-
+            ! passive substances
             if (notot - nototp > nosys) then
                 surf = surface(iseg)
                 do isys = nosys + 1, notot - nototp
@@ -134,10 +108,9 @@ contains
         return
 
         !        output formats
-
         1000 format ('Volume of segment:', I7, ' is:', &
-                E15.6, ' 1.0 assumed.')
-        1001 format ('25 or more zero volumes , further messages surpressed')
+                     E15.6, ' 1.0 assumed.')
+        1001 format ('25 or more zero volumes, further messages supressed')
 
     end
 

@@ -42,13 +42,13 @@ contains
         ! NOLAY   I*4 1 I     number of layers
         !
 
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_cli_utils, only : retrieve_command_argument
+        use m_logger_helper, only : get_log_unit_number, stop_with_error
+        use m_cli_utils, only : get_command_argument_by_name
         use m_dhnoseg
         use m_dhnolay
         use m_dhltim
-        use m_evaluate_waq_attribute
-        use      bloom_data_vtrans
+        use m_extract_waq_attribute
+        use bloom_data_vtrans
 
         implicit none
 
@@ -73,18 +73,15 @@ contains
                 e, diag, codiag, rhs, volume, &
                 delt, period
 
-        logical :: lfound
-        character :: cdummy
-        real(kind = real_wp) :: rdummy
+        logical :: parsing_error
         logical :: l_initial
         logical, save :: l_restart
-        character(len = 256) :: file_initial
-        character(len = 256), save :: file_restart
+        character(:), allocatable :: file_initial
+        character(:), allocatable, save :: file_restart
         integer(kind = int_wp) :: ilun
         integer(kind = int_wp) :: nosegi
         integer(kind = int_wp) :: nolayi
-        integer(kind = int_wp) :: idummy
-        integer(kind = int_wp) :: ierr2
+
         !
         ip1 = ipoint(1)
         ip2 = ipoint(2)
@@ -159,14 +156,14 @@ contains
                     write (lunrep, 1000) ierr_alloc
                     write (lunrep, 1001) noseg
                     write (lunrep, 1002) nolay
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
 
                 ! read initial file?
 
                 if(.not.fm_vtrans) then
-                    call retrieve_command_argument('-vtrans_initial', 3, l_initial, idummy, rdummy, file_initial, ierr2)
-                    call retrieve_command_argument('-vtrans_restart', 3, l_restart, idummy, rdummy, file_restart, ierr2)
+                    l_initial = get_command_argument_by_name('-vtrans_initial', file_initial, parsing_error)
+                    l_restart = get_command_argument_by_name('-vtrans_restart', file_restart, parsing_error)
                 else
                     l_initial = .false.
                     l_restart = .false.
@@ -251,7 +248,7 @@ contains
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom > 0 .and. ito > 0) then
-                    call evaluate_waq_attribute(1, iknmrk(ito), ikmrk1)
+                    call extract_waq_attribute(1, iknmrk(ito), ikmrk1)
                     if (ikmrk1==1) then
                         disp = pmsa(ip9) + pmsa(ip13)
                     else

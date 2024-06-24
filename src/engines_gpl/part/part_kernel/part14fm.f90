@@ -47,6 +47,7 @@ module part14fm_mod
 
       use m_waq_precision          ! single/double precision
       use timers
+      use partmem, only: hyd
       use grid_search_mod
       use spec_feat_par
       use m_sferic, only: jsferic
@@ -121,33 +122,33 @@ module part14fm_mod
 
 !     Locals
 
-      logical     :: first  =  .true.
-      logical        lcircl            ! this thing is always false !
-      real   (dp) :: rseed             ! seed of the random number generator
-      integer(int_wp ) :: ic                ! loop variable continuous loads
-      integer(int_wp ) :: id                ! loop variable to identify time locations
-      integer(int_wp ) :: ids, ide          ! interval numbers of start and stop time
-      real   (real_wp) :: fac1s, fac2s      ! interpolation factors start location time interval
-      real   (real_wp) :: fac1e, fac2e      ! interpolation factors end   location time interval
-      real   (dp) :: aconu             ! mass per particle of this wasteload (constant !)
-      integer(int_wp ) :: ipb               ! help variable for particle number
-      real   (dp) :: rest              ! help variable remainder for this wasteload
-      real   (dp) :: avcon             ! average mass/s load over a time interval
-      real   (dp) :: amass             ! avcon multiplied with its duration
-      real   (dp) :: dts               ! (mass/particle) / (mass/s) gives s/particle for spreaded release
-      real   (dp) :: rpnul             ! same is dts, but for the rest from last time => time first particle
-      integer(int_wp ) :: nopnow            ! number of particles to be released for this continuos load
-      integer(int_wp ) :: ibegin, iend      ! number of first and last particle of the batch of this load
-      integer(int_wp ) :: ie                ! ic + nodye, entry number in combined arrays
-      integer(int_wp ) :: i, ipart          ! loop/help variables for particles
-      integer(int_wp ) :: ntot              ! help variables for particles
-      integer(int_wp ) :: nulay             ! help variables for the actual layer in a particle loop
-      integer(int_wp ) :: mwasth, nwasth    ! help variables for n and m of wastelocation
-      real   (real_wp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
-      real   (real_wp) :: zwasth            ! help variables for z within the layer
-      real   (real_wp) :: radiuh            ! help variable for the radius0
-      real   (dp) :: dpangle, dxp, dyp, dradius, xx, yy
-      integer(int_wp ) :: ilay  , isub      ! loop variables layers and substances
+      logical, save     :: first  =  .true.
+      real   (dp), save :: rseed             ! seed of the random number generator
+      integer(int_wp )  :: ic                ! loop variable continuous loads
+      integer(int_wp )  :: id                ! loop variable to identify time locations
+      integer(int_wp )  :: ids, ide          ! interval numbers of start and stop time
+      real   (real_wp)  :: fac1s, fac2s      ! interpolation factors start location time interval
+      real   (real_wp)  :: fac1e, fac2e      ! interpolation factors end   location time interval
+      real   (dp)       :: aconu             ! mass per particle of this wasteload (constant !)
+      integer(int_wp )  :: ipb               ! help variable for particle number
+      real   (dp)       :: rest              ! help variable remainder for this wasteload
+      real   (dp)       :: avcon             ! average mass/s load over a time interval
+      real   (dp)       :: amass             ! avcon multiplied with its duration
+      real   (dp)       :: dts               ! (mass/particle) / (mass/s) gives s/particle for spreaded release
+      real   (dp)       :: rpnul             ! same is dts, but for the rest from last time => time first particle
+      integer(int_wp )  :: nopnow            ! number of particles to be released for this continuos load
+      integer(int_wp )  :: ibegin, iend      ! number of first and last particle of the batch of this load
+      integer(int_wp )  :: ie                ! ic + nodye, entry number in combined arrays
+      integer(int_wp )  :: i, ipart          ! loop/help variables for particles
+      integer(int_wp )  :: ntot              ! help variables for particles
+      integer(int_wp )  :: nulay             ! help variables for the actual layer in a particle loop
+      integer(int_wp )  :: mwasth, nwasth    ! help variables for n and m of wastelocation
+      real   (real_wp)  :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
+      real   (real_wp)  :: zwasth            ! help variables for z within the layer
+      real   (real_wp)  :: radiuh            ! help variable for the radius0
+      real   (dp)       :: dpangle, dxp, dyp, dradius, xx, yy
+      integer(int_wp )  :: ilay  , isub      ! loop variables layers and substances
+      integer(int_wp )  :: cellid            ! ID of the first cell in the column of cells (for accessing laytop and laybot)
 
       integer(int_wp ) :: np                ! Number of particles to add
 
@@ -159,7 +160,6 @@ module part14fm_mod
 
       if ( first ) then
          first  = .false.
-         lcircl = .false.
          rem    = 0.0          ! zero remainder array for all continuous loads
          ncheck = 0            ! zero check array for number of particles per load
          rseed  = 0.5d+00      ! seed for random generator
@@ -357,7 +357,8 @@ module part14fm_mod
             enddo
 
             if (zmodel) then
-               laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+               cellid = 1 + mod( mpart(i)-1, hyd%nosegl )
+               laypart(i) = min(laybot(1, cellid), max(nulay,laytop(1, cellid)))
             else
                laypart(i) = nulay
             endif

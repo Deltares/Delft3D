@@ -31,7 +31,7 @@ contains
     subroutine sulfox (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_logger
+        use m_logger_helper
 
         !>\file
         !>       Oxidation of dissolved sulphide (0 and 2nd order) (new, generic !)

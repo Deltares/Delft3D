@@ -1,0 +1,52 @@
+<!--
+    default testCases
+    -->
+    <defaultTestCases>
+        <testCase name="dwaq_default">
+            <programs>
+                <program ref="dimr">
+                    <arguments>
+                        <argument>dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <!-- Yes, point to the Linux references. We use only one set, since results should be independent of OS -->
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+
+        <testCase name="part_default">
+            <programs>
+                <program ref="PART">
+                    <arguments>
+                        <argument>runid.par</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="cases" type="input">
+                    <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                    <from>lnx64</from>
+            </location>
+            <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+        </testCase>
+
+        <testCase name="dummy">
+            <!-- Used in testcase e03_f02_c00_hydro and e03_f07_c00_hydro, which are just input for actual tests -->
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
+        </testCase>
+    </defaultTestCases>

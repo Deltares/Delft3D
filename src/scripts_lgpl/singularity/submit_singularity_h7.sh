@@ -1,12 +1,14 @@
 #! /bin/bash
  
+# This is a script for submitting single or multi-node simulations to the Slurm cluster at Deltares (H7).
+# Note: Apptainer is the replacement for Singularity.
+
 # Usage:
-#   - Modify this script where needed (e.g. number of nodes, number of tasks per node, Singularity version).
+#   - Modify this script where needed (e.g. number of nodes, number of tasks per node, Apptainer version).
 #   - Execute this script from the command line of H7 using:
 #     sbatch ./submit_singularity_h7.sh
 #
-# This is an h7 specific script for single (or multi-node) simulations
- 
+
  
 #--- Specify Slurm SBATCH directives ------------------------------------------------------------------------
 #SBATCH --nodes=1               # Number of nodes.
@@ -22,22 +24,21 @@
 ##SBATCH --contiguous           # The allocated nodes must form a contiguous set, i.e. next to each other.
                                 # In many cases this option can be omitted.
  
-#--- Load modules -------------------------------------------------------------------------------------------
+#--- Load modules (for use within Deltares) ------------------------------------------------------------------
 module purge
-module load apptainer/1.1.8     # Load the Singularity container system software.
+module load apptainer/1.2.5     # Load the Apptainer container system software.
 module load intelmpi/2021.9.0   # Load the  message-passing library for parallel simulations.
  
  
 #--- Setup the container ------------------------------------------------------------------------------------
-# Delft3D FM Singularity containers are available on the P-drive here: P:\d-hydro\delft3dfm_containers\
-# Specify the folder that contains the required version of the Singularity container
-# Currently v2023.03 is supported.
-containerFolder=/p/d-hydro/delft3dfm_containers/delft3dfm_2023.03
+# For use within Deltares, Delft3D FM Apptainer containers are available here: P:\d-hydro\delft3dfm_containers\
+# Specify the folder that contains the required version of the Apptainer container
+containerFolder=/p/d-hydro/delft3dfm_containers/delft3dfm_2024.03/
  
  
 #--- Setup the model ----------------------------------------------------------------------------------------
 # Specify the ROOT folder of your model, i.e. the folder that contains ALL of the input files and sub-folders, e.g:
-modelFolder=/p/myFolder/singularity/delft3dfm/test
+modelFolder=/p/myFolder/apptainer/delft3dfm/test
 
 # Specify the folder containing your model's MDU file.
 mdufileFolder=$modelFolder/dflowfm

@@ -91,13 +91,13 @@
           ! Perform velocity correction for fixed weir and structures
           ! In some cases the flow area of the hydraulic structure is larger than the flow area of the branch.
           ! In those cases the flow velocity at the structure is not used, but the upstream velocity
-          do i = 1, numberOfStructuresAndWeirs
+          do i = 1, size(structuresAndWeirsList)
              L = structuresAndWeirsList(i)
              if (jabarrieradvection == 3 .and. L > lnx1D) then
                 if ( struclink(L) == 1 ) cycle
              endif
              if (comparereal(au_nostrucs(L), 0d0) ==1) then
-               k1 = ln(1,L) 
+               k1 = ln(1,L)
                k2 = ln(2,L)
                u1correction = q1(L)/au_nostrucs(L) - u1(L)
                ucx(k1) = ucx(k1) + wcx1(L)*u1correction

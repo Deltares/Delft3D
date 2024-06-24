@@ -23,7 +23,7 @@
 
 module process_registration
     use m_waq_precision
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
     use m_protistcm
     use m_propsg
     use m_heteroagg
@@ -522,7 +522,7 @@ contains
                     write(lunrep, *) 'ERROR        : requested module not in open process library dll/so'
                     write(lunrep, *) 'module       : ', pronam
                     write(lunrep, *) 'dll/so handle: ', dll_opb
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
             else
                 write(*, *) ' '
@@ -531,7 +531,7 @@ contains
                 write(lunrep, *) ' '
                 write(lunrep, *) 'ERROR  : requested module not available, no open process library dll/so loaded'
                 write(lunrep, *) 'module       : ', pronam
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         endif
 

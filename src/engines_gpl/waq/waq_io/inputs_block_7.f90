@@ -39,13 +39,13 @@ contains
         !! Reads block 7 of input, process parameters
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_string_utils, only : index_in_array
         use m_open_waq_files
         use m_grid_utils_external   ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token       ! tokenized reading
-        use partmem, only : alone, lsettl, layt        ! for the interface with Delpar (Tau and VertDisp)
+        use partmem, only : alone, use_settling, layt        ! for the interface with Delpar (Tau and VertDisp)
         use timers       !   performance timers
         use m_sysn
         use omp_lib
@@ -182,7 +182,7 @@ contains
 
         enddo
         if (.not. alone) then              ! Delwaq runs with Delpar
-            if (lsettl .or. layt > 1) then
+            if (use_settling .or. layt > 1) then
                 if (taupart) then
                     write (file_unit, 2330)
                 else
@@ -265,7 +265,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) call status%increase_error_count()
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error(ctoken, iwidth, 7, ierr2, status)
         if (timon) call timstop(ithndl)
 

@@ -15,14 +15,17 @@ from typing import (
 )
 
 from s3_path_wrangler.paths import S3Path
-from tools.minio import utils
 
 from src.config.credentials import Credentials
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.path_type import PathType
+from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.xml_config_parser import XmlConfigParser
+from tools.minio import utils
+from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.log_level import LogLevel
 
 
 @dataclass
@@ -155,12 +158,13 @@ class TestBenchConfigLoader(TestCaseLoader):
         self._server_base_url = server_base_url
 
     def get_test_cases(self, filter: Optional[str] = None) -> Iterable[TestCaseData]:
-        local_paths, _, test_case_configs = self._config_parser.load(
-            path=str(self._path),
-            rstr="",  # Override path Unnecessary.
-            cred=self._credentials,  # We shouldn't need credentials to parse the config.
-            server_base_url=self._server_base_url,
-        )
+        settings = TestBenchSettings()
+        settings.server_base_url = self._server_base_url
+        settings.credentials = self._credentials
+        settings.override_paths = ""
+        settings.config_file = str(self._path)
+        logger = ConsoleLogger(LogLevel.DEBUG)
+        local_paths, _, test_case_configs = self._config_parser.load(settings, logger)
 
         return [
             TestCaseData.from_config(config, local_paths)

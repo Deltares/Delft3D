@@ -27,16 +27,16 @@ module m_getidentification
 contains
 
 
-    subroutine getidentification(idstr)
+    subroutine getidentification(identification_text)
         !
         ! Get the ident-string and version number for DELWAQ2
         !
         use delwaq_version_module
         implicit none
 
-        character(len = *) :: idstr
+        character(len = *) :: identification_text
 
-        call getfullversionstring_delwaq(idstr)
+        call getfullversionstring_delwaq(identification_text)
 
     end subroutine
 end module m_getidentification

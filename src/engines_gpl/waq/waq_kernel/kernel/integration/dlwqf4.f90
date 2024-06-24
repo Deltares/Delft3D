@@ -27,83 +27,60 @@ module m_dlwqf4
 
 contains
 
-
-    subroutine dlwqf4 (noseg, nobnd, nosys, notot, isys, &
+    !> Define right hand side of the matrix equation
+    subroutine dlwqf4(noseg, nobnd, nosys, notot, isys, &
             &                    idt, conc, deriv, volold, bound, &
             &                                      rhs, diag, sol)
 
-        !     Deltares - Delft Software Department
-
-        !     Created   : Nov. 1996 by Kian Tan
-
-        !     Function  : define right hand side of the matrix equation
-
-        !     Modified  : July 2008, Leo Postma  : WAQ performance timers
-        !                 July 2009, Leo Postma  : double precission version
-
-        use timers                         ! WAQ performance timers
+        use timers
 
         implicit none
 
-        !     Arguments           :
+        integer(kind=int_wp), intent(in   ) :: noseg               !< Number of computational volumes
+        integer(kind=int_wp), intent(in   ) :: nobnd               !< Number of open boundaries
+        integer(kind=int_wp), intent(in   ) :: nosys               !< Number of transported substances
+        integer(kind=int_wp), intent(in   ) :: notot               !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: isys                !< This substance
+        integer(kind=int_wp), intent(in   ) :: idt                 !< Timestep
+        real(kind=real_wp),   intent(in   ) :: conc(notot, noseg)  !< All concentrations
+        real(kind=real_wp),   intent(in   ) :: deriv(notot, noseg) !< All derivatives (loads, processes)
+        real(kind=real_wp),   intent(in   ) :: volold(noseg)       !< Volumes at beginning of time step
+        real(kind=real_wp),   intent(in   ) :: bound(nosys, nobnd) !< Open boundary concentrations
+        real(kind=dp),        intent(  out) :: rhs(noseg + nobnd)  !< Right hand side of the equation
+        real(kind=dp),        intent(in   ) :: diag(noseg + nobnd) !< Value of the diagonal
+        real(kind=dp),        intent(  out) :: sol(noseg + nobnd)  !< Initial guess
 
-        !     Kind        Function         Name                  Description
+        ! Local variables
+        real(kind=dp) :: ddt          !< 1.0 / time step in double precision
+        integer(kind=int_wp) :: iseg  !< Loop variable
 
-        integer(kind = int_wp), intent(in) :: noseg               ! Number of computational volumes
-        integer(kind = int_wp), intent(in) :: nobnd               ! Number of open boundaries
-        integer(kind = int_wp), intent(in) :: nosys               ! Number of transported substances
-        integer(kind = int_wp), intent(in) :: notot               ! Total number of substances
-        integer(kind = int_wp), intent(in) :: isys                ! This substance
-        integer(kind = int_wp), intent(in) :: idt                 ! timestep in scu's
-        real(kind = real_wp), intent(in) :: conc  (notot, noseg) ! all concentrations
-        real(kind = real_wp), intent(in) :: deriv (notot, noseg) ! all derivatives (loads, processes)
-        real(kind = real_wp), intent(in) :: volold(noseg)       ! volumes at beginning of time step
-        real(kind = real_wp), intent(in) :: bound (nosys, nobnd) ! open boundary concentrations
-        real(kind = dp), intent(out) :: rhs   (noseg + nobnd) ! right hand side of the equation
-        real(kind = dp), intent(in) :: diag  (noseg + nobnd) ! value of the diagonal
-        real(kind = dp), intent(out) :: sol   (noseg + nobnd) ! initial guess
+        ! The WAQ-timer
+        integer(kind=int_wp) :: ithandl = 0
+        if (timon) call timstrt("dlwqf4", ithandl)
 
-        !     Local declarations
-
-        real(kind = dp) :: ddt                                   ! 1.0 / time step in double
-        integer(kind = int_wp) :: iseg                                  ! Loop variable
-
-        !     The WAQ-timer
-
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqf4", ithandl)
-
-        !         set the right hand side, normal part
-
-        ddt = 1.0d00 / idt
+        ! set the right hand side, normal part
+        ddt = 1.0d00/idt
 
         do iseg = 1, noseg
-            rhs(iseg) = deriv(isys, iseg) + volold(iseg) * conc(isys, iseg) * ddt
-        enddo
+            rhs(iseg) = deriv(isys, iseg) + volold(iseg)*conc(isys, iseg)*ddt
+        end do
 
-        !         set the right hand side, open boundary part
-
+        ! set the right hand side, open boundary part
         do iseg = 1, nobnd
             rhs(noseg + iseg) = bound(isys, iseg)
-        enddo
+        end do
 
-        !        row scaling
-
+        ! row scaling
         do iseg = 1, noseg + nobnd
-            rhs(iseg) = rhs(iseg) / diag(iseg)
-        enddo
+            rhs(iseg) = rhs(iseg)/diag(iseg)
+        end do
 
-        !        zero initial guess, try previous concentration for water volumes
-        !        ( alternatively take zero vector ). Zero initial guess for boundaries.
-
+        ! zero initial guess, try previous concentration for water volumes
+        ! ( alternatively take zero vector ). Zero initial guess for boundaries.
         sol = 0.0
         do iseg = 1, noseg
             sol(iseg) = conc(isys, iseg) + 0.01
-        enddo
-
-        if (timon) call timstop (ithandl)
-
-        return
-    end
-
+        end do
+        if (timon) call timstop(ithandl)
+    end subroutine dlwqf4
 end module m_dlwqf4

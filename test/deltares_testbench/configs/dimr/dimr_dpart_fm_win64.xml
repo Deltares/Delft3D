@@ -3,10 +3,6 @@
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xmlns:xi="http://www.w3.org/2001/XInclude"
                 xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
-                                <!--
-                                Basic Linux       configuration file: tb3_cfg_lnx64.xml
-                                Basic Windows configuration     file: tb3_cfg_win64.xml
-                                -->
         <config>
                 <localPaths>
                         <testCasesDir>.\data\cases</testCasesDir>
@@ -24,11 +20,11 @@
                         </location>
                         <location name="dsctestbench-cases">
                                 <credential     ref="commandline"/>
-				<root>{server_base_url}/cases</root>
+                <root>{server_base_url}/cases</root>
                         </location>
                         <location name="dsctestbench-references">
                                 <credential     ref="commandline"/>
-				<root>{server_base_url}/references</root>
+                <root>{server_base_url}/references</root>
                         </location>
                         <location name="network-references">
                                 <root>p:\delft3d\test_data\d3d-flow\flow\versions\6.01.10.4289</root>
@@ -38,67 +34,13 @@
                         </location>
                 </locations>
         </config>
-                                <!--
-                                Programs
 
-                                Optional attributes:
-                                        ignoreStandardError="true"               default: false
-                                        ignoreReturnValue="true"                 default: false
-                                        logOutputToFile="true"                   default: true
-                                        programStringRemoveQuotes="true" default: false
-                                                Needed by WAQ1: -p "proc_def" does NOT work
-                                                                                -p proc_def       does work
-                                        shellStringRemoveQuotes="true"   default: false
-                                                Needed by mpi: mpirun -n 3 "program     program_args" does NOT work
-                                                                           mpirun -n 3 program programargs        does work
-                                        storeOutput="true"                               default: false
-                                                Needed by esm_create: The result must be passed through to setenv(DIO_SHM_ESM)/esm_delete
-                                                Before using this attribute, ALL program-output was     stored. This caused     problems on     Linux.
-
-                                Path:
-                                        The     path to the     executable is build     as follows:
-                                                <networkpath_root>/<from>path
-                                        To local:
-                                                <networkpath>/<from>
-                                                is copied to
-                                                <localPaths_enginesDir>/<to>
-                                                where "<to>" is by default the same     value of "<from>"
-                                                When "<version" is defined,     "_<version>" is added.
-                                        Example:
-                                                if:
-                                                <networpath_root>                = /f/h4/opt
-                                                <from> = <to>                    = swan/lnx64
-                                                <path>                                   = bin/swan.exe
-                                                <llocalPaths_enginesDir> = /tmp
-                                                then:
-                                                copyRecursive /f/h4/opt/swan/lnx64 /tmp/swan/lnx64
-                                                all     subdirs of /tmp/swan/lnx64 are added to the     searchPaths     automatically
-
-                                Environment     parameters:
-                                        type path:
-                                                "."     resolves to     <localPaths_enginesDir>/<to>                            (in     example above: /tmp/swan/lnx64)
-                                                example:
-                                                <environment name="D3D_HOME" type="path">..\.</environment>     (in     example above: /tmp/swan)
-                                        type raw:
-                                                just the value
-                                                example:
-                                                <environment name="ARCH" type="raw">lnx64</environment>
-                                -->
         <programs>
-                <!--
-                The     order is important.     Start with the following programs:
-                        command_prompt
-                        svn
-                        mpi
-                -->
                 <program name="command_prompt">
                         <path>cmd</path>
                         <arguments>
                                 <argument>/C</argument>
                         </arguments>
-                </program>
-                <program name="svn">
-                        <path>thirdparty\svn\win64\svn.exe</path>
                 </program>
                   <program name="vs">
                         <shell ref="command_prompt"/>
@@ -109,14 +51,10 @@
                 </program>
 
                 <program name="PART" logOutputToFile="true"     addSearchPaths="true">
-                        <location ref="dsctestbench-references" type="reference">
-                                <from>bin/delft3d/x64</from>
-                        </location>
                         <location ref="local" type="check">
                                 <from>teamcity_artifacts/x64</from>
                         </location>
-                        <!-- <path>dpart/bin/delpar.exe</path> -->
-                        <path>bin/run_dpart.bat</path>
+                        <path>bin/run_delpar.bat</path>
                 </program>
         </programs>
                                 <!--
@@ -127,18 +65,25 @@
                                 -->
         <defaultTestCases>
                 <testCase name="part_default">
-                        <location ref="dsctestbench-cases" type="input">
-                                <!-- if "to" is not     specified, "from" is used as target     -->
-                                <from>.</from>
-                        </location>
-                        <location ref="dsctestbench-references" type="reference">
-                                <from>lnx64</from>
-                        </location>
-                        <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
+                    <programs>
+                        <program ref="PART">
+                            <arguments>
+                                <argument>runid.par</argument>
+                            </arguments>
+                        </program>
+                    </programs>
+                    <location ref="dsctestbench-cases" type="input">
+                            <!-- if "to" is not     specified, "from" is used as target     -->
+                            <from>.</from>
+                    </location>
+                    <location ref="dsctestbench-references" type="reference">
+                            <from>lnx64</from>
+                    </location>
+                    <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
                 </testCase>
         </defaultTestCases>
         <!--
         testCases
         -->
-        <xi:include href="../include/dpart_all_cases_fm.xml"/>
+        <xi:include href="../dwaq_dpart/include/test_configs/dpart_unstructured.xml"/>
 </deltaresTestbench_v3>

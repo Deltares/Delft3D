@@ -28,7 +28,7 @@ module grid_utils
     use m_error_status
     use timers
     use rd_token
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
 
     implicit none
 
@@ -685,7 +685,7 @@ contains
     end subroutine read_grid
 
     subroutine read_attributes_for_bottomgrid(file_unit, iarray, nosegl, status)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         integer(kind = int_wp) :: file_unit, nosegl
         integer(kind = int_wp), dimension(:) :: iarray
@@ -797,7 +797,7 @@ contains
                 ikmerge(iknm1) = 1
                 iknmrk = 10**(iknm1 - 1)
                 do iseg = 1, noseg
-                    call evaluate_waq_attribute(iknm2, iread(iseg), ivalk)
+                    call extract_waq_attribute(iknm2, iread(iseg), ivalk)
                     iamerge(iseg) = iamerge(iseg) + iknmrk * ivalk
                 enddo
             enddo
@@ -806,8 +806,8 @@ contains
 
         ! Extract the information we need
         do i = 1, noseg
-            call evaluate_waq_attribute(1, iamerge(i), active)
-            call evaluate_waq_attribute(2, iamerge(i), attrib)
+            call extract_waq_attribute(1, iamerge(i), active)
+            call extract_waq_attribute(2, iamerge(i), attrib)
             if (active == 1 .and. (attrib == 0 .or. attrib == 3)) then
                 iarray(i) = 1 + mod(i - 1, nosegl)
             endif
@@ -828,7 +828,7 @@ contains
             call status%increase_error_count()
         end if
 
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         write(file_unit, 2000)
         return
 
@@ -836,7 +836,7 @@ contains
         if (ierr2 > 0) then
             call status%increase_error_count()
         end if
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         write(file_unit, 2001)
 
         return

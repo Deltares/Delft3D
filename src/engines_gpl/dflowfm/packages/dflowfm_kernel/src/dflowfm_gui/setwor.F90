@@ -32,6 +32,9 @@
 
       SUBROUTINE SETWOR(XW1,YW1,XW2,YW2)
       use unstruc_opengl
+#ifdef HAVE_OPENGL
+      use IFOPNGL, only: GL_PROJECTION, GL_MODELVIEW, fglMatrixMode, fglLoadIdentity, fglOrtho
+#endif
       implicit none
       double precision :: XW1,YW1,XW2,YW2
       IF (XW1 .EQ. XW2 .OR. YW1 .EQ. YW2) THEN

@@ -228,6 +228,26 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f014_c042_dad_2dredge1dump_layered_bed_par" ref="dimr">
+      <path version="2024-05-06T23:10:00">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
+      <programs>
+          <program ref="dimr">
+             <arguments>
+                 <argument>3 dimr.xml</argument>
+             </arguments>
+          </program>
+      </programs>
+      <maxRunTime>120.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_test/test_0000_his.nc" type="netCDF">
+           <parameters>
+               <parameter name="dred_discharge" toleranceAbsolute="0.001" />
+               <parameter name="dump_discharge" toleranceAbsolute="0.001" />
+               <parameter name="dred_link_discharge" toleranceAbsolute="0.001" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f014_c100" ref="dimr">
         <path version="2024-01-11T16:40:00">e02_dflowfm/f014_parallel/c100_guayas_model</path>
         <programs>

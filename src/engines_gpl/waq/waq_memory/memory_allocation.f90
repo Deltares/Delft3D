@@ -23,7 +23,7 @@
 
 module memory_allocation
     use m_waq_precision
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
     implicit none
 
     interface allocate_array
@@ -81,7 +81,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iapoi = iapoi + 1
 
@@ -91,7 +91,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iatyp = iatyp + 1
 
@@ -101,7 +101,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iabyt = iabyt + 1
 
@@ -111,7 +111,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         ialen = ialen + 1
 
@@ -121,7 +121,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iaknd = iaknd + 1
 
@@ -131,7 +131,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iadm1 = iadm1 + 1
 
@@ -141,7 +141,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iadm2 = iadm2 + 1
 
@@ -151,7 +151,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         iadm3 = iadm3 + 1
 
@@ -161,7 +161,7 @@ contains
         !            write(logical_unit, 2010)
         !            write(logical_unit, 2020) arrnam
         !            write(logical_unit, 2030) noarr * 20
-        !            call terminate_execution(1)
+        !            call stop_with_error()
         !        endif
         !        ianam = ianam + 1
 
@@ -453,7 +453,7 @@ contains
             char_arr_size = char_arr_size + arrlen(i_car)
             if (char_arr_size < 0) then
                 write(logical_unit, 2005)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             arrlen(i_car) = arrlen(i_car) * 4
         enddo
@@ -473,7 +473,7 @@ contains
                     ip = make_pointer(partition_data, iartyp, iarlen)
                     if (ip <= 0) then
                         write(logical_unit, 2010) temp_array_name
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 else
                     ip = 0
@@ -1028,7 +1028,7 @@ contains
             int_arr_size = int_arr_size + arrlen(i_jar)
             if (int_arr_size < 0) then
                 write(logical_unit, 2005)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         enddo
 
@@ -1042,7 +1042,7 @@ contains
                     ip = make_pointer(partition_data, iartyp, iarlen)
                     if (ip <= 0) then
                         write(logical_unit, 2010) temp_array_name
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 else
                     ip = 0
@@ -1085,7 +1085,7 @@ contains
 
         if (ierr /= 0) then
             write(logical_unit, 2010) "iknmkv              "
-            call terminate_execution(1) ;
+            call stop_with_error() ;
         endif
         if (.not. declare_memory) write (328, 2040) nr_jar_new, "iknmkv              ", (noseg + nseg2) * nogrid
 
@@ -1094,7 +1094,7 @@ contains
         if (declare_memory) allocate (iwstkind(nowst), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) "iwstkind            "
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         if (.not. declare_memory) write (328, 2040) nr_jar_new, "iwstkind            ", nowst
 
@@ -1111,7 +1111,7 @@ contains
             if (declare_memory) allocate (rowpnt (0:noseg + nobnd), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "rowpnt              "
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "rowpnt              ", noseg + nobnd + 1
 
@@ -1124,7 +1124,7 @@ contains
             if (declare_memory) allocate (iexseg (noseg + nobnd, noth), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "iexseg              "
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "iexseg              ", (noseg + nobnd) * noth
         endif
@@ -1140,7 +1140,7 @@ contains
             if (declare_memory) allocate (nvert(2, noseg), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "nvert               "
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. declare_memory) write (328, 2040) nr_jar_new, "nvert               ", 2 * noseg
 
@@ -1177,7 +1177,7 @@ contains
         use m_sysi
         ! Pointers in real array workspace
         use m_sysa
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
         use omp_lib
 
         integer(kind = int_wp), intent(in) :: logical_unit    ! logical unitnumber output file
@@ -1212,12 +1212,8 @@ contains
         integer(kind = int_wp) :: jstart                            ! lower limit Flow arrays method 19 and 20
         integer(kind = int_wp) :: nmmaxj                            ! upper limit Flow arrays method 19 and 20
 
-        logical :: lfound                      ! argument was found
-        character(len = 256) :: adummy                      ! dummy string
         ! optional number of threads from delwaq2 commandline arguments
         integer(kind = int_wp) :: nothreadsarg, num_to_file
-        real(kind = real_wp) :: rdummy                      ! dummy
-        integer(kind = int_wp) :: ierr2                       ! error code
 
         integer(kind = int_wp) :: ith, j                      ! iteration variables (NUMA initialisation)
 
@@ -1244,12 +1240,10 @@ contains
         ! any setting of the number of threads in the input file.
         ! No value or zero for [N] will use the maximum number of available threads
         nothreadsarg = 0
-        call retrieve_command_argument ('-threads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
-        if (lfound) then
+        if (get_command_argument_by_name('-threads', nothreadsarg)) then
             nothrd = nothreadsarg
         else
-            call retrieve_command_argument ('-nothreads', 1, lfound, nothreadsarg, rdummy, adummy, ierr2)
-            if (lfound) then
+            if (get_command_argument_by_name('-nothreads', nothreadsarg)) then
                 nothrd = nothreadsarg
             end if
         end if
@@ -1611,14 +1605,14 @@ contains
             if (arrlen(i_rar) < 0) then
                 write(logical_unit, 2000)
                 write(logical_unit, 2010) arrnam(i_rar)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. declare_memory) write (328, 2040) i_rar, arrnam(i_rar), arrlen(i_rar)
             real_arr_size = real_arr_size + arrlen(i_rar)
             if (real_arr_size < 0) then
                 write(logical_unit, 2005)
                 write(logical_unit, 2010) arrnam(i_rar)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         enddo
 
@@ -1632,7 +1626,7 @@ contains
                     ip = make_pointer(partition_data, iartyp, iarlen)
                     if (ip <= 0) then
                         write(logical_unit, 2010) temp_array_name
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 else
                     ip = 0
@@ -2028,7 +2022,7 @@ contains
             if (declare_memory) allocate (volint  (noseg), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "volint              "
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             if (.not. declare_memory) write (328, 2040) nr_rar, "volint              ", noseg * 2
 
@@ -2066,7 +2060,7 @@ contains
         if (declare_memory) allocate (arr(dim1, dim2), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) trim(arr_name) // "             "
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         if (.not. declare_memory) write (328, 2040) nr_rar, trim(arr_name) // "             ", num_to_file
 
@@ -2091,7 +2085,7 @@ contains
         if (declare_memory) allocate (arr(dim1, dim2), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) trim(arr_name) // "             "
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         if (.not. declare_memory) write (328, 2040) nr_rar, trim(arr_name) // "             ", num_to_file
 
@@ -2117,7 +2111,7 @@ contains
         if (declare_memory) allocate (arr(dim1), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) trim(arr_name) // "            "
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         if (.not. declare_memory) write (328, 2040) nr_rar, trim(arr_name) // "            ", num_to_file
 
@@ -2143,7 +2137,7 @@ contains
         if (declare_memory) allocate (arr(dim1), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) trim(arr_name) // "            "
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         if (.not. declare_memory) write (328, 2040) nr_rar, trim(arr_name) // "            ", num_to_file
 
@@ -2170,7 +2164,7 @@ contains
             write(logical_unit, 2010)
             write(logical_unit, 2020) array_name
             write(logical_unit, 2030) noarr
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         var = var + 1
 

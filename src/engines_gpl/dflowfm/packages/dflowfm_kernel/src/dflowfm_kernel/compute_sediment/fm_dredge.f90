@@ -90,7 +90,7 @@ contains
        use m_flow, only: s1
        use m_flowtimes, only: time1, dts, julrefdat, tstart_user, tfac
        use m_flowgeom, only: bl_ave, ndx
-       use m_dad, only: dadpar
+       use m_dad, only: dadpar, model_has_dredge_links_across_partitions
        use unstruc_files, only: mdia
        use m_bedform, only: bfmpar
        use m_partitioninfo, only: my_rank, numranks
@@ -144,6 +144,15 @@ contains
                        & fm_dredgecommunicate, bfmpar%duneheight, stmpar%morpar, dts, numranks, mdia, &
                        & julrefdat, 1, ndx, sedtra, stmpar%morlyr, mtd%messages)
        endif
+       
+       if (firstdredge) then
+          do nst = 1, size(dadpar%dredge_prop)
+             if (.not. dadpar%dredge_prop(nst)%in1domain) then
+               model_has_dredge_links_across_partitions = .true.
+               exit
+             end if
+          end do
+       end if
        !
        ! Update sediment administration for dumping only
        ! dbodsd is filled (kg/m^2 sediment added to a cell)

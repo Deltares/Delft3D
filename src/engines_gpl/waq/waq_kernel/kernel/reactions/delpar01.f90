@@ -37,6 +37,7 @@ module m_delpar01
 
 contains
 
+    !> Carries out a Particle tracking step.
     subroutine delpar01 (itime, noseg, nolay, noq, nosys, &
             notot, dwqvol, surface, dwqflo, syname, &
             nosfun, sfname, segfun, amass, conc, &
@@ -66,36 +67,31 @@ contains
 
         implicit none
 
-        !     Arguments
-
-        !     kind           function         name                      description
-
-        integer(kind = int_wp), intent(in) :: itime                   !< actual time
-        integer(kind = int_wp), intent(in) :: noseg                   !< delwaq noseg
-        integer(kind = int_wp), intent(in) :: nolay                   !< delwaq layers
-        integer(kind = int_wp), intent(in) :: noq                     !< delwaq noq
-        integer(kind = int_wp), intent(in) :: nosys                   !< delwaq transported subs
-        integer(kind = int_wp), intent(in) :: notot                   !< delwaq total subs, part subs included
-        real(kind = real_wp), intent(in) :: dwqvol (noseg)         !< delwaq volumes
-        real(kind = real_wp), intent(in) :: surface(noseg)         !< horizontal surfaces
-        real(kind = real_wp), intent(in) :: dwqflo (noq)         !< delwaq flows
-        character(20), intent(in) :: syname (notot)         !< names of sumstances
-        integer(kind = int_wp), intent(in) :: nosfun                  !< number of segment functions
-        character(20), intent(in) :: sfname (nosfun)         !< names of segment functions
-        real(kind = real_wp), intent(in) :: segfun (noseg, nosfun)  !< segment function values
-        real(kind = real_wp), intent(inout) :: amass  (notot, noseg)  !< delwaq mass array
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)  !< delwaq conc array
-        integer(kind = int_wp), intent(in) :: iaflag                  !< if 1 then accumulation of balances
-        integer(kind = int_wp), intent(in) :: intopt                  !< integration suboptions
-        integer(kind = int_wp), intent(in) :: ndmps                   !< number of dumped volumes for balances
-        integer(kind = int_wp), intent(in) :: isdmp  (noseg)         !< volume to dump-location pointer
-        real(kind = real_wp), intent(inout) :: dmps   (notot, ndmps, *) !< dumped segment fluxes if INTOPT > 7
-        real(kind = real_wp), intent(inout) :: amass2 (notot, 5)     !< mass balance array
+        integer(kind = int_wp), intent(in   ) :: itime                    !< Actual time
+        integer(kind = int_wp), intent(in   ) :: noseg                    !< Delwaq noseg
+        integer(kind = int_wp), intent(in   ) :: nolay                    !< Delwaq layers
+        integer(kind = int_wp), intent(in   ) :: noq                      !< Delwaq noq
+        integer(kind = int_wp), intent(in   ) :: nosys                    !< Delwaq transported subs
+        integer(kind = int_wp), intent(in   ) :: notot                    !< Delwaq total subs, part subs included
+        real(kind = real_wp),   intent(in   ) :: dwqvol (noseg)           !< Delwaq volumes
+        real(kind = real_wp),   intent(in   ) :: surface(noseg)           !< Horizontal surfaces
+        real(kind = real_wp),   intent(in   ) :: dwqflo (noq)             !< Delwaq flows
+        character(20),          intent(in   ) :: syname (notot)           !< Names of substances
+        integer(kind = int_wp), intent(in   ) :: nosfun                   !< Number of segment functions
+        character(20),          intent(in   ) :: sfname (nosfun)          !< Names of segment functions
+        real(kind = real_wp),   intent(in   ) :: segfun (noseg, nosfun)   !< Segment function values
+        real(kind = real_wp),   intent(inout) :: amass  (notot, noseg)    !< Delwaq mass array
+        real(kind = real_wp),   intent(inout) :: conc   (notot, noseg)    !< Delwaq conc array
+        integer(kind = int_wp), intent(in   ) :: iaflag                   !< If 1 then accumulation of balances
+        integer(kind = int_wp), intent(in   ) :: intopt                   !< Integration suboptions
+        integer(kind = int_wp), intent(in   ) :: ndmps                    !< Number of dumped volumes for balances
+        integer(kind = int_wp), intent(in   ) :: isdmp  (noseg)           !< Volume to dump-location pointer
+        real(kind = real_wp),   intent(inout) :: dmps   (notot, ndmps, *) !< Dumped segment fluxes if INTOPT > 7
+        real(kind = real_wp),   intent(inout) :: amass2 (notot, 5)        !< Mass balance array
 
 
         !     Locals
-
-        integer(kind = int_wp) lunut             !  output unit number
+        integer(kind = int_wp) :: lunut             !  output unit number
         integer(kind = int_wp) :: lunpr
         integer(kind = int_wp) :: indx              !  index in segment names
         integer(kind = int_wp) :: ioff              !  offset in substances array
@@ -148,7 +144,7 @@ contains
         else
             ifflag = 0
         endif
-        if (lsettl .or. layt > 1) then
+        if (use_settling .or. layt > 1) then
             indx = index_in_array('TAU       ', sfname)
             if (indx > 0) then
                 do i = 1, noseg
@@ -265,7 +261,7 @@ contains
                 iptime, npwndn, modtyp, nosubs, noslay, &
                 iyear, imonth, iofset, pg(1), rbuffr, &
                 nosta, mnmax2, noseglp, isfile, mapsub, &
-                layt, area, nfract, lsettl, mstick, &
+                layt, area, nfract, use_settling, mstick, &
                 elt_names, elt_types, elt_dims, elt_bytes, locdep, &
                 nosub_max, bufsize)
         ioff = notot - nosubs
@@ -287,7 +283,7 @@ contains
                 lgrid, pblay, modtyp, apeak, adepth, &
                 noslay, nosubs, rbuffr, kpart, itrack, &
                 nplot, mapsub, ntrack, isfile, mmaxp, &
-                nfract, lsettl, mstick, elt_names, elt_types, &
+                nfract, use_settling, mstick, elt_names, elt_types, &
                 elt_dims, elt_bytes, locdep, zpart, za, &
                 dpsp, tcktot, nosub_max, bufsize)
 
@@ -302,7 +298,7 @@ contains
                 chispl, nosta, nmstat, xstat, ystat, &
                 nstat, mstat, nplsta, mplsta, ihstrtp, &
                 ihstopp, ihstepp, ihplot, fnamep(13), kpart, &
-                mnmax2, noseglp, nfract, lsettl, mstick, &
+                mnmax2, noseglp, nfract, use_settling, mstick, &
                 elt_names, elt_types, elt_dims, elt_bytes, rbuffr, &
                 zpart, za, locdep, dpsp, tcktot, &
                 lgrid3)
@@ -352,7 +348,7 @@ contains
                     lgrid3, &
                     mmaxp, xb, yb, kpart, mapsub, &
                     isfile, nfract, mstick, nstick, fstick, &
-                    xa, ya, pg(1), lsettl, xpart, &
+                    xa, ya, pg(1), use_settling, xpart, &
                     ypart, zpart, za, locdep, dpsp, &
                     tcktot, substi, npmax, rhow, &
                     amassd, ioptrad, ndisapp, idisset, tydisp, &
@@ -465,7 +461,7 @@ contains
                     xpart, ypart, zpart, wpart, npwndw, &
                     pg(1), amapsett, xa, ya, za, &
                     atotal, apeak, adepth, imap, nplay, &
-                    wsettl, irfac, anfac, lsettl, locdep, &
+                    wsettl, irfac, anfac, use_settling, locdep, &
                     tcktot, dpsp)
         else
             ! jvb removed this line (commented, so execute if not modtyp=model_abm?

@@ -169,7 +169,7 @@ function initInitialFields(inifilename) result(ierr)
    use m_wind ! |TODO: AvD: reduce amount of uses
    use m_missing
    use timespace
-   use unstruc_boundaries, only: prepare_lateral_mask
+   use m_init_ext_forcings, only: prepare_lateral_mask
    use m_flowexternalforcings, only: qid, operand, transformcoef, success
    use network_data
    use m_alloc
@@ -202,6 +202,8 @@ function initInitialFields(inifilename) result(ierr)
    logical(kind=c_bool), allocatable :: specified_indices(:)
    double precision                  :: global_value, water_level_global_value
    logical                           :: global_value_provided, water_level_global_value_provided
+   integer,          allocatable     :: kcsini(:)      ! node code during initialization
+
 
    logical, external :: timespaceinitialfield_mpi
 
@@ -389,10 +391,11 @@ end function initInitialFields
 !> Reads all key values for a data provider from an IniFieldFile block.
 !! All returned values will typically be used for a call to timespaceinitialfield().
 subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filename,filetype,method,iloctype,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-   use timespace_parameters, only: inside_polygon, field1D
+   use timespace_parameters
    use m_ec_interpolationsettings, only: RCEL_DEFAULT
    use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
    use m_grw
+
    character (len=*), intent(in   )           :: inifilename         !< Name of the ini file, only used in warning messages, actual data is read from node_ptr.
    type(tree_data), pointer                   :: node_ptr            !< The tree structure containing a single ini-file chapter/block.
    character (len=*), intent(  out)           :: groupname           !< Identifier of the read chapter (e.g., 'Initial')
@@ -458,7 +461,7 @@ subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filenam
       call warn_flush()
       goto 888
    end if
-   call fileTypeStringToInteger(dataFileType, filetype)
+   filetype = convert_file_type_string_to_integer(dataFileType)
    if (filetype < 0) then
       write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
       call warn_flush()
@@ -476,7 +479,7 @@ subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filenam
          call warn_flush()
          goto 888
       end if
-      call methodStringToInteger(interpolationMethod, method)
+      method = convert_method_string_to_integer(interpolationMethod)
       if (method < 0 .or. (method == 4 .and. filetype /= inside_polygon)) then
          write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)//'''. Ignoring this block.'
          call warn_flush()
@@ -542,8 +545,7 @@ subroutine readIniFieldProvider(inifilename, node_ptr,groupname,quantity,filenam
       if (.not. retVal) then
          ilocType = ILATTP_ALL
       else
-         call str_lower(locationType)
-         select case (trim(locationType))
+         select case (trim(str_tolower(locationType)))
             case ('1d')
                ilocType = ILATTP_1D
             case ('2d')
@@ -875,58 +877,6 @@ function init1dField(filename, inifieldfilename, quant, specified_indices, globa
 
 end function init1dField
 
-
-!> Converts fileType string to an integer.
-!! Returns -1 when an invalid type string is given.
-subroutine fileTypeStringToInteger(sFileType, iFileType)
-   use timespace_parameters
-   implicit none
-   character(len=*), intent(in   ) :: sFileType        !< file type string
-   integer,          intent(  out) :: iFileType        !< file type integer
-
-   call str_lower(sFileType)
-   select case (trim(sFileType))
-      case ('arcinfo')
-         iFileType = arcinfo
-      case ('sample')
-         iFileType = triangulation
-      case ('1dfield')
-         iFileType = field1D
-      case ('polygon')
-         iFileType = inside_polygon
-      case ('geotiff')
-         iFileType = geotiff
-      case default
-         iFileType = -1
-   end select
-   return
-
-end subroutine fileTypeStringToInteger
-
-
-!> Converts interpolationMethod string to an integer.
-!! Returns -1 when an invalid type string is given.
-subroutine methodStringToInteger(sMethod, imethod)
-   implicit none
-   character(len=*), intent(in   ) :: sMethod        !< method string
-   integer,          intent(  out) :: imethod        !< method integer
-
-   call str_lower(sMethod)
-   select case (trim(sMethod))
-      case ('constant')
-         imethod = 4
-      case ('triangulation')
-         imethod = 5
-      case ('averaging')
-         imethod = 6
-      case default
-         imethod = -1
-   end select
-   return
-
-end subroutine methodStringToInteger
-
-
 !> Converts averaging type string to an integer value.
 !! Returns -1 when an invalid type string is given.
 subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
@@ -935,8 +885,7 @@ subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
    character(len=*), intent(in   ) :: sAveragingType        ! averaging type string
    integer,          intent(  out) :: iAveragingType        ! averaging type integer
 
-   call str_lower(sAveragingType)
-   select case (trim(sAveragingType))
+   select case (trim(str_tolower(sAveragingType)))
    case ('mean')
       iAveragingType = AVGTP_MEAN
    case ('nearestnb')

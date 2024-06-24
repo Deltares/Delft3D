@@ -24,7 +24,7 @@
 module partable
     use m_waq_precision
     use m_valpoi
-    use m_logger
+    use m_logger_helper
     use m_string_utils
 
 
@@ -244,7 +244,7 @@ contains
                     prorder(iprocs) = iproc1
                     write(line, '(a,a)') ' WARNING: possibly unresolved input for process: ', &
                             &                                                      ProcesDef%ProcesProps(iproc1)%name
-                    call write_log_message(line, 2)
+                    call write_log_message(line)
                     call status%increase_warning_count()
                 endif
             enddo
@@ -264,7 +264,7 @@ contains
             enddo
             if (nproc /= iin) then
                 write(line, '(a,2i5)') ' ERROR: no match in number of active processes: ', nproc, iin
-                call write_log_message(line, 2)
+                call write_log_message(line)
             endif
         else
             iprocs = 0

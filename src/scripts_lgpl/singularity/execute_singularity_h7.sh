@@ -3,13 +3,13 @@
 # Important: allow unlimited stack size. 
 ulimit -s unlimited
 
+# Note: Apptainer is the replacement for Singularity.
+# This script assumes that the command "apptainer" can be found.
+
 # Usage:
-# Executing a command inside a Singularity container.
-# This script is an interface between the Singularity run or submit scripts
-# and the Singularity container itself.
-
-# This script assumes that the command "singularity" can be found.
-
+# Executing a command inside an Apptainer container. 
+# This script is an interface between the Apptainer submit script
+# and the Apptainer container itself.
 
 # The following parameters are passed to the container via --env.
 # Modify them according to your requirements:
@@ -35,11 +35,11 @@ function print_usage_info {
     echo "       ${0##*/} [-c | --containerfolder] folder executable [OPTIONS]"
     echo "       ${0##*/} [-m | --modelfolder] folder executable [OPTIONS]"
     echo "       ${0##*/} [-h | --help]"
-    echo "Runs executable inside Singularity container by wrapping and passing additional arguments."
+    echo "Runs executable inside Apptainer container by wrapping and passing additional arguments."
     echo
     echo "Options:"
     echo "-c, --containerfolder"
-    echo "       The folder in which the singularity container is located"
+    echo "       The folder in which the apptainer container is located"
     echo "       (Default value: current working folder)"
     echo "-h, --help"
     echo "       Print this help message and exit"
@@ -50,14 +50,14 @@ function print_usage_info {
 }
 
 # Variables. Will be overwritten.
-container_folder=${PWD} # The directory that contains the singularity container
+container_folder=${PWD} # The directory that contains the apptainer container
 model_folder=${PWD} # The directory that contains the model. This will be bound to the container.
 
 executable=
 executable_opts=
 
-container_bindir=/opt/delft3dfm_latest/lnx64/bin # The directory WITHIN the container that contains all the executables
-container_libdir=/opt/delft3dfm_latest/lnx64/lib
+container_bindir=/opt/delft3dfm_latest/lnx64/bin # The directory WITHIN the container that contains the executables
+container_libdir=/opt/delft3dfm_latest/lnx64/lib # The directory WITHIN the container that contains the libraries
 
 container_PATH=$MPI_DIR/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:$container_bindir
 container_LD_LIBRARY_PATH=$MPI_DIR/lib:$MPI_DIR/lib/release:$MPI_DIR/libfabric/lib:/usr/local/lib:/usr/lib:$container_libdir
@@ -127,7 +127,7 @@ mountdir=/mnt/data
 container_working_dir=$mountdir${current_working_dir:${#model_folder}}
 
 echo ---------------------------------------------------------------------- 
-echo "Executing Singularity container with:"
+echo "Executing Apptainer container with:"
 echo "Container file                            : $container_file_path"
 echo "Current   working directory               : $current_working_dir"
 echo "Mounting  source  directory               : $model_folder"
@@ -139,7 +139,7 @@ echo "env PATH                 inside container : $container_PATH"
 echo "env LD_LIBRARY_PATH      inside container : $container_LD_LIBRARY_PATH"
 echo "env HDF5_USE_FILE_LOCKING inside container: $HDF5_USE_FILE_LOCKING"
 echo
-echo "Executing singularity exec $container_bindir/$executable $executable_opts"
+echo "Executing apptainer exec $container_bindir/$executable $executable_opts"
 
 #
 #
@@ -148,10 +148,10 @@ echo "Executing singularity exec $container_bindir/$executable $executable_opts"
 # Optionally use --cleanenv to prevent the user's environment from being passed to the container.
 # Be careful with it: the IntelMPI setup uses multiple environment settings.
 # --cleanenv will probably not work for multiple node computations.
-# See also https://sylabs.io/guides/3.8/user-guide/environment_and_metadata.html
+# See also https://apptainer.org/docs/user/latest/environment_and_metadata.html
 #
 
-singularity exec \
+apptainer exec \
                  --bind $model_folder:$mountdir,$MPI_DIR:$MPI_DIR,/usr/:/host,/usr/lib64/:/host/lib64 \
                  --pwd $container_working_dir \
                  --no-home \

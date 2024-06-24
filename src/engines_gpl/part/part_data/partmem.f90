@@ -63,7 +63,7 @@ module partmem
       character( 40)           :: title(4)      ! Simulation title
       integer  ( int_wp )           :: modtyp        ! type of model
       integer  ( int_wp )           :: notrak        ! number of followed particle tracks
-      logical  ( int_wp )           :: lsettl        ! if true substances are settling
+      logical                       :: use_settling  ! if true substances are settling
       integer  ( int_wp )           :: nolayp        ! number of layers   <== pas op
       integer  ( int_wp )           :: noslay        ! number of layers inclusive of optional bed layer
       integer  ( int_wp )           :: idelt         ! simulation time step inputfile

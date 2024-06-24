@@ -36,7 +36,7 @@ contains
                           iptime   , npwndn   , modtyp   , nosubs   , nolay    ,    &
                           iyear    , imonth   , iofset   , pg       , rbuffr   ,    &
                           nosta    , mnmax2   , nosegl   , isfile   , mapsub   ,    &
-                          layt     , area     , nfract   , lsettl   , mstick   ,    &
+                          layt     , area     , nfract   , use_settling   , mstick   ,    &
                           elt_names, elt_types, elt_dims , elt_bytes, locdep   ,    &
                           nosub_max, bufsize  )
 
@@ -120,7 +120,7 @@ contains
       integer  ( int_wp ), intent(in   ) :: layt                    !< number of hydrodynamic layers
       real     ( sp), intent(in   ) :: area  (mnmax2)
       integer  ( int_wp ), intent(in   ) :: nfract                  !< number of oil fractions
-      logical       , intent(in   ) :: lsettl                  !< if .true. settling occurs in an extra layer
+      logical       , intent(in   ) :: use_settling                  !< if .true. settling occurs in an extra layer
       integer  ( int_wp ), intent(in   ) :: mstick(nosub_max)
       character( * ), pointer       :: elt_names(:)            !<  NEFIS
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
@@ -384,7 +384,7 @@ contains
          endif
       endif
 
-  100 if ( lsettl ) then
+  100 if ( use_settling ) then
          layts = layt + 1
       else
          layts = layt
@@ -483,7 +483,7 @@ contains
                            if ( conc(isub,iseg) .gt. 0.0 ) then !  mass found, determine concentration
                               if ( isfile(isub) .ne. 1 ) then
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg)
-                              elseif ( lsettl .and. i1 .eq. nolay ) then
+                              elseif ( use_settling .and. i1 == nolay ) then
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg)
                               else
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg) *                 &
@@ -497,7 +497,7 @@ contains
                                  jsub = mod(isub,3)
                                  if ( jsub .eq. 0 ) jsub = 3                !.. jsub is 1, 2 or 3 (2 is stick)
                                  if ( jsub .eq. 2 ) then                               !.. dispersed
-                                    if ( lsettl .and. i1 .eq. nolay ) then
+                                    if ( use_settling .and. i1 == nolay ) then
                                        vnorm = area  (lgrid2(n,m))
                                     else
                                        vnorm = volume(lgrid2(n,m)+(i1-1)*mnmax2)
@@ -507,7 +507,7 @@ contains
                                  else                                                  !.. floating
                                     vnorm = area(lgrid2(n,m))
                                  endif
-                              elseif ( lsettl .and. i1 .eq. nolay ) then               !.. other cases
+                              elseif ( use_settling .and. i1 == nolay ) then               !.. other cases
                                  vnorm = area  (lgrid2(n,m))
                               elseif ( mstick(isub) < 0 ) then
                                  vnorm = area  (lgrid2(n,m))

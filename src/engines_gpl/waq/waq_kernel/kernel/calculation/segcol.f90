@@ -33,7 +33,7 @@ contains
 
         ! function : sets the top of the column for every segment
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use timers
         implicit none
 
@@ -77,7 +77,7 @@ contains
 
             ! only if from segment is not a water segment
 
-            call evaluate_waq_attribute(1, iknmrk(ifrom), ikmrkv)
+            call extract_waq_attribute(1, iknmrk(ifrom), ikmrkv)
             if (ikmrkv/=3) cycle
 
             isegcol(ito) = isegcol(ifrom)
