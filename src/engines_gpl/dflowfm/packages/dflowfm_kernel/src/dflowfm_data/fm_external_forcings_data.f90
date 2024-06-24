@@ -41,7 +41,7 @@
  logical                           :: success           !< want je wil maar liever succes
  integer                           :: jatimespace       !< doen ja/nee 1/0
  integer                           :: mhis              !< unit nr external forcings history *.exthis
- integer, save                     :: kx, filetype, mext
+ integer                           :: kx, filetype, mext
  character(len=256)                :: qid
  character(len=1)                  :: operand
  integer                           :: numbnp            !< total nr of open boundary cells for network extension

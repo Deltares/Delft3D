@@ -1353,6 +1353,8 @@ implicit none
       call aerr('xdum(1), ydum(1), kdum(1)', ierr, 3)
       xdum = 1d0 ; ydum = 1d0; kdum = 1
       
+      success = .true. ! default return code
+      
       ! If no source/sink exists, then do not write related statistics to His-file
       if (numsrc < 0) then
          jahissourcesink = 0
