@@ -325,7 +325,7 @@ contains
 !     read substance names
 
       if ( gettoken( nosubs , ierr2 ) .ne. 0 ) goto 4009
-      nfract = 1
+      nfract = 0
       if ( oil ) then
          if ( gettoken( nfract , ierr2 ) .ne. 0 ) goto 4009
       endif

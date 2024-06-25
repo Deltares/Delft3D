@@ -240,10 +240,16 @@ subroutine part10fm()
                     ! but only for the oil model (surface floating), to be consistent with the delft3d approach
                     ! for all oil fractions. If it hits mpart=0 due to dispersion the particle will not stick but resamples.
                     ! drag should also be used when the wind_drag_option is used (ie particles near surface subject to drag, for example leeway)
-                    if (oil .or. apply_wind_drag) then
+                    if (oil ) then
                         do ifract = 1 , nfract
                             if ( wpart(1 + 3 * (ifract - 1), ipart) > 0.0 ) then
                                 call part10fm_pdrag(ipart, ifract, rseed) ! only for floating oil and particles near surface when winddrag option is used
+                            endif
+                        enddo
+                    else if ( apply_wind_drag ) then  !when leeway function is used and not the oil module
+                        do isub = 1 , nosubs
+                            if ( wpart(isub, ipart) > 0.0 ) then
+                                call part10fm_pdrag(ipart, isub, rseed) ! only for floating oil and particles near surface when winddrag option is used
                             endif
                         enddo
                     endif
