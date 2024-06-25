@@ -221,7 +221,6 @@ integer(c_int) function initialize(c_config_file) result(c_iresult) bind(C, name
 
    character(kind=c_char),intent(in)    :: c_config_file(MAXSTRLEN)
    character(len=strlen(c_config_file)) :: config_file
-type(c_ptr), dimension(:), pointer :: names
    ! Extra local variables
    integer :: inerr  ! number of the initialisation error
    logical :: mpi_initd
@@ -236,8 +235,6 @@ type(c_ptr), dimension(:), pointer :: names
    my_rank           = 0
    ja_mpi_init_by_fm = 0
 #ifdef HAVE_MPI
-allocate(names(13))
-c_iresult = get_input_var_names(names)
    ! Check if MPI is already initialized
    call mpi_initialized(mpi_initd, inerr)
    if (mpi_initd) then
