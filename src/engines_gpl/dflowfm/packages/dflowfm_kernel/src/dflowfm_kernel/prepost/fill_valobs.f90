@@ -353,10 +353,12 @@ subroutine fill_valobs()
                valobs(i,IPNT_TEM1+klay-1) = constituents(itemp, kk)
             end if
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-               valobs(i,IPNT_RHOP+klay-1) = setrhofixedp(kk, 0d0)
-               if (idensform > 10 ) then  
-                  valobs(i,IPNT_RHO+klay-1) = rho(kk)
-               endif
+               if ( density_is_pressure_dependent() ) then
+                  valobs(i,IPNT_RHOP+klay-1) = setrhofixedp(kk, 0d0)
+                  valobs(i,IPNT_RHO +klay-1) = rho(kk)
+               else
+                  valobs(i,IPNT_RHOP+klay-1) = rho(kk)
+               end if
             end if
             if (jahisvelocity > 0) then
                valobs(i,IPNT_UMAG+klay-1) = ucmag(kk)
