@@ -39,6 +39,7 @@
     use m_wind
     use m_structures
     use m_external_forcings, only: allocatewindarrays
+    use m_obs_on_flowgeom, only: obs_on_flowgeom
     
     implicit none
  

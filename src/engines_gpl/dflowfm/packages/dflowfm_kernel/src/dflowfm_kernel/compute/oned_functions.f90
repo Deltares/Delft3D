@@ -239,6 +239,7 @@ module m_oned_functions
       use m_GlobalParameters, only: INDTP_ALL
       use m_partitioninfo, only: jampi
       use m_inquire_flowgeom
+      use m_find_flownode, only: find_nearest_flownodes
 
       implicit none
 
@@ -277,7 +278,7 @@ module m_oned_functions
       
       if (nxy > 0) then ! find flow nodes for storage nodes that are defined by x-, y-coordinates
          jakdtree = 1
-         call find_flownode(nxy, x_tmp(1:nxy), y_tmp(1:nxy), name_tmp(1:nxy), k_tmp(1:nxy), jakdtree, 0, INDTP_1D)
+         call find_nearest_flownodes(nxy, x_tmp(1:nxy), y_tmp(1:nxy), name_tmp(1:nxy), k_tmp(1:nxy), jakdtree, 0, INDTP_1D)
          do i = 1, nxy
             if (k_tmp(i) > 0) then
                pstor => network%storS%stor(ixy2stor(i))

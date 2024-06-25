@@ -29,8 +29,6 @@
 
 module delpar_version_module
 
-
-    use m_waq_precision
     use waq_static_version_info
 
     implicit none

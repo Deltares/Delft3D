@@ -26,6 +26,8 @@ if __name__ == "__main__":
     # Filter the testcases to be run
     if settings.filter != "":
         settings.configs_to_run = XmlConfigParser.filter_configs(settings.configs_from_xml, settings.filter, logger)
+    else:
+        settings.configs_to_run = settings.configs_from_xml
 
     settings.log_overview(logger)
 

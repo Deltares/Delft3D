@@ -51,7 +51,7 @@ module subroutine set_external_forcings_boundaries(time, iresult)
    use m_sobekdfm
    use unstruc_channel_flow
    use m_oned_functions
-
+   use m_obs_on_flowgeom, only: obs_on_flowgeom
 
    implicit none
 

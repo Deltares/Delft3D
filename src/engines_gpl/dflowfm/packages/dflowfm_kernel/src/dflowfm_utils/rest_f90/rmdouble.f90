@@ -94,12 +94,6 @@
          num = 0
          do i=1,NS
             if ( xs(i).ne.DMISS .and. ys(i).ne.DMISS ) then
-
-               if ( num.gt.1 .and. janeedfix.eq.1 ) then
-!                 fix for Wim: already check samples with latest (not understood kdtree error until June 2017)
-                  if( xs(i).eq.xs(num) .and. ys(i).eq.ys(num) ) cycle
-               end if
-
                num = num+1
                xx(num) = xs(i)
                yy(num) = ys(i)

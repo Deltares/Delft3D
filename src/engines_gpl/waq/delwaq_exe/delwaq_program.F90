@@ -65,7 +65,7 @@ program delwaq
 
     argv = get_arguments()
     call log%log_info('Running: '//trim(id_str))
-    call log%log_info('Provided arguments: '//join_strings(argv(2:), ', '))
+    call log%log_info('Provided arguments: '//join_strings(argv(1:), ', '))
 
     if (.not. delwaq1(argv)) then
         call log%log_error('Error during delwaq pre-processing')

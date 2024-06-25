@@ -23,197 +23,204 @@
 
 program waqmerge
 
-      use m_logger_helper, only : stop_with_error, set_log_unit_number
-      use io_netcdf
-      use m_write_waqgeom
-      use m_hydmod
-      use hyd_waqgeom_old
-      use m_alloc
-      use waqmerge_version_module, only: getfullversionstring_waqmerge
-      use m_date_time_utils_external, only : write_date_time
-      use m_file_path_utils, only : extract_file_extension
+    use m_logger_helper, only: stop_with_error, set_log_unit_number
+    use io_netcdf
+    use m_write_waqgeom
+    use m_hydmod
+    use hyd_waqgeom_old
+    use m_alloc
+    use m_banner_helper
+    use m_banner_information
+    use waq_static_version_info
+    use waqmerge_version_module, only: getfullversionstring_waqmerge
+    use m_date_time_utils_external, only: write_date_time
+    use m_file_path_utils, only: extract_file_extension
 
-      implicit none
+    implicit none
 
-      type(t_hydrodynamics)               :: hyd             ! description of the overall hydrodynamics
-      type(t_hydrodynamics), pointer      :: domain_hyd      ! description of one domain hydrodynamics
-      type(t_hydrodynamics_collection)          :: domain_hyd_coll ! description of all domain hydrodynamics
+    type(t_hydrodynamics) :: hyd             ! description of the overall hydrodynamics
+    type(t_hydrodynamics), pointer :: domain_hyd      ! description of one domain hydrodynamics
+    type(t_hydrodynamics_collection) :: domain_hyd_coll ! description of all domain hydrodynamics
 
-      character(len=10)         :: c_domain        ! number of domains
-      integer                   :: n_domain        ! number of domains
-      integer                   :: i_domain        ! domain index
-      character(len=80)         :: version         ! version string
-      character(len=20)         :: rundat          ! date and time string
-      type(t_file)          :: file_rep        ! report file
-      integer                   :: lunrep          ! unit number report file
-      character(len=256)        :: filext          ! file extension
-      character(len=256)        :: waq_output_dir  ! WAQ directory
-      integer                   :: istat           ! reading parameter
-      integer                   :: extpos          ! start position of file extension
-      integer                   :: extlen          ! length of file extension
-      integer                   :: itime           ! time in file
-      integer                   :: itime_domain    ! time in file
-      integer                   :: nowast          ! number of wasteloads
-      integer                   :: iend            ! end of hydro indication
-      integer                   :: iend_domain     ! end of hydro indication
-      character(len=20)         :: valnam(2)       ! parameter name
-      character(len=256)        :: domain_hydname  ! domain hyd-file name
-      character(len=4)          :: sdnm            ! domain string
-      logical                   :: exists          ! file exists
-      logical                   :: success         ! check if operation was succesfull
-      integer                   :: len_hyd         ! length of old hyd filename
-      character(len=255)        :: new_hyd         ! name for new UGRID 1.0 hyd file
-      integer                   :: len_geo         ! length of old waqgeom filename
-      character(len=255)        :: new_geom        ! name for new UGRID 1.0 _waqgeom file
-      logical                   :: mdu_exist       ! mdu file is present
+    character(len=10) :: c_domain        ! number of domains
+    integer :: n_domain        ! number of domains
+    integer :: i_domain        ! domain index
+    character(len=99) :: version         ! version string
+    character(len=20) :: rundat          ! date and time string
+    type(t_file) :: file_rep        ! report file
+    integer :: lunrep          ! unit number report file
+    character(len=256) :: filext          ! file extension
+    character(len=256) :: waq_output_dir  ! WAQ directory
+    integer :: istat           ! reading parameter
+    integer :: extpos          ! start position of file extension
+    integer :: extlen          ! length of file extension
+    integer :: itime           ! time in file
+    integer :: itime_domain    ! time in file
+    integer :: nowast          ! number of wasteloads
+    integer :: iend            ! end of hydro indication
+    integer :: iend_domain     ! end of hydro indication
+    character(len=20) :: valnam(2)       ! parameter name
+    character(len=256) :: domain_hydname  ! domain hyd-file name
+    character(len=4) :: sdnm            ! domain string
+    logical :: exists          ! file exists
+    logical :: success         ! check if operation was succesfull
+    integer :: len_hyd         ! length of old hyd filename
+    character(len=255) :: new_hyd         ! name for new UGRID 1.0 hyd file
+    integer :: len_geo         ! length of old waqgeom filename
+    character(len=255) :: new_geom        ! name for new UGRID 1.0 _waqgeom file
+    logical :: mdu_exist       ! mdu file is present
+    type(banner_information) :: info
 
+    ! Show startup screen
+    info = banner_information(name="Waq merge", &
+                              description="Merging of hydrodynamic data sets from parallel D-Flow FM runs", &
+                              suite_name="D-HYDRO", &
+                              version_string=trim(major_minor_buildnr), &
+                              built_on=trim(build_date_time), &
+                              copyright=copyright)
 
-      ! Version string
+    write (*, "(A)") generate_banner(info)
 
-      call getfullversionstring_waqmerge(version)
-      write(*,*)
-      write (*,'(a)') ' ', trim(version)
+    ! Version string
 
-      ! command line
+    call getfullversionstring_waqmerge(version)
 
-      if (command_argument_count() .gt. 0) then
-         call get_command_argument(1,hyd%file_hyd%name)
+    ! command line
 
-         mdu_exist = .false.
-         inquire(file = trim(hyd%file_hyd%name),exist = mdu_exist)
-         if (.not. mdu_exist) then
-            write(*     ,'(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
+    if (command_argument_count() > 0) then
+        call get_command_argument(1, hyd%file_hyd%name)
+
+        mdu_exist = .false.
+        inquire (file=trim(hyd%file_hyd%name), exist=mdu_exist)
+        if (.not. mdu_exist) then
+            write (*, '(a,a)') '*** ERROR File: '//trim(hyd%file_hyd%name)//' does not exist'
             call stop_with_error()
-         endif
+        end if
 
-         ! report
-         call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
-         hyd%file_hyd%name = hyd%file_hyd%name(1:extpos-1)
-         file_rep%name   = trim(hyd%file_hyd%name)//'-waqmerge.log'
-         file_rep%type   = FT_ASC
-         file_rep%status = 0
-         call file_rep%open()
-         lunrep = file_rep%unit
-         write (lunrep,'(a)') ' ', trim(version)
-      else
-         file_rep%name   = 'waqmerge.log'
-         file_rep%type   = FT_ASC
-         file_rep%status = 0
-         call file_rep%open()
-         lunrep = file_rep%unit
-         write (lunrep,'(a,a)') ' ', trim(version)
-         write (lunrep,'(/a)') ' ERROR: no mdu name was given!'
-         write (*     ,'(/a)') ' ERROR: no mdu name was given!'
-         write (lunrep,'( a)') ' Usage: waqmerge <name.mdu> '
-         write (*     ,'( a)') ' Usage: waqmerge <name.mdu> '
-         write(lunrep ,'(/a)') ' Execution will stop '
-         write(*      ,'(/a)') ' Execution will stop '
-         stop (1)
-      endif
-      call set_log_unit_number(lunrep)
+        ! report
+        call extract_file_extension(hyd%file_hyd%name, filext, extpos, extlen)
+        hyd%file_hyd%name = hyd%file_hyd%name(1:extpos - 1)
+        file_rep%name = trim(hyd%file_hyd%name)//'-waqmerge.log'
+        file_rep%type = FT_ASC
+        file_rep%status = 0
+        call file_rep%open()
+        lunrep = file_rep%unit
+        write (lunrep, '(a,a99)') ' ', trim(version)
+    else
+        file_rep%name = 'waqmerge.log'
+        file_rep%type = FT_ASC
+        file_rep%status = 0
+        call file_rep%open()
+        lunrep = file_rep%unit
+        write (lunrep, '(a,a99)') ' ', trim(version)
+        write (lunrep, '(/a)') ' ERROR: no mdu name was given!'
+        write (*, '(/a)') ' ERROR: no mdu name was given!'
+        write (lunrep, '( a)') ' Usage: waqmerge <name.mdu> '
+        write (*, '( a)') ' Usage: waqmerge <name.mdu> '
+        write (lunrep, '(/a)') ' Execution will stop '
+        write (*, '(/a)') ' Execution will stop '
+        stop 1
+    end if
+    call set_log_unit_number(lunrep)
 
-      ! execution start
+    ! execution start
 
-      call write_date_time(rundat)
-      write (lunrep,*)
-      write (lunrep,'(2a)') ' execution start : ',rundat
-      write (lunrep,*)
-      write (*,*)
-      write (*,'(2a)') ' execution start : ',rundat
-      write (*,*)
+    call write_date_time(rundat)
+    write (lunrep, *)
+    write (lunrep, '(2a)') ' execution start : ', rundat
+    write (lunrep, *)
+    write (*, *)
+    write (*, '(2a)') ' execution start : ', rundat
+    write (*, *)
 
-
-      call read_waqoutput_dir(hyd, waq_output_dir)
-
-
+    call read_waqoutput_dir(hyd, waq_output_dir)
 
 !     detect number of domains
-      n_domain = 0
-      exists = .true.
-      do while (exists)
-         write(sdnm, '(i4.4)') n_domain
-         domain_hydname = trim(waq_output_dir)//'/'//trim(hyd%file_hyd%name)//'_'//sdnm//'.hyd'
-         inquire(file=domain_hydname,exist=exists)
-         if ( exists ) then
-            write(*,'(2a)') 'Found: ', trim(domain_hydname)
+    n_domain = 0
+    exists = .true.
+    do while (exists)
+        write (sdnm, '(i4.4)') n_domain
+        domain_hydname = trim(waq_output_dir)//'/'//trim(hyd%file_hyd%name)//'_'//sdnm//'.hyd'
+        inquire (file=domain_hydname, exist=exists)
+        if (exists) then
+            write (*, '(2a)') 'Found: ', trim(domain_hydname)
             n_domain = n_domain + 1
-         endif
-      end do
-      if ( n_domain > 0 ) then
-         write(*,'(2a)') 'Last domain found'
-         write (msgbuf, '(a,a,a,i4)') 'Number of domains found for project ''',trim(hyd%file_hyd%name),''':', n_domain
-         call msg_flush()
-      endif
+        end if
+    end do
+    if (n_domain > 0) then
+        write (*, '(2a)') 'Last domain found'
+        write (msgbuf, '(a,a,a,i4)') 'Number of domains found for project ''', trim(hyd%file_hyd%name), ''':', n_domain
+        call msg_flush()
+    end if
 
 !     stop when nothing was found!
-      if (n_domain .eq.0) then
-         write(lunrep,'(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ',trim(waq_output_dir)
-         write(*     ,'(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ',trim(waq_output_dir)
-         write(lunrep,'(a)')     '        Possible cause: the output per domain is in separate directories', &
-                                 '        - this is an obsolete organisation of the files'
-         write(*     ,'(a)')     '        Possible cause: the output per domain is in separate directories', &
-                                 '        - this is an obsolete organisation of the files'
-         write(lunrep,'(a,a)') ' Execution will stop '
-         write(*     ,'(a,a)') ' Execution will stop '
-         stop (1)
-      end if
+    if (n_domain == 0) then
+        write (lunrep, '(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ', trim(waq_output_dir)
+        write (*, '(a,a,a)') ' ERROR: no hydrodynamic descriptions found in directory ', trim(waq_output_dir)
+        write (lunrep, '(a)') '        Possible cause: the output per domain is in separate directories', &
+            '        - this is an obsolete organisation of the files'
+        write (*, '(a)') '        Possible cause: the output per domain is in separate directories', &
+            '        - this is an obsolete organisation of the files'
+        write (lunrep, '(a,a)') ' Execution will stop '
+        write (*, '(a,a)') ' Execution will stop '
+        stop 1
+    end if
 
+    ! create hyd file
+    call overall_hyd(waq_output_dir, hyd, n_domain)
 
-      ! create hyd file
-      call overall_hyd(waq_output_dir,hyd,n_domain)
-
-      allocate(domain_hyd_coll%hyd_pnts(n_domain))
-      domain_hyd_coll%maxsize = n_domain
-      domain_hyd_coll%current_size = n_domain
-      do i_domain = 1 , n_domain
-         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         domain_hyd%file_hyd%name = hyd%domain_coll%domain_pnts(i_domain)%name
-         write(lunrep,'(a,i3,a,a)') ' domain ',i_domain,' hydrodynamic description: ',trim(domain_hyd%file_hyd%name)
-         domain_hyd%file_hyd%status = 0
-         call read_hyd(domain_hyd)
-         if (domain_hyd%file_bnd%name .eq. ' ') then
+    allocate (domain_hyd_coll%hyd_pnts(n_domain))
+    domain_hyd_coll%maxsize = n_domain
+    domain_hyd_coll%current_size = n_domain
+    do i_domain = 1, n_domain
+        domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
+        domain_hyd%file_hyd%name = hyd%domain_coll%domain_pnts(i_domain)%name
+        write (lunrep, '(a,i3,a,a)') ' domain ', i_domain, ' hydrodynamic description: ', trim(domain_hyd%file_hyd%name)
+        domain_hyd%file_hyd%status = 0
+        call read_hyd(domain_hyd)
+        if (domain_hyd%file_bnd%name == ' ') then
             ! old bnd label used?
-            if (domain_hyd%file_lga%name .ne. ' ') then
-               domain_hyd%file_bnd%name = domain_hyd%file_lga%name
+            if (domain_hyd%file_lga%name /= ' ') then
+                domain_hyd%file_bnd%name = domain_hyd%file_lga%name
             else
-               write(lunrep,'(a)') ' error: no boundary file found for domain'
-               call stop_with_error()
-            endif
-         endif
-         if (domain_hyd%file_geo%name .eq. ' ') then
+                write (lunrep, '(a)') ' error: no boundary file found for domain'
+                call stop_with_error()
+            end if
+        end if
+        if (domain_hyd%file_geo%name == ' ') then
             ! old geo label used?
-            if (domain_hyd%file_cco%name .ne. ' ') then
-               domain_hyd%file_geo%name = domain_hyd%file_cco%name
+            if (domain_hyd%file_cco%name /= ' ') then
+                domain_hyd%file_geo%name = domain_hyd%file_cco%name
             else
-               write(lunrep,'(a)') ' error: no waqgeom file found for domain'
-               call stop_with_error()
-            endif
-         endif
-         call read_hyd_init(domain_hyd)
-         call reallocP(domain_hyd%iglobal_link, domain_hyd%noq1, fill=0, keepExisting=.false.)
-      enddo
+                write (lunrep, '(a)') ' error: no waqgeom file found for domain'
+                call stop_with_error()
+            end if
+        end if
+        call read_hyd_init(domain_hyd)
+        call reallocP(domain_hyd%iglobal_link, domain_hyd%noq1, fill=0, keepExisting=.false.)
+    end do
 
-      ! set new dimension and renumber tables
+    ! set new dimension and renumber tables
 
-      if (domain_hyd_coll%hyd_pnts(1)%conv_type == IONC_CONV_UGRID .and. domain_hyd_coll%hyd_pnts(1)%conv_version >= 1.0) then
-         call merge_domains(hyd, domain_hyd_coll)
-      else
-         call merge_domains_old(hyd, domain_hyd_coll)
-      end if
+    if (domain_hyd_coll%hyd_pnts(1)%conv_type == IONC_CONV_UGRID .and. domain_hyd_coll%hyd_pnts(1)%conv_version >= 1.0) then
+        call merge_domains(hyd, domain_hyd_coll)
+    else
+        call merge_domains_old(hyd, domain_hyd_coll)
+    end if
 
-      ! write time independent data
+    ! write time independent data
 
-      write(lunrep,'(2a)') ' writing overall hyd file       : ',trim(hyd%file_hyd%name)
-      call write_hyd(hyd, version)
-      write(lunrep,'(2a)') ' writing waqgeom file          : ',trim(hyd%file_geo%name)
-      if(hyd%conv_type == IONC_CONV_UGRID .and. hyd%conv_version >= 1.0) then
-         hyd%meta%institution = "Deltares"
-         hyd%meta%source = trim(version)
-         hyd%meta%references = "http://www.deltares.nl"
-         success =  write_waqgeom_file(hyd%file_geo%name, hyd%meta, hyd%crs, hyd%waqgeom, &
-                                       hyd%edge_type, hyd%conv_type, hyd%conv_version)
-      else
-         call write_waqgeom(hyd, version)
+    write (lunrep, '(2a)') ' writing overall hyd file       : ', trim(hyd%file_hyd%name)
+    call write_hyd(hyd, version)
+    write (lunrep, '(2a)') ' writing waqgeom file          : ', trim(hyd%file_geo%name)
+    if (hyd%conv_type == IONC_CONV_UGRID .and. hyd%conv_version >= 1.0) then
+        hyd%meta%institution = "Deltares"
+        hyd%meta%source = trim(version)
+        hyd%meta%references = "http://www.deltares.nl"
+        success = write_waqgeom_file(hyd%file_geo%name, hyd%meta, hyd%crs, hyd%waqgeom, &
+                                     hyd%edge_type, hyd%conv_type, hyd%conv_version)
+    else
+        call write_waqgeom(hyd, version)
 
 !        also write hyd file with UGRID 1.0 _waqgeom
 !         len_hyd = len(trim(hyd%file_hyd%name))
@@ -224,74 +231,74 @@ program waqmerge
 !         hyd%file_geo%name = new_geom
 !         call write_hyd(hyd, version)
 !         call write_waqgeom_ugrid(new_geom, hyd, version)
-      endif
-      write(lunrep,'(2a)') ' writing boundary def. file     : ',trim(hyd%file_bnd%name)
-      call write_bnd(hyd)
-      write(lunrep,'(2a)') ' writing exchange pointers file : ',trim(hyd%file_poi%name)
-      call write_poi(hyd%file_poi, hyd%noq, hyd%noq1, hyd%noq2, hyd%noq3, hyd%ipoint)
-      write(lunrep,'(2a)') ' writing attributes file       : ',trim(hyd%file_atr%name)
-      call write_atr ( hyd )
+    end if
+    write (lunrep, '(2a)') ' writing boundary def. file     : ', trim(hyd%file_bnd%name)
+    call write_bnd(hyd)
+    write (lunrep, '(2a)') ' writing exchange pointers file : ', trim(hyd%file_poi%name)
+    call write_poi(hyd%file_poi, hyd%noq, hyd%noq1, hyd%noq2, hyd%noq3, hyd%ipoint)
+    write (lunrep, '(2a)') ' writing attributes file       : ', trim(hyd%file_atr%name)
+    call write_atr(hyd)
 
-      if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
-         write(lunrep,'(2a)') ' write horizontal surfaces file : ',trim(hyd%file_hsrf%name)
-         call write_hsrf ( hyd%file_hsrf, hyd%noseg, hyd%surf)
-      endif
-      write(lunrep,'(2a)') ' write surface areas file       : ',trim(hyd%file_srf%name)
-      call write_srf ( hyd%file_srf, hyd%mmax  , hyd%nmax  , hyd%nosegl, hyd%surf)
-      if (hyd%file_dps%name.ne.' ') then
-         write(lunrep,'(2a)') ' write depths file              : ',trim(hyd%file_dps%name)
-         call write_srf ( hyd%file_dps, hyd%mmax  , hyd%nmax  , hyd%nosegl, hyd%depth)
-      endif
-      itime     = 0
-      valnam(1) = 'displen-from'
-      valnam(2) = 'displen-to'
-      write(lunrep,'(2a)') ' writing dispersion length file : ',trim(hyd%file_len%name)
-      call write_data ( hyd%file_len, itime, 1, hyd%noq1, hyd%noq2, hyd%noq3, 2, 1, 0, valnam, hyd%displen,0)
+    if (hyd%geometry == HYD_GEOM_UNSTRUC) then
+        write (lunrep, '(2a)') ' write horizontal surfaces file : ', trim(hyd%file_hsrf%name)
+        call write_hsrf(hyd%file_hsrf, hyd%noseg, hyd%surf)
+    end if
+    write (lunrep, '(2a)') ' write surface areas file       : ', trim(hyd%file_srf%name)
+    call write_srf(hyd%file_srf, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%surf)
+    if (hyd%file_dps%name /= ' ') then
+        write (lunrep, '(2a)') ' write depths file              : ', trim(hyd%file_dps%name)
+        call write_srf(hyd%file_dps, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%depth)
+    end if
+    itime = 0
+    valnam(1) = 'displen-from'
+    valnam(2) = 'displen-to'
+    write (lunrep, '(2a)') ' writing dispersion length file : ', trim(hyd%file_len%name)
+    call write_data(hyd%file_len, itime, 1, hyd%noq1, hyd%noq2, hyd%noq3, 2, 1, 0, valnam, hyd%displen, 0)
 
-      ! time loop
+    ! time loop
 
-      do
+    do
 
-         do i_domain = 1 , n_domain
+        do i_domain = 1, n_domain
 
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-            call read_hyd_step(domain_hyd,itime_domain,iend_domain)
-            if ( i_domain .eq. 1 ) then
-               itime = itime_domain
-               iend  = iend_domain
-            endif
-            if ( itime_domain .ne. itime ) then
-               write(lunrep,'(a)') ' error time in domains not equal'
-               write(lunrep,'(a,i10)') 'Time in domain: ', itime_domain
-               write(lunrep,'(a,i10)') 'Time expected:  ', itime
-               write(lunrep,'(a,i10)') 'Domain is:      ', i_domain
-               call stop_with_error()
-            endif
-            if ( iend_domain .ne. iend ) then
-               write(lunrep,'(a)') ' warning end time in domains not equal'
-               write(lunrep,'(a)') ' coupling up to shortest'
-               iend = 1
-            endif
+            call read_hyd_step(domain_hyd, itime_domain, iend_domain)
+            if (i_domain == 1) then
+                itime = itime_domain
+                iend = iend_domain
+            end if
+            if (itime_domain /= itime) then
+                write (lunrep, '(a)') ' error time in domains not equal'
+                write (lunrep, '(a,i10)') 'Time in domain: ', itime_domain
+                write (lunrep, '(a,i10)') 'Time expected:  ', itime
+                write (lunrep, '(a,i10)') 'Domain is:      ', i_domain
+                call stop_with_error()
+            end if
+            if (iend_domain /= iend) then
+                write (lunrep, '(a)') ' warning end time in domains not equal'
+                write (lunrep, '(a)') ' coupling up to shortest'
+                iend = 1
+            end if
 
-         enddo
-         if ( iend .ne. 0 ) exit
-         write(lunrep,'(a,i12)') ' step:',itime
-         write(*,*) 'step:',itime
+        end do
+        if (iend /= 0) exit
+        write (lunrep, '(a,i12)') ' step:', itime
+        write (*, *) 'step:', itime
 
-         call merge_step_unstruc(hyd, domain_hyd_coll)
+        call merge_step_unstruc(hyd, domain_hyd_coll)
 
-         call write_hyd_step(hyd, itime)
+        call write_hyd_step(hyd, itime)
 
-      enddo
+    end do
 
-      ! finished
+    ! finished
 
-      call write_date_time(rundat)
-      write (lunrep,*)
-      write (lunrep,'(a)') ' normal end of execution'
-      write (lunrep,'(2a)') ' execution stop : ',rundat
-      write (*,*)
-      write (*,'(a)') ' normal end of execution'
-      write (*,'(2a)') ' execution stop : ',rundat
+    call write_date_time(rundat)
+    write (lunrep, *)
+    write (lunrep, '(a)') ' normal end of execution'
+    write (lunrep, '(2a)') ' execution stop : ', rundat
+    write (*, *)
+    write (*, '(a)') ' normal end of execution'
+    write (*, '(2a)') ' execution stop : ', rundat
 
 end program

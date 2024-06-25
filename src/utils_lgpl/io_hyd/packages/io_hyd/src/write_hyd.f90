@@ -57,7 +57,7 @@
       integer                   :: i_dd_bound             ! index in collection
       type(t_dd_bound),pointer  :: dd_bound               ! one dd_bound description
       character(len=256)  :: filename               ! filename without path
-      character(*)   version_full      !! Delft3D FLOW version information
+      character(*)   version_full      !! Version information of program calling this subroutine
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
 

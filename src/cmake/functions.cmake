@@ -336,9 +336,11 @@ function(create_test test_name)
     if (DEFINED op_test_list)
         foreach(test_i IN LISTS op_test_list)
             add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
+            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")            
         endforeach()
     else()
         add_test(NAME ${test_name} COMMAND ${test_name})
+        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")        
     endif()
 
 

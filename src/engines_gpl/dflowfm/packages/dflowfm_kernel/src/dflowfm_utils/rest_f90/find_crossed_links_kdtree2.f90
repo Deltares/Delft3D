@@ -79,13 +79,6 @@
       integer                                            :: jacros, kint
       integer                                            :: LnxiORLnx
       integer                                            :: isactive
-      double precision                                   :: dtol
-
-      if ( janeedfix.eq.1 ) then
-         dtol = 1d-8
-      else
-         dtol = 0d0
-      end if
 
       ierror          = 1
 
@@ -134,21 +127,11 @@
       allocate(x(num), y(num))
 
 !     fill coordinates
-      if ( janeedfix.eq.1 ) then
-         do k=1,num
-            i=ipolsection(k)
-            call random_number(d)
-            x(k) = xpl(i) + dtol*d
-            call random_number(d)
-            y(k) = ypl(i) + dtol*d
-         end do
-      else
-         do k=1,num
-            i=ipolsection(k)
-            x(k) = xpl(i)
-            y(k) = ypl(i)
-         end do
-      end if
+      do k=1,num
+         i=ipolsection(k)
+         x(k) = xpl(i)
+         y(k) = ypl(i)
+      end do
 
       call build_kdtree(treeinst,num, x, y, ierror, jsferic, dmiss)
       if ( ierror.ne.0 ) then
@@ -214,11 +197,7 @@
          dlinlen = dbdistance(xa,ya,xb,yb, jsferic, jasfer3D, dmiss)
 
 !        determine square search radius
-         if ( jsferic.eq.0 ) then
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol)**2  ! 1.1d0: safety
-         else
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol*Ra)**2  ! 1.1d0: safety
-         end if
+         R2search = 1.1d0*(dlinlen+dmaxpollen)**2  ! 1.1d0: safety
 
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree,treeinst%qv,R2search)
