@@ -43,6 +43,7 @@
  use geometry_module, only: normalin
  use m_sferic, only: jsferic, jasfer3D
  use MessageHandling, only: IdLen
+ use m_find_flownode, only: find_nearest_flownodes
 
  implicit none
 
@@ -88,7 +89,7 @@
  jakdtree = 0
  kdum(1)  = 0
  if (xpl(npl) .ne. -999.999d0) then
-    call find_flownode(1,xpl(npl),ypl(npl),tmpname(1),kdum(1),jakdtree,-1, INDTP_ALL) ; kk2 = kdum(1)
+    call find_nearest_flownodes(1,xpl(npl),ypl(npl),tmpname(1),kdum(1),jakdtree,-1, INDTP_ALL) ; kk2 = kdum(1)
  endif
 
  ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
@@ -106,7 +107,7 @@
     tmpname = filename(n1+1:n2) // ' sink'
     kdum(1) = 0
     if (xpl(1) .ne. -999.999d0) then
-       call find_flownode(1,xpl(1),ypl(1),tmpname(1),kdum(1),jakdtree,-1,INDTP_ALL) ; kk = kdum(1)
+       call find_nearest_flownodes(1,xpl(1),ypl(1),tmpname(1),kdum(1),jakdtree,-1,INDTP_ALL) ; kk = kdum(1)
     endif
 
     if (kk.ne.0 .or. kk2.ne.0) then

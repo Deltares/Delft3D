@@ -38,6 +38,7 @@
     use unstruc_model,  only : md_delete_observation_points_outside_grid
     use m_wind
     use m_structures
+    use m_obs_on_flowgeom, only: obs_on_flowgeom
     
     implicit none
  

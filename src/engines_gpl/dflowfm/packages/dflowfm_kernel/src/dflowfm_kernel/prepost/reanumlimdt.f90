@@ -38,7 +38,10 @@
  use m_flow
  use m_partitioninfo
  use m_samples
+ use m_find_flownode, only: find_nearest_flownodes
+ 
  implicit none
+ 
  character(len=IdLen) :: name, nams
  logical              :: jawel
  integer              :: mlim, k, numlimdtk, kk, jakdtree=1, jaoutside=0
@@ -64,7 +67,7 @@
     call doclose(mlim)
     allocate(knum(ndx)) ; knum = 0
     kk = kk - 1
-    call find_flownode(kk, xs, ys, nams, knum, jakdtree, jaoutside, INDTP_ALL)
+    call find_nearest_flownodes(kk, xs, ys, nams, knum, jakdtree, jaoutside, INDTP_ALL)
     do k = 1,kk
        if (knum(k) > 0) then
           numlimdt(knum(k)) = zs(k)

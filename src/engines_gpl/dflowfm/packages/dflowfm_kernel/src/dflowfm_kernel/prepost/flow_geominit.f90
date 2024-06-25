@@ -68,6 +68,7 @@
  use Timers
  use m_structures
  use unstruc_messages
+ use m_find_flownode, only: find_nearest_flownodes_kdtree
 
  implicit none
 
@@ -1331,7 +1332,7 @@
 
  if (Lnx1D < -1 ) then
     kc = 0 ! allocate(inodes(Ndxi-ndx2D)) ; inodes = 0
-    call find_flowcells_kdtree(treeglob,Ndxi-ndx2D,xz(ndx2D+1),yz(ndx2D+1),kc,0,INDTP_2D,ierr)
+    call find_nearest_flownodes_kdtree(treeglob, Ndxi-ndx2D, xz(ndx2D+1), yz(ndx2D+1), kc, 0, INDTP_2D, ierr)
     do k1 = ndx2D+1, ndxi
        k2 = kc(k1-ndx2D)
        if ( k2 > 0 ) then

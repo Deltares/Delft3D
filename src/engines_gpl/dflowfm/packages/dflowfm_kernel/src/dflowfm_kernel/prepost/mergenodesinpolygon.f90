@@ -65,15 +65,7 @@
 
   double precision                            :: xboundmin, xboundmax, d
 
-  double precision                            :: dtol
-
   logical                                     :: Lmerge
-
-  if ( janeedfix.eq.1 ) then
-     dtol=1d-4
-  else
-     dtol=0d0
-  end if
 
   CALL SAVENET()
 
@@ -136,27 +128,14 @@
         do k=1,numk
            if ( kc(k) >= 1 .and. xk(k).ne.DMISS .and. yk(k).ne.DMISS ) then
               numk_inpoly=numk_inpoly+1
-
-              if ( janeedfix.eq.1 ) then
-!                kdtree may run into problems (infinite recursion) with duplicate input data: perturb data
-                 call random_number(d)
-                 xx(numk_inpoly) = xk(k) + dtol*d
-                 call random_number(d)
-                 yy(numk_inpoly) = yk(k) + dtol*d
-              else
-                 xx(numk_inpoly) = xk(k)
-                 yy(numk_inpoly) = yk(k)
-              end if
+              xx(numk_inpoly) = xk(k)
+              yy(numk_inpoly) = yk(k)
               iperm(numk_inpoly) = k
            end if
         end do
 
-!       compute squared search radius, add toleance due to kdtree perturbations
-        if ( jsferic.eq.0 ) then
-           R2search = (tooclose+2d0*dtol)**2
-        else
-           R2search = (tooclose+2d0*dtol*Ra)**2
-        end if
+!       compute squared search radius
+        R2search = tooclose**2
 
 !       initialize kdtree
         call build_kdtree(treeglob,numk_inpoly,xx,yy, ierror, jsferic, dmiss)
@@ -207,10 +186,6 @@
                            Lmerge = .true.
                         end if
 
-                        if ( Lmerge .and. janeedfix.eq.1 ) then
-!                          because of random perturbations<=tolerance added to kdtree: check real distance
-                           Lmerge = ( dbdistance(xk(k),yk(k),xk(kother),yk(kother), jsferic, jasfer3D, dmiss).lt.tooclose )
-                        end if
                         if ( Lmerge ) then
                            kc(k) = max(kc(k), kc(kother)) ! merged node gets maximum of the two node types
                            call mergenodes(kother,k,ja)
