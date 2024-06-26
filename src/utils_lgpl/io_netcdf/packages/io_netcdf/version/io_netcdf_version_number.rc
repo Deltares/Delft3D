@@ -53,12 +53,12 @@ BEGIN
             VALUE "CompanyName", COMPANY_NAME
             VALUE "FileDescription", "io_netcdf library\0"
             VALUE "FileVersion", VERSION_FULL
-            VALUE "InternalName", PROGRAM
+            VALUE "InternalName", PROGRAM_NAME
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "LegalTrademarks", LEGAL_TRADEMARKS
             VALUE "OriginalFilename", "io_netcdf.dll\0"
             VALUE "PrivateBuild", "-\0"
-            VALUE "ProductName", PROGRAM
+            VALUE "ProductName", PROGRAM_NAME
             VALUE "ProductVersion", VERSION_FULL
             VALUE "SpecialBuild", "-\0"
         END
