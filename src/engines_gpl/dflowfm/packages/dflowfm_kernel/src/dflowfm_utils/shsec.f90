@@ -343,86 +343,105 @@ subroutine shsec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
    modl = mod(nlat,2)
    imm1 = imid
    if(modl .ne. 0) imm1 = imid-1
-   do 80 k=1,nt
-      do 80 j=1,nlon
-         do 80 i=1,ls
+   do k=1,nt
+      do j=1,nlon
+         do i=1,ls
             ge(i,j,k)=0.
-80 continue
+         end do
+      end do
+   end do
    if(isym .eq. 1) go to 125
    call alin (2,nlat,nlon,0,pb,i3,walin)
-   do 100 k=1,nt
-      do 100 np1=1,nlat,2
-         do 100 i=1,imid
+   do k=1,nt
+      do np1=1,nlat,2
+         do i=1,imid
             ge(i,1,k)=ge(i,1,k)+a(1,np1,k)*pb(i,np1,i3)
-100 continue
+         end do
+      end do
+   end do
    ndo = nlat
    if(mod(nlat,2) .eq. 0) ndo = nlat-1
-   do 110 mp1=2,mdo
+   do mp1=2,mdo
       m = mp1-1
       call alin (2,nlat,nlon,m,pb,i3,walin)
-      do 110 np1=mp1,ndo,2
-         do 110 k=1,nt
-            do 110 i=1,imid
+      do np1=mp1,ndo,2
+         do k=1,nt
+            do i=1,imid
                ge(i,2*mp1-2,k) = ge(i,2*mp1-2,k)+a(mp1,np1,k)*pb(i,np1,i3)
                ge(i,2*mp1-1,k) = ge(i,2*mp1-1,k)+b(mp1,np1,k)*pb(i,np1,i3)
-110 continue
+            end do
+         end do
+      end do
+   end do
    if(mdo .eq. mmax .or. mmax .gt. ndo) go to 122
    call alin (2,nlat,nlon,mdo,pb,i3,walin)
-   do 120 np1=mmax,ndo,2
-      do 120 k=1,nt
-         do 120 i=1,imid
+   do np1=mmax,ndo,2
+      do k=1,nt
+         do i=1,imid
             ge(i,2*mmax-2,k) = ge(i,2*mmax-2,k)+a(mmax,np1,k)*pb(i,np1,i3)
-120 continue
+         end do
+      end do
+   end do
 122 if(isym .eq. 2) go to 155
 125 call alin(1,nlat,nlon,0,pb,i3,walin)
-   do 140 k=1,nt
-      do 140 np1=2,nlat,2
-         do 140 i=1,imm1
+   do k=1,nt
+      do np1=2,nlat,2
+         do i=1,imm1
             go(i,1,k)=go(i,1,k)+a(1,np1,k)*pb(i,np1,i3)
-140 continue
+         end do
+      end do
+   end do
    ndo = nlat
    if(mod(nlat,2) .ne. 0) ndo = nlat-1
-   do 150 mp1=2,mdo
+   do mp1=2,mdo
       mp2 = mp1+1
       m = mp1-1
       call alin(1,nlat,nlon,m,pb,i3,walin)
-      do 150 np1=mp2,ndo,2
-         do 150 k=1,nt
-            do 150 i=1,imm1
+      do np1=mp2,ndo,2
+         do k=1,nt
+            do i=1,imm1
                go(i,2*mp1-2,k) = go(i,2*mp1-2,k)+a(mp1,np1,k)*pb(i,np1,i3)
                go(i,2*mp1-1,k) = go(i,2*mp1-1,k)+b(mp1,np1,k)*pb(i,np1,i3)
-150 continue
+            end do
+         end do
+      end do
+   end do
    mp2 = mmax+1
    if(mdo .eq. mmax .or. mp2 .gt. ndo) go to 155
    call alin(1,nlat,nlon,mdo,pb,i3,walin)
-   do 152 np1=mp2,ndo,2
-      do 152 k=1,nt
-         do 152 i=1,imm1
+   do np1=mp2,ndo,2
+      do k=1,nt
+         do i=1,imm1
             go(i,2*mmax-2,k) = go(i,2*mmax-2,k)+a(mmax,np1,k)*pb(i,np1,i3)
-152 continue
-155 do 160 k=1,nt
+         end do
+      end do
+   end do
+155 do k=1,nt
       if(mod(nlon,2) .ne. 0) go to 157
-      do 156 i=1,ls
+      do i=1,ls
          ge(i,nlon,k) = 2.*ge(i,nlon,k)
-156   continue
+end do
 157   call hrfftb(ls,nlon,ge(1,1,k),ls,whrfft,work)
-160 continue
+end do
    if(isym .ne. 0) go to 180
-   do 170 k=1,nt
-      do 170 j=1,nlon
-         do 175 i=1,imm1
+   do k=1,nt
+      do j=1,nlon
+         do i=1,imm1
             g(i,j,k) = .5*(ge(i,j,k)+go(i,j,k))
             g(nlp1-i,j,k) = .5*(ge(i,j,k)-go(i,j,k))
-175      continue
-         if(modl .eq. 0) go to 170
+         end do
+         if(modl .eq. 0) cycle
          g(imid,j,k) = .5*ge(imid,j,k)
-170 continue
+      end do
+   end do
    return
-180 do 185 k=1,nt
-      do 185 i=1,imid
-         do 185 j=1,nlon
+180 do k=1,nt
+      do i=1,imid
+         do j=1,nlon
             g(i,j,k) = .5*ge(i,j,k)
-185 continue
+         end do
+      end do
+   end do
    return
 end
 !     subroutine shseci(nlat,nlon,wshsec,lshsec,dwork,ldwork,ierror)

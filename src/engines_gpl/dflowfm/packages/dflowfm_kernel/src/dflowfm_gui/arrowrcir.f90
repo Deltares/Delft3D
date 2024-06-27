@@ -42,10 +42,10 @@
       DATA X(1)  /0.8d0/, X(2) /1d0/, X(3) /0.8d0/,  &
            Y(1) /-0.1d0/, Y(2) /0d0/, Y(3) /0.1d0/
 
-      DO 10 I = 1,3
+      do I = 1,3
          XR(I) = X0 + 3*rcir*(X(I)*CS - Y(I)*SN)
          YR(I) = Y0 + 3*rcir*(Y(I)*CS + X(I)*SN)
-   10 CONTINUE
+end do
 
       CALL MOVABS(X0,Y0)
       CALL LNABS(XR(2),YR(2))

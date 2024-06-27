@@ -39,13 +39,13 @@
        integer :: j
        double precision :: xh, yh
 
-      DO 10 J = 1,NUMPJ/2
+      do J = 1,NUMPJ/2
          XH              = X(JN,J)
          X(JN,J)         = X(JN,NUMPJ-J+1)
          X(JN,NUMPJ-J+1) = XH
          YH              = Y(JN,J)
          Y(JN,J)         = Y(JN,NUMPJ-J+1)
          Y(JN,NUMPJ-J+1) = YH
-    10 CONTINUE
+      end do
       RETURN
       END subroutine switch

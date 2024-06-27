@@ -210,9 +210,9 @@
          VMIN = 2
          NV   = 10
          DV   = VMAX - VMIN
-         DO 40 I = 1,NV
+         do I = 1,NV
             VAL(I) = VMIN + (I-1)*DV/(NV-1)
-   40    CONTINUE
+         end do
 !C        CALL ISOSCALE()
          DO I = 2,N
             XX(1) = DAG-1

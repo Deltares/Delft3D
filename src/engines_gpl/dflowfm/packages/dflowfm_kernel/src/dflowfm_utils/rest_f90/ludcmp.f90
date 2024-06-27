@@ -52,36 +52,36 @@
       DIMENSION A(NP,NP),INDX(N),VV(NX)
       JAPARALLEL = 0
       D=1.
-      DO 12 I=1,N
+      do I=1,N
         AAMAX=0.
-        DO 11 J=1,N
+        do J=1,N
           IF (ABS(A(I,J)).GT.AAMAX) AAMAX=ABS(A(I,J))
-11      CONTINUE
+end do
         IF (AAMAX .EQ. 0) THEN
            JAPARALLEL = 1
            RETURN
         ENDIF
         VV(I)=1./AAMAX
-12    CONTINUE
-      DO 19 J=1,N
+end do
+      do J=1,N
         IF (J.GT.1) THEN
-          DO 14 I=1,J-1
+          do I=1,J-1
             SUM=A(I,J)
             IF (I.GT.1)THEN
-              DO 13 K=1,I-1
+              do K=1,I-1
                 SUM=SUM-A(I,K)*A(K,J)
-13            CONTINUE
+end do
               A(I,J)=SUM
             ENDIF
-14        CONTINUE
+end do
         ENDIF
         AAMAX=0.
-        DO 16 I=J,N
+        do I=J,N
           SUM=A(I,J)
           IF (J.GT.1)THEN
-            DO 15 K=1,J-1
+            do K=1,J-1
               SUM=SUM-A(I,K)*A(K,J)
-15          CONTINUE
+end do
             A(I,J)=SUM
           ENDIF
           DUM=VV(I)*ABS(SUM)
@@ -89,13 +89,13 @@
             IMAX=I
             AAMAX=DUM
           ENDIF
-16      CONTINUE
+end do
         IF (J.NE.IMAX)THEN
-          DO 17 K=1,N
+          do K=1,N
             DUM=A(IMAX,K)
             A(IMAX,K)=A(J,K)
             A(J,K)=DUM
-17        CONTINUE
+end do
           D=-D
           VV(IMAX)=VV(J)
         ENDIF
@@ -103,11 +103,11 @@
         IF(J.NE.N)THEN
           IF(A(J,J).EQ.0d0)A(J,J)=TINY
           DUM=1./A(J,J)
-          DO 18 I=J+1,N
+          do I=J+1,N
             A(I,J)=A(I,J)*DUM
-18        CONTINUE
+end do
         ENDIF
-19    CONTINUE
+end do
       IF(A(N,N).EQ.0d0)A(N,N)=TINY
       RETURN
       END

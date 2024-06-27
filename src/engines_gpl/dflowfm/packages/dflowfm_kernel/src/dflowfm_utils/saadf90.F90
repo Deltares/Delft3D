@@ -486,19 +486,21 @@
 !
 !     initialize nonzero indicator array.
 !
-      do 1 j=1,n
+      do j=1,n
          jw(n+j)  = 0
- 1    continue
+      end do
+
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do 500 ii = 1, n
+      do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii+1) - 1
          tnorm = 0.0d0
-         do 501 k=j1,j2
+         do k=j1,j2
             tnorm = tnorm+abs(a(k))
- 501     continue
+         end do
+
          if (tnorm .eq. 0.0) goto 999
          tnorm = tnorm/real(j2-j1+1)
 !
@@ -510,7 +512,7 @@
          w(ii) = 0.0
          jw(n+ii) = ii
 !
-         do 170  j = j1, j2
+         do  j = j1, j2
             k = ja(j)
             t = a(j)
             if (k .lt. ii) then
@@ -527,7 +529,8 @@
                w(jpos) = t
                jw(n+k) = jpos
             endif
- 170     continue
+         end do
+
          jj = 0
          len = 0
 !
@@ -544,12 +547,13 @@
 !
 !     determine smallest column index
 !
-         do 151 j=jj+1,lenl
+         do j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
                k = j
             endif
- 151     continue
+         end do
+
 !
          if (k .ne. jj) then
 !     exchange in jw
@@ -576,7 +580,7 @@
 !
 !     combine current row and row jrow
 !
-         do 203 k = ju(jrow), jlu(jrow+1)-1
+         do k = ju(jrow), jlu(jrow+1)-1
             s = fact*alu(k)
             j = jlu(k)
             jpos = jw(n+j)
@@ -621,7 +625,8 @@
                   w(jpos) = w(jpos) - s
                endif
             endif
- 203     continue
+         end do
+
 !
 !     store this pivot element -- (from left to right -- no danger of
 !     overlap with the working elements in L (pivots).
@@ -634,9 +639,10 @@
 !
 !     reset double-pointer to zero (U-part)
 !
-         do 308 k=1, lenu
+         do k=1, lenu
             jw(n+jw(ii+k-1)) = 0
- 308     continue
+         end do
+
 !
 !     update L-matrix
 !
@@ -649,12 +655,13 @@
 !
 !     store L-part
 !
-         do 204 k=1, len
+         do k=1, len
             if (ju0 .gt. iwk) goto 996
             alu(ju0) =  w(k)
             jlu(ju0) =  jw(k)
             ju0 = ju0+1
- 204     continue
+         end do
+
 !
 !     save pointer to beginning of row ii of U
 !
@@ -679,12 +686,13 @@
 !
          t = abs(w(ii))
          if (len + ju0 .gt. iwk) goto 997
-         do 302 k=ii+1,ii+len-1
+         do k=ii+1,ii+len-1
             jlu(ju0) = jw(k)
             alu(ju0) = w(k)
             t = t + abs(w(k) )
             ju0 = ju0+1
- 302     continue
+         end do
+
 !
 !     store inverse of diagonal element of u
 !
@@ -698,7 +706,8 @@
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- 500  continue
+      end do
+
       ierr = 0
       return
 !
@@ -839,21 +848,23 @@
 !
 !  integer double pointer array.
 !
-      do 1 j=1, n
+      do j=1, n
          jw(n+j)  = 0
          iperm(j) = j
          iperm(n+j) = j
- 1    continue
+      end do
+
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do 500 ii = 1, n
+      do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii+1) - 1
          tnorm = 0.0d0
-         do 501 k=j1,j2
+         do k=j1,j2
             tnorm = tnorm+abs(a(k))
- 501     continue
+         end do
+
          if (tnorm .eq. 0.0) goto 999
          tnorm = tnorm/(j2-j1+1)
 !
@@ -865,7 +876,7 @@
          w(ii) = 0.0
          jw(n+ii) = ii
 !
-         do 170  j = j1, j2
+         do  j = j1, j2
             k = iperm(n+ja(j))
             t = a(j)
             if (k .lt. ii) then
@@ -882,7 +893,8 @@
                w(jpos) = t
                jw(n+k) = jpos
             endif
- 170     continue
+         end do
+
          jj = 0
          len = 0
 !
@@ -899,12 +911,13 @@
 !
 !     determine smallest column index
 !
-         do 151 j=jj+1,lenl
+         do j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
                k = j
             endif
- 151     continue
+         end do
+
 !
          if (k .ne. jj) then
 !     exchange in jw
@@ -934,7 +947,7 @@
 !
 !     combine current row and row jrow
 !
-         do 203 k = ju(jrow), jlu(jrow+1)-1
+         do k = ju(jrow), jlu(jrow+1)-1
             s = fact*alu(k)
 !     new column number
             j = iperm(n+jlu(k))
@@ -977,7 +990,8 @@
                  w(jpos) = w(jpos) - s
               endif
            endif
- 203  continue
+         end do
+
 !
 !     store this pivot element -- (from left to right -- no danger of
 !     overlap with the working elements in L (pivots).
@@ -990,9 +1004,10 @@
 !
 !     reset double-pointer to zero (U-part)
 !
-        do 308 k=1, lenu
+        do k=1, lenu
            jw(n+jw(ii+k-1)) = 0
- 308  continue
+         end do
+
 !
 !     update L-matrix
 !
@@ -1005,14 +1020,15 @@
 !
 !     store L-part -- in original coordinates ..
 !
-        do 204 k=1, len
+        do k=1, len
            if (ju0 .gt. iwk) THEN
            goto 996
            ENDIF
            alu(ju0) =  w(k)
            jlu(ju0) = iperm(jw(k))
            ju0 = ju0+1
- 204    continue
+         end do
+
 !
 !     save pointer to beginning of row ii of U
 !
@@ -1069,11 +1085,12 @@
 !
 !     copy U-part in original coordinates
 !
-        do 302 k=ii+1,ii+len-1
+        do k=ii+1,ii+len-1
            jlu(ju0) = iperm(jw(k))
            alu(ju0) = w(k)
            ju0 = ju0+1
- 302  continue
+         end do
+
 !
 !     store inverse of diagonal element of u
 !
@@ -1086,7 +1103,7 @@
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- 500  continue
+      end do
 !
 !     permute all column indices of LU ...
 !
@@ -1225,20 +1242,22 @@
 !
 !     initialize nonzero indicator array.
 !
-      do 1 j=1,n
+      do j=1,n
          jw(n+j)  = 0
- 1    continue
+      end do
+
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do 500 ii = 1, n
+      do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii+1) - 1
          dropsum = 0.0d0
          tnorm = 0.0d0
-         do 501 k=j1,j2
+         do k=j1,j2
             tnorm = tnorm + abs(a(k))
- 501     continue
+         end do
+
          if (tnorm .eq. 0.0) goto 997
          tnorm = tnorm / real(j2-j1+1)
 !
@@ -1250,7 +1269,7 @@
          w(ii) = 0.0
          jw(n+ii) = ii
 !
-         do 170  j = j1, j2
+         do  j = j1, j2
             k = ja(j)
             t = a(j)
             if (k .lt. ii) then
@@ -1267,7 +1286,8 @@
                w(jpos) = t
                jw(n+k) = jpos
             endif
- 170     continue
+         end do
+
          jj = 0
          len = 0
 !
@@ -1284,12 +1304,13 @@
 !
 !     determine smallest column index
 !
-         do 151 j=jj+1,lenl
+         do j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
                k = j
             endif
- 151     continue
+         end do
+
 !
          if (k .ne. jj) then
 !     exchange in jw
@@ -1329,7 +1350,7 @@
 !
 !     combine current row and row jrow
 !
-         do 203 k = ju(jrow), jlu(jrow+1)-1
+         do k = ju(jrow), jlu(jrow+1)-1
             s = fact*alu(k)
             j = jlu(k)
             jpos = jw(n+j)
@@ -1373,7 +1394,8 @@
                   w(jpos) = w(jpos) - s
                endif
             endif
- 203     continue
+         end do
+
          len = len+1
          w(len) = fact
          jw(len)  = jrow
@@ -1382,20 +1404,22 @@
 !
 !     reset double-pointer to zero (For U-part only)
 !
-         do 308 k=1, lenu
+         do k=1, lenu
             jw(n+jw(ii+k-1)) = 0
- 308     continue
+         end do
+
 !
 !     update l-matrix
 !
-         do 204 k=1, len
+         do k=1, len
             if (ju0 .gt. iwk) THEN
             goto 996
             ENDIF
             alu(ju0) =  w(k)
             jlu(ju0) =  jw(k)
             ju0 = ju0+1
- 204     continue
+         end do
+
 !
 !     save pointer to beginning of row ii of U
 !
@@ -1420,11 +1444,12 @@
          if (ju0 + len-1 .gt. iwk) THEN
          goto 996
          ENDIF
-         do 302 k=ii+1,ii+len
+         do k=ii+1,ii+len
             jlu(ju0) = jw(k)
             alu(ju0) = w(k)
             ju0 = ju0+1
- 302     continue
+         end do
+
 !
 !     define diagonal element
 !
@@ -1442,7 +1467,7 @@
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- 500  continue
+      end do
       ierr = 0
       return
 !
@@ -1562,22 +1587,24 @@
 !
 !  integer double pointer array.
 !
-      do 1 j=1,n
+      do j=1,n
          jw(n+j)  = 0
          iperm(j) = j
          iperm(n+j) = j
- 1    continue
+      end do
+
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do 500 ii = 1, n
+      do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii+1) - 1
          dropsum = 0.0d0
          tnorm = 0.0d0
-         do 501 k=j1,j2
+         do k=j1,j2
             tnorm = tnorm+abs(a(k))
- 501     continue
+         end do
+
          if (tnorm .eq. 0.0) goto 997
          tnorm = tnorm/(j2-j1+1)
 !
@@ -1589,7 +1616,7 @@
          w(ii) = 0.0
          jw(n+ii) = ii
 !
-         do 170  j = j1, j2
+         do  j = j1, j2
             k = iperm(n+ja(j))
             t = a(j)
             if (k .lt. ii) then
@@ -1606,7 +1633,8 @@
                w(jpos) = t
                jw(n+k) = jpos
             endif
- 170     continue
+         end do
+
          jj = 0
          len = 0
 !
@@ -1623,12 +1651,13 @@
 !
 !     determine smallest column index
 !
-         do 151 j=jj+1,lenl
+         do j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
                k = j
             endif
- 151     continue
+         end do
+
 !
          if (k .ne. jj) then
 !     exchange in jw
@@ -1661,7 +1690,7 @@
 !
 !     combine current row and row jrow
 !
-         do 203 k = ju(jrow), jlu(jrow+1)-1
+         do k = ju(jrow), jlu(jrow+1)-1
             s = fact*alu(k)
 !     new column number
             j = iperm(n+jlu(k))
@@ -1701,7 +1730,8 @@
                  w(jpos) = w(jpos) - s
               endif
            endif
- 203  continue
+         end do
+
         len = len+1
         w(len) = fact
         jw(len)  = jrow
@@ -1710,18 +1740,18 @@
 !
 !     reset double-pointer to zero (U-part)
 !
-        do 308 k=1, lenu
+        do k=1, lenu
            jw(n+jw(ii+k-1)) = 0
- 308  continue
+        end do
 !
 !     update L-matrix
 !
-        do 204 k=1, len
+        do k=1, len
            if (ju0 .gt. iwk) goto 996
            alu(ju0) =  w(k)
            jlu(ju0) = iperm(jw(k))
            ju0 = ju0+1
- 204    continue
+         end do
 !
 !     save pointer to beginning of row ii of U
 !
@@ -1777,11 +1807,11 @@
 !
 !     copy U-part in original coordinates
 !
-        do 302 k=ii+1,ii+len
+        do k=ii+1,ii+len
            jlu(ju0) = iperm(jw(k))
            alu(ju0) = w(k)
            ju0 = ju0+1
- 302  continue
+         end do
 !
 !     define diagonal element
 !
@@ -1799,7 +1829,7 @@
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- 500  continue
+ end do
 !
 !     permute all column indices of LU ...
 !
@@ -1918,13 +1948,13 @@
 !
 !     initialize nonzero indicator array + levs array --
 !
-      do 1 j=1,2*n
+      do j=1,2*n
          jw(j)  = 0
- 1    continue
+      end do
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do 500 ii = 1, n
+      do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii+1) - 1
 !
@@ -1936,10 +1966,10 @@
          w(ii) = 0.0
          jw(n+ii) = ii
 !
-         do 170  j = j1, j2
+         do  j = j1, j2
             k = ja(j)
             t = a(j)
-            if (t .eq. 0.0) goto 170
+            if (t .eq. 0.0) cycle
             if (k .lt. ii) then
                lenl = lenl+1
                jw(lenl) = k
@@ -1957,7 +1987,7 @@
                jw(n2+jpos) = 0
                jw(n+k) = jpos
             endif
- 170     continue
+         end do
 !
          jj = 0
 !
@@ -1974,12 +2004,12 @@
 !
 !     determine smallest column index
 !
-         do 151 j=jj+1,lenl
+         do j=jj+1,lenl
             if (jw(j) .lt. jrow) then
                jrow = jw(j)
                k = j
             endif
- 151     continue
+         end do
 !
          if (k .ne. jj) then
 !     exchange in jw
@@ -2011,7 +2041,7 @@
 !
 !     combine current row and row jrow
 !
-         do 203 k = ju(jrow), jlu(jrow+1)-1
+         do k = ju(jrow), jlu(jrow+1)-1
             s = fact*alu(k)
             j = jlu(k)
             jpos = jw(n+j)
@@ -2059,7 +2089,7 @@
                   jw(n2+jpos) = min(jw(n2+jpos),jlev+levs(k)+1)
                endif
             endif
- 203     continue
+         end do
          w(jj) = fact
          jw(jj)  = jrow
          goto 150
@@ -2067,20 +2097,20 @@
 !
 !     reset double-pointer to zero (U-part)
 !
-         do 308 k=1, lenu
+         do k=1, lenu
             jw(n+jw(ii+k-1)) = 0
- 308     continue
+         end do
 !
 !     update l-matrix
 !
-         do 204 k=1, lenl
+         do k=1, lenl
             if (ju0 .gt. iwk) goto 996
             if (jw(n2+k) .le. lfil) then
                alu(ju0) =  w(k)
                jlu(ju0) =  jw(k)
                ju0 = ju0+1
             endif
- 204     continue
+         end do
 !
 !     save pointer to beginning of row ii of U
 !
@@ -2088,14 +2118,14 @@
 !
 !     update u-matrix
 !
-         do 302 k=ii+1,ii+lenu-1
+         do k=ii+1,ii+lenu-1
             if (jw(n2+k) .le. lfil) then
                jlu(ju0) = jw(k)
                alu(ju0) = w(k)
                levs(ju0) = jw(n2+k)
                ju0 = ju0+1
             endif
- 302     continue
+         end do
 
          if (w(ii) .eq. 0.0) goto 999
 !
@@ -2107,7 +2137,7 @@
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- 500  continue
+      end do
       ierr = 0
       return
 !
@@ -2194,18 +2224,18 @@
 !
 ! initialize work vector to zero's
 !
-   do 31 i=1, n
+   do i=1, n
            iw(i) = 0
- 31     continue
+         end do
 !
 ! main loop
 !
-   do 500 ii = 1, n
+   do ii = 1, n
            js = ju0
 !
 ! generating row number ii of L and U.
 !
-           do 100 j=ia(ii),ia(ii+1)-1
+           do j=ia(ii),ia(ii+1)-1
 !
 !     copy row ii of a, ja, ia into row ii of alu, jlu (L/U) matrix.
 !
@@ -2220,25 +2250,25 @@
                  iw(jcol) = ju0
                  ju0 = ju0+1
               endif
- 100       continue
+            end do
            jlu(ii+1) = ju0
            jf = ju0-1
            jm = ju(ii)-1
 !
 !     exit if diagonal element is reached.
 !
-           do 150 j=js, jm
+           do j=js, jm
               jrow = jlu(j)
               tl = alu(j)*alu(jrow)
               alu(j) = tl
 !
 !     perform  linear combination
 !
-              do 140 jj = ju(jrow), jlu(jrow+1)-1
+              do jj = ju(jrow), jlu(jrow+1)-1
                  jw = iw(jlu(jj))
                  if (jw .ne. 0) alu(jw) = alu(jw) - tl*alu(jj)
- 140          continue
- 150       continue
+               end do
+            end do
 !
 !     invert  and store diagonal element.
 !
@@ -2248,9 +2278,10 @@
 !     reset pointer iw to zero
 !
            iw(ii) = 0
-           do 201 i = js, jf
- 201          iw(jlu(i)) = 0
- 500       continue
+           do i = js, jf
+             iw(jlu(i)) = 0
+            end do
+end do
            ierr = 0
            return
 !
@@ -2315,17 +2346,18 @@
           ju0 = n+2
           jlu(1) = ju0
 ! initialize work vector to zero's
- do 31 i=1, n
- 31           iw(i) = 0
-!
+          do i=1, n
+            iw(i) = 0
+          end do
+!           
 !-------------- MAIN LOOP ----------------------------------
 !
- do 500 ii = 1, n
+ do ii = 1, n
            js = ju0
 !
 ! generating row number ii or L and U.
 !
-           do 100 j=ia(ii),ia(ii+1)-1
+           do j=ia(ii),ia(ii+1)-1
 !
 !     copy row ii of a, ja, ia into row ii of alu, jlu (L/U) matrix.
 !
@@ -2340,35 +2372,36 @@
                  iw(jcol) = ju0
                  ju0 = ju0+1
               endif
- 100       continue
+            end do
            jlu(ii+1) = ju0
            jf = ju0-1
            jm = ju(ii)-1
 !     s accumulates fill-in values
            s = 0.0d0
-           do 150 j=js, jm
+           do j=js, jm
               jrow = jlu(j)
               tl = alu(j)*alu(jrow)
               alu(j) = tl
 !-----------------------perform linear combination --------
-              do 140 jj = ju(jrow), jlu(jrow+1)-1
+              do jj = ju(jrow), jlu(jrow+1)-1
                  jw = iw(jlu(jj))
                  if (jw .ne. 0) then
                        alu(jw) = alu(jw) - tl*alu(jj)
                     else
                        s = s + tl*alu(jj)
                     endif
- 140          continue
- 150       continue
+                  end do
+               end do
 !----------------------- invert and store diagonal element.
            alu(ii) = alu(ii)-s
            if (alu(ii) .eq. 0.0d0) goto 600
            alu(ii) = 1.0d0/alu(ii)
 !----------------------- reset pointer iw to zero
            iw(ii) = 0
-           do 201 i = js, jf
- 201          iw(jlu(i)) = 0
- 500       continue
+           do i = js, jf
+              iw(jlu(i)) = 0
+           end do
+end do
            ierr = 0
            return
 !     zero pivot :
@@ -2479,17 +2512,17 @@
 ! outer loop starts here..
 !-------------- compute initial residual vector --------------
        call amux (n, sol, vv, aa, ja, ia)
-       do 21 j=1,n
+       do j=1,n
           vv(j,1) = rhs(j) - vv(j,1)
- 21    continue
+         end do
 !-------------------------------------------------------------
  20    ro = dnrm2(n, vv, 1)
        if (iout .gt. 0 .and. its .eq. 0)   write(iout, 199) its, ro
        if (ro .eq. 0.0d0) goto 999
        t = 1.0d0/ ro
-       do 210 j=1, n
+       do j=1, n
           vv(j,1) = vv(j,1)*t
- 210   continue
+         end do
        if (its .eq. 0) eps1=eps*ro
 !     ** initialize 1-st term  of rhs of hessenberg system..
        rs(1) = ro
@@ -2502,30 +2535,30 @@
 !-----------------------------------------
 !     modified gram - schmidt...
 !-----------------------------------------
-       do 55 j=1, i
+       do j=1, i
           t = ddot(n, vv(1,j),1,vv(1,i1),1)
           hh(j,i) = t
           call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
- 55    continue
+         end do
        t = dnrm2(n, vv(1,i1), 1)
        hh(i1,i) = t
        if ( t .eq. 0.0d0) goto 58
        t = 1.0d0/t
-       do 57  k=1,n
+       do  k=1,n
           vv(k,i1) = vv(k,i1)*t
- 57    continue
+         end do
 !
 !     done with modified gram schimd and arnoldi step..
 !     now  update factorization of hh
 !
  58    if (i .eq. 1) goto 121
 !--------perfrom previous transformations  on i-th column of h
-       do 66 k=2,i
+       do k=2,i
           k1 = k-1
           t = hh(k1,i)
           hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
           hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
- 66    continue
+         end do
  121   gam = sqrt(hh(i,i)**2 + hh(i1,i)**2)
 !
 !     if gamma is zero then any small value will do...
@@ -2551,35 +2584,35 @@
 !     now compute solution. first solve upper triangular system.
 !
        rs(i) = rs(i)/hh(i,i)
-       do 30 ii=2,i
+       do ii=2,i
           k=i-ii+1
           k1 = k+1
           t=rs(k)
-          do 40 j=k1,i
+          do j=k1,i
              t = t-hh(k,j)*rs(j)
- 40       continue
+            end do
           rs(k) = t/hh(k,k)
- 30    continue
+         end do
 !
 !     form linear combination of v(*,i)'s to get solution
 !
        t = rs(1)
-       do 15 k=1, n
+       do k=1, n
           rhs(k) = vv(k,1)*t
- 15    continue
-       do 16 j=2, i
+         end do
+       do j=2, i
           t = rs(j)
-          do 161 k=1, n
+          do k=1, n
              rhs(k) = rhs(k)+t*vv(k,j)
- 161      continue
- 16    continue
+            end do
+         end do
 !
 !     call preconditioner.
 !
        call lusol (n, rhs, rhs, alu, jlu, ju, 30*n)
-       do 17 k=1, n
+       do k=1, n
           sol(k) = sol(k) + rhs(k)
- 17    continue
+         end do
 !
 !     restart outer loop  when necessary
 !
@@ -2588,16 +2621,16 @@
 !
 !     else compute residual vector and continue..
 !
-       do 24 j=1,i
+       do j=1,i
           jj = i1-j+1
           rs(jj-1) = -s(jj-1)*rs(jj)
           rs(jj) = c(jj-1)*rs(jj)
- 24    continue
-       do 25  j=1,i1
+         end do
+       do  j=1,i1
           t = rs(j)
           if (j .eq. 1)  t = t-1.0d0
           call daxpy (n, t, vv(1,j), 1,  vv, 1)
- 25    continue
+         end do
  199   format('   its =', i4, ' res. norm =', d20.6)
 !     restart outer loop.
        goto 20
@@ -2637,7 +2670,7 @@
 !
  1      mid = first
         abskey = abs(a(mid))
-        do 2 j=first+1, last
+        do j=first+1, last
            if (abs(a(j)) .gt. abskey) then
               mid = mid+1
 !     interchange
@@ -2648,7 +2681,7 @@
               a(j)  = tmp
               ind(j) = itmp
            endif
- 2      continue
+         end do
 !
 !     interchange
 !
@@ -6008,10 +6041,10 @@
 !     normalize first arnoldi vector
 !
       t = one/zeta
-      do 22 k=1,n
+      do k=1,n
          w(k,3) = w(k,3)*t
          w(k,5) = w(k,3)
- 22   continue
+      end do
       fpar(11) = fpar(11) + n
 !
 !     initialize constants for main loop
@@ -6124,10 +6157,10 @@
          u(ju) = ss
       endif
 !
-      do 32  j=1,n
+      do  j=1,n
          w(j,1) = w(j,1) - ss*w(j,k+2)
          w(j,2) = w(j,2) - ss1*w(j,k+4)
- 32   continue
+      end do
       fpar(11) = fpar(11) + 4*n
 !
       if (k .ne. i2) goto 31
@@ -6148,10 +6181,10 @@
       if (i2 .eq. lbm1) i2=0
       i2=i2+1
 !
-      do 315 j=1,n
+      do j=1,n
          w(j,i2+2)=w(j,1)*ss
          w(j,i2+4)=w(j,2)*ss1
- 315  continue
+      end do
       fpar(11) = fpar(11) + 4*n
 !-----------------------------------------------------------------------
 !     end of orthogonalization.
@@ -6164,9 +6197,9 @@
 !-----------------------------------------------------------------------
 !     update conjugate directions and solution
 !-----------------------------------------------------------------------
-      do 33 k=1,n
+      do k=1,n
          w(k,1) = w(k,ip2+2)
- 33   continue
+      end do
       call uppdir(n, w(1,7), np, lb, indp, w, u, usav, fpar(11))
 !-----------------------------------------------------------------------
       if (i .eq. 1) goto 34
@@ -6175,9 +6208,9 @@
       if (.not.perm(j)) zeta = -zeta*ypiv(j)
  34   x = zeta/u(np)
       if (perm(np))goto 36
-      do 35 k=1,n
+      do k=1,n
          w(k,10) = w(k,10) + x*w(k,1)
- 35   continue
+      end do
       fpar(11) = fpar(11) + 2 * n
 !-----------------------------------------------------------------------
  36   if (ipar(3).eq.999) then
@@ -6214,9 +6247,9 @@
 !-----------------------------------------------------------------------
       if (.not. perm(np)) goto 900
       x = zeta/umm
-      do 40 k = 1,n
+      do k = 1,n
          w(k,10) = w(k,10) + x*w(k,1)
- 40   continue
+      end do
       fpar(11) = fpar(11) + 2 * n
 !
 !     right preconditioning and clean-up jobs
@@ -6251,13 +6284,13 @@
 !
 !     -- perform  previous step of the factorization-
 !
-      do 6 k=1,npm1
+      do k=1,npm1
          if (.not. permut(k)) goto 5
          x=u(k)
          u(k) = u(k+1)
          u(k+1) = x
  5       u(k+1) = u(k+1) - ypiv(k)*u(k)
- 6    continue
+end do
 !-----------------------------------------------------------------------
 !     now determine pivotal information to be used in the next call
 !-----------------------------------------------------------------------
@@ -6272,10 +6305,10 @@
       ypiv(np) = xpiv
       if (.not. full) return
 !     shift everything up if full...
-      do 7 k=1,npm1
+      do k=1,npm1
          ypiv(k) = ypiv(k+1)
          permut(k) = permut(k+1)
- 7    continue
+      end do
       return
 !-----end-of-implu
       end
@@ -6298,9 +6331,9 @@
  10   if (j .le. 0) j=lbp
       x = u(ju) /usav(j)
       if (x .eq. zero) goto 115
-      do 11 k=1,n
+      do k=1,n
          y(k) = y(k) - x*p(k,j)
- 11   continue
+      end do
       flops = flops + 2*n
  115  j = j-1
       ju = ju -1
@@ -6308,9 +6341,9 @@
  12   indp = indp + 1
       if (indp .gt. lbp) indp = 1
       usav(indp) = u(np)
-      do 13 k=1,n
+      do k=1,n
          p(k,indp) = y(k)
- 13   continue
+      end do
  208  return
 !-----------------------------------------------------------------------
 !-------end-of-uppdir---------------------------------------------------
@@ -6615,46 +6648,46 @@
 !     Modified Gram-Schmidt loop
 !
       if (full) then
-         do 40 i = ind+1, m
+         do i = ind+1, m
             fct = ddot(n,vec(1,ind),1,vec(1,i),1)
             hh(i) = fct
-            do 20 k = 1, n
+            do k = 1, n
                vec(k,ind) = vec(k,ind) - fct * vec(k,i)
- 20         continue
+            end do
             ops = ops + 4 * n + 2
             if (fct*fct.gt.thr) then
                fct = ddot(n,vec(1,ind),1,vec(1,i),1)
                hh(i) = hh(i) + fct
-               do 30 k = 1, n
+               do k = 1, n
                   vec(k,ind) = vec(k,ind) - fct * vec(k,i)
- 30            continue
+               end do
                ops = ops + 4*n + 1
             endif
             nrm0 = nrm0 - hh(i) * hh(i)
             if (nrm0.lt.zero) nrm0 = zero
             thr = nrm0 * reorth
- 40      continue
+         end do
       endif
 !
-      do 70 i = 1, ind-1
+      do i = 1, ind-1
          fct = ddot(n,vec(1,ind),1,vec(1,i),1)
          hh(i) = fct
-         do 50 k = 1, n
+         do k = 1, n
             vec(k,ind) = vec(k,ind) - fct * vec(k,i)
- 50      continue
+         end do
          ops = ops + 4 * n + 2
          if (fct*fct.gt.thr) then
             fct = ddot(n,vec(1,ind),1,vec(1,i),1)
             hh(i) = hh(i) + fct
-            do 60 k = 1, n
+            do k = 1, n
                vec(k,ind) = vec(k,ind) - fct * vec(k,i)
- 60         continue
+            end do
             ops = ops + 4*n + 1
          endif
          nrm0 = nrm0 - hh(i) * hh(i)
          if (nrm0.lt.zero) nrm0 = zero
          thr = nrm0 * reorth
- 70   continue
+      end do
 !
 !     test the resulting vector
 !
@@ -6669,9 +6702,9 @@
 !     scale the resulting vector
 !
       fct = one / nrm1
-      do 80 k = 1, n
+      do k = 1, n
          vec(k,ind) = vec(k,ind) * fct
- 80   continue
+      end do
       ops = ops + n + 1
 !
 !     normal return
@@ -6901,9 +6934,9 @@
       kz = nx*ny
       iedge = 1
       node = 1
-      do 100 iz = 1,nz
-         do 90 iy = 1,ny
-            do 80 ix = 1,nx
+      do iz = 1,nz
+         do iy = 1,ny
+            do ix = 1,nx
                ia(node) = iedge
 !
 !     compute the stencil at the current node
@@ -6953,9 +6986,9 @@
 !     the right-hand side
                if (genrhs) rhs(node) = r
                node=node+1
- 80         continue
- 90      continue
- 100  continue
+            end do
+         end do
+      end do
       ia(node)=iedge
 !
 !     Add in the boundary conditions
@@ -7010,9 +7043,9 @@
 !
       if (mode .lt. 0) return
 !
-      do 200 k=1,7
+      do k=1,7
          stencil(k) = zero
- 200  continue
+      end do
 !
       hhalf = h*half
       x = h*dble(kx)
@@ -7178,82 +7211,72 @@
       nfree2 = nfree*nfree
       iedge = 1
       node = 1
-      do 100 iz = 1,nz
-         do 90 iy = 1,ny
-            do 80 ix = 1,nx
+      do iz = 1,nz
+         do iy = 1,ny
+            do ix = 1,nx
                ia(node) = iedge
                call bsten(nx,ny,nz,ix,iy,iz,nfree,stencil,h)
 !     west
                if (ix.gt.1) then
                   ja(iedge)=node-kx
-             do 4 k=1,nfree2
+             do k=1,nfree2
            a(k,iedge) = stencil(2,k)
- 4      continue
+         end do
                   iedge=iedge + 1
                end if
 !     south
                if (iy.gt.1) then
                   ja(iedge)=node-ky
-             do 5 k=1,nfree2
+             do k=1,nfree2
            a(k,iedge) = stencil(4,k)
- 5      continue
+         end do
                   iedge=iedge + 1
                end if
 !     front plane
                if (iz.gt.1) then
                   ja(iedge)=node-kz
-             do 6 k=1,nfree2
+             do k=1,nfree2
            a(k,iedge) = stencil(6,k)
- 6      continue
+         end do
                   iedge=iedge + 1
                endif
 !     center node
                ja(iedge) = node
                iau(node) = iedge
-               do 7 k=1,nfree2
+               do k=1,nfree2
                   a(k,iedge) = stencil(1,k)
- 7             continue
+               end do
                iedge = iedge + 1
 !     -- upper part
 !     east
                if (ix.lt.nx) then
                   ja(iedge)=node+kx
-             do 8 k=1,nfree2
+             do k=1,nfree2
            a(k,iedge) = stencil(3,k)
- 8      continue
+         end do
                   iedge=iedge + 1
                end if
 !     north
                if (iy.lt.ny) then
                   ja(iedge)=node+ky
-             do 9 k=1,nfree2
+             do k=1,nfree2
            a(k,iedge) = stencil(5,k)
- 9      continue
+         end do
                   iedge=iedge + 1
                end if
 !     back plane
                if (iz.lt.nz) then
                   ja(iedge)=node+kz
-             do 10 k=1,nfree2
+             do k=1,nfree2
                      a(k,iedge) = stencil(7,k)
- 10        continue
+                  end do
                   iedge=iedge + 1
                end if
 !------next node -------------------------
                node=node+1
- 80         continue
- 90      continue
- 100  continue
-!
-!     -- new version of BSR -- renumbering removed.
-!     change numbering of nodes so that each ja(k) will contain the
-!     actual column number in the original matrix of entry (1,1) of each
-!     block (k).
-!      do 101 k=1,iedge-1
-!         ja(k) = (ja(k)-1)*nfree+1
-! 101  continue
-!
-!      n = (node-1)*nfree
+            end do
+         end do
+      end do
       n = node-1
       ia(node)=iedge
       return
@@ -7299,12 +7322,12 @@
       endif
 !
       nfree2 = nfree*nfree
-      do 200 k=1, nfree2
+      do k=1, nfree2
          cntr(k) = zero
-         do 199 i=1,7
+         do i=1,7
             stencil(i,k) = zero
- 199     continue
- 200  continue
+         end do
+      end do
 !------------
       hhalf = h*half
       h2 = h*h
@@ -7314,72 +7337,73 @@
 ! differentiation wrt x:
       xh = x+hhalf
       call afunbl(nfree,xh,y,z,coeff)
-      do 1 k=1, nfree2
-      stencil(3,k) = stencil(3,k) + coeff(k)
-      cntr(k) = cntr(k) + coeff(k)
- 1    continue
+      do k=1, nfree2
+         stencil(3,k) = stencil(3,k) + coeff(k)
+         cntr(k) = cntr(k) + coeff(k)
+      end do
+
 !
       xh = x-hhalf
       call afunbl(nfree,xh,y,z,coeff)
-      do 2 k=1, nfree2
+      do k=1, nfree2
          stencil(2,k) = stencil(2,k) + coeff(k)
          cntr(k) = cntr(k) + coeff(k)
- 2    continue
+      end do
 !
       call dfunbl(nfree,x,y,z,coeff)
-      do 3 k=1, nfree2
+      do k=1, nfree2
          stencil(3,k) = stencil(3,k) + coeff(k)*hhalf
          stencil(2,k) = stencil(2,k) - coeff(k)*hhalf
- 3    continue
+      end do
       if (ny .le. 1) goto 99
 !
 ! differentiation wrt y:
 !
       call bfunbl(nfree,x,y+hhalf,z,coeff)
-      do 4 k=1,nfree2
+      do k=1,nfree2
          stencil(5,k) = stencil(5,k) + coeff(k)
          cntr(k) = cntr(k) + coeff(k)
- 4    continue
+      end do
 !
       call bfunbl(nfree,x,y-hhalf,z,coeff)
-      do 5 k=1, nfree2
+      do k=1, nfree2
          stencil(4,k) = stencil(4,k) + coeff(k)
          cntr(k) = cntr(k) + coeff(k)
- 5    continue
+      end do
 !
       call efunbl(nfree,x,y,z,coeff)
-      do 6 k=1, nfree2
+      do k=1, nfree2
          stencil(5,k) = stencil(5,k) + coeff(k)*hhalf
          stencil(4,k) = stencil(4,k) - coeff(k)*hhalf
- 6    continue
+      end do
       if (nz .le. 1) goto 99
 !
 ! differentiation wrt z:
 !
       call cfunbl(nfree,x,y,z+hhalf,coeff)
-      do 7 k=1, nfree2
+      do k=1, nfree2
          stencil(7,k) = stencil(7,k) + coeff(k)
          cntr(k) = cntr(k) + coeff(k)
- 7    continue
+      end do
 !
       call cfunbl(nfree,x,y,z-hhalf,coeff)
-      do 8 k=1, nfree2
+      do k=1, nfree2
          stencil(6,k) = stencil(6,k) + coeff(k)
          cntr(k) = cntr(k) + coeff(k)
- 8    continue
+      end do
 !
       call ffunbl(nfree,x,y,z,coeff)
-      do 9 k=1, nfree2
+      do k=1, nfree2
          stencil(7,k) = stencil(7,k) + coeff(k)*hhalf
          stencil(6,k) = stencil(6,k) - coeff(k)*hhalf
- 9    continue
+      end do
 !
 ! discretization of  product by g:
 !
  99   call gfunbl(nfree,x,y,z,coeff)
-      do 10 k=1, nfree2
+      do k=1, nfree2
          stencil(1,k) = h2*coeff(k) - cntr(k)
- 10   continue
+end do
 !
       return
 !------------end of bsten-----------------------------------------------
@@ -7430,8 +7454,8 @@
 !
       if (alpha(1) .eq. zero) then
          lx = 2
-         do 10 k = 1, nz
-            do 11 j = 1, ny
+         do k = 1, nz
+            do j = 1, ny
                node = (k-1)*kz + (j-1)*ky + 1
                nbnode = node + kx
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7439,16 +7463,16 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 11         continue
- 10      continue
+            end do
+      end do
       endif
 !
 !     right (east) side
 !
       if (alpha(2) .eq. zero) then
          ux = nx - 1
-         do 20 k = 1, nz
-            do 21 j = 1, ny
+         do k = 1, nz
+            do j = 1, ny
                node = (k-1)*kz + (j-1)*ky + nx
                nbnode = node - kx
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7456,8 +7480,8 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 21         continue
- 20      continue
+            end do
+      end do
       endif
 !
 !     if it's only 1-D, skip the following part
@@ -7468,8 +7492,8 @@
 !
       if (alpha(3) .eq. zero) then
          ly = 2
-         do 30 k = 1, nz
-            do 31 i = lx, ux
+         do k = 1, nz
+            do i = lx, ux
                node = (k-1)*kz + i
                nbnode = node + ky
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7477,16 +7501,16 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 31         continue
- 30      continue
+            end do
+         end do
       endif
 !
 !     top (north) side
 !
       if (alpha(4) .eq. zero) then
          uy = ny - 1
-         do 40 k = 1, nz
-            do 41 i = lx, ux
+         do k = 1, nz
+            do i = lx, ux
                node = (k-1)*kz + i + (ny-1)*ky
                nbnode = node - ky
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7494,8 +7518,8 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 41         continue
- 40      continue
+            end do
+         end do
       endif
 !
 !     if only 2-D skip the following section on z
@@ -7506,8 +7530,8 @@
 !
       if (alpha(5) .eq. zero) then
          lz = 2
-         do 50 j = ly, uy
-            do 51 i = lx,  ux
+         do j = ly, uy
+            do i = lx,  ux
                node = (j-1)*ky + i
                nbnode = node + kz
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7515,16 +7539,16 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 51         continue
- 50      continue
+            end do
+         end do
       endif
 !
 !     rear surface
 !
       if (alpha(6) .eq. zero) then
          uz = nz - 1
-         do 60 j = ly, uy
-            do 61 i = lx, ux
+         do j = ly, uy
+            do i = lx, ux
                node = (nz-1)*kz + (j-1)*ky + i
                nbnode = node - kz
                lk = lctcsr(nbnode, node, ja, ia)
@@ -7532,8 +7556,8 @@
                val = rhs(node)/a(ld)
 !     modify the rhs
                rhs(nbnode) = rhs(nbnode) - a(lk)*val
- 61         continue
- 60      continue
+            end do
+         end do
       endif
 !
 !     now the second part ----------------------------------------------
@@ -7546,9 +7570,9 @@
       kz = (uy - ly + 1) * ky
       node = 1
       iedge = 1
-      do 80 k = lz, uz
-         do 81 j = ly, uy
-            do 82 i = lx, ux
+      do k = lz, uz
+         do j = ly, uy
+            do i = lx, ux
 !
 !     the corresponding old node number
                nbnode = ((k-1)*ny + j-1)*nx + i
@@ -7631,9 +7655,9 @@
 !------next node -------------------------
                node=node+1
 !
- 82         continue
- 81      continue
- 80   continue
+            end do
+         end do
+      end do
 !
       ia(node) = iedge
 !
@@ -7737,9 +7761,9 @@
 !
       x = zero
       side = 'x1'
-      do 20 k = 1, nz
+      do k = 1, nz
          z = (k-1)*h
-         do 21 j = 1, ny
+         do j = 1, ny
             y = (j-1)*h
             node = 1+(j-1)*ky+(k-1)*kz
 !
@@ -7764,8 +7788,8 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 21      continue
- 20   continue
+         end do
+end do
 !
 !     the right (east) side boudary, similarly, the contirbution from
 !     the terms containing the derivatives of x were assumed to be
@@ -7792,9 +7816,9 @@
 !
       x = one
       side = 'x2'
-      do 22 k = 1, nz
+      do k = 1, nz
          z = (k-1)*h
-         do 23 j = 1, ny
+         do j = 1, ny
             y = (j-1)*h
             node = (k-1)*kz + j*ky
 !
@@ -7813,8 +7837,8 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 23      continue
- 22   continue
+         end do
+      end do
 !
 !     If only one dimension, return now
 !
@@ -7841,9 +7865,9 @@
       end if
       y = zero
       side = 'y1'
-      do 24 k = 1, nz
+      do k = 1, nz
          z = (k-1)*h
-         do 25 i = lx, ux
+         do i = lx, ux
             x = (i-1)*h
             node = i + (k-1)*kz
 !
@@ -7862,16 +7886,16 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 25      continue
- 24   continue
+         end do
+      end do
 !
 !     The top (north) side, similar to the right side
 !
       y = (ny-1) * h
       side = 'y2'
-      do 26 k = 1, nz
+      do k = 1, nz
          z = (k-1)*h
-         do 27 i = lx, ux
+         do i = lx, ux
             x = (i-1)*h
             node = (k-1)*kz+(ny-1)*ky + i
 !
@@ -7890,8 +7914,8 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 27      continue
- 26   continue
+         end do
+      end do
 !
 !     If only has two dimesion to work on, return now
 !
@@ -7915,9 +7939,9 @@
 !
       z = zero
       side = 'z1'
-      do 28 j = ly, uy
+      do j = ly, uy
          y = (j-1)*h
-         do 29 i = lx, ux
+         do i = lx, ux
             x = (i-1)*h
             node = i + (j-1)*ky
 !
@@ -7936,16 +7960,16 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 29      continue
- 28   continue
+         end do
+      end do
 !
 !     Similiarly for the top side of the boundary suface
 !
       z = (nz - 1) * h
       side = 'z2'
-      do 30 j = ly, uy
+      do j = ly, uy
          y = (j-1)*h
-         do 31 i = lx, ux
+         do i = lx, ux
             x = (i-1)*h
             node = (nz-1)*kz + (j-1)*ky + i
 !
@@ -7964,8 +7988,8 @@
                a(iau(node)) = a(iau(node)) - coeff + ctr
                a(nbr) = two*coeff
             end if
- 31      continue
- 30   continue
+         end do
+      end do
 !
 !     all set
 !
@@ -7981,9 +8005,9 @@
 !     clear the row i to all zero, but still keep the structure of the
 !     CSR matrix
 !-----------------------------------------------------------------------
-      do 10 k = ia(i), ia(i+1)-1
+      do k = ia(i), ia(i+1)-1
          a(k) = 0.0D0
- 10   continue
+end do
 !
       return
 !-----end of clrow------------------------------------------------------
@@ -8017,80 +8041,80 @@
       subroutine afunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
+         end do
          coeff((j-1)*nfree+j) = -1.0d0
- 2    continue
+      end do
       return
       end
 
       subroutine bfunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
+         end do
          coeff((j-1)*nfree+j) = -1.0d0
- 2    continue
+      end do
       return
       end
 
       subroutine cfunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
+         end do
          coeff((j-1)*nfree+j) = -1.0d0
- 2    continue
+      end do
       return
       end
 
       subroutine dfunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
- 2    continue
+         end do
+      end do
       return
       end
 
       subroutine efunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
- 2    continue
+         end do
+      end do
       return
       end
 
       subroutine ffunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
- 2    continue
+         end do
+      end do
       return
       end
 
       subroutine gfunbl (nfree,x,y,z,coeff)
       integer :: nfree
       double precision ::  x, y, z, coeff(225)
-      do 2 j=1, nfree
-         do 1 i=1, nfree
+      do j=1, nfree
+         do i=1, nfree
             coeff((j-1)*nfree+i) = 0.0d0
- 1       continue
- 2    continue
+         end do
+      end do
       return
       end
 
@@ -8321,20 +8345,20 @@
 
 ! forward solve (with U^T)
 !
-        do 20 i = 1, n
+        do i = 1, n
            x(i) = y(i) * alu(i)
-           do 30 k=ju(i),jlu(i+1)-1
+           do k=ju(i),jlu(i+1)-1
               x(jlu(k)) = x(jlu(k)) - alu(k)* x(i)
- 30        continue
- 20     continue
+            end do
+end do
 !
 !       backward solve (with L^T)
 !
-       do 40 i = n, 1, -1
-          do 50 k=jlu(i),ju(i)-1
+       do i = n, 1, -1
+          do k=jlu(i),ju(i)-1
                x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
- 50        continue
- 40    continue
+            end do
+         end do
 !
    return
 !----------------end of lutsol -----------------------------------------

@@ -62,8 +62,8 @@
       N2    = NB(2)
       IN    = MIN(1,N2-N1)
       JN    = MIN(1,M2-M1)
-      DO 10 I = M1,M2
-         DO 10 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             X0 = Xch(I,J)
             Y0 = Ych(I,J)
             IF (LANDORSPLINE .EQ. 1) THEN
@@ -79,6 +79,7 @@
                                  MC,     NC,      I,      J,           &
                                NUMP,      1,     IN,     JN)
             ENDIF
-    10 CONTINUE
+         end do
+      end do
       RETURN
        END subroutine modgr4

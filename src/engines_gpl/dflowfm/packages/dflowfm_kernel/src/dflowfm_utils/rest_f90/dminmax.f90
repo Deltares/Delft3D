@@ -50,13 +50,13 @@
 
       XMIN =  10D20
       XMAX = -10D20
-      DO 10 I = 1,MXLAN
+      do I = 1,MXLAN
          XX   = X(I)
          IF (XX .NE. dmiss) THEN
             XMIN = MIN(XMIN,XX)
             XMAX = MAX(XMAX,XX)
          ENDIF
-   10 CONTINUE
+      end do
       IF (XMIN .EQ. 10D20) XMIN = 0
       IF (XMAX .EQ.-10D20) XMAX = 0
       RETURN

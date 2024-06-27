@@ -43,13 +43,14 @@
       double precision, dimension(MC) :: dline
       CHARACTER TEX*16
 
-      DO 10 J = NC,1,-1
+      do J = NC,1,-1
          READ(MINP,*,ERR=101,END=100) (D(I,J),I = 1,MC)
-   10 CONTINUE
-      DO 20 I = 1,MC
-         DO 20 J = 1,NC
+      end do
+      do i = 1,MC
+         do j = 1,NC
             IF (D(I,J) .EQ. RMIS) D(I,J) = dmiss
-   20 CONTINUE
+         end do
+      end do
       call doclose (MINP)
       RETURN
 

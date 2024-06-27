@@ -37,11 +37,11 @@
       double precision :: AF
 
       CALL READYY('Writing Depth File ',0d0)
-      DO 10 N = N1, NC
+      do N = N1, NC
          AF = dble(N) / dble(NC)
          CALL READYY('Writing Dept File',AF)
          WRITE(MMDD,'(12(1PE13.5))') (ZC(M,N),M = M1,MC)
-   10 CONTINUE
+      end do
       CALL READYY('writing Dept File',-1d0)
       CALL DOCLOSE (MMDD)
       RETURN

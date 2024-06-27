@@ -58,12 +58,12 @@
          RETURN
       ENDIF
 
-      DO 10 I = 1,numobs
+      do I = 1,numobs
             CALL PINPOK(xobs(I), yobs(I), Npl, Xpl, Ypl, INHUL, jins, dmiss)
             IF (INHUL .EQ. 1) then
                 call deleteObservation(I)
             end if
-   10 CONTINUE
+    end do
     call purgeObservations()
 
       RETURN

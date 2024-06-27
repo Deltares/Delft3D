@@ -42,9 +42,9 @@
       integer :: narrin
       double precision :: q
       DIMENSION NARRIN(N),INDX(N)
-      DO 11 J=1,N
+      do J=1,N
         INDX(J)=J
-11    CONTINUE
+end do
       L=N/2+1
       IR=N
 10    CONTINUE

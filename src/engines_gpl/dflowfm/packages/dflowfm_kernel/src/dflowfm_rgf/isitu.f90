@@ -57,19 +57,20 @@
     5 CONTINUE
       ijc = 0 ; ijyes = 0
 
-      DO 10 I = 1,MC-1
-         DO 10 J = 1,NC-1
+      do I = 1,MC-1
+         do J = 1,NC-1
             X1 = Xc(I,J)
             X2 = Xc(I+1,J)
             X3 = Xc(I+1,J+1)
             X4 = Xc(I,J+1)
             IF (X1 .NE. dXYMIS .AND. X2 .NE. dXYMIS .AND.   &
                 X3 .NE. dXYMIS .AND. X4 .NE. dXYMIS ) IJYES(I,J) = 1
-   10 CONTINUE
+         end do
+      end do
 
 
-      DO 11 I = 1,MC
-         DO 11 J = 1,NC
+      DO I = 1,MC
+         DO J = 1,NC
             X1 = Xc(I,J)
             IF (I .NE. 1)  X6 = Xc(I-1,J)
             IF (I .NE. MC) X2 = Xc(I+1,J)
@@ -159,13 +160,12 @@
                   IJC(I,J) =  14
                ENDIF
             ENDIF
-   11 CONTINUE
-
-
-
+         end do
+      end do
+      
       JAUNCONNECTED = 0
-      DO 20 I = 2,MC
-         DO 20 J = 2,NC
+      DO I = 2,MC
+         DO J = 2,NC
             X1 = Xc(I,J)
             IF (X1 .NE. dXYMIS) THEN
 !              ALS ER EEN PUNT IS, MAAR GEEN VAN DE OMLIGGENDE CELLEN IS
@@ -183,9 +183,11 @@
                   ENDIF
                ENDIF
             ENDIF
-   20 CONTINUE
+         end do
+      end do
+      
       J = 1
-      DO 25 I = 2,MC
+      DO I = 2,MC
          X1 = Xc(I,J)
          IF (X1 .NE. dXYMIS) THEN
             IF (IJYES(I-1,J) .EQ. 0 .AND. IJYES(I,J) .EQ. 0) THEN
@@ -194,9 +196,9 @@
                Yc(I,J) = dXYMIS
             ENDIF
          ENDIF
-   25 CONTINUE
+      end do
       I = 1
-      DO 26 J = 2,NC
+      DO J = 2,NC
          X1 = Xc(I,J)
          IF (X1 .NE. dXYMIS) THEN
             IF (IJYES(I,J-1) .EQ. 0 .AND. IJYES(I,J) .EQ. 0) THEN
@@ -205,7 +207,7 @@
                Yc(I,J) = dXYMIS
             ENDIF
          ENDIF
-   26 CONTINUE
+      end do
       J = 1
       I = 1
       IF (IJYES(I,J) .EQ. 0 .AND. Xc(I,J) .NE. dXYMIS) THEN
@@ -216,28 +218,6 @@
       IF (JAUNCONNECTED .EQ. 1) then
          GOTO 5
       endif
-
-!     spline2curvi: do not check on corrupt grids
-!!     CHECK OP CORRUPTE ROOSTERS
-!      JAONTOP = 0
-!      DO 30 I = 1,MC-1
-!         DO 30 J = 1,NC-1
-!            X1 = Xc(I,J)
-!            Y1 = Yc(I,J)
-!            IF (X1 .NE. dXYMIS) THEN
-!               IF (X1.EQ.Xc(I,J+1)  .AND. Y1.EQ.Yc(I,J+1) .OR. &
-!                   X1.EQ.Xc(I+1,J)  .AND. Y1.EQ.Yc(I+1,J) .OR. &
-!                   X1.EQ.Xc(I+1,J+1).AND. Y1.EQ.Yc(I+1,J+1)) THEN
-!                   JAONTOP = 1
-!                   Xc(I,J)  = dXYMIS
-!                   Yc(I,J)  = dXYMIS
-!               ENDIF
-!            ENDIF
-!   30 CONTINUE
-!      IF (JAONTOP .EQ. 1) THEN
-!         ! CALL QNERROR('IDENTICAL NEIGHBOURPOINT DELETED,', 'CHECK GRID',' ')
-!         GOTO 5
-!      ENDIF
 
       RETURN
       END SUBROUTINE ISITU

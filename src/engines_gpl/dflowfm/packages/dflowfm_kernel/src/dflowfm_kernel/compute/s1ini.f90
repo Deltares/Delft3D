@@ -41,7 +41,7 @@
  use m_mass_balance_areas
  use m_partitioninfo
  use m_lateral, only : numlatsg, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
-                       apply_transport
+                       apply_transport_is_used
  implicit none
 
  integer          :: L, k1, k2, k, n, LL, kt, idim, imba
@@ -50,7 +50,9 @@
  logical :: isGhost
  integer :: nlayer, num_layers
 
- bb = 0d0 ; ccr = 0d0 ; dd = 0d0
+ bb = 0d0
+ ccr = 0d0
+ dd = 0d0
 
  if (jagrw > 0 .or. numsrc > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
     jaqin = 1
@@ -66,7 +68,15 @@
 
  if (jaqin > 0) then                                         ! sources and sinks through meteo
 
-    qin = 0d0 ; qinrain = 0d0; qinrainground = 0d0; qouteva = 0d0; qoutevaicept = 0d0; qinlat(1:2) = 0d0 ; qoutlat(1:2) = 0d0; qinext(1:2) = 0d0 ; qoutext(1:2) = 0d0
+    qin = 0d0
+    qinrain = 0d0
+    qinrainground = 0d0
+    qouteva = 0d0
+    qoutevaicept = 0d0
+    qinlat(1:2) = 0d0
+    qoutlat(1:2) = 0d0
+    qinext(1:2) = 0d0
+    qoutext(1:2) = 0d0
     if (jarain > 0) then
        if (rainuni > 0d0) then
           rain     = rainuni*24d0                             ! mm/hr  => mm/day
@@ -162,13 +172,13 @@
     end if
 
     if (numlatsg > 0) then
-
-       ! First accumulate all lateral discharges per grid cell
        num_layers = max(1,kmx)
-       QQLat(1:num_layers,1:ndx) = 0d0
-       do n = 1,numlatsg
-          if (apply_transport(n) == 0) then ! When apply_transport is positive, qqlat has been 
-                                            ! computed in flow_run_sometimesteps already
+
+       ! if apply_transport_is_used: qqlat has been computed in flow_run_sometimesteps already
+       if (.not. apply_transport_is_used) then 
+          ! First accumulate all lateral discharges per grid cell
+          QQLat(1:num_layers,1:ndx) = 0d0
+          do n = 1,numlatsg
              do k1=n1latsg(n),n2latsg(n)
                 k = nnlat(k1)
                 if (k > 0) then
@@ -177,11 +187,8 @@
                    end do
                 end if
              end do
-          end if
-       end do
- 
-
-
+          end do
+       end if 
        ! Now, handle the total lateral discharge for each grid cell
        do k = 1,ndxi
           if (k <= ndx2d) then
@@ -251,7 +258,8 @@
        ! qin = qin - qinship
     endif
 
-    qincel = 0d0 ; qoutcel = 0d0
+    qincel = 0d0
+    qoutcel = 0d0
 
     do k = 1,ndxi
        if (qin(k) > 0d0) then
@@ -270,7 +278,8 @@
              if (ds  < hsk) then                             ! er is genoeg
                 s1(k) = s0(k) - ds
              else                                            ! leeg
-                s1(k) = bl(k) ; ds = hsk
+                s1(k) = bl(k)
+                ds = hsk
              endif
              qin(k) = -ds*aloc/dts
 
@@ -279,7 +288,8 @@
              qin(k) = dd(k)
 
           else                                               ! er is te weinig
-             dd(k)  = 0 ; qin(k) = 0                         ! => wachten tot kfs=0 en expliciet scheppen
+             dd(k)  = 0
+             qin(k) = 0                                      ! => wachten tot kfs=0 en expliciet scheppen
           endif
        else
           dd(k) = 0
@@ -298,7 +308,8 @@
        if (hu(L) > 0) then
            tetau       = teta(L)*au(L)
            aufu        = tetau*fu(L)
-           k1 = ln(1,L); k2 = ln(2,L)
+           k1 = ln(1,L)
+           k2 = ln(2,L)
            bb(k1)      = bb(k1)      + aufu
            bb(k2)      = bb(k2)      + aufu
            ccr(Lv2(L)) = ccr(Lv2(L)) - aufu

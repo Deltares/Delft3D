@@ -52,25 +52,26 @@
       MP = MP + IS
       NP = NP + JS
 
-      DO 10 J = NC,1+JS,-1
-         DO 10 I = MC,1+IS,-1
+      do J = NC,1+JS,-1
+         do I = MC,1+IS,-1
             Xc(I,J) = Xc(I-IS,J-JS)
             Yc(I,J) = Yc(I-IS,J-JS)
             Zc(I,J) = Zc(I-IS,J-JS)
-    10 CONTINUE
+         end do
+      end do
       IF (IS .EQ. 1) THEN
-         DO 20 J = 1,NC
+         DO J = 1,NC
             Xc(1,J) = XYMIS
             Yc(1,J) = XYMIS
             Zc(1,J) = XYMIS
-    20   CONTINUE
+         end do
       ENDIF
       IF (JS .EQ. 1) THEN
-         DO 30 I = 1,MC
+         DO I = 1,MC
             Xc(I,1) = XYMIS
             Yc(I,1) = XYMIS
             Zc(I,1) = XYMIS
-    30   CONTINUE
+         end do
       ENDIF
       RETURN
       END subroutine shifxy

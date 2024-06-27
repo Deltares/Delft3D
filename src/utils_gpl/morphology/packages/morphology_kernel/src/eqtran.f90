@@ -12,8 +12,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
                 & scour     ,ubot_from_com        ,camax     ,eps       , &
                 & iform     ,npar      ,par       ,numintpar ,numrealpar, &
                 & numstrpar ,dllfunc   ,dllhandle ,intpar    ,realpar   , &
-                & strpar    , &
-!output:
+                & strpar    , & !output:
                 & aks       ,caks      ,taurat    ,seddif    ,rsedeq    , &
                 & kmaxsd    ,conc2d    ,sbcu      ,sbcv      ,sbwu      , &
                 & sbwv      ,sswu      ,sswv      ,dss       ,caks_ss3d , &

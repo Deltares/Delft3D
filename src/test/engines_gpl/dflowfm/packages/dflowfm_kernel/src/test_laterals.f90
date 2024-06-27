@@ -22,7 +22,7 @@
 !!  rights reserved.
 module test_lateral
    use ftnunit
-   use stdlib_kinds, only: dp
+   use precision_basics, only: dp
    use dfm_error, only: DFM_NOERR
    use m_alloc, only: aerr
    use m_lateral

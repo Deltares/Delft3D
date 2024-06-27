@@ -88,8 +88,8 @@
       IF (NLOC .EQ. 1) THEN
          CALL TOLOCL(    DX0,    DY0,      X,      Y,  mmax, nmax, MP,     NP,      0        )
       ENDIF
-      DO 10 I = M1,M2
-         DO 10 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             XN = X(I,J)
             IF (XN .NE. XYMIS) THEN
                YN = Y(I,J)
@@ -119,6 +119,7 @@
                   ENDIF
                ENDIF
             ENDIF
-    10 CONTINUE
+         end do
+      end do
       RETURN
       END subroutine modfld

@@ -78,7 +78,7 @@ subroutine dnlfk (m,n,cp)
    nex = 20
    fden = 2.d0
    if(nmms2 .lt. 1) go to 20
-   do 18 i=1,nmms2
+   do i=1,nmms2
       t1 = fnum*t1/fden
       if(t1 .gt. sc20) then
          t1 = t1/sc40
@@ -86,15 +86,15 @@ subroutine dnlfk (m,n,cp)
       end if
       fnum = fnum+2.
       fden = fden+2.
-18 continue
+end do
 20 t1 = t1/2.d0**(n-1-nex)
    if(mod(ma/2,2) .ne. 0) t1 = -t1
    t2 = 1.
    if(ma .eq. 0) go to 26
-   do 25 i=1,ma
+   do i=1,ma
       t2 = fnmh*t2/(fnmh+pm1)
       fnmh = fnmh+2.
-25 continue
+end do
 26 cp2 = t1*dsqrt((n+.5d0)*t2)
    fnnp1 = n*(n+1)
    fnmsq = fnnp1-2.d0*ma*ma
@@ -133,13 +133,13 @@ subroutine dnlft (m,n,theta,cp,pb)
    if(n .eq. 0) return
    cth = cdt
    sth = sdt
-   do 170 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k+1)*dcos(2*k*theta)
       pb = pb+cp(k+1)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-170 continue
+end do
    return
 !
 !     n even, m odd
@@ -148,13 +148,13 @@ subroutine dnlft (m,n,theta,cp,pb)
    pb = 0.
    cth = cdt
    sth = sdt
-   do 180 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dsin(2*k*theta)
       pb = pb+cp(k)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-180 continue
+end do
    return
 2  if(mmod)13,13,14
 !
@@ -164,13 +164,13 @@ subroutine dnlft (m,n,theta,cp,pb)
    pb = 0.
    cth = dcos(theta)
    sth = dsin(theta)
-   do 190 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dcos((2*k-1)*theta)
       pb = pb+cp(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-190 continue
+end do
    return
 !
 !     n odd, m odd
@@ -179,13 +179,13 @@ subroutine dnlft (m,n,theta,cp,pb)
    pb = 0.
    cth = dcos(theta)
    sth = dsin(theta)
-   do 200 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dsin((2*k-1)*theta)
       pb = pb+cp(k)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-200 continue
+end do
    return
 end
 subroutine dnlftd (m,n,theta,cp,pb)
@@ -208,13 +208,13 @@ subroutine dnlftd (m,n,theta,cp,pb)
    if(n .eq. 0) return
    cth = cdt
    sth = sdt
-   do 170 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k+1)*dcos(2*k*theta)
       pb = pb-2.d0*k*cp(k+1)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-170 continue
+end do
    return
 !
 !     n even, m odd
@@ -223,13 +223,13 @@ subroutine dnlftd (m,n,theta,cp,pb)
    pb = 0.
    cth = cdt
    sth = sdt
-   do 180 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dsin(2*k*theta)
       pb = pb+2.d0*k*cp(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-180 continue
+end do
    return
 2  if(mmod)13,13,14
 !
@@ -239,13 +239,13 @@ subroutine dnlftd (m,n,theta,cp,pb)
    pb = 0.
    cth = dcos(theta)
    sth = dsin(theta)
-   do 190 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dcos((2*k-1)*theta)
       pb = pb-(2.d0*k-1)*cp(k)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-190 continue
+end do
    return
 !
 !     n odd, m odd
@@ -254,13 +254,13 @@ subroutine dnlftd (m,n,theta,cp,pb)
    pb = 0.
    cth = dcos(theta)
    sth = dsin(theta)
-   do 200 k=1,kdo
+   do k=1,kdo
 !     pb = pb+cp(k)*dsin((2*k-1)*theta)
       pb = pb+(2.d0*k-1)*cp(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-200 continue
+end do
    return
 end
 subroutine legin(mode,l,nlat,m,w,pmn,km)
@@ -313,27 +313,30 @@ subroutine legin1(mode,l,nlat,late,m,p0n,p1n,abel,bbel,cbel,&
 
 
    if (m.gt.1) then
-      do 100 np1=ms,nlat,ninc
+      do np1=ms,nlat,ninc
          n = np1-1
          imn = indx(m,n)
          if (n.ge.l) imn = imndx(m,n)
-         do 100 i=1,late
+         do i=1,late
             pmn(np1,i,km0) = abel(imn)*pmn(n-1,i,km2)&
             &+bbel(imn)*pmn(n-1,i,km0)&
             &-cbel(imn)*pmn(np1,i,km2)
-100   continue
+         end do
+      end do
 
    else if (m.eq.0) then
-      do 101 np1=ms,nlat,ninc
-         do 101 i=1,late
+      do np1=ms,nlat,ninc
+         do i=1,late
             pmn(np1,i,km0) = p0n(np1,i)
-101   continue
+         end do
+      end do
 
    else if (m.eq.1) then
-      do 102 np1=ms,nlat,ninc
-         do 102 i=1,late
+      do np1=ms,nlat,ninc
+         do i=1,late
             pmn(np1,i,km0) = p1n(np1,i)
-102   continue
+         end do
+      end do
    end if
 
 !     permute column indices
@@ -379,38 +382,41 @@ subroutine zfin1 (isym,nlat,m,z,imid,i3,zz,z1,a,b,c)
 25 i1 = 1
    i2 = 2
    i3 = 3
-   do 45 np1=1,nlat
-      do 45 i=1,imid
+   do np1=1,nlat
+      do i=1,imid
          z(i,np1,i3) = zz(i,np1)
-45 continue
+      end do
+   end do
    return
-30 do 50 np1=2,nlat
-      do 50 i=1,imid
+30 do np1=2,nlat
+      do i=1,imid
          z(i,np1,i3) = z1(i,np1)
-50 continue
+      end do
+   end do
    return
 35 ns = ((m-2)*(nlat+nlat-m-1))/2+1
    if(isym .eq. 1) go to 36
-   do 85 i=1,imid
+   do i=1,imid
       z(i,m+1,i3) = a(ns)*z(i,m-1,i1)-c(ns)*z(i,m+1,i1)
-85 continue
+end do
 36 if(m .eq. nlat-1) return
    if(isym .eq. 2) go to 71
    ns = ns+1
-   do 70 i=1,imid
+   do i=1,imid
       z(i,m+2,i3) = a(ns)*z(i,m,i1)-c(ns)*z(i,m+2,i1)
-70 continue
+end do
 71 nstrt = m+3
    if(isym .eq. 1) nstrt = m+4
    if(nstrt .gt. nlat) go to 80
    nstp = 2
    if(isym .eq. 0) nstp = 1
-   do 75 np1=nstrt,nlat,nstp
+   do np1=nstrt,nlat,nstp
       ns = ns+nstp
-      do 75 i=1,imid
+      do i=1,imid
          z(i,np1,i3) = a(ns)*z(i,np1-2,i1)+b(ns)*z(i,np1-2,i3)&
          &-c(ns)*z(i,np1,i1)
-75 continue
+      end do
+   end do
 80 return
 end
 subroutine zfinit (nlat,nlon,wzfin,dwork)
@@ -438,18 +444,19 @@ subroutine zfini1 (nlat,nlon,imid,z,abc,cz,work)
    double precision pi,dt,th,zh,cz(*),work(*)
    pi = 4.*datan(1.d0)
    dt = pi/(nlat-1)
-   do 160 mp1=1,2
+   do mp1=1,2
       m = mp1-1
-      do 160 np1=mp1,nlat
+      do np1=mp1,nlat
          n = np1-1
          call dnzfk(nlat,m,n,cz,work)
-         do 165 i=1,imid
+         do i=1,imid
             th = (i-1)*dt
             call dnzft(nlat,m,n,th,cz,zh)
             z(i,np1,mp1) = zh
-165      continue
+         end do
          z(1,np1,mp1) = .5*z(1,np1,mp1)
-160 continue
+      end do
+   end do
    call rabcp(nlat,nlon,abc)
    return
 end
@@ -475,64 +482,64 @@ subroutine dnzfk(nlat,m,n,cz,work)
 !     n even, m even
 !
 3  kdo = n/2+1
-   do 5 idx=1,lc
+   do idx=1,lc
       i = idx+idx-2
       sum = work(1)/(1.d0-i*i)
       if(kdo.lt.2) go to 29
-      do 6 kp1=2,kdo
+      do kp1=2,kdo
          k = kp1-1
          t1 = 1.d0-(k+k+i)**2
          t2 = 1.d0-(k+k-i)**2
 8        sum = sum+work(kp1)*(t1+t2)/(t1*t2)
-6     continue
+end do
 29    cz(idx) = sc1*sum
-5  continue
+end do
    return
 !
 !     n even, m odd
 !
 4  kdo = n/2
-   do 9 idx=1,lc
+   do idx=1,lc
       i = idx+idx-2
       sum = 0.
-      do 101 k=1,kdo
+      do k=1,kdo
          t1 = 1.d0-(k+k+i)**2
          t2 = 1.d0-(k+k-i)**2
 12       sum=sum+work(k)*(t1-t2)/(t1*t2)
-101   continue
+end do
       cz(idx) = sc1*sum
-9  continue
+end do
    return
 2  if(mmod)13,13,14
 !
 !     n odd, m even
 !
 13 kdo = (n+1)/2
-   do 15 idx=1,lc
+   do idx=1,lc
       i = idx+idx-1
       sum = 0.
-      do 16 k=1,kdo
+      do k=1,kdo
          t1 = 1.d0-(k+k-1+i)**2
          t2 = 1.d0-(k+k-1-i)**2
 18       sum=sum+work(k)*(t1+t2)/(t1*t2)
-16    continue
+end do
       cz(idx)=sc1*sum
-15 continue
+end do
    return
 !
 !     n odd, m odd
 !
 14 kdo = (n+1)/2
-   do 19 idx=1,lc
+   do idx=1,lc
       i = idx+idx-3
       sum=0.
-      do 20 k=1,kdo
+      do k =1,kdo
          t1 = 1.d0-(k+k-1+i)**2
          t2 = 1.d0-(k+k-1-i)**2
 22       sum=sum+work(k)*(t1-t2)/(t1*t2)
-20    continue
+      end do
       cz(idx)=sc1*sum
-19 continue
+end do
    return
 end
 subroutine dnzft(nlat,m,n,th,cz,zh)
@@ -556,26 +563,26 @@ subroutine dnzft(nlat,m,n,th,cz,zh)
 3  zh = .5*(cz(1)+cz(lc)*dcos(2*lq*th))
    cth = cdt
    sth = sdt
-   do 201 k=2,lq
+   do k=2,lq
 !     zh = zh+cz(k)*dcos(2*(k-1)*th)
       zh = zh+cz(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-201 continue
+end do
    return
 !
 !     nlat odd n even m odd
 !
 4  cth = cdt
    sth = sdt
-   do 202 k=1,ls
+   do k=1,ls
 !     zh = zh+cz(k+1)*dsin(2*k*th)
       zh = zh+cz(k+1)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-202 continue
+end do
    return
 !
 !     nlat odd n odd, m even
@@ -583,26 +590,26 @@ subroutine dnzft(nlat,m,n,th,cz,zh)
 2  if(mmod)5,5,6
 5  cth = dcos(th)
    sth = dsin(th)
-   do 203 k=1,lq
+   do k=1,lq
 !     zh = zh+cz(k)*dcos((2*k-1)*th)
       zh = zh+cz(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-203 continue
+end do
    return
 !
 !     nlat odd n odd m odd
 !
 6  cth = dcos(th)
    sth = dsin(th)
-   do 204 k=1,lq
+   do k=1,lq
 !     zh = zh+cz(k+1)*dsin((2*k-1)*th)
       zh = zh+cz(k+1)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-204 continue
+end do
    return
 20 lc = nlat/2
    lq = lc-1
@@ -614,26 +621,26 @@ subroutine dnzft(nlat,m,n,th,cz,zh)
 40 zh = .5*cz(1)
    cth = cdt
    sth = sdt
-   do 50 k=2,lc
+   do k=2,lc
 !     zh = zh+cz(k)*dcos(2*(k-1)*th)
       zh = zh+cz(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-50 continue
+end do
    return
 !
 !     nlat even n even m odd
 !
 60 cth = cdt
    sth = sdt
-   do 70 k=1,lq
+   do k=1,lq
 !     zh = zh+cz(k+1)*dsin(2*k*th)
       zh = zh+cz(k+1)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-70 continue
+end do
    return
 !
 !     nlat even n odd m even
@@ -642,26 +649,26 @@ subroutine dnzft(nlat,m,n,th,cz,zh)
 90 zh = .5*cz(lc)*dcos((nlat-1)*th)
    cth = dcos(th)
    sth = dsin(th)
-   do 100 k=1,lq
+   do k=1,lq
 !     zh = zh+cz(k)*dcos((2*k-1)*th)
       zh = zh+cz(k)*cth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-100 continue
+end do
    return
 !
 !     nlat even n odd m odd
 !
 110 cth = dcos(th)
    sth = dsin(th)
-   do 120 k=1,lq
+   do k=1,lq
 !     zh = zh+cz(k+1)*dsin((2*k-1)*th)
       zh = zh+cz(k+1)*sth
       chh = cdt*cth-sdt*sth
       sth = sdt*cth+cdt*sth
       cth = chh
-120 continue
+end do
    return
 end
 subroutine alin (isym,nlat,nlon,m,p,i3,walin)
@@ -695,38 +702,41 @@ subroutine alin1 (isym,nlat,m,p,imid,i3,pz,p1,a,b,c)
 25 i1 = 1
    i2 = 2
    i3 = 3
-   do 45 np1=1,nlat
-      do 45 i=1,imid
+   do np1=1,nlat
+      do i=1,imid
          p(i,np1,i3) = pz(i,np1)
-45 continue
+      end do
+   end do
    return
-30 do 50 np1=2,nlat
-      do 50 i=1,imid
+30 do np1=2,nlat
+      do i=1,imid
          p(i,np1,i3) = p1(i,np1)
-50 continue
+      end do
+   end do
    return
 35 ns = ((m-2)*(nlat+nlat-m-1))/2+1
    if(isym .eq. 1) go to 36
-   do 85 i=1,imid
+   do i=1,imid
       p(i,m+1,i3) = a(ns)*p(i,m-1,i1)-c(ns)*p(i,m+1,i1)
-85 continue
+end do
 36 if(m .eq. nlat-1) return
    if(isym .eq. 2) go to 71
    ns = ns+1
-   do 70 i=1,imid
+   do i=1,imid
       p(i,m+2,i3) = a(ns)*p(i,m,i1)-c(ns)*p(i,m+2,i1)
-70 continue
+end do
 71 nstrt = m+3
    if(isym .eq. 1) nstrt = m+4
    if(nstrt .gt. nlat) go to 80
    nstp = 2
    if(isym .eq. 0) nstp = 1
-   do 75 np1=nstrt,nlat,nstp
+   do np1=nstrt,nlat,nstp
       ns = ns+nstp
-      do 75 i=1,imid
+      do i=1,imid
          p(i,np1,i3) = a(ns)*p(i,np1-2,i1)+b(ns)*p(i,np1-2,i3)&
          &-c(ns)*p(i,np1,i1)
-75 continue
+      end do
+   end do
 80 return
 end
 subroutine alinit (nlat,nlon,walin,dwork)
@@ -749,16 +759,18 @@ subroutine alini1 (nlat,nlon,imid,p,abc,cp)
    double precision pi,dt,th,cp,ph
    pi = 4.*datan(1.d0)
    dt = pi/(nlat-1)
-   do 160 mp1=1,2
+   do mp1=1,2
       m = mp1-1
-      do 160 np1=mp1,nlat
+      do np1=mp1,nlat
          n = np1-1
          call dnlfk (m,n,cp)
-         do 160 i=1,imid
+         do i=1,imid
             th = (i-1)*dt
             call dnlft (m,n,th,cp,ph)
             p(i,np1,mp1) = ph
-160 continue
+         end do
+      end do
+   end do
    call rabcp(nlat,nlon,abc)
    return
 end
@@ -785,7 +797,7 @@ subroutine rabcp1(nlat,nlon,a,b,c)
    double precision a,b,c
    dimension a(1),b(1),c(1)
    mmax = min0(nlat,nlon/2+1)
-   do 215 mp1=3,mmax
+   do mp1=3,mmax
       m = mp1-1
       ns = ((m-2)*(nlat+nlat-m-1))/2+1
       fm = float(m)
@@ -793,14 +805,14 @@ subroutine rabcp1(nlat,nlon,a,b,c)
       temp = tm*(tm-1.)
       a(ns) = sqrt((tm+1.)*(tm-2.)/temp)
       c(ns) = sqrt(2./temp)
-      if(m .eq. nlat-1) go to 215
+      if(m .eq. nlat-1) cycle
       ns = ns+1
       temp = tm*(tm+1.)
       a(ns) = sqrt((tm+3.)*(tm-2.)/temp)
       c(ns) = sqrt(6./temp)
       mp3 = m+3
-      if(mp3 .gt. nlat) go to 215
-      do 210 np1=mp3,nlat
+      if(mp3 .gt. nlat) cycle
+      do np1=mp3,nlat
          n = np1-1
          ns = ns+1
          fn = float(n)
@@ -812,8 +824,8 @@ subroutine rabcp1(nlat,nlon,a,b,c)
          a(ns) = sqrt(cn*(fnpm-3.)*(fnpm-2.)/temp)
          b(ns) = sqrt(cn*fnmm*(fnmm-1.)/temp)
          c(ns) = sqrt((fnmm+1.)*(fnmm+2.)/temp)
-210   continue
-215 continue
+end do
+end do
    return
 end
 

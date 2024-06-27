@@ -43,9 +43,9 @@
 
       CALL SPLINXY(X,Y,X2,Y2,N)
 
-      DO 10 I = 1,NT
+      do I = 1,NT
           CALL GETDIS(X,Y,X2,Y2,N,T(I),S(I),H)
-    10 CONTINUE
+      end do
       CALL SPLINE(S,NT,S2)
       RETURN
       END subroutine makes

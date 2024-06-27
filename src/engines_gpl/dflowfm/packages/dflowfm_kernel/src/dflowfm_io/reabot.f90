@@ -68,7 +68,7 @@
 
       ENDIF
 
-      DO 10 M = M1,M2
+      do M = M1,M2
          AF = dble(M) / dble(MC)
          CALL READYY('Reading SIMONA *.bottom File',AF)
 
@@ -77,7 +77,7 @@
 
 
          READ(MMDD,*,END = 999,ERR = 888) (ZC(M,N),N = N1, N2)
-   10 CONTINUE
+      end do
       GOTO 5
 
 

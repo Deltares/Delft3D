@@ -80,9 +80,9 @@
       NUMC(12) =  22
 
       NUMKEYS = 9
-      DO 10 I = 1,NUMKEYS
+      do I = 1,NUMKEYS
          CALL INCONTROLKEY(NUMC(I),NKEY(I))
-   10 CONTINUE
+      end do
       NUMKEYS = 12
 
 !     INS CONFIRM                  CALL INConTRoLkey(21, 142)

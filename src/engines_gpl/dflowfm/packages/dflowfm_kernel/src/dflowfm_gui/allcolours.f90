@@ -57,8 +57,8 @@
       DY   = YU-YL
       DXC  = DX/20
       DYC  = DY/20
-      DO 10 J = 1,16
-         DO 10 I = 1,16
+      do J = 1,16
+         do I = 1,16
             X  = dble(I-1)/15d0
             Y  = dble(J-1)/15d0
             XC = XL + X*DX
@@ -68,6 +68,7 @@
             CALL FBOXnop(XC-DXC,YC-DYC,XC+DXC,YC+DYC)
             CALL SETCOL(0)
             CALL  BOXnop(XC-DXC,YC-DYC,XC+DXC,YC+DYC)
-   10 CONTINUE
+         end do
+      end do
       RETURN
       END

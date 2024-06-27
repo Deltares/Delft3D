@@ -409,7 +409,7 @@ module m_fourier_analysis
       ! reading file
       !
       ! -->
-   20 continue
+20    continue
       read (lunfou, '(a)',iostat=iostat) line
       if (iostat/=0) then
          write (msgbuf, '(a)') 'Error reading data line from .fou file.'

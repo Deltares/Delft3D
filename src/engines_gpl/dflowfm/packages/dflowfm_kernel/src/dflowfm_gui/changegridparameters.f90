@@ -102,7 +102,7 @@
       NUMFLDACTUAL = 2*NUMPARACTUAL
 
       IR = 0
-      DO 10 I = 1,NUMPARACTUAL
+      do I = 1,NUMPARACTUAL
          IL = IR + 1
          IR = IL + 1
          IX(IL) = 13
@@ -117,8 +117,8 @@
          ELSE
             IT(IR) = 6
          ENDIF
-    10 CONTINUE
-
+      end do
+      
 !     Initialise
       CALL IWinWordWrap('OFF')
       CALL ITEXTCOLOURN(HLPFOR, HLPBCK)
@@ -160,13 +160,13 @@
       CALL IFORMHELP(13,IH,60)
 
       IR = 0
-      DO 20 I = 1,NUMPARACTUAL
+      DO I = 1,NUMPARACTUAL
          IL = IR + 1
          IR = IL + 1
          CALL IFORMPUTSTRING (IL,OPTION(I))
          CALL IFORMPUTHELP   (IR,HELPM(I))
          CALL IFORMATTRIBUTEN(IR,0,0,7)
-    20 CONTINUE
+      end do
 
       CALL IFORMPUTINTEGER(2*1,MFAC)
       CALL IFORMPUTINTEGER(2*2,NFAC)

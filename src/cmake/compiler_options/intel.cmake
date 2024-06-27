@@ -5,7 +5,7 @@ set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads  /MP")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
@@ -36,8 +36,13 @@ if (WIN32)
     set(profiling_flag                        /Qprof-gen:srcpos)
     set(srcrootdir_code_cov                   /Qprof-src-root ${src_root_dir})
 
+    # Store debug info inside objects instead of pdbs when building, pbds are created by linker after.
+    # Since we build with /MP, multiple processes might write into the same PDB otherwise, causing corrupt PDB errors.
+    # CMAKE_Fortran_FLAGS_DEBUG contains /debug:full by default, which creates a PDB before linking, but specifying /Z7 after overrides this behavior.
+    set(debug_information_flag                /Z7)
+
     # Set debug flags:
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
+    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag}")
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
     # to a blocked .exe

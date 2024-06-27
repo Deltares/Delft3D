@@ -42,9 +42,9 @@
       COMMON /NKEYS/ NUMKEYS, NKEY(20), NUMC(20)
       KEY    = InfoInput(57)
       KEYNUM = -999
-      DO 10 I = 1,NUMKEYS
+      do I = 1,NUMKEYS
          IF (KEY .EQ. NKEY(I)) KEYNUM = I
-   10 CONTINUE
+      end do
       IF (KEYNUM .NE. -999) KEY = NUMC(KEYNUM)
       RETURN
       END

@@ -52,8 +52,8 @@
          CALL FRAMES(31)
 !     ENDIF
 
-!
-   20 CONTINUE
+!  
+ 20    continue
       CALL READLOCATOR(XP,YP,KEY)
 !
       IF (KEY .GE. 24 .AND. KEY .LE. 26) THEN

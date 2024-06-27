@@ -39,12 +39,12 @@
       integer :: i, numpi
       MC = 0
       NC = 0
-      DO 10 I = 1,MMAX
+      do I = 1,MMAX
          CALL NUMPold  (      X,      mmax, nmax, I,  NUMPI)
          IF (NUMPI .NE. 0) THEN
             MC = I
             NC = MAX(NC,NUMPI)
          ENDIF
-    10 CONTINUE
+      end do
       RETURN
       END subroutine nums

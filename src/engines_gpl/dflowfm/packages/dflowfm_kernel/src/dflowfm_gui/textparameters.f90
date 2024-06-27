@@ -89,7 +89,7 @@
       HELPM (9) =  'SCREEN Y POSITION, FOR TIME/DATE IN ANIMATE INCREMENTAL     '
 
       IR = 0
-      DO 10 I = 1,NUMPAR
+      do I = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          IX(IL) = 2
@@ -106,7 +106,7 @@
             IS(IR) = 5
             IT(IR) = 6
          ENDIF
-   10 CONTINUE
+end do
 
       CALL SAVEKEYS()
 !     Initialise
@@ -150,13 +150,13 @@
       CALL IFORMHELP(13,IH,60)
 
       IR = 0
-      DO 20 I = 1,NUMPAR
+      do I = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          CALL IFORMPUTSTRING (IL,OPTION(I))
          CALL IFORMPUTHELP   (IR,HELPM(I))
          CALL IFORMATTRIBUTEN(IR,0,0,7)
-   20 CONTINUE
+end do
 
       CALL IFORMPUTSTRING (2*1,TXLIN(1))
       CALL IFORMPUTSTRING (2*2,TXLIN(2))

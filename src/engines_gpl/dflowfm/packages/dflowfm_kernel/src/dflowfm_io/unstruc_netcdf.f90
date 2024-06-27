@@ -3182,10 +3182,11 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     ! We should tr to reduce the 2D-3D branching in this routine. We can do this by using this vector. 
     if (kmx > 0) then
        id1 = (/ id_laydim, id_flowelemdim , id_timedim /)
+       id1_bnd = (/ id_laydim, id_bnddim, id_timedim/)
     else
        id1 = (/ id_flowelemdim , id_timedim /)
+       id1_bnd = (/ id_bnddim, id_timedim/)
     endif
-    id1_bnd = (/ id_bnddim, id_timedim/)
     
     call process_structures_saved_parameters(DEFINE_NCDF_DATA_ID, irstfile)
 

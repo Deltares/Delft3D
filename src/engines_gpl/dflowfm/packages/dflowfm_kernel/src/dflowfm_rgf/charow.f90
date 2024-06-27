@@ -39,10 +39,10 @@
       integer :: j
       double precision :: xh
 
-      DO 10 J = 1,NUMSPL
+      do J = 1,NUMSPL
          XH      = X(I1,J)
          X(I1,J) = X(I2,J)
          X(I2,J) = XH
-    10 CONTINUE
+      end do
       RETURN
       END subroutine charow

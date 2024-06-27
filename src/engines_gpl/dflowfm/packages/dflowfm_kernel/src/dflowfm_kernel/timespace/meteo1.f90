@@ -3651,7 +3651,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !        --- storage of uc, us
    !
-               do 90 i1 = 1, idim1
+               do i1 = 1, idim1
    
                      rlat  = yzeta(i1)
                      rlong = xzeta(i1)
@@ -3709,7 +3709,7 @@ llnk( 1024  )= -0.2780315803D-02
                      rlslat = rlat
                      rlslon = rlong
    
-      90       continue
+end do
    
          end if
    !
@@ -3758,7 +3758,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !     --- computation of the tidal potential at each grid-point:
    !
-            do 190 i1 = 1, idim1
+            do i1 = 1, idim1
    
                   potent = 0d0
                   do nq = 2, 3
@@ -3775,7 +3775,7 @@ llnk( 1024  )= -0.2780315803D-02
                      enddo
                   enddo
                   tidep(i1) = potent
-     190    continue
+end do
    
          ! if (idebug.ge.1 .and. i1dbg.ge.1)    write(6,*) 'tidep=', tidep(i1dbg)
 

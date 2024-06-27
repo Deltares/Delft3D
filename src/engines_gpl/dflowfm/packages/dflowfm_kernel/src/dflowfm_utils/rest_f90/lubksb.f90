@@ -44,27 +44,27 @@
       double precision :: sum
       DIMENSION A(NP,NP),INDX(N),B(N)
       II=0
-      DO 12 I=1,N
+      do I=1,N
         LL=INDX(I)
         SUM=B(LL)
         B(LL)=B(I)
         IF (II.NE.0)THEN
-          DO 11 J=II,I-1
+          do J=II,I-1
             SUM=SUM-A(I,J)*B(J)
-11        CONTINUE
+end do
         ELSE IF (SUM.NE.0d0) THEN
           II=I
         ENDIF
         B(I)=SUM
-12    CONTINUE
-      DO 14 I=N,1,-1
+end do
+      do I=N,1,-1
         SUM=B(I)
         IF(I.LT.N)THEN
-          DO 13 J=I+1,N
+          do J=I+1,N
             SUM=SUM-A(I,J)*B(J)
-13        CONTINUE
+end do
         ENDIF
         B(I)=SUM/A(I,I)
-14    CONTINUE
+end do
       RETURN
       END

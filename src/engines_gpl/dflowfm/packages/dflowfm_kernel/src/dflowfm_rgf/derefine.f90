@@ -71,7 +71,7 @@
 
       IR   = 1
       INOW = 1
-      DO 10 I = 1,MC
+      do I = 1,MC
          IF (INOW .GE. M1 .AND. INOW .LT. M2) THEN
             MFA = MFAA
          ELSE
@@ -80,7 +80,7 @@
          JR   = 1
          JNOW = 1
          IF (INOW .LE. MC) THEN
-            DO 20 J = 1,NC
+            do j = 1,NC
                IF (JNOW .GE. N1 .AND. JNOW .LT. N2) THEN
                   NFA = NFAA
                ELSE
@@ -92,11 +92,11 @@
                   JR   = JR + 1
                   JNOW = JNOW + NFA
                ENDIF
-    20      CONTINUE
+            end do
             IR   = IR + 1
             INOW = INOW + MFA
          ENDIF
-    10 CONTINUE
+end do
 
       CALL PUTARR(XR,Xc,MMAX,NMAX)
       CALL PUTARR(YR,Yc,MMAX,NMAX)

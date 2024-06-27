@@ -55,20 +55,20 @@
             CALL OKAY(0)
          ELSE IF (NUMPI .EQ. 2) THEN
 !           LAATSTE TWEE PUNTEN VAN EEN SPLINE, DUS DELETE DE HELE SPLIN
-            DO 10 I = 1,MMAX
+            do I = 1,MMAX
                X(I) = 0
                Y(I) = 0
                Z(I) = 0
-   10       CONTINUE
+            end do
             NUMPI = 0
          ELSE
 !           EEN WILLEKEURIG ANDER PUNT
             NUMPI = NUMPI - 1
-            DO 20 J = MP,NUMPI
+            do j = MP,NUMPI
                X(J) = X(J+1)
                Y(J) = Y(J+1)
                Z(J) = Z(J+1)
-   20       CONTINUE
+         end do
          ENDIF
       ELSE IF (NPUT .EQ. -1) THEN
 !        ADD PUNT
@@ -76,11 +76,11 @@
             IF (MP .NE. 0) THEN
 !              EEN NIEUW PUNT OP EEN BESTAANDE SPLINE TUSSENVOEGEN
                NUMPI = NUMPI + 1
-               DO 30 J = NUMPI,MP+2,-1
+               do J = NUMPI,MP+2,-1
                   X(J) = X(J-1)
                   Y(J) = Y(J-1)
                   Z(J) = Z(J-1)
-   30          CONTINUE
+end do
                MP    = MP + 1
                X(MP) = XP
                Y(MP) = YP
@@ -138,7 +138,7 @@
 
          K = 0
          ISTART = 0
-         DO 60 I = 1,NUMPI
+         do I = 1,NUMPI
             IF (X(I) .NE. dmiss) THEN
                K      = K + 1
                X(K)   = X(I)
@@ -152,7 +152,7 @@
                Z(K)   = Z(I)
                ISTART = 0
             ENDIF
-   60    CONTINUE
+end do
          NUMPI = K
          ! If numpi points to a dmiss element at tail, decrement it.
          if (k > 0 .and. istart == 0) then
