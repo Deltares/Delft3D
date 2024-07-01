@@ -537,6 +537,8 @@ contains
          real(hp) :: max_search_radius
          real(hp), pointer, dimension(:) :: x_array
          real(hp), pointer, dimension(:) :: y_array
+         real(kind=hp) :: max_search_radius
+         logical :: success
 
          res = .false.
 
