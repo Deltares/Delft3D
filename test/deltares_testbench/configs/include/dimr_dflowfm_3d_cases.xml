@@ -231,6 +231,23 @@
       </file>
      </checks>
     </testCase>
+    <testCase name="e02_f019_c014_erosilt_density_effect_3d" ref="dflowfm_default">
+     <path version="2024-07-01T11:13:24">e02_dflowfm/f019_transport/c014_erosilt_density_effect_3d</path>
+     <maxRunTime>15000.0000000</maxRunTime>
+     <checks>
+      <file name="output/tst_his.nc" type="netCDF">
+        <parameters>
+         <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+         <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+         <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+         <parameter name="vicwws" toleranceAbsolute="0.0001" />
+         <parameter name="sed" toleranceAbsolute="0.0001" />
+         <parameter name="tausx" toleranceAbsolute="0.0001" />
+         <parameter name="tausy" toleranceAbsolute="0.0001" />
+        </parameters>
+      </file>
+     </checks>
+    </testCase>
     <testCase name="e02_f019_c021_thatcherharleman3D" ref="dflowfm_default">
      <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c021_thatcherharleman3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
