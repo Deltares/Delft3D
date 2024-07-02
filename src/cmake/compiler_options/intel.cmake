@@ -2,6 +2,17 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
+add_library(strict_compiler_warnings INTERFACE)
+# Disable warning 5268, allow text longer than 132 characters
+set(windows_extra_warning_flags /warn:errors /warn:all /warn:stderrors /Qdiag-disable:5268)
+set(linux_extra_warning_flags "SHELL:-warn errors" "SHELL:-warn all" "SHELL:-warn stderrors" "SHELL:-diag-disable 5268")
+target_compile_options(strict_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
+
+add_library(no_warnings INTERFACE)
+set(windows_no_warning_flags /warn:none)
+set(linux_no_warning_flags "SHELL:-warn none")
+target_compile_options(no_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_no_warning_flags},${linux_no_warning_flags}>>")
+
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
@@ -92,7 +103,6 @@ endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
 set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
-
 
 # Define the custom flag about code coverage with a default value of OFF
 option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)
