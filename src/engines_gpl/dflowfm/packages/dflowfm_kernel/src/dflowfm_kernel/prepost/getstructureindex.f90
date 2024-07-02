@@ -57,13 +57,12 @@ subroutine getStructureIndex(strtypename, strname, index, is_in_network)
       index = hashsearch(network%sts%hashlist_structure, trim(strname))
       if (index > 0) then
          is_in_network = .true.
+         return
+      else
+         ! Retry on the 2D structures in code below
+         continue
       end if
-      return
-   else
-      ! Retry on the 2D structures in code below
-      continue
-   end if
-
+   end if  
 
    if (trim(strtypename) == 'pumps') then
       do i=1,npumpsg
