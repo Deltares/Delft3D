@@ -281,7 +281,6 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)
 
