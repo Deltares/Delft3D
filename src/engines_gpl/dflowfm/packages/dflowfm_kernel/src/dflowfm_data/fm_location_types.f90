@@ -36,6 +36,7 @@ module fm_location_types
 
    public location_specifier_to_string
 
+   integer, parameter, public :: UNC_LOC_UNKNOWN = 0      !< Data location: unknown or invalid location.
    ! Grid locations:
    integer, parameter, public :: UNC_LOC_CN = 1           !< Data location: corner point.
    integer, parameter, public :: UNC_LOC_S = 2            !< Data location: pressure point.

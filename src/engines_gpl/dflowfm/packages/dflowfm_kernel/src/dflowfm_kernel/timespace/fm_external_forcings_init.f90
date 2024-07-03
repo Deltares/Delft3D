@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 !
 submodule(fm_external_forcings) fm_external_forcings_init
-
+   use precision_basics, only: hp
    implicit none
 
 contains
@@ -516,7 +516,8 @@ contains
 
       end function init_lateral_forcings
 
-      !> reads meteo blocks from new external forcings file and makes required initialisations
+      !> Read the current [Meteo] block from new external forcings file
+      !! and do required initialisation for that quantity.
       function init_meteo_forcings() result(res)
          use timespace_parameters
 
@@ -532,12 +533,26 @@ contains
          character(len=INI_KEY_LEN) :: variable_name
          character(len=INI_VALUE_LEN) :: interpolation_method
          real(kind=hp) :: max_search_radius
+         ! generalized properties+pointers to target element grid:
+         integer :: target_location_type               !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+         integer :: target_num_points                  !< Number of points in target element set.
+         real(hp), dimension(:), pointer :: target_x   !< Pointer to x-coordinates array of target element set.
+         real(hp), dimension(:), pointer :: target_y   !< Pointer to y-coordinates array of target element set.
+         integer, dimension(:), pointer :: target_mask !< Pointer to x-coordinates array of target element set.
+         integer :: ierr
 
          res = .false.
 
          call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
          if (.not. is_successful) then
             write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+            call warn_flush()
+            return
+         end if
+         ierr = get_quantity_target_properties(quantity, target_location_type, target_num_points, target_x, target_y, target_mask)
+         if (ierr /= DFM_NOERR) then
+            write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
+               ']. Line ''quantity = ', trim(quantity), ''' contains an unknown quantity.'
             call warn_flush()
             return
          end if
