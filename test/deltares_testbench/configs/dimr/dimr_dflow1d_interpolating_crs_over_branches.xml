@@ -51,7 +51,7 @@
             <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -84,7 +84,7 @@
     </defaultTestCases>
     <testCases>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c01_264_flow-diversion_RWS_crs_profile" ref="dflow1d_default">
+        <testCase name="e106_f14_c01_264_flow-diversion_RWS_crs_profile" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c01_264_flow-diversion_RWS_crs_profile</path>
             <checks>
                 <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -112,7 +112,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>        
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c04_267_flow-diversion_YZ-table" ref="dflow1d_default">
+        <testCase name="e106_f14_c04_267_flow-diversion_YZ-table" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c04_267_flow-diversion_YZ-table</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -140,7 +140,7 @@
             </checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c05_268_flow-diversion_YZ-table" ref="dflow1d_default">
+        <testCase name="e106_f14_c05_268_flow-diversion_YZ-table" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c05_268_flow-diversion_YZ-table</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -169,7 +169,7 @@
         </testCase>
 	    <!-- ======================================================================== -->
  
-		<!-- <testCase name="e106(dflow1d)_f14(interpolating-crs-over-branches)_c06_274_flow-diversion_YZ-table" ref="dflow1d_default">
+		<!-- <testCase name="e106_f14_c06_274_flow-diversion_YZ-table" ref="dflow1d_default">
             <path>e106_dflow1d/f14_interpolating-crs-over-branches/c06_274_flow-diversion_YZ-table</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>

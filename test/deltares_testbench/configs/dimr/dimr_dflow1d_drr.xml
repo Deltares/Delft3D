@@ -51,7 +51,7 @@
             <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -89,11 +89,6 @@
     <testCases>
         <testCase name="e107_f01_c355" ref="sobek_default">
             <path version="2024-01-12T07:40:00">e107_dflow1d-drr/f01_general/c355</path>
-            <checks>
-                <file name="dimr_screen.log" type="NUMBERTEXT">
-                    <skipline>Dimr</skipline>
-                </file>
-            </checks>
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
         </testCase>

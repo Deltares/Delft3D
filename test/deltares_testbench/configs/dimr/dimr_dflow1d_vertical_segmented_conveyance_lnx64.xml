@@ -95,7 +95,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f09(vertical-segmented-conveyance)_c01_258_YZ-six-roughness_formulae" ref="dflow1d_default">
+		<testCase name="e106_f09_c01_258_YZ-six-roughness_formulae" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f09_vertical-segmented-conveyance/c01_258_YZ-six-roughness_formulae</path>
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
@@ -329,7 +329,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f09(vertical-segmented-conveyance)_c06_YZ_waterlevel-gradient" ref="dflow1d_default">
+		<testCase name="e106_f09_c06_YZ_waterlevel-gradient" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f09_vertical-segmented-conveyance/c06_YZ_waterlevel-gradient</path>
             <checks>
                 <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
