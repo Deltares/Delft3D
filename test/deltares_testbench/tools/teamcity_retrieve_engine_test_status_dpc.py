@@ -33,6 +33,7 @@ global log_file
 global engine_statistics
 TEXT_NOT_IN_XML_MESSAGE = "Text is not in XML format: %s"
 BASE_URL = "https://dpcbuild.deltares.nl/httpAuth/app/rest/projects/id:%s"
+TEST_OCCURRENCES = "./testOccurrences"
 
 
 class SummaryData(object):
@@ -140,21 +141,21 @@ def report_cases(url, given_build_config, username, password, buildname):
             build_nr.append(bnr)
             status_text = ""
 
-            if build.find("./testOccurrences") is not None:
-                if "passed" in build.find("./testOccurrences").attrib:
-                    passed.append(int(build.find("./testOccurrences").attrib["passed"]))
+            if build.find(TEST_OCCURRENCES) is not None:
+                if "passed" in build.find(TEST_OCCURRENCES).attrib:
+                    passed.append(int(build.find(TEST_OCCURRENCES).attrib["passed"]))
                 else:
                     passed.append(0)
-                if "failed" in build.find("./testOccurrences").attrib:
-                    failed.append(int(build.find("./testOccurrences").attrib["failed"]))
+                if "failed" in build.find(TEST_OCCURRENCES).attrib:
+                    failed.append(int(build.find(TEST_OCCURRENCES).attrib["failed"]))
                 else:
                     failed.append(0)
-                if "ignored" in build.find("./testOccurrences").attrib:
-                    ignored.append(int(build.find("./testOccurrences").attrib["ignored"]))
+                if "ignored" in build.find(TEST_OCCURRENCES).attrib:
+                    ignored.append(int(build.find(TEST_OCCURRENCES).attrib["ignored"]))
                 else:
                     ignored.append(0)
-                if "muted" in build.find("./testOccurrences").attrib:
-                    muted.append(int(build.find("./testOccurrences").attrib["muted"]))
+                if "muted" in build.find(TEST_OCCURRENCES).attrib:
+                    muted.append(int(build.find(TEST_OCCURRENCES).attrib["muted"]))
                 else:
                     muted.append(0)
             else:
@@ -179,8 +180,8 @@ def report_cases(url, given_build_config, username, password, buildname):
         i = build_nr.__len__() - 1
         a = 0
         if failed[i] != 0:
-            cnt = int(build.find("./testOccurrences").attrib["count"])
-            href = build.find("./testOccurrences").attrib["href"]
+            cnt = int(build.find(TEST_OCCURRENCES).attrib["count"])
+            href = build.find(TEST_OCCURRENCES).attrib["href"]
             url_1 = "%s%s,count:%d" % (deltares_build, href, cnt)
             test_occs_req = get_request(url_1, username, password)
             if not text_in_xml_message(test_occs_req.text):
