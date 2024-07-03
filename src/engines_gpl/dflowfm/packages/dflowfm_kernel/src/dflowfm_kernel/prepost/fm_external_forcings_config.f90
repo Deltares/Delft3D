@@ -42,6 +42,7 @@ contains
    !! so target_location_type UNC_LOC_U will be returned.
    module function get_quantity_target_properties(quantity, target_location_type, target_num_points, target_x, target_y, target_mask) result(ierr)
       use dfm_error
+      use mass_balance_areas_routines, only: get_mbainputname
       character(len=*), intent(in) :: quantity                   !< Quantity identifier, as given in external forcings input file.
       integer, intent(out) :: target_location_type               !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
       integer, intent(out) :: target_num_points                  !< Number of points in target element set.
