@@ -138,14 +138,16 @@ contains
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
-         ib = itpenz(ibt)
-         if (ib > 0) then
+         ib  = itpenz(ibt)
+         !TODO: the check on the upper bound becomes obsolete, when the old external forcingsfile is removed
+         if (ib > 0 .and. ib <= num_items_in_file) then
             itpenzr(ib) = ibt
          end if
       end do
       do ibt = 1, nbndu
-         ib = itpenu(ibt)
-         if (ib > 0) then
+         ib  = itpenu(ibt)
+         !TODO: the check on the upper bound becomes obsolete, when the old external forcingsfile is removed
+         if (ib > 0 .and. ib <= num_items_in_file) then
             itpenur(ib) = ibt
          end if
       end do
