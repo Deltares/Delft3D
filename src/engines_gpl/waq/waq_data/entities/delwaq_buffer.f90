@@ -27,8 +27,8 @@ module m_waq_data_buffer
     implicit none
 
     type, public :: waq_data_buffer
-        integer(kind = int_wp), dimension(:), allocatable :: ibuf
-        real(kind = real_wp), dimension(:), allocatable :: rbuf
+        integer(kind=int_wp), dimension(:), allocatable :: ibuf
+        real(kind=real_wp), dimension(:), allocatable :: rbuf
         character, dimension(:), allocatable :: chbuf
 
     contains
@@ -62,18 +62,18 @@ contains
     function create_strings_20_array(this, start_index, number_of_strings) result(result_val)
         !< convert the chbuf (character array) property to a new string(len=20) array
         class(waq_data_buffer), intent(in) :: this
-        integer(kind = int_wp), intent(in) :: start_index       !< start index to start creating strings
-        integer(kind = int_wp), intent(in) :: number_of_strings !< number of strings to create
-        character(len = 20) :: result_val(number_of_strings)       !< created string array
+        integer(kind=int_wp), intent(in) :: start_index       !< start index to start creating strings
+        integer(kind=int_wp), intent(in) :: number_of_strings !< number of strings to create
+        character(len=20) :: result_val(number_of_strings)       !< created string array
 
         result_val = convert(this%chbuf(start_index), number_of_strings)
     end function create_strings_20_array
 
     function convert(item_to_convert, number_of_strings) result(result_val)
         !< implicitly converts provided item_to_convert to string array
-        integer(kind = int_wp), intent(in) :: number_of_strings !< number of strings to create
-        character(len = 20) :: item_to_convert(number_of_strings)  !< character array to convert
-        character(len = 20) :: result_val(number_of_strings)       !< created string array
+        integer(kind=int_wp), intent(in) :: number_of_strings !< number of strings to create
+        character(len=20) :: item_to_convert(number_of_strings)  !< character array to convert
+        character(len=20) :: result_val(number_of_strings)       !< created string array
 
         result_val = item_to_convert
 

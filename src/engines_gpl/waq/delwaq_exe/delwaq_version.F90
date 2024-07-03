@@ -27,7 +27,7 @@
 
 module delwaq_exe_version_module
     use waq_static_version_info
-
+    use m_waq_precision
     implicit none
 
     character(*), private, parameter :: component_name = 'DELWAQ'

@@ -31,24 +31,22 @@ module m_delwaq2_main
 contains
     !> MAIN module for DELWAQ2 , dimensioning of the work array's.
     subroutine dlwqmain(action, dlwqd)
-        !DEC$ ATTRIBUTES DLLEXPORT::dlwqmain
-
-        use integration_schemes, only : run_integration_schemes
+        use integration_schemes, only: run_integration_schemes
         use delwaq2_data
-        use m_actions, only : action_initialisation, action_fullcomputation
+        use m_actions, only: action_initialisation, action_fullcomputation
         use m_sysn
         use m_sysi
 
-        integer(kind = int_wp), intent(in) :: action         !< Action to be taken
+        integer(kind=int_wp), intent(in) :: action         !< Action to be taken
         type(delwaq_data) :: dlwqd
 
-        character(len = 20) :: rundat
+        character(len=20) :: rundat
         logical :: init
-        integer(kind = int_wp) :: file_unit
+        integer(kind=int_wp) :: file_unit
 
-        integer(kind = int_wp), save :: itota
-        integer(kind = int_wp), save :: itoti
-        integer(kind = int_wp), save :: itotc
+        integer(kind=int_wp), save :: itota
+        integer(kind=int_wp), save :: itoti
+        integer(kind=int_wp), save :: itotc
 
         init = action == action_initialisation .or. action == action_fullcomputation
 
@@ -70,12 +68,12 @@ contains
         implicit none
 
         ! Arguments
-        integer(kind = int_wp) :: imaxa, imaxi, imaxc
+        integer(kind=int_wp) :: imaxa, imaxi, imaxc
         type(delwaq_data), target :: dlwqd
 
-        integer(kind = int_wp), intent(inout) :: itota
-        integer(kind = int_wp), intent(inout) :: itoti
-        integer(kind = int_wp), intent(inout) :: itotc
+        integer(kind=int_wp), intent(inout) :: itota
+        integer(kind=int_wp), intent(inout) :: itoti
+        integer(kind=int_wp), intent(inout) :: itotc
 
         itota = 0
         itoti = 0
@@ -88,12 +86,12 @@ contains
     subroutine delwaq2_main_finalise(action, file_unit, rundat)
 
         use m_actions
-        use m_date_time_utils_external, only : write_date_time
-        use m_logger_helper, only : get_log_unit_number
+        use m_date_time_utils_external, only: write_date_time
+        use m_logger_helper, only: get_log_unit_number
 
-        integer(kind = int_wp), intent(in) :: action
-        character(len = 20), intent(in) :: rundat
-        integer(kind = int_wp), intent(in) :: file_unit
+        integer(kind=int_wp), intent(in) :: action
+        character(len=20), intent(in) :: rundat
+        integer(kind=int_wp), intent(in) :: file_unit
 
         !     Finalise - only if the full computation was done
         if ((action == action_fullcomputation) .or. (action == action_finalisation)) then

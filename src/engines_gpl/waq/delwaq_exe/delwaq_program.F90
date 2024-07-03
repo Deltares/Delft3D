@@ -38,7 +38,7 @@ program delwaq
 
     implicit none
 
-    character(len = 256), dimension(:), allocatable :: argv
+    character(len=256), dimension(:), allocatable :: argv
     character(:), allocatable :: id_str
     character(len=10) :: log_file_path
 
@@ -55,8 +55,8 @@ program delwaq
 
     if (is_command_arg_specified('--version') .or. &
         is_command_arg_specified('-v')) then
-            call show_command_line_version()
-            stop 0
+        call show_command_line_version()
+        stop 0
     end if
 
     ! initialize logging

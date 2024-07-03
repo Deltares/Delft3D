@@ -22,11 +22,12 @@
 !!  rights reserved.
 
 !> @file
-!! General interface routines to DELWAQ:
+!! General interface routines to DELWAQ for OpenMI:
 !! The routines are accessible from C/C++
 !!<
 
-!> Implementation of the routines that interface to DELWAQ
+!> Implementation of the routines that interface DELWAQ with OpenMI
+!! see https://publicwiki.deltares.nl/display/OPENMI/Home
 module waq_omi_priv
 
     use m_waq_precision

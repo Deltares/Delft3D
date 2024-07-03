@@ -24,10 +24,10 @@ module m_delwaq1
     use m_waq_precision
     use m_delwaq1_write_messages
     use m_delwaq1_startup_screen
-    use m_delwaq1_read_input_data, only : delwaq1_read_input_data
+    use m_delwaq1_read_input_data, only: delwaq1_read_input_data
     use m_delwaq1_init
     use m_delwaq1_close_lunfiles
-    use m_cli_utils, only : is_command_arg_specified, store_command_arguments
+    use m_cli_utils, only: is_command_arg_specified, store_command_arguments
 
     implicit none
 
@@ -36,9 +36,7 @@ contains
     !> Reads the DELWAQ inputfiles and generates
     !! a consistent set of binairy intermediate files.
     function delwaq1(argv) result(success)
-
         use m_delwaq1_allocate_workspace
-        !DEC$ ATTRIBUTES DLLEXPORT::delwaq1
 
         character(len = *), intent(in), dimension(:) :: argv !< arguments as strings
         logical :: success !< if the run was successful

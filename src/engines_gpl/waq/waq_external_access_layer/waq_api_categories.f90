@@ -20,27 +20,17 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_delwaq2
+
+module m_waq_api_categories
     use m_waq_precision
 
     implicit none
 
-contains
+    integer(kind=int_wp), parameter :: category_hydrodynamics = 1  ! Placeholder!
+    integer(kind=int_wp), parameter :: category_boundary = 2
+    integer(kind=int_wp), parameter :: category_wasteload = 3
+    integer(kind=int_wp), parameter :: category_segment = 4
+    integer(kind=int_wp), parameter :: category_monitorpoint = 5
+    integer(kind=int_wp), parameter :: category_procparam = 6
 
-    function delwaq2() result(success)
-        !DEC$ ATTRIBUTES DLLEXPORT::delwaq2
-
-        use m_delwaq2_main
-        use delwaq2_data
-        use m_actions
-
-        logical :: success !< if the run was successful
-        type(delwaq_data) :: dlwqd
-
-        dlwqd%set_timer = .true.
-
-        call dlwqmain(ACTION_FULLCOMPUTATION, dlwqd)
-        success = .true.
-    end function delwaq2
-
-end module m_delwaq2
+end module m_waq_api_categories
