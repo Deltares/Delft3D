@@ -64,6 +64,9 @@ logical                                    , intent(out) :: sbc_total     ! Sedi
 !
 character(len=256) :: error_message
 !
+! Initialize the output argument error_message since it MUST have value ' ' to continue the calculation.
+error_message = ' '
+!
 call core_function() ! Core function call 
 !
 call message2c(error_message, error_message_c)
@@ -187,10 +190,6 @@ runid   = dll_strings( 1)
 !
 !! executable statements -------------------------------------------------------
 !
-! Parameter error_message MUST have value ' ' to continue the calculation
-! Remove the next line to enable this subroutine
-!
-error_message = ' '
 sbc_total     = .true.
 equi_conc     = .false.    
 

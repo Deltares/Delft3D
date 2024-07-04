@@ -52,6 +52,9 @@ logical           , intent(out) :: sbc_total     ! true: bed load magnitude retu
 !
 character(len=256) :: error_message
 !
+! Initialize the output argument error_message since it MUST have value ' ' to continue the calculation.
+error_message = ' '
+!
 call core_function() ! Core function call 
 !
 call message2c(error_message, error_message_c)
@@ -84,7 +87,6 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
-character(len=256) :: error_message
 !
 ! Local variables: parameters
 !
@@ -187,9 +189,6 @@ if (write_count < 100) then
       write(*,*) 'plugin_delftflow_traform.dll : message suppressed'
    endif
 endif
-! The output argument error_message MUST have value ' ' to continue the calculation.
-!
-error_message = ' '
 !
 ! If you want to indicate that this subroutine has encountered some invalid input or
 ! encountered some unexpected situation, you can set the error_message to a non-empty
