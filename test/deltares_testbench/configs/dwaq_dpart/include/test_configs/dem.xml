@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f19_c01_combined_run_EM_WQ" ref="dem_default">
         <path version="2024-05-31T09:00:00">e03_waq/f19_d_emissions/c01_combined_run_EM_WQ</path>
         <maxRunTime>3000.0</maxRunTime>
