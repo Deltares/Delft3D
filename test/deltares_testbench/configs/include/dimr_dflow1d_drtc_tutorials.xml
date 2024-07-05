@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
         <testCase name="e103_f06_c01_simple_control_flow" ref="dflow1d_default">
             <path version="2024-01-12T07:20:00">e103_dflow1d-drtc/f06_tutorials/c01_simple_control_flow</path>

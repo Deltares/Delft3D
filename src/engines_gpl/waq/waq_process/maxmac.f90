@@ -31,7 +31,7 @@ contains
     SUBROUTINE MAXMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -101,7 +101,7 @@ contains
         !
         DO ISEG = 1, NOSEG
             !
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 nMacrophyt = PMSA(IPNT(1))

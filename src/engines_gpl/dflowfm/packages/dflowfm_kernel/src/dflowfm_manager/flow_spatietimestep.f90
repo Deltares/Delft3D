@@ -30,12 +30,12 @@
 ! 
 ! 
 
- subroutine flow_spatietimestep()                 ! do 1 flowstep
+ subroutine flow_spatietimestep()                 ! do flowstep
  use m_flowtimes
  use m_flowgeom,              only: ndx
- use m_flowexternalforcings,  only: nbndz, zbndz
+ use fm_external_forcings_data,  only: nbndz, zbndz
  use m_flowparameters,        only: janudge
- use m_external_forcings
+ use fm_external_forcings
 
  implicit none
  integer :: key, ierr

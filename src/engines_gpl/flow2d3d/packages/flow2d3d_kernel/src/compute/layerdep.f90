@@ -1,4 +1,4 @@
-subroutine layerdep(dep   , thick, kmax, nm    , dp    , wlev, &
+subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
                   & zmodel, zk   , dzu1, kfumin, kfumax, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -54,7 +54,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dp    , wlev, &
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfumax !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(0:kmax+1)                   , intent(out) :: dep    !  Depth of layers
     real(fp), dimension(kmax)                       , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dp
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dpd
     real(fp)                                        , intent(in)  :: wlev
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: dzu1   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(0:kmax)                     , intent(in)  :: zk
@@ -75,7 +75,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dp    , wlev, &
     ! dep(kmax+1) always denotes the extrapolation region at upper side
     ! dep(kmax+1) = total water depth for both sigma and zmodel
     !
-    dep(kmax+1) = dp(nm) + wlev
+    dep(kmax+1) = dpd(nm) + wlev
     !
     if (zmodel) then
        do k = 1, kmax
@@ -90,7 +90,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dp    , wlev, &
           endif
        enddo
     else
-       tmpval = 0.5_fp   * (dp(nm) + wlev)
+       tmpval = 0.5_fp   * (dpd(nm) + wlev)
        dep(1) = thick(1) * tmpval
        do k = 2, kmax
           dep (k) = dep(k-1) + (thick(k)+thick(k-1))*tmpval

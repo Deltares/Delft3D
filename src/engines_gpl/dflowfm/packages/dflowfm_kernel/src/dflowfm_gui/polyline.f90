@@ -38,9 +38,9 @@
 
     IF (InOpenGLRendering) THEN
       CALL MOVABSNOP(dble(XR(1)),dble(YR(1)))
-      DO 10 I = 2,N
+      do I = 2,N
          call LNABSNOP(dble(XR(I)),dble(YR(I)))
-      10 CONTINUE
+    end do
     ELSE
         CALL IGRPOLYLINE(XR,YR,N)
     ENDIF

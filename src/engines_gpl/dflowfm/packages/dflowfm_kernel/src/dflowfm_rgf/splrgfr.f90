@@ -119,7 +119,7 @@
          Yc = dxymis
          zc = zkuni
 !        vul voor alle splines de lijninterpolaties in
-         DO 10 I1 = 1, NUMSPL
+         do I1 = 1, NUMSPL
 !           Alle horizontaaltjes
             CALL GETIJ(XSPc, XI1, mcs, maxsplen, imax,I1, I1, 1, NUMPX)
             CALL GETIJ(YSPc, YI1, mcs, maxsplen, imax,I1, I1, 1, NUMPX)
@@ -137,7 +137,7 @@
                II2 = (MN12(I1,3) - 1)*NFAC + 1
             ENDIF
             K   = 0
-            DO 20 II = II1,II2
+            do I = II1,II2
                K        = K + 1
                IF (K .LE. L1MAX) THEN
                   IF (I1 .LE. NUMI) THEN
@@ -149,14 +149,14 @@
                   ENDIF
                ENDIF
 !              CALL RCIRC( X1(K),Y1(K) )
-    20      CONTINUE
+            end do
 !           CALL TOEMAAR()
             IF (I1 .LE. NUMI) THEN
                NS = MAX( NS,MN12(I1,1) )
             ELSE
                MS = MAX( MS,MN12(I1,1) )
             ENDIF
-    10   CONTINUE
+         end do
 
          NCR = (NS - 1)*NFAC + 1
          MCR = (MS - 1)*MFAC + 1
@@ -177,15 +177,15 @@
 !        CALL TEKGRIDPUNTEN(X,Y,MCR,NCR)
 !        CALL TOEMAAR()
 
-         DO 30 I = 1, MS-1
-            DO 30 J = 1, NS-1
+         do I = 1, MS-1
+            do J = 1, NS-1
                X1(2) = XYMIS
                X2(2) = XYMIS
                X3(2) = XYMIS
                X4(2) = XYMIS
 
-               DO 40 K = 1,MFAC+1
-                  DO 40 L = 1,NFAC+1
+               do K = 1,MFAC+1
+                  do L = 1,NFAC+1
                      KI  = (I-1)*MFAC + K
                      LJ  = (J-1)*NFAC + L
                      IF (Xc(KI,LJ) .NE. XYMIS) THEN
@@ -206,7 +206,8 @@
                            Y4(K) = Yc(KI,LJ)
                         ENDIF
                      ENDIF
-    40         CONTINUE
+                  end do
+               end do
                NO = 0
                IF (X1(2) .EQ. XYMIS) NO = 1
                IF (X2(2) .EQ. XYMIS) NO = 1
@@ -216,17 +217,19 @@
                   CALL TRANFN2(X1, X2, X3, X4,      &
                                Y1, Y2, Y3, Y4,      &
                                imax, mmax, nmax, XH, YH)
-                  DO 60 K = 1,MFAC+1
-                     DO 60 L = 1,NFAC+1
+                  do K = 1,MFAC+1
+                     do L = 1,NFAC+1
                         KI   = (I-1)*MFAC + K
                         LJ   = (J-1)*NFAC + L
                         IF (Xc(KI,LJ) .EQ. XYMIS) THEN
                            Xc(KI,LJ) = XH(K,L)
                            Yc(KI,LJ) = YH(K,L)
                         ENDIF
-    60            CONTINUE
+                     end do
+                  end do
                ENDIF
-    30   CONTINUE
+            end do
+         end do
          MC = MCR
          NC = NCR
 !         CALL ISITU (Xc, Yc, MC, NC, IJC, IJYES)

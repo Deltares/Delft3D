@@ -40,8 +40,8 @@
       double precision :: Y(N)
       CALL SETCOL(NCOL)
       CALL MOVABS(0d0,Y(1))
-      DO 10 I = 1,N
+      do I = 1,N
          CALL LNABS(dble(I),Y(I))
-   10 CONTINUE
+      end do
       RETURN
       END

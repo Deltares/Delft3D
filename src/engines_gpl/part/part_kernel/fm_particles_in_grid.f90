@@ -355,7 +355,7 @@ subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDty
    use m_fm_aux_routines
    use m_hydmod
    use partmem, only: xwaste, ywaste, zwaste, &
-        radius, wparm, iwtime, ictime, amassd, amassc, nodye, nocont, ndprt, nopart, npmax, nosubs
+        radius, wparm, iwtime, ictime, amassd, amassc, nodye, nocont, ndprt, nopart, npmax, nosubs, noslay
 
    use m_particles
    use m_samples
@@ -386,7 +386,7 @@ subroutine ini_part(partfile, partrelfile, starttime_loc, timestep_loc, threeDty
 
 !  add particle tracer (when tracers are initialized)
    part_iconst = 1
-   call realloc(constituents, (/ nosubs, Ndx/kmx, kmx /), keepExisting=.false., fill=0d0)
+   call realloc(constituents, (/ nosubs, Ndx/kmx, noslay /), keepExisting=.false., fill=0d0)
 
    timenext = 0d0
    timelast = DMISS

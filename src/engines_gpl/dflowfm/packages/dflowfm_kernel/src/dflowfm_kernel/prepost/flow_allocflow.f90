@@ -40,7 +40,7 @@
  use m_netw, only : netcell, numk, numl
  use m_alloc
  use m_waves
- use m_flowexternalforcings, only: nbndw
+ use fm_external_forcings_data, only: nbndw
  use m_sediment
  use m_ship
  use m_sferic

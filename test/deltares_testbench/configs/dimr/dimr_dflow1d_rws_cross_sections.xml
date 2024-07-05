@@ -58,7 +58,7 @@
       </program>
       <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true"
          addSearchPaths="true">
-         <path>bin/run_dimr.bat</path>
+         <path>dimr/scripts/run_dimr.bat</path>
          <shell ref="command_prompt" />
          <location ref="reference_engines" type="reference">
             <from>win64</from>
@@ -77,7 +77,6 @@
             <program ref="dimr">
                <arguments>
                   <argument>dimr.xml</argument>
-                  <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                </arguments>
             </program>
          </programs>
@@ -95,7 +94,7 @@
     -->
    <testCases>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c01_250a_Chezy-blocked-interpolation"
+      <testCase name="e106_f05_c01_250a_Chezy-blocked-interpolation"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c01_250a_Chezy-blocked-interpolation</path>
          <maxRunTime>120.0</maxRunTime>
@@ -175,7 +174,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c02_250b_Chezy-linear-interpolation"
+      <testCase name="e106_f05_c02_250b_Chezy-linear-interpolation"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c02_250b_Chezy-linear-interpolation</path>
          <maxRunTime>120.0</maxRunTime>
@@ -255,7 +254,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c03_251a_Manning-blocked-interpolation"
+      <testCase name="e106_f05_c03_251a_Manning-blocked-interpolation"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c03_251a_Manning-blocked-interpolation</path>
          <maxRunTime>120.0</maxRunTime>
@@ -335,7 +334,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c04_251b_Manning-linear-interpolation"
+      <testCase name="e106_f05_c04_251b_Manning-linear-interpolation"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c04_251b_Manning-linear-interpolation</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1063,7 +1062,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c13_116a_Summer-dike-flow-area"
+      <testCase name="e106_f05_c13_116a_Summer-dike-flow-area"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c13_116a_Summer-dike-flow-area</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1143,7 +1142,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c14_116b_Summer-dike-flow-area"
+      <testCase name="e106_f05_c14_116b_Summer-dike-flow-area"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c14_116b_Summer-dike-flow-area</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1223,7 +1222,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c15_116c_Summer-dike-flow-area"
+      <testCase name="e106_f05_c15_116c_Summer-dike-flow-area"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c15_116c_Summer-dike-flow-area</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1303,7 +1302,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c16_Waterbalance-NoSummerdike"
+      <testCase name="e106_f05_c16_Waterbalance-NoSummerdike"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c16_Waterbalance-NoSummerdike</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1341,7 +1340,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c17_Waterbalance-WithSummerdike"
+      <testCase name="e106_f05_c17_Waterbalance-WithSummerdike"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c17_Waterbalance-WithSummerdike</path>
          <maxRunTime>120.0</maxRunTime>
@@ -1379,7 +1378,7 @@
          </checks>
       </testCase>
       <!-- ======================================================================== -->
-      <testCase name="e106(dflow1d)_f05(rws-cross-sections)_c18_Interpolate-FlowProfile"
+      <testCase name="e106_f05_c18_Interpolate-FlowProfile"
          ref="dflow1d_default">
          <path version="2024-01-12T06:20:00">e106_dflow1d/f05_rws-cross-sections/c18_Interpolate-FlowProfile</path>
          <maxRunTime>120.0</maxRunTime>

@@ -37,8 +37,8 @@
       integer :: mmax
       double precision :: x
       DIMENSION X(MMAX)
-      DO 10 I = 1,MMAX
+      do I = 1,MMAX
          X(I) = XYMIS
-   10 CONTINUE
+      end do
       RETURN
       END

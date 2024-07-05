@@ -70,13 +70,13 @@
       N2 = NB(4)
 
       JS = 1
-      DO 10 K = 1,ITSMO
+      do K = 1,ITSMO
 
          IF (MD .EQ. 0 .AND. NFLD .EQ. 9) THEN
 !           verticale linemodes
 
-            DO 20 I = 1,MC
-               DO 20 J = 2,NC-1
+            do I = 1,MC
+               do J = 2,NC-1
                   IF (J .GT. N1 .AND. J .LT. N2) THEN
                      IF (IJC(I,J) .EQ. 10 .OR. IJC(I,J) .EQ.  2 .OR. IJC(I,J) .EQ.  4 ) THEN
                          R1 = SQRT( (XH(I,J) - XH(I,J-1))**2 +  &
@@ -116,13 +116,14 @@
                          Yc(I,J) = YY
                      ENDIF
                   ENDIF
-    20      CONTINUE
+               end do
+            end do
 
          ELSE IF (ND .EQ. 0 .AND. NFLD .EQ. 9) THEN
 !           horizontale linemodes
 
-            DO 40 I = 2,MC-1
-               DO 40 J = 1,NC
+            do I = 2,MC-1
+               do J = 1,NC
                   IF (I .GT. M1 .AND. I .LT. M2) THEN
                      IF (IJC(I,J) .EQ. 10 .OR. IJC(I,J) .EQ.  1 .OR. IJC(I,J) .EQ.  3 ) THEN
                          R1 = (XH(I,J) - XH(I-1,J))**2 +      &
@@ -170,15 +171,16 @@
                          Yc(I,J) = YY
                      ENDIF
                   ENDIF
-    40      CONTINUE
+               end do
+            end do
 
          ELSE IF (NFLD .EQ. 17) THEN
 !           blockmode
 
             B  = CSMO
             A  = 1 - B
-            DO 60 I = 1,MC
-               DO 60 J = 1,NC
+            do I = 1,MC
+               do J = 1,NC
                   IF (I .GE. M1 .AND. I .LE. M2 .AND.          &
                       J .GE. N1 .AND. J .LE. N2 ) THEN
                      IF (IJC(I,J) .EQ. 10) THEN
@@ -246,7 +248,8 @@
                         ENDIF
                      ENDIF
                   ENDIF
-    60      CONTINUE
+               end do
+            end do
 
          ENDIF
 
@@ -258,7 +261,7 @@
             CALL TEKGRD(Xc,Yc,mmax, nmax, M1,N1,M2,N2,NCOLDG,NDRAW(38),-1,mc) ! key=-1 is unknown (but unused anyway)
          ENDIF
 
-    10 CONTINUE
+end do
 
       CALL PUTARR(XH,Xc,MMAX,NMAX)
       CALL PUTARR(YH,Yc,MMAX,NMAX)

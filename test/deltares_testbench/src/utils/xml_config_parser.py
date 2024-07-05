@@ -5,7 +5,9 @@ Copyright (C)  Stichting Deltares, 2013
 """
 
 import copy
+import operator
 import re
+import sys
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from lxml import etree
@@ -23,6 +25,11 @@ from src.config.test_case_path import TestCasePath
 from src.config.types.file_type import FileType
 from src.config.types.path_type import PathType
 from src.config.types.presence_type import PresenceType
+from src.suite.test_bench_settings import TestBenchSettings
+from src.utils.logging.i_logger import ILogger
+from src.utils.logging.i_main_logger import IMainLogger
+from src.utils.logging.test_loggers.test_result_type import TestResultType
+
 
 def loop(dictionary: Dict[str, Any], key: str) -> List:
     if key in dictionary:
@@ -56,28 +63,31 @@ def branch(xml_tree: etree._ElementTree, prefix: str) -> Dict[str, Any]:
 
 # Parse the xml configuration file
 class XmlConfigParser(object):
+    def __init__(self, settings: Optional[TestBenchSettings] = None):
+        """initialize defaults"""
+        self.__testbench_settings: TestBenchSettings = settings
+        self.__credentials: List[Credentials] = []
+        self.__locations: List[Location] = []
+        self.__program_configs: List[ProgramConfig] = []
+        self.__default_cases: List[TestCaseConfig] = []
+
     def load(
-        self, path: str, rstr: str, cred: Credentials, server_base_url: str
+        self, settings: TestBenchSettings, logger: IMainLogger
     ) -> Tuple[LocalPaths, List[ProgramConfig], List[TestCaseConfig]]:
         """load the config file
 
         Args:
-            path (str): (relative or absolute), overwritten roots (if any)
-            rstr (str): ??
-            cred (Credentials): credential from the command line
-            server_base_url (sr): the base URL of the server (SVN, Git, MinIO etc.)
+            settings (TestBenchSettings): the test_bench settings
+            logger (IMainLogger): the logger class
 
         Returns:
             tuple[LocalPaths, List[ProgramConfig], list]: local paths, program configs and test case configs
         """
-        self.__path: str = path
-        self.__rstr: str = rstr
+        self.__testbench_settings = settings
         self.__validate__()
-        self.__initialize__()
-        self.__credentials.append(cred)
-        self.__server_base_url: str = server_base_url
+        self.__credentials.append(settings.credentials)
 
-        return self.__parse__()
+        return self.__parse__(logger)
 
     def __maketree__(self, path):
         global schema
@@ -94,24 +104,112 @@ class XmlConfigParser(object):
         parsed_tree = branch(root_node, prefix)
         return (parsed_tree, schema, root_name)
 
+    @classmethod
+    def filter_configs(cls, configs: List[TestCaseConfig], args: str, logger: ILogger):
+        """check which filters to apply to configuration"""
+        filtered: List[TestCaseConfig] = []
+        filters = args.split(":")
+        program_filter = None
+        test_case_filter = None
+        max_runtime = None
+        operator = None
+        start_at_filter = None
+
+        for filter in filters:
+            con, arg = filter.split("=")
+            con = con.lower()
+            if con == "program":
+                program_filter = arg.lower()
+            elif con == "testcase":
+                test_case_filter = arg.lower()
+            elif con == "maxruntime":
+                max_runtime = float(arg[1:])
+                operator = arg[:1]
+            elif con == "startat":
+                start_at_filter = arg.lower()
+            else:
+                error_message = "ERROR: Filter keyword " " + con + " " not recognised"
+                logger.error(f"{error_message} '{con}'\n")
+                sys.stderr.write(error_message + "\n")
+                raise SyntaxError(error_message + "\n")
+
+        # For each testcase (p, t, mrt filters):
+        for config in configs:
+            c = cls.__find_characteristics__(config, program_filter, test_case_filter, max_runtime, operator)
+            if c:
+                filtered.append(c)
+            else:
+                logger.info(f"Skip {config.name} due to filter.")
+
+        # StartAt filter:
+        if start_at_filter:
+            starti = len(filtered)
+            for i, config in enumerate(filtered):
+                if start_at_filter in config.name:
+                    starti = i
+                    break
+            filtered[:] = filtered[starti:]
+        return filtered
+
+    @classmethod
+    def __find_characteristics__(
+        cls, config: TestCaseConfig, program: Optional[str], testcase, mrt, op
+    ) -> Optional[TestCaseConfig]:
+        """check if a test case matches given characteristics"""
+        found_program = None
+        found_testcase = None
+        found_max_runtime = None
+
+        if program:
+            # Program is a string, containing names of programs, comma separated
+            programs = program.split(",")
+            for aprog in programs:
+                found_program = any(
+                    aprog in e.name.lower() for e in config.program_configs
+                )
+                if found_program:
+                    break
+        if testcase:
+            # testcase is a string, containing (parts of) testcase names, comma separated
+            testcases = testcase.split(",")
+            for atestcase in testcases:
+                found_testcase = atestcase in config.name.lower()
+                if found_testcase:
+                    break
+        if mrt:
+            mappings = {">": operator.gt, "<": operator.lt, "=": operator.eq}
+            found_max_runtime = mappings[op](config.max_run_time, mrt)
+
+        if (
+            ((not program and not found_program) or (program and found_program))
+            and ((not testcase and not found_testcase) or (testcase and found_testcase))
+            and ((not mrt and not found_max_runtime) or (mrt and found_max_runtime))
+        ):
+            return config
+        return None
+
+    def __remove_xml_base(self, xml_doc):
+        """Remove xml:base element added by xinclude"""
+        for elem in xml_doc.iter():
+            if "{http://www.w3.org/XML/1998/namespace}base" in elem.attrib:
+                del elem.attrib["{http://www.w3.org/XML/1998/namespace}base"]
+
     def __validate__(self):
         """validate Xml file format"""
-        # parser = make_parser()
-        # parser.setContentHandler(ContentHandler())
-        # parser.parse(self.__path)
-        pass
-
-    def __initialize__(self):
-        """initialize defaults"""
-        self.__credentials: List[Credentials] = []
-        self.__locations: List[Location] = []
-        self.__program_configs: List[ProgramConfig] = []
-        self.__default_cases: List[TestCaseConfig] = []
+        xmlschema_doc = etree.parse("configs/xsd/deltaresTestbench.xsd")
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        parser = etree.XMLParser(load_dtd=True)
+        xml_doc: etree._ElementTree = etree.parse(self.__testbench_settings.config_file, parser)
+        xml_doc.xinclude()
+        self.__remove_xml_base(xml_doc)
+        xmlschema.assertValid(xml_doc)
 
     # parse the xml file
     # output: loglevel, local paths, program configs and test case configs
-    def __parse__(self):
-        xml_doc, schema, root_name = self.__maketree__(self.__path)
+    def __parse__(self, logger: IMainLogger):
+        xml_doc, schema, root_name = self.__maketree__(
+            self.__testbench_settings.config_file
+        )
 
         config_tags = xml_doc["config"]
 
@@ -141,12 +239,13 @@ class XmlConfigParser(object):
                 try:
                     self.__default_cases.append(self.__fillCase__(case))
                     result.append(self.__fillCase__(case))
-                except Exception:
-                    print(
-                        "Something is wrong with test case: "
-                        + str(cases["testCase"][caseNr]["path"][0]["txt"])
-                        + ", test case will be ignored"
-                    )
+                except Exception as e:
+                    test_name = str(cases["testCase"][caseNr]["name"][0]) 
+                    testcase_logger = logger.create_test_case_logger(test_name)
+                    testcase_logger.test_started()
+                    testcase_logger.test_Result(TestResultType.Exception, str(e.args[0]))
+                    raise
+
         return local_paths, self.__program_configs, result
 
     def __parse_locations(self, config_tag: Dict[str, Any]) -> Iterable[Location]:
@@ -187,25 +286,35 @@ class XmlConfigParser(object):
             if "credential" in element:
                 c = self.__getCredentials__(str(element["credential"][0]["ref"][0]))
                 if not c:
-                    raise XmlError("invalid credential reference value in " + new_location.name)
+                    raise XmlError(
+                        "invalid credential reference value in " + new_location.name
+                    )
                 new_location.credentials = c
             # overwrite roots if specified
-            newroot = self.__getOverwritePaths__(self.__rstr, new_location.name, "root")
+            newroot = self.__getOverwritePaths__(
+                self.__testbench_settings.override_paths, new_location.name, "root"
+            )
+
+            root_text = str(element["root"][0]["txt"].strip())
+
             if newroot:
                 new_location.root = newroot
-            elif str(element["root"][0]["txt"].strip()).startswith("{server_base_url}"):
-                directory_with_handlebar = str(element["root"][0]["txt"].strip())
-                if self.__server_base_url.endswith("/") and directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
-                    new_location.root = directory_with_handlebar.replace("{server_base_url}/", self.__server_base_url)
-                    new_location.root = new_location.root.replace("{server_base_url}", self.__server_base_url)
-                elif self.__server_base_url.endswith("/"):
-                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url)
-                elif directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
-                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url)
+            elif root_text.startswith("{server_base_url}"):
+                server_base_url = self.__testbench_settings.server_base_url
+                directory_with_handlebar = root_text
+
+                # Make sure the URL has correct slashes
+                if server_base_url.endswith("/") and directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}/", server_base_url)
+                elif server_base_url.endswith("/") or directory_with_handlebar.replace("{server_base_url}", "").startswith("/"):
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", server_base_url)
                 else:
-                    new_location.root = directory_with_handlebar.replace("{server_base_url}", self.__server_base_url + "/")
+                    new_location.root = directory_with_handlebar.replace("{server_base_url}", server_base_url + "/")
+
+                new_location.root = new_location.root.replace("{server_base_url}", server_base_url)
             else:
-                new_location.root = str(element["root"][0]["txt"].strip())
+                # If root text doesn't start with "{server_base_url}", assign it directly
+                new_location.root = root_text
         else:
             new_location = copy.deepcopy(self.__getLocations__(element["ref"][0]))
             if not new_location:
@@ -219,7 +328,7 @@ class XmlConfigParser(object):
                 new_location.type = PathType.REFERENCE
         if "path" in element:
             #  overwrite paths if specified
-            newpath = self.__getOverwritePaths__(self.__rstr, new_location.name, "path")
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, new_location.name, "path")
             if newpath:
                 new_location.from_path = newpath
             else:
@@ -228,7 +337,7 @@ class XmlConfigParser(object):
             new_location.version = str(element["version"][0]["txt"])
         if "from" in element:
             # overwrite from if specified
-            newfrom = self.__getOverwritePaths__(self.__rstr, new_location.name, "from")
+            newfrom = self.__getOverwritePaths__(self.__testbench_settings.override_paths, new_location.name, "from")
             if newfrom:
                 new_location.from_path = newfrom
             else:
@@ -236,7 +345,9 @@ class XmlConfigParser(object):
                 new_location.from_path = str(element["from"][0]["txt"]).strip("/\\")
         if "to" in element:
             # overwrite to if specified
-            newto = self.__getOverwritePaths__(self.__rstr, new_location.name, "to")
+            newto = self.__getOverwritePaths__(
+                self.__testbench_settings.override_paths, new_location.name, "to"
+            )
             if newto:
                 new_location.to_path = newto
             else:
@@ -253,17 +364,17 @@ class XmlConfigParser(object):
                 return None
         if "name" in element:
             p.name = str(element["name"][0])
-        if "programStringRemoveQuotes" in element and str(element["programStringRemoveQuotes"][0]).lower() == "true":
+        if ("programStringRemoveQuotes" in element and str(element["programStringRemoveQuotes"][0]).lower() == "true"):
             p.program_remove_quotes = True
-        if "shellStringRemoveQuotes" in element and str(element["shellStringRemoveQuotes"][0]).lower() == "true":
+        if ("shellStringRemoveQuotes" in element and str(element["shellStringRemoveQuotes"][0]).lower() == "true"):
             p.shell_remove_quotes = True
-        if "ignoreStandardError" in element and str(element["ignoreStandardError"][0]).lower() == "true":
+        if ("ignoreStandardError" in element and str(element["ignoreStandardError"][0]).lower() == "true"):
             p.ignore_standard_error = True
-        if "ignoreReturnValue" in element and str(element["ignoreReturnValue"][0]).lower() == "true":
+        if ("ignoreReturnValue" in element and str(element["ignoreReturnValue"][0]).lower() == "true"):
             p.ignore_return_value = True
-        if "logOutputToFile" in element and str(element["logOutputToFile"][0]).lower() == "true":
+        if ("logOutputToFile" in element and str(element["logOutputToFile"][0]).lower() == "true"):
             p.log_output_to_file = True
-        if "addSearchPaths" in element and str(element["addSearchPaths"][0]).lower() == "true":
+        if ("addSearchPaths" in element and str(element["addSearchPaths"][0]).lower() == "true"):
             p.add_search_paths = True
         if "excludeSearchPathsContaining" in element:
             p.exclude_search_paths_containing = str(element["excludeSearchPathsContaining"][0])
@@ -278,7 +389,7 @@ class XmlConfigParser(object):
             p.max_run_time = float(element["maxRunTime"][0]["txt"])
         if "path" in element:
             # overwrite path if specified
-            newpath = self.__getOverwritePaths__(self.__rstr, p.name, "path")
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, p.name, "path")
             if newpath:
                 p.path = newpath
             else:
@@ -441,7 +552,7 @@ class XmlConfigParser(object):
         # add case path
         if "path" in element:
             # overwrite path if specified
-            newpath = self.__getOverwritePaths__(self.__rstr, test_case.name, "path")
+            newpath = self.__getOverwritePaths__(self.__testbench_settings.override_paths, test_case.name, "path")
             if newpath:
                 test_case.path = TestCasePath(newpath, None)
             else:
@@ -463,7 +574,10 @@ class XmlConfigParser(object):
         if "maxRunTime" in element:
             test_case.max_run_time = float(element["maxRunTime"][0]["txt"])
             for el in element["maxRunTime"]:
-                if "OverruleRefMaxRunTime" in el and str(el["OverruleRefMaxRunTime"][0]).lower() == "true":
+                if (
+                    "OverruleRefMaxRunTime" in el
+                    and str(el["OverruleRefMaxRunTime"][0]).lower() == "true"
+                ):
                     test_case.overrule_ref_max_run_time = True
         for el in loop(element, "programs"):
             for program in loop(el, "program"):
@@ -545,7 +659,6 @@ class PathParts:
         self.__root = None
         self.__from = None
         self.__to = None
-        self.__path = None
 
     def getName(self):
         return self.__name
@@ -570,12 +683,6 @@ class PathParts:
 
     def setTo(self, to):
         self.__to = to
-
-    def getPath(self):
-        return self.__path
-
-    def setPath(self, path):
-        self.__path = path
 
 
 # custom error for Xml handler

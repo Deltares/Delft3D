@@ -75,29 +75,29 @@
             RETURN
          ENDIF
          CALL SAVESAM()
-         DO 5 I = 1,NS
+         do I = 1,NS
             XS(I) = DMISS
             YS(I) = DMISS
             ZS(I) = DMISS
             ipsam(i) = 0
-    5    CONTINUE
+end do
          NS = 0
          RETURN
       ENDIF
       ! Else: check in polygon
       CALL SAVESAM()
       INHUL = -1
-      DO 10 I = 1,NS
+      do I = 1,NS
             RD = ZS(I)
             XI = XS(I)
             YI = YS(I)
             CALL DBPINPOL(xI, yI, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
             IF (INHUL .EQ. 1) ZS(I) = dmiss
-   10 CONTINUE
+end do
 
       K = 0
       NSOL = NS
-      DO 20 I = 1,NS
+      do i = 1,NS
          IF (ZS(I) .NE. dmiss) THEN
             K     = K + 1
             XS(K) = XS(I)
@@ -105,15 +105,15 @@
             ZS(K) = ZS(I)
             ipsam(k) = ipsam(i)
          ENDIF
-   20 CONTINUE
+      end do
       NS = K
 
-      DO 30 I = NS+1,NSOL
+      do I = NS+1,NSOL
          XS(I) = DMISS
          YS(I) = DMISS
          ZS(I) = DMISS
          ipsam(i) = 0
-   30 CONTINUE
+end do
 
       RETURN
       END SUBROUTINE DELSAM

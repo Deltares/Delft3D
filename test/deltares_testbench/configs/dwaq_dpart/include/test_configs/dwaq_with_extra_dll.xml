@@ -1,0 +1,19 @@
+<!-- Test case for Windows only, at least for the moment -->
+<!-- D-Emissions is implemented as an Open Processes Library - hence a DLL, no .so yet -->
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e03_f15_c01_d_emissions" ref="dwaq_default">
+        <path version="2024-02-22T14:50:00">e03_waq/f15_openpl/c01_d_emissions</path>
+        <checks>
+            <file name="EM_pop_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="Pav" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Sew" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Sfw" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Soi" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Stw" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="Unp" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

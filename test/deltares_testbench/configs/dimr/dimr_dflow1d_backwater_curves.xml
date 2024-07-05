@@ -53,7 +53,7 @@
             <path>python.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>./win64</from>
@@ -72,7 +72,6 @@
                 <program ref="dimr" seq="1">
                     <arguments>
                         <argument>dimr.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>
@@ -90,7 +89,7 @@
     -->
     <testCases>
 	<!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c01_M1_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f15_c01_M1_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c01_M1_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -117,7 +116,7 @@
             <maxRunTime>120.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c02_M1_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f15_c02_M1_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c02_M1_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -144,7 +143,7 @@
             <maxRunTime>120.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c03_M1_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f15_c03_M1_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c03_M1_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -171,7 +170,7 @@
             <maxRunTime>120.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c04_M2_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f15_c04_M2_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c04_M2_iadvec1d_1</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -198,7 +197,7 @@
             <maxRunTime>120.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c05_M2_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f15_c05_M2_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c05_M2_iadvec1d_2</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -225,7 +224,7 @@
             <maxRunTime>120.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f15(backwater-curves)_c06_M2_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f15_c06_M2_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c06_M2_iadvec1d_5</path>
             <checks>
  				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">

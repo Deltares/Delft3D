@@ -46,7 +46,7 @@ contains
                           xpart  , ypart  , zpart  , wpart  , npwndw , &
                           pg     , amap   , xa     , ya     , za     , &
                           atotal , apeak  , adepth , imap   , nplay  , &
-                          wsettl , irfac  , anfac  , lsettl , locdep , &
+                          wsettl , irfac  , anfac  , use_settling , locdep , &
                           tcktot , dps   )
 !
 !
@@ -119,7 +119,7 @@ contains
 !
       type(PlotGrid)                   pg    !< plot grid information
       logical :: first = .true.
-      logical :: lsettl
+      logical :: use_settling
 !
 !     integer arrays
 !
@@ -255,7 +255,7 @@ contains
 !                  that means: nolay = extra bed layer
 !
          nplay(ilay) = nplay(ilay) + 1
-         if (lsettl) then
+         if ( use_settling ) then
             if ( ilay == nolay ) then
                imap(i1,1) = -4  ! settled out
                goto 30

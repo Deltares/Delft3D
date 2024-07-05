@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<!-- ++++++++++++++++++++++++++++++++++++++++++++ -->
         <testCase name="e103_f02_c01_114_TimeCntrl-1" ref="dflow1d_default">
             <path version="2024-01-12T07:20:00">e103_dflow1d-drtc/f02_general/c01_114_TimeCntrl-1</path>

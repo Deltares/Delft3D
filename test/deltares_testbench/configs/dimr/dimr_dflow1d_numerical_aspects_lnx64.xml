@@ -100,7 +100,7 @@
 
 <!-- For reasons why the test below is not run, see SOBEK3-1940 -->
 
-<!--    <testCase name="e106(dflow1d)_f04(numerical-aspects)_c01_033_lateral_inflow_timestep_reduction" ref="dflow1d_default" ignore="TRUE">
+<!--    <testCase name="e106_f04_c01_033_lateral_inflow_timestep_reduction" ref="dflow1d_default" ignore="TRUE">
             <path>e106_dflow1d/f04_numerical-aspects/c01_033_lateral_inflow_timestep_reduction</path>
             <checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -138,7 +138,7 @@
 
 <!-- For reasons why the test below is not run, see SOBEK3-1940 -->
 
-<!--    <testCase name="e106(dflow1d)_f04(numerical-aspects)_c02_201_lateral_inflow_timestep_reduction" ref="dflow1d_default" ignore="TRUE">
+<!--    <testCase name="e106_f04_c02_201_lateral_inflow_timestep_reduction" ref="dflow1d_default" ignore="TRUE">
             <path>e106_dflow1d/f04_numerical-aspects/c02_201_lateral_inflow_timestep_reduction</path>
             <checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -173,7 +173,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase> -->
 		<!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c03_112_flooding-and-drying-threshold" ref="dflow1d_default">
+        <testCase name="e106_f04_c03_112_flooding-and-drying-threshold" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c03_112_flooding-and-drying-threshold</path>
             <checks>
 				<file name="dflow1d/output/gridpoints.nc" type="NETCDF">
@@ -192,7 +192,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c07_junction-advection01_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c07_junction-advection01_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c07_junction-advection01_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -233,7 +233,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c08_junction-advection02_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c08_junction-advection02_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c08_junction-advection02_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -274,7 +274,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c09_junction-advection03_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c09_junction-advection03_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c09_junction-advection03_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -315,7 +315,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c10_junction-advection04_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c10_junction-advection04_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c10_junction-advection04_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -356,7 +356,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c11_junction-advection05_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c11_junction-advection05_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c11_junction-advection05_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -401,7 +401,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c12_junction_advection06_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c12_junction_advection06_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c12_junction_advection06_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -454,7 +454,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c13_junction_advection07_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c13_junction_advection07_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c13_junction_advection07_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -507,7 +507,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c14_junction_advection08_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c14_junction_advection08_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c14_junction_advection08_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -560,7 +560,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c15_junction_advection09_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c15_junction_advection09_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c15_junction_advection09_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -613,7 +613,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c16_junction_advection10_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c16_junction_advection10_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c16_junction_advection10_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -644,7 +644,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c17_junction_advection11_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c17_junction_advection11_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c17_junction_advection11_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -676,7 +676,7 @@
              </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c18_junction_advection12_iadvec1d_1" ref="dflow1d_default">
+        <testCase name="e106_f04_c18_junction_advection12_iadvec1d_1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c18_junction_advection12_iadvec1d_1</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -729,7 +729,7 @@
              </checks>              
         </testCase>	
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c19_junction-advection03_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c19_junction-advection03_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c19_junction-advection03_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -770,7 +770,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c20_junction-advection04_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c20_junction-advection04_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c20_junction-advection04_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -811,7 +811,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c21_junction-advection06_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c21_junction-advection06_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c21_junction-advection06_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -864,7 +864,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c22_junction_advection07_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c22_junction_advection07_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c22_junction-advection07_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -917,7 +917,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c23_junction_advection08_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c23_junction_advection08_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c23_junction-advection08_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -970,7 +970,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c24_junction_advection09_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c24_junction_advection09_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c24_junction-advection09_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1023,7 +1023,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c25_junction_advection11_iadvec1d_2" ref="dflow1d_default">
+        <testCase name="e106_f04_c25_junction_advection11_iadvec1d_2" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c25_junction-advection11_iadvec1d_2</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1055,7 +1055,7 @@
              </checks>              
         </testCase>
         <!-- ======================================================================== -->				
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c26_junction-advection03_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c26_junction-advection03_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c26_junction-advection03_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1096,7 +1096,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c27_junction-advection04_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c27_junction-advection04_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c27_junction-advection04_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1137,7 +1137,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c28_junction_advection06_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c28_junction_advection06_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c28_junction-advection06_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1190,7 +1190,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c29_junction_advection07_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c29_junction_advection07_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c29_junction-advection07_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1243,7 +1243,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c30_junction_advection08_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c30_junction_advection08_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c30_junction-advection08_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1296,7 +1296,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c31_junction_advection09_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c31_junction_advection09_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c31_junction-advection09_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>
@@ -1349,7 +1349,7 @@
             </checks>              
         </testCase>
         <!-- ======================================================================== -->    
-        <testCase name="e106(dflow1d)_f04(numerical-aspects)_c32_junction_advection11_iadvec1d_5" ref="dflow1d_default">
+        <testCase name="e106_f04_c32_junction_advection11_iadvec1d_5" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f04_numerical-aspects/c32_junction-advection11_iadvec1d_5</path>
             <maxRunTime>120.0</maxRunTime> <!-- seconds -->
              <checks>

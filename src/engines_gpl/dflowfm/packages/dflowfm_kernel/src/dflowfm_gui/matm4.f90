@@ -37,10 +37,12 @@
   integer :: k
   ! matrix matrix
   double precision, dimension(4,4) :: a,b,c
-  do 801 i = 1,4
-     do 801 k = 1,4
+  do i = 1,4
+     do k = 1,4
         c(i,k) = 0d0
-        do 801 j = 1,4
+        do j = 1,4
            c(i,k) = a(i,j) * b(j,k) + c(i,k)
-  801 continue
+         end do
+      end do
+   end do
   end SUBROUTINE MATM4

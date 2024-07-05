@@ -13,6 +13,10 @@ set(waq_utils_c_module ${waq_module_path}/waq_utils_c)
 set(waq_utils_f_module ${waq_module_path}/waq_utils_f)
 set(waq_netcdf_module ${waq_module_path}/waq_netcdf)
 set(waq_validation_module ${waq_module_path}/waq_validation)
+set(waq_external_access_layer_module ${waq_module_path}/waq_external_access_layer)
+set(waq_preprocessor_module ${waq_module_path}/waq_preprocessor)
+set(waq_proc_preprocess_module ${waq_module_path}/waq_proc_preprocess)
+set(waq_computation_module ${waq_module_path}/waq_computation)
 set(waq_process_module ${waq_module_path}/waq_process)
 set(wq_processes_module ${waq_module_path}/wq_processes)
 set(waq_plugin_wasteload_module ${waq_module_path}/waq_plugin_wasteload)
@@ -21,8 +25,8 @@ set(waq_memory_module ${waq_module_path}/waq_memory)
 set(waq_io_module ${waq_module_path}/waq_io)
 set(waq_data_module ${waq_module_path}/waq_data)
 set(delwaq_lib_module ${waq_module_path}/delwaq_lib)
-set(delwaq1_module ${waq_module_path}/delwaq1)
-set(delwaq2_module ${waq_module_path}/delwaq2)
+set(waq_logging_module ${waq_module_path}/waq_logging)
+set(delwaq_exe_module ${waq_module_path}/delwaq_exe)
 
 # Waves
 set(wave_module_path "${engines_gpl_path}/wave/packages")
@@ -65,11 +69,9 @@ set(d_hydro_module "${d_hydro_module_path}/d_hydro")
 set(tests_directory src/test/engines_gpl)
 set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kernel)
 
-
 # Unit tests
 # WAQ
 set(delwaq_tests_module ${unit_tests_dir}/engines_gpl/waq)
-
 
 # Install
 set(install_dflowfm_module cmake/install_fm)

@@ -95,7 +95,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c01_034_nearest-h-pnt_point-lateral-on-connection-node" ref="dflow1d_default">
+        <testCase name="e106_f02_c01_034_nearest-h-pnt_point-lateral-on-connection-node" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c01_034_nearest-h-pnt_point-lateral-on-connection-node</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -182,7 +182,7 @@
             </checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c02_052_nearest-h-pnt_point-lateral-on-lateral-node" ref="dflow1d_default">
+        <testCase name="e106_f02_c02_052_nearest-h-pnt_point-lateral-on-lateral-node" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c02_052_nearest-h-pnt_point-lateral-on-lateral-node</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -336,7 +336,7 @@
             </checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c03_147_nearest-h-pnt_constant-diffusive-lateral" ref="dflow1d_default">
+        <testCase name="e106_f02_c03_147_nearest-h-pnt_constant-diffusive-lateral" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c03_147_nearest-h-pnt_constant-diffusive-lateral</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -401,7 +401,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c04_133_lowest-h-pnt_waterbalance-laterals" ref="dflow1d_default">
+        <testCase name="e106_f02_c04_133_lowest-h-pnt_waterbalance-laterals" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c04_133_lowest-h-pnt_waterbalance-laterals</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -564,7 +564,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c05_271_nearest-h-pnt_point-lateral-on-lateral-node" ref="dflow1d_default">
+        <testCase name="e106_f02_c05_271_nearest-h-pnt_point-lateral-on-lateral-node" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c05_271_nearest-h-pnt_point-lateral-on-lateral-node</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -715,7 +715,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c06_263_lowest-h_pnt_lateral-on-conn-node" ref="dflow1d_default">
+        <testCase name="e106_f02_c06_263_lowest-h_pnt_lateral-on-conn-node" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c06_263_lowest-h_pnt_lateral-on-conn-node</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -778,7 +778,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c07_272_nearest-h-pnt_diffusive-laterals" ref="dflow1d_default">
+        <testCase name="e106_f02_c07_272_nearest-h-pnt_diffusive-laterals" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c07_272_nearest-h-pnt_diffusive-laterals</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -941,7 +941,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c08_nearest-h-pnt_diffusive-laterals-f(x)" ref="dflow1d_default">
+        <testCase name="e106_f02_c08_nearest-h-pnt_diffusive-laterals-f" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c08_nearest-h-pnt_diffusive-laterals-f(x)</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -995,7 +995,7 @@
 			</checks>
         </testCase>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c09_lowest-h-pnt_diffusive-laterals-f(x)" ref="dflow1d_default">
+        <testCase name="e106_f02_c09_lowest-h-pnt_diffusive-laterals-f" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c09_lowest-h-pnt_diffusive-laterals-f(x)</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -1049,7 +1049,7 @@
 			</checks>
         </testCase>		
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c10_295_lowest-h-pnt_constant-diffusive-lateral" ref="dflow1d_default">
+        <testCase name="e106_f02_c10_295_lowest-h-pnt_constant-diffusive-lateral" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c10_295_lowest-h-pnt_constant-diffusive-lateral</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -1131,7 +1131,7 @@
 
 
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f02(lateral-flows)_c11_296_lowest-h-pnt_point-laterals-on-branch-1" ref="dflow1d_default">
+        <testCase name="e106_f02_c11_296_lowest-h-pnt_point-laterals-on-branch-1" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f02_lateral-flows/c11_296_lowest-h-pnt_point-laterals-on-branch-1</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>

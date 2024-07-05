@@ -53,7 +53,10 @@
       double precision, dimension(NPL),    intent(in)    :: xpl, ypl           !< polyline node coordinates
       integer,                             intent(in)    :: itype              !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
       integer,                             intent(in)    :: nLinks             !< number of links ( Lnx for flowlinks, numL for netlinks)
-      integer,                             intent(in)    :: jaboundarylinks    !< include boundary links (1) or not (0), flowlinks only
+      integer,                             intent(in)    :: jaboundarylinks    !< include boundary links:
+                                                                               !< (0) do not include boundary links
+                                                                               !< (1) include all boundary links
+                                                                               !< (2) include only 2d boundary links
       integer,                             intent(out)   :: numcrossedLinks    !< number of crossed flowlinks
       integer,          dimension(nLinks), intent(inout) :: iLink              !< crossed flowlinks
       integer,          dimension(nLinks), intent(inout) :: iPol               !< polygon section
@@ -76,13 +79,6 @@
       integer                                            :: jacros, kint
       integer                                            :: LnxiORLnx
       integer                                            :: isactive
-      double precision                                   :: dtol
-
-      if ( janeedfix.eq.1 ) then
-         dtol = 1d-8
-      else
-         dtol = 0d0
-      end if
 
       ierror          = 1
 
@@ -95,7 +91,7 @@
       if ( itype.eq.1 .or. itype.eq.3 ) then  ! netlinks
          LnxiORLnx = numL
       else ! if ( itype.eq.2 ) then   ! flowlinks
-         if ( jaboundarylinks.eq.1 ) then
+         if ( jaboundarylinks == 1 .or. jaboundarylinks == 2) then
             LnxiORLnx = Lnx
          else
             LnxiORLnx = Lnxi
@@ -131,21 +127,11 @@
       allocate(x(num), y(num))
 
 !     fill coordinates
-      if ( janeedfix.eq.1 ) then
-         do k=1,num
-            i=ipolsection(k)
-            call random_number(d)
-            x(k) = xpl(i) + dtol*d
-            call random_number(d)
-            y(k) = ypl(i) + dtol*d
-         end do
-      else
-         do k=1,num
-            i=ipolsection(k)
-            x(k) = xpl(i)
-            y(k) = ypl(i)
-         end do
-      end if
+      do k=1,num
+         i=ipolsection(k)
+         x(k) = xpl(i)
+         y(k) = ypl(i)
+      end do
 
       call build_kdtree(treeinst,num, x, y, ierror, jsferic, dmiss)
       if ( ierror.ne.0 ) then
@@ -162,9 +148,13 @@
             af = dble(L)/dble(LnxiORLnx)
             call readyy('Finding crossed links', af)
 !            write(6,"(F4.1, ' %')") af*100d0
-         endif
+         end if
 
-
+         if (jaboundarylinks == 2 .and. L > lnxi .and. L <= lnx1db) then
+            ! Skip 1d boundaries
+            cycle
+         end if
+      
          if ( itype.eq.1 ) then   ! netlinks, cross with dual links
             call get_link_neighboringcellcoords(L,isactive,xa,ya,xb,yb)
             if ( isactive.ne.1 ) then
@@ -197,8 +187,8 @@
                ya = yk(lncn(1,L))
                xb = xk(lncn(2,L))
                yb = yk(lncn(2,L))
-            endif
-         endif
+            end if
+         end if
 
 !        fill query vector
          call make_queryvector_kdtree(treeinst,xa,ya, jsferic)
@@ -207,11 +197,7 @@
          dlinlen = dbdistance(xa,ya,xb,yb, jsferic, jasfer3D, dmiss)
 
 !        determine square search radius
-         if ( jsferic.eq.0 ) then
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol)**2  ! 1.1d0: safety
-         else
-            R2search = 1.1d0*(dlinlen+dmaxpollen+2d0*dtol*Ra)**2  ! 1.1d0: safety
-         end if
+         R2search = 1.1d0*(dlinlen+dmaxpollen)**2  ! 1.1d0: safety
 
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree,treeinst%qv,R2search)

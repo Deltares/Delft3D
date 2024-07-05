@@ -34,6 +34,8 @@ module m_structures
 use properties
 use unstruc_channel_flow, only: network
 use MessageHandling
+use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
+
 implicit none
 
 type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -84,16 +86,16 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: NUMVALS_WEIRGEN = NUMVALS_COMMON + NUMEXTVALS_WEIRGEN  !< Total number of variables for weir
  integer, parameter :: NUMVALS_ORIFGEN = NUMVALS_COMMON + NUMEXTVALS_ORIFGEN  !< Total number of variables for orifice
 
- double precision, dimension(:,:), allocatable :: valgenstru   !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+ double precision, dimension(:,:), allocatable, target :: valgenstru   !< Array for general structure, (1:NUMVALS_GENSTRU,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
                                                                !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
                                                                !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH,
                                                                !<                                   IVAL_UPPL, IVAL_DIS_OPEN, IVAL_DIS_OVER, IVAL_DIS_UNDER,
                                                                !<                                   IVAL_AREA_OPEN, IVAL_AREA_OVER, IVAL_AREA_UNDER, IVAL_VEL_OPEN, IVAL_VEL_OVER,
                                                                !<                                   IVAL_VEL_UNDER, IVAL_COUNT.
- double precision, dimension(:,:), allocatable :: valweirgen   !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+ double precision, dimension(:,:), allocatable, target :: valweirgen   !< Array for weir, (1:NUMVALS_WEIRGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
                                                                !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
                                                                !<                                   IVAL_FORCEDIF, NUMVALS_WEIRGEN is the counter
- double precision, dimension(:,:), allocatable :: valorifgen   !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
+ double precision, dimension(:,:), allocatable, target :: valorifgen   !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
                                                                !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
                                                                !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH, the last one NUMVALS_ORIFGEN is the counter
  ! Bridge, extra variables:
@@ -102,7 +104,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_BLACTUAL     = NUMVALS_COMMON+3                   !< Index of actual bed level (crest)
  integer, parameter :: NUMEXTVALS_BRIDGE = 3                                  !< Number of extra variables for bridge
  integer, parameter :: NUMVALS_BRIDGE    = NUMVALS_COMMON + NUMEXTVALS_BRIDGE !< Total number of variables for bridge
- double precision, dimension(:,:), allocatable :: valbridge                   !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valbridge                   !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
                                                                               !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_BRIDGE extra variables here.
 
  ! Dambreak, extra variables:
@@ -122,14 +124,14 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_CL_OPENH   = NUMVALS_COMMON + 4                  !< Index of culvert gate opening height
  integer, parameter :: NUMEXTVALS_CULVERT = 4                                !< Number of extra variables for culvertt
  integer, parameter :: NUMVALS_CULVERT = NUMVALS_COMMON + NUMEXTVALS_CULVERT !< Total number of variables for culvert
- double precision, dimension(:,:), allocatable :: valculvert                 !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valculvert                 !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
                                                                              !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
 
  ! Univeral weir, extra variables:
  integer, parameter :: IVAL_UW_CRESTL = NUMVALS_COMMON + 1                   !< Index of universal weir crest level
  integer, parameter :: NUMEXTVALS_UNIWEIR = 1                                !< Number of extra variables for universal weir
  integer, parameter :: NUMVALS_UNIWEIR = NUMVALS_COMMON + NUMEXTVALS_UNIWEIR !< Total number of variables for universal weir
- double precision, dimension(:,:), allocatable :: valuniweir                 !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valuniweir                 !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
                                                                              !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
  
  ! gate (new),  extra variables:
@@ -142,12 +144,12 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6               !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
  integer, parameter :: NUMEXTVALS_GATE    = 6                                     !< Number of extra variables for gate
  integer, parameter :: NUMVALS_GATEGEN    = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
- double precision, dimension(:,:), allocatable :: valgategen                   !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valgategen                   !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
                                                                                !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
  
  ! Compound structure
  integer, parameter :: NUMVALS_CMPSTRU = NUMVALS_COMMON       !< Total number of variables for compound structure, no extra variables.
- double precision, dimension(:,:), allocatable :: valcmpstru  !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
+ double precision, dimension(:,:), allocatable, target :: valcmpstru  !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
  ! Pump shares the first 9 indices in common indices, extra variables are as follows:
  integer, parameter :: NUMVALS_COMMON_PUMP = 9                              !< Number of common variables shared by pump
@@ -160,39 +162,25 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer, parameter :: IVAL_PP_DISDIR = NUMVALS_COMMON_PUMP + 7               !< Pump discharge w.r.t. pumping orientation (same sign as capacity)
  integer, parameter :: NUMEXTVALS_PUMP = 7                                  !< Number of extra variables for pump
  integer, parameter :: NUMVALS_PUMP = NUMVALS_COMMON_PUMP + NUMEXTVALS_PUMP !< Total number of variables for pump
- double precision, dimension(:,:), allocatable :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: valpump                   !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
                                                                             !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
 
  ! Long culvert
  integer, parameter :: IVAL_LC_VALVE       = NUMVALS_COMMON + 1                   !< long culvert valve relative opening
  integer, parameter :: NUMEXTVALS_LONGCULV = 1                                    !< Number of extra variables for long culvert
  integer, parameter :: NUMVALS_LONGCULVERT = NUMVALS_COMMON + NUMEXTVALS_LONGCULV !< Number of variables for long culvert
- double precision, dimension(:,:), allocatable :: vallongculvert                  !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
+ double precision, dimension(:,:), allocatable, target :: vallongculvert                  !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
                                                                                   !< NUMVALS_COMMON common variables (see definitation at top)and above extra variables.
  ! For old stype structures
  integer                           :: NUMVALS_GATE = 5        !< Number of variables for gate
  integer                           :: NUMVALS_CDAM = 4        !< Number of variables for controble dam
  integer                           :: NUMVALS_CGEN = 4        !< Number of variables for general structure (old ext file)
- double precision, dimension(:,:), allocatable :: valgate     !< Array for gate;      (1,:) discharge through gate
- double precision, dimension(:,:), allocatable :: valcdam     !< Array for cdam;      (1,:) discharge through controlable dam
+ double precision, dimension(:,:), allocatable, target :: valgate     !< Array for gate;      (1,:) discharge through gate
+ double precision, dimension(:,:), allocatable, target :: valcdam     !< Array for cdam;      (1,:) discharge through controlable dam
                                                               !<                      (2,:) Upstream average water levels
                                                               !<                      (3,:) downstream average water level
                                                               !<                      (4,0) width of dam
  double precision, dimension(:,:), allocatable :: valcgen     !< Array for general structure (old ext), (1,:) discharge
-
- ! His output keywords
- integer                           :: jahiscgen               !< Write structure parameters to his file, 0: n0, 1: yes
- integer                           :: jahispump               !< Write pump      parameters to his file, 0: n0, 1: yes
- integer                           :: jahisgate               !< Write gate      parameters to his file, 0: n0, 1: yes
- integer                           :: jahiscdam               !< Write dam       parameters to his file, 0: n0, 1: yes
- integer                           :: jahisweir               !< Write weir      parameters to his file, 0: n0, 1: yes
- integer                           :: jahisdambreak           !< Write dambreak  parameters to his file, 0: n0, 1: yes
- integer                           :: jahisorif               !< Write orifice   parameters to his file, 0: no, 1: yes
- integer                           :: jahisbridge             !< Write bridge    parameters to his file, 0: no, 1: yes
- integer                           :: jahisculv               !< Write culvert   parameters to his file, 0: no, 1: yes
- integer                           :: jahisuniweir            !< Write univeral weir parameters to his file, 0: no, 1: yes
- integer                           :: jahiscmpstru            !< Write compound structure parameters to his file, 0: no, 1: yes
- integer                           :: jahislongculv           !< Write long culverts parameters to his file, 0: no, 1:yes
  
  !! Geometry variables
  ! weir
@@ -201,8 +189,8 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  integer,          allocatable, target :: nodeCountWeirInput(:)!< [-] Input Count of nodes per weir.
  double precision, allocatable, target :: geomXWeir(:)         !< [m] x coordinates of weirs.
  double precision, allocatable, target :: geomYWeir(:)         !< [m] y coordinates of weirs.
- double precision, allocatable, target :: geomXWeirInput(:)         !< [m] x coordinates of weirs.
- double precision, allocatable, target :: geomYWeirInput(:)         !< [m] y coordinates of weirs.
+ double precision, allocatable, target :: geomXWeirInput(:)    !< [m] x coordinates of weirs.
+ double precision, allocatable, target :: geomYWeirInput(:)    !< [m] y coordinates of weirs.
  ! general structure
  integer                               :: nNodesGenstru        !< [-] Total number of nodes for all general structures
  integer,          allocatable, target :: nodeCountGenstru(:)  !< [-] Count of nodes per general structure.
@@ -239,6 +227,22 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
  double precision, allocatable, target :: geomXLongCulv(:)     !< [m] x coordinates of long culverts.
  double precision, allocatable, target :: geomYLongCulv(:)     !< [m] y coordinates of long culverts.
  
+ !> Whether or not the model has any structures that lie across multiple partitions
+ !! (needed to disable possibly invalid statistical output items)
+ !! (set in fill_geometry_arrays_structure)
+ logical, protected :: model_has_weirs_across_partitions               = .false.
+ logical, protected :: model_has_general_structures_across_partitions  = .false.
+ logical, protected :: model_has_orifices_across_partitions            = .false.
+ logical, protected :: model_has_universal_weirs_across_partitions     = .false.
+ logical, protected :: model_has_culverts_across_partitions            = .false.
+ logical, protected :: model_has_pumps_across_partitions               = .false.
+ logical, protected :: model_has_bridges_across_partitions             = .false. 
+ logical, protected :: model_has_long_culverts_across_partitions       = .false.
+ logical, protected :: model_has_dams_across_partitions                = .false.
+ logical, protected :: model_has_dambreaks_across_partitions           = .false.
+ logical, protected :: model_has_gates_across_partitions               = .false.
+ logical, protected :: model_has_compound_structures_across_partitions = .false.
+ 
  integer, parameter :: IOPENDIR_FROMLEFT  = -1 !< Gate door opens/closes from left side.
  integer, parameter :: IOPENDIR_FROMRIGHT =  1 !< Gate door opens/closes from right side.
  integer, parameter :: IOPENDIR_SYMMETRIC =  0 !< Gate door opens/closes symmetrically (from center).
@@ -261,7 +265,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use m_flowexternalforcings , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksg
+      use fm_external_forcings_data , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
       !use m_structures, only: NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, &
       !                        NUMVALS_GATEGEN, NUMVALS_WEIRGEN, NUMVALS_GENSTRU
       use m_alloc
@@ -309,9 +313,9 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
          if( allocated( valweirgen) ) deallocate( valweirgen )
          allocate( valweirgen(NUMVALS_WEIRGEN,nweirgen) ) ; valweirgen = 0d0
       endif
-      if( jahisdambreak > 0 .and. ndambreaksg > 0) then
+      if( jahisdambreak > 0 .and. ndambreaksignals > 0) then
          if( allocated( valdambreak ) ) deallocate( valdambreak )
-         allocate( valdambreak(NUMVALS_DAMBREAK,ndambreaksg) ) ; valdambreak = 0d0
+         allocate( valdambreak(NUMVALS_DAMBREAK,ndambreaksignals) ) ; valdambreak = 0d0
       endif
       if((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if( allocated( valorifgen) ) deallocate( valorifgen )
@@ -792,7 +796,7 @@ end function get_discharge_under_gate
 !! Values are stored in the val*(:,:) arrays, shared with history output.
 subroutine structure_parameters_rst()
    use m_1d_structures
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    implicit none
    integer :: n, istru
    type(t_structure), pointer    :: pstru
@@ -972,6 +976,27 @@ integer function get_total_number_of_geom_nodes(istrtypein, nstru)
 
 end function get_total_number_of_geom_nodes
 
+!> Get the total number of structures of a certain type
+function get_number_of_structures(struc_type_id) result(number_of_structures)
+   use m_GlobalParameters
+   use fm_external_forcings_data, only: ncdamsg, ndambreaksignals, ngatesg, npumpsg
+   use unstruc_channel_flow, only: network
+   
+   integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
+   integer             :: number_of_structures
+   
+   select case (struc_type_id)
+   case (ST_DAM)
+      number_of_structures = ncdamsg
+   case (ST_DAMBREAK)
+      number_of_structures = ndambreaksignals
+   case (ST_GATE)
+      number_of_structures = ngatesg
+   case (ST_COMPOUND)
+      number_of_structures = network%cmps%count
+   end select
+end function get_number_of_structures
+
 !> Gets geometry coordinates of a structure.
 !! Geometry coordinates can be used in a (multi-) polyline representation of the placement
 !! of structures on flow links.
@@ -1123,17 +1148,18 @@ subroutine get_geom_coordinates_of_structure(istrtypein, i, nNodes, x, y, maskLo
    end if
 end subroutine get_geom_coordinates_of_structure
 
-!> Gets geometry coordinates of a structure, aligned along structure.
-!! Geometry coordinates can be used in a polyline representation of the placement
-!! of structures on flow links.
-subroutine get_geom_coordinates_of_structure_old(i, nNodes, x, y)
+!> Gets geometry coordinates of a generalstructure that was read from an old ext file.
+!! (this is either a generalstructure, gate or weir)
+!! Geometry coordinates are aligned along the structure's polyline orientation,
+!! and can be used in a polyline representation of the placement of structures on flow links.
+subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
    use m_alloc
-   use m_flowexternalforcings, only: ncgensg, kcgen, L1cgensg, L2cgensg
+   use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg
    use m_flowgeom, only: lncn
    use network_data, only: xk, yk
    implicit none
-   integer,                       intent(in   ) :: i           !< Structure index for this structure type.
-   integer,                       intent(in   ) :: nNodes      !< Number of geometry nodes in this structure.
+   integer,                       intent(in   ) :: i      !< Structure index for this structure type.
+   integer,                       intent(in   ) :: nNodes !< Number of geometry nodes in this structure.
    double precision, allocatable, intent(  out) :: x(:)   !< x-coordinates of the structure (will be reallocated when needed)
    double precision, allocatable, intent(  out) :: y(:)   !< y-coordinates of the structure (will be reallocated when needed)
 
@@ -1186,17 +1212,17 @@ subroutine get_geom_coordinates_of_structure_old(i, nNodes, x, y)
          k = k+1
       end do
    end if
-end subroutine get_geom_coordinates_of_structure_old
+end subroutine get_geom_coordinates_of_generalstructure_oldext
 
 !> Fills in the geometry arrays of a structure type for history output
-subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
+subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
    use m_alloc
    use m_partitioninfo
    use m_GlobalParameters
    use m_flowparameters, only: eps6
    use precision_basics
    implicit none
-   integer,                       intent(in   ) :: istrtypein       !< The type of the structure. May differ from the struct%type
+   integer,                       intent(in   ) :: struc_type_id    !< The id of the type of the structure (e.g. ST_CULVERT). May differ from the struct%type
    integer,                       intent(in   ) :: nstru            !< Number of this structure type
    integer,                       intent(  out) :: nNodesStru       !< Total number of nodes of this structure type
    integer,          allocatable, intent(  out) :: nodeCountStru(:) !< Node count of this structure type
@@ -1217,13 +1243,13 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
    ! Allocate and construct geometry variable arrays (on one subdomain)
    call realloc(nodeCountStru,   nstru, keepExisting = .false., fill = 0  )
    do i = 1, nstru
-      nNodes = get_number_of_geom_nodes(istrtypein, i)
+      nNodes = get_number_of_geom_nodes(struc_type_id, i)
       nodeCountStru(i) = nNodes
    end do
    nNodesStru = sum(nodeCountStru)
    call realloc(geomXStru,       nNodesStru,   keepExisting = .false., fill = 0d0)
    call realloc(geomYStru,       nNodesStru,   keepExisting = .false., fill = 0d0)
-   if (jampi > 0 .and. istrtypein == ST_LONGCULVERT) then
+   if (jampi > 0 .and. struc_type_id == ST_LONGCULVERT) then
       ! In parallel runs, one structure might lie on multiple subdomains. To handle this situation,
       ! we will need to know which nodes are local start/end nodes of a structure on each subdomain, and the local start/end nodes will be handled separately.
       ! This will avoid having duplicated (local start/end) nodes in the arrays of coordinates of a structure among all subdomains.
@@ -1234,16 +1260,43 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
    do i = 1, nstru
       nNodes = nodeCountStru(i)
       if (nNodes > 0) then
-         call get_geom_coordinates_of_structure(istrtypein, i, nNodes, geomX, geomY, maskLocalStartEnd)
+         call get_geom_coordinates_of_structure(struc_type_id, i, nNodes, geomX, geomY, maskLocalStartEnd)
          is = ie + 1
          ie = is + nNodes - 1
          geomXStru(is:ie) = geomX(1:nNodes)
          geomYStru(is:ie) = geomY(1:nNodes)
-         if (jampi > 0 .and. istrtypein == ST_LONGCULVERT) then
+         if (jampi > 0 .and. struc_type_id == ST_LONGCULVERT) then
             maskLocalStartEndAll(is:ie) = maskLocalStartEnd(1:nNodes)
          end if
       end if
    end do
+   
+   ! Check if any structures of this type lie across multiple partitions
+   ! (needed to disable possibly invalid statistical output items)
+   if (any_structures_lie_across_multiple_partitions(nodeCountStru)) then
+      select case (struc_type_id)
+      case default
+         call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in m_structures/fill_geometry_arrays_structure')
+      case (ST_UNSET)
+         call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in m_structures/fill_geometry_arrays_structure')
+      case (ST_WEIR)
+         model_has_weirs_across_partitions = .true.
+      case (ST_GENERAL_ST)
+         model_has_general_structures_across_partitions = .true.
+      case (ST_ORIFICE)
+         model_has_orifices_across_partitions = .true.
+      case (ST_UNI_WEIR)
+         model_has_universal_weirs_across_partitions = .true.
+      case (ST_CULVERT)
+         model_has_culverts_across_partitions = .true.
+      case (ST_PUMP)
+         model_has_pumps_across_partitions = .true.
+      case (ST_BRIDGE)
+         model_has_bridges_across_partitions = .true.
+      case (ST_LONGCULVERT)
+         model_has_long_culverts_across_partitions = .true.
+      end select
+   end if
 
    !! The codes below are similar to subroutine "fill_geometry_arrays_lateral".
    !! They work for 1D structures, but are supposed to work when more links are contained in a structure.
@@ -1265,7 +1318,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
          call realloc(yGat,             nNodesStruMPI,  keepExisting = .false., fill = 0d0)
          call realloc(displs,           ndomains,       keepExisting = .false., fill = 0  )
          call realloc(nNodesStruGat,    ndomains,       keepExisting = .false., fill = 0  )
-         if (istrtypein == ST_LONGCULVERT) then
+         if (struc_type_id == ST_LONGCULVERT) then
             call realloc(maskLocalStartEndGat, nNodesStruMPI,  keepExisting = .false., fill = 0  )
          end if
       else
@@ -1292,7 +1345,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
       ! Gather double precision data, here, different number of data can be gatherd from different subdomains to process 0000
       call gatherv_double_data_mpi_dif(nNodesStru, geomXStru, nNodesStruMPI, xGat, ndomains, nNodesStruGat, displs, 0, ierror)
       call gatherv_double_data_mpi_dif(nNodesStru, geomYStru, nNodesStruMPI, yGat, ndomains, nNodesStruGat, displs, 0, ierror)
-      if (istrtypein == ST_LONGCULVERT) then
+      if (struc_type_id == ST_LONGCULVERT) then
          call gatherv_int_data_mpi_dif(nNodesStru, maskLocalStartEndAll, nNodesStruMPI, maskLocalStartEndGat, ndomains, nNodesStruGat, displs, 0, ierror)
       end if
 
@@ -1309,7 +1362,7 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
          ! Below seperate long culverts with other structures, because the we support a long culvert lying
          ! on multiple subdomains, but do not support other structures lying on multiple subdomains yet.
          ! TODO: enable this for other structures as well.
-         if (istrtypein == ST_LONGCULVERT) then
+         if (struc_type_id == ST_LONGCULVERT) then
             j = 0
             do i = 1, nstru                    ! for each structure
                nPar = 0                        ! Number of subdomains that contain this structure
@@ -1410,6 +1463,60 @@ subroutine fill_geometry_arrays_structure(istrtypein, nstru, nNodesStru, nodeCou
       end if
    end if
 end subroutine fill_geometry_arrays_structure
+
+!> Check if the model has any dams/dam breaks/gates/compound structures that lie across multiple partitions
+!! (needed to disable possibly invalid statistical output items)
+subroutine check_model_has_structures_across_partitions
+   use m_partitioninfo, only: jampi, any_structures_lie_across_multiple_partitions
+   use m_GlobalParameters
+   
+   integer, dimension(4)              :: struc_type_ids
+   integer                            :: i_struc_type_id, struc_type_id, number_of_structures, i_struc
+   integer, dimension(:), allocatable :: links, nlinks_per_struc
+   logical                            :: res
+  
+   if (jampi == 0) then
+      model_has_dams_across_partitions                = .false.
+      model_has_dambreaks_across_partitions           = .false.
+      model_has_gates_across_partitions               = .false.
+      model_has_compound_structures_across_partitions = .false.
+      return
+   end if
+   
+   struc_type_ids = [ST_DAM, ST_DAMBREAK, ST_GATE, ST_COMPOUND]
+   
+   do i_struc_type_id = 1, size(struc_type_ids)
+      struc_type_id = struc_type_ids(i_struc_type_id)
+      number_of_structures = get_number_of_structures(struc_type_id)
+      
+      if (number_of_structures == 0) then
+         res = .false.
+      else
+         allocate(nlinks_per_struc(number_of_structures), source = 0)
+      
+         do i_struc = 1, number_of_structures
+            call retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
+            nlinks_per_struc(i_struc) = size(links)
+            deallocate(links)
+         end do
+      
+         res = any_structures_lie_across_multiple_partitions(nlinks_per_struc)
+      end if
+   
+      select case (struc_type_id)
+      case (ST_DAM)
+         model_has_dams_across_partitions = res
+      case (ST_DAMBREAK)
+         model_has_dambreaks_across_partitions = res
+      case (ST_GATE)
+         model_has_gates_across_partitions = res
+      case (ST_COMPOUND)
+         model_has_compound_structures_across_partitions = res
+      end select
+      
+   end do
+      
+end subroutine check_model_has_structures_across_partitions
 
 !> Fill in array valstruct for a givin general structure, weir or orifice.
 subroutine fill_valstruct_per_structure(valstruct, istrtypein, istru, nlinks)
@@ -1588,5 +1695,246 @@ if (numstructs > 0) then
 endif
 
 end subroutine get_input_coordinates_of_structure
+
+!> Determine the combined number of geometry nodes for all pumps
+!! (used to determine the size of geometry variables in the his-file)
+integer function number_of_pump_nodes
+   use m_flowparameters, only: jahispump
+   use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
+   use unstruc_channel_flow, only: network
+   
+   integer :: n, nlinks, nNodes
+   
+   number_of_pump_nodes = 0
+   
+   if (jahispump > 0 .and. npumpsg > 0) then
+      if (network%sts%numPumps > 0) then ! newpump
+         number_of_pump_nodes = nNodesPump
+      else ! old pump
+         do n = 1, npumpsg
+            nlinks = L2pumpsg(n) - L1pumpsg(n) + 1
+            if (nlinks > 0) then
+               nNodes = nlinks + 1
+            else if (nlinks == 0) then
+               nNodes = 0
+            end if
+            number_of_pump_nodes = number_of_pump_nodes + nNodes
+         end do
+      end if
+   end if
+   
+end function number_of_pump_nodes
+
+!> Retrieve the set of snapped flowlinks for a polyline-based structure
+subroutine retrieve_set_of_flowlinks_for_polyline_structure(struc_type_id, i_struc, links)
+   use MessageHandling, only: mess, LEVEL_ERROR
+   use m_GlobalParameters
+   
+   integer,                            intent(in   ) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
+   integer,                            intent(in   ) :: i_struc       !< Index of the structure of this type
+   integer, dimension(:), allocatable, intent(  out) :: links         !< The set of flowlinks that this structure has been snapped to
+   
+   select case (struc_type_id)
+   case default
+      call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in unstruc_structures/retrieve_set_of_flowlinks_for_polyline_structure')
+   case (ST_UNSET)
+      call mess(LEVEL_ERROR,'Programming error, please report: unrecognised struc_type_id in unstruc_structures/retrieve_set_of_flowlinks_for_polyline_structure')
+   case (ST_PUMP)
+      call retrieve_set_of_flowlinks_pump(i_struc, links)
+   case (ST_DAM)
+      call retrieve_set_of_flowlinks_dam(i_struc, links)
+   case (ST_DAMBREAK)
+      call retrieve_set_of_flowlinks_dambreak(i_struc, links)
+   case (ST_GATE)
+      call retrieve_set_of_flowlinks_gate(i_struc, links)
+   case (ST_COMPOUND)
+      call retrieve_set_of_flowlinks_compound_structure(i_struc, links)
+   case (ST_WEIR         , &
+         ST_ORIFICE      , &
+         ST_GENERAL_ST   , &
+         ST_UNI_WEIR     , &
+         ST_CULVERT      , &
+         ST_BRIDGE       , &
+         ST_LONGCULVERT  , &
+         ST_OBS_STATION  , &
+         ST_CROSS_SECTION, &
+         ST_RUNUP_GAUGE  , &
+         ST_SOURCE_SINK  , &
+         ST_GATEGEN      , &
+         ST_LATERAL)
+      ! TODO: implement these! (UNST-7919)
+      allocate(links(0))
+      return
+   end select
+   
+end subroutine retrieve_set_of_flowlinks_for_polyline_structure
+
+!> Retrieve the set of snapped flowlinks for a pump
+subroutine retrieve_set_of_flowlinks_pump(i_pump, links)
+   use fm_external_forcings_data, only: L1pumpsg, L2pumpsg, kpump
+   
+   integer,                            intent(in   ) :: i_pump      !< Index of the pump
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this pump has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2pumpsg(i_pump) + 1 - L1pumpsg(i_pump)
+   allocate(links(n_links), source = -999)
+   
+   i = 0
+   do k = L1pumpsg(i_pump), L2pumpsg(i_pump)
+      i = i+1
+      links(i) = kpump(3,k)
+   end do
+   
+end subroutine retrieve_set_of_flowlinks_pump
+
+!> Retrieve the set of snapped flowlinks for a dam
+subroutine retrieve_set_of_flowlinks_dam(i_dam, links)
+   use fm_external_forcings_data, only: L1cdamsg, L2cdamsg, kcdam
+   
+   integer,                            intent(in   ) :: i_dam       !< Index of the dam
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dam has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2cdamsg(i_dam) + 1 - L1cdamsg(i_dam)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1cdamsg(i_dam), L2cdamsg(i_dam)
+      i = i+1
+      links(i) = kcdam(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_dam
+
+!> Retrieve the set of snapped flowlinks for a dambreak
+subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
+   use fm_external_forcings_data, only: L1dambreaksg, L2dambreaksg, kdambreak
+   
+   integer,                            intent(in   ) :: i_dambreak  !< Index of the dambreak
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dambreak has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2dambreaksg(i_dambreak) + 1 - L1dambreaksg(i_dambreak)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1dambreaksg(i_dambreak), L2dambreaksg(i_dambreak)
+      i = i+1
+      links(i) = kdambreak(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_dambreak
+
+!> Retrieve the set of snapped flowlinks for a gate
+subroutine retrieve_set_of_flowlinks_gate(i_gate, links)
+   use fm_external_forcings_data, only: L1gatesg, L2gatesg, kgate
+   
+   integer,                            intent(in   ) :: i_gate      !< Index of the gate
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this gate has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: k,i
+   
+   n_links = L2gatesg(i_gate) + 1 - L1gatesg(i_gate)
+   allocate(links(n_links), source = -999)
+
+   i = 0
+   do k = L1gatesg(i_gate), L2gatesg(i_gate)
+      i = i+1
+      links(i) = kgate(3,k)
+   end do
+      
+end subroutine retrieve_set_of_flowlinks_gate
+
+!> Retrieve the set of snapped flowlinks for a compound structure
+subroutine retrieve_set_of_flowlinks_compound_structure(i_cmpnd, links)
+   use unstruc_channel_flow, only: network
+   
+   integer,                            intent(in   ) :: i_cmpnd     !< Index of the compound structure
+   integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this compound structure has been snapped to
+   
+   integer :: n_links !< Total number of flowlinks in the set
+   integer :: i
+   
+   n_links = network%cmps%compound(i_cmpnd)%numlinks
+   allocate(links(n_links), source = -999)
+   links  = network%cmps%compound(i_cmpnd)%linknumbers
+      
+end subroutine retrieve_set_of_flowlinks_compound_structure
+
+!> Calculate the x,y-coordinates of the midpoint of a set of flowlinks
+!! (presumably those that a polyline has been snapped to)
+subroutine calc_midpoint_coords_of_set_of_flowlinks(links, xmid, ymid)
+   use m_missing, only: dmiss
+   use MessageHandling, only: mess, LEVEL_ERROR
+   use m_flowgeom, only: kcu, wu, lncn, xu, yu
+   use network_data, only: xk, yk
+   use precision_basics, only: comparereal, dp
+   
+   integer, dimension(:), intent(in   ) :: links !< The set of flowlinks
+   real(dp),              intent(  out) :: xmid  !< x-coordinate of the midpoint
+   real(dp),              intent(  out) :: ymid  !< y-coordinate of the midpoint
+   
+   integer  :: number_of_flowlinks, i, Lf, k1, k2, k3, k4
+   real(dp) :: total_length_of_flowlink_set, distance_along_flowlink_set, w1
+   
+   xmid = dmiss
+   ymid = dmiss
+   
+   ! Safety in case no flowlinks were provided
+   number_of_flowlinks = size(links)
+   if (number_of_flowlinks == 0) then
+      return
+   end if
+
+   total_length_of_flowlink_set = 0.0_dp
+   do i = 1, number_of_flowlinks
+      Lf = abs(links(i))
+      total_length_of_flowlink_set = total_length_of_flowlink_set + wu(Lf)
+   end do
+
+   ! Find the mid point on the snapped flow link path
+   distance_along_flowlink_set = 0.0_dp
+   do i = 1, number_of_flowlinks
+      Lf = abs(links(i))
+      if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set / 2.0_dp) then
+         ! The midpoint must lie on this flowlink; calculate exactly where
+         if (kcu(Lf) == 2) then
+            ! 2D flowlink
+            if (links(i) > 0) then
+               k3 = lncn(1,Lf)
+               k4 = lncn(2,Lf)
+            else
+               k3 = lncn(2,Lf)
+               k4 = lncn(1,Lf)
+            end if
+            w1 = (total_length_of_flowlink_set / 2.0_dp - distance_along_flowlink_set) / wu(Lf)
+            xmid = w1 *xk(k3) + (1.0_dp - w1)*xk(k4)
+            ymid = w1 *yk(k3) + (1.0_dp - w1)*yk(k4)
+         else
+            ! 1D flowlink
+            xmid = xu(Lf)
+            ymid = yu(Lf)
+         end if
+         exit ! midpoint was found
+      else
+         ! The midpoint must lie beyond this flowlink; add its entire length
+         distance_along_flowlink_set = distance_along_flowlink_set + wu(Lf)
+      end if
+   end do
+   
+   ! Safety
+   if (comparereal(xmid, dmiss) == 0 .and. comparereal(ymid, dmiss) == 0) then
+      call mess(LEVEL_ERROR, 'Programming error, please report: calc_midpoint_coords_of_set_of_flowlinks failed')
+   end if
+               
+end subroutine calc_midpoint_coords_of_set_of_flowlinks
 
 end module m_structures

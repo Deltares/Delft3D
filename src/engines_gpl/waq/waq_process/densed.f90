@@ -31,7 +31,7 @@ contains
     subroutine densed (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Denitrification in sediment
@@ -108,7 +108,7 @@ contains
         DO ISEG = 1, NOSEG
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
                     IF (TMPOPT) THEN

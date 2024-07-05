@@ -40,14 +40,15 @@
 
       integer :: i, j
 
-      DO 10 I = 1,MC
-         DO 10 J = 1,NC
+      do I = 1,MC
+         do J = 1,NC
             IF (I .GE. MB(3) .AND. I .LE. MB(4) .AND. J .GE. NB(3) .AND. J .LE. NB(4) )THEN
 !               mooi houwen zo
             ELSE
                X(I,J) = XYMIS
                Y(I,J) = 0d0
             ENDIF
-    10 CONTINUE
+         end do
+      end do
       RETURN
       END subroutine cutfield

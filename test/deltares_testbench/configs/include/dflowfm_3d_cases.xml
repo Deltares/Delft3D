@@ -1,4 +1,4 @@
-  <testCases>
+  <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
       <testCase name="e02_f001_c201_channel_flow_algebraic_sigma_equi_3d" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c201_channel_flow_algebraic_sigma_equi_3d</path>
@@ -922,7 +922,7 @@
     </testCase>
 
     <testCase name="e02_f020_c001_htc_read_uniform" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
+      <path version="2024-05-07T21:17:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
       <programs>
         <program ref="DFlowFM">
           <arguments>
@@ -935,9 +935,24 @@
       <checks>
         <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
-			<parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_s1" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_ucx" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_ucy" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Patm" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windx" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windy" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windxu" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_windyu" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Tair" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Rhum" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Clou" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qsun" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qeva" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qcon" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qlong" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qfreva" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qfrcon" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qtot" toleranceRelative="1e-7" />
           </parameters>
         </file>
       </checks>

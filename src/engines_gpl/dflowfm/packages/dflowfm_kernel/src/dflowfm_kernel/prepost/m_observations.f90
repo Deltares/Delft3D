@@ -72,7 +72,7 @@ module m_observations
 
 use m_alloc
 use m_missing
-use m_flowexternalforcings
+use fm_external_forcings_data
 use MessageHandling, only: IdLen
 
 implicit none
@@ -85,6 +85,7 @@ implicit none
     double precision, allocatable     :: smxobs(:)      !< maximum waterlevel of observation points
     double precision, allocatable     :: cmxobs(:)      !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
     integer, allocatable              :: kobs(:)        !< node nrs of ACTIVE observation points
+    integer, allocatable              :: lobs(:)        !< flowlink nrs of active observation points
     ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
     character(len=IdLen), allocatable :: namobs(:)      ! names of observation points
     integer, allocatable              :: locTpObs(:)    !< location type of observation points, determining to which flownodes to snap to (0=1d2d, 1=1d, 2=2d, 3=1d defined by branchID+chainage)
@@ -96,11 +97,8 @@ implicit none
     integer                           :: mxls           !< Unit nr hisdump to excel
     integer                           :: jafahrenheit=0 !< Output in Celsius, otherwise Fahrenheit
 
-
-    double precision                  :: tlastupd_valobs !< Time at which the valobs array was last updated.
-    double precision, dimension(:,:), allocatable, target :: valobs     !< work array with 2d and 3d values stored at observation stations, dim(MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1),numobs+nummovobs)
-    double precision, dimension(:,:), allocatable         :: valobs_all !< work array with 2d and 3d values stored at observation stations, dim(MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1),numobs+nummovobs)
-
+    double precision, dimension(:,:), allocatable, target :: valobs     !< work array with 2d and 3d values stored at observation stations, dim(numobs+nummovobs, MAXNUMVALOBS2D+MAXNUMVALOBS3D*max(kmx,1)+MAXNUMVALOBS3Dw*(max(kmx,1)+1))
+    
     integer                           :: MAXNUMVALOBS2D   ! maximum number of outputted values at observation stations
     integer                           :: MAXNUMVALOBS3D   ! maximum number of outputted values at observation stations, 3D layer centers
     integer                           :: MAXNUMVALOBS3Dw  ! maximum number of outputted values at observation stations, 3D layer interfaces (e.g. zws)
@@ -152,7 +150,8 @@ implicit none
     integer                           :: IVAL_BRUV
     integer                           :: IVAL_TKIN
     integer                           :: IVAL_TEPS
-    integer                           :: IVAL_VICWW
+    integer                           :: IVAL_VICWWS
+    integer                           :: IVAL_VICWWU
     integer                           :: IVAL_WS1
     integer                           :: IVAL_WSN
     integer                           :: IVAL_SEDDIF1
@@ -248,6 +247,7 @@ implicit none
     integer                           :: IPNT_WQB1
     integer                           :: IPNT_WQB3D1
     integer                           :: IPNT_SF1
+    integer                           :: IPNT_SFN
     integer                           :: IPNT_SED
     integer                           :: IPNT_ZCS
     integer                           :: IPNT_ZWS
@@ -255,8 +255,10 @@ implicit none
     integer                           :: IPNT_BRUV
     integer                           :: IPNT_TKIN
     integer                           :: IPNT_TEPS
-    integer                           :: IPNT_VICWW
+    integer                           :: IPNT_VICWWS
+    integer                           :: IPNT_VICWWU
     integer                           :: IPNT_WS1
+    integer                           :: IPNT_WSN
     integer                           :: IPNT_SEDDIF1
     integer                           :: IPNT_RICH
     integer                           :: IPNT_TAIR
@@ -292,6 +294,7 @@ implicit none
     integer                           :: IPNT_POROS
     integer                           :: IPNT_LYRFRAC1
     integer                           :: IPNT_FRAC1
+    integer                           :: IPNT_FRACN
     integer                           :: IPNT_MUDFRAC
     integer                           :: IPNT_SANDFRAC
     integer                           :: IPNT_FIXFAC1
@@ -303,7 +306,6 @@ contains
 subroutine init_valobs()
    implicit none
 
-   tlastupd_valobs = dmiss
    call init_valobs_pointers()
 
    call alloc_valobs()
@@ -321,15 +323,8 @@ subroutine alloc_valobs()
    end if
 
    if ( IPNT_NUM.gt.0 ) then
-      allocate(valobs(IPNT_NUM,numobs+nummovobs))
+      allocate(valobs(numobs+nummovobs,IPNT_NUM))
       valobs = 0d0   ! should not be DMISS, since DMISS is used for global reduction in parallel computations
-   end if
-
-   if ( jampi.eq.1 ) then
-      if ( allocated(valobs_all) ) then
-         deallocate(valobs_all)
-      end if
-      allocate(valobs_all(IPNT_NUM,numobs+nummovobs))
    end if
 
    return
@@ -398,7 +393,8 @@ subroutine init_valobs_pointers()
    IVAL_BRUV       = 0
    IVAL_TKIN       = 0
    IVAL_TEPS       = 0
-   IVAL_VICWW      = 0
+   IVAL_VICWWS     = 0
+   IVAL_VICWWU     = 0
    IVAL_RICH       = 0
    IVAL_WS1        = 0
    IVAL_WSN        = 0
@@ -626,23 +622,24 @@ subroutine init_valobs_pointers()
    MAXNUMVALOBS3D                       = i-i0
 
 !  3D, layer interfaces
-   i0=i;
-   if ( kmx.gt.0 ) then
+   i0 = i
+   if (kmx > 0) then
       i=i+1;            IVAL_ZWS        = i
       i=i+1;            IVAL_ZWU        = i
       i=i+1;            IVAL_BRUV       = i
-      if ( iturbulencemodel.gt.0 ) then
+      if (iturbulencemodel > 0) then
          i=i+1;         IVAL_TKIN       = i
          i=i+1;         IVAL_TEPS       = i
-         i=i+1;         IVAL_VICWW      = i
+         i=i+1;         IVAL_VICWWS     = i
+         i=i+1;         IVAL_VICWWU     = i
       end if
-      if ( idensform.gt.0 ) then
+      if (idensform > 0) then
          i=i+1;         IVAL_RICH       = i
       end if
-      if (jased>0 .and. stm_included .and. ISED1.gt.0) then
+      if (jased > 0 .and. stm_included .and. ISED1 > 0) then
          i=i+1;              IVAL_SEDDIF1   = i
          i=i+ISEDN-ISED1;    IVAL_SEDDIFN   = i
-      endif
+      end if
    end if
    if (jased>0 .and. stm_included .and. ISED1.gt.0) then     ! also 2d
       i=i+1;              IVAL_WS1       = i
@@ -687,6 +684,7 @@ subroutine init_valobs_pointers()
    IPNT_HWQ1  = ivalpoint(IVAL_HWQ1,  kmx, nlyrs)
    IPNT_WQB3D1= ivalpoint(IVAL_WQB3D1,kmx, nlyrs)
    IPNT_SF1   = ivalpoint(IVAL_SF1,   kmx, nlyrs)
+   IPNT_SFN   = ivalpoint(IVAL_SFN,   kmx, nlyrs)
    IPNT_SED   = ivalpoint(IVAL_SED,   kmx, nlyrs)
    IPNT_WX    = ivalpoint(IVAL_WX ,   kmx, nlyrs)
    IPNT_WY    = ivalpoint(IVAL_WY ,   kmx, nlyrs)
@@ -705,11 +703,13 @@ subroutine init_valobs_pointers()
    IPNT_BRUV  = ivalpoint(IVAL_BRUV,  kmx, nlyrs)
    IPNT_TKIN  = ivalpoint(IVAL_TKIN,  kmx, nlyrs)
    IPNT_TEPS  = ivalpoint(IVAL_TEPS,  kmx, nlyrs)
-   IPNT_VICWW = ivalpoint(IVAL_VICWW, kmx, nlyrs)
+   IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+   IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
    IPNT_RICH  = ivalpoint(IVAL_RICH,  kmx, nlyrs)
    IPNT_RHOP  = ivalpoint(IVAL_RHOP,  kmx, nlyrs)
    IPNT_RHO   = ivalpoint(IVAL_RHO,   kmx, nlyrs)
    IPNT_WS1   = ivalpoint(IVAL_WS1,   kmx, nlyrs)
+   IPNT_WSN   = ivalpoint(IVAL_WSN,   kmx, nlyrs)
    IPNT_SEDDIF1 = ivalpoint(IVAL_SEDDIF1,   kmx, nlyrs)
    IPNT_SBCX1 = ivalpoint(IVAL_SBCX1,   kmx, nlyrs)
    IPNT_SBCY1 = ivalpoint(IVAL_SBCY1,   kmx, nlyrs)
@@ -748,6 +748,7 @@ subroutine init_valobs_pointers()
    IPNT_POROS    = ivalpoint(IVAL_POROS   ,kmx, nlyrs)
    IPNT_LYRFRAC1 = ivalpoint(IVAL_LYRFRAC1,kmx, nlyrs)
    IPNT_FRAC1    = ivalpoint(IVAL_FRAC1   ,kmx, nlyrs)
+   IPNT_FRACN    = ivalpoint(IVAL_FRACN   ,kmx, nlyrs)
    IPNT_MUDFRAC  = ivalpoint(IVAL_MUDFRAC ,kmx, nlyrs)
    IPNT_SANDFRAC = ivalpoint(IVAL_SANDFRAC,kmx, nlyrs)
    IPNT_FIXFAC1  = ivalpoint(IVAL_FIXFAC1 ,kmx, nlyrs)
@@ -895,6 +896,7 @@ use m_GlobalParameters, only: INDTP_ALL
         call realloc(yobs,   numobs+nummovobs+capacity_)
         call realloc(xyobs,  2*(nummovobs+capacity_))
         call realloc(kobs,   numobs+nummovobs+capacity_)
+        call realloc(lobs,   numobs+nummovobs+capacity_)
         call realloc(namobs, numobs+nummovobs+capacity_)
         call realloc(smxobs, numobs+nummovobs+capacity_)
         call realloc(cmxobs, numobs+nummovobs+capacity_)
@@ -909,6 +911,7 @@ use m_GlobalParameters, only: INDTP_ALL
             xobs(i+1)   = xobs(i)
             yobs(i+1)   = yobs(i)
             kobs(i+1)   = kobs(i)
+            lobs(i+1)   = lobs(i)
             namobs(i+1) = namobs(i)
             smxobs(i+1) = smxobs(i)
             cmxobs(i+1) = cmxobs(i)
@@ -927,6 +930,7 @@ use m_GlobalParameters, only: INDTP_ALL
     yobs(inew)   = y
     namobs(inew) = name_
     kobs(inew)   = -999   ! Cell number is set elsewhere
+    lobs(inew)   = -999   ! Flow link number is set elsewhere
     smxobs(inew) = -999d0 ! max waterlevel
     cmxobs(inew) = -999d0 ! max velocity mag.
     locTpObs(inew) = loctype_
@@ -1045,6 +1049,7 @@ subroutine purgeObservations()
             xobs(k)   = xobs(i)
             yobs(k)   = yobs(i)
             kobs(k)   = kobs(i)
+            lobs(k)   = lobs(i)
             namobs(k) = namobs(i)
             if (i <= numobs) then
                 kk = k
@@ -1065,6 +1070,7 @@ use unstruc_channel_flow, only: network
        deallocate(yobs)
        deallocate(xyobs)
        deallocate(kobs)
+       deallocate(lobs)
        deallocate(namobs)
        deallocate(smxobs)
        deallocate(cmxobs)
@@ -1078,6 +1084,7 @@ use unstruc_channel_flow, only: network
     allocate(yobs(capacity_))
     allocate(xyobs(2*capacity_))
     allocate(kobs(capacity_))
+    allocate(lobs(capacity_))
     allocate(namobs(capacity_))
     allocate(smxobs(capacity_))
     allocate(cmxobs(capacity_))
@@ -1086,10 +1093,10 @@ use unstruc_channel_flow, only: network
 
 
     kobs = -999
+    lobs = -999
 
     numobs = 0
     nummovobs = 0
-    tlastupd_valobs = dmiss
     call doclose(mxls)
 end subroutine deleteObservations
 

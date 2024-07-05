@@ -345,27 +345,33 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
-     if (facLaxturb > 0) then 
-        if (jafacLaxturbtyp == 1) then 
-           do L  = Lb,Lt-1
+     if (turbulence_lax_factor > 0) then 
+        if (turbulence_lax_vertical == 1) then 
+           do L = Lb,Lt-1
               zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
               if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
                  k1 = ln(1,L) ; k2 = ln(2,L) 
-                 if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                    faclax = facLaxturb*zf
-                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
-                 endif
-              endif
-           enddo
-        else if (jafacLaxturbtyp == 2) then 
+                 if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then
+                    if ( turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2-1) .and. zws(k1-1) < zws(k2)) ) then
+                        faclax = turbulence_lax_factor*zf
+                        faclax = faclax*min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                        dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                    end if
+                 end if
+              end if
+           end do
+        else if (turbulence_lax_vertical == 2) then 
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*turkin0(L) +  0.5d0*facLaxturb*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
-              endif
-           enddo
-        endif
-     endif
+                 if ( turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2-1) .and. zws(k1-1) < zws(k2)) ) then
+                    faclax = turbulence_lax_factor*min( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) ) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                 end if
+              end if
+           end do
+        end if
+     end if
 
      vicu      = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigtkei        !
 
@@ -728,26 +734,32 @@ double precision, external :: setrhofixedp
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
 
-     if (facLaxturb > 0) then 
-        if (jafacLaxturbtyp == 1) then 
+     if (turbulence_lax_factor > 0) then 
+        if (turbulence_lax_vertical == 1) then 
            do L  = Lb,Lt-1
               zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
               if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
                  k1 = ln(1,L) ; k2 = ln(2,L) 
-                 if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                    faclax = facLaxturb*zf
-                    dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
-                 endif
-              endif
-           enddo
-        else if (jafacLaxturbtyp == 2) then 
+                 if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then
+                     if ( turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2-1) .and. zws(k1-1) < zws(k2)) ) then
+                        faclax = turbulence_lax_factor*zf
+                        faclax = faclax*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                        dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                     end if
+                 end if
+              end if
+           end do
+        else if (turbulence_lax_vertical == 2) then 
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
-              if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
-              endif
-           enddo
-        endif  
+              if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then
+                 if ( turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2-1) .and. zws(k1-1) < zws(k2)) ) then
+                     faclax = turbulence_lax_factor*dzu(L-Lb+1) / max( zws(k1)-zws(k1-1), zws(k2)-zws(k2-1) )
+                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                 end if
+              end if
+           end do
+        end if  
      endif
 
      vicu  = viskin+0.5d0*(vicwwu(Lb0)+vicwwu(Lb))*sigepsi

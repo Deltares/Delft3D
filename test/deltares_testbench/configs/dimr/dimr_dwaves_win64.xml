@@ -82,7 +82,6 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr_config.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>

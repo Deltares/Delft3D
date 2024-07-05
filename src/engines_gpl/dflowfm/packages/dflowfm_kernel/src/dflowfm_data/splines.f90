@@ -282,8 +282,8 @@ subroutine isSplinePoint(xl, yl, rcir, mv, nv)
          ISHOT = 0
       ENDIF
 
-      DO 10 I = M1,M2
-         DO 10 J = N1,min(N2, lensp(i))
+      DO I = M1,M2
+         DO J = N1,min(N2, lensp(i))
             IF (xsp(I,J) .NE. dXYMIS) THEN
                IF (ABS(XL - xsp(I,J)) .LT. rcir) THEN
                   IF (ABS(YL - ysp(I,J)) .LT. rcir) THEN
@@ -298,7 +298,8 @@ subroutine isSplinePoint(xl, yl, rcir, mv, nv)
                   ENDIF
                ENDIF
             ENDIF
-   10 CONTINUE
+         end do
+      end do
       IF (ISHOT .EQ. 1) GOTO 666
       MVold = 0
       NVold = 0
@@ -355,14 +356,15 @@ subroutine writeSplines(mspl)
     MATR = 'S   '
       CALL FIRSTLIN(MSPL)
       CALL READYY('Writing Spline File',0d0)
-      DO 10 I = 1,mcs
+      DO I = 1,mcs
          CALL READYY('Writing Spline File',dble(I)/dble(mcs) )
          WRITE(MATR(2:5),'(I4.4)') I
          WRITE(MSPL,'(A5)') MATR
          WRITE(MSPL,'(I4,A4)')  lensp(i), '   2'
-         DO 10 J = 1,lensp(i)
+         DO J = 1,lensp(i)
             WRITE(MSPL,'(1PE14.6, 1X, 1PE14.6)') xsp(I,J),ysp(I,J)
-    10 CONTINUE
+         end do
+      end do
       call READYY(' ',-1d0)
       call doclose(mspl)
       RETURN

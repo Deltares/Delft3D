@@ -57,7 +57,7 @@
             </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>./x64</from>
@@ -76,7 +76,6 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>

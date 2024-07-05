@@ -83,7 +83,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -105,13 +104,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>
@@ -133,7 +130,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -155,13 +151,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>

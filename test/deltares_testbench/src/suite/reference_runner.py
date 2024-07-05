@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from distutils import dir_util, file_util
+import shutil
 from typing import List
 
 from src.config.test_case_config import TestCaseConfig
@@ -22,25 +22,6 @@ class ReferenceRunner(TestSetRunner):
         run_data: RunData,
     ) -> TestCaseResult:
         # Get the reference networkPath of the testcase
-        refNetworkPath = None
-        credentials = None
-        for aNetworkPath in test_case_config.locations:
-            if aNetworkPath.type == PathType.REFERENCE:
-                refNetworkPath = aNetworkPath
-                credentials = aNetworkPath.credentials
-
-        # Make sure the reference folders are in sync.
-        netloc = Paths().mergeFullPath(
-            refNetworkPath.root, refNetworkPath.from_path, test_case_config.path.prefix
-        )
-        if refNetworkPath:
-            HandlerFactory.prepare_upload(
-                test_case_config.absolute_test_case_reference_path,
-                netloc,
-                self.programs,
-                credentials,
-                logger,
-            )
 
         logger.debug("Overwrite (local) reference")
         if not os.path.exists(
@@ -60,35 +41,16 @@ class ReferenceRunner(TestSetRunner):
             fl = os.path.join(test_case_config.absolute_test_case_path, f)
             fr = os.path.join(test_case_config.absolute_test_case_reference_path, f)
             if os.path.isfile(fl):
-                file_util.copy_file(fl, fr)
+                shutil.copyfile(fl, fr)
             if os.path.isdir(fl):
-                dir_util.copy_tree(fl, fr)
-        file_util.copy_file(
+                shutil.copytree(fl, fr, dirs_exist_ok=True)
+        shutil.copyfile(
             os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run"),
             os.path.join(
                 test_case_config.absolute_test_case_reference_path, "_tb3_char.run"
             ),
         )
 
-        # Upload (or prepare upload) of new results of reference run.
-        if refNetworkPath:
-            # Build the path to upload to: Root+From+testcasePath:
-            # Root: https://repos.deltares.nl/repos/DSCTestbench/references
-            # From: trunk/win32_hp
-            # testcasePath: e01_d3dflow\f01_general\c03-f34
-            logger.debug("\tPreparing reference data for upload...\n")
-            HandlerFactory.upload(
-                test_case_config.absolute_test_case_reference_path,
-                netloc,
-                self.programs,
-                logger,
-                credentials,
-                super().settings.autocommit,
-            )
-        else:
-            logger.warning(
-                "Could not find reference network path for case to upload to"
-            )
         run_data.end_time = datetime.now()
 
         return TestCaseResult(test_case_config, run_data)

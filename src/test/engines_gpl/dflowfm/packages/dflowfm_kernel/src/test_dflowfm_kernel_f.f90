@@ -33,33 +33,39 @@ program test_dflowfm_kernel
     use test_1d_grid
     use test_read_property
     use test_airdensity
+    use test_lateral
+    use test_temporal_statistics
+    use test_read_statistical_output
     
     implicit none
     
-    call prepareTests
-    call runtests_init
+    call prepareTests()
+    call runtests_init()
 
-    call tests_roughness
-    call tests_cross_sections
-    call tests_observations
-    call tests_observCrossSections
-    call tests_MDU_fileversion
-    call tests_1d_grid
-    call tests_storageNodes
-    call tests_iniField_1dField
-    call tests_read_property
-    call tests_compute_airdensity
+    call tests_lateral()
+    call tests_roughness()
+    call tests_cross_sections()
+    call tests_observations()
+    call tests_observCrossSections()
+    call tests_MDU_fileversion()
+    call tests_1d_grid()
+    call tests_storageNodes()
+    call tests_iniField_1dField()
+    call tests_read_property()
+    call tests_compute_airdensity()
+    call tests_temporal_statistics()
+    call tests_read_statistical_output()
     !
     ! Done - properly finalize
     !
-    call runtests_final
-    call showResult
+    call runtests_final()
+    call showResult()
 
 contains
 
 !> Routine to start the testing
 !! Note: This routine merely takes care that the unit tests are indeed run
-subroutine prepareTests
+subroutine prepareTests()
 
     integer  :: lun   !< LU-number
 
@@ -70,7 +76,7 @@ subroutine prepareTests
 end subroutine prepareTests
 
 !> Start the browser to show the result
-subroutine showResult
+subroutine showResult()
     !character(len=1) :: answer
     !
     !write(*,*)     'Press ENTER ...'

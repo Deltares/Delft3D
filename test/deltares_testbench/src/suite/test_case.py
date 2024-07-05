@@ -7,7 +7,7 @@ Copyright (C)  Stichting Deltares, 2013
 import copy
 import os
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, ClassVar
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
@@ -18,6 +18,7 @@ from src.utils.paths import Paths
 # Test case handler (compare or reference)
 class TestCase(object):
     __errors = []
+    __test__: ClassVar[bool] = False
 
     # constructor
     # input: test case configuration
@@ -151,6 +152,7 @@ class TestCase(object):
             # overwrite run configuration with given overrides
             program_config.shell_arguments = shell_arguments
             program_config.shell = shell
+            program_config.case_name = self.__config.name
             program_copy.overwriteConfiguration(program_config)
 
             # add runner sequence number and runner configuration to local storage

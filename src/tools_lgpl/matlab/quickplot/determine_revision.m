@@ -67,7 +67,7 @@ if ~strcmp(Id(2:end-1),'Id')
                 svnPath = 'c:\Program Files\Subversion\bin';
                 svnVersion = [svnPath filesep 'svnversion.exe'];
             case 5
-                [s,svnVersion] = system('which svnversion');
+                [s,svnVersion] = system_plain('which svnversion');
                 if s~=0
                     svnVersion = 'The WHICH command failed';
                 end
@@ -83,7 +83,7 @@ if ~strcmp(Id(2:end-1),'Id')
     end
 
     if ~isempty(svnVersion)
-        [s,revString] = system(['"' svnVersion '" "' dirname '"']);
+        [s,revString] = system_plain(['"' svnVersion '" "' dirname '"']);
     else
         s = 0;
     end
@@ -120,43 +120,49 @@ else
     % Use Git
 
     % get hash
-    [a,b] = system('git log -n 1 -v --decorate');
-    [commit,b] = strtok(b);
-    [hash,b] = strtok(b);
-    b = strsplit(b,local_newline);
-    hasLocalCommits = isempty(strfind(b{1},'origin/'));
-    % if we could remove -n 1, we could look for the latest hash available
-    % at the origin, but that triggers a pager to wait for keypresses. The
-    % option --no-pagers before log seems to work on the command line, but
-    % not when called via system for some reason.
+    [a,b] = system_plain('git -P log -n 1 -v --decorate');
+    if a ~= 0
+        revString = 'unknown';
+        repoUrl   = 'unknown';
+        hash      = 'unknown';
+    else
+        [commit,b] = strtok(b);
+        [hash,b] = strtok(b);
+        b = strsplit(b,local_newline);
+        hasLocalCommits = isempty(strfind(b{1},'origin/'));
+        % if we could remove -n 1, we could look for the latest hash available
+        % at the origin, but that triggers a pager to wait for keypresses. The
+        % option --no-pagers before log seems to work on the command line, but
+        % not when called via system for some reason.
 
-    % get repository
-    [a,b] = system('git remote -v');
-    [origin,b] = strtok(b);
-    [repoUrl,b] = strtok(b);
+        % get repository
+        [a,b] = system_plain('git remote -v');
+        [origin,b] = strtok(b);
+        [repoUrl,b] = strtok(b);
 
-    % git describe
-    %[a,b] = system(['git describe "' dirname '"']);
-    % returns something like: DIMRset_2.23.05-4-ge3176daa1
-    % but I don't want QUICKPLOT to refer to "DIMRset" tags
-    % however, neither should DIMRsets refer to QUICKPLOT tags.
+        % git describe
+        %[a,b] = system_plain(['git describe "' dirname '"']);
+        % returns something like: DIMRset_2.23.05-4-ge3176daa1
+        % but I don't want QUICKPLOT to refer to "DIMRset" tags
+        % however, neither should DIMRsets refer to QUICKPLOT tags.
 
-    % get status
-    [a,b] = system(['git status "' dirname '"']);
-    b = strsplit(b,local_newline);
+        % get status
+        [a,b] = system_plain(['git status "' dirname '"']);
+        b = strsplit(b,local_newline);
     
-    staged = strncmp(b,'Changes to be committed:',24);
-    hasStagedChanges = any(staged);
+        staged = strncmp(b,'Changes to be committed:',24);
+        hasStagedChanges = any(staged);
     
-    unstaged = strncmp(b,'Changes not staged for commit:',30);
-    hasUnstagedChanges = any(unstaged);
+        unstaged = strncmp(b,'Changes not staged for commit:',30);
+        hasUnstagedChanges = any(unstaged);
     
-    hasUntrackedChanges = check_and_list_files(b,'Untracked files:','Untracked files:\n');
+        hasUntrackedChanges = check_and_list_files(b,'Untracked files:','Untracked files:\n');
 
-    % we should also check if we have local commits to be pushed.
-    revString = hash(1:9);
-    if hasLocalCommits || hasStagedChanges || hasUnstagedChanges || hasUntrackedChanges
-        revString = [revString ' (changed)'];
+        % we should also check if we have local commits to be pushed.
+        revString = hash(1:9);
+        if hasLocalCommits || hasStagedChanges || hasUnstagedChanges || hasUntrackedChanges
+            revString = [revString ' (changed)'];
+        end
     end
 end
 
@@ -309,3 +315,21 @@ if matlabversionnumber > 9.01
 else
     s = char(10);
 end
+
+
+function [err,output] = system_plain(cmd)
+[err,output] = system(cmd);
+output = strip_ansi(output);
+
+
+function s = strip_ansi(s)
+% https://en.wikipedia.org/wiki/ANSI_escape_code
+
+% CSI sequences
+parameter_bytes = '[0-9:;<=>?]*';
+intermediate_bytes = '[!"#$%&''()*+,-./]*';
+final_byte = '[@A-Z\[\\\]\^_`a-z{|}~]';
+s = regexprep(s, [char(27),'\[',parameter_bytes,intermediate_bytes,final_byte],'');
+
+% Escape sequences
+s = regexprep(s, [char(27) '.'],'');

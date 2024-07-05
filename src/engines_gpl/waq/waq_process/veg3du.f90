@@ -32,7 +32,7 @@ contains
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use layered_sediment
 
         ! function : vegetation module uptake of nutrients
@@ -158,8 +158,8 @@ contains
             s1_fs1vbxxupy = 0.0
             s1_fs2vbxxupy = 0.0
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
             ibotseg = NINT(pmsa(ipnt(4)))
             inicovvbxx = pmsa(ipoint(19) + (ibotseg - 1) * increm(19)) / 100.

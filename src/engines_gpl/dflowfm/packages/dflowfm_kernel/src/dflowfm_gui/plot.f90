@@ -70,11 +70,12 @@
             EXT = '.hgl'
          ELSE IF (NHCDEV .EQ. 2) THEN
             EXT = '.ps '
-            DO 5 I = 1,NUMHCOPTs
+            do I = 1,NUMHCOPTs
                IF (IHCOPTS(1,I) .EQ. 22) THEN
                   IF (IHCOPTS(2,I) .EQ. 1) EXT = '.eps'
                ENDIF
-    5       CONTINUE
+            end do
+
          ELSE IF (NHCDEV .EQ. 3) THEN
             EXT = '.acd'
          ELSE IF (NHCDEV .EQ. 4) THEN
@@ -123,9 +124,9 @@
 
             CALL IGrHardCopySelect(1,NHCDEV)
             IF (NHCDEV .EQ. 7) CALL IGrHardCopySelect(1,6)
-            DO 10 I = 1,NUMHCOPTS
+            do I = 1,NUMHCOPTS
                CALL IGrHardCopyOptions( IHCOPTS(1,I), IHCOPTS(2,I) )
-   10       CONTINUE
+            end do
             IF (NHCDEV .EQ. 7) CALL IGrHardCopyOptions(26,0)
             CALL IGrHardCopy(trim(PLOTJE))
             !WRITE(msgbuf,'(2A)') 'You created plotfile ', trim(PLOTJE) ; call msg_flush()

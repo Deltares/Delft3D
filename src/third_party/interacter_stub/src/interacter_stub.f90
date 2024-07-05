@@ -12688,9 +12688,9 @@
         !ErrBadArea (44) : Invalid X and/or Y range. Range reset to 0.0-1.0
 !        type(Fields), pointer :: this
 !        double precision minX
-!        double precision maxX
+!        double precision max_x
 !        double precision minY
-!        double precision maxY
+!        double precision max_y
 !        double precision x1
 !        double precision x2
 !        double precision y1
@@ -12699,13 +12699,13 @@
 !        
 !        minX = getMinX(this%canvas)
 !        minY = getMinY(this%canvas)
-!        maxX = getMaxX(this%canvas)
-!        maxY = getMaxY(this%canvas)
+!        max_x = getMaxX(this%canvas)
+!        max_y = getMaxY(this%canvas)
 !
-!        x1 = XLEFT * (maxX - minX)
-!        x2 = XRIGHT * (maxX - minX)
-!        y1 = YLOWER * (maxY - minY)
-!        y2 = YUPPER * (maxY - minY)
+!        x1 = XLEFT * (max_x - minX)
+!        x2 = XRIGHT * (max_x - minX)
+!        y1 = YLOWER * (max_y - minY)
+!        y2 = YUPPER * (max_y - minY)
 !
 !    !    call zoomToExtend(this%canvas, x1, x2 , y1, y2)
 !
@@ -12756,16 +12756,16 @@
         !1-11
 !        type(Fields), pointer :: this
 !        double precision minX
-!        double precision maxX
+!        double precision max_x
 !        double precision minY
-!        double precision maxY
+!        double precision max_y
 !        this => this_
 !
 !        minX = XLEFT
-!        maxX = XRIGHT
+!        max_x = XRIGHT
 !        minY = YLOWER
-!        maxY = YUPPER
-!        call setFullExtend(this%canvas, minX, maxX , minY, maxY)
+!        max_y = YUPPER
+!        call setFullExtend(this%canvas, minX, max_x , minY, max_y)
     end subroutine
 
     subroutine IGrUnitsFromPixels(IXPIXL,IYPIXL,XPOS,YPOS)

@@ -114,14 +114,14 @@
       CALL SAVENET()
       CALL READYY('CHANGE FIELD VALUES', 0d0)
       KMOD = MAX(1,NUML/100)
-      DO 20 L = 1,NUML
+      do L = 1,NUML
          IF (MOD(L,KMOD) == 0) THEN
             AF = dble(L) / dble(NUML)
             CALL READYY('CHANGE FIELD VALUES', AF)
          ENDIF
          K1 = KN(1,L)
          K2 = KN(2,L)
-         IF (K1 .EQ. 0 .OR. K2 .EQ. 0) GOTO 20
+         IF (K1 .EQ. 0 .OR. K2 .EQ. 0) cycle
          XI = (XK(K1) + XK(K2))/2
          YI = (YK(K1) + YK(K2))/2
          ZI = (ZK(K1) + ZK(K2))/2
@@ -153,7 +153,7 @@
                kn(3,L) = INT(dmiss)
             ENDIF
          ENDIF
-   20 CONTINUE
+      end do
       CALL READYY('CHANGE FIELD VALUES', -1d0)
       KEY = 3
       RETURN

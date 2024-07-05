@@ -619,7 +619,7 @@ module m_VolumeTables
       use m_flowgeom
       use unstruc_channel_flow
       use m_flowparameters
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_Crosssections
 
       integer,                            intent(in   )           :: Lorg              !< FLow link.

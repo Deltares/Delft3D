@@ -41,10 +41,12 @@
       integer :: numq
       INTEGER IH(NUMQ,MMAX,NMAX)
 
-      DO 10 K = 1,NUMQ
-         DO 10 I = 1,MMAX
-            DO 10 J = 1,NMAX
+      do K = 1,NUMQ
+         do I = 1,MMAX
+            do J = 1,NMAX
                IH(K,I,J) = dmiss
-   10 CONTINUE
+            end do
+         end do
+      end do
       RETURN
       END

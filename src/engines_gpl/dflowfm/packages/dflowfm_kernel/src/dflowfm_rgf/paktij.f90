@@ -39,13 +39,14 @@
       TH = 0d0
       K   = 0
       JI1 = 0
-      DO 10 I  = I1,I2
-         DO 10 J  = J1,J2
+      do I  = I1,I2
+         do J  = J1,J2
          IF (T(I,J) .NE. 0) THEN
             K     = K + 1
             TH(K) = T(I,J)
          ENDIF
-    10 CONTINUE
+         end do
+      end do
       NUM = K
       RETURN
       END subroutine paktij

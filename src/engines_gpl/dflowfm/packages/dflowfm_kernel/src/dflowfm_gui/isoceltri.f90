@@ -40,11 +40,11 @@
       DIMENSION P(3),X(3),Y(3),XH(3),YH(3)
       COMMON /DEPMAX/ VMAX,VMIN,DV,VAL(256),NCOLS(256),NV,NIS,NIE,JAAUTO
 
-      DO 10 I = 1,NV
+      do I = 1,NV
          NPLUS = 1
          VN    = VAL(I)
          NH    = 0
-         DO 20 IH = 1,3
+         DO IH = 1,3
             IF (IH .EQ. 3) NPLUS = -2
             P1 = P(IH)
             P2 = P(IH + NPLUS)
@@ -58,10 +58,10 @@
                XH(NH) = XHIT
                YH(NH) = YHIT
             ENDIF
-   20    CONTINUE
-!        IF (NH .GT. 1) CALL DISPF2(XH,YH,NH,3,NCOLS(I+1))
+         end do
+         !        IF (NH .GT. 1) CALL DISPF2(XH,YH,NH,3,NCOLS(I+1))
          IF (NH .GT. 1) CALL DISPF2(XH,YH,NH,3,0)
-   10 CONTINUE
+      end do
 
       IF (NCOLR .NE. 0) CALL DISPF2(X,Y,3,3,NCOLR)
 

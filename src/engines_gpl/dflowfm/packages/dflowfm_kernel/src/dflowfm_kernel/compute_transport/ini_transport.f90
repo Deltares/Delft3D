@@ -36,7 +36,7 @@ subroutine ini_transport()
    use m_flowparameters
    use m_sediment
    use m_physcoef
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use string_module
    use Messagehandling
    use m_flow, only: kmx

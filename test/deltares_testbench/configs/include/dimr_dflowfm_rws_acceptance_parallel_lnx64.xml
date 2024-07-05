@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e110_f03_c010" ref="dimr_trunk_4">
             <path version="2024-01-12T07:30:00">e110_delft3dfm_suite/f03_caching/c010_dcsm_0_5nm</path>
             <programs>

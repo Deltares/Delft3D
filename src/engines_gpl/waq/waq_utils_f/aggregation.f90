@@ -24,8 +24,7 @@
 module aggregation
 
     use m_waq_precision
-    use m_srstop, only : srstop
-    use m_monsys, only : getmlu
+    use m_logger_helper, only : get_log_unit_number, stop_with_error
 
     implicit none
 
@@ -153,9 +152,9 @@ contains
             enddo
 
         case default
-            call getmlu(lurep)
+            call get_log_unit_number(lurep)
             write(lurep, 2000) agg_type
-            call srstop(1)
+            call stop_with_error()
 
         end select
 
@@ -169,7 +168,7 @@ contains
 
         ! Aggregates value to coarser grid, extended version with minimum aggregation, and signed accumulation, and
         ! command line option for minimum weight
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : get_command_argument_by_name
 
         integer(kind = int_wp), intent(in) :: fine_grid_segs                 !! Number of segments on finer grid
         integer(kind = int_wp), intent(in) :: coarse_grid_segs               !! Number of segments on coarser grid
@@ -190,10 +189,8 @@ contains
 
         integer(kind = int_wp) :: seg_fine, seg_coarse, LUREP
         real(kind = real_wp) :: min_weight          ! minimum in weight variable
-        logical :: command_found              ! command line option found
-        integer(kind = int_wp) :: int_arg
-        character :: char_arg
-        integer(kind = int_wp) :: error_status
+        logical :: parsing_error
+
         integer(kind = int_wp) :: file_unit        ! report file
         logical :: lfirst = .true.
         real(kind = real_wp), parameter :: NO_DATA_VALUE = -999.
@@ -201,13 +198,13 @@ contains
 
         if (lfirst) then
             lfirst = .false.
-            call retrieve_command_argument('-vmin', 2, command_found, int_arg, min_weight, char_arg, error_status)
-            if (command_found) then
-                call getmlu(file_unit)
-                if (error_status /= 0) then
+
+            if (get_command_argument_by_name('-vmin', min_weight, parsing_error)) then
+                call get_log_unit_number(file_unit)
+                if (parsing_error) then
                     write(*, *) 'error commandline option -vmin value could not be interpreted'
                     write(file_unit, *) 'error commandline option -vmin value could not be interpreted'
-                    call srstop(1)
+                    call stop_with_error()
                 endif
                 write(*, *) ' commandline option -vmin ', min_weight
                 write(file_unit, *) ' commandline option -vmin ', min_weight
@@ -287,9 +284,9 @@ contains
                 ENDIF
             ENDDO
         ELSE
-            CALL GETMLU(LUREP)
+            CALL get_log_unit_number(LUREP)
             WRITE(LUREP, 2000) agg_type
-            CALL SRSTOP(1)
+            CALL stop_with_error()
         ENDIF
         ! Average
         IF (agg_type == AGGREGATION_TYPE_AVERAGE .OR. agg_type == AGGREGATION_TYPE_WEIGHTED_AVERAGE) THEN
@@ -437,9 +434,9 @@ contains
             ENDDO
         ELSE
             ! ERROR , undefined dis-aggregation type
-            CALL GETMLU(file_unit)
+            CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL SRSTOP(1)
+            CALL stop_with_error()
         ENDIF
 
         RETURN
@@ -553,9 +550,9 @@ contains
             ENDDO
         ELSE
             ! ERROR , undefined dis-aggregation type
-            CALL GETMLU(file_unit)
+            CALL get_log_unit_number(file_unit)
             WRITE(file_unit, 2000) resampling_type
-            CALL SRSTOP(1)
+            CALL stop_with_error()
         ENDIF
 
         RETURN
@@ -564,7 +561,7 @@ contains
 
     subroutine aggregate_attributes (num_segments, num_attributes, num_grids, attribute_array, grid_cell_counts, &
             segment_pointers)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         !! Aggregates attribute array across different grids and segments
 
         INTEGER(kind = int_wp), intent(in) :: num_segments        !!Number of segments
@@ -592,8 +589,8 @@ contains
 
                 ! Process first attribute
                 ! 0 = inactive , 1 = active , 2 = GEM bottom
-                CALL evaluate_waq_attribute(1, attribute_array(base_segment, 1, 1), attr1_base_grid)
-                CALL evaluate_waq_attribute(1, attribute_array(coarser_segment, 1, grid_index), attr1_coarser_grid)
+                CALL extract_waq_attribute(1, attribute_array(base_segment, 1, 1), attr1_base_grid)
+                CALL extract_waq_attribute(1, attribute_array(coarser_segment, 1, grid_index), attr1_coarser_grid)
                 IF (attr1_base_grid > 0) THEN
                     attr1_coarser_grid = attr1_base_grid
                 ENDIF
@@ -603,8 +600,8 @@ contains
                 !             2 = middle segment
                 !             3 = bottom
 
-                CALL evaluate_waq_attribute(2, attribute_array(base_segment, 1, 1), attr2_base_grid)
-                CALL evaluate_waq_attribute(2, attribute_array(coarser_segment, 1, grid_index), attr2_coarser_grid)
+                CALL extract_waq_attribute(2, attribute_array(base_segment, 1, 1), attr2_base_grid)
+                CALL extract_waq_attribute(2, attribute_array(coarser_segment, 1, grid_index), attr2_coarser_grid)
 
                 SELECT CASE (attr2_base_grid)
                 CASE (0)

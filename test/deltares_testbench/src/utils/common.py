@@ -5,11 +5,12 @@ Copyright (C)  Stichting Deltares, 2013
 """
 import os
 import platform
+import re
 import shutil
 import string
 import subprocess
 import tempfile
-from typing import Dict, List, Tuple
+from typing import Dict, Iterator, List, Tuple
 
 from src.config.credentials import Credentials
 from src.utils.dict_table import DictTable
@@ -42,23 +43,45 @@ def add_search_path(environment, sp, logger: ILogger):
         environment["PATH"] = search_path + ":" + environment["PATH"]
 
 
-# strip all characters from a string that need to be escaped for TeamCity
-def stripEscapeCharacters(cstr):
-    if not cstr or cstr == "":
-        return ""
-    vstr = (
-        str(cstr)
-        .replace("\r", "")
-        .replace("\n", "")
-        .replace("'", "")
-        .replace('"', "")
-        .replace("|", "||")
-        .replace("[", "")
-        .replace("]", "")
-    )
-    # The decode method messes up the string completely on Linux
-    # vstr = vstr.decode('utf-8')
-    return vstr
+def escape_teamcity(input: str) -> str:
+    """Replace regular escape sequences in string with TeamCity escape sequences.
+
+    TeamCity uses the alternative escape character '|' (vertical bar) instead of 
+    '\\' (back-slash) to encode things like unicode characters and line feeds. In
+    addition, square brackets ('[', ']') have special meaning in the teamcity logs.
+    These need to be escaped as well.
+
+    Args:
+        input (str) : Input string containing escape sequences like '\n' or '\\'.
+
+    Returns:
+        str: String with regular escape sequences replaced with TeamCity escape sequences.
+
+    Notes:
+        TeamCity documentation:
+        https://www.jetbrains.com/help/teamcity/cloud/service-messages.html#Escaped+Values
+    """
+    def generate_segments(input: str) -> Iterator[str]:
+        last_end = 0
+        for mo in re.finditer(r"[\n\r\[\]'|\u0080-\uffff]", input, re.UNICODE):
+            begin, end = mo.span()
+            yield input[last_end:begin]
+            last_end = end
+
+            char = mo.group()
+            code = ord(char)
+            if char in "\n\r":
+                yield "|" + chr(char.encode("unicode_escape")[-1])
+            elif char in "[]'|":
+                yield "|" + char
+            elif 0x80 <= code <= 0xffff:
+                yield f"|0x{code:04X}"  # Watch out: code must be exactly four characters.
+            else:
+                raise RuntimeError("Unhandled escape character.")
+        
+        yield input[last_end:]
+
+    return "".join(generate_segments(input))
 
 
 # Replace a word by "***" when it follows a word containing the string "password"

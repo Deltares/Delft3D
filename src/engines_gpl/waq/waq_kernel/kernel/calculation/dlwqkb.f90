@@ -29,8 +29,8 @@
       contains
 
 
-      SUBROUTINE DLWQKB ( LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 , & 
-                         ITIME2 , IARRA1 , IARRA2 , NFTOT  , LUNTXT , & 
+      SUBROUTINE DLWQKB ( input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
+                         ITIME2 , IARRA1 , IARRA2 , NFTOT  , LUNTXT , &
                          ISFLAG , IFFLAG )
 !
 !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -40,16 +40,16 @@
 !     FUNCTION            : Steps along in a time variable database
 !                           for integer block functions
 !
-!     LOGICAL UNITNUMBERS : LUNIN  - input unit intermediate file
+!     LOGICAL UNITNUMBERS : input_file  - input unit intermediate file
 !                           LUNOUT - monitor file
 !
-!     SUBROUTINES CALLED  : SRSTOP, stops execution
+!     SUBROUTINES CALLED  : stop_with_error, stops execution
 !
 !     PARAMETERS          :
 !
 !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !     ----    -----    ------     ------- -----------
-!     LUNIN   INTEGER       1     INPUT   unit number intermediate file
+!     input_file   INTEGER       1     INPUT   unit number intermediate file
 !     LUNOUT  INTEGER       1     INPUT   unit number monitor file
 !     ITIME   INTEGER       1     INPUT   Model timer
 !     IDTIME  INTEGER       1     IN/OUT  Delta for this function
@@ -64,10 +64,10 @@
 !
 !     DECLARATIONS        :
 !
-      use m_srstop
+      use m_logger_helper, only : stop_with_error
       use m_array_manipulation, only : copy_integer_array_elements
       use timers
-      INTEGER(kind=int_wp) ::LUNIN  , LUNOUT , ITIME  , IDTIME , ITIME1 , & 
+      INTEGER(kind=int_wp) ::input_file  , LUNOUT , ITIME  , IDTIME , ITIME1 , &
                    ITIME2 , NFTOT  , ISFLAG , IFFLAG
       INTEGER(kind=int_wp) ::IARRA1(*), IARRA2(*)
       character(len=*) LUNTXT
@@ -77,7 +77,7 @@
       logical        stream_access                     ! help variable to detect the type of file access
       character(20)  access                            ! help variable to detect the type of file access
       character(len=16)  MSGTXT(3)
-      DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' , & 
+      DATA          MSGTXT / ' REWIND ON      ' , ' WARNING READING' , &
                             ' REWIND ERROR   ' /
       integer(kind=int_wp) ::messge, k, ierr
 
@@ -91,8 +91,8 @@
 !
 !         This is the first time, so read.
 !
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       IDTIME = 0
 !
 !         Check for start time simulation before start time file
@@ -104,22 +104,22 @@
    10 IF ( ITIME-IDTIME < ITIME2 ) GOTO 100
       CALL copy_integer_array_elements ( IARRA2 , IARRA1 , NFTOT )
       ITIME1 = ITIME2
-      READ ( LUNIN , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=60 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       GOTO 10
 !
 !         normal rewind.
 !
    60 MESSGE = 1
-      inquire( lunin, access = access )
+      inquire( input_file, access = access )
       stream_access = access == 'STREAM'
       if (stream_access) then
-         read( lunin, iostat = ierr, pos = 1 )
+         read( input_file, iostat = ierr, pos = 1 )
       else
-         rewind lunin                            ! Start at the beginning again
+         rewind input_file                            ! Start at the beginning again
       endif
       IDTIME = IDTIME + ITIME1
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
-      READ ( LUNIN , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME1 , (IARRA1(K),K=1,NFTOT)
+      READ ( input_file , END=80 , ERR=80 ) ITIME2 , (IARRA2(K),K=1,NFTOT)
       IDTIME = IDTIME - ITIME1
       GOTO 100
 !
@@ -132,13 +132,13 @@
 !
   100 IF ( MESSGE == 0 ) goto 9999
       IF ( ISFLAG /= 1 ) THEN
-           WRITE(LUNOUT,2000) MSGTXT(MESSGE), LUNIN, LUNTXT, & 
+           WRITE(LUNOUT,2000) MSGTXT(MESSGE), input_file, LUNTXT, &
                              ITIME, ITIME1
       ELSE
-           WRITE(LUNOUT,2010) MSGTXT(MESSGE), LUNIN, LUNTXT, & 
-                             ITIME /86400, MOD(ITIME ,86400)/3600 , & 
-                             MOD(ITIME ,3600)/60, MOD(ITIME ,60)  , & 
-                             ITIME1/86400, MOD(ITIME1,86400)/3600 , & 
+           WRITE(LUNOUT,2010) MSGTXT(MESSGE), input_file, LUNTXT, &
+                             ITIME /86400, MOD(ITIME ,86400)/3600 , &
+                             MOD(ITIME ,3600)/60, MOD(ITIME ,60)  , &
+                             ITIME1/86400, MOD(ITIME1,86400)/3600 , &
                              MOD(ITIME1,3600)/60, MOD(ITIME1,60)
       ENDIF
       IF ( MESSGE == 1 ) THEN
@@ -146,15 +146,15 @@
            GOTO 10
       ENDIF
       IF ( MESSGE == 2 ) goto 9999
-      CALL SRSTOP ( 1 )
+      CALL stop_with_error()
  9999 if ( timon ) call timstop ( ithandl )
 
 !
- 2000 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ & 
-              ' AT SIMULATION TIME:',I12,' !',/, & 
+ 2000 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ &
+              ' AT SIMULATION TIME:',I12,' !',/, &
               ' TIME IN FILE:      ',I12,' !')
- 2010 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ & 
-              ' AT SIMULATION TIME:',I5,'D ',I2,'H ',I2,'M ',I2,'S !',/ & 
+ 2010 FORMAT (   A16          ,' UNIT: ',I3,', READING: ',A20,/ &
+              ' AT SIMULATION TIME:',I5,'D ',I2,'H ',I2,'M ',I2,'S !',/ &
               ' TIME IN FILE:      ',I5,'D ',I2,'H ',I2,'M ',I2,'S !')
 !
       END

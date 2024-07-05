@@ -830,15 +830,15 @@ subroutine plotSpline(xh, yh, numpi, ncol)
         CALL SPLINE(XH,NUMPI,XH2)
         CALL SPLINE(YH,NUMPI,YH2)
 
-         DO 10 I = 1,NUMPI-1
-            DO 20 K = 1,NUMK
+         do I = 1,NUMPI-1
+            do k = 1,NUMK
                TN = (I - 1) + dble(K) / dble(NUMK)
                CALL SPLINT(XH,XH2,NUMPI,TN,XK)
                CALL SPLINT(YH,YH2,NUMPI,TN,YK)
                CALL LNABS(XK,YK)
-         20 CONTINUE
+            end do
             IF (MET .LE. 2) CALL CIR(RCIR)
-      10 CONTINUE
+    end do
     ENDIF
 
 !   allocate

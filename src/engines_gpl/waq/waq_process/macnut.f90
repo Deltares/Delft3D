@@ -31,7 +31,7 @@ contains
     subroutine MACNUT     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -153,7 +153,7 @@ contains
             disco2 = (disco2 * 12. / 44. + dish2co3) / poros
             dishco3 = dishco3 / poros
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 ! active water segment
@@ -168,7 +168,7 @@ contains
 
                 ! S12 sediment concentration
 
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     if (nh4s12>0.0) pmsa(botidx(43)) = nh4s12
                     if (po4s12>0.0) pmsa(botidx(44)) = po4s12
@@ -207,9 +207,9 @@ contains
         ipnt = ipoint
         do iseg = 1, noseg
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
 
                     kmdinsm01w = pmsa(ipnt(18))

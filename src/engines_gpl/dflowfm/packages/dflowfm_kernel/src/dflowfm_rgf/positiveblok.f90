@@ -55,12 +55,12 @@
       N1 = NB(1)
       M2 = MB(2)
       N2 = NB(2)
-      DO 10 I = 1,NPT
+      do I = 1,NPT
          M1 = MIN(MB(I),M1)
          N1 = MIN(NB(I),N1)
          M2 = MAX(MB(I),M2)
          N2 = MAX(NB(I),N2)
-    10 CONTINUE
+      end do
       MB(3) = M1
       NB(3) = N1
       MB(4) = M2

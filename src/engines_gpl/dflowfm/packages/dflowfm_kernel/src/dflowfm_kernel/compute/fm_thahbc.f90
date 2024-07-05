@@ -52,7 +52,7 @@
 
    subroutine fm_thahbc()
 
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowparameters
    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itrac2const, ifrac2const
    use m_sediment
@@ -121,7 +121,7 @@ subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
    use m_flow, only: kmxd, q1
    use m_flowtimes, only: dt_user
    use m_flowgeom, only: ln
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_missing
 
    implicit none

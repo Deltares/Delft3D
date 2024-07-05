@@ -48,7 +48,7 @@
       IF (N .LE. 0) RETURN
       CALL SETCOL(NCOL)
       ISTART = 0
-      DO 10 I = 1,N
+      do I = 1,N
          IF (X(I) .NE. dmiss) THEN
             IF (ISTART .EQ. 1) THEN
                CALL DLNABS(A*X(I)+B,Y(I),Z(I))
@@ -65,6 +65,6 @@
              CALL HALT2(KEY)
              IF (KEY .EQ. 1) RETURN
          ENDIF
-   10 CONTINUE
+      end do
       RETURN
       END

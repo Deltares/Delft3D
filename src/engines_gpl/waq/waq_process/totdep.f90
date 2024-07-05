@@ -52,7 +52,7 @@ contains
         !     ------   -----  ------------
 
         use m_advtra
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT NONE
@@ -129,7 +129,7 @@ contains
 
             IF (IFROM>0 .AND. ITO>0) THEN
 
-                CALL evaluate_waq_attribute(2, IKNMRK(IFROM), IKMRK)
+                CALL extract_waq_attribute(2, IKNMRK(IFROM), IKMRK)
                 IF ((IKMRK==0).OR.(IKMRK==1)) THEN
 
                     PMSA (IP3 + (IFROM - 1) * IN3) = &
@@ -176,7 +176,7 @@ contains
             !        toekennen aan de bovenliggende segmenten
 
             IF (IFROM>0 .AND. ITO>0) then
-                CALL evaluate_waq_attribute(1, IKNMRK(ITO), IKMRK)
+                CALL extract_waq_attribute(1, IKNMRK(ITO), IKMRK)
                 IF (IKMRK == 1) THEN
 
                     PMSA (IP3 + (IFROM - 1) * IN3) = &

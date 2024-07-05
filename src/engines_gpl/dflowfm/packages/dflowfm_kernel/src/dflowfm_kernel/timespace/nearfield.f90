@@ -34,7 +34,7 @@ module m_nearfield
     use iso_c_binding
     use precision
     use MessageHandling
-    use m_flowexternalforcings
+    use fm_external_forcings_data
     use m_transport
     !
     implicit none
@@ -331,6 +331,7 @@ end subroutine nearfieldToFM
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
 subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
+    use m_find_flownode, only: find_nearest_flownodes
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id
@@ -358,7 +359,7 @@ subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
         find_y(i) = nf_sink(idif,i,NF_IY)
         write(find_name(i),'(i0.4,a,i0.4)') idif, "sink", i
     enddo
-    call find_flownode(nf_numsink, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+    call find_nearest_flownodes(nf_numsink, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
     do i = 1, nf_numsink
         if (find_n(i) == 0) then
             call mess(LEVEL_ERROR, "Sink point '", trim(find_name(i)),"' not found")
@@ -379,6 +380,7 @@ end subroutine getSinkLocations
 subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
     use m_flow, only: zws
+    use m_find_flownode, only: find_nearest_flownodes
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id
@@ -417,7 +419,7 @@ subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
         find_y(i) = nf_intake(idif,i,NF_IY)
         write(find_name(i),'(i0.4,a,i0.4)') idif, "intake", i
     enddo
-    call find_flownode(nf_numintake_idif(idif), find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+    call find_nearest_flownodes(nf_numintake_idif(idif), find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
     !
     if (nf_numintake_idif(idif) /= 0) then
         !
@@ -499,6 +501,7 @@ end subroutine getIntakeLocations
 subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
     use m_alloc
     use mathconsts, only: pi
+    use m_find_flownode, only: find_nearest_flownodes
     !
     ! Arguments
     integer, intent(in)    :: idif      !< Diffuser id
@@ -568,7 +571,7 @@ subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
                 find_y(itrack) = ystart + (itrack-1)*dy
                 write(find_name(itrack),'(i0.4,a,i0.4)') idif, "sour track", itrack
             enddo
-            call find_flownode(NUM_TRACK, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+            call find_nearest_flownodes(NUM_TRACK, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
             !
             ! First handle the first source_track point of this diffuser: it will always result in an additional source point
             nf_sour_track = 1
@@ -611,7 +614,7 @@ subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
                 find_y(isour) = nf_sour(idif,isour,NF_IY)
                 write(find_name(isour),'(i0.4,a,i0.4)') idif, "sour", isour
             enddo
-            call find_flownode(nf_numsour, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+            call find_nearest_flownodes(nf_numsour, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
             !
             ! Keep the sources separated, even if they are in the same cell: momentum specification might differ
             !

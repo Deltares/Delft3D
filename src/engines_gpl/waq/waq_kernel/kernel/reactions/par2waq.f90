@@ -142,22 +142,26 @@ contains
                     isys = iwaqsub(isub)
                     if (isys == 0) cycle
                     if (isys < 0) then
-                        amass(-isys, iseg) = amass(-isys, iseg) + wpart(isub, ipart)
-                        conc (-isys, iseg) = amass(-isys, iseg) / surface(iseg)
+                        isys = abs(isys)
+                        amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
+                        conc (isys, iseg) = amass(isys, iseg) / surface(iseg)
                     else
                         amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
                         conc (isys, iseg) = amass(isys, iseg) / volume (iseg)
                     endif
-                    if (massbal) amass2(isys, 3) = amass2(isys, 3) + wpart(isub, ipart)
-                    if (ipb > 0 .and. fluxes) &
-                            dmps  (isys, ipb, 2) = dmps  (isys, ipb, 2) + wpart(isub, ipart)
+                    if (massbal) then
+                        amass2(isys, 3) = amass2(isys, 3) + wpart(isub, ipart)
+                    end if
+                    if (ipb > 0 .and. fluxes) then
+                        dmps(isys, ipb, 2) = dmps(isys, ipb, 2) + wpart(isub, ipart)
+                    end if
+                    npart (ipart) = 1
+                    mpart (ipart) = 1
+                    kpart (ipart) = 1
+                    iptime(ipart) = 0
                     wpart(isub, ipart) = 0.0
                 enddo
             endif
-            npart (ipart) = 1
-            mpart (ipart) = 1
-            kpart (ipart) = 1
-            iptime(ipart) = 0
         enddo
 
         if (timon) call timstop (ithandl)

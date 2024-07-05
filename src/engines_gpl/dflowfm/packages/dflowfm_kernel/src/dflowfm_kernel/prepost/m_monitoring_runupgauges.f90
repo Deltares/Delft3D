@@ -27,9 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
 module m_monitoring_runupgauges
    use m_crspath
    use m_missing
@@ -37,231 +34,244 @@ module m_monitoring_runupgauges
 
    implicit none
 
-   type trug
-      character(len=IdLen)                 :: name          !< Name
-      type(tcrspath)                       :: path          !< Polyline+crossed flow links that defines this runup gauge.
-      double precision                     :: maxx          !< flow node xz of max runup
-      double precision                     :: maxy          !< flow node xy of max runup
-      double precision                     :: maxruh        !< Runup water level
-   end type trug
+   type t_runup_gauge
+      character(len=IdLen)                 :: name           !< Name
+      type(tcrspath)                       :: path           !< Polyline+crossed flow links that defines this runup gauge.
+      double precision                     :: max_x          !< flow node xz of max runup
+      double precision                     :: max_y          !< flow node xy of max runup
+      double precision                     :: max_rug_height !< Runup water level
+   end type t_runup_gauge
 
-    type (trug), allocatable               :: rug(:)
-    integer                                :: nrug = 0
-    integer                                :: maxrug = 2
-    character(len=*), parameter, private   :: defaultName_ = 'Rug'
-    integer, private                       :: iUniq_ = 1
+    type (t_runup_gauge), allocatable, target :: rug(:)
+    integer                                   :: num_rugs = 0
+    integer                                   :: rug_allocated_size = 2
+    character(len=*), parameter, private      :: defaultName_ = 'Rug'
+    integer, private                          :: runup_gauge_id = 1
 
    contains
 
-!> Increases memory for crs
-subroutine increaseRunupGauges(n)
-    integer, intent(in) :: n !< Desired number of rugs.
+!> Double run up gauge array size if necessary
+subroutine increase_runup_gauges(new_rug_size)
+    integer, intent(in) :: new_rug_size !< Desired number of run up gauges
 
-    type(trug), allocatable :: crst(:) ! Temp storage
+    type(t_runup_gauge), allocatable :: temp_rug_array(:)
 
-    if (n < maxrug .and. allocated(rug)) then
+    if (new_rug_size < rug_allocated_size .and. allocated(rug)) then
         return
     end if
 
-    call allocRunupGauges(crst, maxrug)
+    call allocate_runup_gauges(temp_rug_array, rug_allocated_size)
 
-    if (n > maxrug) then
-        maxrug    = max(maxrug, int(1.2*n))
+    if (new_rug_size > rug_allocated_size) then
+        rug_allocated_size = max(rug_allocated_size, int(2*new_rug_size))
     end if
 
     if (allocated(rug)) then
-       call copyRunupGauges(rug, crst)
+       call copy_runup_gauges(rug, temp_rug_array)
     end if
-    call allocRunupGauges(rug, maxrug)
-    call copyRunupGauges(crst, rug)
+    call allocate_runup_gauges(rug, rug_allocated_size)
+    call copy_runup_gauges(temp_rug_array, rug)
 
-    call deallocRunupGauges(crst)
+    call deallocate_runup_gauges(temp_rug_array)
 
-end subroutine increaseRunupGauges
+end subroutine increase_runup_gauges
+
+!> set rug_allocated_size to num_rugs, after all necessary runupgauges have been added
+subroutine decrease_runup_gauges()
+
+    type(t_runup_gauge), allocatable :: temp_rug_array(:) 
+
+    if (num_rugs == rug_allocated_size .or. .not. allocated(rug)) then
+        return
+    end if
+    
+    call allocate_runup_gauges(temp_rug_array, num_rugs)
+    call copy_runup_gauges(rug(1:num_rugs), temp_rug_array)
+    call deallocate_runup_gauges(rug)
+    call allocate_runup_gauges(rug, num_rugs)
+    call copy_runup_gauges(temp_rug_array, rug)
+    call deallocate_runup_gauges(temp_rug_array)
+    rug_allocated_size = num_rugs
+      
+end subroutine decrease_runup_gauges
+
 
 !> Allocates an array of runup gauges, deallocating any existing memory.
-subroutine allocRunupGauges(cs, n)
+subroutine allocate_runup_gauges(rug, rug_size)
 
-   implicit none
+    type(t_runup_gauge), allocatable, intent(inout) :: rug(:)   !< Array of run up gauges
+    integer,                          intent(in)    :: rug_size !< Desired size of rug
 
-    type(trug), allocatable, intent(inout) :: cs(:)   !< Array of gauges
-    integer,                 intent(in)    :: n       !< Desired nr of gauges
+    call deallocate_runup_gauges(rug)
+    allocate(rug(rug_size))
 
-    call deallocRunupGauges(cs)
-    allocate(cs(n))
+end subroutine allocate_runup_gauges
 
-end subroutine allocRunupGauges
+!> Deallocates an array of runup gauges by first deallocating the cross section paths
+subroutine deallocate_runup_gauges(rug)
+    type(t_runup_gauge), allocatable, intent(inout) :: rug(:)
 
-!> Deallocates an array of rugs
-subroutine deallocRunupGauges(cs)
-    type(trug), allocatable, intent(inout) :: cs(:)
+    integer :: i
 
-    integer :: i, n
+    if (.not. allocated(rug)) return
 
-    if (.not. allocated(cs)) return
-
-    n = size(cs)
-    do i=1,n
-        call deallocCrossSectionPath(cs(i)%path)
+    do i=1,size(rug)
+        call deallocCrossSectionPath(rug(i)%path)
     end do
-    deallocate(cs)
-end subroutine deallocRunupGauges
+    deallocate(rug)
+end subroutine deallocate_runup_gauges
 
-!> Copies array of rug into another array of rug.
-subroutine copyRunupGauges(rfrom, rto)
+!> Copies array of runup gauges into another array of runup gauges.
+subroutine copy_runup_gauges(source_rug, target_rug)
 use m_alloc
-    type(trug), intent(inout) :: rfrom(:)
-    type(trug), intent(inout) :: rto(:)
+    type(t_runup_gauge), intent(inout) :: source_rug(:) !> array with runup gauges that need to be copied to target
+    type(t_runup_gauge), intent(inout) :: target_rug(:) !> target array runup gauges need to be copied to
 
-    integer :: i, n
+    integer :: i, size_source_rug
 
-    n = size(rfrom)
-    if (n > size(rto) .or. n == 0) return
+    size_source_rug = size(source_rug)
+    if (size_source_rug > size(target_rug) .or. size_source_rug == 0) return
 
-    do i=1,n
-       rto(i) = rfrom(i)
+    do i=1,size_source_rug
+       target_rug(i) = source_rug(i)
     end do
-end subroutine copyRunupGauges
-
-
-subroutine delRunupGauges()
-    nrug = 0
-end subroutine delRunupGauges
+end subroutine copy_runup_gauges
 
 !> Converts a set of polylines into runup gauges.
 !! The input arrays have the structure of the global polygon:
 !! one or more polylines separated by dmiss values.
-subroutine pol_to_runupgauges(xpl, ypl, npl, names)
+subroutine polyline_to_runupgauges(pl_x, pl_y, pl_n, names)
     use m_missing
 
-    double precision, intent(in)           :: xpl(:), ypl(:) !< Long array with one or more polylines, separated by dmiss
-    integer,          intent(in)           :: npl            !< Total number of polyline points
-    character(len=*), optional, intent(in) :: names(:)       !< Optional names for cross sections
+    double precision, intent(in)           :: pl_x(:), pl_y(:) !< Long array with one or more polylines, separated by dmiss
+    integer,          intent(in)           :: pl_n             !< Total number of polyline points
+    character(len=*), optional, intent(in) :: names(:)         !< Optional names for run up gauges
 
-    integer :: i, i1, i2, ic, numnam
+    integer :: i, i_start, i_end, i_poly, num_names
     character(len=IdLen) :: name
 
     if (present(names)) then
-        numnam = size(names)
+        num_names = size(names)
     else
-        numnam = 0
+        num_names = 0
     end if
 
-    i1 = 1 ! First possible start index
-    i2 = 0 ! No end index found yet.
-    ic = 0 ! Nr of polylines found so far
-    do i = 1,npl
-        if (xpl(i) == dmiss .or. i == npl) then
-            if (i == npl .and. xpl(i) /= dmiss) then
-                i2 = i ! Last polyline, no dmiss separator, so also include last point #npl.
+    i_start = 1 ! First possible start index
+    i_end= 0    ! No end index found yet.
+    i_poly = 0  ! polyline index
+    do i = 1,pl_n
+        if (pl_x(i) == dmiss .or. i == pl_n) then
+            if (i == pl_n .and. pl_x(i) /= dmiss) then
+                i_end = i ! Last polyline, no dmiss separator, so also include last point #pl_n.
             end if
-            if (i1 <= i2) then
+            if (i_start <= i_end) then
                 ! 1: Special name for this rug or not?
-                ic = ic + 1
-                if (ic <= numnam) then
-                    name = names(ic)
+                i_poly = i_poly + 1
+                if (i_poly <= num_names) then
+                    name = names(i_poly)
                 else
                     name = ' '
                 end if
-
                 ! 2: add the current polyline as a new rug.
-                call addRunupgauges(name, xpl(i1:i2), ypl(i1:i2))
+                call add_runup_gauges(name, pl_x(i_start:i_end), pl_y(i_start:i_end))
             end if
-            i1 = i+1
+            i_start = i+1
             cycle
         else
-            i2 = i ! Advance end point by one.
+            i_end = i ! Advance end point by one.
         end if
     end do
-end subroutine pol_to_runupgauges
+    
+    call decrease_runup_gauges()
+    
+end subroutine polyline_to_runupgauges
 
 
 !> Reads observation rug and adds them to the normal rug adm
-subroutine loadRunupGauges(filename, jadoorladen)
+subroutine load_runup_gauges(file_name, append)
    use unstruc_messages
 
    implicit none
-   character(len=*), intent(in   ) :: filename    !< File containing the observation rug. Either a *_rug.pli.
-   integer,          intent(in   ) :: jadoorladen !< Append to existing observation rug or not
+   character(len=*), intent(in   ) :: file_name !< File containing the observation rug. Either a *_rug.pli.
+   logical,          intent(in   ) :: append    !< Append to existing observation rug or not
 
-   logical :: jawel
-   integer :: tok_pli
+   logical :: file_exists, file_is_polyline
 
-   inquire(file = filename, exist = jawel)
-   if (jawel) then
-      if (jadoorladen == 0) then
-         call delRunupGauges()
+   inquire(file = file_name, exist = file_exists)
+   if (file_exists) then
+      if (.not. append) then
+         num_rugs = 0
       end if
-      tok_pli = index(filename, '_rug.pli')
-      if (tok_pli > 0) then
-         call loadRunupGauges_from_pli(filename)
+      file_is_polyline = index(file_name, '_rug.pli') > 0
+      if (file_is_polyline) then
+         call load_runup_gauges_from_pli(file_name)
       else
-         call mess(LEVEL_WARN, "Runup gauge file ('"//trim(filename)//"') does not end with _rug.pli.")
+         call mess(LEVEL_WARN, "Runup gauge file ('"//trim(file_name)//"') does not end with _rug.pli.")
       end if
    else
-       call mess(LEVEL_ERROR, "Runup gauge file '"//trim(filename)//"' not found!")
-   endif
-end subroutine loadRunupGauges
+       call mess(LEVEL_ERROR, "Runup gauge file '"//trim(file_name)//"' not found!")
+   end if
+end subroutine load_runup_gauges
 
 !> Reads rugs from an *.pli file.
-subroutine loadRunupGauges_from_pli(filename)
+subroutine load_runup_gauges_from_pli(file_name)
    use messageHandling
    use dfm_error
    use m_polygon
    implicit none
-   character(len=*), intent(in) :: filename
+   character(len=*), intent(in) :: file_name !< name of polyline file to load runup gauges from
 
-   integer :: minp, ipli
+   integer :: file_pointer, polyline_index
 
-   call oldfil(minp, filename)
-   ipli = 0
-   call reapol_nampli(minp, 0, 1, ipli)
-   call pol_to_runupgauges(xpl, ypl, npl, names=nampli)
-   call doclose(minp)
+   call oldfil(file_pointer, file_name)
+   polyline_index = 0
+   call reapol_nampli(file_pointer, 0, 1, polyline_index)
+   call polyline_to_runupgauges(xpl, ypl, npl) !TODO refactor reapol_nampli so we no longer have to use horrible global arrays
+   call doclose(file_pointer)
 
-end subroutine loadRunupGauges_from_pli
+end subroutine load_runup_gauges_from_pli
 
+!> adds runup gauge with name and polyline coordinates
+subroutine add_runup_gauges(name, pl_x, pl_y)
+    character(len=*), intent(in) :: name !> name of the new runup gauge
+    double precision, intent(in) :: pl_x(:), pl_y(:) !> x- and y coordinates of polyline
 
-subroutine addRunupgauges(name, xp, yp)
-    character(len=*), intent(in) :: name
-    double precision, intent(in) :: xp(:), yp(:)
+    integer :: name_length
+    character(len=1) :: runup_gauge_digits
 
-    integer :: m
-    character(len=1) :: cdigits
+    call increase_runup_gauges(num_rugs+1)
 
-    call increaseRunupgauges(nrug+1)
-
-    nrug           = nrug + 1
-    call setCrossSectionPathPolyline(rug(nrug)%path, xp, yp)
-    rug(nrug)%path%lnx  = 0
+    num_rugs           = num_rugs + 1
+    call setCrossSectionPathPolyline(rug(num_rugs)%path, pl_x, pl_y)
+    rug(num_rugs)%path%lnx  = 0
 
     ! Set name (or generate one)
-    m = len_trim(name)
-    if (m > 0) then
-        m = min(len(rug(nrug)%name), len(name))
-        rug(nrug)%name = ' '
-        rug(nrug)%name(1:m) = name(1:m)
+    name_length= len_trim(name)
+    if (name_length > 0) then
+        name_length= min(len(rug(num_rugs)%name), len(name))
+        rug(num_rugs)%name = ' '
+        rug(num_rugs)%name(1:name_length) = name(1:name_length)
     else ! No name given, generate one.
-        write(cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_))+1)))
-        write(rug(nrug)%name, '(a,i'//cdigits//'.'//cdigits//')'), trim(defaultName_), iUniq_
-        iUniq_ = iUniq_ + 1
+        write(runup_gauge_digits, '(i1)') max(2, int(floor(log10(dble(runup_gauge_id))+1)))
+        write(rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')'), trim(defaultName_), runup_gauge_id
+        runup_gauge_id = runup_gauge_id + 1
     end if
 
     ! Set default values
-    rug(nrug)%maxx = 0d0
-    rug(nrug)%maxy = 0d0
-    rug(nrug)%maxruh = -huge(0d0)
+    rug(num_rugs)%max_x = 0d0
+    rug(num_rugs)%max_y = 0d0
+    rug(num_rugs)%max_rug_height = -huge(0d0)
 
-end subroutine addRunupgauges
+end subroutine add_runup_gauges
 
-subroutine clearRunupGauges()
+subroutine clear_runup_gauges()
    integer :: i
    ! Reset data for next iteration
-   do i=1, nrug
-      rug(i)%maxruh = -huge(0d0)
-      rug(i)%maxx   = 0d0
-      rug(i)%maxy   = 0d0
-   enddo
+   do i=1, num_rugs
+      rug(i)%max_rug_height = -huge(0d0)
+      rug(i)%max_x   = 0d0
+      rug(i)%max_y   = 0d0
+   end do
 end subroutine
 
 end module

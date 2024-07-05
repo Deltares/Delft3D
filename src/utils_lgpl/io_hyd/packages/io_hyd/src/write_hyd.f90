@@ -30,14 +30,11 @@
       subroutine write_hyd(hyd, version_full)
 
       ! function : write a hydrodynamic description file
-
-      ! global declarations
-
-      use m_monsys
+      use m_logger_helper, only: get_log_unit_number
       use m_hydmod
       use system_utils
-      use :: m_hyd_keys, only: key, nokey     ! keywords in hydfile
-      use m_dattim
+      use m_hyd_keys, only: key, nokey     ! keywords in hydfile
+      use m_date_time_utils_external, only : write_date_time
 
       implicit none
 
@@ -60,7 +57,7 @@
       integer                   :: i_dd_bound             ! index in collection
       type(t_dd_bound),pointer  :: dd_bound               ! one dd_bound description
       character(len=256)  :: filename               ! filename without path
-      character(*)   version_full      !! Delft3D FLOW version information
+      character(*)   version_full      !! Version information of program calling this subroutine
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
 
@@ -70,14 +67,14 @@
       character(len=2),parameter :: csq = ' '''     ! space with quote
 
 
-      call getmlu(lunrep)
+      call get_log_unit_number(lunrep)
 
       call hyd%file_hyd%open()
       lunhyd = hyd%file_hyd%unit
 
       write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_full)
 
-      call dattim(rundat)
+      call write_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 

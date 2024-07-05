@@ -32,7 +32,7 @@
 
 subroutine reallocsrc(n)
  use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, itrac2const
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_alloc
  use m_missing
  use m_polygon, only: npl

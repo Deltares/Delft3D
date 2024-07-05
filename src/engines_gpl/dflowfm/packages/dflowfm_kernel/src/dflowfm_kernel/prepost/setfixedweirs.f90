@@ -171,7 +171,7 @@ subroutine setfixedweirs()
     success = .false.
  endif
  if ( .not. success ) then
-    call find_crossed_links_kdtree2(treeglob,NPL,XPL,YPL,2,Lnx,1,numcrossedLinks, iLink, iPol, dSL, ierror)
+    call find_crossed_links_kdtree2(treeglob,NPL,XPL,YPL,2,Lnx,2,numcrossedLinks, iLink, iPol, dSL, ierror)
     call cacheFixedWeirs( npl, xpl, ypl, numcrossedLinks, iLink, iPol, dSL )
  endif
  call klok(t_extra(2,3))

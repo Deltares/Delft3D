@@ -95,7 +95,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c01_246_pump-station_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106_f06_c01_246_pump-station_free-surface-flow" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c01_246_pump-station_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -213,7 +213,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c02_366_pump-station_free-surface-flow_rws-reduction-table(neg-pump-heads)" ref="dflow1d_default">
+		<testCase name="e106_f06_c02_366_pump-station_free-surface-flow_rws-reduction-table" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c02_366_pump-station_free-surface-flow_rws-reduction-table(neg-pump-heads)</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -250,7 +250,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c03_236_internal-pump-station_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106_f06_c03_236_internal-pump-station_free-surface-flow" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c03_236_internal-pump-station_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -353,7 +353,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c04_288_internal-pump-station_pressurized-pipe-flow" ref="dflow1d_default">
+		<testCase name="e106_f06_c04_288_internal-pump-station_pressurized-pipe-flow" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c04_288_internal-pump-station_pressurized-pipe-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -456,7 +456,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c05_287_external-pump-station_free-surface-flow" ref="dflow1d_default">
+		<testCase name="e106_f06_c05_287_external-pump-station_free-surface-flow" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c05_287_external-pump-station_free-surface-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -559,7 +559,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c06_289_external-pump-station_pressurized-pipe-flow" ref="dflow1d_default">
+		<testCase name="e106_f06_c06_289_external-pump-station_pressurized-pipe-flow" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c06_289_external-pump-station_pressurized-pipe-flow</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -662,7 +662,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 	    <!-- ======================================================================== -->
-		<testCase name="e106(dflow1d)_f06(single-structures)_c11_220_weir-with-detailed-description-of-crest(river-weir)" ref="dflow1d_default">
+		<testCase name="e106_f06_c11_220_weir-with-detailed-description-of-crest" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c11_220_weir-with-detailed-description-of-crest(river-weir)</path>
             <checks>
 				<file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -678,7 +678,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f06(single-structures)_c15_227_pump(river-pump)" ref="dflow1d_default">
+        <testCase name="e106_f06_c15_227_pump" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c15_227_pump(river-pump)</path>
             <checks>
                 <file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -704,7 +704,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->		
-        <testCase name="e106(dflow1d)_f06(single-structures)_c16_235_simple-weir(weir)" ref="dflow1d_default">
+        <testCase name="e106_f06_c16_235_simple-weir" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c16_235_simple-weir(weir)</path>
             <checks>
                 <file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -722,7 +722,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->		
-        <testCase name="e106(dflow1d)_f06(single-structures)_c17_134_free-form-weir(universal-weir)" ref="dflow1d_default">
+        <testCase name="e106_f06_c17_134_free-form-weir" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c17_134_free-form-weir(universal-weir)</path>
             <checks>
                 <file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -768,7 +768,7 @@
             <maxRunTime>60.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f06(single-structures)_c18_243_culvert_siphon_invertedsiphon" ref="dflow1d_default">
+        <testCase name="e106_f06_c18_243_culvert_siphon_invertedsiphon" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c18_243_culvert_siphon_invertedsiphon</path>
             <checks>
                 <file name="dflow1d/output/structures.nc" type="NETCDF">
@@ -801,7 +801,7 @@
             <maxRunTime>240.0</maxRunTime>
         </testCase>
 		<!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f06(single-structures)_c19_293_culvert_siphon_invertedsiphon" ref="dflow1d_default">
+        <testCase name="e106_f06_c19_293_culvert_siphon_invertedsiphon" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f06_single-structures/c19_293_culvert_siphon_invertedsiphon</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>

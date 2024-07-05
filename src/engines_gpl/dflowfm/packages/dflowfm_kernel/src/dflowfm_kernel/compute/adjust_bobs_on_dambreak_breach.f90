@@ -34,7 +34,7 @@
 subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1, L2, strucid)
 
    use m_flowgeom
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use MessageHandling
 
    implicit none

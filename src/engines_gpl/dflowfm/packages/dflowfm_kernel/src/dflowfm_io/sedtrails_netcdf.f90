@@ -435,21 +435,21 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
        idims(2) = id_timedim(iid)
 
        ! Variables that will always be written
-       call definencvar(imapfile,id_bl(iid)   ,nf90_double,idims,2, 'bedlevel', 'bed level', 'm', 'net_xcc net_ycc')
+       call definencvar(imapfile,id_bl(iid)   ,nf90_double,idims, 'bedlevel', 'bed level', 'm', 'net_xcc net_ycc')
        
        if (trim(sedtrails_analysis)=='flowvelocity' .or. trim(sedtrails_analysis)=='all') then
-          call definencvar(imapfile,id_ucx(iid),nf90_double,idims,2, 'sea_water_x_velocity', 'depth-averaged velocity on grid corner, x-component', 'm s-1', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_ucy(iid),nf90_double,idims,2, 'sea_water_y_velocity', 'depth-averaged velocity on grid corner, y-component', 'm s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_ucx(iid),nf90_double,idims, 'sea_water_x_velocity', 'depth-averaged velocity on grid corner, x-component', 'm s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_ucy(iid),nf90_double,idims, 'sea_water_y_velocity', 'depth-averaged velocity on grid corner, y-component', 'm s-1', 'net_xcc net_ycc')
        endif
 
        if ((trim(sedtrails_analysis)=='transport' .or. trim(sedtrails_analysis)=='all') .and. stm_included) then
           ! Fractions
           ierr = nf90_def_dim(imapfile, 'nSedTot', lsedtot, id_sedtotdim(iid))
           !
-          call definencvar(imapfile,id_sbx(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'bedload_x_comp', 'bedload transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_sby(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'bedload_y_comp', 'bedload transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_ssx(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'susload_x_comp', 'suspended transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_ssy(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'susload_y_comp', 'suspended transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_sbx(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /), 'bedload_x_comp', 'bedload transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_sby(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /), 'bedload_y_comp', 'bedload transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_ssx(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /), 'susload_x_comp', 'suspended transport on grid corner, x-component', 'kg m-1 s-1', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_ssy(iid),nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /), 'susload_y_comp', 'suspended transport on grid corner, y-component', 'kg m-1 s-1', 'net_xcc net_ycc')
        endif    
        
        if ((trim(sedtrails_analysis)=='soulsby' .or. trim(sedtrails_analysis)=='all') .and. stm_included) then
@@ -459,14 +459,14 @@ subroutine unc_write_sedtrails_filepointer(imapfile,tim)
              ierr = nf90_def_dim(imapfile, 'nSedTot', lsedtot, id_sedtotdim(iid)) ! only once
           endif
           !
-          call definencvar(imapfile,id_hs(iid)     ,nf90_double,idims,2, 'waterdepth', 'water depth', 'm', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_taus(iid)   ,nf90_double,idims,2, 'mean_bss_magnitude', 'mean bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_tausmax(iid),nf90_double,idims,2, 'max_bss_magnitude' , 'max bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
-          call definencvar(imapfile,id_ssc(iid)    ,nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /),3, 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_hs(iid)     ,nf90_double,idims, 'waterdepth', 'water depth', 'm', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_taus(iid)   ,nf90_double,idims, 'mean_bss_magnitude', 'mean bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_tausmax(iid),nf90_double,idims, 'max_bss_magnitude' , 'max bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
+          call definencvar(imapfile,id_ssc(iid)    ,nf90_double,(/ id_flowelemdim(iid) , id_sedtotdim(iid) , id_timedim(iid) /), 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
           !
           if (jawave>0) then
-             call definencvar(imapfile,id_ua(iid)     ,nf90_double,idims,2, 'wave_nonlin_vel_x_comp', 'non-linear wave velocity contribution, x-component', 'm s-1', 'net_xcc net_ycc')
-             call definencvar(imapfile,id_va(iid)     ,nf90_double,idims,2, 'wave_nonlin_vel_y_comp', 'non-linear wave velocity contribution, y-component', 'm s-1', 'net_xcc net_ycc')
+             call definencvar(imapfile,id_ua(iid)     ,nf90_double,idims, 'wave_nonlin_vel_x_comp', 'non-linear wave velocity contribution, x-component', 'm s-1', 'net_xcc net_ycc')
+             call definencvar(imapfile,id_va(iid)     ,nf90_double,idims, 'wave_nonlin_vel_y_comp', 'non-linear wave velocity contribution, y-component', 'm s-1', 'net_xcc net_ycc')
           endif
        endif  
        !       

@@ -41,7 +41,6 @@
       <path>bin/run_dimr.bat</path>
       <arguments>
         <argument>dimr.xml</argument>
-        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
       </arguments>
     </program>
     <program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -52,7 +51,6 @@
       <path>bin/run_dimr.bat</path>
       <arguments>
         <argument>dimr_waq.xml</argument>
-        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
       </arguments>
     </program>
     <program name="dimr-mpi" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -71,7 +69,6 @@
       <arguments>
         <argument>3</argument>
         <argument>dimr.xml</argument>
-        <!-- <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument> -->
       </arguments>
     </program>
     <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >

@@ -97,7 +97,7 @@
       ENDIF
      ! CALL SAVENET()
       CALL READYY('CHANGE FIELD VALUES', 0d0)
-      DO 20 K = 1,NUMK
+      do k = 1,NUMK
          if (mod (k,1000) == 0) then
             AF = dble(K) / dble(NUMK)
             CALL READYY('CHANGE FIELD VALUES', AF)
@@ -137,7 +137,7 @@
                  IF (RD /= dmiss .AND. EA(K) < DA) EA(K) = DMISS
               ENDIF
            ENDIF
-   20 CONTINUE
+      end do
       CALL READYY('CHANGE FIELD VALUES', -1d0)
       KEY = 3
       RETURN

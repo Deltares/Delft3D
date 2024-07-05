@@ -37,7 +37,7 @@ subroutine unc_write_shp()
     use unstruc_shapefile
     use m_monitoring_crosssections, only: ncrs, crs
     use m_observations, only: numobs, kobs
-    use m_flowexternalforcings, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreak, ndambreaksg, L1dambreaksg, L2dambreaksg
+    use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreaklinks, ndambreaksignals, L1dambreaksg, L2dambreaksg
     use m_thindams
     use m_sobekdfm, only: nbnd1d2d
     use m_fixedweirs, only: nfxw
@@ -218,8 +218,8 @@ subroutine unc_write_shp()
 
     ! dam break
     if (jashp_dambreak > 0) then
-       jawrite = ndambreaksg
-       do n = 1, ndambreaksg
+       jawrite = ndambreaksignals
+       do n = 1, ndambreaksignals
           if (L1dambreaksg(n) > L2dambreaksg(n)) then
              jawrite = jawrite - 1
           endif

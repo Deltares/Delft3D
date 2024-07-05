@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f012_c0322" ref="dimr">
         <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
          <checks>
@@ -224,6 +224,26 @@
                <parameter name="waterlevel" toleranceAbsolute="0.001" />
                <parameter name="x_velocity" toleranceAbsolute="0.001" />
                <parameter name="y_velocity" toleranceAbsolute="0.001" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f014_c042_dad_2dredge1dump_layered_bed_par" ref="dimr">
+      <path version="2024-05-06T23:10:00">e02_dflowfm/f014_parallel/c042_dad_2dredge1dump_layered_bed_par</path>
+      <programs>
+          <program ref="dimr">
+             <arguments>
+                 <argument>3 dimr.xml</argument>
+             </arguments>
+          </program>
+      </programs>
+      <maxRunTime>120.0</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_test/test_0000_his.nc" type="netCDF">
+           <parameters>
+               <parameter name="dred_discharge" toleranceAbsolute="0.001" />
+               <parameter name="dump_discharge" toleranceAbsolute="0.001" />
+               <parameter name="dred_link_discharge" toleranceAbsolute="0.001" />
            </parameters>
         </file>
       </checks>

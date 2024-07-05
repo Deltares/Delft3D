@@ -34,7 +34,7 @@ contains
         !! Sets a specific feature in a multi-feature integer based on the provided index
         !!
         !! The feature is an integer with at most 9 10-base features.
-        !! This routine sets a feature. Routine evaluate_waq_attribute is the mirror
+        !! This routine sets a feature. Routine extract_waq_attribute is the mirror
         !! routine that reads the feature.
 
         integer(kind = int_wp), intent(in) :: feature_index       !! Index of the feature to be set

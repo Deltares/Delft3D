@@ -32,7 +32,7 @@
 
    subroutine disable_higherorder_at_sorsin()
       use m_flowgeom
-      use m_flowexternalforcings, only: numsrc, ksrc
+      use fm_external_forcings_data, only: numsrc, ksrc
       use m_partitioninfo
       use m_alloc
       implicit none

@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- ======================================================================== -->
     <testCase name="e02_f029_c001_frisianinlet_schematized_2D" ref="dimr_default">
         <path version="2024-01-11T13:10:00">e02_dflowfm/f029_hyd_file/c001_frisianinlet_schematized_2D</path>
@@ -6,7 +6,6 @@
             <program ref="dimr" seq="1">
                 <arguments>
                     <argument>-m dimr.xml</argument>
-                    <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                 </arguments>
             </program>
             <program ref="checkhydbal" seq="2">
@@ -36,7 +35,6 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -66,7 +64,6 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -97,7 +94,6 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -127,7 +123,6 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">
@@ -157,7 +152,6 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="checkhydbal" seq="2">

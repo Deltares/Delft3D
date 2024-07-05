@@ -49,10 +49,10 @@
 
       IF (UR .EQ. 0 .AND. VR .EQ. 0) RETURN
 
-      DO 10 I = 1,3
+      do I = 1,3
          XR(I) = X0 + VFAC*(X(I)*UR - Y(I)*VR)
          YR(I) = Y0 + VFAC*(Y(I)*UR + X(I)*VR)
-   10 CONTINUE
+      end do
 
       CALL MOVABS(X0,Y0)
       CALL LNABS(XR(2),YR(2))

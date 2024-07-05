@@ -71,16 +71,14 @@ use unstruc_messages, only: mess, LEVEL_ERROR
 
 implicit none
 
-integer,          intent(in)    :: cell   !< cell number
-double precision, intent(inout) :: p0     !< in as cell ceiling pressure, out as cell floorpressure (pascal) 
-
-double precision                :: rhok   !< in as previous density, reduces required nr of iterations 
-
-integer                         :: i, lsed   
+integer,          intent(in)    :: cell              !< cell number
+double precision, intent(inout) :: p0                !< in as cell ceiling pressure, out as cell floorpressure (pascal) 
+double precision                :: rhok              !< in as previous density, reduces required nr of iterations 
+double precision, parameter     :: rhom_min = 990d0  !< lower limit of rhom [kg/m3]
+double precision, parameter     :: rhom_max = 1250d0 !< upper limit of rhom [kg/m3]
+integer                         :: i  
 double precision, external      :: densfm
-double precision                :: rhom, sal, temp, p1, dzz
-
-double precision, parameter     :: SEDIMENT_DENSITY = 2600d0   !< default/typical sediment density [kg/m3]
+double precision                :: sal, temp, p1, dzz
 
 call getsaltemk(cell,sal, temp)
 
@@ -97,39 +95,10 @@ else
    p0     = p1
 end if
 
-if (jased > 0 .and. stm_included) then
-   rhom = setrho                     ! UNST-5170 for mor, only use salt+temp, not sediment effect
-   rhom = min(rhom, 1250d0)           ! check overshoots at thin water layers
-   rhom = max(rhom,  990d0)           !
-   rhowat(cell) = rhom
-   if (stmpar%morpar%densin) then     ! sediment density effects
-      i    = ised1
-      rhom = setrho
-      do lsed = 1,stmpar%lsedtot
-         if (has_advdiff(stmpar%sedpar%tratyp(lsed))) then ! has suspended component
-            setrho = setrho + constituents(i,cell)*(stmpar%sedpar%rhosol(lsed) - rhom)/stmpar%sedpar%rhosol(lsed)
-            i = i+1
-         end if
-      end do
-   end if
-else if (jasubstancedensitycoupling > 0) then ! for now, only works for DELWAQ sediment fractions (concentrations in g/m3 and density of SEDIMENT_DENSITY)
-   if (itra1 == 0) then
-       call mess(LEVEL_ERROR, 'SubstanceDensityCoupling was set to 1, but there are no substances.')
-   end if
-   rhom = setrho
-   do i = itra1, itran 
-      setrho = setrho + (1d-3)*constituents(i,cell)*(SEDIMENT_DENSITY - rhom)/SEDIMENT_DENSITY
-   enddo
-else if (jaseddenscoupling > 0) then  ! jased < 4
-   rhom = setrho
-   do i = 1,mxgr
-      setrho = setrho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i)
-   enddo
+call add_sediment_effect_to_density(setrho, cell)
 
-end if
-
-setrho = min(setrho, 1250d0)          ! check overshoots at thin water layers
-setrho = max(setrho,  990d0)          !
+setrho = min(setrho, rhom_max)          ! check overshoots at thin water layers
+setrho = max(setrho, rhom_min)          !
 
 end function setrho
 
@@ -142,11 +111,13 @@ double precision, intent(in)    :: p0   !< some given pressure
 
 double precision, external      :: densfm
 
-double precision :: sal, temp
+double precision                :: sal, temp
 
 call getsaltemk(k,sal, temp)
 
 setrhofixedp = densfm(sal,temp,p0)
+
+call add_sediment_effect_to_density(setrhofixedp, k)
 
 end function setrhofixedp
 
@@ -171,3 +142,56 @@ else
    temp = backgroundwatertemperature
 endif
 end subroutine getsaltemk
+
+!> Adds the effect of sediment on the density of a cell
+subroutine add_sediment_effect_to_density(rho, cell)
+use m_sediment,             only: jased, jaseddenscoupling, jasubstancedensitycoupling, mxgr, rhosed, sed, stmpar, stm_included
+use m_transport,            only: constituents, ised1, itra1, itran
+use m_turbulence,           only: rhowat
+use sediment_basics_module, only: has_advdiff
+use unstruc_messages,       only: LEVEL_ERROR, mess
+use unstruc_model,          only: check_positive_value
+
+implicit none
+
+double precision, intent(inout) :: rho                       !< density in a cell [kg/m3]
+integer,          intent(in   ) :: cell                      !< cell index
+double precision, parameter     :: rhom_min = 990d0          !< lower limit of rhom [kg/m3]
+double precision, parameter     :: rhom_max = 1250d0         !< upper limit of rhom [kg/m3]
+double precision, parameter     :: SEDIMENT_DENSITY = 2600d0 !< default/typical sediment density [kg/m3]
+double precision                :: rhom                      !< density in a cell [kg/m3] before adding sediment effects
+integer                         :: i, lsed                   !< loop indices
+
+if (jased > 0 .and. stm_included) then
+   rhom = rho                      ! UNST-5170 for mor, only use salt+temp, not sediment effect
+   rhom = min(rhom, rhom_max)         ! check overshoots at thin water layers
+   rhom = max(rhom, rhom_min)         !
+   rhowat(cell) = rhom
+   if (stmpar%morpar%densin) then     ! sediment density effects
+      i    = ised1
+      rhom = rho
+      do lsed = 1,stmpar%lsedtot
+         if (has_advdiff(stmpar%sedpar%tratyp(lsed))) then ! has suspended component
+            rho = rho + constituents(i,cell)*(stmpar%sedpar%rhosol(lsed) - rhom)/stmpar%sedpar%rhosol(lsed)
+            i = i+1
+         end if
+      end do
+   end if
+else if (jasubstancedensitycoupling > 0) then ! for now, only works for DELWAQ sediment fractions (concentrations in g/m3 and density of SEDIMENT_DENSITY)
+   if (itra1 == 0) then
+       call mess(LEVEL_ERROR, 'SubstanceDensityCoupling was set to 1, but there are no substances.')
+   end if
+   rhom = rho
+   do i = itra1, itran 
+      rho = rho + (1d-3)*constituents(i,cell)*(SEDIMENT_DENSITY - rhom)/SEDIMENT_DENSITY
+   enddo
+else if (jaseddenscoupling > 0) then  ! jased < 4
+   rhom = rho
+   do i = 1,mxgr
+      call check_positive_value('rhosed', rhosed(i))
+      rho = rho + sed(i,cell)*(rhosed(i) - rhom)/rhosed(i)
+   enddo
+
+end if
+end subroutine add_sediment_effect_to_density
+    

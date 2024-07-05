@@ -434,7 +434,7 @@ subroutine waq_wri_hyd()
    use m_flowparameters
    use m_flowtimes
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowgeom
    use unstruc_model
    use time_module, only: ymd2jul
@@ -1581,7 +1581,7 @@ subroutine waq_wri_bnd()
    use m_flowgeom
    use network_data
    use m_partitioninfo, only: is_ghost_node
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, lat_ids
    use unstruc_files
    use m_sferic, only: jsferic, jasfer3D
@@ -1771,7 +1771,7 @@ subroutine waq_wri_couple_files(time)
    use m_flowtimes
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_waves
    use unstruc_files, only: defaultFilename
    implicit none
@@ -1880,7 +1880,7 @@ subroutine waq_prepare_aggr()
    use m_partitioninfo
    use unstruc_model
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    implicit none
 
@@ -2267,7 +2267,7 @@ end subroutine waq_make_aggr_lnk
 subroutine waq_prepare_src()
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    implicit none
 
@@ -2358,7 +2358,7 @@ subroutine waq_prepare_lat()
    use m_partitioninfo, only: is_ghost_node
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
    use m_alloc
    implicit none

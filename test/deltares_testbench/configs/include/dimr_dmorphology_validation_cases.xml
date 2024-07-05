@@ -1,4 +1,4 @@
-  <testCases>
+  <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f022_c02_trench_EH" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f022_morphology_2D/c02_trench_EH</path>
       <maxRunTime>20.0</maxRunTime>

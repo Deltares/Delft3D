@@ -31,7 +31,7 @@ contains
     SUBROUTINE DAYRAD (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
 
         !***********************************************************************
@@ -154,7 +154,7 @@ contains
         ENDIF
         !
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             RADSURF = PMSA(IP1)
 
@@ -171,7 +171,6 @@ contains
                 HOUR = MOD (TIME / AUXSYS + REFDAY, 1.) * 24.
                 RDIST = 1.D0 + .033 * COS(E * DAYNR)
                 OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
-                OMEGA0 = ACOS(-TAN(DECLIN) * TAN(LATITUDE))
 
                 DECLIN = 6.918D-3 - &
                         3.99912D-1 * DCOS (E * DAYNR) - &

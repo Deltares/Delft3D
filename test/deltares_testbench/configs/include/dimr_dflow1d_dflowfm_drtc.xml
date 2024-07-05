@@ -1,7 +1,7 @@
     <!--
     testCases
     -->
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e102_f01_c01_model1" ref="dimr_trunk">
             <path version="2024-01-12T07:40:00">e102_dflow1d-dflowfm-drtc/f01_general/c01_model1</path>
             <checks>

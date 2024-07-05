@@ -31,7 +31,7 @@ contains
     subroutine dmvol  (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !>\file
         !>       Volume of dry matter in a segment
@@ -74,7 +74,7 @@ contains
         !
         IFLUX = 0
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 

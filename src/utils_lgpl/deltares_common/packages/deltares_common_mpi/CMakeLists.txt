@@ -1,4 +1,4 @@
-include_directories(${mpi_include_path})
+include_directories(${mpi_module_path})
 
 set(library_name deltares_common_mpi)
 

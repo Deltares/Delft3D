@@ -39,9 +39,11 @@
       integer :: nmax
 
       double precision :: H(NMAX,-1:MMAX+1)
-      DO 10 I = -1,MMAX+1
-         DO 10 J = 1,NMAX
+      do I = -1,MMAX+1
+         do J = 1,NMAX
             H(J,I) = dmiss
-   10 CONTINUE
+         end do
+      end do
+      
       RETURN
       END

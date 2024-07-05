@@ -54,8 +54,8 @@
          MZ = MVOL
          NZ = NVOL
       ELSE
-         DO 10 I = 1,MC
-            DO 10 J = 1,NC
+         do I = 1,MC
+            do J = 1,NC
                IF (X(I,J) .NE. XYMIS) THEN
                   DX = XL - X(I,J)
                   DY = YL - Y(I,J)
@@ -66,7 +66,8 @@
                      NZ   = J
                   ENDIF
                ENDIF
-    10   CONTINUE
+            end do
+         end do
       ENDIF
 
       M1     = MAX(1,MZ-2)
@@ -76,8 +77,8 @@
       INSIDE = 0
       MVOL   = 0
       NVOL   = 0
-      DO 20 I = M1,M2
-         DO 20 J = N1,N2
+      DO I = M1,M2
+         DO J = N1,N2
             XX(1) = X(I,J)
             XX(2) = X(I+1,J)
             XX(3) = X(I+1,J+1)
@@ -102,7 +103,7 @@
                   YYC  = ( YY(1) + YY(2) + YY(3) + YY(4) )/4
                   IN   = 0
                   JN   = 0
-                  DO 30 I1 = 1,4
+                  DO I1 = 1,4
                      I2    = MOD(I1,4) + 1
                      XK(1) = XX(I1)
                      YK(1) = YY(I1)
@@ -121,11 +122,12 @@
 !                       WRITE(MDIA,*) 'NO KWADRANT'
                         RETURN
                      ENDIF
-    30            CONTINUE
+                  end do
                ENDIF
             ENDIF
-    20 CONTINUE
-
+         end do
+      end do
+      
 !     WRITE(MDIA,*) 'ISHOT', ISHOT, MVOL, NVOL
       IF (ISHOT .EQ. 1) RETURN
       ISHOT = 1

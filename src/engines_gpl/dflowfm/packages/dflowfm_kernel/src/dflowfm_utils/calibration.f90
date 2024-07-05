@@ -766,7 +766,7 @@ subroutine update_clddata()
     
     ! Set water level dependent calibration value
     do icldobs = 1,ncldobs
-        zs = valobs(IPNT_S1, clddata%obs(icldobs)) 
+        zs = valobs( clddata%obs(icldobs),IPNT_S1) 
         call f_from_table_of_x( clddata%cldtable_zs, clddata%rttdef_zs, clddata%start_zs(icldobs), clddata%end_zs(icldobs), clddata%slope_zs, clddata%cross_zs, zs, f)
         ! store to definitions
         clddata%rttdef(clddata%icld_zs(icldobs)) = f 

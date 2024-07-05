@@ -33,23 +33,21 @@
 module dfm_error
 implicit none
 
-   integer, parameter :: DFM_NOERR         = 0   !< Success code.
-   integer, parameter :: DFM_GENERICERROR  = 1   !< Error without further details.
-   integer, parameter :: DFM_EXIT          = 10  !< Exit program without error.
-   integer, parameter :: DFM_USERINTERRUPT = 11  !< No error, but execution stopped because of user interrupt.
-   integer, parameter :: DFM_MISSINGARGS   = 13  !< Missing input arguments
-   integer, parameter :: DFM_SIGINT        = 121 !< SIGINT signal was give from outside the program (Ctrl-C)
-
-   integer, parameter :: DFM_EFILEFORMAT   = -13 !< Error code: File has wrong format.
-   integer, parameter :: DFM_WRONGINPUT    = 14  !< Error code: Generic error about wrong data in input.
-   integer, parameter :: DFM_EXTFORCERROR  = 16  !< Error code: Related to external forcing (EC-module etc.)
+   integer, parameter :: DFM_NOERR               = 0   !< Success code.
+   integer, parameter :: DFM_GENERICERROR        = 1   !< Error without further details.
+   integer, parameter :: DFM_EXIT                = 10  !< Exit program without error.
+   integer, parameter :: DFM_USERINTERRUPT       = 11  !< No error, but execution stopped because of user interrupt.
+   integer, parameter :: DFM_MISSINGARGS         = 13  !< Missing input arguments
+   integer, parameter :: DFM_SIGINT              = 121 !< SIGINT signal was give from outside the program (Ctrl-C)
+   integer, parameter :: DFM_EFILEFORMAT         = -13 !< Error code: File has wrong format.
+   integer, parameter :: DFM_WRONGINPUT          = 14  !< Error code: Generic error about wrong data in input.
+   integer, parameter :: DFM_EXTFORCERROR        = 16  !< Error code: Related to external forcing (EC-module etc.)
    integer, parameter :: DFM_NOMODEL             = 20  !< No model loaded.
    integer, parameter :: DFM_MODELNOTINITIALIZED = 21  !< Model was empty or not properly initialized.
-   integer, parameter :: DFM_INVALIDSTATE  = 22 !< Model state has become unphysical
-   integer, parameter :: DFM_INVALIDTARGETTIME = 30 !< Invalid target time or timestep requested (via API).
-   integer, parameter :: DFM_TIMESETBACK       = 31 !< Warning only: time setbacks occurred in step_reduce.
-
-   integer, parameter :: DFM_NOTIMPLEMENTED    = 999 !< Generic error that functionality is intended but not yet implemented.
+   integer, parameter :: DFM_INVALIDSTATE        = 22  !< Model state has become unphysical
+   integer, parameter :: DFM_INVALIDTARGETTIME   = 30  !< Invalid target time or timestep requested (via API).
+   integer, parameter :: DFM_TIMESETBACK         = 31  !< Warning only: time setbacks occurred in step_reduce.
+   integer, parameter :: DFM_NOTIMPLEMENTED      = 999 !< Generic error that functionality is intended but not yet implemented.
 
    logical            :: do_check_bmi_timestep =.true. !< SH: temporary flag to be able to run both DFlowFM/Wave and 1d2d
                                                        !<     to be removed when 1d2d time step handling is fixed

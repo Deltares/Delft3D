@@ -44,7 +44,7 @@
  use m_partitioninfo
  use m_sediment, only: stm_included
  use m_sethu
- use m_external_forcings, only: calculate_wind_stresses
+ use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
  use m_wind, only: update_wind_stress_each_time_step
  use m_fm_icecover, only: update_icecover
  implicit none
@@ -84,7 +84,7 @@
  tim1bnd = max(time0+dts, tim1bnd)
 
  call timstrt('Set boundaries      ', handle_extra(38)) ! Start bnd
- call flow_setexternalforcingsonboundaries(tim1bnd , iresult)  ! boundary forcings
+ call set_external_forcings_boundaries(tim1bnd , iresult)  ! boundary forcings
  call timstop(handle_extra(38)) ! End bnd
 
  if (iresult /= DFM_NOERR) then

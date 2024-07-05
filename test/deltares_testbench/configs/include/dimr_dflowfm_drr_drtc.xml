@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- ======================================================================== -->
     <testCase name="e114_f01_c01_hunze_en_aas" ref="dimr_trunk">
         <path>e114_dflowfm-drr-drtc/f01_general/c01_hunze_en_aas</path>

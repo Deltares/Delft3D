@@ -11,3 +11,6 @@ create_test(
     labels "test_protist_mortality_salinity_influence_salinity:fast" "test_protist_mortality_salinity_influence_sigmoid_gradient:fast" "test_protist_mortality_salinity_influence_sigmoid_shift:fast" "test_protist_mortality_salinity_influence_rate_low_salinity:fast" "test_protist_mortality_salinity_influence_rate_high_salinity:fast" 
     test_files tests_protist_mortality_salinity.f90
     )
+
+
+add_subdirectory(debgrz test_debgrz)

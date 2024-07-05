@@ -33,7 +33,7 @@
 !> check if structures on flowlinks are unique
 subroutine check_structures_and_fixed_weirs()
    use m_flowgeom, only: Lnx
-   use m_flowexternalforcings, only: ncgensg, kcgen, L1cgensg, L2cgensg, cgen_ids
+   use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg, cgen_ids
    use m_fixedweirs, only: nfxw, lnfxw
    use unstruc_messages
    implicit none

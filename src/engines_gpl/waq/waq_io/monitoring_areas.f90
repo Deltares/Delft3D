@@ -32,7 +32,7 @@ module monitoring_areas
 
 contains
 
-    subroutine read_monitoring_areas(lun, lchar, filtype, duname, nsegdmp, &
+    subroutine read_monitoring_areas(file_unit_list, file_name_list, filtype, duname, nsegdmp, &
             isegdmp, dmpbal, ndmpar, ntdmps, output_verbose_level, &
             ierr, status)
 
@@ -52,15 +52,15 @@ contains
         !! Subroutine called : process_simulation_input_options   - to open an external file
         !!                         ZOEK   - to searchs strings
         !!
-        !!     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
-        !!                         LUN(29) = unitnumber formatted output file
+        !!     Logical units     : file_unit_list(27) = unitnumber stripped DELWAQ input file
+        !!                         file_unit_list(29) = unitnumber formatted output file
 
         use simulation_input_options, only: process_simulation_input_options
         use rd_token     !   for the reading of tokens
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(inout) :: lun    (*)         !< array with unit numbers
-        character(*), intent(inout) :: lchar  (*)        !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
+        character(*), intent(inout) :: file_name_list  (*)        !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype(*)         !< type of binary file
         character(20), pointer :: duname (:)        !< name of monitoring areas
         integer(kind = int_wp), pointer :: nsegdmp(:)         !< number of volumes per monitoring area
@@ -92,18 +92,18 @@ contains
         if (gettoken(idopt1, ierr2) > 0) goto 20
         select case (idopt1)
         case (:-2)
-            write (lunut, 2000)  idopt1
-            write (lunut, 2010)
+            write (file_unit, 2000)  idopt1
+            write (file_unit, 2010)
             goto 20
         case (-1)                     ! old style <other ASCII file>
-            write (lunut, 2000)  idopt1
-            call process_simulation_input_options   (idopt1, lun, 0, lchar, filtype, &
+            write (file_unit, 2000)  idopt1
+            call process_simulation_input_options   (idopt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
             if (gettoken(ndmpar, ierr2) > 0) goto 20
         case (0)                      ! new style (October 2012) no dump areas
-            write (lunut, 2020)       ! old style would have produced an error
+            write (file_unit, 2020)       ! old style would have produced an error
             ndmpar = 0
             ntdmps = 0
             goto 30
@@ -113,7 +113,7 @@ contains
                 push = .true.
                 ndmpar = idopt1
             else
-                write (lunut, 2000)  idopt1
+                write (file_unit, 2000)  idopt1
             endif
         case (2)                      ! old style <no dump areas> or new style 2 areas
             if (gettoken(option, ndmpar, itype, ierr2) > 0) goto 20
@@ -121,8 +121,8 @@ contains
             if (itype == 1) then     ! a string, so first dump-ID from 2 areas
                 ndmpar = idopt1
             else                         ! an integer, so 2 meant <not used>
-                write (lunut, 2000)  idopt1
-                write (lunut, 2020)
+                write (file_unit, 2000)  idopt1
+                write (file_unit, 2020)
                 ndmpar = 0
                 ntdmps = 0
                 goto 30
@@ -133,23 +133,23 @@ contains
         end select
 
         ! Write number of dump areas, allocate arrays
-        write(lunut, 2030) ndmpar
+        write(file_unit, 2030) ndmpar
         ntdmps = 0
         allocate (duname(ndmpar), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2380) ierr_alloc
+            write (file_unit, 2380) ierr_alloc
             goto 20
         endif
         allocate (nsegdmp(ndmpar), isegdmp(ndmpar), dmpbal(ndmpar), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2390) ierr_alloc
+            write (file_unit, 2390) ierr_alloc
             goto 20
         endif
         max_ntdmps = ndmpar
 
         ! Read specification of the dump areas
-        if (output_verbose_level < 2) write (lunut, 2040)
-        if (output_verbose_level == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (file_unit, 2040)
+        if (output_verbose_level == 2) write (file_unit, 2050)
         do id = 1, ndmpar
             if (gettoken(duname(id), ierr2) > 0) goto 20
             if (gettoken(option, nseg, itype, ierr2) > 0) goto 20
@@ -159,7 +159,7 @@ contains
                 elseif (option == 'NO_BALANCE') then
                     dmpbal(id) = 0
                 else
-                    write(lunut, 2420) trim(option)
+                    write(file_unit, 2420) trim(option)
                     goto 20
                 endif
                 if (gettoken(nseg, ierr2) > 0) goto 20
@@ -170,7 +170,7 @@ contains
                 max_ntdmps = 2 * (ntdmps + nseg)
                 allocate (isegdmp_2(max_ntdmps), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
-                    write (lunut, 2400) ierr_alloc
+                    write (file_unit, 2400) ierr_alloc
                     goto 20
                 endif
                 isegdmp_2(1:ntdmps) = isegdmp(1:ntdmps)
@@ -185,19 +185,19 @@ contains
             ! check if name is unique
             do k = 1, id - 1
                 if (string_equals(duname(id), duname(k))) then
-                    write(lunut, 2410) duname(id)
+                    write(file_unit, 2410) duname(id)
                     ierr = ierr + 1
                 endif
             enddo
 
             if (output_verbose_level >= 2) then
-                write(lunut, 2060) id, duname(id), nseg
+                write(file_unit, 2060) id, duname(id), nseg
                 if (dmpbal(id) == 0) then
-                    write(lunut, 2430)
+                    write(file_unit, 2430)
                 endif
                 if (output_verbose_level >= 3) then
-                    write(lunut, 2070)
-                    write(lunut, 2080) (k, isegdmp(ntdmps + k), k = 1, nseg)
+                    write(file_unit, 2070)
+                    write(file_unit, 2080) (k, isegdmp(ntdmps + k), k = 1, nseg)
                 endif
             endif
 
@@ -233,7 +233,7 @@ contains
         2430 FORMAT (' Dump area is excluded from mass balance output')
     end subroutine read_monitoring_areas
 
-    subroutine read_monitoring_transects(lun, lchar, filtype, raname, nexcraai, &
+    subroutine read_monitoring_transects(file_unit_list, file_name_list, filtype, raname, nexcraai, &
             iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
             ierr, status)
 
@@ -258,8 +258,8 @@ contains
         !!     Subroutine called : process_simulation_input_options   -
         !!                         ZOEK   - to searchs strings
         !!
-        !!     Logical units     : LUN(27) = unitnumber stripped DELWAQ input file
-        !!                         LUN(29) = unitnumber formatted output file
+        !!     Logical units     : file_unit_list(27) = unitnumber stripped DELWAQ input file
+        !!                         file_unit_list(29) = unitnumber formatted output file
 
         use simulation_input_options, only : process_simulation_input_options
         use rd_token     !   for the reading of tokens
@@ -269,8 +269,8 @@ contains
         use m_string_utils
         use m_error_status
 
-        integer(kind = int_wp), intent(inout) :: lun     (*)        !< array with unit numbers
-        character(*), intent(inout) :: lchar   (*)       !< array with file names of the files
+        integer(kind = int_wp), intent(inout) :: file_unit_list     (*)        !< array with unit numbers
+        character(*), intent(inout) :: file_name_list   (*)       !< array with file names of the files
         integer(kind = int_wp), intent(inout) :: filtype (*)        !< type of binary file
         character(20), pointer :: raname  (:)       !< name of monitoring areas
         integer(kind = int_wp), pointer :: nexcraai(:)        !< number of exchanges per monitoring transect
@@ -301,18 +301,18 @@ contains
         if (gettoken(iropt1, ierr2) > 0) goto 20
         select case (iropt1)
         case (:-2)
-            write (lunut, 2000)  iropt1
-            write (lunut, 2010)
+            write (file_unit, 2000)  iropt1
+            write (file_unit, 2010)
             goto 20
         case (-1)                     ! old style <other ASCII file>
-            write (lunut, 2000)  iropt1
-            call process_simulation_input_options   (iropt1, lun, 0, lchar, filtype, &
+            write (file_unit, 2000)  iropt1
+            call process_simulation_input_options(iropt1, file_unit_list, 0, file_name_list, filtype, &
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
             if (gettoken(noraai, ierr2) > 0) goto 20
         case (0)                      ! new style (October 2012) no dump transects
-            write (lunut, 2020)       ! old style would have produced an error
+            write (file_unit, 2020)       ! old style would have produced an error
             noraai = 0
             ntraaq = 0
             goto 30
@@ -322,7 +322,7 @@ contains
                 push = .true.
                 noraai = iropt1
             else
-                write (lunut, 2000)  iropt1
+                write (file_unit, 2000)  iropt1
             endif
         case (2)                      ! old style <no dump transects> or new style 2 transects
             if (gettoken(option, noraai, itype, ierr2) > 0) goto 20
@@ -332,14 +332,14 @@ contains
                 if (ierr2 /= 0) then
                     noraai = iropt1
                 else
-                    write (lunut, 2000)  iropt1
-                    write (lunut, 2020)
+                    write (file_unit, 2000)  iropt1
+                    write (file_unit, 2020)
                     noraai = 0
                     ntraaq = 0
                     goto 30
                 endif
             else                         ! an integer, so 2 meant <not used>
-                write (lunut, 2020)
+                write (file_unit, 2020)
                 noraai = 0
                 ntraaq = 0
                 goto 30
@@ -350,24 +350,24 @@ contains
         end select
 
         ! Write number of dump transects, allocate arrays
-        write(lunut, 2030) noraai
+        write(file_unit, 2030) noraai
         ntraaq = 0
         allocate (raname  (noraai), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2380) ierr_alloc
+            write (file_unit, 2380) ierr_alloc
             goto 20
         endif
         allocate (nexcraai(noraai), ioptraai(noraai), &
                 iexcraai(noraai * 2), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
-            write (lunut, 2390) ierr_alloc
+            write (file_unit, 2390) ierr_alloc
             goto 20
         endif
         max_ntraaq = noraai * 2
 
         ! Read specification of the transects
-        if (output_verbose_level < 2) write (lunut, 2040)
-        if (output_verbose_level == 2) write (lunut, 2050)
+        if (output_verbose_level < 2) write (file_unit, 2040)
+        if (output_verbose_level == 2) write (file_unit, 2050)
         do ir = 1, noraai
             if (gettoken(raname  (ir), ierr2) > 0) goto 20
             if (gettoken(ioptraai(ir), ierr2) > 0) goto 20
@@ -376,7 +376,7 @@ contains
                 max_ntraaq = 2 * (ntraaq + nq)
                 allocate (iexcraai_2(max_ntraaq), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
-                    write (lunut, 2400) ierr_alloc
+                    write (file_unit, 2400) ierr_alloc
                     goto 20
                 endif
                 iexcraai_2(1:ntraaq) = iexcraai(1:ntraaq)
@@ -392,16 +392,16 @@ contains
 
             do k = 1, ir - 1
                 if (string_equals(raname(ir), raname(k))) then
-                    write(lunut, 2410) raname(ir)
+                    write(file_unit, 2410) raname(ir)
                     ierr = ierr + 1
                 endif
             enddo
 
             if (output_verbose_level >= 2) then
-                write(lunut, 2060) ir, raname(ir), ioptraai(ir), nq
+                write(file_unit, 2060) ir, raname(ir), ioptraai(ir), nq
                 if (output_verbose_level >= 3) then
-                    write(lunut, 2070)
-                    write(lunut, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
+                    write(file_unit, 2070)
+                    write(file_unit, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
                 endif
             endif
 
@@ -412,7 +412,7 @@ contains
         goto 30
 
         ! Error handling
-        20 write (lunut, 2500)
+        20 write (file_unit, 2500)
         ierr = ierr + 1
         30 if (timon) call timstop(ithndl)
         return
@@ -438,7 +438,7 @@ contains
         2500 format (/, ' ERROR. while reading transects')
     end subroutine read_monitoring_transects
 
-    subroutine create_write_monitoring_area_array(lun, ndmpar, ntdmps, noq, noseg, &
+    subroutine create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, noq, noseg, &
             nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
             noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
@@ -462,12 +462,12 @@ contains
         !>            plus the dimensions of these arrays./n
         !>            All arrays are written to the binary intermediate file.
         !!
-        !!     Logical units      : lun( 2) = unit unformatted system file
-        !!                          lun(29) = unit number output report file
+        !!     Logical units      : file_unit_list( 2) = unit unformatted system file
+        !!                          file_unit_list(29) = unit number output report file
 
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(in) :: lun     (*)        !< array with unit numbers
+        integer(kind = int_wp), intent(in) :: file_unit_list     (*)        !< array with unit numbers
         integer(kind = int_wp), intent(in) :: ndmpar             !< number of dump areas
         integer(kind = int_wp), intent(in) :: ntdmps             !< number of volumes in dump array
         integer(kind = int_wp), intent(in) :: noq                !< total number of exchange
@@ -537,7 +537,7 @@ contains
         ntdmpq = 0
         ndmpq = 0
         ndmps = 0
-        lurep = lun(29)
+        lurep = file_unit_list(29)
 
         !     check segment numbers in dump areas
 
@@ -757,15 +757,15 @@ contains
         end do
 
         if (ndmpar > 0) then
-            write(lun(2)) (nqdmp  (i), i = 1, ndmpar), (ipdmpq (i), i = 1, ntdmpq)
-            write(lun(2)) (nsegdmp(i), i = 1, ndmpar), (isegdmp(i), i = 1, ntdmps)
+            write(file_unit_list(2)) (nqdmp  (i), i = 1, ndmpar), (ipdmpq (i), i = 1, ntdmpq)
+            write(file_unit_list(2)) (nsegdmp(i), i = 1, ndmpar), (isegdmp(i), i = 1, ntdmps)
         endif
         if (noraai > 0) then
-            write(lun(2)) (ioptraai(i), i = 1, noraai)
-            write(lun(2)) (nexcraai(i), i = 1, noraai)
-            write(lun(2)) (iexcraai(i), i = 1, ntraaq)
+            write(file_unit_list(2)) (ioptraai(i), i = 1, noraai)
+            write(file_unit_list(2)) (nexcraai(i), i = 1, noraai)
+            write(file_unit_list(2)) (iexcraai(i), i = 1, ntraaq)
         endif
-        write(lun(2)) (iqdmp(i), i = 1, noq)
+        write(file_unit_list(2)) (iqdmp(i), i = 1, noq)
 
         deallocate(ipdmpq)
 
@@ -781,7 +781,7 @@ contains
                     endif
                 endif
             enddo
-            write(lun(2)) (isdmp(i), i = 1, noseg)
+            write(file_unit_list(2)) (isdmp(i), i = 1, noseg)
         endif
 
         if (timon) call timstop(ithndl)

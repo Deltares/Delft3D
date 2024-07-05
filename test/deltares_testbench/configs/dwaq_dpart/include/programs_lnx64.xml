@@ -1,0 +1,41 @@
+<programs xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <program name="command_prompt">
+        <path>/bin/bash</path>
+        <arguments>
+            <argument>-c</argument>
+        </arguments>
+    </program>
+
+    <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+        </location>
+        <path>bin/run_dimr.sh</path>
+        <environments>
+            <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+            <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+        </environments>
+    </program>
+
+    <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <shell ref="command_prompt"/>
+            <path>thirdparty/vs/lnx64/vs</path>
+            <environments>
+                <environment name="PAGER" type="raw">more</environment>
+            </environments>
+        </program>
+
+    <program name="WAQ" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/lnx64</from>
+        </location>
+        <path>bin/run_delwaq.sh</path>
+    </program>
+
+    <program name="PART" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/lnx64</from>
+        </location>
+        <path>bin/run_delpar.sh</path>
+    </program>
+</programs>

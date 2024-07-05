@@ -48,6 +48,7 @@ contains
       use timers
       use grid_search_mod
       use spec_feat_par
+      use partmem, only: hyd
       use m_particles, only: xrpart, yrpart, zrpart
       use m_sferic, only: jsferic
       use m_sferic_part, only: ptref
@@ -78,37 +79,37 @@ contains
       integer  ( int_wp ), intent(  out) :: npart  (*)            !< n-values particles
       integer  ( int_wp ), intent(in   ) :: ndprt  (nodye)        !< no. particles per waste entry
       integer  ( int_wp ), intent(  out) :: mpart  (*)            !< m-values particles
-      real     ( dp), intent(  out) :: xpart  (*)            !< x-in-cell of particles
-      real     ( dp), intent(  out) :: ypart  (*)            !< y-in-cell of particles
-      real     ( dp), intent(  out) :: zpart  (*)            !< z-in-cell of particles
+      real     ( dp),      intent(  out) :: xpart  (*)            !< x-in-cell of particles
+      real     ( dp),      intent(  out) :: ypart  (*)            !< y-in-cell of particles
+      real     ( dp),      intent(  out) :: zpart  (*)            !< z-in-cell of particles
       real     ( real_wp), intent(  out) :: wpart  (nosubs,*)     !< weight of the particles
-      integer  ( int_wp ), intent(  out) :: laypart  (*)          !< layer in which the particles are found
-      real     ( dp), intent(  out) :: hpart  (*)            !< position within the layer for the particles
+      integer  ( int_wp ), intent(  out) :: laypart(*)            !< layer in which the particles are found
+      real     ( dp),      intent(  out) :: hpart  (*)            !< position within the layer for the particles
       integer  ( int_wp ), intent(  out) :: iptime (*)            !< particle age
       integer  ( int_wp ), intent(inout) :: nopart                !< number of active particles
       real     ( real_wp), intent(in   ) :: radius (nodye)        !< help var. radius (speed)
-      real     ( sp), pointer       :: xpolwaste(:,:)        !< x-coordinates of waste polygon
-      real     ( sp), pointer       :: ypolwaste(:,:)        !< y-coordinates of waste polygon
+      real     ( sp),      pointer       :: xpolwaste(:,:)        !< x-coordinates of waste polygon
+      real     ( sp),      pointer       :: ypolwaste(:,:)        !< y-coordinates of waste polygon
       integer  ( int_wp ), pointer       :: nrowswaste(:)         !< length of waste polygon
       integer  ( int_wp ), intent(in   ) :: modtyp                !< for model type 2 temperature
       integer  ( int_wp ), intent(in   ) :: lun2                  !< output report unit number
       real     ( real_wp), intent(in   ) :: tcktot (layt)         !< thickness hydrod.layer
-      logical       , intent(in   ) :: zmodel
+      logical            , intent(in   ) :: zmodel
       integer  ( int_wp ), intent(in   ) :: laytop(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( int_wp ), intent(inout) :: laywaste (nodye)      !< layer for the dye points
       integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
       real     ( real_wp), intent(inout) :: track  (10,*)         !< track array for all particles
-      character( 20), intent(in   ) :: nmdyer (nodye)        !< names of the dye loads
-      character( 20), intent(in   ) :: substi (nosubs)       !< names of the substances
+      character( 20),      intent(in   ) :: nmdyer (nodye)        !< names of the dye loads
+      character( 20),      intent(in   ) :: substi (nosubs)       !< names of the substances
       real     ( real_wp), intent(inout) :: rhopart  (nosubs,*)   !< density of the particles
 
       save
 
 !     Locals
 
-      logical        lcircl            ! determines whether load is spread over a circle
+      logical          :: lcircl            ! determines whether load is spread over a circle
       integer(int_wp ) :: id                ! loop variable dye loads
       integer(int_wp ) :: iwt               ! help variable wasteload time
       integer(int_wp ) :: ilay  , isub      ! loop variables layers and substances
@@ -116,11 +117,12 @@ contains
       real   (real_wp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
       real   (real_wp) :: zwasth            ! help variables for z within the layer
       real   (real_wp) :: radiuh            ! help variable for the radius
-      double precision  :: rseed = 0.5d0 ! seed for random number generation
-      double precision  :: dpangle, dxp, dyp, dradius, xx, yy
+      real(dp), save   :: rseed = 0.5d0 ! seed for random number generation
+      real(dp)         :: dpangle, dxp, dyp, dradius, xx, yy
       integer(int_wp ) :: ntot              ! help variables for particles
       integer(int_wp ) :: nulay             ! help variables for the actual layer in a particle loop
       integer(int_wp ) :: i, ipart          ! loop/help variables for particles
+      integer(int_wp ) :: cellid            ! ID of the first cell in the column of cells (for accessing laytop and laybot)
 
       integer(4) ithndl                ! handle to time this subroutine
       data       ithndl / 0 /
@@ -251,7 +253,8 @@ contains
             endif
 
             if (zmodel) then
-               laypart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
+               cellid = 1 + mod( mpart(i)-1, hyd%nosegl )
+               laypart(i) = min(laybot(1, cellid), max(nulay,laytop(1, cellid)))
             else
                laypart(i) = nulay
             endif

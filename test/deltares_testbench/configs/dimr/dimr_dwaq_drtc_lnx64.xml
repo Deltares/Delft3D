@@ -111,5 +111,5 @@
     <!--
     testCases
     -->
-    <xi:include href="../include/dwaq_drtc_combination.xml"/>
+    <xi:include href="../dwaq_dpart/include/test_configs/dwaq_drtc_combination.xml"/>
 </deltaresTestbench_v3>

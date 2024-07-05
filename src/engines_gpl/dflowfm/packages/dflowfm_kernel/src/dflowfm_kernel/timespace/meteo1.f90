@@ -27,79 +27,12 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
 module m_itdate
    character(len=8) :: refdat
    integer          :: itdate      !< should be user specified for (asc routines)
    integer          :: jul0, imonth0, iday0, iyear0
    double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
    end module m_itdate
-
-module timespace_parameters
-  ! enumeration for filetypes van de providers
-  integer, parameter :: uniform                        =  1  ! kx values per tijdstap 1 dim arr       uni
-  integer, parameter :: unimagdir                      =  2  ! kx values per tijdstap 1 dim arr, mag/dir transf op index 1,2 u,v
-  integer, parameter :: svwp                           =  3  ! 3 velden per tijdstap 3 dim array      noint
-  integer, parameter :: arcinfo                        =  4  ! 1 veld per tijdstap 2 dim array        bilin/direct
-  integer, parameter :: spiderweb                      =  5  ! 3 veld per tijdstap 3 dim array        bilin/spw
-  integer, parameter :: curvi                          =  6  ! 1 veld per tijdstap 2 dim array        bilin/findnm
-  integer, parameter :: triangulation                  =  7  ! 1 veld per tijdstap                    triang
-  integer, parameter :: triangulationmagdir            =  8  ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
-                                                             ! op basis van windreeksen op stations mag/dir
-  integer, parameter :: node_id                        = -1  ! for a reference to a node ID
-  integer, parameter :: link_id                        = -1  ! for a reference to a link ID
-  integer, parameter :: poly_tim                       =  9  ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
-  integer, parameter :: inside_polygon                 = 10  ! Constant value inside polygon, used for initial/parameter fields.
-  integer, parameter :: ncgrid                         = 11  ! NetCDF grid, rectangular type as arcinfo  
-  integer, parameter :: ncflow                         = 12  ! NetCDF flow, with arbitrary type of input
-  integer, parameter :: ncwave                         = 14  ! NetCDF com file, with arbitrary type of input
-  integer, parameter :: bcascii                        = 17  ! .bc format as ASCII file
-  integer, parameter :: field1d                        = 18  ! Scalar quantity on a 1D network, used for initial/parameter fields.
-  integer, parameter :: geotiff                        = 19  ! GeoTIFF, used for initial/parameter fields.
-  integer, parameter :: max_file_types                 = 103 !  max nr of supported types for end user in ext file.
-  ! Enumeration for file types of sub-providers (not directly in ext file)
-  integer, parameter :: fourier                        = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
-  integer, parameter :: multiple_uni                   = 102 ! multiple time series, no spatial relation 
-  integer, parameter :: qhtable                        = 103 ! used to link to dataprovider file
-
-  ! het filetype legt vast  :  a) format file
-  !                            b) vectormax van grootheid / heden in file
-  !                            c) elementset waarop grootheid is gedefinieerd
-  !                            d) is daarmee bepalend voor de toepasbare interpolatiemethodes
-  !
-
-
-  ! Enumeration for location specification types (used in selectelset_internal_nodes).
-  integer, parameter :: LOCTP_UNKNOWN                  = -1 !< Undefined location specification type.
-  integer, parameter :: LOCTP_POLYGON_FILE             = 10 !< A polygon input file used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYGON_XY               = 11 !< x/y arrays containing a polygon used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYLINE_FILE            = 12 !< A polyline input file used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_POLYLINE_XY              = 13 !< x/y arrays containing a polyline used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_BRANCHID_CHAINAGE        = 14 !< branchid+chainage combination to select the 1D grid point closest to that network branch location.
-  integer, parameter :: LOCTP_NODEID                   = 15 !< nodeid to select the 1D grid point closest to the network point with that nodeId.
-  integer, parameter :: LOCTP_CONTACTID                = 16 !< contactid to select the 1D flow link corresponding with that contactId.
-
-  integer            :: mdia                           =  0 !  -1  ! -1 = write dia, 0 = do not write dia
-
-  ! enumeration for interpolation methods of providers
-
-  integer, parameter :: justupdate                     =  0  ! provider just updates, another provider that
-                                                             ! pointers to this one does the actual interpolation
-  integer, parameter :: spaceandtime                   =  1  ! intp space and time (getval)
-                                                             ! keep  2 meteofields in memory
-  integer, parameter :: spacefirst                     =  2  ! first intp space (update), next intp. time (getval)
-                                                             ! keep 2 flowfields in memory
-  integer, parameter :: weightfactors                  =  3  ! save weightfactors, intp space and time (getval)
-                                                             ! keep 2 pointer- and weight sets in memory
-
-end module timespace_parameters
-
-
-
-    
-    
-    
 
 
 ! ==========================================================================
@@ -243,7 +176,7 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_flowexternalforcings, only: NTRANSFORMCOEF
+     use fm_external_forcings_data, only: NTRANSFORMCOEF
      use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
@@ -847,7 +780,10 @@ contains
    use m_partitioninfo
    use kdtree2Factory
    use unstruc_messages
+   use m_find_flownode, only: find_nearest_flownodes_kdtree
+   
    implicit none
+   
    integer          :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
    integer, save    :: ini = 0
    double precision :: alf, x, y
@@ -889,7 +825,7 @@ contains
                yy(i-i1+1,j-j1+1) = dble(j)
             end do
          end do
-         call find_flowcells_kdtree(treeglob,Ni*Nj,xx,yy,kk,jakdtree,INDTP_2D, ierror)
+         call find_nearest_flownodes_kdtree(treeglob, Ni*Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
          if ( ierror.ne.0 ) then
             jakdtree = 0
          end if
@@ -3713,7 +3649,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !        --- storage of uc, us
    !
-               do 90 i1 = 1, idim1
+               do i1 = 1, idim1
    
                      rlat  = yzeta(i1)
                      rlong = xzeta(i1)
@@ -3771,7 +3707,7 @@ llnk( 1024  )= -0.2780315803D-02
                      rlslat = rlat
                      rlslon = rlong
    
-      90       continue
+end do
    
          end if
    !
@@ -3820,7 +3756,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !     --- computation of the tidal potential at each grid-point:
    !
-            do 190 i1 = 1, idim1
+            do i1 = 1, idim1
    
                   potent = 0d0
                   do nq = 2, 3
@@ -3837,7 +3773,7 @@ llnk( 1024  )= -0.2780315803D-02
                      enddo
                   enddo
                   tidep(i1) = potent
-     190    continue
+end do
    
          ! if (idebug.ge.1 .and. i1dbg.ge.1)    write(6,*) 'tidep=', tidep(i1dbg)
 
@@ -5121,7 +5057,7 @@ contains
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend2D(n, m, x, y, kcs, x_ext, y_ext)
+   subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
    
    
        double precision, dimension(:,:)  :: x
@@ -5129,25 +5065,25 @@ contains
        integer , dimension(:,:)  :: kcs
        integer                 :: n
        integer                 :: m
-       double precision, dimension(:)  :: x_ext
-       double precision, dimension(:)  :: y_ext
+       double precision, dimension(:)  :: x_dummy
+       double precision, dimension(:)  :: y_dummy
    
-       call get_extend1D(n*m, x, y, kcs, x_ext, y_ext)
+       call get_extend1D(n*m, x, y, kcs, x_dummy, y_dummy)
    
    end subroutine get_extend2D
    !
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend1D(n, x, y, kcs, x_ext, y_ext)
+   subroutine get_extend1D(n, x, y, kcs, x_dummy, y_dummy)
    
    
        integer                 :: n
        double precision, dimension(n)  :: x
        double precision, dimension(n)  :: y
        integer , dimension(n)  :: kcs
-       double precision, dimension(4)  :: x_ext
-       double precision, dimension(4)  :: y_ext
+       double precision, dimension(4)  :: x_dummy
+       double precision, dimension(4)  :: y_dummy
        double precision                :: x_min
        double precision                :: x_max
        double precision                :: x_dist
@@ -5185,14 +5121,14 @@ contains
        y_min = y_min - 0.01d0*y_dist
        y_max = y_max + 0.01d0*y_dist
    
-       x_ext(1) = x_min
-       y_ext(1) = y_min
-       x_ext(2) = x_min
-       y_ext(2) = y_max
-       x_ext(3) = x_max
-       y_ext(3) = y_max
-       x_ext(4) = x_max
-       y_ext(4) = y_min
+       x_dummy(1) = x_min
+       y_dummy(1) = y_min
+       x_dummy(2) = x_min
+       y_dummy(2) = y_max
+       x_dummy(3) = x_max
+       y_dummy(3) = y_max
+       x_dummy(4) = x_max
+       y_dummy(4) = y_min
    
    end subroutine get_extend1D
    !
@@ -6140,7 +6076,7 @@ contains
    use m_flowgeom, only : ln2lne, Ln, Lnx, Wu1Duni
    use m_partitioninfo
    use unstruc_netcdf
-   use m_flowexternalforcings, only: qid
+   use fm_external_forcings_data, only: qid
    use m_ec_interpolationsettings
    use m_flowparameters
    use m_missing
@@ -6579,7 +6515,7 @@ module m_meteo
    use m_flow
    use m_waves
    use m_ship
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use processes_input, only: nofun, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
    use m_observations
@@ -7475,7 +7411,7 @@ module m_meteo
       integer :: converterId    !< Unique Converter id.
       integer :: connectionId   !< Unique Connection id.
       integer :: sourceItemId   !< Unique source item id.
-      integer :: sourceItemId_2 !< Unique additional source item id.
+      integer :: sourceItemId_2 !< Unique additional second source item id.
       integer :: sourceItemId_3 !< Unique additional third source item id.
       integer :: sourceItemId_4 !< Unique additional fourth source item id.
       integer :: ndx
@@ -7764,7 +7700,7 @@ module m_meteo
          end if
       end if
       if (associated(targetItemPtr4)) then
-         ! third field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
+         ! fourth field (e.g. for 'humidity_airtemperatur_cloudiness_solarradiation'
          fieldId_4 = ecCreateField(ecInstancePtr)
          if (success) success = ecSetField1dArray(ecInstancePtr, fieldId_4, dataPtr4)
          if (success) success = ecSetFieldMissingValue(ecInstancePtr, fieldId_4, dmiss)
@@ -8108,10 +8044,10 @@ module m_meteo
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
             if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_x)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_x)
+            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_y)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_x, connectionId)
+            if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_y, connectionId)
         case ('charnock')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
@@ -8398,7 +8334,11 @@ module m_meteo
                sourceItemName = 'air_temperature'
             end if
          case ('cloudiness')
-            sourceItemName = 'cloud_area_fraction'
+            if (ec_filetype == provFile_netcdf) then
+               sourceItemName = 'cloud_area_fraction'
+            else
+               sourceItemName = 'cloudiness'
+            end if
          case ('airdensity')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')

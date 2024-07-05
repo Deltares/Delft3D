@@ -155,11 +155,11 @@
      call c_f_pointer(xptr, x_0d_int_ptr)
      numlatsg = x_0d_int_ptr
   case("qplat")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qplat))
-     qplat(:) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, shape(qplat))
+     qplat(:,:) = x_2d_double_ptr
   case("qqlat")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qqlat))
-     qqlat(:) = x_1d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, shape(qqlat))
+     qqlat(:,:) = x_2d_double_ptr
   case("balat")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(balat))
      balat(:) = x_1d_double_ptr

@@ -12,7 +12,6 @@ from typing import List, Optional
 from src.config.credentials import Credentials
 from src.config.types.handler_type import HandlerType
 from src.suite.program import Program
-from src.utils.common import delete_directory
 from src.utils.handlers.ftp_handler import FTPHandler
 from src.utils.handlers.http_handler import HTTPHandler
 from src.utils.handlers.i_handler import IHandler
@@ -34,8 +33,7 @@ class HandlerFactory(ABC):
         to_path: str,
         programs: List[Program],
         logger: ILogger,
-        credentials: Optional[Credentials] = None,
-        autocommit: bool = False,
+        credentials: Optional[Credentials] = None
     ) -> IHandler:
         """Creates handler based on destination path
 
@@ -43,7 +41,6 @@ class HandlerFactory(ABC):
             to_path (str): destination path
             credentials (Credentials, optional): credentials needed for connection.
                                                  Defaults to None.
-            autocommit (bool): use auto commit (for svn)
 
         Raises:
             AttributeError: if handler could not be detected
@@ -60,7 +57,7 @@ class HandlerFactory(ABC):
         if handler_type == HandlerType.SVN:
             logger.debug(f"using SVN handler for {to_path}")
             svn_program = copy.deepcopy(next(p for p in programs if p.name == "svn"))
-            handler = SvnHandler(svn_program, autocommit)
+            handler = SvnHandler(svn_program)
         if handler_type == HandlerType.FTP:
             logger.debug(f"using FTP handler for {to_path}")
             handler = FTPHandler()
@@ -76,43 +73,6 @@ class HandlerFactory(ABC):
         return handler
 
     @classmethod
-    def prepare_upload(
-        cls,
-        from_path: str,
-        to_path: str,
-        programs: List[Program],
-        credentials: Optional[Credentials],
-        logger: ILogger,
-    ):
-        rfp = Paths().rebuildToLocalPath(from_path)
-
-        handler = cls.__get_handler(to_path, programs, logger, credentials)
-        handler.prepare_upload(rfp, to_path, credentials, logger)
-
-    @classmethod
-    def upload(
-        cls,
-        from_path: str,
-        to_path: str,
-        programs: List[Program],
-        logger: ILogger,
-        credentials: Optional[Credentials] = None,
-        autocommit: bool = False,
-    ):
-        """Upload data to location
-
-        Args:
-            from_path (str): source path
-            to_path (str): target path
-            credentials (Optional[Credentials], optional): Credentials to use.
-            Defaults to None.
-            autocommit (bool, optional): Automatically commit. Defaults to False.
-        """
-        rfp = Paths().rebuildToLocalPath(from_path)
-        handler = cls.__get_handler(to_path, programs, logger, credentials, autocommit)
-        handler.upload(rfp, to_path, credentials, logger)
-
-    @classmethod
     def download(
         cls,
         from_path: str,
@@ -121,8 +81,7 @@ class HandlerFactory(ABC):
         logger: ILogger,
         credentials: Optional[Credentials] = None,
         version: Optional[str] = None,
-        unzip: bool = False,
-        autocommit: bool = False,
+        unzip: bool = False
     ):
         """Download data from location
 
@@ -133,20 +92,14 @@ class HandlerFactory(ABC):
             Defaults to None.
             version (Optional[str], optional): version. Defaults to None.
             unzip (bool, optional): try to unzip file. Defaults to False.
-            autocommit (bool, optional): Automatically commit. Defaults to False.
 
         Raises:
             e: _description_
         """
         rtp = Paths().rebuildToLocalPath(to_path)
-        if os.path.exists(rtp):
-            delete_directory(rtp, logger)
+        os.makedirs(rtp, exist_ok=True)
 
-        os.makedirs(rtp)
-
-        handler = cls.__get_handler(
-            from_path, programs, logger, credentials, autocommit
-        )
+        handler = cls.__get_handler(from_path, programs, logger, credentials)
         handler.download(from_path, rtp, credentials, version, logger)
         if unzip:
             Unzipper().recursive(rtp, logger)

@@ -33,9 +33,8 @@ contains
      subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
                               noflux , iexpnt , iknmrk , noq1  , noq2  , &
                               noq3   , noq4   )
-     use m_monsys
-     use m_write_error_message
-     use m_evaluate_waq_attribute
+     use m_logger_helper, only : write_error_message, get_log_unit_number
+     use m_extract_waq_attribute
 
 !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
 !
@@ -810,8 +809,8 @@ contains
           ! Determine 2D structure, first find dimension and next fill a mapping array
           noseg2d = 0
           do iseg = 1,noseg
-              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
+              CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
               if (iatt2==0.or.iatt2==3) then
                   noseg2d = noseg2d+1
               endif
@@ -820,8 +819,8 @@ contains
           bottomsegments = 0
           itel = 0
           do iseg = 1,noseg
-              CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
-              CALL evaluate_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
+              CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+              CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
 
               if (iatt2==0.or.iatt2==3) then
                   itel = itel+1
@@ -2041,7 +2040,7 @@ contains
                           !
                           ! For the exchange with the overlying water we need the water segment to be active
                           !
-                          CALL evaluate_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
+                          CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
                           if ( iatt1 == 1 ) then
                               term = dble(td(ilay)/(diflen/2.+dl(ilay)/2.))
                               bv(ilay)    = bv(ilay) + term*dble(cwater*poros)
@@ -2111,7 +2110,7 @@ contains
       logical                      :: exists, skip_tt_td
       integer(kind=int_wp)                       ::i, lumon, ierr
 
-      call getmlu( lumon )
+      call get_log_unit_number( lumon )
 
       inquire( file = param_file, exist = exists )
 
@@ -2194,7 +2193,7 @@ contains
       ! Routine to initialise the sediment concentrations from the initial conditions file or from "S1" substances
       !
       subroutine initialise_sedconc
-     
+
       integer(kind=int_wp)  ::ilay, iseg, iseg2d, ip, isys, iflux
       integer(kind=int_wp)  ::ierr, luinit, lumon
       integer(kind=int_wp)  ::timeini, nosysini, nosegini
@@ -2221,7 +2220,7 @@ contains
       else
           open( newunit = luinit, file = initfile, access = 'stream', iostat = ierr )
           if ( ierr /= 0 ) then
-              call getmlu( lumon )
+              call get_log_unit_number( lumon )
               write( lumon, '(2a)' ) 'Error reading file: ', trim(initfile)
               write( lumon, '(2a)' ) 'File does not exist - terminating calculation'
               call write_error_message( 'Initial conditions file for sediment not found')
@@ -2231,7 +2230,7 @@ contains
           read( luinit ) nosysini, nosegini
 
           if ( nosysini /= nototsed .or. nosegini /= nolay * noseg2d ) then
-              call getmlu( lumon )
+              call get_log_unit_number( lumon )
               write( lumon, '(2a)' )     'Error reading file: ', trim(initfile)
               write( lumon, '(a,2i10)' ) 'Wrong size parameters:', nosysini, nosegini
               write( lumon, '(a,2i10)' ) 'Expected parameters:  ', nototsed, nolay * noseg2d
@@ -2319,7 +2318,7 @@ contains
       end subroutine write_sedconc
 
       subroutine handle_zone_information( thickness, poros )
-      use m_monsys
+      use m_logger_helper
 
       real(kind=real_wp), intent(in) ::thickness, poros
 
@@ -2333,7 +2332,7 @@ contains
 
       integer(kind=int_wp), parameter                  ::first_s1 = 142
 
-      call getmlu( lumon )
+      call get_log_unit_number( lumon )
 
       read( luinp, *, iostat = ierr ) zonefile
 

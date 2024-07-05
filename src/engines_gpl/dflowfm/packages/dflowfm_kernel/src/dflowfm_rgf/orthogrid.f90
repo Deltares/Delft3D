@@ -98,7 +98,7 @@
 !     RJAC1 = (COS(PI/MCR) * (XM**2)*COS(PI/NCR)) / (1 + XM**2)
 !     RJAC2 = 2*(COS(PI/MCR)/XM + COS(PI/NCR)) / (1 + 1/XM)
 !     VUL DE COEFFICIENTEN-MATRICES
-      DO 10 IT = 1,ITATP
+      do IT = 1,ITATP
          JDLA   = 0
          IF (IT .EQ. 1) JDLA = 1
          MA1  = MAX(1,M1-1)
@@ -116,7 +116,7 @@
          CALL ORTSOR(XR,YR,A,B,C,D,E,ATP,M1,N1,M2,N2,     &
                      XI2,YI2,XJ2,YJ2,XO,YO,               &
                      RJAC)
-    10 CONTINUE
+end do
 
       IF (NDRAW(8) .EQ. 0) CALL READYY('ORTHOGONALISATION',-1d0)
 

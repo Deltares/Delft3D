@@ -49,12 +49,12 @@
          A(1)  = A(2)
          A(NT) = A(NT-1)
 
-         DO 10 I = 1,NT-1
+         do I = 1,NT-1
             AR = A(I+1)**(1.0/dble(MFAC))
             CALL MAKESR(AR,S(I),S(I+1),SR,MFAC)
             AL = A(I)**(1.0/dble(MFAC))
             CALL MAKESR(AL,S(I),S(I+1),SL,MFAC)
-            DO 20 K = 1,MFAC+1
+            do k = 1,MFAC+1
                KR   = (I-1)*MFAC + K
                AR   = dble(K-1) / dble(MFAC)
                AL   = 1 - AR
@@ -70,8 +70,8 @@
 !              AL = AL/AT
 !              AR = AR/AT
 !              SSQ(KR) = AR*SR(K) + AL*SL(K)
-    20      CONTINUE
-    10   CONTINUE
+end do
+end do
 
       ENDIF
 

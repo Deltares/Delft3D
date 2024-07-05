@@ -38,7 +38,7 @@ subroutine alloc_transport(Keepexisting)
    use m_transport
    use m_alloc
    use m_meteo, only: numtracers, numfracs
-   use m_flowexternalforcings, only: numsrc, qcsrc, vcsrc, wstracers
+   use fm_external_forcings_data, only: numsrc, qcsrc, vcsrc, wstracers
    use m_sediment, only: stm_included
    implicit none
 

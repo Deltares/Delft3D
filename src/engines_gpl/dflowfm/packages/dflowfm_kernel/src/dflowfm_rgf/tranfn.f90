@@ -51,8 +51,8 @@
       CALL ABREL(X4,Y4,A2R,MFAC)
 
 !     Dit is modified transfinite
-      DO 10 I = 2,MFAC
-         DO 10 J = 2,NFAC
+      do I = 2,MFAC
+         do J = 2,NFAC
             B1  = B1R(J)
             B2  = B2R(J)
             A1  = A1R(I)
@@ -79,8 +79,10 @@
                XRH(I,J) = ( (XA*DX+YA*DY)*EY - (XB*EX+YB*EY)*DY ) / DEXY
                YRH(I,J) = ( (XB*EX+YB*EY)*DX - (XA*DX+YA*DY)*EX ) / DEXY
             ENDIF
-    10 CONTINUE
 
+         end do
+      end do
+      
 !     Dit is gewoon transfinite
 !     X00 = X1(1)
 !     X10 = X2(1)
@@ -96,8 +98,8 @@
 !     D11 = SQRT( (X10 - X11)**2 + (Y10 - Y11)**2 )
 !     D10 = SQRT( (X00 - X10)**2 + (Y00 - Y10)**2 )
 !     D01 = SQRT( (X00 - X01)**2 + (Y00 - Y01)**2 )
-!     DO 11 I = 2,MFAC
-!        DO 11 J = 2,NFAC
+!     do I = 2,MFAC
+!        do J = 2,NFAC
 !           B1   = B1R(J)
 !           B2   = B2R(J)
 !           A1   = A1R(I)
@@ -139,19 +141,19 @@
 !   11CONTINUE
 
 !     vul randen in
-      DO 20 I = 1,MFAC+1
+      DO  I = 1,MFAC+1
          XRH(I,1)      = X3(I)
          XRH(I,NFAC+1) = X4(I)
          YRH(I,1)      = Y3(I)
          YRH(I,NFAC+1) = Y4(I)
-    20 CONTINUE
-
-      DO 30 J = 1,NFAC+1
+      end do
+      
+      DO J = 1,NFAC+1
          XRH(1,J)      = X1(J)
          XRH(MFAC+1,J) = X2(J)
          YRH(1,J)      = Y1(J)
          YRH(MFAC+1,J) = Y2(J)
-    30 CONTINUE
-
+      end do
+      
       RETURN
       END subroutine TRANFN

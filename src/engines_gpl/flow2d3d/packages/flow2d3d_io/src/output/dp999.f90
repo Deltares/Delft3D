@@ -1,4 +1,4 @@
-subroutine dp999(dp        ,nmax      ,mmax      ,gdp       )
+subroutine dp999(dpd       ,nmax      ,mmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -51,7 +51,7 @@ subroutine dp999(dp        ,nmax      ,mmax      ,gdp       )
 ! Global variables
 !
     integer :: mmax, nmax
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) :: dp
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) :: dpd
     intent (in) mmax, nmax
 !
 ! Local variables
@@ -62,7 +62,7 @@ subroutine dp999(dp        ,nmax      ,mmax      ,gdp       )
 !
     do m = 1, mmax
        do n = 1, nmax
-          if (abs(dp(n, m) + 999.000)<=1.0e-5) dp(n, m) = 0.0
+          if (abs(dpd(n, m) + 999.000)<=1.0e-5) dpd(n, m) = 0.0
        enddo
     enddo
 end subroutine dp999

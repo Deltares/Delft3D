@@ -232,15 +232,20 @@ function exifil(name, unit)
 end function exifil
 
 !> Test if directory exists
-function directory_exists(name)
-    character(len=*), intent(in) :: name !< Name of the directory
-    logical                      :: directory_exists
+function directory_exists(dir_name)
+    character(len=*), intent(in)  :: dir_name !< Name of the directory
+    logical                       :: directory_exists
+
+    character(len=:), allocatable :: sanitized_dir_name
+
+!! executable statements -------------------------------------------------------
+    sanitized_dir_name = sanitize_path(dir_name)
 
 #ifdef __INTEL_COMPILER
-    inquire(directory = trim(name), exist = directory_exists)
+    inquire(directory = trim(sanitized_dir_name), exist = directory_exists)
 #else
     ! GNU
-    inquire(file = trim(name) // FILESEP // ".", exist = directory_exists)
+    inquire(file = trim(sanitized_dir_name) // FILESEP // ".", exist = directory_exists)
 #endif
 end function directory_exists
 
@@ -263,13 +268,10 @@ subroutine makedir(dir_name)
 !!--declarations----------------------------------------------------------------
 
     use MessageHandling, only: err
-#ifdef __INTEL_COMPILER
-    use ifport
-#endif
-    character(len=*), intent(in) :: dir_name
+    character(len=*), intent(in)  :: dir_name
 
-    character(len=256)           :: command, sanitized_dir_name
-    integer                      :: istat
+    character(len=:), allocatable :: command, sanitized_dir_name
+    integer                       :: istat
 !
 !! executable statements -------------------------------------------------------
 

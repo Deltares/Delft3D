@@ -95,7 +95,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f01(1D-boundaries)_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
+        <testCase name="e106_f01_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
             <path version="2024-01-11T13:30:00">e106_dflow1d/f01_1D-boundaries/c01_030_h-boundary1d_one-connected-branch-only</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>

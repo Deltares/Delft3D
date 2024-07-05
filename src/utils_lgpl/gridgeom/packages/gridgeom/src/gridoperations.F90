@@ -2283,7 +2283,7 @@
    double precision,      intent(in   ) :: xa             !< Input/query point x-coordinate
    double precision,      intent(in   ) :: ya             !< Input/query point y-coordinate
    integer,               intent(  out) :: kin            !< netcell index found (0 when not found)
-   type(kdtree_instance), intent(in   ) :: treeinst       !< k-d tree for searching netcell mass centers
+   type(kdtree_instance), intent(inout) :: treeinst       !< k-d tree for searching netcell mass centers
    double precision,      intent(in   ) :: searchradiussq !< Squared search radius for k-d tree searching
 
    integer :: nCellsInSearchRadius
@@ -2628,7 +2628,7 @@
    double precision,      intent(in   ) :: XP1, YP1 !< Input/query point coordinates
    double precision,      intent(  out) :: dist     !< Distance between query point and the 1D point found
    integer         ,      intent(  out) :: n1       !< 1D point found
-   type(kdtree_instance), intent(in   ) :: treeinst !< k-d tree for searching 1D net nodes
+   type(kdtree_instance), intent(inout) :: treeinst !< k-d tree for searching 1D net nodes
    double precision,      intent(in   ) :: searchradiussq !< Squared search radius for k-d tree searching
    integer,               intent(in   ) :: k1d(:)   !< Mapping table from purely 1D net nodes to full set of netnodenumbers (1:numk1d) ==> (1:numk)
    integer, optional,     intent(in   ) :: oneDMask(:)

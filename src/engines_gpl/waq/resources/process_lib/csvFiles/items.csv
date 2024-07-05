@@ -14369,3 +14369,5 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "dG5_zooSi2","x"," ",   -999.000    ,"(gSi/m3/d)          ","grazing of PROTIST zoo 2 (N) by DEB Grazer4 (dummy","volume    ","volume    "," ","                              "
 "withProtN ","x"," ",    0.00000    ,"(-)                 ","use of DEB with protist (1=on, 0=off)             ","volume    ","volume    "," ","                              "
 "withProtY ","x"," ",    1.00000    ,"(-)                 ","use of DEB with protist (1=on, 0=off)             ","volume    ","volume    "," ","                              "
+"DiaMicro  ","x"," ",   0.100000E-03,"(m)                 ","Characteristic diameter of micro flocs            ","volume    ","volume    "," ","                              "
+"UstarMacro","x"," ",   0.670000E-01,"(m/s)               ","Characteristic shear velocity of macro flocs      ","volume    ","volume    "," ","                              "

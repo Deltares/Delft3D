@@ -37,9 +37,8 @@ contains
         !                active water segments
         !
 
-        use m_srstop
-        use m_monsys
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT NONE
@@ -109,12 +108,12 @@ contains
         IP11 = IPOINT(11)
 
         IF (IP7/=IP9) THEN
-            CALL GETMLU(LUNREP)
+            CALL get_log_unit_number(LUNREP)
             WRITE(LUNREP, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(LUNREP, *) 'Use the correct proc_def!'
             WRITE(*, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(*, *) 'Use the correct proc_def!'
-            CALL SRSTOP(1)
+            CALL stop_with_error()
         END IF
 
         IN1 = INCREM(1)
@@ -136,7 +135,7 @@ contains
 
             DO ISEG = 1, NOSEG
 
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 !........Segment is inactief
                 IF      (IKMRK1 == 0) THEN
@@ -199,10 +198,10 @@ contains
                 INAAR = IEXPNT(2, IQ)
 
                 IF (IVAN > 0 .AND. INAAR > 0) THEN
-                    CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IK1VN)
-                    CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IK1NR)
-                    CALL evaluate_waq_attribute(2, IKNMRK(IVAN), IK2VN)
-                    CALL evaluate_waq_attribute(2, IKNMRK(INAAR), IK2NR)
+                    CALL extract_waq_attribute(1, IKNMRK(IVAN), IK1VN)
+                    CALL extract_waq_attribute(1, IKNMRK(INAAR), IK1NR)
+                    CALL extract_waq_attribute(2, IKNMRK(IVAN), IK2VN)
+                    CALL extract_waq_attribute(2, IKNMRK(INAAR), IK2NR)
 
                     !...........Van segment = inactief
                     IF (IK1VN == 0) THEN

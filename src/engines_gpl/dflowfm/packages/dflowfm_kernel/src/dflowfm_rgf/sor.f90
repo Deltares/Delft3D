@@ -61,10 +61,10 @@
       ANORMF=ZERO
       OMEGA =ONE
 
-      DO 15 N=1,MAXITS
+      do N=1,MAXITS
         ANORM=ZERO
-        DO 14 J=MAX(2,M1),MIN(M2,MC-1)
-          DO 13 L=MAX(2,N1),MIN(N2,NC-1)
+        do J=MAX(2,M1),MIN(M2,MC-1)
+          do L=MAX(2,N1),MIN(N2,NC-1)
             IF (IJC (J,L) .EQ. 10) THEN
 !              IF(MOD(J+L,2).EQ.MOD(N,2))THEN
                  RESID=A(J,L)*U(J+1,L)+B(J,L)*U(J-1,L)+    &
@@ -72,15 +72,15 @@
                  U(J,L)=U(J,L)-OMEGA*RESID/E(J,L)
 !              ENDIF
             ENDIF
-13        CONTINUE
-14      CONTINUE
+         end do
+      end do
         IF(N.EQ.1) THEN
           OMEGA=ONE/(ONE-HALF*RJAC**2)
         ELSE
           OMEGA=ONE/(ONE-QTR*RJAC**2*OMEGA)
         ENDIF
 !       write(mdia,*) omega, rjac
+      end do
 
-15    CONTINUE
       RETURN
       END SUBROUTINE SOR

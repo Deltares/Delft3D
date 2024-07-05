@@ -10,6 +10,8 @@ from src.config.parameter import Parameter
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.comparers.d_series_comparer import DSeriesComparer
 from src.utils.comparers.tree_comparer import TreeComparer
+from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
@@ -174,15 +176,14 @@ class TestTreeComparer:
     def test_compareTreePaths(self):
         # Check that two fod files that are known to be the same are the same
         # Start parsing
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         # Define parameters
         parameter = file[0].checks[0].parameters["parameters"][0]
         # Define path to be checked
@@ -221,15 +222,14 @@ class TestTreeComparer:
 
             # The right xml is passed to test
             # Start parsing
-            credentials = Credentials()
-            credentials.name = "commandline"
             # Parse the xml file.
             xmlcp = XmlConfigParser()
+            logger = ConsoleLogger(LogLevel.DEBUG)
             settings = TestBenchSettings()
-            settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-                join(self.testdata, "Unit_test.xml"), "", credentials, ""
-            )
-            file = settings.configs
+            settings.config_file = join(self.testdata, "Unit_test.xml")
+            settings.credentials.name = "commandline"
+            settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+            file = settings.configs_to_run
 
             # Setting up the parameters
             parameter = file[0].checks[0].parameters["parameters"][0]
@@ -256,15 +256,14 @@ class TestTreeComparer:
     def test_compare(self):
         # Set the inputs
         testcase_name = "Testing_all_the_fod_file"
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         file_check = file[0].checks[0]
 
         # Run the function to be tested
@@ -282,17 +281,14 @@ class TestTreeComparer:
         # Inputs for the function to be tested
         testcase_name = "Testing_all_the_fod_file"
 
-        # Inputs for parsing the xml
-        credentials = Credentials()
-        credentials.name = "commandline"
-
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_wrong_name.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         file_check = file[0].checks[0]
 
         # Delete the file
@@ -326,16 +322,14 @@ class TestTreeComparer:
         # Copy file to be checked
         copyfile(join(self.rp, "Unit_test.fod"), join(self.rp, "Unit_test_wrong.fod"))
 
-        # Inputs for parsing the xml
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_wrong_name.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_wrong_name.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         file_check = file[0].checks[0]
 
         # Run function with 'with' so that exceptions are raised
@@ -360,16 +354,14 @@ class TestTreeComparer:
     def test_compare_NOK_results(self):
         # Inputs for the function to be tested
         testcase_name = "Testing_all_the_fod_file"
-        # Inputs for parsing the xml
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_NOK_values.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_NOK_values.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         file_check = file[0].checks[0]
 
         # Run the function
@@ -384,16 +376,14 @@ class TestTreeComparer:
         assert paramResults[0][3].result == "NOK"
 
     def test_pullIgnored_No_ignored_values(self):
-        # Inputs for the xml file
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameters = file[0].checks[0].parameters["parameters"]
 
         # Run the function
@@ -403,16 +393,14 @@ class TestTreeComparer:
         assert ignored_values == []
 
     def test_pullIgnored_ignored_values(self):
-        # Inputs for the xml file
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_Ignored.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_Ignored.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameters = file[0].checks[0].parameters["parameters"]
 
         # Function to be tested
@@ -426,16 +414,14 @@ class TestTreeComparer:
 
     def test_compareThisNode(self):
         # Check that two fod files that are known to be the same are the same
-        # Inputs for the xml parser
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
 
         # Path to be checked
@@ -487,15 +473,14 @@ class TestTreeComparer:
 
     def test_compareThisNode_Table(self):
         # Check that two fod files that are knonw to be the same are the same
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
 
         # Table to be tested
@@ -551,11 +536,12 @@ class TestTreeComparer:
         credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node_1.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node_1.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
 
         # Check if the correct exception is raised
@@ -700,16 +686,14 @@ class TestTreeComparer:
         assert not TreeComparer.isFloat("Hello")
 
     def test_compareDictionary_OK(self):
-        # Inputs for the xml
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
 
         # dumpfile path to check
@@ -764,16 +748,14 @@ class TestTreeComparer:
         assert output
 
     def test_compareDictionary_NOK(self):
-        # Xml Inputs
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
         pathstr = ">DUMPFILE>INPUT DATA"
         testdictionary = self.testbranch["INPUT DATA"][0]
@@ -791,17 +773,14 @@ class TestTreeComparer:
 
     def test_compareDataTables_OK(self):
         import numpy
-
-        # Inputs for the xml file
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
         # Equal ref and test tables
         testtable = {
@@ -829,17 +808,14 @@ class TestTreeComparer:
 
     def test_compareDataTables_NOK(self):
         import numpy
-
-        # Inputs for the xml file
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter = file[0].checks[0].parameters["parameters"][0]
         # Unequal ref and test tables
         testtable = {
@@ -867,17 +843,14 @@ class TestTreeComparer:
 
     def test_compareDataTables_tolerance(self):
         import numpy
-
-        # Inputs for the xml file
-        credentials = Credentials()
-        credentials.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_compare_this_node.xml"), "", credentials, ""
-        )
-        file = settings.configs
+        settings.credentials.name = "commandline"
+        settings.config_file = join(self.testdata, "Unit_test_compare_this_node.xml")
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         parameter: Parameter = file[0].checks[0].parameters["parameters"][0]
 
         # Unequal tables

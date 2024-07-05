@@ -53,7 +53,7 @@ class TestBench:
                 )
 
         except Exception as e:
-            self.logger.error(e)
+            self.logger.exception(f"Could not run testbench: {repr(e)}")
 
     def __print_filter_usage(self):
         """Only return the list of test cases to be run."""
@@ -71,5 +71,5 @@ class TestBench:
             self.logger.error(line)
 
     def __print_test_case_list(self):
-        for testcase_config in self.settings.configs:
+        for testcase_config in self.settings.configs_to_run:
             self.logger.info(testcase_config.name + "\n")

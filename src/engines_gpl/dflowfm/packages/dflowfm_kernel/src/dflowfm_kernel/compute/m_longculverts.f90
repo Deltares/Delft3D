@@ -1146,6 +1146,7 @@ contains
    use m_partitioninfo, only: jampi,reduce_int_max
    use kdtree2Factory
    use m_hash_search
+   use m_find_flownode, only: find_nearest_flownodes_kdtree
    
    type(t_network) , intent(inout)    :: network      !< Network structure
    integer, intent(in)                :: numcoords    !< number of polyline coordinates
@@ -1206,7 +1207,7 @@ contains
            ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
            call realloc(jnode, 1, keepExisting=.false.,fill=0)
            do j = is+1, ie-1
-              call find_flowcells_kdtree(treeglob,1,xpl(j), ypl(j),jnode,1,INDTP_1D, ierror)
+              call find_nearest_flownodes_kdtree(treeglob, 1, xpl(j), ypl(j), jnode, 1, INDTP_1D, ierror)
               if (ierror == 0 .and. jnode(1) > 0) then
                  nodenum = jnode(1) ! For the later search
                  is = j ! this will be the starting node of the long culvert in current domain
@@ -1224,7 +1225,7 @@ contains
            ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
            call realloc(jnode, 1, keepExisting=.false.,fill=0)
            do j = ie-1, is+1, -1
-              call find_flowcells_kdtree(treeglob,1,xpl(j), ypl(j),jnode,1,INDTP_1D, ierror)
+              call find_nearest_flownodes_kdtree(treeglob, 1, xpl(j), ypl(j), jnode, 1, INDTP_1D, ierror)
               if (ierror == 0 .and. jnode(1) > 0) then
                  ie = j ! this will be the ending node of the long culvert in current domain
                  jafounde = 1

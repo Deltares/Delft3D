@@ -42,6 +42,7 @@ include: yum
 %post
     echo "Installing required packages..."
     mkdir -p /opt/tmp \
+        && yum upgrade -y -v \
         && yum -y -v install libgomp libfabric &> /opt/tmp/libgomp.log
     
     # This sets the version in the metadata
@@ -51,8 +52,10 @@ include: yum
     echo "VERSION ${VERSION}" >> "$SINGULARITY_LABELS"
 
     echo "Installing RPM..."
+    # --force is needed due to conflicting system libraries that are
+    # part of our DIMRset delivery.
     rm -rf /opt/delft3dfm_$VERSION \
-        && rpm -i /opt/tmp/delft3dfm-cli-hmwq_*.rpm --nofiledigest \
+        && rpm -i /opt/tmp/delft3dfm-cli-hmwq_*.rpm --force --nofiledigest \
         && ln -s /opt/delft3dfm_$VERSION /opt/delft3dfm_latest \
         && rm /opt/delft3dfm_latest/lnx64/lib/libmpi* \
         && rm -rf /opt/tmp/

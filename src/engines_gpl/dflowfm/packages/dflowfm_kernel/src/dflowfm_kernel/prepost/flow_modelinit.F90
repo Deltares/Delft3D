@@ -36,7 +36,7 @@
  use timers
  use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
  use waq,           only: reset_waq
- use m_flow,        only: kmx, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
+ use m_flow,        only: kmx, kmxn, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro, zcs, vol1
  use m_flowtimes
  use m_lateral, only: numlatsg
  use network_data,  only: NETSTAT_CELLS_DIRTY
@@ -62,12 +62,13 @@
  use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
  use unstruc_netcdf_map_class
  use unstruc_caching
- use m_monitoring_crosssections, only: ncrs, fill_geometry_arrays_crs
+ use m_monitoring_crosssections, only: ncrs
  use m_setucxcuy_leastsquare, only: reconst2ndini
- use m_flowexternalforcings, only: nwbnd
+ use fm_external_forcings_data, only: nwbnd
  use m_sedtrails_network
  use m_sedtrails_netcdf, only: sedtrails_loadNetwork
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
+ use fm_statistical_output
  use unstruc_display, only : ntek, jaGUI
  use m_debug
  use m_flow_flowinit
@@ -82,7 +83,9 @@
  use system_utils, only: makedir
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
- use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used
+ use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
+                      get_lateral_volume_per_layer, lateral_volume_per_layer, get_lateral_layer_positions, &
+                      lateral_center_position_per_layer
  use m_cell_geometry, only : ba
  use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
  !
@@ -436,6 +439,9 @@
  call structure_parameters()                         ! initialize structure values, after flow_flowinit() so that initial water levels and discharges are already set.
  call timstop(handle_extra(29)) ! end structure parameters
 
+ ! Prepare for his/map/clm output via statistical_output module
+ call flow_init_statistical_output_his(config_set_his, out_variable_set_his)
+
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then
     call flow_trachyupdate()                         ! Perform a trachy update step to correctly set initial field quantities
@@ -504,8 +510,14 @@
  call timstop(handle_extra(33)) ! end Fourier init
 
  if (numconst > 0.and. apply_transport_is_used) then
+    ! During initialisation, the lateral data must be initialized correctly
     call reset_outgoing_lat_concentration()
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+    ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
+    call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, 1._dp)
+    call get_lateral_volume_per_layer(lateral_volume_per_layer)
+
+    call setzcs()
+    call get_lateral_layer_positions(lateral_center_position_per_layer, zcs)
  endif
 
  !Initialize flow1d_implicit

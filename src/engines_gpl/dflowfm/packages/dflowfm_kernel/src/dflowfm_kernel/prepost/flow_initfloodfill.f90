@@ -45,6 +45,8 @@ use m_flowgeom
 use m_GlobalParameters, only: INDTP_ALL
 use m_alloc
 use kdtree2Factory
+use m_find_flownode, only: find_nearest_flownodes_kdtree
+   
 implicit none
 
 integer :: i, inod, iL, Lf, k, k2, nx
@@ -75,7 +77,7 @@ iqtail = 0 !< Index of most recently added element in work queue.
 !find flowcells
 if ( jakdtree.eq.1 ) then
    allocate(inodes(Ns))
-   call find_flowcells_kdtree(treeglob,Ns,xs,ys,inodes,1,INDTP_ALL, ierror)
+   call find_nearest_flownodes_kdtree(treeglob, Ns, xs, ys, inodes, 1, INDTP_ALL, ierror)
 end if
 
 if ( ierror.ne.0 ) then

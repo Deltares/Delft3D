@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 	<!-- ======================================================================== -->
         <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c01_Regge-regression-test</path>

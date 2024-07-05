@@ -38,7 +38,7 @@
 !! flow across the sill.
 subroutine update_zcgen_widths_and_heights()
 use m_strucs
-use m_flowexternalforcings
+use fm_external_forcings_data
 use m_flowgeom
 use m_structures
 implicit none

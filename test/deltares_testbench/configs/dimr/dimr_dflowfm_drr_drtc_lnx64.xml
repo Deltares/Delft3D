@@ -95,7 +95,5 @@
     <!-- ======================================================================== -->
     <!-- NOTE: temporarily disabled, see https://issuetracker.deltares.nl/browse/UNST-7256 -->
     <!-- <xi:include href="../include/dimr_dflowfm_drr_drtc.xml"/> -->
-    <testCases>
-    </testCases>
     <!-- ======================================================================== -->
 </deltaresTestbench_v3>

@@ -29,14 +29,15 @@ module m_read_hydfile
 contains
 
 
-    subroutine read_hydfile(lunout, hydfile, lchar, noseg, nexch, status)
-        use m_get_filepath_and_pathlen
+
+    subroutine read_hydfile(lunout, hydfile, file_name_list, noseg, nexch, status)
+        use waq_file_utils_external, only : get_filepath_and_pathlen
 
         !> Reads the hyd-file and extracts relevant information
 
         integer(kind = int_wp), intent(in) :: lunout       !< unit number for reporting
         character(len = *), intent(in) :: hydfile      !< name of the hyd-file to read
-        character(len = *), intent(inout) :: lchar(*)     !< filenames
+        character(len = *), intent(inout) :: file_name_list(*)     !< filenames
         integer(kind = int_wp), intent(out) :: noseg        !< number of segments
         integer(kind = int_wp), dimension(*), intent(out) :: nexch        !< number of exchanges
 
@@ -47,11 +48,11 @@ contains
         character(len = 20) :: cdummy
         character(len = 20), dimension(10) :: keyword
         integer(kind = int_wp), dimension(10) :: fileno
-        integer(kind = int_wp) :: i, ierr2, lunin, idxlga, idxgeom, pathlen
+        integer(kind = int_wp) :: i, ierr2, input_file, idxlga, idxgeom, pathlen
 
         integer(kind = int_wp) :: nx, ny, nosegl, nolay, noq1, noq2, noq3
         character(len = 4) :: identifier
-        character(len = len(lchar)) :: grid_file
+        character(len = len(file_name_list)) :: grid_file
 
         ! Read the various file names
         ! Note:
@@ -67,14 +68,14 @@ contains
 
         call get_filepath_and_pathlen(hydfile, path, pathlen)
 
-        open(newunit = lunin, file = hydfile, status = 'old', iostat = status%ierr)
+        open(newunit = input_file, file = hydfile, status = 'old', iostat = status%ierr)
         if (status%ierr /= 0) then
             write(lunout, '(a,a)') 'ERROR: Hyd-file does not exist or could not be opened - ', trim(hydfile)
             return
         endif
 
         do
-            read(lunin, '(a)', iostat = ierr2) line
+            read(input_file, '(a)', iostat = ierr2) line
 
             if (ierr2 < 0) then
                 exit
@@ -87,7 +88,7 @@ contains
 
             do i = 1, 8
                 if (index(line, keyword(i)) > 0) then
-                    read(line, *, iostat = ierr2) cdummy, lchar(fileno(i))
+                    read(line, *, iostat = ierr2) cdummy, file_name_list(fileno(i))
                     if (ierr2 > 0) then
                         status%ierr = ierr2
                         write(lunout, '(a,a)') 'ERROR: Reading hyd-file failed - ', trim(hydfile)
@@ -95,7 +96,7 @@ contains
                         return
                     endif
 
-                    lchar(fileno(i)) = path(1:pathlen) // lchar(fileno(i))
+                    file_name_list(fileno(i)) = path(1:pathlen) // file_name_list(fileno(i))
 
                     if (i == 7) then  ! LGA file
                         idxlga = fileno(i)
@@ -126,7 +127,7 @@ contains
         enddo
 
         noseg = nosegl * nolay
-        close(lunin)
+        close(input_file)
 
         ! Read the number of grid cells:
         ! - LGRID file
@@ -137,36 +138,36 @@ contains
             !
             noseg = nosegl * nolay
         elseif (idxlga > 0) then
-            open(newunit = lunin, file = lchar(idxlga), access = 'stream', iostat = ierr2)
+            open(newunit = input_file, file = file_name_list(idxlga), access = 'stream', iostat = ierr2)
 
             if (ierr2 /= 0) then
                 call status%increase_error_count()
-                write(lunout, '(a,a)') 'ERROR: LGA-file does not exist or could not be opened - ', trim(lchar(8))
+                write(lunout, '(a,a)') 'ERROR: LGA-file does not exist or could not be opened - ', trim(file_name_list(8))
                 return
             endif
 
             ! Check that it is not a NetCDF 3/4 file -- UNTRIM
-            read(lunin, iostat = ierr2) identifier
+            read(input_file, iostat = ierr2) identifier
             if (identifier(1:3) == 'CDF' .or. identifier(2:4) == 'HDF') then
 
                 ! We have a hyd-file from UNTRIM, so use the other file name
                 idxgeom = fileno(8)
-                lchar(idxgeom) = grid_file
+                file_name_list(idxgeom) = grid_file
             else
-                rewind(lunin)
-                read(lunin, iostat = ierr2) nx, ny, nosegl, nolay, nexch(1), nexch(2), nexch(3)
+                rewind(input_file)
+                read(input_file, iostat = ierr2) nx, ny, nosegl, nolay, nexch(1), nexch(2), nexch(3)
 
                 if (ierr2 /= 0) then
                     call status%increase_error_count()
-                    write(lunout, '(a,a)') 'ERROR: Header of LGA-file could not be read - ', trim(lchar(8))
+                    write(lunout, '(a,a)') 'ERROR: Header of LGA-file could not be read - ', trim(file_name_list(8))
                     return
                 endif
             endif
 
             noseg = nosegl * nolay
-            close(lunin)
+            close(input_file)
         else
-            close(lunin)
+            close(input_file)
             write(lunout, '(a,a)') 'ERROR: Hyd-file does not contain the name for a grid file - ', trim(hydfile)
             call status%increase_error_count()
             return

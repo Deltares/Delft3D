@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
 <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
   <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>

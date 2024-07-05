@@ -40,7 +40,7 @@ subroutine update_dambreak_breach(startTime, deltaTime)
    use m_Dambreak
    use m_partitioninfo
    use m_meteo
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowtimes
 
    implicit none
@@ -51,14 +51,14 @@ subroutine update_dambreak_breach(startTime, deltaTime)
 
    !locals
    double precision                      :: tempValue, smax, smin, hmx, hmn
-   integer                               :: indAverageUpStream(ndambreak)
-   integer                               :: indAverageDownStream(ndambreak)
+   integer                               :: indAverageUpStream(ndambreaklinks)
+   integer                               :: indAverageDownStream(ndambreaklinks)
    integer                               :: nAverageUpStream, nAverageDownStream
    integer                               :: n, ierr, istru, indexLevelsAndWidths
 
-   if (ndambreaksg > 0) then ! Variable ndambreaksg is >0 for all partitions if there is a dambreak, even if it is outside
+   if (ndambreaksignals > 0) then ! Variable ndambreaksignals is >0 for all partitions if there is a dambreak, even if it is outside
       ! of a partition. In a parallel simulation, we need to run this subroutine even in a special situation that there is
-      ! no dambreak on the current subdomain (i.e. ndambreak == 0), because the following function getAverageQuantityFromLinks
+      ! no dambreak on the current subdomain (i.e. ndambreaklinks == 0), because the following function getAverageQuantityFromLinks
       ! involves mpi communication among all subdomains. However, in this special situation,
       ! all the necessary variables are set to 0 and do not participate the dambreak related computation in this subroutine.
 
@@ -91,7 +91,7 @@ subroutine update_dambreak_breach(startTime, deltaTime)
             return
          endif
 
-         if (ndambreak > 0) then
+         if (ndambreaklinks > 0) then
             do n = 1, nDambreakAveragingUpstream
                if (dambreakAveraging(2,n)>0.0d0) then
                   waterLevelsDambreakUpStream(dambreakAverigingUpstreamMapping(n))  = dambreakAveraging(1,n)/dambreakAveraging(2,n)
@@ -124,7 +124,7 @@ subroutine update_dambreak_breach(startTime, deltaTime)
             return
          endif
 
-         if (ndambreak > 0) then
+         if (ndambreaklinks > 0) then
             do n = 1, nDambreakAveragingDownstream
                if (dambreakAveraging(2,n)>0.0d0) then
                   waterLevelsDambreakDownStream(dambreakAverigingDownstreamMapping(n))  = dambreakAveraging(1,n)/dambreakAveraging(2,n)
@@ -144,15 +144,15 @@ subroutine update_dambreak_breach(startTime, deltaTime)
                                         hu, dmiss, activeDambreakLinks, 0)
       if (ierr.ne.0) success=.false.
 
-      if (ndambreak > 0) then
-         do n = 1, ndambreaksg
+      if (ndambreaklinks > 0) then
+         do n = 1, ndambreaksignals
             if (dambreakAveraging(2,n)>0.0d0) then
                normalVelocityDambreak(n)  = dambreakAveraging(1,n)/dambreakAveraging(2,n)
             endif
          enddo
 
          !Compute dambreak widths
-         do n = 1, ndambreaksg
+         do n = 1, ndambreaksignals
             istru = dambreaks(n)
             if (istru.ne.0) then
                if(network%sts%struct(istru)%dambreak%algorithm == 1 .or. network%sts%struct(istru)%dambreak%algorithm == 2) then

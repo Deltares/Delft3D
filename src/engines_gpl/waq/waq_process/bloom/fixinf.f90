@@ -84,7 +84,7 @@ contains
         integer(kind = int_wp) :: irerun
         integer(kind = int_wp) :: ni
         integer(kind = int_wp) :: index
-        integer(kind = int_wp) :: irmax
+        integer(kind = int_wp), save :: irmax = 0 ! Hack to solve a problem with it being non-initialised in some circumstances at line 166
         integer(kind = int_wp) :: mof
         integer(kind = int_wp) :: infeas
         real(kind = dp) :: exttot

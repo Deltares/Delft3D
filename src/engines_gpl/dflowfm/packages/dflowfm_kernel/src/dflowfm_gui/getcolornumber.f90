@@ -43,7 +43,7 @@
       double precision :: xp
       double precision :: yp
       CALL IGRGETPIXELRGB(real(XP),real(YP),N1O,N2O,N3O)
-      DO 10 I = 0,255
+      do I = 0,255
          CALL SETCOL(I)
          CALL PTABS(XP,YP)
          CALL IGRGETPIXELRGB(real(XP),real(YP),N1,N2,N3)
@@ -52,6 +52,6 @@
             CALL DISVALCOLORS(NUMCOL,N1,N2,N3,1)
             RETURN
          ENDIF
-   10 CONTINUE
+      end do
       RETURN
       END

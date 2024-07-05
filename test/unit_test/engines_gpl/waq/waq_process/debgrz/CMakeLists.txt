@@ -1,0 +1,13 @@
+# test dependencies
+set(dependencies delwaq_lib
+                 waq_process
+                )
+
+create_test(
+    tests_debgrz_computations
+    dependencies ${dependencies}
+    visual_studio_folder tests/unit_test/engines_gpl/waq/waq_process/debgrz
+    test_list test_debgrz_temperature_dependent_rate test_debgrz_calculate_uptake test_debgrz_get_maximum_conversion_coeff test_debgrz_calculate_rescale_factors test_debgrz_rescale_non_food_vars test_debgrz_rescale_food_arrays test_debgrz_calculate_defaecation test_debgrz_calculate_energy_reserve_dynamics test_debgrz_calculate_maintenance test_debgrz_calculate_growth test_debgrz_calculate_respiration test_debgrz_calculate_shell_formation_fluxes test_debgrz_calculate_mortality test_debgrz_get_maturity_fractions test_debgrz_get_gsi calculate_maturity_and_reproduction_energies test_debgrz_calculate_spawning
+    labels "test_debgrz_temperature_dependent_rate:debgrz" "test_debgrz_get_maximum_conversion_coeff:debgrz" "test_debgrz_calculate_rescale_factors:debgrz" "test_debgrz_rescale_non_food_vars:debgrz" "test_debgrz_rescale_food_arrays:debgrz" "test_debgrz_calculate_defaecation:debgrz" "test_debgrz_calculate_energy_reserve_dynamics:debgrz" "test_debgrz_calculate_maintenance:debgrz" "test_debgrz_calculate_growth:debgrz" "test_debgrz_calculate_respiration:debgrz" "test_debgrz_calculate_shell_formation_fluxes:debgrz" "test_debgrz_calculate_mortality:debgrz" "test_debgrz_calculate_uptake:debgrz" "test_debgrz_get_maturity_fractions:debgrz" "test_debgrz_get_gsi:debgrz" "calculate_maturity_and_reproduction_energies:debgrz" "test_debgrz_calculate_spawning:debgrz"
+    test_files tests_debgrz_computations.f90
+    )

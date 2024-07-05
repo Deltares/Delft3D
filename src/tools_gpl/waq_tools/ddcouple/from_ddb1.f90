@@ -86,6 +86,7 @@
 
       call extract_file_extension(hyd%file_hyd%name,filext, extpos, extlen)
       outhydname = 'com-'//trim(hyd%file_hyd%name(1:extpos-1))
+      hyd%geometry = HYD_GEOM_CURVI
       call set_hyd(hyd,outhydname)
       hyd%task = HYD_TASK_FULL
 

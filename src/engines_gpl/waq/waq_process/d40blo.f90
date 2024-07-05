@@ -58,11 +58,10 @@ contains
         use m_blinpu
         use m_blfile
         use m_blclmort
-        use m_srstop
-        use m_monsys
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_dhnoseg
         use m_dhnolay
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use      bloom_data_3dl
         use      bloom_data_vtrans
         ! END3DL
@@ -206,7 +205,7 @@ contains
             init = 0
 
             !        Open autonomous I/O files Bloom
-            call getmlu(lunrep)
+            call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
             timmul = pmsa(ipoint(1))
@@ -385,7 +384,7 @@ contains
                     NOSEGW = MAX (1, NOSEGW)
                     NOSEGL = NOSEGW / NOLAY
                     IF (NOSEGL * NOLAY /= NOSEG .AND. .NOT. FM_VTRANS) THEN
-                        CALL GETMLU(LUNREP)
+                        CALL get_log_unit_number(LUNREP)
                         WRITE(LUNREP, *) ' WARNING unstructured 3D application'
                         WRITE(LUNREP, *) ' BLOOM 3D light approach not possible'
                         ACTIVE_3DL = .FALSE.
@@ -463,7 +462,7 @@ contains
         ISWVTR = NINT(PMSA(IPOINT(24)))
         ! 3DL
         IF (ACTIVE_3DL .AND. ISWVTR == 0) THEN
-            CALL GETMLU(LUNREP)
+            CALL get_log_unit_number(LUNREP)
             WRITE(LUNREP, *) ' WARNING vertical distribution not active'
             WRITE(LUNREP, *) ' BLOOM 3D light approach not possible'
             ACTIVE_3DL = .FALSE.
@@ -487,10 +486,10 @@ contains
         ! 3DL
         IF (.NOT.ACTIVE_EFFT) THEN
             DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     ISEG_3DL = ISEG
                     ILAY_3DL = (ISEG - 1) / NOSEGL_3DL + 1
                     EXTTOT = PMSA(IP2)
@@ -591,9 +590,9 @@ contains
 
         IFLUX = 0
         DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1 .OR. IKMRK1==3) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 !
                 ! 3DL
                 IF (.NOT.ACTIVE_EFFT) THEN
@@ -914,19 +913,19 @@ contains
 
         return
         !
-        901 call getmlu(lunrep)
+        901 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
         write (*, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
-        call srstop (1)
+        call stop_with_error()
         ! 902 STOP 'ERROR D40BLO: DIMENSION NGRO_M TOO SMALL'
-        903 call getmlu(lunrep)
+        903 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
         write (*, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
-        call srstop (1)
+        call stop_with_error()
     end subroutine d40blo
 
     subroutine blstopinit(lunrep, inputname)
-        use m_srstop
+        use m_logger_helper, only : stop_with_error
 
         integer(kind = int_wp) :: lunrep
         character(*) inputname
@@ -934,7 +933,7 @@ contains
         write(lunrep, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
         write(*, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
 
-        call srstop(1)
+        call stop_with_error()
 
         return
 
@@ -942,20 +941,19 @@ contains
 
 
     subroutine blstop(mes, i)
-        use m_srstop
-        use m_monsys
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         character(*) mes
         integer(kind = int_wp) :: lunrep, i
 
-        call getmlu(lunrep)
+        call get_log_unit_number(lunrep)
         write(lunrep, *) 'ERROR in bloom: '
         write(lunrep, *) 'Characteristic ', mes, ' for algae type ', i, ' must be a constant!'
 
         write(*, *) 'ERROR in bloom: '
         write(*, *) 'Characteristic ', mes, ' for algae type ', i, ' must be a constant!'
 
-        call srstop(1)
+        call stop_with_error()
 
         return
 

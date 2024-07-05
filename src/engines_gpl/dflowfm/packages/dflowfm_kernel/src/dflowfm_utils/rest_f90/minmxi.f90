@@ -41,11 +41,11 @@
 
       MAXI = -999999
       MINI =  999999
-      DO 10 I = 1,MMAX
+      do I = 1,MMAX
          IF (IS(I) .NE. dmiss) THEN
             MAXI = MAX(MAXI,IS(I))
             MINI = MIN(MINI,IS(I))
          ENDIF
-   10 CONTINUE
+      end do
       RETURN
       END

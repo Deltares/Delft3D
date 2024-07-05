@@ -34,7 +34,7 @@ use m_part11
                             lgrid3,                                              &
                             mmax    , xb      , yb      , kpart   , mapsub  ,    &
                             isfile  , nfract  , mstick  , nstick  , fstick  ,    &
-                            xa      , ya      , pg      , lsettl  , xpart   ,    &
+                            xa      , ya      , pg      , use_settling  , xpart   ,    &
                             ypart   , zpart   , za      , locdep  , dps     ,    &
                             tcktot  , substi  ,           npmax   , rhow    ,    &
                             amassd  , ioptrad , ndisapp , idisset , tydisp  ,    &
@@ -173,11 +173,11 @@ use m_part11
       integer  ( int_wp ), intent(in   ) :: nodye                 !< number of dye releases
       integer  ( int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
       integer  ( int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of layers     (may be more is lsettl)
+      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of layers     (may be more is use_settling)
       integer  ( int_wp ), intent(in   ) :: nosubs                !< number of substances (may be more than 3*fract)
       integer  ( int_wp ), intent(in   ) :: nstick                !< number of sticking substances
       integer(int_wp ), dimension(:)     :: iptime
-      logical       , intent(in   ) :: lsettl                !< if true, settling and an additional layer exists
+      logical       , intent(in   ) :: use_settling                !< if true, settling and an additional layer exists
       real     ( real_wp), pointer       :: const  (:)            !< constants as read from the input file
       real     ( real_wp), intent(  out) :: fstick (nfract)       !< sticking probability of a fraction
       real     ( real_wp), intent(in   ) :: rhow                  !< density of water
@@ -593,7 +593,7 @@ use m_part11
             if ( i2 .le. 1 ) cycle                            ! NB this probably should be 0 lp
             if ( area(i2) .le. 0.0 ) cycle
             ilay = kpart(i1)
-            if ( lsettl .and. ilay .eq. nolay ) then
+            if ( use_settling .and. ilay == nolay ) then
                iseg = (ilay-2)*nmax*mmax + i2
             else
                iseg = (ilay-1)*nmax*mmax + i2
@@ -607,7 +607,7 @@ use m_part11
                if ( isub .lt. 3*nfract ) then
                   jsub = mod(isub-1,3) + 1
                   if ( jsub .eq. 2 ) then                     ! this is the submerged fraction
-                     if ( lsettl .and. ilay .eq. nolay ) then
+                     if ( use_settling .and. ilay == nolay ) then
                         ac = am/surf
                      endif
                   elseif ( mstick(isub) .lt. 0 ) then         ! this is the sticky part of this fraction (nr 3)
@@ -615,7 +615,7 @@ use m_part11
                   else
                      ac = am/surf                             ! is this wrong ?
                   endif
-               elseif ( lsettl .and. ilay .eq. nolay ) then   ! substances above the three oil fractions
+               elseif ( use_settling .and. ilay == nolay ) then   ! substances above the three oil fractions
                   ac = am/surf                                ! settled mass of this fraction
                elseif ( mstick(isub) .lt. 0 ) then            ! the sticky part of non-oil
                   ac = am/surf

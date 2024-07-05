@@ -31,7 +31,7 @@ contains
     subroutine npps12     (pmsa, fl, ipoint, increm, noseg, &
             noflux, iexpnt, iknmrk, noq1, noq2, &
             noq3, noq4)
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -87,9 +87,9 @@ contains
         ipnt = ipoint
 
         do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if (ikmrk2==0.or.ikmrk2==3) then
 
                     nh4 = max(pmsa(ipnt(1)), 0.0)

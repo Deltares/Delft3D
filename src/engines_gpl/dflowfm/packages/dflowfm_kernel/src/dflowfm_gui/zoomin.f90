@@ -50,11 +50,11 @@
       SAVE XYWOLD
       integer , save :: NUMZOOM = 0
       IF (NUMZOOM .EQ. 0) THEN
-         DO 5 K = 1,MAXZOOM
+         do K = 1,MAXZOOM
             XYWOLD(K,1) = (XMIN + XMAX)/2
             XYWOLD(K,2) = (YMIN + YMAX)/2
             XYWOLD(K,3) = (YMAX-YMIN)
-    5    CONTINUE
+end do
          NUMZOOM = 1
       ENDIF
 !     geen entry ALS NET BEZIG PUNT TE ZETTEN

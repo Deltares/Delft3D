@@ -5,18 +5,16 @@ Copyright (C)  Stichting Deltares, 2023
 """
 
 import getpass
-import operator
 import os
-import sys
 from argparse import ArgumentParser, Namespace
-from typing import Any, List, Optional
+from typing import Any, Optional, List
 
 from src.config.credentials import Credentials
-from src.config.test_case_config import TestCaseConfig
 from src.config.types.mode_type import ModeType
+from src.utils.handlers.credential_handler import CredentialHandler
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
-from src.utils.xml_config_parser import XmlConfigParser
+from src.config.types.path_type import PathType
 
 
 class TestBenchParameterParser:
@@ -36,68 +34,51 @@ class TestBenchParameterParser:
         parser = cls.__create_argument_parser()
         args: Namespace = parser.parse_args()
 
-        new_settings = TestBenchSettings()
+        settings = TestBenchSettings()
 
         # Store path of Testbench.py into os environment
-
         script_path, script_name = os.path.split(os.path.abspath(__file__))
 
-        new_settings.test_bench_root = script_path
-        new_settings.test_bench_script_name = script_name
-        new_settings.test_bench_startup_dir = os.getcwd()
+        settings.test_bench_root = script_path
+        settings.test_bench_script_name = script_name
+        settings.test_bench_startup_dir = os.getcwd()
 
-        credentials = cls.__get_credentials(args)
-
-        # Additionally, extra TeamCity messages will be produced.
-        server_base_url = cls.__get_argument_value("server_base_url", args) or ""
-
-        # Parse the xml file.
-        xml_config_parser = XmlConfigParser()
-
-        config_file = cls.__get_argument_value("config", args) or "config.xml"
-        (
-            new_settings.local_paths,
-            new_settings.programs,
-            new_settings.configs,
-        ) = xml_config_parser.load(
-            config_file, args.__dict__["or_paths"], credentials, server_base_url
+        settings.server_base_url = (
+            cls.__get_argument_value("server_base_url", args) or ""
         )
-
-        new_settings.config_file = config_file
-
-        # Filter the testcases to be run
-        if args.filter != "":
-            new_settings.configs = cls.__filter_configs__(
-                new_settings.configs, args.filter
-            )
+        settings.override_paths = args.__dict__["or_paths"]
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
         if args.__dict__["loglevel"] != "":
-            new_settings.log_level = get_log_level(args.__dict__["loglevel"])
+            settings.log_level = get_log_level(args.__dict__["loglevel"])
 
-        # Do not run the model, only run the post-processing (comparison).
-        new_settings.only_post = cls.__get_argument_value("only_post", args) or False
+        # Do not run the programs associated with the testcase.
+        settings.skip_run = cls.__get_argument_value("skip_run", args) or False
 
-        # automatically commit reference run if succesfull
-        new_settings.autocommit = cls.__get_argument_value("autocommit", args) or False
+        # Skip specified downloads for the testcase xml.
+        skip_download = cls.__get_argument_value("skip_download", args) or []
+        for skip_string in skip_download:
+            path_type = cls.get_path_type(skip_string)
+            settings.skip_download.extend(path_type)
 
         # Enables running the tests in parallel (multi-process)
-        new_settings.parallel = cls.__get_argument_value("parallel", args) or False
+        settings.parallel = cls.__get_argument_value("parallel", args) or False
 
         # If option is used, all logging is decorated with TeamCity messages.
         # Additionally, extra TeamCity messages will be produced.
-        new_settings.teamcity = cls.__get_argument_value("teamcity", args) or False
+        settings.teamcity = cls.__get_argument_value("teamcity", args) or False
 
-        new_settings.filter = args.filter
-        new_settings.config_file = config_file
-        new_settings.user_name = credentials.username
-
+        settings.filter = args.filter
         # Determine type of run
-        new_settings.run_mode = (
+        settings.run_mode = (
             cls.__get_argument_value("run_mode", args) or ModeType.LIST
         )
+        settings.config_file = (
+            cls.__get_argument_value("config", args) or "config.xml"
+        )
+        settings.credentials = cls.__get_credentials(args, settings.teamcity)
 
-        return new_settings
+        return settings
 
     @classmethod
     def __get_argument_value(
@@ -116,116 +97,42 @@ class TestBenchParameterParser:
             if secret_value:
                 return getpass.getpass(f"{name} : ")
 
-            return input(f"{name}")
+            return input(f"{name} : ")
 
         return return_value
 
     @classmethod
-    def __get_credentials(cls, args: Namespace) -> Credentials:
+    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool) -> Credentials:
         credentials = Credentials()
+        credential_handler = CredentialHandler(credentials)
         credentials.name = "commandline"
 
         is_interactive = cls.__get_argument_value("interactive", args) or False
+        make_interactive = not credential_handler.credential_file_exists() and is_interactive
         credentials.username = (
-            cls.__get_argument_value("username", args, is_interactive) or ""
+            cls.__get_argument_value("username", args, make_interactive) or ""
         )
-        if credentials.username == "":
-            print(
-                'No username on commandline. add "-i True" to enable interactive input'
-            )
 
         credentials.password = (
-            cls.__get_argument_value("password", args, is_interactive, True) or ""
+            cls.__get_argument_value("password", args, make_interactive, True) or ""
         )
-        if credentials.password == "":
-            print(
-                'No password on commandline. add "-i True" to enable interactive input'
-            )
 
+        if not is_active_directory_user:
+            credential_handler.setup_credentials(is_interactive)
         return credentials
 
     @classmethod
-    def __filter_configs__(cls, configs: List[TestCaseConfig], args):
-        """check which filters to apply to configuration"""
-        filtered: List[TestCaseConfig] = []
-        filters = args.split(":")
-        program_filter = None
-        test_case_filter = None
-        max_runtime = None
-        operator = None
-        start_at_filter = None
-
-        for filter in filters:
-            con, arg = filter.split("=")
-            con = con.lower()
-            if con == "program":
-                program_filter = arg.lower()
-            elif con == "testcase":
-                test_case_filter = arg.lower()
-            elif con == "maxruntime":
-                max_runtime = float(arg[1:])
-                operator = arg[:1]
-            elif con == "startat":
-                start_at_filter = arg.lower()
-            else:
-                error_message = "ERROR: Filter keyword " " + con + " " not recognised\n"
-                sys.stderr.write(error_message)
-                raise SyntaxError(error_message)
-
-        # For each testcase (p, t, mrt filters):
-        for config in configs:
-            c = cls.__find_characteristics__(
-                config, program_filter, test_case_filter, max_runtime, operator
-            )
-            if c:
-                filtered.append(c)
-
-        # StartAt filter:
-        if start_at_filter:
-            starti = len(filtered)
-            for i, config in enumerate(filtered):
-                if start_at_filter in config.name:
-                    starti = i
-                    break
-            filtered[:] = filtered[starti:]
-        return filtered
-
-    @classmethod
-    def __find_characteristics__(
-        cls, config: TestCaseConfig, program: Optional[str], testcase, mrt, op
-    ) -> Optional[TestCaseConfig]:
-        """check if a test case matches given characteristics"""
-        found_program = None
-        found_testcase = None
-        found_max_runtime = None
-
-        if program:
-            # Program is a string, containing names of programs, comma separated
-            programs = program.split(",")
-            for aprog in programs:
-                found_program = any(
-                    aprog in e.name.lower() for e in config.program_configs
-                )
-                if found_program:
-                    break
-        if testcase:
-            # testcase is a string, containing (parts of) testcase names, comma separated
-            testcases = testcase.split(",")
-            for atestcase in testcases:
-                found_testcase = atestcase in config.name.lower()
-                if found_testcase:
-                    break
-        if mrt:
-            mappings = {">": operator.gt, "<": operator.lt, "=": operator.eq}
-            found_max_runtime = mappings[op](config.max_run_time, mrt)
-
-        if (
-            ((not program and not found_program) or (program and found_program))
-            and ((not testcase and not found_testcase) or (testcase and found_testcase))
-            and ((not mrt and not found_max_runtime) or (mrt and found_max_runtime))
-        ):
-            return config
-        return None
+    def get_path_type(cls, skip_string) -> List[PathType]:
+        if skip_string == "cases":
+            return [PathType.INPUT]
+        elif skip_string == "references":
+            return [PathType.REFERENCE]
+        elif skip_string == "dependency":
+            return [PathType.DEPENDENCY]
+        elif skip_string == "all":
+            return [PathType.INPUT, PathType.REFERENCE, PathType.DEPENDENCY]
+        else:
+            return []
 
     @classmethod
     def __create_argument_parser(cls) -> ArgumentParser:
@@ -295,22 +202,25 @@ class TestBenchParameterParser:
             dest="or_paths",
         )
         parser.add_argument(
-            "--only-post-process",
-            help="Skip running",
+            "--skip-run",
+            help="Skips running of programs defined in xml configuration referenced by the testcases.",
             action="store_true",
-            dest="only_post",
+            dest="skip_run",
+        )
+        parser.add_argument(
+            "--skip-download",
+            help="Skip downloads of [references,cases,dependency,all]",
+            default="",
+            choices=["cases", "references", "dependency", "all"],
+            nargs="+",
+            type=str,
+            dest="skip_download",
         )
         parser.add_argument(
             "--parallel",
             action="store_true",
             help="Turns on running in parallel.",
             dest="parallel",
-        )
-        parser.add_argument(
-            "--autocommit",
-            action="store_true",
-            help="Turns on autocommit when doing a reference run.",
-            dest="autocommit",
         )
         parser.add_argument(
             "--teamcity",

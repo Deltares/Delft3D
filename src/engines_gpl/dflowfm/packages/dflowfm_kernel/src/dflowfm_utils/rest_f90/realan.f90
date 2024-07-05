@@ -68,7 +68,7 @@
       READ(REC,*,ERR = 666) NROW, NKOL
 
       NEWLIN = 0
-      DO 20 I = 1,NROW
+      do I = 1,NROW
          IF (NTOT .GE. MAXLAN-1) THEN
             call increaselan(NTOT+1)
          ENDIF
@@ -109,7 +109,7 @@
          IF (MOD(I,1000) .EQ. 0) THEN
             CALL READYY(' ',MIN( 1d0,dble(I)/MAXLAN ) )
          ENDIF
-   20 CONTINUE
+      end do
       NTOT  = NTOT + 1
       MXLAN = NTOT
       XLAN(NTOT)  = dmiss

@@ -63,7 +63,6 @@
             </environments>
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program name="dimr-mpi" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -81,7 +80,6 @@
             <arguments>
                 <argument>-c 3</argument>
                 <argument>-m dimr.xml</argument>
-                <!-- <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument> -->
             </arguments>
         </program>
         <program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -98,7 +96,6 @@
             </environments>
             <arguments>
                 <argument>-m dimr_waq.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">

@@ -73,7 +73,7 @@
          ISHOT = 0
       ENDIF
 !
-      DO 10 I = M1,M2
+      do I = M1,M2
          IF (X(I) .NE. dmiss) THEN
             IF (ABS(XL - X(I)) .LT. RCIR) THEN
                IF (ABS(YL - Y(I)) .LT. RCIR) THEN
@@ -86,7 +86,7 @@
                ENDIF
             ENDIF
          ENDIF
-   10 CONTINUE
+end do
 !
       IF (ISHOT .EQ. 1) GOTO 666
       MVOL = 0

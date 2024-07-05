@@ -46,8 +46,8 @@
       IF (M1 .NE. 0 .AND. M2 .NE. 0) THEN
          IN = SIGN(1,M2-M1)
          JN = SIGN(1,N2-N1)
-         DO 10 I = M1,M2,IN
-            DO 10 J = N1,N2,JN
+         do I = M1,M2,IN
+            do J = N1,N2,JN
                IF (X(I,J) .NE. XYMIS) THEN
                   IF (ISTART .EQ. 0) THEN
                      CALL MOVABS(X(I,J),Y(I,J))
@@ -58,7 +58,8 @@
                ELSE
                   ISTART = 0
                ENDIF
-    10   CONTINUE
+            end do
+         end do
       ENDIF
       RETURN
       END subroutine tekln2

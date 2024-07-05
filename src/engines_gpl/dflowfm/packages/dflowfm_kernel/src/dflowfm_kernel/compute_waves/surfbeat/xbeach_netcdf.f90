@@ -222,6 +222,7 @@ subroutine unc_write_wav_filepointer_ugrid(wavids, tim)
    use m_sferic, only: pi
    use m_flowtimes, only: Tudunitstr
    use m_flowparameters, only: jamombal
+   use m_output_config
    
    implicit none
    
@@ -581,110 +582,110 @@ subroutine unc_write_wav_filepointer(imapfile, tim,  jaseparate)
        
        ! Flow data on centres
       if (jaavgwriteall>0 .or. jaavgwriteH>0) then
-       call definencvar(imapfile,id_H_mean  ,nf90_double,idims,2, 'H_mean'  , 'mean rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_H_var   ,nf90_double,idims,2, 'H_var'  , 'variance rms wave height', 'm2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_H_min   ,nf90_double,idims,2, 'H_min'  , 'min rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_H_max   ,nf90_double,idims,2, 'H_max'  , 'max rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_H_mean  ,nf90_double,idims, 'H_mean'  , 'mean rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_H_var   ,nf90_double,idims, 'H_var'  , 'variance rms wave height', 'm2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_H_min   ,nf90_double,idims, 'H_min'  , 'min rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_H_max   ,nf90_double,idims, 'H_max'  , 'max rms wave height', 'm', 'FlowElem_xcc FlowElem_ycc')
       end if 
        
       if (jaavgwriteall>0 .or. jaavgwriteE>0) then
-       call definencvar(imapfile,id_E_mean  ,nf90_double,idims,2, 'E_mean'  , 'mean bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_E_var   ,nf90_double,idims,2, 'E_var'  , 'variance bulk wave energy', 'J2 m-4', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_E_min   ,nf90_double,idims,2, 'E_min'  , 'min bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_E_max   ,nf90_double,idims,2, 'E_max'  , 'max bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_E_mean  ,nf90_double,idims, 'E_mean'  , 'mean bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_E_var   ,nf90_double,idims, 'E_var'  , 'variance bulk wave energy', 'J2 m-4', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_E_min   ,nf90_double,idims, 'E_min'  , 'min bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_E_max   ,nf90_double,idims, 'E_max'  , 'max bulk wave energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
       end if
        
       if (jaavgwriteall>0 .or. jaavgwriteR>0) then
-       call definencvar(imapfile,id_R_mean  ,nf90_double,idims,2, 'R_mean'  , 'mean roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_R_var   ,nf90_double,idims,2, 'R_var'  , 'variance roller energy', 'J2 m-4', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_R_min   ,nf90_double,idims,2, 'R_min'  , 'min roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_R_max   ,nf90_double,idims,2, 'R_max'  , 'max roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_R_mean  ,nf90_double,idims, 'R_mean'  , 'mean roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_R_var   ,nf90_double,idims, 'R_var'  , 'variance roller energy', 'J2 m-4', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_R_min   ,nf90_double,idims, 'R_min'  , 'min roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_R_max   ,nf90_double,idims, 'R_max'  , 'max roller energy', 'J m-2', 'FlowElem_xcc FlowElem_ycc')
       end if
               
       if (jaavgwriteall>0 .or. jaavgwriteD>0) then
-       call definencvar(imapfile,id_D_mean  ,nf90_double,idims,2, 'D_mean'  , 'mean wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_D_var   ,nf90_double,idims,2, 'D_var'  , 'variance wave breaking dissipation', 'W2 m-4', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_D_min   ,nf90_double,idims,2, 'D_min'  , 'min wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_D_max   ,nf90_double,idims,2, 'D_max'  , 'max wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_D_mean  ,nf90_double,idims, 'D_mean'  , 'mean wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_D_var   ,nf90_double,idims, 'D_var'  , 'variance wave breaking dissipation', 'W2 m-4', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_D_min   ,nf90_double,idims, 'D_min'  , 'min wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_D_max   ,nf90_double,idims, 'D_max'  , 'max wave breaking dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
               
-       call definencvar(imapfile,id_DR_mean  ,nf90_double,idims,2, 'DR_mean'  , 'mean roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_DR_var   ,nf90_double,idims,2, 'DR_var'  , 'variance roller energy dissipation', 'W2 m-4', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_DR_min   ,nf90_double,idims,2, 'DR_min'  , 'min roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_DR_max   ,nf90_double,idims,2, 'DR_max'  , 'max roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_DR_mean  ,nf90_double,idims, 'DR_mean'  , 'mean roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_DR_var   ,nf90_double,idims, 'DR_var'  , 'variance roller energy dissipation', 'W2 m-4', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_DR_min   ,nf90_double,idims, 'DR_min'  , 'min roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_DR_max   ,nf90_double,idims, 'DR_max'  , 'max roller energy dissipation', 'W m-2', 'FlowElem_xcc FlowElem_ycc')
       end if
        
       if (jaavgwriteall>0 .or. jaavgwriteCel>0) then
-       call definencvar(imapfile,id_cwav_mean  ,nf90_double,idims,2, 'cwav_mean'  , 'mean wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cwav_var   ,nf90_double,idims,2, 'cwav_var'  , 'variance wave phase velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cwav_min   ,nf90_double,idims,2, 'cwav_min'  , 'min wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cwav_max   ,nf90_double,idims,2, 'cwav_max'  , 'max wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cwav_mean  ,nf90_double,idims, 'cwav_mean'  , 'mean wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cwav_var   ,nf90_double,idims, 'cwav_var'  , 'variance wave phase velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cwav_min   ,nf90_double,idims, 'cwav_min'  , 'min wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cwav_max   ,nf90_double,idims, 'cwav_max'  , 'max wave phase velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
               
-       call definencvar(imapfile,id_cgwav_mean  ,nf90_double,idims,2, 'cgwav_mean'  , 'mean wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cgwav_var   ,nf90_double,idims,2, 'cgwav_var'  , 'variance wave group velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cgwav_min   ,nf90_double,idims,2, 'cgwav_min'  , 'min wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_cgwav_max   ,nf90_double,idims,2, 'cgwav_max'  , 'max wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cgwav_mean  ,nf90_double,idims, 'cgwav_mean'  , 'mean wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cgwav_var   ,nf90_double,idims, 'cgwav_var'  , 'variance wave group velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cgwav_min   ,nf90_double,idims, 'cgwav_min'  , 'min wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_cgwav_max   ,nf90_double,idims, 'cgwav_max'  , 'max wave group velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
       end if
 
       if (jaavgwriteall>0 .or. jaavgwriteS>0) then
-         call definencvar(imapfile,id_s1_mean  ,nf90_double,idims,2, 's1_mean'  , 'mean water level', 'm', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_s1_var   ,nf90_double,idims,2, 's1_var'  , 'variance water level', 'm2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_s1_min   ,nf90_double,idims,2, 's1_min'  , 'min water level', 'm', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_s1_max   ,nf90_double,idims,2, 's1_max'  , 'max water level', 'm', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_s1_mean  ,nf90_double,idims, 's1_mean'  , 'mean water level', 'm', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_s1_var   ,nf90_double,idims, 's1_var'  , 'variance water level', 'm2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_s1_min   ,nf90_double,idims, 's1_min'  , 'min water level', 'm', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_s1_max   ,nf90_double,idims, 's1_max'  , 'max water level', 'm', 'FlowElem_xcc FlowElem_ycc')
       end if
        
       if (jaavgwriteall>0 .or. jaavgwriteSigm>0) then
-       call definencvar(imapfile,id_sigmwav_mean  ,nf90_double,idims,2, 'sigmwav_mean'  , 'mean of mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_sigmwav_var   ,nf90_double,idims,2, 'sigmwav_var'  , 'variance mean frequency', 'rad2 s-2', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_sigmwav_min   ,nf90_double,idims,2, 'sigmwav_min'  , 'min mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
-       call definencvar(imapfile,id_sigmwav_max   ,nf90_double,idims,2, 'sigmwav_max'  , 'max mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_sigmwav_mean  ,nf90_double,idims, 'sigmwav_mean'  , 'mean of mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_sigmwav_var   ,nf90_double,idims, 'sigmwav_var'  , 'variance mean frequency', 'rad2 s-2', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_sigmwav_min   ,nf90_double,idims, 'sigmwav_min'  , 'min mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
+       call definencvar(imapfile,id_sigmwav_max   ,nf90_double,idims, 'sigmwav_max'  , 'max mean frequency', 'rad s-1', 'FlowElem_xcc FlowElem_ycc')
       end if
        
       if (jaavgwriteall>0 .or. jaavgwriteDir>0) then
-         call definencvar(imapfile,id_thetamean_mean  ,nf90_double,idims,2, 'thetamean_mean'  , 'mean of mean wave angle', 'deg from N', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_thetamean_var   ,nf90_double,idims,2, 'thetamean_var'  , 'variance mean wave angle', 'deg2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_thetamean_min   ,nf90_double,idims,2, 'thetamean_min'  , 'min mean wave angle', 'deg', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_thetamean_max   ,nf90_double,idims,2, 'thetamean_max'  , 'max mean wave angle', 'deg', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_thetamean_mean  ,nf90_double,idims, 'thetamean_mean'  , 'mean of mean wave angle', 'deg from N', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_thetamean_var   ,nf90_double,idims, 'thetamean_var'  , 'variance mean wave angle', 'deg2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_thetamean_min   ,nf90_double,idims, 'thetamean_min'  , 'min mean wave angle', 'deg', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_thetamean_max   ,nf90_double,idims, 'thetamean_max'  , 'max mean wave angle', 'deg', 'FlowElem_xcc FlowElem_ycc')
       end if
 
       if (jaavgwriteall>0 .or. jaavgwriteF>0) then
-         call definencvar(imapfile,id_Fx_mean  ,nf90_double,idims,2, 'fx_mean'  , 'mean of wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fx_var   ,nf90_double,idims,2, 'fx_var'  , 'variance wave force, x-component', 'N2 m-4', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fx_min   ,nf90_double,idims,2, 'fx_min'  , 'min wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fx_max   ,nf90_double,idims,2, 'fx_max'  , 'max wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fx_mean  ,nf90_double,idims, 'fx_mean'  , 'mean of wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fx_var   ,nf90_double,idims, 'fx_var'  , 'variance wave force, x-component', 'N2 m-4', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fx_min   ,nf90_double,idims, 'fx_min'  , 'min wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fx_max   ,nf90_double,idims, 'fx_max'  , 'max wave force, x-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
 
-         call definencvar(imapfile,id_Fy_mean  ,nf90_double,idims,2, 'fy_mean'  , 'mean of wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fy_var   ,nf90_double,idims,2, 'fy_var'  , 'variance wave force, y-component', 'N2 m-4', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fy_min   ,nf90_double,idims,2, 'fy_min'  , 'min wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_Fy_max   ,nf90_double,idims,2, 'fy_max'  , 'max wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fy_mean  ,nf90_double,idims, 'fy_mean'  , 'mean of wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fy_var   ,nf90_double,idims, 'fy_var'  , 'variance wave force, y-component', 'N2 m-4', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fy_min   ,nf90_double,idims, 'fy_min'  , 'min wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_Fy_max   ,nf90_double,idims, 'fy_max'  , 'max wave force, y-component', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
       end if
 
       if (jaavgwriteall>0 .or. jaavgwriteU>0) then
-         call definencvar(imapfile,id_ustx_mean  ,nf90_double,idims,2, 'ustx_mean'  , 'mean of stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_ustx_var   ,nf90_double,idims,2, 'ustx_var'  , 'variance stokes drift, x-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_ustx_min   ,nf90_double,idims,2, 'ustx_min'  , 'min stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_ustx_max   ,nf90_double,idims,2, 'ustx_max'  , 'max stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_ustx_mean  ,nf90_double,idims, 'ustx_mean'  , 'mean of stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_ustx_var   ,nf90_double,idims, 'ustx_var'  , 'variance stokes drift, x-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_ustx_min   ,nf90_double,idims, 'ustx_min'  , 'min stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_ustx_max   ,nf90_double,idims, 'ustx_max'  , 'max stokes drift, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
 
-         call definencvar(imapfile,id_usty_mean  ,nf90_double,idims,2, 'usty_mean'  , 'mean of stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_usty_var   ,nf90_double,idims,2, 'usty_var'  , 'variance stokes drift, y-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_usty_min   ,nf90_double,idims,2, 'usty_min'  , 'min stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_usty_max   ,nf90_double,idims,2, 'usty_max'  , 'max stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_usty_mean  ,nf90_double,idims, 'usty_mean'  , 'mean of stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_usty_var   ,nf90_double,idims, 'usty_var'  , 'variance stokes drift, y-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_usty_min   ,nf90_double,idims, 'usty_min'  , 'min stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_usty_max   ,nf90_double,idims, 'usty_max'  , 'max stokes drift, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
 
-         call definencvar(imapfile,id_u_mean  ,nf90_double,idims,2, 'ucx_mean'  , 'mean of cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_u_var   ,nf90_double,idims,2, 'ucx_var'  , 'variance cell centre velocity, x-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_u_min   ,nf90_double,idims,2, 'ucx_min'  , 'min cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_u_max   ,nf90_double,idims,2, 'ucx_max'  , 'max cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_u_mean  ,nf90_double,idims, 'ucx_mean'  , 'mean of cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_u_var   ,nf90_double,idims, 'ucx_var'  , 'variance cell centre velocity, x-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_u_min   ,nf90_double,idims, 'ucx_min'  , 'min cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_u_max   ,nf90_double,idims, 'ucx_max'  , 'max cell centre velocity, x-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
 
-         call definencvar(imapfile,id_v_mean  ,nf90_double,idims,2, 'ucy_mean'  , 'mean of cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_v_var   ,nf90_double,idims,2, 'ucy_var'  , 'variance cell centre velocity, y-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_v_min   ,nf90_double,idims,2, 'ucy_min'  , 'min cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_v_max   ,nf90_double,idims,2, 'ucy_max'  , 'max cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_v_mean  ,nf90_double,idims, 'ucy_mean'  , 'mean of cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_v_var   ,nf90_double,idims, 'ucy_var'  , 'variance cell centre velocity, y-component', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_v_min   ,nf90_double,idims, 'ucy_min'  , 'min cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_v_max   ,nf90_double,idims, 'ucy_max'  , 'max cell centre velocity, y-component', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
       end if
 
       if (jaavgwriteall>0 .or. jaavgwriteUrms>0) then
-         call definencvar(imapfile,id_urms_mean  ,nf90_double,idims,2, 'urms_mean'  , 'mean of rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_urms_var   ,nf90_double,idims,2, 'urms_var'  , 'variance rms orbital velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_urms_min   ,nf90_double,idims,2, 'urms_min'  , 'min rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
-         call definencvar(imapfile,id_urms_max   ,nf90_double,idims,2, 'urms_max'  , 'max rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_urms_mean  ,nf90_double,idims, 'urms_mean'  , 'mean of rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_urms_var   ,nf90_double,idims, 'urms_var'  , 'variance rms orbital velocity', 'm2 s-2', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_urms_min   ,nf90_double,idims, 'urms_min'  , 'min rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
+         call definencvar(imapfile,id_urms_max   ,nf90_double,idims, 'urms_max'  , 'max rms orbital velocity', 'm s-1', 'FlowElem_xcc FlowElem_ycc')
       end if
 
        ierr = nf90_enddef(imapfile)

@@ -38,7 +38,7 @@ contains
                           lgrid    , pblay    , modtyp   , apeak    , adepth   ,   &
                           nolay    , nosubs   , rbuffr   , kpart    , itrack   ,   &
                           nplot    , mapsub   , ntrack   , isfile   , mmax     ,   &
-                          nfract   , lsettl   , mstick   , elt_names, elt_types,   &
+                          nfract   , use_settling   , mstick   , elt_names, elt_types,   &
                           elt_dims , elt_bytes, locdep   , zpart    , za       ,   &
                           dps      , tcktot   , nosub_max, bufsize  )
 
@@ -124,7 +124,7 @@ contains
       integer  ( int_wp ), intent(in   ) :: mapsub(nosubs)          !< substances numbers in map
       integer  ( int_wp ), intent(in   ) :: isfile(nosubs)          !< when 1 then from conc array
       integer  ( int_wp ), intent(in   ) :: nfract                  !< number of oil fractions
-      logical       , intent(in   ) :: lsettl                  !< if .true. then settling in an extra layer
+      logical       , intent(in   ) :: use_settling                  !< if .true. then settling in an extra layer
       integer  ( int_wp ), intent(in   ) :: mstick(nosubs)          !< sticking oil material if < 0 then sticky
       character( * ), pointer       :: elt_names(:)            !<  NEFIS
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
@@ -547,7 +547,9 @@ contains
   120 amap = 0.0   ! whole array assignment
 
       units=' kg/m3'
-      if (lsettl) units(nolay)=' kg/m2 (bed layer)'  ! extra bed layer
+      if ( use_settling ) then
+          units(nolay)=' kg/m2 (bed layer)'  ! extra bed layer
+      endif
 !
       write(*,'(7x,a)',advance='no') '  [Writing plo-file ...'
 !
@@ -598,7 +600,7 @@ contains
                 if (modtyp == model_two_layer_temp) then
                    depthl = volume(i2) / area(i2)
                    fvolum = surf * thickn(ilay) * depthl
-                elseif(lsettl.and.ilay==nolay) then
+                elseif ( use_settling .and. ilay == nolay ) then
 !
 !.. take here the last but one layer to check active segments
 !
@@ -625,7 +627,7 @@ contains
                     ac     = am/fvolum
 !
 !.. in oil model plot some substances are floating..
-!.. also for deposited substances at the bed when lsettl =.true.
+!.. also for deposited substances at the bed when use_settling =.true.
 !.. then an extra layer is created hereto..
 !.. also for sticking materials (mstick(isub) > 0)
 !
@@ -638,7 +640,7 @@ contains
 !
 !.. dispersed
 !
-                          if(lsettl.and.ilay==nolay) then
+                          if ( use_settling .and. ilay == nolay ) then
                              ac = am/surf
                           else
                              ac = am/fvolum
@@ -657,7 +659,7 @@ contains
                        endif
 !
 !.. settling
-                    elseif(lsettl.and.ilay==nolay) then
+                    elseif ( use_settling .and. ilay == nolay ) then
                        ac = am/surf
 !.. stickyness
                     elseif(mstick(isub) <0) then

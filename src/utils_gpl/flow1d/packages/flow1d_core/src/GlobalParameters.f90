@@ -66,20 +66,27 @@ module m_GlobalParameters
    end type
 
    ! Structure Types
-   integer, public, parameter              :: ST_UNSET      = -1
-   integer, public, parameter              :: ST_WEIR       =  2
-   integer, public, parameter              :: ST_ORIFICE    =  3
-   integer, public, parameter              :: ST_PUMP       =  4
-   integer, public, parameter              :: ST_GATE       =  5
-   integer, public, parameter              :: ST_GENERAL_ST =  6
-   integer, public, parameter              :: ST_UNI_WEIR   =  7
-   integer, public, parameter              :: ST_DAMBREAK   =  8
-   integer, public, parameter              :: ST_CULVERT    =  9
-   integer, public, parameter              :: ST_BRIDGE     = 10
-   integer, public, parameter              :: ST_COMPOUND   = 11
-   integer, public, parameter              :: ST_LONGCULVERT = 12
+   integer, public, parameter              :: ST_UNSET         = -1
+   integer, public, parameter              :: ST_WEIR          =  2
+   integer, public, parameter              :: ST_ORIFICE       =  3
+   integer, public, parameter              :: ST_PUMP          =  4
+   integer, public, parameter              :: ST_GATE          =  5
+   integer, public, parameter              :: ST_GENERAL_ST    =  6
+   integer, public, parameter              :: ST_UNI_WEIR      =  7
+   integer, public, parameter              :: ST_DAMBREAK      =  8
+   integer, public, parameter              :: ST_CULVERT       =  9
+   integer, public, parameter              :: ST_BRIDGE        = 10
+   integer, public, parameter              :: ST_COMPOUND      = 11
+   integer, public, parameter              :: ST_LONGCULVERT   = 12
+   integer, public, parameter              :: ST_DAM           = 13
+   integer, public, parameter              :: ST_OBS_STATION   = 14
+   integer, public, parameter              :: ST_CROSS_SECTION = 15
+   integer, public, parameter              :: ST_RUNUP_GAUGE   = 16
+   integer, public, parameter              :: ST_SOURCE_SINK   = 17
+   integer, public, parameter              :: ST_GATEGEN       = 18
+   integer, public, parameter              :: ST_LATERAL       = 19
 
-   integer, public, parameter              :: ST_MAX_TYPE   = 12 !< Max id of structure types. The preceding ids must be lower than this.
+   integer, public, parameter              :: ST_MAX_TYPE      = 19 !< Max id of structure types. The preceding ids must be lower than or equal to this.
 
    ! Flow geometry / computational grid
    integer, public, parameter              :: INDTP_1D      = 1  !< Type code for flow nodes that are 1D

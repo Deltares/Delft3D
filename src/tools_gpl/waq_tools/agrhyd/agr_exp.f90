@@ -23,7 +23,6 @@
 
       subroutine agr_exp(input_hyd, output_hyd, ipnt   )
 
-      use m_monsys
       use m_hydmod
       implicit none
 
@@ -39,9 +38,7 @@
       integer              :: n             ! n index
       integer              :: iseg          ! segment index
       integer              :: iseg_new      ! segment index in the new grid
-      integer              :: lunrep        ! unit number report file
 
-      call getmlu(lunrep)
 
       mmax = input_hyd%mmax
       nmax = input_hyd%nmax

@@ -1,7 +1,7 @@
 <!--
 testCases
 -->
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- ======================================================================== -->
     <testCase name="e106_f13_c01_sediment_transport_Engelund_Hansen" ref="dflow1d_default">
         <path version="2024-01-12T06:00:00">e106_dflow1d/f13_morphology/c01_sediment_transport_Engelund_Hansen</path>

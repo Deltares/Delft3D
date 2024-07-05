@@ -53,6 +53,9 @@
  use m_monitoring_runupgauges
  use Timers
  use system_utils, only: makedir
+ use fm_statistical_output, only: out_variable_set_his
+ use m_statistical_output, only: reset_statistical_output, finalize_average
+ 
 #ifdef _OPENMP
  use omp_lib
 #endif
@@ -71,12 +74,19 @@
 
    if (ti_his > 0) then
       if (comparereal(tim, time_his, eps10)>= 0) then
+         if (out_variable_set_his%count > 0) then
+            call finalize_average(out_variable_set_his%statout)
+         endif
+         
          if ( jampi.eq.0 .or. ( jampi.eq.1 .and. my_rank.eq.0 ) ) then
             call unc_write_his(tim)   ! wrihis
          endif
-         if (nrug>0) then
+         if (out_variable_set_his%count > 0) then
+            call reset_statistical_output(out_variable_set_his%statout)
+         endif
+         if (num_rugs>0) then
             ! needs to be done at exactly ti_his, but over all domains, so cannot go in wrihis
-            call clearRunupGauges()
+            call clear_runup_gauges()
          end if
          if (comparereal(time_his, ti_hise, eps10) == 0) then
             time_his = tstop_user + 1

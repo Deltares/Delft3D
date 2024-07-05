@@ -546,7 +546,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     !
     !-----arrays for: depths
     !
-    !                           dp    (nmaxddb  ,mmaxddb)
+    !                           dpd   (nmaxddb  ,mmaxddb)
     !                           dpu   (nmaxddb  ,mmaxddb)
     !                           dpv   (nmaxddb  ,mmaxddb)
     !                           dps   (nmaxddb  ,mmaxddb)
@@ -557,7 +557,7 @@ subroutine esm_alloc_real(lundia, error, gdp)
     !                           hv    (nmaxddb  ,mmaxddb)
     !                           hv0   (nmaxddb  ,mmaxddb)
     !
-    pntnam = 'dp'            !  Depth value at depth points
+    pntnam = 'dpd'           !  Depth value at depth points
     ierr = mkfpnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !

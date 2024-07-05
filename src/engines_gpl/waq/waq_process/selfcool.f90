@@ -32,7 +32,7 @@
       subroutine HDISS      ( pmsa   , fl     , ipoint , increm, noseg ,                               & 
                              noflux , iexpnt , iknmrk , noq1  , noq2  ,                               & 
                              noq3   , noq4   )
-      use m_evaluate_waq_attribute
+      use m_extract_waq_attribute
                                    
 !>\file
 !>       Heat dissipation from heatbal & applied to excess heat                                                                                                          
@@ -102,7 +102,7 @@
 
 !     Calculate Self-Cooling only for top layer segments
 !
-          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
+          CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==1) THEN
                    SelfCool = -1. * (HtTot2 - HtTot) 
                     

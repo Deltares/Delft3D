@@ -35,7 +35,7 @@
  use m_flowgeom
  use m_GlobalParameters, only: INDTP_2D
  use unstruc_model
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_physcoef
  use m_flowparameters
  use m_flowtimes, only : ti_waq
@@ -46,7 +46,7 @@
  use m_orthosettings
  use m_xbeach_data, only: itheta_view
  use m_heatfluxes
- use unstruc_boundaries
+ use fm_external_forcings
  use m_partitioninfo
  use dfm_error
  use m_ship
@@ -68,6 +68,7 @@
  use Timers
  use m_structures
  use unstruc_messages
+ use m_find_flownode, only: find_nearest_flownodes_kdtree
 
  implicit none
 
@@ -505,7 +506,7 @@
  allocate ( xu(lnx), yu(lnx) , blu(lnx) ,  stat = ierr)
  call aerr('xu(lnx), yu(lnx) , blu(lnx)',  ierr, 3*lnx)
  blu = dmiss
- if (jafullgridoutput == 1) then
+ if (jafullgridoutput > 0) then
     call realloc(blup, lnx, keepExisting = .false., fill = dmiss, stat = ierr)
     call aerr('blup(lnx)', ierr, lnx)
  end if
@@ -1331,7 +1332,7 @@
 
  if (Lnx1D < -1 ) then
     kc = 0 ! allocate(inodes(Ndxi-ndx2D)) ; inodes = 0
-    call find_flowcells_kdtree(treeglob,Ndxi-ndx2D,xz(ndx2D+1),yz(ndx2D+1),kc,0,INDTP_2D,ierr)
+    call find_nearest_flownodes_kdtree(treeglob, Ndxi-ndx2D, xz(ndx2D+1), yz(ndx2D+1), kc, 0, INDTP_2D, ierr)
     do k1 = ndx2D+1, ndxi
        k2 = kc(k1-ndx2D)
        if ( k2 > 0 ) then

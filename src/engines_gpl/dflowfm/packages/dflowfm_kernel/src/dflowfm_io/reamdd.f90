@@ -46,11 +46,11 @@
       BACKSPACE(MMDD)
 
 
-      DO 10 N = 1, NC
+      do N = 1, NC
          AF = dble(N) / dble(NC)
          CALL READYY('Reading md-Dept File',AF)
          READ(MMDD,*,END = 999,ERR = 888) (RD1(M,N),M = 1,MC)
-   10 CONTINUE
+      end do
       CALL READYY('Reading md-Dept File',-1d0)
       CALL DOCLOSE (MMDD)
       JA = 1

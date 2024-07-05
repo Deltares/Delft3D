@@ -28,41 +28,26 @@ module m_dlwq66
 contains
 
 
-    SUBROUTINE DLWQ66 (AMASS, VOLUME, CONC, NOTOT, NOSEG)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED             : june 1988 by L.Postma
-        !
-        !     FUNCTION            : makes masses from conc and volumes
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     AMASS   REAL   NOTOT*NOSEG  OUTPUT  closure error correction
-        !     VOLUME  REAL      NOSEG     INPUT   volume
-        !     CONC    REAL   NOTOT*NOSEG  INPUT   concentrations
-        !     NOTOT   INTEGER     1       INPUT   number of systems
-        !     NOSEG   INTEGER     1       INPUT   number of segments
-        !
+    !> Calculates masses form concentrations and volumes
+    subroutine dlwq66(amass, volume, conc, notot, noseg)
+
         use timers
 
-        real(kind = real_wp) :: AMASS(NOTOT, *), VOLUME(*), CONC(NOTOT, *)
+        real(kind = real_wp), intent(inout) :: amass(notot, *) !< Closure error correction (NOTOT x NOSEG)
+        real(kind = real_wp), intent(in   ) :: volume(*)       !< Volume  (NOSEG)
+        real(kind = real_wp), intent(in   ) :: conc(notot, *)  !< Concentrations  (NOTOT x NOSEG)
+
+        integer(kind = int_wp), intent(in) :: notot !< Number of systems
+        integer(kind = int_wp), intent(in) :: noseg !< Number of cells or segments
+
+        ! Local variables
+        integer(kind = int_wp) :: isys, iseg
+        integer(kind = int_wp) :: ithandl = 0
         real(kind = real_wp) :: v1
 
-        integer(kind = int_wp) :: notot, noseg
-        integer(kind = int_wp) :: isys, iseg
-
-        integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq66", ithandl)
-        !
-        !         loop over the number of segments and systems
-        !
+
+        ! loop over the number of segments and systems
         DO ISEG = 1, NOSEG
             V1 = VOLUME(ISEG)
             DO ISYS = 1, NOTOT
@@ -71,7 +56,5 @@ contains
         end do
         !
         if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+    end subroutine dlwq66
 end module m_dlwq66

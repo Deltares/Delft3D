@@ -108,7 +108,7 @@ end subroutine deallocConvtab
 !> Reallocate conveyance table
 subroutine reallocConvtab(convtab, levelscount)
    ! Modules
-   
+   use m_alloc
    implicit none
    
    ! Input/output parameters
@@ -118,14 +118,14 @@ subroutine reallocConvtab(convtab, levelscount)
    ! Local variables
 
    ! Program code
-   allocate(convtab%height (levelscount)    )
-   allocate(convtab%flow_area (levelscount)  )
-   allocate(convtab%flow_width (levelscount)  )
-   allocate(convtab%perimeter (levelscount)  )
-   allocate(convtab%conveyance(levelscount)  )
-   allocate(convtab%chezy(levelscount)  )
-   allocate(convtab%total_area(levelscount)   )
-   allocate(convtab%total_width(levelscount)   )
+   call realloc(convtab%height,      levelscount)
+   call realloc(convtab%flow_area,   levelscount)
+   call realloc(convtab%flow_width,  levelscount)
+   call realloc(convtab%perimeter,   levelscount)
+   call realloc(convtab%conveyance,  levelscount)
+   call realloc(convtab%chezy,       levelscount)
+   call realloc(convtab%total_area,  levelscount)
+   call realloc(convtab%total_width, levelscount)
    convtab%levelscount = levelscount
       
 end subroutine reallocConvtab
@@ -136,7 +136,7 @@ subroutine generateConvtab(convtab, levelscount_csdef, crosssection_id, &
                            frictionValue)
 
    use MessageHandling
-
+   use m_alloc
    implicit none
 
    type (t_convtab), pointer, intent(inout)     :: convtab                          !< Conveyance table.
@@ -148,8 +148,8 @@ subroutine generateConvtab(convtab, levelscount_csdef, crosssection_id, &
    integer               , intent(in   )     :: frictionType(:)                  !< Friction type for segment.
    double precision      , intent(in   )     :: frictionValue(:)                 !< Friction value for segment.
    
-   integer                       ::  levelscount_convtab, ierr, lcnvmax
-   
+   integer                       :: levelscount_convtab, ierr, lcnv_max, lcnv_current
+   integer                       :: yzcount_max_default = 400
    ! Variables for calculating extrapolation coefficients:
    integer              :: i1 ! one but last index
    integer              :: i2 ! last index
@@ -162,16 +162,22 @@ subroutine generateConvtab(convtab, levelscount_csdef, crosssection_id, &
       allocate(convtab)
    endif
 
-   if (.not. associated(convtab_help)) then
-      lcnvmax = max(400, levelscount_csdef * 4)
-      allocate(convtab_help)
-      call reallocConvtab(convtab_help, lcnvmax)
+   if (allocated(friction_value_per_segment)) then
+      lcnv_current = size(friction_value_per_segment)
+   else
+      lcnv_current = 0
+   end if
 
-      allocate (friction_value_per_segment(lcnvmax),  &
-                y(lcnvmax),   &
-                frictype(lcnvmax),  &
-                stat=ierr )
-      
+   lcnv_max = max(yzcount_max_default, levelscount_csdef * 4)
+   if (.not. associated(convtab_help) .or. lcnv_max > lcnv_current) then
+      if (.not. associated(convtab_help)) then
+         allocate(convtab_help)
+      end if
+      call reallocConvtab(convtab_help, lcnv_max)
+
+      call realloc(friction_value_per_segment, lcnv_max, stat=ierr)
+      call realloc(y, lcnv_max, stat=ierr)
+      call realloc(frictype, lcnv_max, stat=ierr)
    endif
    
    convtab_help%height         = 0d0  

@@ -21,7 +21,7 @@
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
-            <location name="cases">:qandadiv
+            <location name="cases">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
@@ -58,7 +58,7 @@
             <path>thirdparty/svn/win64/svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+            <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -76,18 +76,17 @@
             <programs>
                 <program ref="PYTHON" seq="1">
                     <arguments>
-                        <argument>../../scripts/teamcity_unzip_testcases.py "." "." &gt;dimr_unzip.log 2&gt;&amp;1</argument>
+                        <argument>../scripts/teamcity_unzip_testcases.py "." "." &gt;dimr_unzip.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>                
                 <program ref="PYTHON" seq="2">
                     <arguments>
-                        <argument>../../scripts/teamcity_dimr_export_from_deltashell_dsproj.py "." &gt;dimr_export.log 2&gt;&amp;1</argument>
+                        <argument>../scripts/teamcity_dimr_export_from_deltashell_dsproj.py "." &gt;dimr_export.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>                
                 <program ref="dimr" seq="3">
                     <arguments>
                         <argument>dimr.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>
@@ -104,7 +103,6 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr_config.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>

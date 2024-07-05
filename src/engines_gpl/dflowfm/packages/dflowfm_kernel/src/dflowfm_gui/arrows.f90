@@ -53,10 +53,10 @@
       SNA  = SIN(ALFA)
       XLEN = SQRT(UR*UR+VR*VR)
 
-      DO 10 I = 1,3
+      do I = 1,3
          XR(I) = X0 + VFAC*XLEN*(X(I)*CSA - Y(I)*SNA)
          YR(I) = Y0 + VFAC*XLEN*(Y(I)*CSA + X(I)*SNA)
-   10 CONTINUE
+end do
 
       CALL MOVABS(X0,Y0)
       CALL LNABS(XR(2),YR(2))

@@ -39,7 +39,7 @@ integer, PARAMETER :: READ_DATA_FROM_FILE = 3
 
 !> defines ID for fusav, rusav, ausav in NETCDF, writes and reads these variables to from a NETCDF file
 subroutine process_structures_saved_parameters(action, id_file)
-use m_flowexternalforcings, only : ncgen, fusav, rusav, ausav
+use fm_external_forcings_data, only : ncgen, fusav, rusav, ausav
 use netcdf
 use messagehandling 
 

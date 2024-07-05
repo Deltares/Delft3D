@@ -75,15 +75,15 @@
 !
 !     declarations
 !
-      real(dp) :: rseed , help , s
+      real(dp), intent(inout) :: rseed
+      real(dp)                :: help , s
 !
       s      = rseed
       rseed  = dmod(1.6807d+04 * s, 2.147483647d+09)
       help   = 4.656612873d-10 * rseed
-      rnd    = sngl(help)
+      rnd    = real(help, kind=kind(rnd))
 !
 !     end of function
 !
-      return
       end function
       end module random_generator

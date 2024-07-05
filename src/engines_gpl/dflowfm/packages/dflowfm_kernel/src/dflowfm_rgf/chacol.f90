@@ -39,10 +39,10 @@
       integer :: i
       double precision :: xh
 
-      DO 10 I = 1,NUMSPL
+      do I = 1,NUMSPL
          XH      = X(I,J1)
          X(I,J1) = X(I,J2)
          X(I,J2) = XH
-    10 CONTINUE
+      end do
       RETURN
       END subroutine chacol

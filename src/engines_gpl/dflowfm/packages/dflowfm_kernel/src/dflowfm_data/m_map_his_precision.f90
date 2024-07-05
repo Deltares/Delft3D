@@ -43,12 +43,13 @@ module m_map_his_precision
     function netcdf_data_type(nc_precision_string) result(nc_data_type)
         use netcdf, only: nf90_float, nf90_double
         use MessageHandling, only: mess, LEVEL_ERROR
-        use string_module, only: str_lower
+        use string_module, only: str_tolower
+        
         character(len=*), value, intent(in) :: nc_precision_string !< Description of the data type
+        
         integer :: nc_data_type !< Result type as used by the NetCDF library
 
-        call str_lower(nc_precision_string)
-        select case (trim(nc_precision_string))
+        select case (trim(str_tolower(nc_precision_string)))
             case ('double')
                 nc_data_type = nf90_double
             case ('float', 'single')

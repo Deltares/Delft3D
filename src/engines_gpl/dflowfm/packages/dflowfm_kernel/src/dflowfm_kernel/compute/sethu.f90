@@ -29,6 +29,7 @@
 
 ! 
 module m_sethu
+   use stdlib_kinds, only: dp
 
 private
 
@@ -54,7 +55,7 @@ public :: calculate_hu_au_and_advection_for_dams_weirs
 contains
 ! 
 !> Set upwind waterdepth hu and au
-subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)                           
+subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)       
    use m_flowgeom
    use m_flow
    use m_fixedweirs
@@ -85,6 +86,7 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)
    integer             :: link_in_3d
    integer             :: kb, kb0, kt, Lb
    integer             :: kbd, ktd, kbd0, LLbc, kkd
+   integer             :: L_lowest, nq, n, L 
    double precision    :: upstream_water_level
    double precision    :: bed_level_at_u_point
    double precision    :: water_height
@@ -94,7 +96,8 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)
    double precision    :: hub
    double precision    :: zw0u
    double precision    :: ucx_up, ucy_up, u_in, vhei, eup
-   logical             :: dams_or_weirs
+   double precision    :: lowest_bob
+   logical             :: dams_or_weirs, is_already_wet
 
    double precision, pointer  :: velocity_pointer(:)
  
@@ -148,7 +151,7 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)
 
     !DIR$ INLINE
       call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
-      if (jafullgridoutput == 1) then ! is it possible to move to other subroutine?
+      if (jafullgridoutput > 0) then ! is it possible to move to other subroutine?
          blup(link) = bed_level_at_u_point
       end if
 
@@ -182,7 +185,28 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)
       end if
 
    end do
-
+   
+   ! Make sure at least 1 flow link per discharge/velocity boundary is open
+   do nq = 1,nqbnd 
+      is_already_wet = .false.
+      if (l2qbnd(nq) > l1qbnd(nq)) then
+         lowest_bob = huge(1._dp)
+         do n  = L1qbnd(nq), L2qbnd(nq)
+            L  = kbndu(3,n)
+            if (hu(L) > epshu) then
+               is_already_wet = .true.
+               exit
+            end if
+            if (max(bob(1, L), bob(2, L)) < lowest_bob) then
+               L_lowest = L
+               lowest_bob = max(bob(1, L), bob(2, L))
+            end if
+         end do
+         if (.not. is_already_wet) then
+            hu(L_lowest) = epshu
+         end if
+      end if
+   end do
 
    do link = 1,lnx ! why is it here?- it is not hu
       huvli(link) = 1d0 / max(epshs, acl(link)*hs(ln(1,link)) + (1d0 - acl(link)) * hs(ln(2,link)) )

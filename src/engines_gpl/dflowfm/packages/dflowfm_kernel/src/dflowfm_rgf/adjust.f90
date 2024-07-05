@@ -48,16 +48,18 @@
       y = xymis
 
       IFIRST = 0
-      DO 10 I = 1,MC
-         DO 10 J = 1,NC
+      do I = 1,MC
+         do J = 1,NC
             IF (XH(I,J) .NE. XYMIS .AND. IFIRST .EQ. 0) IFIRST = I
-    10 CONTINUE
+         end do
+      end do
 
       JFIRST = 0
-      DO 20 J = 1,NC
-         DO 20 I = 1,MC
+      DO J = 1,NC
+         DO I = 1,MC
             IF (XH(I,J) .NE. XYMIS .AND. JFIRST .EQ. 0) JFIRST = J
-    20 CONTINUE
+         end do
+      end do
 
       IF (IFIRST .EQ. 0 .OR. JFIRST .EQ. 0) THEN
          MC = 0
@@ -65,11 +67,12 @@
       ELSE
          IFIRST = IFIRST - 1
          JFIRST = JFIRST - 1
-         DO 30 I = 1,MC-IFIRST
-            DO 30 J = 1,NC-JFIRST
+         DO I = 1,MC-IFIRST
+            DO J = 1,NC-JFIRST
                X(I,J) = XH(I+IFIRST,J+JFIRST)
                Y(I,J) = YH(I+IFIRST,J+JFIRST)
-    30   CONTINUE
+            end do
+         end do
          CALL NUMS(X,mmax, nmax, MC,NC)
       ENDIF
 

@@ -16,29 +16,6 @@ from src.utils.logging.i_logger import ILogger
 
 # Upload and download for ftp paths
 class FTPHandler(IHandler):
-    def prepare_upload(
-        self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger
-    ) -> None:
-        pass
-
-    # Upload data to location
-    # input: from, to and credentials
-    def upload(
-        self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger
-    ) -> None:
-        logger.debug(f"setting up connection to FTP: {to_path}")
-        url = parse.urlparse(to_path)
-        ftp = FTP(url.netloc)
-        if credentials:
-            ftp.login(credentials.username, credentials.password)
-            logger.debug(f"connecting as: {credentials.username}")
-        else:
-            ftp.login()
-        ftp.cwd(url.path)
-        logger.debug(f"going to root: {url.path}")
-        self.__traverseDirectoryUpload__(ftp, from_path, "", url.path, "", logger)
-        ftp.close()
-
     # Download data from location
     # input: from, to and credentials
     def download(

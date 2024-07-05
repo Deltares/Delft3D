@@ -61,13 +61,24 @@ contains
         real(kind = real_wp) :: ageconc     ! I  Age concentration                                  (g.d/m3)
         real(kind = real_wp) :: age_threshold     ! I  user defined threshold to avoid small concentration (g/m3), default 0.0
         real(kind = real_wp) :: ageprod     ! F  production of waterage                             (d)
-        integer(kind = int_wp) :: Iageprod    !    Pointer to the production of waterage
+        integer(kind = int_wp) :: Iageprod     !  Pointer to the production of waterage
+        real(kind = real_wp) :: temp_watersrc_c     ! F  new threshold ratio to avoid small concentration (g/m3), default 0.0
+        
         !
         !*******************************************************************************
         !
         ipnt = ipoint
         Iageprod = 1
         !
+        temp_watersrc_c = 0.0
+        do iseg = 1, noseg
+            watersrc = pmsa(ipnt(1))
+            temp_watersrc_c =temp_watersrc_c +watersrc
+            ipnt(1) = ipnt(1) + increm(1)
+        end do
+        temp_watersrc_c = temp_watersrc_c/noseg
+                    
+        ipnt = ipoint            
         do iseg = 1, noseg
             !
             watersrc = pmsa(ipnt(1))
@@ -82,7 +93,7 @@ contains
             !
             fl  (Iageprod) = ageprod
 
-            if (watersrc > age_threshold) then
+            if (watersrc > age_threshold*temp_watersrc_c)then
                 pmsa(ipnt(4)) = ageconc / watersrc
             else
                 pmsa(ipnt(4)) = -999.0

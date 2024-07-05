@@ -31,9 +31,8 @@ contains
     SUBROUTINE MACDIS     (PMSA, FL, IPOINT, INCREM, NOSEG, &
             NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
             NOQ3, NOQ4)
-        use m_srstop
-        use m_monsys
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -102,7 +101,7 @@ contains
         DO ISEG = 1, NOSEG
 
             !        Check on active segments
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 Surf = PMSA(IPNT(1))
@@ -157,13 +156,13 @@ contains
                     !              Check Ffac: 0,1 or 2
 
                     If (Ffac  <  0 .OR. Ffac > 2) Then
-                        call getmlu(lunrep)
+                        call get_log_unit_number(lunrep)
                         write (lunrep, *) 'MACDIS: Illegal option for Macrophyte form factor - should be between 0 and 2'
                         write (lunrep, *) '   Value now: ', ffac
                         write (lunrep, *) '   Input error (linear biomass distribution)'
                         write (lunrep, *) 'Input error in process MACDIS'
                         write (*, *) 'Input error in process MACDIS'
-                        call srstop(1)
+                        call stop_with_error()
                     Endif
 
                     A = (SM / Hact) * (2 - (2 * Ffac)) / Hact
@@ -187,14 +186,14 @@ contains
                 ElseIf (SwDisSM == 2) Then
 
                     If (Ffac  <=  0 .OR. Ffac > 50.0) Then
-                        call getmlu(lunrep)
+                        call get_log_unit_number(lunrep)
                         write (lunrep, *) 'MACDIS: Incorrect value for Macrophyte form factor - ', &
                                 'should be positive and lower than or equal to 50'
                         write (lunrep, *) '   Value now: ', ffac
                         write (lunrep, *) '   Input error (exponential biomass distribution)'
                         write (lunrep, *) 'Input error in process MACDIS'
                         write (*, *) 'Input error in process MACDIS'
-                        call srstop(1)
+                        call stop_with_error()
                     Endif
 
                     A = SM / Hactd / ((exp(Ffac * Hactd) - 1.0) / Ffac - Hactd)
@@ -218,7 +217,7 @@ contains
                 ! if we start at the top
                 !
                 If (Hmax < 0.0) Then
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     If (IKMRK2 == 0 .OR. IKMRK2 == 1) Then
                         PMSA(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
                     Endif

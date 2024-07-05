@@ -40,17 +40,20 @@ subroutine updateValuesOnLaterals(tim1, timestep)
    use m_alloc
    use m_flowparameters, only: eps10
    use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
+   use m_flow, only: kmx
    implicit none
    double precision, intent(in) :: tim1     !< Current (new) time
    double precision, intent(in) :: timestep !< Timestep is the difference between tim1 and the last update time
 
-   integer :: i, k, k1
+   integer :: i, k, k1, nlayer, num_layers
    double precision, allocatable :: qLatRealCumTmp(:), qLatRealMPI(:)
 
    ! If current time has not reached the history output start time yet, do not update
    if (comparereal(tim1, ti_hiss, eps10) < 0) then
       return
    end if
+   
+   num_layers = max(1,kmx)
 
    ! Compute realized discharge
    qLatReal = 0d0
@@ -59,7 +62,9 @@ subroutine updateValuesOnLaterals(tim1, timestep)
          k = nnlat(k1)
          if (k > 0) then
             if (.not. is_ghost_node(k)) then
-               qLatReal(i) = qLatReal(i) + qqLat(k)
+               do nlayer = 1, num_layers
+                  qLatReal(i) = qLatReal(i) + qqLat(nlayer,k)
+               end do
             end if
          end if
       end do
@@ -73,7 +78,9 @@ subroutine updateValuesOnLaterals(tim1, timestep)
    !! Compute average discharge
    ! cumulative discharge from starting time of history output
    do i = 1, numlatsg
-      qplatCum(i) = qplatCum(i) + timestep*qplat(i)
+      do nlayer = 1, num_layers
+         qplatCum(i) = qplatCum(i) + timestep*qplat(nlayer,i)
+      end do
       qLatRealCum(i) = qLatRealCum(i) + timestep*qLatReal(i)
    enddo
 

@@ -95,7 +95,7 @@
       CALL SAVEKEYS()
 
       IR = 0
-      DO 10 I = 1,NUMPAR
+      do I = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          IX(IL) = 13
@@ -112,7 +112,7 @@
          ELSE
             IT(IR) = 6
          ENDIF
-   10 CONTINUE
+end do
 
 !     Initialise
       CALL IWinWordWrap('OFF')
@@ -163,14 +163,13 @@
       CALL IFORMHELP(13,IH,60)
 
       IR = 0
-      DO 20 I = 1,NUMPAR
+      do i = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          CALL IFORMPUTSTRING (IL,OPTION(I))
          CALL IFORMPUTHELP   (IR,HELPM(I))
          CALL IFORMATTRIBUTEN(IR,0,0,7)
-   20 CONTINUE
-
+end do 
       CALL IFORMPUTINTEGER( 1*2 ,ITYPE)
       CALL IFORMPUTINTEGER( 2*2 ,IZONE)
       CALL IFORMPUTINTEGER( 3*2 ,IHEM)

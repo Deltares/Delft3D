@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e106_f01_c036" ref="dflow1d_default">
         <path version="2024-01-12T06:30:00">e106_dflow1d/f01_general/c036</path>
         <maxRunTime>60.0</maxRunTime>

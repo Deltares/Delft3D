@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c220_drypoints_pol</path>
       <maxRunTime>15.0</maxRunTime>
@@ -408,7 +408,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c093_chezy_trachytopes_ebb_flood_dependent" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c093_chezy_trachytopes_ebb_flood_dependent</path>
+      <path version="2024-04-10T16:26:00">e02_dflowfm/f004_bottomfriction/c093_chezy_trachytopes_ebb_flood_dependent</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -1464,7 +1464,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c088_qhbnd_bc_tripleboundary" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
+      <path version="2024-04-10T16:35:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/testcase01_map.nc" type="netCDF">
@@ -3774,7 +3774,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c031_alloutdtmaxlarge" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c031_alloutdtmaxlarge</path>
+      <path version="2024-04-10T16:40:00">e02_dflowfm/f012_inout/c031_alloutdtmaxlarge</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
@@ -3876,7 +3876,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c097_running_mean" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c097_running_mean</path>
+      <path version="2024-05-31T12:46:29">e02_dflowfm/f012_inout/c097_running_mean</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/westerscheldt_fou.nc" type="netCDF">
@@ -4097,7 +4097,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f015_c019_iniwatlev_rst" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f015_spatial_interpolation/c019_iniwatlev_rst</path>
+      <path version="2024-04-10T16:40:00">e02_dflowfm/f015_spatial_interpolation/c019_iniwatlev_rst</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
@@ -5626,6 +5626,85 @@
         </file>        
       </checks>
     </testCase>
+    <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c301_sedimentmodelnr2_1VR" ref="dflowfm_default">
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c301_sedimentmodelnr2_1VR</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c302_sedimentmodelnr2_3VR" ref="dflowfm_default">
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c302_sedimentmodelnr2_3VR</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero3" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed3" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c303_sedimentmodelnr2_1PK_2VR" ref="dflowfm_default">
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c303_sedimentmodelnr2_1PK_2VR</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero3" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed3" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f022_c304_sedimentmodelnr3_1EH" ref="dflowfm_default">
+      <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c304_sedimentmodelnr3_1EH</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/test_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_netnode_bedlevel_zk" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ero1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sed1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f023_c35_dad_inside_dumping" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f023_dredge-dump/c35_dad_inside_dumping</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -5783,6 +5862,82 @@
             <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f032_c11_erosilt_manning_dyer_nflocsizes_1" ref="dflowfm_default">
+      <path version="2024-06-13T13:34:33">e02_dflowfm/f032_flocculation/c11_erosilt_manning_dyer_nflocsizes_1</path>
+      <maxRunTime>15000.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/tst_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="ws" toleranceAbsolute="0.0001" />
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/tst_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_ws" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="tst_bed.xyz" ignore="true" />
+      </checks>
+    </testCase>
+    <testCase name="e02_f032_c12_erosilt_manning_dyer_nflocsizes_2" ref="dflowfm_default">
+      <path version="2024-06-13T13:34:33">e02_dflowfm/f032_flocculation/c12_erosilt_manning_dyer_nflocsizes_2</path>
+      <maxRunTime>15000.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/tst_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="ws" toleranceAbsolute="0.0001" />
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/tst_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_ws" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="tst_bed.xyz" ignore="true" />
+      </checks>
+    </testCase>
+    <testCase name="e02_f032_c21_erosilt_chassagne_safar_nflocsizes_1" ref="dflowfm_default">
+      <path version="2024-06-13T13:34:32">e02_dflowfm/f032_flocculation/c21_erosilt_chassagne_safar_nflocsizes_1</path>
+      <maxRunTime>15000.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/tst_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="ws" toleranceAbsolute="0.0001" />
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/tst_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_ws" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="tst_bed.xyz" ignore="true" />
+      </checks>
+    </testCase>
+    <testCase name="e02_f032_c22_erosilt_chassagne_safar_nflocsizes_2" ref="dflowfm_default">
+      <path version="2024-06-13T13:34:32">e02_dflowfm/f032_flocculation/c22_erosilt_chassagne_safar_nflocsizes_2</path>
+      <maxRunTime>15000.0</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/tst_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="ws" toleranceAbsolute="0.0001" />
+            <parameter name="sed" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/tst_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_ws" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="tst_bed.xyz" ignore="true" />
       </checks>
     </testCase>
     <testCase name="e02_f037_c01_EH_ZW" ref="dflowfm_default">
@@ -6030,7 +6185,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c61_wl_q_roughness_ZW" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c61_wl_q_dependent_roughness</path>
+      <path version="2024-04-10T16:45:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c61_wl_q_dependent_roughness</path>
       <maxRunTime>25.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c61_his.nc" type="netCDF">

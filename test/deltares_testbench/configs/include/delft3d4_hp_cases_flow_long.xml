@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e01_f07a_c23-onl" ref="flow2d3d_default">
 			<path version="2024-01-08T09:50:00">e01_d3dflow/f07a_zlayers_implicit/c23-onl</path>
 			<maxRunTime>4158.19100022</maxRunTime>

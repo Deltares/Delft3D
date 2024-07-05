@@ -230,12 +230,12 @@ module string_module
       !   string      String to be converted
       !   lenstr      Optional length of string to be converted
       ! ------------------------------------------------------------------------------
-      subroutine str_lower(string, lenstr)
+      elemental subroutine str_lower(string, lenstr)
           !
           ! Arguments
           !
-          integer     , optional, intent(in) :: lenstr
-          character(*)                       :: string
+          character(*),           intent(inout) :: string
+          integer     , optional, intent(in)    :: lenstr
           !
           ! Local variables
           !
@@ -468,7 +468,7 @@ module string_module
       !   string2     Second string to be compared
       !   lencmp      Optional length over which to compare strings
       ! ------------------------------------------------------------------------------
-      function strcmpi(string1, string2, lenreq) result(retval)
+      elemental function strcmpi(string1, string2, lenreq) result(retval)
           !
           ! Arguments
           !

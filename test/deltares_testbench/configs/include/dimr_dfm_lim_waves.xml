@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 	<testCase name="e02_f043_c01_WAQ_2D" ref="dflowfm_fetch_limited_waves">
       <path version="2024-01-11T13:10:00">e02_dflowfm/f043_fetch_limited_waves/c01_WAQ_2D/</path>
       <maxRunTime>7.5000000</maxRunTime>

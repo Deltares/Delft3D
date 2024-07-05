@@ -55,7 +55,7 @@
             <path>python.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
+          <path>dimr/scripts/run_dimr.bat</path>
             <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
@@ -74,7 +74,6 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>
@@ -92,7 +91,7 @@
     -->
     <testCases>
 	    <!-- ======================================================================== -->
-        <testCase name="e106(dflow1d)_f01(1D-boundaries)_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
+        <testCase name="e106_f01_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
             <path version="2024-01-12T06:30:00">e106_dflow1d/f01_1D-boundaries/c01_030_h-boundary1d_one-connected-branch-only</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
@@ -106,9 +105,6 @@
                         <parameter name="water_balance_error" toleranceAbsolute="0.0001"/>
 					</parameters>
                 </file>				
-                <file name="dimr_screen.log" type="NUMBERTEXT">
-                    <skipline>Dimr</skipline>
-                </file>
             </checks>
         </testCase>
 	<!-- ======================================================================== -->		

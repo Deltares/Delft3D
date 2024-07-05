@@ -168,9 +168,9 @@
    !  ENDIF
 
 !     knoopnummers uitdelen
-      DO 10 J = 1,NC
+      do J = 1,NC
          Y = dble(J-1)/dble(NC-1)
-         DO 10 I = 1,MC
+         do I = 1,MC
             X = dble(I-1)/dble(MC-1)
             K = (J-1)*MC + I + K0
             XKK = XPL(1)*(1-X)*(1-Y) + XPL(2)*(  X)*(1-Y) +    &
@@ -190,60 +190,64 @@
                YK(K) = XKK
                ZK(K) = YKK
             ENDIF
-
-   10 CONTINUE
+         end do
+      end do
       NUMK = K0 + MC*NC
 
 !     horizontale elementen krijgen twee knoopnummers
       L = L0
-      DO 20 J = 1,NC
-         DO 20 I = 1,MC-1
+      do J = 1,NC
+         DO I = 1,MC-1
             L  = L + 1
             K1 = (J-1)*MC + I + K0
             K2 = (J-1)*MC + I + 1 + K0
             KN(1,L) = K1
             KN(2,L) = K2
-   20 CONTINUE
+         end do
+      end do
       NUMH = L
 
 !     verticale elementen
-      DO 30 J = 1,NC-1
-         DO 30 I = 1,MC
+      do J = 1,NC-1
+         do I = 1,MC
             L  = L + 1
             K1 = (J-1)*MC + I + K0
             K2 = (J  )*MC + I + K0
             KN(1,L) = K1
             KN(2,L) = K2
-   30 CONTINUE
+         end do
+      end do
       NUMV = L
 
 
       IF (JPANEL .EQ. 1) THEN
 !         diagonalen naar rechtsboven
-          DO 40 J = 1,NC-1
-             DO 40 I = 1,MC-1
+          do J = 1,NC-1
+             do I = 1,MC-1
                 L = L + 1
                 K1 = (J-1)*MC + I + K0
                 K2 = (J  )*MC + I + 1 + K0
                 KN(1,L) = K1
                 KN(2,L) = K2
-   40     CONTINUE
+               end do
+            end do
           NUMRB = L
 
 !         diagonalen naar linksboven
-          DO 41 J = 1,NC-1
-             DO 41 I = 2,MC
+          do J = 1,NC-1
+             do I = 2,MC
                 L = L + 1
                 K1 = (J-1)*MC + I + K0
                 K2 = (J  )*MC + I - 1 + K0
                 KN(1,L) = K1
                 KN(2,L) = K2
-   41     CONTINUE
+               end do
+            end do
       ENDIF
       NUML = L
 
-      DO 50 J = 1,NC
-         DO 50 I = 1,MC
+      do J = 1,NC
+         do I = 1,MC
             K = (J-1)*MC + I + K0
             IF (I .LT. MC) THEN                  ! ELEMENT NAAR RECHTS
                NMK(K) = NMK(K) + 1
@@ -287,7 +291,8 @@
                    CALL SETNODLIN(K,NMK(K),LRD)
                 ENDIF
             ENDIF
-   50 CONTINUE
+         end do
+      end do
 
       DO L = L0+1, NUML
          K1    = KN(1,L)

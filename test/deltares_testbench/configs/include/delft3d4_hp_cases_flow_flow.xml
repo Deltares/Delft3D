@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e20_f01_c01-helling" ref="flow2d3d_fluidmud_default">
 			<path version="2024-01-12T07:40:00">e20_d3dflow-d3dflow/f01_fluidmud/c01-helling</path>
 			<maxRunTime>142.059999943</maxRunTime>

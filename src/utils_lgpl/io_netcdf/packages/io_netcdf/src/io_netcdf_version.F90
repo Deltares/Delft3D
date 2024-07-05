@@ -39,7 +39,7 @@ implicit none
 
     character(*),  public, parameter :: io_netcdf_company      = COMPANY_NAME
     character(*),  public, parameter :: io_netcdf_company_url  = COMPANY_URL
-    character(*),  public, parameter :: io_netcdf_program      = PROGRAM
+    character(*),  public, parameter :: io_netcdf_program      = PROGRAM_NAME
 
 #if defined(WIN32)
     character(*),  public, parameter :: io_netcdf_architecture = 'Win32' ! used in about box
