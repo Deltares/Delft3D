@@ -254,7 +254,7 @@ function initialize_initial_fields(inifilename) result(ierr)
             success = .false.
             exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
          end if
-         if ((strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth'))) then
+         if (strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') .or. strcmpi(qid, 'initialvelocity')) then
             specified_water_levels = specified_water_levels .or. specified_indices
             if (global_value_provided) then
                water_level_global_value_provided = .true.
@@ -768,7 +768,7 @@ function init1dField(filename, inifieldfilename, quant, specified_indices, globa
 
    call init_1d_field_read_global(field_ptr, inifieldfilename, filename, quant, global_value, global_value_provided, numerr)
 
-   if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel')) then
+   if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel') .or. strcmpi(quant, 'initialvelocity')) then
       call realloc(specified_indices, ndxi - ndx2D, fill = .false._c_bool, keepExisting = .false.)
    else if (strcmpi(quant, 'frictioncoefficient')) then
       call realloc(specified_indices, lnx1d, fill = .false._c_bool, keepExisting = .false.)
