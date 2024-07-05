@@ -27,15 +27,13 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 module m_rechtsaf_active
 
    implicit none
 
 contains
 
-   LOGICAL FUNCTION rechtsaf_active(K1, K2, K3)
+   logical function rechtsaf_active(K1, K2, K3)
 
       use network_data, only: xk, yk
       use geometry_module, only: duitpl
@@ -55,5 +53,5 @@ contains
       end if
 
       return
-   end FUNCTION rechtsaf_active
+   end function rechtsaf_active
 end module
