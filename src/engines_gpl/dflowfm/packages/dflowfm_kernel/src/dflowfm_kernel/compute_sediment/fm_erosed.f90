@@ -73,7 +73,7 @@
    use m_missing
    use m_physcoef, only: frcuni, ifrctypuni
    use m_turbulence, only: vicwws, turkinepsws, rhowat
-   use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu, flowsolver
+   use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
    use m_fm_erosed
    use m_bedform
    use m_xbeach_data
@@ -373,7 +373,7 @@
    do k = 1,ndx_mor                        ! This interpolation is done by considering constant waterdepth per each flow-cell
       h1 = s1(k) - bl(k)                   ! To ensure to get the same results from interpolation based on constant frcu and ifrcutp in the cell centre
                                            ! with considering hs
-      if (nd(k)%lnx==0) then
+      if (nd_mor(k)%lnx==0) then
          z0curk(k) = 1d-5                  ! safety if nd(k)%lnx==0. Happens sometimes in case of thin dams
          cycle
       endif
