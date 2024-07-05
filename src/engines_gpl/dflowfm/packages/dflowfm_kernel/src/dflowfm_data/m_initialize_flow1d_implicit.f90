@@ -795,9 +795,9 @@ subroutine inifm1dimp_faap(iresult)
 
 use m_f1dimp
 use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
-use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu
+use m_flow, only: s0, s1, u1, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor
 use m_sediment, only: stmpar, jased, stm_included, kcsmor
-use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, ucyq_mor, link1, ln_mor
+use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor
 use m_turbulence, only: rhowat
 use m_xbeach_data, only: ktb
 use m_bedform, only: bfmpar
@@ -886,9 +886,35 @@ call reallocate_fill_pointer(bfmpar%rksr,grd_fmmv_fmsv,ndx,ndx_mor)
 
 if (jased > 0 .and. stm_included) then !passing if no morphpdynamics
 
-    call reallocate_fill_pointer(stmpar%morlyr%settings%thtrlyr,grd_fmmv_fmsv,ndx,ndx_mor)
+call reallocate_fill_pointer(stmpar%morlyr%settings%thtrlyr,grd_fmmv_fmsv,ndx,ndx_mor)
 call reallocate_fill_pointer(stmpar%morlyr%settings%thexlyr,grd_fmmv_fmsv,ndx,ndx_mor)
 
+!if (allocated(ucxq_mor)) then
+!    deallocate(ucxq_mor)
+!endif
+allocate(ucxq_mor(1:ndx_mor))
+ucxq_mor = 0d0;
+!if (allocated(ucyq_mor)) then
+!    deallocate(ucyq_mor)
+!endif
+allocate(ucyq_mor(1:ndx_mor))
+ucyq_mor = 0d0;
+!if (allocated(hs_mor)) then
+!    deallocate(hs_mor)
+!endif
+allocate(hs_mor(1:ndx_mor))
+hs_mor = 0d0
+if (allocated(ucx_mor)) then
+    deallocate(ucx_mor)
+endif
+allocate(ucx_mor(1:ndx_mor))
+ucx_mor = 0d0
+if (allocated(ucy_mor)) then
+    deallocate(ucy_mor)
+endif
+allocate(ucy_mor(1:ndx_mor))
+ucy_mor = 0d0
+   
 !multidimensional nodes
 
     !copy pointers to temporary array
