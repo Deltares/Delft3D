@@ -51,12 +51,12 @@
    !<ndxi_mor>
    !    -loop in <fm_bott3d>
    
-   integer                                        :: ndx_mor !< copy of <ndx> for morphodynamics
+   integer                                        :: ndx_mor  !< copy of <ndx> for morphodynamics
    integer                                        :: ndxi_mor !< copy of <ndxi> for morphodynamics
-   integer                                        :: lnx_mor !< copy of <lnx> for morphodynamics
+   integer                                        :: lnx_mor  !< copy of <lnx> for morphodynamics
    integer                                        :: lnxi_mor !< copy of <lnxi> for morphodynamics
-   
-   integer, dimension(:,:),           allocatable :: ln_mor  !< copy of <ln> for morphodynamics. Kept allocatable rather than pointer for consistency with the original
+   integer                                        :: ndkx_mor !< copy of <ndkx> for morpho. <ndkx> cannot be changed for preallocating because it is used for writing. 
+   integer, dimension(:,:),           allocatable :: ln_mor   !< copy of <ln> for morphodynamics. Kept allocatable rather than pointer for consistency with the original
     
    type(tnode), allocatable                       :: nd_mor(:) !< copy of <nd> for morphodynamics
    

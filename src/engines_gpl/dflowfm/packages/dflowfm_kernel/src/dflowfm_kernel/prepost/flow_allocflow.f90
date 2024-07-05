@@ -593,9 +593,9 @@
  call aerr('volerror(ndkx)', ierr,   ndx)           ; volerror = 0
  
  if (stm_included .or. bfm_included .or. bfmpar%lfbedfrmrou .or. jatrt > 0) then
-   allocate(ucxq_mor(1:ndkx_mor), ucyq_mor(1:ndkx_mor), hs_mor(1:ndkx_mor), stat=ierr) 
+   allocate(ucxq_mor(1:ndkx), ucyq_mor(1:ndkx), hs_mor(1:ndkx), stat=ierr) 
    ucxq_mor = 0d0; ucyq_mor = 0d0; hs_mor = 0d0
-   allocate(ucx_mor(1:ndkx_mor), ucy_mor(1:ndkx_mor), stat=ierr)
+   allocate(ucx_mor(1:ndkx), ucy_mor(1:ndkx), stat=ierr)
    ucx_mor = 0d0; ucy_mor = 0d0
  endif   
 

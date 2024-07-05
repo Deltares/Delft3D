@@ -481,8 +481,7 @@ use m_f1dimp
 use m_flowgeom, only: ndx, ndxi, lnx, lnx1D, ln, nd, tnode, lnxi, lnx1Db
 use unstruc_channel_flow, only: network
 use unstruc_messages
-use m_flow, only: ndkx_mor
-use m_fm_erosed, only: link1sign, link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor
+use m_fm_erosed, only: link1sign, link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor, ndkx_mor
 use m_oned_functions, only: gridpoint2cross
 
 implicit none

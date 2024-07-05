@@ -33,7 +33,7 @@
 subroutine flow_sedmorinit()
     use m_sediment
     use m_rdstm
-    use m_flow, only: kmx, ndkx, lnkx, iturbulencemodel, ndkx_mor
+    use m_flow, only: kmx, ndkx, lnkx, iturbulencemodel
     use morphology_data_module !, only: nullsedtra, allocsedtra
     use sediment_basics_module
     use message_module, only: clearstack, initstack
@@ -58,7 +58,7 @@ subroutine flow_sedmorinit()
     use MessageHandling
     use dfm_error
     use m_mormerge
-    use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor !FM1DIMP2DO: It is strange no other variable of this module was used here. This may imply that it is not the right place for the assignment. 
+    use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor, ndkx_mor !FM1DIMP2DO: It is strange no other variable of this module was used here. This may imply that it is not the right place for the assignment. 
     use m_f1dimp, only: f1dimp_initialized
     
     use m_mormerge_mpi

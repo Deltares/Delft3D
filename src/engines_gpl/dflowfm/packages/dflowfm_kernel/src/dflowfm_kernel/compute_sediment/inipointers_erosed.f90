@@ -36,7 +36,7 @@
    subroutine inipointers_erosed()
    use m_fm_erosed
    use m_flowgeom, only: ndx, lnx
-   use m_flow, only: ndkx, ndkx_mor, ucx_mor, ucy_mor
+   use m_flow, only: ndkx, ucx_mor, ucy_mor
    implicit none
    integer :: ierr
 
