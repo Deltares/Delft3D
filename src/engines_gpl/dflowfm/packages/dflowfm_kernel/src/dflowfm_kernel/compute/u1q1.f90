@@ -34,7 +34,6 @@
  use m_flow                                          ! substitute u1 and q1
  use m_flowgeom
  use m_flowtimes
- use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
  use m_partitioninfo
  use m_timer
  use unstruc_channel_flow
