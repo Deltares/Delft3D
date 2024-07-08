@@ -27,9 +27,6 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
 !> spline2curvi parameter menu
 subroutine change_spline2curvi_param(jacancelled)
    use M_GRIDSETTINGS
