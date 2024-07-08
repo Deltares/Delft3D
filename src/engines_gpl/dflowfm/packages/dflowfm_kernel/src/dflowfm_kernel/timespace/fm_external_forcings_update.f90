@@ -239,7 +239,7 @@ contains
 
       ! Update arrays rhum, tair and clou in a single method call.
       ! Nothing happens in case quantity 'humidity_airtemperature_cloudiness' has never been added through ec_addtimespacerelation.
-      select case (itempforcingtyp)
+      select case (heat_forcing_type%typ)
       case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS)
          call get_timespace_value_by_name_and_consider_success_value('humidity_airtemperature_cloudiness', time_in_seconds)
       case (HUMIDITY_AIRTEMPERATURE_CLOUDINESS_SOLARRADIATION)
@@ -252,25 +252,25 @@ contains
          call get_timespace_value_by_name_and_consider_success_value('dewpoint', time_in_seconds)
       end select
 
-      foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
+      foundtempforcing = (heat_forcing_type%typ >= 1 .and. heat_forcing_type%typ <= 4)
 
-      if (btempforcingtypH) then
+      if (heat_forcing_type%humidity) then
          call get_timespace_value_by_item_and_consider_success_value(item_humidity, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypA) then
+      if (heat_forcing_type%air_temperature) then
          call get_timespace_value_by_item_and_consider_success_value(item_airtemperature, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypS) then
+      if (heat_forcing_type%solar_radiation) then
          call get_timespace_value_by_item_and_consider_success_value(item_solarradiation, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypC) then
+      if (heat_forcing_type%cloudiness) then
          call get_timespace_value_by_item_and_consider_success_value(item_cloudiness, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypL) then
+      if (heat_forcing_type%long_wave_radiation) then
          call get_timespace_value_by_item_and_consider_success_value(item_longwaveradiation, time_in_seconds)
          foundtempforcing = .true.
       end if

@@ -138,14 +138,14 @@ contains
       itpenzr(:) = 0
       itpenur(:) = 0
       do ibt = 1, nbndz
-         ib  = itpenz(ibt)
+         ib = itpenz(ibt)
          !TODO: the check on the upper bound becomes obsolete, when the old external forcingsfile is removed
          if (ib > 0 .and. ib <= num_items_in_file) then
             itpenzr(ib) = ibt
          end if
       end do
       do ibt = 1, nbndu
-         ib  = itpenu(ibt)
+         ib = itpenu(ibt)
          !TODO: the check on the upper bound becomes obsolete, when the old external forcingsfile is removed
          if (ib > 0 .and. ib <= num_items_in_file) then
             itpenur(ib) = ibt
@@ -538,7 +538,6 @@ contains
          real(hp), pointer, dimension(:) :: x_array
          real(hp), pointer, dimension(:) :: y_array
          real(kind=hp) :: max_search_radius
-         logical :: success
 
          res = .false.
 

@@ -1614,7 +1614,7 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
@@ -1640,7 +1640,7 @@ contains
 
       iresult = DFM_NOERR
 
-      tair_available = .false.
+      heat_forcing_type%air_temperature = .false.
       dewpoint_available = .false.
 
       if (.not. allocated(const_names)) then
@@ -1657,12 +1657,13 @@ contains
       end if
 
       ! (re-)initialize flags/counters related to temperature forcings
-      itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
+      heat_forcing_type%typ = 0
+      heat_forcing_type%air_temperature = .false.
+      heat_forcing_type%cloudiness = .false.
+      heat_forcing_type%humidity = .false.
+      heat_forcing_type%dewpoint = .false.
+      heat_forcing_type%solar_radiation = .false.
+      heat_forcing_type%long_wave_radiation = .false.
 
       ja_friction_coefficient_time_dependent = 0
 
@@ -2374,7 +2375,7 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
+         if (.not. ((japatm == 1) .and. heat_forcing_type%air_temperature .and. dewpoint_available)) then
             call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
          else
             if (ja_airdensity == 1) then
