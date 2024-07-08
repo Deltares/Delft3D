@@ -84,12 +84,6 @@ def lprint(*args: str) -> None:
 
 
 def report_cases(url, given_build_config, username, password, buildname):
-    _sum_passed = 0
-    _sum_failed = 0
-    _sum_exception = 0
-    _sum_ignored = 0
-    _sum_muted = 0
-
     global _enginge_statistics
     global summarydata_array
 
@@ -97,17 +91,24 @@ def report_cases(url, given_build_config, username, password, buildname):
     if not text_in_xml_message(engine_req.text):
         return 1
     xml_engine_root = ET.fromstring(engine_req.text)
-
+    engine_name = xml_engine_root.attrib["name"]
     case_info_list = get_configuration_info(xml_engine_root, given_build_config)
 
     if len(case_info_list) != 0:
-        print("        %s" % xml_engine_root.attrib["name"])
-        lprint("        %s" % xml_engine_root.attrib["name"])
+        print("        %s" % engine_name)
+        lprint("        %s" % engine_name)
         lprint(
             "               total   passed   failed   except  ignored    muted        %  --- test case name            (# build)"
         )
+    print_case_list(case_info_list, buildname, engine_name)
 
-    # print case_list
+
+def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, engine_name: str):
+    _sum_passed = 0
+    _sum_failed = 0
+    _sum_exception = 0
+    _sum_ignored = 0
+    _sum_muted = 0
     build_nr = []
     passed = []
     failed = []
@@ -140,22 +141,10 @@ def report_cases(url, given_build_config, username, password, buildname):
             status_text = ""
 
             if build.find(TEST_OCCURRENCES) is not None:
-                if "passed" in build.find(TEST_OCCURRENCES).attrib:
-                    passed.append(int(build.find(TEST_OCCURRENCES).attrib["passed"]))
-                else:
-                    passed.append(0)
-                if "failed" in build.find(TEST_OCCURRENCES).attrib:
-                    failed.append(int(build.find(TEST_OCCURRENCES).attrib["failed"]))
-                else:
-                    failed.append(0)
-                if "ignored" in build.find(TEST_OCCURRENCES).attrib:
-                    ignored.append(int(build.find(TEST_OCCURRENCES).attrib["ignored"]))
-                else:
-                    ignored.append(0)
-                if "muted" in build.find(TEST_OCCURRENCES).attrib:
-                    muted.append(int(build.find(TEST_OCCURRENCES).attrib["muted"]))
-                else:
-                    muted.append(0)
+                passed.append(get_number_of_tests(build, "passed"))
+                failed.append(get_number_of_tests(build, "failed"))
+                ignored.append(get_number_of_tests(build, "ignored"))
+                muted.append(get_number_of_tests(build, "muted"))
             else:
                 passed.append(0)
                 failed.append(0)
@@ -264,12 +253,34 @@ def report_cases(url, given_build_config, username, password, buildname):
             summary.sum_muted += _sum_muted
 
     if len(case_info_list) != 0:
-        engine_statistics.append(Data(xml_engine_root.attrib["name"], sum_passed_subtotal, not_passed_subtotal))
+        engine_statistics.append(Data(engine_name, sum_passed_subtotal, not_passed_subtotal))
 
         i = len(engine_statistics) - 1
         lprint("            Total     : %6d" % engine_statistics[i].total)
         lprint("            Passed    : %6d" % engine_statistics[i].passed)
         lprint("            Percentage: %6.2f" % engine_statistics[i].percentage)
+
+
+def get_number_of_tests(build: ET.Element, test_result: str) -> int:
+    """
+    Get number of tests from xml node.
+
+    Parameters
+    ----------
+    build : ET.Element
+        The XML node representing the build.
+    test_result : str
+        The test result to match.
+
+    Returns
+    -------
+        int: number of tests that match the test result.
+    """
+    if build.find(TEST_OCCURRENCES) is not None:
+        if test_result in build.find(TEST_OCCURRENCES).attrib:
+            return int(build.find(TEST_OCCURRENCES).attrib[test_result])
+
+    return 0
 
 
 def get_configuration_info(xml_engine_root, given_build_config) -> List[ConfigurationInfo]:
@@ -282,7 +293,7 @@ def get_configuration_info(xml_engine_root, given_build_config) -> List[Configur
     """
     result = []
     build_types = xml_engine_root.find("buildTypes")
-    if build_types:
+    if build_types is not None:
         for build_type in build_types:
             build_id = build_type.attrib["id"]
             if not given_build_config or build_id in given_build_config:
