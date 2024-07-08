@@ -72,6 +72,22 @@ class ConfigurationInfo(object):
         self.identifier = identifier
 
 
+class CustomData(object):
+    """A class to store configuration info."""
+
+    def __init__(self, build_nr: int, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int) -> None:
+        self.build_nr = build_nr
+        self.passed = passed
+        self.failed = failed
+        self.ignored = ignored
+        self.muted = muted
+        self.exception = exception
+        self.muted_exception = muted_exception
+
+    def get_total(self) -> int:
+        return self.passed + self.failed + self.exception + self.ignored + self.muted - self.muted_exception
+
+
 def lprint(*args: str) -> None:
     """
     Write to a log file.
@@ -109,13 +125,7 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
     _sum_exception = 0
     _sum_ignored = 0
     _sum_muted = 0
-    build_nr = []
-    passed = []
-    failed = []
-    exception = []
-    ignored = []
-    muted = []
-    muted_exception = []
+    test_overview = []
 
     sum_passed_subtotal = 0
     not_passed_subtotal = 0
@@ -136,33 +146,18 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
         xml_case_root = ET.fromstring(case_req.text)
 
         for build in xml_case_root.findall("build"):
-            bnr = build.attrib["number"]
-            build_nr.append(bnr)
             status_text = ""
-
-            if build.find(TEST_OCCURRENCES) is not None:
-                passed.append(get_number_of_tests(build, "passed"))
-                failed.append(get_number_of_tests(build, "failed"))
-                ignored.append(get_number_of_tests(build, "ignored"))
-                muted.append(get_number_of_tests(build, "muted"))
-            else:
-                passed.append(0)
-                failed.append(0)
-                ignored.append(0)
-                muted.append(0)
+            test_overview.append(get_test_overview_from_xml_node(build))
+            if build.find(TEST_OCCURRENCES) is None:
                 status_text = get_status_text_from_node(build)
 
-        exception.append(0)  # first guess, initially there are no exceptions
-        # first guess, initially there are no exceptions for a muted test
-        muted_exception.append(0)
-
-        if len(failed) == 0:
+        if len(test_overview) == 0:
             lprint("ERROR: No data available for project %s" % identifier)
             continue
 
-        i = build_nr.__len__() - 1
+        i = test_overview.__len__() - 1
         a = 0
-        if failed[i] != 0:
+        if test_overview[i].failed != 0:
             cnt = int(build.find(TEST_OCCURRENCES).attrib["count"])
             href = build.find(TEST_OCCURRENCES).attrib["href"]
             url_1 = f"{BASE_URL}{href},count:{cnt}"
@@ -183,21 +178,21 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
                     try:
                         if txt.find("Exception occurred") != -1 or txt.find("exception occurred") != -1:
                             if "muted" in t_occ.attrib:
-                                exception[i] += 1
-                                muted_exception[i] += 1
+                                test_overview[i].exception += 1
+                                test_overview[i].muted_exception += 1
                                 computation_name.append("MUTED: " + xml_test_occ.attrib["name"])
                             else:
-                                failed[i] -= 1
-                                exception[i] += 1
+                                test_overview[i].failed -= 1
+                                test_overview[i].exception += 1
                                 computation_name.append(xml_test_occ.attrib["name"])
                     except:
                         error_message = f"ERROR retrieving data from last build for {case_info_list[i].name} : {xml_test_occ.attrib["name"]}."
                         print(error_message)
                         lprint(error_message)
 
-        total = passed[i] + failed[i] + exception[i] + ignored[i] + muted[i] - muted_exception[i]
+        total = test_overview[i].get_total()
         if total != 0:
-            a = float(passed[i]) / float(total) * 100.0
+            a = float(test_overview[i].passed) / float(total) * 100.0
         else:
             a = 0
 
@@ -206,39 +201,39 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
                 "            %8d %8d %8d %8d %8d %8d %8.2f  ---  %-24s (#%s)"
                 % (
                     total,
-                    passed[i],
-                    failed[i],
-                    exception[i],
-                    ignored[i],
-                    muted[i],
+                    test_overview[i].passed,
+                    test_overview[i].failed,
+                    test_overview[i].exception,
+                    test_overview[i].ignored,
+                    test_overview[i].muted,
                     a,
                     case_info_list[i].name,
-                    build_nr[i],
+                    test_overview[i].build_nr,
                 )
             )
         else:
             lprint(
                 "                   x        x        x        x        x        x        x  ---  %-24s (#%s)"
-                % (case_info_list[i].name, build_nr[i])
+                % (case_info_list[i].name, test_overview[i].build_nr)
             )
             lprint(
                 "                                                                            xxx  %s" % (status_text)
             )
 
-        if exception[i] != 0:
+        if test_overview[i].exception != 0:
             for j in range(0, computation_name.__len__()):
                 lprint(
                     "                                                                            xxx  Exception %s"
                     % computation_name[j]
                 )
 
-        _sum_passed += passed[i]
-        _sum_failed += failed[i]
-        _sum_exception += exception[i]
-        _sum_ignored += ignored[i]
-        _sum_muted += muted[i]
-        sum_passed_subtotal += passed[i]
-        not_passed_subtotal += failed[i] + exception[i] + ignored[i] + muted[i]
+        _sum_passed += test_overview[i].passed
+        _sum_failed += test_overview[i].failed
+        _sum_exception += test_overview[i].exception
+        _sum_ignored += test_overview[i].ignored
+        _sum_muted += test_overview[i].muted
+        sum_passed_subtotal += test_overview[i].passed
+        not_passed_subtotal += test_overview[i].failed + test_overview[i].exception + test_overview[i].ignored + test_overview[i].muted
 
     for summary in summarydata_array:
         if (summary.name in buildname) or summary.name == "All":
@@ -297,6 +292,21 @@ def get_number_of_tests(build: ET.Element, test_result: str) -> int:
             return int(build.find(TEST_OCCURRENCES).attrib[test_result])
 
     return 0
+
+
+def get_test_overview_from_xml_node(build: ET.Element) -> CustomData:
+    build_nr = build.attrib["number"]
+    if build.find(TEST_OCCURRENCES) is not None:
+        passed = get_number_of_tests(build, "passed")
+        failed = get_number_of_tests(build, "failed")
+        ignored = get_number_of_tests(build, "ignored")
+        muted = get_number_of_tests(build, "muted")
+    else:
+        passed = 0
+        failed = 0
+        ignored = 0
+        muted = 0
+    return CustomData(int(build_nr), passed, failed, ignored, muted, 0, 0)
 
 
 def get_configuration_info(xml_engine_root, given_build_config) -> List[ConfigurationInfo]:
