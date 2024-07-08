@@ -28,26 +28,26 @@
 
       type(t_hydrodynamics)          :: input_hyd                           ! description of the input hydrodynamics
       type(t_hydrodynamics)          :: output_hyd                          ! description of the output hydrodynamics
-      integer              :: ipnt(input_hyd%nmax,input_hyd%mmax) ! aggregation pointer
+      integer              :: ipnt(input_hyd%num_rows,input_hyd%num_columns) ! aggregation pointer
 
       ! local declarations
 
-      integer              :: mmax          ! mmax
-      integer              :: nmax          ! nmax
+      integer              :: num_columns          ! num_columns
+      integer              :: num_rows          ! num_rows
       integer              :: m             ! m index
       integer              :: n             ! n index
       integer              :: iseg          ! segment index
       integer              :: iseg_new      ! segment index in the new grid
 
 
-      mmax = input_hyd%mmax
-      nmax = input_hyd%nmax
+      num_columns = input_hyd%num_columns
+      num_rows = input_hyd%num_rows
 
-      do m = 1 , mmax
-         do n = 1 , nmax
+      do m = 1 , num_columns
+         do n = 1 , num_rows
             iseg     = input_hyd%lgrid(n,m)
             if ( iseg .gt. 0 ) then
-               iseg_new  = (m-1)*nmax + n
+               iseg_new  = (m-1)*num_rows + n
                ipnt(n,m) = iseg_new
             else
                ipnt(n,m) = iseg

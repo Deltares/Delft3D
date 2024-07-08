@@ -28,9 +28,9 @@ module m_wkcomp
 contains
 
 
-    subroutine wkcomp (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine wkcomp (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Computes sum parameters from fractions (GEM)
 
@@ -47,9 +47,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(80), INCREM(80), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(80), INCREM(80), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: NO3, NH4, PO4, Si, IM1, IM2, IM3, Phyt, AlgN, AlgP, AlgSi, AlgDM, &
                 POCnoa, POMnoa, PONnoa, POPnoa, POSnoa, DOC, DON, DOP, &
@@ -66,55 +66,55 @@ contains
         IP = IPOINT
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            NO3 = PMSA(IP(1))
-            NH4 = PMSA(IP(2))
-            PO4 = PMSA(IP(3))
-            Si = PMSA(IP(4))
-            IM1 = PMSA(IP(5))
-            IM2 = PMSA(IP(6))
-            IM3 = PMSA(IP(7))
-            Phyt = PMSA(IP(8))
-            AlgN = PMSA(IP(9))
-            AlgP = PMSA(IP(10))
-            AlgSi = PMSA(IP(11))
-            AlgDM = PMSA(IP(12))
-            POC1 = PMSA(IP(13))
-            POC2 = PMSA(IP(14))
-            POC3 = PMSA(IP(15))
-            POC4 = PMSA(IP(16))
-            PON1 = PMSA(IP(17))
-            DOC = PMSA(IP(18))
-            DON = PMSA(IP(19))
-            DOP = PMSA(IP(20))
-            DOS = PMSA(IP(21))
-            AAP = PMSA(IP(22))
-            VIVP = PMSA(IP(23))
-            APATP = PMSA(IP(24))
+            NO3 = process_space_real(IP(1))
+            NH4 = process_space_real(IP(2))
+            PO4 = process_space_real(IP(3))
+            Si = process_space_real(IP(4))
+            IM1 = process_space_real(IP(5))
+            IM2 = process_space_real(IP(6))
+            IM3 = process_space_real(IP(7))
+            Phyt = process_space_real(IP(8))
+            AlgN = process_space_real(IP(9))
+            AlgP = process_space_real(IP(10))
+            AlgSi = process_space_real(IP(11))
+            AlgDM = process_space_real(IP(12))
+            POC1 = process_space_real(IP(13))
+            POC2 = process_space_real(IP(14))
+            POC3 = process_space_real(IP(15))
+            POC4 = process_space_real(IP(16))
+            PON1 = process_space_real(IP(17))
+            DOC = process_space_real(IP(18))
+            DON = process_space_real(IP(19))
+            DOP = process_space_real(IP(20))
+            DOS = process_space_real(IP(21))
+            AAP = process_space_real(IP(22))
+            VIVP = process_space_real(IP(23))
+            APATP = process_space_real(IP(24))
             !
-            DmIM1 = PMSA(IP(25))
-            DmIM2 = PMSA(IP(26))
-            DmIM3 = PMSA(IP(27))
+            DmIM1 = process_space_real(IP(25))
+            DmIM2 = process_space_real(IP(26))
+            DmIM3 = process_space_real(IP(27))
             !
-            PON2 = PMSA(IP(28))
-            PON3 = PMSA(IP(29))
-            PON4 = PMSA(IP(30))
-            POP1 = PMSA(IP(31))
-            POP2 = PMSA(IP(32))
-            POP3 = PMSA(IP(33))
-            POP4 = PMSA(IP(34))
-            POS1 = PMSA(IP(35))
-            POS2 = PMSA(IP(36))
-            POS3 = PMSA(IP(37))
-            POS4 = PMSA(IP(38))
+            PON2 = process_space_real(IP(28))
+            PON3 = process_space_real(IP(29))
+            PON4 = process_space_real(IP(30))
+            POP1 = process_space_real(IP(31))
+            POP2 = process_space_real(IP(32))
+            POP3 = process_space_real(IP(33))
+            POP4 = process_space_real(IP(34))
+            POS1 = process_space_real(IP(35))
+            POS2 = process_space_real(IP(36))
+            POS3 = process_space_real(IP(37))
+            POS4 = process_space_real(IP(38))
             !
-            POSnoa = PMSA(IP(39))
+            POSnoa = process_space_real(IP(39))
             !
-            DmPOC1 = PMSA(IP(40))
-            DmPOC2 = PMSA(IP(41))
-            DmPOC3 = PMSA(IP(42))
-            DmPOC4 = PMSA(IP(43))
+            DmPOC1 = process_space_real(IP(40))
+            DmPOC2 = process_space_real(IP(41))
+            DmPOC3 = process_space_real(IP(42))
+            DmPOC4 = process_space_real(IP(43))
             !
             TIM = DmIM1 * IM1 + DmIM2 * IM2 + DmIM3 * IM3
             !
@@ -175,49 +175,49 @@ contains
             CS3 = RATIO(POC3, POS3)
             CS4 = RATIO(POC4, POS4)
             !
-            PMSA (IP(44)) = TIM + AlgDM + POMnoa
-            PMSA (IP(45)) = TIM + POMnoa
-            PMSA (IP(46)) = TIM + AlgDM + POMnoa
-            PMSA (IP(47)) = TIM
+            process_space_real (IP(44)) = TIM + AlgDM + POMnoa
+            process_space_real (IP(45)) = TIM + POMnoa
+            process_space_real (IP(46)) = TIM + AlgDM + POMnoa
+            process_space_real (IP(47)) = TIM
             !
-            PMSA (IP(48)) = AlgDM + POMnoa
-            PMSA (IP(49)) = TOC
-            PMSA (IP(50)) = POC
+            process_space_real (IP(48)) = AlgDM + POMnoa
+            process_space_real (IP(49)) = TOC
+            process_space_real (IP(50)) = POC
             !
-            PMSA (IP(51)) = TotN
-            PMSA (IP(52)) = Kjel
-            PMSA (IP(53)) = DIN
-            PMSA (IP(54)) = TON
-            PMSA (IP(55)) = PON
+            process_space_real (IP(51)) = TotN
+            process_space_real (IP(52)) = Kjel
+            process_space_real (IP(53)) = DIN
+            process_space_real (IP(54)) = TON
+            process_space_real (IP(55)) = PON
             !
-            PMSA (IP(56)) = TotP
-            PMSA (IP(57)) = TOP
-            PMSA (IP(58)) = POP
-            PMSA (IP(59)) = PIP
-            PMSA (IP(60)) = FrAAP
-            PMSA (IP(61)) = FrVAP
+            process_space_real (IP(56)) = TotP
+            process_space_real (IP(57)) = TOP
+            process_space_real (IP(58)) = POP
+            process_space_real (IP(59)) = PIP
+            process_space_real (IP(60)) = FrAAP
+            process_space_real (IP(61)) = FrVAP
             !
-            PMSA (IP(62)) = TotSi
+            process_space_real (IP(62)) = TotSi
             !
-            PMSA (IP(63)) = POCnoa
-            PMSA (IP(64)) = POMnoa
-            PMSA (IP(65)) = PONnoa
-            PMSA (IP(66)) = POPnoa
-            PMSA (IP(67)) = POSnoa
-            PMSA (IP(68)) = TOSnoa
+            process_space_real (IP(63)) = POCnoa
+            process_space_real (IP(64)) = POMnoa
+            process_space_real (IP(65)) = PONnoa
+            process_space_real (IP(66)) = POPnoa
+            process_space_real (IP(67)) = POSnoa
+            process_space_real (IP(68)) = TOSnoa
             !
-            PMSA (IP(69)) = CN1
-            PMSA (IP(70)) = CN2
-            PMSA (IP(71)) = CN3
-            PMSA (IP(72)) = CN4
-            PMSA (IP(73)) = CP1
-            PMSA (IP(74)) = CP2
-            PMSA (IP(75)) = CP3
-            PMSA (IP(76)) = CP4
-            PMSA (IP(77)) = CS1
-            PMSA (IP(78)) = CS2
-            PMSA (IP(79)) = CS3
-            PMSA (IP(80)) = CS4
+            process_space_real (IP(69)) = CN1
+            process_space_real (IP(70)) = CN2
+            process_space_real (IP(71)) = CN3
+            process_space_real (IP(72)) = CN4
+            process_space_real (IP(73)) = CP1
+            process_space_real (IP(74)) = CP2
+            process_space_real (IP(75)) = CP3
+            process_space_real (IP(76)) = CP4
+            process_space_real (IP(77)) = CS1
+            process_space_real (IP(78)) = CS2
+            process_space_real (IP(79)) = CS3
+            process_space_real (IP(80)) = CS4
             !
             !        ENDIF
             !

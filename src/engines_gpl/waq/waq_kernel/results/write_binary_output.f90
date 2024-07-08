@@ -20,7 +20,7 @@
 !!  All indications and logos of, and references to registered trademarks
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
-module m_write_map_output
+module m_write_binary_output
     use m_waq_precision
 
     implicit none
@@ -31,7 +31,7 @@ module m_write_map_output
 contains
 
 
-    subroutine write_binary_map_output(map_file_unit, namfim, itime, moname, noseg, &
+    subroutine write_binary_map_output(map_file_unit, namfim, itime, moname, num_cells, &
             notot1, conc1, synam1, notot2, conc2, synam2, iknmrk, init)
 
         use timers
@@ -40,14 +40,14 @@ contains
         character(len=*), intent(in) :: namfim               ! name output file
         integer(kind = int_wp), intent(in) :: itime                ! present time in clock units
         character(40), intent(in) :: moname(4)            ! model identification
-        integer(kind = int_wp), intent(in) :: noseg                ! number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_cells                ! number of computational volumes
         integer(kind = int_wp), intent(in) :: notot1               ! number of variables in conc1
-        real(kind = real_wp), intent(in) :: conc1 (notot1, noseg) ! values
+        real(kind = real_wp), intent(in) :: conc1 (notot1, num_cells) ! values
         character(20), intent(in) :: synam1(notot1)       ! names of variables in conc1
         integer(kind = int_wp), intent(in) :: notot2               ! number of variables in conc2
-        real(kind = real_wp), intent(in) :: conc2 (notot2, noseg) ! values
+        real(kind = real_wp), intent(in) :: conc2 (notot2, num_cells) ! values
         character(20), intent(in) :: synam2(notot2)       ! names of variables in conc2
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)        ! Feature array. Bit zero set means active.
+        integer(kind = int_wp), intent(in) :: iknmrk(num_cells)        ! Feature array. Bit zero set means active.
         integer(kind = int_wp), intent(inout) :: init                 ! Initialisation flag
 
         integer(kind = int_wp) :: iseg                   ! loop counter for segments
@@ -62,7 +62,7 @@ contains
         if (init == 1) then
             init = 0
             write (map_file_unit)  moname
-            write (map_file_unit)  notot1 + notot2, noseg
+            write (map_file_unit)  notot1 + notot2, num_cells
             write (map_file_unit)  synam1, synam2
         endif
 
@@ -72,21 +72,21 @@ contains
         !
         !     Note: this may fail, if there is not enough memory, so provide
         !     a slower alternative.
-        allocate(outconc(notot1, noseg), source = conc1, stat = ierr)
+        allocate(outconc(notot1, num_cells), source = conc1, stat = ierr)
 
         if (ierr == 0) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 if (.not. btest(iknmrk(iseg), 0)) then
                     outconc(:, iseg) = missing_value
                 endif
             enddo
-            write (map_file_unit) itime, (outconc(:, iseg), conc2(:, iseg), iseg = 1, noseg)
+            write (map_file_unit) itime, (outconc(:, iseg), conc2(:, iseg), iseg = 1, num_cells)
 
             deallocate(outconc)
         else
             ! Slow alternative
             write (map_file_unit) itime
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 if (btest(iknmrk(iseg), 0)) then
                     write (map_file_unit) conc1(:, iseg), conc2(:, iseg)
                 else
@@ -98,7 +98,7 @@ contains
 
     end subroutine write_binary_map_output
 
-    subroutine write_binary_history_output(history_file_unit, NAMFIH, ITIME, MONAME, NODUMP, &
+    subroutine write_binary_history_output(history_file_unit, NAMFIH, ITIME, MONAME, num_monitoring_points, &
             IDUMP, DUNAME, NOTOT1, SYNAM1, CONC1, &
             NOTOT2, SYNAM2, CONC2, INIT)
         ! Writes history output
@@ -111,20 +111,20 @@ contains
         !     NAMFIH  CHAR*(*) 1           INPUT   name output file
         !     ITIME   INTEGER  1           INPUT   present time in clock units
         !     MONAME  CHAR*40  4           INPUT   model identhification
-        !     NODUMP  INTEGER  1           INPUT   number of dump locations
-        !     IDUMP   INTEGER  NODUMP      INPUT   dump segment numbers
-        !     DUNAME  CHAR*20  NODUMP      INPUT   names of dump locations
+        !     num_monitoring_points  INTEGER  1           INPUT   number of dump locations
+        !     IDUMP   INTEGER  num_monitoring_points      INPUT   dump segment numbers
+        !     DUNAME  CHAR*20  num_monitoring_points      INPUT   names of dump locations
         !     NOTOT1  INTEGER  1           INPUT   number of vars in CONC1
         !     SYNAM1  CHAR*20  NOTOT1      INPUT   names of vars in CONC1
         !     CONC1   REAL     NOTOT1*?    INPUT   values
         !     NOTOT2  INTEGER  1           INPUT   number of extra output vars
-        !     SYNAM2  CHAR*20  NOTOT       INPUT   names of extra vars
-        !     CONC2   REAL    NOTOT2,NX*NY INPUT   values for extra vars
+        !     SYNAM2  CHAR*20  num_substances_total       INPUT   names of extra vars
+        !     CONC2   REAL    NOTOT2,num_cells_u_dir*num_cells_v_dir INPUT   values for extra vars
         !     INIT    INTEGER  1           IN/OUT  Initialize flag
 
         use timers
 
-        integer(kind = int_wp) :: history_file_unit, itime, nodump, notot1, notot2, init
+        integer(kind = int_wp) :: history_file_unit, itime, num_monitoring_points, notot1, notot2, init
         integer(kind = int_wp) :: idump(*)
         character(len = *) moname(4), namfih
         character(len = *) duname(*), synam1(*), synam2(*)
@@ -138,18 +138,18 @@ contains
         if (init == 1) then
             init = 0
             write (history_file_unit) (moname(i), i = 1, 4)
-            write (history_file_unit)  notot1 + notot2, nodump
+            write (history_file_unit)  notot1 + notot2, num_monitoring_points
             write (history_file_unit) (synam1(i), i = 1, notot1), (synam2(i), i = 1, notot2)
-            write (history_file_unit) (i, duname(i), i = 1, nodump)
+            write (history_file_unit) (i, duname(i), i = 1, num_monitoring_points)
         endif
 
         ! Perform output
         write (history_file_unit) itime, (&
                 (conc1(k1 + (idump(j) - 1) * notot1), k1 = 1, notot1), &
                 (conc2(k2 + (j - 1) * notot2), k2 = 1, notot2), &
-                j = 1, nodump)
+                j = 1, num_monitoring_points)
         if (timon) call timstop (ithandl)
 
     end subroutine write_binary_history_output
 
-end module m_write_map_output
+end module m_write_binary_output

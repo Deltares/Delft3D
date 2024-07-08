@@ -23,15 +23,15 @@
 
 module dd_prepare_mod
    interface
-      subroutine dd_prepare ( lunut   , nmax    , mmax    , lgrid   , nbmax   ,      &
+      subroutine dd_prepare ( lunut   , num_rows    , num_columns    , lgrid   , nbmax   ,      &
      &                        ndoms   , nbnds   , nconn   , doms    , bnds    ,      &
      &                        conn    )
       use m_waq_precision       ! single and double precision
       use typos           ! the derived types
       integer  ( int_wp ), intent(in   ) :: lunut             !< output report file
-      integer  ( int_wp ), intent(in   ) :: nmax              !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax              !< second dimension of the grid
-      integer  ( int_wp ), intent(inout) :: lgrid (nmax,mmax) !< the active grid matrix
+      integer  ( int_wp ), intent(in   ) :: num_rows              !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns              !< second dimension of the grid
+      integer  ( int_wp ), intent(inout) :: lgrid (num_rows,num_columns) !< the active grid matrix
       integer  ( int_wp ), intent(in   ) :: nbmax             !< maximum number of real boundaries
       integer  ( int_wp ), intent(in   ) :: ndoms             !< number of domains
       integer  ( int_wp ), intent(in   ) :: nbnds             !< number of DD-boundaries
@@ -43,7 +43,7 @@ module dd_prepare_mod
    end interface
 end module
 
-      subroutine dd_prepare ( lunut   , nmax    , mmax    , lgrid   , nbmax   ,      &
+      subroutine dd_prepare ( lunut   , num_rows    , num_columns    , lgrid   , nbmax   ,      &
      &                        ndoms   , nbnds   , nconn   , doms    , bnds    ,      &
      &                        conn    )
 
@@ -89,9 +89,9 @@ end module
 !     kind           function         name                 description
 
       integer  ( int_wp ), intent(in   ) :: lunut             !< output report file
-      integer  ( int_wp ), intent(in   ) :: nmax              !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax              !< second dimension of the grid
-      integer  ( int_wp ), intent(inout) :: lgrid (nmax,mmax) !< the active grid matrix
+      integer  ( int_wp ), intent(in   ) :: num_rows              !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns              !< second dimension of the grid
+      integer  ( int_wp ), intent(inout) :: lgrid (num_rows,num_columns) !< the active grid matrix
       integer  ( int_wp ), intent(in   ) :: nbmax             !< maximum number of real boundaries
       integer  ( int_wp ), intent(in   ) :: ndoms             !< number of domains
       integer  ( int_wp ), intent(in   ) :: nbnds             !< number of DD-boundaries

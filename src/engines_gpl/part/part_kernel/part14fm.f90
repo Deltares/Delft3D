@@ -35,7 +35,7 @@ module part14fm_mod
                             ncheck , t0buoy , modtyp , abuoy  , t0cf   ,    &
                             acf    , lun2   , layt   , tcktot ,    &
                             zmodel , laytop , laybot , nplay  , laywaste ,  &
-                            nolay  , linear , track  ,    &
+                            num_layers  , linear , track  ,    &
                             nmconr , spart  , rhopart, noconsp, const)
 
 !       Deltares Software Centre
@@ -109,7 +109,7 @@ module part14fm_mod
       integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( int_wp ), intent(in   ) :: laywaste (nodye+nocont) !< k-values of wasteload points
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
+      integer  ( int_wp ), intent(in   ) :: num_layers                 !< number of comp. layer
       integer  ( int_wp ), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
       real     ( real_wp), intent(inout) :: track  (10,*)         !< track array for all particles
       character( 20), intent(in   ) :: nmconr (nocont)       !< names of the continuous loads
@@ -347,8 +347,8 @@ module part14fm_mod
                if ( ipart .gt. nplay(nulay) ) then         ! next layer
                   ipart = 0
                   nulay = nulay + 1
-                  if ( nulay .gt. nolay ) then
-                     nulay = nolay
+                  if ( nulay .gt. num_layers ) then
+                     nulay = num_layers
                      exit
                   endif
                else

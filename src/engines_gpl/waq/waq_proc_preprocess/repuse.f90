@@ -29,8 +29,8 @@ module m_repuse
 contains
 
 
-    subroutine repuse (procesdef, nocons, coname, nopa, paname, &
-            nofun, funame, nosfun, sfname, noinfo)
+    subroutine repuse (procesdef, num_constants, coname, num_spatial_parameters, paname, &
+            num_time_functions, funame, num_spatial_time_fuctions, sfname, noinfo)
 
         ! report on the use of the delwaq input
 
@@ -44,20 +44,20 @@ contains
         ! declaration of arguments
 
         type(procespropcoll) :: procesdef       ! all processes
-        integer(kind = int_wp) :: nocons          ! number of constants
+        integer(kind = int_wp) :: num_constants          ! number of constants
         character(len = *) :: coname(*)       ! constant names
-        integer(kind = int_wp) :: nopa            ! number of parameters
+        integer(kind = int_wp) :: num_spatial_parameters            ! number of parameters
         character(len = *) :: paname(*)       ! parameter names
-        integer(kind = int_wp) :: nofun           ! number of functions
+        integer(kind = int_wp) :: num_time_functions           ! number of functions
         character(len = *) :: funame(*)       ! function names
-        integer(kind = int_wp) :: nosfun          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
         character(len = *) :: sfname(*)       ! segment function names
         integer(kind = int_wp) :: noinfo          ! number of informative messages
 
         ! local declarations
 
         integer(kind = int_wp), parameter :: nopred = 6       ! number of predefined defaults
-        integer(kind = int_wp) :: nproc            ! number of processes
+        integer(kind = int_wp) :: num_processes_activated            ! number of processes
         integer(kind = int_wp) :: iproc            ! loop counter processes
         type(procesprop), pointer :: proc             ! process description
         character(len = 80) :: line             ! output buffer
@@ -98,18 +98,18 @@ contains
         line = ' '
         call write_log_message(line)
 
-        nproc = procesdef%current_size
+        num_processes_activated = procesdef%current_size
 
         ! loop over the constants
 
-        do icons = 1, nocons
+        do icons = 1, num_constants
 
             variable_is_used = .false.
             ipcons = nopred + icons
 
             ! loop over processes
 
-            do iproc = nproc, 1, -1
+            do iproc = num_processes_activated, 1, -1
                 proc => procesdef%procesprops(iproc)
                 if (proc%active) then
 
@@ -143,14 +143,14 @@ contains
 
         ! loop over the parameters
 
-        do ipa = 1, nopa
+        do ipa = 1, num_spatial_parameters
 
             variable_is_used = .false.
-            ippa = nopred + nocons + ipa
+            ippa = nopred + num_constants + ipa
 
             ! loop over processes
 
-            do iproc = nproc, 1, -1
+            do iproc = num_processes_activated, 1, -1
                 proc => procesdef%procesprops(iproc)
                 if (proc%active) then
 
@@ -177,14 +177,14 @@ contains
 
         ! loop over the functions
 
-        do ifun = 1, nofun
+        do ifun = 1, num_time_functions
 
             variable_is_used = .false.
-            ipfun = nopred + nocons + nopa + ifun
+            ipfun = nopred + num_constants + num_spatial_parameters + ifun
 
             ! loop over processes
 
-            do iproc = nproc, 1, -1
+            do iproc = num_processes_activated, 1, -1
                 proc => procesdef%procesprops(iproc)
                 if (proc%active) then
 
@@ -211,14 +211,14 @@ contains
 
         ! loop over the segment functions
 
-        do isfun = 1, nosfun
+        do isfun = 1, num_spatial_time_fuctions
 
             variable_is_used = .false.
-            ipsfun = nopred + nocons + nopa + nofun + isfun
+            ipsfun = nopred + num_constants + num_spatial_parameters + num_time_functions + isfun
 
             ! loop over processes
 
-            do iproc = nproc, 1, -1
+            do iproc = num_processes_activated, 1, -1
                 proc => procesdef%procesprops(iproc)
                 if (proc%active) then
 

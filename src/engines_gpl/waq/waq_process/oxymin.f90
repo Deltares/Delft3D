@@ -28,9 +28,9 @@ module m_oxymin
 contains
 
 
-    subroutine oxymin (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine oxymin (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Potential daily mimimum dissolved oxygen concentration
 
@@ -60,9 +60,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg
 
@@ -77,19 +77,19 @@ contains
         IP9 = IPOINT(9)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
 
-                OXY = PMSA(IP1)
-                GREEN = PMSA(IP2)
-                PGREEN = PMSA(IP3)
-                RGREEN = PMSA(IP4)
-                DIAT = PMSA(IP5)
-                PDIAT = PMSA(IP6)
-                RDIAT = PMSA(IP7)
-                DL = PMSA(IP8)
+                OXY = process_space_real(IP1)
+                GREEN = process_space_real(IP2)
+                PGREEN = process_space_real(IP3)
+                RGREEN = process_space_real(IP4)
+                DIAT = process_space_real(IP5)
+                PDIAT = process_space_real(IP6)
+                RDIAT = process_space_real(IP7)
+                DL = process_space_real(IP8)
 
 
                 !     CALCULATE MINIMUM OXYGEN FROM PRODUCTION AND RESPIRATION
@@ -116,7 +116,7 @@ contains
                 !
                 CMINDO = MIN (CMINDO1, CMINDO2)
 
-                PMSA(IP9) = CMINDO
+                process_space_real(IP9) = CMINDO
 
             ENDIF
 

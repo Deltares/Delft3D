@@ -75,8 +75,8 @@ MODULE variable_declaration
     real(kind = dp), allocatable :: gm_trid (:, :)    ! gmres tridiagonal matrix vertical
 
     ! if regular grid is provided (for future incorporation PART)
-    integer(kind = int_wp), allocatable :: cellpnt (:)      ! backpointer from noseg to mnmaxk
-    integer(kind = int_wp), allocatable :: flowpnt (:)      ! backpointer from noq to 3*mnmaxk - mnmax
+    integer(kind = int_wp), allocatable :: cellpnt (:)      ! backpointer from num_cells to mnmaxk
+    integer(kind = int_wp), allocatable :: flowpnt (:)      ! backpointer from num_exchanges to 3*mnmaxk - mnmax
     real(kind = real_wp), allocatable :: cell_x  (:, :)    ! x-values at the corner points of the grid
     real(kind = real_wp), allocatable :: cell_y  (:, :)    ! y-values at the corner points of the grid
 

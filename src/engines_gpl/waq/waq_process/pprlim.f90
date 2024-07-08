@@ -28,9 +28,9 @@ module m_pprlim
 contains
 
 
-    subroutine pprlim (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine pprlim (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Limitation (numerical) on primary production DYNAMO
         !>
@@ -46,18 +46,18 @@ contains
 
         !     Type    Name         I/O Description
 
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(14) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(14) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(14) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(14)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
 
@@ -110,22 +110,22 @@ contains
         IdcPPGreen = 1
         IdcPPDiat = 2
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             if (btest(iknmrk(iseg), 0)) then
 
-                fPPGreen = pmsa(ipnt(1))
-                NCRatGreen = pmsa(ipnt(2))
-                PCRatGreen = pmsa(ipnt(3))
-                fPPDiat = pmsa(ipnt(4))
-                NCRatDiat = pmsa(ipnt(5))
-                PCRatDiat = pmsa(ipnt(6))
-                SCRatDiat = pmsa(ipnt(7))
-                DELT = pmsa(ipnt(8))
-                NH4 = pmsa(ipnt(9))
-                NO3 = pmsa(ipnt(10))
-                PO4 = pmsa(ipnt(11))
-                Si = pmsa(ipnt(12))
+                fPPGreen = process_space_real(ipnt(1))
+                NCRatGreen = process_space_real(ipnt(2))
+                PCRatGreen = process_space_real(ipnt(3))
+                fPPDiat = process_space_real(ipnt(4))
+                NCRatDiat = process_space_real(ipnt(5))
+                PCRatDiat = process_space_real(ipnt(6))
+                SCRatDiat = process_space_real(ipnt(7))
+                DELT = process_space_real(ipnt(8))
+                NH4 = process_space_real(ipnt(9))
+                NO3 = process_space_real(ipnt(10))
+                PO4 = process_space_real(ipnt(11))
+                Si = process_space_real(ipnt(12))
 
                 ConmxN = amax1(NO3 + NH4, 0.0)
                 ConmxP = amax1(PO4, 0.0)
@@ -173,8 +173,8 @@ contains
                 dcPPDiat = fcPPDiat - fPPDiat
                 fl  (IdcPPGreen) = dcPPGreen
                 fl  (IdcPPDiat) = dcPPDiat
-                pmsa(ipnt(13)) = fcPPGreen
-                pmsa(ipnt(14)) = fcPPDiat
+                process_space_real(ipnt(13)) = fcPPGreen
+                process_space_real(ipnt(14)) = fcPPDiat
 
             endif
 

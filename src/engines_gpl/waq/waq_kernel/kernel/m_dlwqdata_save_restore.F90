@@ -29,8 +29,8 @@ module m_dlwqdata_save_restore
     use delwaq2_data
     use m_waq_data_structure
     use variable_declaration
-    use m_sysi
-    use m_sysn
+    use m_timer_variables
+    use m_waq_memory_dimensions
 
     implicit none
 

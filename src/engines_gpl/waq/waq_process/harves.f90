@@ -29,9 +29,9 @@
       contains
 
 
-      subroutine harves     ( pmsa   , fl     , ipoint , increm, noseg , &
-                             noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                             noq3   , noq4   )
+      subroutine harves     ( process_space_real   , fl     , ipoint , increm, num_cells , &
+                             noflux , iexpnt , iknmrk , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                             num_exchanges_z_dir   , num_exchanges_bottom_dir   )
       use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_dhnoseg
       use m_dhnolay
@@ -41,20 +41,20 @@
 
       ! arguments
 
-      real(kind=real_wp) ::pmsa(*)     !i/o process manager system array, window of routine to process library
+      real(kind=real_wp) ::process_space_real(*)     !i/o process manager system array, window of routine to process library
       real(kind=real_wp) ::fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) ::ipoint( 10) ! i  array of pointers in pmsa to get and store the data
+      integer(kind=int_wp) ::ipoint( 10) ! i  array of pointers in process_space_real to get and store the data
       integer(kind=int_wp) ::increm( 10) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp) ::noseg       ! i  number of computational elements in the whole model schematisation
+      integer(kind=int_wp) ::num_cells       ! i  number of computational elements in the whole model schematisation
       integer(kind=int_wp) ::noflux      ! i  number of fluxes, increment in the fl array
       integer(kind=int_wp) ::iexpnt(4,*) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
       integer(kind=int_wp) ::iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-      integer(kind=int_wp) ::noq1        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-      integer(kind=int_wp) ::noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp) ::noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp) ::noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp) ::num_exchanges_u_dir        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+      integer(kind=int_wp) ::num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+      integer(kind=int_wp) ::num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp) ::num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
 
-      ! variables from pmsa array
+      ! variables from process_space_real array
 
       real(kind=real_wp) ::cgrazer     ! i  calculated concentration of grazer                 (gC/m3)
       real(kind=real_wp) ::zharvegr    ! i  harvest flux of grazer                             (gC/m2/d)
@@ -73,7 +73,7 @@
       integer(kind=int_wp), save       ::nr_message  = 0    ! actual number of messages on insufficient biomass attention this is for all instnces of this process
       integer(kind=int_wp) ::lunrep             ! unit number report file
       integer(kind=int_wp) ::nosegw             ! number of segment in the water
-      integer(kind=int_wp) ::nolay              ! number of layers
+      integer(kind=int_wp) ::num_layers              ! number of layers
       integer(kind=int_wp) ::nosegl             ! number of segment per layer
       integer(kind=int_wp) ::ikol               ! column number = segment number top layer
       integer(kind=int_wp) ::ilay               ! layer number
@@ -87,9 +87,9 @@
 
       call get_log_unit_number(lunrep)
       call dhnoseg(nosegw)
-      call dhnolay(nolay)
-      nosegl = nosegw/nolay
-      if ( nosegl*nolay /= nosegw ) then
+      call dhnolay(num_layers)
+      nosegl = nosegw/num_layers
+      if ( nosegl*num_layers /= nosegw ) then
          write(lunrep,*) ' ERROR: unstructured 3d application'
          write(lunrep,*) ' harvesting module not possible'
          call stop_with_error()
@@ -103,8 +103,8 @@
          call stop_with_error()
       endif
 
-      grunitsw   = nint(pmsa(ipoint(5)))
-      delt       = pmsa(ipoint(6))
+      grunitsw   = nint(process_space_real(ipoint(5)))
+      delt       = process_space_real(ipoint(6))
 
       ! loop over de kolommen
 
@@ -112,9 +112,9 @@
 
          ! harvest is opgegeven per kolom neem de waarde van de top laag
 
-         zharvegr   = pmsa(ipoint(2)+(ikol-1)*increm(2))
-         pharvegr   = pmsa(ipoint(3)+(ikol-1)*increm(3))
-         tgrazer    = pmsa(ipoint(4)+(ikol-1)*increm(4))
+         zharvegr   = process_space_real(ipoint(2)+(ikol-1)*increm(2))
+         pharvegr   = process_space_real(ipoint(3)+(ikol-1)*increm(3))
+         tgrazer    = process_space_real(ipoint(4)+(ikol-1)*increm(4))
 
          ! doe alleen als harvest groter is dan 0
 
@@ -125,11 +125,11 @@
             tot_cgrazer = 0.0
             tot_depth   = 0.0
 
-            do ilay = 1 , nolay
+            do ilay = 1 , num_layers
 
                iseg = ikol+(ilay-1)*nosegl
-               cgrazer = pmsa(ipoint(1)+(iseg-1)*increm(1))
-               depth   = pmsa(ipoint(8)+(iseg-1)*increm(8))
+               cgrazer = process_space_real(ipoint(1)+(iseg-1)*increm(1))
+               depth   = process_space_real(ipoint(8)+(iseg-1)*increm(8))
 
                if ( grunitsw == 1 ) then
                   tot_cgrazer = tot_cgrazer + cgrazer
@@ -178,13 +178,13 @@
             aharvegr = harvest/delt
 
             ! bepaal nieuwe concentratie cgrazer en de geaccumuleerde harvest bharvegr
-            ! zet uitvoer in pmsa, let op cgrazer en bharvegr zijn zowel input and output
+            ! zet uitvoer in process_space_real, let op cgrazer en bharvegr zijn zowel input and output
 
-            do ilay = 1 , nolay
+            do ilay = 1 , num_layers
                iseg = ikol+(ilay-1)*nosegl
-               cgrazer = pmsa(ipoint(1)+(iseg-1)*increm(1))
-               volume  = pmsa(ipoint(7)+(iseg-1)*increm(7))
-               bharvegr= pmsa(ipoint(10)+(iseg-1)*increm(10))
+               cgrazer = process_space_real(ipoint(1)+(iseg-1)*increm(1))
+               volume  = process_space_real(ipoint(7)+(iseg-1)*increm(7))
+               bharvegr= process_space_real(ipoint(10)+(iseg-1)*increm(10))
 
                if ( grunitsw == 1 ) then
                   bharvegr = bharvegr + cgrazer*fharvest*volume/depth
@@ -193,9 +193,9 @@
                endif
                cgrazer = cgrazer*(1.0-fharvest)
 
-               pmsa(ipoint(1)+(iseg-1)*increm(1)) = cgrazer
-               pmsa(ipoint(9)+(iseg-1)*increm(9)) = aharvegr
-               pmsa(ipoint(10)+(iseg-1)*increm(10)) = bharvegr
+               process_space_real(ipoint(1)+(iseg-1)*increm(1)) = cgrazer
+               process_space_real(ipoint(9)+(iseg-1)*increm(9)) = aharvegr
+               process_space_real(ipoint(10)+(iseg-1)*increm(10)) = bharvegr
             enddo
 
          endif

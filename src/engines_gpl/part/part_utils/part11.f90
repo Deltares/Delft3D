@@ -27,10 +27,10 @@ implicit none
 contains
 
 
-      subroutine part11( lgrid  , xp     , yp     , nmax   , npart  ,        &
+      subroutine part11( lgrid  , xp     , yp     , num_rows   , npart  ,        &
                          mpart  , xpart  , ypart  , xa     , ya     ,        &
                          nopart , npwndw , lgrid2 , kpart  , zpart  ,        &
-                         za     , locdep , dps    , nolay  , mmax   ,        &
+                         za     , locdep , dps    , num_layers  , num_columns   ,        &
                          tcktot)
 
 !       Deltares Software Centre
@@ -66,23 +66,23 @@ contains
 
 !     kind            function         name                      description
 
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first grid index
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second grid index
-      integer  ( int_wp ), intent(in   ) :: nolay                   !< number of layers
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first grid index
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second grid index
+      integer  ( int_wp ), intent(in   ) :: num_layers                   !< number of layers
       integer  ( int_wp ), intent(in   ) :: npwndw                  !< start nr of active particle
       integer  ( int_wp ), intent(in   ) :: nopart                  !< total number of active particles
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xp    (nmax*mmax)       !< x of the grid cell corner
-      real     ( real_wp), intent(in   ) :: yp    (nmax*mmax)       !< y of the grid cell corner
-      real     ( real_wp), intent(in   ) :: locdep(nmax*mmax,nolay) !< local depth of a gridcell
-      real     ( real_wp), intent(in   ) :: tcktot(nolay )          !< relative thickness of a layer
-      real     ( real_wp), intent(in   ) :: dps   (nmax*mmax)       !< depth of the reference plain
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xp    (num_rows*num_columns)       !< x of the grid cell corner
+      real     ( real_wp), intent(in   ) :: yp    (num_rows*num_columns)       !< y of the grid cell corner
+      real     ( real_wp), intent(in   ) :: locdep(num_rows*num_columns,num_layers) !< local depth of a gridcell
+      real     ( real_wp), intent(in   ) :: tcktot(num_layers )          !< relative thickness of a layer
+      real     ( real_wp), intent(in   ) :: dps   (num_rows*num_columns)       !< depth of the reference plain
 
-!      integer  ( ip), intent(in   ) :: laytop(nmax,mmax)       !< highest active layer in z-layer model
-!      integer  ( ip), intent(in   ) :: laybot(nmax,mmax)       !< deepest active layer in z-layer model
-!      real     ( rp), intent(in   ) :: zlbot (nolay)           !< z-layer layer bottom level
-!      real     ( rp), intent(in   ) :: zltop (nolay)           !< z-layer layer top level
+!      integer  ( ip), intent(in   ) :: laytop(num_rows,num_columns)       !< highest active layer in z-layer model
+!      integer  ( ip), intent(in   ) :: laybot(num_rows,num_columns)       !< deepest active layer in z-layer model
+!      real     ( rp), intent(in   ) :: zlbot (num_layers)           !< z-layer layer bottom level
+!      real     ( rp), intent(in   ) :: zltop (num_layers)           !< z-layer layer top level
 
       integer  ( int_wp ), intent(in   ) :: npart (nopart)          !< first grid cell index particles
       integer  ( int_wp ), intent(in   ) :: mpart (nopart)          !< second grid cell index particles
@@ -161,9 +161,9 @@ contains
                      za(ipart)= zlbot(ilay-1) - dlay
                   endif
                else
-                  totdep   = locdep(n0,nolay)
+                  totdep   = locdep(n0,num_layers)
                   ilay     = kpart(ipart)
-                  if ( ilay .le. nolay ) then
+                  if ( ilay .le. num_layers ) then
                      dlay     = tcktot(ilay)*totdep
                      dist     = locdep(n0,ilay) - (1.0-zpart(ipart))*dlay
                      za(ipart)= totdep - dps(n0) - dist

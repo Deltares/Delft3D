@@ -32,7 +32,7 @@ contains
 
 
     SUBROUTINE write_monitoring_output(monitoring_file_unit, IDUMP, CONC, AMASS2, ITIME, &
-            DNAME, SNAME, MNAME, NODUMP, NOTOT, &
+            DNAME, SNAME, MNAME, num_monitoring_points, num_substances_total, &
             IP, ISFLAG, ASMASS, IBFLAG, NOTOT2, &
             SYNAM2, CONC2, ITSTRT, ITSTOP, NDMPAR, &
             DANAM)
@@ -43,19 +43,19 @@ contains
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     monitoring_file_unit    INTEGER     1       INPUT   unit number output file
-        !     IDUMP   INTEGER  NODUMP     INPUT   segment numbers for dump
-        !     AMASS   REAL     NOTOT*?    INPUT   mass in the whole system
-        !     CONC    REAL     NOTOT*?    INPUT   concentration values
-        !     AMASS2  REAL     NOTOT*5    INPUT   mass balance whole system
+        !     IDUMP   INTEGER  num_monitoring_points     INPUT   segment numbers for dump
+        !     AMASS   REAL     num_substances_total*?    INPUT   mass in the whole system
+        !     CONC    REAL     num_substances_total*?    INPUT   concentration values
+        !     AMASS2  REAL     num_substances_total*5    INPUT   mass balance whole system
         !     ITIME   INTEGER     1       INPUT   present time in clock units
-        !     DNAME   CHAR*20   NODUMP    INPUT   names of monitoring stations
-        !     SNAME   CHAR*20   NOTOT     INPUT   names of substances
+        !     DNAME   CHAR*20   num_monitoring_points    INPUT   names of monitoring stations
+        !     SNAME   CHAR*20   num_substances_total     INPUT   names of substances
         !     MNAME   CHAR*40     4       INPUT   model identification
-        !     NODUMP  INTEGER     1       INPUT   amount of dump segments
-        !     NOTOT   INTEGER     1       INPUT   total number of systems
+        !     num_monitoring_points  INTEGER     1       INPUT   amount of dump segments
+        !     num_substances_total   INTEGER     1       INPUT   total number of systems
         !     IP      INTEGER     4       IN/OUT  paging structure
         !     ISFLAG  INTEGER     1       INPUT   if 1 then dd-hh:mm'ss"
-        !     ASMASS  REAL NOTOT*NDMPAR*? INPUT   Mass balance per segment
+        !     ASMASS  REAL num_substances_total*NDMPAR*? INPUT   Mass balance per segment
         !     IBFLAG  INTEGER     1       INPUT   Flag = 1 then balances
         !     NOTOT2  INTEGER             INPUT   Number of extra output vars
         !     SYNAM2  CHAR*20             INPUT   Names of extra output vars
@@ -67,11 +67,11 @@ contains
         use date_time_utils, only: report_time
         use timers
 
-        INTEGER(kind = int_wp) :: monitoring_file_unit, ITIME, NODUMP, NOTOT, ISFLAG, &
+        INTEGER(kind = int_wp) :: monitoring_file_unit, ITIME, num_monitoring_points, num_substances_total, ISFLAG, &
                 IBFLAG, NOTOT2, ITSTRT, ITSTOP, NDMPAR
         INTEGER(kind = int_wp) :: IDUMP(*), IP(4)
-        REAL(kind = real_wp) :: CONC(NOTOT, *), AMASS2(NOTOT, 5), &
-                ASMASS(NOTOT, NDMPAR, *), CONC2(*)
+        REAL(kind = real_wp) :: CONC(num_substances_total, *), AMASS2(num_substances_total, 5), &
+                ASMASS(num_substances_total, NDMPAR, *), CONC2(*)
         character(len = 20) DNAME(*), SNAME(*), SYNAM2(*), DANAM(*)
         character(len = 40) MNAME(*)
         !
@@ -85,7 +85,7 @@ contains
 
         ! initialise the paging, accumulation arrays and acumul flag
         IF (IP(3) == 0) THEN
-            IP(3) = MAX(1, IP(1) / (7 + (NODUMP + 7) * ((NOTOT + IP(2) - 1) / IP(2))))
+            IP(3) = MAX(1, IP(1) / (7 + (num_monitoring_points + 7) * ((num_substances_total + IP(2) - 1) / IP(2))))
             IP(4) = 0
         ENDIF
 
@@ -103,8 +103,8 @@ contains
         CALL report_time (monitoring_file_unit, ITIME, ISFLAG, -999.0)
         WRITE (monitoring_file_unit, *)
         !
-        DO ID = 1, NOTOT, IP(2)
-            NEND = MIN (NOTOT, ID + IP(2) - 1)
+        DO ID = 1, num_substances_total, IP(2)
+            NEND = MIN (num_substances_total, ID + IP(2) - 1)
             WRITE (monitoring_file_unit, 2030) (AMASS2(K, 1), K = ID, NEND)
             WRITE (monitoring_file_unit, 2040) (AMASS2(K, 2), K = ID, NEND)
             WRITE (monitoring_file_unit, 2050) (AMASS2(K, 3), K = ID, NEND)
@@ -115,26 +115,26 @@ contains
             !
             VNAME = 'CONCENTRATION'
             CALL OUTMO1 (monitoring_file_unit, IDUMP, CONC, VNAME, DNAME, &
-                    NODUMP, ID, NEND, NOTOT)
+                    num_monitoring_points, ID, NEND, num_substances_total)
             IF (IBFLAG == 1) THEN
                 VNAME = 'MASS'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 1), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'PROCESSES'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 2), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'LOADS ( IN )'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 3), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'LOADS ( OUT )'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 4), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'TRANSPORT ( IN )'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 5), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'TRANSPORT ( OUT )'
                 CALL OUTMO2 (monitoring_file_unit, ASMASS(1, 1, 6), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
             ENDIF
             !
             WRITE (monitoring_file_unit, '('' '')')
@@ -147,7 +147,7 @@ contains
             WRITE (monitoring_file_unit, 2020) (SYNAM2(K)(11:20), K = ID, NEND)
             !
             VNAME = 'VALUE'
-            CALL OUTMO2 (monitoring_file_unit, CONC2, VNAME, DNAME, NODUMP, &
+            CALL OUTMO2 (monitoring_file_unit, CONC2, VNAME, DNAME, num_monitoring_points, &
                     ID, NEND, NOTOT2)
             !
             WRITE (monitoring_file_unit, '('' '')')
@@ -169,29 +169,29 @@ contains
     END SUBROUTINE write_monitoring_output
 
     SUBROUTINE OUTMO1 (IOUT, IDUMP, ARRA, VNAME, DNAME, &
-            NODUMP, ID, NEND, NOTOT)
+            num_monitoring_points, ID, NEND, num_substances_total)
         ! Writes monitoring results to IOUT in blocks of 10 systems.
 
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     IOUT    INTEGER   1         INPUT   unit number output file
-        !     IDUMP   INTEGER   NODUMP    INPUT   segment numbers for dump
+        !     IDUMP   INTEGER   num_monitoring_points    INPUT   segment numbers for dump
         !     ARRA    REAL      *         INPUT   values to be printed
         !     VNAME   CHAR*40   1         INPUT   name of printed value
-        !     DNAME   CHAR*20   NODUMP    INPUT   names of monitoring stations
-        !     NODUMP  INTEGER   1         INPUT   amount of dump segments
+        !     DNAME   CHAR*20   num_monitoring_points    INPUT   names of monitoring stations
+        !     num_monitoring_points  INTEGER   1         INPUT   amount of dump segments
         !     ID      INTEGER   1         INPUT   index first system in this block
         !     NEND    INTEGER   1         INPUT   index last system in this block
-        !     NOTOT   INTEGER   1         INPUT   total number of systems
+        !     num_substances_total   INTEGER   1         INPUT   total number of systems
         !
         !     Declaration of arguments
         !
         use timers
 
-        INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
+        INTEGER(kind = int_wp) :: IOUT, num_monitoring_points, ID, NEND, num_substances_total
         INTEGER(kind = int_wp) :: IDUMP(*)
-        REAL(kind = real_wp) :: ARRA(NOTOT, *)
+        REAL(kind = real_wp) :: ARRA(num_substances_total, *)
         character(len = 40) VNAME
         character(len = 20) DNAME(*)
 
@@ -203,7 +203,7 @@ contains
         !
         WRITE (IOUT, 2060) VNAME
         !
-        DO I = 1, NODUMP
+        DO I = 1, num_monitoring_points
             ISEG = IDUMP(I)
             IF (DNAME(I) == SPACE) THEN
                 WRITE (IOUT, 2080) ISEG, (ARRA(K, ISEG), K = ID, NEND)
@@ -219,8 +219,8 @@ contains
         2090 FORMAT (' ', A20, 10(1P, E11.4))
     END SUBROUTINE OUTMO1
 
-    SUBROUTINE OUTMO2 (IOUT, ARRA, VNAME, DNAME, NODUMP, &
-            ID, NEND, NOTOT)
+    SUBROUTINE OUTMO2 (IOUT, ARRA, VNAME, DNAME, num_monitoring_points, &
+            ID, NEND, num_substances_total)
         ! Writes monitoring results to IOUT in blocks of 10 systems.
 
         !
@@ -229,16 +229,16 @@ contains
         !     IOUT    INTEGER   1         INPUT   unit number output file
         !     ARRA    REAL      *         INPUT   values to be printed
         !     VNAME   CHAR*40   1         INPUT   name of printed value
-        !     DNAME   CHAR*20   NODUMP    INPUT   names of monitoring stations
-        !     NODUMP  INTEGER   1         INPUT   amount of dump segments
+        !     DNAME   CHAR*20   num_monitoring_points    INPUT   names of monitoring stations
+        !     num_monitoring_points  INTEGER   1         INPUT   amount of dump segments
         !     ID      INTEGER   1         INPUT   index first system in this block
         !     NEND    INTEGER   1         INPUT   index last system in this block
-        !     NOTOT   INTEGER   1         INPUT   total number of systems
+        !     num_substances_total   INTEGER   1         INPUT   total number of systems
 
         use timers
 
-        INTEGER(kind = int_wp) :: IOUT, NODUMP, ID, NEND, NOTOT
-        REAL(kind = real_wp) :: ARRA(NOTOT, *)
+        INTEGER(kind = int_wp) :: IOUT, num_monitoring_points, ID, NEND, num_substances_total
+        REAL(kind = real_wp) :: ARRA(num_substances_total, *)
         character(len = 20) DNAME(*)
         character(len = 40) VNAME
 
@@ -249,7 +249,7 @@ contains
         !
         WRITE (IOUT, 2060) VNAME
         !
-        DO IDMP = 1, NODUMP
+        DO IDMP = 1, num_monitoring_points
             WRITE (IOUT, 2090) DNAME(IDMP), (ARRA(K, IDMP), K = ID, NEND)
         end do
         !
@@ -260,7 +260,7 @@ contains
     END SUBROUTINE OUTMO2
 
     SUBROUTINE OUTMO3 (IOUT, AMASS2, ITIME, SNAME, MNAME, &
-            NOTOT, IP, ISFLAG, ASMASS, IBFLAG, &
+            num_substances_total, IP, ISFLAG, ASMASS, IBFLAG, &
             NOTOT2, SYNAM2, CONC2, ITSTRT, ITSTOP, &
             NDMPAR, DANAM)
 
@@ -271,14 +271,14 @@ contains
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     IOUT    INTEGER     1       INPUT   unit number output file
-        !     AMASS2  REAL     NOTOT*5    INPUT   mass balance whole system
+        !     AMASS2  REAL     num_substances_total*5    INPUT   mass balance whole system
         !     ITIME   INTEGER     1       INPUT   present time in clock units
-        !     SNAME   CHAR*20   NOTOT     INPUT   names of substances
+        !     SNAME   CHAR*20   num_substances_total     INPUT   names of substances
         !     MNAME   CHAR*40     4       INPUT   model identification
-        !     NOTOT   INTEGER     1       INPUT   total number of systems
+        !     num_substances_total   INTEGER     1       INPUT   total number of systems
         !     IP      INTEGER     4       IN/OUT  paging structure
         !     ISFLAG  INTEGER     1       INPUT   if 1 then dd-hh:mm'ss"
-        !     ASMASS  REAL NOTOT*NDMPAR*? INPUT   Mass balance per segment
+        !     ASMASS  REAL num_substances_total*NDMPAR*? INPUT   Mass balance per segment
         !     IBFLAG  INTEGER     1       INPUT   Flag = 1 then balances
         !     NOTOT2  INTEGER             INPUT   Number of extra output vars
         !     SYNAM2  CHAR*20             INPUT   Names of extra output vars
@@ -292,10 +292,10 @@ contains
         use date_time_utils, only: report_time
         use timers
 
-        INTEGER(kind = int_wp) :: IOUT, ITIME, NOTOT, ISFLAG, IBFLAG, &
+        INTEGER(kind = int_wp) :: IOUT, ITIME, num_substances_total, ISFLAG, IBFLAG, &
                 NOTOT2, ITSTRT, ITSTOP, NDMPAR
         INTEGER(kind = int_wp) :: IP(4)
-        REAL(kind = real_wp) :: AMASS2(NOTOT, 5), ASMASS(NOTOT, NDMPAR, *), &
+        REAL(kind = real_wp) :: AMASS2(num_substances_total, 5), ASMASS(num_substances_total, NDMPAR, *), &
                 CONC2(*)
         character(len = 20) SNAME(*), SYNAM2(*), DANAM(*)
         character(len = 40) MNAME(*)
@@ -312,7 +312,7 @@ contains
         !         initialise the paging, accumulation arrays and acumul flag
         !
         IF (IP(3) == 0) THEN
-            IP(3) = MAX(1, IP(1) / (7 + (NDMPAR + 7) * ((NOTOT + IP(2) - 1) / IP(2))))
+            IP(3) = MAX(1, IP(1) / (7 + (NDMPAR + 7) * ((num_substances_total + IP(2) - 1) / IP(2))))
             IP(4) = 0
         ENDIF
         !
@@ -335,8 +335,8 @@ contains
         CALL report_time (IOUT, ITIME, ISFLAG, -999.)
         WRITE (IOUT, *)
         !
-        DO ID = 1, NOTOT, IP(2)
-            NEND = MIN (NOTOT, ID + IP(2) - 1)
+        DO ID = 1, num_substances_total, IP(2)
+            NEND = MIN (num_substances_total, ID + IP(2) - 1)
             WRITE (IOUT, 2030) (AMASS2(K, 1), K = ID, NEND)
             WRITE (IOUT, 2040) (AMASS2(K, 2), K = ID, NEND)
             WRITE (IOUT, 2050) (AMASS2(K, 3), K = ID, NEND)
@@ -347,26 +347,26 @@ contains
             !
             VNAME = 'CONCENTRATION'
             CALL OUTMO2 (IOUT, CONC2, VNAME, DANAM, NDMPAR, &
-                    ID, NEND, NOTOT + NOTOT2)
+                    ID, NEND, num_substances_total + NOTOT2)
             IF (IBFLAG == 1) THEN
                 VNAME = 'MASS'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 1), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'PROCESSES'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 2), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'LOADS ( IN )'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 3), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'LOADS ( OUT )'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 4), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'TRANSPORT ( IN )'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 5), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
                 VNAME = 'TRANSPORT ( OUT )'
                 CALL OUTMO2 (IOUT, ASMASS(1, 1, 6), VNAME, DANAM, NDMPAR, &
-                        ID, NEND, NOTOT)
+                        ID, NEND, num_substances_total)
             ENDIF
             !
             WRITE (IOUT, '('' '')')
@@ -376,14 +376,14 @@ contains
         !
         DO ID = 1, NOTOT2, IP(2)
             NEND = MIN (NOTOT2, ID + IP(2) - 1)
-            ID2 = ID + NOTOT
-            NEND2 = NEND + NOTOT
+            ID2 = ID + num_substances_total
+            NEND2 = NEND + num_substances_total
             WRITE (IOUT, 2020) (SYNAM2(K)(1:10), K = ID, NEND)
             WRITE (IOUT, 2020) (SYNAM2(K)(11:20), K = ID, NEND)
             !
             VNAME = 'VALUE'
             CALL OUTMO2 (IOUT, CONC2, VNAME, DANAM, NDMPAR, &
-                    ID2, NEND2, NOTOT + NOTOT2)
+                    ID2, NEND2, num_substances_total + NOTOT2)
             !
             WRITE (IOUT, '('' '')')
         end do

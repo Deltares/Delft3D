@@ -96,7 +96,7 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
    DIMENSION FILNAM(*) , INDLOC(3,*) , INDX(*)
 !
    INTEGER*4 K1     , K2     , K3     , K4     , K      , I      ,&
-   &LUN1   , LUN2   , NX     , NY     , NX2    , NY2    ,&
+   &LUN1   , LUN2   , grid_width     , grid_depth     , NX2    , NY2    ,&
    &NOLAY  , NODATA , NCLAY  , IDUMMY , IDUMM1 , IDUMM2 ,&
    &IDUMM3
    LOGICAL*4 OPEND  , EXIST1 , EXIST2
@@ -162,8 +162,8 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 !
       OPEN( NEWUNIT = LUN1    , FILE = FILNAM(1)(1:K1) , STATUS = 'OLD' ,&
       &ACCESS = 'STREAM' , ERR = 210 )
-      READ( LUN1   , ERR  = 210 , END = 910 ) NX
-      READ( LUN1   , ERR  = 210 , END = 910 ) NY
+      READ( LUN1   , ERR  = 210 , END = 910 ) grid_width
+      READ( LUN1   , ERR  = 210 , END = 910 ) grid_depth
       REWIND( LUN1   )
       GOTO 220
 !
@@ -190,7 +190,7 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 !
 240   CONTINUE
       READ( LUN1   , ERR = 300 , END = 910 )&
-      &NX     , NY     , NOCELL , NOLAY  , IDUMM1 , IDUMM2 , IDUMM3
+      &grid_width     , grid_depth     , NOCELL , NOLAY  , IDUMM1 , IDUMM2 , IDUMM3
       GOTO 330
 !
 ! -------- In case of an error, try a shorter record
@@ -198,20 +198,20 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 300   CONTINUE
       REWIND( LUN1   )
       READ( LUN1   , ERR = 310 , END = 910 )&
-      &NX     , NY     , NOCELL , IDUMMY , NOLAY
+      &grid_width     , grid_depth     , NOCELL , IDUMMY , NOLAY
       GOTO 330
 !
 310   CONTINUE
       REWIND( LUN1   )
       READ( LUN1   , ERR = 320 , END = 910 )&
-      &NX     , NY     , NOCELL , NOLAY
+      &grid_width     , grid_depth     , NOCELL , NOLAY
       GOTO 330
 !
 320   CONTINUE
       NOLAY  = 1
       REWIND( LUN1   )
       READ( LUN1   , ERR = 910 , END = 910 )&
-      &NX     , NY     , NOCELL
+      &grid_width     , grid_depth     , NOCELL
       GOTO 330
 !
 ! -------- Skip the first and read the second record of
@@ -224,18 +224,18 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
       &NY2    , NX2
       CLOSE( LUN2   )
 !
-      IF ( NX     .NE. NX2    .OR. NY     .NE. NY2    ) GOTO 920
-      IF ( NX     .LE. 0      .OR. NY     .LE. 0      ) GOTO 920
+      IF ( grid_width     .NE. NX2    .OR. grid_depth     .NE. NY2    ) GOTO 920
+      IF ( grid_width     .LE. 0      .OR. grid_depth     .LE. 0      ) GOTO 920
       IF ( NOCELL .LE. 0                              ) GOTO 920
    ENDIF
 !
 ! -------- Have we read what we need? If so, fill the array and return
 !
    IF ( INDLOC(1,1) .EQ. -1 ) THEN
-      INDX(1)   = NX
-      INDX(2)   = NY
+      INDX(1)   = grid_width
+      INDX(2)   = grid_depth
       INDX(3)   = NOLAY
-      INDX(4)   = NX     * NY
+      INDX(4)   = grid_width     * grid_depth
       CLOSE( LUN1   )
       RETURN
    ENDIF
@@ -244,7 +244,7 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 !          ASSUMPTION: we read the whole grid (one layer), not more,
 !          not less
 !
-   NODATA = NX     * NY
+   NODATA = grid_width     * grid_depth
    READ( LUN1   , ERR = 910 , END = 910 ) ( INDX(I)  , I = 1,NODATA )
    CLOSE( LUN1   )
 !

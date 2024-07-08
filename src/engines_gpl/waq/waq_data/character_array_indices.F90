@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_sysc
+module m_character_array_indices
     !     Pointers in character array workspace
 
     integer :: IANAM   !    pointer to ARRNAM, array names
@@ -44,7 +44,7 @@ module m_sysc
     integer :: IDINA   !    pointer to DINAM , dispersion array names
     integer :: IVNAM   !    pointer to VENAM , velocity array names
     integer :: IDANA   !    pointer to DANAM , dump area names
-    integer :: IRNAM   !    pointer to RANAM , raaien names
+    integer :: IRNAM   !    pointer to RANAM , transects names
     integer :: ICBUF   !    pointer to CBUFF , character array buffer
     integer :: ILUNT   !    pointer to LUNTX2, names of binary files
     integer :: IOSNM   !    pointer to OUSNM , output variables standard names
@@ -67,4 +67,4 @@ module m_sysc
     integer :: ip_car(nr_car)              ! help array to fill the common block / SYSA /
     equivalence   (ianam, ip_car(1))              ! first entry equivalences with first entry common block
 
-end module m_sysc
+end module m_character_array_indices

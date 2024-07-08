@@ -70,7 +70,7 @@ contains
         type(procesprop), pointer :: proc   ! process description
 
         integer(kind = int_wp) :: i_input   ! index input item
-        integer(kind = int_wp) :: nproc     ! number of processes
+        integer(kind = int_wp) :: num_processes_activated     ! number of processes
         integer(kind = int_wp) :: iproc     ! loop counter processes
         integer(kind = int_wp) :: nalg      ! number of algae types
         integer(kind = int_wp) :: ialg      ! index algae types
@@ -88,7 +88,7 @@ contains
         if (timon) call timstrt("algrep", ithndl)
 
         ! some init
-        nproc = procesdef%current_size
+        num_processes_activated = procesdef%current_size
 
         ! input types
 
@@ -107,7 +107,7 @@ contains
                 write(name1, '(''specalg'',i2.2,'' '')') nalg
                 igrp = index_in_array(alggrp(ialg)(:10), grpnam)
                 rgrp = igrp
-                do iproc = 1, nproc
+                do iproc = 1, num_processes_activated
                     proc => procesdef%procesprops(iproc)
                     do i_input = 1, proc%no_input
                         if (string_equals(proc%input_item(i_input)%name(1:10), name1)) then
@@ -125,7 +125,7 @@ contains
                     write(name1(ilen + 1:), '(i2.2)') nalg
                     name2(ilen - 2:) = abrtyp(ialg)
 
-                    do iproc = 1, nproc
+                    do iproc = 1, num_processes_activated
                         proc => procesdef%procesprops(iproc)
                         do i_input = 1, proc%no_input
                             if (string_equals(proc%input_item(i_input)%name(1:10), name1)) then

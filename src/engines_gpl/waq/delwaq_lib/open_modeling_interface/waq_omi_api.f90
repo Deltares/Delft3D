@@ -43,8 +43,8 @@ contains
     !> Set a value
     logical function SetValuePriv(dlwqtype, parid, locid, values, operation)
 
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         implicit none
 
@@ -79,10 +79,10 @@ contains
         !
         if (size(values) /= idx(3)) then
             write (*, *) 'SetValues: Error - inconsistent number of values'
-            write (*, *) '           Number of substances: ', notot
-            write (*, *) '           Number of segments:   ', noseg
+            write (*, *) '           Number of substances: ', num_substances_total
+            write (*, *) '           Number of segments:   ', num_cells
             write (*, *) '           Number of values:     ', size(values)
-            write (*, *) '           Should be 1, ', notot * noseg, ' or ', noseg
+            write (*, *) '           Should be 1, ', num_substances_total * num_cells, ' or ', num_cells
             SetValuePriv = .false.
             return
         end if
@@ -98,8 +98,8 @@ contains
         !!
         !! The return value is an array of three data: index, step
         !! and potential number of elements that is affected
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         integer(kind = int_wp), intent(in) :: dlwqtype
         integer(kind = int_wp), intent(in) :: parid
@@ -187,7 +187,7 @@ contains
 
     subroutine CheckParameterId(dlwqtype, parid, success)
         !> Check that the parameter ID is valid
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         integer(kind = int_wp), intent(in) :: dlwqtype
         integer(kind = int_wp), intent(in) :: parid
@@ -200,7 +200,7 @@ contains
     subroutine CheckLocationId(dlwqtype, locid, success)
         !> Check that the location ID is valid
 
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: dlwqtype
         integer(kind = int_wp), intent(in) :: locid
@@ -223,7 +223,7 @@ contains
     integer function GetLocationCountPriv(type)
         !> Retrieve number of locations (of given type)
 
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: type
 
@@ -234,7 +234,7 @@ contains
     !> Retrieve indices of locations (of given type)
     integer function GetLocationIndicesPriv(type, idsSize, ids)
 
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: type
         integer(kind = int_wp), intent(in) :: idsSize
@@ -257,7 +257,7 @@ contains
 
     !> Retrieve number of items (of given type)
     integer function GetItemCountPriv(type)
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: type
 
@@ -304,7 +304,7 @@ contains
     !> Get the time parameters for the computation
     subroutine GetTimeParameters(start, stop, step, current)
 
-        use m_sysi
+        use m_timer_variables
 
         implicit none
 
@@ -331,8 +331,8 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'COUNT_VALUES' :: Count_Values
 
         use waq_omi_priv
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         implicit none
 
@@ -567,8 +567,8 @@ contains
         !DEC$ ATTRIBUTES DLLEXPORT::SetCommonVars
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETCOMMONVARS' :: SetCommonVars
 
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         implicit none
 
@@ -579,14 +579,14 @@ contains
         iconc = iconc_
         ibset = ibset_
         iwste = iwste_
-        nosys = nosys_
-        notot = notot_
-        nototp = notot_   ! Particles not supported yet
-        nocons = nocons_
-        nopa = nopa_
-        noseg = noseg_
-        nowst = nowst_
-        nobnd = nobnd_
+        num_substances_transported = nosys_
+        num_substances_total = notot_
+        num_substances_part = notot_   ! Particles not supported yet
+        num_constants = nocons_
+        num_spatial_parameters = nopa_
+        num_cells = noseg_
+        num_waste_loads = nowst_
+        num_boundary_conditions = nobnd_
 
     end subroutine SetCommonVars
 

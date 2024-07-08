@@ -66,20 +66,20 @@
 
       ! some init
 
-      noq1_o = input_hyd%noq1
-      noq2_o = input_hyd%noq2
-      noq3_o = input_hyd%noq3
-      noq_o  = input_hyd%noq
+      noq1_o = input_hyd%num_exchanges_u_dir
+      noq2_o = input_hyd%num_exchanges_v_dir
+      noq3_o = input_hyd%num_exchanges_z_dir
+      noq_o  = input_hyd%num_exchanges
 
-      noq1_n = output_hyd%noseg
-      noq2_n = output_hyd%noseg
-      noq3_n = output_hyd%noseg - output_hyd%nosegl
+      noq1_n = output_hyd%num_cells
+      noq2_n = output_hyd%num_cells
+      noq3_n = output_hyd%num_cells - output_hyd%nosegl
       noq_n  = noq1_n + noq2_n + noq3_n
 
-      output_hyd%noq1 = noq1_n
-      output_hyd%noq2 = noq2_n
-      output_hyd%noq3 = noq3_n
-      output_hyd%noq  = noq_n
+      output_hyd%num_exchanges_u_dir = noq1_n
+      output_hyd%num_exchanges_v_dir = noq2_n
+      output_hyd%num_exchanges_z_dir = noq3_n
+      output_hyd%num_exchanges  = noq_n
 
       allocate(iq_o(noq_n))
       allocate(iq_reset(noq_n))
@@ -138,7 +138,7 @@
 
                      ! ddcoupling exception
 
-                     iq_n = ip2 - output_hyd%nmax + noq1_n
+                     iq_n = ip2 - output_hyd%num_rows + noq1_n
 
                      ! also reset previous point in this dd coupling
 
@@ -149,7 +149,7 @@
                      ip4_prev  = output_hyd%ipoint(4,iq_n_prev)
                      iq_prev   = iq_o(iq_n_prev)
 
-                     iq_n_prev_n                      = ip2_prev - output_hyd%nmax + noq1_n
+                     iq_n_prev_n                      = ip2_prev - output_hyd%num_rows + noq1_n
                      ipnt_q(iq_prev)                  = iq_n_prev_n
                      output_hyd%ipoint(1,iq_n_prev_n) = ip1_prev
                      output_hyd%ipoint(2,iq_n_prev_n) = ip2_prev
@@ -160,13 +160,13 @@
 
                   endif
                else
-                  iq_n = ip2 - output_hyd%nmax + noq1_n
+                  iq_n = ip2 - output_hyd%num_rows + noq1_n
                endif
             else
                if ( ip1 .gt. 0 ) then
                   iq_n = ip1 + noq1_n + noq2_n
                else
-                  iq_n = ip2 - output_hyd%nmax*output_hyd%mmax + noq1_n + noq2_n
+                  iq_n = ip2 - output_hyd%num_rows*output_hyd%num_columns + noq1_n + noq2_n
                endif
             endif
 
@@ -237,9 +237,9 @@
                endif
             elseif ( iq .le. noq1_o+noq2_o ) then
                if ( ip3 .gt. 0 ) then
-                  iq_n = ip3 + output_hyd%nmax + noq1_n
+                  iq_n = ip3 + output_hyd%num_rows + noq1_n
                else
-                  iq_n = ip4 - 2*output_hyd%nmax + noq1_n
+                  iq_n = ip4 - 2*output_hyd%num_rows + noq1_n
                endif
             endif
 

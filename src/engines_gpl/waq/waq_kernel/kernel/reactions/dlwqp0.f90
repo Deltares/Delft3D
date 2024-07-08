@@ -30,7 +30,7 @@
 
 
       subroutine dlwqp0 ( conc   , amass  , deriv  , volume , idt    , & 
-                         nosys  , notot  , noseg  , file_unit_list     ,ivflag , &
+                         num_substances_transported  , num_substances_total  , num_cells  , file_unit_list     ,ivflag , &
                          surfac )
 
 !     Deltares Software Centre
@@ -54,17 +54,17 @@
 !     Parameters          :
 !     type     kind  function         name                      description
 
-      integer(kind=int_wp), intent(in   )  ::nosys                   !< number of transported substances
-      integer(kind=int_wp), intent(in   )  ::notot                   !< total number of substances
-      integer(kind=int_wp), intent(in   )  ::noseg                   !< number of computational volumes
-      real(kind=real_wp), intent(inout)  ::conc  (notot ,noseg)    !< concentrations per substance per volume
-      real(kind=real_wp), intent(inout)  ::amass (notot ,noseg)    !< masses per substance per volume
-      real(kind=real_wp), intent(inout)  ::deriv (notot ,noseg)    !< derivatives per substance per volume
-      real(kind=real_wp), intent(inout)  ::volume(noseg )          !< volumes of the segments
+      integer(kind=int_wp), intent(in   )  ::num_substances_transported                   !< number of transported substances
+      integer(kind=int_wp), intent(in   )  ::num_substances_total                   !< total number of substances
+      integer(kind=int_wp), intent(in   )  ::num_cells                   !< number of computational volumes
+      real(kind=real_wp), intent(inout)  ::conc  (num_substances_total ,num_cells)    !< concentrations per substance per volume
+      real(kind=real_wp), intent(inout)  ::amass (num_substances_total ,num_cells)    !< masses per substance per volume
+      real(kind=real_wp), intent(inout)  ::deriv (num_substances_total ,num_cells)    !< derivatives per substance per volume
+      real(kind=real_wp), intent(inout)  ::volume(num_cells )          !< volumes of the segments
       integer(kind=int_wp), intent(in   )  ::idt                     !< integration time step size
       integer(kind=int_wp), intent(in   )  ::file_unit_list                     !< unit number of the monitoring file
       integer(kind=int_wp), intent(in   )  ::ivflag                  !< if 1 computational volumes
-      real(kind=real_wp), intent(in   )  ::surfac(noseg)           !< horizontal surface
+      real(kind=real_wp), intent(in   )  ::surfac(num_cells)           !< horizontal surface
 
       ! local declarations
 
@@ -79,7 +79,7 @@
 
       ! loop accross the number of computational elements
 
-      do iseg=1,noseg
+      do iseg=1,num_cells
          ! compute volumes if necessary
 
          if ( ivflag == 1 ) volume(iseg) = amass(1,iseg) + idt*deriv(1,iseg)
@@ -98,7 +98,7 @@
 
          !  active substances first
 
-         do i=1,nosys
+         do i=1,num_substances_transported
             a           = amass(i,iseg) + idt*deriv(i,iseg)
             amass(i,iseg) = a
             conc (i,iseg) = a / v1
@@ -107,7 +107,7 @@
 
          ! then the inactive substances
 
-         do i=nosys+1,notot
+         do i=num_substances_transported+1,num_substances_total
             amass(i,iseg) = amass(i,iseg) + idt*deriv(i,iseg)
             conc (i,iseg) = amass(i,iseg) / max(tiny(1.0),surfac(iseg))
             deriv(i,iseg) = 0.0

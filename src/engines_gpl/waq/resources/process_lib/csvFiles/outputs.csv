@@ -579,7 +579,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Phy_Blo   ","BLOOMGRP29",  35," ",1
 "Phy_Blo   ","BLOOMGRP30",  36," ",1
 "MakOOC    ","POCnoa    ",   1,"x",1
-"MakOOCS1  ","POCS1     ",   1,"x",1
+"MakOOCS1  ","S1_PC1    ",   1,"x",1
 "MakOOCS2  ","POCS2     ",   1,"x",1
 "Phy_dyn   ","Phyt      ",   1,"x",1
 "Phy_dyn   ","AlgN      ",   2,"x",1
@@ -1205,13 +1205,22 @@ outppr,outpit,outpnm,outpdo,outpsx
 "SED_SOD   ","fSedSOD   ",   1,"x",1
 "SedPhBlo_P","fSedPHYT  ",   1,"x",1
 "SedPhBlo_P","fSedAlgDM ",   2,"x",1
-"SedPhBlo_P","VxSedPhyt ",   3,"x",0
+"SedPhBlo_P","fSedAlgN  ",   3,"x",1
+"SedPhBlo_P","fSedAlgP  ",   4,"x",1
+"SedPhBlo_P","fSedAlgSi ",   5,"x",1
+"SedPhBlo_P","VxSedPhyt ",   6,"x",0
 "SedPhBlo  ","fSedPHYT  ",   1," ",1
 "SedPhBlo  ","fSedAlgDM ",   2," ",1
-"SedPhBlo  ","VxSedPhyt ",   3," ",0
+"SedPhBlo  ","fSedAlgN  ",   3,"x",1
+"SedPhBlo  ","fSedAlgP  ",   4,"x",1
+"SedPhBlo  ","fSedAlgSi ",   5,"x",1
+"SedPhBlo  ","VxSedPhyt ",   6," ",0
 "SedPhDyn  ","fSedPHYT  ",   1,"x",1
 "SedPhDyn  ","fSedAlgDM ",   2,"x",1
-"SedPhDyn  ","VxSedPhyt ",   3,"x",0
+"SedPhDyn  ","fSedAlgN  ",   3,"x",1
+"SedPhDyn  ","fSedAlgP  ",   4,"x",1
+"SedPhDyn  ","fSedAlgSi ",   5,"x",1
+"SedPhDyn  ","VxSedPhyt ",   6,"x",0
 "Sed_MPB1  ","PSedMPB1  ",   1,"x",1
 "Sed_MPB1  ","fSedMPB1  ",   2,"x",1
 "Sed_MPB1  ","VxSedMPB1 ",   3,"x",0

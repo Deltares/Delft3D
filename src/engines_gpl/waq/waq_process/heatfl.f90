@@ -28,9 +28,9 @@ module m_heatfl
 contains
 
 
-    subroutine heatfl (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine heatfl (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Total heat flux for surface water absolute temperature model
 
@@ -96,9 +96,9 @@ contains
         use m_extract_waq_attribute
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
-        REAL(kind = real_wp) :: PMSA  (*), FL  (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4, &
+        REAL(kind = real_wp) :: process_space_real  (*), FL  (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
                 ISEG, IFLUX, IKMRK2
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, &
@@ -158,7 +158,7 @@ contains
 
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             !     Heat exchange only for active water segments
             !
@@ -169,33 +169,33 @@ contains
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==1) THEN
                     !
-                    Qsw = PMSA(IP1)
-                    Fsw = PMSA(IP2)
-                    Cloud = PMSA(IP3) / 100.0
-                    ISWEmis = NINT(PMSA(IP4))
-                    TempAt = PMSA(IP5)
-                    SBC = PMSA(IP6)
-                    Fa = PMSA(IP7)
-                    Ewater = PMSA(IP8)
-                    TempWa = PMSA(IP9)
-                    Rho0 = PMSA(IP10)
-                    CWinda = PMSA(IP11)
-                    CWindb = PMSA(IP12)
-                    CWindc = PMSA(IP13)
-                    VWindm = PMSA(IP14)
-                    hm = PMSA(IP15)
-                    ha = PMSA(IP16)
-                    k = PMSA(IP17)
-                    cpa = PMSA(IP18)
-                    Patm = PMSA(IP19)
-                    Qrb = PMSA(IP20)
-                    Cp = PMSA(IP21)
-                    DEPTH = PMSA(IP22)
-                    RelHum = PMSA(IP23) / 100.0
-                    DeltaT = PMSA(IP24)
-                    Tref = PMSA(IP25)
-                    ISWTEMP = NINT(PMSA(IP26))
-                    mindeptht = PMSA(IP27)
+                    Qsw = process_space_real(IP1)
+                    Fsw = process_space_real(IP2)
+                    Cloud = process_space_real(IP3) / 100.0
+                    ISWEmis = NINT(process_space_real(IP4))
+                    TempAt = process_space_real(IP5)
+                    SBC = process_space_real(IP6)
+                    Fa = process_space_real(IP7)
+                    Ewater = process_space_real(IP8)
+                    TempWa = process_space_real(IP9)
+                    Rho0 = process_space_real(IP10)
+                    CWinda = process_space_real(IP11)
+                    CWindb = process_space_real(IP12)
+                    CWindc = process_space_real(IP13)
+                    VWindm = process_space_real(IP14)
+                    hm = process_space_real(IP15)
+                    ha = process_space_real(IP16)
+                    k = process_space_real(IP17)
+                    cpa = process_space_real(IP18)
+                    Patm = process_space_real(IP19)
+                    Qrb = process_space_real(IP20)
+                    Cp = process_space_real(IP21)
+                    DEPTH = process_space_real(IP22)
+                    RelHum = process_space_real(IP23) / 100.0
+                    DeltaT = process_space_real(IP24)
+                    Tref = process_space_real(IP25)
+                    ISWTEMP = NINT(process_space_real(IP26))
+                    mindeptht = process_space_real(IP27)
 
                     !
                     !     ------Short wave solar radiation-----------
@@ -323,19 +323,19 @@ contains
                         MODTEMP = 0.0
                     ENDIF
 
-                    PMSA(IP28) = Qsn
-                    PMSA(IP29) = Psvap
-                    PMSA(IP30) = Emiss
-                    PMSA(IP31) = Qan
-                    PMSA(IP32) = Qbr
-                    PMSA(IP33) = Ql
-                    PMSA(IP34) = Qsg
-                    PMSA(IP35) = Qt
-                    PMSA(IP36) = PvapWa
-                    PMSA(IP37) = VWinda
-                    PMSA(IP38) = Vevap
-                    PMSA(IP39) = RhoWat
-                    PMSA(IP40) = MODTEMP
+                    process_space_real(IP28) = Qsn
+                    process_space_real(IP29) = Psvap
+                    process_space_real(IP30) = Emiss
+                    process_space_real(IP31) = Qan
+                    process_space_real(IP32) = Qbr
+                    process_space_real(IP33) = Ql
+                    process_space_real(IP34) = Qsg
+                    process_space_real(IP35) = Qt
+                    process_space_real(IP36) = PvapWa
+                    process_space_real(IP37) = VWinda
+                    process_space_real(IP38) = Vevap
+                    process_space_real(IP39) = RhoWat
+                    process_space_real(IP40) = MODTEMP
 
                     IF (depth < mindeptht) THEN
 

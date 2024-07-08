@@ -28,9 +28,9 @@ module m_trcoef
 contains
 
 
-    subroutine trcoef (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine trcoef (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Gas and liquid exchange organic micro pollutants (Lyman and O'Conner)
 
@@ -73,9 +73,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         LOGICAL  WOROPT, WNDOPT, TMPOPT
         !
@@ -133,7 +133,7 @@ contains
         !
         EXP1 = EXP (C6 * (CRIT2 - CRIT1))
         IF (IN2 == 0) THEN
-            WIND = PMSA(IP2)
+            WIND = process_space_real(IP2)
             IF(WIND  < 0.0) CALL write_error_message ('WIND       in TRCOEF < 0')
             IF (WIND >= CRIT1) THEN
                 IF (WIND < CRIT2) THEN
@@ -155,7 +155,7 @@ contains
         ENDIF
         !
         IF (IN4 == 0) THEN
-            M = PMSA(IP4)
+            M = process_space_real(IP4)
             IF(M     < 1.E-30) CALL write_error_message ('MOLMASS    in TRCOEF = 0')
             WORTL1 = SQRT(C1 / M)
             WORTL5 = SQRT(C5 / M) * C2
@@ -165,15 +165,15 @@ contains
         ENDIF
         !
         IF (IN5 == 0 .AND. IN6 == 0 .AND. IN8 == 0) THEN
-            TEMP = PMSA(IP8)
+            TEMP = process_space_real(IP8)
             !--calculation of bulk densitys of water and air:
             RHOG = C11 / (1. + C12 * TEMP)
             RHOL = C13 - C14 * TEMP
             !--calculation of viscosities of water and air:
             VG = (C15 + C16 * TEMP) * C17
             VL = C18
-            LDIF = PMSA(IP5)
-            GDIF = PMSA(IP6)
+            LDIF = process_space_real(IP5)
+            GDIF = process_space_real(IP6)
             IF(GDIF  < 1.E-30) CALL write_error_message ('GAS-DIFF   in TRCOEF = 0')
             IF(LDIF  < 1.E-30) CALL write_error_message ('WATER-DIFF in TRCOEF = 0')
             !     Calculate Schmidt numbers for water and gas
@@ -184,24 +184,24 @@ contains
             TMPOPT = .TRUE.
         ENDIF
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
                     !
-                    !     Map PMSA on local variables
+                    !     Map process_space_real on local variables
                     !
-                    ISWTCH = PMSA(IP1) + 0.5
+                    ISWTCH = process_space_real(IP1) + 0.5
                     !
                     IF (ISWTCH == 0) THEN
                         !
-                        VELOC = PMSA(IP3)
+                        VELOC = process_space_real(IP3)
                         IF(VELOC < 0.0) CALL write_error_message ('VELOC      in TRCOEF < 0')
-                        DEPTH = PMSA(IP7)
+                        DEPTH = process_space_real(IP7)
                         !
                         IF (WNDOPT) THEN
-                            WIND = PMSA(IP2)
+                            WIND = process_space_real(IP2)
                             IF(WIND  < 0.0) CALL write_error_message ('WIND       in TRCOEF < 0')
                             IF (WIND >= CRIT1) THEN
                                 IF (WIND < CRIT2) THEN
@@ -214,7 +214,7 @@ contains
                         IF(WIND  < 0.0) CALL write_error_message ('WIND       in TRCOEF < 0')
                         !
                         IF (WOROPT) THEN
-                            M = PMSA(IP4)
+                            M = process_space_real(IP4)
                             IF(M     < 1.E-30) CALL write_error_message ('MOLMASS    in TRCOEF = 0')
                             WORTL1 = SQRT(C1 / M)
                             WORTL5 = SQRT(C5 / M) * C2
@@ -244,7 +244,7 @@ contains
                         ! --- Impact formulations (O'connor personal communication?)
                         !
                         IF (WNDOPT) THEN
-                            WIND = PMSA(IP2)
+                            WIND = process_space_real(IP2)
                             IF(WIND  < 0.0) CALL write_error_message ('WIND       in TRCOEF < 0')
                             !     Calculate wind at watersurface from wind at 10m (m/s)
                             FWIND = C21 * WIND * SQRT(C22 + C23 * WIND)
@@ -256,7 +256,7 @@ contains
                         ENDIF
                         !
                         IF (TMPOPT) THEN
-                            TEMP = PMSA(IP8)
+                            TEMP = process_space_real(IP8)
                             !--calculation of bulk densitys of water and air:
                             RHOG = C11 / (1. + C12 * TEMP)
                             RHOL = C13 - C14 * TEMP
@@ -264,8 +264,8 @@ contains
                             VG = (C15 + C16 * TEMP) * C17
                             VL = C18
                             ! --- Impact formulations (O'connor personal communication?)
-                            LDIF = PMSA(IP5)
-                            GDIF = PMSA(IP6)
+                            LDIF = process_space_real(IP5)
+                            GDIF = process_space_real(IP6)
                             IF(GDIF  < 1.E-30) CALL write_error_message ('GAS-DIFF   in TRCOEF = 0')
                             IF(LDIF  < 1.E-30) CALL write_error_message ('WATER-DIFF in TRCOEF = 0')
                             !     Calculate Schmidt numbers for water and gas
@@ -278,8 +278,8 @@ contains
                     !
                     !     Output
                     !
-                    PMSA(IP9) = KL
-                    PMSA(IP10) = KG
+                    process_space_real(IP9) = KL
+                    process_space_real(IP10) = KG
                     !
                 ENDIF
             ENDIF

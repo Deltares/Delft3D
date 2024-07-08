@@ -29,13 +29,13 @@ contains
 
 
     SUBROUTINE DLWQB5 (DISP, DISPER, AREA, FLOW, ALENG, &
-            VELO, CONC, BOUND, IPOINT, NOSYS, &
-            NOTOT, NOQ1, NOQ2, NOQ, NODISP, &
-            NOVELO, IDPNT, IVPNT, integration_id, AMASS2, &
+            VELO, CONC, BOUND, IPOINT, num_substances_transported, &
+            num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
+            num_velocity_arrays, IDPNT, IVPNT, integration_id, AMASS2, &
             ILFLAG, DMPQ, NDMPQ, IDT, IQDMP)
 
         !! Makes a mass balance final to implicit integration methods.
-        !! Identical to DLWQ64, but with dimension BOUND(NOSYS,*), with multiplication factor IDT on mass balances and
+        !! Identical to DLWQ64, but with dimension BOUND(num_substances_transported,*), with multiplication factor IDT on mass balances and
         !! with loop over active substances only (loops 10, 30 and 50).
 
         !     PARAMETERS          :
@@ -43,31 +43,31 @@ contains
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     DISP    REAL        3       INPUT   dispersion in 3 directions
-        !     DISPER  REAL   NODISP*NOQ   INPUT   additional dispersion array
-        !     AREA    REAL       NOQ      INPUT   exchange surface area
-        !     FLOW    REAL       NOQ      INPUT   flows accross exchange surfs
-        !     ALENG   REAL      2*NOQ     INPUT   from- and to lengthes
-        !     VELO    REAL   NOVELO*NOQ   INPUT   additional velocity array
-        !     CONC    REAL   NOTOT*NOSEG  INPUT   concentrations
-        !     BOUND   REAL     NOSYS*?    INPUT   boundary concentrations
-        !     IPOINT  INTEGER   4*NOQ     INPUT   exchange pointers
-        !     NOSYS   INTEGER     1       INPUT   number  of active substances
-        !     NOTOT   INTEGER     1       INPUT   number  of total substances
-        !     NOQ1    INTEGER     1       INPUT   nr of exchanges in first dir.
-        !     NOQ2    INTEGER     1       INPUT   nr of exchanges in second dir.
-        !     NOQ3    INTEGER     1       INPUT   nr of exchanges in third dir.
-        !     NOQ     INTEGER     1       INPUT   total number of exchanges
-        !     NODISP  INTEGER     1       INPUT   number  of additional dispers.
-        !     NOVELO  INTEGER     1       INPUT   number  of additional velos.
-        !     IDPNT   INTEGER   NOSYS     INPUT   pointer systems to dispersions
-        !     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
+        !     DISPER  REAL   num_dispersion_arrays*num_exchanges   INPUT   additional dispersion array
+        !     AREA    REAL       num_exchanges      INPUT   exchange surface area
+        !     FLOW    REAL       num_exchanges      INPUT   flows accross exchange surfs
+        !     ALENG   REAL      2*num_exchanges     INPUT   from- and to lengthes
+        !     VELO    REAL   num_velocity_arrays*num_exchanges   INPUT   additional velocity array
+        !     CONC    REAL   num_substances_total*num_cells  INPUT   concentrations
+        !     BOUND   REAL     num_substances_transported*?    INPUT   boundary concentrations
+        !     IPOINT  INTEGER   4*num_exchanges     INPUT   exchange pointers
+        !     num_substances_transported   INTEGER     1       INPUT   number  of active substances
+        !     num_substances_total   INTEGER     1       INPUT   number  of total substances
+        !     num_exchanges_u_dir    INTEGER     1       INPUT   nr of exchanges in first dir.
+        !     num_exchanges_v_dir    INTEGER     1       INPUT   nr of exchanges in second dir.
+        !     num_exchanges_z_dir    INTEGER     1       INPUT   nr of exchanges in third dir.
+        !     num_exchanges     INTEGER     1       INPUT   total number of exchanges
+        !     num_dispersion_arrays  INTEGER     1       INPUT   number  of additional dispers.
+        !     num_velocity_arrays  INTEGER     1       INPUT   number  of additional velos.
+        !     IDPNT   INTEGER   num_substances_transported     INPUT   pointer systems to dispersions
+        !     IVPNT   INTEGER   num_substances_transported     INPUT   pointer systems to velocities
         !     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
         !                                         = 1 or 3 no DISP at zero flow
         !                                         = 0 or 1 DISP over boundary
         !                                         = 2 or 3 no DISP over boundary
-        !     AMASS2  REAL     NOTOT*5    IN/OUT  mass balance array
+        !     AMASS2  REAL     num_substances_total*5    IN/OUT  mass balance array
         !     ILFLAG  INTEGER     1       INPUT   if 0 then 3 length values
-        !     DMPQ    REAL  NOTOT*NDMPQ*? IN/OUT  mass balance dumped exchange
+        !     DMPQ    REAL  num_substances_total*NDMPQ*? IN/OUT  mass balance dumped exchange
         !                                         if INTOPT > 7
         !     NDMPQ   INTEGER     1       INPUT   number of dumped exchanges
         !     IDT     INTEGER     1       INPUT   timestep (or 1 for steady state)
@@ -80,7 +80,7 @@ contains
         real(kind = real_wp) :: DISP  (3), DISPER(*), AREA (*), FLOW  (*), &
                 ALENG (*), VELO  (*), CONC (*), BOUND (*), &
                 AMASS2(*), DMPQ(*)
-        integer(kind = int_wp) :: NOSYS, NOTOT, NOQ1, NOQ2, NOQ, NODISP, NOVELO
+        integer(kind = int_wp) :: num_substances_transported, num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, num_velocity_arrays
         integer(kind = int_wp) :: integration_id, ILFLAG, IDT
 
         integer(kind = int_wp) :: i, i3, i4, i5, i6, iq, ipq, is
@@ -93,17 +93,17 @@ contains
         !
         !         loop accross the number of exchanges
         !
-        I4 = 3 * NOTOT
-        I5 = 4 * NOTOT
-        I6 = NOSYS * NDMPQ
-        NOQ12 = NOQ1 + NOQ2
+        I4 = 3 * num_substances_total
+        I5 = 4 * num_substances_total
+        I6 = num_substances_transported * NDMPQ
+        NOQ12 = num_exchanges_u_dir + num_exchanges_v_dir
         IF (MOD(integration_id, 16) >= 8) THEN
             IBFLAG = 1
         ELSE
             IBFLAG = 0
         ENDIF
         !
-        DO IQ = 1, NOQ
+        DO IQ = 1, num_exchanges
             !
             !         initialistations, check for transport anyhow
             !
@@ -116,7 +116,7 @@ contains
             IF (IBFLAG == 1) THEN
                 IF (IQDMP(IQ) > 0) THEN
                     IPB = IQDMP(IQ)
-                    IPQ = (IQDMP(IQ) - 1) * NOSYS
+                    IPQ = (IQDMP(IQ) - 1) * num_substances_transported
                 ELSE
                     IPB = 0
                 ENDIF
@@ -131,11 +131,11 @@ contains
             ENDIF
             E = DISP(1)
             AL = ALENG(1)
-            IF (IQ > NOQ1) THEN
+            IF (IQ > num_exchanges_u_dir) THEN
                 E = DISP (2)
                 AL = ALENG(2)
             ENDIF
-            IF (IQ > NOQ1 + NOQ2) THEN
+            IF (IQ > num_exchanges_u_dir + num_exchanges_v_dir) THEN
                 E = DISP (3)
                 AL = ALENG(3)
             ENDIF
@@ -150,15 +150,15 @@ contains
             !
             !         The regular case
             !
-            K1 = (I - 1) * NOTOT
-            K2 = (J - 1) * NOTOT
-            DO I3 = 1, NOSYS
-                IS = MIN (I3, NOSYS)
+            K1 = (I - 1) * num_substances_total
+            K2 = (J - 1) * num_substances_total
+            DO I3 = 1, num_substances_transported
+                IS = MIN (I3, num_substances_transported)
                 !
                 !        dispersion
                 !
                 IF (IDPNT(IS) > 0) THEN
-                    D = E + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
+                    D = E + DISPER((IQ - 1) * num_dispersion_arrays + IDPNT(IS)) * DL
                 ELSE
                     D = E
                 ENDIF
@@ -166,7 +166,7 @@ contains
                 !        flow
                 !
                 IF (IVPNT(IS) > 0) THEN
-                    V = Q + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
+                    V = Q + VELO  ((IQ - 1) * num_velocity_arrays + IVPNT(IS)) * A
                 ELSE
                     V = Q
                 ENDIF
@@ -193,16 +193,16 @@ contains
             !        The 'from' element was a boundary. Note the 2 options.
             !
             20 IF (J < 0) GOTO 60
-            K1 = (-I - 1) * NOSYS
-            K2 = (J - 1) * NOTOT
-            DO I3 = 1, NOSYS
-                IS = MIN (I3, NOSYS)
+            K1 = (-I - 1) * num_substances_transported
+            K2 = (J - 1) * num_substances_total
+            DO I3 = 1, num_substances_transported
+                IS = MIN (I3, num_substances_transported)
                 V = Q
                 D = 0.0
-                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
+                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * num_velocity_arrays + IVPNT(IS)) * A
                 IF (MOD(integration_id, 4) <  2) THEN
                     D = E
-                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
+                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * num_dispersion_arrays + IDPNT(IS)) * DL
                 ENDIF
                 IF (V > 0.0) THEN
                     DQ = ((V + D) * BOUND(K1 + I3) - D * CONC (K2 + I3)) * IDT
@@ -226,16 +226,16 @@ contains
             !
             !        The 'to' element was a boundary.
             !
-            40 K1 = (I - 1) * NOTOT
-            K2 = (-J - 1) * NOSYS
-            DO I3 = 1, NOSYS
-                IS = MIN (I3, NOSYS)
+            40 K1 = (I - 1) * num_substances_total
+            K2 = (-J - 1) * num_substances_transported
+            DO I3 = 1, num_substances_transported
+                IS = MIN (I3, num_substances_transported)
                 V = Q
                 D = 0.0
-                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
+                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * num_velocity_arrays + IVPNT(IS)) * A
                 IF (MOD(integration_id, 4)  <  2) THEN
                     D = E
-                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
+                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * num_dispersion_arrays + IDPNT(IS)) * DL
                 ENDIF
                 IF (V > 0.0) THEN
                     DQ = ((V + D) * CONC (K1 + I3) - D * BOUND(K2 + I3)) * IDT

@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_sysi
+module m_timer_variables
     !     Timer characteristics
 
     integer :: ITSTRT  !    Simulation start time ( scu )
@@ -62,5 +62,5 @@ module m_sysi
     integer :: ii(iisize)
     equivalence       (ii(1), itstrt)
 
-end module m_sysi
+end module m_timer_variables
 

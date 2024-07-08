@@ -28,17 +28,17 @@ module m_dlwq63
 contains
 
     !> Calculates concentrations from derivatives, and zeroes these derivatives
-    subroutine dlwq63(conc, deriv, amass2, noseg, notot, &
+    subroutine dlwq63(conc, deriv, amass2, num_cells, num_substances_total, &
             isys, nsys, dmps, intopt, isdmp)
         use timers
 
-        real(kind=real_wp), intent(inout) :: conc(notot, *)   !< First order term
+        real(kind=real_wp), intent(inout) :: conc(num_substances_total, *)   !< First order term
         real(kind=real_wp), intent(inout) :: deriv(*)         !< Right hand side matrix
-        real(kind=real_wp), intent(inout) :: amass2(notot, *) !< Mass accumulation array
+        real(kind=real_wp), intent(inout) :: amass2(num_substances_total, *) !< Mass accumulation array
         real(kind=real_wp), intent(inout) :: dmps(*)          !< Dumped segment fluxes if intopt>7
 
-        integer(kind = int_wp), intent(in   ) :: noseg    !< Number of cells or segments
-        integer(kind = int_wp), intent(in   ) :: notot    !< Total number of systems
+        integer(kind = int_wp), intent(in   ) :: num_cells    !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_substances_total    !< Total number of systems
         integer(kind = int_wp), intent(in   ) :: isys     !< Index of considered system
         integer(kind = int_wp), intent(in   ) :: nsys     !< Number of systems to take
         integer(kind = int_wp), intent(in   ) :: intopt   !< Integration suboptions
@@ -53,7 +53,7 @@ contains
         ! Calculate concentrations
         iset = 1
         if (mod(intopt, 16) < 8) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 do i = isys, isys + nsys - 1
                     amass2(i, 2) = amass2(i, 2) + conc (i, iseg) * deriv(iset)
                     conc  (i, iseg) = deriv (iset)
@@ -61,9 +61,9 @@ contains
                 end do
             end do
         else
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 ip = isdmp(iseg)
-                j = (ip - 1) * notot
+                j = (ip - 1) * num_substances_total
                 do i = isys, isys + nsys - 1
                     amass2(i, 2) = amass2(i, 2) + conc(i, iseg) * deriv(iset)
                     if (ip > 0) then
@@ -75,7 +75,7 @@ contains
             end do
         endif
         ! Zero the derivative
-        ntot = notot * noseg
+        ntot = num_substances_total * num_cells
         do i = 1, ntot
             deriv(i) = 0.0
         end do

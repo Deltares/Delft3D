@@ -29,25 +29,25 @@ module m_setvat
 contains
 
 
-    subroutine setvat (lurep, nocons, nopa, nofun, nosfun, &
-            nosys, notot, nodisp, novelo, nodef, &
-            noloc, ndspx, nvelx, nlocx, nflux, &
-            nopred, novar, vararr, varidx, vartda, &
-            vardag, vartag, varagg, nogrid, coname, &
+    subroutine setvat (lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+            num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+            nopred, num_vars, vararr, varidx, vartda, &
+            vardag, vartag, varagg, num_grids, coname, &
             paname, funame, sfname, dename, syname, &
             locnam, varnam)
         ! Set variable atributes
         use m_logger_helper, only : stop_with_error, write_log_message
         use timers       !   performance timers
 
-        integer(kind = int_wp) :: lurep, nocons, nopa, nofun, nosfun, &
-                nosys, notot, nodisp, novelo, nodef, &
-                noloc, ndspx, nvelx, nlocx, nflux, &
-                nopred, novar, nogrid
-        integer(kind = int_wp) :: vararr(novar), varidx(novar), &
-                vartda(novar), vardag(novar), &
-                vartag(novar), varagg(novar)
-        character(len = 20)        varnam(novar)
+        integer(kind = int_wp) :: lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                nopred, num_vars, num_grids
+        integer(kind = int_wp) :: vararr(num_vars), varidx(num_vars), &
+                vartda(num_vars), vardag(num_vars), &
+                vartag(num_vars), varagg(num_vars)
+        character(len = 20)        varnam(num_vars)
 
         integer(kind = int_wp), parameter :: maxloc = 2000
         integer(kind = int_wp) :: vattag(maxloc), vattda(maxloc)
@@ -165,20 +165,20 @@ contains
         IVFLO = IVARE + 1
         IVLEN = IVFLO + 1
         IVCNS = IVLEN + 2
-        IVPAR = IVCNS + NOCONS
-        IVFUN = IVPAR + NOPA
-        IVSFU = IVFUN + NOFUN
-        IVCNC = IVSFU + NOSFUN
-        IVMAS = IVCNC + NOTOT
-        IVDER = IVMAS + NOTOT
-        IVDSP = IVDER + NOTOT
-        IVVEL = IVDSP + NODISP
-        IVDEF = IVVEL + NOVELO
-        IVLOC = IVDEF + NODEF
-        IVDSX = IVLOC + NOLOC
-        IVVLX = IVDSX + NDSPX
-        IVLCX = IVVLX + NVELX
-        IVFLX = IVLCX + NLOCX
+        IVPAR = IVCNS + num_constants
+        IVFUN = IVPAR + num_spatial_parameters
+        IVSFU = IVFUN + num_time_functions
+        IVCNC = IVSFU + num_spatial_time_fuctions
+        IVMAS = IVCNC + num_substances_total
+        IVDER = IVMAS + num_substances_total
+        IVDSP = IVDER + num_substances_total
+        IVVEL = IVDSP + num_dispersion_arrays
+        IVDEF = IVVEL + num_velocity_arrays
+        IVLOC = IVDEF + num_defaults
+        IVDSX = IVLOC + num_local_vars
+        IVVLX = IVDSX + num_dispersion_arrays_extra
+        IVLCX = IVVLX + num_velocity_arrays_extra
+        IVFLX = IVLCX + num_local_vars_exchange
         !
         !
         !
@@ -237,7 +237,7 @@ contains
         !
         !     Cons
         !
-        DO ICONS = 1, NOCONS
+        DO ICONS = 1, num_constants
             IVAR = IVAR + 1
             VARNAM(IVAR) = CONAME(ICONS)
             VARARR(IVAR) = IICONS
@@ -250,7 +250,7 @@ contains
         !
         !     Param
         !
-        DO IPA = 1, NOPA
+        DO IPA = 1, num_spatial_parameters
             IVAR = IVAR + 1
             VARNAM(IVAR) = PANAME(IPA)
             VARARR(IVAR) = IIPARM
@@ -267,7 +267,7 @@ contains
         !
         !     Func
         !
-        DO IFUN = 1, NOFUN
+        DO IFUN = 1, num_time_functions
             IVAR = IVAR + 1
             VARNAM(IVAR) = FUNAME(IFUN)
             VARARR(IVAR) = IIFUNC
@@ -280,7 +280,7 @@ contains
         !
         !     Seg Func
         !
-        DO ISFUN = 1, NOSFUN
+        DO ISFUN = 1, num_spatial_time_fuctions
             IVAR = IVAR + 1
             VARNAM(IVAR) = SFNAME(ISFUN)
             VARARR(IVAR) = IISFUN
@@ -293,7 +293,7 @@ contains
         !
         !     Conc
         !
-        DO ISYS = 1, NOSYS
+        DO ISYS = 1, num_substances_transported
             IVAR = IVAR + 1
             VARNAM(IVAR) = SYNAME(ISYS)
             VARARR(IVAR) = IICONC
@@ -303,7 +303,7 @@ contains
             VARTAG(IVAR) = 3
             VARAGG(IVAR) = 1
         ENDDO
-        DO ISYS = NOSYS + 1, NOTOT
+        DO ISYS = num_substances_transported + 1, num_substances_total
             IVAR = IVAR + 1
             VARNAM(IVAR) = SYNAME(ISYS)
             VARARR(IVAR) = IICONC
@@ -316,7 +316,7 @@ contains
         !
         !     Mass
         !
-        DO ISYS = 1, NOTOT
+        DO ISYS = 1, num_substances_total
             IVAR = IVAR + 1
             VARNAM(IVAR) = 'MASS_' // SYNAME(ISYS)
             VARARR(IVAR) = IIMASS
@@ -329,7 +329,7 @@ contains
         !
         !     Deriv
         !
-        DO ISYS = 1, NOTOT
+        DO ISYS = 1, num_substances_total
             IVAR = IVAR + 1
             VARNAM(IVAR) = 'DERIV_' // SYNAME(ISYS)
             VARARR(IVAR) = IIDERV
@@ -342,7 +342,7 @@ contains
         !
         !     Disp
         !
-        DO IDSP = 1, NODISP
+        DO IDSP = 1, num_dispersion_arrays
             IVAR = IVAR + 1
             NAME = ' '
             WRITE (NAME, '("DISP_ARRAY_",I0)') IDSP
@@ -357,7 +357,7 @@ contains
         !
         !     Velo
         !
-        DO IVEL = 1, NOVELO
+        DO IVEL = 1, num_velocity_arrays
             IVAR = IVAR + 1
             NAME = ' '
             WRITE (NAME, '("VELO_ARRAY_",I0)') IVEL
@@ -372,7 +372,7 @@ contains
         !
         !     Default
         !
-        DO IDEF = 1, NODEF
+        DO IDEF = 1, num_defaults
             IVAR = IVAR + 1
             VARNAM(IVAR) = DENAME(IDEF)
             VARARR(IVAR) = IIDEFA
@@ -385,7 +385,7 @@ contains
         !
         !     Local
         !
-        DO ILOC = 1, NOLOC
+        DO ILOC = 1, num_local_vars
             IVAR = IVAR + 1
             VARNAM(IVAR) = LOCNAM(ILOC)
             VARARR(IVAR) = IIPLOC
@@ -398,7 +398,7 @@ contains
         !
         !     DSPX
         !
-        DO IDSX = 1, NDSPX
+        DO IDSX = 1, num_dispersion_arrays_extra
             IVAR = IVAR + 1
             VARARR(IVAR) = IIDSPX
             VARIDX(IVAR) = IDSX
@@ -410,7 +410,7 @@ contains
         !
         !     VELX
         !
-        DO IVLX = 1, NVELX
+        DO IVLX = 1, num_velocity_arrays_extra
             IVAR = IVAR + 1
             NAME = ' '
             WRITE (NAME, '("VELX_ARRAY_",I0)') IVLX
@@ -425,7 +425,7 @@ contains
         !
         !     LOCX
         !
-        DO ILCX = 1, NLOCX
+        DO ILCX = 1, num_local_vars_exchange
             IVAR = IVAR + 1
             NAME = ' '
             WRITE (NAME, '("VLOCX_",I0)') ILCX
@@ -440,7 +440,7 @@ contains
         !
         !     FLUX
         !
-        DO IFLX = 1, NFLUX
+        DO IFLX = 1, num_fluxes
             IVAR = IVAR + 1
             VARARR(IVAR) = IIFLUX
             VARIDX(IVAR) = IFLX
@@ -476,7 +476,7 @@ contains
         !
         !     Check if there are overrulings
         !
-        DO IVAR = 1, NOVAR
+        DO IVAR = 1, num_vars
             IVAT = index_in_array(VARNAM(IVAR), VATNAM(:NOVAT))
             IF (IVAT   > 0) THEN
                 !

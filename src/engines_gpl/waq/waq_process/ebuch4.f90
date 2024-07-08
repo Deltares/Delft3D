@@ -28,9 +28,9 @@ module m_ebuch4
 contains
 
 
-    subroutine ebuch4 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine ebuch4 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -68,9 +68,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
@@ -104,7 +104,7 @@ contains
         !     -----Warnings-----
         !
         IF (FIRST) THEN
-            IF (PMSA(IP4) <= 0.0) THEN
+            IF (process_space_real(IP4) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : Poros', &
                         ' should be greater than zero'
             ENDIF
@@ -112,16 +112,16 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CCH4 = MAX (0.0, PMSA(IP1))
-                FSCALE = PMSA(IP2)
-                TEMP = PMSA(IP3)
-                POROS = PMSA(IP4)
-                DEPTH = PMSA(IP5)
-                DELT = PMSA(IP6)
+                CCH4 = MAX (0.0, process_space_real(IP1))
+                FSCALE = process_space_real(IP2)
+                TEMP = process_space_real(IP3)
+                POROS = process_space_real(IP4)
+                DEPTH = process_space_real(IP5)
+                DELT = process_space_real(IP6)
                 !
                 !           Calculate the saturation concentration
                 !
@@ -139,7 +139,7 @@ contains
                 !
                 !           The saturation concentration is output
                 !
-                PMSA(IP7) = CCH4S
+                process_space_real(IP7) = CCH4S
                 !
             ENDIF
             !

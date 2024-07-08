@@ -198,7 +198,6 @@ implicit none
     oil2dh = oil .and. layt == 1
     oil3d  = oil .and. layt  > 1
 
-
     ! deflection angle for coriolis effect.(3d oil module only)
     if (oil3d) then
         defang   = const(noconsp)

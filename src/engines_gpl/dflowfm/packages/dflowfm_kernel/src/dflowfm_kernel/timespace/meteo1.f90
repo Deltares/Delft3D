@@ -6516,7 +6516,7 @@ module m_meteo
    use m_waves
    use m_ship
    use fm_external_forcings_data
-   use processes_input, only: nofun, funame, funinp, nosfunext, sfunname, sfuninp
+   use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
    use m_observations
    use string_module
@@ -6531,7 +6531,7 @@ module m_meteo
    !
    integer, dimension(:), allocatable, target :: item_tracerbnd              !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd             !< dim(numfracs)
-   integer, dimension(:), allocatable, target :: item_waqfun                 !< dim(nofun)  
+   integer, dimension(:), allocatable, target :: item_waqfun                 !< dim(num_time_functions)  
    integer, dimension(:), allocatable, target :: item_waqsfun                !< dim(nosfunext)
 
    integer, target :: item_windx                                             !< Unique Item id of the ext-file's 'windx' quantity's x-component.
@@ -6759,7 +6759,7 @@ module m_meteo
       ! TO ADD: initial concentration field?
       
       if ( allocated(item_waqfun) ) deallocate(item_waqfun)
-      allocate(item_waqfun(nofun))
+      allocate(item_waqfun(num_time_functions))
       item_waqfun = ec_undef_int
       
       if ( allocated(item_waqsfun) ) deallocate(item_waqsfun)
@@ -7211,7 +7211,7 @@ module m_meteo
             dataPtr1 => bndsf(isf)%z
          case ('waqfunction') 
             ! get sediment fraction (boundary) number
-            ifun = findname(nofun, funame, waqinput)
+            ifun = findname(num_time_functions, funame, waqinput)
             itemPtr1 => item_waqfun(ifun)
             dataPtr1 => funinp(ifun,:)
          case ('waqsegmentfunction') 

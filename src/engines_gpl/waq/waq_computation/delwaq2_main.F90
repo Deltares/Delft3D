@@ -34,8 +34,8 @@ contains
         use integration_schemes, only: run_integration_schemes
         use delwaq2_data
         use m_actions, only: action_initialisation, action_fullcomputation
-        use m_sysn
-        use m_sysi
+        use m_waq_memory_dimensions
+        use m_timer_variables
 
         integer(kind=int_wp), intent(in) :: action         !< Action to be taken
         type(delwaq_data) :: dlwqd
@@ -62,8 +62,8 @@ contains
     subroutine delwaq2_main_init(dlwqd, itota, itoti, itotc)
 
         use delwaq2_data
-        use m_sysn
-        use m_sysi
+        use m_waq_memory_dimensions
+        use m_timer_variables
 
         implicit none
 

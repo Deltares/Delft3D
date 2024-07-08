@@ -28,9 +28,9 @@ module m_atmdep
 contains
 
 
-    subroutine atmdep (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine atmdep (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -55,9 +55,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IFLUX, ISEG, IKMRK1, &
                 IKMRK2, ISW1, ISW2
         real(kind = real_wp) :: zfl, depth, conc, delt
@@ -70,16 +70,16 @@ contains
         IP6 = IPOINT(6)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
-                ZFL = PMSA(IP1)
-                DEPTH = PMSA(IP2)
-                CONC = PMSA(IP3)
-                ISW1 = NINT(PMSA(IP4))
-                ISW2 = NINT(PMSA(IP5))
-                DELT = PMSA(IP6)
+                ZFL = process_space_real(IP1)
+                DEPTH = process_space_real(IP2)
+                CONC = process_space_real(IP3)
+                ISW1 = NINT(process_space_real(IP4))
+                ISW2 = NINT(process_space_real(IP5))
+                DELT = process_space_real(IP6)
 
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((ISW1   == 0) .OR.     & ! option load in all segments

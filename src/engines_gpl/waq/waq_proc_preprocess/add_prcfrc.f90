@@ -55,7 +55,7 @@ contains
         type(procesprop), pointer :: proc            ! single process
         type(procesprop) :: procn           ! process to be added
         type(itemprop) :: item            ! one item
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! loop counter processes
         integer(kind = int_wp) :: iproc_new       ! index inserted process
         integer(kind = int_wp) :: isfrac          ! index substance fractions
@@ -84,8 +84,8 @@ contains
 
         ! loop over the processes
 
-        nproc = procesdef%current_size
-        proc_loop : do iproc = 1, nproc
+        num_processes_activated = procesdef%current_size
+        proc_loop : do iproc = 1, num_processes_activated
 
             proc => procesdef%procesprops(iproc)
 

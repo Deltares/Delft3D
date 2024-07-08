@@ -35,20 +35,20 @@ module m_hsurf
 contains
 
     !> Sets values of horizontal surface array.
-    subroutine hsurf(noseg, nopa, paname, param, nosfun, &
+    subroutine hsurf(num_cells, num_spatial_parameters, paname, param, num_spatial_time_fuctions, &
             sfname, segfun, surface, file_unit_list)
 
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: nopa                  !< Number of parameters
-        character(20),          intent(in   ) :: paname(nopa)          !< Names of the parameters
-        real(kind = real_wp),   intent(in   ) :: param (nopa, noseg)   !< Parameter values
-        integer(kind = int_wp), intent(in   ) :: nosfun                !< Number of segment functions
-        character(20),          intent(in   ) :: sfname(nosfun)        !< Names of the segment functions
-        real(kind = real_wp),   intent(in   ) :: segfun(noseg, nosfun) !< Segment function values
-        real(kind = real_wp),   intent(inout) :: surface(noseg)        !< Horizontal surface
+        integer(kind = int_wp), intent(in   ) :: num_cells                 !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: num_spatial_parameters                  !< Number of parameters
+        character(20),          intent(in   ) :: paname(num_spatial_parameters)          !< Names of the parameters
+        real(kind = real_wp),   intent(in   ) :: param (num_spatial_parameters, num_cells)   !< Parameter values
+        integer(kind = int_wp), intent(in   ) :: num_spatial_time_fuctions                !< Number of segment functions
+        character(20),          intent(in   ) :: sfname(num_spatial_time_fuctions)        !< Names of the segment functions
+        real(kind = real_wp),   intent(in   ) :: segfun(num_cells, num_spatial_time_fuctions) !< Segment function values
+        real(kind = real_wp),   intent(inout) :: surface(num_cells)        !< Horizontal surface
         integer(kind = int_wp), intent(in   ) :: file_unit_list        !< Logical unit number monitoring file
 
         ! Local variables
@@ -65,7 +65,7 @@ contains
             indx = index_in_array('SURF      ', paname)
             if (indx > 0) then                           ! SURF is found
                 mode = 1
-                surface(:) = param(indx, 1:noseg)
+                surface(:) = param(indx, 1:num_cells)
             else
                 indx = index_in_array('SURF      ', sfname)
                 if (indx > 0) then
@@ -77,7 +77,7 @@ contains
             endif
         endif
         if (mode ==  -1) then
-            surface(:) = segfun(1:noseg, indx)
+            surface(:) = segfun(1:num_cells, indx)
         endif
 
         if (timon) call timstop (ithandl)

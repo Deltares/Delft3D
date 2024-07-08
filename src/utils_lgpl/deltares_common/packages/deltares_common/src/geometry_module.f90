@@ -1287,8 +1287,8 @@ module geometry_module
       integer          :: ipiv, indxr, indxc, i, j, k, L, LL, irow, icol
       double precision :: big, dum, pivinv
 
-      !      PARAMETER (NMAX=50)
-      !      DIMENSION A(NP,NP),B(NP,MP),IPIV(NMAX),INDXR(NMAX),INDXC(NMAX)
+      !      PARAMETER (num_rows=50)
+      !      DIMENSION A(NP,NP),B(NP,MP),IPIV(num_rows),INDXR(num_rows),INDXC(num_rows)
 
       DIMENSION A(NP,NP),B(NP,MP),IPIV(NP),INDXR(NP),INDXC(NP) ! SPvdP: set NMAX to N
       do J=1,N
@@ -2647,10 +2647,10 @@ module geometry_module
       double precision :: xe3,ye3,xe1,ye1,xe2,ye2,tex,tey,ds, &
          xccf,yccf,xccc,yccc,xcccf,ycccf,xccfo,yccfo,alf
 
-      integer, parameter :: MMAX=10
+      integer, parameter :: num_columns=10
 
-      double precision :: xh(MMAX), yh(MMAX)
-      double precision :: xr(MMAX), yr(MMAX), SL,SM,XCR,YCR,CRP
+      double precision :: xh(num_columns), yh(num_columns)
+      double precision :: xr(num_columns), yr(num_columns), SL,SM,XCR,YCR,CRP
       double precision :: eps = 1d-3, xcc3, ycc3, xf, xmx, xmn
       double precision :: dfac
       integer          :: jacros, in, m2, nintlinks ! nr of internal links = connected edges

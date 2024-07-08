@@ -28,9 +28,9 @@ module m_phcarb
 contains
 
 
-    subroutine phcarb  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine phcarb  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Integrated calculation of pH and CO2 system
 
@@ -97,12 +97,12 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
         DOUBLE PRECISION AHPLUSD, P_VAL
 
         INTEGER(kind = int_wp) :: ILUMON
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, ISEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, ISEG, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14
 
@@ -154,7 +154,7 @@ contains
         !
         !     Loop over de segmenten
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !     Eerste kenmerk actief of inactief segment
             !
@@ -162,17 +162,17 @@ contains
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                !     Map PMSA on local variables
+                !     Map process_space_real on local variables
                 !
-                SAL = PMSA(IP1)
-                TIC = PMSA(IP2)
-                ALKA = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                PH_MIN = PMSA(IP5)
-                PH_MAX = PMSA(IP6)
+                SAL = process_space_real(IP1)
+                TIC = process_space_real(IP2)
+                ALKA = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                PH_MIN = process_space_real(IP5)
+                PH_MAX = process_space_real(IP6)
 
                 !     Try to get the old value, this is a good initial value for our solvers.
-                PH_OLD = PMSA(IP7)
+                PH_OLD = process_space_real(IP7)
                 !     Because the value might not exist, if it is outside the range start neutral with pH = 7.0
                 IF (PH_OLD<PH_MIN .OR. PH_OLD>PH_MAX) THEN
                     PH_OLD = 7.0e0
@@ -420,14 +420,14 @@ contains
                 !
                 !---- Output --------------------
                 !
-                PMSA(IP7) = PH
-                PMSA(IP8) = CO2
-                PMSA(IP9) = pCO2water
-                PMSA(IP10) = HCO3
-                PMSA(IP11) = CO3
-                PMSA(IP12) = Satcal
-                PMSA(IP13) = Satarg
-                PMSA(IP14) = BOH4
+                process_space_real(IP7) = PH
+                process_space_real(IP8) = CO2
+                process_space_real(IP9) = pCO2water
+                process_space_real(IP10) = HCO3
+                process_space_real(IP11) = CO3
+                process_space_real(IP12) = Satcal
+                process_space_real(IP13) = Satarg
+                process_space_real(IP14) = BOH4
                 !
             ENDIF
             !

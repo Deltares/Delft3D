@@ -414,7 +414,7 @@ contains
         !         2      PHOSPHOR
         !         3      SILICON
         !         4      KMIN         (light limitation)
-        !         5      KMAX         (photo-inhibition)
+        !         5      num_layers_grid         (photo-inhibition)
         !         6                   (to be neglected)
         !         7      Growth-DIATOMS
         !               ......

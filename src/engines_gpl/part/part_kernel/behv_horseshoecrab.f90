@@ -40,10 +40,10 @@ implicit none
 
 contains
     subroutine behv_horseshoecrab ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                             m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                             m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                              lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                              wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                             ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                             ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                              ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                              vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                              ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -59,9 +59,9 @@ contains
 
         integer(int_wp ), intent(in)     :: lunrep              ! report file
         integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
-        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
-        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
-        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: num_layers               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: num_rows                ! first grid dimension
+        integer(int_wp ), intent(in)     :: num_columns                ! second grid dimension
         integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
         integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
         integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
@@ -245,7 +245,7 @@ contains
              
              ! Assemble bathymertry values of surrounding gridcells
              !  return: v_swim and d_swim
-             call orien_bathymetry ( lunrep    , n           , m        , nmax        , mmax        ,    &
+             call orien_bathymetry ( lunrep    , n           , m        , num_rows        , num_columns        ,    &
                                      mnmaxk    , lgrid       , lgrid2   , lgrid3      , depth       ,    &
                                      v_swim    , d_swim      , angle    , ipart       , xpart       ,    &
                                      ypart     , a           , b        , flow        , local_angle ,    &
@@ -254,12 +254,12 @@ contains
                                      bath_n41 ) 
             
             ! No swimming during outgoing tide
-             call vert_swimm_tidal (   lunrep,   ebb_flow  , iseg , k, nolay, &
+             call vert_swimm_tidal (   lunrep,   ebb_flow  , iseg , k, num_layers, &
                                        stick_to_bottom , ipart , wsettl , kpart , zpart , &
                                        buoy , vzact , v_swim , d_swim )
                          
             ! No swimming during the day
-             call vert_swimm_diurnal (   lunrep        , daytime  , k       , nolay   , stick_to_bottom ,    &
+             call vert_swimm_diurnal (   lunrep        , daytime  , k       , num_layers   , stick_to_bottom ,    &
                                          dive_at_night , ipart    , wsettl  , kpart   , zpart           ,    &
                                          buoy          , vzact    , v_swim  , d_swim  )
                 

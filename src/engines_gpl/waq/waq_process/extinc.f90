@@ -28,9 +28,9 @@ module m_extinc
 contains
 
 
-    subroutine extinc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine extinc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Calculation total and partial extinction coefficients
 
@@ -48,9 +48,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(41), INCREM(41), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(41), INCREM(41), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declaration
         !
@@ -108,45 +108,45 @@ contains
         IPNT = IPOINT
         IFLUX = 0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                A1 = PMSA(IPNT(1))
-                A2 = PMSA(IPNT(2))
-                A3 = PMSA(IPNT(3))
-                APOC1 = PMSA(IPNT(4))
-                EXT0 = PMSA(IPNT(5))
-                EXTBL = PMSA(IPNT(6))
-                EXTDYN = PMSA(IPNT(7))
-                EXTPRO = PMSA(IPNT(8))
-                EXTMAC = PMSA(IPNT(9))
-                AIM1 = PMSA(IPNT(10))
-                AIM2 = PMSA(IPNT(11))
-                AIM3 = PMSA(IPNT(12))
-                POC1 = PMSA(IPNT(13))
-                POC2 = PMSA(IPNT(14))
-                SW_UIT = NINT(PMSA(IPNT(15)))
-                DOC = PMSA(IPNT(16))
-                ADOC = PMSA(IPNT(17))
-                DIEP1 = PMSA(IPNT(18))
-                DIEP2 = PMSA(IPNT(19))
-                CORCHL = PMSA(IPNT(20))
-                C_DET = PMSA(IPNT(21))
-                C_GL1 = PMSA(IPNT(22))
-                C_GL2 = PMSA(IPNT(23))
-                HELHUM = PMSA(IPNT(24))
-                TAU = PMSA(IPNT(25))
-                ANGLE = PMSA(IPNT(26))
-                DETCDM = PMSA(IPNT(27))
-                XTSAL0 = PMSA(IPNT(28))
-                SALIN = PMSA(IPNT(29))
-                SALMAX = PMSA(IPNT(30))
-                APOC2 = PMSA(IPNT(31))
-                APOC3 = PMSA(IPNT(32))
-                APOC4 = PMSA(IPNT(33))
-                POC3 = PMSA(IPNT(34))
-                POC4 = PMSA(IPNT(35))
+                A1 = process_space_real(IPNT(1))
+                A2 = process_space_real(IPNT(2))
+                A3 = process_space_real(IPNT(3))
+                APOC1 = process_space_real(IPNT(4))
+                EXT0 = process_space_real(IPNT(5))
+                EXTBL = process_space_real(IPNT(6))
+                EXTDYN = process_space_real(IPNT(7))
+                EXTPRO = process_space_real(IPNT(8))
+                EXTMAC = process_space_real(IPNT(9))
+                AIM1 = process_space_real(IPNT(10))
+                AIM2 = process_space_real(IPNT(11))
+                AIM3 = process_space_real(IPNT(12))
+                POC1 = process_space_real(IPNT(13))
+                POC2 = process_space_real(IPNT(14))
+                SW_UIT = NINT(process_space_real(IPNT(15)))
+                DOC = process_space_real(IPNT(16))
+                ADOC = process_space_real(IPNT(17))
+                DIEP1 = process_space_real(IPNT(18))
+                DIEP2 = process_space_real(IPNT(19))
+                CORCHL = process_space_real(IPNT(20))
+                C_DET = process_space_real(IPNT(21))
+                C_GL1 = process_space_real(IPNT(22))
+                C_GL2 = process_space_real(IPNT(23))
+                HELHUM = process_space_real(IPNT(24))
+                TAU = process_space_real(IPNT(25))
+                ANGLE = process_space_real(IPNT(26))
+                DETCDM = process_space_real(IPNT(27))
+                XTSAL0 = process_space_real(IPNT(28))
+                SALIN = process_space_real(IPNT(29))
+                SALMAX = process_space_real(IPNT(30))
+                APOC2 = process_space_real(IPNT(31))
+                APOC3 = process_space_real(IPNT(32))
+                APOC4 = process_space_real(IPNT(33))
+                POC3 = process_space_real(IPNT(34))
+                POC4 = process_space_real(IPNT(35))
                 !
                 IF (SW_UIT==0) THEN
                     !
@@ -234,12 +234,12 @@ contains
                     !
                 ENDIF
                 !
-                PMSA(IPNT(36)) = EXT
-                PMSA(IPNT(37)) = EXTIM
-                PMSA(IPNT(38)) = EXTPOC
-                PMSA(IPNT(39)) = EXTDOC
-                PMSA(IPNT(40)) = EXTALG
-                PMSA(IPNT(41)) = EXTSAL
+                process_space_real(IPNT(36)) = EXT
+                process_space_real(IPNT(37)) = EXTIM
+                process_space_real(IPNT(38)) = EXTPOC
+                process_space_real(IPNT(39)) = EXTDOC
+                process_space_real(IPNT(40)) = EXTALG
+                process_space_real(IPNT(41)) = EXTSAL
                 !
             ENDIF
             !

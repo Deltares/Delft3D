@@ -28,8 +28,8 @@ module m_setdvp
 contains
 
 
-    subroutine setdvp (nodisp, idpnt, ndspn, idpnw, nosys, &
-            ndspx, dsto)
+    subroutine setdvp (num_dispersion_arrays, idpnt, num_dispersion_arrays_new, idpnw, num_substances_transported, &
+            num_dispersion_arrays_extra, dsto)
         !
         !     function            : sets new dispersion (or velocity) pointers
         !
@@ -43,13 +43,13 @@ contains
 
         ! declaration of arguments
 
-        integer(kind = int_wp), intent(in) :: nodisp             ! number of dispersions from input
-        integer(kind = int_wp), intent(in) :: idpnt(nosys)       ! pointers to dispersion array
-        integer(kind = int_wp), intent(inout) :: ndspn              ! number of new dispersion array
-        integer(kind = int_wp), intent(inout) :: idpnw(nosys)       ! pointers to dispersion array
-        integer(kind = int_wp), intent(in) :: nosys              ! number of active substances
-        integer(kind = int_wp), intent(in) :: ndspx              ! number of dispersions from the processes
-        real(kind = real_wp), intent(in) :: dsto(nosys, ndspx)  ! dispersion stochi factors
+        integer(kind = int_wp), intent(in) :: num_dispersion_arrays             ! number of dispersions from input
+        integer(kind = int_wp), intent(in) :: idpnt(num_substances_transported)       ! pointers to dispersion array
+        integer(kind = int_wp), intent(inout) :: num_dispersion_arrays_new
+        integer(kind = int_wp), intent(inout) :: idpnw(num_substances_transported)       ! pointers to dispersion array
+        integer(kind = int_wp), intent(in) :: num_substances_transported
+        integer(kind = int_wp), intent(in) :: num_dispersion_arrays_extra              ! number of dispersions from the processes
+        real(kind = real_wp), intent(in) :: dsto(num_substances_transported, num_dispersion_arrays_extra)  ! dispersion stochi factors
 
         ! local declarations
 
@@ -63,15 +63,15 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("setdvp", ithndl)
 
-        ! only action if there are already new dispersions, we will reset the number of new dispersions ndspn
+        ! only action if there are already new dispersions, we will reset the number of new dispersions num_dispersion_arrays_new
 
-        if (ndspn > 0) then
+        if (num_dispersion_arrays_new > 0) then
 
-            ndspn = 0
-            allocate(dsto_new(nosys, nodisp + ndspx))
+            num_dispersion_arrays_new = 0
+            allocate(dsto_new(num_substances_transported, num_dispersion_arrays + num_dispersion_arrays_extra))
             dsto_new = 0.0
 
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
 
                 ! only if a dispersion acts on this substance
 
@@ -80,12 +80,12 @@ contains
                     ! determine if there is already a new dispersion with equal (1e-20) stochi factors
 
                     found = .false.
-                    do i_dspn = 1, ndspn
+                    do i_dspn = 1, num_dispersion_arrays_new
                         dsto_equal = .true.
 
                         ! the dispersion arrays from the input stochi always 0.0 (not used)  or 1.0 (used)
 
-                        do idisp = 1, nodisp
+                        do idisp = 1, num_dispersion_arrays
                             if (idpnt(isys) == idisp) then
 
                                 ! stochi on dispersion array always 1.0
@@ -100,8 +100,8 @@ contains
                             endif
                         enddo
 
-                        do idspx = 1, ndspx
-                            if (abs(dsto(isys, idspx) - dsto_new(i_dspn, nodisp + idspx)) > 1.e-20) then
+                        do idspx = 1, num_dispersion_arrays_extra
+                            if (abs(dsto(isys, idspx) - dsto_new(i_dspn, num_dispersion_arrays + idspx)) > 1.e-20) then
                                 dsto_equal = .false.
                             endif
                         enddo
@@ -118,18 +118,18 @@ contains
 
                     if (.not. found) then
 
-                        ndspn = ndspn + 1
-                        idpnw(isys) = ndspn
+                        num_dispersion_arrays_new = num_dispersion_arrays_new + 1
+                        idpnw(isys) = num_dispersion_arrays_new
 
                         ! set stochi factors
 
                         idisp = idpnt(isys)
                         if (idisp > 0) then
-                            dsto_new(ndspn, idisp) = 1.0
+                            dsto_new(num_dispersion_arrays_new, idisp) = 1.0
                         endif
 
-                        do idspx = 1, ndspx
-                            dsto_new(ndspn, nodisp + idspx) = dsto(isys, idspx)
+                        do idspx = 1, num_dispersion_arrays_extra
+                            dsto_new(num_dispersion_arrays_new, num_dispersion_arrays + idspx) = dsto(isys, idspx)
                         enddo
 
                     endif

@@ -34,7 +34,7 @@ use timers
 implicit none
 
 contains
-        subroutine vert_swimm_tidal (   lunrep,   ebb_flow  , iseg , k, nolay, &
+        subroutine vert_swimm_tidal (   lunrep,   ebb_flow  , iseg , k, num_layers, &
                                        stick_to_bottom , ipart , wsettl , kpart , zpart , &
                                        buoy , vzact , v_swim , d_swim )
 
@@ -47,7 +47,7 @@ contains
 
         ! arguments :
         integer(int_wp ), intent(in)    :: lunrep              ! report file
-        integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation
+        integer(int_wp ), intent(in)    :: num_layers               ! number of layers in calculation
 
         integer                    :: iseg                ! iseg
 
@@ -76,13 +76,13 @@ contains
 
     if ( ebb_flow(iseg) ) then                                                 !If ebbflow is TRUE for the segment
 
-        if ( k .ge. nolay  ) then                                              !If the third dimension position of the particle is greater or equal to the number of layers
+        if ( k .ge. num_layers  ) then                                              !If the third dimension position of the particle is greater or equal to the number of layers
 
                 if ( stick_to_bottom ) then                                        !If the particle should stick to the bottom
 
                    ! settle on bed if arrived in lowest layer
                    wsettl(ipart) = 0.0                                             ! Particle stays at verticale position 0.0
-                   kpart(ipart) = nolay + 1                                        ! Particle is placed in the storage layer
+                   kpart(ipart) = num_layers + 1                                        ! Particle is placed in the storage layer
                    zpart(ipart) = 0.5                                              ! Particle is positioned in the middle of the cell in the third dimension
                    v_swim(ipart) = 0.0                                             ! The swimming velocity is set to 0.0
 
@@ -100,11 +100,11 @@ contains
 
     else                                                                       !If ebbflow is FALSE for the segment
 
-        if(nolay + 1 .eq. kpart(ipart)) then
+        if(num_layers + 1 .eq. kpart(ipart)) then
 
                 !Get out of the layer
                 wsettl(ipart) = buoy + vzact                                    ! Particle swims upwards
-                kpart(ipart) = nolay                                            ! Particle is placed in the storage layer
+                kpart(ipart) = num_layers                                            ! Particle is placed in the storage layer
                 zpart(ipart) = 0.5                                              ! Particle is positioned in the middle of the cell in the third dimension
 
         else

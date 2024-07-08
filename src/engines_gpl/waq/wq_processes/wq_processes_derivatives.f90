@@ -28,17 +28,17 @@ module m_wq_processes_derivatives
 contains
 
 
-    subroutine wq_processes_derivatives (deriv, notot, noflux, stochi, nflux1, &
-            nfluxp, flux, noseg, volume, ndt)
+    subroutine wq_processes_derivatives (deriv, num_substances_total, noflux, stochi, nflux1, &
+            nfluxp, flux, num_cells, volume, ndt)
         !
         use timers
 
         implicit none
 
-        integer(kind = int_wp) :: notot, noflux, nflux1, nfluxp, noseg
+        integer(kind = int_wp) :: num_substances_total, noflux, nflux1, nfluxp, num_cells
         integer isys, iflux, iseg, ndt
-        real(kind = real_wp) :: stochi(notot, noflux), flux(noflux, noseg)
-        real(8) deriv(noseg, notot), volume(noseg)
+        real(kind = real_wp) :: stochi(num_substances_total, noflux), flux(noflux, num_cells)
+        real(8) deriv(num_cells, num_substances_total), volume(num_cells)
         real(kind = dp) :: st, fact
 
         integer(kind = int_wp), save :: ithndl = 0
@@ -46,17 +46,17 @@ contains
         !
         !     Construct the DERIV's
         !
-        do isys = 1, notot
+        do isys = 1, num_substances_total
             do iflux = nflux1, nflux1 + nfluxp - 1
                 st = stochi(isys, iflux)
                 if (st /= 0.0) then
                     fact = real(ndt) * st
                     if (abs(fact - 1.0) < 1.e-10) then
-                        do iseg = 1, noseg
+                        do iseg = 1, num_cells
                             deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg)
                         enddo
                     else
-                        do iseg = 1, noseg
+                        do iseg = 1, num_cells
                             deriv(iseg, isys) = deriv(iseg, isys) + flux(iflux, iseg) * fact
                         enddo
                     endif

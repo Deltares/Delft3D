@@ -28,9 +28,9 @@ module m_vervlu
 contains
 
 
-    subroutine vervlu (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine vervlu (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Atmospheric exchange OMPs (volatilization/intake)
 
@@ -77,9 +77,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations, constants in source
         !
@@ -102,24 +102,24 @@ contains
         IP11 = IPOINT(11)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
                     !
                     !
-                    !     Map PMSA on local variables
+                    !     Map process_space_real on local variables
                     !
-                    CONC = MAX (0.0, PMSA(IP1))
-                    ATMC = PMSA(IP2)
-                    KL = PMSA(IP3)
-                    KG = PMSA(IP4)
-                    H0TREF = PMSA(IP5)
-                    TREF = PMSA(IP6)
-                    C1 = PMSA(IP7)
-                    TEMP = PMSA(IP8)
-                    DEPTH = PMSA(IP9)
+                    CONC = MAX (0.0, process_space_real(IP1))
+                    ATMC = process_space_real(IP2)
+                    KL = process_space_real(IP3)
+                    KG = process_space_real(IP4)
+                    H0TREF = process_space_real(IP5)
+                    TREF = process_space_real(IP6)
+                    C1 = process_space_real(IP7)
+                    TEMP = process_space_real(IP8)
+                    DEPTH = process_space_real(IP9)
                     !
                     !
                     !     Error messages
@@ -147,8 +147,8 @@ contains
                     FL (1 + IFLUX) = (CONC - ATMC / H1TEMP) * KV / DEPTH
                     !
                     !     Output
-                    PMSA(IP10) = KV
-                    PMSA(IP11) = H1TEMP
+                    process_space_real(IP10) = KV
+                    process_space_real(IP11) = H1TEMP
                     !
                 ENDIF
             ENDIF

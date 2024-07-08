@@ -258,7 +258,7 @@ function readtime(minp, meteoitem, flow_itdate, flow_tzone, tread) result(succes
 end function readtime
 
 
-function read_equidistant_block(minp, meteoitem, d, mx, nx) result(success)
+function read_equidistant_block(minp, meteoitem, d, mx, grid_width) result(success)
    !
    ! read datablock in meteo_on_equidistant_grid file
    !
@@ -266,7 +266,7 @@ function read_equidistant_block(minp, meteoitem, d, mx, nx) result(success)
    !
    integer                      :: minp
    integer                      :: mx
-   integer                      :: nx
+   integer                      :: grid_width
    real(hp), dimension(:,:)     :: d
    logical                      :: success
    type(tmeteoitem)             :: meteoitem
@@ -275,7 +275,7 @@ function read_equidistant_block(minp, meteoitem, d, mx, nx) result(success)
    integer                :: j
    character(16)          :: tex
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. grid_width ) then
         meteomessage = 'READ_EQUIDISTANT_BLOCK: wrong sizes'
         success = .false.
         return
@@ -445,7 +445,7 @@ function readseries(minp,d,kx,tread) result(success)
 end function readseries
 
 
-function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
+function read_spv_block(minp, meteoitem, d, mx, grid_width, kx) result(success)
    !
    ! Read block in meteo_on_computational_grid file
    !
@@ -454,7 +454,7 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
    integer                    :: minp
    integer                    :: kx
    integer                    :: mx
-   integer                    :: nx
+   integer                    :: grid_width
    real(hp), dimension(:,:,:) :: d
    logical                    :: success
    type(tmeteoitem)           :: meteoitem
@@ -463,7 +463,7 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
    integer                    :: j
    integer                    :: k
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx .or. size(d,3) .ne. kx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. grid_width .or. size(d,3) .ne. kx ) then
       meteomessage = 'READ_SPV_BLOCK: wrong sizes'
       success = .false.
       return
@@ -473,8 +473,8 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
    !
    do k = 1, kx
       do j = 1, mx
-         read(minp,*,end = 100, err=101) ( d(j,i,k), i = 1, nx )
-         do i = 1, nx
+         read(minp,*,end = 100, err=101) ( d(j,i,k), i = 1, grid_width )
+         do i = 1, grid_width
             if (isnan(d(j,i,k))) goto 201
          enddo
       enddo
@@ -497,7 +497,7 @@ function read_spv_block(minp, meteoitem, d, mx, nx, kx) result(success)
 end function read_spv_block
 
 
-function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, all_nodata) result(success)
+function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_spw_eye, all_nodata) result(success)
    !
    ! Read spiderweb field including the location of the cyclone/spiderweb eye and the pressure drop there
    !
@@ -505,7 +505,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    !
    integer                    :: minp
    integer                    :: mx
-   integer                    :: nx
+   integer                    :: grid_width
    real(hp), dimension(:,:,:) :: d
    real(fp)                   :: x_spw_eye
    real(fp)                   :: y_spw_eye
@@ -522,7 +522,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    real(fp)                   :: p_drop_spw_eye
    character(:), allocatable  :: rec
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. grid_width ) then
       meteomessage = 'READ_SPIDERWEB_BLOCK: wrong sizes'
       success = .false.
       return
@@ -549,7 +549,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    !
    ! Wind speed
    !
-   do j = 2, nx
+   do j = 2, grid_width
       read(minp,*,end = 100, err=201) ( d(i,j,1), i = 1, mx-1 )
       do i = 1, mx-1
         if (isnan(d(i,j,1))) goto 301
@@ -558,7 +558,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    !
    ! Wind direction
    !
-   do j = 2, nx
+   do j = 2, grid_width
       read(minp,*,end = 100, err=202) ( d(i,j,2), i = 1, mx-1 )
       do i = 1, mx-1
         if (isnan(d(i,j,2))) goto 302
@@ -567,7 +567,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    !
    ! Pressure
    !
-   do j = 2, nx
+   do j = 2, grid_width
       read(minp,*,end = 100, err=203) ( d(i,j,3), i = 1, mx-1 )
       do i = 1, mx-1
         if (isnan(d(i,j,3))) goto 303
@@ -585,7 +585,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
    ! Conversion of pressure to Pa (N/m2). If already Pa, p_conv = 1.0_hp
    !
    all_nodata = .true.
-   do j = 2, nx
+   do j = 2, grid_width
       do i = 1, mx-1
          if (d(i,j,1) == meteoitem%nodata_value) then
             d(i,j,1) = nodata_default
@@ -606,7 +606,7 @@ function read_spiderweb_block(minp, d, mx, nx, meteoitem, x_spw_eye, y_spw_eye, 
       enddo
    enddo
    !
-   do j = 1, nx
+   do j = 1, grid_width
       !
       ! Fill 360 degrees
       !

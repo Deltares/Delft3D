@@ -28,9 +28,9 @@ module m_dlwqm3
 contains
 
     !> Fills in the rhs and the initial guess for the adjusting theta algorithm
-    subroutine dlwqm3(idt, isys, nosys, notot, noseg, &
-                      conc, deriv, volold, nobnd, bound, &
-                      noq, ipoint, flowtot, disptot, theta, &
+    subroutine dlwqm3(idt, isys, num_substances_transported, num_substances_total, num_cells, &
+                      conc, deriv, volold, num_boundary_conditions, bound, &
+                      num_exchanges, ipoint, flowtot, disptot, theta, &
                       diag, iscale, rhs, sol)
 
         use timers
@@ -39,24 +39,24 @@ contains
 
         integer(kind=int_wp), intent(in   ) :: idt                 !< Time step
         integer(kind=int_wp), intent(in   ) :: isys                !< Current active substance
-        integer(kind=int_wp), intent(in   ) :: nosys               !< Number of active substances
-        integer(kind=int_wp), intent(in   ) :: notot               !< Total number of substances
-        integer(kind=int_wp), intent(in   ) :: noseg               !< Number of cells or segments
-        real(kind=real_wp),   intent(in   ) :: conc(notot, noseg)  !< Concentrations
-        real(kind=real_wp),   intent(in   ) :: deriv(notot, noseg) !< Processes and discharges (divided by the time step idt)
-        real(kind=real_wp),   intent(in   ) :: volold(noseg)       !< Segment volumes at the previous time
-        integer(kind=int_wp), intent(in   ) :: nobnd               !< Number of boundary segments
-        real(kind=real_wp),   intent(in   ) :: bound(nosys, nobnd) !< Boundary concentrions
-        integer(kind=int_wp), intent(in   ) :: noq                 !< Number of exchanges
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)      !< Exchange pointers (dim: 4 x noq)
-        real(kind=real_wp),   intent(in   ) :: flowtot(noq)        !< Flows plus additional velos. (dim: noq)
-        real(kind=real_wp),   intent(in   ) :: disptot(noq)        !< Dispersion plus additional dipers. (dim: noq)
-        real(kind=real_wp),   intent(in   ) :: theta(noq)          !< Variable theta coefficients
-        real(kind=dp),        intent(in   ) :: diag(noseg + nobnd) !< Diagonal of the matrix (lhs)
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported               !< Number of active substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total               !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells               !< Number of cells or segments
+        real(kind=real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)  !< Concentrations
+        real(kind=real_wp),   intent(in   ) :: deriv(num_substances_total, num_cells) !< Processes and discharges (divided by the time step idt)
+        real(kind=real_wp),   intent(in   ) :: volold(num_cells)       !< Segment volumes at the previous time
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions               !< Number of boundary segments
+        real(kind=real_wp),   intent(in   ) :: bound(num_substances_transported, num_boundary_conditions) !< Boundary concentrions
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                 !< Number of exchanges
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)      !< Exchange pointers (dim: 4 x num_exchanges)
+        real(kind=real_wp),   intent(in   ) :: flowtot(num_exchanges)        !< Flows plus additional velos. (dim: num_exchanges)
+        real(kind=real_wp),   intent(in   ) :: disptot(num_exchanges)        !< Dispersion plus additional dipers. (dim: num_exchanges)
+        real(kind=real_wp),   intent(in   ) :: theta(num_exchanges)          !< Variable theta coefficients
+        real(kind=dp),        intent(in   ) :: diag(num_cells + num_boundary_conditions) !< Diagonal of the matrix (lhs)
         integer(kind=int_wp), intent(in   ) :: iscale              !< 0: no diagonal scaling
                                                                    !< 1: diagonal scaling
-        real(kind=dp),        intent(  out) :: rhs(noseg + nobnd)  !< Right hand side
-        real(kind=dp),        intent(  out) :: sol(noseg + nobnd)  !< Initial guess
+        real(kind=dp),        intent(  out) :: rhs(num_cells + num_boundary_conditions)  !< Right hand side
+        real(kind=dp),        intent(  out) :: sol(num_cells + num_boundary_conditions)  !< Initial guess
        
         ! Local variables
         integer(kind=int_wp) :: ifrom  !< Index cell from
@@ -73,16 +73,16 @@ contains
         if (timon) call timstrt("dlwqm3", ithandl)
 
         ! volumes, processes, and discharges
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             rhs(iseg) = volold(iseg)*conc(isys, iseg)/real(idt) + deriv(isys, iseg)
         end do
 
-        do ibnd = 1, nobnd
-            rhs(noseg + ibnd) = bound(isys, ibnd)
+        do ibnd = 1, num_boundary_conditions
+            rhs(num_cells + ibnd) = bound(isys, ibnd)
         end do
 
         ! flow and diffusion
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or. ito == 0) cycle
@@ -113,7 +113,7 @@ contains
 
         ! scale rhs (diagonal scaling to improve convergence of gmres)
         if (iscale == 1) then
-            do iseg = 1, noseg + nobnd
+            do iseg = 1, num_cells + num_boundary_conditions
                 rhs(iseg) = rhs(iseg)/diag(iseg)
             end do
         end if
@@ -121,7 +121,7 @@ contains
         ! zero initial guess, try previous concentration for water volumes
         ! ( alternatively take zero vector ). Zero initial guess for boundaries.
         sol = 0.0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             sol(iseg) = conc(isys, iseg) + 0.01
         end do
 

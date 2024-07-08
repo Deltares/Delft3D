@@ -28,7 +28,7 @@ module m_wrtoys
 contains
 
 
-    subroutine wrtoys(file_name_list, file_unit_list, notot, syname, noutp, ioutps, outputs)
+    subroutine wrtoys(file_name_list, file_unit_list, num_substances_total, syname, num_output_files, ioutps, outputs)
         !! writes altoys input files.
 
         use timers         !< performance timers
@@ -36,9 +36,9 @@ contains
 
         character(len = *), intent(in) :: file_name_list(*)               !< filenames
         integer(kind = int_wp), intent(in) :: file_unit_list(*)                 !< unit numbers
-        integer(kind = int_wp), intent(in) :: notot                  !< number of substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                  !< number of substances
         character(len = 20), intent(in) :: syname(*)              !< substance names
-        integer(kind = int_wp), intent(in) :: noutp                  !< total number of output files
+        integer(kind = int_wp), intent(in) :: num_output_files                  !< total number of output files
         integer(kind = int_wp), intent(in) :: ioutps(7, *)            !< (old) output structure
         type(OutputPointers), intent(in) :: outputs                !< output structure
 
@@ -60,7 +60,7 @@ contains
         ! write altoys.inp for all output in history file
         open (file_unit, file = 'altoys.inp')
         if (ioutps(5, 3) == ihi3) then
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 write(file_unit, 1000) syname(isys), syname(isys)
             end do
         endif
@@ -76,11 +76,11 @@ contains
         ! write batoys.inp for all substances
         if (ioutps(5, 5) == ibal) then
             open (file_unit, file = 'batoys.inp')
-            write(file_unit, 1010) notot
-            do isys = 1, notot
+            write(file_unit, 1010) num_substances_total
+            do isys = 1, num_substances_total
                 write(file_unit, 1020) syname(isys)
             end do
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 write(file_unit, 1030) syname(isys), syname(isys)
             end do
             close (file_unit)

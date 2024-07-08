@@ -47,27 +47,27 @@
       integer             :: iq            ! exchange index
 
       ! volumes
-      do iseg = 1, input_hyd%noseg
+      do iseg = 1, input_hyd%num_cells
          output_hyd%volume(iseg) = input_hyd%volume(iseg)
       end do
 
 
       ! areas
 
-      do iq = 1 , input_hyd%noq
+      do iq = 1 , input_hyd%num_exchanges
          output_hyd%area(iq) = input_hyd%area(iq)
       enddo
 
       ! flows
 
-      do iq = 1 , input_hyd%noq
+      do iq = 1 , input_hyd%num_exchanges
          output_hyd%flow(iq) = input_hyd%flow(iq)
       enddo
 
       ! salinity
 
       if ( input_hyd%sal_present ) then
-         do iseg = 1, input_hyd%noseg
+         do iseg = 1, input_hyd%num_cells
             output_hyd%sal(iseg) = input_hyd%sal(iseg)
          end do
       endif
@@ -75,7 +75,7 @@
       ! temperature, averaged with volume
 
       if ( input_hyd%tem_present ) then
-         do iseg = 1, input_hyd%noseg
+         do iseg = 1, input_hyd%num_cells
             output_hyd%tem(iseg) = input_hyd%tem(iseg)
          end do
       endif
@@ -83,7 +83,7 @@
       ! tau
 
       if ( input_hyd%tau_present ) then
-         do iseg = 1, input_hyd%noseg
+         do iseg = 1, input_hyd%num_cells
             output_hyd%tau(iseg) = input_hyd%tau(iseg)
          end do
       endif
@@ -91,7 +91,7 @@
       ! vdf
 
       if ( input_hyd%vdf_present ) then
-         do iseg = 1, input_hyd%noseg
+         do iseg = 1, input_hyd%num_cells
             output_hyd%vdf(iseg) = input_hyd%vdf(iseg)
          end do
       endif

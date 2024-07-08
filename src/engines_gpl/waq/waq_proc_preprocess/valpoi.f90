@@ -29,28 +29,28 @@ module m_valpoi
 contains
 
 
-    SUBROUTINE VALPOI (NOTOT, NOPA, NOSFUN, SYNAME, NOCONS, &
-            NOFUN, constants, PANAME, FUNAME, SFNAME, &
+    SUBROUTINE VALPOI (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, SYNAME, num_constants, &
+            num_time_functions, constants, PANAME, FUNAME, SFNAME, &
             VALNAM, IVALIP, LINE)
         !     FUNCTION            : sets pointers for process parametrs
 
         use m_waq_data_structure
         use timers       !   performance timers
 
-        INTEGER(kind = int_wp), intent(in) :: NOTOT   !< Total number of substances
-        INTEGER(kind = int_wp), intent(in) :: NOPA    !< Number of parameters
-        INTEGER(kind = int_wp), intent(in) :: NOSFUN  !< Number of segment functions
-        INTEGER(kind = int_wp), intent(in) :: NOCONS  !< Number of constants used
-        INTEGER(kind = int_wp), intent(in) :: NOFUN   !< Number of functions ( user )
+        INTEGER(kind = int_wp), intent(in) :: num_substances_total   !< Total number of substances
+        INTEGER(kind = int_wp), intent(in) :: num_spatial_parameters    !< Number of parameters
+        INTEGER(kind = int_wp), intent(in) :: num_spatial_time_fuctions  !< Number of segment functions
+        INTEGER(kind = int_wp), intent(in) :: num_constants  !< Number of constants used
+        INTEGER(kind = int_wp), intent(in) :: num_time_functions   !< Number of functions ( user )
         INTEGER(kind = int_wp), intent(out) :: IVALIP  !< Pointer in SSA.
 
         CHARACTER(len = *), intent(in) :: VALNAM  !< Name of variable in question
         CHARACTER(len = *), intent(out) :: LINE    !< Report line
 
-        CHARACTER(len = *), intent(in) :: SYNAME(NOTOT)  !< Constant names
-        CHARACTER(len = *), intent(in) :: PANAME(NOPA)   !< Parameter names
-        CHARACTER(len = *), intent(in) :: FUNAME(NOFUN)  !< Function names
-        CHARACTER(len = *), intent(in) :: SFNAME(NOSFUN) !< Segment function names
+        CHARACTER(len = *), intent(in) :: SYNAME(num_substances_total)  !< Constant names
+        CHARACTER(len = *), intent(in) :: PANAME(num_spatial_parameters)   !< Parameter names
+        CHARACTER(len = *), intent(in) :: FUNAME(num_time_functions)  !< Function names
+        CHARACTER(len = *), intent(in) :: SFNAME(num_spatial_time_fuctions) !< Segment function names
 
         type(t_waq_item), intent(in) :: constants       !< delwaq constants list
         !
@@ -107,7 +107,7 @@ contains
         ISYS = index_in_array(VALNAM(:NZOEK), SYNAME)
         IF (ISYS > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using substance nr ', ISYS
-            IVALIP = NOPRED + NOCONS + NOPA + NOFUN + NOSFUN + ISYS
+            IVALIP = NOPRED + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + ISYS
             GOTO 800
         ENDIF
         !
@@ -116,7 +116,7 @@ contains
         ISFUN = index_in_array(VALNAM (:NZOEK), SFNAME)
         IF (ISFUN > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using segment function nr', ISFUN
-            IVALIP = NOPRED + NOCONS + NOPA + NOFUN + ISFUN
+            IVALIP = NOPRED + num_constants + num_spatial_parameters + num_time_functions + ISFUN
             GOTO 800
         ENDIF
         !
@@ -125,7 +125,7 @@ contains
         IFUN = index_in_array(VALNAM (:NZOEK), FUNAME)
         IF (IFUN > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using function nr', IFUN
-            IVALIP = NOPRED + NOCONS + NOPA + IFUN
+            IVALIP = NOPRED + num_constants + num_spatial_parameters + IFUN
             GOTO 800
         ENDIF
         !
@@ -134,7 +134,7 @@ contains
         IPA = index_in_array(VALNAM (:NZOEK), PANAME)
         IF (IPA > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using parameter nr', IPA
-            IVALIP = NOPRED + NOCONS + IPA
+            IVALIP = NOPRED + num_constants + IPA
             GOTO 800
         ENDIF
         !

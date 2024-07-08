@@ -28,7 +28,7 @@ module m_wq_processes_integrate_velocities
 contains
 
 
-    subroutine wq_processes_integrate_velocities (nosys, notot, noseg, noq, novelo, &
+    subroutine wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays, &
             velo, area, volume, ipoint, iknmrk, &
             ivpnt, conc, dts, deriv)
 
@@ -37,9 +37,9 @@ contains
         !>\file
         !>         Makes explicit upwind derivatives for the aditonal velocities from the proces library
         !>
-        !>         This routine makes for the nosys transported substaces the contribution of the advection and
-        !>         the diffusion to the DERIV(notot,noseg) array. Notot is the total number of substances,
-        !>         noseg is the number of computational volumes.\n
+        !>         This routine makes for the num_substances_transported transported substaces the contribution of the advection and
+        !>         the diffusion to the DERIV(num_substances_total,num_cells) array. num_substances_total is the total number of substances,
+        !>         num_cells is the number of computational volumes.\n
 
         !     Function            : Makes explicit derivatives according to additional flow
 
@@ -53,20 +53,20 @@ contains
 
         !     kind           function         name                   description
 
-        integer(kind = int_wp), intent(in) :: nosys                 !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                 !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                 !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: noq                   !< total number of interfaces
-        integer(kind = int_wp), intent(in) :: novelo                !< number additional velocities
-        real(kind = real_wp), intent(in) :: velo  (novelo, noq)    !< array with additional velocities
-        real(kind = real_wp), intent(in) :: area  (noq)           !< exchange areas in m2
-        real(kind = dp), intent(in) :: volume(noseg)         !< volumes in m3
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq)    !< from, to, from-1, to+1 volume numbers
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)         !< feature array
-        integer(kind = int_wp), intent(in) :: ivpnt (nosys)         !< additional velocity number per substance
-        real(kind = real_wp), intent(in) :: conc  (notot, noseg)   !< concentrations at previous time level
+        integer(kind = int_wp), intent(in) :: num_substances_transported                 !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                 !< total number of substances
+        integer(kind = int_wp), intent(in) :: num_cells                 !< number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_exchanges                   !< total number of interfaces
+        integer(kind = int_wp), intent(in) :: num_velocity_arrays                !< number additional velocities
+        real(kind = real_wp), intent(in) :: velo  (num_velocity_arrays, num_exchanges)    !< array with additional velocities
+        real(kind = real_wp), intent(in) :: area  (num_exchanges)           !< exchange areas in m2
+        real(kind = dp), intent(in) :: volume(num_cells)         !< volumes in m3
+        integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges)    !< from, to, from-1, to+1 volume numbers
+        integer(kind = int_wp), intent(in) :: iknmrk(num_cells)         !< feature array
+        integer(kind = int_wp), intent(in) :: ivpnt (num_substances_transported)         !< additional velocity number per substance
+        real(kind = real_wp), intent(in) :: conc  (num_substances_total, num_cells)   !< concentrations at previous time level
         real(kind = dp), intent(in) :: dts                   !< time step in seconds
-        real(kind = dp), intent(inout) :: deriv (noseg, notot)   !< explicit derivative in mass/m3/s
+        real(kind = dp), intent(inout) :: deriv (num_cells, num_substances_total)   !< explicit derivative in mass/m3/s
 
         !     Local variables     :
 
@@ -85,7 +85,7 @@ contains
         if (timon) call timstrt("wq_processes_integrate_velocities", ithndl)
 
         !     loop accross the number of exchanges
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
@@ -93,7 +93,7 @@ contains
             vfrom = volume(ifrom)
             vto = volume(ito)
             if (vfrom <= 0.0 .or. vto <= 0.0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 if (ivpnt(isys) > 0) then
                     q = velo  (ivpnt(isys), iq) * a
                     if (q == 0.0) cycle

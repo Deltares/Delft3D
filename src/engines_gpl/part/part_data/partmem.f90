@@ -50,7 +50,7 @@ module partmem
       integer  ( int_wp )           :: nosub_max     ! maximum number of substances
       integer  ( int_wp )           :: nmaxp         ! horizontal dimension 1 of flow file
       integer  ( int_wp )           :: mmaxp         ! horizontal dimension 2 of flow file
-      integer  ( int_wp )           :: mnmax2        ! nmax*mmax
+      integer  ( int_wp )           :: mnmax2        ! num_rows*num_columns
       integer  ( int_wp )           :: layt          ! number of layers hydrodynamic model
       logical                  :: fmmodel       ! grid type
       logical                  :: zmodel        ! layer type
@@ -133,7 +133,7 @@ module partmem
 
       integer  ( int_wp ), pointer  :: lgrid (:,:)   ! active grid matrix, with 1-1 numbering
       integer  ( int_wp ), pointer  :: lgrid2(:,:)   ! total grid matrix
-      integer  ( int_wp ), pointer  :: lgrid3(:,:)   ! active grid matrix with noseg numbering
+      integer  ( int_wp ), pointer  :: lgrid3(:,:)   ! active grid matrix with num_cells numbering
       integer  ( int_wp ), pointer  :: laytop(:,:)   ! highest active layer in z-layer model
       integer  ( int_wp ), pointer  :: laytopp(:,:)  ! highest active layer in z-layer model on previous time step
       integer  ( int_wp ), pointer  :: laybot(:,:)   ! deepest active layer in z-layer model
@@ -142,8 +142,8 @@ module partmem
       real     ( real_wp), pointer  :: tcktot (:)    ! relative layer thickness
       real     ( real_wp), pointer  :: zlbot (:)     ! z-layer layer bottom level
       real     ( real_wp), pointer  :: zltop (:)     ! z-layer layer top level
-      integer  ( int_wp ), pointer  :: cellpntp(:)   ! pointer from noseg to mnmaxk
-      integer  ( int_wp ), pointer  :: flowpntp(:,:) ! pointer from noq to nflow
+      integer  ( int_wp ), pointer  :: cellpntp(:)   ! pointer from num_cells to mnmaxk
+      integer  ( int_wp ), pointer  :: flowpntp(:,:) ! pointer from num_exchanges to nflow
       real     ( real_wp), pointer  :: angle  (:)    !
       real     ( real_wp), pointer  :: area   (:)    !
       real     ( real_wp), pointer  :: depth  (:)    !

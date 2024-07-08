@@ -34,7 +34,7 @@ contains
         !
         !     created             : nov 07 by jan van beek
         !
-        !     function            : get noseg from /sysn/ common , system characteristics
+        !     function            : get num_cells from /sysn/ common , system characteristics
         !
         !     logical unitnumbers : -
         !
@@ -44,14 +44,14 @@ contains
         !
         !     name    kind     length     funct.  description
         !     ----    -----    ------     ------- -----------
-        !     pnoseg  integer       1     output  copy of the noseg from sysn
+        !     pnoseg  integer       1     output  copy of the num_cells from sysn
         !
         !     declarations
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         !
         integer(kind = int_wp) :: pnoseg
 
-        pnoseg = noseg
+        pnoseg = num_cells
 
         return
     end
@@ -62,7 +62,7 @@ contains
         !
         !     created             : nov 20 by arjen markus
         !
-        !     function            : store noseg and nolay in /sysn/ common , system characteristics
+        !     function            : store num_cells and num_layers in /sysn/ common , system characteristics
         !                           used in the D-Flow FM context
         !
         !     logical unitnumbers : -
@@ -77,12 +77,12 @@ contains
         !     kmx      integer        1     input   number of layers
         !
         !     declarations
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         !
         integer(kind = int_wp) :: pnoseg, kmx, nosegfm
 
-        noseg = nosegfm
-        nolay = max(1, kmx) ! kmx may be zero, indicating a "true" 2D model
+        num_cells = nosegfm
+        num_layers = max(1, kmx) ! kmx may be zero, indicating a "true" 2D model
 
         return
     end

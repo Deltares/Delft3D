@@ -28,9 +28,9 @@ module m_ironox
 contains
 
 
-    subroutine IRONOX     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine IRONOX     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !JVB$ ATTRIBUTES DLLEXPORT, ALIAS: 'IRONOX' :: IRONOX
         !
         !*******************************************************************************
@@ -39,18 +39,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(18) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(18) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(18) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(18)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -88,30 +88,30 @@ contains
         real(kind = real_wp) :: kion2       ! L  rate of FeOH+ oxidation with nitrate
         real(kind = real_wp) :: kion3       ! L  rate of Fe(OH)2 oxid. with nitrate
 
-        ! initialise pointering in pmsa
+        ! initialise pointering in process_space_real
 
         ipnt = ipoint
         idioo = 1
         idion = 2
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            feiid = max(pmsa(ipnt(1)), 0.0)
-            oxy = max(pmsa(ipnt(2)), 0.0)
-            no3 = max(pmsa(ipnt(3)), 0.0)
-            frfe2dis = pmsa(ipnt(4))
-            frfe2ohd = pmsa(ipnt(5))
-            frfe2oh2d = pmsa(ipnt(6))
-            rci1oxox20 = pmsa(ipnt(7))
-            rci2oxox20 = pmsa(ipnt(8))
-            rci3oxox20 = pmsa(ipnt(9))
-            rci1oxni20 = pmsa(ipnt(10))
-            rci2oxni20 = pmsa(ipnt(11))
-            rci3oxni20 = pmsa(ipnt(12))
-            tciox = pmsa(ipnt(13))
-            temp = pmsa(ipnt(14))
-            delt = pmsa(ipnt(15))
-            poros = pmsa(ipnt(16))
+            feiid = max(process_space_real(ipnt(1)), 0.0)
+            oxy = max(process_space_real(ipnt(2)), 0.0)
+            no3 = max(process_space_real(ipnt(3)), 0.0)
+            frfe2dis = process_space_real(ipnt(4))
+            frfe2ohd = process_space_real(ipnt(5))
+            frfe2oh2d = process_space_real(ipnt(6))
+            rci1oxox20 = process_space_real(ipnt(7))
+            rci2oxox20 = process_space_real(ipnt(8))
+            rci3oxox20 = process_space_real(ipnt(9))
+            rci1oxni20 = process_space_real(ipnt(10))
+            rci2oxni20 = process_space_real(ipnt(11))
+            rci3oxni20 = process_space_real(ipnt(12))
+            tciox = process_space_real(ipnt(13))
+            temp = process_space_real(ipnt(14))
+            delt = process_space_real(ipnt(15))
+            poros = process_space_real(ipnt(16))
 
             if (oxy <= 0.0) then
                 dioo = 0.0
@@ -145,8 +145,8 @@ contains
 
             fl  (idioo) = dioo
             fl  (idion) = dion
-            pmsa(ipnt(17)) = fioo
-            pmsa(ipnt(18)) = fion
+            process_space_real(ipnt(17)) = fioo
+            process_space_real(ipnt(18)) = fion
 
             idioo = idioo + noflux
             idion = idion + noflux

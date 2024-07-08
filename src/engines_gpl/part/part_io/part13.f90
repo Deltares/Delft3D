@@ -30,14 +30,14 @@ use openfl_mod
 
 contains
       subroutine part13 ( lun1     , lname    , lun2     , title    , subst    ,   &
-                          lgrid2   , nmax     , volume   , area     , npart    ,   &
+                          lgrid2   , num_rows     , volume   , area     , npart    ,   &
                           mpart    , xpart    , ypart    , wpart    , nopart   ,   &
                           itime    , idelt    , ipset    , iptmax   , xa       ,   &
                           ya       , xb       , yb       , pg       , recovr   ,   &
                           atotal   , iyear    , imonth   , iofset   , npwndw   ,   &
                           lgrid    , pblay    , modtyp   , apeak    , adepth   ,   &
-                          nolay    , nosubs   , rbuffr   , kpart    , itrack   ,   &
-                          nplot    , mapsub   , ntrack   , isfile   , mmax     ,   &
+                          num_layers    , nosubs   , rbuffr   , kpart    , itrack   ,   &
+                          nplot    , mapsub   , ntrack   , isfile   , num_columns     ,   &
                           nfract   , use_settling   , mstick   , elt_names, elt_types,   &
                           elt_dims , elt_bytes, locdep   , zpart    , za       ,   &
                           dps      , tcktot   , nosub_max, bufsize  )
@@ -83,12 +83,12 @@ contains
       integer  ( int_wp ), intent(in   ) :: nosubs                  !< actual number of substances
       integer  ( int_wp ), intent(in   ) :: nosub_max               !< maximum number of substances
       character( * ), intent(in   ) :: subst (nosub_max)       !< substance name and unit specs
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension of lgrid2
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< sec. dimension of lgrid2
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< model grid layout (total)
-      integer  ( int_wp ), intent(in   ) :: nolay                   !< actual number of layers
-      real     ( real_wp), intent(in   ) :: volume(nmax*mmax*nolay) !< volumes of the lgrid2 cells
-      real     ( real_wp), intent(in   ) :: area  (nmax*mmax*nolay) !< horizontal surface areas of the lgrid2 cells
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first dimension of lgrid2
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< sec. dimension of lgrid2
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< model grid layout (total)
+      integer  ( int_wp ), intent(in   ) :: num_layers                   !< actual number of layers
+      real     ( real_wp), intent(in   ) :: volume(num_rows*num_columns*num_layers) !< volumes of the lgrid2 cells
+      real     ( real_wp), intent(in   ) :: area  (num_rows*num_columns*num_layers) !< horizontal surface areas of the lgrid2 cells
       integer  ( int_wp ), intent(in   ) :: nopart                  !< nr of particles
       integer  ( int_wp ), intent(in   ) :: npart (nopart)          !< n-values of particles
       integer  ( int_wp ), intent(in   ) :: mpart (nopart)          !< m-values of particles
@@ -101,20 +101,20 @@ contains
       integer  ( int_wp ), intent(in   ) :: ipset (iptmax)          !< plot grid times
       real     ( real_wp), intent(  out) :: xa    (nopart)          !< national coordinates of parts
       real     ( real_wp), intent(  out) :: ya    (nopart)          !< national coordinates of parts
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)       !< x-values of bottom points
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)       !< y-values of bottom points
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns)       !< x-values of bottom points
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns)       !< y-values of bottom points
       type(PlotGrid), intent(in   ) :: pg                      !< plot grid information
       real     ( real_wp), intent(in   ) :: recovr(iptmax)          !< recovery for the plots
-      real     ( real_wp), intent(  out) :: atotal(nolay,nosubs)    !< total per mass per subst/per layer
+      real     ( real_wp), intent(  out) :: atotal(num_layers,nosubs)    !< total per mass per subst/per layer
       integer  ( int_wp ), intent(in   ) :: iyear                   !< year offset to real time
       integer  ( int_wp ), intent(in   ) :: imonth                  !< month offset to real time
       integer  ( int_wp ), intent(in   ) :: iofset                  !< day offset in seconds to real time
       integer  ( int_wp ), intent(in   ) :: npwndw                  !< start of active nopart number
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid numbers
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid numbers
       real     ( real_wp), intent(in   ) :: pblay                   !< relative thickness lower layer
       integer  ( int_wp ), intent(in   ) :: modtyp                  !< model type
-      real     ( real_wp), intent(  out) :: apeak (nosubs,nolay)    !< max mass per subst/per layer
-      real     ( real_wp), intent(  out) :: adepth(nosubs,nolay)    !< depth for max mass
+      real     ( real_wp), intent(  out) :: apeak (nosubs,num_layers)    !< max mass per subst/per layer
+      real     ( real_wp), intent(  out) :: adepth(nosubs,num_layers)    !< depth for max mass
       integer  ( int_wp ), intent(in   ) :: bufsize                 !< size of rbuffr
       real     ( real_wp)                :: rbuffr(bufsize)         !< work storage
       integer  ( int_wp ), intent(in   ) :: kpart (nopart)          !< k-values of particles
@@ -130,19 +130,19 @@ contains
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
       integer  ( int_wp ), pointer       :: elt_dims (:,:)          !<  NEFIS
       integer  ( int_wp ), pointer       :: elt_bytes(:)            !<  NEFIS
-      real     ( real_wp)                :: locdep(nmax*mmax,nolay)
+      real     ( real_wp)                :: locdep(num_rows*num_columns,num_layers)
       real     ( real_wp), intent(in   ) :: zpart (nopart)          !< z-values of particles
       real     ( real_wp), intent(  out) :: za    (nopart)          !< national coordinates of parts
-      real     ( real_wp), intent(in   ) :: dps   (nmax*mmax)       !< depth
-      real     ( real_wp), intent(in   ) :: tcktot(nolay+1)         !< layer thickness
+      real     ( real_wp), intent(in   ) :: dps   (num_rows*num_columns)       !< depth
+      real     ( real_wp), intent(in   ) :: tcktot(num_layers+1)         !< layer thickness
 !
 !     parameters            :
 !
 !     name    kind     length     funct.  description
 !     ====    ====     ======     ======  ===========
-!     amap    real  nolay*nosubs* in/out  plot grid to be dumped
+!     amap    real  num_layers*nosubs* in/out  plot grid to be dumped
 !                    nmap*mmap
-!     atrack  real nolay*nmap*mmap in/out array for particle track
+!     atrack  real num_layers*nmap*mmap in/out array for particle track
 !     imask   integer  nmap*mmap  input   when 1 then water/when 0 then land
 !     lfimsk  logical     1       local   switch  land mask
 !     mmap    integer     1       input   dimension of amap
@@ -254,7 +254,7 @@ contains
 !
 !     automatic arrays
 !
-      character(len=20), dimension(nolay) :: units
+      character(len=20), dimension(num_layers) :: units
       integer(4) ithndl              ! handle to time this subroutine
       data       ithndl / 0 /
       if ( timon ) call timstrt( "part13", ithndl )
@@ -300,7 +300,7 @@ contains
       elt_bytes(7) =   4
       elt_bytes(8) =   4
 !
-      mnmapk    = nmap*mmap*nolay
+      mnmapk    = nmap*mmap*num_layers
 !
 !     nosubs+2 : local depths (per layer) and number of particles
 !
@@ -347,10 +347,10 @@ contains
 !
 !     compute particle coordinate
 !
-   20 call part11(lgrid , xb    , yb    , nmax  , npart , mpart ,  &
+   20 call part11(lgrid , xb    , yb    , num_rows  , npart , mpart ,  &
                   xpart , ypart , xa    , ya    , nopart, npwndw,  &
                   lgrid2, kpart , zpart , za    , locdep, dps  ,   &
-                  nolay , mmax  , tcktot)
+                  num_layers , num_columns  , tcktot)
 
 !
 !..  rj vos, 25 /11 /1996
@@ -371,7 +371,7 @@ contains
         write ( lun2, * ) ' Writing to new plotgrid file:', lname(1:len_trim(lname))
         call openfl ( lun1, lname, 1 )
         write(lun1) title
-        write(lun1) -1,nosubs+2 , nmap, mmap, nolay ,    &
+        write(lun1) -1,nosubs+2 , nmap, mmap, num_layers ,    &
                        iyear, imonth, iofset
         write(lun1) window , surf
         write(lun1) (subst(i  ), i   = 1, nosubs+2)
@@ -435,18 +435,18 @@ contains
 !         initialize sizes; 1 - nosubs+2
 !                           2 - mnmaxk
 !                           3 - nodmp (0 for .map)
-!                           4 - nolay
+!                           4 - num_layers
 !                           5 - nocol (.plo)
 !                           6 - norow (.plo)
 !
           nosize(1) = nosubs+2
           nosize(2) = 0
           nosize(3) = iptmax
-          nosize(4) = nolay
+          nosize(4) = num_layers
           nosize(5) = nmap
           nosize(6) = mmap
 !
-          mnmapk    = nmap*mmap*nolay
+          mnmapk    = nmap*mmap*num_layers
 !
 !
 !         set up the element dimensions
@@ -548,7 +548,7 @@ contains
 
       units=' kg/m3'
       if ( use_settling ) then
-          units(nolay)=' kg/m2 (bed layer)'  ! extra bed layer
+          units(num_layers)=' kg/m2 (bed layer)'  ! extra bed layer
       endif
 !
       write(*,'(7x,a)',advance='no') '  [Writing plo-file ...'
@@ -559,7 +559,7 @@ contains
       atotal = 0.0  ! whole array assignment
       nbin  =  0    ! whole array assignment
 !
-      do 139 ilay = 1, nolay
+      do 139 ilay = 1, num_layers
          nplay(ilay) = 0
 139   continue
 !
@@ -588,7 +588,7 @@ contains
 !               determine the appropriate layer
 !
                 ilay   = kpart(i1)
-                if(ilay > 0.and.ilay <= nolay) then
+                if(ilay > 0.and.ilay <= num_layers) then
                    nplay(ilay) = nplay(ilay) + 1
                 else
                    write(lun2,*) ' i1, ilay '
@@ -600,15 +600,15 @@ contains
                 if (modtyp == model_two_layer_temp) then
                    depthl = volume(i2) / area(i2)
                    fvolum = surf * thickn(ilay) * depthl
-                elseif ( use_settling .and. ilay == nolay ) then
+                elseif ( use_settling .and. ilay == num_layers ) then
 !
 !.. take here the last but one layer to check active segments
 !
-                   iseg = (ilay-2)*nmax*mmax + i2
+                   iseg = (ilay-2)*num_rows*num_columns + i2
                    depthl = volume(iseg) / area(i2)
                    fvolum = surf * depthl
                 else
-                   iseg = (ilay-1)*nmax*mmax + i2
+                   iseg = (ilay-1)*num_rows*num_columns + i2
                    depthl = volume(iseg) / area(i2)
                    fvolum = surf * depthl
                 endif
@@ -619,7 +619,7 @@ contains
 !
                   do 150, isub = 1, nosubs
                    if(isfile(isub) /= 1) then
-                    ipos   = ilay + (isub - 1) * nolay
+                    ipos   = ilay + (isub - 1) * num_layers
 !.. for partplot
                     am     = recovr(ipsetx) * wpart(isub, i1)
 !                   atotal(ipos) = atotal(ipos) + am
@@ -640,7 +640,7 @@ contains
 !
 !.. dispersed
 !
-                          if ( use_settling .and. ilay == nolay ) then
+                          if ( use_settling .and. ilay == num_layers ) then
                              ac = am/surf
                           else
                              ac = am/fvolum
@@ -659,7 +659,7 @@ contains
                        endif
 !
 !.. settling
-                    elseif ( use_settling .and. ilay == nolay ) then
+                    elseif ( use_settling .and. ilay == num_layers ) then
                        ac = am/surf
 !.. stickyness
                     elseif(mstick(isub) <0) then
@@ -704,7 +704,7 @@ contains
   160 continue
 !
       write(lun2,'(/6x,a)') 'Zoom grid: particle distribution per layer'
-      do i   = 1, nolay
+      do i   = 1, num_layers
          write(lun2,'(10x,a,i4,a,i10)')      &
                   'layer ',i  ,': Number of particles = ',nplay(i  )
       enddo
@@ -715,8 +715,8 @@ contains
          if(isub==itrack.or.isub==ntrack) then
             do 175 ix = 1, mmap
                do 176 iy = 1, nmap
-                  do 177 ilay = 1, nolay
-                    ipos   = ilay   + (isub - 1) * nolay
+                  do 177 ilay = 1, num_layers
+                    ipos   = ilay   + (isub - 1) * num_layers
                     if(isub==ntrack) then
                        amap(isub, ilay, iy, ix) = nbin  (ilay, iy, ix)
                     else
@@ -733,7 +733,7 @@ contains
 !
 !     add local depths to amap (as extra substance nosub+1)
 !
-      do ilay = 1, nolay
+      do ilay = 1, num_layers
          do ix = 1, mmap
             do iy = 1, nmap
                i0 = pg%nmcell(iy,ix)
@@ -748,7 +748,7 @@ contains
 !     grid cells outside the curvilinear grid
 !
       do isub = 1, nosubs+2
-         do ilay = 1, nolay
+         do ilay = 1, num_layers
             do ix = 1, mmap
                do iy = 1, nmap
                   if (imask(iy,ix)==0) then
@@ -763,7 +763,7 @@ contains
 !
 !     do isub = 1, nosubs+1
 !        write(lun2,'(a,i6)') ' stof ',isub
-!        do ilay = 1, nolay
+!        do ilay = 1, num_layers
 !        write(lun2,'(a,i6)') ' laag ',ilay
 !           ippl = isub  + (ilay - 1) * (nosubs+1)
 !           do ix = 1, mmap
@@ -777,13 +777,13 @@ contains
 !
       write(lun1) itime,                                      &
       ((((amap(isub, ilay, iy, ix), isub = 1,nosubs+2),       &
-               iy = 1, nmap),ix = 1,mmap),ilay=1,nolay)
+               iy = 1, nmap),ix = 1,mmap),ilay=1,num_layers)
 
 !    ** test data **
 !     write(lun2,'(a)') ' Part13 - amap array '
 !     do isub = 1,nosubs+2
 !        do iy = 1, nmap
-!           write(lun2,'(2i6,4x,20e12.5)') isub,iy,(amap(isub, nolay, iy, ix),ix = 1,min(mmap,20))
+!           write(lun2,'(2i6,4x,20e12.5)') isub,iy,(amap(isub, num_layers, iy, ix),ix = 1,min(mmap,20))
 !         end do
 !     end do
 !
@@ -791,8 +791,8 @@ contains
 !
       do isub=1,nosubs
          write(lun2,'(6x,a,a)') 'Zoom grid: results for ',subst(isub)
-         do ilay=1,nolay
-            ipos  = ilay + (isub - 1) * nolay
+         do ilay=1,num_layers
+            ipos  = ilay + (isub - 1) * num_layers
             write(lun2, '(10x,a,i4,2(a,es15.7),a)')                   &
                   'Layer ',ilay,': Total mass=',atotal (ilay,isub),  &
                   ' kg: Peak conc. (overall) =',apeak(isub,ilay),units(ilay)
@@ -829,7 +829,7 @@ contains
 !
           do i1 = 1, nosubs+2
              i4 = 0
-             do ilay=1, nolay
+             do ilay=1, num_layers
              do i3 = 1, mmap
                 do i2 = 1, nmap
                    i4 = i4 + 1

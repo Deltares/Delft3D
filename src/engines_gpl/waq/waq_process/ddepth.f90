@@ -28,9 +28,9 @@ module m_ddepth
 contains
 
 
-    subroutine ddepth (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine ddepth (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : write_error_message
         use m_extract_waq_attribute
 
@@ -59,9 +59,9 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         character(55) message
 
         message = 'SURF in DDEPTH zero at segment:'
@@ -70,12 +70,12 @@ contains
         IP3 = IPOINT(3)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             CALL extract_waq_attribute(3, IKNMRK(ISEG), IKMRK3)
             IF (IKMRK3==1 .OR. IKMRK3==3) THEN
                 !
-                VOLUME = PMSA(IP1)
-                SURF = PMSA(IP2)
+                VOLUME = process_space_real(IP1)
+                SURF = process_space_real(IP2)
 
                 IF (SURF    < 1E-30) THEN
                     write (message(32:55), '(i9,1x,e14.6)') iseg, surf
@@ -89,7 +89,7 @@ contains
                 !
                 DEPTH = MAX(TINY(1.0), VOLUME / SURF)
                 !
-                PMSA (IP3) = DEPTH
+                process_space_real (IP3) = DEPTH
                 !
             ENDIF
             !

@@ -74,11 +74,11 @@ module m_fm_wq_processes
    integer                                   :: kbx                         !< pointer of first segment to D-Flow FM 3D administration
    integer                                   :: ktx                         !< pointer of last  segment to D-Flow FM 3D administration
 
-   integer                                   :: noseg                       !< Nr. of computational volumes
-   integer                                   :: noq1                        !< Number of exchanges first direction
-   integer                                   :: noq2                        !< Number of exchanges second direction
-   integer                                   :: noq3                        !< Number of exchanges vertical
-   integer                                   :: noq4                        !< Number of exchanges in the bed
+   integer                                   :: num_cells                       !< Nr. of computational volumes
+   integer                                   :: num_exchanges_u_dir                        !< Number of exchanges first direction
+   integer                                   :: num_exchanges_v_dir                        !< Number of exchanges second direction
+   integer                                   :: num_exchanges_z_dir                        !< Number of exchanges vertical
+   integer                                   :: num_exchanges_bottom_dir                        !< Number of exchanges in the bed
    integer,  allocatable, dimension(:)       :: iexpnt                      !< Exchange pointer
 
    real(hp), allocatable, dimension(:,:)     :: amass                       !< mass array to be updated
@@ -96,9 +96,9 @@ module m_fm_wq_processes
    integer, parameter                        :: IKNMRK_ACTIVE_BOTTOM = 1131 !< processes are active, bottom of water column
 
    integer                                   :: sizepmsa                    !< size of (pms)a-array
-   real(sp), allocatable, dimension(:)       :: pmsa                        !< the actual data array
+   real(sp), allocatable, dimension(:)       :: process_space_real                        !< the actual data array
 
-   real(hp), allocatable, dimension(:,:)     :: deriv                       !< Model derivatives in mass/m3/s (= stochi(notot ,noflux) * flux(noflux, noseg))
+   real(hp), allocatable, dimension(:,:)     :: deriv                       !< Model derivatives in mass/m3/s (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))
 
    integer,  allocatable, dimension(:)       :: isys2const                  !< WAQ substance to D-Flow FM constituents
    integer,  allocatable, dimension(:)       :: iconst2sys                  !< D-Flow FM constituents to WAQ substance

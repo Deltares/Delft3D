@@ -5,9 +5,9 @@ module m_plastc
 
 contains
 
-    subroutine PLASTC     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine PLASTC     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
         use m_extract_waq_attribute
 
@@ -18,18 +18,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)  ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         !
         !*******************************************************************************
         !     D-EM Plastics Model Version 0.1, August 2019 JvG / LB
@@ -45,7 +45,7 @@ contains
         !     support variables
         integer(kind = int_wp), parameter :: npmsamax = 200
         integer(kind = int_wp) :: ipnt(npmsamax)    !    Local work array for the pointering
-        integer(kind = int_wp) :: iseg, isegl, iflux, ip, irec, ioq, iatt1, npmsa, ipmsa
+        integer(kind = int_wp) :: iseg, isegl, iflux, ip, irec, ioq, iatt1, npmsa, process_space_int
         real(kind = real_wp) :: flux, ro_mmperday, fwashoff, fluxexp
         real(kind = dp) :: fluxloss, fluxbur, fluxwash
 
@@ -58,7 +58,7 @@ contains
         integer(kind = int_wp), parameter :: rec_unp = 2
         integer(kind = int_wp), parameter :: rec_sfw = 3
 
-        ! PMSA admin
+        ! process_space_real admin
         integer(kind = int_wp) :: lins
         integer(kind = int_wp), parameter :: line = 0
         integer(kind = int_wp) :: louts
@@ -146,10 +146,10 @@ contains
         if (first) then
 
             ! pick up actual dimensions
-            nosegl = nint(pmsa(ipoint(ip_nosegl)))
+            nosegl = nint(process_space_real(ipoint(ip_nosegl)))
 
             ! pick up constants
-            delt = dble(pmsa(ipoint(ip_delt)))
+            delt = dble(process_space_real(ipoint(ip_delt)))
 
             lins = Lastsingle
             louts = nsubs + 1
@@ -162,7 +162,7 @@ contains
                 write (*, *) 'loute = ', loute
                 write (*, *) 'npmsa = ', npmsa
                 write (*, *) 'npmsamax = ', npmsamax
-                call write_error_message ('PMSA admin array too small')
+                call write_error_message ('process_space_real admin array too small')
             endif
             offset_vel = lins + line + louts
 
@@ -185,8 +185,8 @@ contains
         endif
 
         !******************************************************************************* PROCESSING in TIME LOOP
-        do ipmsa = 1, npmsa
-            ipnt(ipmsa) = ipoint(ipmsa)
+        do process_space_int = 1, npmsa
+            ipnt(process_space_int) = ipoint(process_space_int)
         enddo
 
         emisw = 0.0
@@ -199,15 +199,15 @@ contains
             !*******************************************************************************
 
             ! MPW release -----------------------------------------------------------------------------
-            totsurf = pmsa(ipnt(ip_totsurf))
-            fpaved = max(pmsa(ipnt(ip_fpaved)), 1e-10) ! to avoid division by zero for RO paved conversion to mm
-            funpaved = max(pmsa(ipnt(ip_funpaved)), 1e-10) ! to avoid division by zero for RO unpaved conversion to mm
-            fwater = pmsa(ipnt(ip_fwater))
-            mpw = pmsa(ipnt(ip_mpw))
+            totsurf = process_space_real(ipnt(ip_totsurf))
+            fpaved = max(process_space_real(ipnt(ip_fpaved)), 1e-10) ! to avoid division by zero for RO paved conversion to mm
+            funpaved = max(process_space_real(ipnt(ip_funpaved)), 1e-10) ! to avoid division by zero for RO unpaved conversion to mm
+            fwater = process_space_real(ipnt(ip_fwater))
+            mpw = process_space_real(ipnt(ip_mpw))
             mpw = mpw * (totsurf / 10000.) * 1000.                    !kg/ha/d to g/d
-            mpww = pmsa(ipnt(ip_mpww))
+            mpww = process_space_real(ipnt(ip_mpww))
             mpww = mpww * (totsurf / 10000.) * 1000.                    !kg/ha/d to g/d
-            mpws = pmsa(ipnt(ip_mpws))
+            mpws = process_space_real(ipnt(ip_mpws))
             mpws = mpws * (totsurf / 10000.) * 1000.                    !kg/ha/d to g/d
 
             ! Releases to paved surfaces
@@ -248,28 +248,28 @@ contains
             call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
             if (iatt1>0) then
 
-                ropaved = max(pmsa(ipnt(ip_ropaved)), 0.0)
-                lotpav = pmsa(ipnt(ip_lotpav))
-                hitpav = pmsa(ipnt(ip_hitpav))
+                ropaved = max(process_space_real(ipnt(ip_ropaved)), 0.0)
+                lotpav = process_space_real(ipnt(ip_lotpav))
+                hitpav = process_space_real(ipnt(ip_hitpav))
                 !               m3/s  m2
                 ro_mmperday = ropaved / (totsurf * fpaved) * 1000. * 86400.
                 ! save this quantity as output
                 ip = lins + line + nsubs + 1
-                pmsa(ipoint(ip) + increm(ip) * (iseg - 1)) = ro_mmperday
+                process_space_real(ipoint(ip) + increm(ip) * (iseg - 1)) = ro_mmperday
                 ! calculate fraction removed by runoff
                 fwashoff = (ro_mmperday - lotpav) / (hitpav - lotpav)
                 fwashoff = max(min(fwashoff, 1.0), 0.0)
                 ! input
-                kdecpav = pmsa(ipnt(ip_kdecpav))
+                kdecpav = process_space_real(ipnt(ip_kdecpav))
                 ip = ip_plastic
-                plastic = dble(pmsa(ipoint(ip) + (iseg - 1) * increm(ip)))
+                plastic = dble(process_space_real(ipoint(ip) + (iseg - 1) * increm(ip)))
                 ! fluxes
                 fluxloss = -dble(kdecpav) * plastic / 86400d0
                 fluxbur = 0d0
                 fluxwash = (plastic / delt + totflxin(nsubs, rec_pav) - fluxloss - fluxbur) * dble(fwashoff)
                 ! output velocities to move the substances
                 ioq = (pav2sfw - 1) * nosegl + isegl
-                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
+                process_space_real(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
                 ! increase the inflow balance of the downstream compartments
                 totflxin(nsubs, rec_sfw) = totflxin(nsubs, rec_sfw) + fluxwash
 
@@ -286,29 +286,29 @@ contains
             call extract_waq_attribute(1, iknmrk(iseg), iatt1) ! pick up first attribute
             if (iatt1>0) then
 
-                ! rounpaved = max(pmsa(ipnt(ip_rounpaved)),0.0)  THIS IS THE RIGHT STATEMENT AFTER CORRECTION OF BIN FILE
-                rounpaved = max(pmsa(ipoint(ip_rounpaved) + (iseg - 1) * increm(ip_rounpaved)), 0.0) ! TEMP fix
-                lotunp = pmsa(ipnt(ip_lotunp))
-                hitunp = pmsa(ipnt(ip_hitunp))
+                ! rounpaved = max(process_space_real(ipnt(ip_rounpaved)),0.0)  THIS IS THE RIGHT STATEMENT AFTER CORRECTION OF BIN FILE
+                rounpaved = max(process_space_real(ipoint(ip_rounpaved) + (iseg - 1) * increm(ip_rounpaved)), 0.0) ! TEMP fix
+                lotunp = process_space_real(ipnt(ip_lotunp))
+                hitunp = process_space_real(ipnt(ip_hitunp))
                 ro_mmperday = rounpaved / (totsurf * funpaved) * 1000. * 86400.
                 ! save this quantity as output
                 ip = lins + line + nsubs + 1
-                pmsa(ipoint(ip) + increm(ip) * (iseg - 1)) = ro_mmperday
+                process_space_real(ipoint(ip) + increm(ip) * (iseg - 1)) = ro_mmperday
                 ! calculate fraction removed by runoff
                 fwashoff = (ro_mmperday - lotunp) / (hitunp - lotunp)
                 fwashoff = max(min(fwashoff, 1.0), 0.0)
                 ! input
-                kdecunp = pmsa(ipnt(ip_kdecunp))
-                kbur = pmsa(ipnt(ip_kbur))
+                kdecunp = process_space_real(ipnt(ip_kdecunp))
+                kbur = process_space_real(ipnt(ip_kbur))
                 ip = ip_plastic
-                plastic = dble(pmsa(ipoint(ip) + (iseg - 1) * increm(ip)))
+                plastic = dble(process_space_real(ipoint(ip) + (iseg - 1) * increm(ip)))
                 ! fluxes
                 fluxloss = -dble(kdecunp) * plastic / 86400d0
                 fluxbur = -dble(kbur) * plastic / 86400d0
                 fluxwash = (plastic / delt + totflxin(nsubs, rec_unp) - fluxloss - fluxbur) * dble(fwashoff)
                 ! output velocities to move the substances
                 ioq = (unp2sfw - 1) * nosegl + isegl
-                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
+                process_space_real(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = real(fluxwash)
                 ! increase the inflow balance of the downstream compartments
                 totflxin(nsubs, rec_sfw) = totflxin(nsubs, rec_sfw) + fluxwash
                 ! now set the fluxes
@@ -329,22 +329,22 @@ contains
                 fluxexp = real(totflxin(nsubs, rec_sfw))
                 ! routing
                 ioq = (sfw2exp - 1) * nosegl + isegl
-                pmsa(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = fluxexp
+                process_space_real(ipoint(offset_vel + nsubs) + increm(offset_vel + nsubs) * (ioq - 1)) = fluxexp
                 ! output
                 ip = lins + line + nsubs
-                pmsa(ipoint(ip) + increm(ip) * (iseg - 1)) = fluxexp
+                process_space_real(ipoint(ip) + increm(ip) * (iseg - 1)) = fluxexp
                 emisw(isegl) = fluxexp
 
             endif
 
-            do ipmsa = 1, npmsa
-                ipnt(ipmsa) = ipnt(ipmsa) + increm(ipmsa)
+            do process_space_int = 1, npmsa
+                ipnt(process_space_int) = ipnt(process_space_int) + increm(process_space_int)
             enddo
 
         enddo
 
         ! write output
-        itime = nint(pmsa(ipoint(ip_itime)))
+        itime = nint(process_space_real(ipoint(ip_itime)))
         write (lu_txt, '(''Output written for relative time: '',i20)') itime
         write (lu_bin) itime, emisw
 

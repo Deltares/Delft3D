@@ -27,7 +27,7 @@ implicit none
 contains
 
 
-      subroutine plotgrp( npgrid , pg     , nmax   , mmax   , lgrid  ,               &
+      subroutine plotgrp( npgrid , pg     , num_rows   , num_columns   , lgrid  ,               &
                           lgrid2 , xb     , yb     )
 
 !     Deltares Software Centre
@@ -62,12 +62,12 @@ contains
 
       integer  ( int_wp ), intent(in   ) :: npgrid            !< number of plot grids
       type(PlotGrid)                   pg    (npgrid)    !< collection with plot grid information
-      integer  ( int_wp ), intent(in   ) :: nmax              !< 1st dimension of the flow grid
-      integer  ( int_wp ), intent(in   ) :: mmax              !< 2nd dimension of the flow grid
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax) !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax) !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax) !< x-values of the grid cell corners
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax) !< y-values of the grid cell corners
+      integer  ( int_wp ), intent(in   ) :: num_rows              !< 1st dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: num_columns              !< 2nd dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns) !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns) !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns) !< x-values of the grid cell corners
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns) !< y-values of the grid cell corners
 
 !     local scalars
 
@@ -107,7 +107,7 @@ contains
                xnloc = (ix - 0.5) * xpf  +  pg(ig)%xlow
                ynloc = (iy - 0.5) * ypf  +  pg(ig)%ylow
 
-               call findcell( nmax   , mmax   , xnloc  , ynloc  , lgrid  ,    &
+               call findcell( num_rows   , num_columns   , xnloc  , ynloc  , lgrid  ,    &
                               lgrid2 , xb     , yb     , nmloc  )
 
                pg(ig)%nmcell(iy,ix) = nmloc
@@ -120,7 +120,7 @@ contains
                      do j = 0, 1
                         xnloc = (ix - i) * xpf + pg(ig)%xlow
                         ynloc = (iy - j) * ypf + pg(ig)%ylow
-                        call findcell( nmax   , mmax   , xnloc  , ynloc  , lgrid  ,   &
+                        call findcell( num_rows   , num_columns   , xnloc  , ynloc  , lgrid  ,   &
                                        lgrid2 , xb     , yb     , nmloc  )
                         if ( nmloc .ne. 0 ) exit loop1
                      enddo

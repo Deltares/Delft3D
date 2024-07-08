@@ -73,11 +73,11 @@ contains
         use timers
         use workspace, only : set_array_indexes
         use string_module  ! string manipulation tools
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
-        use m_sysc          ! Pointers in character array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
+        use m_character_array_indices          ! Pointers in character array workspace
 
         !     Parameters          :
 
@@ -128,8 +128,8 @@ contains
 
             !     number of all segments - including segments at the bed
 
-            nosss = noseg + nseg2                ! nseg2 are bed-volumes
-            noqtt = noq + noq4
+            nosss = num_cells + num_cells_bottom                ! num_cells_bottom are bed-volumes
+            noqtt = num_exchanges + num_exchanges_bottom_dir
             !
             !         initialisation of info from the system file
             !
@@ -149,7 +149,7 @@ contains
             !
             CALL open_waq_files (file_unit_list(41), file_name_list(41), 41, 1, IERRD)
             IF (IERRD == 0) THEN
-                DO I = 1, NUFIL
+                DO I = 1, num_unformat_files
                     READ (file_unit_list(41), *) iftyp, FINAM
                     new_lun = 800 + I
                     CALL open_waq_files (new_lun, FINAM, 3, 2 + iftyp, IOERR)
@@ -168,45 +168,45 @@ contains
             !
             !     initialisation of PROCES subsytem
             !
-            IF (NPROC > 0) THEN
+            IF (num_processes_activated > 0) THEN
                 CALL open_waq_files (file_unit_list(24), file_name_list(24), 24, 2, IERRD)
-                CALL initialize_processes (file_unit_list(24), file_name_list(24), file_unit_list(19), NOTOT, NIPMSA, &
-                        NPROC, NOLOC, NFLUX, NODEF, J(INSVA:), &
+                CALL initialize_processes (file_unit_list(24), file_name_list(24), file_unit_list(19), num_substances_total, process_space_int_len, &
+                        num_processes_activated, num_local_vars, num_fluxes, num_defaults, J(INSVA:), &
                         J(IIFLU:), J(IPVAR:), J(IPTYP:), A(IDEFA:), A(ISTOC:), &
-                        C(IPRNA:), J(IIMOD:), IERR, IPBLOO, &
-                        IOFFBL, NOSYS, NDSPX, NVELX, &
-                        A(IDSTO:), A(IVSTO:), NDSPN, J(IDPNW:), NVELN, &
-                        J(IVPNW:), NLOCX, J(IPGRD:), J(IPNDT:), NOVAR, &
+                        C(IPRNA:), J(IIMOD:), IERR, bloom_status_ind, &
+                        bloom_ind, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+                        A(IDSTO:), A(IVSTO:), num_dispersion_arrays_new, J(IDPNW:), num_velocity_arrays_new, &
+                        J(IVPNW:), num_local_vars_exchange, J(IPGRD:), J(IPNDT:), num_vars, &
                         J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), J(IVTAG:), &
-                        J(IVAGG:), nrref, J(ipror:), j(iprvpt:))
+                        J(IVAGG:), num_input_ref, J(ipror:), j(iprvpt:))
                 CLOSE (file_unit_list(24))
             ENDIF
             !
             !     Set variable "structure"
             !
-            CALL initialize_variables (file_unit_list(19), NOCONS, NOPA, NOFUN, NOSFUN, &
-                    NOSYS, NOTOT, NODISP, NOVELO, NODEF, &
-                    NOLOC, NDSPX, NVELX, NLOCX, NFLUX, &
-                    NOPRED, NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), &
-                    J(IVDAG:), J(IVTAG:), J(IVAGG:), NOGRID, J(IVSET:))
+            CALL initialize_variables (file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                    num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                    num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                    NOPRED, num_vars, J(IVARR:), J(IVIDX:), J(IVTDA:), &
+                    J(IVDAG:), J(IVTAG:), J(IVAGG:), num_grids, J(IVSET:))
             !
             !     initialisation of OUTPUT subsytem
             !
 
-            IF (NOUTP > 0) THEN
+            IF (num_output_files > 0) THEN
                 CALL open_waq_files (file_unit_list(25), file_name_list(25), 25, 2, IERRD)
-                CALL initialize_output (file_unit_list(25), file_name_list(25), file_unit_list(19), NOUTP, NRVART, &
-                        NBUFMX, J(IIOUT:), J(IIOPO:), C(IONAM), C(IOSNM), &
-                        C(IOUNI), C(IODSC), NOTOT, C(ISSNM), C(ISUNI), &
+                CALL initialize_output (file_unit_list(25), file_name_list(25), file_unit_list(19), num_output_files, num_output_variables_extra, &
+                        output_buffer_len, J(IIOUT:), J(IIOPO:), C(IONAM), C(IOSNM), &
+                        C(IOUNI), C(IODSC), num_substances_total, C(ISSNM), C(ISUNI), &
                         C(ISDSC), file_unit_list, file_name_list, IERR)
                 CLOSE (file_unit_list(25))
             ENDIF
             !
             !         initialisation of the grid layout
             !
-            IF (NX * NY > 0) THEN
+            IF (num_cells_u_dir * num_cells_v_dir > 0) THEN
                 CALL open_waq_files (file_unit_list(6), file_name_list(6), 6, 2, IERRD)
-                READ  (file_unit_list(6)) (J(K), K = IGRID, IGRID + NX * NY - 1)
+                READ  (file_unit_list(6)) (J(K), K = IGRID, IGRID + num_cells_u_dir * num_cells_v_dir - 1)
                 CLOSE (file_unit_list(6))
             ENDIF
             !
@@ -214,17 +214,17 @@ contains
             !
             CALL open_waq_files (file_unit_list(8), file_name_list(8), 8, 2 + ftype(8), IERRD)
 
-            if (nmax * mmax > 0) then
+            if (num_rows * num_columns > 0) then
 
                 !        read grid, make pointer table
 
                 i1 = ilgra - 1
                 read  (file_unit_list(8)) nmax2, mmax2, noseg2, kmax2, noq1d, noq2d, noq3d
-                read  (file_unit_list(8)) (j(i1 + k), k = 1, mmax * nmax)
+                read  (file_unit_list(8)) (j(i1 + k), k = 1, num_columns * num_rows)
                 i2 = ikbnd - 1
 
-                call create_pointer_table(nmax, mmax, kmax, noseg, nobnd, &
-                        noq, noq1, noq2, j(ilgra:), j(ixpnt:), &
+                call create_pointer_table(num_rows, num_columns, num_layers_grid, num_cells, num_boundary_conditions, &
+                        num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, j(ilgra:), j(ixpnt:), &
                         cellpnt, flowpnt)
                 finam = file_name_list(8)(1:index(file_name_list(8), '.', .true.)) // 'cco'
                 call open_waq_files (file_unit_list(8), finam, 8, 2 + ftype(8), ierrd)
@@ -257,7 +257,7 @@ contains
             CALL CHKNMR (file_unit_list(19), nosss, J(IKNMR:))
 
             ! determine top of the vertical columns
-            call segcol(nosss, noq1, noq2, noq3, noq4, &
+            call segcol(nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
                     j(ixpnt:), j(iknmr:), isegcol)
 
             ! initial conditions
@@ -278,7 +278,7 @@ contains
                         finam(114:120) == 'MASS/M2') propor = .true.
                 ! should be nr. of substance
                 read (file_unit_list(18)) idummy
-                if (idummy /= notot) then
+                if (idummy /= num_substances_total) then
                     write (file_unit_list(19), '(a,a,/,a,i10)') &
                             ' ERROR reading initial conditions - filename: ', file_name_list(18), &
                             ' Number of substances does not match : ', idummy
@@ -292,12 +292,12 @@ contains
                             ' Number of computational volumes does not match : ', idummy
                     call stop_with_error()
                 endif
-                do i = 1, notot
+                do i = 1, num_substances_total
                     read (file_unit_list(18)) finam(1:20)
                 enddo
             endif
             read  (file_unit_list(18), iostat = ierrio)                   & ! like the .ini, the .res and .wrk file
-                    idummy, (a(k), k = iconc, iconc + notot * nosss - 1)
+                    idummy, (a(k), k = iconc, iconc + num_substances_total * nosss - 1)
             50 if (ierrio /= 0) then
                 write (file_unit_list(19), '(a,a)') &
                         ' ERROR reading initial conditions - filename: ', &
@@ -332,36 +332,36 @@ contains
                     .TRUE., gridps, DLWQD)
 
             ! Particle tracking
-            call delpar00 (file_unit_list(19), file_name_list(45), noseg, noq, a(ivol:), a(iflow:), &
-                    nosfun, c(isfna:), a(isfun:))
+            call delpar00 (file_unit_list(19), file_name_list(45), num_cells, num_exchanges, a(ivol:), a(iflow:), &
+                    num_spatial_time_fuctions, c(isfna:), a(isfun:))
 
             ! New bottomlayer processing
-            IF (NOQ4 > 0) &
-                    CALL expands_vol_area_for_bottom_cells (file_unit_list, NOSEG, NSEG2, NOLAY, NOGRID, &
-                            NOQ, NOQ4, J(IGREF:), J(IGSEG:), NOCONS, &
-                            NOPA, NOFUN, NOSFUN, A(ICONS:), C(ICNAM:), &
+            IF (num_exchanges_bottom_dir > 0) &
+                    CALL expands_vol_area_for_bottom_cells (file_unit_list, num_cells, num_cells_bottom, num_layers, num_grids, &
+                            num_exchanges, num_exchanges_bottom_dir, J(IGREF:), J(IGSEG:), num_constants, &
+                            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, A(ICONS:), C(ICNAM:), &
                             A(IPARM:), C(IPNAM:), A(IFUNC:), C(IFNAM:), A(ISFUN:), &
                             C(ISFNA:), J(IXPNT:), A(IVOL:), A(IAREA:), A(IFLOW:), &
                             A(ILENG:))
             !
 
             IF (INTSRT == 6 .OR. INTSRT == 7) THEN
-                NOSUBz = NOTOT
+                NOSUBz = num_substances_total
             ELSE
-                NOSUBz = NOSYS
+                NOSUBz = num_substances_transported
             ENDIF
-            call copy_real_array_elements   (A(IBSET:), A(IBOUN:), NOBND * NOSUBz)
-            call copy_real_array_elements   (A(IBSET:), A(IBSAV:), NOBND * NOSUBz)
-            call initialize_real_array   (A(IDERV:), NOTOT * NOSSS)
-            call initialize_real_array   (A(IMAS2:), NOTOT * 5)
-            call initialize_real_array   (A(IWDMP:), NOTOT * NOWST * 2)
+            call copy_real_array_elements   (A(IBSET:), A(IBOUN:), num_boundary_conditions * NOSUBz)
+            call copy_real_array_elements   (A(IBSET:), A(IBSAV:), num_boundary_conditions * NOSUBz)
+            call initialize_real_array   (A(IDERV:), num_substances_total * NOSSS)
+            call initialize_real_array   (A(IMAS2:), num_substances_total * 5)
+            call initialize_real_array   (A(IWDMP:), num_substances_total * num_waste_loads * 2)
             IF (MOD(INTOPT, 16) > 7) THEN
-                call initialize_real_array(A(IDMPQ:), NOSYS * NDMPQ * 2)
-                call initialize_real_array(A(IDMPS:), NOTOT * NDMPS * 3)
-                call initialize_real_array(A(ISMAS:), NOTOT * NDMPAR * 6)
-                call initialize_real_array(A(IFLXI:), NDMPAR * NFLUX)
-                call initialize_real_array(A(IFLXD:), NDMPS * NFLUX)
-                call initialize_real_array(A(ITRRA:), NOSYS * NORAAI)
+                call initialize_real_array(A(IDMPQ:), num_substances_transported * NDMPQ * 2)
+                call initialize_real_array(A(IDMPS:), num_substances_total * num_monitoring_cells * 3)
+                call initialize_real_array(A(ISMAS:), num_substances_total * NDMPAR * 6)
+                call initialize_real_array(A(IFLXI:), NDMPAR * num_fluxes)
+                call initialize_real_array(A(IFLXD:), num_monitoring_cells * num_fluxes)
+                call initialize_real_array(A(ITRRA:), num_substances_transported * num_transects)
             ENDIF
 
             !         make start masses for dynamic and iterative computation
@@ -373,24 +373,24 @@ contains
 
             do iseg = 0, nosss - 1
                 volume = a(ivol + iseg)
-                do i1 = iseg * notot, iseg * notot + nosys - 1
+                do i1 = iseg * num_substances_total, iseg * num_substances_total + num_substances_transported - 1
                     a(imass + i1) = a(iconc + i1) * volume
                 enddo
             enddo
 
             !         initial conditions passive substances
 
-            if (nosys /= notot) then                         ! if there are bed-substances
-                indx = index_in_array('SURF      ', buffer%create_strings_20_array(ipnam, nopa))
+            if (num_substances_transported /= num_substances_total) then                         ! if there are bed-substances
+                indx = index_in_array('SURF      ', buffer%create_strings_20_array(ipnam, num_spatial_parameters))
                 if (indx > 0) then                           ! and if SURF is found
-                    call inact (nosss, nosys, notot, a(iconc:), a(imass:), &
-                            nopa, indx, a(iparm:), c(imnam + 113), propor, &
+                    call inact (nosss, num_substances_transported, num_substances_total, a(iconc:), a(imass:), &
+                            num_spatial_parameters, indx, a(iparm:), c(imnam + 113), propor, &
                             .true.)
                 else                                     ! routine inact is at end of this file !
-                    indx = index_in_array('SURF      ', buffer%create_strings_20_array(isfna, nosfun))
+                    indx = index_in_array('SURF      ', buffer%create_strings_20_array(isfna, num_spatial_time_fuctions))
                     if (indx > 0) then                        ! and if SURF is found
-                        call inact (nosss, nosys, notot, a(iconc:), a(imass:), &
-                                nosfun, indx, a(isfun:), c(imnam + 113), propor, &
+                        call inact (nosss, num_substances_transported, num_substances_total, a(iconc:), a(imass:), &
+                                num_spatial_time_fuctions, indx, a(isfun:), c(imnam + 113), propor, &
                                 .false.)
                     else
                         write (file_unit_list(19), '(a,a)')               & !   not found
@@ -402,16 +402,16 @@ contains
             endif
 
             !         deal with z-layers (inactive cells at the bottom side of the water column
-            call zlayer (noseg, nosss, nosys, notot, nolay, &
-                    a(ivol:), noq1 + noq2, noq, a(iarea:), nocons, &
-                    c(icnam:), a(icons:), nopa, c(ipnam:), a(iparm:), &
-                    nosfun, c(isfna:), a(isfun:), a(iconc:), a(imass:), &
+            call zlayer (num_cells, nosss, num_substances_transported, num_substances_total, num_layers, &
+                    a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, num_exchanges, a(iarea:), num_constants, &
+                    c(icnam:), a(icons:), num_spatial_parameters, c(ipnam:), a(iparm:), &
+                    num_spatial_time_fuctions, c(isfna:), a(isfun:), a(iconc:), a(imass:), &
                     j(iknmr:), iknmkv, j(ixpnt:))
 
 
             !     temporary for closure error
 
-            40 INDX = index_in_array('CLOSE_ERR ', buffer%create_strings_20_array(ICNAM, NOCONS))
+            40 INDX = index_in_array('CLOSE_ERR ', buffer%create_strings_20_array(ICNAM, num_constants))
             IF (INDX > 0) THEN
                 ICFLAG = 1
                 WRITE(file_unit_list(19), *) ' Closure error correction enabled'
@@ -426,22 +426,22 @@ contains
         RETURN
     END subroutine initialize_all_conditions
 
-    subroutine inact (noseg, nosys, notot, conc, amass, &
-            nopa, iparm, parm, string, propor, &
+    subroutine inact (num_cells, num_substances_transported, num_substances_total, conc, amass, &
+            num_spatial_parameters, iparm, parm, string, propor, &
             direct)
         !>\File
         !>         Makes mass/gridcell from mass/m2 for the passive substances
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: noseg              !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: nosys              !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot              !< total number of substances
-        real(kind = real_wp), intent(inout) :: conc (notot, noseg) !< the concentration values
-        real(kind = real_wp), intent(out) :: amass(notot, noseg) !< the mass values
-        integer(kind = int_wp), intent(in) :: nopa               !< number of parameters or segment functions
+        integer(kind = int_wp), intent(in) :: num_cells              !< number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_substances_transported              !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total              !< total number of substances
+        real(kind = real_wp), intent(inout) :: conc (num_substances_total, num_cells) !< the concentration values
+        real(kind = real_wp), intent(out) :: amass(num_substances_total, num_cells) !< the mass values
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters               !< number of parameters or segment functions
         integer(kind = int_wp), intent(in) :: iparm              !< selected parameter
-        real(kind = real_wp), intent(in) :: parm (nopa * noseg) !< parameter or segment function array
+        real(kind = real_wp), intent(in) :: parm (num_spatial_parameters * num_cells) !< parameter or segment function array
         character(1), intent(out) :: string(7)          !< model docu substring
         logical, intent(in) :: propor             !< if .true. then /m2 in the input
         logical, intent(in) :: direct             !< if .false. segments is first index
@@ -455,11 +455,11 @@ contains
         if (direct) then
             indx = iparm                    ! parameter
         else
-            indx = (iparm - 1) * noseg + 1       ! segment function
+            indx = (iparm - 1) * num_cells + 1       ! segment function
         endif
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             surf = parm(indx)
-            do isys = nosys + 1, notot
+            do isys = num_substances_transported + 1, num_substances_total
                 if (propor) then                                ! input / m2
                     amass(isys, iseg) = conc(isys, iseg) * surf
                 else                                              ! input / gridcell
@@ -468,7 +468,7 @@ contains
                 endif
             enddo
             if (direct) then
-                indx = indx + nopa
+                indx = indx + num_spatial_parameters
             else
                 indx = indx + 1
             endif
@@ -497,8 +497,8 @@ contains
         use timers
         use m_grid_utils_external
         use delwaq2_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
 
 
         !     PARAMETERS          :
@@ -507,78 +507,78 @@ contains
         !     ----    -----    ------     ------- -----------
         !     file_unit_list     INTEGER       *     INPUT   logical unitnumbers
         !     MODID   CHAR*40       4     OUTPUT  Model and run-ID
-        !     SYSID   CHAR*20   NOTOT     OUTPUT  Systems ID
-        !     IDUMP   INTEGER  NODUMP     OUTPUT  Dump segment numbers
-        !     DUMPID  CHAR*20  NODUMP     OUTPUT  Dump-segment ID
-        !     IDPNT   INTEGER   NOSYS     OUTPUT  Pointers to dispersion array
-        !     IVPNT   INTEGER   NOSYS     OUTPUT  Pointers to velocity array
+        !     SYSID   CHAR*20   num_substances_total     OUTPUT  Systems ID
+        !     IDUMP   INTEGER  num_monitoring_points     OUTPUT  Dump segment numbers
+        !     DUMPID  CHAR*20  num_monitoring_points     OUTPUT  Dump-segment ID
+        !     IDPNT   INTEGER   num_substances_transported     OUTPUT  Pointers to dispersion array
+        !     IVPNT   INTEGER   num_substances_transported     OUTPUT  Pointers to velocity array
         !     DISP    REAL          3     OUTPUT  dispersion in 3 directions
-        !     IBPNT   INTEGER  4*NOBND    OUTPUT  1,* = timelag
+        !     IBPNT   INTEGER  4*num_boundary_conditions    OUTPUT  1,* = timelag
         !                                         2,* = flow pointer
         !                                         3,* = segment pointer
         !                                         4,* = time on timelag
-        !     BNDID   CHAR*20   NOBND     OUTPUT  Open boundary ID's
-        !     BNDNAM  CHAR*40   NOBND     OUTPUT  Open boundary names
-        !     BNDTYP  CHAR*20   NOBND     OUTPUT  Open boundary types
+        !     BNDID   CHAR*20   num_boundary_conditions     OUTPUT  Open boundary ID's
+        !     BNDNAM  CHAR*40   num_boundary_conditions     OUTPUT  Open boundary names
+        !     BNDTYP  CHAR*20   num_boundary_conditions     OUTPUT  Open boundary types
         !     INWTYP  INTEGER       *     OUTPUT  Types of items
-        !     IWASTE  INTEGER   NOWST     OUTPUT  waste load segment numbers
+        !     IWASTE  INTEGER   num_waste_loads     OUTPUT  waste load segment numbers
         integer(kind = int_wp), intent(out) :: iwsknd(*) !  wasteload processing
-        !     WASTID  CHAR*20   NOWST     OUTPUT  Waste location ID
-        !     WSTNAM  CHAR*40   NOWST     OUTPUT  Waste location names
-        !     WSTTYP  CHAR*20   NOWST     OUTPUT  Waste location types
+        !     WASTID  CHAR*20   num_waste_loads     OUTPUT  Waste location ID
+        !     WSTNAM  CHAR*40   num_waste_loads     OUTPUT  Waste location names
+        !     WSTTYP  CHAR*20   num_waste_loads     OUTPUT  Waste location types
         !     ALENG   REAL        3       OUTPUT  Lengthes in 3 directions
-        !     CONST   REAL     NOCONS     OUTPUT  value of constants
-        !     PARAM   REAL    NOPA,NOSEG  OUTPUT  value of parameters
-        !     NRFTOT  INTEGER  NOITEM     OUTPUT  file lengthes per item
-        !     NRHARM  INTEGER  NOITEM     OUTPUT  nr of harmonics per item
-        !     CONAME  CHAR*20  NOCONS     OUTPUT  Constant names
-        !     PANAME  CHAR*20  NOPA       OUTPUT  Parameter names
-        !     FUNAME  CHAR*20  NOFUN      OUTPUT  Function names
-        !     SFNAME  CHAR*20  NOSFUN     OUTPUT  Segment function names
-        !     DINAME  CHAR*20  NODISP     OUTPUT  Dispersion array names
-        !     VENAME  CHAR*20  NOVELO     OUTPUT  Velocity array names
+        !     CONST   REAL     num_constants     OUTPUT  value of constants
+        !     PARAM   REAL    num_spatial_parameters,num_cells  OUTPUT  value of parameters
+        !     NRFTOT  INTEGER  num_items_time_fn     OUTPUT  file lengthes per item
+        !     NRHARM  INTEGER  num_items_time_fn     OUTPUT  nr of harmonics per item
+        !     CONAME  CHAR*20  num_constants     OUTPUT  Constant names
+        !     PANAME  CHAR*20  num_spatial_parameters       OUTPUT  Parameter names
+        !     FUNAME  CHAR*20  num_time_functions      OUTPUT  Function names
+        !     SFNAME  CHAR*20  num_spatial_time_fuctions     OUTPUT  Segment function names
+        !     DINAME  CHAR*20  num_dispersion_arrays     OUTPUT  Dispersion array names
+        !     VENAME  CHAR*20  num_velocity_arrays     OUTPUT  Velocity array names
         !     DANAM   CHAR*20  NDMPAR     OUTPUT  Dump-area    ID
         !     IPDMP   INTEGER       *     OUTPUT  pointer structure dump area's
         !     IQDMP   INTEGER       *     OUTPUT  Exchange to dumped exchange pointer
         !     ISDMP   INTEGER       *     OUTPUT  Segment to dumped segment pointer
-        !     RANAM   CHAR*20       *     OUTPUT  Raaien names
-        !     IORAAI  INTEGER       *     OUTPUT  option output raaien
-        !     NQRAAI  INTEGER       *     OUTPUT  number of exch. per raai
-        !     IQRAAI  INTEGER       *     OUTPUT  exchange nunbers raaien
+        !     RANAM   CHAR*20       *     OUTPUT  transects names
+        !     IORAAI  INTEGER       *     OUTPUT  option output transects
+        !     NQRAAI  INTEGER       *     OUTPUT  number of exch. per transect
+        !     IQRAAI  INTEGER       *     OUTPUT  exchange nunbers transect
         !
         !
         !     IN COMMON BLOCK     :
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOSEG   INTEGER       1     INPUT   Number of segments
-        !     NOSYS   INTEGER       1     INPUT   Number of active systems
-        !     NOTOT   INTEGER       1     INPUT   Number of systems
-        !     NODISP  INTEGER       1     INPUT   Number of dispersion array's
-        !     NOVELO  INTEGER       1     INPUT   Number of velocity array's
-        !     NOQ     INTEGER       1     INPUT   total number of exchanges
-        !     NODUMP  INTEGER       1     INPUT   Number of dump segments
-        !     NOBND   INTEGER       1     INPUT   Number of open boundaries
-        !     NOBTYP  INTEGER       1     INPUT   Number of boundary types
-        !     NOWST   INTEGER       1     INPUT   Number of load locations
-        !     NOWTYP  INTEGER       1     INPUT   Number of waste load types
-        !     NOCONS  INTEGER       1     INPUT   Number of constants used
-        !     NOPA    INTEGER       1     INPUT   Number of parameters
-        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-        !     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-        !     NOITEM  INTEGER       1     INPUT   Number possible functions
+        !     num_cells   INTEGER       1     INPUT
+        !     num_substances_transported   INTEGER 1   INPUT
+        !     num_substances_total   INTEGER       1   INPUT
+        !     num_dispersion_arrays  INTEGER       1   INPUT
+        !     num_velocity_arrays  INTEGER       1     INPUT
+        !     num_exchanges     INTEGER       1     INPUT
+        !     num_monitoring_points  INTEGER       1     INPUT
+        !     num_boundary_conditions   INTEGER       1     INPUT
+        !     num_boundary_types  INTEGER       1     INPUT
+        !     num_waste_loads   INTEGER       1     INPUT
+        !     num_waste_load_types  INTEGER       1     INPUT   Number of waste load types
+        !     num_constants  INTEGER       1     INPUT   Number of constants used
+        !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
+        !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
+        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_items_time_fn  INTEGER       1     INPUT   Number possible functions
         !     NDMPAR  INTEGER       1     INPUT   Number of dump area's
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
         !     NTDMPS  INTEGER       1     INPUT   total number segments in dump area
-        !     NORAAI  INTEGER       1     INPUT   number of raaien
-        !     NTRAAQ  INTEGER       1     INPUT   total number of exch. in raaien
+        !     num_transects  INTEGER       1     INPUT
+        !     num_transect_exchanges  INTEGER       1     INPUT
 
         INTEGER(kind = int_wp) :: IPDMP(*), IQDMP(*), ISDMP (*), IORAAI(*), &
                 NQRAAI(*), IQRAAI(*), GRDNOS(*), GRDREF(*), &
                 IDUMP (*), IDPNT (*), IVPNT (*), IBPNT (4, *), &
                 IWASTE(*), NRFTOT(*), NRHARM(*), file_unit_list   (*), &
                 IKNMRK(*), INWTYP(*)
-        INTEGER(kind = int_wp) :: GRDSEG(NOSEG + NSEG2, NOGRID)
+        INTEGER(kind = int_wp) :: GRDSEG(num_cells + num_cells_bottom, num_grids)
         CHARACTER*40 MODID (4), BNDNAM(*), WSTNAM(*)
         CHARACTER*20 SYSID (*), DUMPID(*), BNDID (*), BNDTYP(*), &
                 WASTID(*), WSTTYP(*), CONAME(*), PANAME(*), &
@@ -598,56 +598,56 @@ contains
 
         IT = 0
         ! read from the system file
-        NOQTT = NOQ + NOQ4
-        NOSSS = NOSEG + NSEG2
+        NOQTT = num_exchanges + num_exchanges_bottom_dir
+        NOSSS = num_cells + num_cells_bottom
         IIN = file_unit_list(2)
         READ (IIN, END = 40, ERR = 40)  MODID (1), MODID(2)
         READ (IIN, END = 40, ERR = 40)  MODID (3), MODID(4)
-        READ (IIN, END = 40, ERR = 40) (SYSID (K), K = 1, NOTOT)
-        IF (NODUMP > 0) &
-                READ (IIN, END = 40, ERR = 40) (IDUMP(K), DUMPID(K), K = 1, NODUMP)
+        READ (IIN, END = 40, ERR = 40) (SYSID (K), K = 1, num_substances_total)
+        IF (num_monitoring_points > 0) &
+                READ (IIN, END = 40, ERR = 40) (IDUMP(K), DUMPID(K), K = 1, num_monitoring_points)
         IF (NDMPAR > 0) &
                 READ (IIN, END = 40, ERR = 40) (DANAM(K), K = 1, NDMPAR)
         IF (NDMPAR > 0) &
                 READ (IIN, END = 40, ERR = 40) (DMPBAL(K), K = 1, NDMPAR)
-        IF (NORAAI > 0) &
-                READ (IIN, END = 40, ERR = 40) (RANAM(K), K = 1, NORAAI)
+        IF (num_transects > 0) &
+                READ (IIN, END = 40, ERR = 40) (RANAM(K), K = 1, num_transects)
 
         ! sub-grid
-        DO IGRID = 1, NOGRID
+        DO IGRID = 1, num_grids
             READ (IIN, END = 40, ERR = 40)  GRDNOS(IGRID), GRDREF(IGRID), &
                     (GRDSEG(ISEG, IGRID), ISEG = 1, NOSSS)
         ENDDO
         !     the grid structures
-        DO IGRID = 1, NOGRID
+        DO IGRID = 1, num_grids
             ierror = aGrid%read(iin, nosss)
             if (ierror /= 0) goto 40
             i_grid = GridPs%add(aGrid)
         ENDDO
-        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, NOTOT)
-        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, NOTOT)
+        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, num_substances_total)
+        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, num_substances_total)
         READ (IIN, END = 40, ERR = 40) (IKNMRK(K), K = 1, NOSSS)
-        IF (NODISP > 0) &
-                READ (IIN, END = 40, ERR = 40) (DINAME(K), K = 1, NODISP)
-        IF (NOVELO > 0) &
-                READ (IIN, END = 40, ERR = 40) (VENAME(K), K = 1, NOVELO)
-        READ (IIN, END = 40, ERR = 40) (IDPNT (K), K = 1, NOSYS)
-        READ (IIN, END = 40, ERR = 40) (IVPNT (K), K = 1, NOSYS)
-        IF (NOBND  > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (IBPNT (2, K), K = 1, NOBND)
-            READ (IIN, END = 40, ERR = 40) (IBPNT (3, K), K = 1, NOBND)
+        IF (num_dispersion_arrays > 0) &
+                READ (IIN, END = 40, ERR = 40) (DINAME(K), K = 1, num_dispersion_arrays)
+        IF (num_velocity_arrays > 0) &
+                READ (IIN, END = 40, ERR = 40) (VENAME(K), K = 1, num_velocity_arrays)
+        READ (IIN, END = 40, ERR = 40) (IDPNT (K), K = 1, num_substances_transported)
+        READ (IIN, END = 40, ERR = 40) (IVPNT (K), K = 1, num_substances_transported)
+        IF (num_boundary_conditions  > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (IBPNT (2, K), K = 1, num_boundary_conditions)
+            READ (IIN, END = 40, ERR = 40) (IBPNT (3, K), K = 1, num_boundary_conditions)
         ENDIF
         IF (NDMPAR > 0) THEN
             READ (IIN, END = 40, ERR = 40)  (IPDMP(K), K = 1, NDMPAR + NTDMPQ)
             IX = NDMPAR + NTDMPQ
             READ (IIN, END = 40, ERR = 40)  (IPDMP(IX + K), K = 1, NDMPAR + NTDMPS)
         ENDIF
-        IF (NORAAI > 0) THEN
-            READ (IIN, END = 40, ERR = 40)  (IORAAI(K), K = 1, NORAAI)
-            READ (IIN, END = 40, ERR = 40)  (NQRAAI(K), K = 1, NORAAI)
-            READ (IIN, END = 40, ERR = 40)  (IQRAAI(K), K = 1, NTRAAQ)
+        IF (num_transects > 0) THEN
+            READ (IIN, END = 40, ERR = 40)  (IORAAI(K), K = 1, num_transects)
+            READ (IIN, END = 40, ERR = 40)  (NQRAAI(K), K = 1, num_transects)
+            READ (IIN, END = 40, ERR = 40)  (IQRAAI(K), K = 1, num_transect_exchanges)
         ENDIF
-        IF (NORAAI > 0 .OR. NDMPAR > 0) THEN
+        IF (num_transects > 0 .OR. NDMPAR > 0) THEN
             READ (IIN, END = 40, ERR = 40)  (IQDMP(K), K = 1, NOQTT)
         ENDIF
         IF (NDMPAR > 0) THEN
@@ -655,46 +655,46 @@ contains
         ENDIF
         READ (IIN, END = 40, ERR = 40) IDUMMY, (DISP  (K), K = 1, 3)
         READ (IIN, END = 40, ERR = 40) IDUMMY, (ALENG (K), K = 1, 3)
-        IF (NOBND  > 0) THEN
-            DO I = 1, NOBND
+        IF (num_boundary_conditions  > 0) THEN
+            DO I = 1, num_boundary_conditions
                 READ (IIN, END = 40, ERR = 40) BNDID(I), BNDNAM(I)
             end do
-            READ (IIN, END = 40, ERR = 40) (BNDTYP(K), K = 1, NOBTYP)
-            READ (IIN, END = 40, ERR = 40) (INWTYP(K + IT), K = 1, NOBND)
-            IT = IT + NOBND
+            READ (IIN, END = 40, ERR = 40) (BNDTYP(K), K = 1, num_boundary_types)
+            READ (IIN, END = 40, ERR = 40) (INWTYP(K + IT), K = 1, num_boundary_conditions)
+            IT = IT + num_boundary_conditions
             !          read time lags
-            READ (IIN, END = 40, ERR = 40) (IBPNT(1, K), K = 1, NOBND)
+            READ (IIN, END = 40, ERR = 40) (IBPNT(1, K), K = 1, num_boundary_conditions)
         ENDIF
-        IF (NOWST  > 0) THEN
-            DO I = 1, NOWST
+        IF (num_waste_loads  > 0) THEN
+            DO I = 1, num_waste_loads
                 READ (IIN, END = 40, ERR = 40) IWASTE(I), iwsknd(i), &
                         WASTID(I), WSTNAM(I)
             end do
-            READ (IIN, END = 40, ERR = 40) (WSTTYP(K), K = 1, NOWTYP)
-            READ (IIN, END = 40, ERR = 40) (INWTYP(K + IT), K = 1, NOWST)
-            IT = IT + NOWST
+            READ (IIN, END = 40, ERR = 40) (WSTTYP(K), K = 1, num_waste_load_types)
+            READ (IIN, END = 40, ERR = 40) (INWTYP(K + IT), K = 1, num_waste_loads)
+            IT = IT + num_waste_loads
         ENDIF
-        IF (NOCONS > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (CONAME(K), K = 1, NOCONS)
+        IF (num_constants > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (CONAME(K), K = 1, num_constants)
         ENDIF
-        IF (NOPA   > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (PANAME(K), K = 1, NOPA)
+        IF (num_spatial_parameters   > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (PANAME(K), K = 1, num_spatial_parameters)
         ENDIF
-        IF (NOFUN  > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (FUNAME(K), K = 1, NOFUN)
+        IF (num_time_functions  > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (FUNAME(K), K = 1, num_time_functions)
         ENDIF
-        IF (NOSFUN > 0) THEN
-            READ (IIN, END = 40, ERR = 40) (SFNAME(K), K = 1, NOSFUN)
+        IF (num_spatial_time_fuctions > 0) THEN
+            READ (IIN, END = 40, ERR = 40) (SFNAME(K), K = 1, num_spatial_time_fuctions)
         ENDIF
         !
         !     Time function info
         !
-        READ (IIN, END = 40, ERR = 40) (NRFTOT(K), K = 1, NOITEM)
-        READ (IIN, END = 40, ERR = 40) (NRHARM(K), K = 1, NOITEM)
+        READ (IIN, END = 40, ERR = 40) (NRFTOT(K), K = 1, num_items_time_fn)
+        READ (IIN, END = 40, ERR = 40) (NRHARM(K), K = 1, num_items_time_fn)
         !
         !         boundary timings greater then timelag
         !
-        DO I = 1, NOBND
+        DO I = 1, num_boundary_conditions
             IBPNT(4, I) = IBPNT(1, I) + 1
         end do
         !
@@ -764,15 +764,15 @@ contains
 
     END SUBROUTINE initialize_fixed_conditions
 
-    SUBROUTINE initialize_processes(LUNWRP, LCH, LUREP, NOTOT, NIPMSA, &
-            NPROC, NOLOC, NFLUX, NODEF, PRVNIO, &
+    SUBROUTINE initialize_processes(LUNWRP, LCH, LUREP, num_substances_total, process_space_int_len, &
+            num_processes_activated, num_local_vars, num_fluxes, num_defaults, PRVNIO, &
             IFLUX, PRVVAR, PRVTYP, DEFAUL, STOCHI, &
-            PRONAM, IMODU, IERR, IPBLOO, &
-            IOFFBL, NOSYS, NDSPX, NVELX, &
-            DSTO, VSTO, NDSPN, IDPNW, NVELN, &
-            IVPNW, NLOCX, PROGRD, PRONDT, NOVAR, &
+            PRONAM, IMODU, IERR, bloom_status_ind, &
+            bloom_ind, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+            DSTO, VSTO, num_dispersion_arrays_new, IDPNW, num_velocity_arrays_new, &
+            IVPNW, num_local_vars_exchange, PROGRD, PRONDT, num_vars, &
             VARARR, VARIDX, VARTDA, VARDAG, VARTAG, &
-            VARAGG, nrref, proref, prvpnt)
+            VARAGG, num_input_ref, proref, prvpnt)
         ! Initialisation of PROCES system .
         !
         !     FILES               : LUNWRP, Proces work file
@@ -782,42 +782,42 @@ contains
         !     LUNWRP  INTEGER       1     INPUT   Proces work file
         !     LCH     CHA*(*)       1     INPUT   Name proces work file
         !     LUREP   INTEGER       1     INPUT   Monitoring file
-        !     NOTOT   INTEGER       1     INPUT   Number of substances
-        !     NIPMSA  INTEGER       1     INPUT   Length IPMSA
-        !     NPROC   INTEGER       1     INPUT   Number of called processes
-        !     NOLOC   INTEGER       1     INPUT   Number of local proces params
-        !     NFLUX   INTEGER       1     INPUT   total number of fluxes
-        !     NODEF   INTEGER       1     INPUT   Number of used defaults
+        !     num_substances_total   INTEGER       1     INPUT   Number of substances
+        !     process_space_int_len  INTEGER       1     INPUT   Length process_space_int
+        !     num_processes_activated   INTEGER       1     INPUT   Number of called processes
+        !     num_local_vars   INTEGER       1     INPUT   Number of local proces params
+        !     num_fluxes   INTEGER       1     INPUT   total number of fluxes
+        !     num_defaults   INTEGER       1     INPUT   Number of used defaults
         !     PRVNIO  INTEGER       *     OUTPUT  Number of variables per proces
         !     IFLUX   INTEGER       *     OUTPUT  Pointer in FLUX per proces inst.
-        !     IPMSA   INTEGER       *     OUTPUT  Pointer in SSA per proces inst.
+        !     process_space_int   INTEGER       *     OUTPUT  Pointer in SSA per proces inst.
         !     IPSSA   INTEGER       *     OUTPUT  Pointer to SSA per proces inst.
         !     DEFAUL  REAL          *     OUTPUT  Default proces parameters
         !     STOCHI  REAL          *     OUTPUT  Proces stochiometry
         !     PRONAM  CHA*(*)       *     OUTPUT  Name of called module
         !     IMODU   INTEGER       *     OUTPUT  Module number proces
         !     IERR    INTEGER       1     IN/OUT  Error count
-        !     IPBLOO  INTEGER       1     INPUT   Number of Bloom module (if >0)
-        !     IOFFBL  INTEGER       1     INPUT   Offset in IPMSA for Bloom
-        !     NOSYS   INTEGER       1     INPUT   Number of active substances
-        !     NDSPX   INTEGER       1     INPUT   Number of extra dispersion array
-        !     NVELX   INTEGER       1     INPUT   Number of extra velocity array
-        !     DSTO    INTEGER NOSYS,*     OUTPUT  dispersion stochi matrix
-        !     VSTO    INTEGER NOSYS,*     OUTPUT  velocity stochi matrix
-        !     NDSPN   INTEGER       1     INPUT   Number of new dispersion array
-        !     IDPNW   INTEGER   NOSYS     OUTPUT  Pointers to new dispersion array
-        !     NVELN   INTEGER       1     INPUT   Number of new velocity array
-        !     IVPNW   INTEGER   NOSYS     OUTPUT  Pointers to new velocity array
-        !     PROGRD  INTEGER   NPROC     OUTPUT  Grid number for process
-        !     PRONDT  INTEGER   NPROC     OUTPUT  Fractional step for process
+        !     bloom_status_ind  INTEGER       1     INPUT   Number of Bloom module (if >0)
+        !     bloom_ind  INTEGER       1     INPUT   Offset in process_space_int for Bloom
+        !     num_substances_transported   INTEGER       1     INPUT   Number of active substances
+        !     num_dispersion_arrays_extra   INTEGER      1     INPUT
+        !     num_velocity_arrays_extra   INTEGER       1     INPUT
+        !     DSTO    INTEGER num_substances_transported,*     OUTPUT  dispersion stochi matrix
+        !     VSTO    INTEGER num_substances_transported,*     OUTPUT  velocity stochi matrix
+        !     num_dispersion_arrays_new   INTEGER       1     INPUT   Number of new dispersion array
+        !     IDPNW   INTEGER   num_substances_transported     OUTPUT  Pointers to new dispersion array
+        !     num_velocity_arrays_new   INTEGER       1     INPUT
+        !     IVPNW   INTEGER   num_substances_transported     OUTPUT  Pointers to new velocity array
+        !     PROGRD  INTEGER   num_processes_activated     OUTPUT  Grid number for process
+        !     PRONDT  INTEGER   num_processes_activated     OUTPUT  Fractional step for process
 
         use timers
         use process_registration
 
-        INTEGER(kind = int_wp) :: LUNWRP, LUREP, NOTOT, NIPMSA, NPROC, &
-                NOLOC, NFLUX, NODEF, IPBLOO, &
-                IOFFBL, NOSYS, NDSPX, NVELX, &
-                NDSPN, NVELN, NOVAR, nrref
+        INTEGER(kind = int_wp) :: LUNWRP, LUREP, num_substances_total, process_space_int_len, num_processes_activated, &
+                num_local_vars, num_fluxes, num_defaults, bloom_status_ind, &
+                bloom_ind, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+                num_dispersion_arrays_new, num_velocity_arrays_new, num_vars, num_input_ref
         INTEGER(kind = int_wp) :: PRVNIO(*), IFLUX(*), PRVVAR(*), &
                 PRVTYP(*), IMODU(*), IDPNW(*), &
                 IVPNW(*), PROGRD(*), PRONDT(*), &
@@ -831,11 +831,11 @@ contains
         !
         !     Local declarations
         INTEGER(kind = int_wp) :: NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD, &
-                NOTOTD, IOFF, NOSYSD, NDSPXD, NVELXD, &
-                NLOCXD, NDSPND, NVELND, NOVARD, nrrefD
+                NOTOTD, IOFF, NOSYSD, num_dispersion_arrays_extraD, num_velocity_arrays_extraD, &
+                num_local_vars_exchangeD, num_dispersion_arrays_newD, num_velocity_arrays_newD, NOVARD, nrrefD
         REAL(kind = real_wp) :: VERSIO
 
-        integer(kind = int_wp) :: k, ierr, nlocx, iproc, ifracs, ipdgrd
+        integer(kind = int_wp) :: k, ierr, num_local_vars_exchange, iproc, ifracs, ipdgrd
 
         ! Store fractional step flag in common CFRACS
         COMMON /CFRACS/ IFRACS
@@ -849,100 +849,100 @@ contains
         !
         READ (LUNWRP, ERR = 900, END = 900) NIPMSD, NPROCD, NFLUXD, &
                 NOLOCD, NODEFD, NOTOTD, &
-                NOSYSD, NDSPXD, NVELXD, &
-                NLOCXD, NDSPND, NVELND, &
+                NOSYSD, num_dispersion_arrays_extraD, num_velocity_arrays_extraD, &
+                num_local_vars_exchangeD, num_dispersion_arrays_newD, num_velocity_arrays_newD, &
                 NOVARD, nrrefD
-        IF (NIPMSD /= NIPMSA) THEN
-            WRITE (LUREP, 2020) NIPMSD, NIPMSA
+        IF (NIPMSD /= process_space_int_len) THEN
+            WRITE (LUREP, 2020) NIPMSD, process_space_int_len
             IERR = IERR + 1
         ENDIF
-        IF (NPROCD /= NPROC) THEN
-            WRITE (LUREP, 2030) NPROCD, NPROC
+        IF (NPROCD /= num_processes_activated) THEN
+            WRITE (LUREP, 2030) NPROCD, num_processes_activated
             IERR = IERR + 1
         ENDIF
-        IF (NFLUXD /= NFLUX) THEN
-            WRITE (LUREP, 2040) NFLUXD, NFLUX
+        IF (NFLUXD /= num_fluxes) THEN
+            WRITE (LUREP, 2040) NFLUXD, num_fluxes
             IERR = IERR + 1
         ENDIF
-        IF (NOLOCD /= NOLOC) THEN
-            WRITE (LUREP, 2050) NOLOCD, NOLOC
+        IF (NOLOCD /= num_local_vars) THEN
+            WRITE (LUREP, 2050) NOLOCD, num_local_vars
             IERR = IERR + 1
         ENDIF
-        IF (NODEFD /= NODEF) THEN
-            WRITE (LUREP, 2060) NODEFD, NODEF
+        IF (NODEFD /= num_defaults) THEN
+            WRITE (LUREP, 2060) NODEFD, num_defaults
             IERR = IERR + 1
         ENDIF
-        IF (NOTOTD /= NOTOT) THEN
-            WRITE (LUREP, 2070) NOTOTD, NOTOT
+        IF (NOTOTD /= num_substances_total) THEN
+            WRITE (LUREP, 2070) NOTOTD, num_substances_total
             IERR = IERR + 1
         ENDIF
-        IF (NOSYSD /= NOSYS) THEN
-            WRITE (LUREP, 2120) NOSYSD, NOSYS
+        IF (NOSYSD /= num_substances_transported) THEN
+            WRITE (LUREP, 2120) NOSYSD, num_substances_transported
             IERR = IERR + 1
         ENDIF
-        IF (NDSPXD /= NDSPX) THEN
-            WRITE (LUREP, 2130) NDSPXD, NDSPX
+        IF (num_dispersion_arrays_extraD /= num_dispersion_arrays_extra) THEN
+            WRITE (LUREP, 2130) num_dispersion_arrays_extraD, num_dispersion_arrays_extra
             IERR = IERR + 1
         ENDIF
-        IF (NVELXD /= NVELX) THEN
-            WRITE (LUREP, 2140) NVELXD, NVELX
+        IF (num_velocity_arrays_extraD /= num_velocity_arrays_extra) THEN
+            WRITE (LUREP, 2140) num_velocity_arrays_extraD, num_velocity_arrays_extra
             IERR = IERR + 1
         ENDIF
-        IF (NLOCXD /= NLOCX) THEN
-            WRITE (LUREP, 2150) NLOCXD, NLOCX
+        IF (num_local_vars_exchangeD /= num_local_vars_exchange) THEN
+            WRITE (LUREP, 2150) num_local_vars_exchangeD, num_local_vars_exchange
             IERR = IERR + 1
         ENDIF
-        IF (NDSPND /= NDSPN) THEN
-            WRITE (LUREP, 2160) NDSPND, NDSPN
+        IF (num_dispersion_arrays_newD /= num_dispersion_arrays_new) THEN
+            WRITE (LUREP, 2160) num_dispersion_arrays_newD, num_dispersion_arrays_new
             IERR = IERR + 1
         ENDIF
-        IF (NVELND /= NVELN) THEN
-            WRITE (LUREP, 2170) NVELND, NVELN
+        IF (num_velocity_arrays_newD /= num_velocity_arrays_new) THEN
+            WRITE (LUREP, 2170) num_velocity_arrays_newD, num_velocity_arrays_new
             IERR = IERR + 1
         ENDIF
-        IF (NOVARD /= NOVAR) THEN
-            WRITE (LUREP, 2190) NOVARD, NOVAR
+        IF (NOVARD /= num_vars) THEN
+            WRITE (LUREP, 2190) NOVARD, num_vars
             IERR = IERR + 1
         ENDIF
-        IF (nrrefD /= nrref) THEN
-            WRITE (LUREP, 2200) nrrefd, nrref
+        IF (nrrefD /= num_input_ref) THEN
+            WRITE (LUREP, 2200) nrrefd, num_input_ref
             IERR = IERR + 1
         ENDIF
         IF (IERR > 0) GOTO 910
         !
-        READ (LUNWRP, ERR = 900, END = 900) (PRVNIO(K), K = 1, NPROC)
-        READ (LUNWRP, ERR = 900, END = 900) (IFLUX(K), K = 1, NPROC)
-        READ (LUNWRP, ERR = 900, END = 900) (PRVVAR(K), K = 1, NIPMSA)
-        READ (LUNWRP, ERR = 900, END = 900) (PRVTYP(K), K = 1, NIPMSA)
-        READ (LUNWRP, ERR = 900, END = 900) (DEFAUL(K), K = 1, NODEF)
-        READ (LUNWRP, ERR = 900, END = 900) (STOCHI(K), K = 1, NOTOT * NFLUX)
-        READ (LUNWRP, ERR = 900, END = 900) (DSTO(K), K = 1, NOSYS * NDSPX)
-        READ (LUNWRP, ERR = 900, END = 900) (VSTO(K), K = 1, NOSYS * NVELX)
-        IF (NDSPN > 0) THEN
-            READ (LUNWRP, ERR = 900, END = 900) (IDPNW(K), K = 1, NOSYS)
+        READ (LUNWRP, ERR = 900, END = 900) (PRVNIO(K), K = 1, num_processes_activated)
+        READ (LUNWRP, ERR = 900, END = 900) (IFLUX(K), K = 1, num_processes_activated)
+        READ (LUNWRP, ERR = 900, END = 900) (PRVVAR(K), K = 1, process_space_int_len)
+        READ (LUNWRP, ERR = 900, END = 900) (PRVTYP(K), K = 1, process_space_int_len)
+        READ (LUNWRP, ERR = 900, END = 900) (DEFAUL(K), K = 1, num_defaults)
+        READ (LUNWRP, ERR = 900, END = 900) (STOCHI(K), K = 1, num_substances_total * num_fluxes)
+        READ (LUNWRP, ERR = 900, END = 900) (DSTO(K), K = 1, num_substances_transported * num_dispersion_arrays_extra)
+        READ (LUNWRP, ERR = 900, END = 900) (VSTO(K), K = 1, num_substances_transported * num_velocity_arrays_extra)
+        IF (num_dispersion_arrays_new > 0) THEN
+            READ (LUNWRP, ERR = 900, END = 900) (IDPNW(K), K = 1, num_substances_transported)
         ENDIF
-        IF (NVELN > 0) THEN
-            READ (LUNWRP, ERR = 900, END = 900) (IVPNW(K), K = 1, NOSYS)
+        IF (num_velocity_arrays_new > 0) THEN
+            READ (LUNWRP, ERR = 900, END = 900) (IVPNW(K), K = 1, num_substances_transported)
         ENDIF
-        READ (LUNWRP, ERR = 900, END = 900) (PRONAM(K), K = 1, NPROC)
-        READ (LUNWRP, ERR = 900, END = 900) (PROGRD(K), K = 1, NPROC)
-        READ (LUNWRP, ERR = 900, END = 900) (PRONDT(K), K = 1, NPROC)
-        READ (LUNWRP, ERR = 900, END = 900) (VARARR(K), K = 1, NOVAR)
-        READ (LUNWRP, ERR = 900, END = 900) (VARIDX(K), K = 1, NOVAR)
-        READ (LUNWRP, ERR = 900, END = 900) (VARTDA(K), K = 1, NOVAR)
-        READ (LUNWRP, ERR = 900, END = 900) (VARDAG(K), K = 1, NOVAR)
-        READ (LUNWRP, ERR = 900, END = 900) (VARTAG(K), K = 1, NOVAR)
-        READ (LUNWRP, ERR = 900, END = 900) (VARAGG(K), K = 1, NOVAR)
-        read (lunwrp, err = 900, end = 900) (proref(k), k = 1, nproc * nrref)
+        READ (LUNWRP, ERR = 900, END = 900) (PRONAM(K), K = 1, num_processes_activated)
+        READ (LUNWRP, ERR = 900, END = 900) (PROGRD(K), K = 1, num_processes_activated)
+        READ (LUNWRP, ERR = 900, END = 900) (PRONDT(K), K = 1, num_processes_activated)
+        READ (LUNWRP, ERR = 900, END = 900) (VARARR(K), K = 1, num_vars)
+        READ (LUNWRP, ERR = 900, END = 900) (VARIDX(K), K = 1, num_vars)
+        READ (LUNWRP, ERR = 900, END = 900) (VARTDA(K), K = 1, num_vars)
+        READ (LUNWRP, ERR = 900, END = 900) (VARDAG(K), K = 1, num_vars)
+        READ (LUNWRP, ERR = 900, END = 900) (VARTAG(K), K = 1, num_vars)
+        READ (LUNWRP, ERR = 900, END = 900) (VARAGG(K), K = 1, num_vars)
+        read (lunwrp, err = 900, end = 900) (proref(k), k = 1, num_processes_activated * num_input_ref)
         k = 1
-        do iproc = 1, nproc
+        do iproc = 1, num_processes_activated
             prvpnt(iproc) = k
             k = k + prvnio(iproc)
         enddo
         !
         !     Set module numbers
         !
-        DO K = 1, NPROC
+        DO K = 1, num_processes_activated
             CALL PRONRS (PRONAM(K), IMODU(K))
         end do
         !
@@ -950,7 +950,7 @@ contains
         !
         IFRACS = 0
         IPDGRD = 0
-        DO K = 1, NPROC
+        DO K = 1, num_processes_activated
             IF (PRONDT(K) > 1) THEN
                 IFRACS = 1
             ENDIF
@@ -962,20 +962,20 @@ contains
             WRITE(LUREP, 3010)
         ELSE
             WRITE(LUREP, 3020)
-            DO K = 1, NPROC
+            DO K = 1, num_processes_activated
                 WRITE(LUREP, 3000) PRONAM(K), PROGRD(K), PRONDT(K)
             ENDDO
         ENDIF
         !
         !     Check for Bloom connection
         !
-        IPBLOO = 0
-        IOFFBL = 0
+        bloom_status_ind = 0
+        bloom_ind = 0
         IOFF = 1
-        DO K = 1, NPROC
+        DO K = 1, num_processes_activated
             IF (PRONAM(K)(1:6) == 'D40BLO') THEN
-                IPBLOO = K
-                IOFFBL = IOFF
+                bloom_status_ind = K
+                bloom_ind = IOFF
                 WRITE (LUREP, 2100)
             ENDIF
             IOFF = IOFF + PRVNIO(K)
@@ -994,49 +994,49 @@ contains
         RETURN
 
         2020 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NIPMSA', &
+                /'          DELWAQ boot file for process_space_int_len', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2030 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NPROC ', &
+                /'          DELWAQ boot file for num_processes_activated ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2040 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NFLUX ', &
+                /'          DELWAQ boot file for num_fluxes ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2050 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NOLOC ', &
+                /'          DELWAQ boot file for num_local_vars ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2060 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NODEF ', &
+                /'          DELWAQ boot file for num_defaults ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2070 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NOTOT ', &
+                /'          DELWAQ boot file for num_substances_total ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2090 FORMAT (' ERROR  : Reading proces work file;', A, &
                 /'          on unit number ', I3)
         2100 FORMAT (' MESSAGE: Bloom fractional step switched on')
         2120 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NOSYS ', &
+                /'          DELWAQ boot file for num_substances_transported ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2130 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NDSPX ', &
+                /'          DELWAQ boot file for num_dispersion_arrays_extra ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2140 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NVELX ', &
+                /'          DELWAQ boot file for num_velocity_arrays_extra ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2150 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NLOCX ', &
+                /'          DELWAQ boot file for num_local_vars_exchange ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2160 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NDSPN ', &
+                /'          DELWAQ boot file for num_dispersion_arrays_new ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2170 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NVELN ', &
+                /'          DELWAQ boot file for num_velocity_arrays_new ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2190 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NOVAR ', &
+                /'          DELWAQ boot file for num_vars ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         2200 FORMAT (' ERROR  : Proces work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NRREF ', &
+                /'          DELWAQ boot file for num_input_ref ', &
                 /'          ', I6, ' in proces,', I6, ' in boot file.')
         3000 FORMAT (/' MODULE :', A, ' on grid ', I3, ', timestep multiplier:', I3)
         3010 FORMAT (/' No process decomposition active')
@@ -1044,9 +1044,9 @@ contains
         !
     end subroutine initialize_processes
 
-    SUBROUTINE initialize_output(LUNWRO, LCH, LUREP, NOUTP, NRVART, &
-            NBUFMX, IOUTPS, IOPOIN, OUNAM, OUSNM, &
-            OUUNI, OUDSC, NOTOT, SYSNM, SYUNI, &
+    SUBROUTINE initialize_output(LUNWRO, LCH, LUREP, num_output_files, num_output_variables_extra, &
+            output_buffer_len, IOUTPS, IOPOIN, OUNAM, OUSNM, &
+            OUUNI, OUDSC, num_substances_total, SYSNM, SYUNI, &
             SYDSC, file_unit_list, file_name_list, IERR)
         ! Initialisation of OUTPUT system.
         !   - Reads output work file.
@@ -1058,10 +1058,10 @@ contains
         !     LUNWRO  INTEGER       1     INPUT   Output work file
         !     LCH     CHA*(*)       1     INPUT   Name output work file
         !     LUREP   INTEGER       1     INPUT   Monitoring file
-        !     NOUTP   INTEGER       1     INPUT   Number of output files
-        !     NRVART  INTEGER       1     INPUT   Number of extra output vars
-        !     NBUFMX  INTEGER       1     INPUT   length of output buffer
-        !     IOUTPS  INTEGER 7*NOUTP    OUTPUT   Output structure
+        !     num_output_files   INTEGER       1     INPUT   Number of output files
+        !     num_output_variables_extra  INTEGER       1     INPUT   Number of extra output vars
+        !     output_buffer_len  INTEGER       1     INPUT
+        !     IOUTPS  INTEGER 7*num_output_files    OUTPUT   Output structure
         !                                            index 1 = start time
         !                                            index 2 = stop time
         !                                            index 3 = time step
@@ -1069,14 +1069,14 @@ contains
         !                                            index 5 = kind of output
         !                                            index 6 = format of output
         !                                            index 7 = initialize flag
-        !     IOPOIN  INTEGER  NRVART    OUTPUT   Pointer to DELWAQ array's
-        !     OUNAM   CHAR*(*) NRVART    OUTPUT   name of output variable
-        !     OUSNM   CHAR*(*) NRVART    OUTPUT   standard name of output variable
-        !     OUUNI   CHAR*(*) NRVART    OUTPUT   unit of output variable
-        !     OUDSC   CHAR*(*) NRVART    OUTPUT   description of output variable
-        !     OSSNM   CHAR*(*) NRVART    OUTPUT   standard name of substance
-        !     OSUNI   CHAR*(*) NRVART    OUTPUT   unit of substance
-        !     OSDSC   CHAR*(*) NRVART    OUTPUT   description of substance
+        !     IOPOIN  INTEGER  num_output_variables_extra    OUTPUT   Pointer to DELWAQ array's
+        !     OUNAM   CHAR*(*) num_output_variables_extra    OUTPUT   name of output variable
+        !     OUSNM   CHAR*(*) num_output_variables_extra    OUTPUT   standard name of output variable
+        !     OUUNI   CHAR*(*) num_output_variables_extra    OUTPUT   unit of output variable
+        !     OUDSC   CHAR*(*) num_output_variables_extra    OUTPUT   description of output variable
+        !     OSSNM   CHAR*(*) num_output_variables_extra    OUTPUT   standard name of substance
+        !     OSUNI   CHAR*(*) num_output_variables_extra    OUTPUT   unit of substance
+        !     OSDSC   CHAR*(*) num_output_variables_extra    OUTPUT   description of substance
         !     file_unit_list     INTEGER    *        INPUT   array with unit numbers
         !     file_name_list   CHAR*(*)   *        INPUT   filenames
         !     IERR    INTEGER       1    IN/OUT   cummulative error count
@@ -1087,8 +1087,8 @@ contains
         use timers
         use results
 
-        integer(kind = int_wp) :: lunwro, lurep, noutp, nrvart, nbufmx, nosys, &
-                ierr, notot
+        integer(kind = int_wp) :: lunwro, lurep, num_output_files, num_output_variables_extra, output_buffer_len, num_substances_transported, &
+                ierr, num_substances_total
         integer(kind = int_wp) :: ioutps(7, *), iopoin(*), file_unit_list(*)
         character*(*) lch, file_name_list(*)
         character*20  ounam(*)
@@ -1112,41 +1112,41 @@ contains
 
         ! read and check dimensions
         read (lunwro, err = 900, end = 900) noutpd, nrvard, nbufmd, ncopt
-        if (noutpd /= noutp) then
-            write (lurep, 2020) noutpd, noutp
+        if (noutpd /= num_output_files) then
+            write (lurep, 2020) noutpd, num_output_files
             ierr = ierr + 1
         endif
-        if (nrvard /= nrvart) then
-            write (lurep, 2030) nrvard, nrvart
+        if (nrvard /= num_output_variables_extra) then
+            write (lurep, 2030) nrvard, num_output_variables_extra
             ierr = ierr + 1
         endif
-        if (nbufmd /= nbufmx) then
-            write (lurep, 2040) nbufmd, nbufmx
+        if (nbufmd /= output_buffer_len) then
+            write (lurep, 2040) nbufmd, output_buffer_len
             ierr = ierr + 1
         endif
         if (ierr > 0) goto 910
 
-        read (lunwro, err = 900, end = 900) (ioutps(1, k), k = 1, noutp)
-        read (lunwro, err = 900, end = 900) (ioutps(2, k), k = 1, noutp)
-        read (lunwro, err = 900, end = 900) (ioutps(3, k), k = 1, noutp)
-        read (lunwro, err = 900, end = 900) (ioutps(4, k), k = 1, noutp)
-        read (lunwro, err = 900, end = 900) (ioutps(5, k), k = 1, noutp)
-        read (lunwro, err = 900, end = 900) (ioutps(6, k), k = 1, noutp)
-        if (nrvart>0) then
-            read (lunwro, err = 900, end = 900) (iopoin(k), k = 1, nrvart)
-            read (lunwro, err = 900, end = 900) (ounam (k), k = 1, nrvart)
-            read (lunwro, err = 900, end = 900) (ousnm (k), k = 1, nrvart)
-            read (lunwro, err = 900, end = 900) (ouuni (k), k = 1, nrvart)
-            read (lunwro, err = 900, end = 900) (oudsc (k), k = 1, nrvart)
+        read (lunwro, err = 900, end = 900) (ioutps(1, k), k = 1, num_output_files)
+        read (lunwro, err = 900, end = 900) (ioutps(2, k), k = 1, num_output_files)
+        read (lunwro, err = 900, end = 900) (ioutps(3, k), k = 1, num_output_files)
+        read (lunwro, err = 900, end = 900) (ioutps(4, k), k = 1, num_output_files)
+        read (lunwro, err = 900, end = 900) (ioutps(5, k), k = 1, num_output_files)
+        read (lunwro, err = 900, end = 900) (ioutps(6, k), k = 1, num_output_files)
+        if (num_output_variables_extra>0) then
+            read (lunwro, err = 900, end = 900) (iopoin(k), k = 1, num_output_variables_extra)
+            read (lunwro, err = 900, end = 900) (ounam (k), k = 1, num_output_variables_extra)
+            read (lunwro, err = 900, end = 900) (ousnm (k), k = 1, num_output_variables_extra)
+            read (lunwro, err = 900, end = 900) (ouuni (k), k = 1, num_output_variables_extra)
+            read (lunwro, err = 900, end = 900) (oudsc (k), k = 1, num_output_variables_extra)
         endif
-        if (notot>0) then
-            read (lunwro, err = 900, end = 900) (sysnm (k), k = 1, notot)
-            read (lunwro, err = 900, end = 900) (syuni (k), k = 1, notot)
-            read (lunwro, err = 900, end = 900) (sydsc (k), k = 1, notot)
+        if (num_substances_total>0) then
+            read (lunwro, err = 900, end = 900) (sysnm (k), k = 1, num_substances_total)
+            read (lunwro, err = 900, end = 900) (syuni (k), k = 1, num_substances_total)
+            read (lunwro, err = 900, end = 900) (sydsc (k), k = 1, num_substances_total)
         endif
 
         ! Set initialize flag, open files: only on first subdomain
-        DO K = 1, NOUTP
+        DO K = 1, num_output_files
             ISRTOU = IOUTPS(5, K)
             IF (K <= 4) THEN
                 IFI = K + LUOFF
@@ -1190,13 +1190,13 @@ contains
 
         RETURN
         2020 FORMAT (' ERROR  : Output work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NOUTP', &
+                /'          DELWAQ boot file for num_output_files', &
                 /'          ', I6, ' in output,', I6, ' in boot file.')
         2030 FORMAT (' ERROR  : Output work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NRVART', &
+                /'          DELWAQ boot file for num_output_variables_extra', &
                 /'          ', I6, ' in output,', I6, ' in boot file.')
         2040 FORMAT (' ERROR  : Output work file doesn''t match dimensions in' &
-                /'          DELWAQ boot file for NBUFMX', &
+                /'          DELWAQ boot file for output_buffer_len', &
                 /'          ', I6, ' in output,', I6, ' in boot file.')
         2050 FORMAT (' ERROR  : Reading output work file;', A, &
                 /'          on unit number ', I3)

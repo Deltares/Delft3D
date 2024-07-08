@@ -28,9 +28,9 @@ module m_sulfox
 contains
 
 
-    subroutine sulfox (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sulfox (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -70,9 +70,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9
@@ -111,7 +111,7 @@ contains
         !     -----Warnings-----
         !
         IF (FIRST) THEN
-            IF (PMSA(IP8) <= 0.0) THEN
+            IF (process_space_real(IP8) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : Poros should be', &
                         ' greater than zero'
             ENDIF
@@ -119,19 +119,19 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CSUD = MAX (0.0, PMSA(IP1))
-                COX = MAX (0.0, PMSA(IP2))
-                K0OXI = PMSA(IP3)
-                KOXI = PMSA(IP4)
-                KTOXI = PMSA(IP5)
-                COXC = PMSA(IP6)
-                TEMP = PMSA(IP7)
-                POROS = PMSA(IP8)
-                DELT = PMSA(IP9)
+                CSUD = MAX (0.0, process_space_real(IP1))
+                COX = MAX (0.0, process_space_real(IP2))
+                K0OXI = process_space_real(IP3)
+                KOXI = process_space_real(IP4)
+                KTOXI = process_space_real(IP5)
+                COXC = process_space_real(IP6)
+                TEMP = process_space_real(IP7)
+                POROS = process_space_real(IP8)
+                DELT = process_space_real(IP9)
                 !
                 !           Set the rates according to the DO concentration
                 !

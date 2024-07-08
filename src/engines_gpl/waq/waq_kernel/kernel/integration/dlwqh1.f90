@@ -31,20 +31,20 @@ contains
     !> Sets the diagonal for the steady state option,
     !! updates first order term on the diagonal
     !! and compresses DERIV for use in SGMRES
-    subroutine dlwqh1(noseg, notot, nobnd, isys, diag, &
+    subroutine dlwqh1(num_cells, num_substances_total, num_boundary_conditions, isys, diag, &
             delvol, conc)
 
         use timers
 
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noseg               !< Number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: notot               !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: nobnd               !< Number of open boundaries
+        integer(kind = int_wp), intent(in   ) :: num_cells               !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: num_substances_total               !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions               !< Number of open boundaries
         integer(kind = int_wp), intent(in   ) :: isys                !< This substance number
-        real(kind = dp),        intent(inout) :: diag(noseg + nobnd) !< Diagonal vector (1st order term)
-        real(kind = real_wp),   intent(in   ) :: delvol(noseg)       !< Closure error correction
-        real(kind = real_wp),   intent(in   ) :: conc(notot, noseg)  !< First order term
+        real(kind = dp),        intent(inout) :: diag(num_cells + num_boundary_conditions) !< Diagonal vector (1st order term)
+        real(kind = real_wp),   intent(in   ) :: delvol(num_cells)       !< Closure error correction
+        real(kind = real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)  !< First order term
 
         ! Local variables
         integer(kind = int_wp) :: iseg ! loop counter for computational volumes
@@ -56,10 +56,10 @@ contains
         ! set the right hand side and
         ! set the diagonal for steady state
         ! first order decay in conc
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             diag(iseg) = -conc(isys, iseg) + delvol(iseg)
         end do
-        do iseg = noseg + 1, noseg + nobnd
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             diag(iseg) = 1.0
         end do
         if (timon) call timstop(ithandl)

@@ -29,18 +29,18 @@ contains
 
 
     !> Initialize diagonal for fast solvers
-    subroutine dlwqf2(noseg, nobnd, idt, volnew, trace)
+    subroutine dlwqf2(num_cells, num_boundary_conditions, idt, volnew, trace)
 
         use timers
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: noseg !< Number of cells or computational volumes
-        integer(kind = int_wp), intent(in) :: nobnd !< Number of open boundaries
+        integer(kind = int_wp), intent(in) :: num_cells !< Number of cells or computational volumes
+        integer(kind = int_wp), intent(in) :: num_boundary_conditions !< Number of open boundaries
         integer(kind = int_wp), intent(in) :: idt   !< Time step size
 
-        real(kind = real_wp), intent(in   ) :: volnew(noseg)        !< Volumes end of time step
-        real(kind = dp),      intent(  out) :: trace(noseg + nobnd) !< Diagonal vector
+        real(kind = real_wp), intent(in   ) :: volnew(num_cells)        !< Volumes end of time step
+        real(kind = dp),      intent(  out) :: trace(num_cells + num_boundary_conditions) !< Diagonal vector
 
         ! Local variables
         real(kind = dp) :: dt           !< Time step in double precision
@@ -51,10 +51,10 @@ contains
 
         ! set the diagonal
         dt = idt
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             trace(iseg) = volnew(iseg) / dt
         end do
-        do iseg = noseg + 1, noseg + nobnd
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             trace(iseg) = 1.0
         end do
         if (timon) call timstop (ithandl)

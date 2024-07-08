@@ -28,9 +28,9 @@ module m_sedcom
 contains
 
 
-    subroutine sedcom (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sedcom (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -71,9 +71,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         LOGICAL  NO1OPT, NO2OPT, NO3OPT, NO4OPT, NO5OPT, NO6OPT, &
                 NO7OPT, NO8OPT, NO9OPT
@@ -81,9 +81,9 @@ contains
         !        Substance 1 IM1
         IF (INCREM(1) == 0 .AND. INCREM(9) == 0 .AND. &
                 INCREM(16) == 0) THEN
-            MASS1 = PMSA(IPOINT(1))
-            DMCF1 = PMSA(IPOINT(9))
-            RHO1 = PMSA(IPOINT(16))
+            MASS1 = process_space_real(IPOINT(1))
+            DMCF1 = process_space_real(IPOINT(9))
+            RHO1 = process_space_real(IPOINT(16))
             SOM1 = MASS1 * DMCF1
             SOMV1 = SOM1 / RHO1
             NO1OPT = .TRUE.
@@ -93,9 +93,9 @@ contains
         !        Substance 2  IM2
         IF (INCREM(2) == 0 .AND. INCREM(10) == 0 .AND. &
                 INCREM(17) == 0) THEN
-            MASS2 = PMSA(IPOINT(2))
-            DMCF2 = PMSA(IPOINT(10))
-            RHO2 = PMSA(IPOINT(17))
+            MASS2 = process_space_real(IPOINT(2))
+            DMCF2 = process_space_real(IPOINT(10))
+            RHO2 = process_space_real(IPOINT(17))
             SOM2 = MASS2 * DMCF2
             SOMV2 = SOM2 / RHO2
             NO2OPT = .TRUE.
@@ -105,9 +105,9 @@ contains
         !        Substance 3 IM3
         IF (INCREM(3) == 0 .AND. INCREM(11) == 0 .AND. &
                 INCREM(18) == 0) THEN
-            MASS3 = PMSA(IPOINT(3))
-            DMCF3 = PMSA(IPOINT(11))
-            RHO3 = PMSA(IPOINT(18))
+            MASS3 = process_space_real(IPOINT(3))
+            DMCF3 = process_space_real(IPOINT(11))
+            RHO3 = process_space_real(IPOINT(18))
             SOM3 = MASS3 * DMCF3
             SOMV3 = SOM3 / RHO3
             NO3OPT = .TRUE.
@@ -118,14 +118,14 @@ contains
         IF (INCREM(4) == 0 .AND. INCREM(12) == 0 .AND. &
                 INCREM(19) == 0 .AND. INCREM(25) == 0 .AND. &
                 INCREM(26) == 0 .AND. INCREM(27) == 0) THEN
-            MASS4 = PMSA(IPOINT(4))
-            DMCF4 = PMSA(IPOINT(12))
-            RHO4 = PMSA(IPOINT(19))
+            MASS4 = process_space_real(IPOINT(4))
+            DMCF4 = process_space_real(IPOINT(12))
+            RHO4 = process_space_real(IPOINT(19))
             SOM4 = MASS4 * DMCF4
             SOMV4 = SOM4 / RHO4
-            NMASS4 = PMSA(IPOINT(25))
-            PMASS4 = PMSA(IPOINT(26))
-            SMASS4 = PMSA(IPOINT(27))
+            NMASS4 = process_space_real(IPOINT(25))
+            PMASS4 = process_space_real(IPOINT(26))
+            SMASS4 = process_space_real(IPOINT(27))
             CN4 = -999.
             CP4 = -999.
             CS4 = -999.
@@ -143,14 +143,14 @@ contains
                 INCREM(20) == 0 .AND. INCREM(28) == 0 .AND. &
                 INCREM(29) == 0 .AND. INCREM(30) == 0) THEN
 
-            MASS5 = PMSA(IPOINT(5))
-            DMCF5 = PMSA(IPOINT(13))
-            RHO5 = PMSA(IPOINT(20))
+            MASS5 = process_space_real(IPOINT(5))
+            DMCF5 = process_space_real(IPOINT(13))
+            RHO5 = process_space_real(IPOINT(20))
             SOM5 = MASS5 * DMCF5
             SOMV5 = SOM5 / RHO5
-            NMASS5 = PMSA(IPOINT(28))
-            PMASS5 = PMSA(IPOINT(29))
-            SMASS5 = PMSA(IPOINT(30))
+            NMASS5 = process_space_real(IPOINT(28))
+            PMASS5 = process_space_real(IPOINT(29))
+            SMASS5 = process_space_real(IPOINT(30))
             CN5 = -999.
             CP5 = -999.
             CS5 = -999.
@@ -166,9 +166,9 @@ contains
         !        Substance 6 Diat
         IF (INCREM(6) == 0 .AND. INCREM(14) == 0 .AND. &
                 INCREM(21) == 0) THEN
-            MASS6 = PMSA(IPOINT(6))
-            DMCF6 = PMSA(IPOINT(14))
-            RHO6 = PMSA(IPOINT(21))
+            MASS6 = process_space_real(IPOINT(6))
+            DMCF6 = process_space_real(IPOINT(14))
+            RHO6 = process_space_real(IPOINT(21))
             SOM6 = MASS6 * DMCF6
             SOMV6 = SOM6 / RHO6
             NO6OPT = .TRUE.
@@ -178,9 +178,9 @@ contains
         !        Substance 7 Green
         IF (INCREM(7) == 0 .AND. INCREM(15) == 0 .AND. &
                 INCREM(22) == 0) THEN
-            MASS7 = PMSA(IPOINT(7))
-            DMCF7 = PMSA(IPOINT(15))
-            RHO7 = PMSA(IPOINT(22))
+            MASS7 = process_space_real(IPOINT(7))
+            DMCF7 = process_space_real(IPOINT(15))
+            RHO7 = process_space_real(IPOINT(22))
             SOM7 = MASS7 * DMCF7
             SOMV7 = SOM7 / RHO7
             NO7OPT = .TRUE.
@@ -190,9 +190,9 @@ contains
         !        Substance 8 MFB1
         IF (INCREM(31) == 0 .AND. INCREM(33) == 0 .AND. &
                 INCREM(35) == 0) THEN
-            MASS8 = PMSA(IPOINT(31))
-            DMCF8 = PMSA(IPOINT(33))
-            RHO8 = PMSA(IPOINT(35))
+            MASS8 = process_space_real(IPOINT(31))
+            DMCF8 = process_space_real(IPOINT(33))
+            RHO8 = process_space_real(IPOINT(35))
             SOM8 = MASS8 * DMCF8
             SOMV8 = SOM8 / RHO8
             NO8OPT = .TRUE.
@@ -202,9 +202,9 @@ contains
         !        Substance 9 MFB2
         IF (INCREM(32) == 0 .AND. INCREM(34) == 0 .AND. &
                 INCREM(36) == 0) THEN
-            MASS9 = PMSA(IPOINT(32))
-            DMCF9 = PMSA(IPOINT(34))
-            RHO9 = PMSA(IPOINT(36))
+            MASS9 = process_space_real(IPOINT(32))
+            DMCF9 = process_space_real(IPOINT(34))
+            RHO9 = process_space_real(IPOINT(36))
             SOM9 = MASS9 * DMCF9
             SOMV9 = SOM9 / RHO9
             NO9OPT = .TRUE.
@@ -337,7 +337,7 @@ contains
         IP61 = IPOINT(61)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
@@ -345,38 +345,38 @@ contains
 
                     !        Substance 1
                     IF (.NOT. NO1OPT) THEN
-                        MASS1 = PMSA(IP1)
-                        DMCF1 = PMSA(IP9)
-                        RHO1 = PMSA(IP16)
+                        MASS1 = process_space_real(IP1)
+                        DMCF1 = process_space_real(IP9)
+                        RHO1 = process_space_real(IP16)
                         SOM1 = MASS1 * DMCF1
                         SOMV1 = SOM1 / RHO1
                     ENDIF
                     !        Substance 2
                     IF (.NOT. NO2OPT) THEN
-                        MASS2 = PMSA(IP2)
-                        DMCF2 = PMSA(IP10)
-                        RHO2 = PMSA(IP17)
+                        MASS2 = process_space_real(IP2)
+                        DMCF2 = process_space_real(IP10)
+                        RHO2 = process_space_real(IP17)
                         SOM2 = MASS2 * DMCF2
                         SOMV2 = SOM2 / RHO2
                     ENDIF
                     !        Substance 3
                     IF (.NOT. NO3OPT) THEN
-                        MASS3 = PMSA(IP3)
-                        DMCF3 = PMSA(IP11)
-                        RHO3 = PMSA(IP18)
+                        MASS3 = process_space_real(IP3)
+                        DMCF3 = process_space_real(IP11)
+                        RHO3 = process_space_real(IP18)
                         SOM3 = MASS3 * DMCF3
                         SOMV3 = SOM3 / RHO3
                     ENDIF
                     !        Substance 4
                     IF (.NOT. NO4OPT) THEN
-                        MASS4 = PMSA(IP4)
-                        DMCF4 = PMSA(IP12)
-                        RHO4 = PMSA(IP19)
+                        MASS4 = process_space_real(IP4)
+                        DMCF4 = process_space_real(IP12)
+                        RHO4 = process_space_real(IP19)
                         SOM4 = MASS4 * DMCF4
                         SOMV4 = SOM4 / RHO4
-                        NMASS4 = PMSA(IP25)
-                        PMASS4 = PMSA(IP26)
-                        SMASS4 = PMSA(IP27)
+                        NMASS4 = process_space_real(IP25)
+                        PMASS4 = process_space_real(IP26)
+                        SMASS4 = process_space_real(IP27)
                         CN4 = 0.0
                         CP4 = 0.0
                         CS4 = 0.0
@@ -388,14 +388,14 @@ contains
                     ENDIF
                     !        Substance 5
                     IF (.NOT. NO5OPT) THEN
-                        MASS5 = PMSA(IP5)
-                        DMCF5 = PMSA(IP13)
-                        RHO5 = PMSA(IP20)
+                        MASS5 = process_space_real(IP5)
+                        DMCF5 = process_space_real(IP13)
+                        RHO5 = process_space_real(IP20)
                         SOM5 = MASS5 * DMCF5
                         SOMV5 = SOM5 / RHO5
-                        NMASS5 = PMSA(IP28)
-                        PMASS5 = PMSA(IP29)
-                        SMASS5 = PMSA(IP30)
+                        NMASS5 = process_space_real(IP28)
+                        PMASS5 = process_space_real(IP29)
+                        SMASS5 = process_space_real(IP30)
                         CN5 = 0.0
                         CP5 = 0.0
                         CS5 = 0.0
@@ -407,40 +407,40 @@ contains
                     ENDIF
                     !        Substance 6
                     IF (.NOT. NO6OPT) THEN
-                        MASS6 = PMSA(IP6)
-                        DMCF6 = PMSA(IP14)
-                        RHO6 = PMSA(IP21)
+                        MASS6 = process_space_real(IP6)
+                        DMCF6 = process_space_real(IP14)
+                        RHO6 = process_space_real(IP21)
                         SOM6 = MASS6 * DMCF6
                         SOMV6 = SOM6 / RHO6
                     ENDIF
                     !        Substance 7
                     IF (.NOT. NO7OPT) THEN
-                        MASS7 = PMSA(IP7)
-                        DMCF7 = PMSA(IP15)
-                        RHO7 = PMSA(IP22)
+                        MASS7 = process_space_real(IP7)
+                        DMCF7 = process_space_real(IP15)
+                        RHO7 = process_space_real(IP22)
                         SOM7 = MASS7 * DMCF7
                         SOMV7 = SOM7 / RHO7
                     ENDIF
                     !        Substance 8
                     IF (.NOT. NO8OPT) THEN
-                        MASS8 = PMSA(IP31)
-                        DMCF8 = PMSA(IP33)
-                        RHO8 = PMSA(IP35)
+                        MASS8 = process_space_real(IP31)
+                        DMCF8 = process_space_real(IP33)
+                        RHO8 = process_space_real(IP35)
                         SOM8 = MASS8 * DMCF8
                         SOMV8 = SOM8 / RHO8
                     ENDIF
                     !        Substance 9
                     IF (.NOT. NO9OPT) THEN
-                        MASS9 = PMSA(IP32)
-                        DMCF9 = PMSA(IP34)
-                        RHO9 = PMSA(IP36)
+                        MASS9 = process_space_real(IP32)
+                        DMCF9 = process_space_real(IP34)
+                        RHO9 = process_space_real(IP36)
                         SOM9 = MASS9 * DMCF9
                         SOMV9 = SOM9 / RHO9
                     ENDIF
                     !
-                    MASS10 = PMSA(IP8)
-                    POR = PMSA(IP23)
-                    SURF = PMSA(IP24)
+                    MASS10 = process_space_real(IP8)
+                    POR = process_space_real(IP23)
+                    SURF = process_space_real(IP24)
 
                     !***********************************************************************
                     !**** Calculations connected to the status of the mixed layer
@@ -494,31 +494,31 @@ contains
                     FRAC10 = 0.0
                     IF (SOMDM > 1.0E-20) FRAC10 = MASS10 / SOMDM
 
-                    PMSA(IP37) = SOMDM
-                    PMSA(IP38) = TIM
-                    PMSA(IP39) = TPOC
-                    PMSA(IP40) = PHYT
-                    PMSA(IP41) = POM
-                    PMSA(IP42) = DENS
-                    PMSA(IP43) = THICK
-                    PMSA(IP44) = FRAC1
-                    PMSA(IP45) = FRAC2
-                    PMSA(IP46) = FRAC3
-                    PMSA(IP47) = FRAC4
-                    PMSA(IP48) = FRAC5
-                    PMSA(IP49) = FRAC6
-                    PMSA(IP50) = FRAC7
-                    PMSA(IP51) = CN4
-                    PMSA(IP52) = CP4
-                    PMSA(IP53) = CS4
-                    PMSA(IP54) = CN5
-                    PMSA(IP55) = CP5
-                    PMSA(IP56) = CS5
-                    PMSA(IP57) = FRAC10
-                    PMSA(IP58) = FRAC8
-                    PMSA(IP59) = FRAC9
-                    PMSA(IP60) = MASS8 / SURF
-                    PMSA(IP61) = MASS9 / SURF
+                    process_space_real(IP37) = SOMDM
+                    process_space_real(IP38) = TIM
+                    process_space_real(IP39) = TPOC
+                    process_space_real(IP40) = PHYT
+                    process_space_real(IP41) = POM
+                    process_space_real(IP42) = DENS
+                    process_space_real(IP43) = THICK
+                    process_space_real(IP44) = FRAC1
+                    process_space_real(IP45) = FRAC2
+                    process_space_real(IP46) = FRAC3
+                    process_space_real(IP47) = FRAC4
+                    process_space_real(IP48) = FRAC5
+                    process_space_real(IP49) = FRAC6
+                    process_space_real(IP50) = FRAC7
+                    process_space_real(IP51) = CN4
+                    process_space_real(IP52) = CP4
+                    process_space_real(IP53) = CS4
+                    process_space_real(IP54) = CN5
+                    process_space_real(IP55) = CP5
+                    process_space_real(IP56) = CS5
+                    process_space_real(IP57) = FRAC10
+                    process_space_real(IP58) = FRAC8
+                    process_space_real(IP59) = FRAC9
+                    process_space_real(IP60) = MASS8 / SURF
+                    process_space_real(IP61) = MASS9 / SURF
 
                 ENDIF
             ENDIF

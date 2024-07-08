@@ -42,7 +42,7 @@ module mudrel_mod
 !
 contains
       subroutine mudrel( xpart , ypart, zpart, mpart, npart, kpart,       &
-                         lgrid , mmax ,  nmax, layt , iu   , cbuf ,       &
+                         lgrid , num_columns ,  num_rows, layt , iu   , cbuf ,       &
                          iftime,ndprt ,nosegm, finam, iopt , isfil,       &
                          iutime,nosyss ,aconud, wpart,nosubs, uscal,       &
                          amasud,nopart,sname , isout,iptime, lurep,       &
@@ -92,13 +92,13 @@ contains
 !     mpart      int    nopart   output  m-coord. particle
 !     npart      int    nopart   output  n-coord. particle
 !     kpart      int    nopart   output  k-coord. particle (max 5 layers in v3.23)
-!     lgrid      int   nmax*mmax input   lgrid table (active grid table)
+!     lgrid      int   num_rows*num_columns input   lgrid table (active grid table)
 !     volume     real   nosegm   input   volumes of the segments
 !     iopt       int      1      input   when 1 from restart file/ 0 from mapfile
 !     ipnt       int    nosegm   input   scratch for adding particle procedure
 !     iu         int      1      input   number of ud release
-!     mmax       int      1      input   mmax value grid
-!     nmax       int      1      input   nmax value grid
+!     num_columns       int      1      input   num_columns value grid
+!     num_rows       int      1      input   num_rows value grid
 !     npmax      int      1      local   number of particles after the release
 !     layt       int      1      input   number of layers in the grid
 !     uscal      real     1      input   scale factor ud release
@@ -129,9 +129,9 @@ contains
 !
       integer(int_wp ) :: i     , iftime, iopt   , is    , isfil , isout , it    , itime , iu
       integer(int_wp ) :: i1    , ihulp , ilay   , int   , ipp   , isg2  , jseg  , mod
-      integer(int_wp ) :: il    , im    , in     , ipos  , ips2  , iseg  , isub  , layt  , mmax
+      integer(int_wp ) :: il    , im    , in     , ipos  , ips2  , iseg  , isub  , layt  , num_columns
       integer(int_wp ) :: iutime, lurep , nose2  , nosegm, nosy2 , nosyss , nosudx, nact  , nm
-      integer(int_wp ) :: nmax  , nosubs, nprest , npseg , ndprt , ndprt2, nopart, noseg2, noumx2
+      integer(int_wp ) :: num_rows  , nosubs, nprest , npseg , ndprt , ndprt2, nopart, noseg2, noumx2
       integer(int_wp ) :: npadd , npmax , nptot
       real   (sp) :: hulp  , rmass , rpseg , rdum  , totmas, uscal
       real   (sp) :: totma1, totma2, totma3 , wpart1
@@ -190,8 +190,8 @@ contains
             totmas = 0.0
             ipos = 0
             do 1100 i = 1, layt
-               do 1101 im = 1,mmax
-               do 1102 in = 1,nmax
+               do 1101 im = 1,num_columns
+               do 1102 in = 1,num_rows
                   ipos = ipos+1
                   if(lgrid(in,im) > 0) then
                      totmas = totmas + cbuf(ipos)*volume(ipos)
@@ -270,12 +270,12 @@ contains
       endif
 !
       totmas = 0.0
-      if(nosegm /= (layt*nmax*mmax)) call error('Dim. wrong in mudrel')
+      if(nosegm /= (layt*num_rows*num_columns)) call error('Dim. wrong in mudrel')
       ipos = 0
       do 10 il = 1, layt
          ips2 = 0
-         do 11 im = 1, mmax
-         do 12 in = 1, nmax
+         do 11 im = 1, num_columns
+         do 12 in = 1, num_rows
          ipos = ipos + 1
          ips2 = ips2 + 1
          if (lgrid(in,im) > 0) then
@@ -332,8 +332,8 @@ contains
          totma3 = 0.0
          iseg = 0
          do 40 il = 1, layt
-            do 50 im = 1, mmax
-               do 60 in = 1, nmax
+            do 50 im = 1, num_columns
+               do 60 in = 1, num_rows
                   iseg = iseg + 1
                   if ( lgrid(in,im)  >  0 ) then
                      if ( wpart1  >  small ) then
@@ -404,8 +404,8 @@ contains
             nact =  0
             iseg = 0
             do 106 ilay = 1, layt
-               do 105 im = 1, mmax
-                  do 104 in = 1, nmax
+               do 105 im = 1, num_columns
+                  do 104 in = 1, num_rows
                      iseg = iseg + 1
                      ipnt(iseg) = iseg
                      if(lgrid(in,im) > 0) then
@@ -440,7 +440,7 @@ contains
 120            continue
 110         continue
 !
-            nm = nmax*mmax
+            nm = num_rows*num_columns
 !
             do 100 ipp = nptot + 1, nptot + nprest
 !

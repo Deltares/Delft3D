@@ -56,7 +56,7 @@ program ddcouple
     integer :: maxseg        ! maximum segment number
     integer :: maxbnd        ! maximum boundary number
     integer :: maxnoq        ! maximum exchange number
-    integer :: nolay         ! number of layers
+    integer :: num_layers         ! number of layers
     integer :: ilay          ! layer index
     integer :: nosegl        ! number of segments per layer
     integer :: nosegl_new    ! new (overall) number of segments per layer
@@ -146,36 +146,36 @@ program ddcouple
 
     type(t_file) :: file_rep      ! report file
     integer :: lunrep        ! unit number report file
-    character(len=256) :: filext        ! file extension
+    character(len = 256) :: filext        ! file extension
     integer :: extpos        ! start position of file extension
     integer :: extlen        ! length of file extension
-    character(len=20) :: valnam(2)     ! parameter name
-    character(len=20) :: rundat        ! date and time string
+    character(len = 20) :: valnam(2)     ! parameter name
+    character(len = 20) :: rundat        ! date and time string
     integer :: ierr_alloc    ! error allocating memory
     integer :: length
     logical :: success
     logical :: interactive   ! no commandline arguments given, work in interactive mode
     character*1 :: askparallel   ! get a character
-    character(len=99) :: version       ! version string
+    character(len = 99) :: version       ! version string
     character(:), allocatable :: temp_buffer
     type(banner_information) :: info
-!
-!     Version string
-!
+    !
+    !     Version string
+    !
     ! Show startup screen
-    info = banner_information(name="DDCouple", &
-                              description="Merging of hydrodynamic data sets from dd or parallel Delft3D 4 FLOW runs", &
-                              suite_name="Delft3D", &
-                              version_string=trim(major_minor_buildnr), &
-                              built_on=trim(build_date_time), &
-                              copyright=copyright)
+    info = banner_information(name = "DDCouple", &
+            description = "Merging of hydrodynamic data sets from dd or parallel Delft3D 4 FLOW runs", &
+            suite_name = "Delft3D", &
+            version_string = trim(major_minor_buildnr), &
+            built_on = trim(build_date_time), &
+            copyright = copyright)
 
-    write (*, "(A)") generate_banner(info)   
+    write (*, "(A)") generate_banner(info)
 
     interactive = .false.
     call getfullversionstring_ddcouple(version)
     call write_date_time(rundat)
-    
+
     ! some init
 
     n_mode = .false.
@@ -207,7 +207,7 @@ program ddcouple
 
     call extract_file_extension(hyd%file_hyd%name, filext, extpos, extlen)
 
-    file_rep%name = hyd%file_hyd%name(1:extpos - 1)//'-ddcouple.out'
+    file_rep%name = hyd%file_hyd%name(1:extpos - 1) // '-ddcouple.out'
     file_rep%type = FT_ASC
     file_rep%status = 0
     call file_rep%open()
@@ -322,15 +322,15 @@ program ddcouple
         write (lunrep, *) 'ERROR no domains specified in hydrodynamic description'
         call stop_with_error()
     end if
-    allocate (domain_hyd_coll%hyd_pnts(n_domain), stat=ierr_alloc)
+    allocate (domain_hyd_coll%hyd_pnts(n_domain), stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 900
     do i_domain = 1, n_domain
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
         if (from_ddb) then
-            domain_hyd%file_hyd%name = 'com-'//trim(hyd%domain_coll%domain_pnts(i_domain)%name)//'.hyd'
+            domain_hyd%file_hyd%name = 'com-' // trim(hyd%domain_coll%domain_pnts(i_domain)%name) // '.hyd'
         else
             domain_hyd%file_hyd%name = &
-                hyd%file_hyd%name(1:extpos - 1)//'-'//trim(hyd%domain_coll%domain_pnts(i_domain)%name)//'.hyd'
+                    hyd%file_hyd%name(1:extpos - 1) // '-' // trim(hyd%domain_coll%domain_pnts(i_domain)%name) // '.hyd'
         end if
         write (*, '(/a,i3,a,a/)') ' Domain ', i_domain, ' hydrodynamic description: ', trim(domain_hyd%file_hyd%name)
         write (lunrep, '(/a,i3,a,a/)') ' Domain ', i_domain, ' hydrodynamic description: ', trim(domain_hyd%file_hyd%name)
@@ -341,65 +341,65 @@ program ddcouple
 
     ! set new dimension
 
-    hyd%mmax = 0
-    hyd%nmax = 0
-    hyd%noseg = 0
-    hyd%nobnd = 0
-    hyd%noq1 = 0
-    hyd%noq2 = 0
-    hyd%noq3 = 0
+    hyd%num_columns = 0
+    hyd%num_rows = 0
+    hyd%num_cells = 0
+    hyd%num_boundary_conditions = 0
+    hyd%num_exchanges_u_dir = 0
+    hyd%num_exchanges_v_dir = 0
+    hyd%num_exchanges_z_dir = 0
     maxbnd = 0
     maxseg = 0
     maxnoq = 0
-    nolay = domain_hyd_coll%hyd_pnts(1)%nolay
+    num_layers = domain_hyd_coll%hyd_pnts(1)%num_layers
     hyd%geometry = domain_hyd_coll%hyd_pnts(1)%geometry
     hyd%layer_type = domain_hyd_coll%hyd_pnts(1)%layer_type
-    if (hyd%layer_type == HYD_LAYERS_Z) then
+    if(hyd%layer_type == HYD_LAYERS_Z) then
         hyd%zbot = domain_hyd_coll%hyd_pnts(1)%zbot
         hyd%ztop = domain_hyd_coll%hyd_pnts(1)%ztop
-    end if
-    hyd%nolay = nolay
+    endif
+    hyd%num_layers = num_layers
     do i_domain = 1, n_domain
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
         if (n_mode) then
             if (parallel) then
                 if (i_domain == 1) then
-                    hyd%nmax = hyd%nmax + domain_hyd%nmax - 3
+                    hyd%num_rows = hyd%num_rows + domain_hyd%num_rows - 3
                 elseif (i_domain == n_domain) then
-                    hyd%nmax = hyd%nmax + domain_hyd%nmax - 3
+                    hyd%num_rows = hyd%num_rows + domain_hyd%num_rows - 3
                 else
-                    hyd%nmax = hyd%nmax + domain_hyd%nmax - 6
-                end if
+                    hyd%num_rows = hyd%num_rows + domain_hyd%num_rows - 6
+                endif
             else
-                hyd%nmax = hyd%nmax + domain_hyd%nmax
-            end if
-            hyd%mmax = max(hyd%mmax, domain_hyd%mmax)
+                hyd%num_rows = hyd%num_rows + domain_hyd%num_rows
+            endif
+            hyd%num_columns = max(hyd%num_columns, domain_hyd%num_columns)
         else
             if (parallel) then
                 if (i_domain == 1) then
-                    hyd%mmax = hyd%mmax + domain_hyd%mmax - 3
+                    hyd%num_columns = hyd%num_columns + domain_hyd%num_columns - 3
                 elseif (i_domain == n_domain) then
-                    hyd%mmax = hyd%mmax + domain_hyd%mmax - 3
+                    hyd%num_columns = hyd%num_columns + domain_hyd%num_columns - 3
                 else
-                    hyd%mmax = hyd%mmax + domain_hyd%mmax - 6
-                end if
+                    hyd%num_columns = hyd%num_columns + domain_hyd%num_columns - 6
+                endif
             else
-                hyd%mmax = hyd%mmax + domain_hyd%mmax
-            end if
-            hyd%nmax = max(hyd%nmax, domain_hyd%nmax)
-        end if
-        maxseg = max(maxseg, domain_hyd%noseg)
-        maxbnd = max(maxbnd, domain_hyd%nobnd)
-        maxnoq = max(maxnoq, domain_hyd%noq1 + domain_hyd%noq2 + domain_hyd%noq3)
-        hyd%noseg = hyd%noseg + domain_hyd%noseg
-        hyd%nobnd = hyd%nobnd + domain_hyd%nobnd
-        hyd%noq1 = hyd%noq1 + domain_hyd%noq1
-        hyd%noq2 = hyd%noq2 + domain_hyd%noq2
-        hyd%noq3 = hyd%noq3 + domain_hyd%noq3
-    end do
-    hyd%noq = hyd%noq1 + hyd%noq2 + hyd%noq3
-    hyd%nosegl = hyd%noseg / hyd%nolay
-    hyd%nobndl = hyd%nobnd / hyd%nolay
+                hyd%num_columns = hyd%num_columns + domain_hyd%num_columns
+            endif
+            hyd%num_rows = max(hyd%num_rows, domain_hyd%num_rows)
+        endif
+        maxseg = max(maxseg, domain_hyd%num_cells)
+        maxbnd = max(maxbnd, domain_hyd%num_boundary_conditions)
+        maxnoq = max(maxnoq, domain_hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_v_dir + domain_hyd%num_exchanges_z_dir)
+        hyd%num_cells = hyd%num_cells + domain_hyd%num_cells
+        hyd%num_boundary_conditions = hyd%num_boundary_conditions + domain_hyd%num_boundary_conditions
+        hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_u_dir
+        hyd%num_exchanges_v_dir = hyd%num_exchanges_v_dir + domain_hyd%num_exchanges_v_dir
+        hyd%num_exchanges_z_dir = hyd%num_exchanges_z_dir + domain_hyd%num_exchanges_z_dir
+    enddo
+    hyd%num_exchanges = hyd%num_exchanges_u_dir + hyd%num_exchanges_v_dir + hyd%num_exchanges_z_dir
+    hyd%nosegl = hyd%num_cells / hyd%num_layers
+    hyd%nobndl = hyd%num_boundary_conditions / hyd%num_layers
     nosegl_new = hyd%nosegl
     nobndl_new = hyd%nobndl
 
@@ -417,7 +417,6 @@ program ddcouple
         dd_bound => hyd%dd_bound_coll%dd_bound_pnts(i_dd_bound)
 
         ! look up the domain names
-
         i_domain1 = hyd%domain_coll%find(dd_bound%name1)
         if (i_domain1 <= 0) then
             write (*, *) 'ERROR domain in dd-boundary not found:', trim(dd_bound%name1)
@@ -434,12 +433,11 @@ program ddcouple
         dd_bound%i_domain2 = i_domain2
 
         ! determine refinement and the side of the boundary
-
         domain_hyd1 => domain_hyd_coll%hyd_pnts(i_domain1)
         domain_hyd2 => domain_hyd_coll%hyd_pnts(i_domain2)
         if (dd_bound%m_begin1 == dd_bound%m_end1) then
             if (domain_hyd1%lgrid(dd_bound%n_begin1 + 1, dd_bound%m_begin1) < 0 .and. &
-                domain_hyd2%lgrid(dd_bound%n_begin2 + 1, dd_bound%m_begin2) > 0) then
+                    domain_hyd2%lgrid(dd_bound%n_begin2 + 1, dd_bound%m_begin2) > 0) then
                 dd_bound%direction = DD_LEFT_RIGHT
             else
                 dd_bound%direction = DD_RIGHT_LEFT
@@ -453,7 +451,7 @@ program ddcouple
             end if
         else
             if (domain_hyd1%lgrid(dd_bound%n_begin1, dd_bound%m_begin1 + 1) < 0 .and. &
-                domain_hyd2%lgrid(dd_bound%n_begin2, dd_bound%m_begin2 + 1) > 0) then
+                    domain_hyd2%lgrid(dd_bound%n_begin2, dd_bound%m_begin2 + 1) > 0) then
                 dd_bound%direction = DD_BOTTOM_TOP
             else
                 dd_bound%direction = DD_TOP_BOTTOM
@@ -472,34 +470,33 @@ program ddcouple
     end do
 
     ! construct renumber table
-
-    allocate (ipnew(-2 * maxbnd:maxseg, n_domain), ipbndnew(maxbnd, n_domain), stat=ierr_alloc)
+    allocate (ipnew(-2 * maxbnd:maxseg, n_domain), ipbndnew(maxbnd, n_domain), stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 930
     if (parallel .and. n_mode) then
         ipnew = 0
         ipnewest = 0
         ipbndnewest = 0
-        do m = 1, hyd%mmax
+        do m = 1, hyd%num_columns
             do i_domain = 1, n_domain
                 domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
                 nosegl = domain_hyd%nosegl
                 nobndl = domain_hyd%nobndl
-                do n = 1, domain_hyd%nmax
+                do n = 1, domain_hyd%num_rows
                     iseg = domain_hyd%lgrid(n, m)
                     if (iseg > 0) then
                         ipnewest = ipnewest + 1
-                        do ilay = 1, hyd%nolay
+                        do ilay = 1, hyd%num_layers
                             isegl = iseg + (ilay - 1) * nosegl
                             ipnew(isegl, i_domain) = ipnewest + (ilay - 1) * nosegl_new
                         end do
                     else if (iseg < 0) then
                         ipbndnewest = ipbndnewest - 1
-                        do ilay = 1, hyd%nolay
+                        do ilay = 1, hyd%num_layers
                             ibndl = iseg - (ilay - 1) * nobndl
                             ipnew(ibndl, i_domain) = ipbndnewest - (ilay - 1) * nobndl_new
                             ipbndnew(-ibndl, i_domain) = 0
                         end do
-                    end if
+                    endif
                 end do
             end do
         end do
@@ -511,20 +508,20 @@ program ddcouple
             nosegl = domain_hyd%nosegl
             nobndl = domain_hyd%nobndl
             ipnew(0, i_domain) = 0
-            do iseg = 1, domain_hyd%noseg
+            do iseg = 1, domain_hyd%num_cells
                 ilay = (iseg - 1) / nosegl + 1
                 isegl = iseg - (ilay - 1) * nosegl
                 ipnew(iseg, i_domain) = (ilay - 1) * nosegl_new + nosegl_offset + isegl
-            end do
-            do ibnd = 1, domain_hyd%nobnd
+            enddo
+            do ibnd = 1, domain_hyd%num_boundary_conditions
                 ilay = (ibnd - 1) / nobndl + 1
                 ibndl = ibnd - (ilay - 1) * nobndl
                 ibnd_new = (ilay - 1) * nobndl_new + nobndl_offset + ibndl
                 ipnew(-ibnd, i_domain) = -ibnd_new
-                ipnew(-ibnd - domain_hyd%nobnd, i_domain) = 0
+                ipnew(-ibnd - domain_hyd%num_boundary_conditions, i_domain) = 0
                 !          ipbndnew(ibnd,i_domain)=-ibnd_new
                 ipbndnew(ibnd, i_domain) = 0
-            end do
+            enddo
             nosegl_offset = nosegl_offset + nosegl
             nobndl_offset = nobndl_offset + nobndl
         end do
@@ -541,8 +538,8 @@ program ddcouple
         domain_hyd1 => domain_hyd_coll%hyd_pnts(i_domain1)
         domain_hyd2 => domain_hyd_coll%hyd_pnts(i_domain2)
 
-        nobnd1 = domain_hyd1%nobnd
-        nobnd2 = domain_hyd2%nobnd
+        nobnd1 = domain_hyd1%num_boundary_conditions
+        nobnd2 = domain_hyd2%num_boundary_conditions
         nobndl1 = domain_hyd1%nobndl
         nobndl2 = domain_hyd2%nobndl
         ir1 = dd_bound%refine1
@@ -579,34 +576,34 @@ program ddcouple
 
                     isegl2_plus = 0                                               ! this looks for the '+' at the domain2 side only
                     if (dd_bound%direction == DD_RIGHT_LEFT) then
-                        do m2_plus = m2 + 1 + 1, domain_hyd2%mmax - 1                 ! as said before, the correct topology in the dd-bound
+                        do m2_plus = m2 + 1 + 1, domain_hyd2%num_columns - 1                 ! as said before, the correct topology in the dd-bound
                             isegl2_plus = ipnew(domain_hyd2%lgrid(n2, m2_plus), i_domain2)                      ! file is extremely important
                             if (isegl2_plus /= isegl2) then
                                 exit
-                            end if
-                        end do
+                            endif
+                        enddo
                     else ! DD_LEFT_RIGHT
                         do m2_plus = m2 - 1, 2, -1
                             isegl2_plus = ipnew(domain_hyd2%lgrid(n2, m2_plus), i_domain2)
                             if (isegl2_plus /= isegl2) then
                                 exit
-                            end if
-                        end do
-                    end if
+                            endif
+                        enddo
+                    endif
 
                     ! continue with original handling
 
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         if (isegl1 > 0) then                                     ! correct the active gridnumbers to layered cell numbers
                             iseg1 = isegl1 + (ilay - 1) * nosegl_new
                         else
                             iseg1 = 0
-                        end if
+                        endif
                         if (isegl2 > 0) then
                             iseg2 = isegl2 + (ilay - 1) * nosegl_new
                         else
                             iseg2 = 0
-                        end if
+                        endif
                         ibnd1 = ibndl1 - (ilay - 1) * nobndl1
                         ibnd2 = ibndl2 - (ilay - 1) * nobndl2
                         if (ibndl1 /= 0 .and. iseg2 /= 0) ipnew(ibnd1, i_domain1) = iseg2            ! at the boundary location for domain1 the segment nr of domain2
@@ -651,30 +648,29 @@ program ddcouple
                             isegl1_plus = ipnew(domain_hyd1%lgrid(n1, m1_plus), i_domain1)
                             if (isegl1_plus /= isegl1) then
                                 exit
-                            end if
-                        end do
+                            endif
+                        enddo
                     else ! DD_LEFT_RIGHT
-                        do m1_plus = m2 + 1 + 1, domain_hyd2%mmax - 1
+                        do m1_plus = m2 + 1 + 1, domain_hyd2%num_columns - 1
                             isegl1_plus = ipnew(domain_hyd1%lgrid(n1, m1_plus), i_domain1)
                             if (isegl1_plus /= isegl1) then
                                 exit
-                            end if
-                        end do
-                    end if
-
+                            endif
+                        enddo
+                    endif
                     ! continue with original handling
 
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         if (isegl1 > 0) then
                             iseg1 = isegl1 + (ilay - 1) * nosegl_new
                         else
                             iseg1 = 0
-                        end if
+                        endif
                         if (isegl2 > 0) then
                             iseg2 = isegl2 + (ilay - 1) * nosegl_new
                         else
                             iseg2 = 0
-                        end if
+                        endif
                         ibnd1 = ibndl1 - (ilay - 1) * nobndl1
                         ibnd2 = ibndl2 - (ilay - 1) * nobndl2
                         !        if (ibndl1 .ne. 0 ) ipnew(ibnd1,i_domain1) = 0
@@ -705,7 +701,6 @@ program ddcouple
         else
 
             ! bottom - top boundary
-
             if (dd_bound%direction == DD_TOP_BOTTOM) then
                 segoff1 = 0
                 bndoff1 = 1
@@ -716,7 +711,7 @@ program ddcouple
                 bndoff1 = 0
                 segoff2 = 0
                 bndoff2 = 1
-            end if
+            endif
             n1 = dd_bound%n_begin1
             n2 = dd_bound%n_begin2
             if (ir1 > ir2) then
@@ -734,34 +729,34 @@ program ddcouple
 
                     isegl2_plus = 0
                     if (dd_bound%direction == DD_TOP_BOTTOM) then
-                        do n2_plus = n2 + 1 + 1, domain_hyd2%nmax - 1
+                        do n2_plus = n2 + 1 + 1, domain_hyd2%num_rows - 1
                             isegl2_plus = ipnew(domain_hyd2%lgrid(n2_plus, m2), i_domain2)
                             if (isegl2_plus /= isegl2) then
                                 exit
-                            end if
-                        end do
+                            endif
+                        enddo
                     else ! DD_BOTTOM_TOP
                         do n2_plus = n2 - 1, 2, -1
                             isegl2_plus = ipnew(domain_hyd2%lgrid(n2_plus, m2), i_domain2)
-                            if (isegl2_plus /= isegl2) then
+                            if (isegl2_plus .ne. isegl2) then
                                 exit
-                            end if
-                        end do
-                    end if
+                            endif
+                        enddo
+                    endif
 
                     ! continue with original handling
 
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         if (isegl1 > 0) then
                             iseg1 = isegl1 + (ilay - 1) * nosegl_new
                         else
                             iseg1 = 0
-                        end if
+                        endif
                         if (isegl2 > 0) then
                             iseg2 = isegl2 + (ilay - 1) * nosegl_new
                         else
                             iseg2 = 0
-                        end if
+                        endif
                         ibnd1 = ibndl1 - (ilay - 1) * nobndl1
                         ibnd2 = ibndl2 - (ilay - 1) * nobndl2
                         if (ibndl1 /= 0 .and. iseg2 /= 0) ipnew(ibnd1, i_domain1) = iseg2
@@ -770,22 +765,22 @@ program ddcouple
                         !       if (ibndl1 .ne. 0 ) ipbndnew(-ibnd1,i_domain1) = iseg2
                         !       if (ibndl2 .ne. 0 ) ipbndnew(-ibnd2,i_domain2) = iseg1
                         if (ibndl2 /= 0) then
-                            if (ipbndnew(-ibnd2, i_domain2) == 0) then
+                            if (ipbndnew(-ibnd2, i_domain2) .eq. 0) then
                                 ipbndnew(-ibnd2, i_domain2) = iseg2
                             else
-                                if (ipbndnew(-ibnd2, i_domain2) /= iseg2) then
+                                if (ipbndnew(-ibnd2, i_domain2) .ne. iseg2) then
                                     ipbndnew(-ibnd2, i_domain2) = -1
-                                end if
-                            end if
-                        end if
-                        if (isegl2_plus > 0) then
+                                endif
+                            endif
+                        endif
+                        if (isegl2_plus .gt. 0) then
                             iseg2_plus = isegl2_plus + (ilay - 1) * nosegl_new
                         else
                             iseg2_plus = 0
-                        end if
-                        if (ibndl1 /= 0) ipnew(ibnd1 - nobnd1, i_domain1) = iseg2_plus
-                    end do
-                end do
+                        endif
+                        if (ibndl1 .ne. 0) ipnew(ibnd1 - nobnd1, i_domain1) = iseg2_plus
+                    enddo
+                enddo
             else
                 itel = 0
                 do m2 = dd_bound%m_begin2 + 1, dd_bound%m_end2
@@ -799,135 +794,135 @@ program ddcouple
                     ! look for the -1 (or +1) pointer (isegl1_plus) by checking the column till a segment number other then isegl1 is found
 
                     isegl1_plus = 0
-                    if (dd_bound%direction == DD_TOP_BOTTOM) then
+                    if (dd_bound%direction .eq. DD_TOP_BOTTOM) then
                         do n1_plus = n1 - 1, 2, -1
                             isegl1_plus = ipnew(domain_hyd1%lgrid(n1_plus, m1), i_domain1)
-                            if (isegl1_plus /= isegl1) then
+                            if (isegl1_plus .ne. isegl1) then
                                 exit
-                            end if
-                        end do
+                            endif
+                        enddo
                     else ! DD_BOTTOM_TOP
-                        do n1_plus = n1 + 1 + 1, domain_hyd1%nmax - 1
+                        do n1_plus = n1 + 1 + 1, domain_hyd1%num_rows - 1
                             isegl1_plus = ipnew(domain_hyd1%lgrid(n1_plus, m1), i_domain1)
-                            if (isegl1_plus /= isegl1) then
+                            if (isegl1_plus .ne. isegl1) then
                                 exit
-                            end if
-                        end do
-                    end if
+                            endif
+                        enddo
+                    endif
 
                     ! continue with original handling
 
-                    do ilay = 1, nolay
-                        if (isegl1 > 0) then
+                    do ilay = 1, num_layers
+                        if (isegl1 .gt. 0) then
                             iseg1 = isegl1 + (ilay - 1) * nosegl_new
                         else
                             iseg1 = 0
-                        end if
-                        if (isegl2 > 0) then
+                        endif
+                        if (isegl2 .gt. 0) then
                             iseg2 = isegl2 + (ilay - 1) * nosegl_new
                         else
                             iseg2 = 0
-                        end if
+                        endif
                         ibnd1 = ibndl1 - (ilay - 1) * nobndl1
                         ibnd2 = ibndl2 - (ilay - 1) * nobndl2
                         !      if (ibndl1 .ne. 0 ) ipnew(ibnd1,i_domain1) = 0
-                        if (ibndl1 /= 0 .and. iseg2 /= 0) ipnew(ibnd1, i_domain1) = iseg2
-                        if (ibndl2 /= 0 .and. iseg1 /= 0) ipnew(ibnd2, i_domain2) = iseg1
+                        if (ibndl1 .ne. 0 .and. iseg2 .ne. 0) ipnew(ibnd1, i_domain1) = iseg2
+                        if (ibndl2 .ne. 0 .and. iseg1 .ne. 0) ipnew(ibnd2, i_domain2) = iseg1
                         !      if (ibndl1 .ne. 0 ) ipbndnew(-ibnd1,i_domain1) = iseg2
-                        if (ibndl1 /= 0) then
-                            if (ipbndnew(-ibnd1, i_domain1) == 0) then
+                        if (ibndl1 .ne. 0) then
+                            if (ipbndnew(-ibnd1, i_domain1) .eq. 0) then
                                 ipbndnew(-ibnd1, i_domain1) = iseg1
                             else
-                                if (ipbndnew(-ibnd1, i_domain1) /= iseg1) then
+                                if (ipbndnew(-ibnd1, i_domain1) .ne. iseg1) then
                                     ipbndnew(-ibnd1, i_domain1) = -1
-                                end if
-                            end if
-                        end if
+                                endif
+                            endif
+                        endif
                         !      if (ibndl2 .ne. 0 ) ipbndnew(-ibnd2,i_domain2) = iseg1
 
-                        if (isegl1_plus > 0) then
+                        if (isegl1_plus .gt. 0) then
                             iseg1_plus = isegl1_plus + (ilay - 1) * nosegl_new
                         else
                             iseg1_plus = 0
-                        end if
-                        if (ibndl2 /= 0) ipnew(ibnd2 - nobnd2, i_domain2) = iseg1_plus
-                    end do
-                end do
-            end if
-        end if
-    end do
+                        endif
+                        if (ibndl2 .ne. 0) ipnew(ibnd2 - nobnd2, i_domain2) = iseg1_plus
+                    enddo
+                enddo
+            endif
+        endif
+    enddo
 
     ! renumber the boundaries
 
     nobnd_new = 0
-    do ilay = 1, nolay
+    do ilay = 1, num_layers
         do i_domain = 1, n_domain
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
             nobndl = domain_hyd%nobndl
             do i = 1, nobndl
                 ibnd = i + (ilay - 1) * nobndl
-                if (ipnew(-ibnd, i_domain) < 0) then
+                if (ipnew(-ibnd, i_domain) .lt. 0) then
                     nobnd_new = nobnd_new + 1
                     ipnew(-ibnd, i_domain) = -nobnd_new
-                end if
+                endif
                 !       if ( ipbndnew(ibnd,i_domain) .lt. 0 ) then                   **lp** not necessary any more
                 !          ipbndnew(ibnd,i_domain) = -nobnd_new
                 !       endif
-            end do
-        end do
-    end do
-    nobndl_new = nobnd_new / nolay
+            enddo
+        enddo
+    enddo
+    nobndl_new = nobnd_new / num_layers
 
     ! get the dispersion length in two directions for every positve segment
 
-    allocate (new_len1(hyd%noseg), new_len2(hyd%noseg), stat=ierr_alloc)
-    if (ierr_alloc /= 0) goto 905
+    allocate(new_len1(hyd%num_cells), new_len2(hyd%num_cells), stat = ierr_alloc)
+    if (ierr_alloc .ne. 0) goto 905
     new_len1 = 0.0
     new_len2 = 0.0
 
     do i_domain = 1, n_domain
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-        do iq = 1, domain_hyd%noq1 + domain_hyd%noq2
+        do iq = 1, domain_hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_v_dir
             ip1 = domain_hyd%ipoint(1, iq)
             ip2 = domain_hyd%ipoint(2, iq)
-            if (iq <= domain_hyd%noq1) then
-                if (ip1 > 0) new_len1(ipnew(ip1, i_domain)) = domain_hyd%displen(1, iq)
-                if (ip2 > 0) new_len1(ipnew(ip2, i_domain)) = domain_hyd%displen(2, iq)
+            if (iq .le. domain_hyd%num_exchanges_u_dir) then
+                if (ip1 .gt. 0) new_len1(ipnew(ip1, i_domain)) = domain_hyd%displen(1, iq)
+                if (ip2 .gt. 0) new_len1(ipnew(ip2, i_domain)) = domain_hyd%displen(2, iq)
             else
-                if (ip1 > 0) new_len2(ipnew(ip1, i_domain)) = domain_hyd%displen(1, iq)
-                if (ip2 > 0) new_len2(ipnew(ip2, i_domain)) = domain_hyd%displen(2, iq)
-            end if
-        end do
-    end do
+                if (ip1 .gt. 0) new_len2(ipnew(ip1, i_domain)) = domain_hyd%displen(1, iq)
+                if (ip2 .gt. 0) new_len2(ipnew(ip2, i_domain)) = domain_hyd%displen(2, iq)
+            endif
+        enddo
+    enddo
 
     ! new pointers
 
-    allocate (hyd%ipoint(4, hyd%noq), stat=ierr_alloc)
+    allocate(hyd%ipoint(4, hyd%num_exchanges), stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 910
-    allocate (iqnew(maxnoq, n_domain), stat=ierr_alloc)
+    allocate (iqnew(maxnoq, n_domain), stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 915
 
     ! copy and renumber
 
     iqnew = 0
     iqnewest = 0
-    hyd%noq1 = 0
-    hyd%noq2 = 0
-    hyd%noq3 = 0
+    hyd%num_exchanges_u_dir = 0
+    hyd%num_exchanges_v_dir = 0
+    hyd%num_exchanges_z_dir = 0
 
     do idir = 1, 3  ! loop over three directions
         do i_domain = 1, n_domain
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-            if (idir == 1) then
+            if(idir.eq.1) then
                 noq_start = 1
-                noq_end = domain_hyd%noq1
-            else if (idir == 2) then
-                noq_start = domain_hyd%noq1 + 1
-                noq_end = domain_hyd%noq1 + domain_hyd%noq2
+                noq_end = domain_hyd%num_exchanges_u_dir
+            else if(idir.eq.2) then
+                noq_start = domain_hyd%num_exchanges_u_dir + 1
+                noq_end = domain_hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_v_dir
             else
-                noq_start = domain_hyd%noq1 + domain_hyd%noq2 + 1
-                noq_end = domain_hyd%noq1 + domain_hyd%noq2 + domain_hyd%noq3
-            end if
+                noq_start = domain_hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_v_dir + 1
+                noq_end = domain_hyd%num_exchanges_u_dir + domain_hyd%num_exchanges_v_dir + domain_hyd%num_exchanges_z_dir
+            endif
 
             do iq = noq_start, noq_end
 
@@ -951,50 +946,50 @@ program ddcouple
                 !    if ( ip1new .eq. 0 ) ip2new = 0                                   ! that is why previously a zero was set for domain 2!!!!
                 !    if ( ip2new .eq. 0 ) ip1new = 0                                   ! only the pointers from domain1 should be used
                 ! AND that is what goes wrong in some settings of an 'inner corner'
-                if (ip1 < 0) then
-                    if (ipbndnew(-ip1, i_domain) == ip2new .or. ipbndnew(-ip1, i_domain) == -1) then
+                if (ip1 .lt. 0) then
+                    if (ipbndnew(-ip1, i_domain) .eq. ip2new .or. ipbndnew(-ip1, i_domain) .eq. -1) then
                         ip1new = 0
                         ip2new = 0
-                    end if
-                end if
-                if (ip2 < 0) then
-                    if (ipbndnew(-ip2, i_domain) == ip1new .or. ipbndnew(-ip2, i_domain) == -1) then
+                    endif
+                endif
+                if (ip2 .lt. 0) then
+                    if (ipbndnew(-ip2, i_domain) .eq. ip1new .or. ipbndnew(-ip2, i_domain) .eq. -1) then
                         ip1new = 0
                         ip2new = 0
-                    end if
-                end if
-                if (ip1 == 0 .or. ip2 == 0) then
+                    endif
+                endif
+                if (ip1 .eq. 0 .or. ip2 .eq. 0) then
                     ip1new = 0
                     ip2new = 0
-                end if
+                endif
 
-                ! for boundaries get the -1 and +1 pointers from the position ipnew(-ibnd-nobnd,i_domain)
+                ! for boundaries get the -1 and +1 pointers from the position ipnew(-ibnd-num_boundary_conditions,i_domain)
 
-                if (ip1 < 0) ip3new = ipnew(ip1 - domain_hyd%nobnd, i_domain)
-                if (ip2 < 0) ip4new = ipnew(ip2 - domain_hyd%nobnd, i_domain)
+                if (ip1 .lt. 0) ip3new = ipnew(ip1 - domain_hyd%num_boundary_conditions, i_domain)
+                if (ip2 .lt. 0) ip4new = ipnew(ip2 - domain_hyd%num_boundary_conditions, i_domain)
 
                 ! if boundary pointer becomes segment (from other domain) pointer then substitute dispersion length
 
-                if (ip1 < 0 .and. ip1new > 0) then
-                    if (iq <= domain_hyd%noq1) then
+                if (ip1 .lt. 0 .and. ip1new .gt. 0) then
+                    if (iq .le. domain_hyd%num_exchanges_u_dir) then
                         domain_hyd%displen(1, iq) = new_len1(ip1new)
                     else
                         domain_hyd%displen(1, iq) = new_len2(ip1new)
-                    end if
-                end if
-                if (ip2 < 0 .and. ip2new > 0) then
-                    if (iq <= domain_hyd%noq1) then
+                    endif
+                endif
+                if (ip2 .lt. 0 .and. ip2new .gt. 0) then
+                    if (iq .le. domain_hyd%num_exchanges_u_dir) then
                         domain_hyd%displen(2, iq) = new_len1(ip2new)
                     else
                         domain_hyd%displen(2, iq) = new_len2(ip2new)
-                    end if
-                end if
+                    endif
+                endif
 
-                if (ip1new /= 0 .and. ip2new /= 0) then
+                if (ip1new .ne. 0 .and. ip2new .ne. 0) then
                     iqnewest = iqnewest + 1
-                    if (idir == 1) hyd%noq1 = hyd%noq1 + 1
-                    if (idir == 2) hyd%noq2 = hyd%noq2 + 1
-                    if (idir == 3) hyd%noq3 = hyd%noq3 + 1
+                    if(idir.eq.1) hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+                    if(idir.eq.2) hyd%num_exchanges_v_dir = hyd%num_exchanges_v_dir + 1
+                    if(idir.eq.3) hyd%num_exchanges_z_dir = hyd%num_exchanges_z_dir + 1
                     ! set the new pointer
 
                     iqnew(iq, i_domain) = iqnewest
@@ -1002,45 +997,45 @@ program ddcouple
                     hyd%ipoint(2, iqnewest) = ip2new
                     hyd%ipoint(3, iqnewest) = ip3new
                     hyd%ipoint(4, iqnewest) = ip4new
-                end if
-            end do
-        end do
+                endif
+            enddo
+        enddo
         if (idir == 2) then
             ! add dummy pointer for correct -nobnd_new in poi file (for z-layers)
             if (minval(hyd%ipoint) /= -nobnd_new) then
                 iqnewest = iqnewest + 1
-                hyd%noq2 = hyd%noq2 + 1
+                hyd%num_exchanges_v_dir = hyd%num_exchanges_v_dir + 1
 
                 hyd%ipoint(1, iqnewest) = -nobnd_new
                 hyd%ipoint(2, iqnewest) = 0
                 hyd%ipoint(3, iqnewest) = 0
                 hyd%ipoint(4, iqnewest) = 0
-            end if
-        end if
-    end do
-    deallocate (new_len1, new_len2)
+            endif
+        endif
+    enddo
+    deallocate(new_len1, new_len2)
 
     ! remove positive numbers from the boundaries, don't use ipnew afterwards
 
-    do ilay = 1, nolay
+    do ilay = 1, num_layers
         do i_domain = 1, n_domain
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
             nobndl = domain_hyd%nobndl
             do i = 1, nobndl
                 ibnd = i + (ilay - 1) * nobndl
-                if (ipnew(-ibnd, i_domain) > 0) then
+                if (ipnew(-ibnd, i_domain) .gt. 0) then
                     ipnew(-ibnd, i_domain) = 0
-                end if
-            end do
-        end do
-    end do
+                endif
+            enddo
+        enddo
+    enddo
 
     ! new lga/cco
 
-    allocate (hyd%lgrid(hyd%nmax, hyd%mmax), &
-              hyd%xdepth(hyd%nmax, hyd%mmax), &
-              hyd%ydepth(hyd%nmax, hyd%mmax), &
-              stat=ierr_alloc)
+    allocate(hyd%lgrid(hyd%num_rows, hyd%num_columns), &
+            hyd%xdepth(hyd%num_rows, hyd%num_columns), &
+            hyd%ydepth(hyd%num_rows, hyd%num_columns), &
+            stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 980
     hyd%lgrid = 0
     hyd%xdepth = 0.0
@@ -1051,86 +1046,86 @@ program ddcouple
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
         if (parallel) then
             if (n_mode) then
-                if (i_domain == 1) then
+                if (i_domain .eq. 1) then
                     nstart = 1
-                    nstop = domain_hyd%nmax - 2
-                elseif (i_domain == n_domain) then
+                    nstop = domain_hyd%num_rows - 2
+                elseif (i_domain .eq. n_domain) then
                     nstart = 3
-                    nstop = domain_hyd%nmax
+                    nstop = domain_hyd%num_rows
                 else
                     nstart = 3
-                    nstop = domain_hyd%nmax - 2
-                end if
+                    nstop = domain_hyd%num_rows - 2
+                endif
                 mstart = 1
-                mstop = domain_hyd%mmax
+                mstop = domain_hyd%num_columns
             else
-                if (i_domain == 1) then
+                if (i_domain .eq. 1) then
                     mstart = 1
-                    mstop = domain_hyd%mmax - 2
-                elseif (i_domain == n_domain) then
+                    mstop = domain_hyd%num_columns - 2
+                elseif (i_domain .eq. n_domain) then
                     mstart = 3
-                    mstop = domain_hyd%mmax
+                    mstop = domain_hyd%num_columns
                 else
                     mstart = 3
-                    mstop = domain_hyd%mmax - 2
-                end if
+                    mstop = domain_hyd%num_columns - 2
+                endif
                 nstart = 1
-                nstop = domain_hyd%nmax
-            end if
+                nstop = domain_hyd%num_rows
+            endif
         else
             mstart = 1
-            mstop = domain_hyd%mmax
+            mstop = domain_hyd%num_columns
             nstart = 1
-            nstop = domain_hyd%nmax
-        end if
+            nstop = domain_hyd%num_rows
+        endif
         do m = mstart, mstop
             do n = nstart, nstop
                 m_new = m + moffset
                 n_new = n + noffset
                 ip_new = ipnew(domain_hyd%lgrid(n, m), i_domain)
-                if (ip_new /= 0) then
+                if (ip_new.ne.0) then
                     hyd%lgrid(n_new, m_new) = ip_new
-                end if
+                endif
                 hyd%xdepth(n_new, m_new) = domain_hyd%xdepth(n, m)
                 hyd%ydepth(n_new, m_new) = domain_hyd%ydepth(n, m)
-            end do
-        end do
+            enddo
+        enddo
         if (n_mode) then
             if (parallel) then
-                noffset = noffset + domain_hyd%nmax - 6
+                noffset = noffset + domain_hyd%num_rows - 6
             else
-                noffset = noffset + domain_hyd%nmax
-            end if
+                noffset = noffset + domain_hyd%num_rows
+            endif
         else
             if (parallel) then
-                moffset = moffset + domain_hyd%mmax - 6
+                moffset = moffset + domain_hyd%num_columns - 6
             else
-                moffset = moffset + domain_hyd%mmax
-            end if
-        end if
-    end do
+                moffset = moffset + domain_hyd%num_columns
+            endif
+        endif
+    enddo
 
-    write (*, *)
-    write (*, '(a)') ' Writing output for merged domain'
-    write (lunrep, *)
-    write (lunrep, '(a)') ' Writing output for merged domain'
+    write(*, *)
+    write(*, '(a)') ' Writing output for merged domain'
+    write(lunrep, *)
+    write(lunrep, '(a)') ' Writing output for merged domain'
 
-    write (*, *)
-    write (*, '(2a)') ' Writing lga file: ', trim(hyd%file_lga%name)
-    write (lunrep, *)
-    write (lunrep, '(2a)') ' Writing lga file: ', trim(hyd%file_lga%name)
-    call write_lga(hyd%file_lga, hyd%mmax, hyd%nmax, hyd%nolay, hyd%nosegl, &
-                   hyd%noq1, hyd%noq2, hyd%noq3, hyd%lgrid)
+    write(*, *)
+    write(*, '(2a)') ' Writing lga file: ', trim(hyd%file_lga%name)
+    write(lunrep, *)
+    write(lunrep, '(2a)') ' Writing lga file: ', trim(hyd%file_lga%name)
+    call write_lga (hyd%file_lga, hyd%num_columns, hyd%num_rows, hyd%num_layers, hyd%nosegl, &
+            hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, hyd%lgrid)
 
-    write (*, '(2a)') ' Writing cco file: ', trim(hyd%file_cco%name)
-    write (lunrep, '(2a)') ' Writing cco file: ', trim(hyd%file_cco%name)
-    call write_cco(hyd%file_cco, hyd%mmax, hyd%nmax, hyd%xdepth, hyd%ydepth, hyd%nolay)
+    write(*, '(2a)') ' Writing cco file: ', trim(hyd%file_cco%name)
+    write(lunrep, '(2a)') ' Writing cco file: ', trim(hyd%file_cco%name)
+    call write_cco (hyd%file_cco, hyd%num_columns, hyd%num_rows, hyd%xdepth, hyd%ydepth, hyd%num_layers)
 
     ! horizontal surfaces, depths
 
-    allocate (hyd%surf(hyd%nosegl), &
-              hyd%depth(hyd%nosegl), &
-              stat=ierr_alloc)
+    allocate(hyd%surf(hyd%nosegl), &
+            hyd%depth(hyd%nosegl), &
+            stat = ierr_alloc)
     if (ierr_alloc /= 0) goto 920
     do i_domain = 1, n_domain
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
@@ -1141,38 +1136,38 @@ program ddcouple
                 hyd%depth(iseg_new) = domain_hyd%depth(iseg_domain)
             end if
         end do
-    end do
-    write (*, '(2a)') ' Writing surface areas file: ', trim(hyd%file_srf%name)
-    write (lunrep, '(2a)') ' Writing surface areas file: ', trim(hyd%file_srf%name)
-    call write_srf(hyd%file_srf, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%surf)
+    enddo
+    write(*, '(2a)') ' Writing surface areas file: ', trim(hyd%file_srf%name)
+    write(lunrep, '(2a)') ' Writing surface areas file: ', trim(hyd%file_srf%name)
+    call write_srf (hyd%file_srf, hyd%num_columns, hyd%num_rows, hyd%nosegl, hyd%surf)
     if (hyd%file_dps%name /= ' ') then
-        write (*, '(2a)') ' Writing depths file: ', trim(hyd%file_dps%name)
-        write (lunrep, '(2a)') ' Writing depths file: ', trim(hyd%file_dps%name)
-        call write_srf(hyd%file_dps, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%depth)
-    end if
+        write(*, '(2a)') ' Writing depths file: ', trim(hyd%file_dps%name)
+        write(lunrep, '(2a)') ' Writing depths file: ', trim(hyd%file_dps%name)
+        call write_srf (hyd%file_dps, hyd%num_columns, hyd%num_rows, hyd%nosegl, hyd%depth)
+    endif
 
-    ! source data
-
-    write (*, '(/a/)') ' Merging sources files'
-    write (lunrep, '(/a/)') ' Merging sources files'
+    write(*, '(/a/)') ' Merging sources files'
+    write(lunrep, '(/a/)') ' Merging sources files'
     hyd%wasteload_data%num_locations = 0
-    hyd%wasteload_data%num_parameters = 0
+    hyd%wasteload_data%num_spatial_parameters = 0
     hyd%wasteload_data%num_breakpoints = 0
     do i_domain = 1, n_domain
         domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
         nowast = domain_hyd%wasteload_coll%current_size
+
         if (nowast > 0) then
-            write (*, *) 'Reading sources file: ', trim(domain_hyd%file_src%name)
-            write (lunrep, *) 'Reading sources file: ', trim(domain_hyd%file_src%name)
+            write(*, *)'Reading sources file: ', trim(domain_hyd%file_src%name)
+            write(lunrep, *)'Reading sources file: ', trim(domain_hyd%file_src%name)
             call read_src(domain_hyd%file_src, &
-                          nolay, &
-                          domain_hyd%wasteload_coll, &
-                          domain_hyd%wasteload_data, hyd%time_in_seconds)
+                    num_layers, &
+                    domain_hyd%wasteload_coll, &
+                    domain_hyd%wasteload_data, hyd%time_in_seconds)
             call merge_data(hyd%wasteload_data, domain_hyd%wasteload_data)
         else
             write (*, *) 'Skipping sources file: ', trim(domain_hyd%file_src%name), ' (no sources found)'
             write (lunrep, *) 'Skipping sources file: ', trim(domain_hyd%file_src%name), ' (no sources found)'
         end if
+
     end do
     write (*, '(/2a)') ' Writing sources file: ', trim(hyd%file_src%name)
     write (lunrep, '(/2a)') ' Writing sources file: ', trim(hyd%file_src%name)
@@ -1195,10 +1190,10 @@ program ddcouple
 
         ! exchange pointer file
 
-        write (*, '(2a)') ' Writing exchange pointers file: ', trim(hyd%file_poi%name)
-        write (lunrep, '(2a)') ' Writing exchange pointers file: ', trim(hyd%file_poi%name)
-        call write_poi(hyd%file_poi, hyd%noq, hyd%noq1, hyd%noq2, hyd%noq3, &
-                       hyd%ipoint)
+        write(*, '(2a)') ' Writing exchange pointers file: ', trim(hyd%file_poi%name)
+        write(lunrep, '(2a)') ' Writing exchange pointers file: ', trim(hyd%file_poi%name)
+        call write_poi (hyd%file_poi, hyd%num_exchanges, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, &
+                hyd%ipoint)
 
         ! attribute file
 
@@ -1209,37 +1204,37 @@ program ddcouple
             if (domain_hyd%atr_type == ATR_COMPLETE) then
                 hyd%atr_type = ATR_COMPLETE
                 hyd%no_atr = max(hyd%no_atr, domain_hyd%no_atr)
-            end if
-        end do
+            endif
+        enddo
         if (domain_hyd%atr_type == ATR_COMPLETE) then
-            allocate (hyd%attributes(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 905
+            allocate(hyd%attributes(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 905
             call merge_atr(hyd, domain_hyd_coll, maxbnd, maxseg, n_domain, ipnew)
-        end if
-        write (*, '(2a)') ' Writing attributes file: ', trim(hyd%file_atr%name)
-        write (lunrep, '(2a)') ' Writing attributes file: ', trim(hyd%file_atr%name)
-        call write_atr(hyd)
+        endif
+        write(*, '(2a)') ' Writing attributes file: ', trim(hyd%file_atr%name)
+        write(lunrep, '(2a)') ' Writing attributes file: ', trim(hyd%file_atr%name)
+        call write_atr (hyd)
 
         ! dispersion length
 
-        allocate (hyd%displen(2, hyd%noq), stat=ierr_alloc)
+        allocate(hyd%displen(2, hyd%num_exchanges), stat = ierr_alloc)
         if (ierr_alloc /= 0) goto 910
         do i_domain = 1, n_domain
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-            do iq = 1, domain_hyd%noq
+            do iq = 1, domain_hyd%num_exchanges
                 iq_new = iqnew(iq, i_domain)
                 if (iq_new > 0) then
                     hyd%displen(1, iq_new) = domain_hyd%displen(1, iq)
                     hyd%displen(2, iq_new) = domain_hyd%displen(2, iq)
-                end if
-            end do
-        end do
+                endif
+            enddo
+        enddo
 
         itime = 0
         valnam(1) = 'displen-from'
         valnam(2) = 'displen-to'
-        write (*, '(2a)') ' Writing dispersion length file: ', trim(hyd%file_len%name)
-        write (lunrep, '(2a)') ' Writing dispersion length file: ', trim(hyd%file_len%name)
-        call write_data(hyd%file_len, itime, 1, hyd%noq1, hyd%noq2, hyd%noq3, 2, 1, 0, valnam, hyd%displen, 0)
+        write(*, '(2a)') ' Writing dispersion length file: ', trim(hyd%file_len%name)
+        write(lunrep, '(2a)') ' Writing dispersion length file: ', trim(hyd%file_len%name)
+        call write_data (hyd%file_len, itime, 1, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, 2, 1, 0, valnam, hyd%displen, 0)
 
         write (*, '(a)')
         write (*, '(a)') ' Coupling time dependent quantities'
@@ -1248,13 +1243,13 @@ program ddcouple
         write (lunrep, '(a)') ' Coupling time dependent quantities'
         write (lunrep, '(a)')
 
-        allocate (hyd%area(hyd%noq), stat=ierr_alloc); if (ierr_alloc /= 0) goto 910
-        allocate (hyd%flow(hyd%noq), stat=ierr_alloc); if (ierr_alloc /= 0) goto 910
-        allocate (hyd%volume(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 990
-        if (hyd%sal_present) allocate (hyd%sal(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 990
-        if (hyd%tem_present) allocate (hyd%tem(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 990
-        if (hyd%tau_present) allocate (hyd%tau(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 990
-        if (hyd%vdf_present) allocate (hyd%vdf(hyd%noseg), stat=ierr_alloc); if (ierr_alloc /= 0) goto 990
+        allocate(hyd%area(hyd%num_exchanges), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 910
+        allocate(hyd%flow(hyd%num_exchanges), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 910
+        allocate(hyd%volume(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%sal_present) allocate(hyd%sal(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
 
         hyd%area = 0.0
         hyd%flow = 0.0
@@ -1321,31 +1316,31 @@ program ddcouple
 
     ! error handling
 
-900 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'number of domains:', n_domain
+    900 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'number of domains:', n_domain
     call stop_with_error()
-905 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'hyd%noseg:', hyd%noseg
+    905 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'hyd%num_cells:', hyd%num_cells
     call stop_with_error()
-910 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'hyd%noq:', hyd%noq
+    910 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'hyd%num_exchanges:', hyd%num_exchanges
     call stop_with_error()
-915 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'maxnoq:', maxnoq
+    915 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'maxnoq:', maxnoq
     call stop_with_error()
-920 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'hyd%nosegl:', hyd%nosegl
+    920 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'hyd%nosegl:', hyd%nosegl
     call stop_with_error()
-930 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'maxbnd:', maxbnd
-    write (lunrep, *) 'maxseg:', maxseg
+    930 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'maxbnd:', maxbnd
+    write(lunrep, *) 'maxseg:', maxseg
     call stop_with_error()
-980 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'hyd%nmax:', hyd%nmax
-    write (lunrep, *) 'hyd%mmax:', hyd%mmax
+    980 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'hyd%num_rows:', hyd%num_rows
+    write(lunrep, *) 'hyd%num_columns:', hyd%num_columns
     call stop_with_error()
-990 write (lunrep, *) 'error allocating memory:', ierr_alloc
-    write (lunrep, *) 'hyd%noseg:', hyd%noseg
+    990 write(lunrep, *) 'error allocating memory:', ierr_alloc
+    write(lunrep, *) 'hyd%num_cells:', hyd%num_cells
     call stop_with_error()
 
 end program

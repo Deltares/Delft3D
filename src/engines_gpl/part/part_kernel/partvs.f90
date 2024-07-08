@@ -29,7 +29,7 @@ contains
 
       subroutine partvs ( lun2   , itime  , nosubs , nopart , ivtset ,   &
                           ivtime , vsfour , vsfact , wpart  , wsettl ,   &
-                          modtyp , nmax   , mmax   , lgrid3 , nolay  ,   &
+                          modtyp , num_rows   , num_columns   , lgrid3 , num_layers  ,   &
                           npart  , mpart  , kpart  , nosegp , noseglp ,  &
                           rhopart, rhowatc, spart  , iptime)
 
@@ -94,10 +94,10 @@ contains
       integer  ( int_wp ), intent(in   ) :: npart( nopart)
       integer  ( int_wp ), intent(in   ) :: mpart( nopart)
       integer  ( int_wp ), intent(in   ) :: kpart( nopart)
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension lgrid
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension lgrid
-      integer  ( int_wp ), intent(in   ) :: lgrid3 (nmax,mmax)      !< active grid matrix with noseg numbering
-      integer  ( int_wp ), intent(in   ) :: nolay
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first dimension lgrid
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second dimension lgrid
+      integer  ( int_wp ), intent(in   ) :: lgrid3 (num_rows,num_columns)      !< active grid matrix with num_cells numbering
+      integer  ( int_wp ), intent(in   ) :: num_layers
       real     ( real_wp), intent(in   ) :: rhopart (nosubs, nopart)
       real     ( real_wp), intent(in   ) :: rhowatc (nosegp)
       real     ( real_wp), intent(in   ) :: spart (nosubs,*)        !< size of the particles
@@ -182,7 +182,7 @@ contains
 
 !              active cells only
                if ( ic > 0 ) then
-                  if( layer <= 0 .or. layer > nolay ) then
+                  if( layer <= 0 .or. layer > num_layers ) then
                      write(*,*) ' ipart = ',ipart,' layer = ', layer
                      write (*,*) ' Layer is out of range in partvs '
                      write( lun2,*) ' Layer is out of range in partvs '

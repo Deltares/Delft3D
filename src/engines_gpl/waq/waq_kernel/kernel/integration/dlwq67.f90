@@ -28,12 +28,12 @@ module m_dlwq67
 contains
 
     !> updates the diagonal if zero
-    subroutine dlwq67(amat, noseg, jtrack)
+    subroutine dlwq67(amat, num_cells, num_codiagonals)
         use timers
 
         real(kind = real_wp), intent(inout) :: amat(*) !< Matrix to invert
-        integer(kind = int_wp), intent(in)  :: noseg   !< Number of cells or segments
-        integer(kind = int_wp), intent(in)  :: jtrack  !< Number of codiagonals
+        integer(kind = int_wp), intent(in)  :: num_cells   !< Number of cells or segments
+        integer(kind = int_wp), intent(in)  :: num_codiagonals  !< Number of codiagonals
 
         ! Local variables
         integer(kind = int_wp) :: iseg, istep, iset
@@ -41,9 +41,9 @@ contains
 
         if (timon) call timstrt ("dlwq67", ithandl)
         ! set the diagonal
-        istep = jtrack * 2 + 1
-        iset = jtrack + 1
-        do iseg = 1, noseg
+        istep = num_codiagonals * 2 + 1
+        iset = num_codiagonals + 1
+        do iseg = 1, num_cells
             if (abs(amat(iset)) < 1.0e-35) amat(iset) = 1.0
             iset = iset + istep
         end do

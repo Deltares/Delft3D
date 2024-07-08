@@ -35,10 +35,10 @@ module partable
 
 contains
 
-    subroutine partab (procesdef, notot, syname, nocons, constants, &
-            &                    nopa, paname, nofun, funame, nosfun, &
-            &                    sfname, proref, nrref, status, nothread, &
-            &                    nopred, noloc, nodef)
+    subroutine partab (procesdef, num_substances_total, syname, num_constants, constants, &
+            &                    num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            &                    sfname, proref, num_input_ref, status, nothread, &
+            &                    nopred, num_local_vars, num_defaults)
 
         !     Deltares Software Department
 
@@ -48,8 +48,8 @@ contains
         !                 integrity at runtime of required process input.
         !                 Procesdef is sorted to contain all processes in optimal
         !                 calling order, the inactive processes at the end.
-        !                 Proref(nrref,nproc) contains the reference information
-        !                 for the active processes only, so nproc < procesdef%current_size
+        !                 Proref(num_input_ref,num_processes_activated) contains the reference information
+        !                 for the active processes only, so num_processes_activated < procesdef%current_size
 
         !     Modified  :
 
@@ -65,22 +65,22 @@ contains
         !     Kind                  Function         Name                  Description
 
         type(ProcesPropColl), intent(inout) :: procesdef       ! all processes
-        integer(kind = int_wp), intent(in) :: notot           ! number of substances
-        character(20), intent(in) :: syname(notot)   ! substance names
-        integer(kind = int_wp), intent(in) :: nocons          ! number of constants
+        integer(kind = int_wp), intent(in) :: num_substances_total           ! number of substances
+        character(20), intent(in) :: syname(num_substances_total)   ! substance names
+        integer(kind = int_wp), intent(in) :: num_constants          ! number of constants
         type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
-        integer(kind = int_wp), intent(in) :: nopa            ! number of parameters
-        character(20), intent(in) :: paname(nopa)    ! parameter names
-        integer(kind = int_wp), intent(in) :: nofun           ! number of functions
-        character(20), intent(in) :: funame(nofun)   ! function names
-        integer(kind = int_wp), intent(in) :: nosfun          ! number of segment functions
-        character(20), intent(in) :: sfname(nosfun)  ! segment function names
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters            ! number of parameters
+        character(20), intent(in) :: paname(num_spatial_parameters)    ! parameter names
+        integer(kind = int_wp), intent(in) :: num_time_functions           ! number of functions
+        character(20), intent(in) :: funame(num_time_functions)   ! function names
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions          ! number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_fuctions)  ! segment function names
         integer(kind = int_wp), pointer, intent(out) :: proref(:, :)     ! input items to be resolved for each process
-        integer(kind = int_wp), intent(out) :: nrref           ! maximum nr of references to be resolved
+        integer(kind = int_wp), intent(out) :: num_input_ref           ! maximum nr of references to be resolved
         integer(kind = int_wp), intent(inout) :: nothread        ! number of threads to be used
         integer(kind = int_wp), intent(in) :: nopred          ! number of predefined items
-        integer(kind = int_wp), intent(in) :: noloc           ! number of items in local array
-        integer(kind = int_wp), intent(in) :: nodef           ! number of items in default array
+        integer(kind = int_wp), intent(in) :: num_local_vars           ! number of items in local array
+        integer(kind = int_wp), intent(in) :: num_defaults           ! number of items in default array
 
         type(error_status), intent(inout) :: status !< current error status
 
@@ -97,7 +97,7 @@ contains
         integer(kind = int_wp) :: nfl             ! number of fluxes till this process
         character(100)                         line            ! output buffer
         integer(kind = int_wp) :: iprocs          ! counter of the saved ordered processes
-        integer(kind = int_wp) :: nproc           ! incremental start value or process ordering
+        integer(kind = int_wp) :: num_processes_activated           ! incremental start value or process ordering
         integer(kind = int_wp) :: naproc          ! nr of active processes
         integer(kind = int_wp) :: ifound          ! result of search routine >0 if found
         integer(kind = int_wp) :: k               ! help variable
@@ -130,8 +130,8 @@ contains
                         proc2 => procesdef%procesprops(iproc2)
                         if (proc2%active) then
                             do iin = 1, proc2%no_input
-                                if (isinput(notot, syname, nocons, constants, nopa, &
-                                        &                                paname, nofun, funame, nosfun, sfname, &
+                                if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                         &                                proc2%input_item(iin)%name, &
                                         &                                proc1%output_item(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -145,8 +145,8 @@ contains
                         proc2 => procesdef%procesprops(iproc2)
                         if (proc2%active) then
                             do iin = 1, proc2%no_input
-                                if (isinput(notot, syname, nocons, constants, nopa, &
-                                        &                                paname, nofun, funame, nosfun, sfname, &
+                                if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                         &                                proc2%input_item(iin)%name, &
                                         &                                proc1%fluxoutput(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -161,11 +161,11 @@ contains
 
         !         determine cyclicly which processes need no further input
 
-        nproc = 1
+        num_processes_activated = 1
         iprocs = 0
         needed = 0
-        nrref = 0
-        do while (nproc <= noproc)
+        num_input_ref = 0
+        do while (num_processes_activated <= noproc)
             do iproc1 = 1, noproc                                     ! count backward references
                 proc1 => procesdef%procesprops(iproc1)
                 if (proc1%active) then
@@ -177,16 +177,16 @@ contains
                             if (proc2%active) then
                                 if (needed(iproc2) == -1) cycle
                                 do iout = 1, proc2%no_output
-                                    if (isinput(notot, syname, nocons, constants, nopa, &
-                                            &                                   paname, nofun, funame, nosfun, sfname, &
+                                    if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%output_item(iout)%name) > 0) then
                                         nitem = nitem + 1
                                     endif
                                 enddo
                                 do iout = 1, proc2%no_fluxoutput
-                                    if (isinput(notot, syname, nocons, constants, nopa, &
-                                            &                                   paname, nofun, funame, nosfun, sfname, &
+                                    if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%fluxoutput(iout)%name) > 0) then
                                         nitem = nitem + 1
@@ -200,12 +200,12 @@ contains
                         prorder(iprocs) = iproc1
                         work   (iprocs) = profreq(iproc1)
                     else
-                        nrref = max (nrref, nitem)                      ! determine the maximum of dependencies
+                        num_input_ref = max (num_input_ref, nitem)                      ! determine the maximum of dependencies
                     endif
                 endif
             enddo
-            if (nproc == iprocs + 1) exit                            ! no further progress made
-            do iproc1 = nproc, iprocs                                 ! simple bubblesort of those that can run
+            if (num_processes_activated == iprocs + 1) exit                            ! no further progress made
+            do iproc1 = num_processes_activated, iprocs                                 ! simple bubblesort of those that can run
                 do iproc2 = iprocs, iproc1 + 1, -1                        ! to get those with hihest forward refs first
                     if (work(iproc2) > work(iproc2 - 1)) then
                         iin = work   (iproc2 - 1)
@@ -219,7 +219,7 @@ contains
             enddo
             iin = 0
             iout = 0
-            do iproc1 = nproc, iprocs
+            do iproc1 = num_processes_activated, iprocs
                 needed(prorder(iproc1)) = -1                            ! mark these processes dealt with
                 if (profreq(prorder(iproc1)) == 0) then             ! take care that at the end there are
                     iout = iout + 1                                        ! at least 5 without forward reference
@@ -230,7 +230,7 @@ contains
                 endif                                                   ! you might run out of separators later on.
             enddo                                                      ! There will at least be a check at runtime
             if (iin /= 0) iprocs = iin
-            nproc = iprocs + 1
+            num_processes_activated = iprocs + 1
         enddo
         if (nothread > 1) then
 
@@ -252,18 +252,18 @@ contains
             !         add the inactive processes after that
 
             iin = iprocs
-            nproc = 0
+            num_processes_activated = 0
             do iproc1 = 1, noproc
                 proc1 => procesdef%procesprops(iproc1)
                 if (proc1%active) then
-                    nproc = nproc + 1
+                    num_processes_activated = num_processes_activated + 1
                 else
                     iprocs = iprocs + 1
                     prorder(iprocs) = iproc1
                 endif
             enddo
-            if (nproc /= iin) then
-                write(line, '(a,2i5)') ' ERROR: no match in number of active processes: ', nproc, iin
+            if (num_processes_activated /= iin) then
+                write(line, '(a,2i5)') ' ERROR: no match in number of active processes: ', num_processes_activated, iin
                 call write_log_message(line)
             endif
         else
@@ -295,8 +295,8 @@ contains
 
         !         make the refrence table: proref
 
-        if (nrref == 0) nrref = 1
-        allocate (proref(nrref, naproc))
+        if (num_input_ref == 0) num_input_ref = 1
+        allocate (proref(num_input_ref, naproc))
         proref = 0
         do iproc1 = 1, naproc
             proc1 => procesdef%procesprops(iproc1)
@@ -308,8 +308,8 @@ contains
                         proc2 => procesdef%procesprops(iproc2)
                         if (proc2%active) then
                             do iout = 1, proc2%no_output
-                                if (isinput(notot, syname, nocons, constants, nopa, &
-                                        &                                paname, nofun, funame, nosfun, sfname, &
+                                if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                         &                                proc1%input_item (iin)%name, &
                                         &                                proc2%output_item(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -317,8 +317,8 @@ contains
                                 endif
                             enddo
                             do iout = 1, proc2%no_fluxoutput
-                                if (isinput(notot, syname, nocons, constants, nopa, &
-                                        &                                paname, nofun, funame, nosfun, sfname, &
+                                if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                        &                                paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                         &                                proc1%input_item(iin)%name, &
                                         &                                proc2%fluxoutput(iout)%name) > 0) then
                                     nitem = nitem + 1
@@ -333,7 +333,7 @@ contains
 
         !         update flux pointers to new order
 
-        ioff = nopred + nocons + nopa + nofun + nosfun + notot + noloc + nodef
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_local_vars + num_defaults
         do iproc1 = 1, naproc
             proc1 => procesdef%procesprops(iproc1)
             if (proc1%active) then
@@ -344,8 +344,8 @@ contains
                         if (proc2%active) then
                             if (iproc2 /= iproc1) then
                                 do iout = 1, proc2%no_fluxoutput
-                                    if (isinput(notot, syname, nocons, constants, nopa, &
-                                            &                                   paname, nofun, funame, nosfun, sfname, &
+                                    if (isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+                                            &                                   paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
                                             &                                   proc1%input_item(iin)%name, &
                                             &                                   proc2%fluxoutput(iout)%name) > 0) then
                                         proc1%input_item(iin)%ip_val = ioff + nfl + iout
@@ -363,8 +363,8 @@ contains
         return
     end subroutine partab
 
-    integer function isinput(notot, syname, nocons, constants, nopa, &
-            &                          paname, nofun, funame, nosfun, sfname, &
+    integer function isinput(num_substances_total, syname, num_constants, constants, num_spatial_parameters, &
+            &                          paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, &
             &                          valnam, input)
 
         use m_waq_data_structure
@@ -372,16 +372,16 @@ contains
         character(20), intent(in) :: valnam
         character(20), intent(in) :: input
 
-        integer(kind = int_wp), intent(in) :: notot           ! number of substances
-        character(20), intent(in) :: syname(notot)   ! substance names
-        integer(kind = int_wp), intent(in) :: nocons          ! number of constants
+        integer(kind = int_wp), intent(in) :: num_substances_total           ! number of substances
+        character(20), intent(in) :: syname(num_substances_total)   ! substance names
+        integer(kind = int_wp), intent(in) :: num_constants          ! number of constants
         type(t_waq_item), intent(inout) :: constants       ! delwaq constants list
-        integer(kind = int_wp), intent(in) :: nopa            ! number of parameters
-        character(20), intent(in) :: paname(nopa)    ! parameter names
-        integer(kind = int_wp), intent(in) :: nofun           ! number of functions
-        character(20), intent(in) :: funame(nofun)   ! function names
-        integer(kind = int_wp), intent(in) :: nosfun          ! number of segment functions
-        character(20), intent(in) :: sfname(nosfun)  ! segment function names
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters            ! number of parameters
+        character(20), intent(in) :: paname(num_spatial_parameters)    ! parameter names
+        integer(kind = int_wp), intent(in) :: num_time_functions           ! number of functions
+        character(20), intent(in) :: funame(num_time_functions)   ! function names
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions          ! number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_fuctions)  ! segment function names
         !
         integer(kind = int_wp) :: status          ! value to be returned by function
         integer(kind = int_wp) :: ifound          ! result of search routine >0 if found
@@ -392,8 +392,8 @@ contains
         locnam = valnam
         status = -1
         do while (status == -1)
-            call valpoi (notot, nopa, nosfun, syname, nocons, &
-                    &                 nofun, constants, paname, funame, sfname, &
+            call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                    &                 num_time_functions, constants, paname, funame, sfname, &
                     &                 locnam, ivalip, line)
             if (ivalip /= -1) then
                 status = 0

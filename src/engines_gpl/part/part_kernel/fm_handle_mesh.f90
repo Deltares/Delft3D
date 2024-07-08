@@ -53,7 +53,7 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
     type(t_ug_meshgeom),      intent(in) :: waqgeom                !< model geometry
     type(t_openbndsect_coll), intent(in) :: openbndsect_coll       ! collection of openbndsects
 
-    integer :: ierr, i, j, k, L, ln, N, Nmax
+    integer :: ierr, i, j, k, L, ln, N, num_rows
     real(8) :: bottomlevel
 
     integer(4) ithndl              ! handle to time this subroutine
@@ -98,11 +98,11 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
         lne(1, L) = max(waqgeom%edge_faces(1,L),0)
         lne(2, L) = max(waqgeom%edge_faces(2,L),0)
     enddo
-    call realloc(q0, hyd%noq, keepExisting=.false., fill=0d0)
-    call realloc(q1, hyd%noq, keepExisting=.false., fill=0d0)
+    call realloc(q0, hyd%num_exchanges, keepExisting=.false., fill=0d0)
+    call realloc(q1, hyd%num_exchanges, keepExisting=.false., fill=0d0)
 
     nump = waqgeom%numface
-    Ndx = hyd%noseg! waqgeom%numface
+    Ndx = hyd%num_cells! waqgeom%numface
     call realloc(xzw, nump, keepExisting=.false., fill = dmiss)
     call realloc(yzw, nump, keepExisting=.false., fill = dmiss)
     call realloc(ba, Ndx, keepExisting=.false., fill = 0.0d0)
@@ -113,7 +113,7 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
     call realloc(vol1, Ndx, keepExisting=.false., fill=0d0)
 
     allocate(netcell(nump), stat = ierr)
-    Nmax = waqgeom%maxnumfacenodes
+    num_rows = waqgeom%maxnumfacenodes
     do k=1,nump
 
         ! Determine the average z-coordinate for the nodes
@@ -121,7 +121,7 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
 
         N = 0
         bottomlevel = 0.0
-        do i = 1, Nmax
+        do i = 1, num_rows
             if (waqgeom%face_nodes(i, k) > 0) then
                 N = i
                 bottomlevel = bottomlevel + zk(waqgeom%face_nodes(i, k))
@@ -138,7 +138,7 @@ subroutine part_fill_networkdata(hyd, waqgeom,openbndsect_coll)
         xzw(k) = waqgeom%facex(k)
         yzw(k) = waqgeom%facey(k)
 
-        do i = 1,hyd%nolay
+        do i = 1,hyd%num_layers
             j     = k + (i-1) * hyd%nosegl
             ba(j) = hyd%surf(k)
             bl(j) = bottomlevel / N
@@ -377,7 +377,7 @@ subroutine part_setmesh()
         end do
     end if
 
-    ! nx, ny, w
+    ! num_cells_u_dir, num_cells_v_dir, w
     do L=1,numedges
         k1 = edge2node(1,L)
         k2 = edge2node(2,L)
@@ -532,7 +532,7 @@ subroutine fill_laybot_via_attributes(hyd, laybot)
 
     laybot = 0
     do i = 1,hyd%nosegl
-        do k = 1,hyd%nolay
+        do k = 1,hyd%num_layers
             idcell = i + (k-1) * hyd%nosegl
             if ( mod( hyd%attributes(idcell), 10 ) == 1 ) then
                 laybot(1,i) = k
@@ -568,7 +568,7 @@ subroutine ini_part_grid(hyd)
     call dealloc_particles()
     call dealloc_auxfluxes()
 
-    kmx = hyd%nolay
+    kmx = hyd%num_layers
 
     !     fill network_data
     call part_fill_networkdata(hyd, hyd%waqgeom, hyd%openbndsect_coll)
@@ -589,14 +589,14 @@ subroutine ini_part_grid(hyd)
     call alloc_auxfluxes()
 
     ihdel = hyd%cnv_step_sec
-    layt = hyd%nolay
-    nolayp = hyd%nolay
-    allocate ( tcktot(hyd%nolay))
-    do ilay = 1, hyd%nolay
+    layt = hyd%num_layers
+    nolayp = hyd%num_layers
+    allocate ( tcktot(hyd%num_layers))
+    do ilay = 1, hyd%num_layers
         tcktot(ilay) = hyd%waq_layers(ilay)
     enddo
     mnmax2 = hyd%nosegl
-    mnmaxk = hyd%nosegl*hyd%nolay
+    mnmaxk = hyd%nosegl*hyd%num_layers
 
     if ( timon ) call timstop ( ithndl )
 end subroutine ini_part_grid

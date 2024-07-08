@@ -43,8 +43,8 @@
       end type pnt
       type domain                                  ! domain definition
          character(256)  name                      ! Part has an array of domains if DD applies
-         integer         nmax                      ! first, fast running index, size of the domain
-         integer         mmax                      ! second, slower running index, size of the domain
+         integer         num_rows                      ! first, fast running index, size of the domain
+         integer         num_columns                      ! second, slower running index, size of the domain
          integer         moff                      ! the m-offset in the larger total matrix of this domain
       end type domain
       type range                                   ! a range is a transect in a domain

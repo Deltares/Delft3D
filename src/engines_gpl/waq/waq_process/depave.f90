@@ -28,9 +28,9 @@ module m_depave
 contains
 
 
-    subroutine depave (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine depave (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         !>\file
         !>       Average depth for a Bloom time step (typically a day)
@@ -45,9 +45,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: LUNREP
 
@@ -84,8 +84,8 @@ contains
 
         !     Retrieve switch for averaging and nr. of steps to be averaged
 
-        NSWITS = NINT(PMSA(IP1))
-        NAVERA = NINT(PMSA(IP2))
+        NSWITS = NINT(process_space_real(IP1))
+        NAVERA = NINT(process_space_real(IP2))
 
         !     Add 1 to counter and check for period
 
@@ -94,25 +94,25 @@ contains
 
         !     Loop over segments
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                DEPTH = PMSA(IP3)
-                ADEPTH = PMSA(IP4)
-                PMSA(IP6) = ADEPTH
+                DEPTH = process_space_real(IP3)
+                ADEPTH = process_space_real(IP4)
+                process_space_real(IP6) = ADEPTH
 
                 IF (NSWITS == 0) THEN
 
                     !                 No averaging: copy depth to average depth
 
-                    PMSA(IP5) = DEPTH
+                    process_space_real(IP5) = DEPTH
 
                 ELSE
 
                     !                 Averaging: FANCY FORMULA!!!!!
 
-                    PMSA(IP5) = (ADEPTH * REAL(TELLER - 1) + DEPTH) &
+                    process_space_real(IP5) = (ADEPTH * REAL(TELLER - 1) + DEPTH) &
                             / REAL(TELLER)
                 ENDIF
             ENDIF

@@ -37,7 +37,7 @@ contains
     !! to determine drying and flooding and for a number of
     !! numerical schemes.
     subroutine dlwq41(file_unit_list, itime, itimel, harmat, array, &
-            iharm, nrharm, nrftot, noseg, volume, &
+            iharm, nrharm, nrftot, num_cells, volume, &
             ipoint, luntxt, ftype, isflag, ivflag, &
             updatv, inwspc, anwspc, inwtyp, iwork, &
             lstrec, lrewin, vollst, dlwqd)
@@ -56,8 +56,8 @@ contains
         integer(kind = int_wp), intent(in   ) :: iharm (*)         !< Harmonic time space
         integer(kind = int_wp), intent(in   ) :: nrharm(*)         !< Set of nrs of harmonic records
         integer(kind = int_wp), intent(in   ) :: nrftot(*)         !< Set of record lengthes
-        integer(kind = int_wp), intent(in   ) :: noseg             !< Nr of computational volumes
-        real(kind = real_wp),   intent(  out) :: volume(noseg)     !< Array of volumes per gridcell
+        integer(kind = int_wp), intent(in   ) :: num_cells             !< Nr of computational volumes
+        real(kind = real_wp),   intent(  out) :: volume(num_cells)     !< Array of volumes per gridcell
         integer(kind = int_wp), intent(in   ) :: ipoint(*)         !< Set of pointers to destination
         character(len=*),       intent(in   ) :: luntxt(*)         !< Text with the unit numbers
         integer(kind = int_wp), intent(in   ) :: ftype (*)         !< Type of file to read
@@ -70,7 +70,7 @@ contains
         integer(kind = int_wp), intent(inout) :: iwork (*)         !< Integer workspace
         logical,                intent(in   ) :: lstrec            !< Switch last record on rewind wanted
         logical,                intent(  out) :: lrewin            !< If T then rewindtook place
-        real(kind = real_wp),   intent(  out) :: vollst(noseg)     !< Last volume record before rewind
+        real(kind = real_wp),   intent(  out) :: vollst(num_cells)     !< Last volume record before rewind
         type(delwaq_data),      intent(inout) :: dlwqd             !< derived type for persistent storage
 
         ! Local variables
@@ -101,7 +101,7 @@ contains
         if (nrharm(2) >= 0) then
             call dlwqt1 (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
-                    noseg, nrftot(2), ipa, iph, ipf, &
+                    num_cells, nrftot(2), ipa, iph, ipf, &
                     ipi, luntxt, 7, isflag, ifflag, &
                     update, .false., 0, iwork, lstrec, &
                     lrewin, vollst, ftype, dlwqd)

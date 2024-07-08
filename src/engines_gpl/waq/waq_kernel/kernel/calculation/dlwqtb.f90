@@ -46,8 +46,8 @@ contains
         !     max_int_size   INTEGER    1        INPUT   Maximum integer array size
         !     ITIME   INTEGER    1        INPUT   Time in units of the system clock
         !     KTYPE   INTEGER   NOITM     INPUT   Type of items
-        !     AVAL    REAL    NOTOT,NOITM OUTPUT  Values of the bounds/wastes
-        !     IVAL    INTEGER NOTOT,NOITM LOCAL   Count array for averages
+        !     AVAL    REAL    num_substances_total,NOITM OUTPUT  Values of the bounds/wastes
+        !     IVAL    INTEGER num_substances_total,NOITM LOCAL   Count array for averages
         !     IERR    INTEGER    1        IN/OUT  error count
 
         use timers
@@ -59,7 +59,7 @@ contains
 
         ! local
         real(kind = real_wp) :: missing_value, aa, ab, aphase, func
-        integer(kind = int_wp) :: noitm, notot, nobrk
+        integer(kind = int_wp) :: noitm, num_substances_total, nobrk
         integer(kind = int_wp) :: i, i1, i2, i3, ia, ib, ic, ij, ii
         integer(kind = int_wp) :: integration_id, ipro, iord, itim1, itim2
         integer(kind = int_wp) :: irec, idt, itimf, it1c, it2c, idtc, iperio
@@ -71,7 +71,7 @@ contains
         missing_value = -999.
         !       Number of items
         NOITM = J(1)
-        NOTOT = J(2)
+        num_substances_total = J(2)
         IA = 0
         IJ = 2
         !
@@ -118,7 +118,7 @@ contains
                 IB = IOFF + J(NDST + I2)
                 DO I1 = 1, NOITM
                     AVAL(IB) = A(IA)
-                    IB = IB + NOTOT
+                    IB = IB + num_substances_total
                 end do
             end do
             IJ = IJ + 1
@@ -176,7 +176,7 @@ contains
             IF (IORD == 1) THEN
                 DO I1 = 1, NPNT
                     II = J(NPST + I1)
-                    IB = (II - 1) * NOTOT
+                    IB = (II - 1) * num_substances_total
                     DO I2 = 1, NDIM
                         IC = IOFF + J(NDST + I2)
                         !
@@ -208,7 +208,7 @@ contains
                                     !              Set a whole type
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) THEN
-                                            AVAL ((I3 - 1) * NOTOT + IC) = AA
+                                            AVAL ((I3 - 1) * num_substances_total + IC) = AA
                                         ENDIF
                                     end do
                                 ENDIF
@@ -220,7 +220,7 @@ contains
                                     !                          Set a whole type
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) THEN
-                                            AVAL ((I3 - 1) * NOTOT + IC) = missing_value
+                                            AVAL ((I3 - 1) * num_substances_total + IC) = missing_value
                                         ENDIF
                                     ENDDO
                                 ENDIF
@@ -261,23 +261,23 @@ contains
                                 AA = (IT2C * AA + IT1C * AB) / IDTC
                                 II = J(NPST + I2)
                                 IF (II > 0) THEN
-                                    IB = (J(NPST + I2) - 1) * NOTOT
+                                    IB = (J(NPST + I2) - 1) * num_substances_total
                                     AVAL(IB + IC) = AA
                                 ELSE
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) &
-                                                AVAL ((I3 - 1) * NOTOT + IC) = AA
+                                                AVAL ((I3 - 1) * num_substances_total + IC) = AA
                                     end do
                                 ENDIF
                             ELSEIF (IC - IOFF == 0) THEN
                                 !                       for flow accept missing (detected flow)
                                 IF (II > 0) THEN
-                                    IB = (J(NPST + I2) - 1) * NOTOT
+                                    IB = (J(NPST + I2) - 1) * num_substances_total
                                     AVAL(IB + IC) = missing_value
                                 ELSE
                                     DO I3 = 1, NOITM
                                         IF (KTYPE(I3) == -II) &
-                                                AVAL ((I3 - 1) * NOTOT + IC) = missing_value
+                                                AVAL ((I3 - 1) * num_substances_total + IC) = missing_value
                                     ENDDO
                                 ENDIF
                             ENDIF
@@ -317,7 +317,7 @@ contains
                 !              Inner loop in A over the substances
                 IF (IORD == 1) THEN
                     DO I1 = 1, NPNT
-                        IB = (J(NPST + I1) - 1) * NOTOT
+                        IB = (J(NPST + I1) - 1) * num_substances_total
                         DO I2 = 1, NDIM
                             IC = IOFF + J(NDST + I2)
                             IA = IA + 1
@@ -333,7 +333,7 @@ contains
                     DO I1 = 1, NDIM
                         IC = IOFF + J(NDST + I1)
                         DO I2 = 1, NPNT
-                            IB = (J(NPST + I2) - 1) * NOTOT
+                            IB = (J(NPST + I2) - 1) * num_substances_total
                             IA = IA + 1
                             IF (I == 1) THEN
                                 AVAL(IB + IC) = FUNC * A(IA)

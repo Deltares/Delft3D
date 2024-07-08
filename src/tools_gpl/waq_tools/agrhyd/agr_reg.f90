@@ -33,7 +33,7 @@
       integer              :: n_fact        ! aggregation factor n direction
       integer              :: m_offset      ! offset aggregation m direction
       integer              :: n_offset      ! offset aggregation n direction
-      integer              :: ipnt(input_hyd%nmax,input_hyd%mmax) ! aggregation pointer
+      integer              :: ipnt(input_hyd%num_rows,input_hyd%num_columns) ! aggregation pointer
 
       ! local declarations
 
@@ -47,10 +47,10 @@
       integer              :: n_left_new    ! number of rows to the left in the new grid
       integer              :: m_right_new   ! number of columns to the right in the new grid
       integer              :: n_right_new   ! number of rows to the right in the new grid
-      integer              :: mmax          ! mmax
-      integer              :: nmax          ! nmax
-      integer              :: mmax_new      ! new mmax after aggregation
-      integer              :: nmax_new      ! new nmax after aggregation
+      integer              :: num_columns          ! num_columns
+      integer              :: num_rows          ! num_rows
+      integer              :: mmax_new      ! new num_columns after aggregation
+      integer              :: nmax_new      ! new num_rows after aggregation
       integer              :: m             ! m index
       integer              :: n             ! n index
       integer              :: m_new         ! m index in the new grid
@@ -77,8 +77,8 @@
 
       call get_log_unit_number(lunrep)
 
-      mmax = input_hyd%mmax
-      nmax = input_hyd%nmax
+      num_columns = input_hyd%num_columns
+      num_rows = input_hyd%num_rows
       fact_m = m_fact
       fact_n = n_fact
 
@@ -87,10 +87,10 @@
       if ( m_offset .eq. 1 ) then
          m_offset = m_offset + m_fact
       endif
-      if ( m_offset .eq. mmax ) then
+      if ( m_offset .eq. num_columns ) then
          m_offset = m_offset - m_fact
       endif
-      if ( m_offset .lt. 1 .or. m_offset .gt. mmax ) then
+      if ( m_offset .lt. 1 .or. m_offset .gt. num_columns ) then
          write(*,*) ' error m_offset out of range'
          write(*,*) ' m_offset =',m_offset
          call stop_with_error()
@@ -100,10 +100,10 @@
       if ( n_offset .eq. 1 ) then
          n_offset = n_offset + n_fact
       endif
-      if ( n_offset .eq. nmax ) then
+      if ( n_offset .eq. num_rows ) then
          n_offset = n_offset - n_fact
       endif
-      if ( n_offset .lt. 1 .or. n_offset .gt. nmax ) then
+      if ( n_offset .lt. 1 .or. n_offset .gt. num_rows ) then
          write(*,*) ' error n_offset out of range'
          write(*,*) ' n_offset =',n_offset
          call stop_with_error()
@@ -114,19 +114,19 @@
       ! buitenste rij blijft altijd bestaan om (in het uiterste geval) ruimte te hebben voor de boundaries
 
       m_left      = m_offset-2
-      m_right     = mmax-m_offset
+      m_right     = num_columns-m_offset
       m_left_new  = int((m_left-1.)/m_fact+1.0)
       m_right_new = int((m_right-1.)/m_fact+1.0)
       mmax_new    = m_left_new + m_right_new + 2
 
       n_left      = n_offset-2
-      n_right     = nmax-n_offset
+      n_right     = num_rows-n_offset
       n_left_new  = int((n_left-1.)/n_fact+1.0)
       n_right_new = int((n_right-1.)/n_fact+1.0)
       nmax_new    = n_left_new + n_right_new + 2
 
-      output_hyd%mmax   = mmax_new
-      output_hyd%nmax   = nmax_new
+      output_hyd%num_columns   = mmax_new
+      output_hyd%num_rows   = nmax_new
       output_hyd%nosegl = mmax_new*nmax_new
 
       ! alloceer arrays op nieuwe dimensies
@@ -149,18 +149,18 @@
       ipnt             = 0
       output_hyd%lgrid = 0
 
-      do m = 1 , mmax
-         do n = 1 , nmax
+      do m = 1 , num_columns
+         do n = 1 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -187,18 +187,18 @@
 
       ! extra sweep back for missing cco values
 
-      do m = mmax, 2 , -1
-         do n = nmax, 2 , -1
+      do m = num_columns, 2 , -1
+         do n = num_rows, 2 , -1
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -226,18 +226,18 @@
          enddo
       enddo
 
-      do m = 2 , mmax
-         do n = 2 , nmax
+      do m = 2 , num_columns
+         do n = 2 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)
@@ -272,18 +272,18 @@
       ! boundaries
       nobnd_new = 0
       ierr      = 0
-      do m = 1 , mmax
-         do n = 1 , nmax
+      do m = 1 , num_columns
+         do n = 1 , num_rows
             if ( m .eq. 1 ) then
                m_new = 1
-            elseif ( m .eq. mmax ) then
+            elseif ( m .eq. num_columns ) then
                m_new = mmax_new
             else
                m_new = max(2,ceiling((m-m_offset2-1.)/m_fact)+ceiling(m_offset2/fact_m)+1)
             endif
             if ( n .eq. 1 ) then
                n_new = 1
-            elseif ( n .eq. nmax ) then
+            elseif ( n .eq. num_rows ) then
                n_new = nmax_new
             else
                n_new = max(2,ceiling((n-n_offset2-1.)/n_fact)+ceiling(n_offset2/fact_n)+1)

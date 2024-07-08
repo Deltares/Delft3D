@@ -30,15 +30,15 @@ contains
 
     !> Makes a mass balance final to steady state solutions.
     subroutine dlwq64(disp, disper, area, flow, aleng, &
-            velo, conc, bound, ipoint, nosys, &
-            notot, noq1, noq2, noq, nodisp, &
-            novelo, idpnt, ivpnt, integration_id, amass2, &
+            velo, conc, bound, ipoint, num_substances_transported, &
+            num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
+            num_velocity_arrays, idpnt, ivpnt, integration_id, amass2, &
             ilflag, dmpq, ndmpq, iqdmp)
 
         use timers
 
         real(kind = real_wp),   intent (in   ):: disp(3)        !< Main dispersion in the 3 directions
-        real(kind = real_wp),   intent (in   ):: disper(*)      !< Additional dispersion (NODISP*NOQ)
+        real(kind = real_wp),   intent (in   ):: disper(*)      !< Additional dispersion (num_dispersion_arrays*num_exchanges)
         real(kind = real_wp),   intent (in   ):: area(*)        !< Exchange surface area
         real(kind = real_wp),   intent (in   ):: flow(*)        !< Flows accross exchange surfs
         real(kind = real_wp),   intent (in   ):: aleng(*)       !< From- and to lengths
@@ -46,13 +46,13 @@ contains
         real(kind = real_wp),   intent (in   ):: conc(*)        !< Concentrations
         real(kind = real_wp),   intent (in   ):: bound(*)       !< Boundary concentrations
         integer(kind = int_wp), intent(in   ) :: ipoint(4, *)   !< Exchange indices
-        integer(kind = int_wp), intent(in   ) :: nosys          !< Number  of active substances
-        integer(kind = int_wp), intent(in   ) :: notot          !< Number  of total substances
-        integer(kind = int_wp), intent(in   ) :: noq1           !< Number of exchanges in first direction
-        integer(kind = int_wp), intent(in   ) :: noq2           !< Number of exchanges in second direction
-        integer(kind = int_wp), intent(in   ) :: noq            !< Total number of exchanges
-        integer(kind = int_wp), intent(in   ) :: nodisp         !< Number of additional dispersions
-        integer(kind = int_wp), intent(in   ) :: novelo         !< Number of additional velocities
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported          !< Number  of active substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total          !< Number  of total substances
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_u_dir           !< Number of exchanges in first direction
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_v_dir           !< Number of exchanges in second direction
+        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Total number of exchanges
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays         !< Number of additional dispersions
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays         !< Number of additional velocities
         integer(kind = int_wp), intent(in   ) :: idpnt(*)       !< Pointer systems to dispersions
         integer(kind = int_wp), intent(in   ) :: ivpnt(*)       !< Pointer systems to velocities
         integer(kind = int_wp), intent(in   ) :: integration_id !< = 0, 2 DISP at zero flow
@@ -76,12 +76,12 @@ contains
         if (timon) call timstrt ("dlwq64", ithandl)
 
         ! Loop accross the number of exchanges
-        i4 = 3 * notot
-        i5 = 4 * notot
-        i6 = nosys * ndmpq
+        i4 = 3 * num_substances_total
+        i5 = 4 * num_substances_total
+        i6 = num_substances_transported * ndmpq
         ibflag = mod(integration_id, 16) >= 8
         !
-        do iq = 1, noq
+        do iq = 1, num_exchanges
 
             ! Initialistations, check for transport anyhow
             i = ipoint(1, iq)
@@ -92,7 +92,7 @@ contains
             if (ibflag) then
                 if (iqdmp(iq) > 0) then
                     ipb = iqdmp(iq)
-                    ipq = (iqdmp(iq) - 1) * nosys
+                    ipq = (iqdmp(iq) - 1) * num_substances_transported
                 else
                     ipb = 0
                 end if
@@ -107,11 +107,11 @@ contains
             end if
             e = disp(1)
             al = aleng(1)
-            if (iq > noq1) then
+            if (iq > num_exchanges_u_dir) then
                 e = disp (2)
                 al = aleng(2)
             end if
-            if (iq > noq1 + noq2) then
+            if (iq > num_exchanges_u_dir + num_exchanges_v_dir) then
                 e = disp (3)
                 al = aleng(3)
             end if
@@ -125,21 +125,21 @@ contains
             if (j < 0) goto 40
 
             ! The regular case
-            k1 = (i - 1) * notot
-            k2 = (j - 1) * notot
-            do i3 = 1, notot
-                is = min (i3, nosys)
+            k1 = (i - 1) * num_substances_total
+            k2 = (j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
 
                 ! Dispersion
                 if (idpnt(is) > 0) then
-                    d = e + disper((iq - 1) * nodisp + idpnt(is)) * dl
+                    d = e + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
                 else
                     d = e
                 end if
 
                 ! Flow
                 if (ivpnt(is) > 0) then
-                    v = q + velo  ((iq - 1) * novelo + ivpnt(is)) * a
+                    v = q + velo  ((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
                 else
                     v = q
                 end if
@@ -163,16 +163,16 @@ contains
 
             ! The 'from' element was a boundary. Note the 2 options.
             20 if (j < 0) goto 60
-            k1 = (-i - 1) * notot
-            k2 = (j - 1) * notot
-            do i3 = 1, notot
-                is = min (i3, nosys)
+            k1 = (-i - 1) * num_substances_total
+            k2 = (j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
                 v = q
                 d = 0.0
-                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * novelo + ivpnt(is)) * a
+                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
                 if (mod(integration_id, 4) <  2) then
                     d = e
-                    if (idpnt(is)>0) d = d + disper((iq - 1) * nodisp + idpnt(is)) * dl
+                    if (idpnt(is)>0) d = d + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
                 end if
                 if (v > 0.0) then
                     dq = (v + d) * bound(k1 + i3) - d * conc (k2 + i3)
@@ -195,16 +195,16 @@ contains
             goto 60
 
             ! The 'to' element was a boundary.
-            40 k1 = (i - 1) * notot
-            k2 = (-j - 1) * notot
-            do i3 = 1, notot
-                is = min (i3, nosys)
+            40 k1 = (i - 1) * num_substances_total
+            k2 = (-j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
                 v = q
                 d = 0.0
-                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * novelo + ivpnt(is)) * a
+                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
                 if (mod(integration_id, 4)  <  2) then
                     d = e
-                    if (idpnt(is)>0) d = d + disper((iq - 1) * nodisp + idpnt(is)) * dl
+                    if (idpnt(is)>0) d = d + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
                 end if
                 if (v > 0.0) then
                     dq = (v + d) * conc (k1 + i3) - d * bound(k2 + i3)

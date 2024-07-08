@@ -28,13 +28,13 @@ module m_wripro
 contains
 
 
-    SUBROUTINE WRIPRO (NPROC, NSVAR, IFLUX, NIPMSA, PRVVAR, &
-            PRVTYP, NOLOC, NODEF, DEFAUL, PRONAM, &
-            NFLUX, LUWRKP, VERSIO, STOCHI, NOTOT, &
-            NOSYS, NDSPX, NVELX, NLOCX, DSTO, &
-            VSTO, NDSPN, IDPNW, NVELN, IVPNW, &
-            PROGRD, PRONDT, NOVAR, VARARR, VARIDX, &
-            VARTDA, VARDAG, VARTAG, VARAGG, nrref, &
+    SUBROUTINE WRIPRO (num_processes_activated, NSVAR, IFLUX, process_space_int_len, PRVVAR, &
+            PRVTYP, num_local_vars, num_defaults, DEFAUL, PRONAM, &
+            num_fluxes, LUWRKP, VERSIO, STOCHI, num_substances_total, &
+            num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, DSTO, &
+            VSTO, num_dispersion_arrays_new, IDPNW, num_velocity_arrays_new, IVPNW, &
+            PROGRD, PRONDT, num_vars, VARARR, VARIDX, &
+            VARTDA, VARDAG, VARTAG, VARAGG, num_input_ref, &
             proref)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -51,39 +51,39 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NPROC   INTEGER       1     INPUT   Number of called processes
+        !     num_processes_activated   INTEGER       1     INPUT   Number of called processes
         !     NSVAR   INTEGER       *     INPUT   Number of variables per proces
         !     IFLUX   INTEGER       *     INPUT   Pointer in FLUX per proces inst.
-        !     NIPMSA  INTEGER       1     INPUT   Length IPMSA
-        !     IPMSA   INTEGER       *     INPUT   Pointer in SSA per proces inst.
+        !     process_space_int_len  INTEGER       1     INPUT   Length process_space_int
+        !     process_space_int   INTEGER       *     INPUT   Pointer in SSA per proces inst.
         !     IPSSA   INTEGER       *     INPUT   Pointer to SSA per proces inst.
-        !     NOLOC   INTEGER       1     INPUT   Number of local variables
-        !     NODEF   INTEGER       1     INPUT   Number of used defaults
+        !     num_local_vars   INTEGER       1     INPUT   Number of local variables
+        !     num_defaults   INTEGER       1     INPUT   Number of used defaults
         !     DEFAUL  REAL          *     INPUT   Default values
         !     PRONAM  CHA*(*)       *     INPUT   Name of called module
-        !     NFLUX   INTEGER       1     INPUT   total number of fluxes
+        !     num_fluxes   INTEGER       1     INPUT   total number of fluxes
         !     LUWRKP  INTEGER       1     INPUT   unit number proces work file
         !     VERSIO  INTEGER       1     INPUT   Versie number of program
-        !     STOCHI  REAL   NOTOT*NFLUX  INPUT   Proces stochiometry
-        !     NOTOT   INTEGER       1     INPUT   Number of substances
-        !     NOSYS   INTEGER       1     INPUT   Number of active substances
-        !     NDSPX   INTEGER       1     INPUT   Number of extra dispersion array
-        !     NVELX   INTEGER       1     INPUT   Number of extra velocity array
-        !     NLOCX   INTEGER       1     INPUT   No.loc.var.exhange level
-        !     DSTO    INTEGER NOSYS,*     INPUT   dispersion stochi matrix
-        !     VSTO    INTEGER NOSYS,*     INPUT   velocity stochi matrix
-        !     NDSPN   INTEGER       1     INPUT   Number of new dispersion array
-        !     IDPNW   INTEGER   NOSYS     INPUT   Pointers to new dispersion array
-        !     NVELN   INTEGER       1     INPUT   Number of new velocity array
-        !     IVPNW   INTEGER   NOSYS     INPUT   Pointers to new velocity array
+        !     STOCHI  REAL   num_substances_total*num_fluxes  INPUT   Proces stochiometry
+        !     num_substances_total   INTEGER       1     INPUT   Number of substances
+        !     num_substances_transported   INTEGER       1     INPUT   Number of active substances
+        !     num_dispersion_arrays_extra   INTEGER       1     INPUT   Number of extra dispersion array
+        !     num_velocity_arrays_extra   INTEGER       1     INPUT
+        !     num_local_vars_exchange   INTEGER       1     INPUT
+        !     DSTO    INTEGER num_substances_transported,*     INPUT   dispersion stochi matrix
+        !     VSTO    INTEGER num_substances_transported,*     INPUT   velocity stochi matrix
+        !     num_dispersion_arrays_new   INTEGER       1     INPUT
+        !     IDPNW   INTEGER   num_substances_transported     INPUT   Pointers to new dispersion array
+        !     num_velocity_arrays_new   INTEGER       1     INPUT
+        !     IVPNW   INTEGER   num_substances_transported     INPUT   Pointers to new velocity array
         !     PROGRD  INTEGER       1     INPUT   Grid number for active processes
         !     PRONDT  INTEGER       1     INPUT   Step size for active processes
         !
         use timers       !   performance timers
 
-        INTEGER(kind = int_wp) :: NPROC, NIPMSA, NOLOC, NODEF, NFLUX, &
-                LUWRKP, NOTOT, NOSYS, NDSPX, NVELX, &
-                NLOCX, NDSPN, NVELN, NOVAR, nrref
+        INTEGER(kind = int_wp) :: num_processes_activated, process_space_int_len, num_local_vars, num_defaults, num_fluxes, &
+                LUWRKP, num_substances_total, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+                num_local_vars_exchange, num_dispersion_arrays_new, num_velocity_arrays_new, num_vars, num_input_ref
         INTEGER(kind = int_wp) :: NSVAR(*), IFLUX(*), &
                 PRVVAR(*), PRVTYP(*), &
                 IDPNW(*), IVPNW(*), &
@@ -101,33 +101,33 @@ contains
         if (timon) call timstrt("wripro", ithndl)
         !
         WRITE (LUWRKP) VERSIO
-        WRITE (LUWRKP) NIPMSA, NPROC, NFLUX, NOLOC, NODEF, &
-                NOTOT, NOSYS, NDSPX, NVELX, NLOCX, &
-                NDSPN, NVELN, NOVAR, nrref
-        WRITE (LUWRKP) (NSVAR(K), K = 1, NPROC)
-        WRITE (LUWRKP) (IFLUX(K), K = 1, NPROC)
-        WRITE (LUWRKP) (PRVVAR(K), K = 1, NIPMSA)
-        WRITE (LUWRKP) (PRVTYP(K), K = 1, NIPMSA)
-        WRITE (LUWRKP) (DEFAUL(K), K = 1, NODEF)
-        WRITE (LUWRKP) (STOCHI(K), K = 1, NOTOT * NFLUX)
-        WRITE (LUWRKP) (DSTO(K), K = 1, NOSYS * NDSPX)
-        WRITE (LUWRKP) (VSTO(K), K = 1, NOSYS * NVELX)
-        IF (NDSPN > 0) THEN
-            WRITE (LUWRKP) (IDPNW(K), K = 1, NOSYS)
+        WRITE (LUWRKP) process_space_int_len, num_processes_activated, num_fluxes, num_local_vars, num_defaults, &
+                num_substances_total, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, &
+                num_dispersion_arrays_new, num_velocity_arrays_new, num_vars, num_input_ref
+        WRITE (LUWRKP) (NSVAR(K), K = 1, num_processes_activated)
+        WRITE (LUWRKP) (IFLUX(K), K = 1, num_processes_activated)
+        WRITE (LUWRKP) (PRVVAR(K), K = 1, process_space_int_len)
+        WRITE (LUWRKP) (PRVTYP(K), K = 1, process_space_int_len)
+        WRITE (LUWRKP) (DEFAUL(K), K = 1, num_defaults)
+        WRITE (LUWRKP) (STOCHI(K), K = 1, num_substances_total * num_fluxes)
+        WRITE (LUWRKP) (DSTO(K), K = 1, num_substances_transported * num_dispersion_arrays_extra)
+        WRITE (LUWRKP) (VSTO(K), K = 1, num_substances_transported * num_velocity_arrays_extra)
+        IF (num_dispersion_arrays_new > 0) THEN
+            WRITE (LUWRKP) (IDPNW(K), K = 1, num_substances_transported)
         ENDIF
-        IF (NVELN > 0) THEN
-            WRITE (LUWRKP) (IVPNW(K), K = 1, NOSYS)
+        IF (num_velocity_arrays_new > 0) THEN
+            WRITE (LUWRKP) (IVPNW(K), K = 1, num_substances_transported)
         ENDIF
-        WRITE (LUWRKP) (PRONAM(K), K = 1, NPROC)
-        WRITE (LUWRKP) (PROGRD(K), K = 1, NPROC)
-        WRITE (LUWRKP) (PRONDT(K), K = 1, NPROC)
-        WRITE (LUWRKP) (VARARR(K), K = 1, NOVAR)
-        WRITE (LUWRKP) (VARIDX(K), K = 1, NOVAR)
-        WRITE (LUWRKP) (VARTDA(K), K = 1, NOVAR)
-        WRITE (LUWRKP) (VARDAG(K), K = 1, NOVAR)
-        WRITE (LUWRKP) (VARTAG(K), K = 1, NOVAR)
-        WRITE (LUWRKP) (VARAGG(K), K = 1, NOVAR)
-        write (luwrkp) (proref(k), k = 1, nproc * nrref)
+        WRITE (LUWRKP) (PRONAM(K), K = 1, num_processes_activated)
+        WRITE (LUWRKP) (PROGRD(K), K = 1, num_processes_activated)
+        WRITE (LUWRKP) (PRONDT(K), K = 1, num_processes_activated)
+        WRITE (LUWRKP) (VARARR(K), K = 1, num_vars)
+        WRITE (LUWRKP) (VARIDX(K), K = 1, num_vars)
+        WRITE (LUWRKP) (VARTDA(K), K = 1, num_vars)
+        WRITE (LUWRKP) (VARDAG(K), K = 1, num_vars)
+        WRITE (LUWRKP) (VARTAG(K), K = 1, num_vars)
+        WRITE (LUWRKP) (VARAGG(K), K = 1, num_vars)
+        write (luwrkp) (proref(k), k = 1, num_processes_activated * num_input_ref)
         !
         if (timon) call timstop(ithndl)
         RETURN

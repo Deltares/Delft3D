@@ -34,10 +34,10 @@ module exchange_pointers
 
 contains
 
-    subroutine read_exchange_pointers_regular_grid(file_unit_list, file_name_list, noseg, nmax, mmax, &
-            kmax, noq, noq1, noq2, noq3, &
-            noqt, nobnd, ipnt, intsrt, ipopt1, &
-            jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
+    subroutine read_exchange_pointers_regular_grid(file_unit_list, file_name_list, num_cells, num_rows, num_columns, &
+            num_layers_grid, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+            noqt, num_boundary_conditions, ipnt, intsrt, ipopt1, &
+            num_codiagonals, output_verbose_level, iwidth, GridPs, cellpnt, &
             flowpnt, status)
 
         !! Reads exchange pointers on regular grid
@@ -61,37 +61,37 @@ contains
 
         integer(kind = int_wp), intent(inout) :: file_unit_list   (*)      !< array with unit numbers
         character(*), intent(inout) :: file_name_list (*)     !< array with file names of the files
-        integer(kind = int_wp), intent(in) :: noseg          !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: nmax           !< dimension of first direction of grid
-        integer(kind = int_wp), intent(in) :: mmax           !< dimension of second direction of grid
-        integer(kind = int_wp), intent(in) :: kmax           !< dimension of third direction of grid
-        integer(kind = int_wp), intent(out) :: noq            !< noq1 + noq2 + noq3
-        integer(kind = int_wp), intent(out) :: noq1           !< number of exchanges 1st direction
-        integer(kind = int_wp), intent(out) :: noq2           !< number of exchanges 2nd direction
-        integer(kind = int_wp), intent(out) :: noq3           !< number of exchanges 3rd direction
+        integer(kind = int_wp), intent(in) :: num_cells          !< number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_rows           !< dimension of first direction of grid
+        integer(kind = int_wp), intent(in) :: num_columns           !< dimension of second direction of grid
+        integer(kind = int_wp), intent(in) :: num_layers_grid           !< dimension of third direction of grid
+        integer(kind = int_wp), intent(out) :: num_exchanges            !< num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+        integer(kind = int_wp), intent(out) :: num_exchanges_u_dir           !< number of exchanges 1st direction
+        integer(kind = int_wp), intent(out) :: num_exchanges_v_dir           !< number of exchanges 2nd direction
+        integer(kind = int_wp), intent(out) :: num_exchanges_z_dir           !< number of exchanges 3rd direction
         integer(kind = int_wp), intent(inout) :: noqt           !< total number of exchanges
-        integer(kind = int_wp), intent(out) :: nobnd          !< number of open boundaries
+        integer(kind = int_wp), intent(out) :: num_boundary_conditions          !< number of open boundaries
         integer(kind = int_wp), pointer :: ipnt (:, :)     !< exchange pointer
         integer(kind = int_wp), intent(in) :: intsrt         !< integration number
         integer(kind = int_wp), intent(in) :: ipopt1         !< file option ( 0 = binary )
-        integer(kind = int_wp), intent(out) :: jtrack         !< number of codiagonals of matrix
+        integer(kind = int_wp), intent(out) :: num_codiagonals
         integer(kind = int_wp), intent(in) :: output_verbose_level         !< flag for more or less output
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
         type(GridPointerColl)           GridPs        !< Collection of grid pointers
-        integer(kind = int_wp), pointer :: cellpnt(:)     !< backpointer noseg to mnmaxk
-        integer(kind = int_wp), pointer :: flowpnt(:)     !< backpointer noq to 3*mnmaxk-mnmax
+        integer(kind = int_wp), pointer :: cellpnt(:)     !< backpointer num_cells to mnmaxk
+        integer(kind = int_wp), pointer :: flowpnt(:)     !< backpointer num_exchanges to 3*mnmaxk-mnmax
 
         type(error_status) :: status !< error status
 
         integer(kind = int_wp), allocatable :: imat  (:)    ! regular grid matrix
-        integer(kind = int_wp) :: ntot         ! nmax * mmax
+        integer(kind = int_wp) :: ntot         ! num_rows * num_columns
         integer(kind = int_wp) :: ierr2        ! local error count
         integer(kind = int_wp) :: i1, i2, i3   ! loop counters
         integer(kind = int_wp) :: ist, k       ! help variable for loops
         integer(kind = int_wp) :: nobndl       ! number of boundaries per layer
-        integer(kind = int_wp) :: nmax2        ! help variable to check nmax
-        integer(kind = int_wp) :: mmax2        ! help variable to check mmax
-        integer(kind = int_wp) :: nm           ! noseg from file
+        integer(kind = int_wp) :: nmax2        ! help variable to check num_rows
+        integer(kind = int_wp) :: mmax2        ! help variable to check num_columns
+        integer(kind = int_wp) :: nm           ! num_cells from file
         integer(kind = int_wp) :: nlay         ! number of layers from file
         real(kind = real_wp) :: dummy        !
         character(256)          filename    ! to open more files
@@ -105,30 +105,30 @@ contains
         if (ipopt1 == 0)  then         ! binary file
             call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 2, ierr2)
             if (ierr2 /= 0) goto 100
-            read  (file_unit_list(8)) nmax2, mmax2, nm, nlay, noq1, noq2, noq3
+            read  (file_unit_list(8)) nmax2, mmax2, nm, nlay, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir
         else
             if (gettoken(nmax2, ierr2) > 0) goto 100
             if (gettoken(mmax2, ierr2) > 0) goto 100
             if (gettoken(nm, ierr2) > 0) goto 100
             if (gettoken(nlay, ierr2) > 0) goto 100
-            noq1 = 0
-            noq2 = 0
-            noq3 = 0
-            if (nmax > 1) noq1 = noseg
-            if (mmax > 1) noq2 = noseg
-            if (kmax > 1) noq3 = (noseg / kmax) * (kmax - 1)
+            num_exchanges_u_dir = 0
+            num_exchanges_v_dir = 0
+            num_exchanges_z_dir = 0
+            if (num_rows > 1) num_exchanges_u_dir = num_cells
+            if (num_columns > 1) num_exchanges_v_dir = num_cells
+            if (num_layers_grid > 1) num_exchanges_z_dir = (num_cells / num_layers_grid) * (num_layers_grid - 1)
         endif
-        if (nmax2 /= nmax .or. mmax2 /= mmax .or. nlay  /= kmax) then
-            write (file_unit, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
+        if (nmax2 /= num_rows .or. mmax2 /= num_columns .or. nlay  /= num_layers_grid) then
+            write (file_unit, 2010) nmax2, num_rows, mmax2, num_columns, nlay, num_layers_grid
             ierr2 = 1
             goto 100
         endif
-        noq = noq1 + noq2 + noq3
-        write (file_unit, 2050) noq1, noq2, noq3, noqt, noq + noqt
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+        write (file_unit, 2050) num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, noqt, num_exchanges + noqt
 
         ! Allocate pointer space
-        noqt = noq + noqt
-        allocate (ipnt(4, noqt), cellpnt(noseg), flowpnt(noq), stat = ierr2)
+        noqt = num_exchanges + noqt
+        allocate (ipnt(4, noqt), cellpnt(num_cells), flowpnt(num_exchanges), stat = ierr2)
         if (ierr2 /= 0) then
             write (file_unit, 2160) ierr2, 4 * noqt
             goto 100
@@ -136,10 +136,10 @@ contains
 
         ! Allocate matrix space
         ierr2 = 0
-        ntot = nmax * mmax
+        ntot = num_rows * num_columns
         allocate (imat(ntot), stat = ierr2)
         if (ierr2 /= 0) then
-            write (file_unit, 2000) ierr2, nmax * mmax
+            write (file_unit, 2000) ierr2, num_rows * num_columns
             goto 100
         endif
 
@@ -152,33 +152,33 @@ contains
             enddo
             call open_waq_files(file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            write (file_unit_list(8)) nmax, mmax, noseg, kmax, noq1, noq2, noq3
+            write (file_unit_list(8)) num_rows, num_columns, num_cells, num_layers_grid, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir
             write (file_unit_list(8)) imat
         endif
         close (file_unit_list(8))
 
         ! Print the matrix
-        do i2 = 1, nmax, iwidth * 2
-            i3 = min(nmax, i2 + iwidth * 2 - 1)
+        do i2 = 1, num_rows, iwidth * 2
+            i3 = min(num_rows, i2 + iwidth * 2 - 1)
             write (file_unit, 2020) (k, k = i2, i3)
-            do i1 = 1, mmax
-                ist = (i1 - 1) * nmax
+            do i1 = 1, num_columns
+                ist = (i1 - 1) * num_rows
                 write (file_unit, 2030) i1, (imat(k), k = ist + i2, ist + i3)
             enddo
         enddo
 
         ! make the trivial IKBND array
         nobndl = -minval(imat(1:ntot))
-        nobnd = kmax * nobndl
+        num_boundary_conditions = num_layers_grid * nobndl
 
         ! make pointer table
-        call create_pointer_table(nmax, mmax, kmax, noseg, nobnd, &
-                noq, noq1, noq2, imat, ipnt, &
+        call create_pointer_table(num_rows, num_columns, num_layers_grid, num_cells, num_boundary_conditions, &
+                num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, imat, ipnt, &
                 cellpnt, flowpnt)
 
         ! calculate number of boundaries and bandwith of matrix
-        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
-                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
+        call create_boundary_pointers  (file_unit_list, num_cells, num_exchanges, noqt, intsrt, &
+                output_verbose_level, GridPs, num_boundary_conditions, num_codiagonals, ipnt, &
                 status)
 
         ! open cco-file
@@ -190,9 +190,9 @@ contains
         endif
         read (file_unit_list(8))
         read (file_unit_list(8)) mmax2, nmax2, x0, y0, alpha, npart, nlay
-        if (mmax2 /= mmax .or. nmax2 /= nmax .or. &
-                nlay  /= kmax) then
-            write (file_unit, 2010) nmax2, nmax, mmax2, mmax, nlay, kmax
+        if (mmax2 /= num_columns .or. nmax2 /= num_rows .or. &
+                nlay  /= num_layers_grid) then
+            write (file_unit, 2010) nmax2, num_rows, mmax2, num_columns, nlay, num_layers_grid
             ierr2 = 1
             goto 100
         endif
@@ -219,9 +219,9 @@ contains
 
     end subroutine read_exchange_pointers_regular_grid
 
-    subroutine read_exchange_pointers_irregular_grid(file_unit_list, file_name_list, noseg, noq, noq1, &
-            noq2, noq3, noqt, nobnd, ipnt, &
-            intsrt, ipopt1, jtrack, ftype, output_verbose_level, &
+    subroutine read_exchange_pointers_irregular_grid(file_unit_list, file_name_list, num_cells, num_exchanges, num_exchanges_u_dir, &
+            num_exchanges_v_dir, num_exchanges_z_dir, noqt, num_boundary_conditions, ipnt, &
+            intsrt, ipopt1, num_codiagonals, ftype, output_verbose_level, &
             GridPs, status)
 
         !!  Reads exchange pointers on irregular grid
@@ -241,24 +241,24 @@ contains
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)      !< array with unit numbers
         character(*), intent(inout) :: file_name_list(*)     !< array with file names of the files
-        integer(kind = int_wp), intent(in) :: noseg          !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: noq            !< noq1 + noq2 + noq3
-        integer(kind = int_wp), intent(in) :: noq1           !< number of exchanges 1st direction
-        integer(kind = int_wp), intent(in) :: noq2           !< number of exchanges 2nd direction
-        integer(kind = int_wp), intent(in) :: noq3           !< number of exchanges 3rd direction
+        integer(kind = int_wp), intent(in) :: num_cells          !< number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_exchanges            !< num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir           !< number of exchanges 1st direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir           !< number of exchanges 2nd direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir           !< number of exchanges 3rd direction
         integer(kind = int_wp), intent(in) :: noqt           !< total number of exchanges
-        integer(kind = int_wp), intent(out) :: nobnd          !< number of open boundaries
+        integer(kind = int_wp), intent(out) :: num_boundary_conditions          !< number of open boundaries
         integer(kind = int_wp), intent(out) :: ipnt(4, noqt)  !< exchange pointer
         integer(kind = int_wp), intent(in) :: intsrt         !< integration number
         integer(kind = int_wp), intent(in) :: ipopt1         !< file option ( 0 = binary )
-        integer(kind = int_wp), intent(out) :: jtrack         !< number of codiagonals of matrix
+        integer(kind = int_wp), intent(out) :: num_codiagonals
         integer(kind = int_wp), intent(in) :: ftype          !< type of the pointer file
         integer(kind = int_wp), intent(in) :: output_verbose_level         !< flag for more or less output
         type(GridPointerColl)           GridPs        !< Collection of grid pointers
 
         type(error_status) :: status !< current error status
 
-        integer(kind = int_wp) :: noq12        ! noq1 + noq2 (horizontal exchanges
+        integer(kind = int_wp) :: noq12        ! num_exchanges_u_dir + num_exchanges_v_dir (horizontal exchanges
         integer(kind = int_wp) :: iq           ! loop counter exchanges
         integer(kind = int_wp) :: ip           ! loop counter pointers
         integer(kind = int_wp) :: ierr1        ! local I/O error
@@ -271,11 +271,11 @@ contains
         ierr2 = 0
 
         ! Read exchange pointers
-        noq12 = noq1 + noq2
+        noq12 = num_exchanges_u_dir + num_exchanges_v_dir
         if (ipopt1 == 0)  then
             call open_waq_files(file_unit_list(44), file_name_list(44), 44, 2 + ftype, ierr2)
             if (ierr2 /= 0) goto 100
-            do iq = 1, noq
+            do iq = 1, num_exchanges
                 read (file_unit_list(44), iostat = ierr1) ipnt(:, iq)
                 if (ierr1 /= 0) then
                     write(file_unit, 2100) iq - 1
@@ -287,14 +287,14 @@ contains
 
             ! Check that there are no more data in the file
             ! For DELWAQ-G applications, there may already be more data
-            ! than the raw 4*noq numbers ...
+            ! than the raw 4*num_exchanges numbers ...
 
-            if (noqt > noq) then
+            if (noqt > num_exchanges) then
                 ! Any extra exchange pointers already present?
                 read (file_unit_list(44), iostat = ierr1) idummy
                 if (ierr1 == 0) then
                     ! Skip all extra exchange pointers that are expected
-                    read (file_unit_list(44), iostat = ierr1) (idummy, iq = 2, 4 * (noqt - noq))
+                    read (file_unit_list(44), iostat = ierr1) (idummy, iq = 2, 4 * (noqt - num_exchanges))
                     if (ierr1 /= 0) then
                         write(file_unit, 2111)
                         close (file_unit_list(44))
@@ -317,48 +317,48 @@ contains
             close (file_unit_list(44))
             call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            if (noq1 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, noq1)
-            if (noq2 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
-            if (noq3 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, noq)
+            if (num_exchanges_u_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, num_exchanges_u_dir)
+            if (num_exchanges_v_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = num_exchanges_u_dir + 1, noq12)
+            if (num_exchanges_z_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, num_exchanges)
         else
-            do iq = 1, noq
+            do iq = 1, num_exchanges
                 do ip = 1, 4
                     if (gettoken(ipnt(ip, iq), ierr2) > 0) goto 100
                 enddo
             enddo
             call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            if (noq1 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, noq1)
-            if (noq2 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq1 + 1, noq12)
-            if (noq3 > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, noq)
+            if (num_exchanges_u_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = 1, num_exchanges_u_dir)
+            if (num_exchanges_v_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = num_exchanges_u_dir + 1, noq12)
+            if (num_exchanges_z_dir > 0) write(file_unit_list(8))(ipnt(:, iq), iq = noq12 + 1, num_exchanges)
 
             if (output_verbose_level < 4) then
                 write (file_unit, 2000)
             else
-                if (noq1 > 0) then
+                if (num_exchanges_u_dir > 0) then
                     write (file_unit, 2010)
                     write (file_unit, 2020)
-                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = 1, noq1)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = 1, num_exchanges_u_dir)
                 endif
 
-                if (noq2 > 0) then
+                if (num_exchanges_v_dir > 0) then
                     write (file_unit, 2040)
                     write (file_unit, 2020)
-                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = noq1 + 1, noq12)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = num_exchanges_u_dir + 1, noq12)
                 endif
 
-                if (noq3>0) then
+                if (num_exchanges_z_dir>0) then
                     write (file_unit, 2050)
                     write (file_unit, 2020)
-                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = noq12 + 1, noq)
+                    write (file_unit, 2030) (iq, ipnt(:, iq), iq = noq12 + 1, num_exchanges)
                 endif
             endif
         endif
 
         ! calculate number of boundaries and bandwith of matrix
 
-        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
-                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
+        call create_boundary_pointers  (file_unit_list, num_cells, num_exchanges, noqt, intsrt, &
+                output_verbose_level, GridPs, num_boundary_conditions, num_codiagonals, ipnt, &
                 status)
 
         close (file_unit_list(8))
@@ -398,12 +398,12 @@ contains
 
         use timers       !   performance timers
         use m_grid_utils_external ! for the storage of contraction grids
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         integer(kind = int_wp), intent(in) :: file_unit_list   (*)         !< array with unit numbers
         integer(kind = int_wp), intent(in) :: output_verbose_level              !< how extensive is output ?
         type(GridPointerColl)           GridPs             !< Collection of grid pointers
-        integer(kind = int_wp), intent(in) :: ibnd  (nobnd, 2)  !< normal boundary pointers
+        integer(kind = int_wp), intent(in) :: ibnd  (num_boundary_conditions, 2)  !< normal boundary pointers
         integer(kind = int_wp), intent(in) :: noqt                !< total number of exchanges
         integer(kind = int_wp), intent(inout) :: ipoint(4, noqt)  !< exchange pointers
 
@@ -413,26 +413,26 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ---------------------------------------------------------
-        !     NOSEG   INTEGER  1           INPUT   number of segments
-        !     NSEG2   INTEGER  1           INPUT   number of bottom segments
-        !     NOSYS   INTEGER  1           INPUT   number of active substances
-        !     NODISP  INTEGER  1           OUTPUT  number of dispersion arrays
-        !     NOVELO  INTEGER  1           OUTPUT  number of velocity arrays
-        !     NOQ1    INTEGER  1           OUTPUT  number of exch. 1st direction
-        !     NOQ2    INTEGER  1           OUTPUT  number of exch. 2nd direction
-        !     NOQ3    INTEGER  1           OUTPUT  number of exch. 3rd direction
-        !     NOQ4    INTEGER  1           OUTPUT  number of exch. bottom direction
-        !     NOQ     INTEGER  1           OUTPUT  number of exchanges
-        !     NOBND   INTEGER  1           OUTPUT  number of boundaries
-        !     JTRACK  INTEGER  1           OUTPUT  number of codiagonals
+        !     num_cells   INTEGER  1           INPUT   number of segments
+        !     num_cells_bottom   INTEGER  1           INPUT   number of bottom segments
+        !     num_substances_transported   INTEGER  1           INPUT   number of active substances
+        !     num_dispersion_arrays  INTEGER  1  OUTPUT
+        !     num_velocity_arrays  INTEGER  1    OUTPUT
+        !     num_exchanges_u_dir    INTEGER  1           OUTPUT  number of exch. 1st direction
+        !     num_exchanges_v_dir    INTEGER  1           OUTPUT  number of exch. 2nd direction
+        !     num_exchanges_z_dir    INTEGER  1           OUTPUT  number of exch. 3rd direction
+        !     num_exchanges_bottom_dir    INTEGER  1           OUTPUT  number of exch. bottom direction
+        !     num_exchanges     INTEGER  1           OUTPUT  number of exchanges
+        !     num_boundary_conditions   INTEGER  1           OUTPUT  number of boundaries
+        !     num_codiagonals  INTEGER  1  OUTPUT
         !     NDMPAR  INTEGER  1           INPUT   number of dump areas
         !     NDMPQ   INTEGER  1           OUTPUT  number exchanges dumped
-        !     NDMPS   INTEGER  1           OUTPUT  number segments dumped
+        !     num_monitoring_cells   INTEGER  1  OUTPUT
         !     NTDMPQ  INTEGER  1           OUTPUT  total number exchanges in dump area
         !     NTDMPS  INTEGER  1           INPUT   total number segments in dump area
-        !     NORAAI  INTEGER  1           INPUT   number of raaien
-        !     NTRAAQ  INTEGER  1           INPUT   total number of exch. in raaien
-        !     NOMAT   INTEGER  1           OUTPUT  size of the fastsolvers matrix
+        !     num_transects  INTEGER  1           INPUT
+        !     num_transect_exchanges  INTEGER  1 INPUT
+        !     fast_solver_arr_size   INTEGER  1  OUTPUT
 
         integer(kind = int_wp) :: file_unit            ! output unit number (file_unit_list(29))
         integer(kind = int_wp), allocatable :: IAbnd(:, :)       ! array with boundary information in the bed
@@ -461,10 +461,10 @@ contains
         file_unit = file_unit_list(29)
 
         ! is there a bottom direction ?
-        if (noq4 == 0) then
-            if (nobnd > 0) then
-                write (file_unit_list(2)) (ibnd (k, 1), k = 1, nobnd)
-                write (file_unit_list(2)) (ibnd (k, 2), k = 1, nobnd)
+        if (num_exchanges_bottom_dir == 0) then
+            if (num_boundary_conditions > 0) then
+                write (file_unit_list(2)) (ibnd (k, 1), k = 1, num_boundary_conditions)
+                write (file_unit_list(2)) (ibnd (k, 2), k = 1, num_boundary_conditions)
             endif
             goto 9999
         endif
@@ -480,8 +480,8 @@ contains
         ! allocate memory
         JBase = GridPs%base_grid
         nsegl = GridPs%Pointers(JBase)%noseg_lay ! nr of segments per layer
-        nlay = GridPs%Pointers(JBase)%nolay     !             in the water
-        nlayb = GridPs%Pointers(JBott)%nolay     !
+        nlay = GridPs%Pointers(JBase)%num_layers     !             in the water
+        nlayb = GridPs%Pointers(JBott)%num_layers     !
         nsegb = GridPs%Pointers(JBott)%noseg_lay ! and in the bottom
         allocate(IAbnd(nsegb, 2))
 
@@ -515,7 +515,7 @@ contains
         if (output_verbose_level < 4) write (file_unit, 1000)
         ioff1 = (nlay - 1) * nsegl
         ioff2 = max((nlay - 2) * nsegl, 0)
-        iqt = noq
+        iqt = num_exchanges
         write (file_unit, *) ' nsegb: ', nsegb
         do isegb = 1, nsegb
 
@@ -524,14 +524,14 @@ contains
 
             ! header for water-bottom
             if (output_verbose_level >= 4) then
-                write (file_unit, 1010) ib, noseg + ib
+                write (file_unit, 1010) ib, num_cells + ib
                 write (file_unit, 1030)
             endif
 
             if (nlayb > 1) then
-                inaarplus = botmatrix(isegb, 2) + noseg
+                inaarplus = botmatrix(isegb, 2) + num_cells
             else
-                inaarplus = -nobnd - ib
+                inaarplus = -num_boundary_conditions - ib
             endif
 
             ! get every pointer for this bottom cell
@@ -540,7 +540,7 @@ contains
                 if (GridPs%Pointers(JBott)%iarray(i) == ib) then
                     iq = iq + 1
                     ipoint(1, iq + iqt) = ioff1 + i
-                    ipoint(2, iq + iqt) = ib + noseg
+                    ipoint(2, iq + iqt) = ib + num_cells
                     ipoint(3, iq + iqt) = ioff2 + i
                     ipoint(4, iq + iqt) = inaarplus
                     if (output_verbose_level >= 4) write(file_unit, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
@@ -556,13 +556,13 @@ contains
                 iq = iq + 1            ! the number of the pointer
 
                 ! from pointer
-                ipoint(1, iq + iqt) = botmatrix(isegb, ilay) + noseg
+                ipoint(1, iq + iqt) = botmatrix(isegb, ilay) + num_cells
 
                 ! to pointer
                 if (ilay  < nlayb) then   ! 'to'  can be boundary
-                    ipoint(2, iq + iqt) = botmatrix(isegb, ilay + 1) + noseg
+                    ipoint(2, iq + iqt) = botmatrix(isegb, ilay + 1) + num_cells
                 else
-                    ipoint(2, iq + iqt) = -ib - nobnd
+                    ipoint(2, iq + iqt) = -ib - num_boundary_conditions
                     IAbnd(ib, 1) = iq + iqt
                     IAbnd(ib, 2) = ipoint(1, iq + iqt)
                 endif
@@ -571,14 +571,14 @@ contains
                 if (ilay == 1) then
                     ipoint(3, iq + iqt) = ipoint(1, iq + iqt)
                 else
-                    ipoint(3, iq + iqt) = botmatrix(isegb, ilay - 1) + noseg
+                    ipoint(3, iq + iqt) = botmatrix(isegb, ilay - 1) + num_cells
                 endif
 
                 !to+1
                 if (ilay < nlayb - 1) then ! 'to+1'  can be boundary
-                    ipoint(4, iq + iqt) = botmatrix(isegb, ilay + 2) + noseg
+                    ipoint(4, iq + iqt) = botmatrix(isegb, ilay + 2) + num_cells
                 else
-                    ipoint(4, iq + iqt) = -ib - nobnd
+                    ipoint(4, iq + iqt) = -ib - num_boundary_conditions
                 endif
                 if (output_verbose_level >= 4) write(file_unit, 1040)iq + iqt, (ipoint(k, iq + iqt), k = 1, 4)
 
@@ -593,7 +593,7 @@ contains
             iqt = iqt + 2 * iq
         end do
         if (noqt /= iqt) then
-            write (file_unit, 1110) noq4, iqt - noq
+            write (file_unit, 1110) num_exchanges_bottom_dir, iqt - num_exchanges
             call status%increase_error_count()
             goto 9999
         endif
@@ -601,7 +601,7 @@ contains
         odd = .true.
         if (output_verbose_level >= 3) then
             write (file_unit, 1070)
-            do iq = noq + 1, noq + noq4
+            do iq = num_exchanges + 1, num_exchanges + num_exchanges_bottom_dir
                 if (ipoint(1, iq) < 0 .or. &
                         ipoint(2, iq) < 0) then
                     ib = min (ipoint(1, iq), ipoint(2, iq))
@@ -616,16 +616,16 @@ contains
         else
             write (file_unit, 1090)
         endif
-        write (file_unit_list(8)) ((ipoint(i, iq), i = 1, 4), iq = noq + 1, iqt)
+        write (file_unit_list(8)) ((ipoint(i, iq), i = 1, 4), iq = num_exchanges + 1, iqt)
         write (file_unit, 1100)
 
         ! Write boundary pointers to work file
-        if (nobnd > 0 .or. nsegb > 0) then
-            write (file_unit_list(2)) (ibnd (k, 1), k = 1, nobnd), (iabnd(k, 1), k = 1, nsegb)
-            write (file_unit_list(2)) (ibnd (k, 2), k = 1, nobnd), (iabnd(k, 2), k = 1, nsegb)
+        if (num_boundary_conditions > 0 .or. nsegb > 0) then
+            write (file_unit_list(2)) (ibnd (k, 1), k = 1, num_boundary_conditions), (iabnd(k, 1), k = 1, nsegb)
+            write (file_unit_list(2)) (ibnd (k, 2), k = 1, num_boundary_conditions), (iabnd(k, 2), k = 1, nsegb)
         endif
         deallocate (iabnd)
-        nobnd = nobnd + nsegb
+        num_boundary_conditions = num_boundary_conditions + nsegb
 
         9999 if (timon) call timstop(ithndl)
         return
@@ -649,8 +649,8 @@ contains
 
     END SUBROUTINE generate_bed_layer_pointers
 
-    subroutine create_boundary_pointers(file_unit_list, noseg, noq, noqt, intsrt, &
-            output_verbose_level, GridPs, nobnd, jtrack, ipoint, &
+    subroutine create_boundary_pointers(file_unit_list, num_cells, num_exchanges, noqt, intsrt, &
+            output_verbose_level, GridPs, num_boundary_conditions, num_codiagonals, ipoint, &
             status)
 
         !! Determines boundary pointers and number of codiagonals
@@ -662,14 +662,14 @@ contains
         use timers       !   performance timers
 
         integer(kind = int_wp), intent(in) :: file_unit_list   (*)          !< array with unit numbers
-        integer(kind = int_wp), intent(in) :: noseg              !< number of volumes
-        integer(kind = int_wp), intent(in) :: noq                !< number of exchanges from input
+        integer(kind = int_wp), intent(in) :: num_cells              !< number of volumes
+        integer(kind = int_wp), intent(in) :: num_exchanges                !< number of exchanges from input
         integer(kind = int_wp), intent(in) :: noqt               !< total number of exchanges
         integer(kind = int_wp), intent(in) :: intsrt             !< integration option
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         type(GridPointerColl)        GridPs            !< Structure with grid info
-        integer(kind = int_wp), intent(out) :: nobnd              !< number of open boundaries
-        integer(kind = int_wp), intent(out) :: jtrack             !< number of codiagonals
+        integer(kind = int_wp), intent(out) :: num_boundary_conditions              !< number of open boundaries
+        integer(kind = int_wp), intent(out) :: num_codiagonals
         integer(kind = int_wp), intent(inout) :: ipoint(4, noqt)     !< exchange pointers
 
         type(error_status) :: status !< current error status
@@ -690,33 +690,33 @@ contains
         file_unit = file_unit_list(29)
 
         ! calculate number of boundaries
-        nobnd = 0
-        do iq = 1, noq
+        num_boundary_conditions = 0
+        do iq = 1, num_exchanges
             do i = 1, 4
                 ip1 = ipoint(i, iq)
-                if (ip1 > noseg) then
-                    write (file_unit, 2000) ip1, iq, noseg
+                if (ip1 > num_cells) then
+                    write (file_unit, 2000) ip1, iq, num_cells
                     call status%increase_error_count()
                 endif
-                nobnd = min(nobnd, ip1)
+                num_boundary_conditions = min(num_boundary_conditions, ip1)
             enddo
         enddo
-        nobnd = -nobnd
-        write (file_unit, 2010) nobnd
+        num_boundary_conditions = -num_boundary_conditions
+        write (file_unit, 2010) num_boundary_conditions
 
-        ! Determine JTRACK
-        jtrack = 0
+        ! Determine num_codiagonals
+        num_codiagonals = 0
         do iq = 1, noqt
             ip1 = ipoint(1, iq)
             ip2 = ipoint(2, iq)
-            if (ip1 > 0 .and. ip2 > 0) jtrack = max(jtrack, abs(ip1 - ip2))
+            if (ip1 > 0 .and. ip2 > 0) num_codiagonals = max(num_codiagonals, abs(ip1 - ip2))
         enddo
         if (intsrt == 6 .or. intsrt == 7 .or. intsrt == 10) then
-            write (file_unit, 2020) jtrack
+            write (file_unit, 2020) num_codiagonals
         endif
 
         ! Allocate and zero boundary pointers
-        allocate (ibnd(nobnd, 2), stat = ierr2)
+        allocate (ibnd(num_boundary_conditions, 2), stat = ierr2)
         if (ierr2 /= 0) then
             write (file_unit, 2030) ierr2
             call status%increase_error_count()
@@ -725,13 +725,13 @@ contains
         ibnd = 0
 
         ! Set boundary pointers
-        if (nobnd > 0) then
+        if (num_boundary_conditions > 0) then
             if (output_verbose_level < 3) then
                 write (file_unit_list(29), 2040)
             else
                 write (file_unit_list(29), 2050)
             endif
-            do iq = 1, noq
+            do iq = 1, num_exchanges
                 ip1 = ipoint(1, iq)
                 ip2 = ipoint(2, iq)
                 if (ip1 < 0) then
@@ -753,7 +753,7 @@ contains
 
         ! Check if boundary is active
         iwar2_old = 0
-        do iq = 1, nobnd
+        do iq = 1, num_boundary_conditions
             iwar2_old = iwar2
             if (ibnd(iq, 1) == 0) then
                 write (file_unit, 2070) iq

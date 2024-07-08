@@ -28,8 +28,8 @@ module m_dlwqtk
 contains
 
 
-    SUBROUTINE DLWQTK (file_unit_list, ITIME, IKTIM, IKNMRK, NOSEG, &
-            IS, LUNTXT, ISFLAG, IFFLAG, IFIOPK)
+    SUBROUTINE DLWQTK (file_unit_list, ITIME, IKTIM, IKNMRK, num_cells, &
+            IS, LUNTXT, ISFLAG, IFFLAG, file_option_attributes)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
         !
@@ -49,13 +49,13 @@ contains
         !     file_unit_list     INTEGER       *     INPUT   unit number intermediate file
         !     ITIME   INTEGER       1     INPUT   Model timer
         !     IKTIM   INTEGER       *     IN/OUT  Timers in file
-        !     IKNMRK  INTEGER   NOSEG,*   IN/OUT  Kenmerk array
-        !     NOSEG   INTEGER       1     INPUT   number of segments
+        !     IKNMRK  INTEGER   num_cells,*   IN/OUT  Kenmerk array
+        !     num_cells   INTEGER       1     INPUT   number of segments
         !     IS      INTEGER       1     INPUT   Index number intermediate file
         !     LUNTXT  CHAR*(*)      *     INPUT   text with the unit number
         !     ISFLAG  INTEGER       1     INPUT   = 1 then 'ddhhmmss' format
         !     IFFLAG  INTEGER       1     INPUT   = 1 then first invocation
-        !     IFIOPK  INTEGER       1     IN/OUT  file option kenmerk array
+        !     file_option_attributes  INTEGER       1     IN/OUT  file option kenmerk array
         !
         !     DECLARATIONS        :
         !
@@ -67,9 +67,9 @@ contains
         use m_extract_waq_attribute
         use m_array_manipulation, only : copy_integer_array_elements
         use timers
-        INTEGER(kind = int_wp) :: ITIME, NOSEG, IS, ISFLAG, IFFLAG, &
-                IFIOPK, IKMRK1
-        INTEGER(kind = int_wp) :: file_unit_list(*), IKNMRK(NOSEG, *), &
+        INTEGER(kind = int_wp) :: ITIME, num_cells, IS, ISFLAG, IFFLAG, &
+                file_option_attributes, IKMRK1
+        INTEGER(kind = int_wp) :: file_unit_list(*), IKNMRK(num_cells, *), &
                 IKTIM(*)
 
         character(len=*) LUNTXT(*)
@@ -85,7 +85,7 @@ contains
         !
         !     If time variable then get variable kenmerk array
         !
-        IF (IFIOPK > 0) THEN
+        IF (file_option_attributes > 0) THEN
             LUNOUT = file_unit_list(19)
             !
             !        if first time open intermediate file and
@@ -94,24 +94,24 @@ contains
             !
             IF (IFFLAG == 1) THEN
                 CALL open_waq_files (file_unit_list(IS), LUNTXT(IS), IS, 2, IERR)
-                CALL copy_integer_array_elements (IKNMRK(1, 1), IKNMRK(1, 2), NOSEG)
+                CALL copy_integer_array_elements (IKNMRK(1, 1), IKNMRK(1, 2), num_cells)
             ENDIF
             !
             !        evaluate file option; read time-dependent kenmerk array into column 3
             !
-            IF (IFIOPK == 1) THEN
+            IF (file_option_attributes == 1) THEN
                 !
                 !           one record per time step
                 !
-                CALL DLWQKV(file_unit_list(IS), LUNOUT, ITIME, IKNMRK(1, 3), NOSEG, &
+                CALL DLWQKV(file_unit_list(IS), LUNOUT, ITIME, IKNMRK(1, 3), num_cells, &
                         LUNTXT(IS), ISFLAG, IFFLAG)
                 IF (IFFLAG == -1) THEN
-                    IFIOPK = 0
+                    file_option_attributes = 0
                     IFFLAG = 1
                     CLOSE (file_unit_list(IS))
                 ENDIF
                 !
-            ELSEIF (IFIOPK == 2) THEN
+            ELSEIF (file_option_attributes == 2) THEN
                 !
                 !           Block function
                 !
@@ -119,7 +119,7 @@ contains
                         ITIME, IKTIM(1), &
                         IKTIM(2), IKTIM(3), &
                         IKNMRK(1, 3), IKNMRK(1, 4), &
-                        NOSEG, LUNTXT(IS), &
+                        num_cells, LUNTXT(IS), &
                         ISFLAG, IFFLAG)
                 !
             ELSE
@@ -133,18 +133,18 @@ contains
             !
             !        (column 2)
             !
-            DO ISEG = 1, NOSEG
+            DO ISEG = 1, num_cells
                 CALL extract_waq_attribute(4, IKNMRK(ISEG, 2), IKMRK4)
             end do
             !
             !        Change the time-variable kenmerk-array (column 3) such that it
             !
-            CALL CHKNMR (file_unit_list(19), NOSEG, IKNMRK(1, 3))
+            CALL CHKNMR (file_unit_list(19), num_cells, IKNMRK(1, 3))
 
             !
             !        OR the constant and the time variable array's
             !
-            DO ISEG = 1, NOSEG
+            DO ISEG = 1, num_cells
                 IKNMRK(ISEG, 1) = IKNMRK(ISEG, 2) + IKNMRK(ISEG, 3)
             end do
             !

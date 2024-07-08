@@ -42,7 +42,7 @@ contains
         write (*, '(  '' '')')
 
         if (status%ierr == 0) then
-            novec = min(novec, (nosss + nobnd - 1))
+            num_fast_solver_vectors = min(num_fast_solver_vectors, (nosss + num_boundary_conditions - 1))
             itota = 0
             itoti = 0
             itotc = 0

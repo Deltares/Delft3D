@@ -28,9 +28,9 @@ module m_hdisp
 contains
 
 
-    subroutine hdisp  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine hdisp  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       (1D) Horizontal dispersion as velocity dependent reprofunction
 
@@ -48,9 +48,9 @@ contains
         !     ------   -----  ------------
 
         IMPLICIT NONE
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
@@ -79,15 +79,15 @@ contains
         !.....Exchangeloop over de verticale en breedterichtingen om
         !.....ze op 0 te zetten en over de verticale richting om deze
         !.....te initialiseren
-        DO IQ = 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
-            PMSA(IP7) = 0.0
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
+            process_space_real(IP7) = 0.0
             IP7 = IP7 + IN7
         ENDDO
 
         !.....Exchangeloop over horizontale lengterichting
         IP7 = IPOINT(7)
 
-        DO IQ = 1, NOQ1
+        DO IQ = 1, num_exchanges_u_dir
 
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
@@ -97,19 +97,19 @@ contains
                 IF (IVAN <= 0) IVAN = INAAR
                 IF (INAAR <= 0) INAAR = IVAN
 
-                VELOCV = PMSA(IP1 + (IVAN - 1) * IN1)
-                WIDTHV = PMSA(IP2 + (IVAN - 1) * IN2)
-                CHEZYV = PMSA(IP3 + (IVAN - 1) * IN3)
-                TOTDPV = PMSA(IP4 + (IVAN - 1) * IN4)
-                alfaKV = PMSA(IP5 + (IVAN - 1) * IN5)
-                MAXDSV = PMSA(IP6 + (IVAN - 1) * IN6)
+                VELOCV = process_space_real(IP1 + (IVAN - 1) * IN1)
+                WIDTHV = process_space_real(IP2 + (IVAN - 1) * IN2)
+                CHEZYV = process_space_real(IP3 + (IVAN - 1) * IN3)
+                TOTDPV = process_space_real(IP4 + (IVAN - 1) * IN4)
+                alfaKV = process_space_real(IP5 + (IVAN - 1) * IN5)
+                MAXDSV = process_space_real(IP6 + (IVAN - 1) * IN6)
 
-                VELOCN = PMSA(IP1 + (INAAR - 1) * IN1)
-                WIDTHN = PMSA(IP2 + (INAAR - 1) * IN2)
-                CHEZYN = PMSA(IP3 + (INAAR - 1) * IN3)
-                TOTDPN = PMSA(IP4 + (INAAR - 1) * IN4)
-                alfaKN = PMSA(IP5 + (INAAR - 1) * IN5)
-                MAXDSN = PMSA(IP6 + (INAAR - 1) * IN6)
+                VELOCN = process_space_real(IP1 + (INAAR - 1) * IN1)
+                WIDTHN = process_space_real(IP2 + (INAAR - 1) * IN2)
+                CHEZYN = process_space_real(IP3 + (INAAR - 1) * IN3)
+                TOTDPN = process_space_real(IP4 + (INAAR - 1) * IN4)
+                alfaKN = process_space_real(IP5 + (INAAR - 1) * IN5)
+                MAXDSN = process_space_real(IP6 + (INAAR - 1) * IN6)
 
                 VELOC = (VELOCV + VELOCN) / 2.
                 WIDTH = (WIDTHV + WIDTHN) / 2.
@@ -128,13 +128,13 @@ contains
                 ! MAXDSP on at least one side is positive
                 !
                 IF (MAXDSV > 0.0 .AND. MAXDSN > 0.0) THEN
-                    PMSA(IP7) = MIN(DVAR, MAXDSP)
+                    process_space_real(IP7) = MIN(DVAR, MAXDSP)
                 ELSE
                     MAXDSP = MAX(MAXDSV, MAXDSN)
                     IF (MAXDSP > 0.0) THEN
-                        PMSA(IP7) = MIN(DVAR, MAXDSP)
+                        process_space_real(IP7) = MIN(DVAR, MAXDSP)
                     ELSE
-                        PMSA(IP7) = DVAR
+                        process_space_real(IP7) = DVAR
                     ENDIF
                 ENDIF
 

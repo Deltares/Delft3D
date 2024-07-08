@@ -29,9 +29,9 @@ module m_effave
 contains
 
 
-    subroutine effave (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine effave (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
         !>\file
         !>       Average efficiency for a Bloom time step (typically a day)
@@ -47,9 +47,9 @@ contains
         !     ------   -----  ------------
 
         implicit none
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(92), increm(92), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(92), increm(92), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: ip(92)
         real(kind = real_wp) :: delt, efftalg, limralg, rstep
@@ -65,8 +65,8 @@ contains
         !     Retrieve switch for averaging and nr. of steps to be averaged
         call get_nspe(nspe)
 
-        delt = pmsa(ipoint(1))
-        navera = nint(pmsa(ipoint(2)))
+        delt = process_space_real(ipoint(1))
+        navera = nint(process_space_real(ipoint(2)))
         rstep = real (istep, 4)
 
         !     Loop over segments
@@ -74,14 +74,14 @@ contains
         ip = ipoint
         iflux = 0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             do igro = 1, nspe
-                efftalg = pmsa(ip(2 + igro))
-                limralg = pmsa(ip(32 + igro))
+                efftalg = process_space_real(ip(2 + igro))
+                limralg = process_space_real(ip(32 + igro))
                 if (istep == 0) then
                     ! Store result over past period
-                    pmsa(ip(62 + igro)) = efftalg
+                    process_space_real(ip(62 + igro)) = efftalg
                     ! Reset integration variable to zero and add contribution of present time step to tracer
                     fl(iflux + igro) = (limralg - efftalg) / delt
                 else

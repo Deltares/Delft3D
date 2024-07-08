@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_sysa
+module m_real_array_indices
     !     Pointers in real array workspace
 
     integer :: IVOL     !    pointer to VOLUME, volumes
@@ -70,7 +70,7 @@ module m_sysa
     integer :: IVSTO    !    pointer to VSTO  , stochio extra velocity
     integer :: IDMPQ    !    pointer to DMPQ  , dumped exchange fluxes
     integer :: IDMPS    !    pointer to DMPS  , dumped segment fluxes
-    integer :: ITRRA    !    pointer to TRRAAI, cum tranport over raai
+    integer :: ITRRA    !    pointer to TRRAAI, cum tranport over transect
     integer :: INRSP    !    pointer to INWRSP, time series real space
     integer :: IVOLL    !    pointer to VOLUML, last volume before rewind solver
     integer :: IVOL3    !    pointer to VOLUME, volumes                            !! obsolete !!
@@ -125,4 +125,4 @@ module m_sysa
     integer         ip_rar(iasize)                    ! help array to fill the common block / SYSA /
     equivalence   (ivol, ip_rar(1))              ! first entry equivalences with first entry common block
 
-end module m_sysa
+end module m_real_array_indices

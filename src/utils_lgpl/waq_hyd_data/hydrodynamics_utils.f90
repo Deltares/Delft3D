@@ -126,10 +126,10 @@ module m_hydmod
         character*14 :: cnv_step               ! conversion time step
         integer :: cnv_step_sec           ! conversion time step in seconds
         real(kind = 8) :: time_ref               ! hydrodynamic reference date in julian
-        integer :: mmax                   ! grid cells m direction
-        integer :: nmax                   ! grid cells n direction
-        integer :: kmax                   ! number of layers in hydrodynamics
-        integer :: nolay                  ! number of layers in conversion
+        integer :: num_columns                   ! grid cells m direction
+        integer :: num_rows                   ! grid cells n direction
+        integer :: num_layers_grid                   ! number of layers in hydrodynamics
+        integer :: num_layers                  ! number of layers in conversion
         logical :: time_in_seconds        ! time in sources file in seconds or not
         type(t_file) :: file_com               ! hydrodynamic-file
         type(t_file) :: file_dwq               ! aggregation-file (horizontal)
@@ -174,16 +174,16 @@ module m_hydmod
         type(t_domain_collection) :: domain_coll            ! the domains
         type(t_dd_bound_coll) :: dd_bound_coll          ! the dd boundaries
         type(t_openbndsect_coll) :: openbndsect_coll       ! the (dlflowfm) boundary sections
-        integer :: noseg                  ! number of segments
+        integer :: num_cells                  ! number of segments
         integer :: nosegl                 ! number of segments per layer
-        integer :: nobnd                  ! number of boundaries
+        integer :: num_boundary_conditions                  ! number of boundaries
         integer :: nobndl                 ! number of boundaries per layer
         integer :: lnx                    ! number of flow links
-        integer :: noq                    ! number of exchanges
-        integer :: noq1                   ! number of exchanges in first direction
-        integer :: noq2                   ! number of exchanges in second direction
-        integer :: noq3                   ! number of exchanges in third direction
-        integer :: noq4                   ! number of exchanges in fourth direction
+        integer :: num_exchanges                    ! number of exchanges
+        integer :: num_exchanges_u_dir                   ! number of exchanges in first direction
+        integer :: num_exchanges_v_dir                   ! number of exchanges in second direction
+        integer :: num_exchanges_z_dir                   ! number of exchanges in third direction
+        integer :: num_exchanges_bottom_dir                   ! number of exchanges in fourth direction
         real, pointer :: volume(:)              ! volume
         real, pointer :: area(:)                ! area
         real, pointer :: flow(:)                ! flow

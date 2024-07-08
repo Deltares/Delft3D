@@ -28,9 +28,9 @@ module m_nitrif
 contains
 
 
-    subroutine nitrif (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine nitrif (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -92,9 +92,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19
@@ -152,29 +152,29 @@ contains
         IP19 = IPOINT(19)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                IVERSN = NINT (PMSA(IP13))
+                IVERSN = NINT (process_space_real(IP13))
                 !
                 !     Use new version when IVERSN = 1.0
                 !
                 IF (IVERSN == 1) THEN
 
-                    K0TEMP = PMSA(IP1)
-                    NH4 = MAX (0.0, PMSA(IP2))
-                    KNIT = PMSA(IP3)
-                    TC = PMSA(IP4)
-                    OXY = MAX (0.0, PMSA(IP5))
-                    KSAM = PMSA(IP6)
-                    KSOX = PMSA(IP7)
-                    TEMP = PMSA(IP8)
-                    CRTEMP = PMSA(IP9)
-                    K0OX = PMSA(IP10)
-                    CROXY = PMSA(IP11)
-                    POROS = PMSA(IP12)
-                    DELT = PMSA(IP18)
+                    K0TEMP = process_space_real(IP1)
+                    NH4 = MAX (0.0, process_space_real(IP2))
+                    KNIT = process_space_real(IP3)
+                    TC = process_space_real(IP4)
+                    OXY = MAX (0.0, process_space_real(IP5))
+                    KSAM = process_space_real(IP6)
+                    KSOX = process_space_real(IP7)
+                    TEMP = process_space_real(IP8)
+                    CRTEMP = process_space_real(IP9)
+                    K0OX = process_space_real(IP10)
+                    CROXY = process_space_real(IP11)
+                    POROS = process_space_real(IP12)
+                    DELT = process_space_real(IP18)
                     !
                     !           Set the rates according to CRTEMP and CROXY
                     !
@@ -207,18 +207,18 @@ contains
                     !
                     !           Zuurstoffunctie als uitvoer
                     !
-                    PMSA(IP19) = OXFUNC
+                    process_space_real(IP19) = OXFUNC
                     !
                     !
                     !     Use TEWOR version when IVERSN = 2.0
                     !
                 ELSEIF (IVERSN == 2) THEN
 
-                    NH4 = MAX (0.0, PMSA(IP2))
-                    RC = PMSA(IP14)
-                    OXY = MAX (0.0, PMSA(IP5))
-                    KSOX = PMSA(IP7)
-                    POROS = PMSA(IP12)
+                    NH4 = MAX (0.0, process_space_real(IP2))
+                    RC = process_space_real(IP14)
+                    OXY = MAX (0.0, process_space_real(IP5))
+                    KSOX = process_space_real(IP7)
+                    POROS = process_space_real(IP12)
                     !
                     !           Calculate the nitrification flux
                     !
@@ -227,24 +227,24 @@ contains
                     !
                     !           Zuurstoffunctie als uitvoer
                     !
-                    PMSA(IP19) = OXFUNC
+                    process_space_real(IP19) = OXFUNC
                     !
                     !     Use old version when IVERSN = 0.0
                     !
                 ELSE
                     !
-                    ZERO = PMSA(IP1)
-                    CONC = MAX (0.0, PMSA(IP2))
-                    RC = PMSA(IP14)
-                    TC = PMSA(IP4)
-                    OXY = MAX (0.0, PMSA(IP5))
-                    OOX = PMSA(IP15)
-                    COX = PMSA(IP11)
-                    TEMP = PMSA(IP8)
-                    CRTEMP = PMSA(IP9)
-                    CFL = PMSA(IP16)
-                    SKEWN = PMSA(IP17)
-                    POROS = PMSA(IP12)
+                    ZERO = process_space_real(IP1)
+                    CONC = MAX (0.0, process_space_real(IP2))
+                    RC = process_space_real(IP14)
+                    TC = process_space_real(IP4)
+                    OXY = MAX (0.0, process_space_real(IP5))
+                    OOX = process_space_real(IP15)
+                    COX = process_space_real(IP11)
+                    TEMP = process_space_real(IP8)
+                    CRTEMP = process_space_real(IP9)
+                    CFL = process_space_real(IP16)
+                    SKEWN = process_space_real(IP17)
+                    POROS = process_space_real(IP12)
                     !
                     !           Calculate oxygen function
                     !
@@ -273,7 +273,7 @@ contains
                     !
                     !           Zuurstoffunctie als uitvoer
                     !
-                    PMSA(IP19) = O2FUNC
+                    process_space_real(IP19) = O2FUNC
                     !
                 ENDIF
                 !

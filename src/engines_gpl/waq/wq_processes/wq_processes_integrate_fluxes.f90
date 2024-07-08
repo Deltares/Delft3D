@@ -29,7 +29,7 @@ contains
 
 
     subroutine wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
-            nosys, notot, noseg, surfac)
+            num_substances_transported, num_substances_total, num_cells, surfac)
 
         !     Deltares Software Centre
 
@@ -43,15 +43,15 @@ contains
         !     Parameters          :
         !     type     kind  function         name                      description
 
-        integer(kind = int_wp), intent(in) :: nosys                    !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                    !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                    !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)     !< concentrations per substance per volume
-        real(kind = dp), intent(inout) :: amass (notot, noseg)     !< masses per substance per volume
-        real(kind = dp), intent(inout) :: deriv (noseg, notot)     !< derivatives per substance per volume
-        real(kind = dp), intent(in) :: volume(noseg)           !< volumes of the segments
+        integer(kind = int_wp), intent(in) :: num_substances_transported                    !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                    !< total number of substances
+        integer(kind = int_wp), intent(in) :: num_cells                    !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: conc  (num_substances_total, num_cells)     !< concentrations per substance per volume
+        real(kind = dp), intent(inout) :: amass (num_substances_total, num_cells)     !< masses per substance per volume
+        real(kind = dp), intent(inout) :: deriv (num_cells, num_substances_total)     !< derivatives per substance per volume
+        real(kind = dp), intent(in) :: volume(num_cells)           !< volumes of the segments
         real(kind = dp), intent(in) :: dts                      !< integration time step size
-        real(kind = real_wp), intent(in) :: surfac(noseg)            !< horizontal surface
+        real(kind = real_wp), intent(in) :: surfac(num_cells)            !< horizontal surface
 
         ! local declarations
 
@@ -66,11 +66,11 @@ contains
 
         ! loop accross the number of computational elements
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             ! active substances first
             v1 = volume(iseg)
             if (v1>1.0d-25) then
-                do i = 1, nosys
+                do i = 1, num_substances_transported
                     a = amass(i, iseg) + dts * deriv(iseg, i) * v1
                     amass(i, iseg) = a
                     conc (i, iseg) = a / v1
@@ -80,7 +80,7 @@ contains
             ! then the inactive substances
             s1 = surfac(iseg)
             if(s1>0.0d0) then
-                do i = nosys + 1, notot
+                do i = num_substances_transported + 1, num_substances_total
                     a = amass(i, iseg) + dts * deriv(iseg, i) * v1
                     amass(i, iseg) = a
                     conc (i, iseg) = a / s1

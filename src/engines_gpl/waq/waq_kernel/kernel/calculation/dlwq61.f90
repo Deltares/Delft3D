@@ -30,21 +30,21 @@ contains
 
     !> Zeroes the matrix, updates first-order term on the diagonal
     !! and compresses DERIV for use in DELMAT
-    subroutine dlwq61(conc, deriv, amass, amat, noseg, &
-            notot, isys, nsys, jtrack)
+    subroutine dlwq61(conc, deriv, amass, amat, num_cells, &
+            num_substances_total, isys, nsys, num_codiagonals)
 
         use timers
 
-        real(kind = real_wp), intent(in   ) :: conc(notot, *) !< First order term
+        real(kind = real_wp), intent(in   ) :: conc(num_substances_total, *) !< First order term
         real(kind = real_wp), intent(inout) :: deriv(*)       !< Right hand side matrix
         real(kind = real_wp), intent(in   ) :: amass(*)       !< Closure error correction
         real(kind = real_wp), intent(inout) :: amat(*)        !< Matrix to invert
 
-        integer(kind = int_wp), intent(in   ) :: noseg  !< Number of cells (or segments)
-        integer(kind = int_wp), intent(in   ) :: notot  !< Total number of systems
+        integer(kind = int_wp), intent(in   ) :: num_cells  !< Number of cells (or segments)
+        integer(kind = int_wp), intent(in   ) :: num_substances_total  !< Total number of systems
         integer(kind = int_wp), intent(in   ) :: isys   !< System considered
         integer(kind = int_wp), intent(in   ) :: nsys   !< Number of systems to take
-        integer(kind = int_wp), intent(in   ) :: jtrack !< Number of codiagonals
+        integer(kind = int_wp), intent(in   ) :: num_codiagonals !< Number of codiagonals
 
 
         ! Local variables
@@ -54,15 +54,15 @@ contains
         if (timon) call timstrt ("dlwq61", ithandl)
 
         ! zero the matrix
-        istep = jtrack * 2 + 1
-        ntot = noseg * istep
+        istep = num_codiagonals * 2 + 1
+        ntot = num_cells * istep
         do i = 1, ntot
             amat(i) = 0.0
         end do
 
         ! set the diagonal
-        iset = jtrack + 1
-        do iseg = 1, noseg
+        iset = num_codiagonals + 1
+        do iseg = 1, num_cells
             amat(iset) = -conc(isys, iseg) + amass(iseg)
             iset = iset + istep
         end do
@@ -70,12 +70,12 @@ contains
         ! set the right hand side
         iset = 1
         ioff = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             do i = isys, isys + nsys - 1
                 deriv(iset) = deriv(ioff + i)
                 iset = iset + 1
             end do
-            ioff = ioff + notot
+            ioff = ioff + num_substances_total
         end do
         !
         if (timon) call timstop (ithandl)

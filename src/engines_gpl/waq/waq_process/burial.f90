@@ -28,9 +28,9 @@ module m_burial
 contains
 
 
-    subroutine burial (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine burial (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
 
@@ -79,9 +79,9 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: LUNREP
         !
@@ -139,32 +139,32 @@ contains
         IN25 = INCREM(25)
         IN26 = INCREM(26)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
-                    SOMSED = PMSA(IP1)
-                    RESS1 = PMSA(IP2)
-                    RESS2 = PMSA(IP3)
-                    ZBURS1 = PMSA(IP4)
-                    ZBURS2 = PMSA(IP5)
-                    VBURS1 = PMSA(IP6)
-                    VBURS2 = PMSA(IP7)
-                    ACTHS1 = PMSA(IP8)
-                    ACTHS2 = PMSA(IP9)
-                    MAXS1 = PMSA(IP10)
-                    MAXS2 = PMSA(IP11)
-                    ISW = NINT(PMSA(IP12))
-                    FIXS1 = PMSA(IP13)
-                    FIXS2 = PMSA(IP14)
-                    RHOS1 = PMSA(IP15)
-                    RHOS2 = PMSA(IP16)
-                    PORS1 = PMSA(IP17)
-                    PORS2 = PMSA(IP18)
-                    DELT = PMSA(IP19)
-                    SURF = PMSA(IP20)
+                    SOMSED = process_space_real(IP1)
+                    RESS1 = process_space_real(IP2)
+                    RESS2 = process_space_real(IP3)
+                    ZBURS1 = process_space_real(IP4)
+                    ZBURS2 = process_space_real(IP5)
+                    VBURS1 = process_space_real(IP6)
+                    VBURS2 = process_space_real(IP7)
+                    ACTHS1 = process_space_real(IP8)
+                    ACTHS2 = process_space_real(IP9)
+                    MAXS1 = process_space_real(IP10)
+                    MAXS2 = process_space_real(IP11)
+                    ISW = NINT(process_space_real(IP12))
+                    FIXS1 = process_space_real(IP13)
+                    FIXS2 = process_space_real(IP14)
+                    RHOS1 = process_space_real(IP15)
+                    RHOS2 = process_space_real(IP16)
+                    PORS1 = process_space_real(IP17)
+                    PORS2 = process_space_real(IP18)
+                    DELT = process_space_real(IP19)
+                    SURF = process_space_real(IP20)
 
                     !*******************************************************************************
                     !**** Processes connected to the BURIAL of dry matter
@@ -233,12 +233,12 @@ contains
 
                     ENDIF
 
-                    PMSA (IP21) = BURS1
-                    PMSA (IP22) = UDFBS1
-                    PMSA (IP23) = EXCBS1
-                    PMSA (IP24) = BURS2
-                    PMSA (IP25) = UDFBS2
-                    PMSA (IP26) = EXCBS2
+                    process_space_real (IP21) = BURS1
+                    process_space_real (IP22) = UDFBS1
+                    process_space_real (IP23) = EXCBS1
+                    process_space_real (IP24) = BURS2
+                    process_space_real (IP25) = UDFBS2
+                    process_space_real (IP26) = EXCBS2
                     !
                 ENDIF
             ENDIF

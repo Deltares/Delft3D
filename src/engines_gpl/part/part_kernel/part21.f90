@@ -41,7 +41,7 @@ implicit none           ! force explicit typing
 !
 contains
       subroutine part21 ( lun2   , lgrid  , lgrid2 , xb     , yb     , &
-                          area   , volume , nmax   , mmax   , nolay  , &
+                          area   , volume , num_rows   , num_columns   , num_layers  , &
                           nosubs , nopart , npart  , mpart  , kpart  , &
                           xpart  , ypart  , zpart  , wpart  , npwndw , &
                           pg     , amap   , xa     , ya     , za     , &
@@ -73,15 +73,15 @@ contains
 !     name    kind length        funct.  description
 !     ====    ==== ======        ======  ===========
 !     lun2    integer    1        input   unit number 2 (logging)
-!     lgrid   integer nmax*mmax   input   active grid numbers
-!     lgrid2  integer nmax*mmax   input   model grid layout (total)
+!     lgrid   integer num_rows*num_columns   input   active grid numbers
+!     lgrid2  integer num_rows*num_columns   input   model grid layout (total)
 !     xb      real  mnmaxk        input   x-values of bottom points
 !     yb      real  mnmaxk        input   y-values of bottom points
 !     area    real  mnmaxk        input   surface areas of the lgrid2 cells
 !     volume  real  mnmaxk        input   volumes of the lgrid2 cells
-!     nmax    integer    1        input   first dimension of lgrid2
-!     nmax    integer    1        input   second dimension of lgrid2
-!     nolay   integer    1        input   actual number of layers
+!     num_rows    integer    1        input   first dimension of lgrid2
+!     num_rows    integer    1        input   second dimension of lgrid2
+!     num_layers   integer    1        input   actual number of layers
 !     nosubs  integer    1        input   actual number of substances
 !     nopart  integer    1        input   nr of particles
 !     npart   integer  nopart     input   n-values of particles
@@ -94,17 +94,17 @@ contains
 !     nmap    integer    1        input   dimension of amap
 !     mmap    integer    1        input   dimension of amap
 !     window  real    4        input   plot grid window
-!     amap real nolay*nosubs*nmap*mmap output  plot grid to be filled
+!     amap real num_layers*nosubs*nmap*mmap output  plot grid to be filled
 !     xa      real  nopart        output  national coordinates of parts
 !     ya      real  nopart        output  national coordinates of parts
-!     adepth  real    nolay*nosubs  output  depth for max mass
-!     apeak   real    nolay*nosubs  output  max   mass per subst/per layer
-!     atotal  real    nolay*nosubs  output  total per mass per subst/per layer
+!     adepth  real    num_layers*nosubs  output  depth for max mass
+!     apeak   real    num_layers*nosubs  output  max   mass per subst/per layer
+!     atotal  real    num_layers*nosubs  output  total per mass per subst/per layer
 !     imap    integer  nopart*3   output  index of a particle in plotgrid
 !                                         imap(.,1) = layer
 !                                         imap(.,2) = x
 !                                         imap(.,3) = y
-!     nplay   integer   nolay     local   particle counter per layer
+!     nplay   integer   num_layers     local   particle counter per layer
 !     itime   integer    1        input   simulation time
 !     wsettl  real   nopart       output  conc. dep. settling velocity
 !     irfac   integer    1        input   refinement factor plot grid
@@ -147,8 +147,8 @@ contains
 !     local scalars
 !
       integer(int_wp ) ::  i1    , i2     , ilay   , isub   , ix     , iy     , lun2
-      integer(int_wp ) ::  irfac , mmap   , mmax   , nmap   , mmapl  , nmapl  , nodry , nosubt
-      integer(int_wp ) ::  nout  , npwndw , ntdry  , nmax   , nolay  , nopart , nosubs
+      integer(int_wp ) ::  irfac , mmap   , num_columns   , nmap   , mmapl  , nmapl  , nodry , nosubt
+      integer(int_wp ) ::  nout  , npwndw , ntdry  , num_rows   , num_layers  , nopart , nosubs
 !
       real   (sp) ::  aa    , ac     , am     , depthl , fvolum , surf
       real   (sp) ::  anfac , conc   , vv     , windw1 , windw3 , xpf    , ypf
@@ -167,17 +167,17 @@ contains
       surf      = pg%surf
 !
       if ( nopart  <=  0 ) goto 9999
-      nosubt = nosubs * nolay
+      nosubt = nosubs * num_layers
       nmapl = nmap*irfac
       mmapl = mmap*irfac
 !
 !     compute particle coordinates
 !
       call part11                                               &
-       ( lgrid  , xb     , yb     , nmax   , npart  , mpart,    &
+       ( lgrid  , xb     , yb     , num_rows   , npart  , mpart,    &
          xpart  , ypart  , xa     , ya     , nopart , npwndw ,  &
          lgrid2 , kpart  , zpart  , za     , locdep , dps    ,  &
-         nolay  , mmax   , tcktot)
+         num_layers  , num_columns   , tcktot)
 !
 ! initialize some variables for within the loop
 !
@@ -208,7 +208,7 @@ contains
        apeak  =  0.0 ! whole array assignment
        wsettl =  1.0 ! whole array assignment
 !
-      do 10 ilay = 1, nolay
+      do 10 ilay = 1, num_layers
          nplay(ilay) = 0
    10 continue
 !
@@ -243,7 +243,7 @@ contains
          endif
 !        check for inappropriate layer
          ilay = kpart(i1)
-         if ( ilay  <=  0 .or. ilay  >  nolay ) then
+         if ( ilay  <=  0 .or. ilay  >  num_layers ) then
             write(lun2,*) ' il, ilay: ', i1, ilay
             write(lun2,*) ' Error: ilay out of range in part21'
             call stop_exit(1)
@@ -252,11 +252,11 @@ contains
 !        particle has settled out
 !        modified (01/06/29):
 !                  only in case of sed-ero process active
-!                  that means: nolay = extra bed layer
+!                  that means: num_layers = extra bed layer
 !
          nplay(ilay) = nplay(ilay) + 1
          if ( use_settling ) then
-            if ( ilay == nolay ) then
+            if ( ilay == num_layers ) then
                imap(i1,1) = -4  ! settled out
                goto 30
             endif
@@ -269,7 +269,7 @@ contains
          imap(i1,3) = iy
 !        put mass in it's appropriate cell and layer
 !        depthl = volume( i2 , ilay ) / area(i2)
-         depthl = volume(i2 + (ilay-1)*nmax*mmax) / area(i2)
+         depthl = volume(i2 + (ilay-1)*num_rows*num_columns) / area(i2)
          fvolum = surf * depthl
          do 20 isub = 1, nosubs
             am = wpart(isub, i1)

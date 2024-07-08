@@ -24,7 +24,7 @@
 module larvm2_mod
 
 contains
-      subroutine larvm2 ( lunrep   , itime    , nosegl   , nolay    , nosubs   ,    &
+      subroutine larvm2 ( lunrep   , itime    , nosegl   , num_layers    , nosubs   ,    &
                           conc     )
 
       ! function            : calculate larvae per m2 over the water column, output to map file
@@ -42,7 +42,7 @@ contains
       integer(int_wp ), intent(in)    :: lunrep              ! report file
       integer(int_wp ), intent(in)    :: itime               ! time in seconds
       integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
-      integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation
+      integer(int_wp ), intent(in)    :: num_layers               ! number of layers in calculation
       integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
       real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
 
@@ -53,7 +53,7 @@ contains
       real   , allocatable, save        :: c_m2(:,:)
       character(len=20), allocatable    :: syname(:)
       character(len=40)                 :: moname(4)
-      integer, save                     :: notot
+      integer, save                     :: num_substances_total
       integer                           :: iseg
       integer                           :: isegl
       integer(int_wp )                       :: ilay
@@ -68,7 +68,7 @@ contains
          moname(2) = ' '
          moname(3) = ' '
          moname(4) = ' '
-         notot     = nosubs + 1
+         num_substances_total     = nosubs + 1
          allocate(syname(nosubs-3))
          allocate(c_m2(nosubs-3,nosegl))
          syname(1) = 'sole'
@@ -84,20 +84,20 @@ contains
 
       do isegl = 1, nosegl
 
-         ! if seperate stages accumulate stages (thus skipping stage 0), also seperate per stage, notot = localdepth
+         ! if seperate stages accumulate stages (thus skipping stage 0), also seperate per stage, num_substances_total = localdepth
 
          if ( nosubs .gt. 4 ) then
 
             c_m2(1,isegl) = 0.0
             do istage = 1, nosubs-4
-               c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,isegl)*conc(notot,isegl)
-               c_m2(1+istage,isegl) = conc(4+istage,isegl)*conc(notot,isegl)
-               do ilay = 2, nolay
+               c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,isegl)*conc(num_substances_total,isegl)
+               c_m2(1+istage,isegl) = conc(4+istage,isegl)*conc(num_substances_total,isegl)
+               do ilay = 2, num_layers
                   iseg = isegl + (ilay-1)*nosegl
-                  c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,iseg)*(conc(notot,iseg)-conc(notot,iseg-nosegl))
-                  c_m2(1+istage,isegl) = c_m2(1+istage,isegl) + conc(4+istage,iseg)*(conc(notot,iseg)-conc(notot,iseg-nosegl))
+                  c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
+                  c_m2(1+istage,isegl) = c_m2(1+istage,isegl) + conc(4+istage,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
                enddo
-               iseg = isegl + (nolay-1) * nosegl
+               iseg = isegl + (num_layers-1) * nosegl
                c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,iseg)
                c_m2(1+istage,isegl) = c_m2(1+istage,isegl) + conc(4+istage,iseg)
             enddo
@@ -106,12 +106,12 @@ contains
 
             ! just cummulate substance 1 per layer
 
-            c_m2(1,isegl) = conc(1,isegl)*conc(notot,isegl)
-            do ilay = 2, nolay
+            c_m2(1,isegl) = conc(1,isegl)*conc(num_substances_total,isegl)
+            do ilay = 2, num_layers
                iseg = isegl + (ilay-1)*nosegl
-               c_m2(1,isegl) = c_m2(1,isegl) + conc(1,iseg)*(conc(notot,iseg)-conc(notot,iseg-nosegl))
+               c_m2(1,isegl) = c_m2(1,isegl) + conc(1,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
             enddo
-            iseg = isegl + (nolay-1) * nosegl
+            iseg = isegl + (num_layers-1) * nosegl
             c_m2(1,isegl) = c_m2(1,isegl) + conc(1,iseg)
 
          endif

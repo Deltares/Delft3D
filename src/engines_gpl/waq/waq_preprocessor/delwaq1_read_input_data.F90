@@ -56,7 +56,7 @@ contains
         lch(1) = file_name_list(26)
         file_unit = file_unit_list(29)
 
-        call read_block_1_from_input(file_unit_list, psynam, nosys, notot, nomult, &
+        call read_block_1_from_input(file_unit_list, psynam, num_substances_transported, num_substances_total, nomult, &
                 multp, iwidth, otime, isfact, refday, &
                 output_verbose_level, status)
 
@@ -65,7 +65,7 @@ contains
             call status%increase_error_count()
             return
         end if
-        allocate (syname(notot + nomult), stat = ierr_alloc)
+        allocate (syname(num_substances_total + nomult), stat = ierr_alloc)
         allocate (imultp(2, nomult), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (lunrep, '(A,I6)') " ERROR: allocating memory for system names:", ierr_alloc
@@ -88,9 +88,9 @@ contains
         nullify (ioptraai)
 
         call read_block_2_from_input(file_unit_list, file_name_list, filtype, nrftot, nlines, &
-                npoins, is_date_format, is_ddhhmmss_format, nodump, integration_id_list, &
+                num_indices, is_date_format, is_ddhhmmss_format, num_monitoring_points, integration_id_list, &
                 num_integration_options, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
-                noraai, ntraaq, nosys, notot, nototp, &
+                num_transects, num_transect_exchanges, num_substances_transported, num_substances_total, num_substances_part, &
                 output_verbose_level, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
@@ -117,21 +117,21 @@ contains
 
         deltim = otime
         call read_block_5_boundary_conditions(file_unit_list, file_name_list, filtype, char_arr, iar, &
-                real_array, nrftot, nrharm, nobnd, nosys, &
-                notot, nobtyp, rmax, imax, is_date_format, &
+                real_array, nrftot, nrharm, num_boundary_conditions, num_substances_transported, &
+                num_substances_total, num_boundary_types, rmax, imax, is_date_format, &
                 iwidth, intsrt, is_yyddhh_format, syname, &
                 icmak, output_verbose_level, status)
 
         deltim = otime
 
-        nosss = noseg + nseg2     ! increase with bottom segments
+        nosss = num_cells + num_cells_bottom     ! increase with bottom segments
         call read_block_6_waste_loads_withdrawals(file_unit_list, file_name_list, filtype, icmak, char_arr(k), &
-                imax, iar, rmax, real_array, notot, &
-                nosss, syname, nowst, nowtyp, nrftot, &
+                imax, iar, rmax, real_array, num_substances_total, &
+                nosss, syname, num_waste_loads, num_waste_load_types, nrftot, &
                 nrharm, is_date_format, is_yyddhh_format, iwidth, &
                 output_verbose_level, chkpar, status)
 
-        novec = 50
+        num_fast_solver_vectors = 50
         inpfil%is_date_format = is_date_format
         inpfil%is_ddhhmmss_format = is_ddhhmmss_format
         inpfil%is_yyddhh_format = is_yyddhh_format
@@ -144,11 +144,11 @@ contains
                 status)
 
         ! Finish and close system file ( read_block_9 can re-read it )
-        write (file_unit_list(2)) (nrftot(i), i = 1, noitem)
-        write (file_unit_list(2)) (nrharm(i), i = 1, noitem)
+        write (file_unit_list(2)) (nrftot(i), i = 1, num_items_time_fn)
+        write (file_unit_list(2)) (nrharm(i), i = 1, num_items_time_fn)
         close (file_unit_list(2))
 
-        call read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, nosss, notot, &
+        call read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, nosss, num_substances_total, &
                 syname, iwidth, output_verbose_level, inpfil, &
                 gridps, status)
 

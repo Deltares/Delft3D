@@ -21,14 +21,14 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_sysj
+module m_integer_array_indices
     !   Pointers in integer array workspace
 
     integer :: IAPOI   !    pointer to ARRPOI, Pointer in workarray/FMM reference pointer
     integer :: IATYP   !    pointer to ARRTYP, array type see FMM
     integer :: IABYT   !    pointer to ARRBYT, number off bytes per array element
     integer :: IALEN   !    pointer to ARRLEN, Array length
-    integer :: IAKND   !    pointer to ARRKND, Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+    integer :: IAKND   !    pointer to ARRKND, Kind of array 1=(num_vars), 2=(num_vars,num_cells) or 3=(num_cells,num_vars)
     integer :: IADM1   !    pointer to ARRDM1, Array dimension 1
     integer :: IADM2   !    pointer to ARRDM2, Array dimension 2
     integer :: IADM3   !    pointer to ARRDM3, Array dimension 3
@@ -49,8 +49,8 @@ module m_sysj
     integer :: INSVA   !    pointer to NSVAR , nr of state vars per proces
 
     integer :: IIFLU   !    pointer to IFLUX , pointers in FLUX array
-    integer :: IIPMS   !    pointer to IPMSA , pointers from SSA to PMSA
-    integer :: IIPSS   !    pointer to IPSSA , pointers from PMSA to SSA
+    integer :: IIPMS   !    pointer to process_space_int , pointers from SSA to process_space_real
+    integer :: IIPSS   !    pointer to IPSSA , pointers from process_space_real to SSA
     integer :: IIMOD   !    pointer to IMODU , module number per proces
     integer :: IIOUT   !    pointer to IOUTPS, output structure
     integer :: IIOPO   !    pointer to IOPOIN, pointer to delwaq array's
@@ -60,9 +60,9 @@ module m_sysj
     integer :: IQDMP   !    pointer to IQDMP , pointer from exchange to DMPQ
     integer :: ISDMP   !    pointer to ISDMP , pointer from segment to DMPS
     integer :: IPDMP   !    pointer to IPDMP , pointer structure dump areas
-    integer :: IORAA   !    pointer to IORAAI, output option raai
-    integer :: NQRAA   !    pointer to NQRAAI, number of exchanges per raai
-    integer :: IQRAA   !    pointer to IQRAAI, index of the exchanges in raai
+    integer :: IORAA   !    pointer to IORAAI, output option transects
+    integer :: NQRAA   !    pointer to NQRAAI, number of exchanges per transect
+    integer :: IQRAA   !    pointer to IQRAAI, index of the exchanges in transect
     integer :: INISP   !    pointer to INWISP, new time series int space
     integer :: INTYP   !    pointer to INTYPE, array with types of items
     integer :: IWORK   !    pointer to IWORK , work array
@@ -118,4 +118,4 @@ module m_sysj
     integer :: ip_jar(nr_jar)                    ! help array to fill the common block / SYSA /
     equivalence   (iapoi, ip_jar(1))              ! first entry equivalences with first entry common block
 
-end module m_sysj
+end module m_integer_array_indices

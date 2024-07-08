@@ -27,7 +27,7 @@
 !  
 !  
 
-      subroutine write_grd(file_grd, mmax  , nmax  , xdepth, ydepth)
+      subroutine write_grd(file_grd, num_columns  , num_rows  , xdepth, ydepth)
 
       ! function : write a grd file
 
@@ -39,10 +39,10 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_grd               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
-      real                                   :: xdepth(nmax,mmax)      ! x coordinate depth points
-      real                                   :: ydepth(nmax,mmax)      ! y coordinate depth points
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
+      real                                   :: xdepth(num_rows,num_columns)      ! x coordinate depth points
+      real                                   :: ydepth(num_rows,num_columns)      ! y coordinate depth points
 
       ! local declarations
 
@@ -53,15 +53,15 @@
       lun    = file_grd%unit
 
       write(file_grd%unit,'(a)')   'Coordinate System = Cartesian'
-      write(file_grd%unit,'(2i8)') mmax-1,nmax-1
+      write(file_grd%unit,'(2i8)') num_columns-1,num_rows-1
       write(file_grd%unit,'(a)')   ' 0 0 0'
 
-      do n = 1 , nmax - 1
-         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(xdepth(n,m),m=1,mmax-1)
+      do n = 1 , num_rows - 1
+         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(xdepth(n,m),m=1,num_columns-1)
       enddo
 
-      do n = 1 , nmax - 1
-         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(ydepth(n,m),m=1,mmax-1)
+      do n = 1 , num_rows - 1
+         write(file_grd%unit,'(a,i5,2x,5(e24.17,2x),12x)') ' ETA=',n,(ydepth(n,m),m=1,num_columns-1)
       enddo
 
       close(file_grd%unit)

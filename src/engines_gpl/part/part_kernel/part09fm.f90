@@ -33,7 +33,7 @@ contains
                             radius , nrowswaste,                          &
                             xpolwaste       , ypolwaste       , ndprt  ,  &
                             nosubs , layt   , tcktot , zmodel ,           &
-                            laytop , laybot , nplay  , laywaste,nolay  ,  &
+                            laytop , laybot , nplay  , laywaste,num_layers  ,  &
                             modtyp , zwaste , track  , nmdyer , substi ,  &
                             rhopart )
 
@@ -99,7 +99,7 @@ contains
       integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( int_wp ), intent(inout) :: laywaste (nodye)      !< layer for the dye points
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
+      integer  ( int_wp ), intent(in   ) :: num_layers                 !< number of comp. layer
       real     ( real_wp), intent(inout) :: track  (10,*)         !< track array for all particles
       character( 20),      intent(in   ) :: nmdyer (nodye)        !< names of the dye loads
       character( 20),      intent(in   ) :: substi (nosubs)       !< names of the substances
@@ -238,17 +238,17 @@ contains
                if ( ipart .gt. nplay(nulay) ) then
                   ipart = 0
                   nulay = nulay + 1
-                  if ( nulay .gt. nolay ) then
-                     nulay = nolay
+                  if ( nulay .gt. num_layers ) then
+                     nulay = num_layers
                      exit
                   endif
                else
                   exit
                endif
             enddo
-            if ( nulay .gt. nolay ) then
-               write (*,*) ' Nulay > nolay in part09 '
-               write( lun2,*) ' Nulay > nolay in part09 '
+            if ( nulay .gt. num_layers ) then
+               write (*,*) ' Nulay > num_layers in part09 '
+               write( lun2,*) ' Nulay > num_layers in part09 '
                call stop_exit(1)
             endif
 
@@ -262,7 +262,7 @@ contains
 !    for one layer models (2dh), the release will be in the user-defined location
             if ( modtyp .eq. model_oil .and. laypart(i) .eq. 1 ) then
                hpart(i) = 0.0_dp
-            elseif ( nolay .eq. 1 ) then
+            elseif ( num_layers .eq. 1 ) then
                hpart(i) = (ipart-0.5)/nplay(1)
             else
 

@@ -28,7 +28,7 @@ module m_get_sfrac
 contains
 
 
-    subroutine get_sfrac (lunrep, notot, syname, nomult, imultp, &
+    subroutine get_sfrac (lunrep, num_substances_total, syname, nomult, imultp, &
             sfracs)
 
         ! identifies the number of subtances which consist of fractions
@@ -41,8 +41,8 @@ contains
         ! declaration of arguments
 
         integer(kind = int_wp) :: lunrep          !< report file
-        integer(kind = int_wp) :: notot           !< number of substances
-        character(len = 20) :: syname(notot)   !< substance name
+        integer(kind = int_wp) :: num_substances_total           !< number of substances
+        character(len = 20) :: syname(num_substances_total)   !< substance name
         integer(kind = int_wp), intent(in) :: nomult          !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult)!< multiple substance administration
         type(sfracsprop) :: sfracs          !< substance fraction properties

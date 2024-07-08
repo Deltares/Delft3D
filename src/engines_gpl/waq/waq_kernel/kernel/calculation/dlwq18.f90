@@ -34,7 +34,7 @@ contains
     !! - if applicable, computed volumes are evaluated.
     !! - the concentrations of water bound substances are mass/volume
     !! - the concentrations of bed susbtances are mass / surface
-subroutine update_concs_explicit_time_step(nosys, notot, nototp, noseg, volume, &
+subroutine update_concs_explicit_time_step(num_substances_transported, num_substances_total, num_substances_part, num_cells, volume, &
             surface, amass, conc, deriv, idt, &
             ivflag, file_unit_list)
 
@@ -42,15 +42,15 @@ subroutine update_concs_explicit_time_step(nosys, notot, nototp, noseg, volume, 
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
-        integer(kind = int_wp), intent(in) :: nototp                  !< number of particle substances
-        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume (noseg)         !< volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(noseg)            !< horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass  (notot, noseg)  !< masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg)  !< concentrations per substance per volume
-        real(kind = real_wp), intent(inout) :: deriv  (notot, noseg)  !< derivatives per substance per volume
+        integer(kind = int_wp), intent(in) :: num_substances_transported                   !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                   !< total number of substances
+        integer(kind = int_wp), intent(in) :: num_substances_part                  !< number of particle substances
+        integer(kind = int_wp), intent(in) :: num_cells                   !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume (num_cells)         !< volumes of the segments
+        real(kind = real_wp), intent(in) :: surface(num_cells)            !< horizontal surface area
+        real(kind = real_wp), intent(inout) :: amass  (num_substances_total, num_cells)  !< masses per substance per volume
+        real(kind = real_wp), intent(inout) :: conc   (num_substances_total, num_cells)  !< concentrations per substance per volume
+        real(kind = real_wp), intent(inout) :: deriv  (num_substances_total, num_cells)  !< derivatives per substance per volume
         integer(kind = int_wp), intent(in) :: idt                     !< integration time step size
         integer(kind = int_wp), intent(in) :: ivflag                  !< if 1 computational volumes
         integer(kind = int_wp), intent(in) :: file_unit_list          !< unit number of the monitoring file
@@ -73,7 +73,7 @@ subroutine update_concs_explicit_time_step(nosys, notot, nototp, noseg, volume, 
         deriv = 0.0
 
         ! loop across cells (segments) for the concentrations
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             ! compute volumes if necessary and check for positivity
             if (ivflag == 1) volume(iseg) = amass(1, iseg)
             vol = volume(iseg)
@@ -90,14 +90,14 @@ subroutine update_concs_explicit_time_step(nosys, notot, nototp, noseg, volume, 
             endif
 
             ! transported substances
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 conc(isys, iseg) = amass(isys, iseg) / vol
             enddo
 
             ! passive substances
-            if (notot - nototp > nosys) then
+            if (num_substances_total - num_substances_part > num_substances_transported) then
                 surf = surface(iseg)
-                do isys = nosys + 1, notot - nototp
+                do isys = num_substances_transported + 1, num_substances_total - num_substances_part
                     conc(isys, iseg) = amass(isys, iseg) / surf
                 enddo
             endif

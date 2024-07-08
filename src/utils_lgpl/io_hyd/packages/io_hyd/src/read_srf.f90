@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_srf(file_srf, mmax  , nmax  , nosegl, surf )
+      subroutine read_srf(file_srf, num_columns  , num_rows  , nosegl, surf )
 
       ! read a srf file and check dimensions
       use m_logger_helper, only : stop_with_error, get_log_unit_number
@@ -37,8 +37,8 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_srf               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
       integer                                :: nosegl                 ! nosegl
       real                                   :: surf(nosegl)           ! property of the cells per layer
 
@@ -67,7 +67,7 @@
          call stop_with_error()
       endif
 
-      if ( mmax*nmax .ne. mmaxd*nmaxd ) then
+      if ( num_columns*num_rows .ne. mmaxd*nmaxd ) then
          write(lunrep,*) ' dimensions file ', trim(file_srf%name), ' differ from input hydrodynamics'
          call stop_with_error()
       endif
@@ -84,7 +84,7 @@
       return
       end
 
-      subroutine read_hsrf(file_hsrf, noseg, surf )
+      subroutine read_hsrf(file_hsrf, num_cells, surf )
 
       ! read a horizontal srf file
       use m_logger_helper, only : stop_with_error, get_log_unit_number
@@ -94,8 +94,8 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_hsrf              ! aggregation-file
-      integer                                :: noseg                  ! number of segments
-      real                                   :: surf(noseg)            ! horizontal surfaces
+      integer                                :: num_cells                  ! number of segments
+      real                                   :: surf(num_cells)            ! horizontal surfaces
 
       ! local declarations
 
@@ -114,7 +114,7 @@
       endif
 
       call file_hsrf%open()
-      read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,noseg)
+      read(file_hsrf%unit,iostat=ioerr) idum, (surf(i),i=1,num_cells)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading horizontal srf file'
          call stop_with_error()

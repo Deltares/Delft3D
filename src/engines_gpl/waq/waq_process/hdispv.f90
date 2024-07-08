@@ -28,9 +28,9 @@ module m_hdispv
 contains
 
 
-    subroutine hdispv     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine hdispv     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       (2D) Horizontal dispersion as velocity dependent reprofunction
 
@@ -41,18 +41,18 @@ contains
         !
         !     type    name         i/o description
         !
-        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(12) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(12) ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(12) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(12)   !    local work array for the pointering
         integer(kind = int_wp) :: iq          !    local loop counter for exchanges
         integer(kind = int_wp) :: iseg1       !    segment number from
@@ -80,7 +80,7 @@ contains
 
         ipnt = ipoint
 
-        do iq = 1, noq1 + noq2
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
             ! input on segments
 
@@ -91,20 +91,20 @@ contains
             if (iseg2 <= 0) iseg2 = iexpnt(1, iq)
             if (iseg2 <= 0) iseg2 = 1
 
-            dfact_a = pmsa(ipnt(1) + (iseg1 - 1) * increm(1))
-            dfact_b = pmsa(ipnt(2) + (iseg1 - 1) * increm(2))
-            dfact_c = pmsa(ipnt(3) + (iseg1 - 1) * increm(3))
-            dback = pmsa(ipnt(4) + (iseg1 - 1) * increm(4))
-            dmin = pmsa(ipnt(5) + (iseg1 - 1) * increm(5))
-            dmax = pmsa(ipnt(6) + (iseg1 - 1) * increm(6))
-            depth1 = pmsa(ipnt(7) + (iseg1 - 1) * increm(7))
-            depth2 = pmsa(ipnt(7) + (iseg2 - 1) * increm(7))
+            dfact_a = process_space_real(ipnt(1) + (iseg1 - 1) * increm(1))
+            dfact_b = process_space_real(ipnt(2) + (iseg1 - 1) * increm(2))
+            dfact_c = process_space_real(ipnt(3) + (iseg1 - 1) * increm(3))
+            dback = process_space_real(ipnt(4) + (iseg1 - 1) * increm(4))
+            dmin = process_space_real(ipnt(5) + (iseg1 - 1) * increm(5))
+            dmax = process_space_real(ipnt(6) + (iseg1 - 1) * increm(6))
+            depth1 = process_space_real(ipnt(7) + (iseg1 - 1) * increm(7))
+            depth2 = process_space_real(ipnt(7) + (iseg2 - 1) * increm(7))
             depth = (depth1 + depth2) / 2.
 
             ! input on exchange
 
-            xarea = pmsa(ipnt(8))
-            flow = pmsa(ipnt(9))
+            xarea = process_space_real(ipnt(8))
+            flow = process_space_real(ipnt(9))
 
             ! calculate velocity
 
@@ -122,16 +122,16 @@ contains
 
             ! set output
 
-            if (iq <= noq1) then
-                pmsa(ipnt(10) + (iseg1 - 1) * increm(10)) = horzdispv
-                pmsa(ipnt(10) + (iseg2 - 1) * increm(10)) = horzdispv
+            if (iq <= num_exchanges_u_dir) then
+                process_space_real(ipnt(10) + (iseg1 - 1) * increm(10)) = horzdispv
+                process_space_real(ipnt(10) + (iseg2 - 1) * increm(10)) = horzdispv
             else
-                pmsa(ipnt(11) + (iseg1 - 1) * increm(11)) = horzdispv
-                pmsa(ipnt(11) + (iseg2 - 1) * increm(11)) = horzdispv
+                process_space_real(ipnt(11) + (iseg1 - 1) * increm(11)) = horzdispv
+                process_space_real(ipnt(11) + (iseg2 - 1) * increm(11)) = horzdispv
             endif
-            pmsa(ipnt(12)) = horzdispv
+            process_space_real(ipnt(12)) = horzdispv
 
-            ! update pointering in pmsa
+            ! update pointering in process_space_real
 
             ipnt(8) = ipnt(8) + increm(8)
             ipnt(9) = ipnt(9) + increm(9)

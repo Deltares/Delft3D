@@ -33,12 +33,12 @@ contains
     !! the number of active substances are made. All these verticals
     !! are filtered at most MAXFIL times.
     !!  Everything starts with layer 2 (from the top in WAQ). IL is
-    !! the counter here with starting values ISEG+NOSEG. ILU points
-    !! to the layer upper (IL-NOSEG) and ILD points to the layer down-
-    !! wards (IL+NOSEG).
+    !! the counter here with starting values ISEG+num_cells. ILU points
+    !! to the layer upper (IL-num_cells) and ILD points to the layer down-
+    !! wards (IL+num_cells).
     !!  The from- and to- lengths are in the ALENG array. The third
-    !! direction last. Than means that NOQT-NOQ3+ISEG is the pointer
-    !! for the exchange with the layer above and that value plus NOSEG
+    !! direction last. Than means that NOQT-num_exchanges_z_dir+ISEG is the pointer
+    !! for the exchange with the layer above and that value plus num_cells
     !! is the pointer to the exchange downward. The from- value is
     !! the first one that is in the higher layer, The to- value is in
     !! the lower layer. You can check that the to- value for the upper
@@ -60,21 +60,21 @@ contains
     !! original code. Because we work with half distances, it is 0.5
     !! here.
     !!  A maximum/minimum of DD remains.
-    subroutine dlwqd2(lunut, nosys, notot, noseg, noq3, &
-            kmax, conc, aleng, nowarn)
+    subroutine dlwqd2(lunut, num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
+            num_layers_grid, conc, aleng, nowarn)
 
         use timers
 
         integer(kind = int_wp), intent(in   ) :: lunut  !< Unit number of log file
-        integer(kind = int_wp), intent(in   ) :: nosys  !< Number of active substances
-        integer(kind = int_wp), intent(in   ) :: notot  !< Number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg  !< Number of cells or segments
-        integer(kind = int_wp), intent(in   ) :: noq3   !<  Number of exchanges in vertical direction
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported  !< Number of active substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total  !< Number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells  !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_z_dir   !<  Number of exchanges in vertical direction
         integer(kind = int_wp), intent(inout) :: nowarn !< Number of warnings sent to the log file
-        integer(kind = int_wp), intent(in   ) :: kmax   !< ????
+        integer(kind = int_wp), intent(in   ) :: num_layers_grid   !< ????
 
-        real(kind = real_wp),   intent(inout) :: conc(notot, noseg) !< Array with concentrations of all substances at all cells
-        real(kind = real_wp),   intent(in   ) :: aleng(2, noq3)     !< Mixing length
+        real(kind = real_wp),   intent(inout) :: conc(num_substances_total, num_cells) !< Array with concentrations of all substances at all cells
+        real(kind = real_wp),   intent(in   ) :: aleng(2, num_exchanges_z_dir)     !< Mixing length
 
         ! Local variables
         real(kind = real_wp) :: dd, dr, dr1, dr2, dz1, dz2, coef
@@ -89,19 +89,19 @@ contains
         maxfil = 100
 
         ! only for structured 3d
-        if (kmax <= 1) goto 9999
-        nhor = noseg / kmax
+        if (num_layers_grid <= 1) goto 9999
+        nhor = num_cells / num_layers_grid
         ! for all horizontal segments
         do iseg = 1, nhor
             ! for all active substances
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 ! do until maximum iteration or untill satisfied
                 do ifilt = 1, maxfil
                     ifil = 0
                     il = iseg
                     ilu = il - nhor
                     ild = il + nhor
-                    do ilay = 2, kmax - 1
+                    do ilay = 2, num_layers_grid - 1
                         il = il + nhor
                         ilu = ilu + nhor
                         ild = ild + nhor

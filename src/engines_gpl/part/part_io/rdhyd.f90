@@ -26,7 +26,7 @@ use m_stop_exit
 
    contains
 
-      subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , nolay  , zmodel , ihdel  ,      &
+      subroutine rdhyd  ( nfiles , lunit  , fnam   , hyd    , num_layers  , zmodel , ihdel  ,      &
      &                    tcktot , zlbot  , zltop  , ndoms  , nbnds  , doms   , bnds   )
 
 !       Deltares Software Centre
@@ -59,7 +59,7 @@ use m_stop_exit
       integer  ( int_wp ), intent(inout) :: lunit(nfiles)     !< unit nrs of all files
       character(256), intent(inout) :: fnam (nfiles)     !< file names of all files
       type(t_hydrodynamics)   , intent(in   ) :: hyd               !< description of the hydrodynamics
-      integer  ( int_wp ), intent(  out) :: nolay             !< number of hydrodynamic layers
+      integer  ( int_wp ), intent(  out) :: num_layers             !< number of hydrodynamic layers
       logical       , intent(in   ) :: zmodel            !< layer type
       integer  ( int_wp ), intent(  out) :: ihdel             !< hydrodynamic time step (s)
       real     ( sp), pointer       :: tcktot(:)         !< relative layer thickness
@@ -115,8 +115,8 @@ use m_stop_exit
      &                 (mod(ihdel,10000)/100)*60 + mod(ihdel,100)
             case ( "number-water-quality-layers" )
                read ( line, * ) token1, token2
-               read ( token2, * ) nolay
-               allocate ( tcktot(nolay+1), ilay(nolay) )
+               read ( token2, * ) num_layers
+               allocate ( tcktot(num_layers+1), ilay(num_layers) )
             case ( "number-hydrodynamic-layers" )
                read ( line, * ) token1, token2
                read ( token2, * ) nohydlay
@@ -166,13 +166,13 @@ use m_stop_exit
                endif
                lunit(23) = lunit(18)+5
             case ( "water-quality-layers" )
-               do i = 1, nolay
+               do i = 1, num_layers
                   read ( lunit(18), * ) rlay
                   ilay(i) = nint(rlay)
                enddo
             case ( "domains" )
                write ( lunit(2), * ) ' Domain decomposition detected.'
-               write ( lunit(2), * ) ' Domain name:         mmax    nmax  aggregation'
+               write ( lunit(2), * ) ' Domain name:         num_columns    num_rows  aggregation'
                i     = 0
                do while ( token2 .ne. "end-domains" )
                   read  ( lunit(18), '(A)' ) line
@@ -188,10 +188,10 @@ use m_stop_exit
                         doms => d2
                         ndoms = ndoms + 10
                      endif
-                     read  ( line, * ) doms(i)%name, doms(i)%mmax, doms(i)%nmax, token2
+                     read  ( line, * ) doms(i)%name, doms(i)%num_columns, doms(i)%num_rows, token2
                      write ( lunit(2), '(A,T20,2I8,2X,A40)' )                               &
      &                                   "  "//doms(i)%name(1:len_trim(doms(i)%name)),      &
-     &                                         doms(i)%mmax, doms(i)%nmax, token2
+     &                                         doms(i)%num_columns, doms(i)%num_rows, token2
                      if ( token2 .ne. "none" ) then
                         write ( lunit(2), * ) 'ERROR: aggregation not allowed !'
                         call stop_exit(1)
@@ -201,7 +201,7 @@ use m_stop_exit
                ndoms = i
                doms(1)%moff = 0
                do i = 2, ndoms
-                  doms(i)%moff = doms(i-1)%moff + doms(i-1)%mmax
+                  doms(i)%moff = doms(i-1)%moff + doms(i-1)%num_columns
                enddo
             case ( "dd-boundaries" )
                i     = 0
@@ -248,11 +248,11 @@ use m_stop_exit
 !     make the tcktot table by aggregating the hydrodynamic coefficients
 
       tcktot = 0.0
-      if ( nolay .eq. 1 ) then
+      if ( num_layers .eq. 1 ) then
          tcktot(1) = 1.0
       else
          k = 1
-         do i = 1, nolay
+         do i = 1, num_layers
             do j = 1, ilay(i)
                tcktot(i) = tcktot(i) + hydlay(k)
                k = k + 1
@@ -261,20 +261,20 @@ use m_stop_exit
       endif
 
       if (zmodel) then
-         allocate (zlbot(hyd%nolay))
-         allocate (zltop(hyd%nolay))
+         allocate (zlbot(hyd%num_layers))
+         allocate (zltop(hyd%num_layers))
          zlbot = 0.0
          zltop = 0.0
          zdepth = hyd%ztop - hyd%zbot
          zltop(1) = hyd%ztop
-         zlbot(nolay) = hyd%zbot
-         if ( nolay .gt. 1 ) then
+         zlbot(num_layers) = hyd%zbot
+         if ( num_layers .gt. 1 ) then
             zlbot(1) = zltop(1) - tcktot(1) * zdepth
-            do i = 2, nolay - 1
+            do i = 2, num_layers - 1
                zltop(i) = zlbot(i - 1)
                zlbot(i) = zltop(i) - tcktot(i) * zdepth
             enddo
-            zltop(nolay) = zlbot(nolay - 1)
+            zltop(num_layers) = zlbot(num_layers - 1)
          endif
       endif
 

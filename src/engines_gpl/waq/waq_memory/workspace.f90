@@ -29,14 +29,14 @@ module workspace
             set_character_array_indices
 
     ! System characteristics
-    use m_sysn, only : NOTOT, NOCONS, NOPA, NOFUN, NOSFUN, NODISP, NOVELO, NODEF, NOLOC, NDSPX, NVELX, NLOCX, NFLUX
+    use m_waq_memory_dimensions, only : num_substances_total, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes
     ! Timer characteristics
-    use m_sysi
+    use m_timer_variables
     ! Pointers in real array workspace
-    use m_sysa
-    use m_sysj, only : IAPOI, IATYP, IABYT, IALEN, IAKND, IADM1, IADM2, IADM3, IJSIZE
+    use m_real_array_indices
+    use m_integer_array_indices, only : IAPOI, IATYP, IABYT, IALEN, IAKND, IADM1, IADM2, IADM3, IJSIZE
     ! Pointers in character array workspace
-    use m_sysc
+    use m_character_array_indices
     ! module for computing the pointers into the arrays
     use m_array_manipulation, only : memory_partition
 
@@ -70,13 +70,13 @@ CONTAINS
         type(memory_partition) :: part
 
         ! allocate initial space
-        noarr = iasize + ijsize + icsize
+        num_arrays = iasize + ijsize + icsize
 
         if (allocated(int_array)) deallocate(int_array)
         if (allocated(charachter_array)) deallocate(charachter_array)
         if (allocated(cname)) deallocate(cname)
 
-        allocate(int_array(iasize + 1 + ijsize + icsize + 1 + 8 * noarr))
+        allocate(int_array(iasize + 1 + ijsize + icsize + 1 + 8 * num_arrays))
         allocate(charachter_array(20 * (iasize + 1 + ijsize + icsize + 1)))
         allocate(cname (iasize + 1 + ijsize + icsize + 1))
 
@@ -85,9 +85,9 @@ CONTAINS
         cname = ' '
 
         ! total number of "separate" variables
-        novar = 5 + nocons + nopa + nofun + nosfun + notot + notot + &
-                notot + nodisp + novelo + nodef + noloc + ndspx + &
-                nvelx + nlocx + nflux
+        num_vars = 5 + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + num_substances_total + &
+                num_substances_total + num_dispersion_arrays + num_velocity_arrays + num_defaults + num_local_vars + num_dispersion_arrays_extra + &
+                num_velocity_arrays_extra + num_local_vars_exchange + num_fluxes
 
         ! sets the array pointers for the array administration array's.
         call set_admin_array_indices(logical_unit, int_array, cname, part)
@@ -178,24 +178,24 @@ CONTAINS
 
     end subroutine set_array_indexes
 
-    subroutine initialize_variables(logical_unit, nocons, nopa, nofun, nosfun, &
-            nosys, notot, nodisp, novelo, nodef, &
-            noloc, ndspx, nvelx, nlocx, nflux, &
-            nopred, novar, vararr, varidx, vartda, &
-            vardag, vartag, varagg, nogrid, vgrset)
+    subroutine initialize_variables(logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+            num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+            nopred, num_vars, vararr, varidx, vartda, &
+            vardag, vartag, varagg, num_grids, vgrset)
         !! initialisation of variables structur
 
         use m_array_manipulation, only : initialize_integer_array
         use timers
 
-        integer(kind = int_wp) :: logical_unit, nocons, nopa, nofun, nosfun, &
-                nosys, notot, nodisp, novelo, nodef, &
-                noloc, ndspx, nvelx, nlocx, nflux, &
-                nopred, novar, nogrid
-        integer(kind = int_wp) :: vararr(novar), varidx(novar), &
-                vartda(novar), vardag(novar), &
-                vartag(novar), varagg(novar)
-        integer(kind = int_wp) :: vgrset(novar, nogrid)
+        integer(kind = int_wp) :: logical_unit, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                nopred, num_vars, num_grids
+        integer(kind = int_wp) :: vararr(num_vars), varidx(num_vars), &
+                vartda(num_vars), vardag(num_vars), &
+                vartag(num_vars), varagg(num_vars)
+        integer(kind = int_wp) :: vgrset(num_vars, num_grids)
 
         ! just take the used array's in the right order
         integer(kind = int_wp) :: iivol = 1
@@ -291,22 +291,22 @@ CONTAINS
         ivflo = ivare + 1
         ivlen = ivflo + 1
         ivcns = ivlen + 2
-        ivpar = ivcns + nocons
-        ivfun = ivpar + nopa
-        ivsfu = ivfun + nofun
-        ivcnc = ivsfu + nosfun
-        ivmas = ivcnc + notot
-        ivder = ivmas + notot
-        ivdsp = ivder + notot
-        ivvel = ivdsp + nodisp
-        ivdef = ivvel + novelo
-        ivloc = ivdef + nodef
-        ivdsx = ivloc + noloc
-        ivvlx = ivdsx + ndspx
-        ivlcx = ivvlx + nvelx
-        ivflx = ivlcx + nlocx
+        ivpar = ivcns + num_constants
+        ivfun = ivpar + num_spatial_parameters
+        ivsfu = ivfun + num_time_functions
+        ivcnc = ivsfu + num_spatial_time_fuctions
+        ivmas = ivcnc + num_substances_total
+        ivder = ivmas + num_substances_total
+        ivdsp = ivder + num_substances_total
+        ivvel = ivdsp + num_dispersion_arrays
+        ivdef = ivvel + num_velocity_arrays
+        ivloc = ivdef + num_defaults
+        ivdsx = ivloc + num_local_vars
+        ivvlx = ivdsx + num_dispersion_arrays_extra
+        ivlcx = ivvlx + num_velocity_arrays_extra
+        ivflx = ivlcx + num_local_vars_exchange
 
-        call initialize_integer_array(vgrset, novar * nogrid)
+        call initialize_integer_array(vgrset, num_vars * num_grids)
 
         ivar = 1
         vgrset(ivar, 1) = 1
@@ -324,88 +324,88 @@ CONTAINS
         vgrset(ivar, 1) = 1
 
         ! cons
-        do icons = 1, nocons
+        do icons = 1, num_constants
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! param
-        do ipa = 1, nopa
+        do ipa = 1, num_spatial_parameters
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! func
-        do ifun = 1, nofun
+        do ifun = 1, num_time_functions
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! seg func
-        do isfun = 1, nosfun
+        do isfun = 1, num_spatial_time_fuctions
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! conc
-        do isys = 1, nosys
+        do isys = 1, num_substances_transported
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
-        do isys = nosys + 1, notot
+        do isys = num_substances_transported + 1, num_substances_total
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! mass
-        do isys = 1, notot
+        do isys = 1, num_substances_total
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
-        do isys = 1, notot
+        do isys = 1, num_substances_total
             ivar = ivar + 1
         enddo
 
         ! disp
-        do idsp = 1, nodisp
+        do idsp = 1, num_dispersion_arrays
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! velo
-        do ivel = 1, novelo
+        do ivel = 1, num_velocity_arrays
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
         ! default
-        do idef = 1, nodef
+        do idef = 1, num_defaults
             ivar = ivar + 1
             vgrset(ivar, 1) = 1
         enddo
 
-        do iloc = 1, noloc
+        do iloc = 1, num_local_vars
             ivar = ivar + 1
         enddo
 
         ! dspx
-        do idsx = 1, ndspx
+        do idsx = 1, num_dispersion_arrays_extra
             ivar = ivar + 1
         enddo
 
         ! velx
-        do ivlx = 1, nvelx
+        do ivlx = 1, num_velocity_arrays_extra
             ivar = ivar + 1
         enddo
 
         ! locx
-        do ilcx = 1, nlocx
+        do ilcx = 1, num_local_vars_exchange
             ivar = ivar + 1
         enddo
 
         ! flux
-        do iflx = 1, nflux
+        do iflx = 1, num_fluxes
             ivar = ivar + 1
         enddo
 

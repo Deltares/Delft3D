@@ -37,6 +37,8 @@
 subroutine comp_nnow(k,k1in,k2in,n)
    use m_netw
    use m_landboundary
+   use m_rechtsaf_active
+   
    implicit none
 
    integer, intent(in)  :: k      !< center node
@@ -54,8 +56,6 @@ subroutine comp_nnow(k,k1in,k2in,n)
    logical             :: Lfound
 
    integer, external   :: nmk_opt
-
-   logical, external   :: rechtsaf_active
 
    if ( lanseg_map(k).lt.1 ) then
       n = nmk(k)-nmk_opt(k)

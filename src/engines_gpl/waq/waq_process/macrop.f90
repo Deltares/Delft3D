@@ -28,9 +28,9 @@ module m_macrop
 contains
 
 
-    SUBROUTINE MACROP     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE MACROP     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
         use m_extract_waq_attribute
 
@@ -41,18 +41,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(66)   ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(66)   ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(66)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG       ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(66)   !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
         !
@@ -249,7 +249,7 @@ contains
         !
         IPNT = IPOINT
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
@@ -259,65 +259,65 @@ contains
 
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
-                    EM01 = PMSA(IPNT(1))
-                    SM01 = PMSA(IPNT(2))
-                    RH01 = PMSA(IPNT(3))
-                    NRH01 = PMSA(IPNT(4))
-                    PRH01 = PMSA(IPNT(5))
-                    MaxEM01 = PMSA(IPNT(6))
-                    MaxSM01 = PMSA(IPNT(7))
-                    PPmaxEM01 = PMSA(IPNT(8))
-                    PPmaxSM01 = PMSA(IPNT(9))
-                    EM01thresh = PMSA(IPNT(10))
-                    SM01thresh = PMSA(IPNT(11))
-                    RH01min = PMSA(IPNT(12))
-                    NRH01min = PMSA(IPNT(13))
-                    PRH01min = PMSA(IPNT(14))
-                    NH4crEM01 = PMSA(IPNT(15)) + 1.0e-20
-                    NO3crEM01 = PMSA(IPNT(16)) + 1.0e-20
-                    PO4crEM01 = PMSA(IPNT(17)) + 1.0e-20
-                    CO2crSM01 = PMSA(IPNT(18)) + 1.0e-20
-                    NH4 = MAX(PMSA(IPNT(19)), 0.0)
-                    NO3 = MAX(PMSA(IPNT(20)), 0.0)
-                    PO4 = MAX(PMSA(IPNT(21)), 0.0)
-                    LimNutSM01 = PMSA(IPNT(22))
-                    LimRadSM01 = PMSA(IPNT(23))
-                    MinDLEM01 = PMSA(IPNT(24))
-                    OptDLEM01 = PMSA(IPNT(25))
-                    MinDLSM01 = PMSA(IPNT(26))
-                    OptDLSM01 = PMSA(IPNT(27))
-                    DayL = PMSA(IPNT(28))
-                    TcritEM01 = PMSA(IPNT(29))
-                    TcPMxEM01 = PMSA(IPNT(30))
-                    TcritSM01 = PMSA(IPNT(31))
-                    TcPMxSM01 = PMSA(IPNT(32))
+                    EM01 = process_space_real(IPNT(1))
+                    SM01 = process_space_real(IPNT(2))
+                    RH01 = process_space_real(IPNT(3))
+                    NRH01 = process_space_real(IPNT(4))
+                    PRH01 = process_space_real(IPNT(5))
+                    MaxEM01 = process_space_real(IPNT(6))
+                    MaxSM01 = process_space_real(IPNT(7))
+                    PPmaxEM01 = process_space_real(IPNT(8))
+                    PPmaxSM01 = process_space_real(IPNT(9))
+                    EM01thresh = process_space_real(IPNT(10))
+                    SM01thresh = process_space_real(IPNT(11))
+                    RH01min = process_space_real(IPNT(12))
+                    NRH01min = process_space_real(IPNT(13))
+                    PRH01min = process_space_real(IPNT(14))
+                    NH4crEM01 = process_space_real(IPNT(15)) + 1.0e-20
+                    NO3crEM01 = process_space_real(IPNT(16)) + 1.0e-20
+                    PO4crEM01 = process_space_real(IPNT(17)) + 1.0e-20
+                    CO2crSM01 = process_space_real(IPNT(18)) + 1.0e-20
+                    NH4 = MAX(process_space_real(IPNT(19)), 0.0)
+                    NO3 = MAX(process_space_real(IPNT(20)), 0.0)
+                    PO4 = MAX(process_space_real(IPNT(21)), 0.0)
+                    LimNutSM01 = process_space_real(IPNT(22))
+                    LimRadSM01 = process_space_real(IPNT(23))
+                    MinDLEM01 = process_space_real(IPNT(24))
+                    OptDLEM01 = process_space_real(IPNT(25))
+                    MinDLSM01 = process_space_real(IPNT(26))
+                    OptDLSM01 = process_space_real(IPNT(27))
+                    DayL = process_space_real(IPNT(28))
+                    TcritEM01 = process_space_real(IPNT(29))
+                    TcPMxEM01 = process_space_real(IPNT(30))
+                    TcritSM01 = process_space_real(IPNT(31))
+                    TcPMxSM01 = process_space_real(IPNT(32))
 
                     !
                     ! Use the vertically averaged temperature (prepared by MACNUT)
                     !
-                    Temp = PMSA(IPNT(33))
+                    Temp = process_space_real(IPNT(33))
 
-                    K1DecaEM01 = PMSA(IPNT(34))
-                    TcDecaEM01 = PMSA(IPNT(35))
-                    K1DecaSM01 = PMSA(IPNT(36))
-                    TcDecaSM01 = PMSA(IPNT(37))
-                    FrEMtoRH01 = PMSA(IPNT(38))
-                    FrSMtoRH01 = PMSA(IPNT(39))
-                    NCRatEM01 = PMSA(IPNT(40))
-                    PCRatEM01 = PMSA(IPNT(41))
-                    NCRatSM01 = PMSA(IPNT(42))
-                    PCRatSM01 = PMSA(IPNT(43))
-                    NCRatRH01 = PMSA(IPNT(44))
-                    PCRatRH01 = PMSA(IPNT(45))
-                    FrPOC1EM01 = PMSA(IPNT(46))
-                    FrPOC2EM01 = PMSA(IPNT(47))
-                    FrPOC3EM01 = PMSA(IPNT(48))
-                    FrPOC1SM01 = PMSA(IPNT(49))
-                    FrPOC2SM01 = PMSA(IPNT(50))
-                    FrPOC3SM01 = PMSA(IPNT(51))
-                    Surf = PMSA(IPNT(52))
-                    DELT = PMSA(IPNT(53))
-                    Depth = PMSA(IPNT(54))
+                    K1DecaEM01 = process_space_real(IPNT(34))
+                    TcDecaEM01 = process_space_real(IPNT(35))
+                    K1DecaSM01 = process_space_real(IPNT(36))
+                    TcDecaSM01 = process_space_real(IPNT(37))
+                    FrEMtoRH01 = process_space_real(IPNT(38))
+                    FrSMtoRH01 = process_space_real(IPNT(39))
+                    NCRatEM01 = process_space_real(IPNT(40))
+                    PCRatEM01 = process_space_real(IPNT(41))
+                    NCRatSM01 = process_space_real(IPNT(42))
+                    PCRatSM01 = process_space_real(IPNT(43))
+                    NCRatRH01 = process_space_real(IPNT(44))
+                    PCRatRH01 = process_space_real(IPNT(45))
+                    FrPOC1EM01 = process_space_real(IPNT(46))
+                    FrPOC2EM01 = process_space_real(IPNT(47))
+                    FrPOC3EM01 = process_space_real(IPNT(48))
+                    FrPOC1SM01 = process_space_real(IPNT(49))
+                    FrPOC2SM01 = process_space_real(IPNT(50))
+                    FrPOC3SM01 = process_space_real(IPNT(51))
+                    Surf = process_space_real(IPNT(52))
+                    DELT = process_space_real(IPNT(53))
+                    Depth = process_space_real(IPNT(54))
 
                     ! check input
 
@@ -572,18 +572,18 @@ contains
                     FL  (IdPrPOP3M01) = dPrPOP3M01
                     FL  (IdSM01OXY) = dSM01OXY
                     FL  (IdSM01CO2) = dSM01CO2
-                    PMSA(IPNT(55)) = EM01M2
-                    PMSA(IPNT(56)) = SM01M2
-                    PMSA(IPNT(57)) = RH01M2
-                    PMSA(IPNT(58)) = LimNH4EM01
-                    PMSA(IPNT(59)) = LimNO3EM01
-                    PMSA(IPNT(60)) = LimPO4EM01
-                    PMSA(IPNT(61)) = LimNutEM01
-                    PMSA(IPNT(62)) = LimCO2SM01
-                    PMSA(IPNT(63)) = LimDLEM01
-                    PMSA(IPNT(64)) = LimDLSM01
-                    PMSA(IPNT(65)) = LimTEM01
-                    PMSA(IPNT(66)) = LimTSM01
+                    process_space_real(IPNT(55)) = EM01M2
+                    process_space_real(IPNT(56)) = SM01M2
+                    process_space_real(IPNT(57)) = RH01M2
+                    process_space_real(IPNT(58)) = LimNH4EM01
+                    process_space_real(IPNT(59)) = LimNO3EM01
+                    process_space_real(IPNT(60)) = LimPO4EM01
+                    process_space_real(IPNT(61)) = LimNutEM01
+                    process_space_real(IPNT(62)) = LimCO2SM01
+                    process_space_real(IPNT(63)) = LimDLEM01
+                    process_space_real(IPNT(64)) = LimDLSM01
+                    process_space_real(IPNT(65)) = LimTEM01
+                    process_space_real(IPNT(66)) = LimTSM01
                 ENDIF
             ENDIF
 

@@ -79,9 +79,9 @@ contains
 !     dx      real      mnmaxk    input   dx of the cells
 !     dy      real      mnmaxk    input   dy of the cells
 !     lcircl  locigal     1       input   if true particles on circle
-!     lgrid   integer  nmax*mmax  input   active grid table
+!     lgrid   integer  num_rows*num_columns  input   active grid table
 !     mp      integer     1       in/out  m-values of particle
-!     nmax    integer     1       input   dimension of lgrid
+!     num_rows    integer     1       input   dimension of lgrid
 !     np      integer     1       in/out  n-values of particle
 !     radius  real        1       input   radius of the load
 !     x       real        1       in/out  x-value of particle
@@ -221,7 +221,7 @@ contains
 ! -------------------------------------------------------------------------------------
 !     function              : finds a suitable place for a particle in a polygon
 
-      subroutine findpoly   (nmax    , mmax    , lgrid   , lgrid2  , xcor    ,     &
+      subroutine findpoly   (num_rows    , num_columns    , lgrid   , lgrid2  , xcor    ,     &
                              ycor    , nrowsmax, xpol    , ypol    , xpart   ,     &
                              ypart   , npart   , mpart)
 
@@ -229,12 +229,12 @@ contains
       use pinpok_mod
       use timers
 
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension matrix
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xcor  (nmax*mmax)
-      real     ( real_wp), intent(in   ) :: ycor  (nmax*mmax)
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first dimension matrix
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second dimension matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xcor  (num_rows*num_columns)
+      real     ( real_wp), intent(in   ) :: ycor  (num_rows*num_columns)
       integer  ( int_wp ), intent(in   ) :: nrowsmax                !< dimension of polygons
       real     ( real_wp), intent(in   ) :: xpol  (nrowsmax)        !< xvalues polygons
       real     ( real_wp), intent(in   ) :: ypol  (nrowsmax)        !< yvalues polygons
@@ -268,7 +268,7 @@ contains
          if (inside == 1) then
 
 !        transform world coordinates (xx,yy) into cell-coordinates(xxcel,yycel)
-            call part07 (lgrid  , lgrid2 , nmax   , mmax   , xcor  ,       &
+            call part07 (lgrid  , lgrid2 , num_rows   , num_columns   , xcor  ,       &
                          ycor   , xx     , yy     , nnpart , mmpart,       &
                          xxcel  , yycel  , ier )
 
@@ -299,7 +299,7 @@ contains
 !     Routine findcell
 ! -------------------------------------------------------------------------------------
 
-      subroutine findcell ( nmax   , mmax   , xnloc  , ynloc  , lgrid  ,   &
+      subroutine findcell ( num_rows   , num_columns   , xnloc  , ynloc  , lgrid  ,   &
                             lgrid2 , xb     , yb     , nmloc  )
 
 !     Deltares Software Centre
@@ -311,14 +311,14 @@ contains
 
 !     kind            function         name                description
 
-      integer  ( int_wp ), intent(in   ) :: nmax              !< 1st dimension of the flow grid
-      integer  ( int_wp ), intent(in   ) :: mmax              !< 2nd dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: num_rows              !< 1st dimension of the flow grid
+      integer  ( int_wp ), intent(in   ) :: num_columns              !< 2nd dimension of the flow grid
       real     ( real_wp), intent(in   ) :: xnloc             !< x-value of the point
       real     ( real_wp), intent(in   ) :: ynloc             !< y-value of the point
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax) !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax) !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax) !< x-values of the grid
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax) !< y-values of the grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns) !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns) !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns) !< x-values of the grid
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns) !< y-values of the grid
       integer  ( int_wp ), intent(  out) :: nmloc             !< linear index of grid cell
 
 !     Locals
@@ -341,8 +341,8 @@ contains
       amin   = 1.0e+30
       ns   = 0
       ms   = 0
-      do m = 2, mmax
-         do n = 2, nmax
+      do m = 2, num_columns
+         do n = 2, num_rows
             nm   = lgrid2( n  , m   )
             ndmd = lgrid2( n-1, m-1 )
             ndm  = lgrid2( n-1, m   )
@@ -390,8 +390,8 @@ outer1:do j = 0, 1
       enddo  outer1
 
       if ( ierror .ne. 0 ) then ! the method above is faster, but doesn't always work with DD. When the cell was not found use, pinpok for all cells until found
-outer2:  do m = 2, mmax
-            do n = 2, nmax
+outer2:  do m = 2, num_columns
+            do n = 2, num_rows
                if ( lgrid( n, m ) .le. 0 ) cycle
                nm   = lgrid2( n  , m   )
                ndmd = lgrid2( n-1, m-1 )
@@ -426,7 +426,7 @@ outer2:  do m = 2, mmax
 !     Routine part07
 ! -------------------------------------------------------------------------------------
 
-      subroutine part07 ( lgrid  , lgrid2 , nmax   , mmax   , xb     ,  &
+      subroutine part07 ( lgrid  , lgrid2 , num_rows   , num_columns   , xb     ,  &
                           yb     , xnloc  , ynloc  , nmloc  , mmloc  ,  &
                           xmloc  , ymloc  , ierror )
 
@@ -449,12 +449,12 @@ outer2:  do m = 2, mmax
 
 !     kind            function         name                   description
 
-      integer  ( int_wp ), intent(in   ) :: nmax                 !< first index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: mmax                 !< second index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)    !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)    !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)    !< x of grid corner points
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)    !< y of grid corner points
+      integer  ( int_wp ), intent(in   ) :: num_rows                 !< first index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                 !< second index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)    !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)    !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns)    !< x of grid corner points
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns)    !< y of grid corner points
       real     ( real_wp), intent(in   ) :: xnloc                !< x of the point to locate
       real     ( real_wp), intent(in   ) :: ynloc                !< y of the point to locate
       integer  ( int_wp ), intent(  out) :: nmloc                !< first grid index of the point
@@ -481,7 +481,7 @@ outer2:  do m = 2, mmax
 
 !     find the grid cel n0 in (nmloc,mmloc) in which (xnloc,ynloc) is located
 
-      call findcell ( nmax   , mmax   , xnloc  , ynloc  , lgrid  ,  &
+      call findcell ( num_rows   , num_columns   , xnloc  , ynloc  , lgrid  ,  &
                       lgrid2 , xb     , yb     , n0     )
 
 !     point in active grid cel n0 = lgrid2(nmloc,mmloc)
@@ -491,10 +491,10 @@ outer2:  do m = 2, mmax
          goto 9999
       endif
       n1 = n0 - 1                    ! ( nloc-1, mloc   )
-      n2 = n0 - nmax                 ! ( nloc  , mloc-1 )
-      n3 = n0 - nmax - 1             ! ( nloc-1, mloc-1 )
-      nmloc = mod(n0-1, nmax) + 1
-      mmloc =    (n0-1)/nmax  + 1
+      n2 = n0 - num_rows                 ! ( nloc  , mloc-1 )
+      n3 = n0 - num_rows - 1             ! ( nloc-1, mloc-1 )
+      nmloc = mod(n0-1, num_rows) + 1
+      mmloc =    (n0-1)/num_rows  + 1
 
       x(1) = xb(n3)
       x(2) = xb(n1)
@@ -517,7 +517,7 @@ outer2:  do m = 2, mmax
 !     Routine part07nm
 ! -------------------------------------------------------------------------------------
 
-      subroutine part07nm ( lgrid  , lgrid2 , nmax   , mmax   , xb     ,  &
+      subroutine part07nm ( lgrid  , lgrid2 , num_rows   , num_columns   , xb     ,  &
                             yb     , xnloc  , ynloc  , nmloc  , mmloc  ,  &
                             xmloc  , ymloc  , ierror )
 
@@ -540,12 +540,12 @@ outer2:  do m = 2, mmax
 
 !     kind            function         name                   description
 
-      integer  ( int_wp ), intent(in   ) :: nmax                 !< first index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: mmax                 !< second index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)    !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)    !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)    !< x of grid corner points
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)    !< y of grid corner points
+      integer  ( int_wp ), intent(in   ) :: num_rows                 !< first index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                 !< second index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)    !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)    !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns)    !< x of grid corner points
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns)    !< y of grid corner points
       real     ( real_wp), intent(in   ) :: xnloc                !< x of the point to locate
       real     ( real_wp), intent(in   ) :: ynloc                !< y of the point to locate
       integer  ( int_wp ), intent(in   ) :: nmloc                !< first grid index of the point
@@ -577,8 +577,8 @@ outer2:  do m = 2, mmax
          goto 9999
       endif
       n1 = n0 - 1                    ! ( nloc-1, mloc   )
-      n2 = n0 - nmax                 ! ( nloc  , mloc-1 )
-      n3 = n0 - nmax - 1             ! ( nloc-1, mloc-1 )
+      n2 = n0 - num_rows                 ! ( nloc  , mloc-1 )
+      n3 = n0 - num_rows - 1             ! ( nloc-1, mloc-1 )
 
       x(1) = xb(n3)
       x(2) = xb(n1)

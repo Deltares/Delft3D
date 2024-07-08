@@ -29,9 +29,9 @@ contains
 
 
     !> Flux correction according to Boris and Book
-    subroutine dlwqm8(idt, isys, nosys, notot, noseg, &
-            conc, concvt, volnew, nobnd, bound, &
-            noq, iknmrk, ipoint, area, aleng, &
+    subroutine dlwqm8(idt, isys, num_substances_transported, num_substances_total, num_cells, &
+            conc, concvt, volnew, num_boundary_conditions, bound, &
+            num_exchanges, iknmrk, ipoint, area, aleng, &
             theta, flowtot, integration_id, amass2, ndmpq, &
             iqdmp, dmpq)
 
@@ -39,26 +39,26 @@ contains
 
         integer(kind = int_wp), intent(in   ) :: idt                   !< Time step
         integer(kind = int_wp), intent(in   ) :: isys                  !< Index of current transported substance
-        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of transported substances
-        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of cells or segments
-        real(kind = real_wp),   intent(inout) :: conc(notot, noseg)    !< Concentrations
-        real(kind = dp),        intent(inout) :: concvt(noseg)         !< Estimation of first solution by means of local theta method
-        real(kind = real_wp),   intent(in   ) :: volnew(noseg)         !< Cell volumes at the new time
-        integer(kind = int_wp), intent(in   ) :: nobnd                 !< Number of boundary cells
-        real(kind = real_wp),   intent(in   ) :: bound(nosys, nobnd)   !< Boundary concentrations
-        integer(kind = int_wp), intent(in   ) :: noq                   !< Number of exchanges
-        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)         !< Feature array
-        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)        !< Exchange indeces
-        real(kind = real_wp),   intent(in   ) :: area(noq)             !< Surface areas
-        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)         !< From- and to lengths
-        real(kind = real_wp),   intent(in   ) :: theta(noq)            !< Local theta coefficients
-        real(kind = real_wp),   intent(in   ) :: flowtot(noq)          !< Flow plus additional velocities
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                 !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                 !< Number of cells or segments
+        real(kind = real_wp),   intent(inout) :: conc(num_substances_total, num_cells)    !< Concentrations
+        real(kind = dp),        intent(inout) :: concvt(num_cells)         !< Estimation of first solution by means of local theta method
+        real(kind = real_wp),   intent(in   ) :: volnew(num_cells)         !< Cell volumes at the new time
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions                 !< Number of boundary cells
+        real(kind = real_wp),   intent(in   ) :: bound(num_substances_transported, num_boundary_conditions)   !< Boundary concentrations
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                   !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: iknmrk(num_cells)         !< Feature array
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)        !< Exchange indeces
+        real(kind = real_wp),   intent(in   ) :: area(num_exchanges)             !< Surface areas
+        real(kind = real_wp),   intent(in   ) :: aleng(2, num_exchanges)         !< From- and to lengths
+        real(kind = real_wp),   intent(in   ) :: theta(num_exchanges)            !< Local theta coefficients
+        real(kind = real_wp),   intent(in   ) :: flowtot(num_exchanges)          !< Flow plus additional velocities
         integer(kind = int_wp), intent(in   ) :: integration_id        !< Integration option
-        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Area-wide mass balance array
+        real(kind = real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< Area-wide mass balance array
         integer(kind = int_wp), intent(in   ) :: ndmpq                 !< Number of dumped discharges
-        integer(kind = int_wp), intent(in   ) :: iqdmp(noq)            !< Indeces dumped exchages
-        real(kind = real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< Mass balance array for monitoring areas
+        integer(kind = int_wp), intent(in   ) :: iqdmp(num_exchanges)            !< Indeces dumped exchages
+        real(kind = real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2) !< Mass balance array for monitoring areas
 
         ! Local variables
         real(kind = real_wp) :: length   !< Length between midpoints of cells
@@ -86,7 +86,7 @@ contains
         if (timon) call timstrt ("dlwqm8", ithandl)
 
         ! loop accross the number of exchanges
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ! initialisations , check for transport anyhow
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
@@ -239,7 +239,7 @@ contains
             endif
         end do
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
                 conc(isys, iseg) = concvt(iseg)
             else

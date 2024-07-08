@@ -37,19 +37,19 @@ module m_dlwqf5
     !!    * Relative tolerance: default = 1.D-7
     !!    * Row scaling: 0 = no, 1 = (default) yes
     !!    * Generate iteration report: true or false
-    subroutine initialize_gmres(lunrep, nocons, coname, cons, preconditioner, &
-            &                   max_iterations, rel_tolerance, row_scaling, report_iterations, noseg, &
-            &                   noq3, noq, novec, matrix_size, &
-            &                   nolay, integration_type, integration_option)
+    subroutine initialize_gmres(lunrep, num_constants, coname, cons, preconditioner, &
+            &                   max_iterations, rel_tolerance, row_scaling, report_iterations, num_cells, &
+            &                   num_exchanges_z_dir, num_exchanges, num_fast_solver_vectors, matrix_size, &
+            &                   num_layers, integration_type, integration_option)
 
         use timers                         ! WAQ performance timers
 
         implicit none
 
         integer(kind = int_wp), intent(in)  :: lunrep             ! Unit number report file
-        integer(kind = int_wp), intent(in)  :: nocons             ! Number of constants used
-        character(20),          intent(in)  :: coname(nocons)     ! Constant names
-        real(kind = real_wp),   intent(in)  :: cons  (nocons)     ! Model constants
+        integer(kind = int_wp), intent(in)  :: num_constants             ! Number of constants used
+        character(20),          intent(in)  :: coname(num_constants)     ! Constant names
+        real(kind = real_wp),   intent(in)  :: cons  (num_constants)     ! Model constants
         integer(kind = int_wp), intent(out) :: preconditioner     ! Preconditioner switch:
                                                                   ! 0 = none
                                                                   ! 1 = GS (L)
@@ -59,12 +59,12 @@ module m_dlwqf5
         real(kind = dp),        intent(out) :: rel_tolerance      ! Relative tolerance
         integer(kind = int_wp), intent(out) :: row_scaling        ! Row scaling switch [0 = no, 1 =yes]
         logical,                intent(out) :: report_iterations  ! Switch on reporting iterarions
-        integer(kind = int_wp), intent(in)  :: noseg              ! Number of cells or computational volumes
-        integer(kind = int_wp), intent(in)  :: noq3               ! Number of exchange surfaces in 3rd direction
-        integer(kind = int_wp), intent(in)  :: noq                ! total number of exchange surfaces
-        integer(kind = int_wp), intent(in)  :: novec              ! vector_count
+        integer(kind = int_wp), intent(in)  :: num_cells              ! Number of cells or computational volumes
+        integer(kind = int_wp), intent(in)  :: num_exchanges_z_dir               ! Number of exchange surfaces in 3rd direction
+        integer(kind = int_wp), intent(in)  :: num_exchanges                ! total number of exchange surfaces
+        integer(kind = int_wp), intent(in)  :: num_fast_solver_vectors              ! vector_count
         integer(kind = int_wp), intent(in)  :: matrix_size        ! size of matrix with off-diagonals
-        integer(kind = int_wp), intent(out) :: nolay              ! number of layers
+        integer(kind = int_wp), intent(out) :: num_layers              ! number of layers
         integer(kind = int_wp), intent(in)  :: integration_type   ! integration type
         integer(kind = int_wp), intent(in)  :: integration_option ! integration option
 
@@ -83,9 +83,9 @@ module m_dlwqf5
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwqf5", ithandl)
 
-        ! look for unstructured setting, this is misuse of nolay, fractim depends also on this
+        ! look for unstructured setting, this is misuse of num_layers, fractim depends also on this
         if (btest(integration_option, 15)) then
-            nolay = 1
+            num_layers = 1
         end if
 
         ! Some initialisations
@@ -134,7 +134,7 @@ module m_dlwqf5
         end if
 
         ! Number of vectors
-        write (lunrep, 2260) novec
+        write (lunrep, 2260) num_fast_solver_vectors
 
         ! Relative tolerance
         write (lunrep, *)

@@ -27,7 +27,7 @@
 !  
 !  
 
-      subroutine write_srf ( file_srf, mmax  , nmax  , nosegl, surf  )
+      subroutine write_srf ( file_srf, num_columns  , num_rows  , nosegl, surf  )
 !
 !     created             : jan van beek
 !
@@ -44,8 +44,8 @@
       ! declaration of arguments
 
       type(t_file)                       :: file_srf               ! surfaces-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
       integer                                :: nosegl                 ! number of segments per layer
       real                                   :: surf(nosegl)           ! surf
 
@@ -71,10 +71,10 @@
       ! write surfaces file
 
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
-         write (lun) nmax,mmax,nosegl,nosegl,nosegl,idummy
+         write (lun) num_rows,num_columns,nosegl,nosegl,nosegl,idummy
          write (lun) (surf(i),i=1,nosegl)
       elseif ( filtyp .eq. FT_ASC ) then
-         write (lun,'(4i8)') nmax,mmax,nosegl,nosegl,nosegl,idummy
+         write (lun,'(4i8)') num_rows,num_columns,nosegl,nosegl,nosegl,idummy
          write (lun,'(e13.6)') (surf(i),i=1,nosegl)
       endif
 
@@ -84,7 +84,7 @@
       return
       end
 
-      subroutine write_hsrf ( file_hsrf, noseg, surf  )
+      subroutine write_hsrf ( file_hsrf, num_cells, surf  )
 !
 !     created             : michelle jeuken
 !
@@ -98,8 +98,8 @@
       ! declaration of arguments
 
       type(t_file)                       :: file_hsrf              ! surfaces-file
-      integer                                :: noseg                  ! number of segments
-      real                                   :: surf(noseg)            ! horizontal surfaces
+      integer                                :: num_cells                  ! number of segments
+      real                                   :: surf(num_cells)            ! horizontal surfaces
 
       ! local declarations
 
@@ -122,10 +122,10 @@
 
       ! write horizontal surfaces file
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
-         write (lun) idummy, (surf(i),i=1,noseg)
+         write (lun) idummy, (surf(i),i=1,num_cells)
       elseif ( filtyp .eq. FT_ASC ) then
          write (lun,'(i8)') idummy
-         write (lun,'(e13.6)') (surf(i),i=1,noseg)
+         write (lun,'(e13.6)') (surf(i),i=1,num_cells)
       endif
 
       close(file_hsrf%unit)

@@ -216,7 +216,7 @@ subroutine reconst_vel(q, h0, h1)
    end if
    alphafm = 0d0
 
-   do lay = 1,hyd%nolay
+   do lay = 1,hyd%num_layers
       do icell=1,numcells
          ! get flownode number (for s, bl)
          k = abs(cell2nod(icell)) + (lay-1) * hyd%nosegl
@@ -284,10 +284,10 @@ subroutine reconst_vel(q, h0, h1)
    ! bounds are influenced by this.
    !
    u0w = 0.0
-   do lay = 1,hyd%nolay-1
+   do lay = 1,hyd%num_layers-1
       do icell=1,numcells
          k       = abs(cell2nod(icell)) + (lay-1) * hyd%nosegl
-         L3d     = hyd%noq1 + k
+         L3d     = hyd%num_exchanges_u_dir + k
          icell3d = icell + (lay-1) * numcells
 
          u0w(icell3d) = hyd%flow(L3d) / hyd%volume(k)
@@ -319,7 +319,7 @@ subroutine set_fluxes(Lnx,q,qe)
    data ithndl / 0 /
    if ( timon ) call timstrt( "set_fluxes", ithndl )
 
-   do lay=1,hyd%nolay
+   do lay=1,hyd%num_layers
       do L=1,numedges
          L3d = L + (lay-1) * numedges
          qe(L3d) = 0d0
@@ -556,16 +556,16 @@ subroutine realloc_partrecons()
    use m_sferic, only: jsferic
    implicit none
 
-   call realloc(qe, numedges*hyd%nolay, keepExisting=.false., fill=DMISS)
-   call realloc(qbnd, numedges*hyd%nolay, keepExisting=.false., fill=0)
+   call realloc(qe, numedges*hyd%num_layers, keepExisting=.false., fill=DMISS)
+   call realloc(qbnd, numedges*hyd%num_layers, keepExisting=.false., fill=0)
    call realloc(cell_closed_edge, numedges, keepExisting=.false., fill=0)
-   call realloc(u0x, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
-   call realloc(u0y, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
-   call realloc(u0w, numcells*hyd%nolay, keepExisting=.false., fill=DMISS) ! AM: question: nolay or nolay-1
+   call realloc(u0x, numcells*hyd%num_layers, keepExisting=.false., fill=DMISS)
+   call realloc(u0y, numcells*hyd%num_layers, keepExisting=.false., fill=DMISS)
+   call realloc(u0w, numcells*hyd%num_layers, keepExisting=.false., fill=DMISS) ! AM: question: num_layers or num_layers-1
    if ( jsferic.eq.1 ) then
-      call realloc(u0z, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
+      call realloc(u0z, numcells*hyd%num_layers, keepExisting=.false., fill=DMISS)
    end if
-   call realloc(alphafm, numcells*hyd%nolay, keepExisting=.false., fill=DMISS)
+   call realloc(alphafm, numcells*hyd%num_layers, keepExisting=.false., fill=DMISS)
 
    call realloc(ireconst, numcells+1, keepExisting=.false., fill=0)
 

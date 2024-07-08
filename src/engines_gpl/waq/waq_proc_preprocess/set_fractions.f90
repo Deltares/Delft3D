@@ -34,7 +34,7 @@ contains
     !
     !
 
-    subroutine set_fraction(lurep, notot, syname, nomult, imultp, &
+    subroutine set_fraction(lurep, num_substances_total, syname, nomult, imultp, &
             procesdef, allitems, no_act, actlst, nbpr)
 
         !     Deltares Software Centre
@@ -58,7 +58,7 @@ contains
         ! arguments
 
         integer(kind = int_wp), intent(in) :: lurep                  !< unit number report file
-        integer(kind = int_wp), intent(in) :: notot                  !< number of substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                  !< number of substances
         character(len = *), intent(in) :: syname(*)              !< substance names
         integer(kind = int_wp), intent(in) :: nomult                 !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult)       !< multiple substance administration
@@ -76,7 +76,7 @@ contains
 
         ! set the fractions structure
 
-        call get_sfrac (lurep, notot, syname, nomult, imultp, &
+        call get_sfrac (lurep, num_substances_total, syname, nomult, imultp, &
                 sfracs)
 
         ! add atributes to processes ( and sfracs ?)

@@ -28,7 +28,7 @@ contains
 
 
       subroutine part01 ( lgrid  , lgrid2 , xp     , yp     , dx     ,  &
-                          dy     , area   , angle  , nmax   , mmax   )
+                          dy     , area   , angle  , num_rows   , num_columns   )
 !
 !
 !                   Deltares
@@ -65,16 +65,16 @@ contains
 
 !     kind         function         name                    Descriptipon
 
-      integer(int_wp ), intent(in   ) :: nmax                  !< first dimension lgrid
-      integer(int_wp ), intent(in   ) :: mmax                  !< second dimension lgrid
-      integer(int_wp ), intent(in   ) :: lgrid (nmax,mmax)     !< active grid indices matrix
-      integer(int_wp ), intent(in   ) :: lgrid2(nmax,mmax)     !< total grid indices matrix
-      real   (sp), intent(in   ) :: xp    (nmax*mmax)     !< x of upper right corner grid point
-      real   (sp), intent(in   ) :: yp    (nmax*mmax)     !< y of upper right corner grid point
-      real   (sp), intent(  out) :: dx    (nmax*mmax)     !< x distance of grid cell
-      real   (sp), intent(  out) :: dy    (nmax*mmax)     !< y distance of grid cell
-      real   (sp), intent(  out) :: area  (nmax*mmax)     !< horizontal surface area
-      real   (sp), intent(  out) :: angle (nmax*mmax)     !< angle of the gridcell
+      integer(int_wp ), intent(in   ) :: num_rows                  !< first dimension lgrid
+      integer(int_wp ), intent(in   ) :: num_columns                  !< second dimension lgrid
+      integer(int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)     !< active grid indices matrix
+      integer(int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)     !< total grid indices matrix
+      real   (sp), intent(in   ) :: xp    (num_rows*num_columns)     !< x of upper right corner grid point
+      real   (sp), intent(in   ) :: yp    (num_rows*num_columns)     !< y of upper right corner grid point
+      real   (sp), intent(  out) :: dx    (num_rows*num_columns)     !< x distance of grid cell
+      real   (sp), intent(  out) :: dy    (num_rows*num_columns)     !< y distance of grid cell
+      real   (sp), intent(  out) :: area  (num_rows*num_columns)     !< horizontal surface area
+      real   (sp), intent(  out) :: angle (num_rows*num_columns)     !< angle of the gridcell
 
 !     local scalars
 
@@ -104,8 +104,8 @@ contains
       pi  = 4.0*atan(1.0)
       dx  = default
       dy  = default
-      do 100 i = 1, nmax
-        do 50 j = 1, mmax
+      do 100 i = 1, num_rows
+        do 50 j = 1, num_columns
 !
           n0 = lgrid(i, j)
           if (n0  >  0) then

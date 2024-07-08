@@ -47,12 +47,12 @@ module m_grid_utils_external
     integer, parameter :: NolayGrid = 5
     integer, parameter :: NrGridTypes = 5
     character*20        GridTypes(NrGridTypes)
-    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'NOLAY' /
+    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'num_layers' /
 
     ! this is the grid pointer itself
     type t_grid
         character(len = NAME_SIZE) :: name      ! name of the grid
-        integer :: noseg              ! number of segments
+        integer :: num_cells              ! number of segments
         integer :: noseg_lay          ! number of segments per layer / 2D
         integer :: iref               ! grid reference nr
         character(len = NAME_SIZE) :: name_ref           ! name of the reference grid
@@ -60,7 +60,7 @@ module m_grid_utils_external
         integer, pointer :: iarray(:)          ! the pointer to reference the reference grid
         integer, pointer :: finalpointer(:)    ! the pointer to the final grid
         logical :: space_var_nolay    ! switch for space varying nr of layers
-        integer :: nolay              ! nr of expandable layers
+        integer :: num_layers              ! nr of expandable layers
         integer, pointer :: nolay_var(:)       ! space varying nr of layers if any
     contains
         procedure :: write => write_grid
@@ -133,14 +133,14 @@ contains
         ierror = 0
 
         write(file_unit, err = 100) self%name
-        write(file_unit, err = 100) self%noseg
+        write(file_unit, err = 100) self%num_cells
         write(file_unit, err = 100) self%noseg_lay
         write(file_unit, err = 100) self%iref
         write(file_unit, err = 100) self%name_ref
         write(file_unit, err = 100) self%itype
         write(file_unit, err = 100) self%finalpointer
         write(file_unit, err = 100) self%space_var_nolay
-        write(file_unit, err = 100) self%nolay
+        write(file_unit, err = 100) self%num_layers
         if (self%space_var_nolay) then
             write(file_unit, err = 100) self%nolay_var
         endif
@@ -151,31 +151,31 @@ contains
 
     end function write_grid
 
-    function read_grid(self, file_unit, noseg) result (ierror)
+    function read_grid(self, file_unit, num_cells) result (ierror)
 
         class(t_grid), intent(out) :: self        ! datastructure to be filled
         integer, intent(in) :: file_unit         ! unit number binary file with data
         ! number of segments in base grid (perhaps remove this dependency by adding the length of the pointer to
         ! the structure)
-        integer, intent(in) :: noseg
+        integer, intent(in) :: num_cells
         integer :: ierror
 
         ierror = 0
 
         read(file_unit, err = 100) self%name
-        read(file_unit, err = 100) self%noseg
+        read(file_unit, err = 100) self%num_cells
         read(file_unit, err = 100) self%noseg_lay
         read(file_unit, err = 100) self%iref
         read(file_unit, err = 100) self%name_ref
         read(file_unit, err = 100) self%itype
-        allocate (self%finalpointer(noseg), stat = ierr_alloc)
+        allocate (self%finalpointer(num_cells), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write(*, *) 'ERROR : allocating array in read_grid'
             call stop_with_error()
         endif
         read(file_unit, err = 100) self%finalpointer
         read(file_unit, err = 100) self%space_var_nolay
-        read(file_unit, err = 100) self%nolay
+        read(file_unit, err = 100) self%num_layers
         if (self%space_var_nolay) then
             allocate (self%nolay_var(self%noseg_lay), stat = ierr_alloc)
             if (ierr_alloc /= 0) then

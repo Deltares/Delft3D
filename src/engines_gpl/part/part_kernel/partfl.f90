@@ -39,8 +39,8 @@ implicit none               ! force explicit typing
 !
 contains
       subroutine partfl ( mnmaxk , conc   , volume , area   , velo   ,   &
-                          vdiff  , const  , nocons , pblay  , nosubs ,   &
-                          icvdf  , nolay  , alpha  , wvelo  , lun2   ,   &
+                          vdiff  , const  , num_constants , pblay  , nosubs ,   &
+                          icvdf  , num_layers  , alpha  , wvelo  , lun2   ,   &
                           nosubc , icvdf2 , lgrida )
 !
 !
@@ -96,14 +96,14 @@ contains
 !     alpha   real        1       input   scaling factor vert. diffusivity
 !     area    real      mnmaxk    input   surface area of grid cells
 !     conc    real  nosubs*mnmaxk input   concentration in two layers
-!     const   real      nocons    input   user-defined constants
+!     const   real      num_constants    input   user-defined constants
 !     idelt   integer     1       input   model time step
 !     icvdf   integer     1       input   subst number for vert diff.calc. top
 !     icvdf2  integer     1       input   subst number for vert diff.calc. bot
 !     lun2    integer     1       input   unit number of report file
 !     mnmaxk  integer     1       input   number of grid cells
-!     nocons  integer     1       input   number of constants
-!     nolay   integer     1       input   number of layers
+!     num_constants  integer     1       input   number of constants
+!     num_layers   integer     1       input   number of layers
 !     nopam   integer     1       input   actual first dimension param
 !                                         (first dimension cannot
 !                                         be zero)
@@ -164,7 +164,7 @@ contains
 !
       integer(int_wp ) :: i     , icvdf  , icvdf2 , inocns , lun2
       integer(int_wp ) :: max   , nosubc , ic
-      integer(int_wp ) :: min   , mnmaxk , nocons , nolay  , nosubs
+      integer(int_wp ) :: min   , mnmaxk , num_constants , num_layers  , nosubs
       real   (sp) :: alpha , depth  , diff0  , ufric
       real   (sp) :: densb , densmn , denst  , gamma
       real   (sp) :: pblay , ptlay  , salamb , tempb  , tempt  , tex
@@ -251,8 +251,8 @@ contains
 !
       if (first) then
         first = .false.
-        if(nolay /= 2) then
-          write(*,*) ' Nolay = ',nolay
+        if(num_layers /= 2) then
+          write(*,*) ' num_layers = ',num_layers
           write (*,*) ' Part presently works only for 2 layer model'
           write( lun2,*) ' Part presently works only for 2 layer model'
           call stop_exit(1)
@@ -266,8 +266,8 @@ contains
 !       check number of constants
 !
         inocns = 12
-        if (inocns  >  nocons) then
-          write(lun2, 99001) subnam, inocns, nocons
+        if (inocns  >  num_constants) then
+          write(lun2, 99001) subnam, inocns, num_constants
           call stop_exit(1)
         endif
 !

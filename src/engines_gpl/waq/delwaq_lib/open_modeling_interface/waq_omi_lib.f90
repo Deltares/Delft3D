@@ -73,7 +73,7 @@ contains
     !! Used here only
     subroutine set_intopt(option, keyword_true, keyword_false)
 
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         logical :: option                                  !< Selected value of the option
         character(len = *) :: keyword_true                   !< Keyword describing "true" value for the option
@@ -145,19 +145,19 @@ contains
 
     end function GetLastMessage
 
-    logical function GetWQDimensions(notot, noseg)
+    logical function GetWQDimensions(num_substances_total, num_cells)
 
         !DEC$ ATTRIBUTES DLLEXPORT::GetWQDimensions
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETWQDIMENSIONS' :: GetWQDimensions
 
         use delwaq2_global_data
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
-        integer(kind = int_wp), intent(out) :: notot          !< Number of substances
-        integer(kind = int_wp), intent(out) :: noseg          !< Number of segments
+        integer(kind = int_wp), intent(out) :: num_substances_total          !< Number of substances
+        integer(kind = int_wp), intent(out) :: num_cells          !< Number of segments
 
-        notot = size_dlwq_state%notot
-        noseg = size_dlwq_state%noseg
+        num_substances_total = size_dlwq_state%num_substances_total
+        num_cells = size_dlwq_state%num_cells
 
         GetWQDimensions = .true.
 
@@ -170,7 +170,7 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETSIMULATIONTIMES' :: SetSimulationTimes
 
         use delwaq2_global_data
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         integer(kind = int_wp), intent(in) :: startTime        !< Start time in seconds since the reference date/time
         integer(kind = int_wp), intent(in) :: endTime          !< Stop time in seconds since the reference date/time
@@ -193,7 +193,7 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'GETSIMULATIONTIMES' :: GetSimulationTimes
 
         use delwaq2_global_data
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         integer(kind = int_wp), intent(out) :: startTime        !< Start time in seconds since the reference date/time
         integer(kind = int_wp), intent(out) :: endTime          !< Stop time in seconds since the reference date/time
@@ -210,7 +210,7 @@ contains
     !> Set time format in monitoring file
     logical function SetTimeFormat(timeFormat)
 
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         !DEC$ ATTRIBUTES DLLEXPORT::SetTimeFormat
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETTIMEFORMAT' :: SetTimeFormat
@@ -259,8 +259,8 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'SETOUTPUTTIMERS' :: SetOutputTimers
 
         use delwaq2_global_data
-        use m_sysn
-        use m_sysi
+        use m_waq_memory_dimensions
+        use m_timer_variables
 
         integer(kind = int_wp), intent(in) :: type
         integer(kind = int_wp), intent(in) :: startTime
@@ -283,7 +283,7 @@ contains
         case default
         end select
 
-        noutp = 9
+        num_output_files = 9
         SetOutputTimers = .true.
 
     end function SetOutputTimers
@@ -299,7 +299,7 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: idx
         integer(kind = int_wp), dimension(*), intent(in) :: ivalue
@@ -320,7 +320,7 @@ contains
         ilow = 10**(idx - 1)
         iup = 10**idx
 
-        do iseg = 1, noseg ! + nseg2 (segments in bed)
+        do iseg = 1, num_cells ! + num_cells_bottom (segments in bed)
             i1 = (iknmrk(iseg) / iup) * iup
             i2 = ((iknmrk(iseg) - i1) / ilow) * ilow
             i3 = iknmrk(iseg) - i1 - i2
@@ -394,8 +394,8 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(in) :: value
@@ -406,11 +406,11 @@ contains
 
         call find_index(name, substance_name, idx)
         if (idx > 0) then
-            substance_conc(idx, 1:noseg) = value(1:noseg)
+            substance_conc(idx, 1:num_cells) = value(1:num_cells)
         else
             call find_index(name, procparam_param, idx)
             if (idx > 0) then
-                procparam_param_value(idx, 1:noseg) = value(1:noseg)
+                procparam_param_value(idx, 1:num_cells) = value(1:num_cells)
             else
                 call SetMessage(LEVEL_ERROR, &
                         'Name not found (not a substance or process parameter): ' // name)
@@ -437,8 +437,8 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), intent(in) :: value
@@ -453,7 +453,7 @@ contains
         else
             call find_index(name, procparam_param, idx)
             if (idx > 0) then
-                dlwqd%buffer%rbuf(iparm + idx - 1:iparm + idx - 1 + nopa * noseg - 1:nopa) = value
+                dlwqd%buffer%rbuf(iparm + idx - 1:iparm + idx - 1 + num_spatial_parameters * num_cells - 1:num_spatial_parameters) = value
             else
                 call SetMessage(LEVEL_ERROR, &
                         'Name not found (not a process parameter): ' // name)
@@ -480,8 +480,8 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(in) :: value
@@ -492,7 +492,7 @@ contains
 
         call find_index(name, procparam_param, idx)
         if (idx > 0) then
-            dlwqd%buffer%rbuf(iparm + idx - 1:iparm + idx - 1 + nopa * noseg - 1:nopa) = value(1:noseg)
+            dlwqd%buffer%rbuf(iparm + idx - 1:iparm + idx - 1 + num_spatial_parameters * num_cells - 1:num_spatial_parameters) = value(1:num_cells)
         else
             call SetMessage(LEVEL_ERROR, &
                     'Name not found (not a process parameter): ' // name)
@@ -518,9 +518,9 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         character(len = *), intent(in) :: name
         real(kind = real_wp), dimension(*), intent(out) :: value
@@ -532,14 +532,14 @@ contains
 
         call find_index(name, substance_name, idx)
         if (idx > 0) then
-            do i = 1, noseg
-                value(i) = dlwqd%buffer%rbuf(iconc + idx - 1 + (i - 1) * notot)
+            do i = 1, num_cells
+                value(i) = dlwqd%buffer%rbuf(iconc + idx - 1 + (i - 1) * num_substances_total)
             end do
         else
             call find_index(name, procparam_const, idx)
             if (idx > 0) then
-                do i = 1, noseg
-                    value(i) = dlwqd%buffer%rbuf(iconc + idx - 1 + (i - 1) * notot)
+                do i = 1, num_cells
+                    value(i) = dlwqd%buffer%rbuf(iconc + idx - 1 + (i - 1) * num_substances_total)
                 end do
             else
                 call SetMessage(LEVEL_ERROR, &
@@ -560,7 +560,7 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysi
+        use m_timer_variables
 
         integer(kind = int_wp), intent(in) :: method
         logical, intent(in) :: disp_flow_zero
@@ -594,7 +594,7 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysi
+        use m_timer_variables
 
         integer(kind = int_wp), intent(in) :: type
         logical, intent(in) :: lump_processes
@@ -639,7 +639,7 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQSCHEMATISATION' :: DefineWQSchematisation
 
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
         use matrix_utils, only : compute_matrix_size
 
         integer(kind = int_wp), intent(in) :: number_segments
@@ -666,26 +666,26 @@ contains
         write (lunwrk) pointer_table(:, 1:sum(number_exchanges))
         close (lunwrk)
 
-        noseg = number_segments
-        noq = sum(number_exchanges)
-        noq1 = number_exchanges(1)
-        noq2 = number_exchanges(2)
-        noq3 = number_exchanges(3)
-        noq4 = number_exchanges(4)
-        nolay = number_layers
-        if (noq > 0) then
-            nobnd = -minval(pointer_table(:, 1:noq))
+        num_cells = number_segments
+        num_exchanges = sum(number_exchanges)
+        num_exchanges_u_dir = number_exchanges(1)
+        num_exchanges_v_dir = number_exchanges(2)
+        num_exchanges_z_dir = number_exchanges(3)
+        num_exchanges_bottom_dir = number_exchanges(4)
+        num_layers = number_layers
+        if (num_exchanges > 0) then
+            num_boundary_conditions = -minval(pointer_table(:, 1:num_exchanges))
         else
-            nobnd = 0
+            num_boundary_conditions = 0
         end if
-        nobtyp = nobnd
+        num_boundary_types = num_boundary_conditions
 
         !
-        ! determine nomat (actually only needed if intsrt in [15:18, 21, 22] but
+        ! determine fast_solver_arr_size (actually only needed if intsrt in [15:18, 21, 22] but
         ! the numerical solver may not have been set and at a later time we don't
         ! have access to the pointer_table anymore)
         !
-        call compute_matrix_size(noq1, noq2, noq3, noseg, pointer_table, nomat)
+        call compute_matrix_size(num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_cells, pointer_table, fast_solver_arr_size)
 
         if (allocated(ipoint)) deallocate (ipoint)
         if (allocated(iknmrk)) deallocate (iknmrk)
@@ -694,16 +694,16 @@ contains
         if (allocated(boundary_type)) deallocate (boundary_type)
         if (allocated(ibpnt_array)) deallocate (ibpnt_array)
 
-        allocate (ipoint(4, noq))
-        ipoint = pointer_table(1:4, 1:noq)
+        allocate (ipoint(4, num_exchanges))
+        ipoint = pointer_table(1:4, 1:num_exchanges)
 
-        allocate (iknmrk(1:noseg)) ! actually noseg+nseg2 (segments in the bed)
+        allocate (iknmrk(1:num_cells)) ! actually num_cells+num_cells_bottom (segments in the bed)
         iknmrk = 0
 
-        allocate (boundary_id(1:nobnd))
-        allocate (boundary_name(1:nobnd))
-        allocate (boundary_type(1:nobnd))
-        allocate (ibpnt_array(4, nobnd))
+        allocate (boundary_id(1:num_boundary_conditions))
+        allocate (boundary_name(1:num_boundary_conditions))
+        allocate (boundary_type(1:num_boundary_conditions))
+        allocate (ibpnt_array(4, num_boundary_conditions))
         boundary_id = 'Dummy id'
         boundary_name = 'Dummy name'
         boundary_type = 'Dummy type'
@@ -711,7 +711,7 @@ contains
         ibpnt_array = 0
         ibpnt_array(1, :) = 0                     ! Time lags
 
-        do i = 1, noq
+        do i = 1, num_exchanges
             if (pointer_table(1, i) < 0 .and. pointer_table(2, i) > 0) then
                 j = -pointer_table(1, i)
                 ibpnt_array(2, j) = i
@@ -738,10 +738,10 @@ contains
         !DEC$ ATTRIBUTES DECORATE, ALIAS : 'DEFINEWQDISPERSION' :: DefineWQDispersion
 
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
 
         real(kind = real_wp), dimension(3), intent(in) :: dispc
-        real(kind = real_wp), dimension(2, noq) :: length
+        real(kind = real_wp), dimension(2, num_exchanges) :: length
 
         integer(kind = int_wp) :: time_dummy
         integer(kind = int_wp) :: lunwrk
@@ -888,7 +888,7 @@ contains
             process, number_processes)
 
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: number_substances
         integer(kind = int_wp), intent(in) :: number_parameters
@@ -932,11 +932,11 @@ contains
 
         allocate (substance_name(numsubstot))
         allocate (mult(2, nomult))
-        allocate (substance_conc(numsubstot, noseg))
+        allocate (substance_conc(numsubstot, num_cells))
         allocate (procparam_const(number_parameters + number_processes + 1))
         allocate (procparam_const_value(number_parameters + number_processes + 1))
         allocate (procparam_param(number_fields))
-        allocate (procparam_param_value(number_fields, noseg))
+        allocate (procparam_param_value(number_fields, num_cells))
 
         numsubstot = 0
         nomult = 0
@@ -965,28 +965,28 @@ contains
         procparam_param = field_parameter(1:number_fields)
         procparam_param_value = 0.0
 
-        nosys = numsubsact
-        notot = numsubstot
-        nototp = numsubstot        ! Particles not supported yet
-        nocons = number_parameters + number_processes + 1
-        nopa = number_fields
-        nofun = 0
-        nosfun = 0
+        num_substances_transported = numsubsact
+        num_substances_total = numsubstot
+        num_substances_part = numsubstot        ! Particles not supported yet
+        num_constants = number_parameters + number_processes + 1
+        num_spatial_parameters = number_fields
+        num_time_functions = 0
+        num_spatial_time_fuctions = 0
 
         !   administrate state sizes for OpenDA use
-        size_dlwq_state%notot = notot
-        size_dlwq_state%noseg = noseg
-        size_dlwq_state%conc = notot * noseg
+        size_dlwq_state%num_substances_total = num_substances_total
+        size_dlwq_state%num_cells = num_cells
+        size_dlwq_state%conc = num_substances_total * num_cells
         size_dlwq_state%other = 1 ! todo: set this to zero?
         size_dlwq_state%core = size_dlwq_state%conc + size_dlwq_state%other
 
         size_dlwq_state%rbuf = 0   !not known at this time. TODO: Will this cause problems???
-        size_dlwq_state%mass = notot * noseg
-        size_dlwq_state%names = notot
+        size_dlwq_state%mass = num_substances_total * num_cells
+        size_dlwq_state%names = num_substances_total
         size_dlwq_state%timeadmin = 3
         size_dlwq_state%pseudo = size_dlwq_state%rbuf + size_dlwq_state%mass + size_dlwq_state%names + size_dlwq_state%timeadmin
 
-        size_dlwq_state%output = 9 + 7 * noutp
+        size_dlwq_state%output = 9 + 7 * num_output_files
         size_dlwq_state%total = size_dlwq_state%core + size_dlwq_state%pseudo + size_dlwq_state%output
 
         write (*, *) 'state sizes have been set in DefineWQProcessesCore'
@@ -1028,7 +1028,7 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: number_loads
         integer(kind = int_wp), dimension(number_loads) :: cell
@@ -1039,7 +1039,7 @@ contains
         DefineDischargeLocations = .false.
 
         do i = 1, number_loads
-            if (cell(i) < 1 .or. cell(i) > noseg) then
+            if (cell(i) < 1 .or. cell(i) > num_cells) then
                 write (message, '(a,i0,a)') 'Discharge location out of range: ', cell(i), &
                         ' - should be between 1 and the number of segments'
                 call SetMessage(LEVEL_ERROR, message)
@@ -1065,8 +1065,8 @@ contains
             load_type(i) (1:20) = load_name(i) (1:20)
         end do
 
-        nowst = number_loads
-        nowtyp = 1
+        num_waste_loads = number_loads
+        num_waste_load_types = 1
 
         DefineDischargeLocations = .true.
 
@@ -1083,7 +1083,7 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn
+        use m_waq_memory_dimensions
 
         integer(kind = int_wp), intent(in) :: number_monitoring
         character(len = *), dimension(number_monitoring) :: name
@@ -1095,7 +1095,7 @@ contains
         DefineMonitoringLocations = .false.
 
         do i = 1, number_monitoring
-            if (cell(i) < 1 .or. cell(i) > noseg) then
+            if (cell(i) < 1 .or. cell(i) > num_cells) then
                 write (message, '(a,i0,a)') 'Monitoring location out of range: ', cell(i), &
                         ' - should be between 1 and the number of segments'
                 call SetMessage(LEVEL_ERROR, message)
@@ -1117,7 +1117,7 @@ contains
         monitor_cell = cell(1:number_monitoring)
         cells_per_monitor = 1
 
-        nodump = 0
+        num_monitoring_points = 0
         ndmpar = number_monitoring
 
         DefineMonitoringLocations = .true.
@@ -1135,11 +1135,11 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
-        real(kind = real_wp), dimension(noseg), intent(in) :: volume
+        real(kind = real_wp), dimension(num_cells), intent(in) :: volume
 
         integer(kind = int_wp) :: time_dummy
         integer(kind = int_wp) :: lunwrk
@@ -1148,7 +1148,7 @@ contains
 
         time_dummy = 0
         open (newunit = lunwrk, file = trim(runid) // '-volumes.wrk', form = 'unformatted', access = 'stream', err = 911)
-        write (lunwrk) time_dummy, volume(1:noseg)
+        write (lunwrk) time_dummy, volume(1:num_cells)
         close (lunwrk)
 
         SetInitialVolume = .true.
@@ -1169,19 +1169,19 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
-        real(kind = real_wp), dimension(noseg), intent(in) :: volume
-        real(kind = real_wp), dimension(noq), intent(in) :: area
-        real(kind = real_wp), dimension(noq), intent(in) :: flow
+        real(kind = real_wp), dimension(num_cells), intent(in) :: volume
+        real(kind = real_wp), dimension(num_exchanges), intent(in) :: area
+        real(kind = real_wp), dimension(num_exchanges), intent(in) :: flow
 
         SetFlowData = .false.
 
-        dlwqd%buffer%rbuf(ivol2:ivol2 + noseg - 1) = volume
-        dlwqd%buffer%rbuf(iarea:iarea + noq - 1) = area
-        dlwqd%buffer%rbuf(iflow:iflow + noq - 1) = flow
+        dlwqd%buffer%rbuf(ivol2:ivol2 + num_cells - 1) = volume
+        dlwqd%buffer%rbuf(iarea:iarea + num_exchanges - 1) = area
+        dlwqd%buffer%rbuf(iflow:iflow + num_exchanges - 1) = flow
 
         SetFlowData = .true.
 
@@ -1198,15 +1198,15 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
-        real(kind = real_wp), dimension(noseg), intent(in) :: volume
+        real(kind = real_wp), dimension(num_cells), intent(in) :: volume
 
         SetFlowDataVolume = .false.
 
-        dlwqd%buffer%rbuf(ivol2:ivol2 + noseg - 1) = volume
+        dlwqd%buffer%rbuf(ivol2:ivol2 + num_cells - 1) = volume
 
         SetFlowDataVolume = .true.
 
@@ -1219,15 +1219,15 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
-        real(kind = real_wp), dimension(noq), intent(in) :: velocity
+        real(kind = real_wp), dimension(num_exchanges), intent(in) :: velocity
 
         SetFlowDataVelocity = .false.
 
-        dlwqd%buffer%rbuf(ivelo:ivelo + noq - 1) = velocity
+        dlwqd%buffer%rbuf(ivelo:ivelo + num_exchanges - 1) = velocity
 
         SetFlowDataVelocity = .true.
 
@@ -1248,12 +1248,12 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
-        real(kind = real_wp), dimension(noseg), intent(in) :: volume
-        real(kind = real_wp), dimension(noseg), intent(in) :: surf
+        real(kind = real_wp), dimension(num_cells), intent(in) :: volume
+        real(kind = real_wp), dimension(num_cells), intent(in) :: surf
         integer(kind = int_wp) :: mass_per_m2
 
         integer(kind = int_wp) :: error_count
@@ -1268,18 +1268,18 @@ contains
         ! should be done via the volume or the surface area
         !
         if (mass_per_m2 /= 0) then
-            nosubs = nosys
+            nosubs = num_substances_transported
         else
-            nosubs = notot
+            nosubs = num_substances_total
         end if
 
         error_count = 0
 
         call find_index('SURF      ', procparam_param, isurf)
 
-        do iseg = 1, noseg
-            ioff = imass + (iseg - 1) * notot - 1
-            ip = iparm + (iseg - 1) * nopa + isurf - 1
+        do iseg = 1, num_cells
+            ioff = imass + (iseg - 1) * num_substances_total - 1
+            ip = iparm + (iseg - 1) * num_spatial_parameters + isurf - 1
 
             if (abs(dlwqd%buffer%rbuf(ivol + iseg - 1)) > 1.0e-20) then
                 ratio = volume(iseg) / dlwqd%buffer%rbuf(ivol + iseg - 1)
@@ -1294,7 +1294,7 @@ contains
             if (isurf > 0) then
                 if (abs(dlwqd%buffer%rbuf(ip)) > 1.0e-20) then
                     ratio = surf(iseg) / dlwqd%buffer%rbuf(ip)
-                    do isys = nosubs + 1, notot
+                    do isys = nosubs + 1, num_substances_total
                         dlwqd%buffer%rbuf(ioff + isys) = dlwqd%buffer%rbuf(ioff + isys) * ratio
                     end do
                 else
@@ -1323,12 +1323,12 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         integer(kind = int_wp) :: idx
-        real(kind = real_wp), dimension(notot + 1), intent(in) :: value
+        real(kind = real_wp), dimension(num_substances_total + 1), intent(in) :: value
         character(len = 20) :: string
         integer(kind = int_wp) :: i
         integer(kind = int_wp) :: i2
@@ -1336,20 +1336,20 @@ contains
 
         SetWasteLoadValues = .false.
 
-        if (idx < 1 .or. idx > nowst) then
+        if (idx < 1 .or. idx > num_waste_loads) then
             write (string, '(i0)') idx
             call SetMessage(LEVEL_ERROR, &
                     'Waste load index out of range - index: ' // string)
             return
         end if
 
-        dlwqd%buffer%rbuf(iwste + (idx - 1) * (notot + 1):iwste + idx * (notot + 1) - 1) = value
+        dlwqd%buffer%rbuf(iwste + (idx - 1) * (num_substances_total + 1):iwste + idx * (num_substances_total + 1) - 1) = value
 
         if (reporting) then
             write (lunlst, '(a,i5,a,i10)') 'Waste loads for discharge ', idx, ' - at time: ', dlwqd%itime
             string = 'Flow rate'
-            do i = 0, nosys, 5
-                i2 = min(i + 4, nosys)
+            do i = 0, num_substances_transported, 5
+                i2 = min(i + 4, num_substances_transported)
                 if (i == 0) then
                     write (lunlst, '(5a20)') adjustr(string), (adjustr(substance_name(j)), j = i + 1, i2)
                 else
@@ -1377,12 +1377,12 @@ contains
 
         use waq_omi_utils
         use delwaq2_global_data
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
 
         integer(kind = int_wp) :: idx
-        real(kind = real_wp), dimension(nosys), intent(in) :: value
+        real(kind = real_wp), dimension(num_substances_transported), intent(in) :: value
         character(len = 20) :: string
         integer(kind = int_wp) :: i
         integer(kind = int_wp) :: i2
@@ -1390,19 +1390,19 @@ contains
 
         SetBoundaryConditions = .false.
 
-        if (idx < 1 .or. idx > nobnd) then
+        if (idx < 1 .or. idx > num_boundary_conditions) then
             write (string, '(i0)') idx
             call SetMessage(LEVEL_ERROR, &
                     'Boundary index out of range - index: ' // string)
             return
         end if
 
-        dlwqd%buffer%rbuf(ibset + (idx - 1) * nosys:ibset + idx * nosys - 1) = value
+        dlwqd%buffer%rbuf(ibset + (idx - 1) * num_substances_transported:ibset + idx * num_substances_transported - 1) = value
 
         if (reporting) then
             write (lunlst, '(a,i5,a,i10)') 'Conditions for boundary cell ', idx, ' - at time: ', dlwqd%itime
-            do i = 1, nosys, 5
-                i2 = min(i + 4, nosys)
+            do i = 1, num_substances_transported, 5
+                i2 = min(i + 4, num_substances_transported)
                 write (lunlst, '(5a20)') (adjustr(substance_name(j)), j = i, i2)
                 write (lunlst, '(5g20.5)') (value(j), j = i, i2)
             end do
@@ -1464,9 +1464,9 @@ contains
 
         use delwaq2_global_data
         use m_open_waq_files
-        use m_sysn          ! System characteristics
-        use m_sysc          ! Pointers in character array workspace
-        use m_sysa          ! Pointers in real array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_character_array_indices          ! Pointers in character array workspace
+        use m_real_array_indices          ! Pointers in real array workspace
 
         character(len = *) file_name
         integer(kind = int_wp) :: i, k, ierr
@@ -1474,9 +1474,9 @@ contains
         call open_waq_files(file_unit_list(23), file_name, 23, 1, ierr)
         if (ierr == 0) then
             write (file_unit_list(23)) (dlwqd%buffer%chbuf(imnam + k - 1), k = 1, 160)
-            write (file_unit_list(23)) notot, noseg
-            write (file_unit_list(23)) (substance_name(k), k = 1, notot)
-            write (file_unit_list(23)) dlwqd%itime, ((dlwqd%buffer%rbuf(iconc + (k - 1) + (i - 1) * notot), k = 1, notot), i = 1, noseg)
+            write (file_unit_list(23)) num_substances_total, num_cells
+            write (file_unit_list(23)) (substance_name(k), k = 1, num_substances_total)
+            write (file_unit_list(23)) dlwqd%itime, ((dlwqd%buffer%rbuf(iconc + (k - 1) + (i - 1) * num_substances_total), k = 1, num_substances_total), i = 1, num_cells)
             close (file_unit_list(23))
             WriteRestartFile = 0
         else
@@ -1497,10 +1497,10 @@ contains
         use m_cli_utils, only : store_command_arguments
         use m_waq_openda_exchange_items, only : openda_buffer_initialize
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
 
         type(t_waq_item) :: constants    !< delwaq constants list
         integer(kind = int_wp) :: lunrep, lunwrk
@@ -1536,39 +1536,39 @@ contains
 
         num_file_units = 45      ! num_file_units has been declared in sysn_ff.inc
         !
-        nothrd = 1       ! Set OpenMP threads to 1 (note: read_block_7_process_parameters code to overrule isn't called)
-        nogrid = 1       ! No multiple grid option at the moment
-        noitem = 11      ! Fixed number of items
+        num_threads = 1       ! Set OpenMP threads to 1 (note: read_block_7_process_parameters code to overrule isn't called)
+        num_grids = 1       ! No multiple grid option at the moment
+        num_items_time_fn = 11      ! Fixed number of items
         ilflag = 1       ! Always assume varying lengths
         itfact = 86400   ! Auxiliary timescale always 1 day
         newisp = 0
         newrsp = 0
-        nlines = noseg * 2 + ((noq1 + noq2 + noq3) * 2) * 2 ! memory related to volumes, areas, flows?
-        npoins = noseg + 3 + ((noq1 + noq2 + noq3) + 3) * 2 ! memory related to volumes, areas, flows?
+        nlines = num_cells * 2 + ((num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir) * 2) * 2 ! memory related to volumes, areas, flows?
+        num_indices = num_cells + 3 + ((num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir) + 3) * 2 ! memory related to volumes, areas, flows?
 
         ! fill the constants structure for use in dlwqp1
         ierr = constants%initialize()
-        ierr = constants%resize(nocons)
-        constants%no_item = nocons
-        constants%name(1:nocons) = procparam_const(1:nocons)
-        constants%constant(1:nocons) = procparam_const_value(1:nocons)
+        ierr = constants%resize(num_constants)
+        constants%no_item = num_constants
+        constants%name(1:num_constants) = procparam_const(1:num_constants)
+        constants%constant(1:num_constants) = procparam_const_value(1:num_constants)
 
-        if (nocons > 0) then
-            newisp = newisp + nocons + 5 + 2
-            newrsp = newrsp + nocons
-            nufil = 0
+        if (num_constants > 0) then
+            newisp = newisp + num_constants + 5 + 2
+            newrsp = newrsp + num_constants
+            num_unformat_files = 0
         end if
-        if (nopa > 0) then
-            newisp = newisp + nopa + noseg + 5 + 3
-            newrsp = newrsp + noseg * nopa * 3
-            nufil = 1
+        if (num_spatial_parameters > 0) then
+            newisp = newisp + num_spatial_parameters + num_cells + 5 + 3
+            newrsp = newrsp + num_cells * num_spatial_parameters * 3
+            num_unformat_files = 1
         end if
 
         name = argv(2)
 
         call write_delwaq04(name)
         call write_array_2d(name, 'initials', substance_conc)
-        if (nopa > 0) then
+        if (num_spatial_parameters > 0) then
             call write_array_2d(name, 'params', procparam_param_value)
             open (newunit = lunwrk, file = file_name_list(41))
             write (lunwrk, '(i5,a1,a256)') 0, ' ', trim(argv(2)) // '-params.wrk'
@@ -1577,10 +1577,10 @@ contains
 
         !
         ! Require SetInitialVolume instead
-        call write_array_const(name, 'flows', 0.0, noq)
-        call write_array_const(name, 'areas', 1.0, noq)
-        call write_array_const(name, 'wastload', 0.0, nowst * (notot + 1))
-        call write_array_const(name, 'boundary', 0.0, nobnd * nosys)
+        call write_array_const(name, 'flows', 0.0, num_exchanges)
+        call write_array_const(name, 'areas', 1.0, num_exchanges)
+        call write_array_const(name, 'wastload', 0.0, num_waste_loads * (num_substances_total + 1))
+        call write_array_const(name, 'boundary', 0.0, num_boundary_conditions * num_substances_transported)
         call write_functions(name)
 
         call handle_output_requests(name)
@@ -1613,8 +1613,8 @@ contains
         ! Write the first DELWAQ system intermediate file
         subroutine write_delwaq03(name)
             use workspace, only : set_array_indexes
-            use m_sysn          ! System characteristics
-            use m_sysi          ! Timer characteristics
+            use m_waq_memory_dimensions          ! System characteristics
+            use m_timer_variables          ! Timer characteristics
 
 
             character(len = *), intent(in) :: name
@@ -1623,7 +1623,7 @@ contains
             type(waq_data_buffer) :: buffer
             integer(kind = int_wp) :: lunwrk
 
-            !noutp = 0 ! TODO: requires additional information in delwaq03
+            !num_output_files = 0 ! TODO: requires additional information in delwaq03
 
             imaxa = 0
             imaxi = 0
@@ -1648,8 +1648,8 @@ contains
         !
         subroutine write_delwaq04(name)
             use m_grid_utils_external
-            use m_sysn          ! System characteristics
-            use m_sysi          ! Timer characteristics
+            use m_waq_memory_dimensions          ! System characteristics
+            use m_timer_variables          ! Timer characteristics
 
             character(len = *), intent(in) :: name
 
@@ -1682,22 +1682,22 @@ contains
 
             ! Grid definitions - base grid only
             iref = 1
-            write (lunwrk) noseg, iref, (i, i = 1, noseg)
+            write (lunwrk) num_cells, iref, (i, i = 1, num_cells)
 
             !
             ! Copied from grid.f
             aGrid%name = 'Base grid'
-            aGrid%noseg = noseg
-            aGrid%noseg_lay = noseg / nolay
+            aGrid%num_cells = num_cells
+            aGrid%noseg_lay = num_cells / num_layers
             aGrid%iref = 1
             aGrid%name_ref = ' '
             aGrid%itype = BaseGrid
             aGrid%space_var_nolay = .FALSE.
-            aGrid%nolay = nolay
+            aGrid%num_layers = num_layers
             aGrid%nolay_var => null()
-            allocate (aGrid%iarray(noseg))
-            allocate (aGrid%finalpointer(noseg))
-            do iseg = 1, noseg
+            allocate (aGrid%iarray(num_cells))
+            allocate (aGrid%finalpointer(num_cells))
+            do iseg = 1, num_cells
                 agrid%iarray(iseg) = iseg
                 agrid%finalpointer(iseg) = iseg
             end do
@@ -1708,22 +1708,22 @@ contains
             ! Now the rest ...
             !
             idummy = 1
-            write (lunwrk) (idummy, i = 1, notot) ! SYSGRD in set_grid_all_processes
-            write (lunwrk) (idummy, i = 1, notot) ! SYSNDT in set_grid_all_processes
+            write (lunwrk) (idummy, i = 1, num_substances_total) ! SYSGRD in set_grid_all_processes
+            write (lunwrk) (idummy, i = 1, num_substances_total) ! SYSNDT in set_grid_all_processes
 
             write (lunwrk) iknmrk
 
-            if (nodisp > 0) write (lunwrk) diname
-            if (novelo > 0) write (lunwrk) vename
+            if (num_dispersion_arrays > 0) write (lunwrk) diname
+            if (num_velocity_arrays > 0) write (lunwrk) vename
 
             if (allocated(idpnt_array)) deallocate (idpnt_array)
-            allocate (idpnt_array(1:nosys), ivpnt_array(1:nosys))
+            allocate (idpnt_array(1:num_substances_transported), ivpnt_array(1:num_substances_transported))
             idpnt_array = 0   ! For the moment
             ivpnt_array = 0
             write (lunwrk) idpnt_array
             write (lunwrk) ivpnt_array
 
-            if (nobnd > 0) then
+            if (num_boundary_conditions > 0) then
                 write (lunwrk) ibpnt_array(2, :)
                 write (lunwrk) ibpnt_array(3, :)
             end if
@@ -1736,20 +1736,20 @@ contains
             write (lunwrk) idummy, (disp(i), i = 1, 3)
             write (lunwrk) idummy, (aleng(i), i = 1, 3)
 
-            if (nobnd > 0) then
-                write (lunwrk) (boundary_id(i), boundary_name(i), i = 1, nobnd)
+            if (num_boundary_conditions > 0) then
+                write (lunwrk) (boundary_id(i), boundary_name(i), i = 1, num_boundary_conditions)
                 write (lunwrk) boundary_type
-                write (lunwrk) (/(i, i = 1, nobnd)/)  ! Type
+                write (lunwrk) (/(i, i = 1, num_boundary_conditions)/)  ! Type
                 write (lunwrk) ibpnt_array(1, :)      ! Time lag
             end if
 
-            if (nowst > 0) then
+            if (num_waste_loads > 0) then
                 ! TODO:
                 ! Allow the waste load kind to be set
                 load_kind = 0
-                write (lunwrk) (load_cell(i), load_kind, load_type(i), load_name(i), i = 1, nowst)
+                write (lunwrk) (load_cell(i), load_kind, load_type(i), load_name(i), i = 1, num_waste_loads)
                 write (lunwrk) load_type_def
-                write (lunwrk) (1, i = 1, nowst)
+                write (lunwrk) (1, i = 1, num_waste_loads)
             end if
 
             write (lunwrk) procparam_const
@@ -1759,7 +1759,7 @@ contains
 
             if (allocated(nrftot)) deallocate (nrftot)
             if (allocated(nrharm)) deallocate (nrharm)
-            allocate (nrftot(1:noitem), nrharm(1:noitem))
+            allocate (nrftot(1:num_items_time_fn), nrharm(1:num_items_time_fn))
             nrftot = 0
             nrharm = 0
             write (lunwrk) nrftot
@@ -1773,9 +1773,9 @@ contains
             use m_error_status
 
             integer(kind = int_wp) :: ndmpq
-            integer(kind = int_wp) :: ndmps
-            integer(kind = int_wp) :: noraai
-            integer(kind = int_wp) :: ntraaq
+            integer(kind = int_wp) :: num_monitoring_cells
+            integer(kind = int_wp) :: num_transects
+            integer(kind = int_wp) :: num_transect_exchanges
             integer(kind = int_wp), dimension(1) :: nexcraai
             integer(kind = int_wp), dimension(1) :: iexcraai
             integer(kind = int_wp), dimension(1) :: ioptraai
@@ -1788,12 +1788,12 @@ contains
             nsegdmp = 1
             isegdmp = monitor_cell
 
-            noraai = 0      ! For now
-            ntraaq = 0      ! For now
+            num_transects = 0      ! For now
+            num_transect_exchanges = 0      ! For now
             file_unit_list(2) = 10
 
-            call create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, noq, noseg, nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
-                    noraai, ntraaq, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
+            call create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, num_exchanges, num_cells, num_boundary_conditions, ipoint, ntdmpq, ndmpq, num_monitoring_cells, &
+                    num_transects, num_transect_exchanges, nsegdmp, isegdmp, nexcraai, iexcraai, ioptraai, &
                     status)
 
         end subroutine write_delwaq04_monitoring
@@ -1805,7 +1805,7 @@ contains
         subroutine handle_output_requests(name)
             use processet
             use results
-            use m_sysn          ! System characteristics
+            use m_waq_memory_dimensions          ! System characteristics
 
             character(len = *) :: name
 
@@ -1847,7 +1847,7 @@ contains
             use processet
             use results, only : OutputPointers
             use rd_token
-            use m_sysn          ! System characteristics
+            use m_waq_memory_dimensions          ! System characteristics
 
             character(len = *), intent(in) :: name
 
@@ -1879,13 +1879,13 @@ contains
             AllItems%maxsize = 0
             AllItems%current_size = 0
 
-            org_noutp = noutp
+            org_noutp = num_output_files
 
             iocons = nopred + 1
-            iopa = iocons + nocons
-            iofun = iopa + nopa
-            iosfun = iofun + nofun
-            ioconc = iosfun + nosfun
+            iopa = iocons + num_constants
+            iofun = iopa + num_spatial_parameters
+            iosfun = iofun + num_time_functions
+            ioconc = iosfun + num_spatial_time_fuctions
 
             !
             ! For the moment: only output the substances, nothing extra
@@ -1914,7 +1914,7 @@ contains
                     ioutps, outputs, nomult, mult, constants, &
                     refday, status)
 
-            noutp = org_noutp
+            num_output_files = org_noutp
 
         end subroutine handle_processes
 
@@ -1951,17 +1951,17 @@ contains
             open (file_unit, file = trim(name) // '-function.wrk', form = 'unformatted', access = 'stream')
             write (file_unit) ' 5.000PROCES'
             i = 0
-            if (nocons > 0) then
+            if (num_constants > 0) then
                 i = i + 1
             end if
-            if (nopa > 0) then
+            if (num_spatial_parameters > 0) then
                 i = i + 1
             end if
 
             write (file_unit) i ! proc_pars%current_size
-            if (nocons > 0) then
+            if (num_constants > 0) then
                 write (file_unit) 10       ! subject SUBJECT_CONSTANT
-                write (file_unit) nocons   ! no_param
+                write (file_unit) num_constants   ! no_param
                 write (file_unit) 1        ! no_loc
                 write (file_unit) 0        ! no_brk
                 write (file_unit) 0        ! functype FUNCTYPE_CONSTANT
@@ -1977,7 +1977,7 @@ contains
                 loc = 'constant'
                 write (file_unit) loc
                 write (file_unit) .true.   ! param_pointered
-                write (file_unit) (i, i = 1, nocons)
+                write (file_unit) (i, i = 1, num_constants)
                 write (file_unit) .false.  ! loc_defaults
                 write (file_unit) .false.  ! loc_pointered
                 write (file_unit) .false.  ! scaled
@@ -1986,10 +1986,10 @@ contains
                 write (file_unit) .false.  ! loc_scaled
                 write (file_unit) procparam_const_value
             end if
-            if (nopa > 0) then
+            if (num_spatial_parameters > 0) then
                 write (file_unit) 11       ! subject SUBJECT_PARAMETER
-                write (file_unit) nopa     ! no_param
-                write (file_unit) noseg    ! no_loc
+                write (file_unit) num_spatial_parameters     ! no_param
+                write (file_unit) num_cells    ! no_loc
                 write (file_unit) 0        ! no_brk
                 write (file_unit) 0        ! functype FUNCTYPE_CONSTANT
                 write (file_unit) 1        ! igrid
@@ -2001,12 +2001,12 @@ contains
                 write (file_unit) .true.   ! param_named
                 write (file_unit) procparam_param
                 write (file_unit) .true.   ! loc_named
-                do i = 1, noseg
+                do i = 1, num_cells
                     write (loc, '(A8,I8)') 'segment ', i
                     write (file_unit) loc
                 end do
                 write (file_unit) .true.   ! param_pointered
-                write (file_unit) (i, i = 1, nopa)
+                write (file_unit) (i, i = 1, num_spatial_parameters)
                 write (file_unit) .false.  ! loc_defaults
                 write (file_unit) .false.  ! loc_pointered
                 write (file_unit) .false.  ! scaled
@@ -2031,8 +2031,8 @@ contains
             write (file_unit, '(4x,a,i5)') 'Integration method: ', intsrt
             write (file_unit, '(4x,a,i5)') 'Secondary options:  ', intopt
             write (file_unit, '(/,a)') 'Schematisation:'
-            write (file_unit, '(4x,a,i10)') 'Number of segments: ', noseg
-            write (file_unit, '(4x,a,4i10)') 'Number of exchanges:', noq1, noq2, noq3, noq4
+            write (file_unit, '(4x,a,i10)') 'Number of segments: ', num_cells
+            write (file_unit, '(4x,a,4i10)') 'Number of exchanges:', num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
             write (file_unit, '(/,a)') 'Substances:'
             write (file_unit, '(i5,1x,a20)') (i, substance_name(i), i = 1, size(substance_name))
             write (file_unit, '(/,a)') 'Constants/functions:'
@@ -2108,10 +2108,10 @@ contains
         use m_cli_utils, only : store_command_arguments
         use m_waq_openda_exchange_items, only : openda_buffer_initialize
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
 
         character(len = *), intent(in) :: runid_given
 

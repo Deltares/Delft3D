@@ -28,9 +28,9 @@ module m_vtrans
 contains
 
 
-    subroutine vtrans (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine vtrans (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Vertical distribution after a longer time span to correct 3D-BLOOM
 
@@ -39,7 +39,7 @@ contains
         !
         ! Name    T   L I/O   Description                                    Units
         ! ----    --- -  -    -------------------                            -----
-        ! NOLAY   I*4 1 I     number of layers
+        ! num_layers   I*4 1 I     number of layers
         !
 
         use m_logger_helper, only : get_log_unit_number, stop_with_error
@@ -52,9 +52,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     local declarations
         !
@@ -65,7 +65,7 @@ contains
         integer(kind = int_wp) :: in1, in2, in3, in4, in5, &
                 in6, in7, in8, in9, in10, &
                 in11, in12, in13, in14, in15
-        integer(kind = int_wp) :: idt, nolay, nosegl, noq, noq12, &
+        integer(kind = int_wp) :: idt, num_layers, nosegl, num_exchanges, noq12, &
                 ilay, isegl, iseg, ifrom, ito, &
                 nosub, isub, iq, iqtest, ikmrk1, &
                 nosegw, ikmrk2, itime
@@ -92,70 +92,70 @@ contains
         ip8 = ipoint(8)
         ip14 = ipoint(14)
         !
-        idt = nint(pmsa(ip1))
-        delt = pmsa(ip2)
-        period = pmsa(ip3) / 24.
-        itime = nint(pmsa(ip5))
+        idt = nint(process_space_real(ip1))
+        delt = process_space_real(ip2)
+        period = process_space_real(ip3) / 24.
+        itime = nint(process_space_real(ip5))
 
         if (.not.fm_vtrans) then
             call dhnoseg(nosegw)
-            call dhnolay(nolay)
+            call dhnolay(num_layers)
         else
-            nolay = nolayfm
-            nosegw = noseg
+            num_layers = nolayfm
+            nosegw = num_cells
         endif
 
         !     initialise and allocate memory in module bloom_data_vtrans
         if (.not. init_vtrans) then
             init_vtrans = .true.
             call get_log_unit_number(lunrep)
-            if (noq3 > 0) then
-                if (nolay/=0) then
-                    nosegl = nosegw / nolay
+            if (num_exchanges_z_dir > 0) then
+                if (num_layers/=0) then
+                    nosegl = nosegw / num_layers
                 else
                     nosegw = -1
                 endif
                 active_vtrans = .true.
-                pmsa(ip14) = 1.0
+                process_space_real(ip14) = 1.0
                 if (fm_vtrans) then
-                    allocate(fmlayer(noseg), fmktop(noseg), fmkbot(noseg), stat = ierr_alloc)
+                    allocate(fmlayer(num_cells), fmktop(num_cells), fmkbot(num_cells), stat = ierr_alloc)
                     if (ierr_alloc /= 0) then
                         write (lunrep, 1000) ierr_alloc
-                        write (lunrep, 1001) noseg
+                        write (lunrep, 1001) num_cells
                     endif
-                    do iseg = 1, noseg
-                        fmlayer(iseg) = pmsa(ip6)
-                        fmktop(iseg) = pmsa(ip7)
-                        fmkbot(iseg) = pmsa(ip8)
+                    do iseg = 1, num_cells
+                        fmlayer(iseg) = process_space_real(ip6)
+                        fmktop(iseg) = process_space_real(ip7)
+                        fmkbot(iseg) = process_space_real(ip8)
                         ip6 = ip6 + increm(6)
                         ip7 = ip7 + increm(7)
                         ip8 = ip8 + increm(8)
                     enddo
                     nolayfm = maxval(fmlayer)
-                    nolay = nolayfm
-                    nosegw = noseg
-                else if(nosegl * nolay /= nosegw) then
+                    num_layers = nolayfm
+                    nosegw = num_cells
+                else if(nosegl * num_layers /= nosegw) then
                     write(lunrep, *) ' WARNING unstructured 3D application'
                     write(lunrep, *) ' Vertical distribution routine VTRANS not possible'
-                    nolay = 1
+                    num_layers = 1
                     active_vtrans = .false.
-                    pmsa(ip14) = 0.0
+                    process_space_real(ip14) = 0.0
                 endif
             else
                 write(lunrep, *) ' WARNING 2D application'
                 write(lunrep, *) ' Vertical distribution routine VTRANS not possible'
-                nolay = 1
+                num_layers = 1
                 active_vtrans = .false.
-                pmsa(ip14) = 0.0
+                process_space_real(ip14) = 0.0
             endif
             if (active_vtrans) then
-                nolaylocal = nolay
-                noseglocal = noseg
-                allocate(concv(nolay, noseg), timev(nolay, noseg), fracv(nolay, noseg), dervv(nolay, noseg), stat = ierr_alloc)
+                nolaylocal = num_layers
+                noseglocal = num_cells
+                allocate(concv(num_layers, num_cells), timev(num_layers, num_cells), fracv(num_layers, num_cells), dervv(num_layers, num_cells), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
                     write (lunrep, 1000) ierr_alloc
-                    write (lunrep, 1001) noseg
-                    write (lunrep, 1002) nolay
+                    write (lunrep, 1001) num_cells
+                    write (lunrep, 1002) num_layers
                     call stop_with_error()
                 endif
 
@@ -186,12 +186,12 @@ contains
                     fracv = 0.0
                     timtot = 0.0
                     if(.not.fm_vtrans) then
-                        do ilay = 1, nolay
+                        do ilay = 1, num_layers
                             isegl = (ilay - 1) * nosegl + 1
                             concv(ilay, isegl:isegl + nosegl - 1) = 1.0
                         enddo
                     else
-                        do iseg = 1, noseg
+                        do iseg = 1, num_cells
                             ilay = fmlayer(iseg)
                             if(ilay>0) then
                                 concv(ilay, iseg) = 1.0
@@ -209,11 +209,11 @@ contains
         !
         if (.not. active_vtrans) return
         !
-        nolay = nolaylocal
-        nosegl = nosegw / nolay
-        nosub = nolay
-        noq = noq1 + noq2 + noq3
-        noq12 = noq1 + noq2
+        num_layers = nolaylocal
+        nosegl = nosegw / num_layers
+        nosub = num_layers
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+        noq12 = num_exchanges_u_dir + num_exchanges_v_dir
 
         ! not the first time if initialised to prevent double step
 
@@ -224,8 +224,8 @@ contains
             in4 = increm(4)
             ip4 = ipoint(4)
             do iseg = 1, nosegw
-                volume = pmsa(ip4) + tiny(1.0)
-                do ilay = 1, nolay
+                volume = process_space_real(ip4) + tiny(1.0)
+                do ilay = 1, num_layers
                     concv(ilay, iseg) = concv(ilay, iseg) * volume
                     dervv(ilay, iseg) = volume
                 enddo
@@ -244,19 +244,19 @@ contains
             ip11 = ipoint(11) + noq12 * in11
             ip12 = ipoint(12) + noq12 * in12
             ip13 = ipoint(13) + noq12 * in13
-            do iq = noq12 + 1, noq
+            do iq = noq12 + 1, num_exchanges
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom > 0 .and. ito > 0) then
                     call extract_waq_attribute(1, iknmrk(ito), ikmrk1)
                     if (ikmrk1==1) then
-                        disp = pmsa(ip9) + pmsa(ip13)
+                        disp = process_space_real(ip9) + process_space_real(ip13)
                     else
                         disp = 0.0
                     endif
-                    area = pmsa(ip10)
-                    lenfr = pmsa(ip11)
-                    lento = pmsa(ip12)
+                    area = process_space_real(ip10)
+                    lenfr = process_space_real(ip11)
+                    lento = process_space_real(ip12)
                     !
                     al = max(tiny(1.0), lenfr + lento)
                     e = idt * disp * area / al
@@ -283,7 +283,7 @@ contains
             !
             !            Loop over exchanges, single sweep backward
             !
-            do iq = noq, noq12 + 1, -1
+            do iq = num_exchanges, noq12 + 1, -1
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom > 0 .and. ito > 0) then
@@ -300,7 +300,7 @@ contains
             enddo
 
             do iseg = 1, nosegw      !  for if some diagonal entries are not 1.0
-                do ilay = 1, nolay
+                do ilay = 1, num_layers
                     if (dervv(ilay, iseg) /= 0.0) then
                         concv(ilay, iseg) = concv(ilay, iseg) / dervv(ilay, iseg)
                     endif
@@ -322,12 +322,12 @@ contains
                 timev = 0.0
                 timtot = 0.0
                 if(.not.fm_vtrans) then
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         isegl = (ilay - 1) * nosegl + 1
                         concv(ilay, isegl:isegl + nosegl - 1) = 1.0
                     enddo
                 else
-                    do iseg = 1, noseg
+                    do iseg = 1, num_cells
                         ilay = fmlayer(iseg)
                         if(ilay>0) then
                             concv(ilay, iseg) = 1.0
@@ -340,10 +340,10 @@ contains
         !     output IP14 is switch for the PLCT/BLOOM
         !     furthermore there is a max of 100 output, the fraction of time
         !
-        do iseg = 1, noseg
-            do ilay = 1, min(100, nolay)
+        do iseg = 1, num_cells
+            do ilay = 1, min(100, num_layers)
                 ip15 = ipoint(14 + ilay) + (iseg - 1) * increm(14 + ilay)
-                pmsa(ip15) = fracv(ilay, iseg)
+                process_space_real(ip15) = fracv(ilay, iseg)
             enddo
         enddo
 
@@ -352,7 +352,7 @@ contains
         if (l_restart) then
             if (dhltim(itime, idt)) then
                 open(newunit = ilun, file = file_restart, form = 'unformatted', access = 'stream')
-                write(ilun) noseg, nolay
+                write(ilun) num_cells, num_layers
                 write(ilun) timtot
                 write(ilun) concv
                 write(ilun) timev
@@ -363,8 +363,8 @@ contains
         !
         return
         1000 format(' ERROR: allocating memory in process ''vtrans'' :', I10)
-        1001 format(' noseg = ', I10)
-        1002 format(' nolay = ', I10)
+        1001 format(' num_cells = ', I10)
+        1002 format(' num_layers = ', I10)
     end
 
 end module m_vtrans

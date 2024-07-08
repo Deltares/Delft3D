@@ -27,18 +27,18 @@ module m_dlwqb3
     contains
 
     !> Makes new volumes for computed volumes
-    subroutine dlwqb3(area, flow, velo, ipoint, notot, &
-            noq, novelo, ivpnt, volume, integration_id, &
-            amass2, idt, iaflag, nosys, dmpq, &
+    subroutine dlwqb3(area, flow, velo, ipoint, num_substances_total, &
+            num_exchanges, num_velocity_arrays, ivpnt, volume, integration_id, &
+            amass2, idt, iaflag, num_substances_transported, dmpq, &
             ndmpq, iqdmp)
 
         use timers
 
         integer(kind = int_wp), intent(in   ) :: ndmpq          !< Number of dumped exchanges
-        integer(kind = int_wp), intent(in   ) :: notot          !< Number  of total substances
-        integer(kind = int_wp), intent(in   ) :: noq            !< Total number of exchanges
-        integer(kind = int_wp), intent(in   ) :: novelo         !< Number  of additional velos.
-        integer(kind = int_wp), intent(in   ) :: nosys          !< Number  of active substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total          !< Number  of total substances
+        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Total number of exchanges
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays         !< Number  of additional velos.
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported          !< Number  of active substances
         integer(kind = int_wp), intent(in   ) :: integration_id !< = 0 or 2 DISP at zero flow
                                                                 !! = 1 or 3 no DISP at zero flow
         integer(kind = int_wp), intent(in   ) :: idt            !< Integration time step size
@@ -63,25 +63,25 @@ module m_dlwqb3
         if (timon) call timstrt ("dlwqb3", ithandl)
 
         ! loop accross the number of exchanges
-        i4 = 3 * notot + 1
-        i5 = 4 * notot + 1
-        i6 = nosys * ndmpq
+        i4 = 3 * num_substances_total + 1
+        i5 = 4 * num_substances_total + 1
+        i6 = num_substances_transported * ndmpq
         b = 0.0
         if (iaflag == 1) b = 1.0 / idt
         masbal = .false.
         if (mod(integration_id, 16) >= 8) masbal = .true.
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ! initialisations, check for transport anyhow
             i = ipoint(1, iq)
             j = ipoint(2, iq)
             if (i == 0 .or. j == 0) goto 60
             q = flow(iq) * idt
             if (ivpnt(1) > 0) &
-                    q = q + velo((iq - 1) * novelo + ivpnt(1)) * area(iq) * idt
+                    q = q + velo((iq - 1) * num_velocity_arrays + ivpnt(1)) * area(iq) * idt
             ! accumulate balance for dumped exchanges
             if (masbal) then
                 if (iqdmp(iq) > 0) then
-                    ipq = (iqdmp(iq) - 1) * nosys + 1
+                    ipq = (iqdmp(iq) - 1) * num_substances_transported + 1
                     if (q > 0.0) then
                         dmpq(ipq) = dmpq(ipq) + q
                     else

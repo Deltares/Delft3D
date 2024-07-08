@@ -28,9 +28,9 @@ module m_macnut
 contains
 
 
-    subroutine MACNUT     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine MACNUT     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !
@@ -40,18 +40,18 @@ contains
         !
         !     type    name         i/o description
         !
-        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(45) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(45) ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(45) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(45)   !    local work array for the pointering
         integer(kind = int_wp) :: iseg        !    local loop counter for computational element loop
         !
@@ -111,39 +111,39 @@ contains
         ! zero the average concentrations for all segments
 
         ipnt = ipoint
-        do iseg = 1, noseg
-            pmsa(ipnt(39)) = 0.0
-            pmsa(ipnt(40)) = 0.0
-            pmsa(ipnt(41)) = 0.0
-            pmsa(ipnt(42)) = 0.0
-            pmsa(ipnt(43)) = 0.0
-            pmsa(ipnt(44)) = 0.0
-            pmsa(ipnt(45)) = 0.0
+        do iseg = 1, num_cells
+            process_space_real(ipnt(39)) = 0.0
+            process_space_real(ipnt(40)) = 0.0
+            process_space_real(ipnt(41)) = 0.0
+            process_space_real(ipnt(42)) = 0.0
+            process_space_real(ipnt(43)) = 0.0
+            process_space_real(ipnt(44)) = 0.0
+            process_space_real(ipnt(45)) = 0.0
             ipnt = ipnt + increm
         enddo
 
         ! first loop average concentration over height and rooting depth
 
         ipnt = ipoint
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            depth = pmsa(ipnt(1))
-            totaldepth = pmsa(ipnt(2))
-            locseddept = pmsa(ipnt(4))
-            nh4s12 = pmsa(ipnt(5))
-            po4s12 = pmsa(ipnt(6))
-            ibotseg = nint(pmsa(ipnt(7)))
-            FrBmLay = pmsa(ipnt(8))
-            rootdesm01 = pmsa(ipnt(9))
-            poros = pmsa(ipnt(10))
-            nh4 = max(pmsa(ipnt(11)), 0.0)
-            no3 = max(pmsa(ipnt(12)), 0.0)
-            po4 = max(pmsa(ipnt(13)), 0.0)
-            disco2 = max(pmsa(ipnt(14)), 0.0)
-            dish2co3 = max(pmsa(ipnt(15)), 0.0)
-            dishco3 = max(pmsa(ipnt(16)), 0.0)
-            prfnh4sm01 = pmsa(ipnt(17))
-            temp = pmsa(ipnt(30))
+            depth = process_space_real(ipnt(1))
+            totaldepth = process_space_real(ipnt(2))
+            locseddept = process_space_real(ipnt(4))
+            nh4s12 = process_space_real(ipnt(5))
+            po4s12 = process_space_real(ipnt(6))
+            ibotseg = nint(process_space_real(ipnt(7)))
+            FrBmLay = process_space_real(ipnt(8))
+            rootdesm01 = process_space_real(ipnt(9))
+            poros = process_space_real(ipnt(10))
+            nh4 = max(process_space_real(ipnt(11)), 0.0)
+            no3 = max(process_space_real(ipnt(12)), 0.0)
+            po4 = max(process_space_real(ipnt(13)), 0.0)
+            disco2 = max(process_space_real(ipnt(14)), 0.0)
+            dish2co3 = max(process_space_real(ipnt(15)), 0.0)
+            dishco3 = max(process_space_real(ipnt(16)), 0.0)
+            prfnh4sm01 = process_space_real(ipnt(17))
+            temp = process_space_real(ipnt(30))
 
             ! convert co2 to carbon and add h2co3, calculated din with preference
             ! adjust for porosity
@@ -160,18 +160,18 @@ contains
 
                 fr_avg = FrBmLay
 
-                pmsa(botidx(39)) = pmsa(botidx(39)) + din * fr_avg
-                pmsa(botidx(40)) = pmsa(botidx(40)) + po4 * fr_avg
-                pmsa(botidx(41)) = pmsa(botidx(41)) + disco2 * fr_avg
-                pmsa(botidx(42)) = pmsa(botidx(42)) + dishco3 * fr_avg
-                pmsa(botidx(45)) = pmsa(botidx(45)) + temp * fr_avg
+                process_space_real(botidx(39)) = process_space_real(botidx(39)) + din * fr_avg
+                process_space_real(botidx(40)) = process_space_real(botidx(40)) + po4 * fr_avg
+                process_space_real(botidx(41)) = process_space_real(botidx(41)) + disco2 * fr_avg
+                process_space_real(botidx(42)) = process_space_real(botidx(42)) + dishco3 * fr_avg
+                process_space_real(botidx(45)) = process_space_real(botidx(45)) + temp * fr_avg
 
                 ! S12 sediment concentration
 
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
-                    if (nh4s12>0.0) pmsa(botidx(43)) = nh4s12
-                    if (po4s12>0.0) pmsa(botidx(44)) = po4s12
+                    if (nh4s12>0.0) process_space_real(botidx(43)) = nh4s12
+                    if (po4s12>0.0) process_space_real(botidx(44)) = po4s12
                 endif
 
             elseif (ikmrk1==3) then
@@ -192,9 +192,9 @@ contains
                     fr_avg = 0.0
                 endif
 
-                pmsa(botidx(43)) = pmsa(botidx(43)) + din * fr_avg
-                pmsa(botidx(44)) = pmsa(botidx(44)) + po4 * fr_avg
-                pmsa(botidx(45)) = pmsa(botidx(45)) + temp * fr_avg
+                process_space_real(botidx(43)) = process_space_real(botidx(43)) + din * fr_avg
+                process_space_real(botidx(44)) = process_space_real(botidx(44)) + po4 * fr_avg
+                process_space_real(botidx(45)) = process_space_real(botidx(45)) + temp * fr_avg
 
             endif
 
@@ -205,25 +205,25 @@ contains
         ! second loop limiting factors and water / sediment uptake ratio
 
         ipnt = ipoint
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
 
-                    kmdinsm01w = pmsa(ipnt(18))
-                    kmpsm01w = pmsa(ipnt(19))
-                    kmco2sm01 = pmsa(ipnt(20))
-                    kmhco3sm01 = pmsa(ipnt(21))
-                    kmdinsm01b = pmsa(ipnt(22))
-                    kmpsm01b = pmsa(ipnt(23))
-                    cdinsm01w = pmsa(ipnt(24))
-                    cpo4sm01w = pmsa(ipnt(25))
-                    cco2sm01 = pmsa(ipnt(26))
-                    chco3sm01 = pmsa(ipnt(27))
-                    cdinsm01b = pmsa(ipnt(28))
-                    cpo4sm01b = pmsa(ipnt(29))
+                    kmdinsm01w = process_space_real(ipnt(18))
+                    kmpsm01w = process_space_real(ipnt(19))
+                    kmco2sm01 = process_space_real(ipnt(20))
+                    kmhco3sm01 = process_space_real(ipnt(21))
+                    kmdinsm01b = process_space_real(ipnt(22))
+                    kmpsm01b = process_space_real(ipnt(23))
+                    cdinsm01w = process_space_real(ipnt(24))
+                    cpo4sm01w = process_space_real(ipnt(25))
+                    cco2sm01 = process_space_real(ipnt(26))
+                    chco3sm01 = process_space_real(ipnt(27))
+                    cdinsm01b = process_space_real(ipnt(28))
+                    cpo4sm01b = process_space_real(ipnt(29))
 
                     ! n limitation
 
@@ -305,14 +305,14 @@ contains
 
                     limnutsm01 = min(limn, limp, lco2sm01)
 
-                    pmsa(ipnt(31)) = limnsm01w
-                    pmsa(ipnt(32)) = limpsm01w
-                    pmsa(ipnt(33)) = lco2sm01
-                    pmsa(ipnt(34)) = limnsm01b
-                    pmsa(ipnt(35)) = limpsm01b
-                    pmsa(ipnt(36)) = limnutsm01
-                    pmsa(ipnt(37)) = frootuptn
-                    pmsa(ipnt(38)) = frootuptp
+                    process_space_real(ipnt(31)) = limnsm01w
+                    process_space_real(ipnt(32)) = limpsm01w
+                    process_space_real(ipnt(33)) = lco2sm01
+                    process_space_real(ipnt(34)) = limnsm01b
+                    process_space_real(ipnt(35)) = limpsm01b
+                    process_space_real(ipnt(36)) = limnutsm01
+                    process_space_real(ipnt(37)) = frootuptn
+                    process_space_real(ipnt(38)) = frootuptp
 
                 endif
             endif

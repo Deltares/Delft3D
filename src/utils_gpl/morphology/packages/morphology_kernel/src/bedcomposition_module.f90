@@ -2652,7 +2652,7 @@ subroutine bedcomp_use_bodsed(this)
        do nm = this%settings%nmlb, this%settings%nmub
           !if (kcs(nm)<1 .or. kcs(nm)>2) cycle  !TODO: find a solution for this line
           !
-          ! nm = (m-1)*nmax + n
+          ! nm = (m-1)*num_rows + n
           !
           totsed = 0.0_fp
           do ised = 1, this%settings%nfrac

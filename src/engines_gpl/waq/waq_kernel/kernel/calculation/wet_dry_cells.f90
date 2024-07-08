@@ -43,10 +43,10 @@ contains
     !!      determining the drying and flooding of segments
     !!
     !!      The routine sets the defaults and determines if there are user-provided values
-    subroutine determine_dryflood_parameters(nocons, coname, cons, minvol, thresh, minarea)
-        integer, intent(in) :: nocons                        !< Number of constants
-        character(len = *), dimension(nocons), intent(in) :: coname    !< Names of the constants
-        real(kind = real_wp), dimension(nocons), intent(in) :: cons    !< Values of the constants
+    subroutine determine_dryflood_parameters(num_constants, constants_names, constants_values, minvol, thresh, minarea)
+        integer, intent(in) :: num_constants                                           !< Number of constants
+        character(len = *), dimension(num_constants), intent(in) :: constants_names    !< Names of the constants
+        real(kind = real_wp), dimension(num_constants), intent(in) :: constants_values !< Values of the constants
         real(kind = real_wp), intent(out) :: minvol, thresh, minarea   !< Arguments to pass the thrre numerical options
 
         integer :: id
@@ -55,21 +55,21 @@ contains
         if (initialise) then
             initialise = .false.
             dry_threshold = default_dry_threshold
-            id = index_in_array('DRY_THRESH', coname)
+            id = index_in_array('DRY_THRESH', constants_names)
             if (id > 0) then
-                dry_threshold = cons(id)
+                dry_threshold = constants_values(id)
             endif
 
             minimum_volume = default_minimum_volume
-            id = index_in_array('MIN_VOLUME', coname)
+            id = index_in_array('MIN_VOLUME', constants_names)
             if (id > 0) then
-                minimum_volume = cons(id)
+                minimum_volume = constants_values(id)
             endif
 
             minimum_area = 1.00E-04                                      ! default value of 1.00E-04 m2 = 1 cm2
-            id = index_in_array('MIN_AREA', coname)
+            id = index_in_array('MIN_AREA', constants_names)
             if (id > 0) then
-                minimum_area = cons(id)
+                minimum_area = constants_values(id)
             endif
         endif
 
@@ -98,24 +98,24 @@ contains
     !!      A dry cell may have transport, because it may be wet at the
     !!      end of the time step. It has however no processes yet. The wetting within the
     !!      time step is tested by the identify_wet_cells routine later in this file.
-    subroutine set_dry_cells_to_zero_and_update_volumes(nosegw, noseg, nolay, volume, noq12, area, nocons, coname, &
-            cons, surface, iknmrk, iknmkv)
+    subroutine set_dry_cells_to_zero_and_update_volumes(num_cells_water, num_cells, num_layers, volume, &
+            num_exchanges_u_v, area, num_constants, constants_names, constants_values, surface, iknmrk, iknmkv)
 
         use timers
         use waq_attribute_utils, only: set_feature
 
-        integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
-        integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes total
-        integer(kind = int_wp), intent(in) :: nolay                !< number of layers
-        real(kind = real_wp), intent(inout) :: volume(noseg)       !< volumes at start of time step
-        integer(kind = int_wp), intent(in) :: noq12                !< number of horizontal exchanges
-        real(kind = real_wp), intent(inout) :: area(noq12)         !< areas at start of time step
-        integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-        character(20), intent(in) :: coname(nocons)                !< names of the constants
-        real(kind = real_wp), intent(in) :: cons(nocons)        !< values of the constants
-        real(kind = real_wp), intent(in) :: surface(noseg)       !< horizontal surface area
-        integer(kind = int_wp), intent(in) :: iknmrk (noseg)       !< constant feature array
-        integer(kind = int_wp), intent(out) :: iknmkv (noseg)       !< time varying feature array
+        integer(kind = int_wp), intent(in) :: num_cells_water               !< number of computational volumes water
+        integer(kind = int_wp), intent(in) :: num_cells            !< number of computational volumes total
+        integer(kind = int_wp), intent(in) :: num_layers                !< number of layers
+        real(kind = real_wp), intent(inout) :: volume(num_cells)   !< volumes at start of time step
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_v                !< number of horizontal exchanges
+        real(kind = real_wp), intent(inout) :: area(num_exchanges_u_v)         !< areas at start of time step
+        integer(kind = int_wp), intent(in) :: num_constants               !< number of constants
+        character(20), intent(in) :: constants_names(num_constants)                !< names of the constants
+        real(kind = real_wp), intent(in) :: constants_values(num_constants)        !< values of the constants
+        real(kind = real_wp), intent(in) :: surface(num_cells)       !< horizontal surface area
+        integer(kind = int_wp), intent(in) :: iknmrk (num_cells)       !< constant feature array
+        integer(kind = int_wp), intent(out) :: iknmkv (num_cells)       !< time varying feature array
 
         ! Local variables
         integer(kind = int_wp) :: idryfld         ! help variable to find dry_tresh constant
@@ -134,7 +134,7 @@ contains
 
         ! Initialisations
 
-        nosegl = nosegw / nolay
+        nosegl = num_cells_water / num_layers
 
         ! Allocate the work array - reallocate if
         ! for some reason the model size has changed
@@ -146,11 +146,11 @@ contains
             allocate(sumvol(nosegl))
         endif
 
-        call determine_dryflood_parameters(nocons, coname, cons, minvolume, threshold, minarea)
+        call determine_dryflood_parameters(num_constants, constants_names, constants_values, minvolume, threshold, minarea)
 
         ivol = 0
         sumvol = 0.0
-        do ilay = 1, nolay
+        do ilay = 1, num_layers
             ! Use OpenMP? ikm, ivol private
             ! Is ikm important?
             !$omp parallel do private(ikm,ivol)
@@ -161,7 +161,7 @@ contains
         enddo
 
         ivol = 0
-        do ilay = 1, nolay
+        do ilay = 1, num_layers
             ! Use OpenMP? ivol private
             !$omp parallel do private(ivol)
             do isegl = 1, nosegl
@@ -189,21 +189,21 @@ contains
     !!      A dry cell may have transport, because it may be wet at the
     !!      end of the time step. It has however no processes yet in this step.\n
     !!      NB. This routine does NOT set cells dry, it only wettens any dry cells.
-    subroutine identify_wet_cells(nosegw, noseg, volume, nolay, nocons, &
-            coname, cons, surface, iknmrk, iknmkv)
+    subroutine identify_wet_cells(num_cells_water, num_cells, volume, num_layers, num_constants, &
+            constants_names, constants_values, surface, iknmrk, iknmkv)
 
         use timers
 
-        integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
-        integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume (noseg)       !< volumes at end of time step
-        integer(kind = int_wp), intent(in) :: nolay                !< number of layers
-        integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-        character(20), intent(in) :: coname (nocons)      !< names of the constants
-        real(kind = real_wp), intent(in) :: cons   (nocons)      !< values of the constants
-        real(kind = real_wp), intent(in) :: surface(noseg)       !< horizontal surface area
-        integer(kind = int_wp), intent(in) :: iknmrk (noseg)       !< constant feature array
-        integer(kind = int_wp), intent(inout) :: iknmkv (noseg)       !< time varying feature array
+        integer(kind = int_wp), intent(in) :: num_cells_water           !< number of computational volumes water
+        integer(kind = int_wp), intent(in) :: num_cells                 !< number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume (num_cells)       !< volumes at end of time step
+        integer(kind = int_wp), intent(in) :: num_layers                !< number of layers
+        integer(kind = int_wp), intent(in) :: num_constants             !< number of constants
+        character(20), intent(in) :: constants_names (num_constants)    !< names of the constants
+        real(kind = real_wp), intent(in) :: constants_values(num_constants)      !< values of the constants
+        real(kind = real_wp), intent(in) :: surface(num_cells)          !< horizontal surface area
+        integer(kind = int_wp), intent(in) :: iknmrk (num_cells)        !< constant feature array
+        integer(kind = int_wp), intent(inout) :: iknmkv(num_cells)      !< time varying feature array
 
         ! local variables
         integer(kind = int_wp) :: idryfld         ! help variable to find dry_tresh constant
@@ -220,7 +220,7 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("identify_wet_cells", ithandl)
 
-        nosegl = nosegw / nolay
+        nosegl = num_cells_water / num_layers
 
         ! Allocate the work array - reallocate if
         ! for some reason the model size has changed
@@ -232,10 +232,10 @@ contains
             allocate(sumvol(nosegl))
         endif
 
-        call determine_dryflood_parameters(nocons, coname, cons, minvolume, threshold, minarea)
+        call determine_dryflood_parameters(num_constants, constants_names, constants_values, minvolume, threshold, minarea)
 
         sumvol = 0.0
-        do ilay = 1, nolay
+        do ilay = 1, num_layers
             ! Use OpenMP? ikm, ivol private
             !$omp parallel do private(ikm,ivol)
             do isegl = 1, nosegl
@@ -244,7 +244,7 @@ contains
             enddo
         enddo
 
-        do ilay = 1, nolay
+        do ilay = 1, num_layers
             ! Use OpenMP? ikm, ivol private
             !$omp parallel do private(ivol)
             do isegl = 1, nosegl

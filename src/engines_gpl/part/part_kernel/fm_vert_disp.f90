@@ -98,7 +98,7 @@ subroutine fm_vert_disp (lunpr, itime)
 !>              Holthuysen and Herbers: J. Phys. Ocean 16,290-7,[1986]
 !>         </ol></ol>
 
-    use m_part_flow, only: h0, h1, nolay => kmx
+    use m_part_flow, only: h0, h1, num_layers => kmx
     use m_part_times
     use m_part_geom
     use m_part_parameters
@@ -157,7 +157,7 @@ subroutine fm_vert_disp (lunpr, itime)
     ! calculate settling velocity, check what happens if we change wsettl externally, then we do not need to calculate.
     call partvs( lunpr, itime  , nosubs , nopart , ivtset ,            &
                         ivtime , vsfour , vsfact , wpart  , wsettl ,   &
-                        modtyp , 0      , ndxi   , lgrid3 , nolay  ,   &
+                        modtyp , 0      , ndxi   , lgrid3 , num_layers  ,   &
                         mpart  , mpart  , laypart, nosegp , noseglp ,  &
                         rhopart, rhowatc, spart  , iptime)
     do ipart=1, nopart
@@ -177,14 +177,14 @@ subroutine fm_vert_disp (lunpr, itime)
             bottom_layer    = laybot(1,cellid_in_layer)
         else
             top_layer    = 1
-            bottom_layer = nolay
+            bottom_layer = num_layers
         endif
 
         totdepthlay(1) = h0(partcel)
         cellid         = partcel + (partlay-1) * hyd%nosegl
         ubstar_b = sqrt( gravity / chezy**2  * (u0x(cellid)**2 + u0y(cellid)**2) )
         do ilay = 2, noslay
-           if (ilay <= nolay) then
+           if (ilay <= num_layers) then
               totdepthlay(ilay) = totdepthlay(ilay - 1) + h0(partcel + (ilay-1) * hyd%nosegl)
               totdepth = totdepthlay(ilay)
            else

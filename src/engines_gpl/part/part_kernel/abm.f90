@@ -49,12 +49,12 @@ use intpltd_stagedev_mod        ! explicit interface
 implicit none
 
 contains
-      subroutine abm    ( lunrep   , itime    , idelt    , nmax     , mmax     ,    &
-                          layt     , nosegl   , nolay    , mnmaxk   , lgrid    ,    &
+      subroutine abm    ( lunrep   , itime    , idelt    , num_rows     , num_columns     ,    &
+                          layt     , nosegl   , num_layers    , mnmaxk   , lgrid    ,    &
                           lgrid2   , lgrid3   , nopart   , npwndw   , nosubs   ,    &
                           npart    , mpart    , kpart    , xpart    , ypart    ,    &
                           zpart    , wpart    , iptime   , wsettl   , locdep   ,    &
-                          nocons   , const    , conc     , xa       , ya       ,    &
+                          num_constants   , const    , conc     , xa       , ya       ,    &
                           angle    , vol1     , vol2     , flow     , depth    ,    &
                           vdiff1   , salin1   , temper1  , v_swim   , d_swim   ,    &
                           itstrtp  , vel1     , vel2     , abmmt    , abmsd    ,    &
@@ -67,15 +67,15 @@ contains
       integer(int_wp ), intent(in)    :: lunrep              ! report file
       integer(int_wp ), intent(in)    :: itime               ! time in seconds
       integer(int_wp ), intent(in)    :: idelt               ! time step size in seconds
-      integer(int_wp ), intent(in)    :: nmax                ! first grid dimension
-      integer(int_wp ), intent(in)    :: mmax                ! second grid dimension
+      integer(int_wp ), intent(in)    :: num_rows                ! first grid dimension
+      integer(int_wp ), intent(in)    :: num_columns                ! second grid dimension
       integer(int_wp ), intent(in)    :: layt                ! number of layers of hydr. database
       integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
-      integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation (all model)
+      integer(int_wp ), intent(in)    :: num_layers               ! number of layers in calculation (all model)
       integer(int_wp )                :: nlay                ! number of layers in calculation (current location)
       integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
-      integer(int_wp ), intent(in)    :: laytop(nmax,mmax)   !< highest active layer in z-layer model
-      integer(int_wp ), intent(in)    :: laybot(nmax,mmax)   !< deepest active layer in z-layer model
+      integer(int_wp ), intent(in)    :: laytop(num_rows,num_columns)   !< highest active layer in z-layer model
+      integer(int_wp ), intent(in)    :: laybot(num_rows,num_columns)   !< deepest active layer in z-layer model
       integer(int_wp ), pointer       :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
       integer(int_wp ), pointer       :: lgrid2( : , : )     ! total grid
       integer(int_wp ), pointer       :: lgrid3( : , : )     ! original grid (conc array)
@@ -93,7 +93,7 @@ contains
       real   (sp), pointer       :: wsettl( : )         ! settling per particle
       real   (sp), pointer       :: locdep( : , : )     ! depth per layer
       real   (sp), pointer       :: depth( : )          ! total depth of the cells from top to bottom
-      integer(int_wp ), intent(in)    :: nocons              ! number of constants
+      integer(int_wp ), intent(in)    :: num_constants              ! number of constants
       real   (sp), pointer       :: const ( : )         ! user-defined constants
       real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
       real   (sp), pointer       :: xa    ( : )         ! x-coordiante in real world
@@ -325,7 +325,7 @@ contains
       if ( itime .eq. itstrtp ) then
 
          !If the number of constants are equal to 0 deactivate the larvae model
-         if ( nocons .eq. 0 ) then
+         if ( num_constants .eq. 0 ) then
             write(lunrep,*) 'ERROR no constants, no larvae model activated'
             write(*,*) 'ERROR no constants, no larvae model activated'
             l_larvae = .false.
@@ -353,7 +353,7 @@ contains
                 l_larvae = .false.
                 stop
              endif
-             if ( nocons .ne. nfix_ace +nstage*nvar ) then
+             if ( num_constants .ne. nfix_ace +nstage*nvar ) then
                 write(lunrep,*) 'ERROR no of constants inconsistent with stages of asian carp model, no larvae model activated'
                 write(*,*) 'ERROR no of constants inconsistent with stages of asian carp model, no larvae model activated'
                 l_larvae = .false.
@@ -367,7 +367,7 @@ contains
              ! If number of constants .ne. to 9 (fixed number of constants) +
              ! number of stages * 18 (variable number of constants per stage) then
              ! deactivate the larvae model
-             if ( nocons .ne. nfix_std +nstage*nvar ) then
+             if ( num_constants .ne. nfix_std +nstage*nvar ) then
                 write(lunrep,*) 'ERROR no of constants inconsistent with stages, no larvae model activated'
                 write(*,*) 'ERROR no of constants inconsistent with stages, no larvae model activated'
                 l_larvae = .false.
@@ -550,7 +550,7 @@ contains
       !If the situation is met output the amount
       !of larvae per m2 per gridcell
       if ( itime .ge. it_start_m2 .and. itime .le. it_stop_m2 .and. mod(itime-it_start_m2,idt_m2) .lt. idelt ) then
-         call larvm2 ( lunrep   , itime    , nosegl   , nolay    , nosubs   ,    &
+         call larvm2 ( lunrep   , itime    , nosegl   , num_layers    , nosubs   ,    &
                        conc     )
       endif
 
@@ -572,7 +572,7 @@ contains
 
          m      = mpart(ipart)            !Second grid index of the current particle
          n      = npart(ipart)            !First grid index of the current particle
-         k      = min(kpart(ipart),nolay) !Third grid index of k which can not be higher than the number of layers
+         k      = min(kpart(ipart),num_layers) !Third grid index of k which can not be higher than the number of layers
          kb     = kpart(ipart)            !Third grid index of k (actual position)
          z      = zpart(ipart)            !The z value within the gridcell (0.0 - 1.0)
          iseg   = lgrid3(n,m)             !The original grid number (conc array)
@@ -586,12 +586,12 @@ contains
 
 
             isegl  = iseg + (k-1) * nosegl     !Segment number 3d of the particle(segment number + current layer * segments per layer)
-            isegb  = iseg + (nolay-1)*nosegl    !Segment number 3d of the particle on the bottom.
+            isegb  = iseg + (num_layers-1)*nosegl    !Segment number 3d of the particle on the bottom.
 
             laydep = locdep(lgrid2(n,m),k)                                                !Depth of the layer in which the particle is positioned (is used for substraction)
             if( k .ne. 1 ) laydep = laydep - locdep(lgrid2(n,m),k-1)                      !Distance of particle from the above layer
 
-            nlay = nolay
+            nlay = num_layers
             if(zmodel) nlay = laybot(n,m)                                                 ! get location specific number of layers when zmodel
 
             totdep = locdep(lgrid2(n,m),nlay)                                             !The total depth of the gridcell
@@ -789,15 +789,15 @@ contains
             !Deactivate particles in nursery stage who have arrived in nursery area
 
             if ( istage .ge. istage_nursery .and. is_nursery .and. .not. chronrev) then !If the stage of nursery is reached and nursery is true
-                kpart(ipart) = nolay +1                                              ! Add the particles to the storage layer (total layers + 1)
+                kpart(ipart) = num_layers +1                                              ! Add the particles to the storage layer (total layers + 1)
             elseif ( istage .gt. 0 .or. chronrev ) then                             !If nursery is not reached and particles are active
 
             !Release any particle from bottom
 
-            if ( kb .gt. nolay ) then                                            !If the layer the particle is positioned is higher than the number of layers
-                kpart(ipart) = nolay                                              ! Place the particle in the layer above the bottom for the third dimension track
-                k            = nolay                                              ! Place the particle in the layer above the bottom for the third dimension layers
-                kb           = nolay                                              ! Place the particle in the layer above the bottom for the third dimension actual position
+            if ( kb .gt. num_layers ) then                                            !If the layer the particle is positioned is higher than the number of layers
+                kpart(ipart) = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension track
+                k            = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension layers
+                kb           = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension actual position
                 zpart(ipart) = 0.5                                                ! Place the particle in the middle of the cell in the third dimension
             endif
 
@@ -817,10 +817,10 @@ contains
                     endif
 
                     call behv_test ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -836,10 +836,10 @@ contains
                     endif
 
                     call behv_european_eel ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -855,10 +855,10 @@ contains
                     endif
 
                     call behv_atlantic_salmon ( btype    , hbtype  , v_swim , d_swim   , n    ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -874,10 +874,10 @@ contains
                     endif
 
                     call behv_mauve_stinger ( btype    , hbtype  , v_swim , d_swim   , n    ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -893,10 +893,10 @@ contains
                     endif
 
                     call behv_horseshoecrab ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -912,10 +912,10 @@ contains
                     endif
 
                     call behv_mangrove ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                                    m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                    m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                     lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                     wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                    ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                                    ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                                     ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                                     vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                                     ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -926,10 +926,10 @@ contains
                 case (model_asian_carp_eggs)
 
                     call behv_asiancarpeggs ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                                        m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                                        m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                                         lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                                         wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                                        ypart    , nolay   , &
+                                        ypart    , num_layers   , &
                                         ktopp    , kbotp   , idelt  , day    , phase_diurn ,   &
                                         ebb_flow , flow    , depth  , vdiff1 , salin1      ,   &
                                         temper1  , vol1    , vol2   , vel1   , vel2        ,   &

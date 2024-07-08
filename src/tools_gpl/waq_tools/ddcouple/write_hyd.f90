@@ -96,10 +96,10 @@
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(13), hyd%cnv_start
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(14), hyd%cnv_stop
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(15), hyd%cnv_step
-      write(lunhyd,'(a,'' '',i10)') key(16), hyd%mmax
-      write(lunhyd,'(a,'' '',i10)') key(17), hyd%nmax
-      write(lunhyd,'(a,'' '',i10)') key(18), hyd%kmax
-      write(lunhyd,'(a,'' '',i10)') key(19), hyd%nolay
+      write(lunhyd,'(a,'' '',i10)') key(16), hyd%num_columns
+      write(lunhyd,'(a,'' '',i10)') key(17), hyd%num_rows
+      write(lunhyd,'(a,'' '',i10)') key(18), hyd%num_layers_grid
+      write(lunhyd,'(a,'' '',i10)') key(19), hyd%num_layers
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(20), trim(hyd%file_com%name)
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(21), trim(hyd%file_dwq%name)
       write(lunhyd,'(a,'' '''''',a,'''''''')') key(22), trim(hyd%file_lga%name)
@@ -147,7 +147,7 @@
       ! hydrodynamic-layers
 
       write(lunhyd,'(a)') key(48)
-      do ilay = 1 , hyd%kmax
+      do ilay = 1 , hyd%num_layers_grid
          write(lunhyd,'(''      '',F15.8)') hyd%hyd_layers(ilay)
       enddo
       write(lunhyd,'(a)') key(49)
@@ -155,7 +155,7 @@
       ! water-quality-layers
 
       write(lunhyd,'(a)') key(50)
-      do ilay = 1 , hyd%nolay
+      do ilay = 1 , hyd%num_layers
          write(lunhyd,'(''      '',i6)') nint(hyd%waq_layers(ilay))
       enddo
       write(lunhyd,'(a)') key(51)
@@ -190,8 +190,8 @@
          do i_domain = 1 , n_domain
             write(lunhyd,'(3a,i8,a,i8,3a)') &
                                 cq,trim(hyd%domain_coll%domain_pnts(i_domain)%name),cqs, &
-                                        hyd%domain_coll%domain_pnts(i_domain)%mmax ,cs , &
-                                        hyd%domain_coll%domain_pnts(i_domain)%nmax ,     &
+                                        hyd%domain_coll%domain_pnts(i_domain)%num_columns ,cs , &
+                                        hyd%domain_coll%domain_pnts(i_domain)%num_rows ,     &
                                csq,trim(hyd%domain_coll%domain_pnts(i_domain)%aggr) ,cq
          enddo
             write(lunhyd,'(a)') key(55)

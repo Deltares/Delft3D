@@ -54,11 +54,11 @@ subroutine part_readhydstep(hyd,itime,istat)
    if ( timon ) call timstrt( "part_readhydstep", ithndl )
 
    if (istat==0) then
-      do iseg = 1, hyd%noseg
+      do iseg = 1, hyd%num_cells
          vol0(iseg) = vol1(iseg)
          h0(iseg) = h1(iseg)
       end do
-      do iq = 1, hyd%noq
+      do iq = 1, hyd%num_exchanges
          q0(iq) = q1(iq)
       end do
    end if
@@ -69,12 +69,12 @@ subroutine part_readhydstep(hyd,itime,istat)
       istat = 99
    end if
    if (istat == 0) then
-      do iseg = 1, ndx !hyd%noseg
+      do iseg = 1, ndx !hyd%num_cells
          vol1(iseg) = real(hyd%volume(iseg),8)
          h1(iseg) = vol1(iseg)/ba(iseg)
       end do
-      offset = hyd%nolay*lnx
-      do K = 1, hyd%nolay
+      offset = hyd%num_layers*lnx
+      do K = 1, hyd%num_layers
           do L = 1, lnx  ! horizontal
              iql = lne2ln(L)  !loop at boundary cells
              iq  = lne2ln(L) + (K-1)*lnx  !
@@ -94,7 +94,7 @@ subroutine part_readhydstep(hyd,itime,istat)
       ! - the number of interfaces between the layers is one less than the number of layers,
       !   hence the correction.
       !
-      do K = 1,hyd%nolay-1
+      do K = 1,hyd%num_layers-1
           do L = 1, hyd%nosegl  ! vertical
              iq  = offset + L + (K-1) * hyd%nosegl  !
              q1(iq) = hyd%flow(iq)
@@ -128,23 +128,23 @@ subroutine read_hyd_step_fm(hyd,itime,istat)
 
    if ( first ) then
       first = .false.
-      allocate( vol1(hyd%noseg),     &
-                vol2(hyd%noseg),     &
-                tau1(hyd%noseg),     &
-                salin1(hyd%noseg),   &
-                temper1(hyd%noseg),  &
-                rhowatc(hyd%noseg),  &
-                vdiff1(hyd%noseg),   &
-                flow1(hyd%noq)   ,   &
-                flow2(hyd%noq)   ,   &
-                flow2m(hyd%noq)          )
-      allocate( cellpnt(hyd%noseg),  &
-                flowpnt(hyd%noq,2)       )
+      allocate( vol1(hyd%num_cells),     &
+                vol2(hyd%num_cells),     &
+                tau1(hyd%num_cells),     &
+                salin1(hyd%num_cells),   &
+                temper1(hyd%num_cells),  &
+                rhowatc(hyd%num_cells),  &
+                vdiff1(hyd%num_cells),   &
+                flow1(hyd%num_exchanges)   ,   &
+                flow2(hyd%num_exchanges)   ,   &
+                flow2m(hyd%num_exchanges)          )
+      allocate( cellpnt(hyd%num_cells),  &
+                flowpnt(hyd%num_exchanges,2)       )
 
-      do i = 1,hyd%noseg
+      do i = 1,hyd%num_cells
          cellpnt(i) = i
       enddo
-      do i = 1,hyd%noq
+      do i = 1,hyd%num_exchanges
          flowpnt(i,1) = i
          flowpnt(i,2) = 0 ! Ignore the "to" part
       enddo
@@ -152,8 +152,8 @@ subroutine read_hyd_step_fm(hyd,itime,istat)
       hyd%cnv_step_sec = -999 ! To properly initialise the reading procedure
    endif
                                                ! Was: lnx - AM
-   call rdhydr( hyd%nmax, hyd%mmax,  hyd%noseg, hyd%noq,          hyd%noseg,  &
-                hyd%noq,  itime,     itstrtp,   hyd%cnv_step_sec, hyd%volume, &
+   call rdhydr( hyd%num_rows, hyd%num_columns,  hyd%num_cells, hyd%num_exchanges,          hyd%num_cells,  &
+                hyd%num_exchanges,  itime,     itstrtp,   hyd%cnv_step_sec, hyd%volume, &
                 hyd%vdf,  hyd%surf,  hyd%flow,  vol1,             vol2,       &
                 flow1,    flow2m,    vdiff1,    update,           cellpnt,          flowpnt,    &
                 hyd%tau,  tau1,      caltau,    hyd%sal,          salin1,     &

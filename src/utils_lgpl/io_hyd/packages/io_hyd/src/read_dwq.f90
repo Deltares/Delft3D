@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_dwq(file_dwq, mmax  , nmax, ipnt )
+      subroutine read_dwq(file_dwq, num_columns  , num_rows, ipnt )
 
       !! read a dwq file and check dimensions
 
@@ -38,9 +38,9 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_dwq               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
-      integer                                :: ipnt(nmax,mmax)        ! aggregation pointer
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
+      integer                                :: ipnt(num_rows,num_columns)        ! aggregation pointer
 
       ! local declarations
 
@@ -59,19 +59,19 @@
          call stop_with_error()
       endif
 
-!     If nmaxd or mmaxd is one, only check if nmd.ne.nmax*mmax
+!     If nmaxd or mmaxd is one, only check if nmd.ne.num_rows*num_columns
       if (nmaxd.eq.1.or.mmaxd.eq.1) then
-        if (nmd.ne.nmax*mmax) then
+        if (nmd.ne.num_rows*num_columns) then
            write(*,*) ' dimensions grid on dido file differ from input hydrodynamics'
            call stop_with_error()
         endif
       else
-        if (nmaxd.ne.nmax.or.mmaxd.ne.mmax) then
+        if (nmaxd.ne.num_rows.or.mmaxd.ne.num_columns) then
            write(*,*) ' dimensions grid on dido file differ from input hydrodynamics'
            call stop_with_error()
         endif
       endif
-      read(file_dwq%unit,*,iostat=ioerr) ((ipnt(n,m),n=1,nmax),m=1,mmax)
+      read(file_dwq%unit,*,iostat=ioerr) ((ipnt(n,m),n=1,num_rows),m=1,num_columns)
       if ( ioerr .ne. 0 ) then
          write(*,*) ' error reading dwq file'
          call stop_with_error()

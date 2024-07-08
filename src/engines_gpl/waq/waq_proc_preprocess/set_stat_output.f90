@@ -34,7 +34,7 @@ contains
     !
     !
 
-    subroutine set_stat_output(statprocesdef, noutp, ioutps, nrvart, outputs)
+    subroutine set_stat_output(statprocesdef, num_output_files, ioutps, num_output_variables_extra, outputs)
 
         !     Deltares Software Centre
 
@@ -52,9 +52,9 @@ contains
         ! arguments
 
         type(procespropcoll), intent(in) :: statprocesdef          !< the statistical proces definition
-        integer(kind = int_wp), intent(in) :: noutp                  !< total number of output files
+        integer(kind = int_wp), intent(in) :: num_output_files                  !< total number of output files
         integer(kind = int_wp), intent(inout) :: ioutps(7, *)            !< (old) output structure
-        integer(kind = int_wp), intent(inout) :: nrvart                 !< total number of output parameters
+        integer(kind = int_wp), intent(inout) :: num_output_variables_extra                 !< total number of output parameters
         type(OutputPointers), intent(inout) :: outputs                !< output structure
 
         ! local
@@ -99,7 +99,7 @@ contains
                     endif
                 enddo
             enddo
-            do ioutp = 1, noutp - 2
+            do ioutp = 1, num_output_files - 2
 
                 ! check if there are weigth variables
 
@@ -122,13 +122,13 @@ contains
                         ioutps(5, ioutp) == ihn3 .or. ioutps(5, ioutp) == ihn4 .or. &
                         ioutps(5, ioutp) == imap .or. ioutps(5, ioutp) == ima2 .or. &
                         ioutps(5, ioutp) == imnf .or. ioutps(5, ioutp) == imn2) then
-                    nrvart = nrvart + nrvarx
+                    num_output_variables_extra = num_output_variables_extra + nrvarx
                 endif
             enddo
-            nrvart = nrvart + stat_output%current_size * 3
+            num_output_variables_extra = num_output_variables_extra + stat_output%current_size * 3
 
-            allocate(iopoi3(nrvart))
-            allocate(ounam3(nrvart))
+            allocate(iopoi3(num_output_variables_extra))
+            allocate(ounam3(num_output_variables_extra))
 
             ! handle output from statistical processes
 
@@ -138,7 +138,7 @@ contains
 
             iout1 = 0
             iout3 = 0
-            do ioutp = 1, noutp - 2
+            do ioutp = 1, num_output_files - 2
 
                 ! check if there are weigth variables
 
@@ -226,11 +226,11 @@ contains
             ! put the local arrays in the output structure
 
             deallocate(Outputs%names, Outputs%pointers, Outputs%std_var_name, Outputs%units, Outputs%description, STAT = ierr)
-            allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart), &
-                    Outputs%units(nrvart), Outputs%description(nrvart), STAT = ierr)
-            outputs%current_size = nrvart
-            outputs%pointers(1:nrvart) = iopoi3(1:nrvart)
-            outputs%names(1:nrvart) = ounam3(1:nrvart)
+            allocate(Outputs%names(num_output_variables_extra), Outputs%pointers(num_output_variables_extra), Outputs%std_var_name(num_output_variables_extra), &
+                    Outputs%units(num_output_variables_extra), Outputs%description(num_output_variables_extra), STAT = ierr)
+            outputs%current_size = num_output_variables_extra
+            outputs%pointers(1:num_output_variables_extra) = iopoi3(1:num_output_variables_extra)
+            outputs%names(1:num_output_variables_extra) = ounam3(1:num_output_variables_extra)
 
         endif
 

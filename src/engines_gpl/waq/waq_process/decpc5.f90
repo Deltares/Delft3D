@@ -28,9 +28,9 @@ module m_decpc5
 contains
 
 
-    SUBROUTINE DECPC5 (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE DECPC5 (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : write_error_message
         use m_extract_waq_attribute
 
@@ -99,9 +99,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: POC, PON, POP, RC20LO, RC20UP, RC20, &
                 TEMP, TC, TEMPC, ANR, APR, ALN, &
@@ -175,7 +175,7 @@ contains
 
         IFLUX = 0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !       In all active dry or wet segments
             !
@@ -185,30 +185,30 @@ contains
                 !
                 !          INPUT of subroutine
                 !
-                POC = MAX(PMSA(IP1), 0.0)
-                PON = MAX(PMSA(IP2), 0.0)
-                POP = MAX(PMSA(IP3), 0.0)
-                POS = MAX(PMSA(IP4), 0.0)
-                RC20UP = PMSA(IP5)
-                RC20LO = PMSA(IP6)
-                TC = PMSA(IP7)
-                TEMP = PMSA(IP8)
-                ANR = PMSA(IP9)
-                APR = PMSA(IP10)
-                ASR = PMSA(IP11)
-                ALN = PMSA(IP12)
-                ALP = PMSA(IP13)
-                AUN = PMSA(IP14)
-                AUP = PMSA(IP15)
-                OXY = PMSA(IP16)
-                NO3 = PMSA(IP17)
-                B_NO3 = PMSA(IP18)
-                B_SULF = PMSA(IP19)
-                B_DTPR = PMSA(IP20)
-                B_DTDR = PMSA(IP21)
-                DEPTH = PMSA(IP22)
-                SWEMRS = NINT(PMSA(IP23))
-                NATTEM = PMSA(IP24)
+                POC = MAX(process_space_real(IP1), 0.0)
+                PON = MAX(process_space_real(IP2), 0.0)
+                POP = MAX(process_space_real(IP3), 0.0)
+                POS = MAX(process_space_real(IP4), 0.0)
+                RC20UP = process_space_real(IP5)
+                RC20LO = process_space_real(IP6)
+                TC = process_space_real(IP7)
+                TEMP = process_space_real(IP8)
+                ANR = process_space_real(IP9)
+                APR = process_space_real(IP10)
+                ASR = process_space_real(IP11)
+                ALN = process_space_real(IP12)
+                ALP = process_space_real(IP13)
+                AUN = process_space_real(IP14)
+                AUP = process_space_real(IP15)
+                OXY = process_space_real(IP16)
+                NO3 = process_space_real(IP17)
+                B_NO3 = process_space_real(IP18)
+                B_SULF = process_space_real(IP19)
+                B_DTPR = process_space_real(IP20)
+                B_DTDR = process_space_real(IP21)
+                DEPTH = process_space_real(IP22)
+                SWEMRS = NINT(process_space_real(IP23))
+                NATTEM = process_space_real(IP24)
                 POC = POC / DEPTH
                 PON = PON / DEPTH
                 POP = POP / DEPTH
@@ -350,11 +350,11 @@ contains
                 !
                 !          OUTPUT of subroutine
                 !
-                PMSA(IP25) = RC20 * TEMPC * ELFACT
-                PMSA(IP26) = N_FACT
-                PMSA(IP27) = P_FACT
-                PMSA(IP28) = DECOC
-                PMSA(IP29) = DECOCE
+                process_space_real(IP25) = RC20 * TEMPC * ELFACT
+                process_space_real(IP26) = N_FACT
+                process_space_real(IP27) = P_FACT
+                process_space_real(IP28) = DECOC
+                process_space_real(IP29) = DECOCE
 
                 FL(1 + IFLUX) = CNVPC
                 FL(2 + IFLUX) = CNVPN

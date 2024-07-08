@@ -28,9 +28,9 @@ module m_rear
 contains
 
 
-    subroutine rear   (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine rear   (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_zerome
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
@@ -70,9 +70,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations
         !
@@ -170,43 +170,43 @@ contains
 
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 !         Compute saturation percentage for all layers
 
-                O2 = PMSA(IP1)
-                OXSAT = PMSA(IP10)
+                O2 = process_space_real(IP1)
+                OXSAT = process_space_real(IP10)
                 SATPERC = O2 / OXSAT * 100
-                PMSA (IP27) = SATPERC
+                process_space_real (IP27) = SATPERC
 
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
                     !
-                    DEPTH = PMSA(IP2)
-                    TEMP = PMSA(IP3)
-                    VELOC = PMSA(IP4)
-                    VWIND = PMSA(IP5)
-                    IFREAR = PMSA(IP6) + 0.5
-                    REARKL = PMSA(IP7)
-                    REARTC = PMSA(IP8)
-                    DELT = PMSA(IP9)
-                    SAL = PMSA(IP11)
-                    TOTDEP = PMSA(IP12)
-                    FCOVER = PMSA(IP13)
-                    MAXRRC = PMSA(IP14)
-                    MINRRC = PMSA(IP15)
-                    RAIN = PMSA(IP16)
-                    A = PMSA(IP17)
-                    B1 = PMSA(IP18)
-                    B2 = PMSA(IP19)
-                    C1 = PMSA(IP20)
-                    C2 = PMSA(IP21)
-                    D1 = PMSA(IP22)
-                    D2 = PMSA(IP23)
-                    D3 = PMSA(IP24)
-                    D4 = PMSA(IP25)
+                    DEPTH = process_space_real(IP2)
+                    TEMP = process_space_real(IP3)
+                    VELOC = process_space_real(IP4)
+                    VWIND = process_space_real(IP5)
+                    IFREAR = process_space_real(IP6) + 0.5
+                    REARKL = process_space_real(IP7)
+                    REARTC = process_space_real(IP8)
+                    DELT = process_space_real(IP9)
+                    SAL = process_space_real(IP11)
+                    TOTDEP = process_space_real(IP12)
+                    FCOVER = process_space_real(IP13)
+                    MAXRRC = process_space_real(IP14)
+                    MINRRC = process_space_real(IP15)
+                    RAIN = process_space_real(IP16)
+                    A = process_space_real(IP17)
+                    B1 = process_space_real(IP18)
+                    B2 = process_space_real(IP19)
+                    C1 = process_space_real(IP20)
+                    C2 = process_space_real(IP21)
+                    D1 = process_space_real(IP22)
+                    D2 = process_space_real(IP23)
+                    D3 = process_space_real(IP24)
+                    D4 = process_space_real(IP25)
 
                     IF (DEPTH   < 1E-30) CALL ZEROME ('DEPTH in REAR')
 
@@ -364,7 +364,7 @@ contains
                         CALL stop_with_error()
                     ENDIF
 
-                    PMSA (IP26) = REARRC / DEPTH
+                    process_space_real (IP26) = REARRC / DEPTH
 
                     !     Calculation of rearation flux ( M.L-1.DAY)
                     !     negatieve zuurstof wordt 0 gemaakt i.v.m. deficiet berekening!

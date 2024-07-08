@@ -54,16 +54,16 @@
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          ! grid table
 
-         call write_lga ( hyd%file_lga, hyd%mmax  , hyd%nmax  , hyd%nolay , hyd%nosegl, &
-                          hyd%noq1    , hyd%noq2  , hyd%noq3  , hyd%lgrid )
+         call write_lga ( hyd%file_lga, hyd%num_columns  , hyd%num_rows  , hyd%num_layers , hyd%nosegl, &
+                          hyd%num_exchanges_u_dir    , hyd%num_exchanges_v_dir  , hyd%num_exchanges_z_dir  , hyd%lgrid )
 
          ! total grid table
 
-         call write_lgt ( hyd%file_lgt, hyd%mmax  , hyd%nmax  , hyd%nolay )
+         call write_lgt ( hyd%file_lgt, hyd%num_columns  , hyd%num_rows  , hyd%num_layers )
 
          ! cco file
-         call write_cco ( hyd%file_cco, hyd%mmax  , hyd%nmax  , hyd%xdepth, hyd%ydepth, &
-                          hyd%nolay   )
+         call write_cco ( hyd%file_cco, hyd%num_columns  , hyd%num_rows  , hyd%xdepth, hyd%ydepth, &
+                          hyd%num_layers   )
       else if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
          hyd%waqgeom%epsg = hyd%crs%epsg_code
          success =  write_waqgeom_file(hyd%file_geo%name, hyd%meta, hyd%crs, hyd%waqgeom, &
@@ -73,18 +73,18 @@
 
       ! pointer table
 
-      call write_poi ( hyd%file_poi, hyd%noq   , hyd%noq1    , hyd%noq2  , hyd%noq3  , &
+      call write_poi ( hyd%file_poi, hyd%num_exchanges   , hyd%num_exchanges_u_dir    , hyd%num_exchanges_v_dir  , hyd%num_exchanges_z_dir  , &
                        hyd%ipoint  )
 
       ! surf
 
       if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
          write(lunrep,'(2a)') ' write horizontal surfaces file : ',trim(hyd%file_hsrf%name)
-         call write_hsrf ( hyd%file_hsrf, hyd%noseg, hyd%surf)
+         call write_hsrf ( hyd%file_hsrf, hyd%num_cells, hyd%surf)
       endif
       if ( hyd%file_srf%name .ne. ' ' ) then
          write(lunrep,'(2a)') ' write surface areas file : ',trim(hyd%file_srf%name)
-         call write_srf ( hyd%file_srf, hyd%mmax  , hyd%nmax  , hyd%nosegl, hyd%surf)
+         call write_srf ( hyd%file_srf, hyd%num_columns  , hyd%num_rows  , hyd%nosegl, hyd%surf)
       endif
 
       ! depth
@@ -92,7 +92,7 @@
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          if ( hyd%file_dps%name .ne. ' ' ) then
             write(lunrep,'(2a)') ' write depth file : ',trim(hyd%file_dps%name)
-            call write_srf ( hyd%file_dps, hyd%mmax  , hyd%nmax  , hyd%nosegl, hyd%depth)
+            call write_srf ( hyd%file_dps, hyd%num_columns  , hyd%num_rows  , hyd%nosegl, hyd%depth)
          endif
       endif
 
@@ -112,7 +112,7 @@
       valnam(1) = 'displen-from'
       valnam(2) = 'displen-to'
       write(lunrep,'(2a)') ' writing dispersion length file : ',trim(hyd%file_len%name)
-      call write_data( hyd%file_len, itime, 1, hyd%noq1, hyd%noq2, hyd%noq3, 2, 1, 0, valnam, hyd%displen,0)
+      call write_data( hyd%file_len, itime, 1, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, 2, 1, 0, valnam, hyd%displen,0)
 
       return
       end
