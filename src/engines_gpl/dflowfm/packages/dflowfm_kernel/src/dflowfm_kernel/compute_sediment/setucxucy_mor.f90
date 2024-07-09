@@ -56,12 +56,6 @@
 
    ucxq_mor = 0d0 ; ucyq_mor = 0d0           ! zero arrays
    ucx_mor  = 0d0 ; ucy_mor  = 0d0
-
-   !------------------------------------------
-   ! FM solver
-   !------------------------------------------
-   
-  ! if (flow_solver.eq.1) then !FM solver
        
    if (kmx < 1) then                                   ! original 2D coding
       do L = 1,lnx1D
@@ -471,24 +465,5 @@
       else     ! 3D
       endif
    end do
-
-   !------------------------------------------
-   ! SRE solver
-   !------------------------------------------
-   
-   !else !SRE solver
-   !    do kndx=1,ndx_mor  !loop on FM nodes
-   !        
-   !        
-   !       !skip boundary nodes, for which there is no SRE
-   !        !FM1DIMP2DO: we could initialize <grd_fm_sre> with zeros and skip if 0. 
-   !       if ((kndx>ndxi).and.(kndx<=ndx)) then 
-   !           cycle
-   !       endif
-   !    
-   !       idx_sre=f1dimppar%grd_fm_sre(kndx) 
-   !       ucxq_mor(kndx)=f1dimppar%qpack(idx_sre,3)/f1dimppar%waoft(idx_sre,3)
-   !    enddo
-   !endif
    
    end subroutine setucxucy_mor

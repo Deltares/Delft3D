@@ -277,18 +277,9 @@
            
           idx_sre=f1dimppar%grd_fm_sre(kd) 
           
-          !skip boundary nodes, for which there is no SRE
-          !if ((kd>ndxi).and.(kd<=ndx)) then
-          !FM1DIMP2DO: <idx_sre> cannot be 0 because I have made that it points to the closest SRE index. Remove below. 
-          !if (idx_sre.eq.0) then
-          !    ucxq_mor(kd)=0
-          !    ucyq_mor(kd)=0 !made 0 in initialization
-          !    hs_mor(kd)=0
-          !else
-              ucxq_mor(kd)=f1dimppar%qpack(idx_sre,3)/f1dimppar%waoft(idx_sre,3)
-              ucyq_mor(kd)=0
-              hs_mor(kd)=f1dimppar%hpack(idx_sre,3)-f1dimppar%bedlevel(idx_sre)              
-          !endif
+          ucxq_mor(kd)=f1dimppar%qpack(idx_sre,3)/f1dimppar%waoft(idx_sre,3)
+          ucyq_mor(kd)=0
+          hs_mor(kd)=f1dimppar%hpack(idx_sre,3)-f1dimppar%bedlevel(idx_sre)              
        
        enddo !kd
        
