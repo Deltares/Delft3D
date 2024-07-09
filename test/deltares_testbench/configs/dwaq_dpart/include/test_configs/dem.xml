@@ -42,7 +42,7 @@
             </file>
             <file name="WQtemplate-bal.prn" type="NUMBERTEXT">
                 <parameters>
-                    <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+                    <parameter name="balances" toleranceAbsolute="1.0e00" />
                 </parameters>
             </file>
         </checks>
