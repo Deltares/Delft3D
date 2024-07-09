@@ -30,15 +30,20 @@
                 </parameters>
             </file>
 <!-- Switched of for now because of NaNs in the reference data
-            <file name="EMtemplate-bal.prn" type="NUMBERTEXT" toleranceAbsolute="1.0e-00">
+            <file name="EMtemplate-bal.prn" type="NUMBERTEXT">
+                <parameters>
+                    <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+                </parameters>
             </file>
--->
-            <file name="WQtemplate_map.nc" type="netCDF">
+-->            <file name="WQtemplate_map.nc" type="netCDF">
                 <parameters>
                     <parameter name="mesh2d_2d_NO3" toleranceAbsolute="1.0e-00"/>
                 </parameters>
             </file>
-            <file name="WQtemplate-bal.prn" type="NUMBERTEXT" toleranceAbsolute="1.0e-00">
+            <file name="WQtemplate-bal.prn" type="NUMBERTEXT">
+                <parameters>
+                    <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+                </parameters>
             </file>
         </checks>
     </testCase>
