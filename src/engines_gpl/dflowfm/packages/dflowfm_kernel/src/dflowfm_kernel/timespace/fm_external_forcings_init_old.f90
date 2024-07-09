@@ -67,7 +67,7 @@ contains
       integer :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
-      character(len=64) :: varname
+      character(len=256) :: varname, varname2
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam, qidsfnam
       character(len=20) :: wqinput

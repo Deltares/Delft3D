@@ -32,54 +32,7 @@ module m_itdate
    integer          :: itdate      !< should be user specified for (asc routines)
    integer          :: jul0, imonth0, iday0, iyear0
    double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
-   end module m_itdate
-
-  integer, parameter :: max_file_types                 = 103 !  max nr of supported types for end user in ext file.
-  ! Enumeration for file types of sub-providers (not directly in ext file)
-  integer, parameter :: fourier                        = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
-  integer, parameter :: multiple_uni                   = 102 ! multiple time series, no spatial relation 
-  integer, parameter :: qhtable                        = 103 ! used to link to dataprovider file
-
-  ! het filetype legt vast  :  a) format file
-  !                            b) vectormax van grootheid / heden in file
-  !                            c) elementset waarop grootheid is gedefinieerd
-  !                            d) is daarmee bepalend voor de toepasbare interpolatiemethodes
-  !
-
-
-  ! Enumeration for location specification types (used in selectelset_internal_nodes).
-  integer, parameter :: LOCTP_UNKNOWN                  = -1 !< Undefined location specification type.
-  integer, parameter :: LOCTP_POLYGON_FILE             = 10 !< A polygon input file used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYGON_XY               = 11 !< x/y arrays containing a polygon used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYLINE_FILE            = 12 !< A polyline input file used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_POLYLINE_XY              = 13 !< x/y arrays containing a polyline used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_BRANCHID_CHAINAGE        = 14 !< branchid+chainage combination to select the 1D grid point closest to that network branch location.
-  integer, parameter :: LOCTP_NODEID                   = 15 !< nodeid to select the 1D grid point closest to the network point with that nodeId.
-  integer, parameter :: LOCTP_CONTACTID                = 16 !< contactid to select the 1D flow link corresponding with that contactId.
-
-  integer            :: mdia                           =  0 !  -1  ! -1 = write dia, 0 = do not write dia
-
-  ! enumeration for interpolation methods of providers
-
-  integer, parameter :: justupdate                     =  0  ! provider just updates, another provider that
-                                                             ! pointers to this one does the actual interpolation
-  integer, parameter :: spaceandtime                   =  1  ! intp space and time (getval)
-                                                             ! keep  2 meteofields in memory
-  integer, parameter :: spacefirst                     =  2  ! first intp space (update), next intp. time (getval)
-                                                             ! keep 2 flowfields in memory
-  integer, parameter :: weightfactors                  =  3  ! save weightfactors, intp space and time (getval)
-                                                             ! keep 2 pointer- and weight sets in memory
-
-end module timespace_parameters
-
-
-
-    
-    
-    
-
-
-! ==========================================================================
+end module m_itdate
 
 !> 
 module timespace_read
@@ -7601,8 +7554,8 @@ module m_meteo
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
                      else
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
-                  end if
+                        success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname)
+                     end if
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
@@ -8389,6 +8342,7 @@ module m_meteo
             sourceItemName = 'cloud_area_fraction'
             else
                sourceItemName = 'cloudiness'
+            endif
          case ('airdensity')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_density')

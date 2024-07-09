@@ -6623,7 +6623,7 @@ end module m_partitioninfo
    
 !> see if a discharge boundary is partitioned and set japartqbnd
    subroutine set_japartqbnd()
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_partitioninfo
 #ifdef HAVE_MPI
       use mpi

@@ -31,7 +31,7 @@
 ! 
 
    subroutine wave_uorbrlabda()
-   use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, hwavcom, gammax, rlabda, jauorb, jauorbfromswan
+   use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, gammax, rlabda, jauorb, jauorbfromswan
    use m_flow, only: s1
    use m_flowgeom, only: ndx, bl
    use m_physcoef, only: ag

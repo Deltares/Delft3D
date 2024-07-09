@@ -3276,23 +3276,6 @@ module m_ec_converter
       end function ecConverterNetcdf
 
       ! =======================================================================
-      ! JRE to do offline waves
-      function ecConverterNetcdf_weighted(connection, timesteps) result (success)
-         
-         implicit none
-         
-         logical                            :: success    !< function status
-         type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-         real(hp),            intent(in)    :: timesteps  !< convert to this number of timesteps past the kernel's reference date
-         
-         call setECMessage("INFO: ec_converter::ecConverterNetcdf_weighted: function called.")
-               
-         success = .true.
-         
-      
-      end function ecConverterNetcdf_weighted
-      
-      
 
       !> For every connected target item,
       !> if the target field has an associated scalar pointer, fill it with the first element of the arr1DPtr array.

@@ -6159,7 +6159,8 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       endif
       
       if (jamapwav>0) then
-         if (1) then      ! Check the external forcing wave quantities and their associated arrays
+         ! TO DO JRE: fix dit voor offline wave koppeling
+         if (flowWithoutWaves) then      ! Check the external forcing wave quantities and their associated arrays
             if (jamapwav_hwav > 0      .and. allocated(hwav)) then
                if (jamapsigwav==0) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav     , nc_precision, UNC_LOC_S, 'hwav'         , 'sea_surface_wave_rms_height'          , 'RMS wave height'          , 'm'    , jabndnd=jabndnd_) ! not CF
@@ -7534,7 +7535,8 @@ if (jamapsed > 0 .and. jased > 0 .and. stm_included) then
    endif
 
    if (jamapwav>0) then
-      if (1) then      ! Check the external forcing wave quantities and their associated arrays
+      ! TO DO JRE: fix dit voor offline wave koppeling
+      if (flowWithoutWaves) then      ! Check the external forcing wave quantities and their associated arrays
          if (jamapwav_hwav > 0      .and. allocated(hwav)) then
             if (jamapsigwav==0) then
                wavfac = 1d0
