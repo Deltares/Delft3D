@@ -1641,7 +1641,7 @@ contains
       iresult = DFM_NOERR
 
       heat_forcing_type%air_temperature = .false.
-      dewpoint_available = .false.
+      heat_forcing_type%dewpoint = .false.
 
       if (.not. allocated(const_names)) then
          allocate (const_names(0))
@@ -2375,7 +2375,7 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (.not. ((japatm == 1) .and. heat_forcing_type%air_temperature .and. dewpoint_available)) then
+         if (.not. ((japatm == 1) .and. heat_forcing_type%air_temperature .and. heat_forcing_type%dewpoint)) then
             call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
          else
             if (ja_airdensity == 1) then

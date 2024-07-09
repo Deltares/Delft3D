@@ -815,7 +815,7 @@ contains
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
                if (success) then
-                  dewpoint_available = .true.
+                  heat_forcing_type%dewpoint = .true.
                   heat_forcing_type%air_temperature = .true.
                end if
 
@@ -841,7 +841,7 @@ contains
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
-                  dewpoint_available = .true.
+                  heat_forcing_type%dewpoint = .true.
                   heat_forcing_type%air_temperature = .true.
                   heat_forcing_type%solar_radiation = .true.
                end if

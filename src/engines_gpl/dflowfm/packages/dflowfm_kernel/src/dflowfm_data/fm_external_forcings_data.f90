@@ -472,7 +472,6 @@ module fm_external_forcings_data
    double precision, allocatable :: sah(:) ! temp
    double precision, allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
    integer :: num_lat_ini_blocks
-   logical :: dewpoint_available
    double precision, allocatable :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
