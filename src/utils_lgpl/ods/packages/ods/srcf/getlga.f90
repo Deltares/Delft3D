@@ -61,9 +61,6 @@
 ! --------------------------------------------------------------------
 !
 SUBROUTINE ODS_DELWAQ_UNF_LGA&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_delwaq_unf_lga']
-!#endif
 &(FILNAM , ITYPE  , INDLOC , INDX   ,&
 &NOCELL , IGISTY , IERROR          )
 ! --------------------------------------------------------------------
@@ -127,14 +124,14 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 !
       K1     = INDEX( FILNAM(1) , CHAR(0) )
       IF ( K1     .EQ. 0 ) K1     = LENODS - 1
-      DO 110 I = K1-1,1,-1
+      DO I = K1-1,1,-1
          IF ( FILNAM(1)(I:I) .EQ. '.' ) THEN
             FILNAM(1)(I:) = '.lga'
             FILNAM(2)     = FILNAM(1)
             FILNAM(2)(I:) = '.cco'
             GOTO 120
          ENDIF
-110   CONTINUE
+      END DO
 !
 ! -------- Check whether the files exist
 !
@@ -252,9 +249,9 @@ SUBROUTINE ODS_DELWAQ_UNF_LGA&
 !
    IF ( INDLOC(1,3) .GE. 2 ) THEN
       NCLAY  = NOCELL * ( INDLOC(1,3) - 1 )
-      DO 410 I = 1,NODATA
+      DO I = 1,NODATA
          IF ( INDX(I)   .GT. 1 ) INDX(I)   = INDX(I)  + NCLAY
-410   CONTINUE
+      END DO
    ENDIF
 !
    RETURN
@@ -295,9 +292,6 @@ END
 ! --------------------------------------------------------------------
 !
 SUBROUTINE ODS_DELWAQ_UNF_CCO&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_delwaq_unf_cco']
-!#endif
 &(&
 &FILNAM , ITYPE  , IPCODE , TIME   , INDLOC ,&
 &VALMIS , MAXDIM , DATA   , IERROR          )
@@ -386,9 +380,9 @@ SUBROUTINE ODS_DELWAQ_UNF_CCO&
    GOTO 320
 !
 320 CONTINUE
-   DO 330 I = 1,NPART+9
+   DO I = 1,NPART+9
       READ( LUN2   , ERR = 910 , END = 910 ) XDUMMY
-330 CONTINUE
+   END DO
 !
    NODATA = NX2    * NY2
    IF ( NODATA .GT. MAXDIM ) THEN

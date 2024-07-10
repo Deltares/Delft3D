@@ -28,30 +28,8 @@
 !     $Date: 6-06-03 10:40 $
 !     $Source: /u/cvsroot/gpp/libsrc/ods/tri_map.f,v $
 !
-!#ifdef WINNT
-!$ DEFINE GETELT_V8_I
-!      INCLUDE '../include/nfsintrf.i'
-!$ UNDEFINE GETELT_V8_I
-!      INTERFACE TO INTEGER FUNCTION GETELT_i [ALIAS:'_GETELT']
-!     +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!     +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!      INTEGER   VALUE1
-!      INTEGER   VALUE2
-!      CHARACTER VALUE3
-!      CHARACTER VALUE4
-!      INTEGER   VALUE5
-!      INTEGER   VALUE6
-!      INTEGER   VALUE7
-!      CHARACTER VALUE8
-!
-!      END
-!#endif
 
 subroutine ods_tri_nef_map_par&
-!#ifdef WINNT
-!     *          [ALIAS:'_ods_tri_nef_map_par']
-!#endif
 &(&
 &fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
@@ -184,9 +162,6 @@ subroutine ods_tri_nef_map_par&
    character*16  grpdef,elmnam
 !
    integer       GETELT,GETELS,INQELM
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
    integer       TMLCDP
    parameter     ( TMLCDP = IPLMNK + IPTDEP )
@@ -355,11 +330,7 @@ subroutine ods_tri_nef_map_par&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -382,11 +353,7 @@ subroutine ods_tri_nef_map_par&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -728,9 +695,6 @@ subroutine ods_tri_nef_map_par&
 end
 
 subroutine ods_tri_nef_map_dim&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_dim']
-!#endif
 &(&
 &fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
@@ -841,9 +805,6 @@ subroutine ods_tri_nef_map_dim&
 !
    integer       INQGRP,GETELT,GETELS
    integer       INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -988,11 +949,7 @@ subroutine ods_tri_nef_map_dim&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -1015,11 +972,7 @@ subroutine ods_tri_nef_map_dim&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -1280,9 +1233,6 @@ subroutine ods_tri_nef_map_dim&
 end
 
 subroutine ods_tri_nef_map_tme&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_tme']
-!#endif
 &(&
 &fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
@@ -1413,9 +1363,6 @@ subroutine ods_tri_nef_map_tme&
 !
    integer       INQGRP,GETELT,GETELS
    integer       INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -1618,9 +1565,6 @@ subroutine ods_tri_nef_map_tme&
 end
 
 subroutine julind_map&
-!#ifdef WINNT
-!    *          [ALIAS:'_julind_map']
-!#endif
 &(hdefds, hdafds, tim, nindex, ierror)
 !-----------------------------------------------------------------------
 !           Function: transform julian day to index in time series
@@ -1728,9 +1672,6 @@ subroutine julind_map&
    &uindex(    3),usrord,buflen
    character*16  grpdef,elmnam,celnam
    integer       INQGRP,GETELT,GETELS,INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -1903,9 +1844,6 @@ subroutine julind_map&
 end
 
 subroutine ods_tri_nef_map_loc&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_loc']
-!#endif
 &(&
 &fname  ,itype  ,locdef ,maxdef ,pardep ,timdep ,&
 &maxlst ,        loclst ,        loctyp ,nrlst  ,&
@@ -2021,9 +1959,6 @@ subroutine ods_tri_nef_map_loc&
    character*16  grpdef,elmnam
 !
    integer       GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2121,11 +2056,7 @@ subroutine ods_tri_nef_map_loc&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -2148,11 +2079,7 @@ subroutine ods_tri_nef_map_loc&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -2210,9 +2137,6 @@ subroutine ods_tri_nef_map_loc&
 end
 
 subroutine ods_tri_nef_map_mat&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_mat']
-!#endif
 &(&
 &fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
@@ -2383,9 +2307,6 @@ subroutine ods_tri_nef_map_mat&
    character*64  elmdes
 !
    integer       GETELT,GETELS,INQELM
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2484,11 +2405,7 @@ subroutine ods_tri_nef_map_mat&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -2511,11 +2428,7 @@ subroutine ods_tri_nef_map_mat&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -2658,9 +2571,6 @@ subroutine ods_tri_nef_map_mat&
 end
 
 subroutine ods_tri_nef_map_getdata&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_getdata']
-!#endif
 &(&
 &hdefds        ,hdafds        ,misval        ,&
 &num_rows          ,num_columns          ,num_layers_grid          ,&
@@ -2902,9 +2812,6 @@ subroutine ods_tri_nef_map_getdata&
 
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !
 !-----------------------------------------------------------------------
 !-----Initalize
@@ -3618,9 +3525,6 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer*4     GETELT_i
-!#endif
 !
 !-----------------------------------------------------------------------
    dryflp = 'NO  '
@@ -3790,11 +3694,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
    buflen    = 4
    okee      = okee .and.&
-!#ifdef WINNT
-!    *            GETELT_i
-!#else
    &GETELS&
-!#endif
    &(hdefds,grpdef    ,'DRYFLP'  ,&
    &uindex,usrord    ,buflen    ,DRYFLP    )&
    &.eq. 0
@@ -3934,9 +3834,6 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
@@ -4121,9 +4018,6 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4375,9 +4269,6 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4615,9 +4506,6 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4808,9 +4696,6 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
@@ -4963,9 +4848,6 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
@@ -5138,9 +5020,6 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -5356,9 +5235,6 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -5551,9 +5427,6 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------

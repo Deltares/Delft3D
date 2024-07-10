@@ -2197,7 +2197,7 @@ subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, deltaH, waveps, hhw,
    use m_flowgeom
    use m_sferic, only: pi
    use m_physcoef, only: rhomean
-   use m_xerf
+   use math_tools, only: xerf
    use m_xbeach_typesandkinds, only: slen
    use m_debug
    

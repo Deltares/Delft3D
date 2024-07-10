@@ -28,31 +28,7 @@
 !        $Date: 1-04-03 10:52 $
 !        $Source: /u/cvsroot/gpp/libsrc/ods/mor_sys.f,v $
 !
-!#ifdef WINNT
-!     INCLUDE '../include/nfsintrf.i'
-!
-!     INTERFACE TO FUNCTION GETELT_i [ALIAS:'_GETELT']
-!    +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!    +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!     INTEGER   GETELT_i
-!
-!     INTEGER   VALUE1
-!     INTEGER   VALUE2
-!     CHARACTER VALUE3
-!     CHARACTER VALUE4
-!     INTEGER   VALUE5
-!     INTEGER   VALUE6
-!     INTEGER   VALUE7
-!     CHARACTER VALUE8
-!
-!     END
-
-!#endif
 subroutine ods_mor_nef_com_dim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_dim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -228,9 +204,6 @@ subroutine ods_mor_nef_com_dim&
 end
 
 subroutine ods_mor_nef_com_par&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_par']
-!#endif
 &( fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -399,9 +372,6 @@ subroutine ods_mor_nef_com_par&
 !-----------------------------------------------------------------------
 end
 subroutine ods_mor_nef_com_tme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_tme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -636,9 +606,6 @@ subroutine ods_mor_nef_com_tme&
 end
 
 subroutine ods_mor_nef_com_mat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_mat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -1604,7 +1571,6 @@ subroutine comtme( datfds , deffds , okee   , npar    ,&
 end
 ! =====================================================================
 subroutine mapcom&
-! ---------------------------------------------------------------------
 &( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
 &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
 &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&

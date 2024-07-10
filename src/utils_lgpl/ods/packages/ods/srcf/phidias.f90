@@ -28,30 +28,7 @@
 !        $Date: 1-04-03 10:52 $
 !        $Source: /u/cvsroot/gpp/libsrc/ods/phidias.f,v $
 !
-!#ifdef WINNT
-!     INCLUDE '../include/nfsintrf.i'
-!
-!     INTERFACE TO FUNCTION GETELT_i [ALIAS:'_GETELT']
-!    +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!    +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!     INTEGER   GETELT_i
-!
-!     INTEGER   VALUE1
-!     INTEGER   VALUE2
-!     CHARACTER VALUE3
-!     CHARACTER VALUE4
-!     INTEGER   VALUE5
-!     INTEGER   VALUE6
-!     INTEGER   VALUE7
-!     CHARACTER VALUE8
-!
-!     END
-!#endif
 subroutine phspdim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phspdim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -345,9 +322,6 @@ end
 
 
 subroutine phsppar&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsppar']
-!#endif
 &(fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -570,9 +544,6 @@ subroutine phsppar&
 end
 
 subroutine phsploc&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsploc']
-!#endif
 &(fname , itype , locdef, maxdef, pardep, timdep,&
 &loclst, loctyp, locnr , maxlst, nrlst , ierror,&
 &option )
@@ -771,9 +742,6 @@ subroutine phsploc&
 !-----------------------------------------------------------------------
 end
 subroutine             phsptme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsptme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -889,9 +857,6 @@ subroutine             phsptme&
    integer       i, idp, itp, n
    integer       itmodc, icurtm, ihou, imin, isec, l
    integer       GETELT, GETELS, INQMXI
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
    real          tmodc
    character*12  tnul
    character*16  elmnam(maxelm), grpnam
@@ -962,11 +927,7 @@ subroutine             phsptme&
 
    buflen    =12
    elmnam(1) = 'tijd-spcc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpnam    ,elmnam(1) ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
 
@@ -1058,9 +1019,6 @@ subroutine             phsptme&
 end
 
 subroutine             phspmat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phspmat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -1179,9 +1137,6 @@ subroutine             phspmat&
    integer       nrlst
    integer       itmodc, icurtm, ihou, imin, isec, l
    integer       GETELT, GETELS, INQMXI, INQCEL, INQELM
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
    real          tmodc
    real*8        timlev
    character*8   elmtyp
@@ -1242,11 +1197,7 @@ subroutine             phspmat&
 
    buflen    =12 * 4
    elmnaa    = 'tijd-spcc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    read(tnul(1:6),'(i6)')itdate
@@ -1470,9 +1421,6 @@ subroutine             phspmat&
 end
 
 subroutine phi_dim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_dim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -1684,9 +1632,6 @@ subroutine phi_dim&
 end
 
 subroutine phi_par&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_par']
-!#endif
 &(fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -1864,9 +1809,6 @@ subroutine phi_par&
 !-----------------------------------------------------------------------
 end
 subroutine phi_loc&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_loc']
-!#endif
 &(fname  ,itype  ,locdef ,maxdef ,pardep ,timdep ,&
 &maxlst ,        loclst ,        loctyp ,nrlst  ,&
 &locnr  ,ierror ,zbuffs ,option                 )
@@ -2065,9 +2007,6 @@ subroutine phi_loc&
 end
 
 subroutine             phi_tme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_tme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -2195,9 +2134,6 @@ subroutine             phi_tme&
 !
 !
    integer       GETELT, GETELS
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -2255,11 +2191,7 @@ subroutine             phi_tme&
    buflen    =12 * 4
    elmnaa    = 'tijd-mapc'
    if(itype.eq.5050)elmnaa='tijd-tsrc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdaf    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    okee = okee .and. ierror .eq. 0
@@ -2308,9 +2240,6 @@ subroutine             phi_tme&
 end
 
 subroutine             phi_mat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_mat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -2433,9 +2362,6 @@ subroutine             phi_mat&
    integer maplast,num_rows,num_columns,npar
    integer       uindex(3,5),usrord(5),buflen
    integer       GETELT, GETELS
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2496,11 +2422,7 @@ subroutine             phi_mat&
    buflen    =12 * 4
    elmnaa    = 'tijd-mapc'
    if(itype.eq.5050)elmnaa='tijd-tsrc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdaf    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    okee  =  ierror .eq. 0

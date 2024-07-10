@@ -33,12 +33,12 @@ subroutine getDatasets_f77get(synched, resFileName)
    include 'dio-f77-tst.inc'
    include 'dio-plt.inc'
 
-   C     ! arguments
+   ! arguments
 
    logical       :: synched
    character*(*) :: resFileName
 
-   C     ! timeframe
+   ! timeframe
 
    integer, parameter :: ra = 1 ! dataset/stream reals/ASCII
    integer, parameter :: da = 2 ! dataset/stream doubles/ASCII
@@ -54,7 +54,7 @@ subroutine getDatasets_f77get(synched, resFileName)
 #endif
    integer, parameter :: NSETS            =  6
    integer, parameter :: DioMaxTimLen     = 25
-   C     ! locals
+   ! locals
 
    integer         :: resLun
 
@@ -76,17 +76,17 @@ subroutine getDatasets_f77get(synched, resFileName)
 
    integer :: ds, t, i, j
 
-   C     !   Open file for results, write DioVersion
+   !   Open file for results, write DioVersion
 
    open(newunit=resLun,file=resFileName)
 
    write(resLun,*) 'getDatasets_f77get: ', synched
 
-   C     !   Initialise expected Data
+   !   Initialise expected Data
 
    call initValues(NPARS, NLOCS, checkRValues)
 
-   C     !   Initialize data set names
+   !   Initialize data set names
 
    name(ra) = 'TESTRealASCII'
    name(rb) = 'TESTRealBinary'
@@ -99,44 +99,36 @@ subroutine getDatasets_f77get(synched, resFileName)
       endif
    enddo
 
-   C       !   Create IN data streams
+   !   Create IN data streams
 
    if ( synched ) then
-      stream(ra) = DioCreateStreamSynched(
-      +                    Dio_ASCII_stream, name(ra), 'r')
-      stream(rb) = DioCreateStreamSynched(
-      +                    Dio_Binary_stream, name(rb), 'r')
-      stream(rh) = DioCreateStreamSynched(
-      +                    Dio_HIS_stream, name(rh), 'r')
+      stream(ra) = DioCreateStreamSynched(Dio_ASCII_stream, name(ra), 'r')
+      stream(rb) = DioCreateStreamSynched(Dio_Binary_stream, name(rb), 'r')
+      stream(rh) = DioCreateStreamSynched(Dio_HIS_stream, name(rh), 'r')
    else
-      stream(ra) = DioCreateStream(
-      +                    Dio_ASCII_stream, name(ra), 'r')
-      stream(rb) = DioCreateStream(
-      +                    Dio_Binary_stream, name(rb), 'r')
-      stream(rh) = DioCreateStream(
-      +                    Dio_HIS_stream, name(rh), 'r')
+      stream(ra) = DioCreateStream(Dio_ASCII_stream, name(ra), 'r')
+      stream(rb) = DioCreateStream(Dio_Binary_stream, name(rb), 'r')
+      stream(rh) = DioCreateStream(Dio_HIS_stream, name(rh), 'r')
    endif
    write (*, *) 'IN streams Created'
 
-   C     !   Create IN data sets
+   !   Create IN data sets
 
    do ds = 1, NSETS
       write (*, *) 'Getting Dataset ', name(ds)
       write (resLun, *) 'Getting Dataset ', name(ds)
-      set(ds) = DioGetPltDataSetInfo(stream(ds),  name(ds),
-      +                    npar, pars, nloc, locs, nTim, tims)
+      set(ds) = DioGetPltDataSetInfo(stream(ds),  name(ds), npar, pars, nloc, locs, nTim, tims)
       write(resLun,*) 'nPar: ', nPar, ', pars:'
       write(resLun,*) pars
       write(resLun,*) 'nLoc: ', nLoc, ', locs:'
       write(resLun,*) locs
    enddo
 
-   C     !   Get data for each timestep
+   !   Get data for each timestep
 
    do t = 1, NTIMES
 
-      if (DioGetPltDataSetReals(set(ra), "defaultTime",
-      +                               npar, nloc, rValues)) then
+      if (DioGetPltDataSetReals(set(ra), "defaultTime", npar, nloc, rValues)) then
       write (resLun, *) 'Got reals/ASCII for Step: ', t
       write(resLun,*) rValues
       do i = 1,NPARS
@@ -145,16 +137,14 @@ subroutine getDatasets_f77get(synched, resFileName)
          enddo
       enddo
       if ( diffInValues(NPARS, NLOCS, diffValues, 1.D-6) ) then
-         write(resLun,*)
-         +                'DIFFERENCES in reals/ASCII, Step', t, ':'
+         write(resLun,*) 'DIFFERENCES in reals/ASCII, Step', t, ':'
          write(resLun,*) diffValues
       endif
    else
       write(*,*) 'Did not get reals/ASCII for Step: ', t
    endif
 
-   if (DioGetPltDataSetReals(set(rb), "defaultTime",
-   +                               npar, nloc, rValues)) then
+   if (DioGetPltDataSetReals(set(rb), "defaultTime", npar, nloc, rValues)) then
    write (resLun, *) 'Got reals/Binary for Step: ', t
    write(resLun,*) rValues
    do i = 1,NPARS
@@ -163,16 +153,14 @@ subroutine getDatasets_f77get(synched, resFileName)
       enddo
    enddo
    if ( diffInValues(NPARS, NLOCS, diffValues, 1.D-6) ) then
-      write(resLun,*)
-      +                'DIFFERENCES in reals/Binary, Step', t, ':'
+      write(resLun,*) 'DIFFERENCES in reals/Binary, Step', t, ':'
       write(resLun,*) diffValues
    endif
 else
    write(*,*) 'Did not get reals/Binary for Step: ', t
 endif
 
-if (DioGetPltDataSetReals(set(rh), "defaultTime",
-+                               npar, nloc, rValues)) then
+if (DioGetPltDataSetReals(set(rh), "defaultTime", npar, nloc, rValues)) then
 write (resLun, *) 'Got reals/His for Step: ', t
 write(resLun,*) rValues
 do i = 1,NPARS
@@ -181,8 +169,7 @@ do i = 1,NPARS
    enddo
 enddo
 if ( diffInValues(NPARS, NLOCS, diffValues, 1.D-6) ) then
-   write(resLun,*)
-   +                'DIFFERENCES in reals/His, Step', t, ':'
+   write(resLun,*) 'DIFFERENCES in reals/His, Step', t, ':'
    write(resLun,*) diffValues
 endif
 else
@@ -193,7 +180,7 @@ call incrementValues(NPARS, NLOCS, checkRValues)
 
 enddo
 
-C     !   cleanup
+!   cleanup
 
 do ds = 1, NSETS
    call DioDestroyPltDataSet(set(ds))
@@ -214,7 +201,7 @@ program test_get_dio_f90
 
    include 'dio-f77-tst.inc'
 
-   C     ! initialise Dio
+   ! initialise Dio
 
    call DiofInit
    call getDatasets_f77get(.true., 'TESTF77Synch-res.txt')
