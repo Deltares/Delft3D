@@ -385,7 +385,9 @@ def create_configuration_test_result(build: ET.Element, name: str, status_text: 
     -------
         ConfigurationTestResult: configuration test result from XML.
     """
-    build_nr = build.attrib["number"]
+    build_nr = 0
+    if "number" in build.attrib:
+        build_nr = int(build.attrib["number"])
     if build.find(TEST_OCCURRENCES) is not None:
         passed = get_number_of_tests(build, "passed")
         failed = get_number_of_tests(build, "failed")
