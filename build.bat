@@ -8,6 +8,7 @@ set vs=
 set coverage=
 set build_type=Debug
 set keep_build=
+set compiler=ifort
 
 rem Non-argument variables
 set generator=
@@ -22,6 +23,7 @@ set -vs=
 set -coverage=
 set -build_type=
 set -keep_build=
+set -compiler=
 
 rem Jump to the directory where this build.bat script is
 cd %~dp0
@@ -38,6 +40,7 @@ if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 echo.
 echo     oneapi      : !oneapi!
+echo     compiler    : !compiler!
 echo     vs          : !vs!
 echo     config      : !config!
 echo     generator   : !generator!
@@ -85,7 +88,7 @@ rem =================================
     echo Get command line arguments...
 
     rem Read arguments
-    set "options=-config:!config! -help:!help! -vs:!vs! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
+    set "options=-config:!config! -help:!help! -vs:!vs! -compiler:!compiler! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
@@ -110,12 +113,21 @@ rem =================================
 
     set configs="all delft3d4 delft3dfm dflowfm dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
     set "modified=!configs:%-config%=!"
-    if !modified!==%configs% (
+    if !modified!==!configs! (
         echo ERROR: Configuration !-config! not recognized
         goto :argument_error
     )
 
     set config=!-config!
+
+    set compilers="ifort ifx"
+    set "modified=!compilers:%-compiler%=!"
+    if !modified!==!compilers! (
+        echo ERROR: Compiler !-compiler! not recognized
+        goto :argument_error
+    )
+
+    set compiler=!-compiler!
 
     if !-coverage! == 1 (
         set coverage=1
@@ -342,7 +354,7 @@ rem =======================
     echo.
     call :create_cmake_dir build_!config!
     echo Running CMake for !config!...
-    !cmake! -S .\src\cmake -B build_!config! !cmake_generator_arg! -A x64 -D CONFIGURATION_TYPE:STRING="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
+    !cmake! -S .\src\cmake -B build_!config! !cmake_generator_arg! -T fortran=!compiler! -A x64 -D CONFIGURATION_TYPE:STRING="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
 
@@ -426,9 +438,10 @@ rem =======================
     echo -help: Show this help page.                                                           Example: -help
     echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
     echo -build: Run build and install steps after running cmake.                              Example: -build
-    echo -vs: desired visual studio version. Overrides default.                                Example: -vs 2019
+    echo -vs: desired visual studio version.                                                   Example: -vs 2019
+    echo -compiler: desired Intel compiler, either ifort (default) or ifx.                     Example: -compiler ifx
     echo -build_type: build optimization level.                                                Example: -build_type Release
-rem extra four spaces required for aligning Example:
+rem extra four spaces required for aligning Example, compensating for ^ characters:
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
     echo More info  : https://oss.deltares.nl/web/delft3d/source-code
