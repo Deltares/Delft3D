@@ -30,7 +30,6 @@ teamcity_retrieve_engine_test_status.py --tbroot Delft3DSobek_DimrTestbench  # D
 """
 summarydata_array = []
 global log_file
-global engine_statistics
 TEXT_NOT_IN_XML_MESSAGE = "Text is not in XML format: %s"
 BASE_URL = "https://dpcbuild.deltares.nl"
 REST_API_URL = f"{BASE_URL}/httpAuth/app/rest"
@@ -50,7 +49,7 @@ class SummaryData(object):
         self.sum_muted = 0
 
 
-class Data(object):
+class ConfigurationSummary(object):
     """A class to store data for test results."""
 
     def __init__(self, name, passed, failed) -> None:
@@ -72,11 +71,26 @@ class ConfigurationInfo(object):
         self.identifier = identifier
 
 
-class CustomData(object):
+class EngineCaseList(object):
     """A class to store configuration info."""
 
-    def __init__(self, build_nr: int, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int) -> None:
-        self.build_nr = build_nr
+    def __init__(self, name: str, case_list: List[ConfigurationInfo]) -> None:
+        self.engine_name = name
+        self.list = case_list
+
+    def has_cases(self) -> bool:
+        if len(self.list) != 0:
+            return True
+        else:
+            return False
+
+
+class TestResult(object):
+    """A class to store configuration test results info."""
+
+    def __init__(
+        self, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int
+    ) -> None:
         self.passed = passed
         self.failed = failed
         self.ignored = ignored
@@ -86,6 +100,48 @@ class CustomData(object):
 
     def get_total(self) -> int:
         return self.passed + self.failed + self.exception + self.ignored + self.muted - self.muted_exception
+
+    def get_not_passed_total(self) -> int:
+        return self.failed + self.exception + self.ignored + self.muted
+
+
+class ConfigurationTestResult(object):
+    """A class to store configuration test results info."""
+
+    def __init__(
+        self, build_nr: int, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int
+    ) -> None:
+        self.build_nr = build_nr
+        self.test_result = TestResult(passed, failed, ignored, muted, exception, muted_exception)
+        self.passed = passed
+        self.failed = failed
+        self.ignored = ignored
+        self.muted = muted
+        self.exception = exception
+        self.muted_exception = muted_exception
+
+    def get_total(self) -> int:
+        return self.test_result.get_total()
+
+    def get_not_passed_total(self) -> int:
+        return self.test_result.get_not_passed_total()
+
+
+def get_sum_test_result(test_overview: List[ConfigurationTestResult]) -> TestResult:
+    sum_passed = 0
+    sum_failed = 0
+    sum_exception = 0
+    sum_ignored = 0
+    sum_muted = 0
+    sum_muted_exception = 0
+    for test in test_overview:
+        sum_passed += test.passed
+        sum_failed += test.failed
+        sum_ignored += test.ignored
+        sum_muted += test.muted
+        sum_exception += test.exception
+        sum_muted_exception += test.muted_exception
+    return TestResult(sum_passed, sum_failed, sum_ignored, sum_muted, sum_exception, sum_muted_exception)
 
 
 def lprint(*args: str) -> None:
@@ -99,37 +155,51 @@ def lprint(*args: str) -> None:
     log_file.write(" ".join(map(str, args)) + "\n")
 
 
-def report_cases(url, given_build_config, username, password, buildname):
+def report_cases(engine_cases) -> TestResult:
     global _enginge_statistics
+    global summarydata_array
 
+    print("        %s" % engine_cases.engine_name)
+    lprint("        %s" % engine_cases.engine_name)
+    lprint(
+        "               total   passed   failed   except  ignored    muted        %  --- test case name            (# build)"
+    )
+    test_overview = print_case_list(engine_cases)
+
+    sum_test_result = get_sum_test_result(test_overview)
+
+    configuration_summary = ConfigurationSummary(
+        engine_cases.engine_name, sum_test_result.passed, sum_test_result.get_not_passed_total()
+    )
+    lprint("            Total     : %6d" % configuration_summary.total)
+    lprint("            Passed    : %6d" % configuration_summary.passed)
+    lprint("            Percentage: %6.2f" % configuration_summary.percentage)
+
+    for summary in summarydata_array:
+        if (summary.name in engine_cases.engine_name) or summary.name == "All":
+            summary.sum_passed += sum_test_result.passed
+            summary.sum_failed += sum_test_result.failed
+            summary.sum_exception += sum_test_result.exception
+            summary.sum_ignored += sum_test_result.ignored
+            summary.sum_muted += sum_test_result.muted
+
+    return sum_test_result
+
+
+def get_engine_cases_from_url(url, username, password, given_build_config) -> EngineCaseList:
     engine_req = get_request(url, username, password)
     if not text_in_xml_message(engine_req.text):
-        return 1
+        return EngineCaseList("", [ConfigurationInfo("", "")])
     xml_engine_root = ET.fromstring(engine_req.text)
     engine_name = xml_engine_root.attrib["name"]
-    case_info_list = get_configuration_info(xml_engine_root, given_build_config)
-
-    if len(case_info_list) != 0:
-        print("        %s" % engine_name)
-        lprint("        %s" % engine_name)
-        lprint(
-            "               total   passed   failed   except  ignored    muted        %  --- test case name            (# build)"
-        )
-    print_case_list(case_info_list, buildname, engine_name)
+    case_list = get_configuration_info(xml_engine_root, given_build_config)
+    return EngineCaseList(engine_name, case_list)
 
 
-def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, engine_name: str):
-    _sum_passed = 0
-    _sum_failed = 0
-    _sum_exception = 0
-    _sum_ignored = 0
-    _sum_muted = 0
+def print_case_list(engine_cases: EngineCaseList) -> List[ConfigurationTestResult]:
     test_overview = []
 
-    sum_passed_subtotal = 0
-    not_passed_subtotal = 0
-
-    for case_info in case_info_list:
+    for case_info in engine_cases.list:
         identifier = case_info.identifier
         computation_name = []
         url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=buildType:(id:{identifier}),defaultFilter:false,branch:<default>&count=1&fields=count,build(number,statistics,status,statusText,testOccurrences,agent,lastChange,tags(tag),pinned,revisions(revision))"
@@ -185,7 +255,7 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
                                 test_overview[i].exception += 1
                                 computation_name.append(xml_test_occ.attrib["name"])
                     except:
-                        error_message = f"ERROR retrieving data from last build for {case_info_list[i].name} : {xml_test_occ.attrib["name"]}."
+                        error_message = f"ERROR retrieving data from last build for {engine_cases.list[i].name} : {xml_test_occ.attrib["name"]}."
                         print(error_message)
                         lprint(error_message)
 
@@ -206,14 +276,14 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
                     test_overview[i].ignored,
                     test_overview[i].muted,
                     a,
-                    case_info_list[i].name,
+                    engine_cases.list[i].name,
                     test_overview[i].build_nr,
                 )
             )
         else:
             lprint(
                 "                   x        x        x        x        x        x        x  ---  %-24s (#%s)"
-                % (case_info_list[i].name, test_overview[i].build_nr)
+                % (engine_cases.list[i].name, test_overview[i].build_nr)
             )
             lprint(
                 "                                                                            xxx  %s" % (status_text)
@@ -226,29 +296,7 @@ def print_case_list(case_info_list: List[ConfigurationInfo], buildname: str, eng
                     % computation_name[j]
                 )
 
-        _sum_passed += test_overview[i].passed
-        _sum_failed += test_overview[i].failed
-        _sum_exception += test_overview[i].exception
-        _sum_ignored += test_overview[i].ignored
-        _sum_muted += test_overview[i].muted
-        sum_passed_subtotal += test_overview[i].passed
-        not_passed_subtotal += test_overview[i].failed + test_overview[i].exception + test_overview[i].ignored + test_overview[i].muted
-
-    for summary in summarydata_array:
-        if (summary.name in buildname) or summary.name == "All":
-            summary.sum_passed += _sum_passed
-            summary.sum_failed += _sum_failed
-            summary.sum_exception += _sum_exception
-            summary.sum_ignored += _sum_ignored
-            summary.sum_muted += _sum_muted
-
-    if len(case_info_list) != 0:
-        engine_statistics.append(Data(engine_name, sum_passed_subtotal, not_passed_subtotal))
-
-        i = len(engine_statistics) - 1
-        lprint("            Total     : %6d" % engine_statistics[i].total)
-        lprint("            Passed    : %6d" % engine_statistics[i].passed)
-        lprint("            Percentage: %6.2f" % engine_statistics[i].percentage)
+    return test_overview
 
 
 def get_status_text_from_node(build: ET.Element) -> str:
@@ -293,7 +341,7 @@ def get_number_of_tests(build: ET.Element, test_result: str) -> int:
     return 0
 
 
-def get_test_overview_from_xml_node(build: ET.Element) -> CustomData:
+def get_test_overview_from_xml_node(build: ET.Element) -> ConfigurationTestResult:
     build_nr = build.attrib["number"]
     if build.find(TEST_OCCURRENCES) is not None:
         passed = get_number_of_tests(build, "passed")
@@ -305,7 +353,7 @@ def get_test_overview_from_xml_node(build: ET.Element) -> CustomData:
         failed = 0
         ignored = 0
         muted = 0
-    return CustomData(int(build_nr), passed, failed, ignored, muted, 0, 0)
+    return ConfigurationTestResult(int(build_nr), passed, failed, ignored, muted, 0, 0)
 
 
 def get_configuration_info(xml_engine_root, given_build_config) -> List[ConfigurationInfo]:
@@ -361,15 +409,15 @@ def text_in_xml_message(text: str) -> bool:
         return False
 
 
-def retrieve_engine_test_status(project_id, given_build_config, username, password, engines) -> List[SummaryData]:
-    global engine_statistics
-    engine_test_status = []
-    engine_test_status.append(SummaryData("All"))
+def retrieve_engine_test_status(project_ids, given_build_config, username, password, engines):
+    global summarydata_array
+
+    summarydata_array.append(SummaryData("All"))
     if engines is not None:
         for engine in engines.split(","):
-            engine_test_status.append(SummaryData(engine))
+            summarydata_array.append(SummaryData(engine))
 
-    project_url = PROJECTS_URL % project_id
+    project_url = PROJECTS_URL % project_ids
 
     try:
         project_response = get_request(project_url, username, password)
@@ -384,21 +432,13 @@ def retrieve_engine_test_status(project_id, given_build_config, username, passwo
     print("")
     print("%s" % project_text.attrib["name"])
     lprint("%s" % project_text.attrib["name"])
-
-    engine_name = []
-    engine_id = []
+    engines = []
     for projects in project_text.findall("projects"):
         for project in projects:
-            engine_id.append(project.attrib["id"])
-            engine_name.append(project.attrib["name"])
+            engines.append(ConfigurationInfo(project.attrib["name"], project.attrib["id"]))
 
-    engine_statistics = []
-
-    for engine in engine_id:
-        project_id = []
-        project_name = []
-
-        url = PROJECTS_URL % engine
+    for engine in engines:
+        url = PROJECTS_URL % engine.identifier
 
         engine_req = get_request(url, username, password)
         if not text_in_xml_message(engine_req.text):
@@ -406,38 +446,24 @@ def retrieve_engine_test_status(project_id, given_build_config, username, passwo
         xml_engine_root = ET.fromstring(engine_req.text)
         print("    %s" % xml_engine_root.attrib["name"])
         lprint("    %s" % xml_engine_root.attrib["name"])
+        engine_cases = get_engine_cases_from_url(url, username, password, given_build_config)
+        if engine_cases.has_cases():
+            report_cases(engine_cases)
 
         for projects in xml_engine_root.findall("projects"):
             for project in projects:
-                project_id.append(project.attrib["id"])
-                project_name.append(project.attrib["name"])
+                project_info = ConfigurationInfo(project.attrib["name"], project.attrib["id"])
 
-                url_3 = PROJECTS_URL % project.attrib["id"]
+                url_3 = PROJECTS_URL % project_info.identifier
                 level_req = get_request(url, username, password)
                 if not text_in_xml_message(level_req.text):
                     return 1
-                report_cases(
-                    url_3,
-                    given_build_config,
-                    username,
-                    password,
-                    project.attrib["name"],
-                )
+                engine_cases = get_engine_cases_from_url(url_3, username, password, given_build_config)
+                if engine_cases.has_cases():
+                    report_cases(engine_cases)
 
-        report_cases(
-            url,
-            given_build_config,
-            username,
-            password,
-            engine_name[engine_id.index(engine)],
-        )
     lprint("\nTestbench root: %s" % project_text.attrib["name"])
-    return engine_test_status
-
-
-def print_summary(engine_test_status: List[SummaryData]) -> None:
-    """Print test result summary."""
-    for summary in engine_test_status:
+    for summary in summarydata_array:
         total = (
             summary.sum_passed + summary.sum_failed + summary.sum_exception + summary.sum_ignored + summary.sum_muted
         )
@@ -546,9 +572,7 @@ if __name__ == "__main__":
 
     print("Listing is written to: %s" % out_put)
 
-    engine_test_status = retrieve_engine_test_status(tbroot, given_build_config, username, password, engines)
-
-    print_summary(engine_test_status)
+    retrieve_engine_test_status(tbroot, given_build_config, username, password, engines)
 
     if os.path.exists("TMPdownload_teamcity_retrieve"):
         shutil.rmtree("TMPdownload_teamcity_retrieve")
