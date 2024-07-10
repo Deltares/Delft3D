@@ -249,6 +249,9 @@
 
        if (jbasqbnddownwindhs == 1) then
           hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
+          if (hu(L) > 0.0) then 
+              Ltop(L) = Lbot(L) + kmxL(L) - 1
+          endif
           call addlink2D(L,1)
           huqbnd(n) = hu(L)
        endif
