@@ -273,6 +273,8 @@ def get_engine_cases_from_url(url: str, username: str, password: str, given_buil
     xml_engine_root = ET.fromstring(engine_req.text)
     engine_name = xml_engine_root.attrib["name"]
     case_list = get_configuration_info(xml_engine_root, given_build_config)
+    if len(case_list) != 0:
+        print(f"\tRetrieved {engine_name}")    
     return EngineCaseList(engine_name, case_list)
 
 
@@ -479,8 +481,8 @@ def get_tree_entire_engine_test_results(
 
     engine_results = []
     for engine in engines:
+        print(f"Retrieving {engine.name}")
         url = PROJECTS_URL % engine.identifier
-
         engine_req = get_request(url, username, password)
         if not text_in_xml_message(engine_req.text):
             return 1
@@ -496,11 +498,11 @@ def get_tree_entire_engine_test_results(
         for projects_node in xml_engine_root.findall("projects"):
             for project in projects_node:
                 project_info = ConfigurationInfo(project.attrib["name"], project.attrib["id"])
-
                 url_3 = PROJECTS_URL % project_info.identifier
                 level_req = get_request(url_3, username, password)
                 if not text_in_xml_message(level_req.text):
                     return 1
+
                 sub_engine_cases = get_engine_cases_from_url(url_3, username, password, given_build_config)
                 if sub_engine_cases.has_cases():
                     sub_test_result.append(
@@ -513,7 +515,7 @@ def get_tree_entire_engine_test_results(
 
 
 def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary) -> None:
-    """logs executive summary to a file."""
+    """Log executive summary to a file."""
     log_to_file(log_file, "\nTestbench root: %s" % summarydata.name)
     for summary in summarydata.summary:
         total = (
@@ -537,12 +539,9 @@ def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary
 
 def log_tree(log_file: TextIOWrapper, tree_result: TreeResult) -> None:
     """Log project tree to a file."""
-    print("")
-    print("%s" % tree_result.name)
     log_to_file(log_file, "%s" % tree_result.name)
 
     for engine_result in tree_result.engine_results:
-        print("    %s" % engine_result.name)
         log_to_file(log_file, "    %s" % engine_result.name)
         if len(engine_result.sub_engine_results) != 0:
             for result in engine_result.sub_engine_results:
@@ -551,9 +550,8 @@ def log_tree(log_file: TextIOWrapper, tree_result: TreeResult) -> None:
             log_engine(log_file, engine_result.name, engine_result.engine_results)
 
 
-def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTestResult]):
+def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTestResult]) -> None:
     """Log engine list to a file."""
-    print("        %s" % name)
     log_to_file(log_file, "        %s" % name)
     log_to_file(
         log_file,
@@ -709,7 +707,7 @@ if __name__ == "__main__":
     if os.path.exists("TMPdownload_teamcity_retrieve"):
         shutil.rmtree("TMPdownload_teamcity_retrieve")
 
-    log_to_file(log_file, "\nStart: %s" % start_time)
+    log_to_file(log_file, "Start: %s" % start_time)
     log_to_file(log_file, "End  : %s" % datetime.now())
     log_to_file(log_file, "Ready")
     print("\nStart: %s" % start_time)
